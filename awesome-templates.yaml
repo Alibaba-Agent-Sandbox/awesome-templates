@@ -8,7 +8,7 @@
 #   2. Add your template entry under "# === Community Templates ===" below
 #   3. Ensure all required fields are filled (name, description, repo, tags, author, capabilities, status)
 #   4. Set status to "community" (or "experimental" for early-stage templates)
-#   5. Open a PR — see .github/CONTRIBUTING.md for full guidelines
+#   5. Open a PR — see CONTRIBUTING.md for full guidelines
 #
 # Schema:
 #   - name:         Template display name (unique identifier)

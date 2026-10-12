@@ -9,12 +9,11 @@ tags:
   - ai-agent
   - self-hosted
 
-base: ubuntu:22.04
+base: python:3.12-slim
 
 system_packages:
   - python3
   - python3-pip
-  - python3-venv
   - git
   - curl
   - wget
@@ -30,10 +29,6 @@ python_packages:
 node_packages:
   - "@openai/codex"
 
-commands:
-  - python3 -m venv /opt/venv
-  - /opt/venv/bin/pip install --upgrade pip
-
 capabilities:
   - shell
   - files
@@ -47,7 +42,7 @@ custom_commands:
   agent_status:
     cmd: "curl -s http://localhost:9000/v1/agents/sessions"
     description: "List active Agent API sessions"
-    cwd: "/workspace"
+    cwd: "/app"
     timeout: 10
 
 env:
@@ -56,8 +51,7 @@ env:
   AGENT_MAX_SESSIONS: "20"
   AGENT_SESSION_TTL: "1800"
   CODEX_SANDBOX_MODE: "true"
-  PATH: "/opt/venv/bin:$PATH"
-  WORKSPACE: "/workspace"
+  WORKSPACE: "/app"
 
 resources:
   cpu: 2

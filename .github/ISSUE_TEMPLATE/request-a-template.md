@@ -16,7 +16,7 @@ assignees: []
 
 ## Base image & runtime
 
-- Base image (e.g. `ubuntu:22.04`):
+- Base image (e.g. `python:3.12-slim`):
 - Language/runtime (Python, Node.js, …):
 
 ## Capabilities needed

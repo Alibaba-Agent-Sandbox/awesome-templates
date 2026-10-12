@@ -77,7 +77,7 @@ DEFAULT_MODEL = os.environ.get("CODEX_MODEL", "codex-mini")
 MAX_SESSIONS = int(os.environ.get("AGENT_MAX_SESSIONS", "20"))
 SESSION_TTL = int(os.environ.get("AGENT_SESSION_TTL", "1800"))  # seconds
 TURN_TIMEOUT = 300  # seconds per turn
-WORKSPACE = os.environ.get("WORKSPACE", "/workspace")
+WORKSPACE = os.environ.get("WORKSPACE", "/app")
 
 # ── Route table & capability groups ────────────────────────────────────
 
@@ -1152,8 +1152,18 @@ def delete_agent(request: ServerRequest) -> ServerResponse:
     return ServerResponse.error(404, f"Agent {agent_id} not found", "NotFoundError")
 
 
+# The server SDK registers its own /v1/agents routes in the AGENTS group,
+# which is off by default. A disabled route still matches first and answers
+# 404, hiding the handlers below. This template owns those paths.
+table._routes[:] = [route for route in table._routes if route.group is not CapabilityGroup.AGENTS]
+
 # ── Serve ──────────────────────────────────────────────────────────
 
 registry.freeze()
-server = SandboxServer(registry=registry)
-server.serve(port=9000)
+
+if __name__ == "__main__":
+    import os
+
+    _port = int(os.environ.get("EBX_SERVER_PORT", "9000"))
+    server = SandboxServer(registry=registry)
+    server.serve(port=_port)

@@ -1,0 +1,21 @@
+name: e2e
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  local-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install the in-sandbox server and the test client
+        run: python -m pip install --upgrade pip && python -m pip install easy-sandbox-server httpx
+
+      - name: Run template e2e against locally started servers
+        run: python3 scripts/run_local_e2e.py

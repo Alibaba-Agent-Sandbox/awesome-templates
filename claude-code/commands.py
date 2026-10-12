@@ -44,5 +44,9 @@ def claude(prompt: str, model: str = "sonnet") -> str:
 
 registry.freeze()
 
-server = SandboxServer(registry=registry)
-server.serve(port=9000)
+if __name__ == "__main__":
+    import os
+
+    _port = int(os.environ.get("EBX_SERVER_PORT", "9000"))
+    server = SandboxServer(registry=registry)
+    server.serve(port=_port)

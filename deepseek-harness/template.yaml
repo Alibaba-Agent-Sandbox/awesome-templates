@@ -8,12 +8,11 @@ tags:
   - ai-coding
   - code-generation
 
-base: ubuntu:22.04
+base: python:3.12-slim
 
 system_packages:
-  - python3.11
-  - python3.11-venv
-  - python3.11-dev
+  - python3
+  - python3-pip
   - git
   - curl
   - build-essential
@@ -22,10 +21,6 @@ python_packages:
   - openai>=1.0
   - httpx
   - rich
-
-commands:
-  - python3.11 -m venv /opt/venv
-  - /opt/venv/bin/pip install --upgrade pip
 
 capabilities:
   - shell
@@ -40,7 +35,7 @@ custom_commands:
   run:
     cmd: "python3 {script}"
     description: "Run a Python script in the DeepSeek agent environment"
-    cwd: "/workspace"
+    cwd: "/app"
     timeout: 120
     args:
       - name: script
@@ -49,8 +44,7 @@ custom_commands:
 
 env:
   DEEPSEEK_API_KEY: ""
-  PATH: "/opt/venv/bin:$PATH"
-  WORKSPACE: "/workspace"
+  WORKSPACE: "/app"
 
 resources:
   cpu: 2

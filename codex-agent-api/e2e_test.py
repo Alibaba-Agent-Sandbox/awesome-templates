@@ -39,7 +39,7 @@ import httpx
 BASE_URL = os.environ.get("E2E_BASE_URL", "http://localhost:9000").rstrip("/")
 MODEL = os.environ.get("E2E_MODEL") or os.environ.get("CODEX_MODEL") or "codex-mini"
 SSE_TIMEOUT = float(os.environ.get("E2E_SSE_TIMEOUT", "180"))
-WORKSPACE = os.environ.get("E2E_WORKSPACE", "/workspace")
+WORKSPACE = os.environ.get("E2E_WORKSPACE", "/app")
 
 TIMEOUT = httpx.Timeout(connect=10.0, read=SSE_TIMEOUT, write=30.0, pool=10.0)
 
@@ -427,8 +427,35 @@ def group_2_sessions(client: httpx.Client) -> None:
 # ──────────────────────────────────────────────────────────────────────
 
 
+def _turn_skip_reason() -> str:
+    """Why live Codex turns cannot run in this process, or an empty string."""
+    import shutil
+
+    forced = os.environ.get("E2E_RUN_LLM", "").strip().lower()
+    if forced in {"0", "false", "no"}:
+        return (
+            "E2E_RUN_LLM disables live Codex turns; the local suite has no cloud credentials"
+        )
+    if not os.environ.get("OPENAI_API_KEY"):
+        return "OPENAI_API_KEY is not set — Codex turn execution needs an API key"
+    if shutil.which("codex") is None:
+        return "codex CLI is not on PATH — turn execution needs that third-party binary"
+    return ""
+
+
 def group_3_turns(client: httpx.Client) -> None:
     """Cover session creation with input, follow-up events and SSE subscribe."""
+    reason = _turn_skip_reason()
+    if reason:
+        for ep in (
+            "POST /v1/agents/sessions",
+            "GET /v1/agents/sessions/{session_id}",
+            "POST /v1/agents/sessions/{session_id}/events",
+            "GET /v1/agents/sessions/{session_id}/events",
+        ):
+            record("SKIP", ep, reason)
+        return
+
     session_id = ""
 
     # 11. POST /v1/agents/sessions with input (SSE first turn)

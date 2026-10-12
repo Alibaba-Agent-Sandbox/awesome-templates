@@ -12,7 +12,7 @@ Node.js 20 web service sandbox environment, suited for rapid development and dep
 
 | Category | Details |
 |----------|---------|
-| **Base image** | node:20-slim |
+| **Base image** | python:3.12-slim (Node.js installed for the web runtime) |
 | **Node.js** | Node.js 20.x + npm |
 | **Global tools** | yarn, nodemon, pm2 |
 | **System tools** | curl, wget, git, jq |
@@ -139,7 +139,7 @@ Node.js 20 Web 服务沙箱环境，适用于 Express、Fastify、Koa 等框架�
 
 | 类别 | 内容 |
 |------|------|
-| **基础镜像** | node:20-slim |
+| **基础镜像** | python:3.12-slim（镜像内安装 Node.js，作为 Web 运行时） |
 | **Node.js** | Node.js 20.x + npm |
 | **全局工具** | yarn、nodemon、pm2 |
 | **系统工具** | curl、wget、git、jq |

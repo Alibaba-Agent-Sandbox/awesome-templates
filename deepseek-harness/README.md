@@ -14,7 +14,7 @@ This template comes preinstalled with the following tools and dependencies:
 
 | Category | Details |
 |----------|---------|
-| **OS** | Ubuntu 22.04 |
+| **Base image** | python:3.12-slim |
 | **Node.js** | Node.js 22.x + npm (core runtime) |
 | **Python** | Python 3.11 + venv (at `/opt/venv`) |
 | **Python packages** | `openai>=1.0`, `httpx`, `rich` |
@@ -115,7 +115,7 @@ DeepSeek 模型驱动的 AI 编程 Agent 沙箱运行环境，支持代码生成
 
 | 类别 | 内容 |
 |------|------|
-| **操作系统** | Ubuntu 22.04 |
+| **基础镜像** | python:3.12-slim |
 | **Node.js** | Node.js 22.x + npm（核心运行时） |
 | **Python** | Python 3.11 + venv 虚拟环境（位于 `/opt/venv`） |
 | **Python 包** | `openai>=1.0`、`httpx`、`rich` |

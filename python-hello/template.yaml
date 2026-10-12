@@ -7,7 +7,7 @@ tags:
   - hello-world
   - example
 
-base: ubuntu:22.04
+base: python:3.12-slim
 
 system_packages:
   - python3

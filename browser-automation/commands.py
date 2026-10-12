@@ -91,7 +91,7 @@ def browse(url: str, action: str = "screenshot") -> dict[str, Any]:
 
     if action == "screenshot":
         ts = int(time.time() * 1000)
-        path = f"/workspace/screenshot_{ts}.png"
+        path = f"/app/screenshot_{ts}.png"
         page.screenshot(path=path, full_page=True)
         return {"action": "screenshot", "url": page.url, "path": path}
 
@@ -109,7 +109,7 @@ def browse(url: str, action: str = "screenshot") -> dict[str, Any]:
 
     if action == "full":
         ts = int(time.time() * 1000)
-        path = f"/workspace/screenshot_{ts}.png"
+        path = f"/app/screenshot_{ts}.png"
         page.screenshot(path=path, full_page=True)
         text = page.inner_text("body")
         return {
@@ -216,5 +216,9 @@ def _browser_status() -> dict[str, Any]:
 
 registry.freeze()
 
-server = SandboxServer(registry=registry)
-server.serve(port=9000)
+if __name__ == "__main__":
+    import os
+
+    _port = int(os.environ.get("EBX_SERVER_PORT", "9000"))
+    server = SandboxServer(registry=registry)
+    server.serve(port=_port)

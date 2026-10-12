@@ -14,7 +14,7 @@ This template comes preinstalled with the following tools and dependencies:
 
 | Category | Details |
 |----------|---------|
-| **OS** | Ubuntu 22.04 |
+| **Base image** | python:3.12-slim |
 | **Python** | Python 3.11 + venv (at `/opt/venv`) |
 | **Node.js** | Node.js 22.x + npm |
 | **Python packages** | `dashscope`, `openai>=1.0`, `httpx`, `rich` |
@@ -136,7 +136,7 @@ ebx exec <sandbox-id> -- npm install -g <agent-tool>
 
 | 类别 | 内容 |
 |------|------|
-| **操作系统** | Ubuntu 22.04 |
+| **基础镜像** | python:3.12-slim |
 | **Python** | Python 3.11 + venv 虚拟环境（位于 `/opt/venv`） |
 | **Node.js** | Node.js 22.x + npm |
 | **Python 包** | `dashscope`、`openai>=1.0`、`httpx`、`rich` |

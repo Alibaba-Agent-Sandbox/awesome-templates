@@ -14,7 +14,7 @@ This template comes preinstalled with the following tools and dependencies:
 
 | Category | Details |
 |----------|---------|
-| **OS** | Ubuntu 22.04 |
+| **Base image** | python:3.12-slim |
 | **Node.js** | Node.js 22.x + npm (core runtime) |
 | **Python** | Python 3.11 + venv (at `/opt/venv`) |
 | **Node packages** | `@anthropic-ai/claude-code` |
@@ -108,7 +108,7 @@ Anthropic Claude Code 的沙箱运行环境，预装 Claude Code CLI，支持 AI
 
 | 类别 | 内容 |
 |------|------|
-| **操作系统** | Ubuntu 22.04 |
+| **基础镜像** | python:3.12-slim |
 | **Node.js** | Node.js 22.x + npm（核心运行时） |
 | **Python** | Python 3.11 + venv 虚拟环境（位于 `/opt/venv`） |
 | **Node 包** | `@anthropic-ai/claude-code` |

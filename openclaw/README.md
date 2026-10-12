@@ -14,7 +14,7 @@ This template comes preinstalled with the following tools and dependencies:
 
 | Category | Details |
 |----------|---------|
-| **OS** | Ubuntu 22.04 |
+| **Base image** | python:3.12-slim |
 | **Node.js** | Node.js 22.x + npm (core runtime) |
 | **Node packages** | `openclaw` |
 | **System tools** | git, curl |
@@ -112,7 +112,7 @@ OpenClaw 开源 AI 编程 Agent 的沙箱运行环境，提供 Agent 网关与�
 
 | 类别 | 内容 |
 |------|------|
-| **操作系统** | Ubuntu 22.04 |
+| **基础镜像** | python:3.12-slim |
 | **Node.js** | Node.js 22.x + npm（核心运行时） |
 | **Node 包** | `openclaw` |
 | **系统工具** | git、curl |

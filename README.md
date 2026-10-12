@@ -3,7 +3,10 @@
 A curated collection of production-ready sandbox templates for the
 [Easy Sandbox](https://pypi.org/project/easy-sandbox/) SDK & CLI (`ebx`).
 Each template is a self-contained sandbox definition covering popular AI
-coding agents, runtimes, and automation stacks.
+coding agents, runtimes, and automation stacks. Images use the generic
+profile (`FROM python:3.12-slim`, `WORKDIR /app`, `CMD ["python3", "commands.py"]`)
+and install `easy-sandbox-server`, the in-sandbox runtime imported as
+`easy_sandbox.server`.
 
 > **New here?** See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full template
 > anatomy, capability-group rules, local dev workflow, and PR process.
@@ -46,18 +49,40 @@ ebx template search ai-agent --status official
 
 ## Template Structure
 
-Each template directory contains four files:
+Each template directory contains:
 
 ```
 <template-name>/
 ├── template.yaml    # Template metadata, capabilities, custom commands
-├── Dockerfile       # Container image definition
-├── commands.py      # SandboxServer command registry / custom routes
+├── Dockerfile       # Container image (python:3.12-slim, easy-sandbox-server)
+├── commands.py      # easy_sandbox.server command registry / custom routes
+├── e2e_test.py      # HTTP checks against a running commands.py
 └── README.md        # Template-specific documentation
 ```
 
+The Dockerfile copies an `easy-sandbox-server` wheel when the build context
+has one, and otherwise runs `pip install easy-sandbox-server`. API keys are
+not written into the image; pass them when the sandbox is created.
+
 See [CONTRIBUTING.md](./CONTRIBUTING.md#template-anatomy) for a field-by-field
 breakdown.
+
+## Local end-to-end tests
+
+`scripts/run_local_e2e.py` starts each template with `python3 commands.py` on
+an ephemeral port, sets `E2E_BASE_URL`, runs that directory's `e2e_test.py`,
+and stops the process. It does not use cloud credentials.
+
+```bash
+python3 -m pip install easy-sandbox-server httpx
+python3 scripts/run_local_e2e.py
+```
+
+A template that cannot start without a third-party binary or API key is
+skipped with an explicit reason, and the suite still passes. `python-hello`,
+`node-web`, and any template whose `commands.py` only needs
+`easy-sandbox-server` are executed and must pass. The same script runs in
+[`.github/workflows/e2e.yml`](./.github/workflows/e2e.yml) on `ubuntu-latest`.
 
 ## Environment Variables
 
@@ -77,7 +102,7 @@ We welcome community templates! The short version:
 
 1. Fork this repository.
 2. Create a new top-level directory named after your template.
-3. Add `template.yaml`, `Dockerfile`, `commands.py`, and `README.md`.
+3. Add `template.yaml`, `Dockerfile`, `commands.py`, `e2e_test.py`, and `README.md`.
 4. Register your template in [`awesome-templates.yaml`](./awesome-templates.yaml).
 5. Validate locally with `ebx template install ./<your-template> --registry-type local`.
 6. Open a Pull Request.

@@ -39,7 +39,7 @@ calls the OpenAI API under the hood. The sandbox itself is the API gateway.
 
 | Category | Details |
 |----------|---------|
-| **OS** | Ubuntu 22.04 |
+| **Base image** | python:3.12-slim |
 | **Python** | Python 3 + venv at `/opt/venv` (preinstalled: `openai>=1.0`, `rich`, `httpx`) |
 | **Node.js** | Node.js 22.x + npm |
 | **Agent runtime** | `@openai/codex` (Codex CLI) |
@@ -887,7 +887,7 @@ OpenAI API。沙箱本身即是 API 网关。
 
 | 类别 | 内容 |
 |------|------|
-| **操作系统** | Ubuntu 22.04 |
+| **基础镜像** | python:3.12-slim |
 | **Python** | Python 3 + venv（位于 `/opt/venv`），预装：`openai>=1.0`、`rich`、`httpx` |
 | **Node.js** | Node.js 22.x + npm |
 | **Agent 运行时** | `@openai/codex`（Codex CLI） |

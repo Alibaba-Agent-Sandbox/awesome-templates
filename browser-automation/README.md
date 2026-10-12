@@ -14,7 +14,7 @@ This template enables the built-in **BROWSER** capability group, exposing 8 low-
 
 | Category | Details |
 |----------|---------|
-| **Base image** | mcr.microsoft.com/playwright/python:v1.40.0-jammy |
+| **Base image** | python:3.12-slim (Playwright and Chromium installed) |
 | **Browser** | Chromium (managed by Playwright) |
 | **Python packages** | `playwright`, `beautifulsoup4`, `lxml`, `httpx`, `Pillow` |
 | **System tools** | curl, wget, xvfb, jq |
@@ -174,7 +174,7 @@ Xvfb :99 -screen 0 1920x1080x24 &
 
 | 类别 | 内容 |
 |------|------|
-| **基础镜像** | mcr.microsoft.com/playwright/python:v1.40.0-jammy |
+| **基础镜像** | python:3.12-slim（镜像内安装 Playwright 与 Chromium） |
 | **浏览器** | Chromium（通过 Playwright 管理） |
 | **Python 包** | `playwright`、`beautifulsoup4`、`lxml`、`httpx`、`Pillow` |
 | **系统工具** | curl、wget、xvfb、jq |

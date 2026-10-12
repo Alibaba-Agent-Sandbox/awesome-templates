@@ -8,12 +8,11 @@ tags:
   - ai-coding
   - ai-agent
 
-base: ubuntu:22.04
+base: python:3.12-slim
 
 system_packages:
-  - python3.11
-  - python3.11-venv
-  - python3.11-dev
+  - python3
+  - python3-pip
   - git
   - curl
   - ripgrep
@@ -26,10 +25,6 @@ python_packages:
 
 node_packages:
   - "@anthropic-ai/claude-code"
-
-commands:
-  - python3.11 -m venv /opt/venv
-  - /opt/venv/bin/pip install --upgrade pip
 
 capabilities:
   - shell
@@ -45,7 +40,7 @@ custom_commands:
   run:
     cmd: "claude-code {task}"
     description: "Run Claude Code agent with a task"
-    cwd: "/workspace"
+    cwd: "/app"
     timeout: 300
     args:
       - name: task
@@ -54,8 +49,7 @@ custom_commands:
 
 env:
   ANTHROPIC_API_KEY: ""
-  PATH: "/opt/venv/bin:$PATH"
-  WORKSPACE: "/workspace"
+  WORKSPACE: "/app"
 
 resources:
   cpu: 2

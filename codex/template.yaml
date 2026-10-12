@@ -8,12 +8,11 @@ tags:
   - ai-agent
   - code-generation
 
-base: ubuntu:22.04
+base: python:3.12-slim
 
 system_packages:
   - python3
   - python3-pip
-  - python3-venv
   - git
   - curl
   - wget
@@ -29,10 +28,6 @@ python_packages:
 node_packages:
   - "@openai/codex"  # OpenAI Codex CLI (https://www.npmjs.com/package/@openai/codex)
 
-commands:
-  - python3 -m venv /opt/venv
-  - /opt/venv/bin/pip install --upgrade pip
-
 capabilities:
   - shell
   - files
@@ -46,7 +41,7 @@ custom_commands:
   run:
     cmd: "codex {prompt}"
     description: "Run Codex CLI with a prompt"
-    cwd: "/workspace"
+    cwd: "/app"
     timeout: 120
     args:
       - name: prompt
@@ -56,8 +51,7 @@ custom_commands:
 env:
   OPENAI_API_KEY: ""
   CODEX_SANDBOX_MODE: "true"
-  PATH: "/opt/venv/bin:$PATH"
-  WORKSPACE: "/workspace"
+  WORKSPACE: "/app"
 
 resources:
   cpu: 2

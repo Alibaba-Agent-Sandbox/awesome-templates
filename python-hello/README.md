@@ -53,8 +53,8 @@ ebx download <sandbox-id> /app/remote.txt ./local_file.txt
 
 ### Environment
 
-- Base image: Ubuntu 22.04
-- Python 3 + pip
+- Base image: python:3.12-slim
+- Python 3.12 and pip; in-sandbox package `easy-sandbox-server`
 - Working directory: /app
 
 ---
@@ -108,6 +108,6 @@ ebx download <sandbox-id> /app/remote.txt ./local_file.txt
 
 ### 环境
 
-- 基础镜像: Ubuntu 22.04
-- Python 3 + pip
+- 基础镜像: python:3.12-slim
+- Python 3.12 and pip; in-sandbox package `easy-sandbox-server`
 - 工作目录: /app

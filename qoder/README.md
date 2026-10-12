@@ -14,7 +14,7 @@ This template comes preinstalled with the following tools and dependencies:
 
 | Category | Details |
 |----------|---------|
-| **OS** | Ubuntu 22.04 |
+| **Base image** | python:3.12-slim |
 | **Python** | Python 3.11 + venv (at `/opt/venv`) |
 | **Node.js** | Node.js 22.x + npm |
 | **Python packages** | `httpx`, `rich`, `pyyaml` |
@@ -101,7 +101,7 @@ Qoder AI 编程助手的沙箱运行环境，集成 Python 3.11 与 Node.js 22 �
 
 | 类别 | 内容 |
 |------|------|
-| **操作系统** | Ubuntu 22.04 |
+| **基础镜像** | python:3.12-slim |
 | **Python** | Python 3.11 + venv 虚拟环境（位于 `/opt/venv`） |
 | **Node.js** | Node.js 22.x + npm |
 | **Python 包** | `httpx`、`rich`、`pyyaml` |

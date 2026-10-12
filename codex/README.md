@@ -14,7 +14,7 @@ This template comes preinstalled with the following tools and dependencies:
 
 | Category | Details |
 |----------|---------|
-| **OS** | Ubuntu 22.04 |
+| **Base image** | python:3.12-slim |
 | **Python** | Python 3 + venv (at `/opt/venv`) |
 | **Node.js** | Node.js 22.x + npm |
 | **Python packages** | `openai>=1.0`, `rich`, `httpx` |
@@ -102,7 +102,7 @@ OpenAI Codex CLI Agent 的沙箱运行环境，支持 AI 驱动的代码生成�
 
 | 类别 | 内容 |
 |------|------|
-| **操作系统** | Ubuntu 22.04 |
+| **基础镜像** | python:3.12-slim |
 | **Python** | Python 3 + venv 虚拟环境（位于 `/opt/venv`） |
 | **Node.js** | Node.js 22.x + npm |
 | **Python 包** | `openai>=1.0`、`rich`、`httpx` |

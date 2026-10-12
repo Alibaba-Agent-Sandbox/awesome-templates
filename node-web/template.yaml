@@ -9,7 +9,7 @@ tags:
   - api
   - javascript
 
-base: node:20-slim
+base: python:3.12-slim
 
 system_packages:
   - curl

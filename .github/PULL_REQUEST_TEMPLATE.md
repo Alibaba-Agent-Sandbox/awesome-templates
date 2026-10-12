@@ -11,7 +11,8 @@
 
 ## Contributor checklist
 
-- [ ] Template directory contains all **4 files** (`template.yaml`, `Dockerfile`, `commands.py`, `README.md`)
+- [ ] Template directory contains `template.yaml`, `Dockerfile`, `commands.py`, `e2e_test.py`, and `README.md`
+- [ ] Dockerfile is `FROM python:3.12-slim`, `WORKDIR /app`, `CMD ["python3", "commands.py"]`, and installs `easy-sandbox-server`
 - [ ] `awesome-templates.yaml` index updated (name / description / repo / path / tags / author / capabilities / status)
 - [ ] Directory name == `template.yaml` `name` == index `path`
 - [ ] Local install passes: `ebx template install ./<name> --registry-type local`
@@ -19,7 +20,8 @@
 - [ ] Capabilities in `template.yaml` match the groups enabled in `commands.py`
 - [ ] **No secrets** committed (API keys/tokens/passwords) — placeholders only
 - [ ] No build junk (`__pycache__/`, `*.pyc`, `.DS_Store`)
-- [ ] Uses current naming: **Easy Sandbox / ebx / easy-sandbox / easy_sandbox / Easy-Sandbox**
+- [ ] Uses current naming: **Easy Sandbox / ebx / easy-sandbox / easy-sandbox-server / easy_sandbox / Easy-Sandbox**
+- [ ] `python3 scripts/run_local_e2e.py` passes (or skips this template with an explicit reason)
 
 ## Notes for reviewers
 

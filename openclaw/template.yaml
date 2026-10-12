@@ -8,7 +8,7 @@ tags:
   - ai-coding
   - gateway
 
-base: ubuntu:22.04
+base: python:3.12-slim
 
 system_packages:
   - git
@@ -32,13 +32,13 @@ custom_commands:
   start:
     cmd: "openclaw start"
     description: "Start the OpenClaw gateway server"
-    cwd: "/workspace"
+    cwd: "/app"
     timeout: 120
 
 env:
   ANTHROPIC_API_KEY: ""
   OPENAI_API_KEY: ""
-  WORKSPACE: "/workspace"
+  WORKSPACE: "/app"
 
 resources:
   cpu: 2
