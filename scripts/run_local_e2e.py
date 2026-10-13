@@ -9,12 +9,10 @@ For each template directory this script:
 4. runs ``e2e_test.py``,
 5. stops the server.
 
-No cloud credentials are passed to the server or the test. A template whose
-``commands.py`` cannot start without a third-party module, binary, or API key
-is reported as SKIP with an explicit reason, and the suite still exits 0.
-``python-hello``, ``node-web``, and any template whose ``commands.py`` only
-needs the standard library plus ``easy_sandbox.server`` are executed and must
-pass.
+No cloud credentials are passed to the server or the test. Every template
+must start and its ``e2e_test.py`` must exit 0. A case inside a template
+may still record SKIP (no model key, no Playwright); that does not fail
+the template.
 """
 from __future__ import annotations
 
@@ -33,7 +31,6 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MUST_RUN = ("python-hello", "node-web")
 HEALTH_TIMEOUT = 20.0
 
 # Names that would let a test call a hosted model. The local suite never forwards them.
@@ -41,7 +38,6 @@ _SECRET_NAMES = {
     "ANTHROPIC_API_KEY",
     "DASHSCOPE_API_KEY",
     "DEEPSEEK_API_KEY",
-    "E2B_API_KEY",
     "OPENAI_API_KEY",
     "OPENROUTER_API_KEY",
 }
@@ -68,19 +64,10 @@ def _top_level_modules(source: str) -> list[str]:
     return modules
 
 
-def _sdk_only(source: str) -> bool:
-    """True when import-time dependencies are the stdlib and ``easy_sandbox`` only."""
-    for name in _top_level_modules(source):
-        if name == "easy_sandbox" or name in sys.stdlib_module_names:
-            continue
-        return False
-    return True
-
-
 def _missing_imports(source: str) -> list[str]:
     missing: list[str] = []
     for name in _top_level_modules(source):
-        if name == "easy_sandbox" or name in sys.stdlib_module_names:
+        if name == "agent_sandbox" or name in sys.stdlib_module_names:
             continue
         try:
             __import__(name)
@@ -101,9 +88,9 @@ def _child_env(base_dir: str, port: int, pty_port: int, path_prefix: str) -> dic
         if key.endswith("_API_KEY") or key.endswith("_SECRET") or key.endswith("_TOKEN"):
             env.pop(key, None)
     env["PATH"] = path_prefix + os.pathsep + env.get("PATH", "")
-    env["EBX_SERVER_PORT"] = str(port)
-    env["EBX_PTY_PORT"] = str(pty_port)
-    env["EBX_SERVER_BASE_DIR"] = base_dir
+    env["ABX_SERVER_PORT"] = str(port)
+    env["ABX_PTY_PORT"] = str(pty_port)
+    env["ABX_SERVER_BASE_DIR"] = base_dir
     env["WORKSPACE"] = base_dir
     env["E2E_BASE_URL"] = f"http://127.0.0.1:{port}"
     env["E2E_BASE_DIR"] = base_dir
@@ -162,7 +149,7 @@ def _stop(proc: subprocess.Popen[str]) -> None:
 def _startup_skip_reason(text: str) -> str | None:
     """Classify a crash that is a missing binary, module, or API key."""
     lowered = text.lower()
-    if "no module named 'easy_sandbox'" in lowered or 'no module named "easy_sandbox"' in lowered:
+    if "no module named 'agent_sandbox'" in lowered or 'no module named "agent_sandbox"' in lowered:
         return None
     if "modulenotfounderror" in lowered or "importerror" in lowered:
         return "commands.py cannot start because a third-party Python module is missing"
@@ -179,7 +166,7 @@ def _cleanup(directory: Path) -> None:
         shutil.rmtree(pycache, ignore_errors=True)
     for child in directory.iterdir():
         name = child.name
-        if name.startswith("ebx_e2e_") and child.is_dir():
+        if name.startswith("abx_e2e_") and child.is_dir():
             shutil.rmtree(child, ignore_errors=True)
         elif name != "e2e_test.py" and (
             name.startswith("e2e_") or name.startswith(".e2e_") or name.startswith("screenshot_")
@@ -191,19 +178,14 @@ def _cleanup(directory: Path) -> None:
 
 
 def _run_one(directory: Path, path_prefix: str) -> tuple[str, str]:
-    """Return ``(status, detail)`` for one template. status is pass, skip, or fail."""
+    """Return ``(status, detail)`` for one template. status is pass or fail."""
     name = directory.name
     source = (directory / "commands.py").read_text(encoding="utf-8")
-    sdk_only = _sdk_only(source)
-    if name in MUST_RUN:
-        sdk_only = True
 
     missing = _missing_imports(source)
     if missing:
         reason = "commands.py cannot start without third-party module(s): " + "; ".join(missing)
-        if sdk_only:
-            return "fail", reason + " (this template must run, not skip)"
-        return "skip", reason
+        return "fail", reason
 
     port = _free_port()
     pty_port = _free_port()
@@ -227,9 +209,7 @@ def _run_one(directory: Path, path_prefix: str) -> tuple[str, str]:
         if not healthy:
             detail = log.strip() or f"process exited {proc.poll()} before /health"
             reason = _startup_skip_reason(detail)
-            if reason and not sdk_only:
-                return "skip", f"{reason}: {detail[:400]}"
-            if sdk_only and reason:
+            if reason:
                 return "fail", f"{name} must start with the server SDK, but {reason}: {detail[:400]}"
             return "fail", f"server did not become healthy: {detail[:400]}"
 
@@ -268,25 +248,17 @@ def main() -> int:
             shutil.rmtree(shim, ignore_errors=True)
 
     passed = [name for name, status, _ in results if status == "pass"]
-    skipped = [(name, detail) for name, status, detail in results if status == "skip"]
-    failed = [(name, detail) for name, status, detail in results if status == "fail"]
+    failed = [(name, detail) for name, status, detail in results if status != "pass"]
 
     print("\n" + "=" * 74, flush=True)
     print("LOCAL E2E SUMMARY", flush=True)
     print("=" * 74, flush=True)
     print(
-        f"{len(passed)} passed, {len(skipped)} skipped, {len(failed)} failed "
-        f"(total {len(results)})",
+        f"{len(passed)} passed, {len(failed)} failed (total {len(results)})",
         flush=True,
     )
-    for name, detail in skipped:
-        print(f"  skip {name}: {detail}", flush=True)
     for name, detail in failed:
         print(f"  fail {name}: {detail}", flush=True)
-    refused = [name for name in MUST_RUN if name not in passed]
-    if refused:
-        print(f"required templates did not pass: {', '.join(refused)}", flush=True)
-        return 1
     print("=" * 74, flush=True)
     return 1 if failed else 0
 

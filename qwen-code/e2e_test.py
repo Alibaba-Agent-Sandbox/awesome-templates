@@ -33,7 +33,7 @@ Notes:
 
 - ``/health`` (CORE) and ``/commands`` (COMMANDS) are always registered;
   FILE_OPS and PROCESS are enabled by this template's ``commands.py``.
-- File paths are constrained by the server to ``EBX_SERVER_BASE_DIR``
+- File paths are constrained by the server to ``ABX_SERVER_BASE_DIR``
   (default ``/home/user``); keep ``E2E_BASE_DIR`` inside that root.
 - The host-side key check is a proxy: the key must also be visible
   *inside* the sandbox for the LLM case to actually succeed.
@@ -74,9 +74,9 @@ CMD = "qwen"
 CMD_ARGS = {"prompt": "string", "max_turns": "integer"}  # name -> expected type
 REQUIRED_ARGS = ("prompt",)  # required args of CMD (validated by the server)
 KEY_ENVS = ("OPENAI_API_KEY",)  # host env vars that enable the LLM case
-LLM_PROMPT = "Reply with exactly: EBX_E2E_OK"
+LLM_PROMPT = "Reply with exactly: ABX_E2E_OK"
 
-PROBE_DIR = f"{BASE_DIR}/ebx_e2e_{TEMPLATE}"
+PROBE_DIR = f"{BASE_DIR}/abx_e2e_{TEMPLATE}"
 PROBE_FILE = f"{PROBE_DIR}/probe.txt"
 
 RESULTS: list[tuple[str, str, str]] = []  # (status, test, detail)
@@ -332,7 +332,7 @@ def group_shell_process(client: httpx.Client) -> None:
             record("SKIP", test, "PROCESS capability group is disabled")
         return
 
-    marker = f"ebx-e2e-{TEMPLATE}"
+    marker = f"abx-e2e-{TEMPLATE}"
 
     # 1. Plain shell execution
     try:

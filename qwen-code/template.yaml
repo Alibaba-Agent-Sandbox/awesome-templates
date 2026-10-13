@@ -1,7 +1,7 @@
 name: qwen-code
 version: "2.0.0"
 description: "通义千问编码 Agent 运行环境 - 支持 qwen-code 驱动的 AI 自主部署"
-author: "Easy-Sandbox"
+author: "alibaba-agent-sandbox"
 tags:
   - qwen
   - qwen-code
@@ -42,28 +42,6 @@ ports:
   - 8080
   - 9000
 
-custom_commands:
-  run:
-    cmd: "python3 {script}"
-    description: "Run a Python script in the Qwen Code environment"
-    cwd: "/app"
-    timeout: 120
-    args:
-      - name: script
-        default: "main.py"
-        description: "Python script to execute"
-  deploy:
-    cmd: "qwen -p {prompt} --yolo --output-format json --max-turns {max_turns}"
-    description: "Run qwen-code agent for NL-driven deployment"
-    cwd: "/app"
-    timeout: 600
-    args:
-      - name: prompt
-        required: true
-        description: "Natural-language deployment instruction"
-      - name: max_turns
-        default: "100"
-        description: "Maximum number of agent turns"
 
 env:
   DASHSCOPE_API_KEY: ""

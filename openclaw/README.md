@@ -26,13 +26,13 @@ This template comes preinstalled with the following tools and dependencies:
 **Install from a local path:**
 
 ```bash
-ebx install ./examples/templates/openclaw --registry-type local
+abx template install ./openclaw --registry-type local
 ```
 
 **Install from GitHub:**
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//openclaw
+abx template install alibaba-agent-sandbox/awesome-templates//openclaw
 ```
 
 ### Usage
@@ -40,27 +40,27 @@ ebx install Easy-Sandbox/awesome-templates//openclaw
 Create a sandbox instance and pass in the API key:
 
 ```bash
-ebx create --template openclaw --env ANTHROPIC_API_KEY=sk-ant-xxx
+abx create --template openclaw --env ANTHROPIC_API_KEY=sk-ant-xxx
 ```
 
 OpenAI can also be used as the backend:
 
 ```bash
-ebx create --template openclaw --env OPENAI_API_KEY=sk-xxx
+abx create --template openclaw --env OPENAI_API_KEY=sk-xxx
 ```
 
 Launch OpenClaw inside the sandbox:
 
 ```bash
-ebx exec <sandbox-id> -- openclaw --help
+abx exec <sandbox-id> -- openclaw --help
 ```
 
 Using the Python SDK:
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(
+sandbox = Sandbox.create_sync(
     template="openclaw",
     env={"ANTHROPIC_API_KEY": "sk-ant-xxx"}
 )
@@ -90,7 +90,7 @@ print(result.stdout)
 To install extra dependencies on top of this template, run the following after the sandbox is created:
 
 ```bash
-ebx exec <sandbox-id> -- npm install -g <package-name>
+abx exec <sandbox-id> -- npm install -g <package-name>
 ```
 
 ### Notes
@@ -124,13 +124,13 @@ OpenClaw 开源 AI 编程 Agent 的沙箱运行环境，提供 Agent 网关与�
 **从本地安装：**
 
 ```bash
-ebx install ./examples/templates/openclaw --registry-type local
+abx template install ./openclaw --registry-type local
 ```
 
 **从 GitHub 安装：**
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//openclaw
+abx template install alibaba-agent-sandbox/awesome-templates//openclaw
 ```
 
 ### 使用示例
@@ -138,27 +138,27 @@ ebx install Easy-Sandbox/awesome-templates//openclaw
 创建沙箱实例并传入 API Key：
 
 ```bash
-ebx create --template openclaw --env ANTHROPIC_API_KEY=sk-ant-xxx
+abx create --template openclaw --env ANTHROPIC_API_KEY=sk-ant-xxx
 ```
 
 也可以使用 OpenAI 作为后端：
 
 ```bash
-ebx create --template openclaw --env OPENAI_API_KEY=sk-xxx
+abx create --template openclaw --env OPENAI_API_KEY=sk-xxx
 ```
 
 在沙箱中启动 OpenClaw：
 
 ```bash
-ebx exec <sandbox-id> -- openclaw --help
+abx exec <sandbox-id> -- openclaw --help
 ```
 
 使用 Python SDK：
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(
+sandbox = Sandbox.create_sync(
     template="openclaw",
     env={"ANTHROPIC_API_KEY": "sk-ant-xxx"}
 )
@@ -188,7 +188,7 @@ print(result.stdout)
 如需在模板基础上安装额外依赖，可在创建沙箱后执行：
 
 ```bash
-ebx exec <sandbox-id> -- npm install -g <package-name>
+abx exec <sandbox-id> -- npm install -g <package-name>
 ```
 
 ### 注意事项
@@ -197,3 +197,26 @@ ebx exec <sandbox-id> -- npm install -g <package-name>
 - **多模型支持**：OpenClaw 支持 Anthropic 和 OpenAI 等多种 LLM 后端，按需配置对应的 API Key。
 - **Gateway 端口**：默认监听 18789 端口，可通过沙箱端口映射访问。
 - **网络访问**：需要访问 LLM 提供商 API，确保沙箱具备外网连接能力。
+
+## Deploy and local e2e
+
+Install and register this template:
+
+```bash
+abx template install alibaba-agent-sandbox/awesome-templates//openclaw
+```
+
+From this directory (build, push, and register):
+
+```bash
+abx deploy
+```
+
+From the repository root, with `agent-sandbox-server` and `httpx` installed:
+
+```bash
+python3 scripts/run_local_e2e.py
+```
+
+That starts `python3 commands.py` in this directory and runs `e2e_test.py`.
+

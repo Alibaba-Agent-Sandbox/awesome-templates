@@ -1,7 +1,7 @@
 name: codex-agent-api
 version: "1.0.0"
 description: "Self-hosted OpenAI Agents API compatible service powered by Codex CLI"
-author: "Easy-Sandbox"
+author: "alibaba-agent-sandbox"
 tags:
   - codex
   - openai
@@ -38,12 +38,6 @@ capabilities:
 ports:
   - 9000
 
-custom_commands:
-  agent_status:
-    cmd: "curl -s http://localhost:9000/v1/agents/sessions"
-    description: "List active Agent API sessions"
-    cwd: "/app"
-    timeout: 10
 
 env:
   OPENAI_API_KEY: ""

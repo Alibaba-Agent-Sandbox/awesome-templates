@@ -27,7 +27,7 @@ Notes:
 
 - ``/health`` (CORE) and ``/commands`` (COMMANDS) are always registered;
   FILE_OPS, PROCESS and TERMINAL are enabled by this template's ``commands.py``.
-- File paths are constrained by the server to ``EBX_SERVER_BASE_DIR``
+- File paths are constrained by the server to ``ABX_SERVER_BASE_DIR``
   (default ``/home/user``); keep ``E2E_BASE_DIR`` inside that root.
 - The ``qoder_run`` command's contract (see ``commands.py``):
   ``python <script>`` — ``script`` accepts an absolute path, so the probe
@@ -64,9 +64,9 @@ TIMEOUT = httpx.Timeout(
 CMD = "qoder_run"
 CMD_ARGS = {"script": "string"}  # name -> expected type
 REQUIRED_ARGS = ()  # qoder_run has a default for every arg
-SCRIPT_MARKER = "EBX_E2E_QODER_OK"  # printed by the probe script
+SCRIPT_MARKER = "ABX_E2E_QODER_OK"  # printed by the probe script
 
-PROBE_DIR = f"{BASE_DIR}/ebx_e2e_{TEMPLATE}"
+PROBE_DIR = f"{BASE_DIR}/abx_e2e_{TEMPLATE}"
 PROBE_FILE = f"{PROBE_DIR}/probe.txt"
 PROBE_SCRIPT = f"{PROBE_DIR}/qoder_probe.py"
 
@@ -323,7 +323,7 @@ def group_shell_process(client: httpx.Client) -> None:
             record("SKIP", test, "PROCESS capability group is disabled")
         return
 
-    marker = f"ebx-e2e-{TEMPLATE}"
+    marker = f"abx-e2e-{TEMPLATE}"
 
     # 1. Plain shell execution
     try:

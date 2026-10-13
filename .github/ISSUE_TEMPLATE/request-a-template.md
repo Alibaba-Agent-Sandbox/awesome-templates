@@ -1,6 +1,6 @@
 ---
 name: "🧩 Request a template"
-about: Suggest a new sandbox template for the Easy Sandbox ecosystem
+about: Suggest a new sandbox template for the Agent Sandbox ecosystem
 title: "[template request] <name>"
 labels: ["template-request"]
 assignees: []

@@ -6,7 +6,7 @@
 
 ## English
 
-Sandbox runtime for the Qoder AI coding assistant — an intelligent development sandbox combining Python 3.11 and Node.js 22.
+Sandbox runtime for the Qoder AI coding assistant — an intelligent development sandbox combining Python 3.12 and Node.js 22.
 
 ### Environment
 
@@ -15,7 +15,7 @@ This template comes preinstalled with the following tools and dependencies:
 | Category | Details |
 |----------|---------|
 | **Base image** | python:3.12-slim |
-| **Python** | Python 3.11 + venv (at `/opt/venv`) |
+| **Python** | Python 3.12 + venv (at `/opt/venv`) |
 | **Node.js** | Node.js 22.x + npm |
 | **Python packages** | `httpx`, `rich`, `pyyaml` |
 | **System tools** | git, curl, wget, ripgrep, jq, build-essential, openssh-client |
@@ -26,38 +26,38 @@ This template comes preinstalled with the following tools and dependencies:
 **Install from a local path:**
 
 ```bash
-ebx install ./examples/templates/qoder --registry-type local
+abx template install ./qoder --registry-type local
 ```
 
 **Install from GitHub:**
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//qoder
+abx template install alibaba-agent-sandbox/awesome-templates//qoder
 ```
 
 ### Usage
 
-Create a sandbox instance and pass in the API key:
+Create a sandbox instance:
 
 ```bash
-ebx create --template qoder --env E2B_API_KEY=your-api-key
+abx create --template qoder
 ```
 
 Run development tasks inside the sandbox:
 
 ```bash
-ebx exec <sandbox-id> -- python3 -c "print('Hello from Qoder sandbox')"
-ebx exec <sandbox-id> -- node -e "console.log('Node.js ready')"
+abx exec <sandbox-id> -- python3 -c "print('Hello from Qoder sandbox')"
+abx exec <sandbox-id> -- node -e "console.log('Node.js ready')"
 ```
 
 Using the Python SDK:
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(
+sandbox = Sandbox.create_sync(
     template="qoder",
-    env={"E2B_API_KEY": "your-api-key"}
+    env={"WORKSPACE": "/app"}
 )
 
 result = sandbox.commands.run("python3 --version && node --version")
@@ -70,22 +70,21 @@ print(result.stdout)
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `E2B_API_KEY` | Sandbox API key | Yes |
-| `WORKSPACE` | Working directory path, defaults to `/workspace` | No |
+| `WORKSPACE` | Working directory inside the sandbox. Default `/app`. | No |
 
 #### Custom Configuration
 
 To install extra dependencies on top of this template, run the following after the sandbox is created:
 
 ```bash
-ebx exec <sandbox-id> -- pip install <package-name>
-ebx exec <sandbox-id> -- npm install -g <package-name>
+abx exec <sandbox-id> -- pip install <package-name>
+abx exec <sandbox-id> -- npm install -g <package-name>
 ```
 
 ### Notes
 
-- **API key security**: Never hardcode `E2B_API_KEY` into the template; always inject it via the `--env` option or environment variables.
-- **Dual runtimes**: The environment supports both Python 3.11 and Node.js 22 — pick whichever fits your project.
+- **Working directory**: `WORKSPACE` defaults to `/app`.
+- **Dual runtimes**: The environment supports both Python 3.12 and Node.js 22 — pick whichever fits your project.
 - **Virtual environment**: Python packages are installed in `/opt/venv`; no manual activation is needed since `PATH` is preconfigured.
 - **SSH support**: `openssh-client` is preinstalled, enabling Git-over-SSH operations.
 
@@ -93,7 +92,7 @@ ebx exec <sandbox-id> -- npm install -g <package-name>
 
 ## 中文
 
-Qoder AI 编程助手的沙箱运行环境，集成 Python 3.11 与 Node.js 22 的智能开发沙箱。
+Qoder AI 编程助手的沙箱运行环境，集成 Python 3.12 与 Node.js 22 的智能开发沙箱。
 
 ### 环境说明
 
@@ -102,7 +101,7 @@ Qoder AI 编程助手的沙箱运行环境，集成 Python 3.11 与 Node.js 22 �
 | 类别 | 内容 |
 |------|------|
 | **基础镜像** | python:3.12-slim |
-| **Python** | Python 3.11 + venv 虚拟环境（位于 `/opt/venv`） |
+| **Python** | Python 3.12 + venv 虚拟环境（位于 `/opt/venv`） |
 | **Node.js** | Node.js 22.x + npm |
 | **Python 包** | `httpx`、`rich`、`pyyaml` |
 | **系统工具** | git、curl、wget、ripgrep、jq、build-essential、openssh-client |
@@ -113,38 +112,38 @@ Qoder AI 编程助手的沙箱运行环境，集成 Python 3.11 与 Node.js 22 �
 **从本地安装：**
 
 ```bash
-ebx install ./examples/templates/qoder --registry-type local
+abx template install ./qoder --registry-type local
 ```
 
 **从 GitHub 安装：**
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//qoder
+abx template install alibaba-agent-sandbox/awesome-templates//qoder
 ```
 
 ### 使用示例
 
-创建沙箱实例并传入 API Key：
+创建沙箱实例：
 
 ```bash
-ebx create --template qoder --env E2B_API_KEY=your-api-key
+abx create --template qoder
 ```
 
 在沙箱中执行开发任务：
 
 ```bash
-ebx exec <sandbox-id> -- python3 -c "print('Hello from Qoder sandbox')"
-ebx exec <sandbox-id> -- node -e "console.log('Node.js ready')"
+abx exec <sandbox-id> -- python3 -c "print('Hello from Qoder sandbox')"
+abx exec <sandbox-id> -- node -e "console.log('Node.js ready')"
 ```
 
 使用 Python SDK：
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(
+sandbox = Sandbox.create_sync(
     template="qoder",
-    env={"E2B_API_KEY": "your-api-key"}
+    env={"WORKSPACE": "/app"}
 )
 
 result = sandbox.commands.run("python3 --version && node --version")
@@ -157,21 +156,43 @@ print(result.stdout)
 
 | 变量名 | 说明 | 必填 |
 |--------|------|------|
-| `E2B_API_KEY` | 沙箱 API 密钥 | 是 |
-| `WORKSPACE` | 工作目录路径，默认 `/workspace` | 否 |
+| `WORKSPACE` | 沙箱内工作目录，默认 `/app` | 否 |
 
 #### 自定义配置
 
 如需在模板基础上安装额外依赖，可在创建沙箱后执行：
 
 ```bash
-ebx exec <sandbox-id> -- pip install <package-name>
-ebx exec <sandbox-id> -- npm install -g <package-name>
+abx exec <sandbox-id> -- pip install <package-name>
+abx exec <sandbox-id> -- npm install -g <package-name>
 ```
 
 ### 注意事项
 
-- **API Key 安全**：请勿将 `E2B_API_KEY` 硬编码到模板中，始终通过 `--env` 参数或环境变量注入。
-- **双运行时**：环境同时支持 Python 3.11 和 Node.js 22，可根据项目需求选择。
+- **工作目录**：`WORKSPACE` 默认为 `/app`。
+- **双运行时**：环境同时支持 Python 3.12 和 Node.js 22，可根据项目需求选择。
 - **虚拟环境**：Python 包安装在 `/opt/venv` 中，使用时无需手动激活，`PATH` 已自动配置。
 - **SSH 支持**：已安装 `openssh-client`，支持 Git SSH 协议操作。
+
+## Deploy and local e2e
+
+Install and register this template:
+
+```bash
+abx template install alibaba-agent-sandbox/awesome-templates//qoder
+```
+
+From this directory (build, push, and register):
+
+```bash
+abx deploy
+```
+
+From the repository root, with `agent-sandbox-server` and `httpx` installed:
+
+```bash
+python3 scripts/run_local_e2e.py
+```
+
+That starts `python3 commands.py` in this directory and runs `e2e_test.py`.
+

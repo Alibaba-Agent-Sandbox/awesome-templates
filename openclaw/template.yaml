@@ -1,7 +1,7 @@
 name: openclaw
 version: "1.0.0"
 description: "OpenClaw AI Agent 运行环境 - 开源 AI 编程 Agent 网关与运行时"
-author: "Easy-Sandbox"
+author: "alibaba-agent-sandbox"
 tags:
   - openclaw
   - ai-agent
@@ -28,12 +28,6 @@ capabilities:
   - code
   - ports
 
-custom_commands:
-  start:
-    cmd: "openclaw start"
-    description: "Start the OpenClaw gateway server"
-    cwd: "/app"
-    timeout: 120
 
 env:
   ANTHROPIC_API_KEY: ""

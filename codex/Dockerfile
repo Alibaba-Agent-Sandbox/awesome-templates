@@ -29,13 +29,13 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir "openai>=1.0" rich httpx
 
-# Install easy-sandbox-server (the in-sandbox HTTP server, import easy_sandbox.server).
-# ebx template deploy injects the wheel into the build context. Without a wheel, install from PyPI.
+# Install agent-sandbox-server (the in-sandbox HTTP server, import agent_sandbox.server).
+# abx template deploy injects the wheel into the build context. Without a wheel, install from PyPI.
 COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
         pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
     else \
-        pip install --no-cache-dir easy-sandbox-server; \
+        pip install --no-cache-dir agent-sandbox-server; \
     fi
 
 ENV CODEX_SANDBOX_MODE=true

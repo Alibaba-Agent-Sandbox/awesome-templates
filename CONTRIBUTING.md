@@ -1,298 +1,158 @@
-# Contributing to Awesome Templates for Easy Sandbox
+# Contributing to Awesome Templates for Agent Sandbox
 
-Thanks for helping grow the [Easy Sandbox](https://pypi.org/project/easy-sandbox/)
-template ecosystem! This guide explains how a template is structured, how the
-runtime capability model works, how to develop and test locally with the `ebx`
-CLI, and the exact steps to land your contribution.
+Thanks for adding a template. This repository is the catalog for the `abx`
+CLI and the `agent-sandbox` SDK.
 
-- [Template Anatomy](#template-anatomy)
-- [Capability Groups](#capability-groups)
-- [Local Development & Testing](#local-development--testing)
-- [Contribution Workflow](#contribution-workflow)
-- [Naming & Quality Standards](#naming--quality-standards)
+- [Checklist](#checklist)
+- [Template anatomy](#template-anatomy)
+- [Named commands](#named-commands)
+- [Server policy](#server-policy)
+- [The one e2e command](#the-one-e2e-command)
 
----
+## Checklist
 
-## Template Anatomy
-
-Every template is a **top-level directory** in this repository containing:
-
-```
-<template-name>/
-├── template.yaml    # Metadata, capabilities, custom commands
-├── Dockerfile       # Container image (generic profile, installs easy-sandbox-server)
-├── commands.py      # easy_sandbox.server route table + command registry
-├── e2e_test.py      # HTTP checks against a locally started commands.py
-└── README.md        # What it is, required env vars, usage
-```
-
-### `template.yaml`
-
-The canonical descriptor. Recognised fields:
-
-| Field | Required | Description |
-|-------|----------|-------------|
-| `name` | ✅ | Unique template identifier (matches the directory name). |
-| `version` | ✅ | Semantic version string, e.g. `"1.0.0"`. |
-| `description` | ✅ | One-line summary. |
-| `author` | ✅ | GitHub handle or org (e.g. `Easy-Sandbox`). |
-| `tags` | ✅ | List of search tags. |
-| `base` | ✅ | Base image. Use `python:3.12-slim` unless the template documents another generic base. |
-| `system_packages` | | OS packages installed at build time. |
-| `capabilities` | ✅ | Sandbox capabilities: `shell`, `files`, `code`, `terminal`, `ports`. |
-| `ports` | | Ports the sandbox exposes. |
-| `custom_commands` | | Named CLI commands with `cmd`, `description`, `cwd`, `timeout`, `args`. |
-| `env` | | Default environment variables. |
-
-Minimal example:
-
-```yaml
-name: my-template
-version: "1.0.0"
-description: "Short description of what this template does"
-author: Easy-Sandbox
-tags: [python, example]
-
-base: python:3.12-slim
-system_packages: [python3, python3-pip]
-
-capabilities: [shell, files, code, ports]
-ports: [9000]
-
-env:
-  LANG: C.UTF-8
-```
-
-> `terminal` and `ports` must be declared **explicitly** — they are never
-> granted implicitly.
-
-### `Dockerfile`
-
-Use the generic image profile, not a provider-specific Function Compute image:
-
-- `FROM python:3.12-slim`
-- install `python3` and `pip` only when that base image does not already provide them
-- copy an `easy-sandbox-server` wheel, with a PyPI fallback of `easy-sandbox-server`
-- `WORKDIR /app`
-- `CMD ["python3", "commands.py"]`
-
-Keep the template's own packages (browser extras, agent CLIs). Do not write
-API keys into the image. Declare key *names* with empty values in
-`template.yaml` `env`, and inject the values when the sandbox is created.
-
-```dockerfile
-FROM python:3.12-slim
-
-ENV DEBIAN_FRONTEND=noninteractive
-
-# python:3.12-slim already includes python3 and pip.
-RUN if ! command -v python3 >/dev/null 2>&1 || ! command -v pip >/dev/null 2>&1; then \
-        apt-get update && apt-get install -y --no-install-recommends python3 python3-pip \
-        && rm -rf /var/lib/apt/lists/*; \
-    fi
-
-# Install easy-sandbox-server (in-sandbox runtime: easy_sandbox.server).
-COPY *.whl /tmp/
-RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
-        pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
-    else \
-        pip install --no-cache-dir easy-sandbox-server; \
-    fi
-
-WORKDIR /app
-COPY commands.py .
-EXPOSE 9000
-CMD ["python3", "commands.py"]
-```
-
-### `commands.py` — RouteTable + CommandRegistry
-
-This is where a template extends the sandbox HTTP server. Two building blocks:
-
-- **`RouteTable`** — toggles capability groups and registers custom HTTP routes
-  via the `@table.route(...)` decorator.
-- **`CommandRegistry`** — registers named, callable commands exposed through the
-  server's command API via `@registry.command(...)`.
-
-```python
-from easy_sandbox.server import (
-    CapabilityGroup,
-    CommandRegistry,
-    SandboxServer,
-    ServerResponse,
-    default_table,
-)
-
-# 1. Route table — enable the capability groups this template needs
-table = default_table()
-table.enable_group(CapabilityGroup.FILE_OPS)   # upload/download + file ops
-table.enable_group(CapabilityGroup.PROCESS)    # shell + process management
-table.enable_group(CapabilityGroup.SYSTEM)     # system info + port detection
-
-# 2. Command registry — custom commands
-registry = CommandRegistry()
-
-
-@registry.command("hello", description="Say hello.")
-def hello(name: str = "World") -> str:
-    return f"Hello, {name}!"
-
-
-@registry.command(hidden=True)               # not listed in GET /commands
-def _debug_info() -> dict:
-    import platform
-    return {"python": platform.python_version()}
-
-
-# 3. Custom HTTP route via the RouteTable decorator
-@table.route("GET", "/hello/{name}", group=CapabilityGroup.COMMANDS)
-def hello_route(request: object) -> ServerResponse:
-    name = getattr(request, "path_params", {}).get("name", "World")
-    return ServerResponse.ok({"greeting": f"Hello, {name}!"})
-
-
-# 4. Freeze the registry and serve when this file is the process entrypoint
-registry.freeze()
-if __name__ == "__main__":
-    import os
-
-    port = int(os.environ.get("EBX_SERVER_PORT", "9000"))
-    server = SandboxServer(registry=registry)
-    server.serve(port=port)
-```
-
-`commands.py` imports `easy_sandbox.server` from the `easy-sandbox-server`
-package. The image installs that package, not the client distribution.
-
-### `README.md`
-
-Document what the template is, which environment variables / API keys it needs,
-and a copy-pasteable usage snippet. Keep the install command in the
-`Easy-Sandbox/awesome-templates//<name>` form.
-
----
-
-## Capability Groups
-
-The sandbox server organises endpoints into **capability groups**. Enabling a
-group activates its family of routes.
-
-| Group | Default state | Purpose |
-|-------|---------------|---------|
-| `CORE` | **Always on** (cannot be disabled) | Health/status essentials. |
-| `COMMANDS` | Enabled | List & run registered commands. |
-| `FILE_OPS` | Enabled | Upload/download & file operations. |
-| `PROCESS` | Enabled | Shell execution & process management. |
-| `TERMINAL` | Enabled | Interactive PTY / terminal WebSocket. |
-| `SYSTEM` | Enabled | System info & port detection. |
-| `DEV_TOOLS` | **Disabled** | Developer tooling — must be enabled explicitly. |
-| `BROWSER` | **Disabled** | Browser/DevTools automation — must be enabled explicitly. |
-
-Rules of thumb:
-
-- `CORE` is always active; calling `enable_group(CapabilityGroup.CORE)` is a
-  no-op and `disable_group(CapabilityGroup.CORE)` raises.
-- `DEV_TOOLS` and `BROWSER` are **off by default**. If your template needs them,
-  enable them explicitly:
-
-  ```python
-  table.enable_group(CapabilityGroup.BROWSER)
-  ```
-
-- Only enable the groups you actually use — a smaller surface is safer and
-  faster to start.
-
----
-
-## Local Development & Testing
-
-Install `ebx` and validate your template against a **local registry** before
-opening a PR — no GitHub Release required:
-
-```bash
-# Install directly from a local directory
-ebx template install ./my-template --registry-type local
-
-# Inspect what got cached (~/.ebx/templates/)
-ebx template cache
-
-# Confirm your template shows up in the index search
-ebx template search my-template
-```
-
-What to verify:
-
-1. **Files present** — `template.yaml`, `Dockerfile`, `commands.py`, `e2e_test.py`, `README.md`.
-2. **`commands.py` imports cleanly** — no syntax errors; only enable capability
-   groups you use. The process entrypoint calls `serve()` from `easy_sandbox.server`.
-3. **Commands & routes resolve** — every `@registry.command` and `@table.route`
-   is reachable and returns sensible output.
-4. **Capabilities match reality** — the `capabilities` list in `template.yaml`
-   reflects the groups your `commands.py` enables.
-5. **Local e2e** — from the repository root, with `easy-sandbox-server` and
-   `httpx` installed:
+1. Create a top-level directory in kebab-case. Its name, `template.yaml`
+   `name`, and the index `path` are the same string.
+2. Add `template.yaml`, `Dockerfile`, `commands.py` (when the template
+   registers commands or starts the server), `e2e_test.py`, and `README.md`.
+3. Add one entry under the right section of
+   [`awesome-templates.yaml`](./awesome-templates.yaml): `name`,
+   `description`, `repo`, `path`, `tags`, `author`, `capabilities`, `status`.
+4. From this repository root, with `agent-sandbox-server` and `httpx`
+   installed, run:
 
    ```bash
    python3 scripts/run_local_e2e.py
    ```
 
-   The script starts `python3 commands.py` in each template directory on an
-   ephemeral port, sets `E2E_BASE_URL`, runs `e2e_test.py`, and stops the
-   process. It does not need cloud credentials. If your template cannot start
-   without a third-party binary or API key, the run must skip that template
-   with an explicit reason and still exit 0. A template whose `commands.py`
-   only needs `easy-sandbox-server` must pass. The same script is the
-   `ubuntu-latest` job in `.github/workflows/e2e.yml`.
+   All 12 templates must pass. Do not commit `__pycache__/`, secrets, or
+   API keys. Declare key *names* with empty values in `template.yaml` `env`.
 
-> The final `install` step submits a build to the platform (`POST /templates`).
-> Without platform credentials it will fail at that submission stage — that is
-> expected. Reaching fetch → parse → build-submission proves the template is
-> structurally valid.
+## Template anatomy
 
----
+```
+<template-name>/
+├── template.yaml    # metadata, capabilities, optional server policy
+├── Dockerfile       # python:3.12-slim, installs agent-sandbox-server
+├── commands.py      # agent_sandbox.server process
+├── e2e_test.py      # HTTP checks against a running commands.py
+└── README.md        # what it is, how to deploy, how to run e2e
+```
 
-## Contribution Workflow
+`template.yaml` fields the client accepts include `name`, `version`,
+`description`, `author`, `license`, `tags`, `env`, `ports`, `cpu_count`,
+`memory_mb`, `capabilities` (`shell`, `files`, `code`, `terminal`, `ports`),
+and `server`. The CLI also reads `resources.cpu` and `resources.memory`
+(MB) when it deploys. Named commands are not declared here: they are
+registered in `commands.py`.
 
-1. **Fork** this repository.
-2. **Create** a new top-level directory named exactly after your template
-   (kebab-case, e.g. `my-agent`).
-3. **Add the template files** — `template.yaml`, `Dockerfile`, `commands.py`,
-   `e2e_test.py`, and `README.md`.
-4. **Register** your template in [`awesome-templates.yaml`](./awesome-templates.yaml):
+`capabilities` are template metadata for the client. They do not toggle
+HTTP routes. `terminal` and `ports` are off unless the template lists them.
 
-   ```yaml
-   - name: my-agent
-     description: "Brief description of what your template does"
-     repo: https://github.com/Easy-Sandbox/awesome-templates
-     path: my-agent
-     tags: [ai-agent, your-tag]
-     author: your-github-handle
-     capabilities: [shell, files, code]
-     status: community
-   ```
+The Dockerfile uses the generic profile:
 
-5. **Validate locally** with
-   `ebx template install ./my-agent --registry-type local`.
-6. **Open a PR** and complete the checklist in the pull request template.
+- `FROM python:3.12-slim`
+- install `agent-sandbox-server` from a wheel in the build context, otherwise
+  `pip install agent-sandbox-server`
+- `WORKDIR /app`
+- `CMD ["python3", "commands.py"]`
 
----
+The README must say what the template is, how to deploy it, and how to run
+its e2e:
 
-## Naming & Quality Standards
+```bash
+abx template install alibaba-agent-sandbox/awesome-templates//<name>
+abx deploy
+python3 scripts/run_local_e2e.py
+```
 
-- **Brand:** Easy Sandbox. **CLI:** `ebx`. **Client PyPI package:** `easy-sandbox`.
-  **In-image package:** `easy-sandbox-server` (import `easy_sandbox.server`).
-  **GitHub org:** `Easy-Sandbox`.
-  Install published templates with
-  `ebx template install Easy-Sandbox/awesome-templates//<name>`.
-  Never reference legacy names in new contributions.
-- **Directory name == `template.yaml` `name` == index `path`.** All three must
-  match.
-- **No secrets.** Never commit API keys, tokens, or passwords. Use placeholders
-  like `REPLACE_ME` and document required env vars in the README.
-- **No build junk.** `__pycache__/`, `*.pyc`, and `.DS_Store` are excluded by
-  `.gitignore` — keep it that way.
-- **Minimal & reproducible images.** Pin versions where practical; install only
-  what the template needs.
-- **Conventional Commits** for commit messages (`feat:`, `fix:`, `docs:`, …).
+`abx template install` builds and registers unless you pass
+`--download-only`. `abx deploy` (and `abx template deploy`) publish the
+template directory. There is no top-level `abx install` or `abx init`; use
+`abx template install` and `abx template init`.
 
-Thanks for contributing! 🎉
+## Named commands
+
+Named commands are registered in `commands.py` with the `@command` decorator.
+`template.yaml` has no command map. `start()` serves them and freezes the
+registry:
+
+```python
+from agent_sandbox.server import command, start
+
+
+@command("hello", description="Say hello.")
+def hello(name: str = "World") -> str:
+    return f"Hello, {name}!"
+
+
+if __name__ == "__main__":
+    import os
+
+    start(int(os.environ.get("ABX_SERVER_PORT", "9000")))
+```
+
+Callers use `abx run <sandbox-id> hello --name Alice` or
+`await sandbox.run("hello", name="Alice")` (`sandbox.run_sync` from
+synchronous code). A shell string is `sandbox.commands.run("echo hi")` or
+`abx exec`, not a template.yaml command map.
+
+## Server policy
+
+Every server endpoint has an id (`files_list`, `shell`, `agents_sessions_create`).
+`template.yaml` `server:` is one layer: an endpoint policy. Name the routes you
+expose under `endpoints` (`enabled`, `scopes`, `paths`, `limits`, `params`,
+`audit`). Presets are `default`, `transfer-only`, `read-only`, `hardened`, and
+`locked`. Unknown keys are rejected.
+
+A group (`commands`, `file_ops`, `process`, `terminal`, `system`, `dev_tools`,
+`browser`, `agents`) is only a name for the endpoints that declare it.
+`core`, `commands`, `file_ops`, `process`, `terminal` and `system` start on;
+`dev_tools`, `browser` and `agents` start off. Turn a group on from:
+
+- `template.yaml`: `server.groups` as a list (`groups: [dev_tools]`) or a map
+  (`groups: {process: false}`)
+- `commands.py`: `default_table().enable_group(CapabilityGroup.BROWSER)`
+- the container environment: `ABX_SERVER_ENABLED_GROUPS=dev_tools,browser`
+  (it only turns groups on)
+
+```yaml
+server:
+  endpoints:
+    "*":
+      enabled: false
+    agents_sessions_create:
+      enabled: true
+```
+
+`commands.py` must build the same `ServerPolicy` and pass it to
+`SandboxServer(policy=...)` (or `start(..., policy=...)`). The local e2e runs
+`commands.py`; it does not read `template.yaml`. A disabled endpoint answers
+404 with `code: endpoint_disabled` and the `rule` that decided; `GET
+/capabilities` lists each endpoint's state. A path outside `ABX_SERVER_BASE_DIR`
+answers 403 `path_not_allowed`. `core` cannot be disabled.
+
+Environment variables inside the container use the `ABX_` prefix
+(`ABX_SERVER_PORT`, `ABX_SERVER_TOKEN`, `ABX_SERVER_BASE_DIR`,
+`ABX_SERVER_ENABLED_GROUPS`).
+
+## The one e2e command
+
+```bash
+python3 -m pip install agent-sandbox-server httpx
+python3 scripts/run_local_e2e.py
+```
+
+The script binds an ephemeral port per template, starts
+`python3 commands.py`, sets `E2E_BASE_URL`, runs `e2e_test.py`, and stops
+the process. It does not forward cloud credentials. A case inside
+`e2e_test.py` may print SKIP when a model key or Playwright is absent; the
+template's process must still exit 0.
+
+## Naming
+
+**Agent Sandbox.** CLI `abx`. Client package `agent-sandbox`
+(`agent_sandbox`). In-image package `agent-sandbox-server`
+(`agent_sandbox.server`). GitHub `alibaba-agent-sandbox/awesome-templates`,
+`alibaba-agent-sandbox/python-sdk`, and `alibaba-agent-sandbox/agent-sandbox`.
+npm `@agent-sandbox/cli`. The previous names are not accepted.

@@ -1,7 +1,7 @@
 name: hermes-agent
 version: "1.0.0"
 description: "Hermes Agent 运行环境 - NousResearch Hermes 系列模型驱动的 AI Agent"
-author: "Easy-Sandbox"
+author: "alibaba-agent-sandbox"
 tags:
   - hermes
   - nousresearch
@@ -34,16 +34,6 @@ capabilities:
 ports:
   - 9000
 
-custom_commands:
-  run:
-    cmd: "python3 {script}"
-    description: "Run a Hermes agent script"
-    cwd: "/app"
-    timeout: 120
-    args:
-      - name: script
-        default: "main.py"
-        description: "Python script to execute"
 
 env:
   OPENAI_API_KEY: ""

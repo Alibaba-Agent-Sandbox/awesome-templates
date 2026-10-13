@@ -8,7 +8,7 @@
 
 **Self-hosted OpenAI Agents API compatible service powered by Codex CLI.**
 
-`codex-agent-api` turns an Easy Sandbox instance into a fully self-hosted,
+`codex-agent-api` turns an Agent Sandbox instance into a fully self-hosted,
 OpenAI Agents API-compatible service. Each sandbox runs a lightweight HTTP
 adapter on port `9000` that exposes the `/v1/agents/*` surface (sessions,
 saved agents, artifacts) and internally drives
@@ -52,7 +52,7 @@ calls the OpenAI API under the hood. The sandbox itself is the API gateway.
 Install the template from the awesome-templates registry:
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//codex-agent-api
+abx template install alibaba-agent-sandbox/awesome-templates//codex-agent-api
 ```
 
 Then create a sandbox from it (see Quick Start below).
@@ -62,7 +62,7 @@ Then create a sandbox from it (see Quick Start below).
 **Step 1 — Create a sandbox with your API key:**
 
 ```bash
-ebx create --template codex-agent-api --env OPENAI_API_KEY=sk-xxx
+abx create --template codex-agent-api --env OPENAI_API_KEY=sk-xxx
 ```
 
 **Step 2 — Point the OpenAI SDK at the sandbox:**
@@ -87,22 +87,22 @@ for event in session:
 
 That's it — standard Agents API semantics, served from your own sandbox.
 
-### Quick Start with Easy Sandbox SDK
+### Quick Start with Agent Sandbox SDK
 
 The full pipeline — install the template, create a sandbox, call the API —
-works with either the `ebx` CLI or the Easy Sandbox Python SDK.
+works with either the `abx` CLI or the Agent Sandbox Python SDK.
 
 #### CLI way
 
 ```bash
 # 1. Install the template from the awesome-templates registry
-ebx install Easy-Sandbox/awesome-templates//codex-agent-api
+abx template install alibaba-agent-sandbox/awesome-templates//codex-agent-api
 
 # 2. Create a sandbox from the template, injecting your API key
-ebx create --template codex-agent-api --env OPENAI_API_KEY=sk-xxx
+abx create --template codex-agent-api --env OPENAI_API_KEY=sk-xxx
 
-# 3. Find the sandbox host/port (or use `ebx sandbox list`)
-ebx list
+# 3. Find the sandbox host/port (or use `abx sandbox list`)
+abx list
 
 # 4. Test the API with curl
 curl http://<sandbox-host>:9000/v1/agents
@@ -116,7 +116,7 @@ import asyncio
 import httpx
 from openai import OpenAI
 
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
 
 async def main() -> None:
@@ -129,7 +129,7 @@ async def main() -> None:
     try:
         # 2. Compute the host that exposes the service on port 9000
         base_url = sandbox.network.get_url(port=9000)
-        headers = sandbox.network.get_access_headers()  # {} unless EBX_SERVER_TOKEN is set
+        headers = sandbox.network.get_access_headers()  # {} unless ABX_SERVER_TOKEN is set
 
         # Way 1 — OpenAI SDK: only the base_url changes
         client = OpenAI(base_url=f"{base_url}/v1", api_key="sk-xxx")
@@ -166,7 +166,7 @@ asyncio.run(main())
 | `CODEX_MODEL` | No | `codex-mini` | Default Codex model for new sessions. Can be overridden per session via `agent.model`. |
 | `AGENT_MAX_SESSIONS` | No | `20` | Maximum number of concurrent sessions (429 when exceeded). |
 | `AGENT_SESSION_TTL` | No | `1800` | Session idle TTL in seconds; expired sessions are garbage-collected. |
-| `CODEX_SANDBOX_MODE` | No | `true` | Marker indicating the agent runs inside an Easy Sandbox. |
+| `CODEX_SANDBOX_MODE` | No | `true` | Marker indicating the agent runs inside an Agent Sandbox. |
 | `WORKSPACE` | No | `/workspace` | Working directory for Codex turns. |
 
 ### API Reference
@@ -191,13 +191,13 @@ All 15 endpoints follow the OpenAI Agents API agents & sessions surfaces:
 | 14 | `GET` | `/v1/agents/sessions/{session_id}/artifacts/{artifact_id}` | Download a workspace file artifact produced during the session. |
 | 15 | `DELETE` | `/v1/agents/sessions/{session_id}/artifacts/{artifact_id}` | Delete a workspace file artifact. |
 
-In addition, all standard Easy Sandbox endpoints remain available
+In addition, all standard Agent Sandbox endpoints remain available
 (`/health`, `/commands`, `/files/*`, `/process/*`, `/system/*`).
 
 #### Request & Response Conventions
 
 - **Base URL** — examples below use `http://localhost:9000`; substitute your mapped sandbox host and port.
-- **Auth** — when `EBX_SERVER_TOKEN` is set on the sandbox, add `-H "X-Access-Token: <token>"` to every request; when unset, no auth is required.
+- **Auth** — when `ABX_SERVER_TOKEN` is set on the sandbox, add `-H "X-Access-Token: <token>"` to every request; when unset, no auth is required.
 - **Success** — every successful call returns HTTP `200` (the stdlib server has no `201`/`204` surface); deletes return `200` with `{"deleted": true}`.
 - **Errors** — JSON body `{"error": "<message>", "type": "<ErrorClass>"}`. Common generic codes: `400` invalid JSON body, `401` token configured but header missing/invalid, `413` body too large.
 
@@ -207,7 +207,7 @@ Streaming endpoints answer with `Content-Type: text/event-stream`. Each frame is
 
 ```
 event: agent.session.turn.started
-data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d"}
+data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d"}
 
 ```
 
@@ -372,7 +372,7 @@ curl -N http://localhost:9000/v1/agents/sessions \
 
 ```json
 {
-  "id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d",
+  "id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d",
   "object": "session",
   "status": "idle",
   "model": "codex-mini",
@@ -387,7 +387,7 @@ curl -N http://localhost:9000/v1/agents/sessions \
 
 ```json
 {
-  "id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d",
+  "id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d",
   "object": "session",
   "status": "idle",
   "model": "codex-mini",
@@ -406,13 +406,13 @@ curl -N http://localhost:9000/v1/agents/sessions \
 
 ```
 event: agent.session.created
-data: {"id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d", "object": "session", "status": "in_progress", "model": "codex-mini", "instructions": "", "tools": [], "created_at": 1790640000, "metadata": {}}
+data: {"id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d", "object": "session", "status": "in_progress", "model": "codex-mini", "instructions": "", "tools": [], "created_at": 1790640000, "metadata": {}}
 
 event: agent.session.turn.started
-data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d"}
+data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d"}
 
 event: agent.session.turn.completed
-data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d", "status": "completed"}
+data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d", "status": "completed"}
 ```
 
 Mapped Codex events (`agent.session.output_item.*`, `agent.session.output_text.*`) appear between the two turn frames.
@@ -434,7 +434,7 @@ curl http://localhost:9000/v1/agents/sessions
   "object": "list",
   "data": [
     {
-      "id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d",
+      "id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d",
       "object": "session",
       "status": "idle",
       "model": "codex-mini",
@@ -454,7 +454,7 @@ curl http://localhost:9000/v1/agents/sessions
 Retrieve a session, including its recent output and accumulated usage.
 
 ```bash
-curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d
+curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e8b7d
 ```
 
 **Response** `200`: the session object with `output` (last 5 items) and `usage`, as in the interactive create response above.
@@ -473,7 +473,7 @@ Update session configuration. Only `model` and `instructions` are applied.
 | `instructions` | string | Replacement instruction text. |
 
 ```bash
-curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d \
+curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e8b7d \
   -H "Content-Type: application/json" \
   -d '{"instructions": "Answer in French."}'
 ```
@@ -487,13 +487,13 @@ curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d \
 Delete a session and terminate any live turn process.
 
 ```bash
-curl -X DELETE http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d
+curl -X DELETE http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e8b7d
 ```
 
 **Response** `200`:
 
 ```json
-{"id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d", "object": "session", "deleted": true}
+{"id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d", "object": "session", "deleted": true}
 ```
 
 **Status codes**: `200` success · `404` session not found.
@@ -513,12 +513,12 @@ Send user input to an existing session and start a new turn. Later turns resume 
 
 ```bash
 # streamed turn (default)
-curl -N http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d/events \
+curl -N http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e8b7d/events \
   -H "Content-Type: application/json" \
   -d '{"input": "Now add a unit test"}'
 
 # synchronous turn
-curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d/events \
+curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e8b7d/events \
   -H "Content-Type: application/json" \
   -d '{"input": "Now add a unit test", "stream": false}'
 ```
@@ -529,13 +529,13 @@ curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d/even
 
 ```
 event: agent.session.turn.started
-data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d"}
+data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d"}
 
 event: agent.session.output_item.done
-data: {"type": "agent.session.output_item.done", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d", "item": {"id": "item_1", "type": "agent_message", "text": "Add a pytest case to test_hello.py."}}
+data: {"type": "agent.session.output_item.done", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d", "item": {"id": "item_1", "type": "agent_message", "text": "Add a pytest case to test_hello.py."}}
 
 event: agent.session.turn.completed
-data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d", "status": "completed"}
+data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d", "status": "completed"}
 ```
 
 **Status codes**: `200` success · `400` `{"error": "Missing input text", "type": "ValueError"}` · `404` session not found · `409` `{"error": "Session has an active turn", "type": "ConflictError"}` (only one turn may run per session) · `500` spawn failure.
@@ -545,7 +545,7 @@ data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5
 Attach to the event stream of the session's currently running turn. This is a best-effort tail of the live Codex stdout — not a replayable event log.
 
 ```bash
-curl -N http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d/events
+curl -N http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e8b7d/events
 ```
 
 **Response** `200` — JSON instead of SSE when no turn is active:
@@ -565,7 +565,7 @@ When a turn is in progress, the response is `text/event-stream` with the remaini
 List every item accumulated by the session — the raw Codex `item.started` / `item.completed` events, oldest first.
 
 ```bash
-curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d/items
+curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e8b7d/items
 ```
 
 **Response** `200`:
@@ -589,7 +589,7 @@ Fetch a workspace file as an artifact. `artifact_id` is the URL-safe base64 enco
 
 ```bash
 artifact_id=$(printf 'report.md' | base64)   # -> cmVwb3J0Lm1k
-curl "http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d/artifacts/$artifact_id"
+curl "http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e8b7d/artifacts/$artifact_id"
 ```
 
 **Response** `200`:
@@ -598,7 +598,7 @@ curl "http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d/art
 {
   "id": "cmVwb3J0Lm1k",
   "object": "artifact",
-  "session_id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d",
+  "session_id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d",
   "file_path": "report.md",
   "content": "# Report\n\n...",
   "size": 1234
@@ -615,7 +615,7 @@ Delete a workspace file artifact.
 
 ```bash
 curl -X DELETE \
-  "http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d/artifacts/cmVwb3J0Lm1k"
+  "http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e8b7d/artifacts/cmVwb3J0Lm1k"
 ```
 
 **Response** `200`:
@@ -841,13 +841,13 @@ Unknown Codex event types are passed through as `agent.session.<type>`.
 ### Security Notes
 
 - **Never hardcode `OPENAI_API_KEY`.** Always inject it at sandbox creation
-  time (`ebx create --env OPENAI_API_KEY=sk-xxx`) or via your secret store.
+  time (`abx create --env OPENAI_API_KEY=sk-xxx`) or via your secret store.
 - The adapter runs Codex with
-  `--dangerously-bypass-approvals-and-sandbox` inside the Easy Sandbox
+  `--dangerously-bypass-approvals-and-sandbox` inside the Agent Sandbox
   container — the sandbox boundary is the isolation layer. Do not expose
   port `9000` to untrusted networks.
 - Optional bearer/token auth is inherited from the sandbox server
-  (`EBX_SERVER_TOKEN`); set it if the sandbox port is reachable beyond
+  (`ABX_SERVER_TOKEN`); set it if the sandbox port is reachable beyond
   your trust boundary.
 - Traffic to OpenAI leaves the sandbox over the network; ensure your
   compliance policy allows it.
@@ -858,7 +858,7 @@ Unknown Codex event types are passed through as `agent.session.<type>`.
 
 **由 Codex CLI 驱动的自托管 OpenAI Agents API 兼容服务。**
 
-`codex-agent-api` 将 Easy Sandbox 实例变为完全自托管的 OpenAI Agents API
+`codex-agent-api` 将 Agent Sandbox 实例变为完全自托管的 OpenAI Agents API
 兼容服务。每个沙箱在 `9000` 端口上运行一个轻量级 HTTP 适配器，对外暴露
 `/v1/agents/*` 接口（会话、已保存的 Agent、产物），并在内部以无头模式
 驱动 [Codex CLI](https://www.npmjs.com/package/@openai/codex)
@@ -900,7 +900,7 @@ OpenAI API。沙箱本身即是 API 网关。
 从 awesome-templates 仓库安装模板：
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//codex-agent-api
+abx template install alibaba-agent-sandbox/awesome-templates//codex-agent-api
 ```
 
 然后基于它创建沙箱（见下方快速开始）。
@@ -910,7 +910,7 @@ ebx install Easy-Sandbox/awesome-templates//codex-agent-api
 **第 1 步 —— 携带 API Key 创建沙箱：**
 
 ```bash
-ebx create --template codex-agent-api --env OPENAI_API_KEY=sk-xxx
+abx create --template codex-agent-api --env OPENAI_API_KEY=sk-xxx
 ```
 
 **第 2 步 —— 将 OpenAI SDK 指向沙箱：**
@@ -935,22 +935,22 @@ for event in session:
 
 就这么简单——标准的 Agents API 语义，由你自己的沙箱提供服务。
 
-### Easy Sandbox SDK 快速开始
+### Agent Sandbox SDK 快速开始
 
-从安装模板、创建沙箱到调用 API 的完整链路，既可以用 `ebx` CLI 完成，也可以
-通过 Easy Sandbox Python SDK 完成。
+从安装模板、创建沙箱到调用 API 的完整链路，既可以用 `abx` CLI 完成，也可以
+通过 Agent Sandbox Python SDK 完成。
 
 #### CLI 方式
 
 ```bash
 # 1. 从 awesome-templates 仓库安装模板
-ebx install Easy-Sandbox/awesome-templates//codex-agent-api
+abx template install alibaba-agent-sandbox/awesome-templates//codex-agent-api
 
 # 2. 基于模板创建沙箱，注入 API Key
-ebx create --template codex-agent-api --env OPENAI_API_KEY=sk-xxx
+abx create --template codex-agent-api --env OPENAI_API_KEY=sk-xxx
 
-# 3. 查看沙箱主机与端口（也可以用 `ebx sandbox list`）
-ebx list
+# 3. 查看沙箱主机与端口（也可以用 `abx sandbox list`）
+abx list
 
 # 4. 用 curl 测试 API
 curl http://<sandbox-host>:9000/v1/agents
@@ -964,7 +964,7 @@ import asyncio
 import httpx
 from openai import OpenAI
 
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
 
 async def main() -> None:
@@ -977,7 +977,7 @@ async def main() -> None:
     try:
         # 2. 计算 9000 端口对外暴露的访问地址
         base_url = sandbox.network.get_url(port=9000)
-        headers = sandbox.network.get_access_headers()  # 未设置 EBX_SERVER_TOKEN 时为 {}
+        headers = sandbox.network.get_access_headers()  # 未设置 ABX_SERVER_TOKEN 时为 {}
 
         # 方式 1 —— OpenAI SDK：只需替换 base_url
         client = OpenAI(base_url=f"{base_url}/v1", api_key="sk-xxx")
@@ -1013,7 +1013,7 @@ asyncio.run(main())
 | `CODEX_MODEL` | 否 | `codex-mini` | 新会话的默认 Codex 模型。可通过 `agent.model` 按会话覆盖。 |
 | `AGENT_MAX_SESSIONS` | 否 | `20` | 最大并发会话数（超出时返回 429）。 |
 | `AGENT_SESSION_TTL` | 否 | `1800` | 会话空闲 TTL（秒）；过期会话会被回收。 |
-| `CODEX_SANDBOX_MODE` | 否 | `true` | 标识 Agent 运行在 Easy Sandbox 内的标记。 |
+| `CODEX_SANDBOX_MODE` | 否 | `true` | 标识 Agent 运行在 Agent Sandbox 内的标记。 |
 | `WORKSPACE` | 否 | `/workspace` | Codex 轮次的工作目录。 |
 
 ### API 参考
@@ -1038,13 +1038,13 @@ asyncio.run(main())
 | 14 | `GET` | `/v1/agents/sessions/{session_id}/artifacts/{artifact_id}` | 下载会话期间产生的工作区文件产物。 |
 | 15 | `DELETE` | `/v1/agents/sessions/{session_id}/artifacts/{artifact_id}` | 删除工作区文件产物。 |
 
-此外，所有标准 Easy Sandbox 端点依然可用
+此外，所有标准 Agent Sandbox 端点依然可用
 （`/health`、`/commands`、`/files/*`、`/process/*`、`/system/*`）。
 
 #### 请求与响应约定
 
 - **Base URL** —— 下文示例统一使用 `http://localhost:9000`；实际使用时替换为映射后的沙箱主机与端口。
-- **认证** —— 沙箱设置了 `EBX_SERVER_TOKEN` 时，每个请求都需携带 `-H "X-Access-Token: <token>"`；未设置则无需认证。
+- **认证** —— 沙箱设置了 `ABX_SERVER_TOKEN` 时，每个请求都需携带 `-H "X-Access-Token: <token>"`；未设置则无需认证。
 - **成功响应** —— 所有成功调用均返回 HTTP `200`（标准库服务端没有 `201`/`204` 形态）；删除返回 `200` 与 `{"deleted": true}`。
 - **错误响应** —— JSON 形如 `{"error": "<message>", "type": "<ErrorClass>"}`。通用错误码：`400` 请求体不是合法 JSON、`401` 已配置 token 但请求头缺失或无效、`413` 请求体过大。
 
@@ -1054,7 +1054,7 @@ asyncio.run(main())
 
 ```
 event: agent.session.turn.started
-data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d"}
+data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d"}
 
 ```
 
@@ -1219,7 +1219,7 @@ curl -N http://localhost:9000/v1/agents/sessions \
 
 ```json
 {
-  "id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d",
+  "id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d",
   "object": "session",
   "status": "idle",
   "model": "codex-mini",
@@ -1234,7 +1234,7 @@ curl -N http://localhost:9000/v1/agents/sessions \
 
 ```json
 {
-  "id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d",
+  "id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d",
   "object": "session",
   "status": "idle",
   "model": "codex-mini",
@@ -1253,13 +1253,13 @@ curl -N http://localhost:9000/v1/agents/sessions \
 
 ```
 event: agent.session.created
-data: {"id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d", "object": "session", "status": "in_progress", "model": "codex-mini", "instructions": "", "tools": [], "created_at": 1790640000, "metadata": {}}
+data: {"id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d", "object": "session", "status": "in_progress", "model": "codex-mini", "instructions": "", "tools": [], "created_at": 1790640000, "metadata": {}}
 
 event: agent.session.turn.started
-data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d"}
+data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d"}
 
 event: agent.session.turn.completed
-data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d", "status": "completed"}
+data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d", "status": "completed"}
 ```
 
 映射后的 Codex 事件（`agent.session.output_item.*`、`agent.session.output_text.*`）出现在两个轮次帧之间。
@@ -1281,7 +1281,7 @@ curl http://localhost:9000/v1/agents/sessions
   "object": "list",
   "data": [
     {
-      "id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d",
+      "id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d",
       "object": "session",
       "status": "idle",
       "model": "codex-mini",
@@ -1301,7 +1301,7 @@ curl http://localhost:9000/v1/agents/sessions
 获取会话，包含最近输出与累计用量。
 
 ```bash
-curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d
+curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e8b7d
 ```
 
 **响应** `200`：带 `output`（最近 5 个条目）与 `usage` 的会话对象，形态与上文交互式创建响应一致。
@@ -1320,7 +1320,7 @@ curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d
 | `instructions` | string | 替换后的指令文本。 |
 
 ```bash
-curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d \
+curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e8b7d \
   -H "Content-Type: application/json" \
   -d '{"instructions": "Answer in French."}'
 ```
@@ -1334,13 +1334,13 @@ curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d \
 删除会话，并终止仍在执行的轮次进程。
 
 ```bash
-curl -X DELETE http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d
+curl -X DELETE http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e8b7d
 ```
 
 **响应** `200`：
 
 ```json
-{"id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d", "object": "session", "deleted": true}
+{"id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d", "object": "session", "deleted": true}
 ```
 
 **状态码**：`200` 成功 · `404` 会话不存在。
@@ -1360,12 +1360,12 @@ curl -X DELETE http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9
 
 ```bash
 # 流式轮次（默认）
-curl -N http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d/events \
+curl -N http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e8b7d/events \
   -H "Content-Type: application/json" \
   -d '{"input": "现在添加一个单元测试"}'
 
 # 同步轮次
-curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d/events \
+curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e8b7d/events \
   -H "Content-Type: application/json" \
   -d '{"input": "现在添加一个单元测试", "stream": false}'
 ```
@@ -1376,13 +1376,13 @@ curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d/even
 
 ```
 event: agent.session.turn.started
-data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d"}
+data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d"}
 
 event: agent.session.output_item.done
-data: {"type": "agent.session.output_item.done", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d", "item": {"id": "item_1", "type": "agent_message", "text": "Add a pytest case to test_hello.py."}}
+data: {"type": "agent.session.output_item.done", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d", "item": {"id": "item_1", "type": "agent_message", "text": "Add a pytest case to test_hello.py."}}
 
 event: agent.session.turn.completed
-data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d", "status": "completed"}
+data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d", "status": "completed"}
 ```
 
 **状态码**：`200` 成功 · `400` `{"error": "Missing input text", "type": "ValueError"}` · `404` 会话不存在 · `409` `{"error": "Session has an active turn", "type": "ConflictError"}`（每个会话同时只允许一个轮次）· `500` 启动失败。
@@ -1392,7 +1392,7 @@ data: {"turn_id": "turn_4c8e2f6a9b1d3e5c7a9f2b4d", "session_id": "sess_7a3f9c2e5
 附着到会话当前运行轮次的事件流。这是对 Codex 实时 stdout 的尽力而为式跟踪，并非可重放的事件日志。
 
 ```bash
-curl -N http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d/events
+curl -N http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e8b7d/events
 ```
 
 **响应** `200` —— 无活跃轮次时返回 JSON（而非 SSE）：
@@ -1412,7 +1412,7 @@ curl -N http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d/e
 列出会话累积的全部条目 —— 原始 Codex `item.started` / `item.completed` 事件，按时间从旧到新。
 
 ```bash
-curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d/items
+curl http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e8b7d/items
 ```
 
 **响应** `200`：
@@ -1436,7 +1436,7 @@ assistant 消息呈现为 `item` 对象内的 `{"type": "agent_message", "text":
 
 ```bash
 artifact_id=$(printf 'report.md' | base64)   # -> cmVwb3J0Lm1k
-curl "http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d/artifacts/$artifact_id"
+curl "http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e8b7d/artifacts/$artifact_id"
 ```
 
 **响应** `200`：
@@ -1445,7 +1445,7 @@ curl "http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d/art
 {
   "id": "cmVwb3J0Lm1k",
   "object": "artifact",
-  "session_id": "sess_7a3f9c2e5b8d1a4f6c9e2b7d",
+  "session_id": "sess_7a3f9c2e5b8d1a4f6c9e8b7d",
   "file_path": "report.md",
   "content": "# Report\n\n...",
   "size": 1234
@@ -1462,7 +1462,7 @@ curl "http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d/art
 
 ```bash
 curl -X DELETE \
-  "http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e2b7d/artifacts/cmVwb3J0Lm1k"
+  "http://localhost:9000/v1/agents/sessions/sess_7a3f9c2e5b8d1a4f6c9e8b7d/artifacts/cmVwb3J0Lm1k"
 ```
 
 **响应** `200`：
@@ -1683,13 +1683,36 @@ Codex thread。`turn.completed` 的用量会累加到会话的 `usage` 计数中
 ### 安全说明
 
 - **切勿硬编码 `OPENAI_API_KEY`。** 始终在创建沙箱时注入
-  （`ebx create --env OPENAI_API_KEY=sk-xxx`）或通过你的密钥管理服务注入。
-- 适配器在 Easy Sandbox 容器内以 `--dangerously-bypass-approvals-and-sandbox`
+  （`abx create --env OPENAI_API_KEY=sk-xxx`）或通过你的密钥管理服务注入。
+- 适配器在 Agent Sandbox 容器内以 `--dangerously-bypass-approvals-and-sandbox`
   运行 Codex——沙箱边界即隔离层。请勿将 `9000` 端口暴露给不受信任的网络。
-- 可选的 bearer/token 认证继承自沙箱服务器（`EBX_SERVER_TOKEN`）；
+- 可选的 bearer/token 认证继承自沙箱服务器（`ABX_SERVER_TOKEN`）；
   如果沙箱端口可被信任边界之外的网络访问，请设置它。
 - 发往 OpenAI 的流量会经网络离开沙箱；请确保你的合规策略允许此流量。
 
 ---
 
-Part of [awesome-templates](https://github.com/Easy-Sandbox/awesome-templates) · Maintained by Easy-Sandbox
+Part of [awesome-templates](https://github.com/alibaba-agent-sandbox/awesome-templates) · Maintained by alibaba-agent-sandbox
+
+## Deploy and local e2e
+
+Install and register this template:
+
+```bash
+abx template install alibaba-agent-sandbox/awesome-templates//codex-agent-api
+```
+
+From this directory (build, push, and register):
+
+```bash
+abx deploy
+```
+
+From the repository root, with `agent-sandbox-server` and `httpx` installed:
+
+```bash
+python3 scripts/run_local_e2e.py
+```
+
+That starts `python3 commands.py` in this directory and runs `e2e_test.py`.
+

@@ -15,7 +15,7 @@ This template comes preinstalled with the following tools and dependencies:
 | Category | Details |
 |----------|---------|
 | **Base image** | python:3.12-slim |
-| **Python** | Python 3.11 + venv (at `/opt/venv`) |
+| **Python** | Python 3.12 + venv (at `/opt/venv`) |
 | **Node.js** | Node.js 22.x + npm |
 | **Python packages** | `uv`, `openai>=1.0`, `httpx`, `rich`, `pyyaml` |
 | **System tools** | git, curl, xz-utils, build-essential, ripgrep, ffmpeg |
@@ -26,13 +26,13 @@ This template comes preinstalled with the following tools and dependencies:
 **Install from a local path:**
 
 ```bash
-ebx install ./examples/templates/hermes-agent --registry-type local
+abx template install ./hermes-agent --registry-type local
 ```
 
 **Install from GitHub:**
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//hermes-agent
+abx template install alibaba-agent-sandbox/awesome-templates//hermes-agent
 ```
 
 ### Usage
@@ -40,7 +40,7 @@ ebx install Easy-Sandbox/awesome-templates//hermes-agent
 Create a sandbox instance and pass in the LLM configuration:
 
 ```bash
-ebx create --template hermes-agent \
+abx create --template hermes-agent \
     --env OPENAI_API_KEY=sk-xxx \
     --env OPENAI_BASE_URL=https://api.your-provider.com/v1
 ```
@@ -48,13 +48,13 @@ ebx create --template hermes-agent \
 Quickly install agent frameworks with uv:
 
 ```bash
-ebx exec <sandbox-id> -- uv pip install langchain langgraph
+abx exec <sandbox-id> -- uv pip install langchain langgraph
 ```
 
 Call a Hermes model via the OpenAI-compatible interface:
 
 ```bash
-ebx exec <sandbox-id> -- python3 -c "
+abx exec <sandbox-id> -- python3 -c "
 from openai import OpenAI
 client = OpenAI()
 response = client.chat.completions.create(
@@ -76,9 +76,9 @@ print(response.choices[0].message)
 Using the Python SDK:
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(
+sandbox = Sandbox.create_sync(
     template="hermes-agent",
     env={
         "OPENAI_API_KEY": "sk-xxx",
@@ -106,10 +106,10 @@ This template ships with `uv`, a high-performance Python package manager. Using 
 
 ```bash
 # Install packages with uv (much faster than pip)
-ebx exec <sandbox-id> -- uv pip install <package-name>
+abx exec <sandbox-id> -- uv pip install <package-name>
 
 # Create a project with uv
-ebx exec <sandbox-id> -- uv init my-agent-project
+abx exec <sandbox-id> -- uv init my-agent-project
 ```
 
 ### Notes
@@ -133,7 +133,7 @@ NousResearch Hermes 系列模型驱动的 AI Agent 沙箱运行环境，支持�
 | 类别 | 内容 |
 |------|------|
 | **基础镜像** | python:3.12-slim |
-| **Python** | Python 3.11 + venv 虚拟环境（位于 `/opt/venv`） |
+| **Python** | Python 3.12 + venv 虚拟环境（位于 `/opt/venv`） |
 | **Node.js** | Node.js 22.x + npm |
 | **Python 包** | `uv`、`openai>=1.0`、`httpx`、`rich`、`pyyaml` |
 | **系统工具** | git、curl、xz-utils、build-essential、ripgrep、ffmpeg |
@@ -144,13 +144,13 @@ NousResearch Hermes 系列模型驱动的 AI Agent 沙箱运行环境，支持�
 **从本地安装：**
 
 ```bash
-ebx install ./examples/templates/hermes-agent --registry-type local
+abx template install ./hermes-agent --registry-type local
 ```
 
 **从 GitHub 安装：**
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//hermes-agent
+abx template install alibaba-agent-sandbox/awesome-templates//hermes-agent
 ```
 
 ### 使用示例
@@ -158,7 +158,7 @@ ebx install Easy-Sandbox/awesome-templates//hermes-agent
 创建沙箱实例并传入 LLM 配置：
 
 ```bash
-ebx create --template hermes-agent \
+abx create --template hermes-agent \
     --env OPENAI_API_KEY=sk-xxx \
     --env OPENAI_BASE_URL=https://api.your-provider.com/v1
 ```
@@ -166,13 +166,13 @@ ebx create --template hermes-agent \
 使用 uv 快速安装 Agent 框架：
 
 ```bash
-ebx exec <sandbox-id> -- uv pip install langchain langgraph
+abx exec <sandbox-id> -- uv pip install langchain langgraph
 ```
 
 通过 OpenAI 兼容接口调用 Hermes 模型：
 
 ```bash
-ebx exec <sandbox-id> -- python3 -c "
+abx exec <sandbox-id> -- python3 -c "
 from openai import OpenAI
 client = OpenAI()
 response = client.chat.completions.create(
@@ -194,9 +194,9 @@ print(response.choices[0].message)
 使用 Python SDK：
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(
+sandbox = Sandbox.create_sync(
     template="hermes-agent",
     env={
         "OPENAI_API_KEY": "sk-xxx",
@@ -224,10 +224,10 @@ print(result.stdout)
 
 ```bash
 # 使用 uv 安装包（速度远快于 pip）
-ebx exec <sandbox-id> -- uv pip install <package-name>
+abx exec <sandbox-id> -- uv pip install <package-name>
 
 # 使用 uv 创建项目
-ebx exec <sandbox-id> -- uv init my-agent-project
+abx exec <sandbox-id> -- uv init my-agent-project
 ```
 
 ### 注意事项
@@ -237,3 +237,26 @@ ebx exec <sandbox-id> -- uv init my-agent-project
 - **资源建议**：基础 Agent 任务使用 4096 MB 内存即可；涉及浏览器自动化或多媒体处理时建议 8192 MB。
 - **ffmpeg 支持**：已预装 ffmpeg，支持音视频处理任务。
 - **虚拟环境**：Python 包安装在 `/opt/venv` 中，使用时无需手动激活，`PATH` 已自动配置。
+
+## Deploy and local e2e
+
+Install and register this template:
+
+```bash
+abx template install alibaba-agent-sandbox/awesome-templates//hermes-agent
+```
+
+From this directory (build, push, and register):
+
+```bash
+abx deploy
+```
+
+From the repository root, with `agent-sandbox-server` and `httpx` installed:
+
+```bash
+python3 scripts/run_local_e2e.py
+```
+
+That starts `python3 commands.py` in this directory and runs `e2e_test.py`.
+

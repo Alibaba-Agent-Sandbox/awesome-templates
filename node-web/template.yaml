@@ -1,7 +1,7 @@
 name: node-web
 version: "1.0.0"
 description: "Node.js Web 服务运行环境 - 支持 Express、Fastify 等框架的快速开发与部署"
-author: "Easy-Sandbox"
+author: "alibaba-agent-sandbox"
 tags:
   - nodejs
   - web
@@ -32,22 +32,6 @@ capabilities:
   - code
   - ports
 
-custom_commands:
-  dev:
-    cmd: "npm run dev"
-    description: "Start development server with hot reload"
-    cwd: "/app"
-    timeout: 120
-  build:
-    cmd: "npm run build"
-    description: "Build production bundle"
-    cwd: "/app"
-    timeout: 120
-  start:
-    cmd: "npm start"
-    description: "Start production server"
-    cwd: "/app"
-    timeout: 120
 
 env:
   NODE_ENV: "production"

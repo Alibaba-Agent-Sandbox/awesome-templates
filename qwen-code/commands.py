@@ -1,52 +1,47 @@
 """qwen-code — 通义千问编码 Agent 沙箱命令。"""
 from __future__ import annotations
 
-from easy_sandbox.server import (
-    CapabilityGroup,
-    CommandRegistry,
-    SandboxServer,
-    default_table,
-)
-
-# ---------------------------------------------------------------------------
-# Route table — enable capability groups
-# ---------------------------------------------------------------------------
-
-table = default_table()
-table.enable_group(CapabilityGroup.FILE_OPS)   # upload/download + file operations
-table.enable_group(CapabilityGroup.PROCESS)    # shell + process management
-
-# ---------------------------------------------------------------------------
-# Command registry
-# ---------------------------------------------------------------------------
-
-registry = CommandRegistry()
+from agent_sandbox.server import command, start
 
 
-@registry.command("qwen", description="Run Qwen Code agent.")
-def qwen(prompt: str, max_turns: int = 50) -> str:
-    """Run Qwen Code agent."""
-    import subprocess
-
-    result = subprocess.run(
+@command("qwen", description="Run Qwen Code agent for natural-language deployment.")
+def qwen(prompt: str, max_turns: int = 100) -> str:
+    """Run qwen-code (``qwen -p`` with ``--yolo`` and JSON output)."""
+    return _run(
         [
             "qwen", "-p", prompt,
             "--yolo",
             "--output-format", "json",
             "--max-turns", str(max_turns),
         ],
-        capture_output=True, text=True, timeout=300,
+        timeout=600,
+    )
+
+
+
+def _run(argv: list[str], *, timeout: int, cwd: str = "/app") -> str:
+    """Run *argv* in ``/app`` when that directory exists and return stdout."""
+    import os
+    import subprocess
+
+    workdir = cwd if os.path.isdir(cwd) else (os.environ.get("WORKSPACE") or os.getcwd())
+    result = subprocess.run(
+        argv, cwd=workdir, capture_output=True, text=True, timeout=timeout,
     )
     if result.returncode != 0:
-        raise RuntimeError(result.stderr)
+        detail = (result.stderr or result.stdout or "").strip()
+        raise RuntimeError(detail or f"command exited {result.returncode}")
     return result.stdout
 
 
-registry.freeze()
+
+@command("run", description="Run a Python script in the Qwen Code environment.")
+def run(script: str = "main.py") -> str:
+    """Run a Python script (``python3 {script}``)."""
+    return _run(["python3", script], timeout=120)
+
 
 if __name__ == "__main__":
     import os
 
-    _port = int(os.environ.get("EBX_SERVER_PORT", "9000"))
-    server = SandboxServer(registry=registry)
-    server.serve(port=_port)
+    start(int(os.environ.get("ABX_SERVER_PORT", "9000")))

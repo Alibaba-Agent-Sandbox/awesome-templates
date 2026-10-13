@@ -61,14 +61,14 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any, Iterator
 
-from easy_sandbox.server import (
+from agent_sandbox.server import (
     CapabilityGroup,
-    CommandRegistry,
-    SandboxServer,
     SSEResponse,
     ServerRequest,
     ServerResponse,
+    command,
     default_table,
+    start,
 )
 
 # ── Configuration ──────────────────────────────────────────────────────
@@ -79,19 +79,14 @@ SESSION_TTL = int(os.environ.get("AGENT_SESSION_TTL", "1800"))  # seconds
 TURN_TIMEOUT = 300  # seconds per turn
 WORKSPACE = os.environ.get("WORKSPACE", "/app")
 
-# ── Route table & capability groups ────────────────────────────────────
+# ── Route table ───────────────────────────────────────────────────────
 
 table = default_table()
-table.enable_group(CapabilityGroup.FILE_OPS)
-table.enable_group(CapabilityGroup.PROCESS)
-table.enable_group(CapabilityGroup.SYSTEM)
 
-# ── Command registry (basic codex command for backward compat) ─────────
-
-registry = CommandRegistry()
+# ── Named commands (basic codex command for backward compat) ──────────
 
 
-@registry.command("codex", description="Run Codex agent.")
+@command("codex", description="Run Codex agent.")
 def codex_cmd(prompt: str, model: str = "") -> str:
     """Run Codex agent (simple mode)."""
     m = model or DEFAULT_MODEL
@@ -1159,11 +1154,18 @@ table._routes[:] = [route for route in table._routes if route.group is not Capab
 
 # ── Serve ──────────────────────────────────────────────────────────
 
-registry.freeze()
+
+@command("agent_status", description="List active Agent API sessions.")
+def agent_status() -> str:
+    """List active Agent API sessions."""
+    sessions = [
+        {"id": session.id, "status": session.status, "model": session.model}
+        for session in store.list_all()
+    ]
+    return json.dumps(sessions)
+
 
 if __name__ == "__main__":
     import os
 
-    _port = int(os.environ.get("EBX_SERVER_PORT", "9000"))
-    server = SandboxServer(registry=registry)
-    server.serve(port=_port)
+    start(int(os.environ.get("ABX_SERVER_PORT", "9000")))

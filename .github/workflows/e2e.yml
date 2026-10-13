@@ -13,7 +13,7 @@ jobs:
       - name: Checkout the Python SDK
         uses: actions/checkout@v4
         with:
-          repository: Easy-Sandbox/python-sdk
+          repository: alibaba-agent-sandbox/python-sdk
           path: vendor/python-sdk
 
       - uses: actions/setup-python@v5

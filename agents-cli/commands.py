@@ -16,19 +16,24 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from easy_sandbox.server import CapabilityGroup, SandboxServer, default_table
+from agent_sandbox.server import SandboxServer, ServerPolicy
 
 _HERE = Path(__file__).resolve().parent
 if os.environ.get("E2E_RUN_LLM") == "0":
     os.environ["PATH"] = str(_HERE / "e2e-bin") + os.pathsep + os.environ.get("PATH", "")
 
-os.environ["EBX_SERVER_ENABLED_GROUPS"] = "agents"
+# Endpoint rules are the only switch: ``ServerPolicy.only`` turns every endpoint off
+# except the ones named here. An exact rule also opens an endpoint of an opt-in group
+# such as ``agents``. Add an endpoint id to expose that one route.
+policy = ServerPolicy.only(
+    "agents_sessions_create",
+    "agents_sessions_get",
+    "agents_sessions_list",
+    "agents_sessions_events_create",
+    "agents_sessions_items_list",
+    "agents_runtimes_list",
+)
 
-table = default_table()
-table.enable_group(CapabilityGroup.FILE_OPS)
-table.enable_group(CapabilityGroup.PROCESS)
-table.enable_group(CapabilityGroup.AGENTS)
-
-server = SandboxServer(route_table=table)
+server = SandboxServer(policy=policy)
 if __name__ == "__main__":
-    server.serve(port=int(os.environ.get("EBX_SERVER_PORT", "9000")))
+    server.serve(port=int(os.environ.get("ABX_SERVER_PORT", "9000")))

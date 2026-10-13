@@ -1,115 +1,74 @@
-# Awesome Templates for Easy Sandbox
+# Awesome Templates for Agent Sandbox
 
-A curated collection of production-ready sandbox templates for the
-[Easy Sandbox](https://pypi.org/project/easy-sandbox/) SDK & CLI (`ebx`).
-Each template is a self-contained sandbox definition covering popular AI
-coding agents, runtimes, and automation stacks. Images use the generic
-profile (`FROM python:3.12-slim`, `WORKDIR /app`, `CMD ["python3", "commands.py"]`)
-and install `easy-sandbox-server`, the in-sandbox runtime imported as
-`easy_sandbox.server`.
+A curated collection of sandbox templates for the
+[Agent Sandbox](https://pypi.org/project/agent-sandbox/) SDK and the `abx` CLI.
+Each template is a self-contained sandbox: `template.yaml`, a `Dockerfile`
+(`FROM python:3.12-slim`, `WORKDIR /app`, `CMD ["python3", "commands.py"]`),
+`commands.py` (the in-sandbox `agent_sandbox.server` process), `e2e_test.py`,
+and a README. Images install `agent-sandbox-server`.
 
-> **New here?** See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full template
-> anatomy, capability-group rules, local dev workflow, and PR process.
+The index in [`awesome-templates.yaml`](./awesome-templates.yaml) is the
+catalog `abx template search` and `abx template install <name>` read.
 
-## Available Templates
+## Templates
 
-| Template | Description | Capabilities | Install |
-|----------|-------------|--------------|---------|
-| [python-hello](./python-hello/) | Minimal Python hello-world template for testing | shell, files, code, ports | `ebx template install Easy-Sandbox/awesome-templates//python-hello` |
-| [browser-automation](./browser-automation/) | Playwright + Chromium for web scraping & UI testing | shell, files, code, ports | `ebx template install Easy-Sandbox/awesome-templates//browser-automation` |
-| [claude-code](./claude-code/) | Anthropic Claude-powered AI coding assistant | shell, files, code, terminal, ports | `ebx template install Easy-Sandbox/awesome-templates//claude-code` |
-| [codex](./codex/) | OpenAI Codex CLI agent for code generation | shell, files, code, ports | `ebx template install Easy-Sandbox/awesome-templates//codex` |
-| [codex-agent-api](./codex-agent-api/) | Self-hosted OpenAI Agents API compatible service powered by Codex CLI | shell, files, code, ports | `ebx template install Easy-Sandbox/awesome-templates//codex-agent-api` |
-| [qoder](./qoder/) | Qoder AI coding assistant with Python + Node.js | shell, files, code, terminal, ports | `ebx template install Easy-Sandbox/awesome-templates//qoder` |
-| [qwen-code](./qwen-code/) | Qwen Code — Dashscope-powered deployment agent | shell, files, code, ports | `ebx template install Easy-Sandbox/awesome-templates//qwen-code` |
-| [agents-cli](./agents-cli/) | Agents API for Codex and Qwen Code. Neither CLI is preinstalled | shell, files, ports | `ebx template install Easy-Sandbox/awesome-templates//agents-cli` |
-| [deepseek-harness](./deepseek-harness/) | DeepSeek model-driven AI coding agent | shell, files, code, ports | `ebx template install Easy-Sandbox/awesome-templates//deepseek-harness` |
-| [hermes-agent](./hermes-agent/) | NousResearch Hermes agent with tool calling | shell, files, code, ports | `ebx template install Easy-Sandbox/awesome-templates//hermes-agent` |
-| [node-web](./node-web/) | Node.js web runtime for Express / Fastify | shell, files, ports | `ebx template install Easy-Sandbox/awesome-templates//node-web` |
-| [openclaw](./openclaw/) | OpenClaw open-source AI coding agent gateway | shell, files, ports | `ebx template install Easy-Sandbox/awesome-templates//openclaw` |
+| Template | Description |
+|----------|-------------|
+| [python-hello](./python-hello/) | A minimal Python hello world template for testing |
+| [browser-automation](./browser-automation/) | Browser automation sandbox with Playwright + Chromium for web scraping and UI testing |
+| [claude-code](./claude-code/) | Claude Code Agent runtime — Anthropic Claude-powered AI coding assistant |
+| [codex](./codex/) | OpenAI Codex CLI Agent runtime for AI-driven code generation and execution |
+| [codex-agent-api](./codex-agent-api/) | Self-hosted OpenAI Agents API compatible service powered by Codex CLI |
+| [qoder](./qoder/) | Qoder AI coding assistant runtime with Python and Node.js integrated dev sandbox |
+| [agents-cli](./agents-cli/) | Agents API for Codex and Qwen Code. The image does not preinstall either CLI. |
+| [qwen-code](./qwen-code/) | Qwen Code Agent runtime — Dashscope-powered AI autonomous deployment agent |
+| [deepseek-harness](./deepseek-harness/) | DeepSeek Agent Runtime — DeepSeek model-driven AI coding agent |
+| [hermes-agent](./hermes-agent/) | Hermes Agent runtime — NousResearch Hermes model-driven AI agent with tool calling |
+| [node-web](./node-web/) | Node.js web service runtime for Express, Fastify and other frameworks |
+| [openclaw](./openclaw/) | OpenClaw AI Agent runtime — open-source AI coding agent gateway |
 
-## Usage
+## Deploy
 
-Templates are fetched from this repository's GitHub **Releases** (zipball), so
-make sure a Release exists (e.g. `v1.0.0`) before installing.
+Install from this index (builds and registers the template):
 
 ```bash
-# Install a template (downloads from the latest Release)
-ebx template install Easy-Sandbox/awesome-templates//python-hello
-
-# Pin to a specific release tag
-ebx template install Easy-Sandbox/awesome-templates//codex@v1.0.0
-
-# Inspect the local cache (~/.ebx/templates/)
-ebx template cache
-
-# Search this index by name, tag, or description
-ebx template search python
-ebx template search ai-agent --status official
+abx template install python-hello
+abx template install alibaba-agent-sandbox/awesome-templates//codex@v1.0.0
 ```
 
-## Template Structure
+Publish the template in the current directory:
 
-Each template directory contains:
-
-```
-<template-name>/
-├── template.yaml    # Template metadata, capabilities, custom commands
-├── Dockerfile       # Container image (python:3.12-slim, easy-sandbox-server)
-├── commands.py      # easy_sandbox.server command registry / custom routes
-├── e2e_test.py      # HTTP checks against a running commands.py
-└── README.md        # Template-specific documentation
+```bash
+abx deploy
 ```
 
-The Dockerfile copies an `easy-sandbox-server` wheel when the build context
-has one, and otherwise runs `pip install easy-sandbox-server`. API keys are
-not written into the image; pass them when the sandbox is created.
+`abx template install ./<name> --registry-type local --download-only` only
+fills the local cache (`~/.abx/templates/`) and does not build an image.
+Search the index with `abx template search python` or
+`abx template search ai-agent --status official`.
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md#template-anatomy) for a field-by-field
-breakdown.
+Top-level shortcuts are `create`, `list`, `info`, `kill`, `exec`, `connect`,
+`upload`, `download`, `run`, and `deploy`. Scaffold and install a template
+with `abx template init` and `abx template install`.
 
 ## Local end-to-end tests
 
-`scripts/run_local_e2e.py` starts each template with `python3 commands.py` on
-an ephemeral port, sets `E2E_BASE_URL`, runs that directory's `e2e_test.py`,
-and stops the process. It does not use cloud credentials.
+One command, from this directory, with `agent-sandbox-server` and `httpx`
+installed:
 
 ```bash
-python3 -m pip install easy-sandbox-server httpx
 python3 scripts/run_local_e2e.py
 ```
 
-A template that cannot start without a third-party binary or API key is
-skipped with an explicit reason, and the suite still passes. `python-hello`,
-`node-web`, and any template whose `commands.py` only needs
-`easy-sandbox-server` are executed and must pass. The same script runs in
-[`.github/workflows/e2e.yml`](./.github/workflows/e2e.yml) on `ubuntu-latest`.
-
-## Environment Variables
-
-Most AI agents require API keys. Set them when creating a sandbox:
-
-| Agent | Required Variable |
-|-------|-------------------|
-| codex | `OPENAI_API_KEY` |
-| claude-code | `ANTHROPIC_API_KEY` |
-| qwen-code | `DASHSCOPE_API_KEY` |
-| deepseek-harness | `DEEPSEEK_API_KEY` |
-| Others | Varies by model provider |
+It starts `python3 commands.py` for each of the 12 templates on an ephemeral
+port, sets `E2E_BASE_URL`, runs that directory's `e2e_test.py`, and stops the
+process. Every template must exit 0. The same script is
+[`.github/workflows/e2e.yml`](./.github/workflows/e2e.yml).
 
 ## Contributing
 
-We welcome community templates! The short version:
-
-1. Fork this repository.
-2. Create a new top-level directory named after your template.
-3. Add `template.yaml`, `Dockerfile`, `commands.py`, `e2e_test.py`, and `README.md`.
-4. Register your template in [`awesome-templates.yaml`](./awesome-templates.yaml).
-5. Validate locally with `ebx template install ./<your-template> --registry-type local`.
-6. Open a Pull Request.
-
-Full guidelines, capability-group rules, and quality standards live in
-[CONTRIBUTING.md](./CONTRIBUTING.md).
+See [CONTRIBUTING.md](./CONTRIBUTING.md). A template is one directory plus one
+entry in `awesome-templates.yaml`.
 
 ## License
 

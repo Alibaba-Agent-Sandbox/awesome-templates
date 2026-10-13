@@ -11,13 +11,13 @@ A minimal Python development environment template.
 ### Installation
 
 ```bash
-ebx install ./examples/templates/python-hello --registry-type local
+abx template install ./python-hello --registry-type local
 ```
 
 ### Usage
 
 ```bash
-ebx create --template python-hello
+abx create --template python-hello
 ```
 
 #### Named Commands (End-to-End)
@@ -26,35 +26,35 @@ After the container starts, `commands.py` runs automatically, listens on port 90
 
 ```bash
 # Greet
-ebx run <sandbox-id> hello --name Alice
+abx run <sandbox-id> hello --name Alice
 # → Hello, Alice!
 
 # Run Python code
-ebx run <sandbox-id> run_script --code "print(1+1)"
+abx run <sandbox-id> run_script --code "print(1+1)"
 # → 2
 ```
 
 Equivalent SDK usage:
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(template="python-hello")
-result = sandbox.custom("hello", name="Alice")
-print(result.value)  # Hello, Alice!
+sandbox = Sandbox.create_sync(template="python-hello")
+result = sandbox.run_sync("hello", name="Alice")
+print(result)  # Hello, Alice!
 ```
 
 #### Upload / Download
 
 ```bash
-ebx upload <sandbox-id> ./local_file.txt /app/remote.txt
-ebx download <sandbox-id> /app/remote.txt ./local_file.txt
+abx upload <sandbox-id> ./local_file.txt /app/remote.txt
+abx download <sandbox-id> /app/remote.txt ./local_file.txt
 ```
 
 ### Environment
 
 - Base image: python:3.12-slim
-- Python 3.12 and pip; in-sandbox package `easy-sandbox-server`
+- Python 3.12 and pip; in-sandbox package `agent-sandbox-server`
 - Working directory: /app
 
 ---
@@ -66,13 +66,13 @@ ebx download <sandbox-id> /app/remote.txt ./local_file.txt
 ### 安装
 
 ```bash
-ebx install ./examples/templates/python-hello --registry-type local
+abx template install ./python-hello --registry-type local
 ```
 
 ### 使用
 
 ```bash
-ebx create --template python-hello
+abx create --template python-hello
 ```
 
 #### 命名命令（端到端）
@@ -81,33 +81,56 @@ ebx create --template python-hello
 
 ```bash
 # 打招呼
-ebx run <sandbox-id> hello --name Alice
+abx run <sandbox-id> hello --name Alice
 # → Hello, Alice!
 
 # 执行 Python 代码
-ebx run <sandbox-id> run_script --code "print(1+1)"
+abx run <sandbox-id> run_script --code "print(1+1)"
 # → 2
 ```
 
 SDK 侧等价写法：
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(template="python-hello")
-result = sandbox.custom("hello", name="Alice")
-print(result.value)  # Hello, Alice!
+sandbox = Sandbox.create_sync(template="python-hello")
+result = sandbox.run_sync("hello", name="Alice")
+print(result)  # Hello, Alice!
 ```
 
 #### 上传 / 下载
 
 ```bash
-ebx upload <sandbox-id> ./local_file.txt /app/remote.txt
-ebx download <sandbox-id> /app/remote.txt ./local_file.txt
+abx upload <sandbox-id> ./local_file.txt /app/remote.txt
+abx download <sandbox-id> /app/remote.txt ./local_file.txt
 ```
 
 ### 环境
 
 - 基础镜像: python:3.12-slim
-- Python 3.12 and pip; in-sandbox package `easy-sandbox-server`
+- Python 3.12 and pip; in-sandbox package `agent-sandbox-server`
 - 工作目录: /app
+
+## Deploy and local e2e
+
+Install and register this template:
+
+```bash
+abx template install alibaba-agent-sandbox/awesome-templates//python-hello
+```
+
+From this directory (build, push, and register):
+
+```bash
+abx deploy
+```
+
+From the repository root, with `agent-sandbox-server` and `httpx` installed:
+
+```bash
+python3 scripts/run_local_e2e.py
+```
+
+That starts `python3 commands.py` in this directory and runs `e2e_test.py`.
+

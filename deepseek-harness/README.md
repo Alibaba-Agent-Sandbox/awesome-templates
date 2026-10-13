@@ -16,7 +16,7 @@ This template comes preinstalled with the following tools and dependencies:
 |----------|---------|
 | **Base image** | python:3.12-slim |
 | **Node.js** | Node.js 22.x + npm (core runtime) |
-| **Python** | Python 3.11 + venv (at `/opt/venv`) |
+| **Python** | Python 3.12 + venv (at `/opt/venv`) |
 | **Python packages** | `openai>=1.0`, `httpx`, `rich` |
 | **System tools** | git, curl, build-essential |
 | **Resources** | 2 CPU / 4096 MB memory |
@@ -26,13 +26,13 @@ This template comes preinstalled with the following tools and dependencies:
 **Install from a local path:**
 
 ```bash
-ebx install ./examples/templates/deepseek-harness --registry-type local
+abx template install ./deepseek-harness --registry-type local
 ```
 
 **Install from GitHub:**
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//deepseek-harness
+abx template install alibaba-agent-sandbox/awesome-templates//deepseek-harness
 ```
 
 ### Usage
@@ -40,13 +40,13 @@ ebx install Easy-Sandbox/awesome-templates//deepseek-harness
 Create a sandbox instance and pass in the API key:
 
 ```bash
-ebx create --template deepseek-harness --env DEEPSEEK_API_KEY=sk-xxx
+abx create --template deepseek-harness --env DEEPSEEK_API_KEY=sk-xxx
 ```
 
 Call a DeepSeek model inside the sandbox via the OpenAI-compatible interface:
 
 ```bash
-ebx exec <sandbox-id> -- python3 -c "
+abx exec <sandbox-id> -- python3 -c "
 from openai import OpenAI
 client = OpenAI(
     api_key='your-deepseek-key',
@@ -63,9 +63,9 @@ print(response.choices[0].message.content)
 Using the Python SDK:
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(
+sandbox = Sandbox.create_sync(
     template="deepseek-harness",
     env={"DEEPSEEK_API_KEY": "sk-xxx"}
 )
@@ -89,10 +89,10 @@ This template provides a base development runtime. To install a specific agent p
 
 ```bash
 # Install a Python agent framework
-ebx exec <sandbox-id> -- pip install langchain langgraph
+abx exec <sandbox-id> -- pip install langchain langgraph
 
 # Install a Node.js agent tool
-ebx exec <sandbox-id> -- npm install -g <agent-tool>
+abx exec <sandbox-id> -- npm install -g <agent-tool>
 ```
 
 ### Notes
@@ -100,7 +100,7 @@ ebx exec <sandbox-id> -- npm install -g <agent-tool>
 - **API key security**: Never hardcode `DEEPSEEK_API_KEY` into the template; always inject it via the `--env` option or environment variables.
 - **API compatibility**: DeepSeek offers an OpenAI-compatible interface with the base URL `https://api.deepseek.com`.
 - **Network access**: The DeepSeek API must be reachable — make sure the sandbox has outbound internet connectivity.
-- **Dual runtimes**: The environment supports both Python 3.11 and Node.js 22 — pick whichever fits your plugin needs.
+- **Dual runtimes**: The environment supports both Python 3.12 and Node.js 22 — pick whichever fits your plugin needs.
 - **Virtual environment**: Python packages are installed in `/opt/venv`; no manual activation is needed since `PATH` is preconfigured.
 
 ---
@@ -117,7 +117,7 @@ DeepSeek 模型驱动的 AI 编程 Agent 沙箱运行环境，支持代码生成
 |------|------|
 | **基础镜像** | python:3.12-slim |
 | **Node.js** | Node.js 22.x + npm（核心运行时） |
-| **Python** | Python 3.11 + venv 虚拟环境（位于 `/opt/venv`） |
+| **Python** | Python 3.12 + venv 虚拟环境（位于 `/opt/venv`） |
 | **Python 包** | `openai>=1.0`、`httpx`、`rich` |
 | **系统工具** | git、curl、build-essential |
 | **资源配置** | 2 CPU / 4096 MB 内存 |
@@ -127,13 +127,13 @@ DeepSeek 模型驱动的 AI 编程 Agent 沙箱运行环境，支持代码生成
 **从本地安装：**
 
 ```bash
-ebx install ./examples/templates/deepseek-harness --registry-type local
+abx template install ./deepseek-harness --registry-type local
 ```
 
 **从 GitHub 安装：**
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//deepseek-harness
+abx template install alibaba-agent-sandbox/awesome-templates//deepseek-harness
 ```
 
 ### 使用示例
@@ -141,13 +141,13 @@ ebx install Easy-Sandbox/awesome-templates//deepseek-harness
 创建沙箱实例并传入 API Key：
 
 ```bash
-ebx create --template deepseek-harness --env DEEPSEEK_API_KEY=sk-xxx
+abx create --template deepseek-harness --env DEEPSEEK_API_KEY=sk-xxx
 ```
 
 在沙箱中通过 OpenAI 兼容接口调用 DeepSeek 模型：
 
 ```bash
-ebx exec <sandbox-id> -- python3 -c "
+abx exec <sandbox-id> -- python3 -c "
 from openai import OpenAI
 client = OpenAI(
     api_key='your-deepseek-key',
@@ -164,9 +164,9 @@ print(response.choices[0].message.content)
 使用 Python SDK：
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(
+sandbox = Sandbox.create_sync(
     template="deepseek-harness",
     env={"DEEPSEEK_API_KEY": "sk-xxx"}
 )
@@ -190,10 +190,10 @@ print(result.stdout)
 
 ```bash
 # 安装 Python Agent 框架
-ebx exec <sandbox-id> -- pip install langchain langgraph
+abx exec <sandbox-id> -- pip install langchain langgraph
 
 # 安装 Node.js Agent 工具
-ebx exec <sandbox-id> -- npm install -g <agent-tool>
+abx exec <sandbox-id> -- npm install -g <agent-tool>
 ```
 
 ### 注意事项
@@ -201,5 +201,28 @@ ebx exec <sandbox-id> -- npm install -g <agent-tool>
 - **API Key 安全**：请勿将 `DEEPSEEK_API_KEY` 硬编码到模板中，始终通过 `--env` 参数或环境变量注入。
 - **API 兼容性**：DeepSeek 提供 OpenAI 兼容接口，base URL 为 `https://api.deepseek.com`。
 - **网络访问**：需要访问 DeepSeek API，确保沙箱具备外网连接能力。
-- **双运行时**：环境同时支持 Python 3.11 和 Node.js 22，可根据插件需求选择。
+- **双运行时**：环境同时支持 Python 3.12 和 Node.js 22，可根据插件需求选择。
 - **虚拟环境**：Python 包安装在 `/opt/venv` 中，使用时无需手动激活，`PATH` 已自动配置。
+
+## Deploy and local e2e
+
+Install and register this template:
+
+```bash
+abx template install alibaba-agent-sandbox/awesome-templates//deepseek-harness
+```
+
+From this directory (build, push, and register):
+
+```bash
+abx deploy
+```
+
+From the repository root, with `agent-sandbox-server` and `httpx` installed:
+
+```bash
+python3 scripts/run_local_e2e.py
+```
+
+That starts `python3 commands.py` in this directory and runs `e2e_test.py`.
+

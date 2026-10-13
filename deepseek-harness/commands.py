@@ -1,29 +1,10 @@
 """deepseek-harness — DeepSeek Agent Runtime 沙箱命令。"""
 from __future__ import annotations
 
-from easy_sandbox.server import (
-    CapabilityGroup,
-    CommandRegistry,
-    SandboxServer,
-    default_table,
-)
-
-# ---------------------------------------------------------------------------
-# Route table — enable capability groups
-# ---------------------------------------------------------------------------
-
-table = default_table()
-table.enable_group(CapabilityGroup.FILE_OPS)   # upload/download + file operations
-table.enable_group(CapabilityGroup.PROCESS)    # shell + process management
-
-# ---------------------------------------------------------------------------
-# Command registry
-# ---------------------------------------------------------------------------
-
-registry = CommandRegistry()
+from agent_sandbox.server import command, start
 
 
-@registry.command("deepseek", description="Run DeepSeek agent with a prompt.")
+@command("deepseek", description="Run DeepSeek agent with a prompt.")
 def deepseek(prompt: str, model: str = "deepseek-coder") -> str:
     """Run DeepSeek agent with a prompt."""
     import subprocess
@@ -44,11 +25,30 @@ def deepseek(prompt: str, model: str = "deepseek-coder") -> str:
     return result.stdout
 
 
-registry.freeze()
+
+def _run(argv: list[str], *, timeout: int, cwd: str = "/app") -> str:
+    """Run *argv* in ``/app`` when that directory exists and return stdout."""
+    import os
+    import subprocess
+
+    workdir = cwd if os.path.isdir(cwd) else (os.environ.get("WORKSPACE") or os.getcwd())
+    result = subprocess.run(
+        argv, cwd=workdir, capture_output=True, text=True, timeout=timeout,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "").strip()
+        raise RuntimeError(detail or f"command exited {result.returncode}")
+    return result.stdout
+
+
+
+@command("run", description="Run a Python script in the DeepSeek agent environment.")
+def run(script: str = "main.py") -> str:
+    """Run a Python script (``python3 {script}``)."""
+    return _run(["python3", script], timeout=120)
+
 
 if __name__ == "__main__":
     import os
 
-    _port = int(os.environ.get("EBX_SERVER_PORT", "9000"))
-    server = SandboxServer(registry=registry)
-    server.serve(port=_port)
+    start(int(os.environ.get("ABX_SERVER_PORT", "9000")))

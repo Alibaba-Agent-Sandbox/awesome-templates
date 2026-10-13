@@ -16,7 +16,7 @@ This template comes preinstalled with the following tools and dependencies:
 |----------|---------|
 | **Base image** | python:3.12-slim |
 | **Node.js** | Node.js 22.x + npm (core runtime) |
-| **Python** | Python 3.11 + venv (at `/opt/venv`) |
+| **Python** | Python 3.12 + venv (at `/opt/venv`) |
 | **Node packages** | `@anthropic-ai/claude-code` |
 | **Python packages** | `anthropic`, `httpx`, `rich` |
 | **System tools** | git, curl, ripgrep, build-essential |
@@ -27,13 +27,13 @@ This template comes preinstalled with the following tools and dependencies:
 **Install from a local path:**
 
 ```bash
-ebx install ./examples/templates/claude-code --registry-type local
+abx template install ./claude-code --registry-type local
 ```
 
 **Install from GitHub:**
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//claude-code
+abx template install alibaba-agent-sandbox/awesome-templates//claude-code
 ```
 
 ### Usage
@@ -41,27 +41,27 @@ ebx install Easy-Sandbox/awesome-templates//claude-code
 Create a sandbox instance and pass in the API key:
 
 ```bash
-ebx create --template claude-code --env ANTHROPIC_API_KEY=sk-ant-xxx
+abx create --template claude-code --env ANTHROPIC_API_KEY=sk-ant-xxx
 ```
 
 Launch Claude Code inside the sandbox:
 
 ```bash
-ebx exec <sandbox-id> -- claude "Write a Python HTTP server"
+abx exec <sandbox-id> -- claude "Write a Python HTTP server"
 ```
 
 Run a task in non-interactive mode:
 
 ```bash
-ebx exec <sandbox-id> -- claude -p "Refactor this function for better performance" --allowedTools "Edit,Read,Write"
+abx exec <sandbox-id> -- claude -p "Refactor this function for better performance" --allowedTools "Edit,Read,Write"
 ```
 
 Using the Python SDK:
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(
+sandbox = Sandbox.create_sync(
     template="claude-code",
     env={"ANTHROPIC_API_KEY": "sk-ant-xxx"}
 )
@@ -84,8 +84,8 @@ print(result.stdout)
 To install extra dependencies on top of this template, run the following after the sandbox is created:
 
 ```bash
-ebx exec <sandbox-id> -- pip install <package-name>
-ebx exec <sandbox-id> -- npm install -g <package-name>
+abx exec <sandbox-id> -- pip install <package-name>
+abx exec <sandbox-id> -- npm install -g <package-name>
 ```
 
 ### Notes
@@ -110,7 +110,7 @@ Anthropic Claude Code 的沙箱运行环境，预装 Claude Code CLI，支持 AI
 |------|------|
 | **基础镜像** | python:3.12-slim |
 | **Node.js** | Node.js 22.x + npm（核心运行时） |
-| **Python** | Python 3.11 + venv 虚拟环境（位于 `/opt/venv`） |
+| **Python** | Python 3.12 + venv 虚拟环境（位于 `/opt/venv`） |
 | **Node 包** | `@anthropic-ai/claude-code` |
 | **Python 包** | `anthropic`、`httpx`、`rich` |
 | **系统工具** | git、curl、ripgrep、build-essential |
@@ -121,13 +121,13 @@ Anthropic Claude Code 的沙箱运行环境，预装 Claude Code CLI，支持 AI
 **从本地安装：**
 
 ```bash
-ebx install ./examples/templates/claude-code --registry-type local
+abx template install ./claude-code --registry-type local
 ```
 
 **从 GitHub 安装：**
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//claude-code
+abx template install alibaba-agent-sandbox/awesome-templates//claude-code
 ```
 
 ### 使用示例
@@ -135,27 +135,27 @@ ebx install Easy-Sandbox/awesome-templates//claude-code
 创建沙箱实例并传入 API Key：
 
 ```bash
-ebx create --template claude-code --env ANTHROPIC_API_KEY=sk-ant-xxx
+abx create --template claude-code --env ANTHROPIC_API_KEY=sk-ant-xxx
 ```
 
 在沙箱中启动 Claude Code：
 
 ```bash
-ebx exec <sandbox-id> -- claude "编写一个 Python HTTP 服务器"
+abx exec <sandbox-id> -- claude "编写一个 Python HTTP 服务器"
 ```
 
 非交互模式执行任务：
 
 ```bash
-ebx exec <sandbox-id> -- claude -p "重构这个函数以提高性能" --allowedTools "Edit,Read,Write"
+abx exec <sandbox-id> -- claude -p "重构这个函数以提高性能" --allowedTools "Edit,Read,Write"
 ```
 
 使用 Python SDK：
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(
+sandbox = Sandbox.create_sync(
     template="claude-code",
     env={"ANTHROPIC_API_KEY": "sk-ant-xxx"}
 )
@@ -178,8 +178,8 @@ print(result.stdout)
 如需在模板基础上安装额外依赖，可在创建沙箱后执行：
 
 ```bash
-ebx exec <sandbox-id> -- pip install <package-name>
-ebx exec <sandbox-id> -- npm install -g <package-name>
+abx exec <sandbox-id> -- pip install <package-name>
+abx exec <sandbox-id> -- npm install -g <package-name>
 ```
 
 ### 注意事项
@@ -189,3 +189,26 @@ ebx exec <sandbox-id> -- npm install -g <package-name>
 - **Node.js 核心**：Claude Code CLI 基于 Node.js 运行，Node.js 22 为核心依赖。
 - **资源消耗**：AI 代码生成任务可能消耗较多内存，建议保持 4096 MB 以上的内存配置。
 - **虚拟环境**：Python 包安装在 `/opt/venv` 中，使用时无需手动激活，`PATH` 已自动配置。
+
+## Deploy and local e2e
+
+Install and register this template:
+
+```bash
+abx template install alibaba-agent-sandbox/awesome-templates//claude-code
+```
+
+From this directory (build, push, and register):
+
+```bash
+abx deploy
+```
+
+From the repository root, with `agent-sandbox-server` and `httpx` installed:
+
+```bash
+python3 scripts/run_local_e2e.py
+```
+
+That starts `python3 commands.py` in this directory and runs `e2e_test.py`.
+

@@ -24,13 +24,13 @@ Node.js 20 web service sandbox environment, suited for rapid development and dep
 **Install from a local path:**
 
 ```bash
-ebx install ./examples/templates/node-web --registry-type local
+abx template install ./node-web --registry-type local
 ```
 
 **Install from GitHub:**
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//node-web
+abx template install alibaba-agent-sandbox/awesome-templates//node-web
 ```
 
 ### Usage
@@ -38,13 +38,13 @@ ebx install Easy-Sandbox/awesome-templates//node-web
 Create a sandbox instance:
 
 ```bash
-ebx create --template node-web
+abx create --template node-web
 ```
 
 Initialize an Express project inside the sandbox and start it:
 
 ```bash
-ebx exec <sandbox-id> -- bash -c "
+abx exec <sandbox-id> -- bash -c "
 cd /workspace && \
 npm init -y && \
 npm install express && \
@@ -54,7 +54,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
-  res.json({ message: 'Hello from Easy Sandbox!' });
+  res.json({ message: 'Hello from Agent Sandbox!' });
 });
 
 app.listen(port, () => {
@@ -68,9 +68,9 @@ node index.js
 Using the Python SDK:
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(template="node-web")
+sandbox = Sandbox.create_sync(template="node-web")
 
 # Write the server code
 sandbox.files.write("/workspace/index.js", """
@@ -151,13 +151,13 @@ Node.js 20 Web 服务沙箱环境，适用于 Express、Fastify、Koa 等框架�
 **从本地安装：**
 
 ```bash
-ebx install ./examples/templates/node-web --registry-type local
+abx template install ./node-web --registry-type local
 ```
 
 **从 GitHub 安装：**
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//node-web
+abx template install alibaba-agent-sandbox/awesome-templates//node-web
 ```
 
 ### 使用示例
@@ -165,13 +165,13 @@ ebx install Easy-Sandbox/awesome-templates//node-web
 创建沙箱实例：
 
 ```bash
-ebx create --template node-web
+abx create --template node-web
 ```
 
 在沙箱中初始化 Express 项目并启动：
 
 ```bash
-ebx exec <sandbox-id> -- bash -c "
+abx exec <sandbox-id> -- bash -c "
 cd /workspace && \
 npm init -y && \
 npm install express && \
@@ -181,7 +181,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
-  res.json({ message: 'Hello from Easy Sandbox!' });
+  res.json({ message: 'Hello from Agent Sandbox!' });
 });
 
 app.listen(port, () => {
@@ -195,9 +195,9 @@ node index.js
 使用 Python SDK：
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(template="node-web")
+sandbox = Sandbox.create_sync(template="node-web")
 
 # 写入服务器代码
 sandbox.files.write("/workspace/index.js", """
@@ -255,3 +255,26 @@ NODE_ENV=development nodemon index.js
 - **生产环境**：`NODE_ENV` 默认为 `production`，开发时可设为 `development` 以获取详细错误信息。
 - **包管理器**：npm 和 yarn 均已安装，根据项目需要选择使用。
 - **进程管理**：生产环境建议使用 pm2 管理 Node.js 进程，确保服务稳定运行。
+
+## Deploy and local e2e
+
+Install and register this template:
+
+```bash
+abx template install alibaba-agent-sandbox/awesome-templates//node-web
+```
+
+From this directory (build, push, and register):
+
+```bash
+abx deploy
+```
+
+From the repository root, with `agent-sandbox-server` and `httpx` installed:
+
+```bash
+python3 scripts/run_local_e2e.py
+```
+
+That starts `python3 commands.py` in this directory and runs `e2e_test.py`.
+

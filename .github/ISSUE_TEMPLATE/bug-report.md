@@ -12,7 +12,7 @@ assignees: []
 
 ## Environment
 
-- `ebx --version`:
+- `abx --version`:
 - OS / arch:
 - Install command used:
 
@@ -27,7 +27,7 @@ assignees: []
 ## Reproduction steps
 
 ```bash
-ebx template install Easy-Sandbox/awesome-templates//<name>
+abx template install alibaba-agent-sandbox/awesome-templates//<name>
 # ...
 ```
 

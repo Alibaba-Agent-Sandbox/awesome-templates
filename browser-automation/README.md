@@ -26,13 +26,13 @@ This template enables the built-in **BROWSER** capability group, exposing 8 low-
 **Install from a local path:**
 
 ```bash
-ebx install ./examples/templates/browser-automation --registry-type local
+abx template install ./browser-automation --registry-type local
 ```
 
 **Install from GitHub:**
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//browser-automation
+abx template install alibaba-agent-sandbox/awesome-templates//browser-automation
 ```
 
 ### High-Level Business Commands
@@ -87,45 +87,45 @@ After enabling `CapabilityGroup.BROWSER`, the following low-level HTTP endpoints
 Create a sandbox instance:
 
 ```bash
-ebx create --template browser-automation
+abx create --template browser-automation
 ```
 
 Take a screenshot with a high-level command:
 
 ```bash
-ebx exec <sandbox-id> browse --url https://example.com --action screenshot
+abx exec <sandbox-id> browse --url https://example.com --action screenshot
 ```
 
 Extract text with a high-level command:
 
 ```bash
-ebx exec <sandbox-id> browse --url https://example.com --action extract
+abx exec <sandbox-id> browse --url https://example.com --action extract
 ```
 
 Scrape a specific element with a high-level command:
 
 ```bash
-ebx exec <sandbox-id> scrape --url https://example.com --selector "h1"
+abx exec <sandbox-id> scrape --url https://example.com --selector "h1"
 ```
 
 Using the Python SDK:
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(template="browser-automation")
+sandbox = Sandbox.create_sync(template="browser-automation")
 
-# Take a webpage screenshot (invokes a custom command, returns CommandResult)
-result = sandbox.custom("browse", url="https://example.com", action="screenshot")
-print(result.value)  # {"action": "screenshot", "url": "...", "path": "/workspace/screenshot_xxx.png"}
+# Take a webpage screenshot (registered command; returns the result value)
+result = sandbox.run_sync("browse", url="https://example.com", action="screenshot")
+print(result)  # {"action": "screenshot", "url": "...", "path": "/workspace/screenshot_xxx.png"}
 
 # Extract page text
-result = sandbox.custom("browse", url="https://example.com", action="extract")
-print(result.value["text"])
+result = sandbox.run_sync("browse", url="https://example.com", action="extract")
+print(result["text"])
 
 # Scrape by selector
-result = sandbox.custom("scrape", url="https://example.com", selector="h1")
-print(result.value["texts"])
+result = sandbox.run_sync("scrape", url="https://example.com", selector="h1")
+print(result["texts"])
 
 # Auto form filling
 import json
@@ -133,8 +133,8 @@ fields = [
     {"selector": "#email", "value": "test@example.com"},
     {"selector": "#password", "value": "secret"},
 ]
-result = sandbox.custom("fill_form", url="https://example.com/login", fields_json=json.dumps(fields))
-print(result.value)
+result = sandbox.run_sync("fill_form", url="https://example.com/login", fields_json=json.dumps(fields))
+print(result)
 ```
 
 ### Configuration
@@ -186,13 +186,13 @@ Xvfb :99 -screen 0 1920x1080x24 &
 **从本地安装：**
 
 ```bash
-ebx install ./examples/templates/browser-automation --registry-type local
+abx template install ./browser-automation --registry-type local
 ```
 
 **从 GitHub 安装：**
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//browser-automation
+abx template install alibaba-agent-sandbox/awesome-templates//browser-automation
 ```
 
 ### 高层业务命令
@@ -247,45 +247,45 @@ ebx install Easy-Sandbox/awesome-templates//browser-automation
 创建沙箱实例：
 
 ```bash
-ebx create --template browser-automation
+abx create --template browser-automation
 ```
 
 使用高层命令截图：
 
 ```bash
-ebx exec <sandbox-id> browse --url https://example.com --action screenshot
+abx exec <sandbox-id> browse --url https://example.com --action screenshot
 ```
 
 使用高层命令提取文本：
 
 ```bash
-ebx exec <sandbox-id> browse --url https://example.com --action extract
+abx exec <sandbox-id> browse --url https://example.com --action extract
 ```
 
 使用高层命令抓取指定元素：
 
 ```bash
-ebx exec <sandbox-id> scrape --url https://example.com --selector "h1"
+abx exec <sandbox-id> scrape --url https://example.com --selector "h1"
 ```
 
 使用 Python SDK：
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(template="browser-automation")
+sandbox = Sandbox.create_sync(template="browser-automation")
 
 # 截取网页截图（调用自定义命令，返回 CommandResult）
-result = sandbox.custom("browse", url="https://example.com", action="screenshot")
-print(result.value)  # {"action": "screenshot", "url": "...", "path": "/workspace/screenshot_xxx.png"}
+result = sandbox.run_sync("browse", url="https://example.com", action="screenshot")
+print(result)  # {"action": "screenshot", "url": "...", "path": "/workspace/screenshot_xxx.png"}
 
 # 提取页面文本
-result = sandbox.custom("browse", url="https://example.com", action="extract")
-print(result.value["text"])
+result = sandbox.run_sync("browse", url="https://example.com", action="extract")
+print(result["text"])
 
 # 按选择器抓取
-result = sandbox.custom("scrape", url="https://example.com", selector="h1")
-print(result.value["texts"])
+result = sandbox.run_sync("scrape", url="https://example.com", selector="h1")
+print(result["texts"])
 
 # 自动填表
 import json
@@ -293,8 +293,8 @@ fields = [
     {"selector": "#email", "value": "test@example.com"},
     {"selector": "#password", "value": "secret"},
 ]
-result = sandbox.custom("fill_form", url="https://example.com/login", fields_json=json.dumps(fields))
-print(result.value)
+result = sandbox.run_sync("fill_form", url="https://example.com/login", fields_json=json.dumps(fields))
+print(result)
 ```
 
 ### 配置说明
@@ -321,3 +321,26 @@ Xvfb :99 -screen 0 1920x1080x24 &
 - **仅含 Chromium**：为减小镜像体积，默认只安装 Chromium。如需 Firefox 或 WebKit，可在沙箱内执行 `python3 -m playwright install firefox`。
 - **网络访问**：网页抓取任务需要外网访问权限，请确保沙箱网络策略允许出站连接。
 - **截图与文件**：生成的截图和文件保存在 `/workspace` 目录下，可通过文件 API 下载。
+
+## Deploy and local e2e
+
+Install and register this template:
+
+```bash
+abx template install alibaba-agent-sandbox/awesome-templates//browser-automation
+```
+
+From this directory (build, push, and register):
+
+```bash
+abx deploy
+```
+
+From the repository root, with `agent-sandbox-server` and `httpx` installed:
+
+```bash
+python3 scripts/run_local_e2e.py
+```
+
+That starts `python3 commands.py` in this directory and runs `e2e_test.py`.
+

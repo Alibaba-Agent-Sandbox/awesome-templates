@@ -27,13 +27,13 @@ This template comes preinstalled with the following tools and dependencies:
 **Install from a local path:**
 
 ```bash
-ebx install ./examples/templates/codex --registry-type local
+abx template install ./codex --registry-type local
 ```
 
 **Install from GitHub:**
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//codex
+abx template install alibaba-agent-sandbox/awesome-templates//codex
 ```
 
 ### Usage
@@ -41,21 +41,21 @@ ebx install Easy-Sandbox/awesome-templates//codex
 Create a sandbox instance and pass in the API key:
 
 ```bash
-ebx create --template codex --env OPENAI_API_KEY=sk-xxx
+abx create --template codex --env OPENAI_API_KEY=sk-xxx
 ```
 
 Run a code-generation task inside the sandbox:
 
 ```bash
-ebx exec <sandbox-id> -- codex "Write a quicksort algorithm"
+abx exec <sandbox-id> -- codex "Write a quicksort algorithm"
 ```
 
 Using the Python SDK:
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(
+sandbox = Sandbox.create_sync(
     template="codex",
     env={"OPENAI_API_KEY": "sk-xxx"}
 )
@@ -79,8 +79,8 @@ print(result.stdout)
 To install extra dependencies on top of this template, run the following after the sandbox is created:
 
 ```bash
-ebx exec <sandbox-id> -- pip install <package-name>
-ebx exec <sandbox-id> -- npm install -g <package-name>
+abx exec <sandbox-id> -- pip install <package-name>
+abx exec <sandbox-id> -- npm install -g <package-name>
 ```
 
 ### Notes
@@ -115,13 +115,13 @@ OpenAI Codex CLI Agent 的沙箱运行环境，支持 AI 驱动的代码生成�
 **从本地安装：**
 
 ```bash
-ebx install ./examples/templates/codex --registry-type local
+abx template install ./codex --registry-type local
 ```
 
 **从 GitHub 安装：**
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//codex
+abx template install alibaba-agent-sandbox/awesome-templates//codex
 ```
 
 ### 使用示例
@@ -129,21 +129,21 @@ ebx install Easy-Sandbox/awesome-templates//codex
 创建沙箱实例并传入 API Key：
 
 ```bash
-ebx create --template codex --env OPENAI_API_KEY=sk-xxx
+abx create --template codex --env OPENAI_API_KEY=sk-xxx
 ```
 
 在沙箱中执行代码生成任务：
 
 ```bash
-ebx exec <sandbox-id> -- codex "编写一个快速排序算法"
+abx exec <sandbox-id> -- codex "编写一个快速排序算法"
 ```
 
 使用 Python SDK：
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(
+sandbox = Sandbox.create_sync(
     template="codex",
     env={"OPENAI_API_KEY": "sk-xxx"}
 )
@@ -167,8 +167,8 @@ print(result.stdout)
 如需在模板基础上安装额外依赖，可在创建沙箱后执行：
 
 ```bash
-ebx exec <sandbox-id> -- pip install <package-name>
-ebx exec <sandbox-id> -- npm install -g <package-name>
+abx exec <sandbox-id> -- pip install <package-name>
+abx exec <sandbox-id> -- npm install -g <package-name>
 ```
 
 ### 注意事项
@@ -177,3 +177,26 @@ ebx exec <sandbox-id> -- npm install -g <package-name>
 - **网络访问**：Codex Agent 需要访问 OpenAI API，确保沙箱具备外网连接能力。
 - **资源消耗**：AI 代码生成任务可能消耗较多内存，建议保持 4096 MB 以上的内存配置。
 - **虚拟环境**：Python 包安装在 `/opt/venv` 中，使用时无需手动激活，`PATH` 已自动配置。
+
+## Deploy and local e2e
+
+Install and register this template:
+
+```bash
+abx template install alibaba-agent-sandbox/awesome-templates//codex
+```
+
+From this directory (build, push, and register):
+
+```bash
+abx deploy
+```
+
+From the repository root, with `agent-sandbox-server` and `httpx` installed:
+
+```bash
+python3 scripts/run_local_e2e.py
+```
+
+That starts `python3 commands.py` in this directory and runs `e2e_test.py`.
+

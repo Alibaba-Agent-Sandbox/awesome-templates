@@ -18,21 +18,19 @@ import json
 import time
 from typing import Any
 
-from easy_sandbox.server import (
+from agent_sandbox.server import (
     CapabilityGroup,
-    CommandRegistry,
-    SandboxServer,
+    command,
     default_table,
+    start,
 )
 
 # ---------------------------------------------------------------------------
-# Route table — enable capability groups
+# Opt-in capability group
 # ---------------------------------------------------------------------------
 
 table = default_table()
-table.enable_group(CapabilityGroup.BROWSER)    # 8 built-in browser endpoints
-table.enable_group(CapabilityGroup.FILE_OPS)   # upload / download + file ops
-table.enable_group(CapabilityGroup.PROCESS)    # shell + process management
+table.enable_group(CapabilityGroup.BROWSER)    # opt-in: 8 built-in browser endpoints
 
 # ---------------------------------------------------------------------------
 # Module-level Playwright singleton (lazy-initialised)
@@ -64,13 +62,10 @@ def _ensure_browser() -> Any:
 
 
 # ---------------------------------------------------------------------------
-# Command registry — high-level business commands
+# Named commands — high-level business commands
 # ---------------------------------------------------------------------------
 
-registry = CommandRegistry()
-
-
-@registry.command(
+@command(
     "browse",
     description=(
         "Smart browse — navigate to a URL and perform an action. "
@@ -123,7 +118,7 @@ def browse(url: str, action: str = "screenshot") -> dict[str, Any]:
     raise ValueError(f"Unknown action: {action!r}. Expected: screenshot, extract, links, full")
 
 
-@registry.command(
+@command(
     "scrape",
     description="Scrape — navigate to a URL and extract text from a CSS selector.",
 )
@@ -150,7 +145,7 @@ def scrape(url: str, selector: str) -> dict[str, Any]:
     }
 
 
-@registry.command(
+@command(
     "fill_form",
     description=(
         "Auto-fill a form — navigate to a URL and fill fields. "
@@ -189,7 +184,7 @@ def fill_form(url: str, fields_json: str) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-@registry.command(hidden=True)
+@command(hidden=True)
 def _browser_status() -> dict[str, Any]:
     """Return the current browser singleton status (not listed in /commands)."""
     running = _browser is not None and _browser.is_connected()
@@ -214,11 +209,30 @@ def _browser_status() -> dict[str, Any]:
 # Freeze & serve
 # ---------------------------------------------------------------------------
 
-registry.freeze()
+
+def _run(argv: list[str], *, timeout: int, cwd: str = "/app") -> str:
+    """Run *argv* in ``/app`` when that directory exists and return stdout."""
+    import os
+    import subprocess
+
+    workdir = cwd if os.path.isdir(cwd) else (os.environ.get("WORKSPACE") or os.getcwd())
+    result = subprocess.run(
+        argv, cwd=workdir, capture_output=True, text=True, timeout=timeout,
+    )
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or "").strip()
+        raise RuntimeError(detail or f"command exited {result.returncode}")
+    return result.stdout
+
+
+
+@command("run", description="Run a browser automation script.")
+def run(script: str = "main.py") -> str:
+    """Run a Python script (``python3 {script}``)."""
+    return _run(["python3", script], timeout=120)
+
 
 if __name__ == "__main__":
     import os
 
-    _port = int(os.environ.get("EBX_SERVER_PORT", "9000"))
-    server = SandboxServer(registry=registry)
-    server.serve(port=_port)
+    start(int(os.environ.get("ABX_SERVER_PORT", "9000")))

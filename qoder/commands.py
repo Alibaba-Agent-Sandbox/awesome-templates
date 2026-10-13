@@ -1,48 +1,32 @@
 """qoder — Qoder AI 编程助手沙箱命令。"""
 from __future__ import annotations
 
-from easy_sandbox.server import (
-    CapabilityGroup,
-    CommandRegistry,
-    SandboxServer,
-    default_table,
-)
-
-# ---------------------------------------------------------------------------
-# Route table — enable capability groups
-# ---------------------------------------------------------------------------
-
-table = default_table()
-table.enable_group(CapabilityGroup.FILE_OPS)   # upload/download + file operations
-table.enable_group(CapabilityGroup.PROCESS)    # shell + process management
-table.enable_group(CapabilityGroup.TERMINAL)   # PTY — declared in template.yaml
-
-# ---------------------------------------------------------------------------
-# Command registry
-# ---------------------------------------------------------------------------
-
-registry = CommandRegistry()
+from agent_sandbox.server import command, start
 
 
-@registry.command("qoder_run", description="Run a Python script in the Qoder environment.")
+@command("qoder_run", description="Run a Python script in the Qoder environment.")
 def qoder_run(script: str = "main.py") -> str:
-    """Run a Python script in the Qoder environment."""
+    """Run a Python script (``python3 {script}``)."""
+    return _run(["python3", script], timeout=120)
+
+
+
+def _run(argv: list[str], *, timeout: int, cwd: str = "/app") -> str:
+    """Run *argv* in ``/app`` when that directory exists and return stdout."""
+    import os
     import subprocess
 
+    workdir = cwd if os.path.isdir(cwd) else (os.environ.get("WORKSPACE") or os.getcwd())
     result = subprocess.run(
-        ["python", script],
-        capture_output=True, text=True, timeout=120,
+        argv, cwd=workdir, capture_output=True, text=True, timeout=timeout,
     )
     if result.returncode != 0:
-        raise RuntimeError(result.stderr)
+        detail = (result.stderr or result.stdout or "").strip()
+        raise RuntimeError(detail or f"command exited {result.returncode}")
     return result.stdout
 
-
-registry.freeze()
 
 if __name__ == "__main__":
     import os
 
-    _port = int(os.environ.get("EBX_SERVER_PORT", "9000"))
-    server = SandboxServer(registry=registry)
-    server.serve(port=_port)
+    start(int(os.environ.get("ABX_SERVER_PORT", "9000")))

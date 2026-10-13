@@ -144,7 +144,7 @@ def group_routes(client: httpx.Client) -> None:
 def detect_workspace(client: httpx.Client) -> str:
     """Find a writable directory accepted by the server's path guard.
 
-    The server restricts file operations to ``EBX_SERVER_BASE_DIR``
+    The server restricts file operations to ``ABX_SERVER_BASE_DIR``
     (default ``/home/user``); Docker templates typically use ``/workspace``.
     An explicit ``E2E_WORKSPACE`` always wins.
     """

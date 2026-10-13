@@ -6,7 +6,7 @@
 
 ## English
 
-Sandbox runtime for the Qwen coding agent — supports qwen-code-driven autonomous deployment and provides a Python 3.11 + Node.js 22 AI coding foundation.
+Sandbox runtime for the Qwen coding agent — supports qwen-code-driven autonomous deployment and provides a Python 3.12 + Node.js 22 AI coding foundation.
 
 ### Environment
 
@@ -15,7 +15,7 @@ This template comes preinstalled with the following tools and dependencies:
 | Category | Details |
 |----------|---------|
 | **Base image** | python:3.12-slim |
-| **Python** | Python 3.11 + venv (at `/opt/venv`) |
+| **Python** | Python 3.12 + venv (at `/opt/venv`) |
 | **Node.js** | Node.js 22.x + npm |
 | **Python packages** | `dashscope`, `openai>=1.0`, `httpx`, `rich` |
 | **Node.js packages** | `@qwen-code/qwen-code@0.23.0` |
@@ -27,13 +27,13 @@ This template comes preinstalled with the following tools and dependencies:
 **Install from a local path:**
 
 ```bash
-ebx install ./examples/templates/qwen-code --registry-type local
+abx template install ./qwen-code --registry-type local
 ```
 
 **Install from GitHub:**
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//qwen-code
+abx template install alibaba-agent-sandbox/awesome-templates//qwen-code
 ```
 
 ### Usage
@@ -41,13 +41,13 @@ ebx install Easy-Sandbox/awesome-templates//qwen-code
 Create a sandbox instance and pass in the API key:
 
 ```bash
-ebx create --template qwen-code --env DASHSCOPE_API_KEY=sk-xxx
+abx create --template qwen-code --env DASHSCOPE_API_KEY=sk-xxx
 ```
 
 Call a Qwen model inside the sandbox via the DashScope SDK:
 
 ```bash
-ebx exec <sandbox-id> -- python3 -c "
+abx exec <sandbox-id> -- python3 -c "
 import dashscope
 from dashscope import Generation
 response = Generation.call(model='qwen-turbo', prompt='Write a quicksort algorithm')
@@ -58,7 +58,7 @@ print(response.output.text)
 The OpenAI-compatible interface is also supported:
 
 ```bash
-ebx exec <sandbox-id> -- python3 -c "
+abx exec <sandbox-id> -- python3 -c "
 from openai import OpenAI
 client = OpenAI(
     api_key='your-dashscope-key',
@@ -75,9 +75,9 @@ print(response.choices[0].message.content)
 Using the Python SDK:
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(
+sandbox = Sandbox.create_sync(
     template="qwen-code",
     env={"DASHSCOPE_API_KEY": "sk-xxx"}
 )
@@ -101,20 +101,20 @@ This template already ships with the qwen-code CLI, ready to use:
 
 ```bash
 # Use qwen-code for NL-based deployment
-ebx deploy ./my-project "Deploy this FastAPI project"
+abx run <sandbox-id> qwen --prompt "Deploy this FastAPI project"
 
 # Or use the qwen command directly inside the sandbox
-ebx exec <sandbox-id> -- qwen -p "Analyze the project and deploy it" --yolo
+abx exec <sandbox-id> -- qwen -p "Analyze the project and deploy it" --yolo
 ```
 
 To install additional tools:
 
 ```bash
 # Install extra Python packages
-ebx exec <sandbox-id> -- pip install <agent-package>
+abx exec <sandbox-id> -- pip install <agent-package>
 
 # Install extra Node.js tools
-ebx exec <sandbox-id> -- npm install -g <agent-tool>
+abx exec <sandbox-id> -- npm install -g <agent-tool>
 ```
 
 ### Notes
@@ -128,7 +128,7 @@ ebx exec <sandbox-id> -- npm install -g <agent-tool>
 
 ## 中文
 
-通义千问（Qwen）编码 Agent 的沙箱运行环境，支持 qwen-code 驱动的 AI 自主部署，提供 Python 3.11 + Node.js 22 的 AI 编程基础环境。
+通义千问（Qwen）编码 Agent 的沙箱运行环境，支持 qwen-code 驱动的 AI 自主部署，提供 Python 3.12 + Node.js 22 的 AI 编程基础环境。
 
 ### 环境说明
 
@@ -137,7 +137,7 @@ ebx exec <sandbox-id> -- npm install -g <agent-tool>
 | 类别 | 内容 |
 |------|------|
 | **基础镜像** | python:3.12-slim |
-| **Python** | Python 3.11 + venv 虚拟环境（位于 `/opt/venv`） |
+| **Python** | Python 3.12 + venv 虚拟环境（位于 `/opt/venv`） |
 | **Node.js** | Node.js 22.x + npm |
 | **Python 包** | `dashscope`、`openai>=1.0`、`httpx`、`rich` |
 | **Node.js 包** | `@qwen-code/qwen-code@0.23.0` |
@@ -149,13 +149,13 @@ ebx exec <sandbox-id> -- npm install -g <agent-tool>
 **从本地安装：**
 
 ```bash
-ebx install ./examples/templates/qwen-code --registry-type local
+abx template install ./qwen-code --registry-type local
 ```
 
 **从 GitHub 安装：**
 
 ```bash
-ebx install Easy-Sandbox/awesome-templates//qwen-code
+abx template install alibaba-agent-sandbox/awesome-templates//qwen-code
 ```
 
 ### 使用示例
@@ -163,13 +163,13 @@ ebx install Easy-Sandbox/awesome-templates//qwen-code
 创建沙箱实例并传入 API Key：
 
 ```bash
-ebx create --template qwen-code --env DASHSCOPE_API_KEY=sk-xxx
+abx create --template qwen-code --env DASHSCOPE_API_KEY=sk-xxx
 ```
 
 在沙箱中通过 DashScope SDK 调用 Qwen 模型：
 
 ```bash
-ebx exec <sandbox-id> -- python3 -c "
+abx exec <sandbox-id> -- python3 -c "
 import dashscope
 from dashscope import Generation
 response = Generation.call(model='qwen-turbo', prompt='编写一个快速排序算法')
@@ -180,7 +180,7 @@ print(response.output.text)
 也支持使用 OpenAI 兼容接口：
 
 ```bash
-ebx exec <sandbox-id> -- python3 -c "
+abx exec <sandbox-id> -- python3 -c "
 from openai import OpenAI
 client = OpenAI(
     api_key='your-dashscope-key',
@@ -197,9 +197,9 @@ print(response.choices[0].message.content)
 使用 Python SDK：
 
 ```python
-from easy_sandbox import Sandbox
+from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create(
+sandbox = Sandbox.create_sync(
     template="qwen-code",
     env={"DASHSCOPE_API_KEY": "sk-xxx"}
 )
@@ -223,20 +223,20 @@ print(result.stdout)
 
 ```bash
 # 使用 qwen-code 进行 NL 部署
-ebx deploy ./my-project "部署这个 FastAPI 项目"
+abx run <sandbox-id> qwen --prompt "部署这个 FastAPI 项目"
 
 # 或在沙箱内直接使用 qwen 命令
-ebx exec <sandbox-id> -- qwen -p "分析项目并部署" --yolo
+abx exec <sandbox-id> -- qwen -p "分析项目并部署" --yolo
 ```
 
 如需安装额外工具：
 
 ```bash
 # 安装额外 Python 包
-ebx exec <sandbox-id> -- pip install <agent-package>
+abx exec <sandbox-id> -- pip install <agent-package>
 
 # 安装额外 Node.js 工具
-ebx exec <sandbox-id> -- npm install -g <agent-tool>
+abx exec <sandbox-id> -- npm install -g <agent-tool>
 ```
 
 ### 注意事项
@@ -245,3 +245,26 @@ ebx exec <sandbox-id> -- npm install -g <agent-tool>
 - **网络访问**：需要访问 DashScope API（`dashscope.aliyuncs.com`），确保沙箱具备外网连接能力。
 - **兼容接口**：DashScope 提供 OpenAI 兼容模式，可通过 `openai` 库直接调用 Qwen 模型。
 - **虚拟环境**：Python 包安装在 `/opt/venv` 中，使用时无需手动激活，`PATH` 已自动配置。
+
+## Deploy and local e2e
+
+Install and register this template:
+
+```bash
+abx template install alibaba-agent-sandbox/awesome-templates//qwen-code
+```
+
+From this directory (build, push, and register):
+
+```bash
+abx deploy
+```
+
+From the repository root, with `agent-sandbox-server` and `httpx` installed:
+
+```bash
+python3 scripts/run_local_e2e.py
+```
+
+That starts `python3 commands.py` in this directory and runs `e2e_test.py`.
+

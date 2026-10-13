@@ -1,7 +1,7 @@
 name: agents-cli
 version: "1.0.0"
 description: "Agents API for Codex and Qwen Code. The image does not preinstall either CLI."
-author: "Easy-Sandbox"
+author: "alibaba-agent-sandbox"
 tags:
   - agents-api
   - codex
@@ -18,8 +18,25 @@ capabilities:
 ports:
   - 9000
 
-env:
-  EBX_SERVER_ENABLED_GROUPS: "agents"
+# Endpoint rules are the only switch. `"*"` closes every endpoint (shell, files, and
+# the rest of the Agents API) and the exact rules below open the six routes this
+# template serves. An exact endpoint rule also opens an endpoint of an opt-in group.
+server:
+  endpoints:
+    "*":
+      enabled: false
+    agents_sessions_create:
+      enabled: true
+    agents_sessions_get:
+      enabled: true
+    agents_sessions_list:
+      enabled: true
+    agents_sessions_events_create:
+      enabled: true
+    agents_sessions_items_list:
+      enabled: true
+    agents_runtimes_list:
+      enabled: true
 
 resources:
   cpu: 1
