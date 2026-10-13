@@ -10,12 +10,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Checkout the Python SDK
+        uses: actions/checkout@v4
+        with:
+          repository: Easy-Sandbox/python-sdk
+          path: vendor/python-sdk
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Install the in-sandbox server and the test client
-        run: python -m pip install --upgrade pip && python -m pip install easy-sandbox-server httpx
+        run: python -m pip install --upgrade pip && python -m pip install ./vendor/python-sdk/server-sdk httpx
 
       - name: Run template e2e against locally started servers
         run: python3 scripts/run_local_e2e.py

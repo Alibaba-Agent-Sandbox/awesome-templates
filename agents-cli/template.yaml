@@ -1,0 +1,26 @@
+name: agents-cli
+version: "1.0.0"
+description: "Agents API for Codex and Qwen Code. The image does not preinstall either CLI."
+author: "Easy-Sandbox"
+tags:
+  - agents-api
+  - codex
+  - qwen-code
+  - self-hosted
+
+base: python:3.12-slim
+
+capabilities:
+  - shell
+  - files
+  - ports
+
+ports:
+  - 9000
+
+env:
+  EBX_SERVER_ENABLED_GROUPS: "agents"
+
+resources:
+  cpu: 1
+  memory: 1024

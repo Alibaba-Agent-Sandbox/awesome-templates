@@ -22,6 +22,7 @@ and install `easy-sandbox-server`, the in-sandbox runtime imported as
 | [codex-agent-api](./codex-agent-api/) | Self-hosted OpenAI Agents API compatible service powered by Codex CLI | shell, files, code, ports | `ebx template install Easy-Sandbox/awesome-templates//codex-agent-api` |
 | [qoder](./qoder/) | Qoder AI coding assistant with Python + Node.js | shell, files, code, terminal, ports | `ebx template install Easy-Sandbox/awesome-templates//qoder` |
 | [qwen-code](./qwen-code/) | Qwen Code — Dashscope-powered deployment agent | shell, files, code, ports | `ebx template install Easy-Sandbox/awesome-templates//qwen-code` |
+| [agents-cli](./agents-cli/) | Agents API for Codex and Qwen Code. Neither CLI is preinstalled | shell, files, ports | `ebx template install Easy-Sandbox/awesome-templates//agents-cli` |
 | [deepseek-harness](./deepseek-harness/) | DeepSeek model-driven AI coding agent | shell, files, code, ports | `ebx template install Easy-Sandbox/awesome-templates//deepseek-harness` |
 | [hermes-agent](./hermes-agent/) | NousResearch Hermes agent with tool calling | shell, files, code, ports | `ebx template install Easy-Sandbox/awesome-templates//hermes-agent` |
 | [node-web](./node-web/) | Node.js web runtime for Express / Fastify | shell, files, ports | `ebx template install Easy-Sandbox/awesome-templates//node-web` |
