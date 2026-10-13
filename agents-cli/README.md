@@ -75,7 +75,7 @@ E2E_RUN_LLM=0 EBX_SERVER_PORT=9000 python3 commands.py
 E2E_BASE_URL=http://127.0.0.1:9000 python3 e2e_test.py
 ```
 
-测试会检查：健康检查、未指定适配器时 400、`claude-code` 为 404、假 `codex` 与假 `qwen` 各完成一轮并带回文本。
+测试会检查：健康检查、未指定适配器时会话的 `agent.id` 是 `codex`、`claude-code` 为 404、假 `codex` 与假 `qwen` 各完成一轮并带回文本。
 
 ## English
 

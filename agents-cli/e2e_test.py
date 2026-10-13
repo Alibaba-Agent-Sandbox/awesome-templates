@@ -106,7 +106,11 @@ def main() -> int:
     expect("GET /health", status, 200, health)
 
     status, missing, _headers = call("POST", "/v1/agents/sessions", {"agent": {"model": "gpt-5"}})
-    expect("adapter required", status, 400, missing)
+    expect("omitted adapter uses the first runtime", status, 200, missing)
+    agent = missing.get("agent") if isinstance(missing, dict) else None
+    if not isinstance(agent, dict) or agent.get("id") != "codex" or agent.get("model") != "gpt-5":
+        print(missing)
+        raise SystemExit(1)
 
     status, refused, _headers = call(
         "POST",
