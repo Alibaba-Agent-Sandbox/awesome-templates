@@ -26,10 +26,7 @@ catalog `abx template search` and `abx template install <name>` read.
 | [hermes-agent](./hermes-agent/) | Hermes Agent runtime — NousResearch Hermes model-driven AI agent with tool calling |
 | [node-web](./node-web/) | Node.js web service runtime for Express, Fastify and other frameworks |
 | [openclaw](./openclaw/) | OpenClaw AI Agent runtime — open-source AI coding agent gateway |
-| [base](./base/) | Platform id on Express and E2B. Not a Dockerfile. |
-| [code-interpreter-v1](./code-interpreter-v1/) | Platform id on Express and E2B. Not the OpenSandbox image. |
-| [desktop](./desktop/) | E2B public desktop template. Other providers do not ship this id. |
-| [opensandbox-code-interpreter](./opensandbox-code-interpreter/) | Image `opensandbox/code-interpreter`. |
+OpenSandbox's public sandbox images (code-interpreter, code-interpreter-base, desktop, playwright, vscode) are resolved by the SDK. This catalog does not vendor those Dockerfiles.
 
 `abx template install` builds the twelve Dockerfile templates on
 `alicloud-express` only. The CLI does not load the other providers.

@@ -1,9 +1,0 @@
-name: code-interpreter-v1
-version: "1.0.0"
-description: "Public code-interpreter template on Express and E2B. Not the OpenSandbox image."
-author: "alibaba-agent-sandbox"
-tags:
-  - platform
-capabilities:
-  - shell
-  - files
