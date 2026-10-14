@@ -1,9 +1,0 @@
-name: base
-version: "1.0.0"
-description: "Platform base template. Create it by name on Express and E2B. This directory is not a buildable image."
-author: "alibaba-agent-sandbox"
-tags:
-  - platform
-capabilities:
-  - shell
-  - files
