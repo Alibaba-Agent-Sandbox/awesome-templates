@@ -80,7 +80,8 @@ process. Every template must exit 0. The same script is
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md). A template is one directory plus one
-entry in `awesome-templates.yaml`.
+entry in `awesome-templates.yaml`. The bar for adding one is
+[docs/acceptance.md](./docs/acceptance.md).
 
 ## License
 
