@@ -25,8 +25,11 @@ CLI and the `agent-sandbox` SDK.
    python3 scripts/run_local_e2e.py
    ```
 
-   All 12 templates must pass. Do not commit `__pycache__/`, secrets, or
-   API keys. Declare key *names* with empty values in `template.yaml` `env`.
+   Every template that has `commands.py` must pass. A model call is skipped
+   when its key is absent. That skip is not acceptance of the agent. See
+   [docs/acceptance.md](./docs/acceptance.md). Do not commit `__pycache__/`,
+   secrets, or API keys. Declare key *names* with empty values in
+   `template.yaml` `env`.
 
 ## Template anatomy
 
