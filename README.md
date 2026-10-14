@@ -26,6 +26,21 @@ catalog `abx template search` and `abx template install <name>` read.
 | [hermes-agent](./hermes-agent/) | Hermes Agent runtime — NousResearch Hermes model-driven AI agent with tool calling |
 | [node-web](./node-web/) | Node.js web service runtime for Express, Fastify and other frameworks |
 | [openclaw](./openclaw/) | OpenClaw AI Agent runtime — open-source AI coding agent gateway |
+| [base](./base/) | Platform id on Express and E2B. Not a Dockerfile. |
+| [code-interpreter-v1](./code-interpreter-v1/) | Platform id on Express and E2B. Not the OpenSandbox image. |
+| [desktop](./desktop/) | E2B public desktop template. Other providers do not ship this id. |
+| [opensandbox-code-interpreter](./opensandbox-code-interpreter/) | Image `opensandbox/code-interpreter`. |
+
+`abx template install` builds the twelve Dockerfile templates on
+`alicloud-express` only. The CLI does not load the other providers.
+`base` and `code-interpreter-v1` are CLI builtins, so a bare install does
+not use the directories in this repo. OpenSandbox create takes an image
+URI and replaces the container entrypoint, so these Dockerfiles do not
+start there until the image is pushed and the server is started by hand.
+
+The static registry page is [registry/index.html](./registry/index.html).
+It is the page intended for `registry.agent-sandbox.cn`; that DNS name is
+not wired up here.
 
 ## Deploy
 

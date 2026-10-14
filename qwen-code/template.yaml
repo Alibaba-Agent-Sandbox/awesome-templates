@@ -39,12 +39,12 @@ capabilities:
   - ports
 
 ports:
-  - 8080
   - 9000
 
 
 env:
   DASHSCOPE_API_KEY: ""
+  OPENAI_API_KEY: ""
   WORKSPACE: "/app"
   OPENAI_BASE_URL: "https://dashscope.aliyuncs.com/compatible-mode/v1"
   OPENAI_MODEL: "qwen3-coder-plus"
