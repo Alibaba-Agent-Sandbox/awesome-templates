@@ -1,0 +1,27 @@
+name: Notify registry
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ask the registry to pull this commit
+        env:
+          GH_TOKEN: ${{ secrets.REGISTRY_DISPATCH_TOKEN }}
+          SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "REGISTRY_DISPATCH_TOKEN is unset. The registry daily sync will fetch main."
+            exit 0
+          fi
+          gh api repos/Alibaba-Agent-Sandbox/registry/dispatches \
+            -f event_type=catalog-updated \
+            -f client_payload[repo]="$REPO" \
+            -f client_payload[sha]="$SHA"
