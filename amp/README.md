@@ -75,25 +75,14 @@ python3 e2e_test.py
 
 `E2E_BASE_URL` 默认是 `http://127.0.0.1:9000`。脚本只用 `httpx`，会检查 `GET /health`、`GET /commands` 是否包含 `amp`，以及不带 `prompt` 的 `POST /commands/amp` 是否为客户端错误。
 
-`E2E_RUN_LLM=0` 或环境里没有 `AMP_API_KEY` 时，LLM 调用记为 `SKIP`。只有某项检查是 `FAIL` 时进程才以非 0 退出；全部通过或跳过时退出码为 0。
+`E2E_RUN_LLM=0` 时，LLM 调用记为 `SKIP`。根目录的本地 e2e 会强制这个值，退出码 0 只说明 server 契约过了。
 
-要真正调用 Amp：
+带密钥的验收要设置 `E2E_REQUIRE_LLM=1`。密钥为空、输出里没有 `ABX_E2E_OK`，或同时又设置了 `E2E_RUN_LLM=0`，记为 `FAIL`，退出码为 1。密钥必须同时出现在跑测试的环境里，以及正在跑 `commands.py` 的进程里。
 
 ```bash
-AMP_API_KEY=REPLACE_ME python3 e2e_test.py
+AMP_API_KEY=REPLACE_ME E2E_REQUIRE_LLM=1 python3 e2e_test.py
 ```
-
-密钥必须同时出现在跑测试的环境里，以及正在跑 `commands.py` 的进程里。
 
 ## E2B
 
-E2B 上模板 id 是 amp，创建沙箱时只用 `ABX_E2B_API_KEY`。Amp CLI 的密钥仍是 `AMP_API_KEY`，在创建时注入沙箱。
-
-```python
-sandbox = await Sandbox.create(
-    provider="e2b",
-    template="amp",
-    env={"AMP_API_KEY": "REPLACE_ME"},
-)
-result = await sandbox.run("amp", prompt="用 Python 写一个返回 200 的 HTTP 服务")
-```
+E2B 上如果已经存在模板 id `amp`，创建沙箱时只用 `ABX_E2B_API_KEY`。Amp CLI 的密钥仍是 `AMP_API_KEY`，在创建时注入沙箱。E2B 没有沙箱内具名命令，`sandbox.run("amp", prompt=...)` 会得到 `E8004`。那张预置沙箱里要直接执行 CLI，用 `sandbox.commands.run`，不要调用 `sandbox.run`。`sandbox.run("amp", prompt=...)` 只用在极速版发布后的本模板上。

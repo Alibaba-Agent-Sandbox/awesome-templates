@@ -30,8 +30,10 @@ TIMEOUT = httpx.Timeout(
     pool=10.0,
 )
 LLM_TIMEOUT = float(os.environ.get("E2E_LLM_TIMEOUT", "620"))
-RUN_LLM = os.environ.get("E2E_RUN_LLM", "").strip()
+RUN_LLM = os.environ.get("E2E_RUN_LLM", "").strip().lower()
+REQUIRE = os.environ.get("E2E_REQUIRE_LLM", "").strip().lower() in {"1", "true", "yes"}
 API_KEY = os.environ.get("OPENCODE_API_KEY", "").strip()
+MARKER = "ABX_E2E_OK"
 
 RESULTS: list[tuple[str, str, str]] = []
 
@@ -99,24 +101,28 @@ def check_missing_prompt(client: httpx.Client) -> None:
 
 def check_model_call(client: httpx.Client) -> None:
     test = "POST /commands/opencode"
-    reasons: list[str] = []
-    if RUN_LLM == "0":
-        reasons.append("E2E_RUN_LLM=0")
+    forced_off = RUN_LLM in {"0", "false", "no"}
+    if REQUIRE and forced_off:
+        record("FAIL", test, "E2E_REQUIRE_LLM=1 conflicts with E2E_RUN_LLM=0")
+        return
+    if forced_off:
+        record("SKIP", test, f"E2E_RUN_LLM={RUN_LLM!r}")
+        return
     if not API_KEY:
-        reasons.append("OPENCODE_API_KEY is missing")
-    if reasons:
-        record("SKIP", test, "; ".join(reasons))
+        status = "FAIL" if REQUIRE or RUN_LLM in {"1", "true", "yes"} else "SKIP"
+        record(status, test, "OPENCODE_API_KEY is missing")
         return
     try:
         resp = client.post(
             "/commands/opencode",
-            json={"prompt": "Reply with exactly: ABX_E2E_OK"},
+            json={"prompt": f"Reply with exactly: {MARKER}"},
             timeout=LLM_TIMEOUT,
         )
         body = resp.json()
         result = body.get("result")
-        ok = resp.status_code == 200 and isinstance(result, str) and bool(result.strip())
-        detail = f"HTTP {resp.status_code}, {len(result) if isinstance(result, str) else 0} chars"
+        found = isinstance(result, str) and MARKER in result
+        ok = resp.status_code == 200 and found
+        detail = f"HTTP {resp.status_code}, marker={found}"
         if not ok:
             detail += f", error={_short(body.get('error') or body)}"
         record("PASS" if ok else "FAIL", test, detail)

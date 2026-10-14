@@ -85,9 +85,9 @@ E2E_RUN_LLM=0 ABX_SERVER_PORT=9000 python3 commands.py
 E2E_BASE_URL=http://127.0.0.1:9000 E2E_RUN_LLM=0 python3 e2e_test.py
 ```
 
-`e2e_test.py` 只用 `httpx`。它检查 `GET /health`、`GET /commands` 是否列出 `opencode`，以及不带 `prompt` 的 `POST /commands/opencode` 是否返回 4xx。`E2E_RUN_LLM` 为 `0`，或环境里没有 `OPENCODE_API_KEY` 时，真实模型调用打印 SKIP。输出里有 PASS、SKIP、FAIL 行。存在 FAIL 时退出码为 1，否则为 0。
+`e2e_test.py` 只用 `httpx`。它检查 `GET /health`、`GET /commands` 是否列出 `opencode`，以及不带 `prompt` 的 `POST /commands/opencode` 是否返回 4xx。`E2E_RUN_LLM` 为 `0` 时，真实模型调用打印 SKIP。存在 FAIL 时退出码为 1。
 
-要打到真实模型，服务进程和测试进程都要能看到 `OPENCODE_API_KEY`，并且不要把 `E2E_RUN_LLM` 设为 `0`。
+带密钥的验收设置 `E2E_REQUIRE_LLM=1`。服务进程和测试进程都要能看到 `OPENCODE_API_KEY`，并且不要把 `E2E_RUN_LLM` 设为 `0`。输出里必须包含 `ABX_E2E_OK`。密钥为空、没有标记，或 `E2E_REQUIRE_LLM=1` 又设置了 `E2E_RUN_LLM=0`，都是 FAIL。
 
 ## OpenSandbox 与 E2B 上怎么用这个名字
 
