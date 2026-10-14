@@ -26,6 +26,9 @@ catalog `abx template search` and `abx template install <name>` read.
 | [hermes-agent](./hermes-agent/) | Hermes Agent runtime — NousResearch Hermes model-driven AI agent with tool calling |
 | [node-web](./node-web/) | Node.js web service runtime for Express, Fastify and other frameworks |
 | [openclaw](./openclaw/) | OpenClaw AI Agent runtime — open-source AI coding agent gateway |
+| [opencode](./opencode/) | OpenCode agent (`opencode run`). Experimental until the image build and a keyed run are recorded. |
+| [amp](./amp/) | Amp agent (`amp -x`). Experimental until the image build and a keyed run are recorded. |
+| [droid](./droid/) | Factory Droid (`droid exec`). Experimental until the image build and a keyed run are recorded. |
 OpenSandbox's public sandbox images (code-interpreter, code-interpreter-base, desktop, playwright, vscode) are resolved by the SDK. This catalog does not vendor those Dockerfiles.
 
 `abx template install` builds the twelve Dockerfile templates on

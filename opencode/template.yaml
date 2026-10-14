@@ -1,0 +1,27 @@
+name: opencode
+version: "1.0.0"
+description: "OpenCode 编程 Agent 运行环境 - 预装 opencode-ai CLI，非交互执行 opencode run"
+author: "alibaba-agent-sandbox"
+tags:
+  - opencode
+  - ai-coding
+  - ai-agent
+
+base: python:3.12-slim
+
+capabilities:
+  - shell
+  - files
+  - code
+  - ports
+
+ports:
+  - 9000
+
+env:
+  OPENCODE_API_KEY: ""
+  OPENCODE_MODEL: "opencode/big-pickle"
+
+resources:
+  cpu: 2
+  memory: 4096
