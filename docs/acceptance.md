@@ -36,7 +36,7 @@ CLI 的 `abx template install` 只在阿里云极速版上构建。其他 provid
 
 1. 本地 server。在仓库根目录执行 `python3 scripts/run_local_e2e.py`。它会启动每个带 `commands.py` 的模板，并强制 `E2E_RUN_LLM=0`。`/health`、`/commands` 和该模板的命名命令必须可被发现。没有模型密钥时，真实模型调用记为 SKIP，不能记为通过。
 2. 镜像。`docker build` 成功，并且构建日志里能看到固定版本的上游 CLI。这次构建不在当前 GitHub Actions 里，上架前要在 PR 里留下构建结果。
-3. 有密钥的真实调用。提供对应的 API 密钥后，同一份 `e2e_test.py` 把模型调用跑通，输出里能看到约定的标记。没有这条记录，不能把模板写成“已支持该 Agent”。
+3. 有密钥的真实调用。在模板目录把 `E2E_REQUIRE_LLM=1` 和对应密钥同时给服务进程和 `e2e_test.py`，并且不要设置 `E2E_RUN_LLM=0`。提示词要求模型只回复 `ABX_E2E_OK`，输出里必须包含这个标记。密钥为空、输出里没有标记，或 `E2E_REQUIRE_LLM=1` 又碰上 `E2E_RUN_LLM=0`，都记为 FAIL，进程退出码为 1。没有这条失败数为 0 的记录，不能把模板写成“已支持该 Agent”。
 
 本地验收通过，只说明 server SDK 接上了。它不代替镜像构建，也不代替云上创建沙箱。
 

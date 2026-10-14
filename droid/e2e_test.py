@@ -37,8 +37,10 @@ TIMEOUT = httpx.Timeout(
 )
 LLM_TIMEOUT = float(os.environ.get("E2E_LLM_TIMEOUT", "420"))
 RUN_LLM = os.environ.get("E2E_RUN_LLM", "").strip().lower()
+REQUIRE = os.environ.get("E2E_REQUIRE_LLM", "").strip().lower() in {"1", "true", "yes"}
 KEY_ENV = "FACTORY_API_KEY"
-LLM_PROMPT = "Reply with exactly: ABX_E2E_OK"
+MARKER = "ABX_E2E_OK"
+LLM_PROMPT = f"Reply with exactly: {MARKER}"
 
 RESULTS: list[tuple[str, str, str]] = []
 
@@ -122,16 +124,17 @@ def check_missing_prompt(client: httpx.Client) -> None:
 
 def check_llm(client: httpx.Client) -> None:
     test = f"POST /commands/{CMD}"
-    if RUN_LLM in {"0", "false", "no"}:
+    forced_off = RUN_LLM in {"0", "false", "no"}
+    has_key = bool(os.environ.get(KEY_ENV, "").strip())
+    if REQUIRE and forced_off:
+        record("FAIL", test, "E2E_REQUIRE_LLM=1 conflicts with E2E_RUN_LLM=0")
+        return
+    if forced_off:
         record("SKIP", test, f"E2E_RUN_LLM={RUN_LLM!r} — forced skip")
         return
-    if RUN_LLM not in {"1", "true", "yes"} and not os.environ.get(KEY_ENV, "").strip():
-        record(
-            "SKIP",
-            test,
-            f"no {KEY_ENV} on the host; set it or E2E_RUN_LLM=1 to force "
-            "(the key must also be present inside the sandbox)",
-        )
+    if not has_key:
+        status = "FAIL" if REQUIRE or RUN_LLM in {"1", "true", "yes"} else "SKIP"
+        record(status, test, f"{KEY_ENV} is missing")
         return
 
     try:
@@ -142,8 +145,9 @@ def check_llm(client: httpx.Client) -> None:
         )
         body = resp.json()
         result = body.get("result")
-        ok = resp.status_code == 200 and isinstance(result, str) and bool(result.strip())
-        detail = f"HTTP {resp.status_code}, {len(result) if isinstance(result, str) else 0} chars"
+        found = isinstance(result, str) and MARKER in result
+        ok = resp.status_code == 200 and found
+        detail = f"HTTP {resp.status_code}, marker={found}"
         if not ok:
             detail += f", error={_short(body.get('error') or body, 140)}"
         record("PASS" if ok else "FAIL", test, detail)

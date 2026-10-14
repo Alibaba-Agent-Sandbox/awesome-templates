@@ -29,9 +29,10 @@ catalog `abx template search` and `abx template install <name>` read.
 | [opencode](./opencode/) | OpenCode agent (`opencode run`). Experimental until the image build and a keyed run are recorded. |
 | [amp](./amp/) | Amp agent (`amp -x`). Experimental until the image build and a keyed run are recorded. |
 | [droid](./droid/) | Factory Droid (`droid exec`). Experimental until the image build and a keyed run are recorded. |
+| [gemini](./gemini/) | Gemini CLI (`gemini -p`). Experimental until a keyed run records the marker. |
 OpenSandbox's public sandbox images (code-interpreter, code-interpreter-base, desktop, playwright, vscode) are resolved by the SDK. This catalog does not vendor those Dockerfiles.
 
-`abx template install` builds the twelve Dockerfile templates on
+`abx template install` builds these Dockerfile templates on
 `alicloud-express` only. The CLI does not load the other providers.
 `base` and `code-interpreter-v1` are CLI builtins, so a bare install does
 not use the directories in this repo. OpenSandbox create takes an image
@@ -75,9 +76,11 @@ installed:
 python3 scripts/run_local_e2e.py
 ```
 
-It starts `python3 commands.py` for each of the 12 templates on an ephemeral
-port, sets `E2E_BASE_URL`, runs that directory's `e2e_test.py`, and stops the
-process. Every template must exit 0. The same script is
+It starts `python3 commands.py` for every template directory that has
+`commands.py` and `e2e_test.py`, on an ephemeral port, sets `E2E_BASE_URL`,
+runs that directory's `e2e_test.py`, and stops the process. Every template
+must exit 0. `E2E_RUN_LLM=0` makes the model call a SKIP. That skip is not
+acceptance of the agent. The same script is
 [`.github/workflows/e2e.yml`](./.github/workflows/e2e.yml).
 
 ## Contributing

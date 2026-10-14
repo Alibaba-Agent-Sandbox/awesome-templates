@@ -74,7 +74,7 @@ Omarchy 是一套 Arch Linux 桌面配置（Hyprland 会话），安装对象是
 
 这些是已经有非交互命令的编码 CLI，形态和现在的 `claude` / `codex` / `qwen` 相同：一个二进制、一段提示词、进程退出。做的时候仍要钉安装版本、写 `@command`、用密钥跑通 e2e。下面不写安装命令。
 
-- Gemini CLI：命令 `gemini -p "<prompt>"`（包 `@google/gemini-cli`，密钥 `GEMINI_API_KEY`）。非交互把提示词交给一个进程并退出，和 `claude -p` 同一类。
+- Gemini CLI：目录 `gemini/` 已经按 experimental 接上 `@google/gemini-cli@0.64.0`，命令是 `gemini -p <prompt> --yolo --model <model>`，密钥 `GEMINI_API_KEY`。还缺带密钥且输出含 `ABX_E2E_OK` 的记录，所以不能标 official。
 - Kimi CLI：命令 `kimi -p "<prompt>"`（包 `@moonshot-ai/kimi-code`）。`-p` 不进 TUI，脚本场景再用 `kimi --print -p "<prompt>"` 自动批准工具调用。
 - Aider：命令 `aider --yes --message "<prompt>"`（PyPI 包 `aider-chat`）。它直接改当前 git 仓库并退出，适合收成一个带 `prompt` 的命名命令。
 - OpenHands：命令 `openhands --headless -t "<task>"`。headless 必带 `-t` 或 `-f`，并且会自动批准动作，适合收成一个带任务文本的命名命令。

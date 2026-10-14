@@ -62,6 +62,8 @@ TIMEOUT = httpx.Timeout(
 LLM_TIMEOUT = float(os.environ.get("E2E_LLM_TIMEOUT", "420"))
 MODEL = os.environ.get("E2E_MODEL", "")
 RUN_LLM = os.environ.get("E2E_RUN_LLM", "").strip().lower()
+REQUIRE = os.environ.get("E2E_REQUIRE_LLM", "").strip().lower() in {"1", "true", "yes"}
+MARKER = "ABX_E2E_OK"
 
 # ── Template contract (see commands.py / template.yaml) ────────────────
 CMD = "codex"
@@ -430,13 +432,17 @@ def group_shell_process(client: httpx.Client) -> None:
 def group_command(client: httpx.Client) -> None:
     test = f"POST /commands/{CMD}"
 
-    if RUN_LLM in {"0", "false", "no"}:
+    forced_off = RUN_LLM in {"0", "false", "no"}
+    has_key = any(os.environ.get(k, "").strip() for k in KEY_ENVS)
+    if REQUIRE and forced_off:
+        record("FAIL", test, "E2E_REQUIRE_LLM=1 conflicts with E2E_RUN_LLM=0")
+        return
+    if forced_off:
         record("SKIP", test, f"E2E_RUN_LLM={RUN_LLM!r} — forced skip")
         return
-    if RUN_LLM not in {"1", "true", "yes"} and not any(os.environ.get(k) for k in KEY_ENVS):
-        record("SKIP", test,
-               f"no {'/'.join(KEY_ENVS)} on the host; set one or E2E_RUN_LLM=1 "
-               f"to force — the key must also be present inside the sandbox")
+    if not has_key:
+        status = "FAIL" if REQUIRE or RUN_LLM in {"1", "true", "yes"} else "SKIP"
+        record(status, test, f"missing {'/'.join(KEY_ENVS)}")
         return
 
     payload: dict[str, Any] = {"prompt": LLM_PROMPT}
@@ -446,8 +452,9 @@ def group_command(client: httpx.Client) -> None:
         resp = client.post(f"/commands/{CMD}", json=payload, timeout=LLM_TIMEOUT)
         body = resp.json()
         result = body.get("result")
-        ok = resp.status_code == 200 and isinstance(result, str) and bool(result.strip())
-        detail = f"HTTP {resp.status_code}, {len(result) if isinstance(result, str) else 0} chars"
+        found = isinstance(result, str) and MARKER in result
+        ok = resp.status_code == 200 and found
+        detail = f"HTTP {resp.status_code}, marker={found}"
         if not ok:
             detail += f", error={_short(body.get('error') or body, 140)}"
         record("PASS" if ok else "FAIL", test, detail)

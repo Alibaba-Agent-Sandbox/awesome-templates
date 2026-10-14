@@ -27,8 +27,11 @@ import httpx
 
 BASE_URL = os.environ.get("E2E_BASE_URL", "http://localhost:9000").rstrip("/")
 WORKSPACE = os.environ.get("E2E_WORKSPACE", "")  # empty → auto-detect
-HAS_DEEPSEEK_KEY = bool(os.environ.get("DEEPSEEK_API_KEY"))
-LLM_PROMPT = os.environ.get("E2E_DEEPSEEK_PROMPT", "Reply with exactly: E2E_OK")
+HAS_DEEPSEEK_KEY = bool(os.environ.get("DEEPSEEK_API_KEY", "").strip())
+RUN_LLM = os.environ.get("E2E_RUN_LLM", "").strip().lower()
+REQUIRE = os.environ.get("E2E_REQUIRE_LLM", "").strip().lower() in {"1", "true", "yes"}
+MARKER = "ABX_E2E_OK"
+LLM_PROMPT = os.environ.get("E2E_DEEPSEEK_PROMPT", f"Reply with exactly: {MARKER}")
 MODEL = os.environ.get("E2E_DEEPSEEK_MODEL", "deepseek-coder")
 TIMEOUT = httpx.Timeout(connect=10.0, read=150.0, write=30.0, pool=10.0)
 
@@ -103,18 +106,25 @@ def group_commands(client: httpx.Client) -> None:
 
     # Real LLM call requires DEEPSEEK_API_KEY in the sandbox environment.
     ep = "POST /commands/deepseek (LLM)"
-    if not HAS_DEEPSEEK_KEY:
-        record("SKIP", ep,
-               "DEEPSEEK_API_KEY not set — LLM call not exercised")
+    forced_off = RUN_LLM in {"0", "false", "no"}
+    if REQUIRE and forced_off:
+        record("FAIL", ep, "E2E_REQUIRE_LLM=1 conflicts with E2E_RUN_LLM=0")
+    elif forced_off or not HAS_DEEPSEEK_KEY:
+        status = "FAIL" if REQUIRE or RUN_LLM in {"1", "true", "yes"} else "SKIP"
+        if forced_off and not REQUIRE:
+            status = "SKIP"
+        reason = "E2E_RUN_LLM=0" if forced_off else "DEEPSEEK_API_KEY not set"
+        record(status, ep, reason)
     else:
         try:
             resp = client.post("/commands/deepseek",
                                json={"prompt": LLM_PROMPT, "model": MODEL})
             body = resp.json()
             stdout = str(body.get("result", ""))
-            ok = resp.status_code == 200 and len(stdout.strip()) > 0
+            found = MARKER in stdout
+            ok = resp.status_code == 200 and found
             record("PASS" if ok else "FAIL", ep,
-                   f"HTTP {resp.status_code}, output={_short(stdout, 120)}")
+                   f"HTTP {resp.status_code}, marker={found}, output={_short(stdout, 120)}")
         except Exception as exc:  # noqa: BLE001
             record("FAIL", ep, f"exception: {exc}")
 

@@ -253,6 +253,21 @@ templates:
       e2b: preexisting-template-id
       opensandbox: push-image-then-pass-uri
 
+  - name: gemini
+    description: "Gemini CLI. Command gemini -p. Package @google/gemini-cli@0.64.0."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: gemini
+    tags: [gemini, ai-agent, ai-coding]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: supported
+      alicloud-container: preexisting-template-id
+      cubesandbox: preexisting-template-id
+      e2b: preexisting-template-id
+      opensandbox: push-image-then-pass-uri
+
   # === Community Templates ===
   # Add your template here! Submit a PR following the schema above.
   # Set status to "community" and make sure your repo contains a valid template.yaml.

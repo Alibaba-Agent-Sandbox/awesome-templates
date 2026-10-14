@@ -1,0 +1,27 @@
+name: gemini
+version: "1.0.0"
+description: "Gemini CLI 运行环境 - 预装 @google/gemini-cli，非交互执行 gemini -p"
+author: "alibaba-agent-sandbox"
+tags:
+  - gemini
+  - ai-coding
+  - ai-agent
+
+base: python:3.12-slim
+
+capabilities:
+  - shell
+  - files
+  - code
+  - ports
+
+ports:
+  - 9000
+
+env:
+  GEMINI_API_KEY: ""
+  GEMINI_MODEL: "gemini-3.1-flash-lite"
+
+resources:
+  cpu: 2
+  memory: 4096
