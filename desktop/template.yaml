@@ -1,0 +1,9 @@
+name: desktop
+version: "1.0.0"
+description: "E2B public desktop template. Other providers in this SDK do not provide this id."
+author: "alibaba-agent-sandbox"
+tags:
+  - platform
+capabilities:
+  - shell
+  - files

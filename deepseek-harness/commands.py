@@ -6,19 +6,30 @@ from agent_sandbox.server import command, start
 
 @command("deepseek", description="Run DeepSeek agent with a prompt.")
 def deepseek(prompt: str, model: str = "deepseek-coder") -> str:
-    """Run DeepSeek agent with a prompt."""
+    """Call the DeepSeek API. The prompt is passed in the environment, not interpolated."""
+    import os
     import subprocess
 
+    key = os.environ.get("DEEPSEEK_API_KEY") or os.environ.get("OPENAI_API_KEY") or ""
+    if not key:
+        raise RuntimeError("DEEPSEEK_API_KEY is not set")
+    script = (
+        "import json, os\n"
+        "from openai import OpenAI\n"
+        "client = OpenAI(api_key=os.environ['DEEPSEEK_API_KEY'], "
+        "base_url=os.environ.get('DEEPSEEK_BASE_URL', 'https://api.deepseek.com'))\n"
+        "reply = client.chat.completions.create("
+        "model=os.environ.get('DEEPSEEK_MODEL', 'deepseek-coder'), "
+        "messages=[{'role': 'user', 'content': os.environ['DEEPSEEK_PROMPT']}])\n"
+        "print(json.dumps({'content': reply.choices[0].message.content}))\n"
+    )
+    env = os.environ.copy()
+    env["DEEPSEEK_API_KEY"] = key
+    env["DEEPSEEK_PROMPT"] = prompt
+    env["DEEPSEEK_MODEL"] = model
     result = subprocess.run(
-        ["python", "-c", (
-            "import json, openai; "
-            f"c = openai.OpenAI(); "
-            f"r = c.chat.completions.create("
-            f"model={model!r}, "
-            f"messages=[{{'role':'user','content':{prompt!r}}}]); "
-            f"print(json.dumps({{'content': r.choices[0].message.content}}))"
-        )],
-        capture_output=True, text=True, timeout=120,
+        ["python3", "-c", script],
+        capture_output=True, text=True, timeout=120, env=env,
     )
     if result.returncode != 0:
         raise RuntimeError(result.stderr)

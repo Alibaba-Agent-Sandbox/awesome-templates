@@ -1,0 +1,9 @@
+name: opensandbox-code-interpreter
+version: "1.0.0"
+description: "Pointer to the OpenSandbox image opensandbox/code-interpreter."
+author: "alibaba-agent-sandbox"
+tags:
+  - platform
+capabilities:
+  - shell
+  - files
