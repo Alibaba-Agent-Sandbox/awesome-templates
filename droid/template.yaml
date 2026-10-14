@@ -1,0 +1,40 @@
+name: droid
+version: "1.0.0"
+description: "Factory Droid 编码 CLI 沙箱 - 通过 droid exec 无头执行编程任务"
+author: "alibaba-agent-sandbox"
+tags:
+  - droid
+  - factory
+  - ai-coding
+  - ai-agent
+
+base: python:3.12-slim
+
+system_packages:
+  - python3
+  - python3-pip
+  - git
+  - curl
+  - ca-certificates
+  - ripgrep
+  - build-essential
+
+node_packages:
+  - "@factory/cli@0.241.1"
+
+capabilities:
+  - shell
+  - files
+  - code
+  - ports
+
+ports:
+  - 9000
+
+env:
+  FACTORY_API_KEY: ""
+  WORKSPACE: "/app"
+
+resources:
+  cpu: 2
+  memory: 4096
