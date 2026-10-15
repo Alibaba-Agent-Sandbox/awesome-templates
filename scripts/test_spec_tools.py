@@ -116,6 +116,7 @@ class HarnessTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             dest = Path(tmp) / "python-hello"
             shutil.copytree(ROOT / "python-hello", dest)
+            shutil.rmtree(dest / "evidence", ignore_errors=True)
             calls: list[list[str]] = []
 
             def runner(args: list[str], timeout: float) -> Proc:
@@ -160,6 +161,7 @@ class HarnessTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             dest = Path(tmp) / "python-hello"
             shutil.copytree(ROOT / "python-hello", dest)
+            shutil.rmtree(dest / "evidence", ignore_errors=True)
             calls: list[list[str]] = []
 
             def runner(args: list[str], timeout: float) -> Proc:
