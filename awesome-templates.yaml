@@ -226,13 +226,13 @@ templates:
       opensandbox: push-image-then-pass-uri
 
   - name: amp
-    description: "Amp coding agent. Command amp -x. Package @ampcode/cli pinned in the Dockerfile."
+    description: "Sourcegraph Amp CLI. amp_execute runs amp -x; amp_version and amp_setup_check do not need a key. Package @ampcode/cli@0.0.1792022479-ge66e24."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: amp
     tags: [amp, sourcegraph, ai-agent, ai-coding]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: experimental
+    status: official
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id

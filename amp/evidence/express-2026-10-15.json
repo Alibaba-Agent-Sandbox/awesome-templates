@@ -1,0 +1,39 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-15",
+  "template": "amp",
+  "template_version": "1.1.0",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "passed": true,
+  "commands": [
+    {
+      "name": "amp_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 11.513,
+      "result": "0.0.1792022479-ge66e24"
+    },
+    {
+      "name": "amp_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 4.926,
+      "result": "0.0.1792022479-ge66e24"
+    },
+    {
+      "name": "amp_setup_check",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 4.277,
+      "result": "{'installed': True, 'package': '@ampcode/cli', 'version': '0.0.1792022479-ge66e24', 'api_key_set': False, 'settings_path': '/home/user/.config/amp/settings.json', 'dangerously_allow_all': True, 'updates_mode': 'disabled'}"
+    },
+    {
+      "name": "amp_setup_check",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 2.406,
+      "result": "{'installed': True, 'package': '@ampcode/cli', 'version': '0.0.1792022479-ge66e24', 'api_key_set': False, 'settings_path': '/home/user/.config/amp/settings.json', 'dangerously_allow_all': True, 'updates_mode': 'disabled'}"
+    }
+  ]
+}

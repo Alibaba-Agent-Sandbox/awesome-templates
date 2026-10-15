@@ -1,21 +1,10 @@
 #!/usr/bin/env python3
-"""End-to-end checks for the ``amp`` template. Only ``httpx`` is required.
+"""Local smoke for the amp template against E2E_BASE_URL.
 
-Checks:
-
-- ``GET /health`` returns 200 with ``{"status": "ok"}``.
-- ``GET /commands`` includes the registered ``amp`` command.
-- ``POST /commands/amp`` without ``prompt`` is a client error (HTTP 4xx).
-- The LLM call is ``SKIP`` when ``E2E_RUN_LLM=0`` or ``AMP_API_KEY`` is missing.
-
-The process exits 0 unless a check records ``FAIL``. ``SKIP`` is not a failure.
-
-Usage::
-
-    python3 e2e_test.py
-    E2E_BASE_URL=http://127.0.0.1:9000 python3 e2e_test.py
-    E2E_RUN_LLM=0 python3 e2e_test.py
-    AMP_API_KEY=... python3 e2e_test.py
+Express runs go through scripts/express_e2e.py (CLI and SDK). This file is
+the no-cloud check. A live ``amp -x`` call is SKIP unless AMP_API_KEY is set
+and E2E_RUN_LLM is not 0. E2E_REQUIRE_LLM=1 turns a missing key or a missing
+ABX_E2E_OK marker into FAIL.
 """
 from __future__ import annotations
 
@@ -25,21 +14,14 @@ import sys
 
 import httpx
 
-TEMPLATE = "amp"
-CMD = "amp"
 BASE_URL = os.environ.get("E2E_BASE_URL", "http://127.0.0.1:9000").rstrip("/")
-TOKEN = os.environ.get("E2E_TOKEN", "")
-TIMEOUT = httpx.Timeout(
-    connect=10.0,
-    read=float(os.environ.get("E2E_TIMEOUT", "60")),
-    write=30.0,
-    pool=10.0,
-)
+PINNED_VERSION = "0.0.1792022479-ge66e24"
+MARKER = "ABX_E2E_OK"
+TIMEOUT = httpx.Timeout(connect=10.0, read=30.0, write=30.0, pool=10.0)
 LLM_TIMEOUT = float(os.environ.get("E2E_LLM_TIMEOUT", "600"))
 RUN_LLM = os.environ.get("E2E_RUN_LLM", "").strip().lower()
 REQUIRE = os.environ.get("E2E_REQUIRE_LLM", "").strip().lower() in {"1", "true", "yes"}
-MARKER = "ABX_E2E_OK"
-LLM_PROMPT = f"Reply with exactly: {MARKER}"
+NAMES = {"amp_version", "amp_setup_check", "amp_execute", "amp"}
 
 RESULTS: list[tuple[str, str, str]] = []
 
@@ -52,125 +34,189 @@ def record(status: str, test: str, detail: str = "") -> None:
     print(line, flush=True)
 
 
-def _short(value: object, limit: int = 160) -> str:
+def _short(value: object, limit: int = 240) -> str:
     text = value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)
     return text if len(text) <= limit else text[: limit - 3] + "..."
 
 
-def _client() -> httpx.Client:
-    headers = {"X-Access-Token": TOKEN} if TOKEN else {}
-    return httpx.Client(base_url=BASE_URL, timeout=TIMEOUT, headers=headers)
+def main() -> int:
+    failures = 0
+    with httpx.Client(base_url=BASE_URL, timeout=TIMEOUT) as client:
+        health = client.get("/health")
+        ok = health.status_code == 200 and health.json().get("status") == "ok"
+        record("PASS" if ok else "FAIL", "GET /health", f"HTTP {health.status_code}")
+        failures += not ok
+        if not ok:
+            return _summary(failures)
 
+        listed = client.get("/commands")
+        body = listed.json()
+        entries = body.get("commands", [])
+        names = {item.get("name") for item in entries if isinstance(item, dict)}
+        ok = listed.status_code == 200 and NAMES <= names
+        record("PASS" if ok else "FAIL", "GET /commands", f"names={sorted(names)}")
+        failures += not ok
 
-def check_health(client: httpx.Client) -> bool:
-    test = "GET /health"
-    try:
-        resp = client.get("/health")
-        body = resp.json()
-        ok = resp.status_code == 200 and body.get("status") == "ok"
-        record("PASS" if ok else "FAIL", test, f"HTTP {resp.status_code}, status={body.get('status')}")
-        return ok
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", test, f"exception: {exc}")
-        return False
-
-
-def check_commands(client: httpx.Client) -> None:
-    test = "GET /commands"
-    try:
-        resp = client.get("/commands")
-        body = resp.json()
-        entries = body.get("commands", body if isinstance(body, list) else [])
-        names = [c.get("name") for c in entries if isinstance(c, dict)]
-        ok = resp.status_code == 200 and CMD in names
+        by_name = {item.get("name"): item for item in entries if isinstance(item, dict)}
+        execute = by_name.get("amp_execute") or {}
+        args = {item.get("name"): item for item in execute.get("args", []) if isinstance(item, dict)}
+        prompt = args.get("prompt") or {}
+        stream = args.get("stream_json") or {}
+        ok = prompt.get("required") is True and stream.get("type") == "boolean" and stream.get("required") is False
         record(
             "PASS" if ok else "FAIL",
-            test,
-            f"HTTP {resp.status_code}, includes {CMD}={CMD in names}, names={names}",
+            "amp_execute signature",
+            f"prompt={prompt} stream_json={stream}",
         )
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", test, f"exception: {exc}")
+        failures += not ok
 
-
-def check_missing_prompt(client: httpx.Client) -> None:
-    test = f"POST /commands/{CMD} (no prompt)"
-    try:
-        resp = client.post(f"/commands/{CMD}", json={})
-        try:
-            body = resp.json()
-        except Exception:  # noqa: BLE001
-            body = {"_raw": resp.text}
-        ok = 400 <= resp.status_code < 500
+        missing = client.post("/commands/amp_execute", json={})
+        ok = 400 <= missing.status_code < 500
         record(
             "PASS" if ok else "FAIL",
-            test,
-            f"HTTP {resp.status_code} client error={ok}, error={_short(body.get('error', body) if isinstance(body, dict) else body)}",
+            "POST /commands/amp_execute (no prompt)",
+            f"HTTP {missing.status_code}",
         )
+        failures += not ok
+
+        failures += _version(client)
+        failures += _setup(client)
+        failures += _auth_or_live(client)
+    return _summary(failures)
+
+
+def _version(client: httpx.Client) -> int:
+    response = client.post("/commands/amp_version", json={})
+    try:
+        payload = response.json()
     except Exception as exc:  # noqa: BLE001
-        record("FAIL", test, f"exception: {exc}")
+        record("FAIL", "POST /commands/amp_version", f"not JSON: {exc}")
+        return 1
+    if response.status_code == 200 and payload.get("result") == PINNED_VERSION:
+        record("PASS", "POST /commands/amp_version", PINNED_VERSION)
+        return 0
+    error = payload.get("error", payload) if isinstance(payload, dict) else payload
+    text = error if isinstance(error, str) else json.dumps(error, ensure_ascii=False)
+    if response.status_code == 500 and "not found on PATH" in text:
+        record("PASS", "POST /commands/amp_version", "amp is not on PATH; the error names the missing CLI")
+        return 0
+    record("FAIL", "POST /commands/amp_version", f"HTTP {response.status_code} {_short(payload)}")
+    return 1
 
 
-def check_llm(client: httpx.Client) -> None:
-    test = f"POST /commands/{CMD}"
+def _setup(client: httpx.Client) -> int:
+    response = client.post("/commands/amp_setup_check", json={})
+    try:
+        payload = response.json()
+    except Exception as exc:  # noqa: BLE001
+        record("FAIL", "POST /commands/amp_setup_check", f"not JSON: {exc}")
+        return 1
+    result = payload.get("result") if isinstance(payload, dict) else None
+    if response.status_code != 200 or not isinstance(result, dict):
+        record("FAIL", "POST /commands/amp_setup_check", f"HTTP {response.status_code} {_short(payload)}")
+        return 1
+    key_set = result.get("api_key_set")
+    ok = (
+        result.get("package") == "@ampcode/cli"
+        and isinstance(key_set, bool)
+        and result.get("dangerously_allow_all") is True
+        and result.get("updates_mode") == "disabled"
+        and isinstance(result.get("settings_path"), str)
+        and result["settings_path"]
+        and isinstance(result.get("installed"), bool)
+    )
+    if result.get("installed"):
+        ok = ok and result.get("version") == PINNED_VERSION
+    else:
+        ok = ok and result.get("version") == ""
+    record(
+        "PASS" if ok else "FAIL",
+        "POST /commands/amp_setup_check",
+        f"installed={result.get('installed')} version={result.get('version')} api_key_set={key_set}",
+    )
+    if not ok:
+        return 1
+    path = result["settings_path"]
+    try:
+        settings = json.loads(open(path, encoding="utf-8").read())
+    except OSError as exc:
+        record("FAIL", "settings file", f"unreadable {path}: {exc}")
+        return 1
+    file_ok = (
+        settings.get("amp.dangerouslyAllowAll") is True
+        and settings.get("amp.updates.mode") == "disabled"
+        and settings.get("amp.notifications.enabled") is False
+    )
+    record("PASS" if file_ok else "FAIL", "settings file", path)
+    return 0 if file_ok else 1
+
+
+def _auth_or_live(client: httpx.Client) -> int:
+    test = "POST /commands/amp_execute"
     key = os.environ.get("AMP_API_KEY", "").strip()
     forced_off = RUN_LLM in {"0", "false", "no"}
     if REQUIRE and forced_off:
         record("FAIL", test, "E2E_REQUIRE_LLM=1 conflicts with E2E_RUN_LLM=0")
-        return
-    if forced_off:
-        record("SKIP", test, f"E2E_RUN_LLM={RUN_LLM!r}")
-        return
+        return 1
     if not key:
-        status = "FAIL" if REQUIRE or RUN_LLM in {"1", "true", "yes"} else "SKIP"
-        record(status, test, "AMP_API_KEY is missing")
-        return
-
+        response = client.post(
+            "/commands/amp_execute",
+            json={"prompt": f"Reply with exactly: {MARKER}"},
+            timeout=20.0,
+        )
+        try:
+            payload = response.json()
+        except Exception as exc:  # noqa: BLE001
+            record("FAIL", test, f"not JSON: {exc}")
+            return 1
+        error = ""
+        if isinstance(payload, dict):
+            error = str(payload.get("error") or "")
+        ok = (
+            response.status_code == 500
+            and "AMP_API_KEY" in error
+            and "device-login" in error
+            and "user_code" not in error
+            and "ampcode.com/auth" not in error
+        )
+        record(
+            "PASS" if ok else "FAIL",
+            "POST /commands/amp_execute (no AMP_API_KEY)",
+            f"HTTP {response.status_code} {_short(error)}",
+        )
+        if REQUIRE:
+            record("FAIL", test, "AMP_API_KEY is missing and E2E_REQUIRE_LLM=1")
+            return 1
+        return 0 if ok else 1
+    if forced_off:
+        record("SKIP", test, f"E2E_RUN_LLM={RUN_LLM!r}; AMP_API_KEY is set but the live call is off")
+        return 0
     try:
-        resp = client.post(
-            f"/commands/{CMD}",
-            json={"prompt": LLM_PROMPT},
+        response = client.post(
+            "/commands/amp_execute",
+            json={"prompt": f"Reply with exactly: {MARKER}", "stream_json": False},
             timeout=LLM_TIMEOUT,
         )
-        body = resp.json()
-        result = body.get("result")
-        found = isinstance(result, str) and MARKER in result
-        ok = resp.status_code == 200 and found
-        detail = f"HTTP {resp.status_code}, marker={found}"
-        if not ok:
-            detail += f", error={_short(body.get('error') or body)}"
-        record("PASS" if ok else "FAIL", test, detail)
+        payload = response.json()
     except Exception as exc:  # noqa: BLE001
         record("FAIL", test, f"exception: {exc}")
+        return 1
+    result = payload.get("result") if isinstance(payload, dict) else None
+    found = isinstance(result, str) and MARKER in result
+    ok = response.status_code == 200 and found
+    detail = f"HTTP {response.status_code}, marker={found}"
+    if not ok and isinstance(payload, dict):
+        detail += f", error={_short(payload.get('error') or payload)}"
+    record("PASS" if ok else "FAIL", test, detail)
+    return 0 if ok else 1
 
 
-def summary() -> int:
-    passed = sum(1 for status, _, _ in RESULTS if status == "PASS")
+def _summary(failures: int) -> int:
     failed = sum(1 for status, _, _ in RESULTS if status == "FAIL")
+    passed = sum(1 for status, _, _ in RESULTS if status == "PASS")
     skipped = sum(1 for status, _, _ in RESULTS if status == "SKIP")
-    print("\n" + "=" * 74, flush=True)
-    print(f"SUMMARY — {TEMPLATE}", flush=True)
-    print("=" * 74, flush=True)
-    print(f"{passed} passed, {failed} failed, {skipped} skipped (total {len(RESULTS)})", flush=True)
-    if failed:
-        print("\nFailed tests:", flush=True)
-        for status, name, detail in RESULTS:
-            if status == "FAIL":
-                print(f"  - {name}: {detail}", flush=True)
-    print("=" * 74, flush=True)
-    return 1 if failed else 0
-
-
-def main() -> int:
-    print(f"{TEMPLATE} end-to-end suite", flush=True)
-    print(f"  base_url : {BASE_URL}", flush=True)
-    print("-" * 74, flush=True)
-    with _client() as client:
-        if not check_health(client):
-            return summary()
-        check_commands(client)
-        check_missing_prompt(client)
-        check_llm(client)
-    return summary()
+    print(f"{passed} passed, {failed} failed, {skipped} skipped", flush=True)
+    return 1 if failed or failures else 0
 
 
 if __name__ == "__main__":
