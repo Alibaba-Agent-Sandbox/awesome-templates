@@ -1,6 +1,6 @@
 ## Summary
 
-<!-- What does this PR add or change? Which template(s)? -->
+<!-- What does this PR add or change? Which template(s)? Which test levels passed? -->
 
 ## Type of change
 
@@ -11,17 +11,16 @@
 
 ## Contributor checklist
 
-- [ ] Template directory contains `template.yaml`, `Dockerfile`, `commands.py`, `e2e_test.py`, and `README.md`
-- [ ] Dockerfile is `FROM python:3.12-slim`, `WORKDIR /app`, `CMD ["python3", "commands.py"]`, and installs `agent-sandbox-server`
-- [ ] `awesome-templates.yaml` index updated (name / description / repo / path / tags / author / capabilities / status)
-- [ ] Directory name == `template.yaml` `name` == index `path`
-- [ ] Local install passes: `abx template install ./<name> --registry-type local`
-- [ ] Named commands are registered in `commands.py` with `@command`; `template.yaml` has no command map
-- [ ] `template.yaml` `server:` (if present) is an endpoint policy; a group is only a name for a batch of endpoints (`groups` takes a list or a map)
-- [ ] **No secrets** committed (API keys/tokens/passwords) — placeholders only
-- [ ] No build junk (`__pycache__/`, `*.pyc`, `.DS_Store`)
-- [ ] Uses current naming: **Agent Sandbox / abx / agent-sandbox / agent-sandbox-server / agent_sandbox / alibaba-agent-sandbox**
-- [ ] `python3 scripts/run_local_e2e.py` passes for every template
+- [ ] Follows [docs/template-spec.md](../docs/template-spec.md)
+- [ ] Directory contains `template.yaml`, `Dockerfile`, `commands.py`, `e2e_test.py`, `README.md`, and `README.zh-CN.md`
+- [ ] Dockerfile `FROM` is the Alibaba FC base image, `WORKDIR /home/user/app`, `USER user`, pinned versions, and no `CMD` / `ENTRYPOINT`
+- [ ] `commands.py` imports `command` from `agent_sandbox.server`; `start()` is only under `if __name__ == "__main__"`
+- [ ] `docs/design/<name>.md` filled from `docs/design/_TEMPLATE.md` (product templates)
+- [ ] `awesome-templates.yaml` entry matches the directory name; `status` matches passed levels
+- [ ] Verified table and `tested_on` list only providers with a passing evidence file
+- [ ] **No secrets** committed (API keys/tokens/passwords) — empty placeholders only
+- [ ] `python3 scripts/check_template.py <name>` exits 0
+- [ ] `python3 scripts/run_local_e2e.py` passes
 
 ## Notes for reviewers
 

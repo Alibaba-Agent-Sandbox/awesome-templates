@@ -227,7 +227,18 @@ def _run_one(directory: Path, path_prefix: str) -> tuple[str, str]:
         _cleanup(directory)
 
 
+def _conformance() -> int:
+    """Lint spec_version 2 templates. Legacy violations are printed and ignored."""
+    script = Path(__file__).resolve().parent / "check_template.py"
+    print("\n" + "=" * 74, flush=True)
+    print("TEMPLATE CONFORMANCE", flush=True)
+    print("=" * 74, flush=True)
+    completed = subprocess.run([sys.executable, str(script), "--all"], check=False)
+    return completed.returncode
+
+
 def main() -> int:
+    conformance = _conformance()
     templates = _templates()
     if not templates:
         print("no template directories found", flush=True)
@@ -260,7 +271,7 @@ def main() -> int:
     for name, detail in failed:
         print(f"  fail {name}: {detail}", flush=True)
     print("=" * 74, flush=True)
-    return 1 if failed else 0
+    return 1 if failed or conformance else 0
 
 
 if __name__ == "__main__":

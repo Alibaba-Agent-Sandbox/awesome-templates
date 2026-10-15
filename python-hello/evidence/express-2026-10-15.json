@@ -1,0 +1,31 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-15",
+  "template": "python-hello",
+  "template_version": "1.0.0",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "passed": true,
+  "commands": [
+    {
+      "name": "hello",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 2.744,
+      "args": {
+        "name": "E2E"
+      },
+      "result": "Hello, E2E!"
+    },
+    {
+      "name": "hello",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 2.189,
+      "args": {
+        "name": "E2E"
+      },
+      "result": "Hello, E2E!"
+    }
+  ]
+}
