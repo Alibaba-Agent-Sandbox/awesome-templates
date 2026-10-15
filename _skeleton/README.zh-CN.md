@@ -9,7 +9,7 @@
 ## 技术栈
 
 - 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`abx template deploy` 把 `<region>` 换成 `ALIBABA_CLOUD_REGION_ID` 或 `cn-hangzhou`，把 `<tag>` 换成 `ABX_BASE_IMAGE_TAG` 或 `v0.0.49`。
-- 构建上下文里没有 wheel 时安装 `agent-sandbox-server==0.3.0`。`abx template deploy` 注入的 wheel 优先。
+- 构建上下文里没有 wheel 时，从 python-sdk 提交 `35da216a300f1e2e84254a1cf4b4a7ea98681505` 安装 `agent-sandbox-server`：`pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/<40位hex>.tar.gz#subdirectory=server-sdk"`。`abx template deploy` 注入的 wheel 优先。另一个允许的钉是 `agent-sandbox-server==X.Y.Z`，前提是该版本已经在 PyPI 上。2026-10-15 时 `0.3.0` 不在 PyPI。
 - 工作目录 `/home/user/app`。运行用户 `user`。
 - 基础镜像自带 Python 3.13 和 Node.js 20。
 - 平台用 `start_cmd` 启动进程。Dockerfile 在 `USER` 和 `EXPOSE` 之后结束。
@@ -42,6 +42,8 @@ abx template delete <template-id> -y
 `python3 scripts/express_e2e.py _skeleton` 会做同样的部署、调用 `hello`、只在通过后写证据，并在 `finally` 里删除沙箱和模板。
 
 ## 快速开始（Python SDK）
+
+客户端的 PyPI 名称是 `agent-sandbox-client`（`python3 -m pip install agent-sandbox-client`）。导入名仍是 `agent_sandbox`。`pip install agent-sandbox` 是另一个无关项目。
 
 ```python
 import asyncio

@@ -55,6 +55,8 @@ abx template delete <template-id> -y
 
 ## Quick start (Python SDK)
 
+Install the client from PyPI as `agent-sandbox-client` (`python3 -m pip install agent-sandbox-client`). The import is `agent_sandbox`. `pip install agent-sandbox` is an unrelated project.
+
 ```python
 import asyncio
 from agent_sandbox import Sandbox

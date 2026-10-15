@@ -28,7 +28,11 @@ already passes `scripts/check_template.py`. It is not a catalog entry.
    ```
 
    With Express credentials, `python3 scripts/express_e2e.py <name>` is L2.
-   Commit `evidence/express-<date>.json` only when that command exits 0.
+   Concurrent runs share `/tmp/abx-acr-push.lock` so only one ACR push is
+   active. A deploy dies when CLI output is idle for `--idle-timeout` seconds
+   (default 180), then retries. Commit `evidence/express-<date>.json` only
+   when that command exits 0. `python3 scripts/image_size_report.py IMAGE`
+   prints per-layer sizes.
 
 Do not commit `__pycache__/`, `.env`, or secret values. Declare secret
 *names* with empty values in `template.yaml` `env`.
@@ -65,8 +69,9 @@ A shell string is `sb.commands.run("echo hi")` or `abx exec`.
 
 ## Naming
 
-**Agent Sandbox.** CLI `abx`. Client package `agent-sandbox`
-(`agent_sandbox`). In-image package `agent-sandbox-server`
+**Agent Sandbox.** CLI `abx`. Client package `agent-sandbox-client`
+(`agent_sandbox`). `pip install agent-sandbox` is an unrelated project.
+In-image package `agent-sandbox-server`
 (`agent_sandbox.server`). GitHub `alibaba-agent-sandbox/awesome-templates`,
 `alibaba-agent-sandbox/python-sdk`, and `alibaba-agent-sandbox/agent-sandbox`.
 npm `@agent-sandbox/cli`.
