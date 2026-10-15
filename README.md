@@ -31,7 +31,7 @@ is recorded.
 | [hermes-agent](./hermes-agent/README.md) | Chat completion against an OpenAI-compatible endpoint. This template does not register tools. | official | |
 | [node-web](./node-web/README.md) | Node.js web service runtime for Express, Fastify and other frameworks | official | |
 | [openclaw](./openclaw/README.md) | OpenClaw AI Agent runtime — open-source AI coding agent gateway | official | |
-| [opencode](./opencode/README.md) | OpenCode coding agent. Command opencode run. Package opencode-ai@1.19.0. | experimental | |
+| [opencode](./opencode/README.md) | OpenCode coding agent. Headless opencode run and optional opencode serve. Package opencode-ai@1.19.0. | experimental | |
 | [amp](./amp/README.md) | Sourcegraph Amp CLI. amp_execute runs amp -x; amp_version and amp_setup_check do not need a key. | official | alicloud-express |
 | [droid](./droid/README.md) | Factory Droid. Command droid exec. Package @factory/cli@0.241.1. | experimental | |
 | [gemini](./gemini/README.md) | Gemini CLI. Command gemini -p. Package @google/gemini-cli@0.64.0. | experimental | |

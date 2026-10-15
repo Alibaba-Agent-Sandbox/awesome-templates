@@ -1,0 +1,22 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "dashscope/qwen3.8-flash",
+  "provider": {
+    "dashscope": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "DashScope",
+      "options": {
+        "baseURL": "{env:ABX_LLM_BASE_URL}",
+        "apiKey": "{env:ABX_LLM_API_KEY}"
+      },
+      "models": {
+        "qwen3.8-flash": {
+          "name": "Qwen3.8 Flash"
+        },
+        "qwen3.8-max": {
+          "name": "Qwen3.8 Max"
+        }
+      }
+    }
+  }
+}
