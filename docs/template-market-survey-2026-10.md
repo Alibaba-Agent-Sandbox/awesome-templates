@@ -199,6 +199,69 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **第三波。** `waa`、`phone-sandbox`、`android-world`、`k3s`、`omarchy`、`qm`、`qm-sandbox`。
 
+## Issue 对照
+
+新模板 issue（#48–#72）正文是对应分析块。本环境的 token 能建 issue，不能给 #15–#45 写评论（HTTP 403，`issues=write` 不够）。对照以本表为准。
+
+| issue | 模板 |
+|---|---|
+| #15 | `claude-code` |
+| #16 | `codex` |
+| #17 | `opencode` |
+| #18 | `amp` |
+| #19 | `droid` |
+| #20 | `openclaw` |
+| #21 | `python-hello` |
+| #22 | `browser-automation` |
+| #23 | `codex-agent-api` |
+| #24 | `qoder` |
+| #25 | `agents-cli` |
+| #26 | `qwen-code` |
+| #27 | `deepseek-harness` |
+| #28 | `hermes-agent` |
+| #29 | `node-web` |
+| #30 | `gemini` |
+| #31 | `base` |
+| #32 | `code-interpreter-v1` |
+| #33 | `desktop` |
+| #34 | `opensandbox-code-interpreter` |
+| #35 | `swe` |
+| #36 | `osworld` |
+| #37 | `waa` |
+| #38 | `phone-sandbox` |
+| #39 | `android-world` |
+| #40 | `grok` |
+| #41 | `pi` |
+| #42 | `k3s` |
+| #43 | `omarchy` |
+| #44 | `qm` |
+| #45 | `qm-sandbox` |
+| #48 | `kimi-code` |
+| #49 | `goose` |
+| #50 | `aider` |
+| #51 | `browser-use` |
+| #52 | `playwright-mcp` |
+| #53 | `code-server` |
+| #54 | `next-app` |
+| #55 | `document-tools` |
+| #56 | `dev-services` |
+| #57 | `ocr` |
+| #58 | `media-tools` |
+| #59 | `tau2-bench` |
+| #60 | `apply-patch` |
+| #61 | `chrome` |
+| #62 | `polyglot-toolchain` |
+| #63 | `cursor-agent` |
+| #64 | `copilot-cli` |
+| #65 | `crush` |
+| #66 | `cline` |
+| #67 | `deepagents` |
+| #68 | `stagehand` |
+| #69 | `prime-agent` |
+| #70 | `appworld` |
+| #71 | `muse` |
+| #72 | `devin` |
+
 ## 逐模板分析
 
 锚点是二级标题的模板名。实施时以 `docs/template-backlog.json` 的字段为准，下面是同一份内容的说明。
@@ -537,7 +600,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** https://github.com/MoonshotAI/kimi-code @moonshot-ai/kimi-code@2.2.0 无头形态：kimi -p "<prompt>"。
 
-**结论。** 状态 new，批次 1，优先级 P0，issue 本次新建。OpenSandbox 有示例，目录里没有 Moonshot CLI。 来源：opensandbox:kimi-cli。
+**结论。** 状态 new，批次 1，优先级 P0，issue #48。OpenSandbox 有示例，目录里没有 Moonshot CLI。 来源：opensandbox:kimi-cli。
 
 ## goose
 
@@ -553,7 +616,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** https://github.com/block/goose v1.54.0 Apache-2.0 无头形态：goose run -t "<text>"。
 
-**结论。** 状态 new，批次 1，优先级 P0，issue 本次新建。有钉死的 Linux 包和无头命令。 来源：upstream:block/goose。
+**结论。** 状态 new，批次 1，优先级 P0，issue #49。有钉死的 Linux 包和无头命令。 来源：upstream:block/goose。
 
 ## pi
 
@@ -585,7 +648,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** https://github.com/Aider-AI/aider v0.86.0 无头形态：aider --yes --message "<prompt>"。
 
-**结论。** 状态 new，批次 1，优先级 P1，issue 本次新建。安装钉得死，形态和现有 CLI 一样。 来源：upstream:Aider-AI/aider。
+**结论。** 状态 new，批次 1，优先级 P1，issue #50。安装钉得死，形态和现有 CLI 一样。 来源：upstream:Aider-AI/aider。
 
 ## browser-use
 
@@ -601,7 +664,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** https://github.com/browser-use/browser-use 0.13.11 MIT 无头形态：Python Agent(task=...)。
 
-**结论。** 状态 new，批次 1，优先级 P0，issue 本次新建。118k stars，和 browser-automation 互补。 来源：e2b:kernel-browser, upstream:browser-use。
+**结论。** 状态 new，批次 1，优先级 P0，issue #51。118k stars，和 browser-automation 互补。 来源：e2b:kernel-browser, upstream:browser-use。
 
 ## playwright-mcp
 
@@ -617,7 +680,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** https://github.com/microsoft/playwright-mcp v0.0.83 无头形态：npx @playwright/mcp@0.0.83 --headless --port 8931。
 
-**结论。** 状态 new，批次 1，优先级 P1，issue 本次新建。目录里的浏览器模板不会说 MCP。 来源：cookbook:mcp-browserbase-js, cookbook:mcp-claude-code-js, upstream:playwright-mcp。
+**结论。** 状态 new，批次 1，优先级 P1，issue #52。目录里的浏览器模板不会说 MCP。 来源：cookbook:mcp-browserbase-js, cookbook:mcp-claude-code-js, upstream:playwright-mcp。
 
 ## code-server
 
@@ -633,7 +696,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** https://github.com/coder/code-server v4.141.0 无头形态：code-server --bind-addr 0.0.0.0:8443 --auth password。
 
-**结论。** 状态 new，批次 1，优先级 P1，issue 本次新建。OpenSandbox 的 vscode 示例在极速版没有对应物。 来源：opensandbox:vscode。
+**结论。** 状态 new，批次 1，优先级 P1，issue #53。OpenSandbox 的 vscode 示例在极速版没有对应物。 来源：opensandbox:vscode。
 
 ## next-app
 
@@ -649,7 +712,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** Vercel platform template 文档；E2B template examples/nextjs 是配方不是公开别名；fragments 是应用模板不是沙箱。 无头形态：next dev --port 3000 或 vite --host 0.0.0.0。
 
-**结论。** 状态 new，批次 1，优先级 P1，issue 本次新建。预览服务器是 Vercel/fragments 一类例子里真正缺的运行时。 来源：e2b:template/examples/nextjs, e2b-dev/fragments, cookbook:nextjs-code-interpreter, vercel:platform-template。
+**结论。** 状态 new，批次 1，优先级 P1，issue #54。预览服务器是 Vercel/fragments 一类例子里真正缺的运行时。 来源：e2b:template/examples/nextjs, e2b-dev/fragments, cookbook:nextjs-code-interpreter, vercel:platform-template。
 
 ## document-tools
 
@@ -665,7 +728,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** Debian pandoc（GPL-2.0）与 LibreOffice（MPL-2.0）。 无头形态：pandoc 或 soffice --headless --convert-to。
 
-**结论。** 状态 new，批次 1，优先级 P1，issue 本次新建。文档转换不需要桌面会话。 来源：e2b:desktop。
+**结论。** 状态 new，批次 1，优先级 P1，issue #55。文档转换不需要桌面会话。 来源：e2b:desktop。
 
 ## dev-services
 
@@ -681,7 +744,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** Debian 包。 无头形态：pg_isready 与 redis-cli ping。
 
-**结论。** 状态 new，批次 1，优先级 P1，issue 本次新建。Express 上唯一可行的数据库形态。 来源：runloop:universal-dnd, modal:sandbox。
+**结论。** 状态 new，批次 1，优先级 P1，issue #56。Express 上唯一可行的数据库形态。 来源：runloop:universal-dnd, modal:sandbox。
 
 ## ocr
 
@@ -697,7 +760,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** Tesseract Apache-2.0。 无头形态：tesseract <img> stdout。
 
-**结论。** 状态 new，批次 1，优先级 P2，issue 本次新建。小、可复现。 来源：upstream:tesseract。
+**结论。** 状态 new，批次 1，优先级 P2，issue #57。小、可复现。 来源：upstream:tesseract。
 
 ## media-tools
 
@@ -713,7 +776,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** Debian ffmpeg。E2B desktop 也装了 ffmpeg。 无头形态：ffmpeg -i in -c:v libx264 out。
 
-**结论。** 状态 new，批次 1，优先级 P2，issue 本次新建。媒体 agent 的基础工具。 来源：e2b:desktop。
+**结论。** 状态 new，批次 1，优先级 P2，issue #58。媒体 agent 的基础工具。 来源：e2b:desktop。
 
 ## tau2-bench
 
@@ -729,7 +792,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** sierra-research/tau2-bench v1.0.1 无头形态：该 tag 的 runner。
 
-**结论。** 状态 new，批次 1，优先级 P1，issue 本次新建。不需要 Docker 的评测，适合极速版。 来源：upstream:tau2-bench。
+**结论。** 状态 new，批次 1，优先级 P1，issue #59。不需要 Docker 的评测，适合极速版。 来源：upstream:tau2-bench。
 
 ## apply-patch
 
@@ -745,7 +808,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** https://open-sandbox.ai/examples/apply-patch （2026-10-15 抓取）。examples/ 目录里没有这个文件夹，只有文档页。 无头形态：apply_patch < /tmp/change.patch。
 
-**结论。** 状态 new，批次 2，优先级 P1，issue 本次新建。这是文件工具，不是又一个编码 CLI。 来源：opensandbox:apply-patch。
+**结论。** 状态 new，批次 2，优先级 P1，issue #60。这是文件工具，不是又一个编码 CLI。 来源：opensandbox:apply-patch。
 
 ## osworld
 
@@ -777,7 +840,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** OpenSandbox examples/chrome。 无头形态：chromium --headless=new --remote-debugging-port=9222。
 
-**结论。** 状态 new，批次 2，优先级 P1，issue 本次新建。和 Playwright 模板的差别是调试端口加可选画面。 来源：opensandbox:chrome, cube:browser-sandbox。
+**结论。** 状态 new，批次 2，优先级 P1，issue #61。和 Playwright 模板的差别是调试端口加可选画面。 来源：opensandbox:chrome, cube:browser-sandbox。
 
 ## swe
 
@@ -809,7 +872,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** 官方 tarball。 无头形态：go version && java -version。
 
-**结论。** 状态 new，批次 2，优先级 P1，issue 本次新建。编码 CLI 遇到 Go/Java 仓库会失败。 来源：opensandbox:sandbox-images。
+**结论。** 状态 new，批次 2，优先级 P1，issue #62。编码 CLI 遇到 Go/Java 仓库会失败。 来源：opensandbox:sandbox-images。
 
 ## cursor-agent
 
@@ -825,7 +888,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** https://cursor.com/docs/cli/headless 无头形态：agent -p "<prompt>"。
 
-**结论。** 状态 new，批次 2，优先级 P1，issue 本次新建。需求真实，安装不达标。 来源：cursor-docs, fly-sprites-secondary, e2b:cursor-agents。
+**结论。** 状态 new，批次 2，优先级 P1，issue #63。需求真实，安装不达标。 来源：cursor-docs, fly-sprites-secondary, e2b:cursor-agents。
 
 ## grok
 
@@ -857,7 +920,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** https://github.com/github/copilot-cli 无头形态：unverified。
 
-**结论。** 状态 new，批次 2，优先级 P1，issue 本次新建。示例存在，安装不达标。 来源：opensandbox:github-copilot-cli-sandbox。
+**结论。** 状态 new，批次 2，优先级 P1，issue #64。示例存在，安装不达标。 来源：opensandbox:github-copilot-cli-sandbox。
 
 ## crush
 
@@ -873,7 +936,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** https://github.com/charmbracelet/crush 无头形态：unverified。
 
-**结论。** 状态 new，批次 2，优先级 P1，issue 本次新建。仓库活跃，安装不够格。 来源：upstream:charmbracelet/crush。
+**结论。** 状态 new，批次 2，优先级 P1，issue #65。仓库活跃，安装不够格。 来源：upstream:charmbracelet/crush。
 
 ## cline
 
@@ -889,7 +952,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** https://github.com/cline/cline v4.1.24 无头形态：unverified。
 
-**结论。** 状态 new，批次 2，优先级 P1，issue 本次新建。70k stars，CLI 入口还没读到。 来源：upstream:cline/cline。
+**结论。** 状态 new，批次 2，优先级 P1，issue #66。70k stars，CLI 入口还没读到。 来源：upstream:cline/cline。
 
 ## deepagents
 
@@ -905,7 +968,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** https://github.com/langchain-ai/deepagents deepagents==0.7.25 无头形态：unverified。
 
-**结论。** 状态 new，批次 2，优先级 P1，issue 本次新建。两边都有集成文档。 来源：opensandbox:deep-agents, e2b:agents/deep-agents。
+**结论。** 状态 new，批次 2，优先级 P1，issue #67。两边都有集成文档。 来源：opensandbox:deep-agents, e2b:agents/deep-agents。
 
 ## stagehand
 
@@ -921,7 +984,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** https://github.com/browserbase/stagehand 无头形态：unverified。
 
-**结论。** 状态 new，批次 2，优先级 P2，issue 本次新建。只有调用方坚持要 Node SDK 时再做。 来源：cookbook:mcp-browserbase-js。
+**结论。** 状态 new，批次 2，优先级 P2，issue #68。只有调用方坚持要 Node SDK 时再做。 来源：cookbook:mcp-browserbase-js。
 
 ## prime-agent
 
@@ -937,7 +1000,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** https://github.com/PrimeIntellect-ai/prime-agent；https://docs.e2b.dev/agents/prime.md 无头形态：prime-agent -p "<prompt>"。
 
-**结论。** 状态 new，批次 2，优先级 P2，issue 本次新建。命令已知，发布通道不够。 来源：e2b:prime。
+**结论。** 状态 new，批次 2，优先级 P2，issue #69。命令已知，发布通道不够。 来源：e2b:prime。
 
 ## appworld
 
@@ -953,7 +1016,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** https://github.com/stonybrooknlp/appworld 无头形态：该 tag 的 runner。
 
-**结论。** 状态 new，批次 2，优先级 P2，issue 本次新建。比 tau2 旧，放后面。 来源：upstream:appworld。
+**结论。** 状态 new，批次 2，优先级 P2，issue #70。比 tau2 旧，放后面。 来源：upstream:appworld。
 
 ## muse
 
@@ -969,7 +1032,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** https://docs.e2b.dev/agents/muse.md；https://dev.meta.ai/docs/muse-code 无头形态：muse exec --yolo "<prompt>"。
 
-**结论。** 状态 new，批次 2，优先级 P2，issue 本次新建。E2B 有，我们没有安装物。 来源：e2b:muse, cookbook:muse-execution-backend-python。
+**结论。** 状态 new，批次 2，优先级 P2，issue #71。E2B 有，我们没有安装物。 来源：e2b:muse, cookbook:muse-execution-backend-python。
 
 ## devin
 
@@ -985,7 +1048,7 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **上游与调用。** https://docs.e2b.dev/agents/devin.md 无头形态：devin --permission-mode dangerous -p "<prompt>"。
 
-**结论。** 状态 new，批次 2，优先级 P2，issue 本次新建。登录挡住了可复现安装。 来源：e2b:devin, e2b:devin-outposts。
+**结论。** 状态 new，批次 2，优先级 P2，issue #72。登录挡住了可复现安装。 来源：e2b:devin, e2b:devin-outposts。
 
 ## waa
 
