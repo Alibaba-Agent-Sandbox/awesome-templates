@@ -32,7 +32,7 @@ is recorded.
 | [node-web](./node-web/README.md) | Node.js web service runtime for Express, Fastify and other frameworks | official | |
 | [openclaw](./openclaw/README.md) | OpenClaw AI Agent runtime — open-source AI coding agent gateway | official | |
 | [opencode](./opencode/README.md) | OpenCode coding agent. Command opencode run. Package opencode-ai@1.19.0. | experimental | |
-| [amp](./amp/README.md) | Amp coding agent. Command amp -x. Package @ampcode/cli pinned in the Dockerfile. | experimental | |
+| [amp](./amp/README.md) | Sourcegraph Amp CLI. amp_execute runs amp -x; amp_version and amp_setup_check do not need a key. | official | alicloud-express |
 | [droid](./droid/README.md) | Factory Droid. Command droid exec. Package @factory/cli@0.241.1. | experimental | |
 | [gemini](./gemini/README.md) | Gemini CLI. Command gemini -p. Package @google/gemini-cli@0.64.0. | experimental | |
 OpenSandbox's public sandbox images (code-interpreter, code-interpreter-base, desktop, playwright, vscode) are resolved by the SDK. This catalog does not vendor those Dockerfiles.

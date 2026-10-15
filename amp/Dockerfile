@@ -1,33 +1,35 @@
-FROM python:3.12-slim
+FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8
+ENV HOME=/home/user
+ENV AMP_SETTINGS_FILE=/home/user/.config/amp/settings.json
+ENV AMP_LOG_FILE=/home/user/.cache/amp/logs/cli.log
+# npm view @ampcode/cli version on 2026-10-15. The linux-x64 optional package uses the same version.
+ENV AMP_CLI_VERSION=0.0.1792022479-ge66e24
 
-# git, curl, ca-certificates, ripgrep. gnupg is required by the NodeSource setup script.
+USER root
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
-        curl \
         git \
-        gnupg \
         ripgrep \
-    && rm -rf /var/lib/apt/lists/*
-
-# Node.js 22 via NodeSource, then a pinned Amp CLI. AMP_API_KEY is injected at sandbox start.
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/* \
-    && npm install -g @ampcode/cli@0.0.1791964847-g13f24a
+    && node -v \
+    && npm -v \
+    && npm install -g "@ampcode/cli@${AMP_CLI_VERSION}" --registry https://registry.npmjs.org \
+    && npm cache clean --force \
+    && amp version \
+    && command -v amp
 
-# Install agent-sandbox-server (the in-sandbox HTTP server, import agent_sandbox.server).
-# abx template deploy injects the wheel into the build context. Without a wheel, install from PyPI.
-COPY *.whl /tmp/
-RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
-        pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
-    else \
-        pip install --no-cache-dir agent-sandbox-server; \
-    fi
+# agent-sandbox-server is not on PyPI. Pin is python-sdk main 61c43e0 (PR #21).
+# The echo keeps agent-sandbox-server==61c43e0be65a1f57aa09186d578e7b399e48429b in the build log.
+RUN pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/61c43e0be65a1f57aa09186d578e7b399e48429b.tar.gz#subdirectory=server-sdk" \
+    && echo "agent-sandbox-server==61c43e0be65a1f57aa09186d578e7b399e48429b"
 
-WORKDIR /app
-COPY commands.py .
+WORKDIR /home/user/app
+COPY --chown=user:user commands.py .
+RUN mkdir -p /home/user/.config/amp /home/user/.cache/amp/logs /home/user/app \
+    && chown -R user:user /home/user/.config /home/user/.cache /home/user/app
+USER user
 EXPOSE 9000
-CMD ["python3", "commands.py"]
