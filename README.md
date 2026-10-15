@@ -22,7 +22,7 @@ is recorded.
 | [python-hello](./python-hello/README.md) | A minimal Python hello world template for testing | official | alicloud-express |
 | [browser-automation](./browser-automation/README.md) | Browser automation sandbox with Playwright + Chromium for web scraping and UI testing | official | |
 | [claude-code](./claude-code/README.md) | Claude Code Agent runtime — Anthropic Claude-powered AI coding assistant | official | |
-| [codex](./codex/README.md) | OpenAI Codex CLI Agent runtime for AI-driven code generation and execution | official | |
+| [codex](./codex/README.md) | OpenAI Codex CLI (@openai/codex@0.162.1). codex exec, JSON events, sandbox bypass, OpenAI-compatible config.toml. | experimental | |
 | [codex-agent-api](./codex-agent-api/README.md) | Self-hosted OpenAI Agents API compatible service powered by Codex CLI | official | |
 | [qoder](./qoder/README.md) | Python and Node.js dev sandbox. qoder_run executes a local script; the Qoder CLI is not installed. | official | |
 | [agents-cli](./agents-cli/README.md) | Agents API for Codex and Qwen Code. The image does not preinstall either CLI. | official | |
