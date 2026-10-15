@@ -20,7 +20,9 @@
 #     template_id:  Platform template ID (optional, if published to registry)
 #     capabilities: List of required sandbox capabilities (shell, files, code, terminal, ports)
 #     status:       "official" | "community" | "experimental"
+#                   official only after L0, L1, and L2 in docs/template-spec.md
 #     providers:    optional map ignored by schema_version 1 clients
+#                   this map is not a verification record; see README "Verified on"
 #
 # Install any template with:
 #   abx template install alibaba-agent-sandbox/awesome-templates//<name>

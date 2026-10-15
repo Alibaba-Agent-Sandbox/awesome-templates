@@ -13,6 +13,9 @@ dist/
 venv/
 .env
 
+# abx rewrites placeholders into this file during deploy
+Dockerfile.abx-build
+
 # OS / editor
 .DS_Store
 Thumbs.db

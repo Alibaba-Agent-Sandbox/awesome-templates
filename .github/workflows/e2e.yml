@@ -21,7 +21,10 @@ jobs:
           python-version: "3.12"
 
       - name: Install the in-sandbox server and the test client
-        run: python -m pip install --upgrade pip && python -m pip install ./vendor/python-sdk/server-sdk httpx
+        run: python -m pip install --upgrade pip && python -m pip install ./vendor/python-sdk/server-sdk httpx pyyaml
+
+      - name: Lint templates and unit-test the checker
+        run: python3 scripts/test_spec_tools.py && python3 scripts/check_template.py --all
 
       - name: Run template e2e against locally started servers
         run: python3 scripts/run_local_e2e.py
