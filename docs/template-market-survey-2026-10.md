@@ -2,323 +2,1099 @@
 
 ## English summary
 
-Survey date: 2026-10-15. Catalog baseline: `awesome-templates` `main` at `8acab57` (Gemini CLI template). This document decides which **new** Agent Sandbox templates to build for Alibaba Cloud Express (2 vCPU, non-root `user`, no KVM, no Docker, no capabilities, egress works, FC base image has Python 3.13 and Node 20, rootfs about 10G). Platform entrypoint cannot be replaced.
+Survey date 2026-10-15, deepened the same day. Express `base` was probed with `abx create --template base` and then deleted. Verified: non-root `user` can `sudo -n` to uid 0, but `mount` is still denied; no KVM, FUSE, Docker socket, or GPU; 2 vCPU, ~2GB RAM, ~10G disk; Python 3.13.13 and Node 20.20.2; egress works; Xvfb + xdotool + scrot produced a PNG after apt install. Every OpenSandbox example, the E2B cookbook, CubeSandbox examples, and the Daytona/Modal/Vercel/Cloudflare galleries are mapped in the coverage matrix. Candidate templates: see `docs/template-backlog.json`. Wave 1 is CLI/service wrappers that fit Express. Wave 2 is a useful slice with a stated gap. Wave 3 needs another provider for the actual workload. Do not copy OpenSandbox or E2B Dockerfiles into this repo.
 
-E2B's public aliases (from docs fetched this date, not from the templates API) already cover `base`, `code-interpreter-v1`, `desktop`, `claude`, `codex`, `amp`, `opencode`, `openclaw`, `droid`, `grok`, `pi`, `hermes`, `devin`, `muse`, `prime`, `kernel-browser`, `e2b/k3s`, `android-16`, `cursor-agents`, `devin-outposts`, and `E2B/claude-managed-agents-webhooks`. OpenSandbox publishes a pinned `code-interpreter:v1.1.0` and example images for desktop, Playwright, VS Code, Chrome, and an all-in-one sandbox. CubeSandbox publishes `sandbox-code` and `sandbox-browser`. Daytona, Vercel, Cloudflare, Runloop, and Fly Sprites ship fat base images with coding CLIs preinstalled rather than one template per agent. Modal sells image-builder snapshots, not a public agent catalog. Morph's public snapshot catalog was not verified.
+## 极速版探针
 
-Do not rebuild templates that already exist: `python-hello`, `browser-automation`, `claude-code`, `codex`, `codex-agent-api`, `qoder`, `agents-cli`, `qwen-code`, `deepseek-harness`, `hermes-agent`, `node-web`, `openclaw`, `opencode`, `amp`, `droid`, `gemini`. Upgrade `hermes-agent` (it does not install the Hermes CLI) and keep `gemini` experimental until a keyed e2e exists.
+2026-10-15 在极速版模板 `base` 上实测（沙箱已删除）：用户 `user` uid 1000，`sudo -n` 可变成 uid 0，但 `sudo mount` 仍 permission denied；CapBnd/root CapEff = 00000000a80425fb（没有足够的 SYS_ADMIN 去做挂载）；无 /dev/kvm、无 /dev/fuse、无 /dev/dri、无 docker、无 docker.sock；2 vCPU，MemTotal 2143808 kB，rootfs 9.9G 可用约 9.3G；Debian 13，Python 3.13.13，Node v20.20.2，npm 10.8.2，git 2.47.3，gcc 与 make 在，没有 go/rust/java/ffmpeg/tesseract/pandoc/psql/Xvfb；/dev/shm 64M；出网访问 pypi.org 与 github.com 返回 HTTP 200；用户可以 bind 0.0.0.0:18080；`sudo apt-get install xvfb xdotool scrot openbox` 成功，`Xvfb :99` + `xdotool` + `scrot /tmp/s.png` 写出 2774 字节 PNG。未启动 openbox，所以窗口管理器会话未验证。未探测模板 `code-interpreter-v1`。
 
-Build next, P0: `kimi-code`, `goose`, `pi`, `browser-use`, `code-interpreter` (slim), `linux-desktop` (Xvfb, not OSWorld). P1 includes `cursor-agent` and `grok` only after a versioned install exists. Full SWE-bench, OSWorld, Windows Agent Arena, phone sandbox, AndroidWorld, K3s, Omarchy, qm, and qm-sandbox do not fit Express. Machine-readable list: `docs/template-backlog.json`.
+AK/SK 换票失败（FCSandbox `InvalidAction.NotFound`）。随后用 CLI `.env` 里的 `E2B_API_KEY` 作为 `ABX_SANDBOX_API_KEY`，基址是 `api.cn-hangzhou.e2b.fc.aliyuncs.com`，创建成功。密钥没有写入本文。
 
-Items marked **unverified** were not confirmed against an upstream file or API response in this pass.
+## 覆盖矩阵
 
-## 范围和方法
+状态：`exists` 目录已在 catalog；`new` 建议新建或已有 issue 但还没目录；`catalog-only` 只有平台/厂商 id，不在本仓库建 Dockerfile；`not-a-template` 不是模板。
 
-日期：2026-10-15。
-
-读过的材料：
-
-- 本仓库 `main` 的 `awesome-templates.yaml`、`registry/catalog.json`、`docs/backlog.md`、`docs/acceptance.md`。
-- E2B 文档索引 [https://docs.e2b.dev/llms.txt](https://docs.e2b.dev/llms.txt) 以及下面各节列出的 markdown 页面。没有 E2B API key，没有调用 `GET /v2/templates`。公开别名清单来自文档，可能漏掉未写入文档的公开模板。
-- GitHub API（2026-10-15）：`e2b-dev` 组织仓库、`alibaba/OpenSandbox` 的 `examples/`、`opensandbox-group/sandbox-images`、`tencentcloud/CubeSandbox` 的 `examples/`，以及候选上游的 star、license SPDX、`pushed_at` 和最新 release。
-- 厂商文档页面，链接写在各节。
-
-没有做的事：没有打开 GitHub Trending 网页。近三个月活跃度用的是 API 的 `pushed_at >= 2026-07-15`，star 数是累计值，不是三个月内的新增。没有在 Express 上实际安装这些 CLI。
-
-Express 约束（本程序 2026-10-15 已核实，写进实施说明）：非 root 用户 `user`，2 vCPU，没有 `/dev/kvm`，没有 Docker，没有 capabilities，出网可用，平台基础镜像是 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`（当前 tag `v0.0.49`），不能写 `CMD` / `ENTRYPOINT`。`docs/acceptance.md` 仍写着 `FROM python:3.12-slim`。那条和现行平台契约不一致。新模板按平台基础镜像写，不要照 acceptance 里的旧 Dockerfile 句子。
-
-`docs/acceptance.md` 还写明：OpenSandbox 已发布的 `code-interpreter`、`code-interpreter-base`、`desktop`、`playwright`、`vscode` 由 SDK 把短名字解析成镜像，不要把那些 Dockerfile 拷进本仓库。下面建议的同名能力是给极速版用的新镜像，`FROM` 平台基础镜像，自己钉包版本，不是把 OpenSandbox 的 Dockerfile 搬过来。
-
-## 已经在目录里的，不要再建
-
-| name | 状态 | 备注 |
-|---|---|---|
-| python-hello | official | 最小 Python |
-| browser-automation | official | Playwright + Chromium |
-| claude-code | official | |
-| codex | official | |
-| codex-agent-api | official | Codex CLI 上的 Agents API |
-| qoder | official | 描述写明没有安装 Qoder CLI |
-| agents-cli | official | 镜像里没有预装 Codex 或 Qwen |
-| qwen-code | official | |
-| deepseek-harness | official | |
-| hermes-agent | official | 描述写明只做聊天补全，不注册工具 |
-| node-web | official | Express/Fastify 类服务，不是 Next/Vite 脚手架 |
-| openclaw | official | |
-| opencode | experimental | `opencode-ai@1.19.0`，命令 `opencode run` |
-| amp | experimental | |
-| droid | experimental | `@factory/cli@0.241.1`，命令 `droid exec` |
-| gemini | experimental | `@google/gemini-cli@0.64.0`，命令 `gemini -p`，还没有带密钥且输出含 `ABX_E2E_OK` 的记录 |
-
-## 1. E2B
-
-文档入口：[Templates](https://docs.e2b.dev/template/quickstart.md)、[Base image](https://docs.e2b.dev/template/base-image.md)、[Coding agents](https://docs.e2b.dev/use-cases/coding-agents.md)。组织仓库 [e2b-dev](https://github.com/e2b-dev) 在 2026-10-15 有 85 个公开仓库。和模板市场直接相关的是 `E2B`（14,355 stars，Apache-2.0）、`code-interpreter`（2,418，Apache-2.0）、`desktop`（1,531，Apache-2.0）、`fragments`（6,389，Apache-2.0）、`surf`（873，Apache-2.0）、`open-computer-use`（2,360，许可证未在本次 API 输出里单列）、`awesome-ai-agents`（30,445，一份清单，不是沙箱镜像）。
-
-`fragments` 是生成式应用的 Next.js 模板，不是预置沙箱。`surf` 和 `open-computer-use` 是跑在 Desktop 沙箱上的计算机使用示例。`e2b-dev/swe-bench`（5 stars，2026-09-08 更新）和 `e2b-dev/osworld-e2b`（1 star，2026-09-16）是评测移植，不是公开别名。
-
-默认 `base`：不传 template 时使用。Debian，预装 Python 3、Node.js、Yarn、git、curl、build-essential、GitHub CLI `gh`。Dockerfile：[templates/base/e2b.Dockerfile](https://github.com/e2b-dev/E2B/blob/main/templates/base/e2b.Dockerfile)。构建基础镜像名 `e2bdev/base`。默认 2 vCPU、512 MiB。NixOS 要用 `e2bdev/nixos`，那是构建用基础镜像，不是下面表格里的沙箱别名。
-
-下表「公开别名」指文档里出现 `e2b sbx create <name>` 或 `Sandbox.create("<name>")`。抓取日期 2026-10-15。
-
-| 别名 | 用途 | 里面有什么 | 无头调用 |
-|---|---|---|---|
-| `base` | 默认 Linux 沙箱 | 见上 | `commands.run` |
-| `code-interpreter-v1` | Code Interpreter SDK | Python、JS/TS、R、Java、Bash。服务端口 49999。Python 依赖见仓库 `template/requirements.txt`（2026-10-15 从 main 拉取）：jupyter-server 2.20.0、pandas 2.2.3、numpy 2.3.5、matplotlib 3.10.9、scikit-learn 1.6.1、spacy 3.8.14、opencv-python 4.11.0.86 等 | SDK `run_code`，不是一条 agent CLI |
-| `desktop` | 计算机使用 | Ubuntu 22.04、XFCE、noVNC 6080、LibreOffice、xdotool、scrot、ffmpeg、x11vnc。Desktop SDK 默认模板。分辨率默认 1024×768 | `screenshot()`、鼠标键盘 API、`stream.start()` |
-| `claude` | Claude Code | 预装 Claude Code | `claude --dangerously-skip-permissions -p "..."`，密钥 `ANTHROPIC_API_KEY` |
-| `codex` | Codex CLI | 预装 Codex | `codex exec --full-auto`，密钥 `CODEX_API_KEY` |
-| `amp` | Amp | 预装 Amp | `amp --dangerously-allow-all -x "..."`，密钥 `AMP_API_KEY` |
-| `opencode` | OpenCode | 预装 OpenCode | `opencode run "..."`；另有 `opencode serve --port 4096` |
-| `openclaw` | OpenClaw gateway | 文档用 `Sandbox.create("openclaw")`，页面正文没有写 pre-built 这三个词，但是公开别名 | `openclaw gateway --allow-unconfigured --bind lan --port 18789`，不是单次提示词 |
-| `droid` | Factory Droid | 预装 Droid | `droid exec --auto low "..."`，密钥 `FACTORY_API_KEY` |
-| `grok` | xAI Grok Build | 预装 Grok Build | `grok --always-approve -p "..."`，密钥 `XAI_API_KEY` |
-| `pi` | Pi | 预装 Pi | 文档写 `pi -p "..."`，密钥 `ANTHROPIC_API_KEY` |
-| `hermes` | Hermes Agent | Hermes CLI 和自带 skills | `hermes chat -Q --yolo --provider ... -q "..."` |
-| `devin` | Devin for Terminal | 预装 Devin | `devin --permission-mode dangerous -p "..."`。首次要交互登录 |
-| `muse` | Meta Muse Code | 预装 Muse Code。[上游文档](https://dev.meta.ai/docs/muse-code) | `muse exec --yolo "..."`，密钥 `META_API_KEY` |
-| `prime` | Prime Agent | 预装，命令 `prime-agent`。[仓库](https://github.com/PrimeIntellect-ai/prime-agent) | `prime-agent -p "..."` |
-| `kernel-browser` | 云浏览器 | Kernel SDK、Playwright、Browser Use | 需要 `KERNEL_API_KEY`。浏览器在 Kernel，不在沙箱里 |
-| `e2b/k3s` | 单节点 k3s | kubectl、Flannel VXLAN、Traefik、local-path | `kubectl get nodes`。限制：无 BPF JIT，无 Kata/KubeVirt，无多节点 |
-| `android-16` | Android 16 | redroid，构建期启动，adb `127.0.0.1:5555` | `adb shell`、`screencap` |
-| `cursor-agents` | Cursor 自建机器调度器 | 为每个请求再起 `cursor-agents-worker` | 需要 Cursor Enterprise 和 service-account key。不是 `agent -p` |
-| `devin-outposts` | Devin Outposts 调度器 | worker 模板 `devin-outposts-worker` | 需要 Devin Enterprise，`cog_` token |
-| `E2B/claude-managed-agents-webhooks` | Claude Managed Agents 的 webhook | 端口 8000 | 需要 Anthropic environment id 和 key |
-
-文档里的 Docker、Next.js、Expo 示例是让用户自己 `Template.build` 的配方，构建名可以叫 `docker`，不是上表这种公开别名。
-
-E2B 沙箱没有 GPU（[FAQ](https://docs.e2b.dev/faq/gpu-support.md)）。k3s 和 Android 能跑，是因为沙箱是 microVM，有自己的内核；这不能照搬到极速版容器。
-
-## 2. OpenSandbox
-
-仓库 [alibaba/OpenSandbox](https://github.com/alibaba/OpenSandbox)（与 `opensandbox-group/OpenSandbox` 同一仓库，15,858 stars，2026-10-14 更新）。示例头注释写 Apache-2.0。示例索引：[docs/examples/index.md](https://github.com/alibaba/OpenSandbox/blob/main/docs/examples/index.md)，目录以 2026-10-15 的 `examples/` 列表为准。
-
-镜像仓库 [opensandbox-group/sandbox-images](https://github.com/opensandbox-group/sandbox-images)（2 stars）目前只构建并发布 `code-interpreter` 和 `code-interpreter-base`。README 写明基于 Ubuntu 24.04，预装 Python 3.10–3.14（uv，3.14 为实验）、Java 8/11/17/21、Maven 3.9.2、Node 18/20/22、Go 1.23/1.24/1.25，以及 Jupyter 内核（ipykernel、IJava、tslab、gonb、bash_kernel）。默认版本 Python 3.14、Java 21、Node 22、Go 1.25。Jupyter 在 `127.0.0.1:44771`。amd64 带 clone3-workaround v1.0.0。示例代码里的钉扎引用是 `sandbox-registry.cn-zhangjiakou.cr.aliyuncs.com/opensandbox/code-interpreter:v1.1.0`，Docker Hub 名 `opensandbox/code-interpreter:v1.1.0`（文档页 [code-interpreter](https://open-sandbox.ai/examples/code-interpreter)）。
-
-其它名字是示例 Dockerfile 或浮动 tag，不是这个镜像仓库的独立发布：
-
-| 示例 | 镜像 | 做什么 |
-|---|---|---|
-| code-interpreter | `.../code-interpreter:v1.1.0` | Python/Java/TS/Go 代码执行 |
-| desktop | `opensandbox/desktop:latest`（未钉） | Xvfb + XFCE + x11vnc + noVNC。密码 `VNC_PASSWORD` |
-| playwright | `opensandbox/playwright:latest`（未钉） | 无头 Chromium 抓标题和截图 |
-| vscode | `opensandbox/vscode:latest`（未钉） | code-server，端口默认 8443 |
-| chrome | `opensandbox/chrome:latest` | VNC + DevTools |
-| aio-sandbox | `ghcr.io/agent-infra/sandbox:latest`（未钉） | 别人的 all-in-one 镜像，接 OpenSandbox |
-| windows | `dockurr/windows:latest`，`VERSION=11` | KVM/QEMU Windows 客户机 |
-| claude-code、codex-cli、gemini-cli、opencode、qwen-code | 同上 code-interpreter:v1.1.0 | 启动后再 `npm i -g ...@latest`，未钉 CLI 版本 |
-| kimi-cli | 同上 | 启动后 `pip install kimi-cli`（未钉）。这是旧的 Python CLI；现行产品是 Kimi Code |
-| openclaw | `ghcr.io/openclaw/openclaw:latest`（未钉） | Gateway，端口 18789 |
-| langgraph、deep-agents、deer-flow、google-adk、microsoft-agent-framework | 代码在宿主编排，工具进沙箱 | 不是一块预置镜像 |
-| harbor-evaluation | 每个 trial 一个沙箱 | Harbor 评测 |
-| agent-sandbox、aks-kata | Kubernetes / AKS Kata | 需要集群和 VM 隔离 |
-| 各类 volume-mount | 挂载演示 | 不是应用模板 |
-
-`examples/` 里还有 `client-pool-schedule`、`github-copilot-cli-sandbox`。索引页还列了 Apply Model Patches，本次目录列表里没有单独文件夹，以目录列表为准。
-
-## 3. CubeSandbox
-
-仓库 [tencentcloud/CubeSandbox](https://github.com/tencentcloud/CubeSandbox)（12,942 stars，2026-10-15 更新）。许可证 SPDX 本次没有单独拉取，记为 **unverified**。模板是 OCI 镜像加热启动的 MicroVM 快照，镜像本身不能直接当模板用。[模板说明](https://github.com/tencentcloud/CubeSandbox/blob/master/docs/guide/templates.md)。
-
-已在文档里给出仓库地址的官方镜像：
-
-| 镜像 | 用途 |
-|---|---|
-| `cube-sandbox-int.tencentcloudcr.com/cube-sandbox/sandbox-code:latest`（中国大陆用 `cube-sandbox-cn`） | 代码解释器。端口 49999 和 envd 49983。只有这个 tag 被写成多架构。`:latest` 未钉 |
-| `.../sandbox-browser:latest` | Chromium remote debugging，端口 9000，Playwright 走 CDP |
-| `ghcr.io/tencentcloud/cubesandbox-base:2026.16`（教程里也出现 `:latest`） | 带 envd 的基础镜像，端口 49983 |
-
-Ubuntu 桌面不是预置镜像。`examples/ubuntu-desktop` 要自己构建：Ubuntu 22.04 GNOME，noVNC 6080，建议 4 vCPU / 8G。[指南](https://cubesandbox.com/guide/integrations/ubuntu-desktop)。
-
-`examples/`（2026-10-15）：`code-sandbox-quickstart`、`browser-sandbox`、`cubesandbox-base-nginx`、`ubuntu-desktop`、`claude-code-integration`、`openclaw-integration`、`opencode-plugin-sandbox`、`pi-agent-integration`、`langchain-integration`、`openai-agents-example`、`openai-agents-code-interpreter`、`mcp-gateway`、`snapshot-rollback-clone`、`volume`、`host-mount`、`network-policy`、`route-aware-egress`、`grpc-ingress`、`ivshmem`、`mini-rl-training`、`cube-bench`、`e2b-dev-sidecar`、`run-code-env-inheritance`。这些是集成示例，除了上面三块镜像，没有另一套可直接 `tpl create-from-image` 的公开目录。Cube 需要 KVM。极速版对不上。
-
-## 4. 其它沙箱产品里值得对齐的现成环境
-
-### Daytona
-
-[Snapshots](https://www.daytona.io/docs/en/snapshots/)（抓取 2026-10-15）的默认快照是规格，不是 agent 名：`daytona-small/medium/large`（容器）、`daytona-gpu`、`daytona-vm-*`、`windows-small/medium/large`。默认镜像 README（[daytonaio/daytona images/sandbox](https://github.com/daytonaio/daytona/blob/46f29d5b/images/sandbox/README.md)）写明预装 Python 数据栈（numpy、pandas、torch、transformers 等，版本表在快照文档里，例如 pydantic-ai v1.47.0）以及 `@anthropic-ai/claude-code`、`@openai/codex`、`openclaw`、`opencode-ai`。值得对齐的是「一块能写代码的数据镜像」加上已经有的编码 CLI，不是再做一个 Windows 或 GPU 快照。Windows 和 GPU 在 Express 上不可行。
-
-### Modal
-
-[Images](https://modal.com/docs/guide/images) 默认是 Debian slim，Python 小版本跟着本机走。没有公开的 agent 模板目录。文件系统快照和目录快照是产品能力。内存快照在 Runloop 迁移文档里被写成 Alpha，7 天过期，不能带 GPU。不作为本目录的下一批模板。
-
-### Cloudflare Sandbox
-
-两个页面版本号不一致，当前 tag **unverified**：
-
-- [DOCKER_README.md](https://github.com/cloudflare/sandbox-sdk/blob/main/DOCKER_README.md) 写 `cloudflare/sandbox:0.12.7`，Ubuntu 22.04，Node 24、Bun、git、curl、jq；变体 `-<version>-python`（Python 3.11，matplotlib/numpy/pandas/ipython）、`-opencode`、`-musl`。
-- [官方 Dockerfile 文档](https://developers.cloudflare.com/sandbox/sdk/configuration/dockerfile/) 的示例仍是 `0.7.0`，并写 Node 20。
-
-对齐点：默认镜像里带 OpenCode 变体，以及一份小的 Python 数据栈。镜像 tag 必须和 `@cloudflare/sandbox` 的 npm 版本一起钉，不能抄上面任一页的数字当永恒版本。
-
-### Vercel Sandbox
-
-[更新说明](https://vercel.com/changelog/vercel-sandbox-managed-images)（抓取 2026-10-15）：默认 `vercel/sandbox/universal:latest`，Ubuntu 26.04，Node 24，Python 3.14 + uv，预装 `opencode`、`claude-code`、`codex`、`pi`，以及 git、vim、nano、tmux、ripgrep、jq、fzf。另有 `node:22|24|26`、`python:3.14`、`ubuntu:latest`、`arch:latest`。`latest` 每晚滚动，不适合当本仓库的钉扎。值得抄的是组合：Pi 和三种编码 CLI 放进基础环境。本目录已经有后三种，缺 Pi。
-
-### Runloop
-
-[预置 blueprint](https://docs.runloop.ai/docs/devboxes/blueprints/overview)（抓取 2026-10-15）：`runloop/starter-x86_64` 与 arm64、`runloop/universal-ubuntu-22.04-*`、`universal-ubuntu-24.04-*`、带 Docker-in-Docker 的 `universal-*-dnd` 和 `ubuntu-dnd-*`。starter 是不指定镜像时的默认。没有按 agent 拆开的公开模板。DinD 在 Express 上不可用。对齐 starter/universal 的「常用开发工具」即可。
-
-### Morph
-
-本次没有找到一份可核对的 Morph 公开沙箱快照目录。Morph 作为代码编辑/MCP 层的二手描述，不能当成模板市场。记为 **unverified**，不建议为此建模板。
-
-### Fly Sprites
-
-二手对比页 [fly.io/learn/fly-vs-vercel](https://fly.io/learn/fly-vs-vercel/)（抓取 2026-10-15）写 Sprites 预装 Claude Code、Cursor CLI、Gemini CLI、Codex CLI，以及 Node、Python、Go、Ruby、Rust、Java、Elixir。这不是 Sprites 参考手册原文，预装列表记为二手。对齐点是 Cursor CLI 和多语言工具链。Sprites 的持久磁盘和内存挂起 Express 没有。
-
-## 5. 近三个月仍在更新、适合做成沙箱模板的上游
-
-门槛：GitHub `pushed_at` 在 2026-07-15 之后，并且是编码 CLI、agent 运行时、浏览器代理、评测套件或开发环境。star 为 2026-10-15 的累计值。
-
-已经在目录里、只作升级候选的：OpenCode 213,544（MIT）、OpenClaw 392,032（MIT）、Gemini CLI 107,372（Apache-2.0）、Qwen Code 28,485（Apache-2.0）、Hermes Agent 253,814（MIT，release v0.22.1，2026-10-14）。Claude Code 与 Codex 仓库也在更新，目录里已有模板。
-
-值得新做或已经写进 backlog 的，见第 8 节。明确不新做目录的活跃项目：
-
-| 项目 | stars | 许可证 | 为什么不单开 |
-|---|---|---|---|
-| [basecamp/omarchy](https://github.com/basecamp/omarchy) v4.0.4 | 44,844 | MIT | Arch + Hyprland 桌面发行版，没有无头提示词命令 |
-| [yc-software/qm](https://github.com/yc-software/qm) desktop-v0.1.2 预发布 | 15,417 | MIT | 沙箱后端路由器（Docker、MicroVM、E2B、Modal 等），不是一条 CLI |
-| [Skyvern-AI/skyvern](https://github.com/Skyvern-AI/skyvern) v1.0.56 | 23,199 | AGPL-3.0 | 浏览器工作流，通常要自带浏览器栈；AGPL 不适合作为默认官方模板。browser-use 已覆盖同类需求 |
-| [RooCodeInc/Roo-Code](https://github.com/RooCodeInc/Roo-Code) v3.54.0，pushed 2026-05-15 | 24,280 | Apache-2.0 | 编辑器插件，三个月内无推送。无头 CLI **unverified** |
-| [Kilo-Org/kilocode](https://github.com/Kilo-Org/kilocode) v7.8.10 预发布 | 27,604 | MIT | 二手页面写 `kilo run --auto`，上游无头入口本次 **unverified** |
-| [plandex-ai/plandex](https://github.com/plandex-ai/plandex) server/v2.2.1，2025-07 | 15,723 | MIT | 不在三个月窗口内 |
-| [xlang-ai/OSWorld](https://github.com/xlang-ai/OSWorld) | 3,209 | Apache-2.0 | 要桌面虚拟机 |
-| [SWE-bench/SWE-bench](https://github.com/SWE-bench/SWE-bench) tag v5.0.1 | 6,024 | MIT | 评测要 Docker。SWE-rebench 用的是 [SWE-rebench/SWE-bench-fork](https://github.com/SWE-rebench/SWE-bench-fork) 加预构建镜像，同样要 Docker |
-| [SWE-agent/SWE-agent](https://github.com/SWE-agent/SWE-agent) v1.1.0（2025-05） | 20,558 | MIT | 自己再起环境。用 mini-swe-agent 的本地模式代替 |
-| [microsoft/WindowsAgentArena](https://github.com/microsoft/WindowsAgentArena) v0.0.4 | 910 | MIT | Windows 客户机 |
-| [google-research/android_world](https://github.com/google-research/android_world) | 951 | Apache-2.0 | 真机模拟器，要 AVD 和 KVM。启动参数 `-grpc 8554` |
-| [THUDM/Android-Lab](https://github.com/THUDM/Android-Lab) | 328 | MIT | 无 release，同类模拟器缺口 |
-| [laude-institute/terminal-bench](https://github.com/laude-institute/terminal-bench) | 2,600 | Apache-2.0 | 无 GitHub release。任务运行要 Docker，本次 **unverified** 是否有纯本地后端 |
-| [ServiceNow/BrowserGym](https://github.com/ServiceNow/BrowserGym) v0.14.3 | 1,402 | SPDX NOASSERTION | 浏览器 gym。比 browser-use 更偏评测，网站任务经常要额外服务 |
-| [web-arena-x/webarena](https://github.com/web-arena-x/webarena) v0.2.0（2023） | 1,627 | Apache-2.0 | 要自建一组网站 |
-| [bytedance/deer-flow](https://github.com/bytedance/deer-flow) v2.1.0 | 83,873 | MIT | OpenSandbox 有示例，但是长程 harness，不是一条钉死的无头 CLI。本次没有核实单次调用参数，不放进 25 条实施清单 |
-| AutoGPT | 187,580 | SPDX NOASSERTION | 平台，不是一块沙箱模板 |
-
-## 6. 已经点名的需求：可行性（不重新论证取舍）
-
-这些是既有需求。目录里已经有的不再建议新建。没有的只写极速版上能不能跑。
-
-| 需求 | 可行性 | 说明 |
-|---|---|---|
-| Claude Code | 已有 `claude-code`。Express：yes | E2B 别名 `claude`。无头 `claude --dangerously-skip-permissions -p`。密钥 `ANTHROPIC_API_KEY`，本环境没有 |
-| Codex | 已有 `codex` 与 `codex-agent-api`。Express：yes | E2B 别名 `codex`。`codex exec --full-auto` |
-| OpenCode | 已有 `opencode`（experimental）。Express：yes | E2B 别名 `opencode`。`opencode run`。钉的是 `opencode-ai@1.19.0`，上游仓库 2026-10-15 仍在更新，升级版本是另一件事 |
-| Amp | 已有 `amp`（experimental）。Express：yes | E2B 别名 `amp`。`amp --dangerously-allow-all -x`。密钥 `AMP_API_KEY` |
-| Droid | 已有 `droid`（experimental）。Express：yes | E2B 别名 `droid`。本仓库命令是 `droid exec`，包 `@factory/cli@0.241.1`。E2B 文档写 `droid exec --auto low` |
-| OpenClaw | 已有 `openclaw`。Express：yes | E2B 别名 `openclaw`。入口是 gateway，不是 ` -p ` |
-| SWE（SWE-bench / SWE-agent） | 官方 harness：no | 每个实例一个 Docker 镜像。极速版不能起兄弟容器。可做的子集是 `mini-swe-agent` 本地模式，见 backlog |
-| OSWorld | 完整评测：no | 要桌面虚拟机、截图和输入注入的客户机。可做的子集是 `linux-desktop`（Xvfb），不能跑 OSWorld 分数 |
-| WAA | no | Windows 客户机。极速版是 Linux 容器 |
-| 手机沙箱 | no | 没有设备或厂商协议。沙箱 API 没有手机这种资源 |
-| Android World | no | 模拟器要 AVD 和 `/dev/kvm`。E2B `android-16` 是他们 microVM 里的 redroid，不能搬进无 KVM 的容器 |
-| Grok | partial | 命令形状可行：`grok --always-approve -p`，密钥 `XAI_API_KEY`（本环境没有）。安装仍是未钉版本的 `https://x.ai/cli/install.sh`。没有公开的 CLI 仓库。E2B 已有别名 `grok`。钉住二进制之前不要建目录 |
-| Pi（E2B `pi`） | yes | 见 `pi`。本目录不会变成 E2B 上的公开别名 `pi`。无头调用以 v1.2.0 的 `--help` 为准 |
-| K3s | no | 要特权、cgroup、常常还要 `/dev/kmsg`。E2B `e2b/k3s` 能跑是因为 microVM。极速版没有这些 |
-| Omarchy | no | 整机 Arch + Hyprland，没有可调用的无头 CLI |
-| qm | no | 后端路由和租约不在 `agent_sandbox.server` 的命名命令里。把源码 COPY 进镜像得不到那些后端 |
-| qm-sandbox | no | 文档中的具体接法是 Superserve 模板 `qm-agent-0.1.0`。极速版的安装命令不会注册那块模板 |
-
-## 7. 建议升级，不是新目录
-
-- `hermes-agent`：E2B 别名 `hermes` 装的是真 CLI。本仓库描述写明不注册工具。升级应钉 [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent) v0.22.1（2026-10-14，MIT），命令 `hermes chat -Q --yolo -q "<prompt>"`，密钥按所选 provider（E2B 示例是 `OPENROUTER_API_KEY`）。安装方式要在 v0.22.1 的 README 里钉成包或二进制，本次没有打开那个 README，安装命令 **unverified**。
-- `gemini`：保持 experimental，直到带密钥的 e2e 输出含 `ABX_E2E_OK`。
-- `qoder`：官方描述没有安装 Qoder CLI。若上游给出可钉版本的无头命令，再补进这个目录，不要新建 `qoder-cli`。
-- `browser-automation`：若 `playwright-mcp` 只是在现有 Chromium 上多一个进程，优先加命名命令，而不是第二个浏览器镜像。
-- `opencode`：包仍是 1.19.0，上游仓库非常活跃。升级版本时保持 experimental，直到密钥 e2e 通过。
-
-## 8. 建议新建的模板（P0 在前）
-
-可行性：`yes` 表示按实施说明可以落在极速版上；`partial` 表示有一条能跑的子集，或安装/体积/无头参数还没核实死；`no` 没有放进这张表。完整字段在 `docs/template-backlog.json`。
-
-| 排序 | name | 优先级 | 可行性 | 一句话 |
+| 来源 | 示例 | 模板 | 状态 | 备注 |
 |---|---|---|---|---|
-| 1 | kimi-code | P0 | yes | Moonshot 现行 CLI，npm `@moonshot-ai/kimi-code@2.2.0`，要在镜像里装 Node 22 |
-| 2 | goose | P0 | yes | v1.54.0 的 linux gnu tarball，`goose run -t` |
-| 3 | pi | P0 | yes | v1.2.0 的 `pi-linux-x64.tar.gz`，E2B/Vercel 都预装 |
-| 4 | browser-use | P0 | yes | 0.13.11，无头 Chromium 上的浏览器 agent |
-| 5 | code-interpreter | P0 | partial | 只做 Jupyter + pandas/numpy/matplotlib；全量 E2B 科学栈先不要 |
-| 6 | linux-desktop | P0 | partial | Xvfb + noVNC，不是 OSWorld |
-| 7 | cursor-agent | P1 | partial | `agent -p` 已有文档，安装脚本不钉版本 |
-| 8 | grok | P1 | partial | 命令已知，安装不钉版本，先不要建目录 |
-| 9 | code-server | P1 | yes | code-server 4.141.0 |
-| 10 | mini-swe-agent | P1 | partial | 本地改仓库；不跑 SWE-bench Docker |
-| 11 | aider | P1 | yes | `aider-chat==0.86.0`，上游 2025-08 后无 release |
-| 12 | playwright-mcp | P1 | yes | `@playwright/mcp@0.0.83`，能并进 browser-automation 就不要新目录 |
-| 13 | document-tools | P1 | yes | pandoc + `soffice --headless` |
-| 14 | dev-services | P1 | yes | 用户态 Postgres 和 Redis，不用 Docker |
-| 15 | copilot-cli | P1 | partial | 最新 release 是预发布，无头参数未在上游页核实 |
-| 16 | crush | P1 | partial | 仓库活跃，可见 release 只有 nightly |
-| 17 | cline | P1 | partial | v4.1.24 声称有 CLI，argv 未核实 |
-| 18 | deepagents | P1 | partial | 包 0.7.25 已发布，是否有控制台脚本未核实 |
-| 19 | tau2-bench | P1 | yes | 工具调用评测，不要虚拟机 |
-| 20 | polyglot-toolchain | P1 | partial | 各钉一个 Go、Rust、Java，先量 rootfs |
-| 21 | ocr | P2 | yes | tesseract |
-| 22 | media-tools | P2 | yes | CPU 版 ffmpeg |
-| 23 | stagehand | P2 | partial | 和 browser-use 重叠，Node API 未钉 |
-| 24 | prime-agent | P2 | partial | E2B 有别名，可见 release 只有 nightly |
-| 25 | appworld | P2 | partial | v0.1.3.post1，是否调用 Docker 未核实 |
+| OpenSandbox examples/ | claude-code | `claude-code` | exists |  |
+| OpenSandbox examples/ | gemini-cli | `gemini` | exists |  |
+| OpenSandbox examples/ | codex-cli | `codex` | exists |  |
+| OpenSandbox examples/ | opencode | `opencode` | exists |  |
+| OpenSandbox examples/ | qwen-code | `qwen-code` | exists |  |
+| OpenSandbox examples/ | kimi-cli | `kimi-code` | new |  |
+| OpenSandbox examples/ | langgraph | `not-a-template` | not-a-template | 图在宿主进程，沙箱只是工具后端。 |
+| OpenSandbox examples/ | deep-agents | `deepagents` | new |  |
+| OpenSandbox examples/ | google-adk | `not-a-template` | not-a-template | ADK 在宿主，工具进沙箱。 |
+| OpenSandbox examples/ | openclaw | `openclaw` | exists |  |
+| OpenSandbox examples/ | deer-flow | `not-a-template` | not-a-template | DeerFlow 2.1.0 自带 OpenSandboxProvider，编排在宿主。 |
+| OpenSandbox examples/ | chrome | `chrome` | new |  |
+| OpenSandbox examples/ | playwright | `browser-automation` | exists |  |
+| OpenSandbox examples/ | desktop | `osworld` | new | 极速版切片是 osworld；E2B 的 desktop id 另记。 |
+| OpenSandbox examples/ | vscode | `code-server` | new |  |
+| OpenSandbox examples/ | code-interpreter | `opensandbox-code-interpreter` | catalog-only | 镜像短名由 OpenSandbox SDK 解析，不拷 Dockerfile。 |
+| OpenSandbox examples/ | client-pool-schedule | `not-a-template` | not-a-template | 控制面 Resize API，不是镜像。 |
+| OpenSandbox examples/ | aio-sandbox | `not-a-template` | not-a-template | 未钉的 ghcr.io/agent-infra/sandbox:latest，能力被 code-interpreter、osworld、code-server 拆开。 |
+| OpenSandbox examples/ | agent-sandbox | `not-a-template` | not-a-template | kubernetes-sigs/agent-sandbox 是集群 CRD。 |
+| OpenSandbox examples/ | aks-kata | `not-a-template` | not-a-template | 要 AKS 和 Kata VM。 |
+| OpenSandbox examples/ | windows | `waa` | new | KVM/QEMU。极速版只保留远程客户端，见 waa。 |
+| OpenSandbox examples/ | harbor-evaluation | `not-a-template` | not-a-template | 一个 trial 一个沙箱的编排器，试用现有模板，不单独做镜像。 |
+| OpenSandbox examples/ | host-volume-mount | `not-a-template` | not-a-template | 极速版无宿主目录挂载。等价物是 files API 上传/下载。探针无 /dev/fuse，sudo mount 失败。 |
+| OpenSandbox examples/ | docker-pvc-volume-mount | `not-a-template` | not-a-template | Docker named volume。极速版无 Docker。 |
+| OpenSandbox examples/ | docker-ossfs-volume-mount | `not-a-template` | not-a-template | OSS FUSE。无 fuse 设备。对象存储要走 HTTPS SDK，不是挂载。 |
+| OpenSandbox examples/ | rclone-volume-mount | `not-a-template` | not-a-template | 同样依赖 FUSE 或 CSI。 |
+| OpenSandbox examples/ | kubernetes-pvc-volume-mount | `not-a-template` | not-a-template | PVC 是 Kubernetes 提供方的能力，不是模板。 |
+| OpenSandbox examples/ | github-copilot-cli-sandbox | `copilot-cli` | new |  |
+| OpenSandbox examples/ | microsoft-agent-framework | `not-a-template` | not-a-template | 宿主框架。 |
+| OpenSandbox docs | apply-patch（文档页，examples/ 无目录） | `apply-patch` | new | CODEX_REF 仍是占位符。 |
+| e2b-cookbook/examples | agentkit-coding-agent | `code-interpreter-v1` | catalog-only | 宿主 AgentKit + 解释器 |
+| e2b-cookbook/examples | anthropic-claude-code-in-sandbox-js | `claude-code` | exists |  |
+| e2b-cookbook/examples | anthropic-claude-code-in-sandbox-python | `claude-code` | exists |  |
+| e2b-cookbook/examples | anthropic-computer-use-orangehrm-js | `osworld` | new | 桌面加浏览器 |
+| e2b-cookbook/examples | anthropic-managed-agents | `not-a-template` | not-a-template | E2B webhook 模板，控制面不在极速版 |
+| e2b-cookbook/examples | brainbase-universal-harness-bakeoff | `not-a-template` | not-a-template | 宿主 bake-off |
+| e2b-cookbook/examples | claude-code-interpreter-js | `code-interpreter-v1` | catalog-only |  |
+| e2b-cookbook/examples | claude-code-interpreter-python | `code-interpreter-v1` | catalog-only | README 404，按目录名归类 |
+| e2b-cookbook/examples | claude-visualize-website-topics | `browser-automation` | exists | README 404，按目录名归类 |
+| e2b-cookbook/examples | cleanup-paused-sandboxes | `not-a-template` | not-a-template | 生命周期 API |
+| e2b-cookbook/examples | codestral-code-interpreter-js | `code-interpreter-v1` | catalog-only |  |
+| e2b-cookbook/examples | codestral-code-interpreter-python | `code-interpreter-v1` | catalog-only | README 404 |
+| e2b-cookbook/examples | crabbox-e2b-python | `not-a-template` | not-a-template | 宿主测试循环 |
+| e2b-cookbook/examples | crewai-python | `not-a-template` | not-a-template | CrewAI 在宿主 |
+| e2b-cookbook/examples | custom-sandbox-domain-proxy | `not-a-template` | not-a-template | 自定义域名是 provider 网络 |
+| e2b-cookbook/examples | docker-in-e2b | `not-a-template` | not-a-template | 探针无 docker socket 且 mount 失败 |
+| e2b-cookbook/examples | dspy-rlms-python | `code-interpreter-v1` | catalog-only | 宿主 DSPy |
+| e2b-cookbook/examples | firecrawl-scrape-and-analyze-airbnb-data | `browser-automation` | exists | 抓取在浏览器或 HTTP，分析用解释器 |
+| e2b-cookbook/examples | fireworks-code-interpreter-python | `code-interpreter-v1` | catalog-only | README 404 |
+| e2b-cookbook/examples | flue-feedback-analyst-js | `not-a-template` | not-a-template | 宿主 Flue |
+| e2b-cookbook/examples | groq-code-interpreter-js | `code-interpreter-v1` | catalog-only |  |
+| e2b-cookbook/examples | groq-code-interpreter-python | `code-interpreter-v1` | catalog-only | README 404 |
+| e2b-cookbook/examples | hello-world-js | `python-hello` | exists | JS 你好用 node-web 或 python-hello 的命令通道 |
+| e2b-cookbook/examples | hello-world-python | `python-hello` | exists |  |
+| e2b-cookbook/examples | hermes-incident-playbook-python | `hermes-agent` | exists |  |
+| e2b-cookbook/examples | langchain-python | `code-interpreter-v1` | catalog-only | LangChain 在宿主 |
+| e2b-cookbook/examples | langgraph-plan-and-execute-python | `not-a-template` | not-a-template | LangGraph 在宿主 |
+| e2b-cookbook/examples | langgraph-python | `not-a-template` | not-a-template | 同上 |
+| e2b-cookbook/examples | mcp-browserbase-js | `playwright-mcp` | new | 云浏览器不是本地 MCP |
+| e2b-cookbook/examples | mcp-claude-code-js | `claude-code` | exists | MCP 客户端在 CLI 里 |
+| e2b-cookbook/examples | mcp-client-js | `not-a-template` | not-a-template | 宿主 MCP 客户端 |
+| e2b-cookbook/examples | mcp-custom-server-js | `not-a-template` | not-a-template | 示例服务器，不是产品模板 |
+| e2b-cookbook/examples | mcp-custom-template-js | `not-a-template` | not-a-template | 教人建 E2B 模板 |
+| e2b-cookbook/examples | mcp-groq-exa-js | `not-a-template` | not-a-template | 宿主 Groq + Exa |
+| e2b-cookbook/examples | mcp-research-agent-js | `not-a-template` | not-a-template | 宿主研究 agent |
+| e2b-cookbook/examples | muse-execution-backend-python | `muse` | new |  |
+| e2b-cookbook/examples | nextjs-code-interpreter | `next-app` | new | 同时用 code-interpreter-v1 |
+| e2b-cookbook/examples | openai-agents-api-python-sdk-webhook-managed | `codex-agent-api` | exists | webhook 形态相近但不是同一控制面 |
+| e2b-cookbook/examples | openai-agents-api-python-sdk | `codex-agent-api` | exists |  |
+| e2b-cookbook/examples | openai-agents-sdk | `not-a-template` | not-a-template | 宿主 Agents SDK |
+| e2b-cookbook/examples | openai-codex-in-sandbox-js | `codex` | exists |  |
+| e2b-cookbook/examples | openai-codex-in-sandbox-python | `codex` | exists |  |
+| e2b-cookbook/examples | openai-image-analysis-js | `code-interpreter-v1` | catalog-only |  |
+| e2b-cookbook/examples | openai-image-analysis-python | `code-interpreter-v1` | catalog-only | README 404 |
+| e2b-cookbook/examples | openai-js | `code-interpreter-v1` | catalog-only |  |
+| e2b-cookbook/examples | openai-ml-dataset-js | `code-interpreter-v1` | catalog-only |  |
+| e2b-cookbook/examples | openai-ml-dataset-python | `code-interpreter-v1` | catalog-only | README 404 |
+| e2b-cookbook/examples | openai-python | `code-interpreter-v1` | catalog-only | README 404 |
+| e2b-cookbook/examples | opencode-e2b-workspace-js | `opencode` | exists |  |
+| e2b-cookbook/examples | openenv-terminus-python | `swe` | new | 多轮修代码，不跑 Docker 评测 |
+| e2b-cookbook/examples | pi-code-interpreter-js | `pi` | new |  |
+| e2b-cookbook/examples | playwright-in-e2b | `browser-automation` | exists |  |
+| e2b-cookbook/examples | pydantic-ai-python | `not-a-template` | not-a-template | 宿主 Pydantic AI |
+| e2b-cookbook/examples | pydantic-ai-temporal-python | `not-a-template` | not-a-template | 宿主恢复逻辑 |
+| e2b-cookbook/examples | sandbox-agent-sdk-js | `not-a-template` | not-a-template | 宿主 SDK |
+| e2b-cookbook/examples | stirrup-python | `code-interpreter-v1` | catalog-only |  |
+| e2b-cookbook/examples | tailcat-e2b | `not-a-template` | not-a-template | 宿主 Tailcat |
+| e2b-cookbook/examples | together-ai-code-interpreter-js | `code-interpreter-v1` | catalog-only |  |
+| e2b-cookbook/examples | together-ai-code-interpreter-python | `code-interpreter-v1` | catalog-only |  |
+| e2b-cookbook/examples | trl-grpo-python | `not-a-template` | not-a-template | 训练循环要 GPU，极速版无 GPU |
+| e2b-cookbook/examples | upload-dataset-code-interpreter | `code-interpreter-v1` | catalog-only | README 404，文件上传是 files API |
+| e2b-cookbook/examples | vercel-ai-sdk-sandbox-js | `not-a-template` | not-a-template | 宿主 AI SDK，沙箱用 base |
+| e2b-cookbook/examples | vercel-eve-feedback-analyst-js | `not-a-template` | not-a-template | 宿主 Eve |
+| e2b-cookbook/examples | veris-e2b-js | `not-a-template` | not-a-template | 模拟服务在宿主编排 |
+| e2b-cookbook/examples | watsonx-ai-code-interpreter-js | `code-interpreter-v1` | catalog-only |  |
+| e2b-cookbook/examples | watsonx-ai-code-interpreter-python | `code-interpreter-v1` | catalog-only |  |
+| E2B docs / repos | surf | `osworld` | new | 计算机使用示例，跑在 desktop 上 |
+| E2B docs / repos | fragments | `next-app` | new | Next 应用脚手架，不是沙箱镜像 |
+| E2B docs / repos | desktop repo | `desktop` | catalog-only | E2B Desktop SDK |
+| E2B docs / repos | code-interpreter repo | `code-interpreter-v1` | catalog-only |  |
+| E2B docs / repos | docs alias base | `base` | catalog-only |  |
+| E2B docs / repos | docs alias code-interpreter-v1 | `code-interpreter-v1` | catalog-only |  |
+| E2B docs / repos | docs alias desktop | `desktop` | catalog-only |  |
+| E2B docs / repos | docs alias claude | `claude-code` | exists |  |
+| E2B docs / repos | docs alias codex | `codex` | exists |  |
+| E2B docs / repos | docs alias amp | `amp` | exists |  |
+| E2B docs / repos | docs alias opencode | `opencode` | exists |  |
+| E2B docs / repos | docs alias openclaw | `openclaw` | exists |  |
+| E2B docs / repos | docs alias droid | `droid` | exists |  |
+| E2B docs / repos | docs alias grok | `grok` | new |  |
+| E2B docs / repos | docs alias pi | `pi` | new |  |
+| E2B docs / repos | docs alias hermes | `hermes-agent` | exists |  |
+| E2B docs / repos | docs alias devin | `devin` | new |  |
+| E2B docs / repos | docs alias muse | `muse` | new |  |
+| E2B docs / repos | docs alias prime | `prime-agent` | new |  |
+| E2B docs / repos | docs alias kernel-browser | `browser-use` | new | 浏览器在 Kernel，不在沙箱 |
+| E2B docs / repos | docs alias e2b/k3s | `k3s` | new |  |
+| E2B docs / repos | docs alias android-16 | `android-world` | new | redroid，要 microVM |
+| E2B docs / repos | docs alias cursor-agents | `cursor-agent` | new | 那是调度器，CLI 是另一件事 |
+| E2B docs / repos | docs alias devin-outposts | `devin` | new | 企业调度器 |
+| E2B docs / repos | docs alias E2B/claude-managed-agents-webhooks | `not-a-template` | not-a-template | webhook 控制面 |
+| E2B docs / repos | docs recipe docker | `not-a-template` | not-a-template | 用户自己 build，极速版跑不了 |
+| E2B docs / repos | docs recipe nextjs | `next-app` | new | 配方不是公开别名 |
+| CubeSandbox | code-sandbox-quickstart | `code-interpreter-v1` | catalog-only | 用 sandbox-code:latest |
+| CubeSandbox | browser-sandbox | `browser-automation` | exists | CDP 9000 |
+| CubeSandbox | cubesandbox-base-nginx | `node-web` | exists | nginx 演示，服务形态相同 |
+| CubeSandbox | ubuntu-desktop | `osworld` | new | GNOME+noVNC，要 MicroVM |
+| CubeSandbox | claude-code-integration | `claude-code` | exists |  |
+| CubeSandbox | openclaw-integration | `openclaw` | exists |  |
+| CubeSandbox | opencode-plugin-sandbox | `opencode` | exists | 插件把 bash 送进沙箱 |
+| CubeSandbox | pi-agent-integration | `pi` | new |  |
+| CubeSandbox | langchain-integration | `not-a-template` | not-a-template | 宿主 |
+| CubeSandbox | openai-agents-example | `not-a-template` | not-a-template | 宿主 Agents SDK |
+| CubeSandbox | openai-agents-code-interpreter | `code-interpreter-v1` | catalog-only |  |
+| CubeSandbox | mcp-gateway | `playwright-mcp` | new | 网关本身是控制面；浏览器 MCP 才是模板 |
+| CubeSandbox | mini-rl-training | `swe` | new | RL 训练循环要 GPU/集群，评测切片归 swe |
+| CubeSandbox | snapshot-rollback-clone | `not-a-template` | not-a-template | 平台快照 API |
+| CubeSandbox | host-mount | `not-a-template` | not-a-template | 同 OpenSandbox host volume |
+| CubeSandbox | volume | `not-a-template` | not-a-template | README 404，按目录名是卷插件 |
+| CubeSandbox | network-policy | `not-a-template` | not-a-template | provider 网络 |
+| CubeSandbox | route-aware-egress | `not-a-template` | not-a-template | provider 出口 |
+| CubeSandbox | grpc-ingress | `not-a-template` | not-a-template | 入口 |
+| CubeSandbox | ivshmem | `not-a-template` | not-a-template | 要 hypervisor 共享内存 |
+| CubeSandbox | e2b-dev-sidecar | `not-a-template` | not-a-template | 开发边车 |
+| CubeSandbox | cube-bench | `not-a-template` | not-a-template | 平台性能，不是应用模板 |
+| CubeSandbox | run-code-env-inheritance | `code-interpreter-v1` | catalog-only | 解释器继承环境变量 |
+| CubeSandbox | image sandbox-code:latest | `opensandbox-code-interpreter` | catalog-only | Cube 与 OpenSandbox 是不同镜像，都记在解释器行旁 |
+| CubeSandbox | image sandbox-browser:latest | `browser-automation` | exists |  |
+| CubeSandbox | image cubesandbox-base | `base` | catalog-only | 带 envd 的根文件系统 |
+| Other galleries | daytona-small/medium/large | `base` | catalog-only | 规格档，不是 agent 名 |
+| Other galleries | daytona default image agents | `claude-code` | exists | 镜像 README 还预装 codex、openclaw、opencode |
+| Other galleries | daytona-gpu / windows / macos VM | `not-a-template` | not-a-template | 要 GPU、Windows 或 Apple 硬件 |
+| Other galleries | modal Sandbox.create + Image | `code-interpreter-v1` | catalog-only | 没有公开 agent 目录 |
+| Other galleries | modal Jupyter example | `code-interpreter-v1` | catalog-only |  |
+| Other galleries | vercel universal image | `pi` | new | 同时还预装 claude-code、codex、opencode |
+| Other galleries | vercel node/python/ubuntu/arch images | `base` | catalog-only | 滚动 tag，不能当 pin |
+| Other galleries | vercel platform template | `next-app` | new | 预览服务器 |
+| Other galleries | cloudflare examples/minimal | `python-hello` | exists |  |
+| Other galleries | cloudflare examples/coding-agents/claude-code | `claude-code` | exists |  |
+| Other galleries | cloudflare examples/coding-agents/codex | `codex` | exists |  |
+| Other galleries | cloudflare examples/coding-agents/opencode | `opencode` | exists |  |
+| Other galleries | cloudflare examples/coding-agents/pi | `pi` | new | README 指向 earendil-works/pi |
+| Other galleries | cloudflare workspace/backup/checkpoint/s3 | `not-a-template` | not-a-template | 他们的持久化和对象存储；极速版用 files API，不能 FUSE |
+| Other galleries | cloudflare terminal/process/preview | `node-web` | exists | 进程和预览端口 |
 
-不在表里、明确不要建的：`k3s`、`omarchy`、`qm`、`qm-sandbox`、`osworld`、`windows-agent-arena`、`android-world`、`phone-sandbox`、`swe-bench`（官方 harness）、`terminal-bench`、`skyvern`、`deer-flow`、`webarena`。
+## 存储在 Agent Sandbox 里对应什么
 
-## 9. 实施说明（每条一段）
+OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以及 Cube 的 host-mount、volume、Cloudflare 的 S3/checkpoint，都是提供方的卷，不是模板。极速版等价物是 SDK/CLI 的文件上传和下载。探针里没有 `/dev/fuse`，root 执行 `mount` 也被拒绝，所以不能在沙箱里做 FUSE 或绑定宿主目录。对象存储如果要做，应该是带密钥的 HTTPS 客户端命令，而不是挂载。快照、回滚、克隆、暂停是平台 API，同样不是模板目录。
 
-实施代理按 `docs/template-backlog.json` 的字段做。命名命令用 `@command`，提示词不要拼进 shell。密钥只来自环境变量，`template.yaml` 里值为空。`FROM` 平台基础镜像，运行时 `USER user`，不要 `CMD`/`ENTRYPOINT`。下面是同一份清单的可读版。
+## 并入说明
 
-**kimi-code（P0，yes）。** [MoonshotAI/kimi-code](https://github.com/MoonshotAI/kimi-code) MIT，release `@moonshot-ai/kimi-code@2.2.0`（2026-10-14）。旧仓库 `MoonshotAI/kimi-cli` 已归档。npm 说明要求 Node ≥ 22.19，极速版基础镜像是 Node 20，所以 Dockerfile 里另装 Node 22 再 `npm install -g @moonshot-ai/kimi-code@2.2.0`。不要用 `code.kimi.com` 的安装脚本。无头命令写成 `kimi`，参数 `-p`；仓库 backlog 还写过 `kimi --print -p`。在 2.2.0 上跑 `kimi --help` 再冻结。密钥名以该版本的文档为准，本次 **unverified**。不需要 GPU、KVM、Docker 或显示器。OpenSandbox 示例仍 `pip install kimi-cli`，不要跟着装归档包。
+第一轮里单独列出的三个名字并进已有分析，没有丢掉：`linux-desktop` 的 Xvfb 切片就是 `osworld`；`mini-swe-agent` 是 `swe` 的 agent，不另开目录；`code-interpreter` 的瘦身实现记在 `code-interpreter-v1`，OpenSandbox 镜像记在 `opensandbox-code-interpreter`。
 
-**goose（P0，yes）。** [block/goose](https://github.com/block/goose) Apache-2.0，v1.54.0（2026-10-08）。下载 `goose-x86_64-unknown-linux-gnu.tar.bz2`（80,909,320 字节），不要 vulkan/cuda 包，也不要 `releases/download/stable/download_cli.sh`。命名命令 `goose`，调用 `goose run -t "<text>"`。模型密钥取决于配置的 provider。CLI 压缩包约 80MB，桌面端 Flatpak 不要装。
+## 构建顺序
 
-**pi（P0，yes）。** [badlogic/pi-mono](https://github.com/badlogic/pi-mono) MIT，v1.2.0（2026-10-12），npm 名 `@earendil-works/pi-coding-agent`。优先用 release 里的 `pi-linux-x64.tar.gz`（42,611,136 字节）。这个包是否自带 Node **unverified**；若没有，再按 [pi.dev quickstart](https://pi.dev/docs/latest/quickstart) 用 Node ≥ 22.19 和 `npm install -g --ignore-scripts @earendil-works/pi-coding-agent@1.2.0`。E2B 文档写 `pi -p`；[pi.dev CLI](https://pi.dev/docs/latest/cli) 写 `--print` 才是跑完即退出，`--mode text` 在终端上不会强制单次执行。以 v1.2.0 的 `--help` 为准。密钥 `ANTHROPIC_API_KEY` 或 Pi 支持的其它 provider。没有权限弹窗，进程用户能做什么它就能做什么，所以只能放在沙箱里。本目录不会注册 E2B 别名 `pi`。
+第一波是纯 CLI 或服务包装，极速版可以整份跑。第二波只能跑文中写明的子集。第三波的工作负载要别的 provider，极速版最多做远程客户端。`other` 是已有目录或厂商 id 的复核，不进这三波。
 
-**browser-use（P0，yes）。** [browser-use/browser-use](https://github.com/browser-use/browser-use) MIT，0.13.11（2026-10-07）。`pip install browser-use==0.13.11`，Chromium 用该版本依赖的 Playwright 构建，无头参数沿用 `browser-automation`（含 `/dev/shm` 不足时的 `--disable-dev-shm-usage`）。命名命令 `browser_use`，入参是任务文本。0.13.11 的 Agent 构造参数本次没有重读 README，编码前从该 tag 抄，不要凭记忆。需要模型密钥。不需要 GPU、KVM、Docker。E2B 的 `kernel-browser` 把 Browser Use 放在沙箱里、浏览器放在 Kernel；我们没有 Kernel，浏览器就在本沙箱。
+**第一波。** `claude-code`、`codex`、`codex-agent-api`、`opencode`、`amp`、`droid`、`gemini`、`qwen-code`、`deepseek-harness`、`openclaw`、`node-web`、`browser-automation`、`kimi-code`、`goose`、`pi`、`aider`、`browser-use`、`playwright-mcp`、`code-server`、`next-app`、`document-tools`、`dev-services`、`ocr`、`media-tools`、`tau2-bench`。
 
-**code-interpreter（P0，partial）。** 对齐 E2B `code-interpreter-v1` 和 OpenSandbox `code-interpreter:v1.1.0` 的能力，不要复制两边的 Dockerfile。第一版只钉 2026-10-15 从 `e2b-dev/code-interpreter` main 的 `template/requirements.txt` 里看到的 jupyter-server==2.20.0、ipykernel==6.31.0、pandas==2.2.3、numpy==2.3.5、matplotlib==3.10.9、pillow==12.3.0。命名命令 `execute_code`（language、code）和 `list_runtimes`。不要把 spacy、opencv、librosa、numba 放进第一版，它们对 10G rootfs 是否装得下 **unverified**。不要公开 Jupyter 端口，除非后面真的需要。CPU wheel only。Java/Go 多版本留给 `polyglot-toolchain`，不要在这里做切换脚本。
+**第二波。** `hermes-agent`、`code-interpreter-v1`、`apply-patch`、`osworld`、`chrome`、`swe`、`polyglot-toolchain`、`cursor-agent`、`grok`、`copilot-cli`、`crush`、`cline`、`deepagents`、`stagehand`、`prime-agent`、`appworld`、`muse`、`devin`。
 
-**linux-desktop（P0，partial）。** 对齐 E2B desktop 和 OpenSandbox `examples/desktop` 的能力：Xvfb、x11vnc 或等价 VNC、fluxbox 或一套更小的窗口管理器、noVNC、xdotool、scrot。不要复制它们的 Dockerfile。apt 版本写进构建日志。进程由命名命令 `desktop_start`、`screenshot`、`input` 拉起，不要写进 ENTRYPOINT。noVNC 端口 6080。密码来自环境变量。非 root 起 X、以及 XFCE 全量包的体积，本次 **unverified**，所以先用 fluxbox。这不是 OSWorld，不要装评测 harness。
+**第三波。** `waa`、`phone-sandbox`、`android-world`、`k3s`、`omarchy`、`qm`、`qm-sandbox`。
 
-**cursor-agent（P1，partial）。** [Cursor headless 文档](https://cursor.com/docs/cli/headless) 写安装命令 `curl https://cursor.com/install -fsS | bash`，调用 `agent -p "<prompt>"`，密钥 `CURSOR_API_KEY`，可选 `--output-format json` 和 `--force`。没有找到可钉版本的二进制 URL，所以现在不要合并目录。找到带校验和的版本后再建。二手 SWE 脚本里的 `--trust --sandbox disabled` 没有出现在这份 headless 页上，不要默认加上。不需要 GPU、KVM、Docker。
+## 逐模板分析
 
-**grok（P1，partial）。** 只记录可行性，钉住安装物之前不要建目录。E2B [grok 页](https://docs.e2b.dev/agents/grok.md) 的调用是 `grok --always-approve -p "<prompt>"`，密钥 `XAI_API_KEY`。安装仍是未钉版本的 shell 脚本。`xai-org/grok` 是模型权重仓库，不是 CLI。不需要 GPU 或 KVM。本环境没有 xAI 密钥，L3 跑不通，L0 可以只断言二进制存在。
+锚点是二级标题的模板名。实施时以 `docs/template-backlog.json` 的字段为准，下面是同一份内容的说明。
 
-**code-server（P1，yes）。** [coder/code-server](https://github.com/coder/code-server) MIT，v4.141.0（2026-10-08）。解压 `code-server-4.141.0-linux-amd64.tar.gz`（239,926,515 字节）。命名命令 `code_server_start`，监听 8443，密码来自环境变量。没有模型调用。压缩包 240MB，加上平台镜像后是否仍低于约 10G **unverified**，构建时看 `df`。OpenSandbox 的 `opensandbox/vscode:latest` 未钉版本，不要 `FROM` 它。
+## python-hello
 
-**mini-swe-agent（P1，partial）。** [SWE-agent/mini-swe-agent](https://github.com/SWE-agent/mini-swe-agent) MIT，v2.4.6（2026-07-23）。`pip install mini-swe-agent==2.4.6`，只用直接改本地文件系统的后端。命名命令 `mini_swe`。v2.4.6 的准确 argv 本次没有重读，从该 tag 的 README 抄。不要启用 Docker 或 bubblewrap。不要把 SWE-bench 打分放进这个模板。需要模型密钥和沙箱里的一份 git 仓库。
+**目的与用户。** 目录里最小的 Python 模板，用来验证 server、文件和命令通道，不是产品。
 
-**aider（P1，yes）。** [Aider-AI/aider](https://github.com/Aider-AI/aider) Apache-2.0，v0.86.0（2025-08-09），仓库最后推送 2026-05-22。`pip install aider-chat==0.86.0`。命名命令 `aider`，调用 `aider --yes --message "<prompt>"`，工作目录必须是 git 仓库。密钥 `OPENAI_API_KEY` 或 `ANTHROPIC_API_KEY`，由 `--model` 决定。不需要 Docker。排在 P1 是因为一年多没有新 release，不是因为装不上。
+**能力。** `hello()` 返回纯文本问候。 端口：9000（agent-sandbox-server）。 文件与产物：无。 流式：不需要。
 
-**playwright-mcp（P1，yes）。** [microsoft/playwright-mcp](https://github.com/microsoft/playwright-mcp) Apache-2.0，v0.0.83（2026-09-28）。`npm install -g @playwright/mcp@0.0.83`。命名命令 `mcp_start`，进程 `npx @playwright/mcp@0.0.83 --headless --port 8931`（端口以该版本 `--help` 为准，若 flag 不同就改）。若 `browser-automation` 的镜像已经能装下这个包，把命令加进那个目录，不要再建一个 Chromium 镜像。不需要模型密钥。
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。不安装上游 CLI。保持目录，按现行基础镜像改 Dockerfile，不要再写 CMD。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：1–2 vCPU，512MB 足够。 SDK：`Sandbox.create` 之后调用命名命令（`hello`）。依赖模板：无。
 
-**document-tools（P1，yes）。** Debian 钉死版本的 `pandoc` 和 `libreoffice-writer`。命名命令 `convert`，按输出后缀选择 pandoc 或 `soffice --headless --convert-to`。给 soffice 单独的 `HOME`。非 root 是否还要额外字体包 **unverified**，缺字体时在 README 写明。不需要密钥、GPU 或显示器。许可证：pandoc GPL-2.0，LibreOffice MPL-2.0，在 README 里写清楚。
+**需要。** 无密钥、无 GPU、无 KVM、无 Docker、无显示器。
 
-**dev-services（P1，yes）。** 钉死版本的 PostgreSQL 和 Redis，数据目录放在 `/home/user`，用 `pg_ctl` 和 `redis-server` 由用户拉起，不要用要 root 的 init 脚本。命名命令 `services_start`、`services_stop`，就绪检查 5432 和 6379。这是 Docker Compose 的替代，不是 Kubernetes。非 root 初始化本次没有在极速版上跑过，实施时若失败再改，不要退回到 DinD。
+**极速版。** `yes`。限制因素：没有产品限制。 能跑的子集：整份模板都能在极速版跑。 其余：不需要别的 provider。
 
-**copilot-cli（P1，partial）。** [github/copilot-cli](https://github.com/github/copilot-cli) 许可证 SPDX 为 NOASSERTION。2026-10-15 API 返回的最新 release 是预发布 `v1.0.99-0`。OpenSandbox 有 `github-copilot-cli-sandbox` 示例。无头参数没有在 GitHub 文档页上核实；二手页面写 `copilot -p` 和 `--allow-all-tools`。等一个非预发布的 npm 或 release 资产再做。密钥名 **unverified**。
+**上游与调用。** 本仓库。 无头形态：hello。
 
-**crush（P1，partial）。** [charmbracelet/crush](https://github.com/charmbracelet/crush)，SPDX NOASSERTION，28,642 stars，2026-10-15 仍在推送。API 返回的最新 release 是预发布 `nightly`。二手页面写 npm `@charmland/crush` 和 `crush --yolo`，两者都 **unverified**。有稳定 tag 或 npm 版本之后再做成 `crush` 命令。
+**结论。** 状态 exists，批次 other，优先级 P2，issue #21。验收用的最小模板，已经存在。 来源：catalog。
 
-**cline（P1，partial）。** [cline/cline](https://github.com/cline/cline) Apache-2.0，v4.1.24（2026-10-13），70,337 stars。仓库自述包含 CLI。npm 包名和无头 argv 本次 **unverified**（二手页面写 `cline --yolo`）。从 tag v4.1.24 读出 CLI 的安装行和「传入任务并退出」的参数后再建。不要装 VS Code 扩展。
+## base
 
-**deepagents（P1，partial）。** [langchain-ai/deepagents](https://github.com/langchain-ai/deepagents) MIT，release `deepagents==0.7.25`（2026-10-14）。`pip install deepagents==0.7.25`。是否自带控制台脚本 **unverified**。若没有，命名命令 `deepagents` 用一段短 Python 跑一轮，工具落在本沙箱文件系统上，不要再去创建 E2B 或 OpenSandbox。需要模型密钥。OpenSandbox 和 E2B 都有集成文档，但 E2B 没有公开别名。
+**目的与用户。** 平台模板 id `base`，也是 E2B 不传 template 时的默认沙箱。给所有别的模板当参照，不在本仓库里再做一个同名目录。
 
-**tau2-bench（P1，yes）。** [sierra-research/tau2-bench](https://github.com/sierra-research/tau2-bench) MIT，v1.0.1（2026-07-22）。按该 tag 安装，PyPI 名若对不上就钉 git tag。命名命令 `tau2_run`，跑一个 domain。准确模块路径本次没有重读，从 v1.0.1 README 抄。任务是模拟的，不需要浏览器、Docker 或 KVM。需要模型密钥，用户模拟器往往还要第二份调用。这是评测模板，排在编码 CLI 后面。
+**能力。** 没有命名命令。调用方用 `abx exec` 或 SDK `commands.run`。 端口：49983（envd，创建时返回的 URL 带这个端口）。 文件与产物：空的 /home/user。 流式：exec 支持流式 stdout。
 
-**polyglot-toolchain（P1，partial）。** 各装一个钉死的官方包：Go 1.25.x、一个明确版本的 rustup toolchain、Temurin 21。不要做 OpenSandbox 那种多版本切换。命名命令 `toolchain_versions`。三者加在一起是否超过约 10G rootfs **unverified**，超了就只留 Go 和 Java。不需要密钥。Node 20 已经在基础镜像里，不要再装一份 Node，除非某个 CLI（Kimi、Pi）自己的目录要求 Node 22。
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。不要新建目录。文档写清如何 `abx create --template base`。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：实测 2 vCPU，约 2GB 内存，约 10G rootfs。 SDK：`Sandbox.create` 之后调用命名命令（`exec`）。依赖模板：无。
 
-**ocr（P2，yes）。** 钉死 `tesseract-ocr` 和 `tesseract-ocr-eng`。命名命令 `ocr`，对一张图片跑 `tesseract <path> stdout`。不需要密钥或 GPU。
+**需要。** 极速版 API key。无 GPU/KVM/Docker。
 
-**media-tools（P2，yes）。** 钉死 Debian 的 `ffmpeg`，不要 CUDA，不要非自由编解码如果许可证说不清。命名命令 `transcode`，参数是列表不是 shell 字符串。构建日志里记下这个包实际启用的许可证。
+**极速版。** `yes`。限制因素：这是平台镜像，本仓库 Dockerfile 改变不了它。 能跑的子集：实测内容见文首探针。 其余：E2B 的 `base` 是另一块 Debian 镜像（带 gh、Yarn），不要写成同一份软件清单。
 
-**stagehand（P2，partial）。** [browserbase/stagehand](https://github.com/browserbase/stagehand) MIT。API 返回的最新 release 是 `stagehand-server-v3/v3.7.6`（2026-08-28）。npm 包版本本次没有核对。本地无头 Chromium 优先于 Browserbase。和 browser-use 重叠，只有调用方明确要 Node SDK 时再做。v3 API **unverified**。
+**上游与调用。** 平台镜像；E2B 文档 base image，Dockerfile templates/base/e2b.Dockerfile。 无头形态：abx exec <id> -- <argv>。
 
-**prime-agent（P2，partial）。** [PrimeIntellect-ai/prime-agent](https://github.com/PrimeIntellect-ai/prime-agent)，SPDX NOASSERTION。E2B 别名 `prime`，命令 `prime-agent -p`，密钥 `ANTHROPIC_API_KEY`，没有自动批准开关。2026-10-15 可见的最新 release 是预发布 `nightly`。没有稳定钉之前不要建目录。文档提到常驻 IPython，额外依赖 **unverified**。
+**结论。** 状态 catalog-only，批次 other，优先级 P1，issue #31。目录外的平台模板，issue #31 只做文档和核实。 来源：express-probe, e2b-docs。
 
-**appworld（P2，partial）。** [stonybrooknlp/appworld](https://github.com/stonybrooknlp/appworld) Apache-2.0，v0.1.3.post1（2026-02-17）。是否在运行时调用 Docker **unverified**。若 README 要求 Docker，放弃。否则命名命令 `appworld_run` 跑一道题。优先做完 `tau2-bench`。
+## claude-code
 
-## 10. 实施顺序
+**目的与用户。** Anthropic 的编码 CLI。用户是要在沙箱里改仓库的 agent 调用方。
 
-1. P0 里可行性为 yes 的三条 CLI：`kimi-code`、`goose`、`pi`。每条都是一个二进制加一段提示词，和现有 `gemini` 相同。
-2. `browser-use`，复用 `browser-automation` 的 Chromium 做法。
-3. `code-interpreter` 的瘦身版，和 `linux-desktop` 的 fluxbox 版。这两条先做体积和非 root 试验，失败就停在 experimental，不要扩到 OSWorld 或全量科学栈。
-4. P1 里安装已经钉死的：`code-server`、`aider`、`document-tools`、`dev-services`、`tau2-bench`、`mini-swe-agent`（仅本地后端）。
-5. `cursor-agent`、`grok`、`crush`、`copilot-cli`、`cline`、`prime-agent` 在有可复现安装物之前保持在本文，不建目录。
-6. 同时升级 `hermes-agent`，那不是新名字。
+**能力。** `claude(prompt, resume='', output_format='text') -> {stdout, stderr, exit_code}`。对应 `claude --dangerously-skip-permissions -p`。 端口：9000。 文件与产物：工作区 diff，可用 files API 取出。 流式：`--output-format stream-json` 时需要流式 stdout。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。钉死 `@anthropic-ai/claude-code@<version>`（以目录里已有 pin 为准，升级要改 pin 并写进构建日志）。Node 20 够用则不要另装 Node 22。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`claude`）。依赖模板：无。
+
+**需要。** ANTHROPIC_API_KEY。无 GPU/KVM/Docker/显示器。
+
+**极速版。** `yes`。限制因素：本环境没有 Anthropic key，L3 不能在这里宣称通过。 能跑的子集：整条 CLI 都适合极速版。 其余：E2B 公开别名 `claude`。OpenSandbox 示例是在 code-interpreter 里 `npm i -g @latest`，不要学未钉版本。
+
+**上游与调用。** E2B docs/agents/claude-code.md（2026-10-15）；目录已有。 无头形态：claude --dangerously-skip-permissions -p "<prompt>"。
+
+**结论。** 状态 exists，批次 1，优先级 P0，issue #15。已有目录。这一波只按 spec 复核，不新建。 来源：opensandbox:claude-code, e2b:claude, cloudflare:coding-agents/claude-code, cookbook:anthropic-claude-code-*。
+
+## codex
+
+**目的与用户。** OpenAI Codex 编码 CLI。
+
+**能力。** `codex(prompt) -> {stdout, stderr, exit_code}`，调用 `codex exec --full-auto`。 端口：9000。 文件与产物：git diff。 流式：JSONL 事件需要流式。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。钉 `@openai/codex@<已有 pin>`。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`codex`）。依赖模板：无。
+
+**需要。** CODEX_API_KEY 或 OPENAI_API_KEY（以已有 template.yaml 为准）。
+
+**极速版。** `yes`。限制因素：无平台限制。 能跑的子集：整条 CLI。 其余：E2B 别名 `codex`；Cloudflare examples/coding-agents/codex；Cube 没有单独镜像。
+
+**上游与调用。** https://docs.e2b.dev/agents/codex.md 无头形态：codex exec --full-auto "<prompt>"。
+
+**结论。** 状态 exists，批次 1，优先级 P0，issue #16。已有。 来源：opensandbox:codex-cli, e2b:codex, cloudflare:codex, cookbook:openai-codex-*。
+
+## codex-agent-api
+
+**目的与用户。** 用 Codex CLI 提供一个兼容 OpenAI Agents API 的本地服务。
+
+**能力。** `serve_start() -> {port, url}`，然后 HTTP 创建 session。 端口：服务端口加 9000。 文件与产物：session 日志。 流式：Agents API 流式响应。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。沿用目录里的 pin。start_cmd 只启动 agent-sandbox-server；Agents 服务由命名命令拉起。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`serve_start`）。依赖模板：codex。
+
+**需要。** OpenAI/Codex key。
+
+**极速版。** `yes`。限制因素：无。 能跑的子集：整个服务都能在单容器里跑。 其余：E2B cookbook 的 openai-agents-api 是控制面示例，不是另一块镜像。
+
+**上游与调用。** 本仓库目录。 无头形态：命名命令启动后 curl 健康检查。
+
+**结论。** 状态 exists，批次 1，优先级 P1，issue #23。已有服务型模板。 来源：cookbook:openai-agents-api-*, catalog。
+
+## opencode
+
+**目的与用户。** 多模型编码 CLI。
+
+**能力。** `opencode(prompt, model='') -> {stdout, stderr, exit_code}`，即 `opencode run`。可选 `opencode_serve()` 监听 4096。 端口：4096 仅在 serve 模式。 文件与产物：diff。 流式：serve 是 HTTP，不是必须。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。目录钉 `opencode-ai@1.19.0`。升级版本另开变更，不要在本次调研里改 pin。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`opencode`）。依赖模板：无。
+
+**需要。** ANTHROPIC_API_KEY 或其他 provider key。
+
+**极速版。** `yes`。限制因素：experimental，缺密钥 e2e。 能跑的子集：整条 CLI。 其余：E2B 别名 `opencode`；Cloudflare examples/coding-agents/opencode。
+
+**上游与调用。** https://docs.e2b.dev/agents/opencode.md 无头形态：opencode run "<prompt>"。
+
+**结论。** 状态 exists，批次 1，优先级 P0，issue #17。已有 experimental。 来源：opensandbox:opencode, e2b:opencode, cloudflare:opencode, cube:opencode-plugin-sandbox。
+
+## amp
+
+**目的与用户。** Sourcegraph Amp 编码 CLI。
+
+**能力。** `amp(prompt) -> {stdout, stderr, exit_code}`，`amp --dangerously-allow-all -x`。 端口：9000。 文件与产物：diff。 流式：`--stream-json`。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。保持目录中的 npm pin。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`amp`）。依赖模板：无。
+
+**需要。** AMP_API_KEY。
+
+**极速版。** `yes`。限制因素：无平台限制，缺密钥。 能跑的子集：整条 CLI。 其余：E2B 别名 `amp`。
+
+**上游与调用。** https://docs.e2b.dev/agents/amp.md 无头形态：amp --dangerously-allow-all -x "<prompt>"。
+
+**结论。** 状态 exists，批次 1，优先级 P1，issue #18。已有 experimental。 来源：e2b:amp, catalog。
+
+## droid
+
+**目的与用户。** Factory 的编码 CLI。
+
+**能力。** `droid(prompt) -> {stdout, stderr, exit_code}`，`droid exec`。 端口：9000。 文件与产物：diff。 流式：可选。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。目录钉 `@factory/cli@0.241.1`。E2B 文档用 `--auto low`，和目录里的 flag 是否一致要在复核时对 `--help`。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`droid`）。依赖模板：无。
+
+**需要。** FACTORY_API_KEY。
+
+**极速版。** `yes`。限制因素：无。 能跑的子集：整条 CLI。 其余：E2B 别名 `droid`。
+
+**上游与调用。** https://docs.e2b.dev/agents/droid.md 无头形态：droid exec --auto low "<prompt>"。
+
+**结论。** 状态 exists，批次 1，优先级 P1，issue #19。已有 experimental。 来源：e2b:droid, catalog。
+
+## gemini
+
+**目的与用户。** Google Gemini 终端编码 CLI。
+
+**能力。** `gemini(prompt, model='') -> str`，`gemini -p --yolo`。 端口：9000。 文件与产物：diff。 流式：不强制。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。已钉 `@google/gemini-cli@0.64.0`。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`gemini`）。依赖模板：无。
+
+**需要。** GEMINI_API_KEY。
+
+**极速版。** `yes`。限制因素：缺带 ABX_E2E_OK 的密钥记录，不能标 official。 能跑的子集：整条 CLI。 其余：OpenSandbox gemini-cli 示例未钉版本。
+
+**上游与调用。** 本仓库 gemini/；OpenSandbox examples/gemini-cli。 无头形态：gemini -p "<prompt>" --yolo。
+
+**结论。** 状态 exists，批次 1，优先级 P0，issue #30。已有 experimental。 来源：opensandbox:gemini-cli, catalog。
+
+## qwen-code
+
+**目的与用户。** 通义千问编码 CLI，DashScope 兼容。
+
+**能力。** `qwen(prompt) -> {stdout, stderr, exit_code}`。 端口：9000。 文件与产物：diff。 流式：可选。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。保持目录 pin。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`qwen`）。依赖模板：无。
+
+**需要。** DASHSCOPE_API_KEY 或目录里声明的变量。本环境有 OpenAI 兼容端点时可做 L3，是否被该 CLI 接受要在实现时试。
+
+**极速版。** `yes`。限制因素：无平台限制。 能跑的子集：整条 CLI。 其余：OpenSandbox qwen-code 示例。
+
+**上游与调用。** 本仓库。 无头形态：qwen 的无头参数以目录 commands.py 为准。
+
+**结论。** 状态 exists，批次 1，优先级 P0，issue #26。已有。 来源：opensandbox:qwen-code, catalog。
+
+## deepseek-harness
+
+**目的与用户。** 用 DeepSeek 兼容端点做编码回合。
+
+**能力。** 以目录 commands.py 为准，返回 stdout。 端口：9000。 文件与产物：工作区。 流式：可选。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。保持 pin。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`deepseek`）。依赖模板：无。
+
+**需要。** DeepSeek 或兼容 key。
+
+**极速版。** `yes`。限制因素：无。 能跑的子集：整份。 其余：无对应 E2B 别名。
+
+**上游与调用。** 本仓库。 无头形态：见 commands.py。
+
+**结论。** 状态 exists，批次 1，优先级 P1，issue #27。已有。 来源：catalog。
+
+## openclaw
+
+**目的与用户。** OpenClaw 网关，给浏览器或频道接一个常驻 agent。
+
+**能力。** `gateway_start(token, port=18789) -> {url}`。不是单次 `-p`。 端口：18789。 文件与产物：~/.openclaw 配置。 流式：WebSocket，不是命令 stdout。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。钉 openclaw 版本，不要 `ghcr.io/openclaw/openclaw:latest`。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`gateway_start`）。依赖模板：无。
+
+**需要。** 模型 key。token 来自环境变量。
+
+**极速版。** `yes`。限制因素：常驻进程必须由命名命令拉起，不能写 ENTRYPOINT。 能跑的子集：gateway 本身可以在极速版跑。 其余：E2B 别名 `openclaw`；OpenSandbox 用未钉的 ghcr 镜像。
+
+**上游与调用。** https://docs.e2b.dev/agents/openclaw/openclaw-gateway.md 无头形态：openclaw gateway --allow-unconfigured --bind lan --auth token --port 18789。
+
+**结论。** 状态 exists，批次 1，优先级 P0，issue #20。已有。 来源：opensandbox:openclaw, e2b:openclaw, cube:openclaw-integration。
+
+## hermes-agent
+
+**目的与用户。** Nous Research 的可成长 agent。目录描述写明当前只做聊天补全、不注册工具。升级目标是真 CLI。
+
+**能力。** 升级后 `hermes(prompt, provider, model) -> {stdout, stderr, exit_code}`，即 `hermes chat -Q --yolo -q`。 端口：9000。 文件与产物：~/.hermes/skills 与 memories。 流式：不强制。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。钉 GitHub release v0.22.1（2026-10-14，MIT）。安装命令以该 tag 的 README 为准，本次未打开 README，安装行 unverified。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`hermes`）。依赖模板：无。
+
+**需要。** provider key，E2B 示例是 OPENROUTER_API_KEY。
+
+**极速版。** `partial`。限制因素：现行目录没有 CLI。 能跑的子集：先把 v0.22.1 的 `hermes` 二进制放进现有目录，不要新建名字。 其余：E2B 别名 `hermes`。cookbook hermes-incident-playbook 是宿主脚本。
+
+**上游与调用。** https://github.com/NousResearch/hermes-agent v0.22.1；https://docs.e2b.dev/agents/hermes.md 无头形态：hermes chat -Q --yolo -q "<prompt>"。
+
+**结论。** 状态 exists，批次 2，优先级 P0，issue #28。升级已有模板，不是新目录。 来源：e2b:hermes, cookbook:hermes-incident-playbook-python, catalog。
+
+## qoder
+
+**目的与用户。** 目录描述写明只执行本地脚本，没有安装 Qoder CLI。
+
+**能力。** `qoder_run` 跑本地脚本。若上游给出可钉的无头 CLI，再加 `qoder(prompt)`。 端口：9000。 文件与产物：脚本输出。 流式：不需要。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。没有可钉的 Qoder 安装物之前不要假装装了 CLI。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`qoder_run`）。依赖模板：无。
+
+**需要。** CLI 出现后才需要 key。
+
+**极速版。** `partial`。限制因素：上游安装 unverified。 能跑的子集：现在只能跑本地脚本。 其余：无。
+
+**上游与调用。** 本仓库描述。 无头形态：qoder_run。
+
+**结论。** 状态 exists，批次 other，优先级 P2，issue #24。已有，但是空 CLI。 来源：catalog。
+
+## agents-cli
+
+**目的与用户。** 给 Codex 和 Qwen 的 Agents API 占位。镜像里没有这两个 CLI。
+
+**能力。** 保持现有命令。真正要跑 CLI 时用 `codex` 和 `qwen-code`。 端口：9000。 文件与产物：无。 流式：无。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。不要在这个目录里再装一份未钉的 CLI。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU。 SDK：`Sandbox.create` 之后调用命名命令（`agents`）。依赖模板：codex, qwen-code。
+
+**需要。** 无，直到它真的调用 CLI。
+
+**极速版。** `partial`。限制因素：名不副实。 能跑的子集：健康检查可以过。产品调用走另外两个模板。 其余：无。
+
+**上游与调用。** 本仓库。 无头形态：见 commands.py。
+
+**结论。** 状态 exists，批次 other，优先级 P2，issue #25。已有占位。 来源：catalog。
+
+## node-web
+
+**目的与用户。** 跑 Express/Fastify 一类 Node 服务。不是 Next/Vite 开发服务器。
+
+**能力。** `start(script)` 拉起用户进程并返回端口。 端口：由参数指定，外加 9000。 文件与产物：应用目录。 流式：服务日志。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。Node 20 已在基础镜像里。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`start`）。依赖模板：无。
+
+**需要。** 无密钥。
+
+**极速版。** `yes`。限制因素：无。 能跑的子集：整份。 其余：Vercel 的 Next 脚手架见 `next-app`。
+
+**上游与调用。** 本仓库。 无头形态：node server.js。
+
+**结论。** 状态 exists，批次 1，优先级 P1，issue #29。已有。 来源：catalog, cloudflare:minimal。
+
+## browser-automation
+
+**目的与用户。** 无头 Chromium，给抓取和 UI 检查用。
+
+**能力。** 已有 Playwright 命令。返回标题、正文或截图路径。 端口：9000。CDP 若暴露，用独立端口。 文件与产物：截图 PNG。 流式：不强制。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。钉 Playwright 与对应 Chromium。`/dev/shm` 实测只有 64M，启动参数加 `--disable-dev-shm-usage`。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`browse`）。依赖模板：无。
+
+**需要。** 无模型密钥。无 GPU/KVM/Docker。
+
+**极速版。** `yes`。限制因素：shm 64M 已实测，是浏览器崩溃的常见原因。 能跑的子集：无头 Playwright 可以跑。带 VNC 的 Chrome 归 `chrome`。 其余：OpenSandbox playwright:latest 未钉；Cube sandbox-browser 是 MicroVM 里的 CDP。
+
+**上游与调用。** 本仓库；OpenSandbox examples/playwright；Cube examples/browser-sandbox。 无头形态：playwright chromium headless。
+
+**结论。** 状态 exists，批次 1，优先级 P0，issue #22。已有，浏览器类示例都先落到这里。 来源：opensandbox:playwright, cube:browser-sandbox, cookbook:playwright-in-e2b。
+
+## code-interpreter-v1
+
+**目的与用户。** 平台模板 id，对齐 E2B `code-interpreter-v1`：在沙箱里执行模型写的代码并拿回 stdout。
+
+**能力。** 若平台镜像已带解释器，文档化 SDK `run_code`。若没有，在目录里提供 `execute_code(language, code) -> {stdout, stderr, error}` 和 `list_runtimes()`。本次没有对这个 template id 做 exec，镜像里有什么 unverified。 端口：E2B 是 49999。极速版是否同样，unverified。 文件与产物：代码生成的图表写入 /tmp 再由 files API 读出。 流式：长输出要流式。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。不要复制 E2B 或 OpenSandbox 的 Dockerfile。若要自建，FROM 平台基础镜像，只钉 jupyter-server==2.20.0、ipykernel==6.31.0、pandas==2.2.3、numpy==2.3.5、matplotlib==3.10.9、pillow==12.3.0（2026-10-15 从 e2b-dev/code-interpreter main 的 requirements.txt 读到）。先不要装 spacy/opencv/librosa。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。科学栈容易吃掉 10G 磁盘。 SDK：`Sandbox.create` 之后调用命名命令（`execute_code`, `list_runtimes`）。依赖模板：无。
+
+**需要。** 执行代码本身不要密钥。
+
+**极速版。** `partial`。限制因素：未探测该 template id；全量 E2B 依赖对 10G 磁盘 unverified。 能跑的子集：瘦身 Python 解释器。Java/Go 多版本不要塞进第一版。 其余：OpenSandbox `code-interpreter:v1.1.0` 走 issue #34，不要和这个 id 混成一块镜像。
+
+**上游与调用。** E2B code-interpreter；OpenSandbox sandbox-images README。 无头形态：execute_code。
+
+**结论。** 状态 catalog-only，批次 2，优先级 P0，issue #32。每个厂商都有一块执行代码的镜像。先核实平台 id，缺了再自建瘦身版。 来源：e2b:code-interpreter-v1, cookbook:hello-world-*, cookbook:openai-*, cookbook:groq-*, cookbook:langchain-python, cookbook:langgraph-*, modal:sandbox, cloudflare:code-interpreter-docs, daytona:default-snapshot。
+
+## opensandbox-code-interpreter
+
+**目的与用户。** OpenSandbox 发布的镜像，不是极速版目录。
+
+**能力。** OpenSandbox Code Interpreter SDK 执行 Python/Java/TS/Go。 端口：Jupyter 127.0.0.1:44771，不映射到宿主机。 文件与产物：内核工作目录。 流式：SDK 结果。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。不要把 Dockerfile 拷进本仓库。文档写镜像 `sandbox-registry.cn-zhangjiakou.cr.aliyuncs.com/opensandbox/code-interpreter:v1.1.0`。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：由 OpenSandbox 集群决定。 SDK：`Sandbox.create` 之后调用命名命令（`execute_code`）。依赖模板：无。
+
+**需要。** SANDBOX_DOMAIN、SANDBOX_API_KEY。
+
+**极速版。** `partial`。限制因素：极速版 `abx template install` 不会把这块镜像注册成 OpenSandbox 的短名。 能跑的子集：同一能力在极速版用 `code-interpreter-v1` 的瘦身实现。 其余：只有 OpenSandbox provider。
+
+**上游与调用。** examples/code-interpreter/main.py 默认镜像 v1.1.0；sandbox-images README。 无头形态：CodeInterpreter SDK。
+
+**结论。** 状态 catalog-only，批次 other，优先级 P1，issue #34。目录外镜像。 来源：opensandbox:code-interpreter。
+
+## desktop
+
+**目的与用户。** E2B 公开模板 `desktop`：Ubuntu 22.04 XFCE、noVNC 6080、LibreOffice、xdotool、scrot。
+
+**能力。** Desktop SDK `screenshot`、鼠标键盘、`stream.start()`。 端口：6080。 文件与产物：截图。 流式：VNC。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。不要在本仓库复制 E2B desktop Dockerfile 来冒充这个 id。极速版的桌面切片用 `osworld`。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：E2B 侧建议高于 base 的 512MB。 SDK：`Sandbox.create` 之后调用命名命令（`screenshot`）。依赖模板：无。
+
+**需要。** 无 KVM。要虚拟显示。
+
+**极速版。** `partial`。限制因素：本仓库没有 E2B key 时不能宣称在 E2B 上跑通。issue 写明了这一点。 能跑的子集：见 osworld。 其余：E2B。Cube 的 ubuntu-desktop 是另一块要自己构建的 GNOME 镜像。
+
+**上游与调用。** https://docs.e2b.dev/template/examples/desktop.md 无头形态：sandbox.screenshot()。
+
+**结论。** 状态 catalog-only，批次 other，优先级 P2，issue #33。只做目录外文档。 来源：e2b:desktop, e2b-dev/desktop, e2b-dev/surf。
+
+## kimi-code
+
+**目的与用户。** Moonshot 现行编码 CLI。用户是要接 Kimi 模型的编程 agent。
+
+**能力。** `kimi(prompt) -> {stdout, stderr, exit_code}`。 端口：9000。 文件与产物：diff。 流式：`--output-format stream-json` 时要流式，flag 在 2.2.0 上核对。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。基础镜像是 Node 20。另装 Node ≥22.19，再 `npm install -g @moonshot-ai/kimi-code@2.2.0`（release 2026-10-14，MIT）。不要用 code.kimi.com 的脚本，也不要 `pip install kimi-cli`（旧仓库已归档）。OpenSandbox README 已改称 Kimi Code CLI，但更早的 main.py 仍是未钉的 pip。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`kimi`）。依赖模板：无。
+
+**需要。** Moonshot API key，环境变量名在 2.2.0 文档里核对，本次 unverified。无 GPU/KVM/Docker/显示器。
+
+**极速版。** `yes`。限制因素：Node 版本，可在镜像构建时解决。 能跑的子集：整条 CLI。 其余：不需要。
+
+**上游与调用。** https://github.com/MoonshotAI/kimi-code @moonshot-ai/kimi-code@2.2.0 无头形态：kimi -p "<prompt>"。
+
+**结论。** 状态 new，批次 1，优先级 P0，issue 本次新建。OpenSandbox 有示例，目录里没有 Moonshot CLI。 来源：opensandbox:kimi-cli。
+
+## goose
+
+**目的与用户。** AAIF 的终端 agent，也能做非编码任务。
+
+**能力。** `goose(text) -> {stdout, stderr, exit_code}`，即 `goose run -t`。 端口：9000。 文件与产物：工作区改动。 流式：不强制。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。下载 https://github.com/block/goose/releases/download/v1.54.0/goose-x86_64-unknown-linux-gnu.tar.bz2 （80890920 字节）。不要 vulkan/cuda，不要 stable/download_cli.sh。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。压缩包约 80MB。 SDK：`Sandbox.create` 之后调用命名命令（`goose`）。依赖模板：无。
+
+**需要。** 所选 provider 的 API key。无 GPU。
+
+**极速版。** `yes`。限制因素：无平台限制。 能跑的子集：整条 CLI。 其余：不需要。
+
+**上游与调用。** https://github.com/block/goose v1.54.0 Apache-2.0 无头形态：goose run -t "<text>"。
+
+**结论。** 状态 new，批次 1，优先级 P0，issue 本次新建。有钉死的 Linux 包和无头命令。 来源：upstream:block/goose。
+
+## pi
+
+**目的与用户。** 小体积终端编码 agent。E2B、Vercel universal、Cloudflare、Cube 都把它当一等公民。
+
+**能力。** `pi(prompt) -> {stdout, stderr, exit_code}`。 端口：9000。 文件与产物：diff。 流式：JSON 事件，Cloudflare 说明失败时仍可能 exit 0，调用方要解析事件。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。优先 https://github.com/badlogic/pi-mono/releases/download/v1.2.0/pi-linux-x64.tar.gz （42611136 字节）。是否自带 Node unverified。否则 Node ≥22.19 且 `npm install -g --ignore-scripts @earendil-works/pi-coding-agent@1.2.0`。Cloudflare README 指向 https://github.com/earendil-works/pi ，和 badlogic/pi-mono 是否同一远程 unverified。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`pi`）。依赖模板：无。
+
+**需要。** ANTHROPIC_API_KEY 或其他 provider。无权限弹窗。
+
+**极速版。** `yes`。限制因素：无 KVM/Docker 需求。本目录不会变成 E2B 别名 `pi`。 能跑的子集：整条 CLI。 其余：E2B 别名只在 E2B 账号里存在。
+
+**上游与调用。** pi-mono v1.2.0 MIT；https://docs.e2b.dev/agents/pi.md；https://pi.dev/docs/latest/cli 无头形态：pi -p "<prompt>"（pi.dev 写 --print，以 v1.2.0 --help 为准）。
+
+**结论。** 状态 new，批次 1，优先级 P0，issue #41。issue #41 已存在，不新建 issue。 来源：e2b:pi, cloudflare:coding-agents/pi, cube:pi-agent-integration, cookbook:pi-code-interpreter-js, vercel:universal。
+
+## aider
+
+**目的与用户。** 在 git 仓库里改完文件就退出的结对编程 CLI。
+
+**能力。** `aider(prompt) -> {stdout, stderr, exit_code}`，工作目录必须是 git 仓库。 端口：9000。 文件与产物：git diff。 流式：不需要。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`pip install aider-chat==0.86.0`（release 2025-08-09，Apache-2.0）。仓库 2026-05-22 后无推送。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`aider`）。依赖模板：无。
+
+**需要。** OPENAI_API_KEY 或 ANTHROPIC_API_KEY。
+
+**极速版。** `yes`。限制因素：上游停更，不是平台限制。 能跑的子集：整条 CLI。 其余：不需要。
+
+**上游与调用。** https://github.com/Aider-AI/aider v0.86.0 无头形态：aider --yes --message "<prompt>"。
+
+**结论。** 状态 new，批次 1，优先级 P1，issue 本次新建。安装钉得死，形态和现有 CLI 一样。 来源：upstream:Aider-AI/aider。
+
+## browser-use
+
+**目的与用户。** 在无头 Chromium 上跑浏览器 agent，而不是只暴露 Playwright 原语。
+
+**能力。** `browser_use(task) -> {result, final_url}`。0.13.11 的构造参数从该 tag README 抄，不要凭记忆。 端口：9000。 文件与产物：截图。 流式：步骤日志建议流式。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`pip install browser-use==0.13.11`，Chromium 用它依赖的 Playwright 版本，加 `--disable-dev-shm-usage`。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。shm 64M 已实测。 SDK：`Sandbox.create` 之后调用命名命令（`browser_use`）。依赖模板：browser-automation。
+
+**需要。** 模型 key。无 GPU/KVM/Docker。
+
+**极速版。** `yes`。限制因素：shm。 能跑的子集：本地无头 Chromium。不要依赖 Browser Use Cloud。 其余：E2B `kernel-browser` 把浏览器放在 Kernel，我们没有 Kernel。
+
+**上游与调用。** https://github.com/browser-use/browser-use 0.13.11 MIT 无头形态：Python Agent(task=...)。
+
+**结论。** 状态 new，批次 1，优先级 P0，issue 本次新建。118k stars，和 browser-automation 互补。 来源：e2b:kernel-browser, upstream:browser-use。
+
+## playwright-mcp
+
+**目的与用户。** 让编码 CLI 通过 MCP 驱动浏览器。
+
+**能力。** `mcp_start() -> {port}`。若 browser-automation 镜像装得下，把命令加进那个目录，不要第二份 Chromium。 端口：默认 8931，以 `@playwright/mcp@0.0.83 --help` 为准。 文件与产物：无。 流式：MCP 传输。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`npm install -g @playwright/mcp@0.0.83`（2026-09-28，Apache-2.0）。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`mcp_start`）。依赖模板：browser-automation。
+
+**需要。** Chromium。模板内不要模型 key。
+
+**极速版。** `yes`。限制因素：shm 64M。 能跑的子集：无头 MCP。 其余：E2B MCP gateway 是他们的托管目录，不是这块二进制。
+
+**上游与调用。** https://github.com/microsoft/playwright-mcp v0.0.83 无头形态：npx @playwright/mcp@0.0.83 --headless --port 8931。
+
+**结论。** 状态 new，批次 1，优先级 P1，issue 本次新建。目录里的浏览器模板不会说 MCP。 来源：cookbook:mcp-browserbase-js, cookbook:mcp-claude-code-js, upstream:playwright-mcp。
+
+## code-server
+
+**目的与用户。** 浏览器里的 VS Code，给人不想用终端的调试。
+
+**能力。** `code_server_start() -> {port: 8443}`。 端口：8443。 文件与产物：工作区。 流式：不需要。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。解压 code-server-4.141.0-linux-amd64.tar.gz（239926515 字节，MIT，2026-10-08）。密码来自环境变量。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。压缩包 240MB，加上基础镜像后是否仍低于 10G，构建时看 df。 SDK：`Sandbox.create` 之后调用命名命令（`code_server_start`）。依赖模板：无。
+
+**需要。** 密码。无 GPU/KVM/Docker/显示器。
+
+**极速版。** `yes`。限制因素：体积。 能跑的子集：整个 code-server。 其余：OpenSandbox vscode:latest 未钉，不要 FROM 它。
+
+**上游与调用。** https://github.com/coder/code-server v4.141.0 无头形态：code-server --bind-addr 0.0.0.0:8443 --auth password。
+
+**结论。** 状态 new，批次 1，优先级 P1，issue 本次新建。OpenSandbox 的 vscode 示例在极速版没有对应物。 来源：opensandbox:vscode。
+
+## next-app
+
+**目的与用户。** 给 agent 一个能预览的前端开发服务器。node-web 只是通用 Node 进程，没有脚手架。
+
+**能力。** `dev_start(kind) -> {port, url}`，kind 为 next 或 vite。`scaffold()` 写出最小工程。 端口：3000 或 5173。 文件与产物：应用目录。 流式：dev server 日志。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`npm install -g` 不适合。在镜像里 `npm install next@<pin>` 与 `vite@<pin>`，pin 取构建当天的 dist-tag 并写进日志，不要用 latest 当永久版本。Node 20 已有。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`dev_start`）。依赖模板：node-web。
+
+**需要。** 无密钥。
+
+**极速版。** `yes`。限制因素：HMR 的 websocket 要平台能转发该端口，转发行为 unverified。 能跑的子集：能起服务并返回端口即可，不保证 HMR。 其余：Vercel 平台模板还会部署上线，那一步不在沙箱里。
+
+**上游与调用。** Vercel platform template 文档；E2B template examples/nextjs 是配方不是公开别名；fragments 是应用模板不是沙箱。 无头形态：next dev --port 3000 或 vite --host 0.0.0.0。
+
+**结论。** 状态 new，批次 1，优先级 P1，issue 本次新建。预览服务器是 Vercel/fragments 一类例子里真正缺的运行时。 来源：e2b:template/examples/nextjs, e2b-dev/fragments, cookbook:nextjs-code-interpreter, vercel:platform-template。
+
+## document-tools
+
+**目的与用户。** 把 markdown/html 转成 docx、pdf、幻灯片。
+
+**能力。** `convert(input_path, output_format) -> {output_path}`。 端口：9000。 文件与产物：输入输出都在 /home/user。 流式：不需要。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。apt 钉 pandoc 与 libreoffice-writer 的 Debian 13 版本，写进构建日志。soffice 使用独立 HOME。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。LibreOffice 体积要在构建时看 df。 SDK：`Sandbox.create` 之后调用命名命令（`convert`）。依赖模板：无。
+
+**需要。** 无密钥、无显示器。
+
+**极速版。** `yes`。限制因素：非 root 跑 soffice 本次未在极速版执行，只验证了 apt 通道和 Xvfb。 能跑的子集：pandoc 纯文本转换一定能做；soffice 作为第二步。 其余：E2B desktop 带了 LibreOffice 但是 GUI。
+
+**上游与调用。** Debian pandoc（GPL-2.0）与 LibreOffice（MPL-2.0）。 无头形态：pandoc 或 soffice --headless --convert-to。
+
+**结论。** 状态 new，批次 1，优先级 P1，issue 本次新建。文档转换不需要桌面会话。 来源：e2b:desktop。
+
+## dev-services
+
+**目的与用户。** 给应用提供数据库，替代 Docker Compose。
+
+**能力。** `services_start() -> {postgres:5432, redis:6379}`，`services_stop()`。 端口：5432、6379。 文件与产物：数据目录 /home/user/data。 流式：不需要。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。apt 钉 postgresql 与 redis-server。用 pg_ctl 和 redis-server 以 user 启动。不要用需要 systemd 的脚本。实测 sudo 不能 mount，所以不要尝试把数据目录做成独立挂载。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`services_start`, `services_stop`）。依赖模板：无。
+
+**需要。** 无密钥。无 Docker。
+
+**极速版。** `yes`。限制因素：非 root 初始化数据库本次没跑，apt 通道已通。 能跑的子集：单机 Postgres + Redis。 其余：Runloop 的 DinD 在这里不可用（无 docker socket，mount 被拒绝）。
+
+**上游与调用。** Debian 包。 无头形态：pg_isready 与 redis-cli ping。
+
+**结论。** 状态 new，批次 1，优先级 P1，issue 本次新建。Express 上唯一可行的数据库形态。 来源：runloop:universal-dnd, modal:sandbox。
+
+## ocr
+
+**目的与用户。** 从图片里读文字。
+
+**能力。** `ocr(image_path) -> {text}`。 端口：9000。 文件与产物：图片入、文本出。 流式：不需要。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。apt 钉 tesseract-ocr 与 tesseract-ocr-eng。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：1–2 vCPU。 SDK：`Sandbox.create` 之后调用命名命令（`ocr`）。依赖模板：无。
+
+**需要。** 无。
+
+**极速版。** `yes`。限制因素：无。 能跑的子集：整份。 其余：不需要。
+
+**上游与调用。** Tesseract Apache-2.0。 无头形态：tesseract <img> stdout。
+
+**结论。** 状态 new，批次 1，优先级 P2，issue 本次新建。小、可复现。 来源：upstream:tesseract。
+
+## media-tools
+
+**目的与用户。** CPU 转码。
+
+**能力。** `transcode(args: list[str]) -> {stdout, stderr, exit_code}`，参数是列表。 端口：9000。 文件与产物：媒体文件。 流式：进度可选。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。apt 钉 ffmpeg，不要 CUDA。把包许可证写进 README。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU。 SDK：`Sandbox.create` 之后调用命名命令（`transcode`）。依赖模板：无。
+
+**需要。** 无 GPU。
+
+**极速版。** `yes`。限制因素：无。 能跑的子集：CPU 编解码。 其余：不需要。
+
+**上游与调用。** Debian ffmpeg。E2B desktop 也装了 ffmpeg。 无头形态：ffmpeg -i in -c:v libx264 out。
+
+**结论。** 状态 new，批次 1，优先级 P2，issue 本次新建。媒体 agent 的基础工具。 来源：e2b:desktop。
+
+## tau2-bench
+
+**目的与用户。** 工具调用评测，任务是模拟域，不是活网站。
+
+**能力。** `tau2_run(domain) -> {score, log_path}`。模块路径从 tag v1.0.1 README 抄。 端口：9000。 文件与产物：评测日志。 流式：不强制。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。钉 https://github.com/sierra-research/tau2-bench tag v1.0.1（MIT，2026-07-22）。PyPI 名对不上就用 git tag。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`tau2_run`）。依赖模板：无。
+
+**需要。** 模型 key，用户模拟器往往再要一次调用。
+
+**极速版。** `yes`。限制因素：无 VM。 能跑的子集：一个 domain 的官方 runner。 其余：不需要。
+
+**上游与调用。** sierra-research/tau2-bench v1.0.1 无头形态：该 tag 的 runner。
+
+**结论。** 状态 new，批次 1，优先级 P1，issue 本次新建。不需要 Docker 的评测，适合极速版。 来源：upstream:tau2-bench。
+
+## apply-patch
+
+**目的与用户。** 让沙箱看懂 Codex 的 `*** Begin Patch` 方言。OpenSandbox 的 `/files/replace` 只做字面替换。
+
+**能力。** `apply_patch(patch_text) -> {stdout, stderr, exit_code}`。补丁写到文件再喂给二进制，不要拼进 shell。 端口：9000。 文件与产物：被修改的工作区。失败可能留下半截改动。 流式：不需要。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。OpenSandbox 文档从 openai/codex 的某个 commit 编译 `codex-apply-patch`。文档里的 CODEX_REF 是占位符。先选定一个 commit 再写进 Dockerfile。基础镜像用平台镜像，不要 FROM opensandbox/execd。rust 构建很重，可以在构建阶段完成，运行镜像只留二进制。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：构建要更多内存；运行 2 vCPU 足够。 SDK：`Sandbox.create` 之后调用命名命令（`apply_patch`）。依赖模板：无。
+
+**需要。** 无密钥。
+
+**极速版。** `partial`。限制因素：可复现的 commit 还没选定，所以是 partial。 能跑的子集：选定 commit 之后，二进制本身不需要 Docker 或 KVM。 其余：不需要。
+
+**上游与调用。** https://open-sandbox.ai/examples/apply-patch （2026-10-15 抓取）。examples/ 目录里没有这个文件夹，只有文档页。 无头形态：apply_patch < /tmp/change.patch。
+
+**结论。** 状态 new，批次 2，优先级 P1，issue 本次新建。这是文件工具，不是又一个编码 CLI。 来源：opensandbox:apply-patch。
+
+## osworld
+
+**目的与用户。** OSWorld 那种看屏幕、点鼠标的计算机使用。用户是 GUI agent。
+
+**能力。** `desktop_start() -> {display}`，`screenshot() -> png bytes`，`click(x,y)`，`type(text)`，`hotkey(keys)`，`a11y_tree() -> json`（若装了 at-spi，否则返回 unverified 空），`run_task_config(path)`，`evaluate(path) -> {score}`。 端口：noVNC 6080，可选。 文件与产物：PNG 截图、任务 json。 流式：VNC 是流；截图命令返回字节。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。apt 钉 xvfb、xdotool、scrot、openbox、x11vnc、novnc、websockify。不要写 ENTRYPOINT。命名命令启动 `Xvfb :99 -screen 0 1280x720x24` 和 openbox。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`desktop_start`, `screenshot`, `click`, `type`, `hotkey`, `evaluate`）。依赖模板：无。
+
+**需要。** 无 KVM、无 GPU、无 Docker。虚拟显示即可。
+
+**极速版。** `partial`。限制因素：完整 OSWorld 客户机是一台 VM，任务经常依赖特定 Ubuntu 应用快照。极速版没有 KVM。 能跑的子集：已实测：在 template base 里 apt 安装后，Xvfb :99、xdotool、scrot 写出 /tmp/s.png。openbox 已安装但没启动。所以截图/点击/打字这条 API 可以做。只移植不依赖 VM 快照的 evaluator 纯函数。不要承诺 OSWorld 排行榜分数。 其余：完整 VM 任务用 E2B desktop 或 Cube ubuntu-desktop（MicroVM）。OpenSandbox desktop 也是容器里的 Xvfb，和这个切片同类。
+
+**上游与调用。** https://github.com/xlang-ai/OSWorld Apache-2.0。E2B surf 是桌面 agent 示例。 无头形态：screenshot + click + type。
+
+**结论。** 状态 new，批次 2，优先级 P0，issue #36。issue #36 已覆盖，不新建 linux-desktop issue。探针证明切片不是空话。 来源：opensandbox:desktop, e2b:desktop, e2b-dev/surf, cube:ubuntu-desktop, cookbook:anthropic-computer-use-orangehrm-js。
+
+## chrome
+
+**目的与用户。** 同时给出 DevTools 和 VNC 的 Chrome，方便人看着 agent 点。
+
+**能力。** `chrome_start() -> {cdp:9222, vnc:6080}`。 端口：9222、6080。 文件与产物：用户数据目录。 流式：VNC 与 CDP。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。在 osworld 的 Xvfb 上装钉死版本的 chromium，`--remote-debugging-port=9222 --disable-dev-shm-usage`。OpenSandbox 镜像名 opensandbox/chrome:latest 未钉，不要 FROM。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`chrome_start`）。依赖模板：osworld, browser-automation。
+
+**需要。** 显示由 Xvfb 提供。shm 64M 已实测。
+
+**极速版。** `partial`。限制因素：本次没在极速版安装 Chromium，只有 Xvfb。Chrome 能否在 2GB 和 64M shm 下稳定，unverified。 能跑的子集：先只做无头 CDP（并入 browser-automation）。VNC 叠在 osworld 上作为第二步。 其余：Cube sandbox-browser 在 MicroVM 里起 CDP，内存更大。
+
+**上游与调用。** OpenSandbox examples/chrome。 无头形态：chromium --headless=new --remote-debugging-port=9222。
+
+**结论。** 状态 new，批次 2，优先级 P1，issue 本次新建。和 Playwright 模板的差别是调试端口加可选画面。 来源：opensandbox:chrome, cube:browser-sandbox。
+
+## swe
+
+**目的与用户。** 在一个仓库的 base commit 上打补丁并跑 FAIL_TO_PASS。
+
+**能力。** `swe_prepare(instance_id) -> {workdir}`，`swe_run_agent(instance_id, prompt) -> {patch}`，`swe_evaluate(instance_id) -> {fail_to_pass, pass_to_pass}`，`swe_report() -> json`。agent 用 mini-swe-agent，不单独再做模板。 端口：9000。 文件与产物：repo checkout、patch、测试日志。 流式：测试输出要流式。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`pip install mini-swe-agent==2.4.6`。SWE-bench harness 只取数据集和测试命令，不要启动它的 Docker 后端。每个实例一个 venv：用数据集里的 python 版本若基础镜像没有，就只支持 3.13，并在报告里标明跳过。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB，磁盘是硬限制。 SDK：`Sandbox.create` 之后调用命名命令（`swe_prepare`, `swe_run_agent`, `swe_evaluate`, `swe_report`）。依赖模板：polyglot-toolchain。
+
+**需要。** 模型 key。git。无 Docker。
+
+**极速版。** `partial`。限制因素：官方评测为每个实例拉一个 Docker 镜像。极速版没有 docker，sudo 也不能 mount。 能跑的子集：一个实例：checkout base、打 patch、在 venv 里跑该实例声明的测试命令。不支持依赖系统包或 Docker 的实例。SWE-rebench 同样要预构建镜像，不能跑。 其余：完整分数用 E2B（e2b-dev/swe-bench）或 Cube mini-rl-training 那种带 Docker/MicroVM 的环境。
+
+**上游与调用。** SWE-bench v5.0.1 MIT；mini-swe-agent v2.4.6 MIT；SWE-rebench/SWE-bench-fork。 无头形态：mini-swe-agent 本地后端 + pytest。
+
+**结论。** 状态 new，批次 2，优先级 P0，issue #35。issue #35 已写明这个切片。 来源：cube:mini-rl-training, e2b-dev/swe-bench, upstream:SWE-bench, upstream:mini-swe-agent。
+
+## polyglot-toolchain
+
+**目的与用户。** 基础镜像没有的编译器。
+
+**能力。** `toolchain_versions() -> {go, rustc, java}`。 端口：9000。 文件与产物：无。 流式：不需要。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。各一个 tarball：Go 1.25.x、一个钉死的 rustup toolchain、Temurin 21。不要多版本切换。构建后 df，超过约 8G 已用就砍掉 Rust。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU。磁盘是限制。 SDK：`Sandbox.create` 之后调用命名命令（`toolchain_versions`）。依赖模板：无。
+
+**需要。** 无密钥。
+
+**极速版。** `partial`。限制因素：10G rootfs，探针时空盘可用 9.3G，三个工具链加在一起 unverified。 能跑的子集：先装 Go 和 Temurin 21。 其余：OpenSandbox code-interpreter 预装了多版本，那是他们的镜像。
+
+**上游与调用。** 官方 tarball。 无头形态：go version && java -version。
+
+**结论。** 状态 new，批次 2，优先级 P1，issue 本次新建。编码 CLI 遇到 Go/Java 仓库会失败。 来源：opensandbox:sandbox-images。
+
+## cursor-agent
+
+**目的与用户。** Cursor 的 `agent` CLI，SWE-rebench 和 Fly Sprites 都在用。
+
+**能力。** `agent(prompt) -> {stdout, stderr, exit_code}`。 端口：9000。 文件与产物：diff。 流式：`--output-format stream-json`。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。文档安装是 `curl https://cursor.com/install -fsS | bash`，不钉版本。找到带校验和的 URL 之前不要合并目录。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`agent`）。依赖模板：无。
+
+**需要。** CURSOR_API_KEY。
+
+**极速版。** `partial`。限制因素：安装不可复现。 能跑的子集：命令形状 `agent -p` 已在 https://cursor.com/docs/cli/headless 写明。二进制能否在 Debian 13 运行，unverified。 其余：E2B `cursor-agents` 是企业自建机器的调度器，不是这条 CLI。
+
+**上游与调用。** https://cursor.com/docs/cli/headless 无头形态：agent -p "<prompt>"。
+
+**结论。** 状态 new，批次 2，优先级 P1，issue 本次新建。需求真实，安装不达标。 来源：cursor-docs, fly-sprites-secondary, e2b:cursor-agents。
+
+## grok
+
+**目的与用户。** xAI 编码 CLI。
+
+**能力。** `grok(prompt) -> {stdout, stderr, exit_code}`。 端口：9000。 文件与产物：diff。 流式：不强制。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。已知安装是 `curl -fsSL https://x.ai/cli/install.sh | bash`，无版本。xai-org/grok 不是 CLI。钉住二进制之前不要建目录。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`grok`）。依赖模板：无。
+
+**需要。** XAI_API_KEY。本环境没有。无 GPU。
+
+**极速版。** `partial`。限制因素：安装不可复现。 能跑的子集：命令 `grok --always-approve -p` 来自 E2B 文档。运行时不需要 KVM。 其余：E2B 别名 `grok` 已经预装。
+
+**上游与调用。** https://docs.e2b.dev/agents/grok.md 无头形态：grok --always-approve -p "<prompt>"。
+
+**结论。** 状态 new，批次 2，优先级 P1，issue #40。issue #40 已存在。 来源：e2b:grok。
+
+## copilot-cli
+
+**目的与用户。** GitHub Copilot 终端 agent。
+
+**能力。** `copilot(prompt) -> {stdout, stderr, exit_code}`。 端口：9000。 文件与产物：diff。 流式：unverified。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。2026-10-15 GitHub 最新 release 是预发布 v1.0.99-0，许可证 SPDX NOASSERTION。无头 flag 只在二手页面出现（`copilot -p`、`--allow-all-tools`），未在上游文档核实。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU。 SDK：`Sandbox.create` 之后调用命名命令（`copilot`）。依赖模板：无。
+
+**需要。** Copilot token，变量名 unverified。
+
+**极速版。** `partial`。限制因素：没有稳定 pin，也没有核实过的 argv。 能跑的子集：等非预发布资产。 其余：OpenSandbox 有 github-copilot-cli-sandbox 示例。
+
+**上游与调用。** https://github.com/github/copilot-cli 无头形态：unverified。
+
+**结论。** 状态 new，批次 2，优先级 P1，issue 本次新建。示例存在，安装不达标。 来源：opensandbox:github-copilot-cli-sandbox。
+
+## crush
+
+**目的与用户。** Charm 的终端编码 agent。
+
+**能力。** `crush(prompt)`。 端口：9000。 文件与产物：diff。 流式：unverified。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。可见 release 只有 nightly。npm `@charmland/crush` 与 `crush --yolo` 来自二手页面，unverified。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU。 SDK：`Sandbox.create` 之后调用命名命令（`crush`）。依赖模板：无。
+
+**需要。** 模型 key。
+
+**极速版。** `partial`。限制因素：无稳定 pin。 能跑的子集：有稳定 tag 之后就是一条普通 CLI，不需要 Docker。 其余：不需要。
+
+**上游与调用。** https://github.com/charmbracelet/crush 无头形态：unverified。
+
+**结论。** 状态 new，批次 2，优先级 P1，issue 本次新建。仓库活跃，安装不够格。 来源：upstream:charmbracelet/crush。
+
+## cline
+
+**目的与用户。** Cline 的 CLI 形态，不是 VS Code 扩展。
+
+**能力。** `cline(prompt)`。 端口：9000。 文件与产物：diff。 流式：unverified。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。release v4.1.24（2026-10-13，Apache-2.0）。npm 包名和 `--yolo` 未在该 tag 核实。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU。 SDK：`Sandbox.create` 之后调用命名命令（`cline`）。依赖模板：无。
+
+**需要。** 模型 key。
+
+**极速版。** `partial`。限制因素：argv unverified。 能跑的子集：读完 tag 之后若是单二进制，就进极速版。 其余：不需要。
+
+**上游与调用。** https://github.com/cline/cline v4.1.24 无头形态：unverified。
+
+**结论。** 状态 new，批次 2，优先级 P1，issue 本次新建。70k stars，CLI 入口还没读到。 来源：upstream:cline/cline。
+
+## deepagents
+
+**目的与用户。** LangChain Deep Agents 的文件和 shell 工具跑在沙箱里面。
+
+**能力。** `deepagents(task) -> {stdout}`。0.7.25 是否自带控制台脚本 unverified。没有的话用短 Python 驱动，工具只打本地文件系统。 端口：9000。 文件与产物：工作区。 流式：可选。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`pip install deepagents==0.7.25`（2026-10-14，MIT）。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU，2GB。 SDK：`Sandbox.create` 之后调用命名命令（`deepagents`）。依赖模板：无。
+
+**需要。** 模型 key。
+
+**极速版。** `partial`。限制因素：入口 unverified。 能跑的子集：进程内 agent，不要再去创建 E2B/OpenSandbox。 其余：OpenSandbox 示例是宿主进程加他们的后端。E2B 没有公开别名。
+
+**上游与调用。** https://github.com/langchain-ai/deepagents deepagents==0.7.25 无头形态：unverified。
+
+**结论。** 状态 new，批次 2，优先级 P1，issue 本次新建。两边都有集成文档。 来源：opensandbox:deep-agents, e2b:agents/deep-agents。
+
+## stagehand
+
+**目的与用户。** Browserbase 的 Node 浏览器 SDK。
+
+**能力。** `stagehand(instruction) -> {result}`。 端口：9000。 文件与产物：截图。 流式：可选。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。release 名 stagehand-server-v3/v3.7.6（2026-08-28）。npm 版本未核对。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU。shm 64M。 SDK：`Sandbox.create` 之后调用命名命令（`stagehand`）。依赖模板：browser-automation。
+
+**需要。** 模型 key，或 BROWSERBASE_API_KEY。
+
+**极速版。** `partial`。限制因素：API 未钉，且和 browser-use 重叠。 能跑的子集：本地 Chromium。云浏览器不是这个模板。 其余：Browserbase 云。
+
+**上游与调用。** https://github.com/browserbase/stagehand 无头形态：unverified。
+
+**结论。** 状态 new，批次 2，优先级 P2，issue 本次新建。只有调用方坚持要 Node SDK 时再做。 来源：cookbook:mcp-browserbase-js。
+
+## prime-agent
+
+**目的与用户。** Prime Intellect 的长程 agent。
+
+**能力。** `prime_agent(prompt)`。 端口：9000。 文件与产物：工作区，可能有 IPython 状态。 流式：不强制。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。可见 release 只有 nightly。不要用浮动安装脚本。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU。 SDK：`Sandbox.create` 之后调用命名命令（`prime_agent`）。依赖模板：无。
+
+**需要。** ANTHROPIC_API_KEY。
+
+**极速版。** `partial`。限制因素：无稳定 pin。IPython 额外依赖 unverified。 能跑的子集：E2B 文档的 `prime-agent -p` 不需要 KVM。 其余：E2B 别名 `prime`。
+
+**上游与调用。** https://github.com/PrimeIntellect-ai/prime-agent；https://docs.e2b.dev/agents/prime.md 无头形态：prime-agent -p "<prompt>"。
+
+**结论。** 状态 new，批次 2，优先级 P2，issue 本次新建。命令已知，发布通道不够。 来源：e2b:prime。
+
+## appworld
+
+**目的与用户。** 可控应用世界里的函数调用评测。
+
+**能力。** `appworld_run(task) -> {score}`。 端口：9000。 文件与产物：任务日志。 流式：不强制。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。tag v0.1.3.post1（2026-02-17，Apache-2.0）。是否调用 Docker unverified。若 README 要求 Docker 就停。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU。 SDK：`Sandbox.create` 之后调用命名命令（`appworld_run`）。依赖模板：无。
+
+**需要。** 模型 key。
+
+**极速版。** `partial`。限制因素：Docker 依赖未核实。 能跑的子集：纯 Python 任务可以跑。 其余：若必须 Docker，用 Cube 或 E2B 的 Docker 配方，不是极速版。
+
+**上游与调用。** https://github.com/stonybrooknlp/appworld 无头形态：该 tag 的 runner。
+
+**结论。** 状态 new，批次 2，优先级 P2，issue 本次新建。比 tau2 旧，放后面。 来源：upstream:appworld。
+
+## muse
+
+**目的与用户。** Meta 的终端/CI 编码 agent。
+
+**能力。** `muse(prompt)`。 端口：9000。 文件与产物：diff。 流式：`--json`。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。E2B 预装了它。公开安装 pin 本次没找到，GitHub 上没有 facebook/muse 或 meta-llama/muse。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU。 SDK：`Sandbox.create` 之后调用命名命令（`muse`）。依赖模板：无。
+
+**需要。** META_API_KEY。
+
+**极速版。** `partial`。限制因素：没有可复现安装物。 能跑的子集：`muse exec --yolo` 不需要 KVM，前提是二进制存在。 其余：E2B 别名 `muse`。cookbook muse-execution-backend 是宿主示例。
+
+**上游与调用。** https://docs.e2b.dev/agents/muse.md；https://dev.meta.ai/docs/muse-code 无头形态：muse exec --yolo "<prompt>"。
+
+**结论。** 状态 new，批次 2，优先级 P2，issue 本次新建。E2B 有，我们没有安装物。 来源：e2b:muse, cookbook:muse-execution-backend-python。
+
+## devin
+
+**目的与用户。** Cognition 的终端编码 agent。
+
+**能力。** `devin(prompt)`，`devin --permission-mode dangerous -p`。 端口：9000。 文件与产物：diff。 流式：不强制。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。E2B 别名 `devin`。首次要交互登录。无头安装 pin unverified。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU。 SDK：`Sandbox.create` 之后调用命名命令（`devin`）。依赖模板：无。
+
+**需要。** Devin 账号。
+
+**极速版。** `partial`。限制因素：登录是交互的。 能跑的子集：若能用 token 跳过登录，命令本身不需要 KVM。未验证。 其余：E2B `devin` 与 `devin-outposts`（企业调度器）。
+
+**上游与调用。** https://docs.e2b.dev/agents/devin.md 无头形态：devin --permission-mode dangerous -p "<prompt>"。
+
+**结论。** 状态 new，批次 2，优先级 P2，issue 本次新建。登录挡住了可复现安装。 来源：e2b:devin, e2b:devin-outposts。
+
+## waa
+
+**目的与用户。** Windows 上的计算机使用评测。
+
+**能力。** `rdp_open(host) -> {status}`，`winrm_run(command) -> {stdout}`。不在沙箱里跑 Windows。 端口：出站 3389/5985，不在沙箱内监听 Windows。 文件与产物：截图若远程桌面客户端能抓。 流式：不强制。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。安装钉死版本的 freerdp 客户端或 pywinrm。不要装 QEMU。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU。 SDK：`Sandbox.create` 之后调用命名命令（`winrm_run`）。依赖模板：无。
+
+**需要。** 一台调用方提供的 Windows 目标。无 KVM 也变不出 Windows。
+
+**极速版。** `partial`。限制因素：极速版是 Linux 容器。OpenSandbox 的 dockurr/windows 要 KVM/QEMU。探针没有 /dev/kvm，sudo mount 失败。 能跑的子集：作为远程 RDP/WinRM 客户端，连一台已经存在的 Windows。评测脚本里的 Windows 应用仍在那台机器上。 其余：Windows 客户机用 Cube MicroVM（他们的桌面示例是 Linux）、OpenSandbox windows 示例（dockurr/windows，要 KVM）、Daytona windows-* 快照、E2B 不提供 Windows。
+
+**上游与调用。** https://github.com/microsoft/WindowsAgentArena v0.0.4 MIT。 无头形态：xfreerdp 或 WinRM。
+
+**结论。** 状态 new，批次 3，优先级 P2，issue #37。issue #37。不要写裸的 no。 来源：opensandbox:windows, daytona:windows-snapshots, upstream:WAA。
+
+## phone-sandbox
+
+**目的与用户。** 一台手机或模拟器：屏幕和触摸。
+
+**能力。** `adb_connect(addr) -> {serial}`，`adb_screencap() -> png`，`adb_input(cmd)`。 端口：出站 5555。 文件与产物：截图。 流式：scrcpy 可选，未验证。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。apt 钉 android-tools-adb 或官方 platform-tools 的版本化 zip。不要装模拟器系统镜像。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：客户端 2 vCPU 足够。 SDK：`Sandbox.create` 之后调用命名命令（`adb_connect`, `adb_screencap`, `adb_input`）。依赖模板：android-world。
+
+**需要。** 调用方提供的设备或远程模拟器。沙箱 API 没有手机资源。
+
+**极速版。** `partial`。限制因素：没有 /dev/kvm，也没有设备节点。 能跑的子集：adb 客户端连 `host:5555`。屏幕和触摸发生在远端。 其余：模拟器本身用带 KVM 的 OpenSandbox/Cube/E2B android-16（redroid）。
+
+**上游与调用。** 没有单一上游。E2B android-16 是相邻能力。 无头形态：adb connect && adb exec-out screencap -p。
+
+**结论。** 状态 new，批次 3，优先级 P2，issue #38。issue #38。 来源：e2b:android-16。
+
+## android-world
+
+**目的与用户。** 在 Android 模拟器里跑 116 个动态任务。
+
+**能力。** `android_eval(task) -> {score}` 只有在 adb 已连上时才有意义。 端口：adb 5555，gRPC 8554 是模拟器侧。 文件与产物：任务日志。 流式：不强制。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。pip 钉 android_world 的某个 commit（仓库无 release）。不要下载 AVD 系统镜像。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：客户端 2 vCPU。模拟器要 KVM 和数 GB。 SDK：`Sandbox.create` 之后调用命名命令（`adb_connect`, `android_eval`）。依赖模板：phone-sandbox。
+
+**需要。** 远端模拟器。无本地 GPU 需求。
+
+**极速版。** `partial`。限制因素：官方启动是 `emulator -avd AndroidWorldAvd -grpc 8554`。探针无 /dev/kvm。 能跑的子集：把环境变量指到远程 adb。accessibility 转发若绑在本地 gRPC，则只有命令通道能用，任务复位 unverified。 其余：E2B `android-16` 在他们的 microVM 里跑 redroid。Cube/OpenSandbox 若给 KVM 也能跑模拟器。
+
+**上游与调用。** https://github.com/google-research/android_world Apache-2.0。 无头形态：python run.py 指向远程 adb。
+
+**结论。** 状态 new，批次 3，优先级 P2，issue #39。issue #39。 来源：e2b:android-16, upstream:android_world。
+
+## k3s
+
+**目的与用户。** 一次性 Kubernetes。E2B `e2b/k3s` 是单节点集群。
+
+**能力。** `kubectl_apply(manifest) -> {stdout}`，kubeconfig 由调用方传入。 端口：出站 6443。 文件与产物：kubeconfig 只从环境变量读，不写进镜像。 流式：不需要。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。安装钉死版本的 kubectl 静态二进制。不要装 k3s、containerd 或 CNI。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：客户端可忽略。 SDK：`Sandbox.create` 之后调用命名命令（`kubectl_apply`）。依赖模板：无。
+
+**需要。** 一台外部 apiserver。
+
+**极速版。** `partial`。限制因素：探针：无 docker socket，sudo mount 失败，无 fuse。k3s 要 cgroup 和容器运行时。E2B 能跑是因为 microVM，且他们自己的文档也写了没有 BPF JIT、不能 Kata/KubeVirt。 能跑的子集：kubectl 客户端。集群不在这个沙箱里。 其余：真集群用 E2B `e2b/k3s`，或 OpenSandbox 的 AKS+Kata / kubernetes-sigs agent-sandbox。Cube 也是 MicroVM，不是在容器里套 k3s。
+
+**上游与调用。** https://docs.e2b.dev/use-cases/k3s.md 无头形态：kubectl get nodes。
+
+**结论。** 状态 new，批次 3，优先级 P2，issue #42。issue #42。 来源：e2b:e2b/k3s, opensandbox:agent-sandbox, opensandbox:aks-kata。
+
+## omarchy
+
+**目的与用户。** basecamp/omarchy 是一套 Arch + Hyprland 桌面意见。它不是编码 CLI。
+
+**能力。** 没有提示词命令。不要发明一个。若只是想要主题字体，那不是这个模板的目的。 端口：无。 文件与产物：无。 流式：无。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。不要在 Debian 13 上安装 Arch/Hyprland。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：不适用。 SDK：`Sandbox.create` 之后调用命名命令（（无））。依赖模板：osworld。
+
+**需要。** 真实座位和 Wayland。Xvfb 不能满足 Hyprland。
+
+**极速版。** `partial`。限制因素：发行版和显示栈都不是极速版。 能跑的子集：没有任何 Hyprland 会话可跑。要桌面用 `osworld` 的 Xvfb+openbox。Omarchy 的 CLI 工具若将来单独发布，再单独立项。 其余：一台 Arch 虚拟机（Cube/E2B 自定义镜像），不是 Express。
+
+**上游与调用。** https://github.com/basecamp/omarchy v4.0.4 MIT。 无头形态：无。
+
+**结论。** 状态 new，批次 3，优先级 P2，issue #43。issue #43。切片是承认它没有无头入口，并把桌面需求指到 osworld。 来源：upstream:omarchy。
+
+## qm
+
+**目的与用户。** yc-software/qm 是带可插拔沙箱后端的 agent harness。
+
+**能力。** `qm_run(task) -> {stdout}` 仅当存在不外出的 local shell 后端。 端口：9000。 文件与产物：qm 工作区。 流式：unverified。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。钉 tag desktop-v0.1.2 只是预发布。先读该 tag 是否有 local 后端。不要把 Docker/E2B/Modal 后端编进镜像。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：2 vCPU。 SDK：`Sandbox.create` 之后调用命名命令（`qm_run`）。依赖模板：无。
+
+**需要。** 模型 key。后端租约不在我们的 server 里。
+
+**极速版。** `partial`。限制因素：产品价值在后端路由。极速版提供不了那些后端。 能跑的子集：若代码能把 shell 打到本容器，就只暴露这一条。远程后端不做。本次未读源码确认 local 后端，标 unverified。 其余：E2B、Modal、MicroVM 后端由那些平台自己提供。
+
+**上游与调用。** https://github.com/yc-software/qm MIT。 无头形态：unverified。
+
+**结论。** 状态 new，批次 3，优先级 P2，issue #44。issue #44。 来源：upstream:qm。
+
+## qm-sandbox
+
+**目的与用户。** QM 的沙箱层。文档里的一种接法是 Superserve 模板 `qm-agent-0.1.0`。
+
+**能力。** 不在极速版注册 Superserve 模板。最多 `qm_sandbox_status()` 打印“需要外部后端”。 端口：无。 文件与产物：无。 流式：无。
+
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。不要 COPY 后端控制面。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：无。 SDK：`Sandbox.create` 之后调用命名命令（（无））。依赖模板：qm。
+
+**需要。** SUPERSERVE_API_KEY 与外部模板。
+
+**极速版。** `partial`。限制因素：`abx template install` 不会创建 `qm-agent-0.1.0`。 能跑的子集：没有可执行的沙箱实现。调用方应直接使用本目录里的 CLI 模板，而不是绕到 QM。 其余：Superserve、E2B、Modal、Cube MicroVM。
+
+**上游与调用。** QM 文档中的 SUPERSERVE_TEMPLATE。 无头形态：无。
+
+**结论。** 状态 new，批次 3，优先级 P2，issue #45。issue #45。 来源：upstream:qm-sandbox。

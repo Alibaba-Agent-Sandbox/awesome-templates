@@ -1,302 +1,1218 @@
 [
   {
+    "name": "python-hello",
+    "title": "Python hello",
+    "priority": "P2",
+    "upstream": "本仓库。",
+    "install": "不安装上游 CLI。保持目录，按现行基础镜像改 Dockerfile，不要再写 CMD。",
+    "headless_call": "hello",
+    "needs": "无密钥、无 GPU、无 KVM、无 Docker、无显示器。",
+    "express_feasible": "yes",
+    "rationale": "验收用的最小模板，已经存在。 切片：整份模板都能在极速版跑。",
+    "named_commands": [
+      "hello"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#python-hello",
+    "batch": "other",
+    "source": [
+      "catalog"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "base",
+    "title": "Platform base",
+    "priority": "P1",
+    "upstream": "平台镜像；E2B 文档 base image，Dockerfile templates/base/e2b.Dockerfile。",
+    "install": "不要新建目录。文档写清如何 `abx create --template base`。",
+    "headless_call": "abx exec <id> -- <argv>",
+    "needs": "极速版 API key。无 GPU/KVM/Docker。",
+    "express_feasible": "yes",
+    "rationale": "目录外的平台模板，issue #31 只做文档和核实。 切片：实测内容见文首探针。",
+    "named_commands": [
+      "exec"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#base",
+    "batch": "other",
+    "source": [
+      "express-probe",
+      "e2b-docs"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "claude-code",
+    "title": "Claude Code",
+    "priority": "P0",
+    "upstream": "E2B docs/agents/claude-code.md（2026-10-15）；目录已有。",
+    "install": "钉死 `@anthropic-ai/claude-code@<version>`（以目录里已有 pin 为准，升级要改 pin 并写进构建日志）。Node 20 够用则不要另装 Node 22。",
+    "headless_call": "claude --dangerously-skip-permissions -p \"<prompt>\"",
+    "needs": "ANTHROPIC_API_KEY。无 GPU/KVM/Docker/显示器。",
+    "express_feasible": "yes",
+    "rationale": "已有目录。这一波只按 spec 复核，不新建。 切片：整条 CLI 都适合极速版。",
+    "named_commands": [
+      "claude"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#claude-code",
+    "batch": "1",
+    "source": [
+      "opensandbox:claude-code",
+      "e2b:claude",
+      "cloudflare:coding-agents/claude-code",
+      "cookbook:anthropic-claude-code-*"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "codex",
+    "title": "Codex CLI",
+    "priority": "P0",
+    "upstream": "https://docs.e2b.dev/agents/codex.md",
+    "install": "钉 `@openai/codex@<已有 pin>`。",
+    "headless_call": "codex exec --full-auto \"<prompt>\"",
+    "needs": "CODEX_API_KEY 或 OPENAI_API_KEY（以已有 template.yaml 为准）。",
+    "express_feasible": "yes",
+    "rationale": "已有。 切片：整条 CLI。",
+    "named_commands": [
+      "codex"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#codex",
+    "batch": "1",
+    "source": [
+      "opensandbox:codex-cli",
+      "e2b:codex",
+      "cloudflare:codex",
+      "cookbook:openai-codex-*"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "codex-agent-api",
+    "title": "Codex Agents API",
+    "priority": "P1",
+    "upstream": "本仓库目录。",
+    "install": "沿用目录里的 pin。start_cmd 只启动 agent-sandbox-server；Agents 服务由命名命令拉起。",
+    "headless_call": "命名命令启动后 curl 健康检查",
+    "needs": "OpenAI/Codex key。",
+    "express_feasible": "yes",
+    "rationale": "已有服务型模板。 切片：整个服务都能在单容器里跑。",
+    "named_commands": [
+      "serve_start"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#codex-agent-api",
+    "batch": "1",
+    "source": [
+      "cookbook:openai-agents-api-*",
+      "catalog"
+    ],
+    "depends_on": [
+      "codex"
+    ]
+  },
+  {
+    "name": "opencode",
+    "title": "OpenCode",
+    "priority": "P0",
+    "upstream": "https://docs.e2b.dev/agents/opencode.md",
+    "install": "目录钉 `opencode-ai@1.19.0`。升级版本另开变更，不要在本次调研里改 pin。",
+    "headless_call": "opencode run \"<prompt>\"",
+    "needs": "ANTHROPIC_API_KEY 或其他 provider key。",
+    "express_feasible": "yes",
+    "rationale": "已有 experimental。 切片：整条 CLI。",
+    "named_commands": [
+      "opencode"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#opencode",
+    "batch": "1",
+    "source": [
+      "opensandbox:opencode",
+      "e2b:opencode",
+      "cloudflare:opencode",
+      "cube:opencode-plugin-sandbox"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "amp",
+    "title": "Amp",
+    "priority": "P1",
+    "upstream": "https://docs.e2b.dev/agents/amp.md",
+    "install": "保持目录中的 npm pin。",
+    "headless_call": "amp --dangerously-allow-all -x \"<prompt>\"",
+    "needs": "AMP_API_KEY。",
+    "express_feasible": "yes",
+    "rationale": "已有 experimental。 切片：整条 CLI。",
+    "named_commands": [
+      "amp"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#amp",
+    "batch": "1",
+    "source": [
+      "e2b:amp",
+      "catalog"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "droid",
+    "title": "Factory Droid",
+    "priority": "P1",
+    "upstream": "https://docs.e2b.dev/agents/droid.md",
+    "install": "目录钉 `@factory/cli@0.241.1`。E2B 文档用 `--auto low`，和目录里的 flag 是否一致要在复核时对 `--help`。",
+    "headless_call": "droid exec --auto low \"<prompt>\"",
+    "needs": "FACTORY_API_KEY。",
+    "express_feasible": "yes",
+    "rationale": "已有 experimental。 切片：整条 CLI。",
+    "named_commands": [
+      "droid"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#droid",
+    "batch": "1",
+    "source": [
+      "e2b:droid",
+      "catalog"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "gemini",
+    "title": "Gemini CLI",
+    "priority": "P0",
+    "upstream": "本仓库 gemini/；OpenSandbox examples/gemini-cli。",
+    "install": "已钉 `@google/gemini-cli@0.64.0`。",
+    "headless_call": "gemini -p \"<prompt>\" --yolo",
+    "needs": "GEMINI_API_KEY。",
+    "express_feasible": "yes",
+    "rationale": "已有 experimental。 切片：整条 CLI。",
+    "named_commands": [
+      "gemini"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#gemini",
+    "batch": "1",
+    "source": [
+      "opensandbox:gemini-cli",
+      "catalog"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "qwen-code",
+    "title": "Qwen Code",
+    "priority": "P0",
+    "upstream": "本仓库。",
+    "install": "保持目录 pin。",
+    "headless_call": "qwen 的无头参数以目录 commands.py 为准",
+    "needs": "DASHSCOPE_API_KEY 或目录里声明的变量。本环境有 OpenAI 兼容端点时可做 L3，是否被该 CLI 接受要在实现时试。",
+    "express_feasible": "yes",
+    "rationale": "已有。 切片：整条 CLI。",
+    "named_commands": [
+      "qwen"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#qwen-code",
+    "batch": "1",
+    "source": [
+      "opensandbox:qwen-code",
+      "catalog"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "deepseek-harness",
+    "title": "DeepSeek harness",
+    "priority": "P1",
+    "upstream": "本仓库。",
+    "install": "保持 pin。",
+    "headless_call": "见 commands.py",
+    "needs": "DeepSeek 或兼容 key。",
+    "express_feasible": "yes",
+    "rationale": "已有。 切片：整份。",
+    "named_commands": [
+      "deepseek"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#deepseek-harness",
+    "batch": "1",
+    "source": [
+      "catalog"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "openclaw",
+    "title": "OpenClaw gateway",
+    "priority": "P0",
+    "upstream": "https://docs.e2b.dev/agents/openclaw/openclaw-gateway.md",
+    "install": "钉 openclaw 版本，不要 `ghcr.io/openclaw/openclaw:latest`。",
+    "headless_call": "openclaw gateway --allow-unconfigured --bind lan --auth token --port 18789",
+    "needs": "模型 key。token 来自环境变量。",
+    "express_feasible": "yes",
+    "rationale": "已有。 切片：gateway 本身可以在极速版跑。",
+    "named_commands": [
+      "gateway_start"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#openclaw",
+    "batch": "1",
+    "source": [
+      "opensandbox:openclaw",
+      "e2b:openclaw",
+      "cube:openclaw-integration"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "hermes-agent",
+    "title": "Hermes Agent",
+    "priority": "P0",
+    "upstream": "https://github.com/NousResearch/hermes-agent v0.22.1；https://docs.e2b.dev/agents/hermes.md",
+    "install": "钉 GitHub release v0.22.1（2026-10-14，MIT）。安装命令以该 tag 的 README 为准，本次未打开 README，安装行 unverified。",
+    "headless_call": "hermes chat -Q --yolo -q \"<prompt>\"",
+    "needs": "provider key，E2B 示例是 OPENROUTER_API_KEY。",
+    "express_feasible": "partial",
+    "rationale": "升级已有模板，不是新目录。 切片：先把 v0.22.1 的 `hermes` 二进制放进现有目录，不要新建名字。",
+    "named_commands": [
+      "hermes"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#hermes-agent",
+    "batch": "2",
+    "source": [
+      "e2b:hermes",
+      "cookbook:hermes-incident-playbook-python",
+      "catalog"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "qoder",
+    "title": "Qoder dev sandbox",
+    "priority": "P2",
+    "upstream": "本仓库描述。",
+    "install": "没有可钉的 Qoder 安装物之前不要假装装了 CLI。",
+    "headless_call": "qoder_run",
+    "needs": "CLI 出现后才需要 key。",
+    "express_feasible": "partial",
+    "rationale": "已有，但是空 CLI。 切片：现在只能跑本地脚本。",
+    "named_commands": [
+      "qoder_run"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#qoder",
+    "batch": "other",
+    "source": [
+      "catalog"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "agents-cli",
+    "title": "Agents API shell",
+    "priority": "P2",
+    "upstream": "本仓库。",
+    "install": "不要在这个目录里再装一份未钉的 CLI。",
+    "headless_call": "见 commands.py",
+    "needs": "无，直到它真的调用 CLI。",
+    "express_feasible": "partial",
+    "rationale": "已有占位。 切片：健康检查可以过。产品调用走另外两个模板。",
+    "named_commands": [
+      "agents"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#agents-cli",
+    "batch": "other",
+    "source": [
+      "catalog"
+    ],
+    "depends_on": [
+      "codex",
+      "qwen-code"
+    ]
+  },
+  {
+    "name": "node-web",
+    "title": "Node web service",
+    "priority": "P1",
+    "upstream": "本仓库。",
+    "install": "Node 20 已在基础镜像里。",
+    "headless_call": "node server.js",
+    "needs": "无密钥。",
+    "express_feasible": "yes",
+    "rationale": "已有。 切片：整份。",
+    "named_commands": [
+      "start"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#node-web",
+    "batch": "1",
+    "source": [
+      "catalog",
+      "cloudflare:minimal"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "browser-automation",
+    "title": "Playwright Chromium",
+    "priority": "P0",
+    "upstream": "本仓库；OpenSandbox examples/playwright；Cube examples/browser-sandbox。",
+    "install": "钉 Playwright 与对应 Chromium。`/dev/shm` 实测只有 64M，启动参数加 `--disable-dev-shm-usage`。",
+    "headless_call": "playwright chromium headless",
+    "needs": "无模型密钥。无 GPU/KVM/Docker。",
+    "express_feasible": "yes",
+    "rationale": "已有，浏览器类示例都先落到这里。 切片：无头 Playwright 可以跑。带 VNC 的 Chrome 归 `chrome`。",
+    "named_commands": [
+      "browse"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#browser-automation",
+    "batch": "1",
+    "source": [
+      "opensandbox:playwright",
+      "cube:browser-sandbox",
+      "cookbook:playwright-in-e2b"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "code-interpreter-v1",
+    "title": "Code interpreter (platform id)",
+    "priority": "P0",
+    "upstream": "E2B code-interpreter；OpenSandbox sandbox-images README。",
+    "install": "不要复制 E2B 或 OpenSandbox 的 Dockerfile。若要自建，FROM 平台基础镜像，只钉 jupyter-server==2.20.0、ipykernel==6.31.0、pandas==2.2.3、numpy==2.3.5、matplotlib==3.10.9、pillow==12.3.0（2026-10-15 从 e2b-dev/code-interpreter main 的 requirements.txt 读到）。先不要装 spacy/opencv/librosa。",
+    "headless_call": "execute_code",
+    "needs": "执行代码本身不要密钥。",
+    "express_feasible": "partial",
+    "rationale": "每个厂商都有一块执行代码的镜像。先核实平台 id，缺了再自建瘦身版。 切片：瘦身 Python 解释器。Java/Go 多版本不要塞进第一版。",
+    "named_commands": [
+      "execute_code",
+      "list_runtimes"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#code-interpreter-v1",
+    "batch": "2",
+    "source": [
+      "e2b:code-interpreter-v1",
+      "cookbook:hello-world-*",
+      "cookbook:openai-*",
+      "cookbook:groq-*",
+      "cookbook:langchain-python",
+      "cookbook:langgraph-*",
+      "modal:sandbox",
+      "cloudflare:code-interpreter-docs",
+      "daytona:default-snapshot"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "opensandbox-code-interpreter",
+    "title": "OpenSandbox code-interpreter image",
+    "priority": "P1",
+    "upstream": "examples/code-interpreter/main.py 默认镜像 v1.1.0；sandbox-images README。",
+    "install": "不要把 Dockerfile 拷进本仓库。文档写镜像 `sandbox-registry.cn-zhangjiakou.cr.aliyuncs.com/opensandbox/code-interpreter:v1.1.0`。",
+    "headless_call": "CodeInterpreter SDK",
+    "needs": "SANDBOX_DOMAIN、SANDBOX_API_KEY。",
+    "express_feasible": "partial",
+    "rationale": "目录外镜像。 切片：同一能力在极速版用 `code-interpreter-v1` 的瘦身实现。",
+    "named_commands": [
+      "execute_code"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#opensandbox-code-interpreter",
+    "batch": "other",
+    "source": [
+      "opensandbox:code-interpreter"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "desktop",
+    "title": "E2B desktop catalog id",
+    "priority": "P2",
+    "upstream": "https://docs.e2b.dev/template/examples/desktop.md",
+    "install": "不要在本仓库复制 E2B desktop Dockerfile 来冒充这个 id。极速版的桌面切片用 `osworld`。",
+    "headless_call": "sandbox.screenshot()",
+    "needs": "无 KVM。要虚拟显示。",
+    "express_feasible": "partial",
+    "rationale": "只做目录外文档。 切片：见 osworld。",
+    "named_commands": [
+      "screenshot"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#desktop",
+    "batch": "other",
+    "source": [
+      "e2b:desktop",
+      "e2b-dev/desktop",
+      "e2b-dev/surf"
+    ],
+    "depends_on": []
+  },
+  {
     "name": "kimi-code",
     "title": "Kimi Code CLI",
     "priority": "P0",
-    "upstream": "https://github.com/MoonshotAI/kimi-code (MIT). GitHub release @moonshot-ai/kimi-code@2.2.0 published 2026-10-14. Legacy MoonshotAI/kimi-cli is archived.",
-    "install": "Install Node.js >=22.19 in the image (Express FC base is Node 20), then npm install -g @moonshot-ai/kimi-code@2.2.0. Do not use the unpinned curl installer at code.kimi.com.",
-    "headless_call": "kimi -p \"<prompt>\" with KIMI_CODE_NO_AUTO_UPDATE=1. Catalog backlog also documents kimi --print -p for auto-approved tool calls. Confirm -p vs --print against 2.2.0 --help before freezing the command.",
-    "needs": "Moonshot API key via the CLI provider config (exact env var name unverified on 2.2.0). No GPU, KVM, Docker, or display. Egress required.",
+    "upstream": "https://github.com/MoonshotAI/kimi-code @moonshot-ai/kimi-code@2.2.0",
+    "install": "基础镜像是 Node 20。另装 Node ≥22.19，再 `npm install -g @moonshot-ai/kimi-code@2.2.0`（release 2026-10-14，MIT）。不要用 code.kimi.com 的脚本，也不要 `pip install kimi-cli`（旧仓库已归档）。OpenSandbox README 已改称 Kimi Code CLI，但更早的 main.py 仍是未钉的 pip。",
+    "headless_call": "kimi -p \"<prompt>\"",
+    "needs": "Moonshot API key，环境变量名在 2.2.0 文档里核对，本次 unverified。无 GPU/KVM/Docker/显示器。",
     "express_feasible": "yes",
-    "rationale": "OpenSandbox ships a kimi-cli example, and no catalog template covers Moonshot. The CLI is a single non-interactive process, same shape as gemini and qwen-code. Node 22 is an image install, not a platform blocker.",
-    "named_commands": ["kimi"]
+    "rationale": "OpenSandbox 有示例，目录里没有 Moonshot CLI。 切片：整条 CLI。",
+    "named_commands": [
+      "kimi"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#kimi-code",
+    "batch": "1",
+    "source": [
+      "opensandbox:kimi-cli"
+    ],
+    "depends_on": []
   },
   {
     "name": "goose",
-    "title": "Goose coding agent",
+    "title": "Goose",
     "priority": "P0",
-    "upstream": "https://github.com/block/goose (Apache-2.0). Release v1.54.0 published 2026-10-08.",
-    "install": "Download and unpack https://github.com/block/goose/releases/download/v1.54.0/goose-x86_64-unknown-linux-gnu.tar.bz2 (80,909,320 bytes on 2026-10-15). Do not use the floating stable/download_cli.sh. Skip vulkan and cuda assets.",
-    "headless_call": "goose run -t \"<text>\" (long form --text). Provider and model come from goose config or env; exact key name depends on the chosen provider.",
-    "needs": "An LLM API key for the configured provider. No GPU, KVM, Docker, or display. The CLI tarball is the target, not the Goose desktop app.",
+    "upstream": "https://github.com/block/goose v1.54.0 Apache-2.0",
+    "install": "下载 https://github.com/block/goose/releases/download/v1.54.0/goose-x86_64-unknown-linux-gnu.tar.bz2 （80890920 字节）。不要 vulkan/cuda，不要 stable/download_cli.sh。",
+    "headless_call": "goose run -t \"<text>\"",
+    "needs": "所选 provider 的 API key。无 GPU。",
     "express_feasible": "yes",
-    "rationale": "55k-star AAIF agent with a documented one-shot command and a pinned Linux tarball. Same invocation shape the catalog already accepts for Claude, Codex, and Qwen.",
-    "named_commands": ["goose"]
+    "rationale": "有钉死的 Linux 包和无头命令。 切片：整条 CLI。",
+    "named_commands": [
+      "goose"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#goose",
+    "batch": "1",
+    "source": [
+      "upstream:block/goose"
+    ],
+    "depends_on": []
   },
   {
     "name": "pi",
     "title": "Pi coding agent",
     "priority": "P0",
-    "upstream": "https://github.com/badlogic/pi-mono (MIT). Release v1.2.0 published 2026-10-12. npm package @earendil-works/pi-coding-agent. E2B public alias pi. https://pi.dev/docs/latest/cli",
-    "install": "Prefer the release tarball https://github.com/badlogic/pi-mono/releases/download/v1.2.0/pi-linux-x64.tar.gz (42,611,136 bytes). Whether that tarball bundles Node is unverified. Fallback: Node >=22.19 and npm install -g --ignore-scripts @earendil-works/pi-coding-agent@1.2.0. Do not use pi.dev/install.sh.",
-    "headless_call": "E2B docs (fetched 2026-10-15) use pi -p \"<prompt>\". pi.dev CLI docs say --print is the one-shot flag and that --mode text does not force exit. Confirm on v1.2.0. No auto-approve flag; built-in tools run as the process user.",
-    "needs": "ANTHROPIC_API_KEY or another provider key Pi accepts. No GPU, KVM, Docker, or display. Building this directory does not register E2B's public pi alias.",
+    "upstream": "pi-mono v1.2.0 MIT；https://docs.e2b.dev/agents/pi.md；https://pi.dev/docs/latest/cli",
+    "install": "优先 https://github.com/badlogic/pi-mono/releases/download/v1.2.0/pi-linux-x64.tar.gz （42611136 字节）。是否自带 Node unverified。否则 Node ≥22.19 且 `npm install -g --ignore-scripts @earendil-works/pi-coding-agent@1.2.0`。Cloudflare README 指向 https://github.com/earendil-works/pi ，和 badlogic/pi-mono 是否同一远程 unverified。",
+    "headless_call": "pi -p \"<prompt>\"（pi.dev 写 --print，以 v1.2.0 --help 为准）",
+    "needs": "ANTHROPIC_API_KEY 或其他 provider。无权限弹窗。",
     "express_feasible": "yes",
-    "rationale": "E2B and Vercel universal both ship Pi. It is a terminal coding agent with a print mode, so it fits the named-command contract. The earlier backlog objection was about E2B template registration, which this Express directory does not attempt.",
-    "named_commands": ["pi"]
-  },
-  {
-    "name": "browser-use",
-    "title": "browser-use agent",
-    "priority": "P0",
-    "upstream": "https://github.com/browser-use/browser-use (MIT). Release 0.13.11 published 2026-10-07.",
-    "install": "pip install browser-use==0.13.11 and the Chromium build that release documents (playwright install chromium, pinned to the Playwright version browser-use 0.13.11 depends on). Reuse the non-root Chromium launch flags from browser-automation.",
-    "headless_call": "A small Python entry that constructs a browser-use Agent with task text and a headless Chromium, then prints the final result. The exact constructor kwargs for 0.13.11 were not re-read in this survey; pin them from that tag's README before coding.",
-    "needs": "An LLM API key (provider depends on the agent config). Chromium, /dev/shm or --disable-dev-shm-usage. No GPU, KVM, or Docker. Display not required for headless Chromium.",
-    "express_feasible": "yes",
-    "rationale": "118k stars and actively pushed (2026-10-15). browser-automation only exposes Playwright primitives. browser-use is the agent loop competitors (including E2B kernel-browser) preinstall. It runs in the same headless Chromium this catalog already builds.",
-    "named_commands": ["browser_use"]
-  },
-  {
-    "name": "code-interpreter",
-    "title": "Multi-language code interpreter",
-    "priority": "P0",
-    "upstream": "Match the capability of E2B code-interpreter-v1 (Apache-2.0, e2b-dev/code-interpreter) and OpenSandbox code-interpreter:v1.1.0. Do not copy either Dockerfile.",
-    "install": "On the FC base image, pin jupyter-server, ipykernel, pandas, numpy, matplotlib, pillow to versions copied from e2b-dev/code-interpreter template/requirements.txt as fetched 2026-10-15 (jupyter-server==2.20.0, pandas==2.2.3, numpy==2.3.5, matplotlib==3.10.9). Add a Node 20 kernel only if it stays small. Defer spacy, opencv, librosa, and numba until a size check against the ~10G rootfs passes.",
-    "headless_call": "Named command execute_code(language, code) that runs Python (and optionally node) and returns stdout, stderr, and an error string. No Jupyter port needs to be public for the first version.",
-    "needs": "No API key for code execution. No GPU (CPU wheels only), KVM, Docker, or display. Egress only if a later command installs packages.",
-    "express_feasible": "partial",
-    "rationale": "Every surveyed host ships a code-execution image, and this catalog only has python-hello plus node-web. A slim scientific Python interpreter fits Express. The full E2B library list is unverified against the 10G rootfs, so the first template should be the slim set.",
-    "named_commands": ["execute_code", "list_runtimes"]
-  },
-  {
-    "name": "linux-desktop",
-    "title": "Headless Linux desktop (Xvfb + noVNC)",
-    "priority": "P0",
-    "upstream": "Pattern from E2B desktop (Ubuntu 22.04 XFCE, noVNC on 6080, xdotool, scrot) and OpenSandbox examples/desktop (Xvfb + x11vnc + fluxbox). Do not copy those Dockerfiles. noVNC is MPL-2.0; x11vnc is GPL-2.0.",
-    "install": "apt packages pinned by Debian snapshot or apt version lock: xvfb, x11vnc, fluxbox or xfce4, novnc, websockify, xdotool, scrot. Run as user. Start Xvfb on :0 and noVNC on 6080 from a named command, not from ENTRYPOINT (platform forbids replacing entrypoint).",
-    "headless_call": "desktop_start() then screenshot() via scrot or xwd, and input(text) via xdotool. Return the noVNC URL path on port 6080.",
-    "needs": "No GPU and no KVM. Xvfb does not need a real display. No Docker. Non-root X and image size are unverified on Express. VNC password from env, empty in template.yaml.",
-    "express_feasible": "partial",
-    "rationale": "This is the computer-use surface Express can host. It is not OSWorld. E2B, OpenSandbox, and CubeSandbox all expose a desktop, and this catalog does not.",
-    "named_commands": ["desktop_start", "screenshot", "input"]
-  },
-  {
-    "name": "cursor-agent",
-    "title": "Cursor CLI agent",
-    "priority": "P1",
-    "upstream": "https://cursor.com/docs/cli/headless (fetched 2026-10-15). Install script https://cursor.com/install. No public GitHub repo for the CLI was found (getcursor/cursor has no license field).",
-    "install": "The documented install is curl https://cursor.com/install -fsS | bash, which does not pin a version. A versioned URL was not found. Do not ship until a checksummed binary URL is verified. Command name on PATH is agent.",
-    "headless_call": "agent -p \"<prompt>\" with CURSOR_API_KEY. Docs also show --output-format json and --force. --trust and --sandbox disabled appear in a third-party SWE-rebench runner, not in the Cursor headless page read here.",
-    "needs": "CURSOR_API_KEY. No GPU, KVM, Docker, or display. Egress to Cursor.",
-    "express_feasible": "partial",
-    "rationale": "Fly Sprites and SWE-rebench both treat the Cursor CLI as a standard sandbox agent, and the headless flag is documented. It stays P1 until the install is reproducible.",
-    "named_commands": ["agent"]
-  },
-  {
-    "name": "grok",
-    "title": "Grok Build CLI",
-    "priority": "P1",
-    "upstream": "E2B public template grok, https://docs.e2b.dev/agents/grok.md fetched 2026-10-15. xai-org/grok is the model release (Apache-2.0, last push 2024-08-30), not the CLI. No xai-org/grok-cli repo.",
-    "install": "Upstream install documented in the catalog backlog is curl -fsSL https://x.ai/cli/install.sh | bash, with no version pin. Do not add the directory until a versioned package or binary URL is verified.",
-    "headless_call": "grok --always-approve -p \"<prompt>\" with XAI_API_KEY, as written in the E2B grok page.",
-    "needs": "XAI_API_KEY, which this environment does not have. No GPU, KVM, Docker, or display. Grok's own --sandbox flag is a CLI permission mode, not this catalog.",
-    "express_feasible": "partial",
-    "rationale": "The CLI shape matches existing coding templates and E2B already publishes alias grok. The only blocker called out previously is the unpinned installer, and that is still unverified.",
-    "named_commands": ["grok"]
-  },
-  {
-    "name": "code-server",
-    "title": "code-server (VS Code Web)",
-    "priority": "P1",
-    "upstream": "https://github.com/coder/code-server (MIT). Release v4.141.0 published 2026-10-08. OpenSandbox example uses opensandbox/vscode:latest (unpinned).",
-    "install": "Unpack https://github.com/coder/code-server/releases/download/v4.141.0/code-server-4.141.0-linux-amd64.tar.gz (239,926,515 bytes). Bind 127.0.0.1 or 0.0.0.0 on a fixed port as user, with PASSWORD or hashed password from env.",
-    "headless_call": "code_server_start() launches code-server --bind-addr 0.0.0.0:8443 --auth password and returns the port. No LLM call.",
-    "needs": "Password env var. No GPU, KVM, Docker, or display. ~240MB compressed archive; confirm it fits with the FC base on a ~10G rootfs.",
-    "express_feasible": "yes",
-    "rationale": "OpenSandbox's vscode example and coder/code-server (79k stars, pushed 2026-10-14) are the dev-environment template this catalog lacks. It is a web server, not an agent, so it ranks behind the coding CLIs.",
-    "named_commands": ["code_server_start"]
-  },
-  {
-    "name": "mini-swe-agent",
-    "title": "mini-swe-agent local runner",
-    "priority": "P1",
-    "upstream": "https://github.com/SWE-agent/mini-swe-agent (MIT). Release v2.4.6 published 2026-07-23.",
-    "install": "pip install mini-swe-agent==2.4.6. Use the local environment backend that edits the sandbox filesystem directly. Do not enable the Docker or bubblewrap backends.",
-    "headless_call": "mini with a task string and a model config, non-interactive, writing a patch under the workdir. Exact argv for v2.4.6 was not re-read; take it from that tag's README. Official SWE-bench scoring stays out of this template.",
-    "needs": "An LLM API key. A git checkout of the target repo inside the sandbox. No Docker, KVM, or GPU. Egress for the model API and for git clone.",
-    "express_feasible": "partial",
-    "rationale": "This is the SWE-shaped tool Express can run: one agent, one repo, a patch. The official SWE-bench and SWE-rebench harnesses need per-instance Docker images, which Express cannot start.",
-    "named_commands": ["mini_swe"]
+    "rationale": "issue #41 已存在，不新建 issue。 切片：整条 CLI。",
+    "named_commands": [
+      "pi"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#pi",
+    "batch": "1",
+    "source": [
+      "e2b:pi",
+      "cloudflare:coding-agents/pi",
+      "cube:pi-agent-integration",
+      "cookbook:pi-code-interpreter-js",
+      "vercel:universal"
+    ],
+    "depends_on": []
   },
   {
     "name": "aider",
-    "title": "Aider pair-programming CLI",
+    "title": "Aider",
     "priority": "P1",
-    "upstream": "https://github.com/Aider-AI/aider (Apache-2.0). Release v0.86.0 published 2025-08-09. Repo pushed_at 2026-05-22, outside the last three months.",
-    "install": "pip install aider-chat==0.86.0. Confirm the console script name is aider.",
-    "headless_call": "aider --yes --message \"<prompt>\" in a git repository. It edits files and exits.",
-    "needs": "A model API key (OPENAI_API_KEY or ANTHROPIC_API_KEY depending on --model). git. No GPU, KVM, Docker, or display.",
+    "upstream": "https://github.com/Aider-AI/aider v0.86.0",
+    "install": "`pip install aider-chat==0.86.0`（release 2025-08-09，Apache-2.0）。仓库 2026-05-22 后无推送。",
+    "headless_call": "aider --yes --message \"<prompt>\"",
+    "needs": "OPENAI_API_KEY 或 ANTHROPIC_API_KEY。",
     "express_feasible": "yes",
-    "rationale": "Still the reference headless edit-and-exit CLI, and the install pin is a normal PyPI version. Ranked P1 because upstream has not shipped a release since 2025-08.",
-    "named_commands": ["aider"]
+    "rationale": "安装钉得死，形态和现有 CLI 一样。 切片：整条 CLI。",
+    "named_commands": [
+      "aider"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#aider",
+    "batch": "1",
+    "source": [
+      "upstream:Aider-AI/aider"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "browser-use",
+    "title": "browser-use",
+    "priority": "P0",
+    "upstream": "https://github.com/browser-use/browser-use 0.13.11 MIT",
+    "install": "`pip install browser-use==0.13.11`，Chromium 用它依赖的 Playwright 版本，加 `--disable-dev-shm-usage`。",
+    "headless_call": "Python Agent(task=...)",
+    "needs": "模型 key。无 GPU/KVM/Docker。",
+    "express_feasible": "yes",
+    "rationale": "118k stars，和 browser-automation 互补。 切片：本地无头 Chromium。不要依赖 Browser Use Cloud。",
+    "named_commands": [
+      "browser_use"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#browser-use",
+    "batch": "1",
+    "source": [
+      "e2b:kernel-browser",
+      "upstream:browser-use"
+    ],
+    "depends_on": [
+      "browser-automation"
+    ]
   },
   {
     "name": "playwright-mcp",
-    "title": "Playwright MCP server",
+    "title": "Playwright MCP",
     "priority": "P1",
-    "upstream": "https://github.com/microsoft/playwright-mcp (Apache-2.0). Release v0.0.83 published 2026-09-28.",
-    "install": "npm install -g @playwright/mcp@0.0.83 and the matching Playwright browser. Prefer folding this into browser-automation if that image already has Chromium; a separate directory only if the MCP process needs its own start command.",
-    "headless_call": "npx @playwright/mcp@0.0.83 --headless --port 8931. Named command mcp_start returns the port. Tool calls then go over MCP, not a one-shot prompt.",
-    "needs": "Chromium. No LLM key inside the template. No GPU, KVM, or Docker.",
+    "upstream": "https://github.com/microsoft/playwright-mcp v0.0.83",
+    "install": "`npm install -g @playwright/mcp@0.0.83`（2026-09-28，Apache-2.0）。",
+    "headless_call": "npx @playwright/mcp@0.0.83 --headless --port 8931",
+    "needs": "Chromium。模板内不要模型 key。",
     "express_feasible": "yes",
-    "rationale": "38k stars and the standard way for coding agents to drive a browser. The catalog's browser-automation template does not speak MCP.",
-    "named_commands": ["mcp_start"]
+    "rationale": "目录里的浏览器模板不会说 MCP。 切片：无头 MCP。",
+    "named_commands": [
+      "mcp_start"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#playwright-mcp",
+    "batch": "1",
+    "source": [
+      "cookbook:mcp-browserbase-js",
+      "cookbook:mcp-claude-code-js",
+      "upstream:playwright-mcp"
+    ],
+    "depends_on": [
+      "browser-automation"
+    ]
+  },
+  {
+    "name": "code-server",
+    "title": "code-server",
+    "priority": "P1",
+    "upstream": "https://github.com/coder/code-server v4.141.0",
+    "install": "解压 code-server-4.141.0-linux-amd64.tar.gz（239926515 字节，MIT，2026-10-08）。密码来自环境变量。",
+    "headless_call": "code-server --bind-addr 0.0.0.0:8443 --auth password",
+    "needs": "密码。无 GPU/KVM/Docker/显示器。",
+    "express_feasible": "yes",
+    "rationale": "OpenSandbox 的 vscode 示例在极速版没有对应物。 切片：整个 code-server。",
+    "named_commands": [
+      "code_server_start"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#code-server",
+    "batch": "1",
+    "source": [
+      "opensandbox:vscode"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "next-app",
+    "title": "Next.js or Vite dev server",
+    "priority": "P1",
+    "upstream": "Vercel platform template 文档；E2B template examples/nextjs 是配方不是公开别名；fragments 是应用模板不是沙箱。",
+    "install": "`npm install -g` 不适合。在镜像里 `npm install next@<pin>` 与 `vite@<pin>`，pin 取构建当天的 dist-tag 并写进日志，不要用 latest 当永久版本。Node 20 已有。",
+    "headless_call": "next dev --port 3000 或 vite --host 0.0.0.0",
+    "needs": "无密钥。",
+    "express_feasible": "yes",
+    "rationale": "预览服务器是 Vercel/fragments 一类例子里真正缺的运行时。 切片：能起服务并返回端口即可，不保证 HMR。",
+    "named_commands": [
+      "dev_start"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#next-app",
+    "batch": "1",
+    "source": [
+      "e2b:template/examples/nextjs",
+      "e2b-dev/fragments",
+      "cookbook:nextjs-code-interpreter",
+      "vercel:platform-template"
+    ],
+    "depends_on": [
+      "node-web"
+    ]
   },
   {
     "name": "document-tools",
-    "title": "pandoc and headless LibreOffice",
+    "title": "pandoc and LibreOffice",
     "priority": "P1",
-    "upstream": "pandoc (GPL-2.0) and LibreOffice (MPL-2.0). Pin Debian package versions at build time. E2B desktop includes LibreOffice but not as a headless conversion API.",
-    "install": "apt-get install specific versions of pandoc and libreoffice-writer (or soffice). Record the versions in the image build log.",
-    "headless_call": "convert(input_path, output_format) runs pandoc or soffice --headless --convert-to and returns the output path.",
-    "needs": "No API key, GPU, KVM, Docker, or display. soffice --headless is unverified as non-root on the FC base; it usually works with a temporary HOME.",
+    "upstream": "Debian pandoc（GPL-2.0）与 LibreOffice（MPL-2.0）。",
+    "install": "apt 钉 pandoc 与 libreoffice-writer 的 Debian 13 版本，写进构建日志。soffice 使用独立 HOME。",
+    "headless_call": "pandoc 或 soffice --headless --convert-to",
+    "needs": "无密钥、无显示器。",
     "express_feasible": "yes",
-    "rationale": "Agents that produce docx, pdf, and slides show up in E2B's desktop image and in data workflows, and nothing in the catalog converts documents.",
-    "named_commands": ["convert"]
+    "rationale": "文档转换不需要桌面会话。 切片：pandoc 纯文本转换一定能做；soffice 作为第二步。",
+    "named_commands": [
+      "convert"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#document-tools",
+    "batch": "1",
+    "source": [
+      "e2b:desktop"
+    ],
+    "depends_on": []
   },
   {
     "name": "dev-services",
-    "title": "Postgres and Redis without Docker",
+    "title": "Postgres and Redis",
     "priority": "P1",
-    "upstream": "PostgreSQL and Redis upstream packages. Pin Debian versions. Not a published agent template elsewhere; Daytona and Runloop expect users to start these themselves, often via Docker-in-Docker, which Express cannot do.",
-    "install": "apt install pinned postgresql and redis-server. Init a data directory under /home/user. Start with pg_ctl and redis-server --daemonize no under the user account, or via a named command. Do not use the system init scripts that expect root.",
-    "headless_call": "services_start() then a readiness check on 5432 and 6379. Optional seed SQL argument.",
-    "needs": "No API key, GPU, KVM, or Docker. Non-root Postgres init is a known pattern but was not executed on Express in this survey.",
+    "upstream": "Debian 包。",
+    "install": "apt 钉 postgresql 与 redis-server。用 pg_ctl 和 redis-server 以 user 启动。不要用需要 systemd 的脚本。实测 sudo 不能 mount，所以不要尝试把数据目录做成独立挂载。",
+    "headless_call": "pg_isready 与 redis-cli ping",
+    "needs": "无密钥。无 Docker。",
     "express_feasible": "yes",
-    "rationale": "App backends need a database, and the usual sandbox answer (Docker Compose) is impossible here. User-space Postgres and Redis are the substitute.",
-    "named_commands": ["services_start", "services_stop"]
-  },
-  {
-    "name": "copilot-cli",
-    "title": "GitHub Copilot CLI",
-    "priority": "P1",
-    "upstream": "https://github.com/github/copilot-cli (license SPDX NOASSERTION). Latest GitHub release returned on 2026-10-15 is prerelease v1.0.99-0. OpenSandbox example github-copilot-cli-sandbox exists.",
-    "install": "Unverified. Do not use a floating install script. Wait for a non-prerelease npm or GitHub asset and pin that. A third-party page claims the binary is copilot.",
-    "headless_call": "Unverified on upstream docs in this survey. A secondary page (developertoolkit.ai, fetched 2026-10-15) shows copilot -p \"...\" and copilot --allow-all-tools. Confirm with --help on the pinned build.",
-    "needs": "A GitHub Copilot token (GH_TOKEN or GH_COPILOT_TOKEN; exact name unverified). No GPU, KVM, Docker, or display.",
-    "express_feasible": "partial",
-    "rationale": "OpenSandbox already demonstrates it, and Copilot is a mainstream coding CLI. The pin and the headless flags are not verified, so it is not P0.",
-    "named_commands": ["copilot"]
-  },
-  {
-    "name": "crush",
-    "title": "Crush coding agent",
-    "priority": "P1",
-    "upstream": "https://github.com/charmbracelet/crush (license SPDX NOASSERTION, 28,642 stars, pushed 2026-10-15). Latest GitHub release returned is prerelease tag nightly.",
-    "install": "A third-party page cites npm @charmland/crush and crush --yolo. Neither the package version nor a stable git tag was verified. Pin a non-nightly release or an npm version before building.",
-    "headless_call": "Unverified. Secondary source says crush --yolo. Confirm a non-interactive prompt flag.",
-    "needs": "A model API key. No GPU, KVM, Docker, or display assumed; unverified.",
-    "express_feasible": "partial",
-    "rationale": "Active and widely starred, and it is a terminal agent rather than an IDE fork. Held at P1 because the reproducible install is not verified.",
-    "named_commands": ["crush"]
-  },
-  {
-    "name": "cline",
-    "title": "Cline CLI",
-    "priority": "P1",
-    "upstream": "https://github.com/cline/cline (Apache-2.0). Release v4.1.24 published 2026-10-13. 70,337 stars.",
-    "install": "Unverified. The project is an SDK, IDE extension, and CLI. Find the CLI package at tag v4.1.24 and pin it. Do not install the VS Code extension.",
-    "headless_call": "Unverified on upstream docs. A secondary page says cline --yolo. Confirm a prompt flag that exits.",
-    "needs": "A model API key. No GPU, KVM, or Docker if the CLI mode does not shell out to Docker (unverified).",
-    "express_feasible": "partial",
-    "rationale": "Cline is one of the largest active coding-agent repos and now claims a CLI. It becomes P0 only after the headless argv and the package name are read from the v4.1.24 tree.",
-    "named_commands": ["cline"]
-  },
-  {
-    "name": "deepagents",
-    "title": "LangChain Deep Agents harness",
-    "priority": "P1",
-    "upstream": "https://github.com/langchain-ai/deepagents (MIT). Release deepagents==0.7.25 published 2026-10-14. OpenSandbox example examples/deep-agents. E2B has an integration page but no public template alias.",
-    "install": "pip install deepagents==0.7.25. Whether 0.7.25 ships a console script was not verified.",
-    "headless_call": "Unverified. If the package exposes a CLI that takes a task and exits, wrap that. Otherwise a short Python driver that runs one deep agent turn against the local filesystem is the command. Do not start a sibling sandbox.",
-    "needs": "An LLM API key. No GPU, KVM, or Docker for the in-process filesystem backend. Egress to the model API.",
-    "express_feasible": "partial",
-    "rationale": "30k stars, a release the week of this survey, and both E2B and OpenSandbox document it. The missing piece is a confirmed one-shot entry point.",
-    "named_commands": ["deepagents"]
-  },
-  {
-    "name": "tau2-bench",
-    "title": "tau2-bench tool-use harness",
-    "priority": "P1",
-    "upstream": "https://github.com/sierra-research/tau2-bench (MIT). Release v1.0.1 published 2026-07-22.",
-    "install": "pip install from the v1.0.1 tag (pyproject version unverified; pin the git tag if there is no matching PyPI release). Tasks are simulated domains, not live websites.",
-    "headless_call": "The upstream runner for one domain and a user simulator. Exact module path was not re-read; take it from the v1.0.1 README.",
-    "needs": "An LLM API key for the agent and often for the user simulator. No browser, Docker, KVM, or GPU.",
-    "express_feasible": "yes",
-    "rationale": "tau2 is a tool-use eval that does not need a VM or Docker, unlike OSWorld, AndroidWorld, and SWE-bench. It is a harness template, so it ranks after the coding CLIs.",
-    "named_commands": ["tau2_run"]
-  },
-  {
-    "name": "polyglot-toolchain",
-    "title": "Go, Rust, and Java toolchains",
-    "priority": "P1",
-    "upstream": "Official Go, Rustup, and Temurin/OpenJDK tarballs. OpenSandbox code-interpreter preinstalls Java 8/11/17/21, Node 18/20/22, and Go 1.23/1.24/1.25. Pin one version of each, not a matrix.",
-    "install": "One pinned tarball each: Go (match 1.25.x), a rustup default toolchain with an explicit rust version, and Temurin 21. Skip the multi-version switcher. Verify the three together fit in the ~10G rootfs.",
-    "headless_call": "toolchain_versions() prints go version, rustc --version, and java -version. No agent loop.",
-    "needs": "No API key, GPU, KVM, Docker, or display. Network only at build time.",
-    "express_feasible": "partial",
-    "rationale": "Coding agents fail on repos that need a compiler the FC base does not have. A single toolchain layer is more useful than three half-installed languages. Size is the risk.",
-    "named_commands": ["toolchain_versions"]
+    "rationale": "Express 上唯一可行的数据库形态。 切片：单机 Postgres + Redis。",
+    "named_commands": [
+      "services_start",
+      "services_stop"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#dev-services",
+    "batch": "1",
+    "source": [
+      "runloop:universal-dnd",
+      "modal:sandbox"
+    ],
+    "depends_on": []
   },
   {
     "name": "ocr",
     "title": "Tesseract OCR",
     "priority": "P2",
-    "upstream": "Tesseract (Apache-2.0). Pin the Debian tesseract-ocr package and English traineddata.",
-    "install": "apt install a pinned tesseract-ocr and tesseract-ocr-eng.",
-    "headless_call": "ocr(image_path) runs tesseract <image> stdout and returns the text.",
-    "needs": "No API key, GPU, KVM, Docker, or display.",
+    "upstream": "Tesseract Apache-2.0。",
+    "install": "apt 钉 tesseract-ocr 与 tesseract-ocr-eng。",
+    "headless_call": "tesseract <img> stdout",
+    "needs": "无。",
     "express_feasible": "yes",
-    "rationale": "Small, reproducible, and useful for document agents. Lower priority than pandoc/LibreOffice because fewer benchmark and product templates depend on it.",
-    "named_commands": ["ocr"]
+    "rationale": "小、可复现。 切片：整份。",
+    "named_commands": [
+      "ocr"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#ocr",
+    "batch": "1",
+    "source": [
+      "upstream:tesseract"
+    ],
+    "depends_on": []
   },
   {
     "name": "media-tools",
-    "title": "ffmpeg media tools",
+    "title": "ffmpeg",
     "priority": "P2",
-    "upstream": "ffmpeg. License of the Debian build varies with the enabled libraries; record the package's license at pin time. E2B desktop installs ffmpeg for screen capture.",
-    "install": "apt install a pinned ffmpeg. Do not enable CUDA or nonfree builds.",
-    "headless_call": "ffmpeg_run(args) with an argument list, not a shell string. A thin transcode(input, output) wrapper is enough.",
-    "needs": "No API key, GPU, KVM, Docker, or display. CPU encode only.",
+    "upstream": "Debian ffmpeg。E2B desktop 也装了 ffmpeg。",
+    "install": "apt 钉 ffmpeg，不要 CUDA。把包许可证写进 README。",
+    "headless_call": "ffmpeg -i in -c:v libx264 out",
+    "needs": "无 GPU。",
     "express_feasible": "yes",
-    "rationale": "Agents that trim or transcode media need ffmpeg, and it installs cleanly without Docker. It is not a product template competitors lead with, so it is P2.",
-    "named_commands": ["transcode"]
+    "rationale": "媒体 agent 的基础工具。 切片：CPU 编解码。",
+    "named_commands": [
+      "transcode"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#media-tools",
+    "batch": "1",
+    "source": [
+      "e2b:desktop"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "tau2-bench",
+    "title": "tau2-bench",
+    "priority": "P1",
+    "upstream": "sierra-research/tau2-bench v1.0.1",
+    "install": "钉 https://github.com/sierra-research/tau2-bench tag v1.0.1（MIT，2026-07-22）。PyPI 名对不上就用 git tag。",
+    "headless_call": "该 tag 的 runner",
+    "needs": "模型 key，用户模拟器往往再要一次调用。",
+    "express_feasible": "yes",
+    "rationale": "不需要 Docker 的评测，适合极速版。 切片：一个 domain 的官方 runner。",
+    "named_commands": [
+      "tau2_run"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#tau2-bench",
+    "batch": "1",
+    "source": [
+      "upstream:tau2-bench"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "apply-patch",
+    "title": "Codex apply_patch",
+    "priority": "P1",
+    "upstream": "https://open-sandbox.ai/examples/apply-patch （2026-10-15 抓取）。examples/ 目录里没有这个文件夹，只有文档页。",
+    "install": "OpenSandbox 文档从 openai/codex 的某个 commit 编译 `codex-apply-patch`。文档里的 CODEX_REF 是占位符。先选定一个 commit 再写进 Dockerfile。基础镜像用平台镜像，不要 FROM opensandbox/execd。rust 构建很重，可以在构建阶段完成，运行镜像只留二进制。",
+    "headless_call": "apply_patch < /tmp/change.patch",
+    "needs": "无密钥。",
+    "express_feasible": "partial",
+    "rationale": "这是文件工具，不是又一个编码 CLI。 切片：选定 commit 之后，二进制本身不需要 Docker 或 KVM。",
+    "named_commands": [
+      "apply_patch"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#apply-patch",
+    "batch": "2",
+    "source": [
+      "opensandbox:apply-patch"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "osworld",
+    "title": "Computer use via Xvfb",
+    "priority": "P0",
+    "upstream": "https://github.com/xlang-ai/OSWorld Apache-2.0。E2B surf 是桌面 agent 示例。",
+    "install": "apt 钉 xvfb、xdotool、scrot、openbox、x11vnc、novnc、websockify。不要写 ENTRYPOINT。命名命令启动 `Xvfb :99 -screen 0 1280x720x24` 和 openbox。",
+    "headless_call": "screenshot + click + type",
+    "needs": "无 KVM、无 GPU、无 Docker。虚拟显示即可。",
+    "express_feasible": "partial",
+    "rationale": "issue #36 已覆盖，不新建 linux-desktop issue。探针证明切片不是空话。 切片：已实测：在 template base 里 apt 安装后，Xvfb :99、xdotool、scrot 写出 /tmp/s.png。openbox 已安装但没启动。所以截图/点击/打字这条 API 可以做。只移植不依赖 VM 快照的 evaluator 纯函数。不要承诺 OSWorld 排行榜分数。",
+    "named_commands": [
+      "desktop_start",
+      "screenshot",
+      "click",
+      "type",
+      "hotkey",
+      "evaluate"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#osworld",
+    "batch": "2",
+    "source": [
+      "opensandbox:desktop",
+      "e2b:desktop",
+      "e2b-dev/surf",
+      "cube:ubuntu-desktop",
+      "cookbook:anthropic-computer-use-orangehrm-js"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "chrome",
+    "title": "Chromium with CDP and VNC",
+    "priority": "P1",
+    "upstream": "OpenSandbox examples/chrome。",
+    "install": "在 osworld 的 Xvfb 上装钉死版本的 chromium，`--remote-debugging-port=9222 --disable-dev-shm-usage`。OpenSandbox 镜像名 opensandbox/chrome:latest 未钉，不要 FROM。",
+    "headless_call": "chromium --headless=new --remote-debugging-port=9222",
+    "needs": "显示由 Xvfb 提供。shm 64M 已实测。",
+    "express_feasible": "partial",
+    "rationale": "和 Playwright 模板的差别是调试端口加可选画面。 切片：先只做无头 CDP（并入 browser-automation）。VNC 叠在 osworld 上作为第二步。",
+    "named_commands": [
+      "chrome_start"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#chrome",
+    "batch": "2",
+    "source": [
+      "opensandbox:chrome",
+      "cube:browser-sandbox"
+    ],
+    "depends_on": [
+      "osworld",
+      "browser-automation"
+    ]
+  },
+  {
+    "name": "swe",
+    "title": "SWE-bench local evaluator",
+    "priority": "P0",
+    "upstream": "SWE-bench v5.0.1 MIT；mini-swe-agent v2.4.6 MIT；SWE-rebench/SWE-bench-fork。",
+    "install": "`pip install mini-swe-agent==2.4.6`。SWE-bench harness 只取数据集和测试命令，不要启动它的 Docker 后端。每个实例一个 venv：用数据集里的 python 版本若基础镜像没有，就只支持 3.13，并在报告里标明跳过。",
+    "headless_call": "mini-swe-agent 本地后端 + pytest",
+    "needs": "模型 key。git。无 Docker。",
+    "express_feasible": "partial",
+    "rationale": "issue #35 已写明这个切片。 切片：一个实例：checkout base、打 patch、在 venv 里跑该实例声明的测试命令。不支持依赖系统包或 Docker 的实例。SWE-rebench 同样要预构建镜像，不能跑。",
+    "named_commands": [
+      "swe_prepare",
+      "swe_run_agent",
+      "swe_evaluate",
+      "swe_report"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#swe",
+    "batch": "2",
+    "source": [
+      "cube:mini-rl-training",
+      "e2b-dev/swe-bench",
+      "upstream:SWE-bench",
+      "upstream:mini-swe-agent"
+    ],
+    "depends_on": [
+      "polyglot-toolchain"
+    ]
+  },
+  {
+    "name": "polyglot-toolchain",
+    "title": "Go Rust Java",
+    "priority": "P1",
+    "upstream": "官方 tarball。",
+    "install": "各一个 tarball：Go 1.25.x、一个钉死的 rustup toolchain、Temurin 21。不要多版本切换。构建后 df，超过约 8G 已用就砍掉 Rust。",
+    "headless_call": "go version && java -version",
+    "needs": "无密钥。",
+    "express_feasible": "partial",
+    "rationale": "编码 CLI 遇到 Go/Java 仓库会失败。 切片：先装 Go 和 Temurin 21。",
+    "named_commands": [
+      "toolchain_versions"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#polyglot-toolchain",
+    "batch": "2",
+    "source": [
+      "opensandbox:sandbox-images"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "cursor-agent",
+    "title": "Cursor CLI",
+    "priority": "P1",
+    "upstream": "https://cursor.com/docs/cli/headless",
+    "install": "文档安装是 `curl https://cursor.com/install -fsS | bash`，不钉版本。找到带校验和的 URL 之前不要合并目录。",
+    "headless_call": "agent -p \"<prompt>\"",
+    "needs": "CURSOR_API_KEY。",
+    "express_feasible": "partial",
+    "rationale": "需求真实，安装不达标。 切片：命令形状 `agent -p` 已在 https://cursor.com/docs/cli/headless 写明。二进制能否在 Debian 13 运行，unverified。",
+    "named_commands": [
+      "agent"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#cursor-agent",
+    "batch": "2",
+    "source": [
+      "cursor-docs",
+      "fly-sprites-secondary",
+      "e2b:cursor-agents"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "grok",
+    "title": "Grok Build",
+    "priority": "P1",
+    "upstream": "https://docs.e2b.dev/agents/grok.md",
+    "install": "已知安装是 `curl -fsSL https://x.ai/cli/install.sh | bash`，无版本。xai-org/grok 不是 CLI。钉住二进制之前不要建目录。",
+    "headless_call": "grok --always-approve -p \"<prompt>\"",
+    "needs": "XAI_API_KEY。本环境没有。无 GPU。",
+    "express_feasible": "partial",
+    "rationale": "issue #40 已存在。 切片：命令 `grok --always-approve -p` 来自 E2B 文档。运行时不需要 KVM。",
+    "named_commands": [
+      "grok"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#grok",
+    "batch": "2",
+    "source": [
+      "e2b:grok"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "copilot-cli",
+    "title": "GitHub Copilot CLI",
+    "priority": "P1",
+    "upstream": "https://github.com/github/copilot-cli",
+    "install": "2026-10-15 GitHub 最新 release 是预发布 v1.0.99-0，许可证 SPDX NOASSERTION。无头 flag 只在二手页面出现（`copilot -p`、`--allow-all-tools`），未在上游文档核实。",
+    "headless_call": "unverified",
+    "needs": "Copilot token，变量名 unverified。",
+    "express_feasible": "partial",
+    "rationale": "示例存在，安装不达标。 切片：等非预发布资产。",
+    "named_commands": [
+      "copilot"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#copilot-cli",
+    "batch": "2",
+    "source": [
+      "opensandbox:github-copilot-cli-sandbox"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "crush",
+    "title": "Crush",
+    "priority": "P1",
+    "upstream": "https://github.com/charmbracelet/crush",
+    "install": "可见 release 只有 nightly。npm `@charmland/crush` 与 `crush --yolo` 来自二手页面，unverified。",
+    "headless_call": "unverified",
+    "needs": "模型 key。",
+    "express_feasible": "partial",
+    "rationale": "仓库活跃，安装不够格。 切片：有稳定 tag 之后就是一条普通 CLI，不需要 Docker。",
+    "named_commands": [
+      "crush"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#crush",
+    "batch": "2",
+    "source": [
+      "upstream:charmbracelet/crush"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "cline",
+    "title": "Cline CLI",
+    "priority": "P1",
+    "upstream": "https://github.com/cline/cline v4.1.24",
+    "install": "release v4.1.24（2026-10-13，Apache-2.0）。npm 包名和 `--yolo` 未在该 tag 核实。",
+    "headless_call": "unverified",
+    "needs": "模型 key。",
+    "express_feasible": "partial",
+    "rationale": "70k stars，CLI 入口还没读到。 切片：读完 tag 之后若是单二进制，就进极速版。",
+    "named_commands": [
+      "cline"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#cline",
+    "batch": "2",
+    "source": [
+      "upstream:cline/cline"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "deepagents",
+    "title": "Deep Agents",
+    "priority": "P1",
+    "upstream": "https://github.com/langchain-ai/deepagents deepagents==0.7.25",
+    "install": "`pip install deepagents==0.7.25`（2026-10-14，MIT）。",
+    "headless_call": "unverified",
+    "needs": "模型 key。",
+    "express_feasible": "partial",
+    "rationale": "两边都有集成文档。 切片：进程内 agent，不要再去创建 E2B/OpenSandbox。",
+    "named_commands": [
+      "deepagents"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#deepagents",
+    "batch": "2",
+    "source": [
+      "opensandbox:deep-agents",
+      "e2b:agents/deep-agents"
+    ],
+    "depends_on": []
   },
   {
     "name": "stagehand",
-    "title": "Stagehand browser SDK",
+    "title": "Stagehand",
     "priority": "P2",
-    "upstream": "https://github.com/browserbase/stagehand (MIT). Latest release returned is stagehand-server-v3/v3.7.6 published 2026-08-28. npm package name was not re-checked.",
-    "install": "Pin the npm version that matches that server release after reading its package.json. Local Chromium, not Browserbase, unless a Browserbase key is provided.",
-    "headless_call": "A Node script that calls stagehand against headless Chromium with an instruction string. Exact API for v3.7.6 unverified.",
-    "needs": "An LLM API key plus Chromium, or BROWSERBASE_API_KEY if using their cloud browsers. No GPU, KVM, or Docker for local Chromium.",
+    "upstream": "https://github.com/browserbase/stagehand",
+    "install": "release 名 stagehand-server-v3/v3.7.6（2026-08-28）。npm 版本未核对。",
+    "headless_call": "unverified",
+    "needs": "模型 key，或 BROWSERBASE_API_KEY。",
     "express_feasible": "partial",
-    "rationale": "25k stars and a real SDK, but browser-use covers the same job with a clearer Python install. Build stagehand only if a Node-first caller appears.",
-    "named_commands": ["stagehand"]
+    "rationale": "只有调用方坚持要 Node SDK 时再做。 切片：本地 Chromium。云浏览器不是这个模板。",
+    "named_commands": [
+      "stagehand"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#stagehand",
+    "batch": "2",
+    "source": [
+      "cookbook:mcp-browserbase-js"
+    ],
+    "depends_on": [
+      "browser-automation"
+    ]
   },
   {
     "name": "prime-agent",
     "title": "Prime Agent",
     "priority": "P2",
-    "upstream": "https://github.com/PrimeIntellect-ai/prime-agent (license SPDX NOASSERTION, 22,034 stars). E2B public alias prime. Latest GitHub release returned on 2026-10-15 is prerelease nightly (2026-10-01).",
-    "install": "E2B runs prime-agent. A pinned non-nightly install was not found. Do not use a floating installer.",
-    "headless_call": "E2B docs: prime-agent -p \"<prompt>\" with ANTHROPIC_API_KEY. No approval flag. First-run /login is interactive and must be avoided by passing the env key.",
-    "needs": "ANTHROPIC_API_KEY or another provider. Docs mention a persistent IPython kernel. No GPU, KVM, or Docker stated. Unverified whether the kernel needs extra packages.",
+    "upstream": "https://github.com/PrimeIntellect-ai/prime-agent；https://docs.e2b.dev/agents/prime.md",
+    "install": "可见 release 只有 nightly。不要用浮动安装脚本。",
+    "headless_call": "prime-agent -p \"<prompt>\"",
+    "needs": "ANTHROPIC_API_KEY。",
     "express_feasible": "partial",
-    "rationale": "E2B ships it and the headless flag is documented, but the only release tag visible is nightly, so it fails the reproducible-install bar.",
-    "named_commands": ["prime_agent"]
+    "rationale": "命令已知，发布通道不够。 切片：E2B 文档的 `prime-agent -p` 不需要 KVM。",
+    "named_commands": [
+      "prime_agent"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#prime-agent",
+    "batch": "2",
+    "source": [
+      "e2b:prime"
+    ],
+    "depends_on": []
   },
   {
     "name": "appworld",
-    "title": "AppWorld function-calling benchmark",
+    "title": "AppWorld",
     "priority": "P2",
-    "upstream": "https://github.com/stonybrooknlp/appworld (Apache-2.0). Release v0.1.3.post1 published 2026-02-17.",
-    "install": "Pin the v0.1.3.post1 install extra from that tag. Dependency weight and whether it shells out to Docker were not verified.",
-    "headless_call": "The upstream experiment runner for one task. Exact command unverified.",
-    "needs": "An LLM API key. Docker requirement unverified. No GPU or KVM expected.",
+    "upstream": "https://github.com/stonybrooknlp/appworld",
+    "install": "tag v0.1.3.post1（2026-02-17，Apache-2.0）。是否调用 Docker unverified。若 README 要求 Docker 就停。",
+    "headless_call": "该 tag 的 runner",
+    "needs": "模型 key。",
     "express_feasible": "partial",
-    "rationale": "A controllable apps benchmark with a real release, but it is older than tau2 and the runtime assumptions were not verified. Prefer tau2-bench first.",
-    "named_commands": ["appworld_run"]
+    "rationale": "比 tau2 旧，放后面。 切片：纯 Python 任务可以跑。",
+    "named_commands": [
+      "appworld_run"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#appworld",
+    "batch": "2",
+    "source": [
+      "upstream:appworld"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "muse",
+    "title": "Muse Code",
+    "priority": "P2",
+    "upstream": "https://docs.e2b.dev/agents/muse.md；https://dev.meta.ai/docs/muse-code",
+    "install": "E2B 预装了它。公开安装 pin 本次没找到，GitHub 上没有 facebook/muse 或 meta-llama/muse。",
+    "headless_call": "muse exec --yolo \"<prompt>\"",
+    "needs": "META_API_KEY。",
+    "express_feasible": "partial",
+    "rationale": "E2B 有，我们没有安装物。 切片：`muse exec --yolo` 不需要 KVM，前提是二进制存在。",
+    "named_commands": [
+      "muse"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#muse",
+    "batch": "2",
+    "source": [
+      "e2b:muse",
+      "cookbook:muse-execution-backend-python"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "devin",
+    "title": "Devin for Terminal",
+    "priority": "P2",
+    "upstream": "https://docs.e2b.dev/agents/devin.md",
+    "install": "E2B 别名 `devin`。首次要交互登录。无头安装 pin unverified。",
+    "headless_call": "devin --permission-mode dangerous -p \"<prompt>\"",
+    "needs": "Devin 账号。",
+    "express_feasible": "partial",
+    "rationale": "登录挡住了可复现安装。 切片：若能用 token 跳过登录，命令本身不需要 KVM。未验证。",
+    "named_commands": [
+      "devin"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#devin",
+    "batch": "2",
+    "source": [
+      "e2b:devin",
+      "e2b:devin-outposts"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "waa",
+    "title": "Windows Agent Arena client",
+    "priority": "P2",
+    "upstream": "https://github.com/microsoft/WindowsAgentArena v0.0.4 MIT。",
+    "install": "安装钉死版本的 freerdp 客户端或 pywinrm。不要装 QEMU。",
+    "headless_call": "xfreerdp 或 WinRM",
+    "needs": "一台调用方提供的 Windows 目标。无 KVM 也变不出 Windows。",
+    "express_feasible": "partial",
+    "rationale": "issue #37。不要写裸的 no。 切片：作为远程 RDP/WinRM 客户端，连一台已经存在的 Windows。评测脚本里的 Windows 应用仍在那台机器上。",
+    "named_commands": [
+      "winrm_run"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#waa",
+    "batch": "3",
+    "source": [
+      "opensandbox:windows",
+      "daytona:windows-snapshots",
+      "upstream:WAA"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "phone-sandbox",
+    "title": "Phone sandbox client",
+    "priority": "P2",
+    "upstream": "没有单一上游。E2B android-16 是相邻能力。",
+    "install": "apt 钉 android-tools-adb 或官方 platform-tools 的版本化 zip。不要装模拟器系统镜像。",
+    "headless_call": "adb connect && adb exec-out screencap -p",
+    "needs": "调用方提供的设备或远程模拟器。沙箱 API 没有手机资源。",
+    "express_feasible": "partial",
+    "rationale": "issue #38。 切片：adb 客户端连 `host:5555`。屏幕和触摸发生在远端。",
+    "named_commands": [
+      "adb_connect",
+      "adb_screencap",
+      "adb_input"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#phone-sandbox",
+    "batch": "3",
+    "source": [
+      "e2b:android-16"
+    ],
+    "depends_on": [
+      "android-world"
+    ]
+  },
+  {
+    "name": "android-world",
+    "title": "AndroidWorld client",
+    "priority": "P2",
+    "upstream": "https://github.com/google-research/android_world Apache-2.0。",
+    "install": "pip 钉 android_world 的某个 commit（仓库无 release）。不要下载 AVD 系统镜像。",
+    "headless_call": "python run.py 指向远程 adb",
+    "needs": "远端模拟器。无本地 GPU 需求。",
+    "express_feasible": "partial",
+    "rationale": "issue #39。 切片：把环境变量指到远程 adb。accessibility 转发若绑在本地 gRPC，则只有命令通道能用，任务复位 unverified。",
+    "named_commands": [
+      "adb_connect",
+      "android_eval"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#android-world",
+    "batch": "3",
+    "source": [
+      "e2b:android-16",
+      "upstream:android_world"
+    ],
+    "depends_on": [
+      "phone-sandbox"
+    ]
+  },
+  {
+    "name": "k3s",
+    "title": "kubectl client, not a cluster",
+    "priority": "P2",
+    "upstream": "https://docs.e2b.dev/use-cases/k3s.md",
+    "install": "安装钉死版本的 kubectl 静态二进制。不要装 k3s、containerd 或 CNI。",
+    "headless_call": "kubectl get nodes",
+    "needs": "一台外部 apiserver。",
+    "express_feasible": "partial",
+    "rationale": "issue #42。 切片：kubectl 客户端。集群不在这个沙箱里。",
+    "named_commands": [
+      "kubectl_apply"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#k3s",
+    "batch": "3",
+    "source": [
+      "e2b:e2b/k3s",
+      "opensandbox:agent-sandbox",
+      "opensandbox:aks-kata"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "omarchy",
+    "title": "Omarchy package subset",
+    "priority": "P2",
+    "upstream": "https://github.com/basecamp/omarchy v4.0.4 MIT。",
+    "install": "不要在 Debian 13 上安装 Arch/Hyprland。",
+    "headless_call": "无",
+    "needs": "真实座位和 Wayland。Xvfb 不能满足 Hyprland。",
+    "express_feasible": "partial",
+    "rationale": "issue #43。切片是承认它没有无头入口，并把桌面需求指到 osworld。 切片：没有任何 Hyprland 会话可跑。要桌面用 `osworld` 的 Xvfb+openbox。Omarchy 的 CLI 工具若将来单独发布，再单独立项。",
+    "named_commands": [],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#omarchy",
+    "batch": "3",
+    "source": [
+      "upstream:omarchy"
+    ],
+    "depends_on": [
+      "osworld"
+    ]
+  },
+  {
+    "name": "qm",
+    "title": "QM local backend",
+    "priority": "P2",
+    "upstream": "https://github.com/yc-software/qm MIT。",
+    "install": "钉 tag desktop-v0.1.2 只是预发布。先读该 tag 是否有 local 后端。不要把 Docker/E2B/Modal 后端编进镜像。",
+    "headless_call": "unverified",
+    "needs": "模型 key。后端租约不在我们的 server 里。",
+    "express_feasible": "partial",
+    "rationale": "issue #44。 切片：若代码能把 shell 打到本容器，就只暴露这一条。远程后端不做。本次未读源码确认 local 后端，标 unverified。",
+    "named_commands": [
+      "qm_run"
+    ],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#qm",
+    "batch": "3",
+    "source": [
+      "upstream:qm"
+    ],
+    "depends_on": []
+  },
+  {
+    "name": "qm-sandbox",
+    "title": "QM sandbox backend client",
+    "priority": "P2",
+    "upstream": "QM 文档中的 SUPERSERVE_TEMPLATE。",
+    "install": "不要 COPY 后端控制面。",
+    "headless_call": "无",
+    "needs": "SUPERSERVE_API_KEY 与外部模板。",
+    "express_feasible": "partial",
+    "rationale": "issue #45。 切片：没有可执行的沙箱实现。调用方应直接使用本目录里的 CLI 模板，而不是绕到 QM。",
+    "named_commands": [],
+    "analysis_ref": "docs/template-market-survey-2026-10.md#qm-sandbox",
+    "batch": "3",
+    "source": [
+      "upstream:qm-sandbox"
+    ],
+    "depends_on": [
+      "qm"
+    ]
   }
 ]
