@@ -1,29 +1,32 @@
 # codex
 
-## 这是什么
+`codex` 是 OpenAI Codex CLI 的沙箱模板。镜像基于 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，钉 `@openai/codex@0.162.1`。命名命令在 `agent-sandbox-server` 上，端口 9000。没有镜像 `CMD` / `ENTRYPOINT`。
 
-`codex` 是 OpenAI Codex CLI 的沙箱模板。镜像基于 `python:3.12-slim`，预装 Python 3（`/opt/venv`）、Node.js 22、npm 包 `@openai/codex`，以及 Python 包 `openai>=1.0`、`rich`、`httpx`。系统工具有 git、curl、wget、build-essential、ripgrep、jq。资源配置是 2 CPU / 4096 MB。容器入口是 `python3 commands.py`，命名命令注册在进程里，监听 `ABX_SERVER_PORT`（默认 9000）。
+## 命名命令
 
-命名命令只有一个：`codex`。它在沙箱里执行：
+| 命令 | 作用 |
+|---|---|
+| `codex_version` | `codex --version`，返回 `X.Y.Z` |
+| `codex_setup_check` | 探测 Linux 沙箱。失败时 `bypass_flag` 为 `--dangerously-bypass-approvals-and-sandbox` |
+| `codex_exec` | `codex exec --json`。参数包括 `prompt`、`model`、`cwd`、`sandbox`、`approval`、`resume` |
+| `codex_config_write` | 写 `$CODEX_HOME/config.toml`。`wire_api` 只能是 `responses` |
+| `codex_agents_write` | 把 `AGENTS.md` 写到工作目录 |
+| `codex` | `codex_exec` 的兼容别名，只有 `prompt` 和 `model` |
 
-```text
-codex -p <prompt> --model <model> --yolo --output-format json
-```
+0.162.1 不接受旧的 `codex -p ... --output-format json`，也不接受 `--full-auto`。沙箱探测失败时（Express 上常见：没有 capabilities，bubblewrap user namespace / seccomp / 遗留 landlock 起不来），`codex_exec` 加上 `--dangerously-bypass-approvals-and-sandbox`。探测成功且 `sandbox=auto` 时用 `--sandbox workspace-write` 和 `approval_policy="never"`。
 
-超时 300 秒。`prompt` 必填，`model` 默认 `codex-mini`。
+`apply-patch`（issue #60）是独立的 `codex-apply-patch` 文件工具，不在这个目录里构建。`codex-agent-api`（issue #23）是 Agents API HTTP 服务，和这里的 CLI 命令不是同一个控制面。
 
-## 本地 e2e 怎么跑
+## 本地 e2e
 
-仓库根目录，已安装 `agent-sandbox-server` 和 `httpx`：
+仓库根目录，已安装 `agent-sandbox-server`、`httpx`、`pyyaml`：
 
 ```bash
-python3 -m pip install agent-sandbox-server httpx
+python3 scripts/check_template.py codex
 python3 scripts/run_local_e2e.py
 ```
 
-这条命令会给每个带 `commands.py` 和 `e2e_test.py` 的模板各起一个临时端口，在该目录启动 `python3 commands.py`，设置 `E2E_BASE_URL`，跑完 `e2e_test.py` 再停掉进程。它强制 `E2E_RUN_LLM=0`，并且不把 `OPENAI_API_KEY` 等密钥传给子进程。
-
-只跑本目录时，先在 `codex/` 启动 server，再另开一个终端跑测试。`E2E_BASE_URL` 必须指向这个已经起来的进程：
+只跑本目录时：
 
 ```bash
 cd codex
@@ -35,78 +38,35 @@ cd codex
 E2E_BASE_URL=http://127.0.0.1:9000 python3 e2e_test.py
 ```
 
-`commands.py` 不在跑，或者 `E2E_BASE_URL` 和 `ABX_SERVER_PORT` 对不上，`/health` 和 `/commands` 会失败。
-
-## 极速版怎么安装和创建
-
-`abx template install` 只在阿里云极速版（provider `alicloud-express`）上构建镜像并注册模板。
-
-从索引安装并构建：
+根目录脚本强制 `E2E_RUN_LLM=0`，并且不把密钥传给子进程。这不算模型验收。带密钥时：
 
 ```bash
-abx template install alibaba-agent-sandbox/awesome-templates//codex
+E2E_BASE_URL=http://127.0.0.1:9000 E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 E2E_MODEL=qwen-plus python3 e2e_test.py
 ```
 
-在本仓库里从本地目录安装：
+提示词是 `Reply with exactly: ABX_E2E_OK`。跑测试的进程和 `commands.py` 进程都要看得到密钥。
+
+## 极速版
 
 ```bash
-abx template install ./codex --registry-type local
-```
-
-只下载到 `~/.abx/templates/`、不构建：
-
-```bash
-abx template install ./codex --registry-type local --download-only
-```
-
-在模板目录里构建、推送并注册：
-
-```bash
-abx deploy
-```
-
-创建沙箱并注入密钥（`template.yaml` 里 `OPENAI_API_KEY` 的值是空字符串，不要写进镜像）：
-
-```bash
-abx create --template codex --env OPENAI_API_KEY=<你的密钥>
-```
-
-## 怎么调用命名命令
-
-命名命令走 `abx run` 或 `sandbox.run`。参数名就是 `commands.py` 里的 `prompt` 和 `model`。
-
-```bash
-abx run <sandbox-id> codex --arg prompt="编写一个快速排序算法" --arg model=codex-mini
+abx template deploy ./codex -y --generation 2
+abx create --template <template-id> -y --env OPENAI_API_KEY=<密钥> --env OPENAI_BASE_URL=<兼容端点> --env CODEX_MODEL=qwen-plus
+abx run <sandbox-id> codex_exec --json-args '{"prompt":"总结工作区","model":"qwen-plus"}'
 ```
 
 ```python
-await sandbox.run("codex", prompt="编写一个快速排序算法", model="codex-mini")
+await sandbox.run("codex_exec", prompt="总结工作区", model="qwen-plus")
 ```
 
-同步代码用 `sandbox.run_sync("codex", prompt="...", model="codex-mini")`。省略 `model` 时 server 使用默认值 `codex-mini`。
+`abx exec` 和 `sandbox.commands.run` 是 shell，不会自动加上 `codex exec` 的参数。
 
-`abx exec <sandbox-id> -- codex "..."` 和 `sandbox.commands.run("codex '...'")` 是直接跑 shell，不会经过 `@command("codex")`，也不会自动加上 `-p`、`--model`、`--yolo` 和 `--output-format json`。
-
-## 需要哪些环境变量
+## 环境变量
 
 | 变量 | 作用 |
 |---|---|
-| `OPENAI_API_KEY` | Codex CLI 的密钥。创建沙箱时用 `--env` 注入。`e2e_test.py` 只有在跑测试的进程里看得到这个变量，才会去调 `POST /commands/codex`。密钥还必须出现在 `commands.py` 那个进程的环境里。 |
-| `CODEX_SANDBOX_MODE` | `template.yaml` 写成 `true`。 |
-| `WORKSPACE` | `template.yaml` 写成 `/app`。`codex` 这条命令本身不读它。 |
-| `ABX_SERVER_PORT` | server 端口，默认 `9000`。 |
-| `E2E_BASE_URL` | 只跑 `e2e_test.py` 时指向已启动的 server，例如 `http://127.0.0.1:9000`。根目录的 `run_local_e2e.py` 会自己设置。 |
-| `E2E_RUN_LLM` | `0` 强制跳过模型调用；`1` 强制去调。默认按有没有 `OPENAI_API_KEY` 决定。根目录脚本固定写成 `0`。 |
-| `E2E_MODEL` | 可选。设了就作为 `model` 参数发给 `codex`，不设就用命令默认值 `codex-mini`。 |
-
-Codex CLI 要能访问 OpenAI API，沙箱需要出网。
-
-## 没有密钥时 e2e 会 SKIP
-
-`POST /commands/codex` 这条用例在没有 `OPENAI_API_KEY`，或 `E2E_RUN_LLM=0` 时记为 `SKIP`。根目录的 `python3 scripts/run_local_e2e.py` 两种情况都占了：它不转发密钥，并且强制 `E2E_RUN_LLM=0`。测试进程退出码 0 只说明 server 的 `/health`、`/commands` 和其余本地检查过了。
-
-这不算 Agent 验收。验收要在沙箱进程里看得到 `OPENAI_API_KEY`，再跑同一份 `e2e_test.py`，让 `codex` 真正执行。探测提示词是 `Reply with exactly: ABX_E2E_OK`。没有这条带密钥的记录，不能把模板写成已经支持 Codex。
-
-## OpenSandbox / E2B
-
-OpenSandbox 和 E2B 上，这个目录不会自动变成对方的模板。`abx template install` 只在极速版构建。OpenSandbox 创建用的是镜像 URI，并且会替换容器入口，仓库里的 `codex/Dockerfile` 不会因此在那边注册。E2B 也不会出现一个叫 `codex` 的 template id。`base`、`code-interpreter-v1`、`desktop` 是平台自己的 id，和这个目录无关。
+| `OPENAI_API_KEY` / `CODEX_API_KEY` / `ABX_LLM_API_KEY` | 密钥。`config.toml` 只写变量名（`env_key`）。 |
+| `OPENAI_BASE_URL` / `ABX_LLM_BASE_URL` | OpenAI 兼容基址，例如 DashScope `/compatible-mode/v1`。 |
+| `CODEX_MODEL` | 可选模型名。 |
+| `CODEX_HOME` | 默认 `/home/user/.codex`。 |
+| `WORKSPACE` | 默认 `/home/user/workspace`。 |
+| `E2E_RUN_LLM` | `0` 跳过模型调用；`1` 强制调用。 |

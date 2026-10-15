@@ -76,13 +76,13 @@ templates:
       opensandbox: push-image-then-pass-uri
 
   - name: codex
-    description: "OpenAI Codex CLI Agent runtime for AI-driven code generation and execution"
+    description: "OpenAI Codex CLI (@openai/codex@0.162.1). codex exec, JSON events, sandbox bypass, OpenAI-compatible config.toml."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: codex
     tags: [codex, openai, ai-agent, code-generation]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: official
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
