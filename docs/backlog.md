@@ -1,6 +1,6 @@
 # 这批不做
 
-下面这些先不要在 `awesome-templates` 里建目录。验收要求是：一个目录、一份 `python:3.12-slim` 的 Dockerfile、`commands.py` 里的 `@command` 真正去调上游 CLI，再用带密钥的 e2e 跑通。底层跑不了，或者安装方式还没钉成可复现的包版本，就留在这里。
+下面这些先不要在 `awesome-templates` 里建目录。验收以 [docs/template-spec.md](./template-spec.md) 为准：阿里云基础镜像、`commands.py` 里的 `@command` 真正去调上游 CLI，版本钉死，再用对应级别的 e2e 跑通。底层跑不了，或者安装方式还没钉成可复现的包版本，就留在这里。
 
 `abx template install` 只在阿里云极速版（`alicloud-express`）上构建。新建一个目录不会变成 OpenSandbox 镜像，也不会变成 E2B 的 template id。
 
