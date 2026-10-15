@@ -211,7 +211,7 @@ templates:
       opensandbox: push-image-then-pass-uri
 
   - name: opencode
-    description: "OpenCode coding agent. Command opencode run. Package opencode-ai@1.19.0."
+    description: "OpenCode coding agent. Headless opencode run and optional opencode serve. Package opencode-ai@1.19.0."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: opencode
     tags: [opencode, ai-agent, ai-coding]

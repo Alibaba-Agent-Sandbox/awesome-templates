@@ -1,45 +1,48 @@
-FROM python:3.12-slim
+FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8
-# OpenCode Zen free model documented at https://opencode.ai/docs/zen/ (id big-pickle).
-ENV OPENCODE_MODEL=opencode/big-pickle
-# Keep the npm pin. The CLI checks for updates unless this is set.
+ENV HOME=/home/user
 ENV OPENCODE_DISABLE_AUTOUPDATE=true
+ENV OPENCODE_MODEL=dashscope/qwen3.8-flash
+ENV OPENCODE_CONFIG=/home/user/app/opencode.json
 
-# python:3.12-slim already provides python3 and pip. Install them when the base image does not.
-RUN if ! command -v python3 >/dev/null 2>&1 || ! command -v pip >/dev/null 2>&1; then \
-        apt-get update && apt-get install -y --no-install-recommends python3 python3-pip \
-        && rm -rf /var/lib/apt/lists/*; \
-    fi
+# Spec fallback pin agent-sandbox-server==0.3.0 is not what this image runs.
+# python-sdk main 61c43e0be65a1f57aa09186d578e7b399e48429b includes PR #21.
+# abx template deploy substitutes <region> and <tag> and may inject a wheel.
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        build-essential \
         ca-certificates \
-        curl \
         git \
-        gnupg \
         ripgrep \
-    && rm -rf /var/lib/apt/lists/*
-
-# Node.js 22 from the NodeSource setup script, then the pinned OpenCode CLI.
-# npm view opencode-ai version on 2026-10-14 resolved dist-tag latest to 1.19.0.
-# The package bin name is opencode. Do not copy the E2B or OpenSandbox Dockerfiles.
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/* \
-    && npm install -g opencode-ai@1.19.0
+    && mkdir -p /home/user/app /home/user/.config /home/user/.local \
+    && chown -R user:user /home/user
 
-# Install agent-sandbox-server (the in-sandbox HTTP server, import agent_sandbox.server).
-# abx template deploy injects the wheel into the build context. Without a wheel, install from PyPI.
+# npm view opencode-ai version on 2026-10-15 resolved dist-tag latest to 1.19.0.
+# The package bin name is opencode. Node.js 20 is already in the base image.
+# npm also unpacks the baseline binary and a cache under $HOME. Drop both in
+# this layer. The copied bin is the AVX2 build, which is what `opencode --version` ran.
+RUN node --version && npm --version \
+    && npm install -g opencode-ai@1.19.0 \
+    && opencode --version \
+    && test "$(opencode --version)" = "1.19.0" \
+    && rm -rf \
+        /usr/local/lib/node_modules/opencode-ai/node_modules/opencode-linux-x64-baseline \
+        /usr/local/lib/node_modules/opencode-ai/node_modules/opencode-linux-x64-musl \
+        /usr/local/lib/node_modules/opencode-ai/node_modules/opencode-linux-x64-baseline-musl \
+        /root/.npm \
+        /home/user/.npm
+
 COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
         pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
     else \
-        pip install --no-cache-dir agent-sandbox-server; \
+        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/61c43e0be65a1f57aa09186d578e7b399e48429b.tar.gz#subdirectory=server-sdk"; \
     fi
 
-WORKDIR /app
-COPY commands.py .
+WORKDIR /home/user/app
+COPY --chown=user:user commands.py opencode.json ./
+USER user
 EXPOSE 9000
-CMD ["python3", "commands.py"]
+EXPOSE 4096
