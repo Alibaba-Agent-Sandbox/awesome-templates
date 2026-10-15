@@ -66,6 +66,21 @@ DESIGN_HEADINGS = (
     "Risks",
     "Test plan",
 )
+# Allowed agent-sandbox-server installs. Either form on a RUN line is a pin.
+# PyPI:  agent-sandbox-server==X.Y.Z
+# git:   agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/<40-hex>.tar.gz#subdirectory=server-sdk
+SERVER_PYPI_PIN = re.compile(
+    r"agent-sandbox-server==([0-9]+\.[0-9]+\.[0-9]+(?:[A-Za-z0-9.+-]*)?)"
+)
+SERVER_GIT_ARCHIVE = re.compile(
+    r"agent-sandbox-server\s*@\s*[\"']?"
+    r"https://github\.com/Alibaba-Agent-Sandbox/python-sdk/archive/"
+    r"([0-9a-fA-F]{40})\.tar\.gz#subdirectory=server-sdk"
+)
+# `pip install agent-sandbox` is a different project. `-client` and `-server` are ours.
+BARE_CLIENT_INSTALL = re.compile(
+    r"\bpip(?:3)?\s+install\b[^\n]*?(?:\s|['\"=])agent-sandbox(?![\w.-])"
+)
 FC_PLACEHOLDER = "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
 FC_PINNED = re.compile(
     r"^fc-e2b-registry\.[a-z0-9-]+\.cr\.aliyuncs\.com/runtime/base:v\d+\.\d+\.\d+$"
@@ -154,6 +169,24 @@ def _dockerfile_lines(text: str) -> list[str]:
 
 def _instruction(line: str) -> str:
     return line.split(None, 1)[0].upper()
+
+
+def _server_sdk_pinned(line: str) -> bool:
+    return SERVER_PYPI_PIN.search(line) is not None or SERVER_GIT_ARCHIVE.search(line) is not None
+
+
+def _bad_client_install(text: str) -> bool:
+    """True when a README tells the reader to pip-install the unrelated `agent-sandbox` project.
+
+    A line that says that name is unrelated is the warning itself, not an install instruction.
+    """
+    for line in text.splitlines():
+        lowered = line.lower()
+        if "unrelated" in lowered or "无关" in line:
+            continue
+        if BARE_CLIENT_INSTALL.search(line):
+            return True
+    return False
 
 
 def _from_image(line: str) -> str:
@@ -417,6 +450,28 @@ def check_directory(template_dir: Path) -> list[Violation]:
     if readme_zh.is_file():
         zh_sections = _check_readme(readme_zh, README_ZH, violations)
 
+    if data.get("spec_version") == 2:
+        for label, sections, heading in (
+            ("README.md", en_sections, "Quick start (Python SDK)"),
+            ("README.zh-CN.md", zh_sections, "快速开始（Python SDK）"),
+        ):
+            if heading in sections and "agent-sandbox-client" not in sections[heading]:
+                violations.append(
+                    Violation(
+                        "readme-client",
+                        f"{label}: {heading} must document the client install as agent-sandbox-client "
+                        "(pip install agent-sandbox is an unrelated project)",
+                    )
+                )
+        for label, path in (("README.md", readme_en), ("README.zh-CN.md", readme_zh)):
+            if path.is_file() and _bad_client_install(path.read_text(encoding="utf-8")):
+                violations.append(
+                    Violation(
+                        "readme-client",
+                        f"{label}: pip install agent-sandbox names an unrelated project; use agent-sandbox-client",
+                    )
+                )
+
     if data and not base_ok:
         explained = "Base image" in en_sections and len(en_sections.get("Base image", "")) >= 40
         if explained and isinstance(base, str) and base.strip():
@@ -509,19 +564,24 @@ def check_directory(template_dir: Path) -> list[Violation]:
         workdirs = [line.split(None, 1)[1] for line in lines if _instruction(line) == "WORKDIR"]
         if not workdirs or workdirs[-1] != "/home/user/app":
             violations.append(Violation("dockerfile-workdir", "the last WORKDIR must be /home/user/app"))
-        text = dockerfile.read_text(encoding="utf-8")
-        if "agent-sandbox-server==" not in text:
+        run_lines = [line for line in lines if _instruction(line) == "RUN"]
+        if not any(_server_sdk_pinned(line) for line in run_lines):
             violations.append(
-                Violation("pinned-version", "Dockerfile must pin agent-sandbox-server==X.Y.Z for the PyPI fallback")
+                Violation(
+                    "pinned-version",
+                    "Dockerfile RUN must pin agent-sandbox-server==X.Y.Z or "
+                    "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/"
+                    "<40-hex>.tar.gz#subdirectory=server-sdk",
+                )
             )
-        for line in lines:
-            if _instruction(line) != "RUN" or "pip install" not in line:
+        for line in run_lines:
+            if "pip install" not in line:
                 continue
             if ".whl" in line:
                 continue
             if re.search(r"pip install\b[^&|;]*==", line):
                 continue
-            if "agent-sandbox-server==" in line:
+            if _server_sdk_pinned(line):
                 continue
             violations.append(Violation("pinned-version", f"unpinned pip install in Dockerfile: {line}"))
         for line in lines:

@@ -9,8 +9,9 @@ Tooling that later template work relies on:
 | Tool | Role |
 |---|---|
 | `scripts/check_template.py` | Static lint. Exit 0 when the directory matches this spec. |
-| `scripts/express_e2e.py` | L2 on `alicloud-express`. Writes evidence only after a pass, then deletes the sandbox and the template. |
+| `scripts/express_e2e.py` | L2 on `alicloud-express`. Writes evidence only after a pass, then deletes the sandbox and the template. Serializes ACR pushes with a file lock and stops a push that makes no progress. |
 | `scripts/run_local_e2e.py` | L0 for every directory that has `commands.py` and `e2e_test.py`. Also runs the checker. |
+| `scripts/image_size_report.py` | Per-layer sizes of a local image (`docker history`). |
 
 ## Directory layout
 
@@ -131,11 +132,13 @@ FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Heavy tools first (one RUN, pinned versions, pip --no-cache-dir, npm cache cleaned).
+# commands.py is the last COPY so a command edit does not rebuild that layer.
 COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
         pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
     else \
-        pip install --no-cache-dir "agent-sandbox-server==0.3.0"; \
+        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/<40-hex-sha>.tar.gz#subdirectory=server-sdk"; \
     fi
 
 # Pin every other installer the same way: pip name==X.Y.Z, npm package@X.Y.Z.
@@ -145,7 +148,31 @@ USER user
 EXPOSE 9000
 ```
 
-`abx template deploy` injects an `agent-sandbox-server` wheel into the build context when `ABX_SERVER_SDK_SOURCE` points at a `server-sdk` tree, otherwise it can download a pinned release. The `else` branch still pins `agent-sandbox-server==0.3.0`. Build with BuildKit so an empty `COPY *.whl` is accepted when no wheel was injected (`DOCKER_BUILDKIT=1`).
+### Allowed `agent-sandbox-server` pins
+
+A `RUN` line must use one of these two forms. The checker accepts either. A comment that only mentions the pin does not count.
+
+| Form | Line |
+|---|---|
+| PyPI | `pip install --no-cache-dir "agent-sandbox-server==X.Y.Z"` |
+| python-sdk git archive | `pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/<40-hex-sha>.tar.gz#subdirectory=server-sdk"` |
+
+`<40-hex-sha>` is the full commit of `Alibaba-Agent-Sandbox/python-sdk` (40 hex characters), not a short sha. On 2026-10-15, `agent-sandbox-server==0.3.0` was not on PyPI (`https://pypi.org/pypi/agent-sandbox-server/0.3.0/json` returned 404). Use the archive pin until that release exists. The archive install is the more exact pin: it selects the commit, including the Express server fixes on `61c43e0` and later.
+
+`abx template deploy` injects an `agent-sandbox-server` wheel into the build context when `ABX_SERVER_SDK_SOURCE` points at a `server-sdk` tree. The `if` branch installs that wheel. The `else` branch still carries one of the two pins. Build with BuildKit so an empty `COPY *.whl` is accepted when no wheel was injected (`DOCKER_BUILDKIT=1`).
+
+Every `pip install` uses `--no-cache-dir`. An npm install deletes the npm cache in the same layer (`npm cache clean --force`).
+
+### Image layers
+
+Put package installs in an early layer and `COPY commands.py` last. On 2026-10-15 this VM pushed several template images at once to `registry.cn-hangzhou.aliyuncs.com`. `ss` showed the registry connections `rwnd_limited` about 98.8 percent (the receiver window, not the round trip: `minrtt` was under 1 ms). One upload moved about 35 KB/s and another did not increase `bytes_sent` over 8 seconds. Images were 0.9–1.2 GB. They share the two layers of base `v0.0.49` (about 632 MB, mostly one 606 MB rootfs) locally, but each harness push uses a new ACR repository, so a cross-repo mount of that base is not guaranteed and the base can be uploaded again.
+
+`docker history` sizes are uncompressed diffs. The registry stores compressed blobs, and each blob is its own request. Dozens of small `COPY` layers (a CLI split into many parts) add a round trip per blob. `python3 scripts/image_size_report.py <image>` prints one line per layer. Pass `--base` to see how many rootfs digests are still the base image.
+
+```bash
+python3 scripts/image_size_report.py <local-image> \
+  --base fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49
+```
 
 A base image other than the Alibaba image is allowed only when a hard dependency makes the platform image impossible. The README then has `## Base image` with the reason (at least a short paragraph). The checker accepts that escape hatch. "We already had a Dockerfile" is not a reason.
 
@@ -205,7 +232,11 @@ abx exec <sandbox-id> -- python3 -c 'print(1)'
 
 `--arg` values are strings. Use `--json-args` for numbers and booleans. `abx exec` is a shell or argv, not a named command.
 
-Python SDK:
+Python SDK. The client distribution on PyPI is `agent-sandbox-client`. The import stays `agent_sandbox`. `pip install agent-sandbox` installs an unrelated project.
+
+```bash
+python3 -m pip install agent-sandbox-client
+```
 
 ```python
 import asyncio
@@ -356,7 +387,7 @@ python3 scripts/check_template.py --all --strict   # fail on legacy templates to
 
 `--all` prints a conformance list and exits 0 when every `spec_version: 2` directory passes. Legacy directories are listed with their violation codes and do not fail the process. CI runs `--all`. `scripts/run_local_e2e.py` runs it as well and fails the script when a spec_version 2 directory fails.
 
-Violation codes include `required-file`, `readme-section`, `base-image`, `dockerfile-cmd`, `dockerfile-user`, `yaml-field`, `commands-start`, `verified-evidence`, `pinned-version`, `secrets`.
+Violation codes include `required-file`, `readme-section`, `base-image`, `dockerfile-cmd`, `dockerfile-user`, `yaml-field`, `commands-start`, `verified-evidence`, `pinned-version`, `readme-client`, `secrets`. `pinned-version` fails when a `RUN` has neither allowed server pin above. `readme-client` fails when a spec_version 2 SDK section does not name `agent-sandbox-client`, or when a README tells the reader to `pip install agent-sandbox`.
 
 ## Express harness
 
@@ -382,9 +413,15 @@ python3 scripts/express_e2e.py python-hello \
 
 `python-hello` on main does not yet declare `smoke`, `start_cmd`, or the Alibaba base image, so the flags above supply them. A spec_version 2 directory needs no flags: the harness reads `template.yaml`.
 
-The remote name is a unique `e2e-<name>-<hex>` alias, not the catalog name, so a pre-existing generation-1 template is left alone. The `finally` block runs `abx kill <id> -y` and `abx template delete <id> -y` for ids this process created.
+The remote name is a unique `e2e-<name>-<hex>` alias, not the catalog name, so a pre-existing generation-1 template is left alone. The `finally` block runs `abx kill <id> -y` and `abx template delete <id> -y` for ids this process created. It also kills the deploy process group and any `docker push` whose command line contains that alias. A wall-clock kill of only the `abx` process used to leave the push running (the push is not in the same process group unless the harness starts one).
 
-`--plan` prints the resolved commands and does not call `abx`.
+The harness calls `abx template deploy` with the existing flags (`--json`, `-y`, `--generation`, `--start-cmd`, `--ready-cmd`, `--alias`, `--acr-repo`, `--tag`, `--timeout`, `--verbose`). It does not push the image itself. `--timeout` is the READY poll budget inside `abx`. It is not a cap on the upload. `--verbose` is what makes layer lines show up under `--json`; without them the CLI prints phase lines only and a slow push looks idle. The harness drops `CI` and the other variables `abx` uses to detect CI (`GITHUB_ACTIONS`, `GITLAB_CI`, and the rest of that list), because CI mode suppresses those lines.
+
+Concurrent harnesses take an exclusive `flock` on `/tmp/abx-acr-push.lock` (`ABX_ACR_PUSH_LOCK` overrides the path) for the whole deploy. The CLI does not expose a push-only step, so the lock covers build, push, and the READY poll. That is coarser than a lock around `docker push` alone. Push locking and a no-progress timeout belong in `abx` ([agent-sandbox#29](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues/29)). Until that ships, the harness is the lock.
+
+`--idle-timeout` (default 180) kills the deploy when stdout and stderr produce no new bytes. A push that is still printing layer status is in progress and is not killed. `--wall-timeout` (default `max(21600, --timeout)`) is only a safety cap for a deploy that never goes idle. Six hours covers a progressing upload of about 1 GB at the ~35 KB/s measured on a contended link; the idle timer is what stops a push that has stopped moving. `--push-retries` (default 2) retries a stalled push or a push error. A known CLI/SDK blocker and a Docker build failure are not retried. Each retry stops leftover `docker push` processes for this alias first, so a new upload is not piled on an orphan.
+
+`--plan` prints the resolved commands, the lock path, and the timeouts. It does not call `abx`.
 
 Exit 2 means the output matched a known CLI or SDK failure mode (string `base` rejected, generation-1 update, `AuthError` / HTTP 401, or envd `promised N bytes in enveloped message`). Those were tracked as agent-sandbox `#12` `#13` `#14` and python-sdk `#15` `#17`. The deploy/run CLI fix is on `agent-sandbox` main (`#16`). The envd framing and port-9000 auth fix is on `python-sdk` main. The harness still classifies the old messages so an older binary stays explicit.
 

@@ -9,8 +9,9 @@
 | 工具 | 作用 |
 |---|---|
 | `scripts/check_template.py` | 静态检查。目录符合本规范时退出码为 0。 |
-| `scripts/express_e2e.py` | 在 `alicloud-express` 上做 L2。只有通过才写证据，然后删除沙箱和模板。 |
+| `scripts/express_e2e.py` | 在 `alicloud-express` 上做 L2。只有通过才写证据，然后删除沙箱和模板。用文件锁串行化 ACR 推送，并在推送没有进展时停掉它。 |
 | `scripts/run_local_e2e.py` | 对每个带 `commands.py` 和 `e2e_test.py` 的目录做 L0，并运行检查器。 |
+| `scripts/image_size_report.py` | 打印本地镜像每一层的大小（`docker history`）。 |
 
 ## 目录布局
 
@@ -131,11 +132,13 @@ FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# 重的工具放在前面的一层（一条 RUN，钉死版本，pip --no-cache-dir，清掉 npm cache）。
+# commands.py 是最后一次 COPY，改命令不会重建那一层。
 COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
         pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
     else \
-        pip install --no-cache-dir "agent-sandbox-server==0.3.0"; \
+        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/<40位hex-sha>.tar.gz#subdirectory=server-sdk"; \
     fi
 
 # 其他安装同样钉死：pip name==X.Y.Z，npm package@X.Y.Z。
@@ -145,7 +148,31 @@ USER user
 EXPOSE 9000
 ```
 
-`ABX_SERVER_SDK_SOURCE` 指向 `server-sdk` 源码树时，`abx template deploy` 会把 `agent-sandbox-server` 的 wheel 注入构建上下文，否则可以下载钉死的发行版。`else` 分支仍然写 `agent-sandbox-server==0.3.0`。用 BuildKit 构建，这样没有注入 wheel 时 `COPY *.whl` 也能通过（`DOCKER_BUILDKIT=1`）。
+### 允许的 `agent-sandbox-server` 钉法
+
+`RUN` 行必须使用下面两种形式之一。检查器两种都接受。只在注释里提到钉不算。
+
+| 形式 | 行 |
+|---|---|
+| PyPI | `pip install --no-cache-dir "agent-sandbox-server==X.Y.Z"` |
+| python-sdk git 归档 | `pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/<40位hex-sha>.tar.gz#subdirectory=server-sdk"` |
+
+`<40位hex-sha>` 是 `Alibaba-Agent-Sandbox/python-sdk` 的完整提交（40 个十六进制字符），不是短 sha。2026-10-15 时 `agent-sandbox-server==0.3.0` 不在 PyPI（`https://pypi.org/pypi/agent-sandbox-server/0.3.0/json` 返回 404）。在该版本发布之前使用归档钉。归档钉更精确：它选中某一次提交，包括 `61c43e0` 及之后的极速版服务端修复。
+
+`ABX_SERVER_SDK_SOURCE` 指向 `server-sdk` 源码树时，`abx template deploy` 会把 `agent-sandbox-server` 的 wheel 注入构建上下文。`if` 分支安装这个 wheel。`else` 分支仍然带上两种钉之一。用 BuildKit 构建，这样没有注入 wheel 时 `COPY *.whl` 也能通过（`DOCKER_BUILDKIT=1`）。
+
+每次 `pip install` 都加 `--no-cache-dir`。npm 安装在同一层里清掉缓存（`npm cache clean --force`）。
+
+### 镜像层
+
+把软件包安装放在靠前的层，`COPY commands.py` 放在最后。2026-10-15 这台机器同时向 `registry.cn-hangzhou.aliyuncs.com` 推送了多份模板镜像。`ss` 显示到仓库的连接 `rwnd_limited` 大约 98.8%（受接收窗口限制，不是往返时延：`minrtt` 不到 1 ms）。一条上传大约 35 KB/s，另一条在 8 秒内 `bytes_sent` 没有增加。镜像大约 0.9–1.2 GB。它们在本地与基础镜像 `v0.0.49` 的两层（大约 632 MB，主要是一层 606 MB 的 rootfs）共享摘要，但每次 harness 推送都使用新的 ACR 仓库，跨仓库挂载基础层并没有保证，基础层可能被再传一次。
+
+`docker history` 的大小是未压缩的层差异。仓库存的是压缩后的 blob，每个 blob 是一次请求。把一个 CLI 拆成几十个小 `COPY` 层会让每个 blob 都多一次往返。`python3 scripts/image_size_report.py <image>` 按层打印。加上 `--base` 可以看到还有多少 rootfs 摘要仍属于基础镜像。
+
+```bash
+python3 scripts/image_size_report.py <本地镜像> \
+  --base fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49
+```
 
 只有硬依赖使平台镜像不可用时，才允许其他基础镜像。这时 README 要有 `## Base image`，用一段话说明原因。检查器接受这个例外。「原来就有一份 Dockerfile」不是原因。
 
@@ -205,7 +232,11 @@ abx exec <sandbox-id> -- python3 -c 'print(1)'
 
 `--arg` 的值是字符串。数字和布尔用 `--json-args`。`abx exec` 是 shell 或 argv，不是命名命令。
 
-Python SDK：
+Python SDK。PyPI 上的客户端发行名是 `agent-sandbox-client`。导入名仍是 `agent_sandbox`。`pip install agent-sandbox` 会装上一个无关项目。
+
+```bash
+python3 -m pip install agent-sandbox-client
+```
 
 ```python
 import asyncio
@@ -356,7 +387,7 @@ python3 scripts/check_template.py --all --strict   # 旧模板的违规也导致
 
 `--all` 打印符合性列表。每个 `spec_version: 2` 的目录都通过时退出码为 0。旧目录会带上违规代码列出来，但不让进程失败。CI 运行 `--all`。`scripts/run_local_e2e.py` 也会运行它，spec_version 2 失败时整个脚本失败。
 
-违规代码包括 `required-file`、`readme-section`、`base-image`、`dockerfile-cmd`、`dockerfile-user`、`yaml-field`、`commands-start`、`verified-evidence`、`pinned-version`、`secrets`。
+违规代码包括 `required-file`、`readme-section`、`base-image`、`dockerfile-cmd`、`dockerfile-user`、`yaml-field`、`commands-start`、`verified-evidence`、`pinned-version`、`readme-client`、`secrets`。`RUN` 上两种服务端钉都没有时，`pinned-version` 失败。spec_version 2 的 SDK 章节没有写 `agent-sandbox-client`，或 README 让读者 `pip install agent-sandbox` 时，`readme-client` 失败。
 
 ## 极速版 harness
 
@@ -382,9 +413,15 @@ python3 scripts/express_e2e.py python-hello \
 
 main 上的 `python-hello` 还没有 `smoke`、`start_cmd` 和阿里云基础镜像，所以上面的标志补上这些值。`spec_version: 2` 的目录不需要标志：harness 读 `template.yaml`。
 
-远端名字是唯一的 `e2e-<name>-<hex>` 别名，不是目录里的名字，因此已有的 generation 1 模板会被留下。`finally` 对本进程创建的 id 执行 `abx kill <id> -y` 和 `abx template delete <id> -y`。
+远端名字是唯一的 `e2e-<name>-<hex>` 别名，不是目录里的名字，因此已有的 generation 1 模板会被留下。`finally` 对本进程创建的 id 执行 `abx kill <id> -y` 和 `abx template delete <id> -y`。它还会杀掉部署进程组，以及命令行里包含该别名的 `docker push`。以前只按墙钟杀掉 `abx` 时，推送不在同一个进程组里，会继续占着仓库连接。
 
-`--plan` 只打印解析后的命令，不调用 `abx`。
+harness 用现有标志调用 `abx template deploy`（`--json`、`-y`、`--generation`、`--start-cmd`、`--ready-cmd`、`--alias`、`--acr-repo`、`--tag`、`--timeout`、`--verbose`）。它自己不推镜像。`--timeout` 是 `abx` 内部等待 READY 的预算，不是上传的上限。`--verbose` 让 `--json` 下也能看到每一层的输出；没有这些行时 CLI 只打印阶段名，慢推送看起来像停住了。harness 会从子进程环境里去掉 `CI` 以及 `abx` 用来识别 CI 的其他变量（`GITHUB_ACTIONS`、`GITLAB_CI` 等），因为 CI 模式会吞掉这些行。
+
+并发的 harness 在整个 deploy 期间对 `/tmp/abx-acr-push.lock` 加独占 `flock`（`ABX_ACR_PUSH_LOCK` 可改路径）。CLI 没有单独的推送步骤，所以这把锁盖住构建、推送和 READY 轮询，比只锁 `docker push` 更粗。推送锁和无进展超时应该做在 `abx` 里（[agent-sandbox#29](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues/29)）。在那之前，由 harness 上锁。
+
+`--idle-timeout`（默认 180）在 stdout 和 stderr 没有新字节时杀掉这次 deploy。仍在打印层状态的推送算作有进展，不会被杀掉。`--wall-timeout`（默认 `max(21600, --timeout)`）只是安全上限，给一直有输出的 deploy 用。六小时够一条仍在前进的大约 1 GB 上传，按争用链路上测到的约 35 KB/s 估算；真正停掉已经不动的推送的是空闲计时器。`--push-retries`（默认 2）会重试卡住的推送或推送错误。已知的 CLI/SDK 阻断和 Docker 构建失败不重试。每次重试前先停掉这个别名留下的 `docker push`，避免新上传叠在孤儿进程上。
+
+`--plan` 打印解析后的命令、锁路径和超时，不调用 `abx`。
 
 退出码 2 表示输出命中了已知的 CLI 或 SDK 失败（字符串 `base` 被拒绝、generation 1 更新、`AuthError` / HTTP 401，或 envd 的 `promised N bytes in enveloped message`）。这些曾记在 agent-sandbox `#12` `#13` `#14` 和 python-sdk `#15` `#17`。部署与运行的 CLI 修复已在 `agent-sandbox` main（`#16`）。envd 帧和端口 9000 认证的修复已在 `python-sdk` main。harness 仍然识别旧的报错，这样旧二进制也会给出明确结果。
 
