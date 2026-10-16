@@ -42,3 +42,6 @@ smoke:
   - command: pi_version
     args: {}
     expect: "1.3.0"
+  - command: pi_tools_check
+    args: {}
+    expect: "read/find/grep/ls OK"

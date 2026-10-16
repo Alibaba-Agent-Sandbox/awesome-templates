@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       templates: ${{ steps.select.outputs.templates }}
+      export_all_selected: ${{ steps.select.outputs.export_all_selected }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -43,6 +44,8 @@ jobs:
         run: |
           templates=$(python scripts/select_image_templates.py --event "$EVENT_NAME" --base "$BASE_SHA" --head "$HEAD_SHA" --templates "$REQUESTED_TEMPLATES")
           echo "templates=$templates" >> "$GITHUB_OUTPUT"
+          export_all_selected=$(python scripts/select_image_templates.py --export-policy)
+          echo "export_all_selected=$export_all_selected" >> "$GITHUB_OUTPUT"
           echo "Selected image contexts: $templates"
 
   image-build:
@@ -135,7 +138,7 @@ jobs:
           config = yaml.safe_load((Path(template) / "template.yaml").read_text())
           pins = {
               "agents-cli": [("node --version", "v24.16.0"), ("codex --version", "0.162.1"), ("qwen --version", "0.23.0")],
-              "pi": [("node --version", "v24.16.0"), ("pi --version", "1.3.0")],
+              "pi": [("node --version", "v24.16.0"), ("pi --version", "1.3.0"), ("fd --version", "10.5.0"), ("rg --version", "15.2.0")],
               "amp": [("amp version", "0.0.1792022479-ge66e24")],
               "claude-code": [("claude --version", "2.0.76")],
               "codex": [("codex --version", "0.162.1")],
@@ -194,7 +197,7 @@ jobs:
           PY
 
       - name: Export selected images for a separate local registry transfer
-        if: success() && ((github.event_name == 'workflow_dispatch' && inputs.export_images) || (github.event_name != 'workflow_dispatch' && (matrix.template == 'python-hello' || matrix.template == 'pi')))
+        if: success() && ((github.event_name == 'workflow_dispatch' && inputs.export_images) || (github.event_name != 'workflow_dispatch' && (needs.plan.outputs.export_all_selected == 'true' || matrix.template == 'python-hello' || matrix.template == 'pi')))
         run: |
           docker image save --output "$RUNNER_TEMP/$TEMPLATE-image.tar" "abx-l1:$TEMPLATE"
           python - <<'PY'
@@ -229,7 +232,7 @@ jobs:
           PY
 
       - name: Retain selected transferable images for one day
-        if: success() && ((github.event_name == 'workflow_dispatch' && inputs.export_images) || (github.event_name != 'workflow_dispatch' && (matrix.template == 'python-hello' || matrix.template == 'pi')))
+        if: success() && ((github.event_name == 'workflow_dispatch' && inputs.export_images) || (github.event_name != 'workflow_dispatch' && (needs.plan.outputs.export_all_selected == 'true' || matrix.template == 'python-hello' || matrix.template == 'pi')))
         uses: actions/upload-artifact@v4
         with:
           name: image-${{ matrix.template }}-${{ github.sha }}

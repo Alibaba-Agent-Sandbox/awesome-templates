@@ -135,7 +135,7 @@ def main() -> int:
         record(client.get("/health").status_code == 200, "health")
         response = client.get("/commands")
         entries = {c["name"]: c for c in response.json().get("commands", [])}
-        record(response.status_code == 200 and {"pi", "pi_version", "pi_setup_check"} <= entries.keys(), "registered command names")
+        record(response.status_code == 200 and {"pi", "pi_version", "pi_setup_check", "pi_tools_check"} <= entries.keys(), "registered command names")
         types = {p["name"]: p["type"] for p in entries.get("pi", {}).get("args", [])}
         record(types.get("prompt") == "string" and types.get("cwd") == "string" and types.get("command_timeout") == "integer", "typed command parameters")
         for payload in ({}, {"prompt": "x", "command_timeout": "bad"}):
@@ -146,6 +146,8 @@ def main() -> int:
         record(response.status_code == 200 and isinstance(state, dict), "read-only setup inspection")
         if state.get("installed"):
             record(client.post("/commands/pi_version", json={}).json().get("result") == "1.3.0", "real CLI version equals pin")
+            response = client.post("/commands/pi_tools_check", json={})
+            record(response.status_code == 200 and response.json().get("result") == "read/find/grep/ls OK", "actual offline Pi read/find/grep/ls tools")
         elif enabled("E2E_REQUIRE_CLI") or enabled("E2E_REQUIRE_LLM"):
             record(False, "required target CLI is installed")
         else:

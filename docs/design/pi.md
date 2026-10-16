@@ -11,6 +11,7 @@ The delivered slice is ephemeral print mode with an OpenAI-compatible chat-compl
 ## Exposed API
 
 - `pi_version()` → installed version string; argv `pi --version`.
+- `pi_tools_check()` → `read/find/grep/ls OK` after actually executing all four official tool implementations on disposable files with offline mode; no model call.
 - `pi_setup_check()` → installed/version/pinned-version, boolean key/endpoint/model availability and workspace; no config mutation or secret/endpoint values.
 - `pi(prompt: str, cwd: str = "", allow_tools: bool = False, command_timeout: int = 600)` → buffered, redacted text. Nonempty prompt and an existing directory are required. Timeout range 1–1800. Actual argv is `pi --print --mode text --no-session --offline --no-approve --no-extensions --no-mcp --no-skills --no-prompt-templates --no-themes --no-context-files --provider abx --model <PI_MODEL> --tools <allowlist>`; the prompt is stdin.
 
@@ -18,7 +19,7 @@ Each call owns a temporary config directory with `models.json`, using `api: open
 
 ## How to build
 
-[Dockerfile](../../pi/Dockerfile) uses the Alibaba base placeholder, SHA256-verified official Node 24.16.0 archives for x64/arm64, and exact `@earendil-works/pi-coding-agent@1.3.0` with upstream-recommended `--ignore-scripts`. Direct npm dependencies are pinned upstream; the npm transitive tree is not lockfile-frozen. The server uses a copied source-built wheel or full source commit e2cb27e24fde0a67112f82b8d44af463445a5d1a. No cloud/model key is a build input.
+[Dockerfile](../../pi/Dockerfile) uses the Alibaba base placeholder, SHA256-verified official Node 24.16.0 archives for x64/arm64, and exact `@earendil-works/pi-coding-agent@1.3.0` with upstream-recommended `--ignore-scripts`. The committed package-lock freezes the complete 118-package dependency tree and npm ci installs it with ignore-scripts/omit-dev. Official fd 10.5.0 and ripgrep 15.2.0 musl archives for x64/arm64 use fixed GitHub-published SHA256 digests. Complete extracted directories retain fd LICENSE-MIT/LICENSE-APACHE and rg LICENSE-MIT/UNLICENSE/COPYING, plus README/other distribution files, under /opt/pi-tools. Direct fd/rg executable links avoid Debian fdfind naming ambiguity. The server uses a copied source-built wheel or full source commit e2cb27e24fde0a67112f82b8d44af463445a5d1a. No cloud/model key is a build input.
 
 Generation 2 starts `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`; readiness uses `agent-sandbox-server healthcheck --port 9000`. The image runs as `user` and does not replace the platform entrypoint.
 
@@ -38,6 +39,6 @@ The Linux owned runner drains both pipes, keeps the leader unreaped using WNOWAI
 
 ## Test plan
 
-L0: checker, command/process/privacy regressions, verifier false-acceptance regressions, actual Pi against a local OpenAI protocol fixture, and local HTTP smoke. The fixture is protocol evidence only. L1: selected image CI checks non-root runtime, Node v24.16.0, Pi 1.3.0 and `pi_version` smoke. L2: actual changed image deployment, SDK create/named command/cleanup; pending until run. L3: target model diagnostic, seeded failing source/tests, real writable Pi turn, retrieved changed source/new report/exact ABX_E2E_OK artifact/original tests, isolated target unittest and direct-source held-out inputs. A marker is insufficient. Local source/model evidence is separate from image/provider acceptance. L4: not planned for this slice.
+L0: checker, command/process/privacy regressions, verifier false-acceptance regressions, actual Pi against a local OpenAI protocol fixture, and local HTTP smoke. The fixture is protocol evidence only. L1: selected image CI checks non-root runtime, Node v24.16.0, Pi 1.3.0, fd 10.5.0 and rg 15.2.0, plus pi_version and actual offline pi_tools_check smoke. L2: actual changed image deployment, SDK create/named command/cleanup; pending until run. L3: target model diagnostic, seeded failing source/tests, real writable Pi turn, retrieved changed source/new report/exact ABX_E2E_OK artifact/original tests, isolated target unittest and direct-source held-out inputs. A marker is insufficient. Local source/model evidence is separate from image/provider acceptance. L4: not planned for this slice.
 
 Official references: [tagged CLI](https://github.com/earendil-works/pi/blob/v1.3.0/packages/coding-agent/docs/cli.md), [tagged model configuration](https://github.com/earendil-works/pi/blob/v1.3.0/packages/coding-agent/docs/models.md), [npm version](https://registry.npmjs.org/@earendil-works/pi-coding-agent/1.3.0), [Issue 41](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/41).

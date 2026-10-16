@@ -6,7 +6,7 @@ Run the official [Pi coding CLI](https://github.com/earendil-works/pi) in Alibab
 
 ## Stack
 
-`@earendil-works/pi-coding-agent@1.3.0` (MIT), SHA256-verified Node.js 24.16.0, platform Python 3.13 and Agent Sandbox server. [Dockerfile](Dockerfile) · [template.yaml](template.yaml).
+`@earendil-works/pi-coding-agent@1.3.0` (MIT), SHA256-verified Node.js 24.16.0, platform Python 3.13 and Agent Sandbox server. The committed package-lock freezes all 118 npm dependencies; `npm ci --ignore-scripts --omit=dev` installs them. Official fd 10.5.0 and ripgrep 15.2.0 musl archives are SHA256-verified. [Dockerfile](Dockerfile) · [template.yaml](template.yaml).
 
 ## Problem solved
 
@@ -59,6 +59,7 @@ Arguments are the JSON body, with no `args` wrapper. Success is `{"result":"buff
 | Command | Parameters | Result |
 |---|---|---|
 | pi_version | none | Installed version string. |
+| pi_tools_check | none | Actually execute official read/find/grep/ls offline on disposable files; returns `read/find/grep/ls OK`. |
 | pi_setup_check | none | Installed/version/pin, boolean key/endpoint/model presence, workspace. No credentials or endpoint value. |
 | pi | prompt: string required; cwd: string = ""; allow_tools: boolean = false; command_timeout: integer = 600 | Buffered, credential-redacted text. Deadline 1–1800 seconds. |
 
@@ -70,6 +71,8 @@ Set `PI_BASE_URL` to a compatible chat-completions endpoint, `PI_MODEL` to its m
 
 Each task creates a private temporary `models.json` using upstream's `$PI_API_KEY` interpolation, and removes that directory after success, failure or cancellation. User configuration and sessions are not reused. `--offline` disables automatic catalog/startup network traffic; the requested model call still uses the endpoint. Extensions, MCP, skills, context files, themes and prompt templates are disabled.
 
+The image explicitly provides pinned `fd` and `rg`; offline mode therefore needs no runtime tool download. `pi_tools_check` runs all four default tool implementations without a model, and is part of the image/provider smoke.
+
 The default tools are exactly `read,grep,find,ls`. `allow_tools=true` explicitly adds `edit,write,bash`, granting the model permission to change and execute code throughout this sandbox user's accessible files. Pi's `--no-approve` ignores trust-gated project configuration; it does not restrict tools. The tool allowlist controls this wrapper's default behavior; the sandbox remains the isolation boundary. Do not expose writable model execution to untrusted callers.
 
 On Linux, the wrapper owns a new process group, drains both output streams and stops that group before reaping its leader on success, error, deadline or Python cancellation. Children that deliberately create a new session escape this process-group boundary. Disconnecting an HTTP client is not a cancellation API.
@@ -80,13 +83,13 @@ On Linux, the wrapper owns a new process group, drains both output streams and s
 
 ## Verified
 
-No provider has a passing image deployment recorded for this template. Local source-runtime checks with official Pi 1.3.0 and `qwen3.8-flash` passed independent source/test/artifact acceptance; that does not establish cloud L2 or image L3. See [verification](../.agents/evidence/verify/2026-10-16-pi-runtime.md).
+No provider has a passing image deployment recorded for this template. Earlier source-runtime checks at b2857609735c1da8529ba8ecf3d065076cdfb542 with official Pi 1.3.0 and `qwen3.8-flash` passed independent source/test/artifact acceptance. The later offline-tool/lock fixes need their own image/cloud verification; the earlier run does not establish cloud L2 or image L3. See [verification](../.agents/evidence/verify/2026-10-16-pi-runtime.md).
 
 ## Secondary development
 
 ```bash
 python3 scripts/check_template.py pi
-python3 -m pytest -q pi/test_commands.py pi/test_e2e_protocol.py pi/test_cli_protocol.py
+python3 -m pytest -q pi/test_commands.py pi/test_e2e_protocol.py pi/test_cli_protocol.py pi/test_install_tools.py
 python3 scripts/run_local_e2e.py
 ```
 
@@ -102,4 +105,4 @@ Local checks default to no model. Set `E2E_REQUIRE_CLI=1` to require the pin; `E
 
 ## License
 
-Apache-2.0 template code; upstream Pi is MIT. Dependencies retain their licenses. [LICENSE](../LICENSE).
+Apache-2.0 template code; upstream Pi is MIT. Official fd archives retain LICENSE-MIT and LICENSE-APACHE; ripgrep archives retain LICENSE-MIT, UNLICENSE and COPYING (MIT/Unlicense). Complete extracted release directories remain under `/opt/pi-tools/`; npm dependencies retain their license files. [LICENSE](../LICENSE).

@@ -27,9 +27,15 @@ with tarfile.open(archive) as source:
 archive.unlink()
 NODE
 ENV PATH="/opt/node/current/bin:${PATH}"
-RUN npm install -g --ignore-scripts --registry=https://registry.npmjs.org @earendil-works/pi-coding-agent@1.3.0 \
+COPY package.json package-lock.json /opt/pi-cli/
+RUN npm ci --prefix /opt/pi-cli --ignore-scripts --omit=dev --registry=https://registry.npmjs.org \
+    && ln -s /opt/pi-cli/node_modules/.bin/pi /usr/local/bin/pi \
     && test "$(pi --version)" = "1.3.0" \
     && npm cache clean --force
+
+# Pi's offline find/grep require real fd/rg binaries; preserve upstream licenses.
+COPY install_tools.py /tmp/pi-install-tools.py
+RUN python3 /tmp/pi-install-tools.py && rm /tmp/pi-install-tools.py
 
 COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
@@ -40,6 +46,6 @@ RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
 
 ENV HOME=/home/user WORKSPACE=/home/user/app PI_OFFLINE=1 PI_TELEMETRY=0
 WORKDIR /home/user/app
-COPY --chown=user:user commands.py .
+COPY --chown=user:user commands.py tools_smoke.mjs ./
 USER user
 EXPOSE 9000

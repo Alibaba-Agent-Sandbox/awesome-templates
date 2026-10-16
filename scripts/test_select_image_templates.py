@@ -65,7 +65,7 @@ def test_main_push_never_assumes_an_unverified_prior_image_pass(monkeypatch,caps
     assert selector.main()==0 and capsys.readouterr().out.strip()=='["pi","python-hello"]'
 
 
-def test_automatic_archive_scope_is_only_pi_and_python_hello():
+def test_automatic_archive_scope_has_an_explicit_task_override():
     import re
     import yaml
     workflow=yaml.safe_load((Path(__file__).resolve().parents[1]/'.github/workflows/image-build.yml').read_text())
@@ -75,4 +75,25 @@ def test_automatic_archive_scope_is_only_pi_and_python_hello():
     condition=exports[0]['if']
     assert set(re.findall(r"matrix\.template == '([^']+)'",condition))=={'pi','python-hello'}
     assert "success()" in condition and 'inputs.export_images' in condition
+    assert "needs.plan.outputs.export_all_selected == 'true'" in condition
     assert exports[1]['with']['retention-days']==1
+
+
+def test_task_export_policy_does_not_change_image_selection(tmp_path):
+    import json
+    assert selector.export_all_selected(tmp_path) is False
+    folder=tmp_path/'.github';folder.mkdir()
+    file=folder/'image-export-policy.json'
+    file.write_text(json.dumps({'automatic':'all-selected','reason':'explicit acceptance task'}))
+    assert selector.export_all_selected(tmp_path) is True
+    assert selector.select(['pi','python-hello'],['.github/image-export-policy.json'])==[]
+    file.write_text(json.dumps({'automatic':'default'}))
+    assert selector.export_all_selected(tmp_path) is False
+
+
+@pytest.mark.parametrize('value',[{}, {'automatic':'unknown'}, {'automatic':'all-selected'}, []])
+def test_task_export_policy_rejects_ambiguous_or_unreasoned_modes(tmp_path,value):
+    import json
+    (tmp_path/'.github').mkdir()
+    (tmp_path/'.github/image-export-policy.json').write_text(json.dumps(value))
+    with pytest.raises(ValueError):selector.export_all_selected(tmp_path)

@@ -8,7 +8,7 @@ L1 runner images can advance authorized local daemonless registry transfer and E
 
 ## Decision
 
-Add dispatch inputs `templates` (default `python-hello`, strict comma-separated catalog whitelist) and `export_images` (default false). Manual runs build only selected names; successful selected images can reuse the common archive/checksum/provenance upload with one-day retention. Automatic PR/main runs export only Pi and python-hello after successful image checks, providing this branch's Pi image for local L2 without depending on an unverified dispatch entry point. Pull requests use cumulative base-to-head runtime changes; shared image pipeline changes select all products. Main pushes conservatively select all products. A PR that changes only prose/evidence selects no images.
+Add dispatch inputs `templates` (default `python-hello`, strict comma-separated catalog whitelist) and `export_images` (default false). Manual runs build only selected names; successful selected images can reuse the common archive/checksum/provenance upload with one-day retention. Automatic PR/main runs default to Pi and python-hello. The public .github/image-export-policy.json currently enables a temporary, explicitly reasoned all-selected task mode so every successful selected image can advance the authorized changed-image L2 batch. The flag affects archive saving only, never image selection or build/smoke gates; remove it or set automatic=default after the batch to end this storage expense. This does not depend on unverified dispatch availability. Pull requests use cumulative base-to-head runtime changes; shared image pipeline changes select all products. Main pushes conservatively select all products. A PR that changes only prose/evidence selects no images.
 
 A runtime-changing PR still rebuilds after a later prose-only commit. Avoiding that requires trusted prior successful results keyed by every relevant build input; this change does not invent such proof. Never use only the immediately preceding commit to declare the current runtime verified.
 
@@ -39,3 +39,5 @@ Pure selection cases plus a real temporary Git repository with runtime A and pro
 ## Evidence
 
 [Verification](../../../evidence/verify/2026-10-16-selected-image-exports.md).
+
+Temporary all-selected task mode and its real offline-tool/image prerequisites: [follow-up verification](../../../evidence/verify/2026-10-16-pi-offline-tools.md). The mode must be disabled after the authorized L2 batch; it never marks an unbuilt image verified.

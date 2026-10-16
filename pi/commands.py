@@ -125,6 +125,22 @@ def pi_version() -> str:
     return _run([_executable(), "--version"], timeout=30).strip()
 
 
+@command("pi_tools_check", description="Execute official Pi read/find/grep/ls offline on disposable files without a model.")
+def pi_tools_check() -> str:
+    executable = Path(_executable()).resolve()
+    tools_directory = executable.parent.parent / "core" / "tools"
+    node = shutil.which("node")
+    if not node or not tools_directory.is_dir():
+        raise RuntimeError("pinned Pi tool modules and Node are required")
+    with tempfile.TemporaryDirectory(prefix="abx-pi-tools-") as directory:
+        config = Path(directory) / "config"
+        config.mkdir()
+        env = os.environ.copy()
+        env.update({"PI_CODING_AGENT_DIR": str(config), "PI_OFFLINE": "1", "PI_TELEMETRY": "0"})
+        return _run([node, str(Path(__file__).with_name("tools_smoke.mjs")), str(tools_directory), directory],
+                    timeout=30, cwd=directory, env=env).strip()
+
+
 @command("pi_setup_check", description="Inspect Pi and compatible-model settings without exposing credentials.")
 def pi_setup_check() -> dict:
     installed = shutil.which("pi") is not None

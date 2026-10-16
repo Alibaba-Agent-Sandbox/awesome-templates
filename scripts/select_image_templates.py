@@ -41,13 +41,31 @@ def select(names: list[str], changed: list[str], requested: str | None = None) -
     return sorted(selected)
 
 
+def export_all_selected(root: Path = ROOT) -> bool:
+    policy = root / '.github/image-export-policy.json'
+    if not policy.exists():
+        return False
+    value = json.loads(policy.read_text())
+    if not isinstance(value, dict) or value.get('automatic') not in {'default', 'all-selected'}:
+        raise ValueError('automatic image export policy must be default or all-selected')
+    if value['automatic'] == 'all-selected' and not str(value.get('reason', '')).strip():
+        raise ValueError('all-selected export requires an explicit task reason')
+    return value['automatic'] == 'all-selected'
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--event', required=True, choices=['pull_request','push','workflow_dispatch'])
+    parser.add_argument('--event', choices=['pull_request','push','workflow_dispatch'])
     parser.add_argument('--base', default='')
     parser.add_argument('--head', default='HEAD')
     parser.add_argument('--templates', default='python-hello')
+    parser.add_argument('--export-policy', action='store_true')
     args = parser.parse_args()
+    if args.export_policy:
+        print('true' if export_all_selected(ROOT) else 'false')
+        return 0
+    if not args.event:
+        parser.error('--event is required for image selection')
     names = catalog_names()
     if args.event == 'workflow_dispatch':
         result = select(names, [], args.templates)

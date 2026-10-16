@@ -45,3 +45,20 @@ def test_actual_cli_exposes_only_selected_tools_and_ignores_project_extensions(m
         assert authorization == ['Bearer synthetic-protocol-key']
     finally:
         server.shutdown();server.server_close();thread.join(timeout=5)
+
+
+@pytest.mark.skipif(shutil.which('pi') is None,reason='actual pinned Pi CLI is not installed')
+def test_actual_offline_read_find_grep_ls_execute_without_a_model():
+    assert commands.pi_tools_check()=='read/find/grep/ls OK'
+
+
+@pytest.mark.skipif(shutil.which('pi') is None,reason='actual pinned Pi CLI is not installed')
+@pytest.mark.parametrize('missing',['fd','rg'])
+def test_actual_offline_tool_smoke_rejects_missing_runtime_binary(monkeypatch,tmp_path,missing):
+    binaries={name:shutil.which(name) for name in ['node','pi','fd','rg']}
+    assert all(binaries.values()),'install the official pinned tool dependencies for this test'
+    for name,path in binaries.items():
+        if name!=missing:(tmp_path/name).symlink_to(path)
+    monkeypatch.setenv('PATH',str(tmp_path))
+    with pytest.raises(RuntimeError,match=('fd is not available' if missing=='fd' else 'ripgrep.*not available')):
+        commands.pi_tools_check()
