@@ -20,6 +20,8 @@ Gives a new template one directory that already satisfies [docs/template-spec.md
 
 ## Quick start (CLI)
 
+Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
+
 From a checkout of this repository, with Express credentials in the environment (listed in the spec):
 
 ```bash
@@ -89,7 +91,7 @@ The JSON body contains command parameters directly, without an args wrapper. HTT
 | `ABX_SERVER_TOKEN` | no | empty | When set inside the sandbox, clients send `Authorization: Bearer`. The value in `template.yaml` is empty. |
 | `ABX_SERVER_PORT` | no | `9000` | Port `start()` binds for a local `python3 commands.py`. |
 
-Set secret values on `abx create --env` or `Sandbox.create(envs=...)`. Do not write them into the image, the Dockerfile, or a log.
+Provide secret values before the command server starts; use create-time env only when the provider starts that server with it. See [runtime environment](../docs/runtime-environment.md). Do not write them into the image, the Dockerfile, or a log.
 
 ## Resources
 

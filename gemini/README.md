@@ -16,6 +16,8 @@ Provides buffered, typed command calls with a missing-key guard, read-only setup
 
 ## Quick start (CLI)
 
+Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
+
 Deploy from the repository checkout with your existing provider configuration:
 
 ```bash

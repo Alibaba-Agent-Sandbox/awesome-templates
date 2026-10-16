@@ -19,6 +19,8 @@ A gateway is a long-lived server. Running `openclaw start` synchronously is neit
 
 ## Quick start (CLI)
 
+Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
+
 Use an installed `abx` with your provider configuration. Inject an unpredictable gateway token from the local environment; keep it out of shell history and source files.
 
 ```bash
