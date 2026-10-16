@@ -4,11 +4,11 @@
 
 Runs official `mini-swe-agent==2.4.6` against the genuine SWE-bench Verified instance `pallets__flask-5014`. Prepares the pinned Flask base plus original benchmark tests, reproduces 1 failure and 59 passes, lets an explicitly authorized agent edit source, and evaluates its patch in a fresh checkout and venv. Retrieves a source patch and a JSON report.
 
-This single-instance portability slice does not run the official Docker harness, reproduce its Python 3.11 environment, or produce a SWE-bench score. Python 3.13 and the dependencies below are a separately tested environment. SWE-agent, SWE-rebench, arbitrary dataset instances and batch benchmarks are outside this slice.
+This single-instance portability slice does not run the official Docker harness, reproduce its complete original dependency/system environment, or produce a SWE-bench score. Evaluation now pins the instance’s original Python 3.11.10; the dependencies and Debian base below remain a separately tested environment. SWE-agent, SWE-rebench, arbitrary dataset instances and batch benchmarks are outside this slice.
 
 ## Stack
 
-Alibaba base `v0.0.49` (resolved by the builder), Python 3.13, existing Node.js 20, mini-swe-agent 2.4.6, LiteLLM 1.82.6, pytest 8.3.5. The in-sandbox server uses source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. See [Dockerfile](./Dockerfile) for all pins. No nested Docker, system installs at runtime or full dataset download.
+Alibaba base `v0.0.49` (resolved by the builder), Python 3.13 server/agent, independent official-SHA Python 3.11.10 evaluation runtime, existing Node.js 20, mini-swe-agent 2.4.6, LiteLLM 1.82.6, pytest 8.3.5. The in-sandbox server uses source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. See [Dockerfile](./Dockerfile) for all pins. No nested Docker, system installs at runtime or full dataset download.
 
 ## Problem solved
 
@@ -33,7 +33,7 @@ abx run "$SANDBOX_ID" swe_cleanup --server-port 9010 --arg run_id="$RUN_ID"
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` following the [client installation guide](../docs/python-client-installation.md). Supply `SWE_TEMPLATE`, `SWE_API_KEY`, `SWE_BASE_URL` (OpenAI-compatible `/v1` endpoint) and `SWE_MODEL` in your client environment. Provider credentials use the SDK's documented configuration. Use a fresh sandbox containing no other workloads or credentials.
+Install `agent-sandbox-client` following the [client installation guide](../docs/python-client-installation.md). Supply `SWE_TEMPLATE`, `SWE_API_KEY`, `SWE_BASE_URL` (OpenAI-compatible `/v1` endpoint) and raw model name `SWE_MODEL` (for example `qwen3.8-flash`) in your client environment. Provider credentials use the SDK's documented configuration. Use a fresh sandbox containing no other workloads or credentials.
 
 ```python
 import asyncio
@@ -120,13 +120,13 @@ Use only trusted tasks/models in a disposable sandbox: mini executes model-gener
 
 ## Resources
 
-2 vCPU, 2048 MiB; port 9000 by default and 9010 in the explicit configuration recipe. The immutable Flask archive is 692792 bytes; only one instance is embedded. Separate agent and evaluation venvs avoid package collisions. Each run and independent evaluation receives a copy of the pinned evaluation venv. Explicit cleanup frees owned run files; destroy the sandbox afterward.
+2 vCPU, 2048 MiB; port 9000 by default and 9010 in the explicit configuration recipe. The immutable Flask archive is 692792 bytes; only one instance is embedded. Separate agent and Python 3.11.10 evaluation venvs avoid package collisions. Each run and independent evaluation receives a copy of the pinned evaluation venv. Explicit cleanup frees owned run files; destroy the sandbox afterward.
 
 ## Verified
 
 No provider has a passing run recorded for this template.
 
-L0 contract checks can skip missing upstream runtime/model prerequisites, and such skips do not prove agent execution. L1/L2/L3 status is recorded in the PR and owner evidence. Full official Docker harness and other providers remain unverified. Do not publish this report as a benchmark score.
+L0 contract checks can skip missing upstream runtime/model prerequisites, and such skips do not prove agent execution. L1/L2/L3 status is recorded in the PR and owner evidence. The initial Python3.13 image reproduced 2PASS/58ERROR because upstream treats deprecated pkgutil.get_loader as an error; its tests/warning filters were preserved. Evaluation now uses the pinned original Python3.11.10, pending fresh actual-image acceptance. Full official Docker harness and other providers remain unverified. Do not publish this report as a benchmark score.
 
 ## Secondary development
 

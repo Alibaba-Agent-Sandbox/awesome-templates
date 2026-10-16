@@ -8,7 +8,7 @@
 
 [swe](../swe/README.md) 实现一个明确的非 Docker 切片：官方 mini-swe-agent 2.4.6、真正的 `pallets__flask-5014` base/test_patch、1FAIL+59PASS 基线及全新目录/venv 中的60项独立评价。显式授权才执行模型 shell，输出源码补丁与报告；不会下载整份数据集，也不包含标准答案补丁。实现与验收状态见 [Issue35](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/35) 和 [设计](./design/swe.md)。
 
-仍缺官方每题 Docker 镜像和原始 Python3.11 环境；这里单独验证 Python3.13 的可移植性，不能发布官方 SWE-bench 分数。完整 SWE-agent、任意实例、批量 benchmark、SWE-rebench 和需要额外系统依赖的题目继续留在 backlog。沙箱没有 Docker 不能推出所有非 Docker 子流程都不可做。
+仍缺官方每题 Docker 镜像和原始 Python3.11 环境；首个 Python3.13 镜像被原始弃用警告门槛拒绝，评测现固定官方 SHA 的原题 Python3.11.10；仍需单独验证新环境，不能发布官方 SWE-bench 分数。完整 SWE-agent、任意实例、批量 benchmark、SWE-rebench 和需要额外系统依赖的题目继续留在 backlog。沙箱没有 Docker 不能推出所有非 Docker 子流程都不可做。
 
 ## OSWorld
 

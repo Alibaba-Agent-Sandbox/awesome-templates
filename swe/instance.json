@@ -73,5 +73,5 @@
   "archive_sha256": "b1a4c83b7d12981b81e5f8d2028a73eacfbd153f4e425504c254a6f177b99997",
   "allowed_source": "src/flask/blueprints.py",
   "official_python": "3.11.10",
-  "slice_python": "3.13"
+  "slice_python": "3.11.10"
 }

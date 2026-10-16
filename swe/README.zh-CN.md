@@ -4,11 +4,11 @@
 
 使用官方 `mini-swe-agent==2.4.6` 修复真正的 SWE-bench Verified 题目 `pallets__flask-5014`。准备固定 Flask base commit 和原始测试补丁，重现 1 个失败与 59 个通过；显式授权后由代理改源码，在另一个全新检出目录和 venv 中评测，交回源码补丁及 JSON 报告。
 
-这只是单题的环境可移植性切片。没有运行官方 Docker harness，也没有复刻其 Python 3.11 环境，不产生官方 SWE-bench 分数。Python 3.13 和下列依赖属于单独验证的环境。完整 SWE-agent、SWE-rebench、任意题目和批量评测不在本切片范围内。
+这只是单题的环境可移植性切片。没有运行官方 Docker harness，也没有复刻其完整原始依赖和系统环境，不产生官方 SWE-bench 分数。评测解释器现固定为原题的 Python 3.11.10；下列依赖和 Debian 基础镜像仍属于单独验证的环境。完整 SWE-agent、SWE-rebench、任意题目和批量评测不在本切片范围内。
 
 ## 技术栈
 
-构建器解析的阿里云 `v0.0.49` 基础镜像，Python 3.13，保留原 Node.js 20，mini-swe-agent 2.4.6、LiteLLM 1.82.6、pytest 8.3.5。沙箱服务端源码固定于 `e2cb27e24fde0a67112f82b8d44af463445a5d1a`。所有固定依赖见 [Dockerfile](./Dockerfile)。不需要嵌套 Docker、运行时系统安装或下载整份数据集。
+构建器解析的阿里云 `v0.0.49` 基础镜像，Python 3.13 服务端/代理、官方 SHA 固定的独立 Python 3.11.10 评测运行时，保留原 Node.js 20，mini-swe-agent 2.4.6、LiteLLM 1.82.6、pytest 8.3.5。沙箱服务端源码固定于 `e2cb27e24fde0a67112f82b8d44af463445a5d1a`。所有固定依赖见 [Dockerfile](./Dockerfile)。不需要嵌套 Docker、运行时系统安装或下载整份数据集。
 
 ## 解决的问题
 
@@ -33,7 +33,7 @@ abx run "$SANDBOX_ID" swe_cleanup --server-port 9010 --arg run_id="$RUN_ID"
 
 ## 快速开始（Python SDK）
 
-按[客户端安装指南](../docs/python-client-installation.md)安装 `agent-sandbox-client`。客户端环境设置 `SWE_TEMPLATE`、`SWE_API_KEY`、OpenAI 兼容 `/v1` 地址 `SWE_BASE_URL` 与 `SWE_MODEL`。提供方凭据遵循 SDK 文档。只使用不含其他工作或凭据的全新专用沙箱。
+按[客户端安装指南](../docs/python-client-installation.md)安装 `agent-sandbox-client`。客户端环境设置 `SWE_TEMPLATE`、`SWE_API_KEY`、OpenAI 兼容 `/v1` 地址 `SWE_BASE_URL` 与原始模型名 `SWE_MODEL`（例如 `qwen3.8-flash`）。提供方凭据遵循 SDK 文档。只使用不含其他工作或凭据的全新专用沙箱。
 
 ```python
 import asyncio
@@ -120,13 +120,13 @@ YAML 声明空的 `SWE_API_KEY`、`SWE_BASE_URL`、`SWE_MODEL`，必须明确注
 
 ## 资源
 
-2 vCPU、2048 MiB。默认 9000 端口；显式配置示例使用 9010。固定 Flask 压缩包为 692792 字节，只带一道题。代理与评测依赖分别装入 venv，避免包冲突；每次任务及独立评测再复制固定评测 venv。显式 cleanup 释放任务文件，之后销毁沙箱。
+2 vCPU、2048 MiB。默认 9000 端口；显式配置示例使用 9010。固定 Flask 压缩包为 692792 字节，只带一道题。代理与 Python 3.11.10 评测依赖分别装入 venv，避免包冲突；每次任务及独立评测再复制固定评测 venv。显式 cleanup 释放任务文件，之后销毁沙箱。
 
 ## 已验证
 
 尚未记录任何通过的提供方测试。
 
-L0 可以跳过缺失的上游运行时/模型前置，这不证明代理运行。L1/L2/L3 结果以 PR 和 owner evidence 为准。官方完整 Docker harness 与其他提供方未验证；不要把本报告发表为 benchmark 分数。
+L0 可以跳过缺失的上游运行时/模型前置，这不证明代理运行。L1/L2/L3 结果以 PR 和 owner evidence 为准。首版 Python3.13 真实镜像因上游把 pkgutil.get_loader 弃用视为错误，得到 2PASS/58ERROR；保留原测试和 warning filter，现固定原题 Python3.11.10，等待新镜像实测。官方完整 Docker harness 与其他提供方未验证；不要把本报告发表为 benchmark 分数。
 
 ## 二次开发
 

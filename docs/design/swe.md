@@ -14,7 +14,7 @@ See the complete typed/default/range table in [README](../../swe/README.md#comma
 
 ## How to build
 
-[Dockerfile](../../swe/Dockerfile) preserves the Alibaba base/Python 3.13/Node20, pins mini-swe-agent 2.4.6 and LiteLLM 1.82.6 in an agent venv, and isolates fixed Flask test dependencies in another venv. It downloads only the 692792-byte official Flask archive, checks SHA256 `b1a4c83b7d12981b81e5f8d2028a73eacfbd153f4e425504c254a6f177b99997`, installs the exact server source wheel/fallback and leaves `USER user` with no CMD/ENTRYPOINT. Generation2 uses the required port9000 serve/healthcheck commands. New9010 processes in the usage docs receive explicit model configuration because a prewarmed9000 process may precede create-time envd settings.
+[Dockerfile](../../swe/Dockerfile) preserves the Alibaba base/Python 3.13/Node20, pins mini-swe-agent 2.4.6 and LiteLLM 1.82.6 in an agent venv, and uses official SHA-pinned python-build-standalone20241016 Python3.11.10 for an independent Flask evaluation venv. It downloads only the 692792-byte official Flask archive, checks SHA256 `b1a4c83b7d12981b81e5f8d2028a73eacfbd153f4e425504c254a6f177b99997`, installs the exact server source wheel/fallback and leaves `USER user` with no CMD/ENTRYPOINT. Generation2 uses the required port9000 serve/healthcheck commands. New9010 processes in the usage docs receive explicit model configuration because a prewarmed9000 process may precede create-time envd settings.
 
 ## Express feasibility
 
@@ -22,7 +22,7 @@ Feasible: slice
 
 Limiting factor: official per-instance Docker environments and their original Python/dependency image are not reproduced.
 
-The specific `pallets__flask-5014` source archive and test patch fit the non-root 2CPU/2GB sandbox. Original environment metadata says Python3.11.10; this portability slice explicitly uses3.13 with separately pinned dependencies. A real baseline of exactly1FAIL/59PASS is required before allowing a model repair. Evaluation reconstructs original source plus original tests in another directory and copies the fixed test venv. It requires all60 unique declared identities, no skips/errors and all passes before `resolved_slice=true`. Every report says `official_benchmark_score=false`. Broader SWE-bench/SWE-agent/SWE-rebench support remains open, not a global Express blocker for this bounded workflow.
+The specific `pallets__flask-5014` source archive and test patch fit the non-root 2CPU/2GB sandbox. The initial actual Python3.13 image yielded2PASS/58ERROR (pkgutil.get_loader deprecation under original filterwarnings=error). The test patch/filters remain unchanged; evaluation now pins the original instance Python3.11.10 via official x86/arm archive hashes. The Debian system and package pins still differ from the full original Docker environment, so this remains a local portability slice, not an official score. A real baseline of exactly1FAIL/59PASS is required before allowing a model repair. Evaluation reconstructs original source plus original tests in another directory and copies the fixed test venv. It requires all60 unique declared identities, no skips/errors and all passes before `resolved_slice=true`. Every report says `official_benchmark_score=false`. Broader SWE-bench/SWE-agent/SWE-rebench support remains open, not a global Express blocker for this bounded workflow.
 
 ## Risks
 

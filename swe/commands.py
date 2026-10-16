@@ -10,7 +10,6 @@ from pathlib import Path
 import re
 import runpy
 import shutil
-import sys
 import tarfile
 import tempfile
 import uuid
@@ -126,6 +125,9 @@ def _evaluate(target, patch=''):
             _checked([GIT, 'apply', '-'], cwd=repo, input_text=patch)
         venv = stage / 'venv'; shutil.copytree(EVAL_ENV, venv, symlinks=True)
         env = _environment() | {'PYTHONPATH': str(repo / 'src'), 'PATH': str(venv / 'bin') + ':/usr/bin:/bin'}
+        actual_python = _checked([str(venv / 'bin/python'), '-c', 'import sys; print(sys.version.split()[0])'], cwd=repo, env=env).strip()
+        if actual_python != MANIFEST['slice_python']:
+            raise RuntimeError('evaluation runtime does not match pinned Python version')
         xml = stage / 'tests.xml'
         argv = [str(venv / 'bin/python'), '-m', 'pytest', '-q', '--junitxml', str(xml)] + MANIFEST['fail_to_pass'] + MANIFEST['pass_to_pass']
         code, _, _ = run(argv, cwd=str(repo), env=env, timeout=120)
@@ -140,7 +142,7 @@ def _evaluate(target, patch=''):
                 'errors': sum(s == 'error' for s in states.values()),
                 'skipped': sum(s == 'skipped' for s in states.values()),
                 'resolved_slice': code == 0 and all(s == 'passed' for s in states.values()),
-                'official_benchmark_score': False, 'python': sys.version.split()[0]}
+                'official_benchmark_score': False, 'python': actual_python}
 
 
 @command('swe_version', description='Pinned mini-SWE-agent distribution version, no model call.')

@@ -8,7 +8,7 @@ The previous backlog treated missing nested Docker as a blocker for every SWE wo
 
 ## Decision
 
-Support only real SWE-bench Verified `pallets__flask-5014`, pinned base archive and original benchmark test patch/test IDs, without the gold solution. Use actual official mini-swe-agent2.4.6 CLI and a documented LocalEnvironment extension preserving shared process-group ownership. Require explicit model shell permission. Rebuild an independent original checkout and venv for evaluation, admitting only the supported source diff. Require the actual one-failure/59-pass baseline and exactly60 passing declared identities for a repaired slice. Report no official benchmark score. Preserve HOME and use the upstream private config directory entry point. Final sandbox destruction remains the boundary for arbitrary shell and deliberately detached children.
+Support only real SWE-bench Verified `pallets__flask-5014`, pinned base archive and original benchmark test patch/test IDs, without the gold solution. The initial native3.13 evaluation was rejected by58original test errors from pkgutil deprecation, so pin the original instance Python3.11.10 without changing tests/filters. Use actual official mini-swe-agent2.4.6 CLI and a documented LocalEnvironment extension preserving shared process-group ownership. Require explicit model shell permission. Rebuild an independent original checkout and venv for evaluation, admitting only the supported source diff. Require the actual one-failure/59-pass baseline and exactly60 passing declared identities for a repaired slice. Report no official benchmark score. Preserve HOME and use the upstream private config directory entry point. Final sandbox destruction remains the boundary for arbitrary shell and deliberately detached children.
 
 ## API Design
 
@@ -20,7 +20,7 @@ Keep all SWE work blocked: contradicts the feasible local backend and Issue35 ac
 
 ## Dependencies
 
-Alibaba base/Python3.13/Node20, pinned server source e2cb27e24fde0a67112f82b8d44af463445a5d1a, official mini-swe-agent2.4.6/LiteLLM1.82.6, separately pinned Flask evaluation packages and archive, real OpenAI-compatible model. Dataset revision c104f840cc67f8b6eec6f759ebc8b2693d585d4a. No new host/global dependencies.
+Alibaba base/Python3.13/Node20, pinned server source e2cb27e24fde0a67112f82b8d44af463445a5d1a, official mini-swe-agent2.4.6/LiteLLM1.82.6, official-SHA Python3.11.10 evaluation runtime, separately pinned Flask evaluation packages and archive, real OpenAI-compatible model. Dataset revision c104f840cc67f8b6eec6f759ebc8b2693d585d4a. No new host/global dependencies.
 
 ## Test Strategy
 
