@@ -34,6 +34,23 @@ def _process_dead(pid: int) -> bool:
 
 
 class CheckerTest(unittest.TestCase):
+    def test_http_section_requires_request_and_result(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp) / "_skeleton"
+            shutil.copytree(SKELETON, dest)
+            for filename, heading in (
+                ("README.md", "Quick start (HTTP POST)"),
+                ("README.zh-CN.md", "快速开始（HTTP POST）"),
+            ):
+                with self.subTest(filename=filename):
+                    readme = dest / filename
+                    original = readme.read_text(encoding="utf-8")
+                    sections = check_template._sections(original)
+                    readme.write_text(original.replace(sections[heading], "HTTP is available.\n\n"), encoding="utf-8")
+                    violations = check_template.check_directory(dest)
+                    self.assertTrue(any(v.code == "readme-http" and filename in v.message for v in violations))
+                    readme.write_text(original, encoding="utf-8")
+
     def test_skeleton_conforms(self) -> None:
         violations = check_template.check_directory(SKELETON)
         self.assertEqual([str(item) for item in violations], [])
@@ -83,6 +100,15 @@ class CheckerTest(unittest.TestCase):
             )
             codes = {item.code for item in check_template.check_directory(dest)}
             self.assertNotIn("verified-evidence", codes)
+
+            evidence_file = evidence / "express-2026-10-15.json"
+            original = json.loads(evidence_file.read_text(encoding="utf-8"))
+            for field, value in (("template", "another-template"), ("template_version", "0.9.0")):
+                with self.subTest(field=field):
+                    evidence_file.write_text(json.dumps({**original, field: value}), encoding="utf-8")
+                    codes = {item.code for item in check_template.check_directory(dest)}
+                    self.assertIn("verified-evidence", codes)
+            evidence_file.write_text(json.dumps(original), encoding="utf-8")
 
     def test_dockerfile_cmd_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

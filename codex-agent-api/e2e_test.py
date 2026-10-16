@@ -1,906 +1,227 @@
 #!/usr/bin/env python3
-"""End-to-end test suite for the ``codex-agent-api`` template.
-
-Exercises all 15 ``/v1/agents/*`` endpoints (agents CRUD, sessions CRUD,
-turn execution, items and artifacts) against a running adapter instance.
-Only ``httpx`` is required — no OpenAI SDK dependency.
-
-Usage::
-
-    python3 e2e_test.py                                # http://localhost:9000
-    E2E_BASE_URL=http://host:9000 python3 e2e_test.py
-    E2E_MODEL=qwen3-coder-plus python3 e2e_test.py
-
-Environment variables:
-
-    E2E_BASE_URL      Adapter base URL            (default http://localhost:9000)
-    E2E_MODEL         Model for created agents    (default $CODEX_MODEL or codex-mini)
-    E2E_SSE_TIMEOUT   SSE read timeout, seconds   (default 180)
-    E2E_WORKSPACE     Workspace root in the host  (default /workspace)
-
-Notes on status codes: the stdlib ``SandboxServer`` returns HTTP 200 for
-every successful response (``ServerResponse.ok``) and JSON bodies for
-deletes (``{"deleted": true}``) — there is no 201/204 surface in the
-framework, so the assertions accept 200/201 and 200/204 respectively and
-report which code was observed.
-"""
-from __future__ import annotations
-
+"""L0 HTTP smoke; E2E_RUN_LLM=1 enables strict real upstream L3 turns."""
 import base64
+import hashlib
 import json
 import os
+import shlex
 import sys
-import threading
 import time
-from typing import Any
+import uuid
 
 import httpx
 
-BASE_URL = os.environ.get("E2E_BASE_URL", "http://localhost:9000").rstrip("/")
-MODEL = os.environ.get("E2E_MODEL") or os.environ.get("CODEX_MODEL") or "codex-mini"
-SSE_TIMEOUT = float(os.environ.get("E2E_SSE_TIMEOUT", "180"))
-WORKSPACE = os.environ.get("E2E_WORKSPACE", "/app")
+BASE_URL = os.environ.get("E2E_BASE_URL", "http://127.0.0.1:9000").rstrip("/")
 
-TIMEOUT = httpx.Timeout(connect=10.0, read=SSE_TIMEOUT, write=30.0, pool=10.0)
-
-# Canonical endpoint list (README table order, 15 endpoints).
-ENDPOINTS = [
-    "POST /v1/agents",
-    "GET /v1/agents",
-    "GET /v1/agents/{agent_id}",
-    "POST /v1/agents/{agent_id}",
-    "DELETE /v1/agents/{agent_id}",
-    "POST /v1/agents/sessions",
-    "GET /v1/agents/sessions",
-    "GET /v1/agents/sessions/{session_id}",
-    "POST /v1/agents/sessions/{session_id}",
-    "DELETE /v1/agents/sessions/{session_id}",
-    "POST /v1/agents/sessions/{session_id}/events",
-    "GET /v1/agents/sessions/{session_id}/events",
-    "GET /v1/agents/sessions/{session_id}/items",
-    "GET /v1/agents/sessions/{session_id}/artifacts/{artifact_id}",
-    "DELETE /v1/agents/sessions/{session_id}/artifacts/{artifact_id}",
-]
-
-RESULTS: list[tuple[str, str, str]] = []  # (status, endpoint, detail)
-STATE: dict[str, Any] = {}
-
-
-def record(status: str, endpoint: str, detail: str = "") -> None:
-    """Print and remember the result of one endpoint check."""
-    RESULTS.append((status, endpoint, detail))
-    line = f"[{status}] {endpoint}"
-    if detail:
-        line += f" — {detail}"
-    print(line, flush=True)
+WORKSPACE = os.environ.get("E2E_WORKSPACE") or os.environ.get("E2E_BASE_DIR") or "/home/user/workspace"
+BUGGY_SOURCE = "def normalize_usernames(values):\n    return sorted(set(values))\n"
+REPORT_INPUT = [" Alice ", "BOB", "alice", "", " bob ", "CAROL"]
+REPORT_OUTPUT = ["alice", "bob", "carol"]
+# These fixed tests stay in the controller. The model cannot alter a remote
+# test file because no copy of the tests is uploaded to its filesystem.
+FIXED_TESTS = r"""
+import sys
+import types
+import unittest
+from pathlib import Path
+path = Path(sys.argv[1]) / "normalizer.py"
+module = types.ModuleType("target_normalizer")
+exec(compile(path.read_text(), str(path), "exec"), module.__dict__)
+class FixedAcceptance(unittest.TestCase):
+    def test_case_and_whitespace(self):
+        self.assertEqual(module.normalize_usernames([" Alice ", "BOB"]), ["alice", "bob"])
+    def test_ordered_deduplication(self):
+        self.assertEqual(module.normalize_usernames(["Zed", "amy", " ZED ", "AMY"]), ["zed", "amy"])
+    def test_blanks(self):
+        self.assertEqual(module.normalize_usernames(["", " ", "\t"]), [])
+    def test_empty(self):
+        self.assertEqual(module.normalize_usernames([]), [])
+    def test_unicode(self):
+        self.assertEqual(module.normalize_usernames(["Zoë", " ZOË "]), ["zoë"])
+    def test_input_not_modified(self):
+        values = [" A ", "a", " B "]
+        before = values.copy()
+        self.assertEqual(module.normalize_usernames(values), ["a", "b"])
+        self.assertEqual(values, before)
+unittest.main(argv=["controller-fixed-tests"], verbosity=2)
+"""
 
 
-def _short(value: Any, limit: int = 160) -> str:
-    """Compact string form of *value* for log lines."""
-    text = value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)
-    return text if len(text) <= limit else text[: limit - 3] + "..."
+def _headers() -> dict:
+    token = os.environ.get("E2E_TOKEN") or os.environ.get("ABX_SERVER_TOKEN", "")
+    return {"X-Access-Token": token} if token else {}
 
 
-def _client() -> httpx.Client:
-    """Build an httpx client bound to the adapter base URL."""
-    return httpx.Client(base_url=BASE_URL, timeout=TIMEOUT)
+def _read_file(client: httpx.Client, path: str) -> str:
+    response = client.get("/files/download-stream", params={"path": path})
+    response.raise_for_status()
+    return base64.b64decode(response.json()["content_base64"]).decode("utf-8")
 
 
-def _sse_events(response: httpx.Response, max_seconds: float) -> list[dict[str, Any]]:
-    """Parse an ``text/event-stream`` response into ``{event, data}`` records.
+def _fixed_tests(client: httpx.Client, task: str) -> dict:
+    command = "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -I -c " + shlex.quote(FIXED_TESTS) + " " + shlex.quote(task)
+    response = client.post("/shell", json={"command": command, "cwd": task, "timeout": 30})
+    response.raise_for_status()
+    return response.json()
 
-    Partial results are returned when the read times out mid-stream; the
-    caller decides whether that is acceptable for the assertion at hand.
-    """
-    events: list[dict[str, Any]] = []
-    event_name = ""
-    data_buf: list[str] = []
-    deadline = time.monotonic() + max_seconds
+
+def _agent_message(items: list, marker: str) -> bool:
+    return any(isinstance(event, dict) and isinstance(event.get("item"), dict)
+               and event["item"].get("type") == "agent_message"
+               and event["item"].get("text", "").strip() == marker for event in items)
+
+
+def _has_command(items: list) -> bool:
+    return any(isinstance(event, dict) and event.get("type") == "item.completed"
+               and isinstance(event.get("item"), dict)
+               and event["item"].get("type") == "command_execution"
+               and event["item"].get("status") == "completed"
+               and event["item"].get("exit_code") == 0 for event in items)
+
+
+def _artifact(client: httpx.Client, session_id: str, relative: str) -> str:
+    identifier = base64.urlsafe_b64encode(relative.encode()).decode().rstrip("=")
+    response = client.get(f"/v1/agents/sessions/{session_id}/artifacts/{identifier}")
+    response.raise_for_status()
+    return response.json()["content"]
+
+
+def _coding_acceptance(client: httpx.Client, check) -> None:
+    run = os.environ.get("E2E_RUN_LLM", "").strip().lower()
+    require = os.environ.get("E2E_REQUIRE_LLM", "").strip().lower() in {"1", "true", "yes"}
+    if require and run in {"0", "false", "no"}:
+        check("L3 real coding task required", False)
+        return
+    if not require and run not in {"1", "true", "yes"}:
+        print("[SKIP] L3 real coding task: set E2E_RUN_LLM=1 or E2E_REQUIRE_LLM=1", flush=True)
+        return
+    # Credentials belong to the remote server. The controller need not receive
+    # a model key; explicit L3 requests fail on upstream errors rather than SKIP.
+    task_name = "abx_e2e_codex_api_" + uuid.uuid4().hex
+    task = os.path.join(WORKSPACE, task_name)
+    source = os.path.join(task, "normalizer.py")
+    report_path = os.path.join(task, "normalization-report.json")
+    live_id = ""
     try:
-        for line in response.iter_lines():
-            if time.monotonic() > deadline:
+        response = client.post("/files/upload-stream", json={"path": source,
+            "content_base64": base64.b64encode(BUGGY_SOURCE.encode()).decode()})
+        response.raise_for_status()
+        baseline = _fixed_tests(client, task)
+        baseline_ok = baseline.get("exit_code") == 1 and "Ran 6 tests" in baseline.get("stderr", "") and "FAILED" in baseline.get("stderr", "")
+        check("L3 existing source reproduces fixed-test failures", baseline_ok)
+        if not baseline_ok:
+            return
+        model = os.environ.get("E2E_MODEL") or os.environ.get("CODEX_MODEL") or os.environ.get("ABX_LLM_MODEL", "")
+        prompt = (
+            f"Work only in {task}. Fix the EXISTING normalizer.py normalize_usernames(values) function. "
+            "Strip whitespace and lowercase every username, drop blank usernames, deduplicate "
+            "while preserving first-seen order, support Unicode lowercase, and do not mutate the input list. "
+            "Use your command tool to exercise the function. Do not create or edit any test files: "
+            "the controller owns fixed independent tests outside your filesystem. "
+            f"Create normalization-report.json as a JSON object with input={json.dumps(REPORT_INPUT)} "
+            f"and output={json.dumps(REPORT_OUTPUT)} by actually calling the fixed function. "
+            "After the source is fixed and the report exists, reply with exactly ABX_E2E_OK."
+        )
+        response = client.post("/v1/agents/sessions", json={"agent": {"model": model,
+            "instructions": "Complete the requested coding task using upstream Codex tools."},
+            "input": prompt, "background": True})
+        response.raise_for_status()
+        live_id = response.json()["id"]
+        deadline = time.monotonic() + float(os.environ.get("E2E_LLM_TIMEOUT", "330"))
+        result = response.json()
+        while time.monotonic() < deadline:
+            result = client.get(f"/v1/agents/sessions/{live_id}").raise_for_status().json()
+            if result["status"] != "in_progress":
                 break
-            if line == "":
-                if data_buf:
-                    raw = "\n".join(data_buf)
-                    try:
-                        payload: Any = json.loads(raw)
-                    except json.JSONDecodeError:
-                        payload = {"_raw": raw}
-                    if not isinstance(payload, dict):
-                        payload = {"value": payload}
-                    events.append(
-                        {"event": event_name or str(payload.get("type", "")), "data": payload}
-                    )
-                event_name, data_buf = "", []
-                continue
-            if line.startswith("event:"):
-                event_name = line[len("event:"):].strip()
-            elif line.startswith("data:"):
-                data_buf.append(line[len("data:"):].strip())
-    except httpx.TimeoutException:
-        events.append({"event": "_timeout", "data": {}})
-    except httpx.HTTPError as exc:
-        events.append({"event": "_error", "data": {"message": str(exc)}})
-    return events
-
-
-def _stream_outcome(response: httpx.Response, max_seconds: float) -> tuple[str, list, Any]:
-    """Consume a streaming route that may answer with SSE or plain JSON.
-
-    Returns ``("sse", events, None)`` for an event stream, or
-    ``("json", [], body)`` when the handler answered synchronously.
-    """
-    ctype = response.headers.get("content-type", "")
-    if "text/event-stream" in ctype:
-        return "sse", _sse_events(response, max_seconds), None
-    raw = response.read()
-    try:
-        body: Any = json.loads(raw)
-    except (json.JSONDecodeError, ValueError):
-        body = {"_raw": raw[:400].decode("utf-8", "replace")}
-    return "json", [], body
-
-
-def _event_names(events: list[dict[str, Any]]) -> list[str]:
-    """Return the ordered list of SSE event names."""
-    return [str(e.get("event", "")) for e in events]
-
-
-def _assistant_text(events: list[dict[str, Any]]) -> str:
-    """Extract assistant message text from mapped item events."""
-    chunks: list[str] = []
-    for ev in events:
-        item = (ev.get("data") or {}).get("item")
-        if isinstance(item, dict) and item.get("type") == "agent_message":
-            text = item.get("text")
-            if isinstance(text, str):
-                chunks.append(text)
-    return "\n".join(chunks).strip()
-
-
-def _failed_events(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Return ``turn.failed``/error entries from a collected event list."""
-    out = []
-    for ev in events:
-        name = str(ev.get("event", ""))
-        if "failed" in name or "_timeout" in name or "_error" in name:
-            out.append(ev)
-    return out
-
-
-def _turn_once(
-    client: httpx.Client, method: str, url: str, payload: dict[str, Any]
-) -> tuple[str, list[dict[str, Any]], Any, int]:
-    """Perform a single streaming turn request."""
-    with client.stream(method, url, json=payload) as resp:
-        kind, events, body = _stream_outcome(resp, SSE_TIMEOUT)
-        return kind, events, body, resp.status_code
-
-
-def _turn_with_retry(
-    client: httpx.Client,
-    method: str,
-    url: str,
-    payload: dict[str, Any],
-    attempts: int = 3,
-) -> tuple[str, list[dict[str, Any]], Any, int, int, str]:
-    """Run a streaming turn, retrying transient upstream failures.
-
-    The OpenAI-compatible gateway used by this template intermittently
-    answers the model call of a turn with
-    ``<400> InternalError.Algo.InvalidParameter`` (observed during
-    development; the same request succeeds on a fresh attempt).  Codex
-    retries the HTTP stream 5 times and then fails the turn, so the suite
-    allows a bounded number of fresh attempts and reports how many were
-    used — a flaky gateway stays visible instead of masquerading as an
-    adapter defect.
-
-    Returns ``(kind, events, body, status_code, attempts_used, last_error)``.
-    """
-    last_kind, last_events, last_body, last_code = "json", [], {}, 0
-    last_error = ""
-    for attempt in range(1, attempts + 1):
-        last_kind, last_events, last_body, last_code = _turn_once(client, method, url, payload)
-        failures = _failed_events(last_events)
-        if last_kind == "sse" and not failures:
-            return last_kind, last_events, last_body, last_code, attempt, ""
-        if failures:
-            data = failures[0].get("data") or {}
-            err = data.get("error") or {}
-            last_error = str(err.get("message") or data.get("message") or failures[0])[:300]
-        elif last_kind == "json":
-            last_error = f"HTTP {last_code}: {_short(last_body, 200)}"
-        if attempt < attempts:
-            print(
-                f"  [info] attempt {attempt}/{attempts} failed, retrying: {_short(last_error, 170)}",
-                flush=True,
-            )
-    return last_kind, last_events, last_body, last_code, attempts, last_error
-
-
-# ──────────────────────────────────────────────────────────────────────
-# Group 1 — Agent CRUD (pure in-memory, no LLM)
-# ──────────────────────────────────────────────────────────────────────
-
-
-def group_1_agents(client: httpx.Client) -> None:
-    """Cover the five saved-agent endpoints."""
-    agent_id = ""
-
-    # 1. POST /v1/agents
-    ep = "POST /v1/agents"
-    try:
-        resp = client.post(
-            "/v1/agents",
-            json={
-                "model": MODEL,
-                "instructions": "You are a concise E2E test assistant.",
-                "name": "e2e-agent",
-                "metadata": {"suite": "e2e"},
-            },
+            time.sleep(0.25)
+        items = client.get(f"/v1/agents/sessions/{live_id}/items").raise_for_status().json()["data"]
+        completed = result["status"] == "idle" and _agent_message(items, "ABX_E2E_OK") and _has_command(items)
+        check("L3 real upstream background coding completion", completed)
+        if not completed:
+            return
+        changed_source = _read_file(client, source)
+        check("L3 existing source changed on target", changed_source != BUGGY_SOURCE and bool(changed_source.strip()))
+        report = _read_file(client, report_path)
+        report_ok = json.loads(report) == {"input": REPORT_INPUT, "output": REPORT_OUTPUT}
+        check("L3 independent new report contents", report_ok)
+        check("L3 artifact API matches remote report", _artifact(client, live_id, task_name + "/normalization-report.json") == report)
+        rerun = _fixed_tests(client, task)
+        tests_ok = rerun.get("exit_code") == 0 and "Ran 6 tests" in rerun.get("stderr", "") and "OK" in rerun.get("stderr", "")
+        check("L3 controller-owned fixed tests pass on target", tests_ok)
+        if not tests_ok or not report_ok or changed_source == BUGGY_SOURCE:
+            return
+        prompt = (
+            f"Continue the same task in {task}. Read normalization-report.json; create "
+            "resume-summary.json containing only report_sha256 (the SHA-256 of that report's actual bytes) "
+            "and normalized_count (length of its output list). Use your command tool. "
+            "Do not modify normalizer.py or normalization-report.json. Reply with exactly ABX_RESUME_OK."
         )
-        body = resp.json()
-        ok = (
-            resp.status_code in (200, 201)
-            and body.get("object") == "agent"
-            and str(body.get("id", "")).startswith("agent_")
-            and body.get("model") == MODEL
-            and body.get("name") == "e2e-agent"
-        )
-        agent_id = body.get("id", "")
-        STATE["agent_id"] = agent_id
-        record(
-            "PASS" if ok else "FAIL",
-            ep,
-            f"HTTP {resp.status_code}, id={agent_id}, model={body.get('model')}",
-        )
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", ep, f"exception: {exc}")
-
-    # 2. GET /v1/agents
-    ep = "GET /v1/agents"
-    try:
-        resp = client.get("/v1/agents")
-        body = resp.json()
-        ids = [a.get("id") for a in body.get("data", [])]
-        ok = resp.status_code == 200 and body.get("object") == "list" and agent_id in ids
-        record("PASS" if ok else "FAIL", ep, f"HTTP {resp.status_code}, {len(ids)} agent(s)")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", ep, f"exception: {exc}")
-
-    # 3. GET /v1/agents/{agent_id}
-    ep = "GET /v1/agents/{agent_id}"
-    try:
-        resp = client.get(f"/v1/agents/{agent_id}")
-        body = resp.json()
-        ok = (
-            resp.status_code == 200
-            and body.get("id") == agent_id
-            and body.get("instructions") == "You are a concise E2E test assistant."
-            and body.get("metadata") == {"suite": "e2e"}
-        )
-        record("PASS" if ok else "FAIL", ep, f"HTTP {resp.status_code}, name={body.get('name')}")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", ep, f"exception: {exc}")
-
-    # 4. POST /v1/agents/{agent_id}
-    ep = "POST /v1/agents/{agent_id}"
-    try:
-        resp = client.post(
-            f"/v1/agents/{agent_id}",
-            json={"name": "e2e-agent-updated", "instructions": "Updated instructions."},
-        )
-        body = resp.json()
-        ok = (
-            resp.status_code == 200
-            and body.get("name") == "e2e-agent-updated"
-            and body.get("instructions") == "Updated instructions."
-            and body.get("model") == MODEL  # untouched field
-        )
-        record(
-            "PASS" if ok else "FAIL",
-            ep,
-            f"HTTP {resp.status_code}, name={body.get('name')}, model kept={body.get('model') == MODEL}",
-        )
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", ep, f"exception: {exc}")
-
-    # 5. DELETE /v1/agents/{agent_id}
-    ep = "DELETE /v1/agents/{agent_id}"
-    try:
-        resp = client.delete(f"/v1/agents/{agent_id}")
-        body = resp.json() if resp.content else {}
-        deleted_ok = resp.status_code in (200, 204) and (
-            resp.status_code == 204 or body.get("deleted") is True
-        )
-        follow = client.get(f"/v1/agents/{agent_id}")
-        ok = deleted_ok and follow.status_code == 404
-        record(
-            "PASS" if ok else "FAIL",
-            ep,
-            f"HTTP {resp.status_code}, deleted={body.get('deleted')}, re-GET={follow.status_code}",
-        )
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", ep, f"exception: {exc}")
-
-
-# ──────────────────────────────────────────────────────────────────────
-# Group 2 — Session CRUD (pure in-memory, no LLM)
-# ──────────────────────────────────────────────────────────────────────
-
-
-def group_2_sessions(client: httpx.Client) -> None:
-    """Cover the five session endpoints with an empty session (no turn)."""
-    session_id = ""
-
-    # 6. POST /v1/agents/sessions (no input — create only)
-    ep = "POST /v1/agents/sessions"
-    try:
-        resp = client.post(
-            "/v1/agents/sessions",
-            json={"agent": {"model": MODEL, "instructions": "Session CRUD probe."}},
-        )
-        body = resp.json()
-        ok = (
-            resp.status_code == 200
-            and body.get("object") == "session"
-            and str(body.get("id", "")).startswith("sess_")
-            and body.get("status") == "idle"
-        )
-        session_id = body.get("id", "")
-        STATE["crud_session_id"] = session_id
-        record(
-            "PASS" if ok else "FAIL",
-            ep,
-            f"HTTP {resp.status_code}, id={session_id}, status={body.get('status')}",
-        )
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", ep, f"exception: {exc}")
-
-    # 7. GET /v1/agents/sessions
-    ep = "GET /v1/agents/sessions"
-    try:
-        resp = client.get("/v1/agents/sessions")
-        body = resp.json()
-        ids = [s.get("id") for s in body.get("data", [])]
-        ok = resp.status_code == 200 and body.get("object") == "list" and session_id in ids
-        record("PASS" if ok else "FAIL", ep, f"HTTP {resp.status_code}, {len(ids)} session(s)")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", ep, f"exception: {exc}")
-
-    # 8. GET /v1/agents/sessions/{session_id}
-    ep = "GET /v1/agents/sessions/{session_id}"
-    try:
-        resp = client.get(f"/v1/agents/sessions/{session_id}")
-        body = resp.json()
-        ok = (
-            resp.status_code == 200
-            and body.get("id") == session_id
-            and body.get("instructions") == "Session CRUD probe."
-            and body.get("status") == "idle"
-        )
-        record("PASS" if ok else "FAIL", ep, f"HTTP {resp.status_code}, status={body.get('status')}")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", ep, f"exception: {exc}")
-
-    # 9. POST /v1/agents/sessions/{session_id} (update)
-    ep = "POST /v1/agents/sessions/{session_id}"
-    try:
-        resp = client.post(
-            f"/v1/agents/sessions/{session_id}",
-            json={"instructions": "Updated session instructions."},
-        )
-        body = resp.json()
-        follow = client.get(f"/v1/agents/sessions/{session_id}").json()
-        ok = (
-            resp.status_code == 200
-            and body.get("instructions") == "Updated session instructions."
-            and follow.get("instructions") == "Updated session instructions."
-        )
-        record("PASS" if ok else "FAIL", ep, f"HTTP {resp.status_code}, instructions updated")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", ep, f"exception: {exc}")
-
-    # 10. DELETE /v1/agents/sessions/{session_id}
-    ep = "DELETE /v1/agents/sessions/{session_id}"
-    try:
-        resp = client.delete(f"/v1/agents/sessions/{session_id}")
-        body = resp.json() if resp.content else {}
-        follow = client.get(f"/v1/agents/sessions/{session_id}")
-        ok = (
-            resp.status_code in (200, 204)
-            and (resp.status_code == 204 or body.get("deleted") is True)
-            and follow.status_code == 404
-        )
-        record(
-            "PASS" if ok else "FAIL",
-            ep,
-            f"HTTP {resp.status_code}, deleted={body.get('deleted')}, re-GET={follow.status_code}",
-        )
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", ep, f"exception: {exc}")
-
-
-# ──────────────────────────────────────────────────────────────────────
-# Group 3 — Turn execution (requires a real LLM)
-# ──────────────────────────────────────────────────────────────────────
-
-
-def _turn_skip_reason() -> str:
-    """Why live Codex turns cannot run in this process, or an empty string."""
-    import shutil
-
-    forced = os.environ.get("E2E_RUN_LLM", "").strip().lower()
-    if forced in {"0", "false", "no"}:
-        return (
-            "E2E_RUN_LLM disables live Codex turns; the local suite has no cloud credentials"
-        )
-    if not os.environ.get("OPENAI_API_KEY"):
-        return "OPENAI_API_KEY is not set — Codex turn execution needs an API key"
-    if shutil.which("codex") is None:
-        return "codex CLI is not on PATH — turn execution needs that third-party binary"
-    return ""
-
-
-def group_3_turns(client: httpx.Client) -> None:
-    """Cover session creation with input, follow-up events and SSE subscribe."""
-    reason = _turn_skip_reason()
-    if reason:
-        for ep in (
-            "POST /v1/agents/sessions",
-            "GET /v1/agents/sessions/{session_id}",
-            "POST /v1/agents/sessions/{session_id}/events",
-            "GET /v1/agents/sessions/{session_id}/events",
-        ):
-            record("SKIP", ep, reason)
-        return
-
-    session_id = ""
-
-    # 11. POST /v1/agents/sessions with input (SSE first turn)
-    ep = "POST /v1/agents/sessions"
-    try:
-        kind, events, body, code, used, last_error = _turn_with_retry(
-            client,
-            "POST",
-            "/v1/agents/sessions",
-            {
-                "agent": {"model": MODEL, "instructions": "Reply concisely."},
-                "input": "Say hello in one short sentence.",
-                "stream": True,
-            },
-        )
-        if kind != "sse":
-            record("FAIL", ep, f"HTTP {code}, expected SSE, got JSON: {_short(body)}")
-        else:
-            names = _event_names(events)
-            session_id = ""
-            for ev in events:
-                if ev.get("event") == "agent.session.created":
-                    session_id = str((ev.get("data") or {}).get("id", ""))
-                    break
-            STATE["turn_session_id"] = session_id
-            text = _assistant_text(events)
-            failures = _failed_events(events)
-            ok = (
-                "agent.session.created" in names
-                and "agent.session.turn.started" in names
-                and any("output_item" in n for n in names)
-                and "agent.session.turn.completed" in names
-                and not failures
-            )
-            detail = f"HTTP {code}, {len(events)} events, session={session_id}"
-            if used > 1:
-                detail += f", attempts={used}"
-            if text:
-                detail += f", assistant={_short(text, 60)!r}"
-            if failures:
-                detail += f", failure={_short(last_error, 150)}"
-            record("PASS" if ok else "FAIL", ep, detail)
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", ep, f"exception: {exc}")
-
-    # Session state side-check: completed turn recorded usage and went idle.
-    if session_id:
-        try:
-            body = client.get(f"/v1/agents/sessions/{session_id}").json()
-            usage = body.get("usage") or {}
-            ok = body.get("status") == "idle" and int(usage.get("input_tokens", 0)) > 0
-            record(
-                "PASS" if ok else "FAIL",
-                "GET /v1/agents/sessions/{session_id}",
-                f"status={body.get('status')}, usage={usage}",
-            )
-        except Exception as exc:  # noqa: BLE001
-            record("FAIL", "GET /v1/agents/sessions/{session_id}", f"exception: {exc}")
-
-    # 12. POST /v1/agents/sessions/{session_id}/events (follow-up turn)
-    ep = "POST /v1/agents/sessions/{session_id}/events"
-    if not session_id:
-        record("SKIP", ep, "no session from test 11")
-    else:
-        try:
-            kind, events, body, code, used, last_error = _turn_with_retry(
-                client,
-                "POST",
-                f"/v1/agents/sessions/{session_id}/events",
-                {"input": "What is 2 + 2? Reply with just the number.", "stream": True},
-            )
-            if kind != "sse":
-                record("FAIL", ep, f"HTTP {code}, expected SSE, got JSON: {_short(body)}")
-            else:
-                names = _event_names(events)
-                failures = _failed_events(events)
-                text = _assistant_text(events)
-                ok = (
-                    "agent.session.turn.started" in names
-                    and "agent.session.turn.completed" in names
-                    and not failures
-                )
-                detail = f"HTTP {code}, {len(events)} events (resume turn)"
-                if used > 1:
-                    detail += f", attempts={used}"
-                if text:
-                    detail += f", assistant={_short(text, 60)!r}"
-                if failures:
-                    detail += f", failure={_short(last_error, 150)}"
-                record("PASS" if ok else "FAIL", ep, detail)
-        except Exception as exc:  # noqa: BLE001
-            record("FAIL", ep, f"exception: {exc}")
-
-    # 13a. GET /v1/agents/sessions/{session_id}/events — idle branch
-    ep = "GET /v1/agents/sessions/{session_id}/events"
-    if not session_id:
-        record("SKIP", ep, "no session from test 11")
-    else:
-        try:
-            resp = client.get(f"/v1/agents/sessions/{session_id}/events")
-            body = resp.json()
-            ok = (
-                resp.status_code == 200
-                and isinstance(body, dict)
-                and "message" in body
-                and body.get("message") == "No active turn"
-            )
-            record(
-                "PASS" if ok else "FAIL",
-                ep,
-                f"idle branch: HTTP {resp.status_code}, {_short(body, 100)}",
-            )
-        except Exception as exc:  # noqa: BLE001
-            record("FAIL", ep, f"exception: {exc}")
-
-    # 13b. GET /v1/agents/sessions/{session_id}/events — live tail branch.
-    # A slow turn runs in a background thread; the subscriber attaches while
-    # the turn is in progress. NOTE: the endpoint reads the turn's stdout
-    # concurrently with the writer of the turn, so this is a best-effort tail
-    # (documented in the template README) — event counts are reported as-is.
-    try:
-        resp = client.post(
-            "/v1/agents/sessions",
-            json={"agent": {"model": MODEL}, "input": "Keep this session ready."},
-        )
-        live_session = resp.json().get("id", "")
-    except Exception:  # noqa: BLE001
-        live_session = ""
-    if not live_session:
-        record("SKIP", ep, "could not create live-tail session")
-        return
-
-    slow_prompt = (
-        "Run this exact shell command and wait for it to finish: sleep 12. "
-        "Then reply with exactly: SLOW_DONE"
-    )
-    post_result: dict[str, Any] = {}
-
-    def _run_slow_turn() -> None:
-        try:
-            with _client() as bg:
-                with bg.stream(
-                    "POST",
-                    f"/v1/agents/sessions/{live_session}/events",
-                    json={"input": slow_prompt, "stream": True},
-                ) as bg_resp:
-                    _, evs, bd = _stream_outcome(bg_resp, SSE_TIMEOUT)
-                    post_result["events"] = evs
-                    post_result["body"] = bd
-        except Exception as exc:  # noqa: BLE001
-            post_result["exception"] = str(exc)
-
-    thread = threading.Thread(target=_run_slow_turn, daemon=True)
-    thread.start()
-
-    in_progress = False
-    # The background turn needs a moment to reach the server: keep polling for
-    # a grace period even while the session still reads ``idle`` (a single
-    # early idle response is a race, not turn completion).
-    deadline = time.monotonic() + 15
-    while time.monotonic() < deadline:
-        try:
-            status = client.get(f"/v1/agents/sessions/{live_session}").json().get("status")
-        except Exception:  # noqa: BLE001
-            status = None
-        if status == "in_progress":
-            in_progress = True
-            break
-        if status == "failed":
-            break
-        time.sleep(0.5)
-
-    if not in_progress:
-        bg = post_result.get("events") or []
-        bg_state = "failed" if _failed_events(bg) else ("completed" if bg else "no-events")
-        record(
-            "PASS",
-            ep,
-            "live branch not observed (turn finished before subscribe; idle branch "
-            f"validated in 13a), background turn: {bg_state}",
-        )
-    else:
-        try:
-            with client.stream(
-                "GET", f"/v1/agents/sessions/{live_session}/events"
-            ) as resp:
-                kind, events, body = _stream_outcome(resp, SSE_TIMEOUT)
-            bg = post_result.get("events") or []
-            bg_state = "failed" if _failed_events(bg) else ("completed" if bg else "no-events")
-            if kind == "sse":
-                names = _event_names(events)
-                got_completed = "agent.session.turn.completed" in names
-                record(
-                    "PASS",
-                    ep,
-                    f"live branch: subscribed in_progress, {len(events)} events via tail"
-                    f", turn.completed={got_completed}, background turn: {bg_state}",
-                )
-            else:
-                record(
-                    "PASS",
-                    ep,
-                    f"live branch raced to idle: HTTP {resp.status_code}, "
-                    f"{_short(body, 90)}, background turn: {bg_state}",
-                )
-        except Exception as exc:  # noqa: BLE001
-            record("FAIL", ep, f"live branch exception: {exc}")
-
-    thread.join(timeout=SSE_TIMEOUT + 30)
-    if "exception" in post_result:
-        record("FAIL", "POST /v1/agents/sessions/{session_id}/events", f"background turn: {post_result['exception']}")
-
-    STATE["live_session_id"] = live_session
-
-
-# ──────────────────────────────────────────────────────────────────────
-# Group 4 — Items & Artifacts
-# ──────────────────────────────────────────────────────────────────────
-
-
-def group_4_items_artifacts(client: httpx.Client) -> None:
-    """Cover items listing and the artifact get/delete endpoints."""
-    session_id = STATE.get("turn_session_id", "")
-    rel_path = "e2e_artifact.txt"
-    abs_path = f"{WORKSPACE}/{rel_path}"
-    artifact_id = base64.urlsafe_b64encode(rel_path.encode()).decode().rstrip("=")
-
-    # 14. GET /v1/agents/sessions/{session_id}/items
-    ep = "GET /v1/agents/sessions/{session_id}/items"
-    if not session_id:
-        record("SKIP", ep, "no session from test 11")
-    else:
-        try:
-            resp = client.get(f"/v1/agents/sessions/{session_id}/items")
-            body = resp.json()
-            data = body.get("data", [])
-            types: dict[str, int] = {}
-            for item in data:
-                if isinstance(item, dict):
-                    it = (item.get("item") or {}).get("type", item.get("type", "?"))
-                    types[it] = types.get(it, 0) + 1
-            ok = resp.status_code == 200 and body.get("object") == "list" and len(data) > 0
-            record(
-                "PASS" if ok else "FAIL",
-                ep,
-                f"HTTP {resp.status_code}, {len(data)} item(s), types={types}",
-            )
-        except Exception as exc:  # noqa: BLE001
-            record("FAIL", ep, f"exception: {exc}")
-
-    # 15a. GET artifact — missing file must yield 404 NotFoundError.
-    ep = "GET /v1/agents/sessions/{session_id}/artifacts/{artifact_id}"
-    missing_id = base64.urlsafe_b64encode(b"no_such_file_e2e.txt").decode().rstrip("=")
-    if not session_id:
-        record("SKIP", ep, "no session from test 11")
-    else:
-        try:
-            resp = client.get(f"/v1/agents/sessions/{session_id}/artifacts/{missing_id}")
-            body = resp.json()
-            ok = resp.status_code == 404 and body.get("type") == "NotFoundError"
-            record(
-                "PASS" if ok else "FAIL",
-                ep,
-                f"missing file: HTTP {resp.status_code}, type={body.get('type')}",
-            )
-        except Exception as exc:  # noqa: BLE001
-            record("FAIL", ep, f"exception: {exc}")
-
-    # 15b. Traversal attempt must be rejected with 403 (security check).
-    if session_id:
-        try:
-            escape_id = base64.urlsafe_b64encode(b"../../etc/passwd").decode().rstrip("=")
-            resp = client.get(f"/v1/agents/sessions/{session_id}/artifacts/{escape_id}")
-            body = resp.json()
-            ok = resp.status_code == 403
-            record(
-                "PASS" if ok else "FAIL",
-                ep,
-                f"traversal attempt: HTTP {resp.status_code}, type={body.get('type')}",
-            )
-        except Exception as exc:  # noqa: BLE001
-            record("FAIL", ep, f"traversal exception: {exc}")
-
-    # 15c. Artifact round-trip: seed a file through the standard files route,
-    # fetch it as an artifact, delete it, verify it is gone.
-    content = "codex-agent-api e2e artifact probe\n"
-    seeded = False
-    if session_id:
-        try:
-            up = client.post(
-                "/files/upload-stream",
-                json={
-                    "path": abs_path,
-                    "content_base64": base64.b64encode(content.encode()).decode(),
-                },
-            )
-            seeded = up.status_code == 200
-            if not seeded:
-                record("FAIL", ep, f"seed upload HTTP {up.status_code}: {_short(up.text, 120)}")
-        except Exception as exc:  # noqa: BLE001
-            record("FAIL", ep, f"seed upload exception: {exc}")
-    if seeded:
-        try:
-            resp = client.get(f"/v1/agents/sessions/{session_id}/artifacts/{artifact_id}")
-            body = resp.json()
-            ok = (
-                resp.status_code == 200
-                and body.get("content") == content
-                and body.get("file_path") == rel_path
-                and body.get("object") == "artifact"
-            )
-            record(
-                "PASS" if ok else "FAIL",
-                ep,
-                f"round-trip: HTTP {resp.status_code}, file_path={body.get('file_path')}, "
-                f"size={body.get('size')}",
-            )
-        except Exception as exc:  # noqa: BLE001
-            record("FAIL", ep, f"round-trip exception: {exc}")
-
-        ep_del = "DELETE /v1/agents/sessions/{session_id}/artifacts/{artifact_id}"
-        try:
-            resp = client.delete(f"/v1/agents/sessions/{session_id}/artifacts/{artifact_id}")
-            body = resp.json() if resp.content else {}
-            follow = client.get(f"/v1/agents/sessions/{session_id}/artifacts/{artifact_id}")
-            ok = (
-                resp.status_code in (200, 204)
-                and (resp.status_code == 204 or body.get("deleted") is True)
-                and follow.status_code == 404
-            )
-            record(
-                "PASS" if ok else "FAIL",
-                ep_del,
-                f"HTTP {resp.status_code}, deleted={body.get('deleted')}, re-GET={follow.status_code}",
-            )
-        except Exception as exc:  # noqa: BLE001
-            record("FAIL", ep_del, f"exception: {exc}")
-
-
-# ──────────────────────────────────────────────────────────────────────
-# Preflight & summary
-# ──────────────────────────────────────────────────────────────────────
-
-
-def preflight(client: httpx.Client) -> bool:
-    """Verify the adapter is reachable and healthy."""
-    try:
-        resp = client.get("/health")
-        ok = resp.status_code == 200 and resp.json().get("status") == "ok"
-        print(f"[{'PASS' if ok else 'FAIL'}] preflight GET /health — HTTP {resp.status_code}", flush=True)
-        return ok
-    except Exception as exc:  # noqa: BLE001
-        print(f"[FAIL] preflight GET /health — {exc}", flush=True)
-        return False
-
-
-def cleanup(client: httpx.Client) -> None:
-    """Best-effort removal of every session created during this run.
-
-    A turn that fails on an upstream gateway error is retried with a fresh
-    session, so the store may hold more sessions than the suite records —
-    wipe whatever the adapter still lists.
-    """
-    try:
-        sessions = client.get("/v1/agents/sessions").json().get("data", [])
-    except Exception as exc:  # noqa: BLE001
-        print(f"[cleanup] session list failed: {exc}", flush=True)
-        sessions = []
-    for sess in sessions:
-        sid = sess.get("id", "")
-        if not sid:
-            continue
-        try:
-            resp = client.delete(f"/v1/agents/sessions/{sid}")
-            print(f"[cleanup] DELETE session {sid} -> HTTP {resp.status_code}", flush=True)
-        except Exception as exc:  # noqa: BLE001
-            print(f"[cleanup] DELETE session {sid} failed: {exc}", flush=True)
-
-
-def summary() -> int:
-    """Print the aggregate report and return the process exit code."""
-    passed = sum(1 for s, _, _ in RESULTS if s == "PASS")
-    failed = sum(1 for s, _, _ in RESULTS if s == "FAIL")
-    skipped = sum(1 for s, _, _ in RESULTS if s == "SKIP")
-
-    coverage: dict[str, str] = {}
-    for ep in ENDPOINTS:
-        cases = [s for s, e, _ in RESULTS if e == ep]
-        if not cases:
-            coverage[ep] = "MISSING"
-        elif any(s == "FAIL" for s in cases):
-            coverage[ep] = "FAIL"
-        elif all(s == "SKIP" for s in cases):
-            coverage[ep] = "SKIP"
-        else:
-            coverage[ep] = "PASS"
-
-    print("\n" + "=" * 74, flush=True)
-    print("SUMMARY", flush=True)
-    print("=" * 74, flush=True)
-    print(f"Test cases : {passed} passed, {failed} failed, {skipped} skipped "
-          f"(total {len(RESULTS)})", flush=True)
-    ep_pass = sum(1 for v in coverage.values() if v == "PASS")
-    print(f"Endpoints  : {ep_pass}/{len(ENDPOINTS)} passed", flush=True)
-    for ep in ENDPOINTS:
-        print(f"  [{coverage[ep]:^7}] {ep}", flush=True)
-    if failed:
-        print("\nFailed cases:", flush=True)
-        for s, e, d in RESULTS:
-            if s == "FAIL":
-                print(f"  - {e}: {d}", flush=True)
-    print("=" * 74, flush=True)
-    return 1 if failed else 0
+        with client.stream("POST", f"/v1/agents/sessions/{live_id}/events", json={"input": prompt, "stream": True}) as response:
+            response.raise_for_status()
+            body = response.read().decode()
+        stream_items = []
+        for line in body.splitlines():
+            if line.startswith("data:"):
+                event = json.loads(line[5:].strip())
+                if isinstance(event, dict):
+                    stream_items.append(event)
+        check("L3 exact-thread resume SSE completion", _agent_message(stream_items, "ABX_RESUME_OK")
+              and any(e.get("type") == "agent.session.turn.completed" for e in stream_items)
+              and not any("failed" in e.get("type", "") for e in stream_items))
+        summary = json.loads(_artifact(client, live_id, task_name + "/resume-summary.json"))
+        check("L3 independently verified resume artifact", summary == {
+            "report_sha256": hashlib.sha256(report.encode()).hexdigest(), "normalized_count": len(REPORT_OUTPUT)})
+        check("L3 resume preserves fixed source and first artifact",
+              _read_file(client, source) == changed_source and _read_file(client, report_path) == report)
+        final_tests = _fixed_tests(client, task)
+        check("L3 final independent fixed-test rerun", final_tests.get("exit_code") == 0
+              and "Ran 6 tests" in final_tests.get("stderr", "") and "OK" in final_tests.get("stderr", ""))
+    except (httpx.HTTPError, KeyError, ValueError, TypeError):
+        check("L3 coding request/schema/artifact verification", False)
+    finally:
+        if live_id:
+            response = client.delete(f"/v1/agents/sessions/{live_id}")
+            check("L3 owned session cleanup", response.status_code in (200, 404))
+        response = client.delete("/files", params={"path": task})
+        check("L3 owned coding project cleanup", response.status_code in (200, 404))
 
 
 def main() -> int:
-    """Run the full suite."""
-    print("codex-agent-api end-to-end suite", flush=True)
-    print(f"  base_url     : {BASE_URL}", flush=True)
-    print(f"  model        : {MODEL}", flush=True)
-    print(f"  sse timeout  : {SSE_TIMEOUT}s", flush=True)
-    print(f"  workspace    : {WORKSPACE}", flush=True)
-    print(
-        "  note         : SandboxServer answers HTTP 200 for all successes; "
-        "deletes return 200 + {deleted:true} (no 201/204 surface).",
-        flush=True,
-    )
-    print("-" * 74, flush=True)
+    failures = 0
+    def check(label, ok):
+        nonlocal failures
+        print(f"[{'PASS' if ok else 'FAIL'}] {label}", flush=True)
+        failures += not ok
 
-    with _client() as client:
-        if not preflight(client):
-            print("adapter unreachable — aborting", flush=True)
-            return 2
-        print("\n-- Group 1: Agent CRUD --", flush=True)
-        group_1_agents(client)
-        print("\n-- Group 2: Session CRUD --", flush=True)
-        group_2_sessions(client)
-        print("\n-- Group 3: Turn execution (LLM) --", flush=True)
-        group_3_turns(client)
-        print("\n-- Group 4: Items & Artifacts --", flush=True)
-        group_4_items_artifacts(client)
-        print("\n-- Cleanup --", flush=True)
-        cleanup(client)
-
-    return summary()
+    headers = _headers()
+    with httpx.Client(base_url=BASE_URL, timeout=360, headers=headers) as client:
+        health = client.get("/health")
+        check("health", health.status_code == 200 and health.json().get("status") == "ok")
+        response = client.get("/commands")
+        names = {entry["name"] for entry in response.json().get("commands", [])}
+        check("named command discovery", {"codex", "codex_version", "agent_status"} <= names)
+        created = client.post("/v1/agents", json={"model": "test-model", "instructions": "Be concise", "name": "smoke"})
+        check("create saved agent", created.status_code == 200 and created.json().get("object") == "agent")
+        agent_id = created.json()["id"]
+        check("list saved agents", agent_id in {a["id"] for a in client.get("/v1/agents").json()["data"]})
+        check("update saved agent", client.post(f"/v1/agents/{agent_id}", json={"name": "updated"}).json().get("name") == "updated")
+        response = client.post("/v1/agents/sessions", json={"agent": agent_id})
+        session_id = response.json()["id"]
+        check("create session from saved agent", response.status_code == 200 and response.json().get("model") == "test-model")
+        check("get session", client.get(f"/v1/agents/sessions/{session_id}").json().get("status") == "idle")
+        check("update session", client.post(f"/v1/agents/sessions/{session_id}", json={"instructions": "Updated"}).json().get("instructions") == "Updated")
+        check("list sessions", session_id in {s["id"] for s in client.get("/v1/agents/sessions").json()["data"]})
+        check("empty items", client.get(f"/v1/agents/sessions/{session_id}/items").json().get("data") == [])
+        check("missing input rejected", client.post(f"/v1/agents/sessions/{session_id}/events", json={}).status_code == 400)
+        check("mistyped stream rejected", client.post("/v1/agents/sessions", json={"stream": "true"}).status_code == 400)
+        check("unsupported tool rejected", client.post("/v1/agents", json={"tools": [{"type": "function"}]}).status_code == 400)
+        check("secret artifact denied", client.get(f"/v1/agents/sessions/{session_id}/artifacts/LmVudg").status_code == 403)
+        check("idle event subscription", client.get(f"/v1/agents/sessions/{session_id}/events").json().get("status") == "idle")
+        check("delete session", client.delete(f"/v1/agents/sessions/{session_id}").json().get("deleted") is True)
+        check("deleted session missing", client.get(f"/v1/agents/sessions/{session_id}").status_code == 404)
+        check("delete saved agent", client.delete(f"/v1/agents/{agent_id}").json().get("deleted") is True)
+        _coding_acceptance(client, check)
+    return int(bool(failures))
 
 
 if __name__ == "__main__":

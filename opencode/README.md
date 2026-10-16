@@ -4,11 +4,11 @@ OpenCode (`sst/opencode`) in an Agent Sandbox. The image installs npm package `o
 
 ## What it does
 
-`agent-sandbox-server` listens on port 9000 and registers commands that run `opencode`. `opencode_run` executes one non-interactive `opencode run --format json` and returns the assistant text, the raw JSON events, and the session id. `opencode_version` and `opencode_setup_check` check the pinned binary and `opencode.json` without calling a model.
+`agent-sandbox-server` listens on port 9000 and registers commands that run `opencode`. `opencode_run` executes one non-interactive `opencode run --format json` and returns the assistant text, sanitized JSON events, and the session id. `opencode_version` and `opencode_setup_check` check the pinned binary and `opencode.json` without calling a model.
 
 `opencode_serve_start` starts `opencode serve` on port 4096 bound to `0.0.0.0`. That process is OpenCode's own HTTP API (`GET /global/health`). Reach it with `sb.network.get_url(4096)`. The platform `start_cmd` does not start it.
 
-`opencode` is the previous command name. It runs the same argv as `opencode_run` and returns the raw stdout string.
+`opencode` is the previous command name. It runs the same argv as `opencode_run` and returns the sanitized JSON-event stdout string.
 
 ## Stack
 
@@ -91,16 +91,29 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-`await sb.run("opencode_run", prompt="...")` returns a dict with `text`, `stdout`, `session_id`, `model`, `agent`, and `cwd`. `sb.commands.run` is a shell command, not this named command. `Sandbox.create_sync` raises `TypeError` on python-sdk 0.3.0 ([python-sdk#22](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues/22)); use `await Sandbox.create`.
+`await sb.run("opencode_run", prompt="...")` returns a dict with `text`, `stdout`, `session_id`, `model`, `agent`, and `cwd`. `sb.commands.run` is a shell command, not this named command. Older SDK snapshots before the sync-wrapper fix could raise `TypeError` from `Sandbox.create_sync` ([python-sdk#22](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues/22)); this was fixed in [python-sdk#24](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/24). Upgrade to a commit or release containing that fix, or use `await Sandbox.create`.
 
 `opencode_run` is the primary API: one request, one JSON body, the headless CLI. `opencode serve` is for clients that already speak OpenCode's HTTP API. Both are in the image. Only the command server on port 9000 starts with the sandbox.
+
+## Quick start (HTTP POST)
+
+Use the sandbox port-9000 URL, or http://127.0.0.1:9000 locally. Include the authentication header when ABX_SERVER_TOKEN is set on the server.
+
+```bash
+curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/opencode_version" \
+  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
+  --header "Content-Type: application/json" \
+  --data '{}'
+```
+
+The JSON body contains command parameters directly, without an args wrapper. HTTP 200 returns `{"result":"1.19.0"}`. Invalid arguments return 400, failed authentication 401, and execution errors 500; error responses contain error and type. Results are buffered until completion. An HTTP client timeout does not guarantee server-side cancellation; manage long tasks through the process API.
 
 ## Command reference
 
 | Command | Parameters | Returns | Upstream |
 |---|---|---|---|
 | `opencode_run` | see the table below | object | `opencode run --pure --format json --auto ...` |
-| `opencode` | same as `opencode_run` | string (raw JSON events) | same argv as `opencode_run` |
+| `opencode` | same as `opencode_run` | string (sanitized JSON events) | same argv as `opencode_run` |
 | `opencode_version` | none | `"1.19.0"` | `opencode --version` |
 | `opencode_setup_check` | none | `"ok"` | `opencode --version` plus a read of `opencode.json` |
 | `opencode_serve_start` | `port` integer, default `4096`; `hostname` string, default `0.0.0.0` | object | `opencode serve --pure --hostname --port` |
@@ -111,27 +124,27 @@ asyncio.run(main())
 
 | Parameter | Type | Required | Default | Meaning |
 |---|---|---|---|---|
-| `prompt` | string | yes | | Last argv element. Not interpolated into a shell string. |
+| `prompt` | string | yes | | Positional argv after `--`; never interpolated into a shell string. |
 | `model` | string | no | `OPENCODE_MODEL`, else `dashscope/qwen3.8-flash` | `--model`, form `provider/model`. |
 | `agent` | string | no | empty (CLI primary agent, `build`) | `--agent` when non-empty. |
 | `session` | string | no | empty | `--session` to continue that session id. |
 | `continue_session` | boolean | no | `false` | `--continue` (last session). Pass a JSON boolean. |
-| `cwd` | string | no | `/home/user/app` when that directory exists | `--dir` and the child working directory. Must be an existing directory. |
+| `cwd` | string | no | `/home/user/app` (the module directory for local runs) | `--dir` and the child working directory. Must be an existing directory. |
 
 `opencode_run` returns:
 
 | Field | Meaning |
 |---|---|
 | `text` | Concatenated `type: text` parts from the JSON events. |
-| `stdout` | Raw stdout, one JSON event per line. |
+| `stdout` | JSON events with secret environment values redacted, one event per line. |
 | `session_id` | `sessionID` from those events, or empty. |
 | `model` | Selector that was passed to `--model`. |
 | `agent` | Agent name that was passed, or empty. |
 | `cwd` | Directory that was passed to `--dir`. |
 
-A missing `prompt` is HTTP 400. A non-zero CLI exit is HTTP 500 `{"error","type":"RuntimeError"}`. The message does not include secret values. Timeout is 600 seconds. Stdin is `/dev/null`.
+A missing `prompt` is HTTP 400. A non-zero CLI exit is HTTP 500 `{"error","type":"RuntimeError"}`. CLI error output is omitted, so prompts, tool arguments, and credentials are not copied into error messages. Successful event values redact known environment secrets. Serve logs are discarded. Timeout is 600 seconds. Stdin is `/dev/null`.
 
-`opencode_serve_start` returns `running`, `port`, `hostname`, `pid`, and `healthy`. It waits until `GET http://127.0.0.1:<port>/global/health` returns `{"healthy": true, "version": "1.19.0"}`. The public URL is `sb.network.get_url(port)`, not that localhost address. A second start on the same port returns the current status.
+`opencode_serve_start` returns `running`, `port`, `hostname`, `pid`, `healthy`, and `version`. It waits until `GET http://127.0.0.1:<port>/global/health` returns `{"healthy": true, "version": "1.19.0"}`. The target-side health probe supports `OPENCODE_SERVER_PASSWORD` and requires the pinned version. The public URL is `sb.network.get_url(port)`, not that localhost address. A second start with the same port and hostname returns the current status. Start/status/stop are serialized by an in-process lock. Stop signals only the Popen child owned by this interpreter and verifies its process group; old PID files are never read. Restarting the command server does not adopt an older serve process; recycle the sandbox to clean up such a process.
 
 ## Configuration
 
@@ -187,3 +200,11 @@ Copy `_skeleton` only when starting a different template. This directory is the 
 ## License
 
 Apache-2.0, the same license as this repository. See [LICENSE](../LICENSE). The OpenCode CLI is upstream software installed at build time.
+
+## Local acceptance and model acceptance
+
+Run `python3 -m pytest opencode/test_commands.py opencode/test_e2e_protocol.py -q` for regressions. For real HTTP L0, install `opencode-ai@1.19.0` on the server, start this template, and run `E2E_BASE_URL=<target-url> E2E_WORKSPACE=<target-workspace> E2E_RUN_LLM=0 python3 opencode/e2e_test.py`. The target must have the pinned CLI; missing tools fail. Tests exercise real target-side Python through `/shell`, download the produced file, and start/check/stop OpenCode serve. The tester never uses its own `opencode` or probes its own localhost to infer a remote target's state. `opencode_setup_check` never writes configuration or starts a service.
+
+L0 success is not model acceptance. L3 is explicitly NOT RUN by default. Enable both `E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1` with model configuration already injected into the server. L3 uploads a broken existing calc.py and fixed test_calc.py, reproduces the failure, and asks the real agent to fix the source and create report.txt plus acceptance.txt. It downloads the source/tests/artifacts, requires the original tests to be byte-identical, reruns all three tests remotely with an explicit project cwd, and checks additional held-out assertions. It then removes only its unique project directory. A marker response or new file alone cannot pass. No client-side model key is needed to test a preconfigured remote server. `/code/run` is an optional SDK dev-tools endpoint; capability metadata alone does not enable it. No L1/L2/L3 provider acceptance has been recorded for this template.
+
+External HTTP target requests respect environment proxy settings. The sandbox-internal loopback health check alone connects directly to its own serve process. The fake-remote protocol tests validate the harness using actual local test subprocesses; they do not establish real model/provider acceptance.

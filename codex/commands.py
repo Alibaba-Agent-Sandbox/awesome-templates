@@ -26,11 +26,21 @@ _PROBE: dict | None = None
 def _redact(text: str) -> str:
     redacted = text
     for key, value in os.environ.items():
-        if not value or len(value) < 8:
+        if not value:
             continue
-        if re.search(r"(KEY|SECRET|TOKEN|PASSWORD)", key):
+        if re.search(r"(KEY|SECRET|TOKEN|PASSWORD|CREDENTIAL)", key, re.IGNORECASE):
             redacted = redacted.replace(value, "***")
     return redacted
+
+
+def _redact_event(value):
+    if isinstance(value, str):
+        return _redact(value)
+    if isinstance(value, list):
+        return [_redact_event(item) for item in value]
+    if isinstance(value, dict):
+        return {_redact(key): _redact_event(item) for key, item in value.items()}
+    return value
 
 
 def _codex_home() -> Path:
@@ -322,10 +332,8 @@ def _ensure_provider_config() -> dict | None:
 def _apply_sandbox(requested: str) -> tuple[bool, str]:
     """Return (bypass, applied mode).
 
-    When the nested sandbox probe failed, read-only / workspace-write /
-    danger-full-access cannot be enforced. Codex documents
-    ``--dangerously-bypass-approvals-and-sandbox`` for that container case.
-    ``--full-auto`` is rejected by this pin.
+    Only ``auto`` may fall back to the container's isolation boundary.
+    An explicit mode must never silently lose its sandbox or approval policy.
     """
     mode = requested.strip() or "auto"
     if mode not in SANDBOX_CHOICES:
@@ -333,8 +341,14 @@ def _apply_sandbox(requested: str) -> tuple[bool, str]:
     status = sandbox_status()
     if not status["binary_present"]:
         raise RuntimeError("codex is not on PATH")
-    if mode == "bypass" or status["use_bypass"]:
+    if mode == "bypass" or (mode == "auto" and status["use_bypass"]):
         return True, "bypass"
+    if mode in SANDBOX_MODES and not status["linux_sandbox"]:
+        raise RuntimeError(
+            f"Codex Linux sandbox is unavailable; cannot honor sandbox={mode!r}. "
+            "Use sandbox='auto' or sandbox='bypass' only when the container's "
+            "isolation is sufficient."
+        )
     applied = "workspace-write" if mode == "auto" else mode
     return False, applied
 
@@ -605,12 +619,12 @@ def codex_exec(
     resume_id = resume.strip()
     if resume_all and resume_id != "last":
         raise ValueError("resume_all requires resume='last'")
+    bypass, applied = _apply_sandbox(requested)
     directory = _resolve_cwd(cwd)
     _ensure_git(directory)
     if agents_md.strip():
         codex_agents_write(agents_md, cwd=str(directory))
     _ensure_provider_config()
-    bypass, applied = _apply_sandbox(sandbox)
     argv = _build_argv(
         prompt=text,
         model=model,
@@ -626,10 +640,13 @@ def codex_exec(
         output_schema=output_schema,
     )
     proc = _run_codex(argv, timeout_s)
-    events = _parse_events(proc.stdout or "")
-    message = _last_message(events) if json_events else (proc.stdout or "").strip()
+    # Tool events can contain model-generated shell output, including environment
+    # values. Apply the same redaction as stderr before returning any events.
+    stdout = _redact(proc.stdout or "")
+    events = [_redact_event(event) for event in _parse_events(proc.stdout or "")]
+    message = _last_message(events) if json_events else stdout.strip()
     if not message and not json_events:
-        message = (proc.stdout or "").strip()
+        message = stdout.strip()
     failure = _failure_message(events)
     stderr = _redact((proc.stderr or "").strip())[-4000:]
     if proc.returncode != 0 or any(event.get("type") == "turn.failed" for event in events):
@@ -645,7 +662,7 @@ def codex_exec(
         "sandbox_requested": sandbox.strip() or "auto",
         "sandbox_applied": applied,
         "bypass": bypass,
-        "argv": argv,
+        "argv": [_redact(arg) for arg in argv],
         "stderr": stderr,
     }
 

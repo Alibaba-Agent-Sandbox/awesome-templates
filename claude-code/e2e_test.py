@@ -21,7 +21,7 @@ Environment variables:
 
     E2E_BASE_URL     Server base URL                     (default http://localhost:9000)
     E2E_TOKEN        X-Access-Token header value          (default: none — local mode)
-    E2E_BASE_DIR     File-ops root inside the container   (default /home/user)
+    E2E_BASE_DIR     File-ops root inside the container   (default /home/user/app)
     E2E_TIMEOUT      HTTP read timeout in seconds         (default 60)
     E2E_LLM_TIMEOUT  Timeout for the LLM command call     (default 420)
     E2E_RUN_LLM      1 = force the LLM case, 0 = skip it  (default: auto-detect key)
@@ -30,13 +30,13 @@ Environment variables:
 Notes:
 
 - ``/health`` (CORE) and ``/commands`` (COMMANDS) are always registered;
-  FILE_OPS, PROCESS and TERMINAL are enabled by this template's ``commands.py``.
+  FILE_OPS, PROCESS and TERMINAL depend on the server capability configuration.
 - File paths are constrained by the server to ``ABX_SERVER_BASE_DIR``
   (default ``/home/user``); keep ``E2E_BASE_DIR`` inside that root.
 - The host-side key check is a proxy: the key must also be visible
   *inside* the sandbox for the LLM case to actually succeed.
 - The ``claude`` command's CLI contract (see ``commands.py``):
-  ``claude -p <prompt> --model <model> --output-format json``.
+  ``claude -p <prompt> --model <model> --output-format json`` plus explicit tools.
 - PTY sessions are exercised through the TERMINAL REST routes only
   (``/pty/sessions``); the interactive WebSocket on port 9001 is not
   touched.
@@ -50,6 +50,7 @@ import json
 import os
 import sys
 import time
+import uuid
 from typing import Any
 
 import httpx
@@ -57,7 +58,7 @@ import httpx
 TEMPLATE = "claude-code"
 BASE_URL = os.environ.get("E2E_BASE_URL", "http://localhost:9000").rstrip("/")
 TOKEN = os.environ.get("E2E_TOKEN", "")
-BASE_DIR = os.environ.get("E2E_BASE_DIR", "/home/user").rstrip("/") or "/home/user"
+BASE_DIR = os.environ.get("E2E_BASE_DIR", "/home/user/app").rstrip("/") or "/home/user/app"
 TIMEOUT = httpx.Timeout(
     connect=10.0,
     read=float(os.environ.get("E2E_TIMEOUT", "60")),
@@ -72,16 +73,20 @@ MARKER = "ABX_E2E_OK"
 
 # ── Template contract (see commands.py / template.yaml) ────────────────
 CMD = "claude"
-CMD_ARGS = {"prompt": "string", "model": "string"}  # name -> expected type
+CMD_ARGS = {
+    "prompt": "string", "model": "string", "cwd": "string",
+    "allowed_tools": "string", "resume": "string", "command_timeout": "integer",
+}  # name -> expected type
 REQUIRED_ARGS = ("prompt",)  # required args of CMD (validated by the server)
 KEY_ENVS = ("ANTHROPIC_API_KEY",)  # host env vars that enable the LLM case
-LLM_PROMPT = "Reply with exactly: ABX_E2E_OK"
 
-PROBE_DIR = f"{BASE_DIR}/abx_e2e_{TEMPLATE}"
+PROBE_DIR = f"{BASE_DIR}/abx_e2e_{TEMPLATE}_{uuid.uuid4().hex}"
 PROBE_FILE = f"{PROBE_DIR}/probe.txt"
 
 RESULTS: list[tuple[str, str, str]] = []  # (status, test, detail)
 STATE: dict[str, Any] = {}
+OWNED_PTY_SESSIONS: set[str] = set()
+OWNED_PROCESS_IDS: set[int] = set()
 
 
 def record(status: str, test: str, detail: str = "") -> None:
@@ -377,6 +382,8 @@ def group_shell_process(client: httpx.Client) -> None:
         resp = client.post("/process/start", json={"command": "sleep 60"})
         body = resp.json()
         pid = body.get("pid") if isinstance(body.get("pid"), int) else None
+        if pid is not None:
+            OWNED_PROCESS_IDS.add(pid)
         ok = resp.status_code == 200 and pid is not None
         record("PASS" if ok else "FAIL", "POST /process/start",
                f"HTTP {resp.status_code}, pid={pid}")
@@ -450,21 +457,71 @@ def group_command(client: httpx.Client) -> None:
         record(status, test, f"missing {'/'.join(KEY_ENVS)}")
         return
 
-    payload: dict[str, Any] = {"prompt": LLM_PROMPT}
-    if MODEL:
-        payload["model"] = MODEL
+    # Seed a broken project; require tool use and verify files independently.
+    project = f"{PROBE_DIR}/agent-project"
+    source = "def add(a, b):\n    return a - b\n"
+    test_source = (
+        "import unittest\nfrom calculator import add\n"
+        "class TestAdd(unittest.TestCase):\n"
+        "    def test_positive(self): self.assertEqual(add(2, 3), 5)\n"
+        "    def test_negative(self): self.assertEqual(add(-2, -3), -5)\n"
+        "if __name__ == '__main__': unittest.main()\n"
+    )
     try:
+        for name, content in (("calculator.py", source), ("test_calculator.py", test_source)):
+            resp = client.post("/files/upload-stream", json={
+                "path": f"{project}/{name}",
+                "content_base64": base64.b64encode(content.encode()).decode(),
+            })
+            resp.raise_for_status()
+        # Before invoking the agent, the test must fail for the intended bug.
+        command = "python3 -m unittest -v"
+        before = client.post("/shell", json={"command": command, "cwd": project}).json()
+        if before.get("exit_code") != 1 or "AssertionError" not in before.get("stderr", ""):
+            record("FAIL", test, "seeded project did not reproduce the expected failing test")
+            return
+        payload: dict[str, Any] = {
+            "prompt": (
+                "Fix calculator.py so add(a,b) returns the sum. Do not modify "
+                "test_calculator.py. Run python3 -m unittest -v and make all tests pass. "
+                "Create agent-created.txt containing exactly ABX_E2E_OK followed by a newline, "
+                "and report.txt describing the fix and test result. End your response with ABX_E2E_OK."
+            ),
+            "cwd": project,
+            "allowed_tools": "Read,Edit,Write,Bash(python3:*)",
+        }
+        if MODEL:
+            payload["model"] = MODEL
         resp = client.post(f"/commands/{CMD}", json=payload, timeout=LLM_TIMEOUT)
         body = resp.json()
         result = body.get("result")
         found = isinstance(result, str) and MARKER in result
-        ok = resp.status_code == 200 and found
-        detail = f"HTTP {resp.status_code}, marker={found}"
-        if not ok:
-            detail += f", error={_short(body.get('error') or body, 140)}"
-        record("PASS" if ok else "FAIL", test, detail)
+        if resp.status_code != 200 or not found:
+            record("FAIL", test, f"HTTP {resp.status_code}, response marker={found}")
+            return
+
+        def read_file(name: str) -> str:
+            response = client.get("/files/download-stream", params={"path": f"{project}/{name}"})
+            response.raise_for_status()
+            return base64.b64decode(response.json()["content_base64"]).decode()
+
+        modified = read_file("calculator.py")
+        original_test = read_file("test_calculator.py")
+        artifact = read_file("agent-created.txt")
+        report = read_file("report.txt")
+        after_response = client.post("/shell", json={"command": command, "cwd": project})
+        after = after_response.json()
+        ok = (
+            modified != source and original_test == test_source
+            and artifact == MARKER + "\n" and bool(report.strip())
+            and after_response.status_code == 200 and after.get("exit_code") == 0
+            and "Ran 2 tests" in after.get("stderr", "")
+        )
+        record("PASS" if ok else "FAIL", test,
+               f"real agent: source changed={modified != source}, tests preserved={original_test == test_source}, "
+               f"artifact valid={artifact == MARKER + chr(10)}, test exit={after.get('exit_code')}")
     except Exception as exc:  # noqa: BLE001
-        record("FAIL", test, f"exception: {exc}")
+        record("FAIL", test, f"agent acceptance exception: {type(exc).__name__}")
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -483,8 +540,10 @@ def group_pty(client: httpx.Client) -> None:
         resp = client.post("/pty/sessions", json={"cols": 80, "rows": 24})
         body = resp.json()
         session_id = str(body.get("session_id", ""))
+        if session_id:
+            OWNED_PTY_SESSIONS.add(session_id)
         ok = (resp.status_code == 200 and bool(session_id)
-              and str(body.get("ws_url", "")).startswith("ws://")
+              and str(body.get("ws_url", "")).startswith(("ws://", "wss://"))
               and isinstance(body.get("pid"), int))
         record("PASS" if ok else "FAIL", "POST /pty/sessions",
                f"HTTP {resp.status_code}, session={session_id}, ws_url={body.get('ws_url')}")
@@ -512,6 +571,8 @@ def group_pty(client: httpx.Client) -> None:
         follow = client.delete(f"/pty/sessions/{session_id}")
         ok = (resp.status_code == 200 and body.get("status") == "closed"
               and follow.status_code == 404)
+        if resp.status_code == 200:
+            OWNED_PTY_SESSIONS.discard(session_id)
         record("PASS" if ok else "FAIL", "DELETE /pty/sessions/{id}",
                f"HTTP {resp.status_code}, status={body.get('status')}, "
                f"re-DELETE={follow.status_code}")
@@ -525,26 +586,24 @@ def group_pty(client: httpx.Client) -> None:
 
 
 def cleanup(client: httpx.Client) -> None:
-    """Best-effort removal of the probe directory and leftover PTY sessions."""
-    try:
-        sessions = client.get("/pty/sessions").json().get("sessions", [])
-    except Exception:  # noqa: BLE001
-        sessions = []
-    for sess in sessions:
-        sid = sess.get("id", "")
-        if not sid:
-            continue
+    """Remove only resources created by this invocation, including failed cases."""
+    for sid in list(OWNED_PTY_SESSIONS):
         try:
             resp = client.delete(f"/pty/sessions/{sid}")
-            print(f"[cleanup] DELETE pty session {sid} -> HTTP {resp.status_code}", flush=True)
-        except Exception as exc:  # noqa: BLE001
-            print(f"[cleanup] DELETE pty session {sid} failed: {exc}", flush=True)
-
+            if resp.status_code in {200, 404}:
+                OWNED_PTY_SESSIONS.discard(sid)
+        except Exception:
+            print("[cleanup] owned PTY session cleanup failed", flush=True)
+    for pid in list(OWNED_PROCESS_IDS):
+        try:
+            client.post(f"/process/{pid}/signal", json={"signal": 15})
+        except Exception:
+            print("[cleanup] owned process cleanup failed", flush=True)
     try:
         resp = client.delete("/files", params={"path": PROBE_DIR})
-        print(f"[cleanup] DELETE {PROBE_DIR} -> HTTP {resp.status_code}", flush=True)
-    except Exception as exc:  # noqa: BLE001
-        print(f"[cleanup] DELETE {PROBE_DIR} failed: {exc}", flush=True)
+        print(f"[cleanup] owned probe directory -> HTTP {resp.status_code}", flush=True)
+    except Exception:
+        print("[cleanup] owned probe directory cleanup failed", flush=True)
 
 
 def summary() -> int:
@@ -577,18 +636,19 @@ def main() -> int:
         if not preflight(client):
             print("server unreachable — aborting", flush=True)
             return 2
-        print("\n-- Built-in routes --", flush=True)
-        group_builtin(client)
-        print("\n-- File ops (FILE_OPS) --", flush=True)
-        group_files(client)
-        print("\n-- Shell & process (PROCESS) --", flush=True)
-        group_shell_process(client)
-        print("\n-- Template command --", flush=True)
-        group_command(client)
-        print("\n-- PTY sessions (TERMINAL) --", flush=True)
-        group_pty(client)
-        print("\n-- Cleanup --", flush=True)
-        cleanup(client)
+        try:
+            print("\n-- Built-in routes --", flush=True)
+            group_builtin(client)
+            print("\n-- File ops (FILE_OPS) --", flush=True)
+            group_files(client)
+            print("\n-- Shell & process (PROCESS) --", flush=True)
+            group_shell_process(client)
+            print("\n-- Template command --", flush=True)
+            group_command(client)
+            print("\n-- PTY sessions (TERMINAL) --", flush=True)
+            group_pty(client)
+        finally:
+            cleanup(client)
     return summary()
 
 

@@ -101,7 +101,20 @@ sb = await Sandbox.create(
 text = await sb.run("amp_execute", prompt="Reply with exactly: ABX_E2E_OK", stream_json=False)
 ```
 
-`await sb.run(...)` 返回该命令的 `result`。`sb.commands.run` 跑的是 shell，不是这些命名命令。python-sdk 0.3.0 上 `Sandbox.create_sync` 会抛 `TypeError`（[python-sdk#22](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues/22)），请用 `await Sandbox.create`。
+`await sb.run(...)` 返回该命令的 `result`。`sb.commands.run` 跑的是 shell，不是这些命名命令。当前检出的 SDK 已在 [python-sdk#24](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/24) 修复同步类方法；旧提交遇到 TypeError 时请升级或使用异步构造。
+
+## 快速开始（HTTP POST）
+
+使用沙箱端口 9000 的 URL；本地默认 http://127.0.0.1:9000。服务启用了 ABX_SERVER_TOKEN 时才添加认证头。
+
+```bash
+curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/amp_version" \
+  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
+  --header "Content-Type: application/json" \
+  --data '{}'
+```
+
+请求体直接包含命名命令参数，不嵌套在 args 中。HTTP 200 的响应为 `{"result":"0.0.1792022479-ge66e24"}`。参数错误为 HTTP 400，认证失败为 401，执行异常为 500；错误响应包含 error 和 type。命令响应在执行完成后整体返回。HTTP 客户端超时不保证取消服务端命令；长任务使用进程 API 管理。
 
 ## 命令参考
 

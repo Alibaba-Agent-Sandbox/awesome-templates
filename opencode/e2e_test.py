@@ -1,222 +1,200 @@
 #!/usr/bin/env python3
-"""Local smoke for the opencode template against E2E_BASE_URL.
+"""Check the actual HTTP target. Core CLI/serve failures never become skips.
 
-Express runs go through scripts/express_e2e.py, which uses ``abx run`` and
-``from agent_sandbox import Sandbox``. This file is the no-cloud check.
-When ``E2E_SANDBOX_ID`` is set, the same assertions also run through
-``Sandbox.connect``.
+L0 deliberately omits the paid model call with E2E_RUN_LLM=0. L3 requires
+E2E_REQUIRE_LLM=1 and requires editing existing code, new artifacts, and independent remote tests.
+The tester does not inspect its own CLI installation or model credentials.
 """
 from __future__ import annotations
 
-import json
+import base64
 import os
-import shutil
+import shlex
 import sys
+import uuid
 
 import httpx
 
 BASE_URL = os.environ.get("E2E_BASE_URL", "http://127.0.0.1:9000").rstrip("/")
-SANDBOX_ID = os.environ.get("E2E_SANDBOX_ID", "").strip()
-TIMEOUT = httpx.Timeout(connect=10.0, read=30.0, write=30.0, pool=10.0)
-LLM_TIMEOUT = float(os.environ.get("E2E_LLM_TIMEOUT", "180"))
-RUN_LLM = os.environ.get("E2E_RUN_LLM", "").strip().lower()
-REQUIRE = os.environ.get("E2E_REQUIRE_LLM", "").strip().lower() in {"1", "true", "yes"}
-API_KEY = os.environ.get("ABX_LLM_API_KEY", "").strip()
-MARKER = "ABX_E2E_OK"
+WORKSPACE = os.environ.get("E2E_WORKSPACE", "/home/user/app").rstrip("/")
+RUN_LLM = os.environ.get("E2E_RUN_LLM", "0").strip().lower()
+REQUIRE = os.environ.get("E2E_REQUIRE_LLM", "0").strip().lower() in {"1", "true", "yes"}
 PINNED = "1.19.0"
-REQUIRED = {
-    "opencode",
-    "opencode_run",
-    "opencode_serve_start",
-    "opencode_serve_status",
-    "opencode_serve_stop",
-    "opencode_version",
-    "opencode_setup_check",
-}
+REQUIRED = {"opencode", "opencode_run", "opencode_version", "opencode_setup_check",
+            "opencode_serve_start", "opencode_serve_status", "opencode_serve_stop"}
 RUN_PARAMS = {"prompt", "model", "agent", "session", "continue_session", "cwd"}
-
-RESULTS: list[tuple[str, str, str]] = []
-
-
-def record(status: str, test: str, detail: str = "") -> None:
-    RESULTS.append((status, test, detail))
-    line = f"[{status}] {test}"
-    if detail:
-        line += f" — {detail}"
-    print(line, flush=True)
+RESULTS: list[tuple[str, str]] = []
 
 
-def _short(value: object, limit: int = 240) -> str:
-    text = value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)
-    return text if len(text) <= limit else text[: limit - 3] + "..."
+def record(ok: bool, test: str) -> None:
+    status = "PASS" if ok else "FAIL"
+    RESULTS.append((status, test))
+    # No response bodies, prompts, command arguments or exception messages in logs.
+    print(f"[{status}] {test}", flush=True)
 
 
-def check_health(client: httpx.Client) -> None:
-    response = client.get("/health")
-    body = response.json()
-    ok = response.status_code == 200 and body.get("status") == "ok"
-    record("PASS" if ok else "FAIL", "GET /health", f"HTTP {response.status_code}")
-
-
-def check_commands(client: httpx.Client) -> None:
-    response = client.get("/commands")
-    body = response.json()
-    entries = body.get("commands", [])
-    names = {item.get("name") for item in entries if isinstance(item, dict)}
-    missing = sorted(REQUIRED - names)
-    run = next((item for item in entries if item.get("name") == "opencode_run"), None)
-    params = {arg.get("name") for arg in (run or {}).get("args", [])}
-    param_gap = sorted(RUN_PARAMS - params)
-    ok = response.status_code == 200 and not missing and not param_gap
-    detail = f"missing={missing or '-'} params={param_gap or '-'}"
-    record("PASS" if ok else "FAIL", "GET /commands", detail)
-
-
-def check_missing_prompt(client: httpx.Client) -> None:
-    response = client.post("/commands/opencode_run", json={})
-    ok = response.status_code == 400
-    record(
-        "PASS" if ok else "FAIL",
-        "POST /commands/opencode_run without prompt",
-        f"HTTP {response.status_code}",
-    )
-
-
-def check_version_and_setup(client: httpx.Client) -> None:
-    if shutil.which("opencode") is None:
-        record("SKIP", "opencode_version", "opencode is not on PATH")
-        record("SKIP", "opencode_setup_check", "opencode is not on PATH")
-        return
-    version = client.post("/commands/opencode_version", json={})
-    body = version.json()
-    ok = version.status_code == 200 and body.get("result") == PINNED
-    record("PASS" if ok else "FAIL", "opencode_version", _short(body))
-    setup = client.post("/commands/opencode_setup_check", json={})
-    body = setup.json()
-    ok = setup.status_code == 200 and body.get("result") == "ok"
-    record("PASS" if ok else "FAIL", "opencode_setup_check", _short(body))
-
-
-def check_serve(client: httpx.Client) -> None:
-    if shutil.which("opencode") is None:
-        record("SKIP", "opencode_serve_start", "opencode is not on PATH")
-        return
-    port = 18096
+def check_code_artifact(client: httpx.Client) -> None:
+    path = WORKSPACE + "/e2e_opencode_code_" + uuid.uuid4().hex + ".txt"
+    marker = "REMOTE_CODE_" + uuid.uuid4().hex
     try:
-        started = client.post(
-            "/commands/opencode_serve_start",
-            json={"port": port, "hostname": "127.0.0.1"},
-            timeout=30.0,
-        )
-        body = started.json()
-        result = body.get("result") if isinstance(body, dict) else None
-        ok = (
-            started.status_code == 200
-            and isinstance(result, dict)
-            and result.get("healthy") is True
-            and result.get("port") == port
-        )
-        record("PASS" if ok else "FAIL", "opencode_serve_start", _short(body))
-        if ok:
-            health = httpx.get(f"http://127.0.0.1:{port}/global/health", timeout=5.0)
-            payload = health.json()
-            healthy = health.status_code == 200 and payload.get("healthy") is True
-            record(
-                "PASS" if healthy else "FAIL",
-                "GET /global/health",
-                _short(payload),
-            )
-        status = client.post("/commands/opencode_serve_status", json={})
-        state = status.json().get("result")
-        running = isinstance(state, dict) and state.get("running") is True
-        record("PASS" if running else "FAIL", "opencode_serve_status", _short(status.json()))
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", "opencode_serve_start", str(exc))
+        code = f"from pathlib import Path\nPath({path!r}).write_text({marker!r})\nprint('CODE_OK')"
+        response = client.post("/shell", json={"command": "python3 -c " + shlex.quote(code)})
+        record(response.status_code == 200 and response.json().get("exit_code") == 0
+               and response.json().get("stdout", "").strip() == "CODE_OK", "actual target Python execution")
+        artifact = client.get("/files/download-stream", params={"path": path})
+        data = base64.b64decode(artifact.json().get("content_base64", ""))
+        record(artifact.status_code == 200 and data == marker.encode(), "target code artifact downloaded via files API")
     finally:
-        try:
-            stopped = client.post("/commands/opencode_serve_stop", json={})
-            ok = stopped.status_code == 200 and stopped.json().get("result") == "stopped"
-            record("PASS" if ok else "FAIL", "opencode_serve_stop", _short(stopped.text))
-        except Exception as exc:  # noqa: BLE001
-            record("FAIL", "opencode_serve_stop", str(exc))
-
-
-def _marker_in(result: object) -> bool:
-    if isinstance(result, str):
-        return MARKER in result
-    if isinstance(result, dict):
-        return MARKER in json.dumps(result)
-    return False
+        deleted = client.delete("/files", params={"path": path})
+        record(deleted.status_code in {200, 404}, "owned code artifact cleanup")
 
 
 def check_model_call(client: httpx.Client) -> None:
-    test = "POST /commands/opencode_run"
-    forced_off = RUN_LLM in {"0", "false", "no"}
-    if REQUIRE and forced_off:
-        record("FAIL", test, "E2E_REQUIRE_LLM=1 conflicts with E2E_RUN_LLM=0")
+    enabled = RUN_LLM in {"1", "true", "yes"}
+    if not enabled:
+        if REQUIRE:
+            record(False, "L3 requires E2E_RUN_LLM=1")
+        else:
+            print("[NOT RUN] L3 model/artifact acceptance; use E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1", flush=True)
         return
-    if forced_off:
-        record("SKIP", test, f"E2E_RUN_LLM={RUN_LLM!r}")
-        return
-    if not API_KEY:
-        status = "FAIL" if REQUIRE or RUN_LLM in {"1", "true", "yes"} else "SKIP"
-        record(status, test, "ABX_LLM_API_KEY is missing")
-        return
-    if shutil.which("opencode") is None:
-        record("FAIL" if REQUIRE else "SKIP", test, "opencode is not on PATH")
-        return
-    response = client.post(
-        "/commands/opencode_run",
-        json={"prompt": f"Reply with exactly the token {MARKER} and nothing else."},
-        timeout=LLM_TIMEOUT,
+    marker = "ABX_E2E_" + uuid.uuid4().hex
+    project = WORKSPACE + "/abx_e2e_opencode_" + uuid.uuid4().hex
+    source = "def add(a, b):\n    return a - b\n"
+    fixed_tests = (
+        "import unittest\nfrom calc import add\n"
+        "class TestAdd(unittest.TestCase):\n"
+        "    def test_positive(self): self.assertEqual(add(2, 3), 5)\n"
+        "    def test_negative(self): self.assertEqual(add(-2, -3), -5)\n"
+        "    def test_zero(self): self.assertEqual(add(0, 0), 0)\n"
+        "if __name__ == '__main__': unittest.main()\n"
     )
-    body = response.json()
-    found = response.status_code == 200 and _marker_in(body.get("result"))
-    detail = f"HTTP {response.status_code}, marker={found}"
-    if not found:
-        detail += f", body={_short(body)}"
-    record("PASS" if found else "FAIL", test, detail)
+    # /shell accepts argv via shlex.split, so cwd is an API parameter and
+    # shell operators must not be used. No client-local filesystem inspection.
+    test_command = "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -m unittest -v test_calc.py"
+    try:
+        for name, content in (("calc.py", source), ("test_calc.py", fixed_tests)):
+            uploaded = client.post("/files/upload-stream", json={
+                "path": project + "/" + name,
+                "content_base64": base64.b64encode(content.encode()).decode(),
+            })
+            uploaded.raise_for_status()
+        before = client.post("/shell", json={"command": test_command, "cwd": project, "timeout": 30})
+        baseline = before.json()
+        reproduced = (before.status_code == 200 and baseline.get("exit_code") == 1
+                      and "AssertionError" in baseline.get("stderr", "")
+                      and "Ran 3 tests" in baseline.get("stderr", ""))
+        record(reproduced, "L3 seeded existing source reproduces failing independent tests")
+        if not reproduced:
+            return
+        response = client.post("/commands/opencode_run", json={
+            "prompt": (
+                "Fix the existing calc.py so add(a, b) returns their sum. Do not modify test_calc.py. "
+                "Run python3 -m unittest -v test_calc.py and make all three tests pass. "
+                "Create report.txt describing the source change and the test result. "
+                f"Create acceptance.txt containing exactly {marker} followed by a newline. "
+                f"After completing the task, reply with exactly {marker}."
+            ),
+            "cwd": project,
+        }, timeout=float(os.environ.get("E2E_LLM_TIMEOUT", "600")))
+        result = response.json().get("result", {})
+        responded = (response.status_code == 200 and isinstance(result, dict)
+                     and result.get("text", "").strip() == marker and bool(result.get("session_id")))
+        record(responded, "L3 real headless coding response and session")
+        if not responded:
+            return
 
+        def read_file(name: str) -> str:
+            artifact = client.get("/files/download-stream", params={"path": project + "/" + name})
+            artifact.raise_for_status()
+            return base64.b64decode(artifact.json()["content_base64"]).decode()
 
-def check_sdk() -> None:
-    if not SANDBOX_ID:
-        record("SKIP", "Sandbox.connect", "E2E_SANDBOX_ID is unset")
-        return
-    import asyncio
-
-    from agent_sandbox import Sandbox
-
-    async def _call() -> None:
-        sandbox = await Sandbox.connect(SANDBOX_ID)
-        try:
-            version = await sandbox.run("opencode_version")
-            setup = await sandbox.run("opencode_setup_check")
-            ok = version == PINNED and setup == "ok"
-            record("PASS" if ok else "FAIL", "Sandbox.run", f"version={version!r} setup={setup!r}")
-        finally:
-            close = getattr(sandbox, "close", None)
-            if callable(close):
-                await close()
-
-    asyncio.run(_call())
+        modified = read_file("calc.py")
+        record(modified != source, "L3 existing source was modified on target")
+        record(read_file("test_calc.py") == fixed_tests, "L3 seeded independent tests were preserved")
+        record(bool(read_file("report.txt").strip()) and read_file("acceptance.txt") == marker + "\n",
+               "L3 new agent report and exact artifact downloaded from target")
+        after = client.post("/shell", json={"command": test_command, "cwd": project, "timeout": 30})
+        tests = after.json()
+        record(after.status_code == 200 and tests.get("exit_code") == 0
+               and "Ran 3 tests" in tests.get("stderr", ""), "L3 independent remote fixed-test rerun passes")
+        # Additional held-out cases are supplied only after the agent finishes.
+        assertions = (
+            "from calc import add\n"
+            "assert all(add(a, b) == a + b for a, b in [(8, -3), (-7, 4), (99, 101), (0, 12)])\n"
+            "print('INDEPENDENT_OK')\n"
+        )
+        independent = client.post("/shell", json={
+            "command": "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -c " + shlex.quote(assertions),
+            "cwd": project, "timeout": 30,
+        })
+        checked = independent.json()
+        record(independent.status_code == 200 and checked.get("exit_code") == 0
+               and checked.get("stdout", "").strip() == "INDEPENDENT_OK",
+               "L3 independent remote held-out assertions pass")
+    except Exception as exc:
+        print(f"[FAIL] L3 coding acceptance aborted ({type(exc).__name__}); response content omitted", flush=True)
+        record(False, "L3 real coding acceptance completed")
+    finally:
+        deleted = client.delete("/files", params={"path": project})
+        record(deleted.status_code in {200, 404}, "L3 owned coding project cleanup")
 
 
 def main() -> int:
-    print(f"opencode e2e  base_url={BASE_URL}", flush=True)
-    with httpx.Client(base_url=BASE_URL, timeout=TIMEOUT) as client:
-        check_health(client)
-        check_commands(client)
-        check_missing_prompt(client)
-        check_version_and_setup(client)
-        check_serve(client)
+    headers = {}
+    token = os.environ.get("ABX_SERVER_TOKEN", "")
+    if token:
+        headers["Authorization"] = "Bearer " + token
+    with httpx.Client(base_url=BASE_URL, headers=headers, timeout=40) as client:
+        health = client.get("/health")
+        record(health.status_code == 200 and health.json().get("status") == "ok", "target health")
+        commands = client.get("/commands")
+        entries = commands.json().get("commands", [])
+        names = {entry.get("name") for entry in entries}
+        run = next((entry for entry in entries if entry.get("name") == "opencode_run"), {})
+        params = {arg.get("name") for arg in run.get("args", [])}
+        record(commands.status_code == 200 and REQUIRED <= names and RUN_PARAMS <= params,
+               "target command registration and parameters")
+        missing = client.post("/commands/opencode_run", json={})
+        record(missing.status_code == 400, "missing required prompt returns 400")
+        invalid = client.post("/commands/opencode_run", json={"prompt": "  "})
+        record(invalid.status_code == 500, "empty prompt fails before CLI execution")
+        unknown = client.post("/commands/no_such_command", json={})
+        record(unknown.status_code == 404, "unknown command returns 404")
+        check_code_artifact(client)
+        version = client.post("/commands/opencode_version", json={})
+        record(version.status_code == 200 and version.json().get("result") == PINNED,
+               "required target CLI version matches pin")
+        setup = client.post("/commands/opencode_setup_check", json={})
+        record(setup.status_code == 200 and setup.json().get("result") == "ok",
+               "required target setup check")
+        try:
+            started = client.post("/commands/opencode_serve_start", json={"port": 4096, "hostname": "0.0.0.0"})
+            state = started.json().get("result", {})
+            record(started.status_code == 200 and state.get("running") is True
+                   and state.get("healthy") is True and state.get("version") == PINNED
+                   and state.get("port") == 4096, "target serve startup and target-side authenticated health/version")
+            status = client.post("/commands/opencode_serve_status", json={})
+            state = status.json().get("result", {})
+            record(status.status_code == 200 and state.get("running") is True and state.get("version") == PINNED,
+                   "target serve status")
+            again = client.post("/commands/opencode_serve_start", json={"port": 4096, "hostname": "0.0.0.0"})
+            record(again.status_code == 200 and again.json().get("result", {}).get("pid") == state.get("pid"),
+                   "target serve start is idempotent")
+        finally:
+            stopped = client.post("/commands/opencode_serve_stop", json={})
+            record(stopped.status_code == 200 and stopped.json().get("result") == "stopped", "target serve stop")
+            status = client.post("/commands/opencode_serve_status", json={})
+            record(status.status_code == 200 and status.json().get("result", {}).get("running") is False,
+                   "target serve stopped state")
         check_model_call(client)
-    check_sdk()
-    failed = sum(1 for status, _, _ in RESULTS if status == "FAIL")
-    passed = sum(1 for status, _, _ in RESULTS if status == "PASS")
-    skipped = sum(1 for status, _, _ in RESULTS if status == "SKIP")
-    print(f"SUMMARY {passed} PASS, {skipped} SKIP, {failed} FAIL", flush=True)
+    failed = sum(status == "FAIL" for status, _ in RESULTS)
+    print(f"SUMMARY {len(RESULTS) - failed} PASS, {failed} FAIL, 0 SKIP (L3 status printed separately)", flush=True)
     return 1 if failed else 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except Exception as exc:
+        print(f"[FAIL] acceptance aborted ({type(exc).__name__}); response content omitted", flush=True)
+        sys.exit(1)

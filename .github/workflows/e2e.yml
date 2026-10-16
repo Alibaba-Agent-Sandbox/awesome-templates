@@ -6,7 +6,10 @@ on:
 
 jobs:
   local-e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      E2E_RUN_LLM: "0"
     steps:
       - uses: actions/checkout@v4
 
@@ -14,17 +17,44 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: alibaba-agent-sandbox/python-sdk
+          # Includes the postponed-annotation dataclass command-loader fix.
+          ref: e2cb27e24fde0a67112f82b8d44af463445a5d1a
           path: vendor/python-sdk
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
 
       - name: Install the in-sandbox server and the test client
-        run: python -m pip install --upgrade pip && python -m pip install ./vendor/python-sdk/server-sdk httpx pyyaml
+        run: |
+          python -m pip install ./vendor/python-sdk/server-sdk httpx==0.28.1 pyyaml==6.0.3 pytest==9.1.1 playwright==1.58.0
+          python -m playwright install --with-deps chromium
+
+      - name: Install pinned upstream CLIs for local smoke checks
+        run: |
+          npm install --global @openai/codex@0.162.1 @anthropic-ai/claude-code@2.0.76 opencode-ai@1.19.0
+          codex --version
+          claude --version
+          test "$(opencode --version)" = "1.19.0"
 
       - name: Lint templates and unit-test the checker
-        run: python3 scripts/test_spec_tools.py && python3 scripts/check_template.py --all
+        run: |
+          python3 scripts/test_spec_tools.py
+          python3 scripts/check_template.py --all
+
+      - name: Run process, privacy, and acceptance-harness regressions
+        run: |
+          python -m pytest -q python-hello/test_command_errors.py
+          python -m pytest -q claude-code/tests
+          python -m pytest -q codex/test_commands.py
+          python -m pytest -q opencode/test_commands.py opencode/test_e2e_protocol.py
+          python -m pytest -q codex-agent-api/test_commands.py codex-agent-api/test_e2e_protocol.py codex-agent-api/test_http_runtime.py
 
       - name: Run template e2e against locally started servers
-        run: python3 scripts/run_local_e2e.py
+        run: |
+          python3 scripts/run_local_e2e.py
+          echo "Local L0 checks only; image builds, cloud deployment, and real model acceptance are not covered."

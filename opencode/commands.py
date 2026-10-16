@@ -9,12 +9,14 @@ serve --commands`` imports this module.
 """
 from __future__ import annotations
 
+import base64
 import json
 import os
 import signal
 import subprocess
 import tempfile
 import time
+import threading
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -25,20 +27,44 @@ PINNED_VERSION = "1.19.0"
 DEFAULT_MODEL = "dashscope/qwen3.8-flash"
 RUN_TIMEOUT_S = 600
 SERVE_READY_S = 20
-STATE_PATH = Path("/tmp/opencode-serve.json")
-LOG_PATH = Path("/tmp/opencode-serve.log")
 IMAGE_CONFIG = Path("/home/user/app/opencode.json")
+MODULE_CONFIG = Path(__file__).resolve().with_name("opencode.json")
+_SERVE_LOCK = threading.RLock()
+_SERVE_PROCESS: subprocess.Popen | None = None
+_SERVE_PORT = 0
+_SERVE_HOST = ""
+_SERVE_OWNER_PID = 0
 
 
 def _redact(text: str) -> str:
     redacted = text
     for key, value in os.environ.items():
-        if not value or len(value) < 8:
+        if not value:
             continue
         upper = key.upper()
-        if any(part in upper for part in ("KEY", "SECRET", "TOKEN", "PASSWORD")):
+        if any(part in upper for part in ("KEY", "SECRET", "TOKEN", "PASSWORD", "CREDENTIAL")):
             redacted = redacted.replace(value, "***")
     return redacted
+
+
+def _redact_event(value):
+    if isinstance(value, str):
+        return _redact(value)
+    if isinstance(value, list):
+        return [_redact_event(item) for item in value]
+    if isinstance(value, dict):
+        return {_redact(key): _redact_event(item) for key, item in value.items()}
+    return value
+
+
+def _safe_events(stdout: str) -> str:
+    lines = []
+    for line in stdout.splitlines():
+        try:
+            lines.append(json.dumps(_redact_event(json.loads(line)), ensure_ascii=False))
+        except json.JSONDecodeError:
+            lines.append(_redact(line))
+    return "\n".join(lines) + ("\n" if stdout.endswith("\n") else "")
 
 
 def _resolved_model(model: str) -> str:
@@ -50,9 +76,11 @@ def _config_file() -> Path:
     candidates: list[Path] = []
     override = os.environ.get("OPENCODE_CONFIG", "").strip()
     if override:
-        candidates.append(Path(override))
-    candidates.append(IMAGE_CONFIG)
-    candidates.append(Path.cwd() / "opencode.json")
+        path = Path(override)
+        if not path.is_file():
+            raise RuntimeError("OPENCODE_CONFIG does not point to a readable config file")
+        return path
+    candidates.extend((MODULE_CONFIG, Path.cwd() / "opencode.json"))
     for path in candidates:
         if path.is_file():
             return path
@@ -114,11 +142,10 @@ def _child_config(model: str) -> tuple[str, Path | None]:
 def _workdir(cwd: str) -> str:
     raw = (cwd or "").strip()
     if not raw:
-        default = "/home/user/app"
-        return default if os.path.isdir(default) else os.getcwd()
+        return str(MODULE_CONFIG.parent)
     path = Path(raw)
     if not path.is_dir():
-        raise ValueError(f"cwd is not a directory: {raw}")
+        raise ValueError("cwd must be an existing directory")
     return str(path.resolve())
 
 
@@ -136,14 +163,15 @@ def _run(argv: list[str], *, cwd: str, timeout: int, env: dict[str, str] | None 
         )
     except FileNotFoundError as exc:
         raise RuntimeError("opencode CLI was not found on PATH") from exc
-    except subprocess.TimeoutExpired as exc:
-        raise RuntimeError(f"opencode timed out after {timeout} seconds") from exc
+    except subprocess.TimeoutExpired:
+        raise RuntimeError(f"opencode timed out after {timeout} seconds; CLI output omitted") from None
 
 
 def _require_ok(result: subprocess.CompletedProcess[str], what: str) -> str:
     if result.returncode != 0:
-        detail = _redact((result.stderr or result.stdout or "").strip())
-        raise RuntimeError(detail or f"{what} exited {result.returncode}")
+        # CLI failures can include prompts, tool arguments, URLs and credentials.
+        # Never return their stdout/stderr in the HTTP error envelope.
+        raise RuntimeError(f"{what} exited {result.returncode}; CLI output omitted")
     return result.stdout
 
 
@@ -181,7 +209,11 @@ def _execute_run(
     text = prompt.strip()
     if not text:
         raise ValueError("prompt is required")
+    if session.strip() and continue_session:
+        raise ValueError("session and continue_session are mutually exclusive")
     chosen = _resolved_model(model)
+    if chosen.startswith("-") or agent.strip().startswith("-") or session.strip().startswith("-"):
+        raise ValueError("model, agent and session must not start with an option prefix")
     workdir = _workdir(cwd)
     config_path, temp_dir = _child_config(chosen)
     env = os.environ.copy()
@@ -208,7 +240,7 @@ def _execute_run(
         argv.extend(["--session", session_arg])
     if continue_session:
         argv.append("--continue")
-    argv.append(text)
+    argv.extend(["--", text])
     try:
         result = _run(argv, cwd=workdir, timeout=RUN_TIMEOUT_S, env=env)
     finally:
@@ -216,93 +248,100 @@ def _execute_run(
             for child in temp_dir.iterdir():
                 child.unlink(missing_ok=True)
             temp_dir.rmdir()
-    stdout = _require_ok(result, "opencode run")
+    stdout = _safe_events(_require_ok(result, "opencode run"))
     visible, session_id = _parse_events(stdout)
-    return {
+    return _redact_event({
         "text": visible,
         "stdout": stdout,
         "session_id": session_id,
         "model": chosen,
         "agent": agent_name,
         "cwd": workdir,
-    }
+    })
 
 
 def _version_text() -> str:
-    result = _run(["opencode", "--version"], cwd=os.getcwd(), timeout=30)
+    env = os.environ.copy()
+    env["OPENCODE_DISABLE_AUTOUPDATE"] = "true"
+    result = _run(["opencode", "--version"], cwd=str(MODULE_CONFIG.parent), timeout=30, env=env)
     return _require_ok(result, "opencode --version").strip()
-
-
-def _read_state() -> dict | None:
-    if not STATE_PATH.is_file():
-        return None
-    try:
-        data = json.loads(STATE_PATH.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return None
-    return data if isinstance(data, dict) else None
-
-
-def _pid_alive(pid: int) -> bool:
-    if pid <= 0:
-        return False
-    try:
-        os.kill(pid, 0)
-    except OSError:
-        return False
-    return True
 
 
 def _healthy(port: int) -> bool:
     url = f"http://127.0.0.1:{port}/global/health"
+    request = urllib.request.Request(url)
+    password = os.environ.get("OPENCODE_SERVER_PASSWORD", "")
+    if password:
+        username = os.environ.get("OPENCODE_SERVER_USERNAME", "opencode")
+        value = base64.b64encode(f"{username}:{password}".encode()).decode()
+        request.add_header("Authorization", f"Basic {value}")
     try:
-        with urllib.request.urlopen(url, timeout=1) as resp:
+        # Local service probes must not be sent to an environment HTTP proxy.
+        with urllib.request.build_opener(urllib.request.ProxyHandler({})).open(request, timeout=1) as resp:
             body = json.loads(resp.read().decode("utf-8"))
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError):
         return False
-    return isinstance(body, dict) and body.get("healthy") is True
+    return isinstance(body, dict) and body.get("healthy") is True and body.get("version") == PINNED_VERSION
+
+
+def _owned_serve_alive() -> bool:
+    """Only the Popen child created by this interpreter can authorize a signal.
+
+    PID/state files cannot prove ownership, and are deliberately never read.
+    poll() reaps an exited child before it could be mistaken for a reused PID.
+    """
+    proc = _SERVE_PROCESS
+    return (proc is not None and _SERVE_OWNER_PID == os.getpid()
+            and proc.poll() is None)
 
 
 def _serve_status() -> dict[str, object]:
-    state = _read_state() or {}
-    pid = int(state.get("pid") or 0)
-    port = int(state.get("port") or 0)
-    hostname = str(state.get("hostname") or "")
-    alive = _pid_alive(pid)
-    healthy = _healthy(port) if alive and port else False
-    if not alive and STATE_PATH.is_file():
-        STATE_PATH.unlink(missing_ok=True)
-    return {
-        "running": alive and healthy,
-        "port": port if alive else 0,
-        "hostname": hostname if alive else "",
-        "pid": pid if alive else 0,
-        "healthy": healthy,
-    }
+    with _SERVE_LOCK:
+        alive = _owned_serve_alive()
+        healthy = _healthy(_SERVE_PORT) if alive else False
+        return {
+            "running": alive and healthy,
+            "port": _SERVE_PORT if alive else 0,
+            "hostname": _SERVE_HOST if alive else "",
+            "pid": _SERVE_PROCESS.pid if alive else 0,
+            "healthy": healthy,
+            "version": PINNED_VERSION if healthy else "",
+        }
+
+
+def _signal_owned_serve(sig: int) -> None:
+    proc = _SERVE_PROCESS
+    if not _owned_serve_alive():
+        return
+    # start_new_session makes the owned child its own group leader. Never
+    # signal a mismatching group or fall back to a PID from external state.
+    try:
+        if os.getpgid(proc.pid) != proc.pid:
+            raise RuntimeError("opencode serve process identity mismatch; signal refused")
+        os.killpg(proc.pid, sig)
+    except ProcessLookupError:
+        pass
 
 
 def _stop_serve() -> None:
-    state = _read_state()
-    if not state:
-        return
-    pid = int(state.get("pid") or 0)
-    if _pid_alive(pid):
-        try:
-            os.killpg(pid, signal.SIGTERM)
-        except OSError:
+    global _SERVE_PROCESS, _SERVE_PORT, _SERVE_HOST, _SERVE_OWNER_PID
+    with _SERVE_LOCK:
+        proc = _SERVE_PROCESS
+        if proc is None:
+            return
+        if _SERVE_OWNER_PID != os.getpid():
+            raise RuntimeError("opencode serve is owned by another interpreter; signal refused")
+        if proc.poll() is None:
+            _signal_owned_serve(signal.SIGTERM)
             try:
-                os.kill(pid, signal.SIGTERM)
-            except OSError:
-                pass
-        deadline = time.monotonic() + 5
-        while time.monotonic() < deadline and _pid_alive(pid):
-            time.sleep(0.1)
-        if _pid_alive(pid):
-            try:
-                os.killpg(pid, signal.SIGKILL)
-            except OSError:
-                pass
-    STATE_PATH.unlink(missing_ok=True)
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                _signal_owned_serve(signal.SIGKILL)
+                proc.wait(timeout=5)
+        _SERVE_PROCESS = None
+        _SERVE_PORT = 0
+        _SERVE_HOST = ""
+        _SERVE_OWNER_PID = 0
 
 
 @command("opencode_run", description="Run OpenCode headless (opencode run --format json).")
@@ -320,7 +359,7 @@ def opencode_run(
 
 @command(
     "opencode",
-    description="Compatibility alias of opencode_run. Returns the raw JSON-event stdout.",
+    description="Compatibility alias of opencode_run. Returns sanitized JSON-event stdout.",
 )
 def opencode(
     prompt: str,
@@ -339,7 +378,7 @@ def opencode_version() -> str:
     """Return ``opencode --version`` with surrounding whitespace removed."""
     found = _version_text()
     if found != PINNED_VERSION:
-        raise RuntimeError(f"opencode version {found} does not match pin {PINNED_VERSION}")
+        raise RuntimeError(f"opencode version does not match pin {PINNED_VERSION}")
     return found
 
 
@@ -348,7 +387,7 @@ def opencode_setup_check() -> str:
     """Return ``ok`` when the pin and ``opencode.json`` match this template."""
     found = _version_text()
     if found != PINNED_VERSION:
-        raise RuntimeError(f"opencode version {found} does not match pin {PINNED_VERSION}")
+        raise RuntimeError(f"opencode version does not match pin {PINNED_VERSION}")
     _assert_dashscope(_load_config(_config_file()))
     return "ok"
 
@@ -356,6 +395,12 @@ def opencode_setup_check() -> str:
 @command("opencode_serve_start", description="Start opencode serve and wait until it is healthy.")
 def opencode_serve_start(port: int = 4096, hostname: str = "0.0.0.0") -> dict[str, object]:
     """Bind ``opencode serve`` and return when ``/global/health`` is healthy."""
+    with _SERVE_LOCK:
+        return _start_serve(port, hostname)
+
+
+def _start_serve(port: int, hostname: str) -> dict[str, object]:
+    global _SERVE_PROCESS, _SERVE_PORT, _SERVE_HOST, _SERVE_OWNER_PID
     if port < 1 or port > 65535:
         raise ValueError("port must be between 1 and 65535")
     host = hostname.strip()
@@ -363,11 +408,11 @@ def opencode_serve_start(port: int = 4096, hostname: str = "0.0.0.0") -> dict[st
         raise ValueError("hostname is required")
     current = _serve_status()
     if current["running"]:
-        if int(current["port"]) != port:
-            raise RuntimeError(f"opencode serve is already running on port {current['port']}")
+        if int(current["port"]) != port or current["hostname"] != host:
+            raise RuntimeError("opencode serve is already running with different bind settings")
         return current
     _stop_serve()
-    config_path, _temp = _child_config(DEFAULT_MODEL)
+    config_path = str(_config_file())
     env = os.environ.copy()
     env["OPENCODE_CONFIG"] = config_path
     env["OPENCODE_DISABLE_AUTOUPDATE"] = "true"
@@ -380,34 +425,28 @@ def opencode_serve_start(port: int = 4096, hostname: str = "0.0.0.0") -> dict[st
         "--port",
         str(port),
     ]
-    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    log = open(LOG_PATH, "ab")
     try:
         proc = subprocess.Popen(
             argv,
             cwd=_workdir(""),
             env=env,
             stdin=subprocess.DEVNULL,
-            stdout=log,
-            stderr=log,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
             start_new_session=True,
         )
     except FileNotFoundError as exc:
-        log.close()
         raise RuntimeError("opencode CLI was not found on PATH") from exc
-    log.close()
-    STATE_PATH.write_text(
-        json.dumps({"pid": proc.pid, "port": port, "hostname": host}) + "\n",
-        encoding="utf-8",
-    )
+    _SERVE_PROCESS = proc
+    _SERVE_PORT = port
+    _SERVE_HOST = host
+    _SERVE_OWNER_PID = os.getpid()
     deadline = time.monotonic() + SERVE_READY_S
     while time.monotonic() < deadline:
         if proc.poll() is not None:
-            tail = ""
-            if LOG_PATH.is_file():
-                tail = _redact(LOG_PATH.read_text(encoding="utf-8", errors="replace")[-800:])
-            STATE_PATH.unlink(missing_ok=True)
-            raise RuntimeError(tail or f"opencode serve exited {proc.returncode}")
+            code = proc.returncode
+            _stop_serve()
+            raise RuntimeError(f"opencode serve exited {code}; CLI output omitted")
         if _healthy(port):
             return _serve_status()
         time.sleep(0.2)
@@ -417,7 +456,7 @@ def opencode_serve_start(port: int = 4096, hostname: str = "0.0.0.0") -> dict[st
 
 @command("opencode_serve_status", description="Report whether opencode serve is healthy.")
 def opencode_serve_status() -> dict[str, object]:
-    """Return the pid file plus a localhost ``/global/health`` probe."""
+    """Report this interpreter's owned child plus its local health probe."""
     return _serve_status()
 
 

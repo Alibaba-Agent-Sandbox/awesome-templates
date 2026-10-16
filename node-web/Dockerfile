@@ -1,44 +1,17 @@
-FROM python:3.12-slim
+FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG=C.UTF-8
-
-# python:3.12-slim already provides python3 and pip. Install them when the base image does not.
-RUN if ! command -v python3 >/dev/null 2>&1 || ! command -v pip >/dev/null 2>&1; then \
-        apt-get update && apt-get install -y --no-install-recommends python3 python3-pip \
-        && rm -rf /var/lib/apt/lists/*; \
-    fi
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        ca-certificates \
-        curl \
-        git \
-        gnupg \
-        jq \
-        wget \
-    && rm -rf /var/lib/apt/lists/*
-
-# Node.js 20 is this template's web runtime (Express, Fastify, and similar).
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
-    && rm -rf /var/lib/apt/lists/* \
-    && npm install -g --force yarn nodemon pm2
-
-# Install agent-sandbox-server (the in-sandbox HTTP server, import agent_sandbox.server).
-# abx template deploy injects the wheel into the build context. Without a wheel, install from PyPI.
+ENV NODE_ENV=production
+ENV PORT=3000
+# The platform base supplies Node 20 and Python 3.13. No floating installers.
 COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
         pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
     else \
-        pip install --no-cache-dir agent-sandbox-server; \
+        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/35da216a300f1e2e84254a1cf4b4a7ea98681505.tar.gz#subdirectory=server-sdk"; \
     fi
 
-ENV NODE_ENV=production
-ENV PORT=3000
-
-WORKDIR /app
-COPY commands.py .
-
-EXPOSE 3000
-EXPOSE 9000
-CMD ["python3", "commands.py"]
+WORKDIR /home/user/app
+COPY --chown=user:user index.js .
+COPY --chown=user:user commands.py .
+USER user
+EXPOSE 3000 9000

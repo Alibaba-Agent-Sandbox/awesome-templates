@@ -234,6 +234,10 @@ abx exec <sandbox-id> -- python3 -c 'print(1)'
 
 Python SDK. The client distribution on PyPI is `agent-sandbox-client`. The import stays `agent_sandbox`. `pip install agent-sandbox` installs an unrelated project.
 
+Check package availability before using the index command below. For an
+unpublished release, use the paired, pinned source installation in
+[Python client installation](./python-client-installation.md).
+
 ```bash
 python3 -m pip install agent-sandbox-client
 ```
@@ -256,9 +260,27 @@ asyncio.run(main())
 
 `sb.run` posts the keyword arguments as the JSON body of `POST /commands/hello` and returns the `result` value. `sb.commands.run` is the shell API. Attach to an existing sandbox with `await Sandbox.connect(sandbox_id)`.
 
-On python-sdk 0.3.0, `Sandbox.create_sync`, `Sandbox.connect_sync`, `Sandbox.list_sync`, and `Sandbox.kill_by_id_sync` raise `TypeError` (the class argument is dropped). Instance methods such as `sb.run_sync` work after `await Sandbox.connect`. Use the async constructors above until [python-sdk#22](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues/22) is fixed.
+The checked-out python-sdk includes the sync-classmethod fix in [python-sdk#24](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/24). Older commits that drop the class argument raise `TypeError`; update the SDK or use async constructors. Record the source commit as well as the package version when validating a checkout.
 
 Local L0 does not create a cloud sandbox. `scripts/run_local_e2e.py` starts `python3 commands.py`, sets `E2E_BASE_URL`, and runs `e2e_test.py`. That test may use HTTP against `E2E_BASE_URL`. Every cloud path uses the SDK above.
+
+### HTTP POST contract
+
+Every README has a dedicated `Quick start (HTTP POST)` section after the Python
+SDK section. It shows the same task as CLI/SDK, the sandbox port URL,
+`POST /commands/<name>`, `Content-Type: application/json`, the direct JSON
+argument object (no `args` wrapper), and the `{"result": ...}` response.
+Document required/default values, types, allowed ranges, 400 argument errors,
+401 authentication, 404 unknown commands, and 500 execution errors. Explain
+`ABX_SERVER_TOKEN` authentication separately from provider gateway authentication;
+never put real credentials in an example. Use the gateway access header required
+by the selected provider in addition to any server authentication.
+
+Named commands return buffered results. Distinguish a command execution deadline
+from the client HTTP timeout: `Sandbox.run(timeout=...)` controls the HTTP request,
+so a command deadline parameter must have a different name, such as
+`command_timeout` or `timeout_s`. A client timeout does not guarantee cancellation.
+Use process APIs for running, reconnecting to, and cancelling background tasks.
 
 ## Test levels
 
@@ -269,7 +291,7 @@ Record a level only when it passed. The README Verified table and `tested_on` li
 | L0 | `python3 scripts/run_local_e2e.py` starts the template and `e2e_test.py` exits 0. A missing model key inside one case may print SKIP. That SKIP is not acceptance of the agent. `E2E_RUN_LLM=0` is what the local script sets. |
 | L1 | `docker build` succeeds and the log shows the pinned upstream version. |
 | L2 | `abx template deploy` reaches READY, `Sandbox.create(template=<id>)` (or `connect`) succeeds, and each smoke command is invoked from outside the sandbox through the SDK and asserted. Record provider `alicloud-express`, the UTC date, template version, and SDK version. Do not record the template id. |
-| L3 | A real model or product call with a key this environment has. The prompt asks for the marker `ABX_E2E_OK` and the output contains it. An empty key is a failure, not a skip, when `E2E_REQUIRE_LLM=1`. |
+| L3 | A real model or product call with a compatible key. Coding agents must modify an existing source file, create a new artifact, and pass independently executed tests in the sandbox. Verify artifacts through the remote files/process APIs when the server is remote. A response marker alone is insufficient. An empty key fails when `E2E_REQUIRE_LLM=1`. |
 | L4 | `e2b`, `opensandbox`, `alicloud-container`, or `cubesandbox`, only after a run on that provider. |
 
 `scripts/express_e2e.py <dir>` is the L2 runner. It writes `evidence/express-<YYYY-MM-DD>.json` only when every smoke command passed through the CLI and the SDK:
@@ -316,6 +338,7 @@ Inside the template README, `## Verified` is either the sentence `No provider ha
 | Problem solved | 解决的问题 |
 | Quick start (CLI) | 快速开始（CLI） |
 | Quick start (Python SDK) | 快速开始（Python SDK） |
+| Quick start (HTTP POST) | 快速开始（HTTP POST） |
 | Command reference | 命令参考 |
 | Configuration | 配置 |
 | Resources | 资源 |

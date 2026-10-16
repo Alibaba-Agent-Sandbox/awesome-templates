@@ -13,7 +13,7 @@
 | `codex_agents_write` | 把 `AGENTS.md` 写到工作目录 |
 | `codex` | `codex_exec` 的兼容别名，只有 `prompt` 和 `model` |
 
-0.162.1 不接受旧的 `codex -p ... --output-format json`，也不接受 `--full-auto`。沙箱探测失败时（Express 上常见：没有 capabilities，bubblewrap user namespace / seccomp / 遗留 landlock 起不来），`codex_exec` 加上 `--dangerously-bypass-approvals-and-sandbox`。探测成功且 `sandbox=auto` 时用 `--sandbox workspace-write` 和 `approval_policy="never"`。
+0.162.1 不接受旧的 `codex -p ... --output-format json`，也不接受 `--full-auto`。沙箱探测失败时（Express 上常见：没有 capabilities，bubblewrap user namespace / seccomp / 遗留 landlock 起不来），仅 `sandbox=auto` 自动加上 `--dangerously-bypass-approvals-and-sandbox`；显式 `sandbox=bypass` 也使用该标志。显式 `read-only`、`workspace-write` 或 `danger-full-access` 在探测失败时会在创建工作目录、git 或配置之前拒绝执行。探测成功且 `sandbox=auto` 时用 `--sandbox workspace-write` 和 `approval_policy="never"`。
 
 `apply-patch`（issue #60）是独立的 `codex-apply-patch` 文件工具，不在这个目录里构建。`codex-agent-api`（issue #23）是 Agents API HTTP 服务，和这里的 CLI 命令不是同一个控制面。
 

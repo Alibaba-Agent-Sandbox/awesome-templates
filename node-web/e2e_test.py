@@ -1,249 +1,125 @@
 #!/usr/bin/env python3
-"""End-to-end test suite for the ``node-web`` template.
-
-Exercises built-in routes (/health, /commands), the custom ``serve``
-command (upload a minimal Node app, start it, verify, kill it), FILE_OPS
-round-trip and PROCESS shell execution against a running server.
-
-Usage::
-
-    python3 e2e_test.py                                # http://localhost:9000
-    E2E_BASE_URL=http://host:9000 python3 e2e_test.py
-"""
+"""Real Node service/build lifecycle over the server HTTP API; no mocks or keys."""
 from __future__ import annotations
 
 import base64
 import json
 import os
+from pathlib import PurePosixPath
 import sys
-import time
+import uuid
 
 import httpx
 
-BASE_URL = os.environ.get("E2E_BASE_URL", "http://localhost:9000").rstrip("/")
-WORKSPACE = os.environ.get("E2E_WORKSPACE", "")  # empty → auto-detect
-TIMEOUT = httpx.Timeout(connect=10.0, read=60.0, write=30.0, pool=10.0)
-
-RESULTS: list[tuple[str, str, str]] = []
+BASE_URL = os.environ.get("E2E_BASE_URL", "http://127.0.0.1:9000").rstrip("/")
+WORKSPACE = os.environ.get("E2E_WORKSPACE", "/home/user/app")
+PASSED = 0
 
 
-def record(status: str, test: str, detail: str = "") -> None:
-    RESULTS.append((status, test, detail))
-    line = f"[{status}] {test}"
-    if detail:
-        line += f" — {detail}"
-    print(line, flush=True)
-
-
-def _short(value: object, limit: int = 160) -> str:
-    text = value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)
-    return text if len(text) <= limit else text[: limit - 3] + "..."
-
-
-def detect_workspace(client: httpx.Client) -> str:
-    """Find a writable directory accepted by the server's path guard."""
-    candidates = ([WORKSPACE] if WORKSPACE else []) + ["/home/user", "/workspace"]
-    for candidate in candidates:
-        probe = f"{candidate}/.e2e_probe"
-        try:
-            resp = client.post("/files/upload-stream", json={
-                "path": probe,
-                "content_base64": base64.b64encode(b"probe").decode(),
-            })
-            if resp.status_code == 200:
-                client.delete("/files", params={"path": probe})
-                return candidate
-        except Exception:  # noqa: BLE001
-            continue
-    return ""
-
-
-def preflight(client: httpx.Client) -> bool:
-    try:
-        resp = client.get("/health")
-        ok = resp.status_code == 200 and resp.json().get("status") == "ok"
-        print(f"[{'PASS' if ok else 'FAIL'}] preflight GET /health — HTTP {resp.status_code}",
-              flush=True)
-        return ok
-    except Exception as exc:  # noqa: BLE001
-        print(f"[FAIL] preflight GET /health — {exc}", flush=True)
-        return False
-
-
-def group_builtin(client: httpx.Client) -> None:
-    try:
-        resp = client.get("/commands")
-        body = resp.json()
-        entries = body.get("commands", body if isinstance(body, list) else [])
-        names = {c.get("name") for c in entries}
-        ok = resp.status_code == 200 and "serve" in names
-        record("PASS" if ok else "FAIL", "GET /commands",
-               f"HTTP {resp.status_code}, listed={sorted(n for n in names if n)}")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", "GET /commands", f"exception: {exc}")
-
-
-def group_commands(client: httpx.Client) -> None:
-    # serve failure path: entry file does not exist → command must report 500.
-    try:
-        resp = client.post("/commands/serve",
-                           json={"entry": "no_such_entry_e2e.js", "port": 3999})
-        ok = resp.status_code == 500 and "error" in resp.json()
-        record("PASS" if ok else "FAIL", "POST /commands/serve (missing entry)",
-               f"HTTP {resp.status_code} (expected 500)")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", "POST /commands/serve (missing entry)", f"exception: {exc}")
-
-    # serve success path: upload a tiny HTTP app, start it, probe it, kill it.
-    if not WORKSPACE:
-        record("SKIP", "POST /commands/serve (start)",
-               "no writable workspace detected — set E2E_WORKSPACE")
-        return
-    app_path = f"{WORKSPACE}/e2e_index.js"
-    app_src = (
-        "const http = require('http');"
-        "http.createServer((req, res) => {"
-        "  res.writeHead(200, {'Content-Type': 'text/plain'});"
-        "  res.end('e2e-ok');"
-        "}).listen(process.env.PORT || 3000);"
-    )
-    try:
-        resp = client.post("/files/upload-stream", json={
-            "path": app_path,
-            "content_base64": base64.b64encode(app_src.encode()).decode(),
-        })
-        seeded = resp.status_code == 200
-        record("PASS" if seeded else "FAIL", "POST /files/upload-stream (app seed)",
-               f"HTTP {resp.status_code}")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", "POST /files/upload-stream (app seed)", f"exception: {exc}")
-        seeded = False
-    if not seeded:
-        record("SKIP", "POST /commands/serve (start)", "app upload failed")
-        return
-
-    try:
-        resp = client.post("/commands/serve", json={"entry": "e2e_index.js", "port": 3998})
-        body = resp.json()
-        result = body.get("result") or {}
-        pid = result.get("pid")
-        ok = (
-            resp.status_code == 200
-            and result.get("status") == "running"
-            and result.get("port") == 3998
-            and isinstance(pid, int)
-        )
-        record("PASS" if ok else "FAIL", "POST /commands/serve (start)",
-               f"HTTP {resp.status_code}, pid={pid}, result={_short(result, 120)}")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", "POST /commands/serve (start)", f"exception: {exc}")
-        pid = None
-
-    if isinstance(pid, int):
-        # Give the server a moment, then kill it via the PROCESS shell route.
-        time.sleep(1.0)
-        try:
-            resp = client.post("/shell", json={"command": f"kill {pid}"})
-            ok = resp.status_code == 200
-            record("PASS" if ok else "FAIL", "POST /shell kill serve pid",
-                   f"HTTP {resp.status_code}")
-        except Exception as exc:  # noqa: BLE001
-            record("FAIL", "POST /shell kill serve pid", f"exception: {exc}")
-
-        # Best-effort cleanup of the uploaded app file.
-        try:
-            client.delete("/files", params={"path": app_path})
-        except Exception:  # noqa: BLE001
-            pass
-
-
-def group_files(client: httpx.Client) -> None:
-    if not WORKSPACE:
-        record("SKIP", "files upload/download round-trip",
-               "no writable workspace detected — set E2E_WORKSPACE")
-        return
-    path = f"{WORKSPACE}/e2e_node_web.txt"
-    content = "node-web e2e file round-trip\n"
-    encoded = base64.b64encode(content.encode()).decode()
-    try:
-        up = client.post("/files/upload-stream",
-                         json={"path": path, "content_base64": encoded})
-        down = client.get("/files/download-stream", params={"path": path})
-        body = down.json()
-        ok = up.status_code == 200 and down.status_code == 200 \
-            and body.get("content_base64") == encoded
-        record("PASS" if ok else "FAIL", "files upload/download round-trip",
-               f"upload HTTP {up.status_code}, download HTTP {down.status_code}")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", "files upload/download round-trip", f"exception: {exc}")
-    try:
-        resp = client.get("/files/list", params={"path": WORKSPACE})
-        ok = resp.status_code == 200
-        record("PASS" if ok else "FAIL", "GET /files/list",
-               f"HTTP {resp.status_code}")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", "GET /files/list", f"exception: {exc}")
-
-
-def group_shell(client: httpx.Client) -> None:
-    try:
-        resp = client.post("/shell", json={"command": "node --version"})
-        body = resp.json()
-        stdout = str(body.get("stdout", "")).strip()
-        ok = resp.status_code == 200 and stdout.startswith("v")
-        record("PASS" if ok else "FAIL", "POST /shell node --version",
-               f"HTTP {resp.status_code}, node={stdout!r}")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", "POST /shell node --version", f"exception: {exc}")
-    try:
-        resp = client.post("/shell", json={"command": "echo hello"})
-        body = resp.json()
-        ok = resp.status_code == 200 and "hello" in str(body.get("stdout", ""))
-        record("PASS" if ok else "FAIL", "POST /shell echo",
-               f"HTTP {resp.status_code}")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", "POST /shell echo", f"exception: {exc}")
-
-
-def summary() -> int:
-    passed = sum(1 for s, _, _ in RESULTS if s == "PASS")
-    failed = sum(1 for s, _, _ in RESULTS if s == "FAIL")
-    skipped = sum(1 for s, _, _ in RESULTS if s == "SKIP")
-    print("\n" + "=" * 74, flush=True)
-    print("SUMMARY — node-web", flush=True)
-    print("=" * 74, flush=True)
-    print(f"{passed} passed, {failed} failed, {skipped} skipped "
-          f"(total {len(RESULTS)})", flush=True)
-    if failed:
-        print("\nFailed tests:", flush=True)
-        for s, t, d in RESULTS:
-            if s == "FAIL":
-                print(f"  - {t}: {d}", flush=True)
-    print("=" * 74, flush=True)
-    return 1 if failed else 0
+def check(condition: bool, label: str) -> None:
+    global PASSED
+    if not condition:
+        raise AssertionError(label)
+    PASSED += 1
+    print(f"PASS {label}", flush=True)
 
 
 def main() -> int:
-    print("node-web end-to-end suite", flush=True)
-    print(f"  base_url : {BASE_URL}", flush=True)
-    print("-" * 74, flush=True)
-    with httpx.Client(base_url=BASE_URL, timeout=TIMEOUT) as client:
-        if not preflight(client):
-            print("server unreachable — aborting", flush=True)
-            return 2
-        print("\n-- Built-in routes --", flush=True)
-        group_builtin(client)
-        print("\n-- Workspace --", flush=True)
-        global WORKSPACE
-        WORKSPACE = detect_workspace(client)
-        print(f"  workspace: {WORKSPACE}", flush=True)
-        print("\n-- Custom commands (serve) --", flush=True)
-        group_commands(client)
-        print("\n-- File ops --", flush=True)
-        group_files(client)
-        print("\n-- Shell --", flush=True)
-        group_shell(client)
-    return summary()
+    directory = str(PurePosixPath(WORKSPACE) / ("abx_e2e_node_web_" + uuid.uuid4().hex))
+    # Emit 4 MiB *before* listening and respect Node's stdout backpressure. An
+    # unconsumed Popen PIPE prevents readiness here instead of silently passing.
+    app = '''const http = require('node:http');
+const {once} = require('node:events');
+(async () => {
+ for (let i = 0; i < 512; i++) {
+   if (!process.stdout.write('x'.repeat(8192))) await once(process.stdout, 'drain');
+ }
+ console.error('BOOT_DONE');
+ http.createServer((req, res) => {
+   if (req.url === '/missing') {res.writeHead(404); res.end('missing'); return;}
+   res.writeHead(200); res.end('real-node-response');
+ }).listen(Number(process.env.PORT), '0.0.0.0');
+})();
+'''
+    with httpx.Client(base_url=BASE_URL, timeout=45) as client:
+        def call(name: str, args: dict | None = None, expected: int = 200):
+            response = client.post(f"/commands/{name}", json=args or {})
+            check(response.status_code == expected, f"{name}: HTTP {expected}")
+            body = response.json()
+            return body.get("result") if expected == 200 else body
+
+        def upload(name: str, text: str) -> None:
+            response = client.post("/files/upload-stream", json={
+                "path": f"{directory}/{name}",
+                "content_base64": base64.b64encode(text.encode()).decode(),
+            })
+            check(response.status_code == 200, f"upload {name}")
+
+        health = client.get("/health")
+        check(health.status_code == 200 and health.json()["status"] == "ok", "server health")
+        names = {item["name"] for item in client.get("/commands").json()["commands"]}
+        check({"serve", "start", "dev", "build", "status", "stop", "logs", "request", "smoke"} <= names,
+              "complete command discovery")
+        check(client.post("/files/mkdir", json={"path": directory}).status_code == 200, "workspace mkdir")
+        try:
+            call("stop")
+            check(call("status")["status"] == "stopped", "initial stopped")
+            call("serve", {"cwd": directory, "entry": "missing.js"}, 500)
+            call("serve", {"port": "not-a-number"}, 400)
+            call("logs", {"max_bytes": 0}, 500)
+            call("not_a_command", expected=404)
+            upload("index.js", app)
+            upload("package.json", json.dumps({"private": True, "scripts": {
+                "start": "node index.js", "dev": "node index.js", "build": "node build.js"}}))
+            upload("build.js", "require('node:fs').writeFileSync('build-artifact.txt', 'built-by-node');console.log('built');")
+            result = call("serve", {"cwd": directory, "port": 39671, "timeout_s": 15})
+            check(result["status"] == "running" and result["http_status"] == 200, "high-output HTTP readiness")
+            response = call("request")
+            check(response["status_code"] == 200 and response["body"] == "real-node-response", "actual Node response")
+            check(call("request", {"path": "/missing"})["status_code"] == 404, "application HTTP error preserved")
+            check(call("status")["http_ready"] is True, "status probes HTTP")
+            check("BOOT_DONE" in call("logs", {"max_bytes": 131072})["output"], "4 MiB drained; stderr available")
+            check(len(call("logs", {"max_bytes": 4096})["output"]) <= 4096, "bounded log response")
+            call("request", {"path": "//other-host/"}, 500)
+            call("serve", {"cwd": directory, "port": 39672}, 500)
+            # Independent probe via the server process API, not the template's
+            # request helper: proves Node's response over an actual socket.
+            probe = "node -e \"require('http').get('http://127.0.0.1:39671/',r=>r.pipe(process.stdout))\""
+            response = client.post("/shell", json={"command": probe})
+            check(response.status_code == 200 and response.json()["stdout"] == "real-node-response", "independent socket request")
+            call("stop")
+            check(call("status")["status"] == "stopped", "serve process stopped")
+            call("request", expected=500)
+            build = call("build", {"cwd": directory})
+            check(build["exit_code"] == 0 and "built" in build["output"], "real npm build")
+            artifact = client.get("/files/download-stream", params={"path": directory + "/build-artifact.txt"})
+            check(artifact.status_code == 200 and base64.b64decode(artifact.json()["content_base64"]) == b"built-by-node",
+                  "independently read build artifact")
+            for name in ("start", "dev"):
+                result = call(name, {"cwd": directory, "port": 39671, "timeout_s": 15})
+                check(result["status"] == "running", f"npm {name} starts in background")
+                check(call("request")["body"] == "real-node-response", f"npm {name} HTTP response")
+                call("stop")
+                # Rebinding the same port in the next iteration proves children
+                # of the npm launcher were stopped, not merely the npm parent.
+            upload("build.js", "process.exit(7)")
+            call("build", {"cwd": directory}, 500)
+            upload("build.js", "setTimeout(()=>{}, 10000)")
+            call("build", {"cwd": directory, "timeout_s": 1}, 500)
+            upload("no-http.js", "require('net').createServer(()=>{}).listen(Number(process.env.PORT), '0.0.0.0')")
+            call("serve", {"entry": "no-http.js", "cwd": directory, "port": 39671, "timeout_s": 1}, 500)
+            check(call("status")["status"] == "stopped", "TCP-only listener fails HTTP readiness and is killed")
+            call("serve", {"entry": "index.js", "cwd": directory, "port": 39671})
+            call("stop")
+            call("stop")
+            check(call("smoke") == "node-web ready", "bundled sample real HTTP smoke")
+        finally:
+            call("stop")
+            # Remove only the test-owned directory, preserving user application.
+            response = client.delete("/files", params={"path": directory, "recursive": "true"})
+            check(response.status_code == 200, "workspace cleanup")
+        print(f"node-web: {PASSED} passed; L0 only", flush=True)
+        return 0
 
 
 if __name__ == "__main__":

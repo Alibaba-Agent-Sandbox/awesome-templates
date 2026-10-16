@@ -81,7 +81,7 @@ Argv when the probe succeeds and `sandbox=auto`:
 codex exec --color never --json --skip-git-repo-check -C <cwd> --sandbox workspace-write -c approval_policy="never" -- <prompt>
 ```
 
-Argv when the probe fails, or `sandbox=bypass`:
+Argv when `sandbox=auto` and the probe fails, or `sandbox=bypass`:
 
 ```text
 codex exec --color never --json --skip-git-repo-check -C <cwd> --dangerously-bypass-approvals-and-sandbox -- <prompt>
@@ -89,7 +89,7 @@ codex exec --color never --json --skip-git-repo-check -C <cwd> --dangerously-byp
 
 Resume inserts `resume --last` or `resume <session_id>` before `--`. `--model` is added only when `model` is non-empty. `--full-auto` is not used.
 
-`auto` with a failed probe still bypasses for `read-only`, `workspace-write`, and `danger-full-access`, because those modes cannot be enforced. The result records both the request and `sandbox_applied=bypass`.
+Only `auto` falls back after a failed probe. Explicit `read-only`, `workspace-write`, and `danger-full-access` requests fail before workspace, git, or configuration writes when the sandbox cannot be enforced. Explicit `bypass` remains an operator choice. The result records both the request and the applied mode.
 
 ### codex_config_write
 

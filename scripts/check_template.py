@@ -33,6 +33,7 @@ README_EN = (
     "Problem solved",
     "Quick start (CLI)",
     "Quick start (Python SDK)",
+    "Quick start (HTTP POST)",
     "Command reference",
     "Configuration",
     "Resources",
@@ -48,6 +49,7 @@ README_ZH = (
     "解决的问题",
     "快速开始（CLI）",
     "快速开始（Python SDK）",
+    "快速开始（HTTP POST）",
     "命令参考",
     "配置",
     "资源",
@@ -208,6 +210,9 @@ def _evidence_passes(template_dir: Path, provider: str) -> bool:
     evidence = template_dir / "evidence"
     if not evidence.is_dir():
         return False
+    metadata, errors = _load_yaml(template_dir / "template.yaml")
+    if errors or not isinstance(metadata, dict):
+        return False
     slugs = PROVIDERS[provider]
     for path in sorted(evidence.glob("*.json")):
         matched = False
@@ -227,6 +232,8 @@ def _evidence_passes(template_dir: Path, provider: str) -> bool:
         if not isinstance(payload, dict):
             continue
         if payload.get("provider") != provider or payload.get("passed") is not True:
+            continue
+        if payload.get("template") != metadata.get("name") or str(payload.get("template_version")) != str(metadata.get("version")):
             continue
         commands = payload.get("commands")
         if not isinstance(commands, list) or not commands:
@@ -268,20 +275,25 @@ def _check_readme(path: Path, headings: tuple[str, ...], violations: list[Violat
             continue
         if len(sections[heading].strip()) < 3:
             violations.append(Violation("readme-section", f"{path.name}: section '## {heading}' is empty"))
-    cli = sections.get(headings[3], "")
-    sdk = sections.get(headings[4], "")
-    commands = sections.get(headings[5], "")
-    issues = sections.get(headings[11], "")
-    if headings[3] in sections and "abx run" not in cli:
+    english = "Command reference" in headings
+    cli_heading = "Quick start (CLI)" if english else "快速开始（CLI）"
+    sdk_heading = "Quick start (Python SDK)" if english else "快速开始（Python SDK）"
+    commands_heading = "Command reference" if english else "命令参考"
+    issues_heading = "Issues" if english else "问题反馈"
+    cli = sections.get(cli_heading, "")
+    sdk = sections.get(sdk_heading, "")
+    commands = sections.get(commands_heading, "")
+    issues = sections.get(issues_heading, "")
+    if cli_heading in sections and "abx run" not in cli:
         violations.append(Violation("readme-cli", f"{path.name}: Quick start (CLI) must show `abx run`"))
-    if headings[4] in sections and ("Sandbox" not in sdk or ".run" not in sdk):
+    if sdk_heading in sections and ("Sandbox" not in sdk or ".run" not in sdk):
         violations.append(
             Violation("readme-sdk", f"{path.name}: Quick start (Python SDK) must show Sandbox and .run")
         )
-    if headings[5] in sections and not any(line.strip().startswith("|") for line in commands.splitlines()):
+    if commands_heading in sections and not any(line.strip().startswith("|") for line in commands.splitlines()):
         violations.append(Violation("readme-api", f"{path.name}: Command reference needs a parameter table"))
     for repo in ("awesome-templates", "python-sdk", "agent-sandbox"):
-        if headings[11] in sections and repo not in issues:
+        if issues_heading in sections and repo not in issues:
             violations.append(Violation("readme-issues", f"{path.name}: Issues must name {repo}"))
     return sections
 
@@ -451,6 +463,18 @@ def check_directory(template_dir: Path) -> list[Violation]:
         zh_sections = _check_readme(readme_zh, README_ZH, violations)
 
     if data.get("spec_version") == 2:
+        for label, sections, heading in (
+            ("README.md", en_sections, "Quick start (HTTP POST)"),
+            ("README.zh-CN.md", zh_sections, "快速开始（HTTP POST）"),
+        ):
+            body = sections.get(heading, "")
+            if body and not all(token in body for token in ("POST", "/commands/", "application/json", '"result"')):
+                violations.append(
+                    Violation(
+                        "readme-http",
+                        f"{label}: {heading} must show POST /commands/<name>, application/json, and a result envelope",
+                    )
+                )
         for label, sections, heading in (
             ("README.md", en_sections, "Quick start (Python SDK)"),
             ("README.zh-CN.md", zh_sections, "快速开始（Python SDK）"),
@@ -622,7 +646,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
             violations.append(
                 Violation(
                     "verified-evidence",
-                    f"{provider} is listed as verified but no passing evidence file ({slugs}) "
+                    f"{provider} is listed as verified but no passing evidence for this template/version ({slugs}) "
                     "records cli and sdk results",
                 )
             )

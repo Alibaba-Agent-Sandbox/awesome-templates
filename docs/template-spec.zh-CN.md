@@ -234,6 +234,9 @@ abx exec <sandbox-id> -- python3 -c 'print(1)'
 
 Python SDK。PyPI 上的客户端发行名是 `agent-sandbox-client`。导入名仍是 `agent_sandbox`。`pip install agent-sandbox` 会装上一个无关项目。
 
+使用下面的索引安装命令前先确认发行包已发布。尚未发布时，按
+[Python 客户端安装](./python-client-installation.md) 同时从固定提交安装两个配套包。
+
 ```bash
 python3 -m pip install agent-sandbox-client
 ```
@@ -256,9 +259,27 @@ asyncio.run(main())
 
 `sb.run` 把关键字参数作为 `POST /commands/hello` 的 JSON 正文，并返回 `result`。`sb.commands.run` 是 shell API。连接已有沙箱用 `await Sandbox.connect(sandbox_id)`。
 
-python-sdk 0.3.0 上，`Sandbox.create_sync`、`Sandbox.connect_sync`、`Sandbox.list_sync`、`Sandbox.kill_by_id_sync` 会抛 `TypeError`（类参数被丢掉）。`await Sandbox.connect` 得到实例之后，`sb.run_sync` 这类实例方法可用。在 [python-sdk#22](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues/22) 修复前使用上面的异步构造。
+当前检出的 python-sdk 已由 [python-sdk#24](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/24) 修复同步类方法。旧提交若因类参数丢失抛出 `TypeError`，请升级 SDK 或使用异步构造；验收同时记录源码提交与发行版本。
 
 本地 L0 不创建云沙箱。`scripts/run_local_e2e.py` 启动 `python3 commands.py`，设置 `E2E_BASE_URL`，再运行 `e2e_test.py`。该测试可以对 `E2E_BASE_URL` 发 HTTP。所有云上路径使用上面的 SDK。
+
+### HTTP POST 契约
+
+每个 README 在 Python SDK 章节后包含独立的“快速开始（HTTP POST）”章节。
+使用与 CLI/SDK 相同的任务，给出沙箱端口 URL、`POST /commands/<name>`、
+`Content-Type: application/json`、直接参数 JSON（不嵌套 args）及 `{"result": ...}`。
+说明必填值、默认值、类型、范围，以及参数错误 400、认证失败 401、命令不存在
+404、执行错误 500。分别说明 ABX_SERVER_TOKEN 与提供方网关认证；示例只使用
+环境变量或占位符，不得出现真实凭据。
+
+命名命令在执行完成后整体返回。`Sandbox.run(timeout=...)` 控制客户端 HTTP
+超时，因此命令执行截止时间应采用 command_timeout 或 timeout_s 等独立参数名。
+客户端超时不保证取消服务端执行。后台运行、重连与取消使用进程 API。
+编程 Agent 的 L3 必须修改已有源码、创建新产物，并在沙箱内独立运行测试；
+远端服务的产物验证必须走远端 files/process API，不能读取宿主文件冒充通过。
+仅回复 marker 不构成 L3。同步类方法旧缺陷已由
+[python-sdk#24](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/24) 修复；
+验证时同时记录 SDK 提交和包版本，旧提交请升级或使用异步构造。
 
 ## 测试级别
 
@@ -269,7 +290,7 @@ python-sdk 0.3.0 上，`Sandbox.create_sync`、`Sandbox.connect_sync`、`Sandbox
 | L0 | `python3 scripts/run_local_e2e.py` 能启动该模板，且 `e2e_test.py` 退出码为 0。某个用例因缺少模型密钥可以打印 SKIP。这个 SKIP 不是该 Agent 已验收。本地脚本会设置 `E2E_RUN_LLM=0`。 |
 | L1 | `docker build` 成功，日志里能看到钉死的上游版本。 |
 | L2 | `abx template deploy` 到达 READY，`Sandbox.create(template=<id>)`（或 `connect`）成功，并且每条 smoke 命令都从沙箱外经 SDK 调用并断言。记录提供方 `alicloud-express`、UTC 日期、模板版本、SDK 版本。不记录模板 id。 |
-| L3 | 用本环境已有的密钥做一次真实模型或产品调用。提示词要求标记 `ABX_E2E_OK`，输出里包含它。`E2E_REQUIRE_LLM=1` 时空密钥是失败，不是跳过。 |
+| L3 | 用兼容凭据运行真实模型/产品。编程 Agent 必须修改已有源码、创建新产物，并在沙箱内独立运行测试；远端文件/进程 API 验证产物，回复 marker 不足以通过。`E2E_REQUIRE_LLM=1` 时空密钥是失败。 |
 | L4 | `e2b`、`opensandbox`、`alicloud-container` 或 `cubesandbox`，只有在该提供方上真实跑过之后。 |
 
 `scripts/express_e2e.py <dir>` 是 L2 运行器。只有每条 smoke 命令都经 CLI 和 SDK 通过时，才写 `evidence/express-<YYYY-MM-DD>.json`：
@@ -316,6 +337,7 @@ Verified 表里出现 `alicloud-express` 时，检查器要求存在上述形状
 | Problem solved | 解决的问题 |
 | Quick start (CLI) | 快速开始（CLI） |
 | Quick start (Python SDK) | 快速开始（Python SDK） |
+| Quick start (HTTP POST) | 快速开始（HTTP POST） |
 | Command reference | 命令参考 |
 | Configuration | 配置 |
 | Resources | 资源 |

@@ -83,13 +83,29 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-`await sb.run("codex_exec", prompt="...")` returns the result object (`last_message`, `events`, `thread_id`). `sb.commands.run` is a shell command, not this named command. `Sandbox.create_sync` raises `TypeError` on python-sdk 0.3.0 ([python-sdk#22](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues/22)); use `await Sandbox.create`.
+`await sb.run("codex_exec", prompt="...")` returns the result object (`last_message`, `events`, `thread_id`). `sb.commands.run` is the shell API; use the async `Sandbox.create` example above for sandbox lifecycle management.
 
 Resume with the `thread_id` from the first result:
 
 ```python
 await sb.run("codex_exec", prompt="Continue.", resume="<thread_id>")
 ```
+
+## Quick start (HTTP POST)
+
+For a server reachable at `http://127.0.0.1:9000` (for example a local template process):
+
+```bash
+curl --fail-with-body -X POST http://127.0.0.1:9000/commands/codex_exec \
+  -H 'Content-Type: application/json' \
+  --data '{"prompt":"Summarize the workspace.","sandbox":"read-only","approval":"never","json_events":true,"timeout_s":120}'
+```
+
+Use the sandbox gateway URL from `sb.network.get_url(9000)` for a remote sandbox and the gateway's required authentication. When the application has `ABX_SERVER_TOKEN` configured, send its bearer token in the authorization header using your application's secret handling. The response wraps the command result in `{"result": ...}`; tool events and stderr redact known secret environment values.
+
+A successful execution is HTTP 200 with `{"result":{"last_message":"...","events":[],"thread_id":"..."}}`. Missing or mistyped required arguments produce HTTP 400; failed application authentication produces HTTP 401. Invalid sandbox policy or upstream execution failure produces HTTP 500 with `{"error":"...","type":"RuntimeError"}` (or `ValueError` for invalid values).
+
+`timeout_s` defaults to 300 and accepts integers from 1 to 3600. Set your HTTP read timeout above that value, including server and gateway overhead. A client or gateway timeout can happen before the server finishes; it does not confirm that the child process stopped. A server-side Codex timeout is reported as HTTP 500. Named commands return one complete JSON response, so use the process API for live output.
 
 ## Command reference
 
@@ -124,7 +140,9 @@ await sb.run("codex_exec", prompt="Continue.", resume="<thread_id>")
 
 `codex_config_write` refuses `wire_api` other than `responses`, and refuses provider ids `openai`, `ollama`, and `lmstudio`. The file sets `supports_websockets = false` so a compatible endpoint is called over HTTPS.
 
-When `codex_setup_check` reports `use_bypass: true`, `codex_exec` adds `--dangerously-bypass-approvals-and-sandbox`. That flag skips Codex's bubblewrap/seccomp sandbox and approval prompts. The Express container is the isolation boundary. When the probe succeeds, `sandbox=auto` uses `--sandbox workspace-write` and `approval_policy="never"`.
+`sandbox=auto` uses `workspace-write` when the probe succeeds and falls back to `--dangerously-bypass-approvals-and-sandbox` when it fails. `sandbox=bypass` explicitly selects that flag. It skips Codex's bubblewrap/seccomp sandbox and approval prompts; isolation then comes from the Express container. An explicit `read-only`, `workspace-write`, or `danger-full-access` request is rejected when the Linux sandbox probe fails, before workspace, git, provider config, or `AGENTS.md` writes. Explicit requests never silently become bypass. The probe itself may create its isolated `sandbox-probe` state directory.
+
+`codex_config_write` accepts `base_url` (default `ABX_LLM_BASE_URL`, then `OPENAI_BASE_URL`), `provider` (default `compatible`), `env_key` (a variable name), `model`, `wire_api` (only `responses`), and `codex_home` (default `CODEX_HOME` or `~/.codex`). It overwrites `config.toml` with mode `0600`. `codex_agents_write` accepts required `content` and optional `cwd`; it overwrites `cwd/AGENTS.md`.
 
 ## Configuration
 
@@ -156,6 +174,16 @@ Set secret values on `abx create --env` or `Sandbox.create(envs=...)`. Do not wr
 
 Long agent runs can use more memory than this request. The platform may ignore the memory field and apply its own size.
 
+## Runtime verification
+
+On 2026-10-16, patched command source with pinned Codex 0.162.1 passed a real
+model coding task on `alicloud-express`: remote code/artifact retrieval, independent
+Fibonacci assertions, and a separate unittest run. All 16 HTTP checks passed, and
+the owned sandbox was deleted. The source and runtime package hashes are in
+[evidence](evidence/runtime-express-2026-10-16.json), with the [check log](evidence/runtime-express-2026-10-16.log).
+This used an existing platform base sandbox with runtime-installed dependencies;
+the Dockerfile image build and new-template deployment remain unverified.
+
 ## Verified
 
 No provider has a passing run recorded for this template.
@@ -173,6 +201,10 @@ The nested sandbox probe is `sandbox_status()` in `commands.py`. Do not apt-inst
 ## Contributing
 
 [CONTRIBUTING.md](../CONTRIBUTING.md) and [docs/template-spec.md](../docs/template-spec.md). Design notes: [docs/design/codex.md](../docs/design/codex.md).
+
+From the repository root, run `python3 -m unittest discover -s codex -p test_commands.py -v`, `python3 scripts/check_template.py codex`, and `python3 scripts/run_local_e2e.py`. The unit suite checks explicit permissions, automatic fallback, result redaction, and false agent-success markers. L0 checks HTTP command contracts and may skip the model task; it does not establish L1 image builds, L2 cloud execution, or L3 agent acceptance.
+
+For L3 against a local or remote template server, run `E2E_BASE_URL=http://127.0.0.1:9000 E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 E2E_MODEL=<model> python3 codex/e2e_test.py` with authorized model configuration already supplied to both processes. The agent must create a Fibonacci implementation and unittest file, execute a command successfully, and write `acceptance.txt`. The test requires the final assistant marker, checks the files, independently asserts Fibonacci results and negative-input rejection, and reruns the generated tests. A chat reply or an echoed marker in tool events fails. Artifact reads use the remote files API, and independent assertions/tests run through the remote shell API. Set `E2E_WORKSPACE` to a writable directory inside the server file root (default `/home/user/workspace`) and `E2E_TOKEN` if the server requires authentication. Each run uses a unique directory and deletes only that directory. Record only actual passing provider evidence, and report model skips separately.
 
 ## Issues
 

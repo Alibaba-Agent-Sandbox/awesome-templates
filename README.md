@@ -19,17 +19,17 @@ is recorded.
 
 | Template | Description | Status | Verified on |
 |----------|-------------|--------|-------------|
-| [python-hello](./python-hello/README.md) | A minimal Python hello world template for testing | official | alicloud-express |
-| [browser-automation](./browser-automation/README.md) | Browser automation sandbox with Playwright + Chromium for web scraping and UI testing | official | |
-| [claude-code](./claude-code/README.md) | Claude Code Agent runtime — Anthropic Claude-powered AI coding assistant | official | |
+| [python-hello](./python-hello/README.md) | A minimal Python hello world template for testing | experimental | |
+| [browser-automation](./browser-automation/README.md) | Browser automation sandbox with Playwright + Chromium for web scraping and UI testing | experimental | |
+| [claude-code](./claude-code/README.md) | Claude Code Agent runtime — Anthropic Claude-powered AI coding assistant | experimental | |
 | [codex](./codex/README.md) | OpenAI Codex CLI (@openai/codex@0.162.1). codex exec, JSON events, sandbox bypass, OpenAI-compatible config.toml. | experimental | |
-| [codex-agent-api](./codex-agent-api/README.md) | Self-hosted OpenAI Agents API compatible service powered by Codex CLI | official | |
+| [codex-agent-api](./codex-agent-api/README.md) | Codex 0.162.1 HTTP session adapter with bounded turns and SSE; project API subset | experimental | |
 | [qoder](./qoder/README.md) | Python and Node.js dev sandbox. qoder_run executes a local script; the Qoder CLI is not installed. | official | |
 | [agents-cli](./agents-cli/README.md) | Agents API for Codex and Qwen Code. The image does not preinstall either CLI. | official | |
 | [qwen-code](./qwen-code/README.md) | Qwen Code Agent runtime — Dashscope-powered AI autonomous deployment agent | official | |
 | [deepseek-harness](./deepseek-harness/README.md) | DeepSeek Agent Runtime — DeepSeek model-driven AI coding agent | official | |
 | [hermes-agent](./hermes-agent/README.md) | Chat completion against an OpenAI-compatible endpoint. This template does not register tools. | official | |
-| [node-web](./node-web/README.md) | Node.js web service runtime for Express, Fastify and other frameworks | official | |
+| [node-web](./node-web/README.md) | Node.js web service runtime for Express, Fastify and other frameworks | experimental | |
 | [openclaw](./openclaw/README.md) | OpenClaw AI Agent runtime — open-source AI coding agent gateway | official | |
 | [opencode](./opencode/README.md) | OpenCode coding agent. Headless opencode run and optional opencode serve. Package opencode-ai@1.19.0. | experimental | |
 | [amp](./amp/README.md) | Sourcegraph Amp CLI. amp_execute runs amp -x; amp_version and amp_setup_check do not need a key. | official | alicloud-express |

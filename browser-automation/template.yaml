@@ -1,51 +1,31 @@
 name: browser-automation
-version: "1.0.0"
-description: "浏览器自动化沙箱环境 - 预装 Playwright + Chromium，支持网页抓取与 UI 测试"
-author: "alibaba-agent-sandbox"
-tags:
-  - browser
-  - playwright
-  - chromium
-  - automation
-  - web-scraping
-
-base: python:3.12-slim
-
-system_packages:
-  - python3
-  - python3-pip
-  - nodejs
-  - npm
-  - curl
-  - wget
-  - xvfb
-  - jq
-
-python_packages:
-  - playwright>=1.40.0
-  - beautifulsoup4
-  - lxml
-  - httpx
-  - Pillow
-
-commands:
-  - python3 -m playwright install chromium
-  - python3 -m playwright install-deps chromium
-
-capabilities:
-  - shell
-  - files
-  - code
-  - ports
-
-ports:
-  - 9000
-
-
-env:
-  DISPLAY: ":99"
-  PLAYWRIGHT_BROWSERS_PATH: "/root/.cache/ms-playwright"
-
+version: "2.0.0"
+description: "Isolated headless Chromium navigation, screenshots, text extraction, and form filling."
+author: alibaba-agent-sandbox
+license: Apache-2.0
+spec_version: 2
+base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
+generation: 2
+start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
+ready_cmd: "agent-sandbox-server healthcheck --port 9000"
 resources:
   cpu: 2
-  memory: 4096
+  memory: 2048
+ports: [9000]
+tags: [browser, playwright, chromium, automation]
+priority: P0
+wave: 1
+tested_on: []
+capabilities: [shell, files, code, ports]
+env:
+  PLAYWRIGHT_BROWSERS_PATH: /opt/playwright
+  ABX_SERVER_TOKEN: ""
+smoke:
+  - command: browse
+    args:
+      url: "data:text/html,<title>ABX_E2E_OK</title><h1>ABX_E2E_OK</h1>"
+      action: extract
+    expect:
+      action: extract
+      title: ABX_E2E_OK
+      text: ABX_E2E_OK

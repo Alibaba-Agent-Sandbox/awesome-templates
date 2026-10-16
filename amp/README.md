@@ -101,7 +101,20 @@ sb = await Sandbox.create(
 text = await sb.run("amp_execute", prompt="Reply with exactly: ABX_E2E_OK", stream_json=False)
 ```
 
-`await sb.run(...)` returns the command's `result` value. `sb.commands.run` is a shell command, not one of these names. `Sandbox.create_sync` raises `TypeError` on python-sdk 0.3.0 ([python-sdk#22](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues/22)); use `await Sandbox.create`.
+`await sb.run(...)` returns the command's `result` value. `sb.commands.run` is a shell command, not one of these names. The checked-out SDK includes the sync-classmethod fix in [python-sdk#24](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/24). Upgrade older commits or use the async constructors if they raise TypeError.
+
+## Quick start (HTTP POST)
+
+Use the sandbox port-9000 URL, or http://127.0.0.1:9000 locally. Include the authentication header when ABX_SERVER_TOKEN is set on the server.
+
+```bash
+curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/amp_version" \
+  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
+  --header "Content-Type: application/json" \
+  --data '{}'
+```
+
+The JSON body contains command parameters directly, without an args wrapper. HTTP 200 returns `{"result":"0.0.1792022479-ge66e24"}`. Invalid arguments return 400, failed authentication 401, and execution errors 500; error responses contain error and type. Results are buffered until completion. An HTTP client timeout does not guarantee server-side cancellation; manage long tasks through the process API.
 
 ## Command reference
 

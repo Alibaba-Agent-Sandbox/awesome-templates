@@ -1,0 +1,16 @@
+[PASS] GET /health
+[PASS] GET /commands — ['codex', 'codex_agents_write', 'codex_config_write', 'codex_exec', 'codex_setup_check', 'codex_version']
+[PASS] codex_exec arg types — ['agents_md', 'approval', 'cwd', 'ephemeral', 'json_events', 'model', 'output_schema', 'prompt', 'resume', 'resume_all', 'sandbox', 'skip_git_repo_check', 'timeout_s']
+[PASS] unknown command
+[PASS] codex_exec missing prompt — 400
+[PASS] codex_exec rejects sandbox — sandbox must be one of: auto, bypass, read-only, workspace-write, danger-full-access
+[PASS] codex_setup_check — linux_sandbox=True binary=True
+[PASS] bypass follows the probe
+[PASS] codex_version — 0.162.1
+[PASS] codex_config_write — 200
+[PASS] wire_api chat rejected — wire_api "chat" is no longer supported by Codex; set wire_api = "responses"
+[PASS] reserved provider rejected
+[PASS] codex_agents_write — /home/user/abx-codex-runtime/workspace/abx_e2e_codex_a8646ea4271449ddbc70a97b5e33c093/workspace/AGENTS.md
+[PASS] codex_exec real coding task — HTTP 200 agent_tools=True artifacts=True
+[PASS] independent remote Fibonacci assertions
+[PASS] remote agent-written unittest rerun

@@ -37,7 +37,7 @@ templates:
     tags: [python, hello-world, example]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: official
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
@@ -52,7 +52,7 @@ templates:
     tags: [browser, playwright, chromium, automation, web-scraping]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: official
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
@@ -67,7 +67,7 @@ templates:
     tags: [claude, anthropic, ai-coding, ai-agent]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, terminal, ports]
-    status: official
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
@@ -91,13 +91,13 @@ templates:
       opensandbox: push-image-then-pass-uri
 
   - name: codex-agent-api
-    description: "Self-hosted OpenAI Agents API compatible service powered by Codex CLI"
+    description: "Codex 0.162.1 HTTP session adapter with bounded turns and SSE; project API subset, not full OpenAI API compatibility."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: codex-agent-api
     tags: [codex, openai, agents-api, ai-agent, self-hosted]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: official
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
@@ -187,7 +187,7 @@ templates:
     tags: [nodejs, web, express, api, javascript]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: official
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
