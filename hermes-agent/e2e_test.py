@@ -7,6 +7,7 @@ import json
 import os
 import shlex
 import sys
+import textwrap
 import uuid
 
 import httpx
@@ -39,6 +40,56 @@ def read(client: httpx.Client, path: str) -> str:
     response = client.get("/files/download-stream", params={"path": path})
     response.raise_for_status()
     return base64.b64decode(response.json()["content_base64"]).decode()
+
+
+def _verifier_source(project: str, ack: str, *, tests: bool) -> str:
+    """Run with isolated Python; ACK is minted only after the model response.
+
+    Direct source compilation and a fresh acknowledgment detect premature exit
+    and stale bytecode. They are not an isolation boundary against hostile code
+    with the same operating-system authority as the verifier.
+    """
+    prefix = """
+import contextlib, io, pathlib, sys, types, unittest
+PROJECT = pathlib.Path(PROJECT_LITERAL)
+ACK = ACK_LITERAL
+def load_source(name, path):
+    module = types.ModuleType(name)
+    module.__file__ = str(path)
+    sys.modules[name] = module
+    exec(compile(path.read_bytes(), str(path), 'exec'), module.__dict__)
+    return module
+try:
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+        sys.path.insert(0, str(PROJECT))
+BODY
+except BaseException:
+    raise SystemExit(1)
+print(ACK, flush=True)
+""".replace("PROJECT_LITERAL", repr(project)).replace("ACK_LITERAL", repr(ack))
+    if tests:
+        body = """
+load_source('calculator', PROJECT / 'calculator.py')
+original = load_source('test_calculator', PROJECT / 'test_calculator.py')
+suite = unittest.TestLoader().loadTestsFromModule(original)
+if suite.countTestCases() != 3:
+    raise AssertionError('original test count')
+result = unittest.TextTestRunner(stream=io.StringIO()).run(suite)
+if (result.testsRun != 3 or not result.wasSuccessful() or result.failures
+        or result.errors or result.skipped or result.expectedFailures
+        or result.unexpectedSuccesses):
+    raise AssertionError('original tests did not all run successfully')
+"""
+    else:
+        body = """
+module = load_source('calculator_under_test', PROJECT / 'calculator.py')
+if not all(module.add(a,b) == a+b for a,b in
+           [(2,3),(-4,-3),(0,0),(127,83),(-91,13),(0.5,1.25)]):
+    raise AssertionError('held-out results')
+"""
+    return textwrap.dedent(prefix).replace(
+        "BODY", textwrap.indent(textwrap.dedent(body).strip(), "        ")
+    )
 
 
 def coding(client: httpx.Client, setup: dict | None = None) -> None:
@@ -104,21 +155,24 @@ def coding(client: httpx.Client, setup: dict | None = None) -> None:
         record(read(client, project + "/test_calculator.py") == tests, "original test file preserved")
         record(bool(read(client, project + "/REPORT.md").strip()), "new report artifact retrieved")
         record(read(client, project + "/acceptance.txt") == marker + "\n", "new exact artifact retrieved")
-        result = client.post("/shell", json={"command": test_command, "cwd": project, "timeout": 30})
-        body = result.json()
-        record(result.status_code == 200 and body.get("exit_code") == 0 and "Ran 3 tests" in body.get("stderr", "") + body.get("stdout", ""), "independent target unittest process passes")
-        # Isolated Python starts without importing writable cwd/sitecustomize.
-        # Load only the target source, then check original and held-out inputs.
-        heldout = (
-            "import importlib.util;"
-            f"spec=importlib.util.spec_from_file_location('calculator_under_test',{project + '/calculator.py'!r});"
-            "module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);"
-            "assert all(module.add(a,b)==a+b for a,b in [(2,3),(-4,-3),(0,0),(127,83),(-91,13),(0.5,1.25)]);"
-            "print('INDEPENDENT_OK')"
+        # Mint independent completion ACKs after the model has returned. They
+        # are never included in its prompt or accepted from model output.
+        tests_ack = "ORIGINAL_TESTS_OK_" + uuid.uuid4().hex
+        verify_tests = "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -I -c " + shlex.quote(
+            _verifier_source(project, tests_ack, tests=True)
         )
-        result = client.post("/shell", json={"command": "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -I -c " + shlex.quote(heldout), "cwd": project, "timeout": 30})
-        record(result.status_code == 200 and result.json().get("exit_code") == 0
-               and result.json().get("stdout", "").strip() == "INDEPENDENT_OK", "independent held-out calculations pass")
+        result = client.post("/shell", json={"command": verify_tests, "cwd": project, "timeout": 30})
+        body = result.json()
+        record(result.status_code == 200 and body.get("exit_code") == 0
+               and body.get("stdout", "").strip() == tests_ack, "independent target unittest process passes")
+        heldout_ack = "HELD_OUT_OK_" + uuid.uuid4().hex
+        verify_heldout = "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -I -c " + shlex.quote(
+            _verifier_source(project, heldout_ack, tests=False)
+        )
+        result = client.post("/shell", json={"command": verify_heldout, "cwd": project, "timeout": 30})
+        body = result.json()
+        record(result.status_code == 200 and body.get("exit_code") == 0
+               and body.get("stdout", "").strip() == heldout_ack, "independent held-out calculations pass")
     except Exception as exc:
         record(False, f"L3 aborted ({type(exc).__name__}); response omitted")
     finally:
