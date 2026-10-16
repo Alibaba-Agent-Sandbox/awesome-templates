@@ -16,6 +16,8 @@ Expose the real Hermes headless CLI through a typed named command with a bounded
 
 ## Quick start (CLI)
 
+Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
+
 ```bash
 abx template install alibaba-agent-sandbox/awesome-templates//hermes-agent
 abx create --template <template-id> --env OPENROUTER_API_KEY="$OPENROUTER_API_KEY"

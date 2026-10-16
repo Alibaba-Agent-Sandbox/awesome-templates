@@ -19,6 +19,8 @@
 
 ## 快速开始（CLI）
 
+运行配置：以下创建时注入密钥的示例，要求命名服务启动时实际获得这些值。预热服务请先检查模板提供的 setup 标志（如有），再按[显式进程配置](../docs/runtime-environment.zh-CN.md)操作；创建沙箱不会重新配置已运行的服务。
+
 在仓库根目录执行，使用已经配置好的 Express provider：
 
 ```bash
@@ -85,7 +87,7 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/run_script" \
 
 请求体直接包含参数，没有 `args` 包装。`POST /commands/run` 加 `{"file":"main.py"}` 运行已上传脚本；`POST /commands/test` 加 `{"path":"test_main.py"}` 运行测试。成功返回 `{"result":"<stdout>"}`。`GET /commands` 列出公开命令；`GET /hello/Ada` 返回 `{"greeting":"Hello, Ada!"}`。
 
-服务端认证与 provider 网关认证分别配置。如果沙箱设置了 `ABX_SERVER_TOKEN`，每个请求需携带 `Authorization: Bearer $ABX_SERVER_TOKEN`。SDK 可使用 `sb.server_at(9000, token=server_token).commands.run(...)`，token 从应用的安全配置获得。需要网关访问头的 provider 还需添加该访问头，例如 `sb.network.get_access_headers()` 提供的 `X-Access-Token`，同时保留服务端 bearer token。本模板只有 Express 的历史证据，其他 provider 尚未验证。
+服务端认证与 provider 网关认证分别配置。如果沙箱设置了 `ABX_SERVER_TOKEN`，受保护的请求需携带 `Authorization: Bearer $ABX_SERVER_TOKEN`；`/health` 不要求 server token。SDK 可使用 `sb.server_at(9000, token=server_token).commands.run(...)`，token 从应用的安全配置获得。需要网关访问头的 provider 还需添加该访问头，例如 `sb.network.get_access_headers()` 提供的 `X-Access-Token`，同时保留服务端 bearer token。本模板只有 Express 的历史证据，其他 provider 尚未验证。
 
 缺少或无效参数返回 HTTP 400，认证失败 401，未知命令 404，执行失败 500；错误对象包含 `error` 和 `type`。命令完成后一次返回完整输出。HTTP 客户端超时仅结束等待，不能保证服务端取消。
 

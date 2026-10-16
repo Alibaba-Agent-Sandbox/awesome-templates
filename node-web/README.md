@@ -14,6 +14,8 @@ A successful spawn or open TCP port does not prove an application works. This te
 
 ## Quick start (CLI)
 
+Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
+
 With the provider already configured, deploy from the repository root:
 
 ```bash
@@ -70,7 +72,7 @@ curl --fail-with-body -X POST "$SERVER_URL/commands/stop" \
 
 The request response is `{"result":{"status_code":200,"body":"node-web ready\n","truncated":false}}`. The serve response includes `pid`, `port`, `status`, `cwd`, and `http_status`; stop returns `status` and `pid`.
 
-If `ABX_SERVER_TOKEN` is set inside the sandbox, add `Authorization: Bearer $ABX_SERVER_TOKEN` or `X-Access-Token: $ABX_SERVER_TOKEN` to **every** command request. For Python, use `sb.server_at(9000, token=server_token).run(...)` with the same token supplied at sandbox creation. Provider gateway authentication is separate: add the header required by the chosen provider (Express uses `X-Access-Token: $SANDBOX_ACCESS_TOKEN`); when both are needed, put the server token in `Authorization` and the gateway token in `X-Access-Token`. Obtain both from your authorized runtime configuration; examples contain no real values.
+If `ABX_SERVER_TOKEN` is set inside the sandbox, add `Authorization: Bearer $ABX_SERVER_TOKEN` or `X-Access-Token: $ABX_SERVER_TOKEN` to **every** command request. For Python, use `sb.server_at(9000, token=server_token).commands.run(...)` with the same token supplied to that server before startup. Provider gateway authentication is separate: add the header required by the chosen provider (Express uses `X-Access-Token: $SANDBOX_ACCESS_TOKEN`); when both are needed, put the server token in `Authorization` and the gateway token in `X-Access-Token`. Obtain both from your authorized runtime configuration; examples contain no real values.
 
 Errors use `{"error":"...","type":"..."}`: 400 for missing/mistyped/unknown arguments, 401 for server authentication, 404 for an unknown named command, and 500 for command execution failures (including out-of-range values, unavailable ports, failed builds and readiness deadlines). All named responses are buffered. A service's own HTTP 404 is returned in `request.result.status_code`, with command HTTP 200.
 

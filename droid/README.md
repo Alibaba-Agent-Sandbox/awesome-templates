@@ -16,6 +16,8 @@ An automation can upload a project, ask Droid to edit it, inspect files, and run
 
 ## Quick start (CLI)
 
+Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
+
 Install the CLI following the [official installation instructions](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#readme), then build this template on `alicloud-express`:
 
 ```bash
