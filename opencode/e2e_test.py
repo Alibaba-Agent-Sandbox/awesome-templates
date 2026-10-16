@@ -13,6 +13,7 @@ import json
 import os
 import shlex
 import sys
+import textwrap
 import uuid
 
 import httpx
@@ -49,6 +50,57 @@ def check_code_artifact(client: httpx.Client) -> None:
     finally:
         deleted = client.delete("/files", params={"path": path})
         record(deleted.status_code in {200, 404}, "owned code artifact cleanup")
+
+
+def _verifier_source(project: str, ack: str, *, tests: bool) -> str:
+    """Run with isolated Python; ACK is minted only after the model response.
+
+    Direct source compilation and a fresh acknowledgment detect premature exit
+    and stale bytecode. They are not an isolation boundary against hostile code
+    with the same operating-system authority as the verifier.
+    """
+    prefix = """
+import contextlib, io, pathlib, sys, types, unittest
+PROJECT = pathlib.Path(PROJECT_LITERAL)
+ACK = ACK_LITERAL
+def load_source(name, path):
+    module = types.ModuleType(name)
+    module.__file__ = str(path)
+    sys.modules[name] = module
+    exec(compile(path.read_bytes(), str(path), 'exec'), module.__dict__)
+    return module
+try:
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+        sys.path.insert(0, str(PROJECT))
+BODY
+except BaseException:
+    raise SystemExit(1)
+print(ACK, flush=True)
+""".replace("PROJECT_LITERAL", repr(project)).replace("ACK_LITERAL", repr(ack))
+    if tests:
+        body = """
+load_source('calc', PROJECT / 'calc.py')
+original = load_source('test_calc', PROJECT / 'test_calc.py')
+suite = unittest.TestLoader().loadTestsFromModule(original)
+if suite.countTestCases() != 3:
+    raise AssertionError('original test count')
+result = unittest.TextTestRunner(stream=io.StringIO()).run(suite)
+if (result.testsRun != 3 or not result.wasSuccessful() or result.failures
+        or result.errors or result.skipped or result.expectedFailures
+        or result.unexpectedSuccesses):
+    raise AssertionError('original tests did not all run successfully')
+"""
+    else:
+        body = """
+module = load_source('calc_under_test', PROJECT / 'calc.py')
+if not all(module.add(a,b) == a+b for a,b in
+           [(2,3),(-2,-3),(0,0),(8,-3),(-7,4),(99,101),(0,12),
+            (1543,-271),(0,98765),(-809,611),(0.5,1.25)]):
+    raise AssertionError('held-out results')
+"""
+    return textwrap.dedent(prefix).replace(
+        "BODY", textwrap.indent(textwrap.dedent(body).strip(), "        ")
+    )
 
 
 def check_model_call(client: httpx.Client) -> None:
@@ -122,24 +174,25 @@ def check_model_call(client: httpx.Client) -> None:
         record(preserved, "L3 seeded independent tests were preserved")
         record(artifacts_ok,
                "L3 new agent report and exact artifact downloaded from target")
-        after = client.post("/shell", json={"command": test_command, "cwd": project, "timeout": 30})
+        tests_ack = "ORIGINAL_TESTS_OK_" + uuid.uuid4().hex
+        after = client.post("/shell", json={
+            "command": "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -I -c " + shlex.quote(
+                _verifier_source(project, tests_ack, tests=True)),
+            "cwd": project, "timeout": 30})
         tests = after.json()
         tests_ok = (after.status_code == 200 and tests.get("exit_code") == 0
-                    and "Ran 3 tests" in tests.get("stderr", ""))
+                    and tests.get("stdout", "").strip() == tests_ack)
         record(tests_ok, "L3 independent remote fixed-test rerun passes")
         # Additional held-out cases are supplied only after the agent finishes.
-        assertions = (
-            "from calc import add\n"
-            "assert all(add(a, b) == a + b for a, b in [(8, -3), (-7, 4), (99, 101), (0, 12)])\n"
-            "print('INDEPENDENT_OK')\n"
-        )
+        heldout_ack = "INDEPENDENT_OK_" + uuid.uuid4().hex
+        assertions = _verifier_source(project, heldout_ack, tests=False)
         independent = client.post("/shell", json={
-            "command": "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -c " + shlex.quote(assertions),
+            "command": "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -I -c " + shlex.quote(assertions),
             "cwd": project, "timeout": 30,
         })
         checked = independent.json()
         independent_ok = (independent.status_code == 200 and checked.get("exit_code") == 0
-                          and checked.get("stdout", "").strip() == "INDEPENDENT_OK")
+                          and checked.get("stdout", "").strip() == heldout_ack)
         record(independent_ok,
                "L3 independent remote held-out assertions pass")
         if not all((changed, preserved, artifacts_ok, tests_ok, independent_ok)):
@@ -188,19 +241,15 @@ def check_model_call(client: httpx.Client) -> None:
         record(read_file("calc.py") == modified and read_file("test_calc.py") == preserved_tests
                and read_file("report.txt") == report and read_file("acceptance.txt") == acceptance,
                "L3 resume preserves original source tests report and acceptance artifact")
-        resume_assertions = (
-            "from calc import add\n"
-            "assert all(add(a, b) == a + b for a, b in "
-            f"{[(8, -3), (-7, 4), (99, 101), (0, 12)] + resume_pairs!r})\n"
-            "print('RESUME_INDEPENDENT_OK')\n"
-        )
+        resume_ack = "RESUME_INDEPENDENT_OK_" + uuid.uuid4().hex
+        resume_assertions = _verifier_source(project, resume_ack, tests=False)
         repeated = client.post("/shell", json={
-            "command": "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -c " + shlex.quote(resume_assertions),
+            "command": "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -I -c " + shlex.quote(resume_assertions),
             "cwd": project, "timeout": 30,
         })
         repeated_result = repeated.json()
         record(repeated.status_code == 200 and repeated_result.get("exit_code") == 0
-               and repeated_result.get("stdout", "").strip() == "RESUME_INDEPENDENT_OK",
+               and repeated_result.get("stdout", "").strip() == resume_ack,
                "L3 independent remote held-out assertions pass after exact-session resume")
     except Exception as exc:
         print(f"[FAIL] L3 coding acceptance aborted ({type(exc).__name__}); response content omitted", flush=True)
