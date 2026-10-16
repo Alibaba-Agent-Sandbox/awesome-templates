@@ -179,10 +179,16 @@ analytics-disabled 状态可能保留在该专用沙箱原生 `.aider`，随实�
 
 ## 已验证
 
-尚未记录任何通过的提供方测试。
+[Express 实际镜像补充验收](evidence/image-runtime-2026-10-16-configured.json)
+已通过：实际 CI 构建镜像的官方 READY、源码/server 字节溯源、SDK/HTTP/CLI
+版本与配置目标、真实 CLI 正负控，以及 qwen3.8-flash 真实编程 21 项检查，
+包括独立测试和取回的产物。模型 server 在 9010，预热 9000 是独立进程。
+自有 helper、实例、模板、registry 均已清理并回查。
+保留[首轮失败记录](evidence/image-runtime-2026-10-16-attempt1.json)。
 
-目录保持 experimental。源码运行时模型通过或 image build 通过，不代表已通过
-完整模板 deploy 到 READY 的路径。参见[设计](../docs/design/aider.md)与 evidence。
+目录仍是 experimental，`tested_on: []`：canonical
+`scripts/express_e2e.py` → `abx template deploy` 的 L2 wrapper 尚未通过。
+其他 provider 未验。参见[设计](../docs/design/aider.md)。
 
 ## 二次开发
 

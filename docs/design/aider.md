@@ -105,6 +105,13 @@ with public `commands.start(env=...)`, consume its stream, and use actual SDK
 target setup booleans through all three clients before model acceptance. Do not
 replace commands.py or change HOME. Kill the owned sandbox and close the stream.
 
+Actual configured-image evidence now records official READY, exact command and
+56-module server provenance, SDK/HTTP/CLI configuration, real upstream guards,
+and qwen3.8-flash coding: 21 PASS / 0 FAIL / 0 SKIP with independent target tests
+and retrieved artifacts. See [the immutable run](../../aider/evidence/image-runtime-2026-10-16-configured.json).
+The first failed image run is retained. Canonical deploy-wrapper L2 remains
+pending, so catalog tested_on stays empty and the PR remains draft.
+
 ## Test plan
 
 L0: actual server HTTP registry/types/400/404/missing-configuration smoke and

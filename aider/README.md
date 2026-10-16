@@ -206,11 +206,17 @@ this is not an installed-image size. The separate Python 3.12 archive adds about
 
 ## Verified
 
-No provider has a passing run recorded for this template.
+[Express supplemental image/runtime acceptance](evidence/image-runtime-2026-10-16-configured.json)
+passed against the actual CI-built image: official READY, exact source/server
+provenance, SDK/HTTP/CLI version and configured-target checks, actual CLI guards,
+and qwen3.8-flash coding with 21 checks, independent tests and retrieved artifacts.
+The configured model server runs on 9010; the prewarmed 9000 server is separate.
+All owned helper/instances/template/registry resources were cleaned and read back.
+The [earlier failed run](evidence/image-runtime-2026-10-16-attempt1.json) is retained.
 
-The catalog remains experimental. Source-runtime model verification and an image
-build do not mean the named template was deployed READY through the full wrapper.
-See [design](../docs/design/aider.md) and the evidence directory for exact tiers.
+The catalog remains experimental with `tested_on: []`: the canonical
+`scripts/express_e2e.py` → `abx template deploy` L2 wrapper has not passed.
+Other providers remain unverified. See [design](../docs/design/aider.md).
 
 ## Secondary development
 

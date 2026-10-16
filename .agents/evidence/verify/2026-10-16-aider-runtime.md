@@ -1,7 +1,7 @@
 # Verification: Aider runtime
 
 - Date: 2026-10-16
-- Result: PARTIAL; real source and image gates are ongoing.
+- Result: PARTIAL; actual CI image and real-model runtime PASS; canonical deploy-wrapper L2 remains pending.
 - Change: [Issue 50](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/50).
 - Base: Pi PR 86 current head `a361f490555ead0ff67081ffb4874abf292a1b2f`.
 
@@ -66,13 +66,23 @@ requires a positive selected edit before testing unselected refusals.
 Actual coding evidence is added only after completion. No full 108-package download was
 made on the shared host, and no shared HOME/store was changed.
 
-## Not yet verified
+## Remote CI and remaining gates
 
 Initial head `3590cbac74c681eb2c8aeebe77f5006261fb1ac6` had four successful
-remote checks, including [actual Aider image build](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38854484890/job/116822849140)
-and both local-e2e workflow runs. Subsequent peer-review fixes require fresh CI.
-Actual config negative controls and real-model coding acceptance remain pending. No provider is listed as tested_on, no named-template image L2 READY is
-claimed, and L4 providers remain unverified. The PR must remain draft.
+remote checks, including [actual Aider image build](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38854484890/job/116822849140).
+Subsequent product and configuration/CI fixes received fresh CI. Head
+`86f6076a137f54f51e9267decc446645d633ab0b` has four successful checks,
+including [actual image build](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38858795334/job/116836213684)
+and both full local-e2e workflow jobs. The [regression job](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38858795306/job/116836145714)
+log was read with GitHub auth restricted to the API redirect: it contains the
+scoped Aider pytest invocation and `57 passed in 6.87s`. Raw logs were not saved.
+The records-only follow-up receives its own normal CI; image/runtime claims keep
+their exact source and artifact provenance.
+
+Actual native-home/CLI guards and configured final-image real coding now pass,
+as recorded below. Canonical scripts/express_e2e.py → abx template deploy L2
+remains pending, and other providers are unverified. No tested_on promotion;
+the PR remains draft under the explicitly requested draft delivery scope.
 
 ## Independent review corrections
 
@@ -149,3 +159,40 @@ Both runtime instances and the transfer helper were killed and absent from
 scoped list readback. The template was deleted and absent; official ACR tag and
 repository deletion were verified HTTP404. No failed-run resource was reused.
 The retry uses a new unique repository, template name and private per-run journal.
+
+## Configured actual-image retry: PASS
+
+[Immutable configured run](../../../aider/evidence/image-runtime-2026-10-16-configured.json)
+uses the same reviewed actual image archive/source as attempt 1, with a fresh
+owned repository/template/instances and explicit native-process configuration.
+No commands.py was copied over the image; its SHA256 matched reviewed product
+source. All 56 server modules matched pinned SDK source. SDK/HTTP/CLI version
+smoke passed; the non-model suite was 9 PASS / 0 FAIL / 1 intentional SKIP.
+
+The new port-9010 server was started from the installed image commands using
+public SDK commands.start with only explicit Aider settings/workspace in env.
+Its stream was consumed; credentials were not placed in argv/files and HOME was
+unchanged. SDK/HTTP/CLI target setup all required key/base/model booleans true.
+Actual upstream home-default rejection and deployed wrapper refusal both passed.
+Actual official-CLI loopback selected editing, slash/bang literal text and all
+three external-path artifact-state controls passed. Diagnostics showed explicit
+refusal text only for the relative path, an upstream path-error category for
+the existing absolute file, and neither fixed marker for new absolute output.
+Artifact state is the acceptance boundary; no universal No-feeder branch claim.
+
+Real qwen3.8-flash HTTP model acceptance: 21 PASS / 0 FAIL / 0 SKIP. The seeded
+calculator failed before edits; default ask preserved bytes; coding changed
+calculator.py and created REPORT.md plus the exact artifact. Original tests were
+unchanged, all three independent unittests and six held-out calculations passed,
+and artifacts were retrieved through the target files API. Model completion
+without those observable changes was not accepted. Native image Node was
+independently read as v20.20.2; base system Python remains 3.13.13 and Aider uses
+its separate verified 3.12.12 runtime.
+
+All ten cleanup flags are true: transfer helper and both runtime instances
+killed/absent, template deleted/absent, official ACR tag and repository HTTP404.
+The first failed image report remains immutable. Root independently reviewed
+final commands/guard code before the actual pass. Current design/status remains
+proposed/experimental and PR draft because canonical scripts/express_e2e.py →
+abx template deploy L2 and other providers remain unverified. No canonical
+express-YYYY-MM-DD.json or tested_on promotion is produced from this supplement.
