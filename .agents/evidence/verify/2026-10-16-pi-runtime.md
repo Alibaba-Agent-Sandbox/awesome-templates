@@ -33,3 +33,6 @@ Pi actual Docker image L1: NOT RUN locally; no Docker daemon. Pi changed-image E
 Temporary per-call model config and model coding project were removed. Test HTTP servers/process groups were stopped; real descendant-marker regressions cover success, nonzero, timeout and Python cancellation. Deliberate setsid escape is outside this Linux group boundary. Credentials were read only in memory, passed through process environment, never printed or committed.
 
 Independent peer review of the final runtime/verifier/selector/workflow found no blocking issue. The reviewer confirmed owned cleanup, independent target verification, cumulative PR selection and archive provenance boundaries. Output remains buffered in memory without a byte cap; the execution deadline is enforced and this limit is documented.
+
+
+Publication follow-up: draft [PR 86](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/86) is stacked on PR 82. A scoped follow-up updates the current backlog Pi section and requests automatic Pi archive export so authorized image-backed L2 can use the actual runner image without depending on not-yet-verified workflow_dispatch availability. Pi image/cloud results remain pending.

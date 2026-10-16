@@ -8,7 +8,7 @@ L1 runner images can advance authorized local daemonless registry transfer and E
 
 ## Decision
 
-Add dispatch inputs `templates` (default `python-hello`, strict comma-separated catalog whitelist) and `export_images` (default false). Manual runs build only selected names; successful selected images can reuse the common archive/checksum/provenance upload with one-day retention. Pull requests use cumulative base-to-head runtime changes; shared image pipeline changes select all products. Main pushes conservatively select all products. A PR that changes only prose/evidence selects no images.
+Add dispatch inputs `templates` (default `python-hello`, strict comma-separated catalog whitelist) and `export_images` (default false). Manual runs build only selected names; successful selected images can reuse the common archive/checksum/provenance upload with one-day retention. Automatic PR/main runs export only Pi and python-hello after successful image checks, providing this branch's Pi image for local L2 without depending on an unverified dispatch entry point. Pull requests use cumulative base-to-head runtime changes; shared image pipeline changes select all products. Main pushes conservatively select all products. A PR that changes only prose/evidence selects no images.
 
 A runtime-changing PR still rebuilds after a later prose-only commit. Avoiding that requires trusted prior successful results keyed by every relevant build input; this change does not invent such proof. Never use only the immediately preceding commit to declare the current runtime verified.
 
@@ -22,7 +22,7 @@ A last-commit-only synchronize diff was rejected during independent review becau
 
 ## Dependencies
 
-GitHub's ordinary PR base/head fields, complete checkout history, catalog/PyYAML, public Docker runner and existing fixed source-wheel preparation. Unknown or unavailable comparison history selects the full catalog. No cloud/model secret is requested by this workflow.
+GitHub's ordinary PR base/head fields, complete checkout history, catalog/PyYAML, public Docker runner and existing fixed source-wheel preparation. Unknown or unavailable comparison history selects the full catalog. No cloud/model secret is requested by this workflow. The workflow is not yet on the default branch; dispatch availability is NOT VERIFIED until it lands there and an actual manual run succeeds.
 
 ## Test Strategy
 

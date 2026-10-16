@@ -194,7 +194,7 @@ jobs:
           PY
 
       - name: Export selected images for a separate local registry transfer
-        if: success() && ((github.event_name == 'workflow_dispatch' && inputs.export_images) || (github.event_name != 'workflow_dispatch' && matrix.template == 'python-hello'))
+        if: success() && ((github.event_name == 'workflow_dispatch' && inputs.export_images) || (github.event_name != 'workflow_dispatch' && (matrix.template == 'python-hello' || matrix.template == 'pi')))
         run: |
           docker image save --output "$RUNNER_TEMP/$TEMPLATE-image.tar" "abx-l1:$TEMPLATE"
           python - <<'PY'
@@ -229,7 +229,7 @@ jobs:
           PY
 
       - name: Retain selected transferable images for one day
-        if: success() && ((github.event_name == 'workflow_dispatch' && inputs.export_images) || (github.event_name != 'workflow_dispatch' && matrix.template == 'python-hello'))
+        if: success() && ((github.event_name == 'workflow_dispatch' && inputs.export_images) || (github.event_name != 'workflow_dispatch' && (matrix.template == 'python-hello' || matrix.template == 'pi')))
         uses: actions/upload-artifact@v4
         with:
           name: image-${{ matrix.template }}-${{ github.sha }}

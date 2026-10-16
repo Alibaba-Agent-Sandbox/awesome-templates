@@ -24,3 +24,10 @@ Initial PR synchronize planning used the last head. Independent review found tha
 No local Docker tests, registry pushes, remote workflow triggers or cloud/model secrets are added by these checks. New 17-product workflow execution and generalized remote archive upload remain NOT RUN until this independent branch is published. The previously observed 16/16 L1 pass belongs to PR 82's 7cb revision, not this new Pi image or workflow.
 
 Independent peer review of the final runtime/verifier/selector/workflow found no blocking issue. The reviewer confirmed owned cleanup, independent target verification, cumulative PR selection and archive provenance boundaries. Output remains buffered in memory without a byte cap; the execution deadline is enforced and this limit is documented.
+
+
+## Scoped publication follow-up
+
+Draft [PR 86](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/86) initially published b2857609735c1da8529ba8ecf3d065076cdfb542. Review then found stale current Pi text in docs/backlog.md and that manual dispatch availability was not yet verified while the workflow remains outside the default branch. The follow-up corrects the current Pi section and automatically exports only Pi and python-hello from successful automatic jobs, with a regression constraining that scope. Historical survey files remain unchanged. Old-head runs 38851706883, 38851706717 and 38851684272 were requested cancelled before the scoped source follow-up; cancellation is not a passed check. New-head image/archives remain pending actual CI.
+
+Follow-up verification: selector/archive-policy pytest 24 PASS (one added case; 69 distinct cases combined with unchanged Pi suites), spec tools 22 PASS, all 18 directories strict conformant, workflow YAML/shell/embedded Python syntax PASS and git diff check PASS. This is preparation only; no new image result is claimed.

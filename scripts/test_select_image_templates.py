@@ -63,3 +63,16 @@ def test_main_push_never_assumes_an_unverified_prior_image_pass(monkeypatch,caps
     monkeypatch.setattr(selector,'catalog_names',lambda:['pi','python-hello'])
     monkeypatch.setattr(sys,'argv',['select','--event','push','--base','deadbeef','--head','HEAD'])
     assert selector.main()==0 and capsys.readouterr().out.strip()=='["pi","python-hello"]'
+
+
+def test_automatic_archive_scope_is_only_pi_and_python_hello():
+    import re
+    import yaml
+    workflow=yaml.safe_load((Path(__file__).resolve().parents[1]/'.github/workflows/image-build.yml').read_text())
+    steps=workflow['jobs']['image-build']['steps']
+    exports=[step for step in steps if step.get('name') in {'Export selected images for a separate local registry transfer','Retain selected transferable images for one day'}]
+    assert len(exports)==2 and exports[0]['if']==exports[1]['if']
+    condition=exports[0]['if']
+    assert set(re.findall(r"matrix\.template == '([^']+)'",condition))=={'pi','python-hello'}
+    assert "success()" in condition and 'inputs.export_images' in condition
+    assert exports[1]['with']['retention-days']==1
