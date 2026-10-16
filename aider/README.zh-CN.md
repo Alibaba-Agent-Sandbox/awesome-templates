@@ -1,0 +1,170 @@
+# Aider
+
+## 做什么
+
+真实调用官方 `aider-chat==0.86.2` CLI。默认 **ask 只读模式**；只有显式
+`allow_write=true` 才允许回写指定文件。工作目录必须属于已有 git 仓库。
+每轮只把白名单文件复制进临时 git 工作区，完成后检查原文件未被并行修改，
+再回写选中的结果，不自动提交。它不是交互式 Aider 的全部功能替代品。
+
+## 技术栈
+
+Alibaba FC base `v0.0.49` 的 Python 3.13 server 与 Node 20 保持原状。
+Aider 官方要求 Python `>=3.10,<3.13`，因此单独安装经过 SHA256 校验的
+python-build-standalone **3.12.12 / 20260211**，并在 `/opt/aider` 的独立
+venv 中安装固定 Aider。server 使用源码构建的 wheel，或 Dockerfile 中的
+固定 SDK commit。无需浏览器、Node 升级或另一套 HTTP server。
+
+## 解决的问题
+
+在沙箱中执行有边界的代码审查和修改，不把 Aider 的整套 Python 依赖装进
+调用方环境，也不默认将整个仓库、配置与凭据发送给模型。
+
+## 快速开始（CLI）
+
+```bash
+abx template install alibaba-agent-sandbox/awesome-templates//aider
+abx template deploy ./aider -y
+abx create --template <template-id> --env AIDER_API_KEY=REPLACE_ME \
+  --env AIDER_BASE_URL=https://example.invalid/v1 --env AIDER_MODEL=your-model
+abx exec <sandbox-id> -- sh -c 'mkdir -p /home/user/project && cd /home/user/project && git init -q'
+# 先用 abx upload 上传 calculator.py。
+abx run <sandbox-id> aider --json-args '{"prompt":"解释此文件","cwd":"/home/user/project","files":"[\"calculator.py\"]"}'
+abx run <sandbox-id> aider --json-args '{"prompt":"修复 calculator.py 并创建 REPORT.md","cwd":"/home/user/project","files":"[\"calculator.py\",\"REPORT.md\"]","allow_write":true,"command_timeout":180}'
+abx exec <sandbox-id> -- sh -c 'cd /home/user/project && git diff -- calculator.py'
+abx kill <sandbox-id>
+```
+
+退出码零只说明 CLI 完成，不代表代码正确；自行检查 diff 并执行独立测试。
+
+## 快速开始（Python SDK）
+
+`agent-sandbox-client` 发行版未发布时使用[配对固定源码安装](../docs/python-client-installation.md)。
+`pip install agent-sandbox` 是无关项目，不是这里的 client。
+
+```python
+import asyncio
+import json
+from agent_sandbox import Sandbox
+
+async def main():
+    sb = await Sandbox.create(template="<template-id>", timeout=600, envs={
+        "AIDER_API_KEY": "REPLACE_ME", "AIDER_BASE_URL": "https://example.invalid/v1",
+        "AIDER_MODEL": "your-model",
+    })
+    try:
+        await sb.commands.run("mkdir -p /home/user/project && cd /home/user/project && git init -q")
+        await sb.files.write("/home/user/project/calculator.py", "def add(a,b): return a-b\n")
+        result = await sb.run("aider", prompt="修复 add 并创建 REPORT.md", cwd="/home/user/project",
+            files=json.dumps(["calculator.py", "REPORT.md"]), allow_write=True,
+            command_timeout=180, timeout=210)
+        print(result["changed_files"])
+        print(await sb.files.read("/home/user/project/REPORT.md"))
+    finally:
+        await sb.kill()
+
+asyncio.run(main())
+```
+
+## 快速开始（HTTP POST）
+
+通过 `sb.network.get_url(9000)` 获得 server 地址。JSON 直接放参数对象，
+不要再套 `args`：
+
+```http
+POST /commands/aider
+Content-Type: application/json
+Authorization: Bearer REPLACE_ME
+
+{"prompt":"解释 calculator.py","cwd":"/home/user/project","files":"[\"calculator.py\"]","allow_write":false,"command_timeout":180}
+```
+
+结果结构为 `{"result":{"stdout":"...","stderr":"...","exit_code":0,"changed_files":[]}}`。
+只有配置了 `ABX_SERVER_TOKEN` 才需要示例 bearer；provider gateway 认证是另一层。
+SDK 使用 `sb.server_at(9000, token=...)`。不要把 envd token 当作 server bearer。
+缺少必填参数、参数类型或请求格式错误返回 400，认证错误 401，未知命令 404，
+语义校验、上游失败或超时返回 500，包含 `error` 与 `type`，不回显上游错误原文。
+
+命名命令缓冲完整输出。`command_timeout` 约束拥有的 CLI 进程组，SDK 的
+`timeout` 只是 HTTP 等待时间，应该更长。客户端断线不会自动取消命令。
+长后台任务使用 process API，显式停止进程或销毁自己的沙箱。包装层超时或
+Python 取消会终止自己的进程组，并删除临时消息、配置和 stage。
+
+## 命令参考
+
+| 命令 | 参数 | 返回与真实调用 |
+| --- | --- | --- |
+| `aider_version` | 无 | 字符串 `aider 0.86.2`；真实执行 `aider --version` |
+| `aider_setup_check` | 无 | 安装/配置/home 阻断布尔值、固定版本和工作目录；不返回 key 或 endpoint |
+| `aider` | 必填 `prompt: string`，1–100000 字符；`cwd: string=""`；`files: string="[]"`，内容是最多 32 个相对路径组成的 JSON 数组；`allow_write: boolean=false`；`command_timeout: integer=600`，范围 1–1800 | 脱敏 stdout/stderr、exit_code 与 changed_files 字典 |
+
+每个文件最多 1 MiB。拒绝绝对路径、遍历、重复项、文件或父目录符号链接，以及
+`.git`、`.env`、`.aider` 路径。尚不存在的选中路径表示新产物。未选中的输出丢弃。
+检测到并行修改会拒绝回写，但不能把它视为对恶意并行写者的隔离机制。
+写入按单个文件原子替换，保留旧文件权限，不是跨全部文件的事务。
+默认 ask 即使 stage 被修改也不会回写。
+
+真实 argv 使用 `--chat-mode ask|whole`、`--message-file`、明确文件、model/base/settings，
+并关闭自动提交、自动 lint/test、shell 建议、URL 检测、浏览器、analytics 与更新。
+prompt 和 API key 不出现在 argv；key 只通过子进程环境传递。
+
+## 配置
+
+| 名称 | 默认与含义 |
+| --- | --- |
+| `AIDER_API_KEY` | 空；必需兼容 API 凭据 |
+| `AIDER_BASE_URL` | 空；必需 HTTP(S) endpoint，不允许内嵌凭据、query、fragment |
+| `AIDER_MODEL` | 空；必需 model ID，自动加 LiteLLM `openai/` 前缀 |
+| `WORKSPACE` | `/home/user/app`；默认工作目录 |
+| `ABX_SERVER_TOKEN` | 空；可选 server 认证 |
+
+兼容配置使用 `extra_body.enable_thinking=false`，用于已验证的 Qwen 兼容路由；
+扩展其他后端时调整并重新验收。key 不写入 stage 文件；选中源码仍会发往模型服务。
+
+**原生 home 限制：** 固定上游源码总是先搜索 home 默认文件，再追加
+`--config` / `--env-file`，这两个参数不能承诺完全隔离。已有 home
+`.aider.conf.yml`、`.env`、model settings/metadata、OAuth key 文件时启动前拒绝。
+包装层不替换 `HOME`、不修改共享 profile、不导入项目配置；
+`PYTHON_DOTENV_DISABLED=1` 禁用 dotenv 加载。上游自己的 cache/install 与
+analytics-disabled 状态可能保留在该专用沙箱原生 `.aider`，随实例整体销毁。
+不要在共享宿主 home 中执行真实调用。
+
+## 资源
+
+2 vCPU、2048 MiB、9000 端口。Python 3.11 Linux x86-64 的 metadata 解析共
+108 个兼容发行包、118 MiB 压缩 wheel；这不是实际镜像安装体积。
+独立 Python 3.12 的 x86-64 压缩归档约 32 MiB。镜像验收另行记录。
+
+## 已验证
+
+尚未记录任何通过的提供方测试。
+
+目录保持 experimental。源码运行时模型通过或 image build 通过，不代表已通过
+完整模板 deploy 到 READY 的路径。参见[设计](../docs/design/aider.md)与 evidence。
+
+## 二次开发
+
+修改 `commands.py` 后补充带边界的新命令、API 表、中英文文档和正负控。
+保留白名单、原文件校验和进程组清理。升级 Python/Aider pin 必须重新查官方
+metadata、真实 help/version，并重跑镜像与模型测试。保留安装依赖和 Python 归档许可证。
+
+## 贡献
+
+遵循[仓库规则](../CONTRIBUTING.md)，运行
+`python3 scripts/check_template.py aider`、`python3 -m pytest aider -q` 与
+`python3 scripts/run_local_e2e.py`。本地无 key 检查只有 L0。
+真实 coding 需专用新沙箱、`E2E_REQUIRE_LLM=1`、独立测试与文件取回，不能只看 marker。
+不改旧证据，不提交 key 或原始模型日志。
+
+## 问题反馈
+
+[模板 Issue 50](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/50)。
+SDK/server 问题到 [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues)，
+CLI/deploy 问题到 [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues)。
+
+## 许可证
+
+模板 glue 为 Apache-2.0。[Aider](https://github.com/Aider-AI/aider) 也采用 Apache-2.0；
+安装依赖与 [python-build-standalone](https://github.com/astral-sh/python-build-standalone)
+保留各自 notices。参见[官方安装](https://aider.chat/docs/install.html)与
+[兼容 API 指南](https://aider.chat/docs/llms/openai-compat.html)。
