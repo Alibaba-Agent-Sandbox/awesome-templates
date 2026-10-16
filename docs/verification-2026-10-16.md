@@ -35,6 +35,7 @@ claim gateway cancellation is implemented.
 |---|---|---|
 | Strict catalog/spec check | All 16 products plus skeleton conformant | Static verification |
 | Local HTTP suite | All 17 directories pass | Models disabled; not L3 |
+| First actual image CI at `7289e69` | 13 images built and passed keyless container checks; 3 jobs failed | Two context-preparation failures and one Droid install failure; fixes await the next run |
 | Coding/process/privacy/protocol regressions | Passed suites are recorded in repository evidence | Synthetic providers/CLIs are labeled; not cloud acceptance |
 | Qwen current owned-process source on Express | 17 HTTP checks pass, including real source repair, preserved tests, downloaded artifacts and independent target tests | Existing base, no changed-image deployment |
 | Droid current owned-process source on Express | 9 HTTP checks pass; owned instance cleaned | Keyless installation/contract only; Factory coding unverified |
@@ -54,9 +55,12 @@ uses a random engine socket nonce to prevent native-exec PID collisions.
 
 ## Open acceptance and roadmap
 
-- Changed Dockerfiles still require actual L1 results. The independent image-build
-  workflow runs on Docker-capable GitHub workers without cloud/model credentials.
-  Its existence or a queued run is not a successful build.
+- The first actual L1 matrix passed 13 images and failed 3 jobs. The follow-up
+  fixes exact Dockerfile FROM matching and Droid's native package install. See the
+  [first-run evidence](../.agents/evidence/verify/2026-10-16-image-build-first-ci.md).
+  All 16 images still need to pass at the corrected head; a queued run is not a
+  successful build. The workflow also exports only the already built Python hello
+  image for a separate local registry transfer and L2 attempt.
 - New-image Express deployment (L2), current-version provider acceptance, release
   and promotion remain unverified. Source upload does not replace these gates.
 - Claude, Amp, Droid, Gemini and Qoder need their compatible authorized credentials
@@ -83,6 +87,7 @@ Hermes/DeepSeek 的兼容模型结果属于本地目标服务，不能当作原�
 极速版部署验收；Hermes CLI 超时也不能保证取消独立 authority 已接受的任务。
 浏览器在普通 Express base 中缺少 libglib，复验失败且实例已清理。
 
-独立镜像构建 CI 只有实际成功才算 L1；新镜像部署、模型专属凭据、其他提供方、
+首轮实际镜像 CI 有 13 个通过、3 个失败；FROM 匹配和 Droid 原生包安装的修复
+正在复验，并准备导出 Python hello 镜像以继续 L2。新镜像部署、模型专属凭据、其他提供方、
 后续模板及完整 Skills/MCP 路线图仍有未完成项。所有改动模板保持 experimental，
 不填未通过的 provider，不把计划、SKIP、排队 CI 或源码运行称为全部交付。

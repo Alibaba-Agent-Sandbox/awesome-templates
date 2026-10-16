@@ -20,35 +20,35 @@ outside its group with setsid. The template remains Linux-specific.
 
 ## Actual verification
 
-Environment: Linux x86_64, Python3.13.13/source-built server0.3.0,
-pytest9.1.1/httpx0.28.1, official SHA256-verified Node24.16.0 and actual pinned
-OpenClaw2026.10.4 in temporary installation prefixes. No model credential was
+Environment: Linux x86_64, Python 3.13.13/source-built server 0.3.0,
+pytest 9.1.1/httpx 0.28.1, official SHA256-verified Node 24.16.0 and actual pinned
+OpenClaw 2026.10.4 in temporary installation prefixes. No model credential was
 injected. Synthetic gateway/server tokens were generated in process and omitted
 from output/evidence.
 
 - PASS: `python -m pytest --import-mode=importlib -q openclaw/test_commands.py`,
-  exit0,22passed. Existing15gateway ownership tests still pass. Four new actual
+  exit 0, 22 passed. Existing 15 gateway ownership tests still pass. Four new actual
   helper process scenarios cover successful/error leaders with ready-synchronized
-  redirected descendants, timeout leader/TERM-ignoring child, and200KB stdout and
+  redirected descendants, timeout leader/TERM-ignoring child, and 200 KB stdout and
   stderr drain. Three direct `_probe` actual-process regressions exercise
-  success,nonzero,timeout against a private executable fixture: no descendant
+  success, nonzero, timeout against a private executable fixture: no descendant
   marker survives and the independently running gateway process remains alive.
   No killpg/waitid mock substitutes for these process behaviors.
 - PASS: real HTTP server plus actual OpenClaw CLI with independent fresh server/
   gateway tokens and unique local ports ran `python openclaw/e2e_test.py`:
-  exit0,11PASS,model/codingSKIP. Authenticated readiness/RPC health, continued
+  exit 0, 11 PASS, model/codingSKIP. Authenticated readiness/RPC health, continued
   gateway after start response, owned stop, absent health after stop, precise
   HTTP errors and server shell all passed after the helper change.
-- PASS: `python scripts/check_template.py openclaw`, exit0,conformant.
-- PASS: scoped diff whitespace and relative Markdown-link checks,exit0.
+- PASS: `python scripts/check_template.py openclaw`, exit 0, conformant.
+- PASS: scoped diff whitespace and relative Markdown-link checks, exit 0.
 
 ## Remaining gates and cleanup
 
 This host CLI/HTTP run is not L1 image or L2 current-image deployment acceptance.
 Docker is unavailable, so both remain blocked. Gateway lifecycle does not run a
-model and no L3 coding acceptance is claimed. No L4,provider pass file or
+model and no L3 coding acceptance is claimed. No L4, provider pass file or
 tested_on provider was added. Existing local/runtime JSON is historical evidence
-for its recorded source, not a new image pass. Full integration CI/L0,owner
+for its recorded source, not a new image pass. Full integration CI/L0, owner
 Issue/PR/review and verified merge remain coordinating-task work.
 
 The actual gateway was explicitly stopped; its HTTP server was terminated/reaped.

@@ -11,7 +11,7 @@ the image used a non-platform base, and the template lacked the v2 contract.
 
 ## Decision
 
-Pin OpenClaw2026.10.4 with Node24.16.0, use Alibaba base/non-root/generation2,
+Pin OpenClaw 2026.10.4 with Node 24.16.0, use Alibaba base/non-root/generation2,
 and register dedicated start/status/authenticated-health/stop commands. Retain
 `gateway` as an explicit bounded action alias. Own the Popen object in memory;
 never trust a PID file or reclaim ports using --force. Use a private temporary

@@ -37,7 +37,7 @@ registration cannot silently leave the default shell/files surface open.
 non-root user and no CMD/ENTRYPOINT. Installs pin `@openai/codex@0.162.1`,
 `@qwen-code/qwen-code@0.23.0`, and python-sdk server archive commit
 `e2cb27e24fde0a67112f82b8d44af463445a5d1a` unless a source wheel is supplied.
-The base Node20 is below Qwen Code0.23.0's declared Node>=22 requirement. Install official Node24.16.0 from architecture-specific SHA256-verified archives using the same pinned installer as OpenClaw. Build logs must assert both actual CLI versions. commands.py and server-policy.json
+The base Node 20 is below Qwen Code 0.23.0's declared Node>=22 requirement. Install official Node 24.16.0 from architecture-specific SHA256-verified archives using the same pinned installer as OpenClaw. Build logs must assert both actual CLI versions. commands.py and server-policy.json
 are copied after package installation. Synthetic e2e-bin programs are not copied.
 
 start_cmd is `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py --policy /home/user/app/server-policy.json`.
@@ -70,7 +70,7 @@ never activate synthetic production binaries.
 L0: checker plus actual SDK server/real pinned CLI diagnostic and HTTP contracts;
 create/read/list sessions without model turns, prove disabled endpoints remain
 404. Separate pytest protocol fixtures explicitly inject e2e-bin into only their
-own subprocess PATH and check both startup forms, wrong/missing token401,
+own subprocess PATH and check both startup forms, wrong/missing token 401,
 allowlist enforcement and two turns for each adapter. An empty test PATH proves
 the model-disabled flag cannot enable fixtures automatically.
 

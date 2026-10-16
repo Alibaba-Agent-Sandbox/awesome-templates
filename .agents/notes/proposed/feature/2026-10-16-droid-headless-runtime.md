@@ -50,3 +50,5 @@ Cross-review follow-up: [target-key authority and disabled-model verification](.
 [Independent completion review](../../../evidence/verify/2026-10-16-four-template-completion-review.md).
 
 Completion cleanup follow-up: retain the Linux session leader unreaped until final owned-group KILL, drain stdout/stderr concurrently, and clean descendants after successful/nonzero completion as well as deadline expiry. Real redirected-descendant and TERM-ignoring-child regressions accompany the fix. [Verification](../../../evidence/verify/2026-10-16-amp-droid-gemini-owned-processes.md).
+
+Actual-image follow-up: the first remote L1build exposed a native optional-package mirror miss and upstream fallback self-link. Install the same pinned Droid release from the official npm registry with optional packages explicitly included; preserve the actual version assertion and await the new image run. [CI evidence](../../../evidence/verify/2026-10-16-image-build-first-ci.md).

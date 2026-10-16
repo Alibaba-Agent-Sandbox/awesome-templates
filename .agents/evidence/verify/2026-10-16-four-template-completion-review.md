@@ -47,7 +47,7 @@ installation paths as `<venv>`, `<npm10>`, `<cli-prefix>` and `<node24>`.
 - PASS: isolated npm 10.9.4 exact-version install of
   `@ampcode/cli@0.0.1792022479-ge66e24 @factory/cli@0.241.1 @google/gemini-cli@0.64.0`;
   actual `amp version`, `droid --version`, `gemini --version` all exit 0 and match
-  their pins. Node24 npm installed `openclaw@2026.10.4` (exit 0).
+  their pins. Node 24 npm installed `openclaw@2026.10.4` (exit 0).
 - PASS: `python scripts/check_template.py amp`, `droid`, `gemini`, `openclaw`
   (each separate invocation, each exit 0 / conformant).
 - PASS: `python -m pytest --import-mode=importlib -q amp/test_commands.py amp/test_e2e_protocol.py droid/test_commands.py droid/test_e2e_protocol.py gemini/test_commands.py gemini/test_e2e_protocol.py openclaw/test_commands.py`
@@ -74,9 +74,9 @@ installation paths as `<venv>`, `<npm10>`, `<cli-prefix>` and `<node24>`.
 
 ## Failed attempts retained as limitations
 
-The restored historical npm10 artifact was incomplete (`package.json` absent),
-and system npm12 install failed with `Class extends value undefined`. A fresh
-exact npm10 tarball was extracted to a temporary prefix and installed the pins
+The restored historical npm 10 artifact was incomplete (`package.json` absent),
+and system npm 12 install failed with `Class extends value undefined`. A fresh
+exact npm 10 tarball was extracted to a temporary prefix and installed the pins
 successfully. A first combined pytest command without `--import-mode=importlib`
 failed collection because templates use the same test filenames. The corrected
 command avoids module-name collisions; neither failure is represented as a pass.

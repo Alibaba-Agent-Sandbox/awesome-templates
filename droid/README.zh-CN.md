@@ -6,6 +6,8 @@
 
 ## 技术栈
 
+从 `https://registry.npmjs.org` 安装固定 CLI，并显式包含平台可选包。基础镜像 npm 镜像源对所需 native 包返回404；缺包会进入上游 fallback，可能使二进制成为自引用链接。
+
 阿里云 FC 基础镜像（通常为 `v0.0.49`），镜像内 Python 3.13、Node.js 20，npm `@factory/cli@0.241.1`，以及 [Dockerfile](Dockerfile) 中固定源码版本的 `agent-sandbox-server`。模板采用 generation 2，以非 root 的 `user` 用户运行，开放 9000 端口。
 
 ## 解决的问题

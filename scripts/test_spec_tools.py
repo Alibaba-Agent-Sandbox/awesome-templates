@@ -11,6 +11,7 @@ import threading
 import time
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import check_template
 import express_e2e
@@ -445,6 +446,42 @@ class MonitorTest(unittest.TestCase):
                 order.append("b-in")
             thread.join(timeout=5)
             self.assertEqual(order, ["a-in", "a-out", "b-in"])
+
+
+class ImageBuildContextTest(unittest.TestCase):
+    def test_actual_template_contexts_preserve_heredocs_and_sdk_install(self) -> None:
+        """Exercise the real context step; no Docker process is mocked or invoked."""
+        import contextlib
+        import io
+
+        workflow = check_template.yaml.safe_load((ROOT / ".github/workflows/image-build.yml").read_text())
+        job = workflow["jobs"]["image-build"]
+        step = next(item for item in job["steps"] if item.get("name") == "Prepare the standalone template context")
+        code = step["run"].split("python - <<'PY'\n", 1)[1].rsplit("\nPY", 1)[0]
+        templates = job["strategy"]["matrix"]["template"]
+        catalog = check_template.yaml.safe_load((ROOT / "awesome-templates.yaml").read_text())["templates"]
+        self.assertEqual(set(templates), {item["path"] for item in catalog})
+        with tempfile.TemporaryDirectory() as folder:
+            runner = Path(folder)
+            wheel_dir = runner / "server-wheel"
+            wheel_dir.mkdir()
+            # The prepare step only copies this opaque fixture; it never claims
+            # that these bytes are an installed or executable server wheel.
+            wheel = wheel_dir / "agent_sandbox_server-0.3.0-py3-none-any.whl"
+            wheel.write_bytes(b"context-copy fixture, not an installable package")
+            environment = {"RUNNER_TEMP": folder, "GITHUB_ENV": str(runner / "environment"),
+                           "SERVER_SDK_SHA": "e2cb27e24fde0a67112f82b8d44af463445a5d1a"}
+            for name in templates:
+                with self.subTest(template=name), patch.dict(os.environ, {**environment, "TEMPLATE": str(ROOT / name)}):
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        exec(compile(code, "image-build.yml::prepare", "exec"), {})
+                    context = runner / ("image-context-" + name)
+                    materialized = (context / "Dockerfile").read_bytes()
+                    original = (ROOT / name / "Dockerfile").read_bytes()
+                    self.assertEqual(materialized.replace(
+                        b"FROM fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+                        b"FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"), original)
+                    self.assertEqual((context / wheel.name).read_bytes(), wheel.read_bytes())
 
 
 class ImageReportTest(unittest.TestCase):

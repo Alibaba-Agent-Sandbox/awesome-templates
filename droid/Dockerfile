@@ -12,7 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
     && chown -R user:user /home/user
 
 # The platform image already provides Node >=20, required by this exact release.
-RUN npm install -g @factory/cli@0.241.1 \
+# The base npm mirror lacks this release's native optional packages. The
+# upstream fallback installer can otherwise leave bin/droid self-linked.
+RUN npm install -g @factory/cli@0.241.1 --registry https://registry.npmjs.org --include=optional \
     && test "$(droid --version)" = "0.241.1" \
     && npm cache clean --force
 

@@ -18,7 +18,7 @@ Compatibility: 1.1.0 changes the project root from `/app` to `/home/user/app` an
 
 ## How to build
 
-[Dockerfile](../../droid/Dockerfile) uses the Alibaba platform base, bundled Node >=20 and Python, exact npm `@factory/cli@0.241.1`, and the exact python-sdk archive `61c43e0be65a1f57aa09186d578e7b399e48429b` for server SDK fallback. BuildKit accepts the optional injected wheel copy. The installer asserts the actual CLI version. npm metadata and the locally installed binary confirmed that pin on 2026-10-16; no blind upstream upgrade was made.
+[Dockerfile](../../droid/Dockerfile) uses the Alibaba platform base, bundled Node >=20 and Python, exact npm `@factory/cli@0.241.1`, and the exact python-sdk archive `61c43e0be65a1f57aa09186d578e7b399e48429b` for server SDK fallback. BuildKit accepts the optional injected wheel copy. The installer uses the official npm registry with optional platform packages included and asserts the actual CLI version. The base mirror returned 404 for @factory/cli-linux-x64@0.241.1, causing an upstream fallback to create a self-referencing bin/droid link in the first actual image-build run. npm metadata and the locally installed binary confirmed that pin on 2026-10-16; no blind upstream upgrade was made.
 
 Generation 2 starts `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`; ready command is `agent-sandbox-server healthcheck --port 9000`. No image CMD/ENTRYPOINT; runtime user is `user`. [template.yaml](../../droid/template.yaml) declares only empty secret placeholders.
 

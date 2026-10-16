@@ -13,7 +13,7 @@ subprocess implementation; earlier cloud source-runtime checks do not establish
 these new source hashes.
 
 Before the fix, an actual Python leader launched a child with stdin/stdout/stderr
-redirected to DEVNULL, printed its result and exited0. Each old wrapper returned
+redirected to DEVNULL, printed its result and exited 0. Each old wrapper returned
 success without cleaning its group. After a delay the child wrote its marker:
 reproduced independently for all three templates. This is an observable resource
 leak, not a hypothetical model assertion. The old communicate timeout path could
@@ -33,27 +33,27 @@ this cancellation contract.
 
 ## Environment and actual validation
 
-Linux x86_64, Python3.13.13, source-built agent-sandbox-server0.3.0,
-pytest9.1.1/httpx0.28.1/PyYAML6.0.3. Real pinned Amp/Droid/Gemini CLIs remained on
+Linux x86_64, Python 3.13.13, source-built agent-sandbox-server 0.3.0,
+pytest 9.1.1/httpx 0.28.1/PyYAML 6.0.3. Real pinned Amp/Droid/Gemini CLIs remained on
 temporary PATH for keyless diagnostics. Temporary test projects use synthetic
 markers and child programs only; model credentials are not injected.
 
 - PASS of reproduction: a temporary local driver ran the old public process
-  wrappers with actual redirected children, exit0, and observed surviving child
+  wrappers with actual redirected children, exit 0, and observed surviving child
   markers for all three templates before editing the runner.
 - PASS: `python -m pytest --import-mode=importlib -q amp/test_commands.py droid/test_commands.py gemini/test_commands.py`,
-  exit0,45passed. Includes12new actual-process scenarios: exit0/7 leaders with
+  exit 0, 45 passed. Includes 12 new actual-process scenarios: exit 0/7 leaders with
   ready-synchronized redirected descendants, deadline leader exiting on TERM with
-  a TERM-ignoring descendant, and200KB each stdout/stderr without deadlock.
+  a TERM-ignoring descendant, and 200 KB each stdout/stderr without deadlock.
   Existing secret redaction and private-argv timeout regressions still pass.
 - PASS: each template's `scripts/run_local_e2e.py::_run_one` with ordinary
   credential-sanitized environment and real pinned CLIs: all three `pass` and
-  driver exit0. Amp7PASS/1modelSKIP, Droid9PASS/L3NOT RUN, Gemini9PASS/modelSKIP.
+  driver exit 0. Amp 7 PASS/1 model SKIP, Droid 9 PASS/L3 NOT RUN, Gemini 9 PASS/modelSKIP.
 - PASS: `python scripts/check_template.py amp`, `droid`, `gemini` (separate
-  invocations): each conformant/exit0. agents-cli checker also remained conformant.
-- PASS: scoped `git diff --check` and relative document-link validation, exit0.
+  invocations): each conformant/exit 0. agents-cli checker also remained conformant.
+- PASS: scoped `git diff --check` and relative document-link validation, exit 0.
 - PASS: combined regression suite across these templates, OpenClaw and agents-cli,
-  `python -m pytest --import-mode=importlib -q amp/test_commands.py amp/test_e2e_protocol.py droid/test_commands.py droid/test_e2e_protocol.py gemini/test_commands.py gemini/test_e2e_protocol.py openclaw/test_commands.py agents-cli/test_protocol.py`: exit0,111passed at this checkpoint. The later OpenClaw probe cleanup has its own evidence and rerun.
+  `python -m pytest --import-mode=importlib -q amp/test_commands.py amp/test_e2e_protocol.py droid/test_commands.py droid/test_e2e_protocol.py gemini/test_commands.py gemini/test_e2e_protocol.py openclaw/test_commands.py agents-cli/test_protocol.py`: exit 0, 111 passed at this checkpoint. The later OpenClaw probe cleanup has its own evidence and rerun.
 
 ## Required acceptance still open
 

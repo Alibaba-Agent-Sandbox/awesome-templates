@@ -11,8 +11,8 @@ other-template and repository-process work was preserved. Base HEAD:
 `2acb53481739e9585803076dd4c05ce5c2048219`. Refs
 [Issue #25](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/25).
 
-Linux x86_64, Python3.13.13, agent-sandbox-server0.3.0 built from the current local
-server tree, pytest9.1.1/httpx0.28.1/PyYAML6.0.3. Actual Codex0.162.1 and Qwen0.23.0
+Linux x86_64, Python 3.13.13, agent-sandbox-server 0.3.0 built from the current local
+server tree, pytest 9.1.1/httpx 0.28.1/PyYAML 6.0.3. Actual Codex 0.162.1 and Qwen 0.23.0
 from the integration owner's pinned temporary CLI installation were on PATH for
 real diagnostic runs. Protocol tests select their synthetic executables explicitly
 on child PATH. All HTTP targets use unique temporary ports; protected targets use
@@ -36,25 +36,25 @@ fresh random synthetic tokens. No genuine model credential was injected or read.
 ## Executed checks
 
 - PASS: `python -m pytest --import-mode=importlib -q agents-cli/test_protocol.py`,
-  exit0,10passed. Actual HTTP/CLI-subprocess protocol tests cover both startup
+  exit 0, 10 passed. Actual HTTP/CLI-subprocess protocol tests cover both startup
   forms, missing/wrong/correct server token, disabled shell/files/process/model/
   additional Agents routes, both adapters with two sequential turns each,
   E2E_RUN_LLM=0 preserving PATH and missing-CLI refusal, plus output/argv privacy
   for nonzero/wrong-version/timeout diagnostics. Synthetic adapter turns are not
   actual upstream CLI/model acceptance.
-- PASS: `python scripts/check_template.py agents-cli`, exit0, conformant.
+- PASS: `python scripts/check_template.py agents-cli`, exit 0, conformant.
 - PASS: existing `scripts/run_local_e2e.py::_run_one(Path("agents-cli").resolve(), "")`
-  with ordinary sanitized child environment and real pins on PATH: exit0/pass,
-  18HTTP/diagnostic checks; model/coding explicitly SKIP. Both versions were
+  with ordinary sanitized child environment and real pins on PATH: exit 0/pass,
+  18 HTTP/diagnostic checks; model/coding explicitly SKIP. Both versions were
   actually executed and matched; sessions were created/read/listed without turns.
 - PASS: independent real-CLI authenticated HTTP suite for both direct and canonical
   startup. Canonical argv was derived from template.yaml with local path/port
-  substitution only. Actual e2e_test.py exited0 with19PASS for each mode, including
-  missing-token401. No model turn was submitted.
+  substitution only. Actual e2e_test.py exited 0 with 19 PASS for each mode, including
+  missing-token 401. No model turn was submitted.
 - PASS of negative guard, not L3: repeated actual e2e against both authenticated
-  modes with E2E_REQUIRE_LLM=1. Each exited1 and reported no L3 pass without an
+  modes with E2E_REQUIRE_LLM=1. Each exited 1 and reported no L3 pass without an
   out-of-band artifact verifier; the driver asserted both expected failures.
-- PASS: scoped diff whitespace and relative Markdown-link checks (exit0).
+- PASS: scoped diff whitespace and relative Markdown-link checks (exit 0).
 
 ## Earlier failures
 
@@ -74,7 +74,7 @@ image-build prerequisite; no provider/template pass file was added, tested_on st
 empty and no verified provider is listed. L3 NOT PASSED: this restricted HTTP smoke
 has no independent out-of-band artifact verifier and submitted no genuine model
 turn. Real coding acceptance must modify existing source, create an artifact and
-pass independent tests; event202 or fixture output cannot prove it. L4 NOT RUN.
+pass independent tests; event 202 or fixture output cannot prove it. L4 NOT RUN.
 Full-repository shared CI/catalog reconciliation, owner PR/review/checks and
 verified merge remain integration requirements.
 

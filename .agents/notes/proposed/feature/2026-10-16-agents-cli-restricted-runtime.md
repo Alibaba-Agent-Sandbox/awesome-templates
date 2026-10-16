@@ -57,7 +57,7 @@ forms. Explicit fixture PATH tests verify both adapters' two-turn event/item
 protocol, correct/missing/wrong token authentication, closed endpoints, no implicit
 fixture fallback with an empty PATH and sanitized diagnostic failures. Separately,
 real pinned CLIs run version/HTTP checks with no model turn; requesting required
-model acceptance must exit1 rather than infer a pass. Checker, docs/links/records
+model acceptance must exit 1 rather than infer a pass. Checker, docs/links/records
 and scoped diff validation complete local conformance.
 
 ## Acceptance criteria
@@ -74,4 +74,4 @@ and scoped diff validation complete local conformance.
 
 [Local verification](../../../evidence/verify/2026-10-16-agents-cli-restricted-runtime.md).
 
-Image dependency follow-up: Qwen0.23.0 requires Node>=22. The image now installs the reviewed SHA256-verified official Node24.16.0 archives; shared host CI Node24does not establish image compatibility. [L1 gate preparation](../../../evidence/verify/2026-10-16-template-image-build-gate.md).
+Image dependency follow-up: Qwen 0.23.0 requires Node>=22. The image now installs the reviewed SHA256-verified official Node 24.16.0 archives; shared host CI Node 24 does not establish image compatibility. [L1 gate preparation](../../../evidence/verify/2026-10-16-template-image-build-gate.md).

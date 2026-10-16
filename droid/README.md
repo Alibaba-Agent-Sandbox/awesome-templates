@@ -6,6 +6,8 @@ Run Factory Droid 0.241.1 headlessly on an existing project. Named commands expo
 
 ## Stack
 
+Install the pinned CLI from `https://registry.npmjs.org` with optional platform packages included. The base image npm mirror returned 404 for the required native package; its absence triggers an upstream fallback that can leave a self-referencing binary link.
+
 Alibaba FC base image (normally `v0.0.49`), its Python 3.13 and Node.js 20, npm `@factory/cli@0.241.1`, and the pinned in-sandbox `agent-sandbox-server` source in [Dockerfile](Dockerfile). The template uses generation 2 and runs as `user` on port 9000.
 
 ## Problem solved
