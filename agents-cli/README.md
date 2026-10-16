@@ -39,10 +39,11 @@ abx create --template <template-id> -y
 abx run <sandbox-id> agents_version
 ```
 
-The result is `codex 0.162.1; qwen-code 0.23.0`. Create a sandbox with compatible
-credentials before submitting a model turn, for example `--env
-OPENAI_API_KEY=<compatible-key>` and the base URL/model configuration that your
-selected CLI requires. Do not include credentials in images or checked-in files.
+The result is `codex 0.162.1; qwen-code 0.23.0`. Model configuration must reach the
+server process before it starts. Create-time environment does not retroactively
+configure a prewarmed port-9000 process. The SDK verifier below starts a new
+port-9010 process with explicit configuration. Do not include credentials in
+images or checked-in files.
 
 ```bash
 abx kill <sandbox-id> -y
@@ -73,7 +74,55 @@ If the sandbox was created with `ABX_SERVER_TOKEN`, pass the matching server cre
 `await sb.server_at(9000, token="<server-token>").commands.run("agents_version", timeout=60)`.
 
 The named diagnostic returns a buffered string. Use the HTTP session routes below
-for turns. General SDK files/process operations receive HTTP 404 under this policy.
+for turns. The named server's HTTP files/process APIs return 404 under this policy;
+the separate provider-native SDK management channel remains available.
+
+### Independent Qwen coding acceptance
+
+From a checkout with the paired SDK installed, export `OPENAI_API_KEY` and
+`OPENAI_BASE_URL` for an OpenAI-compatible, tool-capable endpoint. Set
+`OPENAI_MODEL` to your actual model, for example `qwen3.8-flash`. Then run:
+
+```bash
+mkdir -m 700 /tmp/agents-cli-private-<unique-run>
+python agents-cli/e2e_sdk.py --template <owned-agents-cli-template-id> \
+  --journal /tmp/agents-cli-private-<unique-run>/journal.json \
+  --report /tmp/agents-cli-private-<unique-run>/result.json
+```
+
+The controller calls `Sandbox.create(provider="alicloud-express")`, seeds a
+disposable project through provider-native commands, and proves the exact initial
+failure. It starts the unchanged installed commands and policy on port 9010 with
+selected model configuration, its own server token, workspace and private state
+directory. It retains the original `HOME`; host GitHub/cloud credentials are not
+forwarded. It submits a genuine `qwen-code` session/event, reconnects and polls
+items. No synthetic CLI is selected.
+
+Independent native processes require changed existing source, byte-identical
+original tests, exact JSON artifact values and a nonempty report, complete
+original plus agent-written unittest modules, and six held-out cases. They compile
+source under isolated Python and require a fresh post-agent random ACK, rejecting
+skip, early exit0 and stale bytecode. A marker response cannot pass. The pinned
+server's own private persisted turn state is additionally inspected for completed
+status because this policy disables turn-status/SSE routes; this is an internal
+diagnostic for server commit `e2cb27e`, not a new public API or artifact receipt.
+
+The session API currently runs the agent with **full_access**. It does not accept
+per-session permissions or time limits from the inline JSON. Closing HTTP
+shell/files/process routes does not contain the CLI's tools or arbitrary same-user
+code. Run only in a newly owned disposable sandbox without valuable files or
+other credentials. The verifier checks ordinary correctness; it does not isolate
+hostile code that can inspect or alter its own OS processes. The host turn deadline
+defaults to 540 seconds (30–600 configurable); HTTP disconnect is not cancellation.
+`finally` destroys the owned sandbox and checks a paginated provider listing for
+its ID and random metadata nonce. A permission/readback failure fails acceptance
+and retains the private recovery journal. Resolve its exact owned resources before
+deleting the journal.
+
+This controller does not deploy/delete a template or registry repository. The
+owner who supplies the template handles those resources separately. Qwen success
+does not establish Codex success: Codex 0.162.1 requires a compatible Responses
+endpoint, and its coding branch needs independent acceptance.
 
 ## Quick start (HTTP POST)
 
@@ -115,8 +164,10 @@ curl --fail-with-body "$ABX_SERVER_URL/v1/agents/sessions/<id>/items?limit=100&o
 Event submission returns 202 before model completion. HTTP 400 means invalid
 arguments, 401 missing/incorrect server authentication, 404 an unknown or disabled
 route/runtime/session, and 500 a diagnostic execution failure. Model-turn failures
-are reported in session/items state; accepting an event does not prove the model
-turn succeeded. An HTTP timeout does not cancel an upstream turn.
+may appear in items. The current session view can return idle without exposing
+the final turn's error; accepting an event or observing idle does not prove model
+success. The SDK verifier independently inspects results. An HTTP timeout does
+not cancel an upstream turn.
 
 ## Command reference
 
@@ -179,11 +230,12 @@ python scripts/run_local_e2e.py
 
 Protocol tests explicitly put `e2e-bin` on only their child process PATH and test
 both startup forms, authentication, disabled routes and two turns of each adapter.
-The Dockerfile does not copy those fixtures. Default e2e requires actual installed
-CLIs and submits no model turn. `E2E_REQUIRE_LLM=1` or `E2E_RUN_LLM=1` exits nonzero
-because this restricted API suite has no out-of-band artifact verifier. Do not
-count protocol markers as L3. Add a separate verifier that independently inspects
-changed source, new artifacts and tests before claiming genuine coding acceptance.
+The Dockerfile does not copy those fixtures. Default HTTP e2e requires actual
+installed CLIs and submits no model turn. `E2E_REQUIRE_LLM=1` or `E2E_RUN_LLM=1`
+still exits nonzero and directs callers to `e2e_sdk.py`. It never trusts an external
+receipt or arbitrary verifier hook. Run
+`python -m pytest --import-mode=importlib -q agents-cli/test_sdk_verifier.py` for
+no-network negative controls; those are separate from actual model/provider runs.
 
 ## Contributing
 

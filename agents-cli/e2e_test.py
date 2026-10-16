@@ -76,7 +76,7 @@ def main() -> int:
             check(response.status_code == 401, "server token protects business routes")
     requested = any(os.environ.get(name, "").lower() in {"1", "true", "yes"}
                     for name in ("E2E_RUN_LLM", "E2E_REQUIRE_LLM"))
-    check(not requested, "no L3 pass without an out-of-band artifact verifier")
+    check(not requested, "HTTP-only smoke cannot establish L3; run agents-cli/e2e_sdk.py for owned SDK coding verification")
     print("[SKIP] model/coding acceptance: no model turn or artifact acceptance was performed", flush=True)
     return 0
 

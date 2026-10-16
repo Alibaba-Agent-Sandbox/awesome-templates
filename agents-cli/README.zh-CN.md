@@ -35,9 +35,9 @@ abx create --template <template-id> -y
 abx run <sandbox-id> agents_version
 ```
 
-结果为 `codex 0.162.1; qwen-code 0.23.0`。提交模型任务前，在创建沙箱时通过
-`--env OPENAI_API_KEY=<compatible-key>` 等参数注入所选上游兼容的凭据及端点/模型配置。
-不要把密钥写入镜像或版本控制文件。结束后清理自己创建的资源：
+结果为 `codex 0.162.1; qwen-code 0.23.0`。模型配置必须在服务进程启动前传入；
+创建时的环境变量不会追配已经预热的 9000 进程。下方 SDK 验证器显式配置并启动
+新的 9010 进程。不要把密钥写入镜像或版本控制文件。结束后清理自己的资源：
 
 ```bash
 abx kill <sandbox-id> -y
@@ -69,7 +69,44 @@ asyncio.run(main())
 传入匹配的服务端凭据。
 
 命名检查命令缓冲返回字符串；模型任务使用下方 HTTP 会话接口。
-该策略下通用 SDK 文件/进程操作返回 404。
+该策略下命名服务端的 HTTP 文件/进程接口返回 404；提供方原生 SDK 管理通道独立保留。
+
+### Qwen 独立编码验收
+
+在安装配套 SDK 的 checkout 中，导出支持工具调用的兼容端点 `OPENAI_API_KEY` 和
+`OPENAI_BASE_URL`，并将 `OPENAI_MODEL` 设为实际模型，例如 `qwen3.8-flash`：
+
+```bash
+mkdir -m 700 /tmp/agents-cli-private-<unique-run>
+python agents-cli/e2e_sdk.py --template <owned-agents-cli-template-id> \
+  --journal /tmp/agents-cli-private-<unique-run>/journal.json \
+  --report /tmp/agents-cli-private-<unique-run>/result.json
+```
+
+控制器自行调用 `Sandbox.create(provider="alicloud-express")`，通过提供方原生命令
+通道创建一次性项目，确认精确的初始失败。随后用镜像内未改动的 commands 和策略启动
+9010 进程，显式传入选定模型配置、独立服务端 token、工作区和私有状态目录。
+保留原 `HOME`，不转发宿主 GitHub/云凭据；实际提交 `qwen-code` 会话和消息，再重连
+轮询 items，不选用模拟 CLI。
+
+独立原生进程要求已有源码实际改变、原测试字节完全不变、JSON 产物数值精确、报告
+非空、原测试及模型新增 unittest 模块完整运行通过，并额外执行六个隐藏用例。
+验证器使用隔离 Python 编译源字节，要求模型结束后新生成的随机 ACK，拒绝 skip、
+提前 exit0 和旧字节码假成功，文字标记不能过关。由于原策略关闭 turn 状态/SSE
+接口，另通过管理通道只读固定服务端自身的私有持久化状态，确认该会话 turn 已完成。
+这是固定 `e2cb27e` 的内部诊断，不是新公共 API 或可提交的产物回执。
+
+当前会话 API 实际以 **full_access** 运行模型，不支持通过内联 JSON 设置单会话权限
+或时限。关闭 HTTP shell/文件/进程接口不会隔离 CLI 工具或任意同用户代码。
+只在新建且自有的一次性沙箱中运行，不放重要文件或其他凭据。验证器检查普通正确性，
+不隔离能检查或篡改自身 OS 进程的恶意代码。宿主等待 turn 默认 540 秒，可设
+30–600 秒；HTTP 断线不是取消。`finally` 销毁整个自有沙箱，再分页检查 ID 及随机
+metadata nonce 均不存在。权限或回查失败会导致验收失败，并保留私有恢复 journal；
+确认对应自有资源已处理后再删除它。
+
+验证器不部署/删除模板或镜像仓库，这些资源由提供模板的 owner 另行管理。
+Qwen 成功不代表 Codex 成功：Codex 0.162.1 要求兼容 Responses 端点，其编码分支需
+单独验收。
 
 ## 快速开始（HTTP POST）
 
@@ -109,8 +146,9 @@ curl --fail-with-body "$ABX_SERVER_URL/v1/agents/sessions/<id>/items?limit=100&o
 ```
 
 事件提交返回 202，模型尚未完成。400 表示参数错误，401 表示服务端认证失败，404 表示
-未知/关闭的接口、运行时或会话，500 表示版本检查执行失败。模型执行错误体现在会话及
-items 状态中；事件被接收不代表模型成功。HTTP 超时不会自动取消后台任务。
+未知/关闭的接口、运行时或会话，500 表示版本检查执行失败。部分模型错误可见于 items，
+当前会话视图可能返回 idle 而不暴露最终 turn 错误；事件被接收或观察到 idle 都不代表
+模型成功。SDK 验证器独立检查结果。HTTP 超时不会自动取消后台任务。
 
 ## 命令参考
 
@@ -169,9 +207,10 @@ python scripts/run_local_e2e.py
 
 协议测试仅给自己的子进程显式设置 `e2e-bin` PATH，覆盖两种启动方式、认证、关闭接口
 及每个 adapter 的两轮任务。Dockerfile 不复制这些 fixture。默认 e2e 要求真实 CLI，
-不提交模型任务。设置 `E2E_REQUIRE_LLM=1` 或 `E2E_RUN_LLM=1` 时退出非零，因为受限接口
-套件尚无带外产物验收器。回复标记不能计作 L3；声称真实编码完成前，必须独立检查
-已有源码修改、新建产物及测试结果。
+不提交模型任务。设置 `E2E_REQUIRE_LLM=1` 或 `E2E_RUN_LLM=1` 时仍退出非零，并提示运行
+`e2e_sdk.py`，不会信任外部回执或任意 verifier hook。无网络负控可运行
+`python -m pytest --import-mode=importlib -q agents-cli/test_sdk_verifier.py`；它们与实际
+模型/提供方验收分别记录。
 
 ## 贡献
 
