@@ -256,3 +256,13 @@ python3 aider/verify_upstream_guards.py
 
 This uses a deterministic loopback model to verify slash/bang and unselected-path
 refusals. It is separate from real-model coding and image deployment acceptance.
+
+### Independent test completion
+
+The coding controller verifies all three unchanged original tests in an isolated
+Python process, compiles actual source bytes, rejects skipped/expected-failing or
+incomplete tests, and requires fresh acknowledgements chosen after the agent
+exits. Held-out calculations have a separate acknowledgement. Static marker output,
+premature exit and cached bytecode do not establish a pass. These are completion
+checks within the disposable sandbox, not an OS security boundary. Earlier real
+model evidence is retained separately; the hardened verifier needs its own run.

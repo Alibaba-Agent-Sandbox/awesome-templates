@@ -125,3 +125,13 @@ test bytes stay unchanged, remote file retrieval and three tests plus six held-o
 calculations pass. Marker-only/modified-tests/held-out failures must be rejected.
 No source-runtime pass is reported as an image deployment. L4 other providers
 remain unverified. Every owned resource is destroyed even on failure.
+
+## Independent verifier completion
+
+The first controller's static held-out marker could be printed by target source
+before sys.exit(0), bypassing the assertions while leaving the original three
+tests passing. Isolated source-compiling verifier processes now require the exact
+three-test successful result without skips/expected failures, plus fresh separate
+post-agent completion acknowledgements. Actual source bytes bypass stale caches;
+trusted stdlib loads before adding the project. This is completion verification,
+not a hostile same-authority isolation claim. Runtime/CLI policy is unchanged.
