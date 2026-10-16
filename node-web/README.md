@@ -115,6 +115,10 @@ No provider has a passing run recorded for this template.
 
 2026-10-16 local L0 passed all 60 assertions with real Node 22.22.2, isolated npm 10.9.4, agent-sandbox-server 0.3.0 and httpx 0.28.1: HTTP API discovery, 4 MiB pre-readiness output, real HTTP requests, stderr logs, npm build artifact, npm start/dev and process-group stop/rebind, build nonzero/timeout and readiness failure. This is a local host run; it does not establish the Node 20 image build or cloud behavior. L1 is pending because Docker is absent. L2/L4 are pending; `tested_on` remains empty. No model call is required for this service template.
 
+## Express source-runtime verification
+
+On 2026-10-16, all 60 external HTTP assertions passed against the patched source on an owned Express base sandbox with its actual Node.js 20 runtime. The run covers bundled smoke, uploaded application build/start/dev, HTTP readiness, bounded logs, shutdown, port reuse and cleanup. The owned instance was destroyed. [JSON evidence](evidence/runtime-express-2026-10-16.json) records source/config/fixture/wheel hashes; [HTTP results](evidence/runtime-express-2026-10-16.log) record the assertions. This does not establish a Dockerfile build or deployment of a new template image; `tested_on` remains empty. See [the runner](../docs/express-source-runtime.md).
+
 ## Secondary development
 
 Upload a project beneath `/home/user/app`, include its dependency lockfile, and install exact versions when building a derivative image (`npm ci` against the committed lockfile). Keep package installs before the final `COPY commands.py`, remove the npm cache in the same image layer, retain the pinned server, Alibaba base, non-root user and generation-2 start/ready commands. Do not add Docker CMD/ENTRYPOINT. Express/Fastify applications use `serve`, or define `start`/`dev`/`build` scripts. This template does not install a framework or generate a Next/Vite project.

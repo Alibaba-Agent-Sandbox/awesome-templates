@@ -19,7 +19,7 @@ python-hello end-to-end suite
 [PASS] GET /hello/{name} — HTTP 200, greeting='Hello, E2E!'
 
 -- File ops --
-[PASS] POST /files/upload-stream — HTTP 200, {"path": "/home/user/abx-python-hello-runtime/workspace/e2e_python_hello_6037d2f071354f93bee8bd1d86e57888.txt", "byte...
+[PASS] POST /files/upload-stream — HTTP 200, {"path": "/home/user/abx-python-hello-runtime/workspace/e2e_python_hello_1f2b97cb9dcf4ea798124b195aa6a6a3.txt", "byte...
 [PASS] GET /files/download-stream — HTTP 200, content matches=True
 [PASS] GET /files/list — HTTP 200, 1 entr(ies), file present=True
 [PASS] DELETE /files — HTTP 200
@@ -30,6 +30,7 @@ python-hello end-to-end suite
 [PASS] pytest failing test returns sanitized 500 — HTTP 500
 [PASS] cleanup Python workflow — HTTP 200
 [PASS] cleanup Python workflow — HTTP 200
+[PASS] cleanup Python workflow — HTTP 200
 
 -- Shell --
 [PASS] POST /shell echo — HTTP 200, stdout='hello'
@@ -37,5 +38,5 @@ python-hello end-to-end suite
 ==========================================================================
 SUMMARY — python-hello
 ==========================================================================
-19 passed, 0 failed, 0 skipped (total 19)
+20 passed, 0 failed, 0 skipped (total 20)
 ==========================================================================

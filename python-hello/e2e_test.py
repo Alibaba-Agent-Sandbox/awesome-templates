@@ -228,6 +228,7 @@ def group_python_workflow(client: httpx.Client) -> None:
     marker = uuid.uuid4().hex
     source = f"e2e_python_{marker}.py"
     test_file = f"e2e_pytest_{marker}.py"
+    failing_test_file = f"e2e_pytest_failing_{marker}.py"
     files = {
         source: "print(6 * 7)\n",
         test_file: "def test_calculation():\n    assert 6 * 7 == 42\n",
@@ -248,16 +249,21 @@ def group_python_workflow(client: httpx.Client) -> None:
                lambda result: result.strip() == "42")
         cmd_ok(client, "pytest uploaded test", "test", {"path": test_file},
                lambda result: "1 passed" in result)
+        # A same-size rewrite within one timestamp tick can reuse pytest's
+        # assertion-rewrite bytecode cache. Use a fresh negative-control module
+        # so the check always executes the failing source, including on fast CI.
+        failing_path = f"{WORKSPACE}/{failing_test_file}"
         resp = client.post("/files/upload-stream", json={
-            "path": f"{WORKSPACE}/{test_file}",
+            "path": failing_path,
             "content_base64": base64.b64encode(
                 b"def test_calculation():\n    assert 6 * 7 == 41\n"
             ).decode(),
         })
         if resp.status_code != 200:
-            record("FAIL", "replace Python test", f"HTTP {resp.status_code}")
+            record("FAIL", "upload failing Python test", f"HTTP {resp.status_code}")
             return
-        resp = run_cmd(client, "test", {"path": test_file})
+        uploaded.append(failing_path)
+        resp = run_cmd(client, "test", {"path": failing_test_file})
         ok = resp.status_code == 500 and "error" in resp.json()
         record("PASS" if ok else "FAIL", "pytest failing test returns sanitized 500",
                f"HTTP {resp.status_code}")

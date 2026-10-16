@@ -1,12 +1,36 @@
 {
-  "date": "2026-10-16T01:18:24.049113+00:00",
+  "date": "2026-10-16T02:04:14.768644+00:00",
   "provider": "alicloud-express",
   "template": "python-hello",
   "scope": "patched-source runtime on existing base; NOT Dockerfile L1 or template-deploy L2",
   "source_sha256": "819dd5d91a67edc9d681b01dc44caac479c6d693d947f1818d5a1253cc9b9ceb",
+  "source_files_sha256": {
+    "python-hello/commands.py": "819dd5d91a67edc9d681b01dc44caac479c6d693d947f1818d5a1253cc9b9ceb",
+    "python-hello/e2e_test.py": "34aa4e50c9b75c3b14f94b49a8b35da33ad4335eca2b652adbad595db9b2be16",
+    "python-hello/Dockerfile": "7ea5968e85cd97accb08b30250590390e226eae7f7b1dedddd495c00af4ed416",
+    "python-hello/template.yaml": "2d97ffbaa494d5be8eb3e3ff206a909d932016c5dc4a5f353489aba312c251af",
+    "scripts/express_runtime_e2e.py": "dfbc3513928d5037d844f78602dc00ec6d2964544822dd58318c9761b8629cf2"
+  },
+  "uploaded_files_sha256": {
+    "commands.py": "819dd5d91a67edc9d681b01dc44caac479c6d693d947f1818d5a1253cc9b9ceb"
+  },
+  "generated_fixtures": [],
+  "required_model_acceptance": false,
+  "runtime_dependencies": "pytest==8.4.2",
+  "server_wheel_sha256": "a09a4846fef8b49f3a059d1c65e38d283986aa4fbf879dd09192100c30039fc9",
+  "sdk_version": "0.3.0",
+  "sdk_source_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+  "base_template": "base",
+  "verification_type": "source-runtime",
+  "image_build_verified": false,
+  "template_deploy_verified": false,
   "checks": [
     {
       "name": "owned Express base sandbox",
+      "ok": true
+    },
+    {
+      "name": "public runtime source and config upload",
       "ok": true
     },
     {
@@ -32,20 +56,12 @@
     {
       "name": "remote HTTP suite",
       "ok": true,
-      "detail": "exit=0; PASS lines=20; FAIL lines=0"
+      "detail": "exit=0; PASS lines=21; FAIL lines=0"
     },
     {
       "name": "owned sandbox cleanup",
       "ok": true
     }
   ],
-  "passed": true,
-  "verification_type": "source-runtime",
-  "image_build_verified": false,
-  "template_deploy_verified": false,
-  "template_version": "1.1.0",
-  "sdk_version": "0.3.0",
-  "sdk_source_commit": "35da216a300f1e2e84254a1cf4b4a7ea98681505",
-  "pytest_version": "8.4.2",
-  "server_wheel_sha256": "e8e7943da6dfb61a4832c18a3edcb6aa698b7b13679cd712fd58a1c37534291f"
+  "passed": true
 }

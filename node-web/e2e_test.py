@@ -41,7 +41,9 @@ const {once} = require('node:events');
  }).listen(Number(process.env.PORT), '0.0.0.0');
 })();
 '''
-    with httpx.Client(base_url=BASE_URL, timeout=45) as client:
+    token = os.environ.get("E2E_TOKEN") or os.environ.get("ABX_SERVER_TOKEN", "")
+    headers = {"Authorization": "Bearer " + token} if token else {}
+    with httpx.Client(base_url=BASE_URL, timeout=45, headers=headers) as client:
         def call(name: str, args: dict | None = None, expected: int = 200):
             response = client.post(f"/commands/{name}", json=args or {})
             check(response.status_code == expected, f"{name}: HTTP {expected}")

@@ -17,6 +17,15 @@ python scripts/express_runtime_e2e.py python-hello \
   --sdk-source-commit SDK_COMMIT
 ```
 
+The runner also accepts `node-web`, `browser-automation` and `opencode`.
+Node web uploads its public sample and a dependency-free package fixture; browser
+automation installs Playwright 1.58.0 and Chromium, using only system libraries
+already in the base. It never invokes sudo or installs system dependencies; a
+missing library or failed browser launch is a failed run, not an isolation fallback.
+OpenCode requires `ABX_LLM_API_KEY`, `ABX_LLM_BASE_URL` in the caller environment
+and `--model dashscope/<model>`. It uses the checked-in public config and pinned
+1.19.0 CLI; credentials are supplied only to the remote process environment.
+
 For `codex` and `codex-agent-api`, supply `OPENAI_API_KEY` and `OPENAI_BASE_URL`
 through the environment, select a Responses-compatible model with `--model`, and
 replace `python-hello` above with the chosen template name. Model acceptance is
@@ -39,7 +48,7 @@ not proof that the wheel was built from a clean tree; reviewers should reproduce
 the build and compare the wheel hash. A platform denial is a failure: stop that
 path and record its original reason rather than changing network or permissions.
 
-Current recorded checks for Codex, Codex API and Python hello are source-runtime evidence.
+Successful recorded checks are source-runtime evidence; failed runs remain failures even when cleanup succeeds.
 Docker image build (L1), deployment of that image (L2), other providers and full
 candidate acceptance remain separate work. See the individual template READMEs
 and evidence; the catalog's provider acceptance stays empty until its gates pass.

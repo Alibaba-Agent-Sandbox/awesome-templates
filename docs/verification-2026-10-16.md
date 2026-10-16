@@ -11,15 +11,15 @@ but evidence for another template version cannot qualify the changed version.
 | Process/privacy/acceptance-harness regressions | 66 PASS | Synthetic CLI/protocol fixtures are explicitly synthetic |
 | Spec tooling | 20 PASS | Simulated deployment fixtures are not real cloud runs |
 | Catalog conformance | 9 conformant including skeleton; 8 legacy; v2 failures 0 | Existing legacy violations remain open |
-| Python hello, patched source on real Express base | 20 HTTP checks PASS | Pinned pytest 8.4.2; no Dockerfile build/deployment |
+| Python hello, patched source on real Express base | 21 HTTP checks PASS | Pinned pytest 8.4.2; no Dockerfile build/deployment |
 | Codex, patched source on real Express base | 16 HTTP checks PASS including real coding task | Pinned Codex 0.162.1; no Dockerfile build/deployment |
 | Codex API, patched source on real Express base | 30 HTTP checks PASS including real background coding and exact-thread resume | Production serve loader, Codex 0.162.1; no Dockerfile build/deployment |
 | Browser automation | 24 real Chromium local checks PASS | Playwright 1.58.0; no cloud image validation |
-| Node web | 60 local assertions PASS | Includes real HTTP/build/log/process lifecycle; no cloud image validation |
+| Node web | 60 local assertions and 60 real Express source-runtime HTTP checks PASS | Includes real HTTP/build/log/process lifecycle; no Dockerfile build/deployment |
 | OpenCode | 17 process/ownership regressions and 15 local HTTP checks PASS | Real 1.19.0 binary; model task not run |
 | Claude Code | 10 regressions and 19 local checks PASS | Actual pinned 2.0.76 version/help checked; model credential absent |
 
-The three source-runtime runs have per-template JSON/log evidence with source and
+The successful source-runtime runs have per-template JSON/log evidence with source and
 server-wheel hashes. Every created cloud sandbox was owned by the run and destroyed.
 The shared [Express source runner](express-source-runtime.md) can reproduce these
 checks. A source-runtime pass is not a substitute for L1/L2; `tested_on: []`
@@ -42,6 +42,20 @@ remains accurate for changed templates lacking those gates.
   pinned CLIs/browser and executes the regression suites; remote CI results must
   be checked separately after pushing.
 
+## CI and additional cloud findings
+
+One remote CI run failed because an immediate equal-size rewrite of the Python
+negative test reused pytest assertion bytecode within the same timestamp tick.
+A real controlled reproduction confirmed the stale pass. The verifier now uses a
+fresh negative-control module; real Express revalidation passes all 21 checks.
+The original CI failure is retained, and the corrected push must pass remote CI.
+
+Node web additionally passed all 60 external checks on a real owned Express base.
+OpenCode passed a first real-model coding task with 23 checks; exact-session
+continuation is being strengthened and will be recorded after its own run.
+Browser source-runtime dependency setup failed with `UNAVAILABLE: Stream removed
+(Socket closed)`; its owned instance was destroyed. That run is not a pass.
+
 ## Remaining work
 
 Docker is not available in this execution workspace. No L1 Docker build or L2 new
@@ -62,7 +76,7 @@ existing catalog issues; this batch does not close them as completed.
 本批已落地七个模板及共享规范/CI 的实现与修复，但完整目录路线图尚未完成。
 17 个目录本地 HTTP 运行通过；66 项回归、20 项规范工具测试通过。
 规范检查有 9 个合规目录（含 skeleton），8 个旧目录仍待迁移。
-Codex、Python hello、Codex API 分别在真实 Express base 中通过 16、20、30 项
+Codex、Python hello、Codex API 分别在真实 Express base 中通过 16、21、30 项
 源码运行检查；Codex 两项包含真实模型编程任务，API 另验同线程恢复及产物哈希。
 所有本次创建的实例已销毁。各模板 JSON/log 保留源码和 server wheel 哈希。
 

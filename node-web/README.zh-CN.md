@@ -115,6 +115,10 @@ curl --fail-with-body -X POST "$SERVER_URL/commands/stop" \
 
 2026-10-16 本地 L0 使用真实 Node 22.22.2、隔离 npm 10.9.4、agent-sandbox-server 0.3.0、httpx 0.28.1，60 项断言全部通过：HTTP API 发现、就绪前 4 MiB 高输出、真实 HTTP 请求、stderr 日志、npm 构建产物、start/dev 及进程组停止后端口重用、构建非零/超时、就绪失败。该结果仅为本地主机验证，未证明 Node 20 镜像或云端行为。Docker 缺失，L1 待运行；L2/L4 待运行，`tested_on` 保持空。服务模板不需要模型调用。
 
+## Express 源码运行验证
+
+2026-10-16，改动后的源码在自有 Express base 的真实 Node.js 20 中通过全部 60 项外部 HTTP 断言，覆盖样例 smoke、上传应用的构建/start/dev、HTTP 就绪、日志边界、退出、端口复用及清理。自有实例已销毁。[JSON 证据](evidence/runtime-express-2026-10-16.json)记录源码、配置、fixture 和 wheel 哈希，[HTTP 结果](evidence/runtime-express-2026-10-16.log)记录断言。此结果不等于 Dockerfile 构建或新模板镜像部署，`tested_on` 保持为空；见[共享工具](../docs/express-source-runtime.md)。
+
 ## 二次开发
 
 把项目上传至 `/home/user/app` 下并提交依赖锁文件。衍生镜像用 `npm ci` 从锁文件安装精确版本；依赖安装放在最终 `COPY commands.py` 之前，npm 缓存在同层清理。保留锁定 server、Alibaba 基础镜像、非 root 用户、generation 2 的启动/就绪命令，无 Docker CMD/ENTRYPOINT。Express/Fastify 可用 serve，或提供 start/dev/build 脚本。模板不预装框架，不创建 Next/Vite 项目。
