@@ -26,6 +26,13 @@ MARKER = "ABX_E2E_OK"
 TOKEN = os.environ.get("E2E_TOKEN", "")
 PROBE_ROOT = os.path.join(WORK, "abx_e2e_codex_" + uuid.uuid4().hex)
 KEY_ENVS = ("OPENAI_API_KEY", "CODEX_API_KEY", "ABX_LLM_API_KEY")
+BASELINE_SOURCE = "def fib(n):\n    return n\n"
+ORIGINAL_TESTS = (
+    "import unittest\nfrom fibonacci import fib\n"
+    "class OriginalTests(unittest.TestCase):\n"
+    "    def test_zero(self): self.assertEqual(fib(0), 0)\n"
+    "    def test_existing_positive(self): self.assertEqual(fib(7), 13)\n"
+)
 COMMANDS = {
     "codex_version",
     "codex_setup_check",
@@ -250,12 +257,38 @@ def _llm(client: httpx.Client, check) -> None:
             check(test, False, "model key or E2E_RUN_LLM is missing")
         return
     task = os.path.join(PROBE_ROOT, "agent-task")
+    shell_prefix = "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 "
+    seed = (
+        "from pathlib import Path; r=Path(" + repr(task) + "); r.mkdir(parents=True); "
+        "(r/'fibonacci.py').write_text(" + repr(BASELINE_SOURCE) + "); "
+        "(r/'test_original.py').write_text(" + repr(ORIGINAL_TESTS) + ")"
+    )
+    seeded = client.post("/shell", json={
+        "command": shell_prefix + "-c " + shlex.quote(seed), "cwd": WORK, "timeout": 30,
+    })
+    if seeded.status_code != 200 or seeded.json().get("exit_code") != 0:
+        check("existing project seed", False)
+        return
+    baseline = client.post("/shell", json={
+        "command": shell_prefix + "-m unittest -v test_original.py", "cwd": task, "timeout": 30,
+    })
+    baseline_body = baseline.json() if baseline.status_code == 200 else {}
+    baseline_log = baseline_body.get("stderr", "")
+    baseline_failed = baseline_body.get("exit_code") == 1 and all(
+        expected in baseline_log for expected in (
+            "FAIL: test_existing_positive", "Ran 2 tests", "FAILED (failures=1)",
+        )
+    ) and "ERROR:" not in baseline_log
+    check("existing original tests fail before agent correction", baseline_failed)
+    if not baseline_failed:
+        return
     payload: dict = {
         "prompt": (
-            "Create fibonacci.py implementing fib(n): fib(0)=0, fib(1)=1, "
-            "and negative input raises ValueError. Create test_fibonacci.py using "
+            "Fix the existing fibonacci.py implementing fib(n): fib(0)=0, fib(1)=1, "
+            "and negative input raises ValueError. Preserve test_original.py byte for byte. "
+            "Write REPORT.md explaining the correction and validation. Create test_fibonacci.py using "
             "stdlib unittest to cover zero, positive, and negative inputs. Run the "
-            "tests with python3 -m unittest -v test_fibonacci.py using your command "
+            "tests with python3 -m unittest -v test_original.py test_fibonacci.py using your command "
             "tool. After the tests pass, write acceptance.txt containing exactly "
             f"{MARKER} followed by a newline. Reply with exactly: {MARKER}"
         ),
@@ -274,7 +307,9 @@ def _llm(client: httpx.Client, check) -> None:
     try:
         files_ok = (
             _read_file(client, os.path.join(task, "acceptance.txt")) == MARKER + "\n"
-            and bool(_read_file(client, os.path.join(task, "fibonacci.py")).strip())
+            and _read_file(client, os.path.join(task, "fibonacci.py")) != BASELINE_SOURCE
+            and _read_file(client, os.path.join(task, "test_original.py")) == ORIGINAL_TESTS
+            and bool(_read_file(client, os.path.join(task, "REPORT.md")).strip())
             and bool(_read_file(client, os.path.join(task, "test_fibonacci.py")).strip())
         )
     except (httpx.HTTPError, KeyError, ValueError):
@@ -290,16 +325,15 @@ def _llm(client: httpx.Client, check) -> None:
     )
     # /shell uses shlex.split + exec, not a shell interpreter. Supply cwd as
     # an API argument and keep operators such as `cd` / `&&` out of argv.
-    shell_prefix = "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 "
     verified = client.post("/shell", json={
         "command": shell_prefix + "-c " + shlex.quote(assertions), "cwd": task, "timeout": 30,
     })
     check("independent remote Fibonacci assertions", verified.status_code == 200
           and verified.json().get("exit_code") == 0)
     tests = client.post("/shell", json={
-        "command": shell_prefix + "-m unittest -v test_fibonacci.py", "cwd": task, "timeout": 30,
+        "command": shell_prefix + "-m unittest -v test_original.py test_fibonacci.py", "cwd": task, "timeout": 30,
     })
-    check("remote agent-written unittest rerun", tests.status_code == 200
+    check("remote original and agent-written unittest rerun", tests.status_code == 200
           and tests.json().get("exit_code") == 0
           and "Ran 0 tests" not in tests.json().get("stderr", "")
           and "Ran " in tests.json().get("stderr", ""))
