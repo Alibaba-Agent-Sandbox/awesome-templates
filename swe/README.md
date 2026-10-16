@@ -126,7 +126,7 @@ Use only trusted tasks/models in a disposable sandbox: mini executes model-gener
 
 No provider has a passing run recorded for this template.
 
-L0 contract checks can skip missing upstream runtime/model prerequisites, and such skips do not prove agent execution. L1/L2/L3 status is recorded in the PR and owner evidence. The initial Python3.13 image reproduced 2PASS/58ERROR because upstream treats deprecated pkgutil.get_loader as an error; its tests/warning filters were preserved. Evaluation now uses the pinned original Python3.11.10, pending fresh actual-image acceptance. Full official Docker harness and other providers remain unverified. Do not publish this report as a benchmark score.
+L0 contract checks can skip missing upstream runtime/model prerequisites, and such skips do not prove agent execution. L1/L2/L3 status is recorded in the PR and owner evidence. The initial Python3.13 image reproduced 2PASS/58ERROR because upstream treats deprecated pkgutil.get_loader as an error; its tests/warning filters were preserved. With pinned original Python3.11.10, the actual CI image passed the exact1FAIL59PASS baseline, real mini/Qwen3.8-flash repair, fresh60PASS evaluation and remote patch/report retrieval (14PASS/0FAIL/0SKIP). All10owned cleanup flags and additional strict absence readbacks passed; see [actual image evidence](./evidence/image-runtime-2026-10-16-configured.json) and [strict readback](./evidence/image-runtime-2026-10-16-strict-readback.json). Canonical local abx template deploy remains unrun, so formal provider verification stays empty. Full official Docker harness and other providers remain unverified. Do not publish this report as a benchmark score.
 
 ## Secondary development
 
@@ -142,4 +142,4 @@ Run `python -m pytest -q swe/test_commands.py swe/test_e2e_protocol.py`, `python
 
 ## License
 
-Wrapper Apache-2.0. mini-swe-agent 2.4.6 is MIT; Flask is BSD-3-Clause. SWE-bench Verified metadata/test patch follows the dataset's MIT license. Provenance and upstream license links are in [NOTICE](./NOTICE.md); upstream source archives retain their own license files.
+Wrapper Apache-2.0. mini-swe-agent 2.4.6 is MIT; Flask is BSD-3-Clause. SWE-bench Verified metadata/test patch follows the dataset's MIT license. Bundled CPython retains its distribution license files. Provenance and upstream license links are in [NOTICE](./NOTICE.md); upstream source archives retain their own license files.

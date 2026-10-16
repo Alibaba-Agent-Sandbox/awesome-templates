@@ -126,7 +126,7 @@ YAML 声明空的 `SWE_API_KEY`、`SWE_BASE_URL`、`SWE_MODEL`，必须明确注
 
 尚未记录任何通过的提供方测试。
 
-L0 可以跳过缺失的上游运行时/模型前置，这不证明代理运行。L1/L2/L3 结果以 PR 和 owner evidence 为准。首版 Python3.13 真实镜像因上游把 pkgutil.get_loader 弃用视为错误，得到 2PASS/58ERROR；保留原测试和 warning filter，现固定原题 Python3.11.10，等待新镜像实测。官方完整 Docker harness 与其他提供方未验证；不要把本报告发表为 benchmark 分数。
+L0 可以跳过缺失的上游运行时/模型前置，这不证明代理运行。L1/L2/L3 结果以 PR 和 owner evidence 为准。首版 Python3.13 真实镜像因上游把 pkgutil.get_loader 弃用视为错误，得到 2PASS/58ERROR；保留原测试和 warning filter，现固定原题 Python3.11.10，真实 CI 镜像已通过准确1FAIL59PASS基线、实际mini/Qwen3.8-flash修复、全新环境60PASS与远端补丁/报告读取（14PASS/0FAIL/0SKIP）。10项自有资源清理和额外严格不存在性回查均通过，见[实际镜像证据](./evidence/image-runtime-2026-10-16-configured.json)和[严格回查](./evidence/image-runtime-2026-10-16-strict-readback.json)。完整本地abx template deploy尚未运行，因此正式提供方验证仍为空。官方完整 Docker harness 与其他提供方未验证；不要把本报告发表为 benchmark 分数。
 
 ## 二次开发
 
@@ -142,4 +142,4 @@ L0 可以跳过缺失的上游运行时/模型前置，这不证明代理运行�
 
 ## 许可证
 
-Wrapper 为 Apache-2.0；mini-swe-agent 2.4.6 为 MIT；Flask 为 BSD-3-Clause；SWE-bench Verified 元数据和测试补丁遵循数据集 MIT 许可证。来源和许可证链接见 [NOTICE](./NOTICE.md)，原始源码归档保留自己的许可证文件。
+Wrapper 为 Apache-2.0；mini-swe-agent 2.4.6 为 MIT；Flask 为 BSD-3-Clause；SWE-bench Verified 元数据和测试补丁遵循数据集 MIT 许可证。随附 CPython 保留其 distribution 许可证文件。来源和许可证链接见 [NOTICE](./NOTICE.md)，原始源码归档保留自己的许可证文件。
