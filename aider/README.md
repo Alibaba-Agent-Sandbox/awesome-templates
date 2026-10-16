@@ -116,8 +116,10 @@ Each file is at most 1 MiB. `cwd` must exist inside a git working tree. Existing
 file symlinks, symlink parents, traversal, absolute paths, duplicates and `.git`,
 `.env` or `.aider` paths are rejected. Missing selected names are new artifacts.
 Non-selected staged output is discarded. Automatic confirmation is explicitly
-disabled (`yes-always: false`), so upstream refuses creation or editing of paths
-that were not added to the selected stage. Detected concurrent source changes reject
+disabled (`yes-always: false`), and the owned stdin feeder continually answers
+`n` until process exit, so upstream refuses creation or editing of paths that
+were not added to the selected stage. In this pinned version config false alone
+leaves confirmation unset, and EOF would accept the default Yes. Detected concurrent source changes reject
 writeback; this is not an isolation boundary against hostile concurrent writers.
 Writes are atomic per file, preserve an existing file's permission bits and are
 not an all-files transaction. Ask mode never copies staged edits back.

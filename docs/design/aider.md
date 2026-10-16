@@ -77,9 +77,12 @@ into stage files or argv. Selected code and prompts still go to the configured
 model endpoint. Staging is a workflow boundary, not a hostile-code security sandbox.
 The message file starts with a fixed literal-text prefix, preventing upstream
 slash/bang commands from interpreting user prompts as shell or file-add commands.
-Explicit `yes-always: false` refuses upstream attempts to create/edit unselected
-absolute or parent-relative paths before any touch/write; all selected paths are
-precreated in stage. These controls require actual installed-CLI loopback negative
+Explicit `yes-always: false` removes automatic Yes, but official configargparse
+store_true maps false to no argv and leaves yes=None; Aider treats EOF as the
+default Yes. Therefore the owned stdin feeder continually supplies No until CLI
+exit, then joins after group cleanup. This refuses create/edit requests for
+unselected absolute or parent-relative paths before touch/write. All selected
+paths are precreated in stage. These controls require actual installed-CLI loopback negative
 controls in addition to unit argv assertions.
 Reject symlinks/traversal/config paths and detected stale originals before writeback.
 Per-file atomic replacement preserves old mode; a multi-file change is not a

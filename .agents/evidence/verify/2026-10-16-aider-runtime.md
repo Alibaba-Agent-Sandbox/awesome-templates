@@ -23,7 +23,7 @@ No host or child HOME was replaced. Shared profile/store files remain untouched.
 
 ## Local checks
 
-- `python -m pytest aider -q`:55 PASS in 7.41 seconds, including real Python child
+- `python -m pytest aider -q`:57 PASS in 8.52 seconds, including real Python child
   process cleanup, timeout/cancellation, explicit/default write behavior, stale
   edits, symlinks, private output, and real independent test-process controller
   negative controls. Fake executable/model fixtures do not prove upstream/model.
@@ -51,10 +51,18 @@ than a runtime pass. A second owned run transferred the identical official archi
 after host SHA verification, deleted the host archive, reverified its SHA in cloud,
 installed Python 3.12.12 and all 108 official Aider dependencies, and executed
 actual Aider help with all required flags. Its later native-home negative-control
-assertion failed before coding; the fixture creation return code was not checked,
-so that failure does not establish whether defaults were bypassed. That entire
-instance was destroyed. A third fresh owned run corrects and checks this fixture
-and adds actual installed-CLI loopback controls before real-model acceptance.
+assertion failed before coding; that fixture used invalid empty explicit YAML
+(`/dev/null`), so parsing failed before the intended default-key rejection. That entire
+instance was destroyed. The third owned run checked fixture creation and again installed dependencies/
+passed actual help, but retained that empty-YAML harness mistake and failed its
+negative assertion before coding; it was destroyed. The fourth fresh owned run used a valid explicit `{}` config: actual official CLI
+rejected the malicious native-home default even with the explicit override, and
+actual slash/bang literal-input negative controls passed. Its later unselected-
+path fixture incorrectly contained literal backslash-n sequences instead of a
+multiline whole-file edit, so that assertion failed without reaching coding. The
+whole owned instance was destroyed. The corrected reproducible runner now builds
+a real multiline response, locally regression-checks its exact lines, and first
+requires a positive selected edit before testing unselected refusals.
 Actual coding evidence is added only after completion. No full 108-package download was
 made on the shared host, and no shared HOME/store was changed.
 
@@ -78,3 +86,21 @@ The peer independently reviewed both fixes and reran 55 regressions successfully
 `aider/verify_upstream_guards.py` is a reproducible actual-installed-CLI loopback
 model negative-control runner; its deterministic model is not real-model coding
 acceptance. No default HOME value or shared profile/store is changed.
+
+Official configargparse 1.7.1 was also executed directly with Aider's store_true/
+default=None action and YAML `yes-always: false`: the result is None, not False.
+Upstream EOF consequently still accepts default Yes. The wrapper now keeps a
+continuous No stdin feeder alive until actual process exit, then reaps/joins it
+after owned group cleanup. The 57 local regressions include 100000 confirmations
+without EOF plus leader exit, timeout and cancellation with that feeder active.
+No successful real CLI negative/model result is inferred from the earlier
+config-only fix.
+
+The fourth source sandbox's read-only native platform inspection established
+Debian 13 and system Python 3.13.13; the independent Aider runtime remained
+Python 3.12.12. No system interpreter, HOME value or shared store was replaced.
+Head `3de9aaeddcd01befb24b81d9275b901b580f5ad2` also had all four remote
+checks succeed (including actual image build), before the continuous-No/input
+fix in the next source head. Its archive metadata is artifact `12027335721`,
+472704050 bytes, run `38855333392`; no archive SHA is claimed from metadata.
+A small log-artifact download attempt returned HTTP401 and was not retried.

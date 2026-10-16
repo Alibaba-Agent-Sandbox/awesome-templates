@@ -69,10 +69,11 @@ def _environment() -> dict[str, str]:
 
 
 def _run_process(argv: list[str], *, cwd: str, timeout: int | float,
-                 env: dict | None = None, input_text: str | None = None) -> tuple[int, str, str]:
+                 env: dict | None = None, input_text: str | None = None,
+                 reject_confirmations: bool = False) -> tuple[int, str, str]:
     """Keep the Linux session leader unreaped until its owned group is stopped."""
     process = subprocess.Popen(argv, cwd=cwd, env=env,
-        stdin=subprocess.PIPE if input_text is not None else subprocess.DEVNULL,
+        stdin=subprocess.PIPE if input_text is not None or reject_confirmations else subprocess.DEVNULL,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
     stdout_parts: list[bytes] = []
     stderr_parts: list[bytes] = []
@@ -88,11 +89,18 @@ def _run_process(argv: list[str], *, cwd: str, timeout: int | float,
                threading.Thread(target=drain, args=(process.stderr, stderr_parts), daemon=True)]
     for reader in readers:
         reader.start()
-    if input_text is not None:
+    feeder = None
+    if input_text is not None or reject_confirmations:
         def feed():
             try:
-                process.stdin.write(input_text.encode())
-                process.stdin.close()
+                if reject_confirmations:
+                    # Aider 0.86.2 yes-always:false leaves yes=None. EOF would
+                    # accept its default Yes, so keep answering No until exit.
+                    while True:
+                        os.write(process.stdin.fileno(), b"n\n" * 1024)
+                else:
+                    process.stdin.write(input_text.encode())
+                    process.stdin.close()
             except (OSError, ValueError):
                 pass
             finally:
@@ -100,7 +108,8 @@ def _run_process(argv: list[str], *, cwd: str, timeout: int | float,
                     process.stdin.close()
                 except (OSError, ValueError):
                     pass
-        threading.Thread(target=feed, daemon=True).start()
+        feeder = threading.Thread(target=feed, name="aider-confirmation-refuser", daemon=True)
+        feeder.start()
     deadline = time.monotonic() + timeout
     timed_out = False
     try:
@@ -132,6 +141,10 @@ def _run_process(argv: list[str], *, cwd: str, timeout: int | float,
             raise RuntimeError("owned process cleanup timed out") from None
         for reader in readers:
             reader.join(timeout=2)
+        if feeder is not None:
+            feeder.join(timeout=2)
+            if feeder.is_alive():
+                raise RuntimeError("owned process input cleanup timed out")
     if timed_out:
         raise RuntimeError(f"command timed out after {timeout} seconds") from None
     return (process.returncode, b"".join(stdout_parts).decode("utf-8", "replace"),
@@ -139,7 +152,7 @@ def _run_process(argv: list[str], *, cwd: str, timeout: int | float,
 
 
 def _checked(argv: list[str], *, cwd: Path, timeout: int, env: dict[str, str]) -> tuple[str, str]:
-    code, stdout, stderr = _run_process(argv, cwd=str(cwd), timeout=timeout, env=env)
+    code, stdout, stderr = _run_process(argv, cwd=str(cwd), timeout=timeout, env=env, reject_confirmations=True)
     if code:
         # Never return an upstream error that may echo prompts/config/credentials.
         raise RuntimeError(f"Aider process failed with exit code {code}; upstream output omitted")

@@ -151,7 +151,7 @@ def test_leader_exit_reaps_owned_descendants(tmp_path, exit_code):
     marker = tmp_path / "survived"
     child = f"import time;time.sleep(1.3);open({str(marker)!r},'w').write('bad')"
     leader = "import subprocess,sys;subprocess.Popen([sys.executable,'-c',"+repr(child)+"],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL);sys.exit("+str(exit_code)+")"
-    result = commands._run_process([sys.executable,"-c",leader], cwd=str(tmp_path), timeout=5)
+    result = commands._run_process([sys.executable,"-c",leader], cwd=str(tmp_path), timeout=5, reject_confirmations=True)
     assert result[0] == exit_code
     time.sleep(1.5)
     assert not marker.exists()
@@ -168,10 +168,10 @@ def test_timeout_and_cancellation_reap_owned_group(monkeypatch, tmp_path):
         if started.exists(): raise KeyboardInterrupt("synthetic cancellation")
         return original(*args)
     monkeypatch.setattr(commands.os, "waitid", cancel)
-    with pytest.raises(KeyboardInterrupt): commands._run_process([sys.executable,"-c",leader],cwd=str(tmp_path),timeout=5)
+    with pytest.raises(KeyboardInterrupt): commands._run_process([sys.executable,"-c",leader],cwd=str(tmp_path),timeout=5,reject_confirmations=True)
     monkeypatch.setattr(commands.os, "waitid", original)
     with pytest.raises(RuntimeError, match="timed out"):
-        commands._run_process([sys.executable,"-c",leader],cwd=str(tmp_path),timeout=1)
+        commands._run_process([sys.executable,"-c",leader],cwd=str(tmp_path),timeout=1,reject_confirmations=True)
     time.sleep(1.2)
     assert not marker.exists()
 
@@ -196,3 +196,17 @@ def test_prompt_is_literal_and_unsolicited_file_changes_require_no(monkeypatch, 
         return "literal answer", ""
     monkeypatch.setattr(commands, "_checked", checked)
     assert commands.aider(prompt)["changed_files"] == []
+
+
+def test_confirmation_input_never_reaches_default_yes_eof(tmp_path):
+    code = "import sys; assert all(sys.stdin.readline()=='n\\n' for _ in range(100000)); print('ALL_REFUSED')"
+    result = commands._run_process([sys.executable, "-c", code], cwd=str(tmp_path), timeout=10, reject_confirmations=True)
+    assert result == (0, "ALL_REFUSED\n", "")
+    assert not any(t.name == "aider-confirmation-refuser" for t in commands.threading.enumerate())
+
+
+def test_real_cli_guard_fixture_contains_actual_multiline_edit():
+    spec = importlib.util.spec_from_file_location("aider_guard_fixture", Path(__file__).with_name("verify_upstream_guards.py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.edit_response("../outside.txt").splitlines() == ["../outside.txt", "```", "UNSELECTED", "```"]

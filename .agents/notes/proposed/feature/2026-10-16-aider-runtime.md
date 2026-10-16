@@ -21,6 +21,9 @@ Stage only selected files, reject symlinks/config paths, recheck original bytes
 and atomically replace selected outputs after successful CLI completion.
 Disable upstream automatic confirmation explicitly: selected stage files already
 exist, while unselected file creation/edit requests must be declined before touch.
+Config false alone leaves the pinned store_true state unset and EOF means Yes;
+an owned continuous No input feeder supplies refusals until exit, then joins
+after process-group cleanup.
 Prefix message-file text so slash/bang input cannot dispatch upstream commands.
 
 Never replace HOME or alter shared profiles. Refuse native default home config,
