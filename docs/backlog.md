@@ -1,6 +1,6 @@
-# 这批不做
+# 暂缓项目与已启动切片
 
-下面这些先不要在 `awesome-templates` 里建目录。验收以 [docs/template-spec.md](./template-spec.md) 为准：阿里云基础镜像、`commands.py` 里的 `@command` 真正去调上游 CLI，版本钉死，再用对应级别的 e2e 跑通。底层跑不了，或者安装方式还没钉成可复现的包版本，就留在这里。
+除下文已启动的 Pi 切片外，其余条目暂不在 `awesome-templates` 里建目录。验收以 [docs/template-spec.md](./template-spec.md) 为准：阿里云基础镜像、`commands.py` 里的 `@command` 真正去调上游 CLI，版本钉死，再用对应级别的 e2e 跑通。底层跑不了，或者安装方式还没钉成可复现的包版本，就留在这里。
 
 `abx template install` 只在阿里云极速版（`alicloud-express`）上构建。新建一个目录不会变成 OpenSandbox 镜像，也不会变成 E2B 的 template id。
 
@@ -40,11 +40,13 @@ xAI 的编码 CLI 已经存在：命令是 `grok`，非交互是 `grok -p "<prom
 
 这批仍不建目录。那个安装入口是一段不钉版本的脚本，`docker build` 日志里看不到像 `@qwen-code/qwen-code@0.23.0` 这样的固定版本。验收要求先核实安装方式，再写进目录。缺的是可复现的安装物（钉死版本的包或二进制）以及一份对着这个二进制的 `commands.py`。Grok 自己的 `--sandbox` 是 CLI 内部的权限档，不是 Agent Sandbox 的模板。
 
-## Pi（E2B 的 `pi`）
+## Pi（Alibaba 独立 CLI 切片）
 
-Pi 是终端编码代理，自己的非交互入口是 `pi -p "<prompt>"`。E2B 已经发布了预置模板 id `pi`（文档里的创建方式是 `e2b sbx create pi`，或 `Sandbox.create('pi')`，密钥 `E2B_API_KEY` / `ANTHROPIC_API_KEY`）。在 E2B 上再派生用 `Template().fromTemplate('pi')`。
+[pi/](../pi/README.zh-CN.md) 已作为独立 experimental 模板实现：在 Alibaba 基础镜像内安装官方 `@earendil-works/pi-coding-agent@1.3.0` 和经 SHA256 校验的 Node 24.16.0，提供一次性 print 模式、只读诊断与显式可写工具。默认工具是 read/grep/find/ls；`allow_tools=true` 才允许 edit/write/bash。模型端点由 PI_BASE_URL、PI_MODEL、PI_API_KEY 配置，不复用用户扩展或持久会话。
 
-缺的是 E2B 模板注册这条链路。`abx template install` 写不进 E2B。在本仓库放一个 `pi/` 目录，不会变成 E2B 上那个 `pi`，也不会替换 `e2b sbx create pi` 拉起的镜像。要改 E2B 的 Pi 环境，用 E2B 的 template build，而不是极速版的安装命令。
+官方 CLI 的本地源码服务已用 `qwen3.8-flash` 完成真实编程验收：先重现失败测试，模型改源码并生成新产物，保留原测试，再由独立进程运行隔离 unittest 与 held-out 检查。Pi 镜像 L1 正由独立 [PR #86](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/86) 的实际 CI 验证；镜像 Express L2 和镜像模型 L3 尚未通过，不列入 provider verified。详见[设计](design/pi.md)与[验证记录](../.agents/evidence/verify/2026-10-16-pi-runtime.md)。
+
+E2B 的预置 `pi` template ID 及其注册/派生流程是另一条路线。本仓库安装 Alibaba CLI 模板既不向 E2B 注册，也不替换或验证 E2B 的镜像；E2B 注册缺口不再阻塞这个独立 Alibaba 切片。交互 TUI、RPC 会话和扩展安装不在本次命令面内。
 
 ## K3s
 

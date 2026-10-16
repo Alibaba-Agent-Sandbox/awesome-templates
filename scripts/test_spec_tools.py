@@ -458,7 +458,8 @@ class ImageBuildContextTest(unittest.TestCase):
         job = workflow["jobs"]["image-build"]
         step = next(item for item in job["steps"] if item.get("name") == "Prepare the standalone template context")
         code = step["run"].split("python - <<'PY'\n", 1)[1].rsplit("\nPY", 1)[0]
-        templates = job["strategy"]["matrix"]["template"]
+        templates = sorted(item["path"] for item in check_template.yaml.safe_load((ROOT / "awesome-templates.yaml").read_text())["templates"])
+        self.assertEqual(job["strategy"]["matrix"]["template"], "${{ fromJSON(needs.plan.outputs.templates) }}")
         catalog = check_template.yaml.safe_load((ROOT / "awesome-templates.yaml").read_text())["templates"]
         self.assertEqual(set(templates), {item["path"] for item in catalog})
         with tempfile.TemporaryDirectory() as folder:
