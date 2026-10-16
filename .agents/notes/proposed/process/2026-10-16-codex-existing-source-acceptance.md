@@ -16,7 +16,7 @@ unique owned remote project. Require the specific one-failure baseline before an
 model call. Ask the real CLI to fix the source, preserve original tests, write a
 report and an exact acceptance artifact, add coverage and execute tests. Read
 remote artifacts independently and rerun both original and generated tests plus
-held-out Fibonacci assertions. Preserve permission and successful-tool-event gates.
+held-out Fibonacci assertions. Independent review reproduced early-exit false positives in the first implementation. Isolated trusted verifier processes now compile actual source bytes, reject incomplete/skipped/expected-failing tests, catch BaseException and require fresh completion acknowledgements chosen after the agent exits. Preserve permission and successful-tool-event gates.
 
 ## API Design
 
@@ -49,6 +49,6 @@ actual image, cloud and model runs separately with exact controller provenance.
 - [x] The specific existing-test failure precedes model execution.
 - [x] Original tests, changed source, report and exact artifact are checked.
 - [x] Independent hidden assertions and original/generated test reruns are required.
-- [x] Positive and five invalid-baseline/artifact regressions exercise actual subprocesses.
+- [x] Positive and twelve invalid-baseline/artifact regressions exercise actual subprocesses.
 - [ ] The updated public controller passes a real model run on a reviewed image.
 - [ ] Required parent, canonical cloud and remote CI gates pass before normal merge.

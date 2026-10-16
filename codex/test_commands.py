@@ -176,6 +176,49 @@ class AgentAcceptanceTests(unittest.TestCase):
                             "    if n < 0: raise ValueError('negative')\n"
                             "    return {0:0, 7:13}.get(n, -1)\n"
                         )
+                    elif tamper == "sys-exit":
+                        (project / "fibonacci.py").write_text(
+                            "import sys\nprint('Ran 2 tests',file=sys.stderr)\nsys.exit(0)\n"
+                        )
+                    elif tamper == "os-exit":
+                        (project / "fibonacci.py").write_text("import os\nos._exit(0)\n")
+                    elif tamper == "zero-generated-tests":
+                        (project / "test_fibonacci.py").write_text("# No tests\n")
+                    elif tamper == "test-loader-exit":
+                        (project / "test_fibonacci.py").write_text("import sys\nsys.exit(0)\n")
+                    elif tamper == "expected-failure":
+                        (project / "test_fibonacci.py").write_text(
+                            "import unittest\nclass Generated(unittest.TestCase):\n"
+                            "    @unittest.expectedFailure\n"
+                            "    def test_fake(self): self.assertTrue(False)\n"
+                        )
+                    elif tamper == "shadowed-unittest":
+                        (project / "test_fibonacci.py").write_text(
+                            "import unittest\nclass Generated(unittest.TestCase):\n"
+                            "    def test_fake(self): self.assertTrue(False)\n"
+                        )
+                        (project / "unittest.py").write_text(
+                            "from types import SimpleNamespace as S\n"
+                            "defaultTestLoader=S(loadTestsFromName=lambda name: S(countTestCases=lambda:2 if name=='test_original' else 1))\n"
+                            "TestSuite=lambda suites:suites\n"
+                            "TextTestRunner=lambda **kw:S(run=lambda suite:S(wasSuccessful=lambda:True,testsRun=3,skipped=[]))\n"
+                        )
+                    elif tamper == "stale-pyc":
+                        # Use the SAME actual interpreter as the fake remote
+                        # shell. Forge a valid timestamp/size cache for good code,
+                        # then leave equally sized incorrect source on disk.
+                        compile_cache = (
+                            "from pathlib import Path; import os,py_compile; "
+                            "p=Path('fibonacci.py'); good=p.read_bytes(); st=p.stat(); "
+                            "py_compile.compile(str(p),doraise=True); "
+                            "bad=" + repr(b"def fib(n):\n    return -1\n") + "; "
+                            "compile(bad.decode(),str(p),'exec'); p.write_bytes(bad.ljust(len(good),b' ')); "
+                            "os.utime(p,ns=(st.st_atime_ns,st.st_mtime_ns)); "
+                            "from fibonacci import fib; assert fib(7)==13"
+                        )
+                        cache = subprocess.run(["python3", "-c", compile_cache], cwd=project,
+                            capture_output=True, text=True, timeout=10, env={"PATH":os.defpath})
+                        self.assertEqual(cache.returncode, 0, cache.stderr)
                     return httpx.Response(200, json={"result": {
                         "last_message": e2e.MARKER,
                         "events": [{"type": "item.completed", "item": {
@@ -216,7 +259,8 @@ class AgentAcceptanceTests(unittest.TestCase):
         if tamper:
             expected = (
                 "existing original tests fail before agent correction" if tamper == "baseline-error"
-                else "independent remote Fibonacci assertions" if tamper == "incorrect-held-out"
+                else "independent remote Fibonacci assertions" if tamper in ("incorrect-held-out", "sys-exit", "os-exit", "stale-pyc")
+                else "remote original and agent-written unittest rerun" if tamper in ("zero-generated-tests", "test-loader-exit", "expected-failure", "shadowed-unittest")
                 else "codex_exec real coding task"
             )
             self.assertIn((expected, False), checks)
@@ -235,7 +279,7 @@ class AgentAcceptanceTests(unittest.TestCase):
         self.run_remote_acceptance()
 
     def test_existing_source_gate_rejects_invalid_agent_artifacts(self):
-        for tamper in ("original-tests", "unchanged-source", "missing-report", "incorrect-held-out", "baseline-error"):
+        for tamper in ("original-tests", "unchanged-source", "missing-report", "incorrect-held-out", "baseline-error", "sys-exit", "os-exit", "zero-generated-tests", "test-loader-exit", "expected-failure", "shadowed-unittest", "stale-pyc"):
             with self.subTest(tamper=tamper):
                 self.run_remote_acceptance(tamper)
 

@@ -8,7 +8,7 @@ Dockerfile, catalog, provider evidence and tested_on are unchanged. Parent sourc
 ## Executed checks
 
 - PASS: `python -m unittest discover -s codex -p test_commands.py -q`:
-  11 tests, including actual direct-exec positive control and five invalid baseline/agent
+  11 tests, including actual direct-exec positive control and twelve invalid baseline/agent
   artifact cases. These controls use synthetic model responses, not a cloud model.
 - PASS: `python3 scripts/check_template.py codex --strict`.
 - FAIL (environment): invoking the local runner with an unsupported `--help`
@@ -44,7 +44,7 @@ an executed model result for this PR's updated public Fibonacci controller.
 
 ## Outstanding gates
 
-The updated public controller has not yet executed against a real model. Actual
+The initial public controller at `24a029e` passed 17 actual model checks, and its independently owned target sandbox/template were confirmed absent. A later peer review reproduced a false positive from `sys.exit(0)` before assertions, with fake unittest output. That initial run remains historical evidence and does not establish acceptance for the hardened controller. The hardened current public controller has not yet executed against a real model. Actual
 image/cloud deployment through the canonical runner, normal remote CI, parent
 landing and complete owned batch cleanup remain separate gates. This patch stays
 draft and makes no official/tested-provider claim. Refs
