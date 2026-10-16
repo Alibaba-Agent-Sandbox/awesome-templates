@@ -30,3 +30,5 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 
 - [Aider independent verifier](notes/proposed/process/2026-10-16-aider-independent-verifier.md)
 - [Aider verifier evidence](evidence/verify/2026-10-16-aider-independent-verifier.md)
+
+- [Aider hardened image recheck](evidence/verify/2026-10-16-aider-hardened-image-recheck.md)

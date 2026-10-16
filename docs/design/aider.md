@@ -135,3 +135,11 @@ three-test successful result without skips/expected failures, plus fresh separat
 post-agent completion acknowledgements. Actual source bytes bypass stale caches;
 trusted stdlib loads before adding the project. This is completion verification,
 not a hostile same-authority isolation claim. Runtime/CLI policy is unchanged.
+
+The hardened host controller `f76687e` subsequently ran against the same immutable
+`ecbabaf` image: 21 genuine qwen3.8-flash checks passed, with zero failures/skips;
+all seven owned-resource cleanup flags and an independent strict official
+exact-template absence check passed. See the separate
+[recheck evidence](../../aider/evidence/image-runtime-hardened-2026-10-16.json).
+This does not rerun or replace historical evidence and does not satisfy canonical
+L2 deployment. Runtime commands, template configuration and HOME were unchanged.

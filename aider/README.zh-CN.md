@@ -186,6 +186,12 @@ analytics-disabled 状态可能保留在该专用沙箱原生 `.aider`，随实�
 自有 helper、实例、模板、registry 均已清理并回查。
 保留[首轮失败记录](evidence/image-runtime-2026-10-16-attempt1.json)。
 
+[加固验收器后的镜像复验](evidence/image-runtime-hardened-2026-10-16.json)
+使用 `f76687e` 验收器与同一不可变镜像，真实模型检查 21 项通过，零失败、零跳过。
+直接编译源码、完整执行原始测试及新的完成确认值，可以拒绝提前退出和旧缓存造成的误通过。
+七项自有资源清理检查和单独的官方模板严格缺席回查均通过；旧记录保留，
+其真实模型结果发生在这次完成性校验加固之前。
+
 目录仍是 experimental，`tested_on: []`：canonical
 `scripts/express_e2e.py` → `abx template deploy` 的 L2 wrapper 尚未通过。
 其他 provider 未验。参见[设计](../docs/design/aider.md)。

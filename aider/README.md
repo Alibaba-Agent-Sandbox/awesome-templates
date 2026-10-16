@@ -214,6 +214,14 @@ The configured model server runs on 9010; the prewarmed 9000 server is separate.
 All owned helper/instances/template/registry resources were cleaned and read back.
 The [earlier failed run](evidence/image-runtime-2026-10-16-attempt1.json) is retained.
 
+[Hardened-controller image recheck](evidence/image-runtime-hardened-2026-10-16.json)
+subsequently passed 21 genuine model checks with no failures or skips, using
+controller `f76687e` against the same immutable image. Actual source compilation,
+complete original-test execution and fresh completion acknowledgements now reject
+early-exit and stale-cache false positives. Seven owned-resource cleanup checks
+and a separate strict official template-absence readback passed. Earlier evidence
+is preserved and predates this completion guard.
+
 The catalog remains experimental with `tested_on: []`: the canonical
 `scripts/express_e2e.py` → `abx template deploy` L2 wrapper has not passed.
 Other providers remain unverified. See [design](../docs/design/aider.md).

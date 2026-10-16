@@ -49,5 +49,5 @@ owned sandbox/template/registry cleanup independently.
 - [x] Actual direct-exec reproduction demonstrates the old false positive.
 - [x] Correct source passes; early exit, skipped tests and stale cache fail.
 - [x] Historical evidence remains unchanged; no provider promotion.
-- [ ] Corrected controller actual-image/model acceptance and owned cleanup.
+- [x] Corrected controller actual-image/model acceptance and owned cleanup.
 - [ ] Required parent, canonical deployment and final CI gates pass before merge.
