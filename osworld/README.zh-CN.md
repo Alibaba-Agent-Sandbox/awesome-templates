@@ -113,7 +113,7 @@ JSON body 直接放参数，成功返回 `{"result": ...}`。未设置的认证�
 
 ## 已验证
 
-当前不声明 provider 验收。`tested_on` 为空，目录为 experimental。native 源码 GUI 验证与变更镜像 L1、Express L2 分开；完整 OSWorld benchmark/模型验收尚未验证。见[初始验证记录](../.agents/evidence/verify/2026-10-16-osworld-browser-slice.md)与[浏览器路径修复记录](../.agents/evidence/verify/2026-10-16-osworld-browser-cache.md)。
+规范的 deploy L2 尚未通过；`tested_on` 保持空、catalog 仍为 experimental。源码 `9a53b56` 的确切镜像已实际通过非 root、禁网络 L1 和补充 Express 验证：SDK/HTTP/CLI 三端各自执行完整真实 GUI 任务及 4096 Unicode 全文读回；外部 required-GUI 验收为 18 PASS、0 FAIL、0 SKIP，随后独立核实 owned 资源消失及 registry 删除。该路径使用 CI 构建和官方镜像注册，没有执行完整本地 `abx template deploy` 或规范 L2 runner；不宣称完整 benchmark/model 通过。参见[最终镜像/云验证](../.agents/evidence/verify/2026-10-16-osworld-changed-image.md)，先前 native/image 失败记录保留为历史。
 
 ## 二次开发
 

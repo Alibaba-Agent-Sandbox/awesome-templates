@@ -14,7 +14,7 @@ SWE-bench 按实例评分：每道题有自己的仓库快照和 `FAIL_TO_PASS` 
 
 完整 OSWorld benchmark 仍需要各应用、VM 快照/reset 和相应任务/evaluator 集合；它不是一条 headless CLI。Express 无 KVM，不能据此承诺完整 benchmark 或排行榜分数。
 
-[Issue 36](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/36) 明确允许非特权桌面切片。新的 [osworld](../osworld/README.zh-CN.md) 目录独立基于 Alibaba 镜像，固定上游源码，提供真实 Xvfb/Openbox/DBus/Chromium、截图、AT-SPI、原生鼠标键盘/私有剪贴板 Unicode 输入，以及明确的浏览器 task 配置和上游评估函数子集。native 源码任务及独立 DOM/PNG 验证已通过；实际镜像 L1 与 Express L2 待验证，状态仍 experimental。Office、任意 launch/shell、VM/完整 benchmark 不包含在此切片，原 Issue 保持开放。它不是复制 E2B `desktop` template id，也不声明 OpenSandbox 客户机已可用。
+[Issue 36](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/36) 明确允许非特权桌面切片。新的 [osworld](../osworld/README.zh-CN.md) 目录独立基于 Alibaba 镜像，固定上游源码，提供真实 Xvfb/Openbox/DBus/Chromium、截图、AT-SPI、原生鼠标键盘/私有剪贴板 Unicode 输入，以及明确的浏览器 task 配置和上游评估函数子集。native 源码任务及独立 DOM/PNG 验证已通过；9a53b56 镜像已实际通过 L1、官方注册后的 Express 三端真实 GUI smoke、HTTP18/0skip 与 owned 清理。该补充 changed-image 云验证不替代完整 `abx template deploy`/规范 L2 runner，tested_on 仍空、状态仍 experimental。详见[最终证据](../.agents/evidence/verify/2026-10-16-osworld-changed-image.md)。Office、任意 launch/shell、VM/完整 benchmark 不包含在此切片，原 Issue 保持开放。它不是复制 E2B `desktop` template id，也不声明 OpenSandbox 客户机已可用。
 
 ## Windows Agent Arena
 
