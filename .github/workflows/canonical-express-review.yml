@@ -76,7 +76,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Alibaba-Agent-Sandbox/awesome-templates
-          ref: 1c4bbdd3d9596b65cdded6a611f8d28e7580a45e
+          ref: 3572927fbd0ab25ad028a9186bc2820ff7a8a854
           path: reviewed/harness
           persist-credentials: false
       - name: Checkout reviewed production CLI and wheel rewriter

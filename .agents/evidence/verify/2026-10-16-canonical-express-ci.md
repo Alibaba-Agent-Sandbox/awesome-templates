@@ -6,9 +6,9 @@ Result: PARTIAL
 ## Exact scope and source
 
 Separate workflow/controller/test/bilingual guide and owner records, stacked on
-cleanup fix 1c4bbdd3d9596b65cdded6a611f8d28e7580a45e. Existing template runtime,
+cleanup fix 3572927fbd0ab25ad028a9186bc2820ff7a8a854. Existing template runtime,
 Dockerfiles, L1 workflow and provider-pass records are unchanged. The new workflow
-pins immutable a361f49 template inputs, cleanup-fixed 1c4bbdd canonical runner,
+pins immutable a361f49 template inputs, cleanup-fixed 3572927 canonical runner,
 production CLI 37b6d27, accepted controller SDK 666657b and e2cb27e server source.
 Those are separate checkouts; an old workspace dependency definition is not
 modified to make it installable.
@@ -56,3 +56,9 @@ Temporary test roots were removed. No raw diagnostics, credentials, private
 endpoints, resource IDs or signed artifact URLs are included in these records.
 The operator must review the concrete workflow and approve the new temporary
 credential storage site before the final upload/execution step.
+
+The first workflow push local-e2e run failed before this change's tests while
+installing pinned upstream Hermes: curl HTTP 429 (run 38859149702). This external
+installation failure is preserved and is not a cleanup/controller regression.
+The initial authorization run 38859154201 succeeded and canonical cloud job
+was SKIPPED because default authorization remains BLOCKED. Neither is L2 PASS.

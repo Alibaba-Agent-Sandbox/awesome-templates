@@ -22,7 +22,7 @@ failure and forbid overlapping batches. No secrets are uploaded by this change.
 
 Invoke the actual cleanup-fixed canonical `scripts/express_e2e.py`, not a copied
 builder or alternate registration path. Template/Docker source remains a361f49;
-the independently pinned harness is 1c4bbdd, CLI 37b6d27, controller SDK 666657b,
+the independently pinned harness is 3572927, CLI 37b6d27, controller SDK 666657b,
 and server wheel source e2cb27e. Existing flags bound READY/idle/deploy time and
 disable automatic push retries. Public npm installs use the CLI lockfile.
 

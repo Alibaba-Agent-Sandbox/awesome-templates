@@ -30,7 +30,7 @@ TEMPLATES = ("agents-cli", "amp", "browser-automation", "claude-code", "codex",
     "codex-agent-api", "deepseek-harness", "droid", "gemini", "hermes-agent",
     "node-web", "openclaw", "opencode", "pi", "python-hello", "qoder", "qwen-code")
 PINS = {"templates": "a361f490555ead0ff67081ffb4874abf292a1b2f",
-        "harness": "1c4bbdd3d9596b65cdded6a611f8d28e7580a45e",
+        "harness": "3572927fbd0ab25ad028a9186bc2820ff7a8a854",
         "cli": "37b6d276bdca875811ce7fb0ae88aca64882fcaa",
         "controller": "666657b5706945d8899061033edc09b6eb2af953",
         "server": "e2cb27e24fde0a67112f82b8d44af463445a5d1a"}
