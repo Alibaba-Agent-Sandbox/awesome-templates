@@ -19,10 +19,10 @@ catalog, provider-pass file or CI workflow is changed.
 
 ## Executed checks
 
-- PASS: `python scripts/test_spec_tools.py`, exit 0, 30 unittest methods including
+- PASS: `python scripts/test_spec_tools.py`, exit 0, 31 unittest methods including
   cleanup subcases. The initial version passed 31 parametrized pytest cases;
   tests were then expressed as standard-library unittest so the existing CI
-  entry point includes them without a new dependency. The final 30-method run
+  entry point includes them without a new dependency. The final 31-method run
   includes actual redirected-descendant completion and SDK pagination fixtures.
 - Independent source review found that rejected/failed preflight still called
   process/marker cleanup and could mutate a pre-existing alias's work. Fixed:
@@ -30,6 +30,9 @@ catalog, provider-pass file or CI workflow is changed.
   Regressions prove neither mutator runs on pre-existing/failed preflight; a
   concurrently created unowned marker is preserved. The existing one-CLI-call
   pre-existing-alias assertion remains intact.
+- Self-review additionally fixed unknown-create ordering: preserve the known
+  template until SDK sandbox reconciliation, rather than delete the alias anchor
+  first. A negative regression proves no direct delete precedes recovery.
 - PASS: kill/delete nonzero and exceptions cannot write pass evidence or return
   0, even when the recovery fixture succeeds. Private failure intents remain.
 - PASS: success publishes only after both cleanup calls; exact alias recovery

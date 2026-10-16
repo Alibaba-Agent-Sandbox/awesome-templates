@@ -987,17 +987,18 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
         print(f"harness operation failed: {type(exc).__name__}; upstream details omitted", flush=True)
         status = 1
     finally:
+        uncertain = (intent["deploy_attempted"] and not template_id) or (intent["create_attempted"] and not sandbox_id)
         if intent["ownership_confirmed"] and intent["deploy_attempted"]:
             try:
                 stop_deploy_processes(options.alias)
-                cleanup_ok = _cleanup(run, sandbox_id, template_id, marker, marker_existed)
+                if not uncertain:
+                    cleanup_ok = _cleanup(run, sandbox_id, template_id, marker, marker_existed)
             except Exception as exc:
                 print(f"owned cleanup failed: {type(exc).__name__}", flush=True)
         else:
             # A refused/failed read-only preflight establishes no ownership of
             # similarly named pushes or a concurrently generated build marker.
             cleanup_ok = True
-        uncertain = (intent["deploy_attempted"] and not template_id) or (intent["create_attempted"] and not sandbox_id)
         if uncertain or not cleanup_ok:
             try:
                 intent["recovery_complete"] = recover_owned(intent, run)

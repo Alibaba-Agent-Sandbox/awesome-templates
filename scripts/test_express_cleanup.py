@@ -32,6 +32,24 @@ def case():
 
 
 class CleanupTest(unittest.TestCase):
+    def test_unknown_create_retains_template_until_sandbox_reconciliation(self):
+        with case() as (project, options, intents):
+            calls = []
+            def runner(args, timeout):
+                calls.append(args)
+                if "--official-api" in args: return harness.Proc(0, "[]", "")
+                if "deploy" in args: return harness.Proc(0, '{"TemplateID":"owned-template","Status":"ready"}', "")
+                if "create" in args: return harness.Proc(1, "", "synthetic unknown response")
+                self.fail("unknown create must reconcile before any cloud delete")
+            with patch.object(harness, "recover_owned", return_value=False) as recovery:
+                self.assertEqual(harness.execute(options, runner=runner, sdk=lambda *a: "ok"), 1)
+                recovery.assert_called_once()
+            self.assertFalse(any("delete" in args for args in calls))
+            intent = json.loads(intents[0].read_text())
+            self.assertEqual(intent["template_ids"], ["owned-template"])
+            self.assertEqual(intent["sandbox_ids"], [])
+            self.assertIs(intent["recovery_complete"], False)
+
     def test_sdk_recovery_paginates_and_kills_only_owned_template(self):
         from agent_sandbox import Sandbox
         calls = []
