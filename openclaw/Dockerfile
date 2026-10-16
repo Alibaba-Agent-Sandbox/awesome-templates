@@ -1,41 +1,42 @@
-FROM python:3.12-slim
+FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG=C.UTF-8
+# The base includes Node 20; this pinned OpenClaw requires Node >=24.16.
+RUN python3 - <<'NODE'
+import hashlib
+from pathlib import Path
+import platform
+import tarfile
+import urllib.request
 
-# python:3.12-slim already provides python3 and pip. Install them when the base image does not.
-RUN if ! command -v python3 >/dev/null 2>&1 || ! command -v pip >/dev/null 2>&1; then \
-        apt-get update && apt-get install -y --no-install-recommends python3 python3-pip \
-        && rm -rf /var/lib/apt/lists/*; \
-    fi
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        ca-certificates \
-        curl \
-        git \
-        gnupg \
-    && rm -rf /var/lib/apt/lists/*
-
-# Node.js 22 and the OpenClaw gateway CLI. Provider keys are injected at sandbox start.
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y nodejs \
-    && rm -rf /var/lib/apt/lists/* \
-    && npm install -g openclaw
-
-# Install agent-sandbox-server (the in-sandbox HTTP server, import agent_sandbox.server).
-# abx template deploy injects the wheel into the build context. Without a wheel, install from PyPI.
+architectures = {
+    "x86_64": ("x64", "2faf6a387e9b62b888e21c54f01249fb27537ffecf1842f29f4c919d0a59a0ff"),
+    "aarch64": ("arm64", "589f5b6dd4fcfee4dfda73013903c966abaa8abd93dbc9d436544e472b4f0e74"),
+}
+arch, expected = architectures[platform.machine()]
+name = f"node-v24.16.0-linux-{arch}"
+archive = Path("/tmp/node.tar.gz")
+urllib.request.urlretrieve(f"https://nodejs.org/dist/v24.16.0/{name}.tar.gz", archive)
+if hashlib.sha256(archive.read_bytes()).hexdigest() != expected:
+    raise RuntimeError("Node archive SHA256 mismatch")
+root = Path("/opt/node")
+root.mkdir(parents=True, exist_ok=True)
+with tarfile.open(archive) as source:
+    source.extractall(root, filter="data")
+(root / "current").symlink_to(root / name)
+archive.unlink()
+NODE
+ENV PATH="/opt/node/current/bin:${PATH}"
+RUN node --version \
+    && npm install -g openclaw@2026.10.4 \
+    && openclaw --version \
+    && npm cache clean --force
 COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
         pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
     else \
-        pip install --no-cache-dir agent-sandbox-server; \
+        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/35da216a300f1e2e84254a1cf4b4a7ea98681505.tar.gz#subdirectory=server-sdk"; \
     fi
-
-ENV WORKSPACE=/app
-
-WORKDIR /app
-COPY commands.py .
-
-EXPOSE 18789
-EXPOSE 9000
-CMD ["python3", "commands.py"]
+WORKDIR /home/user/app
+COPY --chown=user:user commands.py .
+USER user
+EXPOSE 9000 18789

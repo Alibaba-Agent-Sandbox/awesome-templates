@@ -70,3 +70,7 @@ and evidence; the catalog's provider acceptance stays empty until its gates pass
 资源清理结果；提交声明不代替干净源码构建证明，应复现构建并比对哈希。
 遇到平台拒绝需保留原因，停止该路径，不更改网络或权限绕过。
 源码运行验证与 Docker 构建、镜像部署、其他 provider 验收分别记录，不混称通过。
+
+## Amp inspection slice
+
+The runner also accepts `amp`. It installs the pinned CLI without an Amp key, uploads public conservative settings and verifies the SDK version/config inspection plus unchanged settings bytes. Model execution is explicitly disabled; this is not coding-agent acceptance. A bounded background install is polled through short RPCs so a long dependency install does not require one uninterrupted streaming RPC. The sandbox is still destroyed in `finally`.

@@ -34,6 +34,24 @@ def _process_dead(pid: int) -> bool:
 
 
 class CheckerTest(unittest.TestCase):
+    def test_catalog_capabilities_match_template_ignoring_order(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            dest = root / "example"
+            shutil.copytree(SKELETON, dest)
+            metadata = check_template.yaml.safe_load((dest / "template.yaml").read_text())
+            metadata["name"] = "example"
+            metadata["capabilities"] = ["shell", "files", "ports"]
+            (dest / "template.yaml").write_text(check_template.yaml.safe_dump(metadata))
+            for capabilities, rejected in ((["ports", "files", "shell"], False),
+                                             (["ports"], True), ({"ports": True}, True)):
+                with self.subTest(capabilities=capabilities):
+                    (root / "awesome-templates.yaml").write_text(check_template.yaml.safe_dump({
+                        "templates": [{"name": "example", "path": "example", "status": "experimental",
+                                       "capabilities": capabilities}]}))
+                    violations = check_template.check_directory(dest)
+                    self.assertEqual(any(item.code == "index-capabilities" for item in violations), rejected)
+
     def test_http_section_requires_request_and_result(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             dest = Path(tmp) / "_skeleton"

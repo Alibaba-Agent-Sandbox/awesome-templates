@@ -1,46 +1,23 @@
-FROM python:3.12-slim
+FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8
 
-# python:3.12-slim already provides python3 and pip. Install them when the base image does not.
-RUN if ! command -v python3 >/dev/null 2>&1 || ! command -v pip >/dev/null 2>&1; then \
-        apt-get update && apt-get install -y --no-install-recommends python3 python3-pip \
-        && rm -rf /var/lib/apt/lists/*; \
-    fi
+# The platform base supplies Node.js >=20. Use the versioned npm compatibility
+# channel rather than the upstream native installer, which tracks latest.
+RUN npm install -g @qoder-ai/qodercli@1.1.72 \
+    && qodercli --version \
+    && npm cache clean --force
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        build-essential \
-        ca-certificates \
-        curl \
-        git \
-        gnupg \
-        jq \
-        openssh-client \
-        ripgrep \
-        wget \
-    && rm -rf /var/lib/apt/lists/*
-
-# Node.js 22 for the integrated JavaScript toolchain. Keys are injected at sandbox start.
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y nodejs \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir httpx rich pyyaml
-
-# Install agent-sandbox-server (the in-sandbox HTTP server, import agent_sandbox.server).
-# abx template deploy injects the wheel into the build context. Without a wheel, install from PyPI.
 COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
         pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
     else \
-        pip install --no-cache-dir agent-sandbox-server; \
+        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/35da216a300f1e2e84254a1cf4b4a7ea98681505.tar.gz#subdirectory=server-sdk"; \
     fi
 
-ENV WORKSPACE=/app
-
-WORKDIR /app
-COPY commands.py .
+ENV WORKSPACE=/home/user/app
+WORKDIR /home/user/app
+COPY --chown=user:user commands.py .
+USER user
 EXPOSE 9000
-CMD ["python3", "commands.py"]

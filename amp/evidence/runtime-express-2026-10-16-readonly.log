@@ -1,0 +1,9 @@
+[PASS] GET /health — HTTP 200
+[PASS] GET /commands — names=['amp', 'amp_execute', 'amp_setup_check', 'amp_version']
+[PASS] amp_execute signature — prompt={'name': 'prompt', 'type': 'string', 'required': True, 'default': None, 'description': ''} stream_json={'name': 'stream_json', 'type': 'boolean', 'required': False, 'default': 'False', 'description': ''}
+[PASS] POST /commands/amp_execute (no prompt) — HTTP 400
+[PASS] POST /commands/amp_version — 0.0.1792022479-ge66e24
+[PASS] POST /commands/amp_setup_check — installed=True version=0.0.1792022479-ge66e24 api_key_set=False
+[PASS] setup is stable across repeated inspection
+[SKIP] POST /commands/amp_execute — E2E_RUN_LLM disables all execute calls
+7 passed, 0 failed, 1 skipped

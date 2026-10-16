@@ -683,6 +683,13 @@ def check_directory(template_dir: Path) -> list[Violation]:
                     violations.append(Violation("index", f"index name/path must both be {name}"))
                 if item.get("status") not in {"official", "community", "experimental"}:
                     violations.append(Violation("index", f"index status for {name} is not a known value"))
+                declared = data.get("capabilities")
+                indexed = item.get("capabilities")
+                if not all(isinstance(value, list) and all(isinstance(cap, str) for cap in value)
+                           for value in (declared, indexed)):
+                    violations.append(Violation("index-capabilities", f"{name}: template and index capabilities must be string lists"))
+                elif set(declared) != set(indexed):
+                    violations.append(Violation("index-capabilities", f"{name}: template and index capabilities must match"))
     return violations
 
 

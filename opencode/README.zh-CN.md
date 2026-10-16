@@ -207,6 +207,10 @@ Apache-2.0，与本仓库相同。见 [LICENSE](../LICENSE)。OpenCode CLI 是�
 
 CLI 失败输出整体省略，避免在错误响应中暴露提示词、工具参数与凭据；成功 JSON 事件会对已知环境秘密值脱敏，包括短值与 JSON 转义值。serve 不保存原始日志。提示词在 `--` 后作为位置参数传递，`session` 与 `continue_session` 不能同时使用。serve 状态新增 `version`，健康检查支持配置的 Basic Auth 密码且要求固定版本。
 
-L0 成功不能替代模型验收。默认明确输出 L3 NOT RUN。模型配置已注入服务端时，设置 `E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1` 才执行 L3：先通过远端文件 API 上传有缺陷的既有 calc.py 与固定 test_calc.py，运行并复现失败；要求 agent 修改源码、保持测试文件不变，并新建 report.txt 与 acceptance.txt。随后下载源码、测试及产物，校验测试字节未变、源码确已修改，再通过远端 /shell 显式指定项目 cwd 独立运行全部三个测试与额外隐藏断言，最后只清理自建的唯一项目目录。仅回复 marker 或生成新文件不能通过编码验收。不要求测试机持有模型密钥。`/code/run` 属于 SDK 可选的 dev-tools 端点，capabilities 元数据本身不会启用它。当前没有本模板的 L1/L2/L3 云端通过记录。
+L0 成功不能替代模型验收。默认明确输出 L3 NOT RUN。模型配置已注入服务端时，设置 `E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1` 才执行 L3：先通过远端文件 API 上传有缺陷的既有 calc.py 与固定 test_calc.py，运行并复现失败；要求 agent 修改源码、保持测试文件不变，并新建 report.txt 与 acceptance.txt。随后下载源码、测试及产物，校验测试字节未变、源码确已修改，再通过远端 /shell 显式指定项目 cwd 独立运行全部三个测试与额外隐藏断言。
 
-访问外部目标的 HTTP 客户端遵循环境代理配置；仅 sandbox 内部的 loopback serve 健康探测直连自身进程。fake-remote 协议回归通过真实本地子进程验证验收器成功路径，并拒绝只生成 marker 或篡改固定测试的伪成功；它不构成真实模型/云端验收证据。
+首次编码检查全部通过后，验收器再次调用 `opencode_run`，把首次返回的确切 `session_id` 显式传入 `session`，不用全局 `continue_session`。该轮必须读取已有报告及源码，新建此前不存在的 resume.json，包含原报告真实字节的 SHA-256，以及通过现有 `add` 函数计算的额外结果。控制端独立计算预期摘要和加法结果，不在提示词提供答案；下载新产物后校验返回会话 ID 一致、原源码/测试/报告/acceptance 字节未变，并在远端重新执行隐藏断言。错误会话、缺失或错误的续会话产物、篡改原文件都会导致验收失败，最后只清理自建的唯一项目目录。仅回复 marker 或生成新文件不能通过验收。不要求测试机持有模型密钥；服务认证使用 `E2E_TOKEN`，回退到 `ABX_SERVER_TOKEN`。`/code/run` 属于 SDK 可选的 dev-tools 端点，capabilities 元数据本身不会启用它。这些源码运行时检查不等于 Dockerfile L1 或模板部署 L2 验收。
+
+访问外部目标的 HTTP 客户端遵循环境代理配置；仅 sandbox 内部的 loopback serve 健康探测直连自身进程。fake-remote 协议回归通过真实本地子进程验证编码与确切会话恢复，包括拒绝错误会话、摘要或计算结果及原文件篡改；它不构成真实模型/云端验收证据。
+
+2026-10-16 的 Express 源码运行态验证使用真实 `dashscope/qwen3.8-flash` 模型，28 项 HTTP 检查全部通过，覆盖上述精确 session 续接以及项目目录、沙箱清理。本次向已有 base 沙箱上传源码和配置，并单独安装固定版本依赖。镜像构建 L1 与新模板部署 L2 仍未验证，`tested_on` 保持为空。详见[验证记录](../.agents/evidence/verify/2026-10-16-opencode-session-resume-clean-wheel.md)。

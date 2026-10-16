@@ -1,143 +1,157 @@
 #!/usr/bin/env python3
-"""HTTP checks for the gemini template. Only httpx is required.
-
-The server must already be running (``python3 commands.py``).
-
-- ``GET /health``
-- ``GET /commands`` lists ``gemini``
-- ``POST /commands/gemini`` without ``prompt`` is a client error
-- ``E2E_RUN_LLM=0`` records SKIP for the model call
-- ``E2E_REQUIRE_LLM=1`` fails when ``GEMINI_API_KEY`` is missing, when
-  ``E2E_RUN_LLM=0``, or when the output does not contain ``ABX_E2E_OK``
-
-Exit 0 when no line is FAIL.
-"""
+"""Local HTTP smoke and opt-in real coding acceptance. No response-only L3 passes."""
 from __future__ import annotations
 
+import base64
 import json
 import os
+import shlex
 import sys
+import uuid
 
 import httpx
 
 BASE_URL = os.environ.get("E2E_BASE_URL", "http://127.0.0.1:9000").rstrip("/")
+BASE_DIR = os.environ.get("E2E_BASE_DIR", "/home/user/app").rstrip("/")
 TOKEN = os.environ.get("E2E_TOKEN", "")
-TIMEOUT = httpx.Timeout(
-    connect=10.0,
-    read=float(os.environ.get("E2E_TIMEOUT", "60")),
-    write=30.0,
-    pool=10.0,
-)
-LLM_TIMEOUT = float(os.environ.get("E2E_LLM_TIMEOUT", "620"))
-RUN_LLM = os.environ.get("E2E_RUN_LLM", "").strip().lower()
-REQUIRE = os.environ.get("E2E_REQUIRE_LLM", "").strip().lower() in {"1", "true", "yes"}
-API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
-MARKER = "ABX_E2E_OK"
-LLM_PROMPT = f"Reply with exactly: {MARKER}"
-
-RESULTS: list[tuple[str, str, str]] = []
+SERVER_TOKEN = os.environ.get("E2E_SERVER_TOKEN", "")
+FAILED = 0
 
 
-def record(status: str, test: str, detail: str = "") -> None:
-    RESULTS.append((status, test, detail))
-    line = f"[{status}] {test}"
-    if detail:
-        line += f" — {detail}"
-    print(line, flush=True)
+def enabled(name: str) -> bool:
+    return os.environ.get(name, "").lower() in {"1", "true", "yes"}
 
 
-def _short(value: object, limit: int = 160) -> str:
-    text = value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)
-    return text if len(text) <= limit else text[: limit - 3] + "..."
+def record(ok: bool, label: str) -> None:
+    global FAILED
+    FAILED += not ok
+    print(f"[{'PASS' if ok else 'FAIL'}] {label}", flush=True)
 
 
-def _client() -> httpx.Client:
-    headers = {"X-Access-Token": TOKEN} if TOKEN else {}
-    return httpx.Client(base_url=BASE_URL, timeout=TIMEOUT, headers=headers)
+def upload(client: httpx.Client, path: str, text: str) -> None:
+    response = client.post("/files/upload-stream", json={"path": path, "content_base64": base64.b64encode(text.encode()).decode()})
+    response.raise_for_status()
 
 
-def check_health(client: httpx.Client) -> None:
-    try:
-        resp = client.get("/health")
-        body = resp.json()
-        ok = resp.status_code == 200 and body.get("status") == "ok"
-        record("PASS" if ok else "FAIL", "GET /health", f"HTTP {resp.status_code}")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", "GET /health", str(exc))
+def read(client: httpx.Client, path: str) -> str:
+    response = client.get("/files/download-stream", params={"path": path})
+    response.raise_for_status()
+    return base64.b64decode(response.json()["content_base64"]).decode()
 
 
-def check_commands(client: httpx.Client) -> None:
-    try:
-        resp = client.get("/commands")
-        body = resp.json()
-        entries = body.get("commands", body if isinstance(body, list) else [])
-        names = [item.get("name") for item in entries if isinstance(item, dict)]
-        ok = resp.status_code == 200 and "gemini" in names
-        record(
-            "PASS" if ok else "FAIL",
-            "GET /commands",
-            f"HTTP {resp.status_code}, names={names}",
-        )
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", "GET /commands", str(exc))
-
-
-def check_missing_prompt(client: httpx.Client) -> None:
-    try:
-        resp = client.post("/commands/gemini", json={})
-        ok = 400 <= resp.status_code < 500
-        record(
-            "PASS" if ok else "FAIL",
-            "POST /commands/gemini without prompt",
-            f"HTTP {resp.status_code} (expected client error), {_short(resp.text)}",
-        )
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", "POST /commands/gemini without prompt", str(exc))
-
-
-def check_model_call(client: httpx.Client) -> None:
-    test = "POST /commands/gemini"
-    forced_off = RUN_LLM in {"0", "false", "no"}
-    if REQUIRE and forced_off:
-        record("FAIL", test, "E2E_REQUIRE_LLM=1 conflicts with E2E_RUN_LLM=0")
-        return
+def coding(client: httpx.Client, setup: dict | None = None) -> None:
+    required = enabled("E2E_REQUIRE_LLM")
+    forced_off = os.environ.get("E2E_RUN_LLM", "").lower() in {"0", "false", "no"}
     if forced_off:
-        record("SKIP", test, f"E2E_RUN_LLM={RUN_LLM!r}")
+        record(False, "required L3 must not skip model invocation") if required else print("[SKIP] L3 real coding; no acceptance claimed", flush=True)
         return
-    if not API_KEY:
-        status = "FAIL" if REQUIRE or RUN_LLM in {"1", "true", "yes"} else "SKIP"
-        record(status, test, "GEMINI_API_KEY is missing")
+    if setup is None:
+        response = client.post("/commands/gemini_setup_check", json={})
+        candidate = response.json().get("result")
+        if response.status_code != 200 or not isinstance(candidate, dict):
+            record(False, "target setup inspection is required before model acceptance")
+            return
+        setup = candidate
+    # The controller never needs the target's model credentials. Trust only the
+    # read-only target diagnostic, not a similarly named local environment value.
+    has_key = setup.get("api_key_set") is True
+    if not has_key:
+        if required or enabled("E2E_RUN_LLM"):
+            record(False, "required L3 target has no compatible API key")
+        else:
+            print("[SKIP] L3 target has no compatible API key; no acceptance claimed", flush=True)
         return
+    project = BASE_DIR + "/abx_e2e_gemini_" + uuid.uuid4().hex[:10]
+    source = "def add(a, b):\n    return a - b\n"
+    tests = ("import unittest\nfrom calculator import add\nclass AddTests(unittest.TestCase):\n"
+             "    def test_positive(self): self.assertEqual(add(2, 3), 5)\n"
+             "    def test_negative(self): self.assertEqual(add(-4, -3), -7)\n"
+             "    def test_zero(self): self.assertEqual(add(0, 0), 0)\n")
+    marker = "ABX_E2E_OK_" + uuid.uuid4().hex
+    test_command = "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -I -c " + shlex.quote(
+        "import sys,unittest;sys.path.insert(0,'.');"
+        "result=unittest.TextTestRunner().run(unittest.defaultTestLoader.discover('.',pattern='test_calculator.py'));"
+        "sys.exit(not result.wasSuccessful())"
+    )
     try:
-        resp = client.post(
-            "/commands/gemini",
-            json={"prompt": LLM_PROMPT},
-            timeout=LLM_TIMEOUT,
+        upload(client, project + "/calculator.py", source)
+        upload(client, project + "/test_calculator.py", tests)
+        baseline = client.post("/shell", json={"command": test_command, "cwd": project, "timeout": 30})
+        before = baseline.json()
+        reproduced = (baseline.status_code == 200 and before.get("exit_code") == 1
+                      and "AssertionError" in before.get("stderr", "")
+                      and "Ran 3 tests" in before.get("stderr", ""))
+        record(reproduced, "seeded source fails before model edits")
+        if not reproduced:
+            return
+        prompt = ("In the current directory, fix calculator.py so add(a,b) adds numbers correctly. "
+                  "Do not modify test_calculator.py. Create REPORT.md explaining the bug and fix. "
+                  f"Create acceptance.txt containing exactly {marker} followed by a newline. "
+                  "Run python3 -m unittest discover -v before finishing. Perform the file edits, do not just describe them.")
+        payload = {"prompt": prompt, "cwd": project, "yolo": True, "command_timeout": 300}
+        if os.environ.get("E2E_MODEL"):
+            payload["model"] = os.environ["E2E_MODEL"]
+        response = client.post("/commands/gemini", json=payload, timeout=330)
+        record(response.status_code == 200 and isinstance(response.json().get("result"), str), "real headless CLI completes")
+        if response.status_code != 200:
+            return
+        updated = read(client, project + "/calculator.py")
+        record(updated != source, "existing source changed via target files API")
+        record(read(client, project + "/test_calculator.py") == tests, "original test file preserved")
+        record(bool(read(client, project + "/REPORT.md").strip()), "new report artifact retrieved")
+        record(read(client, project + "/acceptance.txt") == marker + "\n", "new exact artifact retrieved")
+        result = client.post("/shell", json={"command": test_command, "cwd": project, "timeout": 30})
+        body = result.json()
+        record(result.status_code == 200 and body.get("exit_code") == 0 and "Ran 3 tests" in body.get("stderr", "") + body.get("stdout", ""), "independent target unittest process passes")
+        # Isolated Python starts without importing writable cwd/sitecustomize.
+        # Load only the target source, then check original and held-out inputs.
+        heldout = (
+            "import importlib.util;"
+            f"spec=importlib.util.spec_from_file_location('calculator_under_test',{project + '/calculator.py'!r});"
+            "module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);"
+            "assert all(module.add(a,b)==a+b for a,b in [(2,3),(-4,-3),(0,0),(127,83),(-91,13),(0.5,1.25)]);"
+            "print('INDEPENDENT_OK')"
         )
-        body = resp.json()
-        result = body.get("result")
-        found = isinstance(result, str) and MARKER in result
-        ok = resp.status_code == 200 and found
-        detail = f"HTTP {resp.status_code}, marker={found}"
-        if not ok:
-            detail += f", error={_short(body.get('error') or body)}"
-        record("PASS" if ok else "FAIL", test, detail)
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", test, str(exc))
+        result = client.post("/shell", json={"command": "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -I -c " + shlex.quote(heldout), "cwd": project, "timeout": 30})
+        record(result.status_code == 200 and result.json().get("exit_code") == 0
+               and result.json().get("stdout", "").strip() == "INDEPENDENT_OK", "independent held-out calculations pass")
+    except Exception as exc:
+        record(False, f"L3 aborted ({type(exc).__name__}); response omitted")
+    finally:
+        result = client.delete("/files", params={"path": project})
+        record(result.status_code in {200, 404}, "owned coding project cleanup")
 
 
 def main() -> int:
-    print(f"gemini e2e  base_url={BASE_URL}", flush=True)
-    with _client() as client:
-        check_health(client)
-        check_commands(client)
-        check_missing_prompt(client)
-        check_model_call(client)
-    failed = sum(1 for status, _, _ in RESULTS if status == "FAIL")
-    passed = sum(1 for status, _, _ in RESULTS if status == "PASS")
-    skipped = sum(1 for status, _, _ in RESULTS if status == "SKIP")
-    print(f"SUMMARY {passed} PASS, {skipped} SKIP, {failed} FAIL", flush=True)
-    return 1 if failed else 0
+    headers = {"X-Access-Token": TOKEN} if TOKEN else {}
+    if SERVER_TOKEN:
+        headers["Authorization"] = "Bearer " + SERVER_TOKEN
+    with httpx.Client(base_url=BASE_URL, headers=headers, timeout=60) as client:
+        record(client.get("/health").status_code == 200, "health")
+        response = client.get("/commands")
+        entries = {c["name"]: c for c in response.json().get("commands", [])}
+        record(response.status_code == 200 and {"gemini", "gemini_version", "gemini_setup_check"} <= entries.keys(), "registered command names")
+        types = {p["name"]: p["type"] for p in entries.get("gemini", {}).get("args", [])}
+        record(types.get("command_timeout") == "integer" and types.get("yolo") == "boolean", "typed command parameters")
+        for payload in ({}, {"prompt": "x", "command_timeout": "bad"}):
+            record(client.post("/commands/gemini", json=payload).status_code == 400, "invalid arguments are HTTP 400")
+        record(client.post("/commands/no_such_command", json={}).status_code == 404, "unknown command is HTTP 404")
+        response = client.post("/commands/gemini_setup_check", json={})
+        state = response.json().get("result", {})
+        record(response.status_code == 200 and isinstance(state, dict), "read-only setup inspection")
+        if state.get("installed"):
+            record(client.post("/commands/gemini_version", json={}).json().get("result") == "0.64.0", "real CLI version equals pin")
+        elif enabled("E2E_REQUIRE_CLI") or enabled("E2E_REQUIRE_LLM"):
+            record(False, "required target CLI is installed")
+        else:
+            record(client.post("/commands/gemini_version", json={}).status_code == 500, "missing CLI has explicit execution error")
+            print("[SKIP] real CLI version; no image/runtime acceptance claimed", flush=True)
+        if not state.get("api_key_set"):
+            response = client.post("/commands/gemini", json={"prompt": "test"})
+            record(response.status_code == 500 and "required" in response.json().get("error", ""), "missing-key guard prevents OAuth login")
+        coding(client, state)
+    print(f"{FAILED} failed", flush=True)
+    return int(bool(FAILED))
 
 
 if __name__ == "__main__":

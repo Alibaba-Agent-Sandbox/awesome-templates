@@ -1,87 +1,88 @@
 # Template verification, 2026-10-16
 
-This batch implements changes; it does not complete the full catalog roadmap.
-The new `experimental` entries remain unqualified for provider deployment until
-image-build and deployment gates pass. Existing historical evidence is retained,
-but evidence for another template version cannot qualify the changed version.
+The original business request is not complete. This page tracks the implementation
+and review batch; per-template evidence preserves the exact source hashes of each
+run. A source-runtime pass on an existing Express base is distinct from building
+and deploying the changed Dockerfile.
 
-| Scope | Actual result | Limit |
+## Implemented and reviewed
+
+All 16 product directories now follow spec v2, have English and Chinese references
+for CLI/Python SDK/HTTP POST, command arguments, authentication, errors, extension,
+contribution and issue routing, and have a design document. The strict checker
+also checks catalog/template capability agreement. All changed entries remain
+`experimental`, with empty current-version provider acceptance metadata.
+
+The batch fixes process/output/privacy contracts and real coding acceptance for
+Python hello, browser automation, Claude Code, Codex, Codex API, Node web, OpenCode,
+Amp, Droid, Gemini, Qwen Code, Qoder, DeepSeek and Hermes. Agents CLI now installs
+actual pinned Codex/Qwen CLIs and applies the same explicit endpoint policy through
+both direct and production startup. Its synthetic CLIs are test-only fixtures.
+
+Amp/Droid/Gemini/Qwen/Qoder/Hermes command workers and the OpenClaw health probe
+retain the owned Linux session leader until process-group cleanup; normal and
+nonzero completion clean up redirected background descendants too. OpenClaw's
+long-running gateway has separate owned, authenticated lifecycle control.
+
+Hermes has an additional upstream boundary: the CLI viewer can submit to a detached
+authority/managed worker. Its CLI process deadline is not proof that accepted
+upstream work was cancelled. See its README and scoped verification record; do not
+claim gateway cancellation is implemented.
+
+## Verified results and boundaries
+
+| Scope | Actual result | Boundary |
 |---|---|---|
-| Local HTTP runtime, all 17 directories | PASS | Optional model cases explicitly skipped; L0 only |
-| Process/privacy/acceptance-harness regressions | 66 PASS | Synthetic CLI/protocol fixtures are explicitly synthetic |
-| Spec tooling | 20 PASS | Simulated deployment fixtures are not real cloud runs |
-| Catalog conformance | 9 conformant including skeleton; 8 legacy; v2 failures 0 | Existing legacy violations remain open |
-| Python hello, patched source on real Express base | 21 HTTP checks PASS | Pinned pytest 8.4.2; no Dockerfile build/deployment |
-| Codex, patched source on real Express base | 16 HTTP checks PASS including real coding task | Pinned Codex 0.162.1; no Dockerfile build/deployment |
-| Codex API, patched source on real Express base | 30 HTTP checks PASS including real background coding and exact-thread resume | Production serve loader, Codex 0.162.1; no Dockerfile build/deployment |
-| Browser automation | 24 real Chromium local checks PASS | Playwright 1.58.0; no cloud image validation |
-| Node web | 60 local assertions and 60 real Express source-runtime HTTP checks PASS | Includes real HTTP/build/log/process lifecycle; no Dockerfile build/deployment |
-| OpenCode | 17 process/ownership regressions and 15 local HTTP checks PASS | Real 1.19.0 binary; model task not run |
-| Claude Code | 10 regressions and 19 local checks PASS | Actual pinned 2.0.76 version/help checked; model credential absent |
+| Strict catalog/spec check | All 16 products plus skeleton conformant | Static verification |
+| Local HTTP suite | All 17 directories pass | Models disabled; not L3 |
+| Coding/process/privacy/protocol regressions | Passed suites are recorded in repository evidence | Synthetic providers/CLIs are labeled; not cloud acceptance |
+| Qwen current owned-process source on Express | 17 HTTP checks pass, including real source repair, preserved tests, downloaded artifacts and independent target tests | Existing base, no changed-image deployment |
+| Droid current owned-process source on Express | 9 HTTP checks pass; owned instance cleaned | Keyless installation/contract only; Factory coding unverified |
+| OpenCode clean-wheel source on Express | 28 HTTP/model/resume checks pass | Exact session and artifact verification; no image deployment |
+| Python hello / Codex / Codex API / Node web source on Express | Historical batch passes retained with their hashes | These records do not cover unrelated later revisions |
+| OpenClaw current local CLI | Authenticated start/health/stop lifecycle passes, 11 checks | Not model coding or Express deployment |
+| Hermes current local CLI + compatible real model | Coding/artifact/independent-test acceptance passes | Local target, custom provider; not Express or all gateway cancellation |
+| DeepSeek local compatible model | Successful coding runs, later failed attempt and final rerun recorded separately | Compatible provider is distinct from native DeepSeek credentials |
+| Browser on plain Express base | Failed: Chromium cannot load libglib-2.0.so.0; owned sandbox cleaned | Dockerfile installs system dependencies; this run did not execute that layer |
 
-The successful source-runtime runs have per-template JSON/log evidence with source and
-server-wheel hashes. Every created cloud sandbox was owned by the run and destroyed.
-The shared [Express source runner](express-source-runtime.md) can reproduce these
-checks. A source-runtime pass is not a substitute for L1/L2; `tested_on: []`
-remains accurate for changed templates lacking those gates.
+Latest source-runtime reports for Qwen and Droid are under each template's
+`evidence/runtime-express-2026-10-16-owned-processes.*`. Earlier same-day reports
+remain historical; their source hashes are not silently reassigned to current code.
+The server wheel was built from the recorded SDK revision and compared byte-for-byte
+against its tracked Python modules. The [source runner](express-source-runtime.md)
+uses a random engine socket nonce to prevent native-exec PID collisions.
 
-## Changes covered
+## Open acceptance and roadmap
 
-- Python hello, browser automation, Claude Code, Node web and Codex API now follow
-  the v2 image/entrypoint/resource/smoke/document contract with bilingual references.
-- Coding-agent tests validate source changes, new artifacts and independently
-  executed assertions. Marker-only responses fail required model acceptance.
-- Codex sandbox selection fails before workspace mutation unless an authorized
-  mode permits fallback; successful output is redacted too.
-- OpenCode stop/restart uses an owned live process handle, interpreter and process
-  group identity. A stale PID file cannot authorize killing an unrelated process.
-- Codex API bounds/reaps upstream processes, checks deadlines during busy output,
-  separates subscriber replay from execution accounting, and redacts nested object
-  keys as well as values. REST support is the documented project subset.
-- HTTP POST examples are part of the bilingual template contract. CI installs the
-  pinned CLIs/browser and executes the regression suites; remote CI results must
-  be checked separately after pushing.
-
-## CI and additional cloud findings
-
-One remote CI run failed because an immediate equal-size rewrite of the Python
-negative test reused pytest assertion bytecode within the same timestamp tick.
-A real controlled reproduction confirmed the stale pass. The verifier now uses a
-fresh negative-control module; real Express revalidation passes all 21 checks.
-The original CI failure is retained, and the corrected push must pass remote CI.
-
-Node web additionally passed all 60 external checks on a real owned Express base.
-OpenCode passed a first real-model coding task with 23 checks; exact-session
-continuation is being strengthened and will be recorded after its own run.
-Browser source-runtime dependency setup failed with `UNAVAILABLE: Stream removed
-(Socket closed)`; its owned instance was destroyed. That run is not a pass.
-
-## Remaining work
-
-Docker is not available in this execution workspace. No L1 Docker build or L2 new
-image deployment has passed for this batch. Do not promote changed templates or
-close their acceptance issues until these gates and required model tests pass.
-Claude model acceptance needs its authorized provider key. OpenCode's real model
-coding/resume acceptance remains to run. Other providers require their actual
-credentialed environments; no provider compatibility is inferred from Express.
-
-Eight legacy templates still need migration: agents-cli, deepseek-harness, droid,
-gemini, hermes-agent, openclaw, qoder and qwen-code. Candidate templates and benchmark
-runtimes in [the backlog](backlog.md), provider build hooks, package publication and
-the complete MCP/Skills roadmap remain separate unfinished work. Refer to the
-existing catalog issues; this batch does not close them as completed.
+- Changed Dockerfiles still require actual L1 results. The independent image-build
+  workflow runs on Docker-capable GitHub workers without cloud/model credentials.
+  Its existence or a queued run is not a successful build.
+- New-image Express deployment (L2), current-version provider acceptance, release
+  and promotion remain unverified. Source upload does not replace these gates.
+- Claude, Amp, Droid, Gemini and Qoder need their compatible authorized credentials
+  for real coding acceptance. Agents CLI needs an out-of-band artifact verifier;
+  its intentionally closed shell/files HTTP routes are not opened just for a test.
+- Native DeepSeek and other sandbox providers require their actual credentialed
+  environments; compatible-model tests do not establish those integrations.
+- SWE/OSWorld, conditional Windows/phone/Android workloads, market-derived new
+  templates, remaining provider build paths and the complete Skills/MCP P0–P2
+  roadmap are unfinished. Existing [backlog](backlog.md) Issues remain authoritative.
+- Template PR remains draft until mandatory image/cloud/model/CI/review gates pass.
+  No acceptance Issue is closed merely because local tests pass.
 
 ## 中文
 
-本批已落地七个模板及共享规范/CI 的实现与修复，但完整目录路线图尚未完成。
-17 个目录本地 HTTP 运行通过；66 项回归、20 项规范工具测试通过。
-规范检查有 9 个合规目录（含 skeleton），8 个旧目录仍待迁移。
-Codex、Python hello、Codex API 分别在真实 Express base 中通过 16、21、30 项
-源码运行检查；Codex 两项包含真实模型编程任务，API 另验同线程恢复及产物哈希。
-所有本次创建的实例已销毁。各模板 JSON/log 保留源码和 server wheel 哈希。
+原业务需求尚未全部完成。现有 16 个模板已统一到 v2 规范并补齐中英文
+CLI、SDK、HTTP POST、参数、认证、错误、贡献与二次开发文档；含骨架的
+17 个目录严格检查及本地 HTTP 套件通过。多种命令生命周期已修复正常结束后
+遗留后台后代的问题，并用真实进程回归验证。
 
-这些结果不等于 Docker 镜像构建和新镜像部署。当前环境无 Docker，L1/L2 未通过，
-因此改动模板保持 experimental，未通过的提供方不写入 `tested_on`。
-Claude 缺少授权模型 key；OpenCode 真模型 coding/resume、其他提供方的真实环境、
-八个旧目录迁移、候选模板/基准环境、provider 构建接口、包发布和完整 MCP/Skills
-均仍是未完成事项。静态审查、合成 fixture 或计划不记作这些事项已经完成。
+Qwen 当前源码在真实极速版通过 17 项含真实编程、产物和独立测试的检查；
+Droid 当前源码通过 9 项无模型检查。OpenClaw 真实本地认证生命周期通过。
+Hermes/DeepSeek 的兼容模型结果属于本地目标服务，不能当作原生提供方或
+极速版部署验收；Hermes CLI 超时也不能保证取消独立 authority 已接受的任务。
+浏览器在普通 Express base 中缺少 libglib，复验失败且实例已清理。
+
+独立镜像构建 CI 只有实际成功才算 L1；新镜像部署、模型专属凭据、其他提供方、
+后续模板及完整 Skills/MCP 路线图仍有未完成项。所有改动模板保持 experimental，
+不填未通过的 provider，不把计划、SKIP、排队 CI 或源码运行称为全部交付。

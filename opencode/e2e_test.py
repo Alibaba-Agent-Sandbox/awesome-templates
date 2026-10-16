@@ -8,6 +8,8 @@ The tester does not inspect its own CLI installation or model credentials.
 from __future__ import annotations
 
 import base64
+import hashlib
+import json
 import os
 import shlex
 import sys
@@ -98,7 +100,8 @@ def check_model_call(client: httpx.Client) -> None:
         }, timeout=float(os.environ.get("E2E_LLM_TIMEOUT", "600")))
         result = response.json().get("result", {})
         responded = (response.status_code == 200 and isinstance(result, dict)
-                     and result.get("text", "").strip() == marker and bool(result.get("session_id")))
+                     and result.get("text", "").strip() == marker
+                     and isinstance(result.get("session_id"), str) and bool(result.get("session_id")))
         record(responded, "L3 real headless coding response and session")
         if not responded:
             return
@@ -109,14 +112,21 @@ def check_model_call(client: httpx.Client) -> None:
             return base64.b64decode(artifact.json()["content_base64"]).decode()
 
         modified = read_file("calc.py")
-        record(modified != source, "L3 existing source was modified on target")
-        record(read_file("test_calc.py") == fixed_tests, "L3 seeded independent tests were preserved")
-        record(bool(read_file("report.txt").strip()) and read_file("acceptance.txt") == marker + "\n",
+        preserved_tests = read_file("test_calc.py")
+        report = read_file("report.txt")
+        acceptance = read_file("acceptance.txt")
+        changed = modified != source
+        preserved = preserved_tests == fixed_tests
+        artifacts_ok = bool(report.strip()) and acceptance == marker + "\n"
+        record(changed, "L3 existing source was modified on target")
+        record(preserved, "L3 seeded independent tests were preserved")
+        record(artifacts_ok,
                "L3 new agent report and exact artifact downloaded from target")
         after = client.post("/shell", json={"command": test_command, "cwd": project, "timeout": 30})
         tests = after.json()
-        record(after.status_code == 200 and tests.get("exit_code") == 0
-               and "Ran 3 tests" in tests.get("stderr", ""), "L3 independent remote fixed-test rerun passes")
+        tests_ok = (after.status_code == 200 and tests.get("exit_code") == 0
+                    and "Ran 3 tests" in tests.get("stderr", ""))
+        record(tests_ok, "L3 independent remote fixed-test rerun passes")
         # Additional held-out cases are supplied only after the agent finishes.
         assertions = (
             "from calc import add\n"
@@ -128,9 +138,70 @@ def check_model_call(client: httpx.Client) -> None:
             "cwd": project, "timeout": 30,
         })
         checked = independent.json()
-        record(independent.status_code == 200 and checked.get("exit_code") == 0
-               and checked.get("stdout", "").strip() == "INDEPENDENT_OK",
+        independent_ok = (independent.status_code == 200 and checked.get("exit_code") == 0
+                          and checked.get("stdout", "").strip() == "INDEPENDENT_OK")
+        record(independent_ok,
                "L3 independent remote held-out assertions pass")
+        if not all((changed, preserved, artifacts_ok, tests_ok, independent_ok)):
+            return
+
+        # This is an explicit continuation of the exact session returned above,
+        # never global --continue. Expected hashes/results stay on the controller.
+        missing = client.get("/files/download-stream", params={"path": project + "/resume.json"})
+        record(missing.status_code == 404, "L3 resume artifact absent before exact-session turn")
+        if missing.status_code != 404:
+            return
+        session_id = result["session_id"]
+        resume_marker = "ABX_RESUME_" + uuid.uuid4().hex
+        resume_pairs = [(1543, -271), (0, 98765), (-809, 611)]
+        expected_resume = {
+            "report_sha256": hashlib.sha256(report.encode()).hexdigest(),
+            "results": [{"a": a, "b": b, "sum": a + b} for a, b in resume_pairs],
+        }
+        resumed = client.post("/commands/opencode_run", json={
+            "session": session_id,
+            "cwd": project,
+            "prompt": (
+                "Continue this exact session in its existing project. Read report.txt and calc.py. "
+                "Do not modify calc.py, test_calc.py, report.txt, or acceptance.txt. "
+                "Using the actual report.txt bytes, compute its SHA-256 with hashlib. "
+                "Import add from the existing calc.py and call it for these ordered (a, b) pairs: "
+                f"{json.dumps(resume_pairs)}. Create a new resume.json object with exactly two keys: "
+                "report_sha256 (the lowercase SHA-256 hex digest) and results (an ordered list of "
+                "objects with a, b, and sum from the actual add calls). Do not guess the hash or results. "
+                f"After writing resume.json, reply with exactly {resume_marker}."
+            ),
+        }, timeout=float(os.environ.get("E2E_LLM_TIMEOUT", "600")))
+        resumed_result = resumed.json().get("result", {})
+        resumed_ok = (resumed.status_code == 200 and isinstance(resumed_result, dict)
+                      and resumed_result.get("text", "").strip() == resume_marker
+                      and resumed_result.get("session_id") == session_id)
+        record(resumed_ok, "L3 exact-session resume response preserves the returned session id")
+        if not resumed_ok:
+            return
+        try:
+            resume_artifact = json.loads(read_file("resume.json"))
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            resume_artifact = None
+        record(json.dumps(resume_artifact, sort_keys=True) == json.dumps(expected_resume, sort_keys=True),
+               "L3 resume artifact independently matches original report SHA-256 and held-out calculations")
+        record(read_file("calc.py") == modified and read_file("test_calc.py") == preserved_tests
+               and read_file("report.txt") == report and read_file("acceptance.txt") == acceptance,
+               "L3 resume preserves original source tests report and acceptance artifact")
+        resume_assertions = (
+            "from calc import add\n"
+            "assert all(add(a, b) == a + b for a, b in "
+            f"{[(8, -3), (-7, 4), (99, 101), (0, 12)] + resume_pairs!r})\n"
+            "print('RESUME_INDEPENDENT_OK')\n"
+        )
+        repeated = client.post("/shell", json={
+            "command": "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -c " + shlex.quote(resume_assertions),
+            "cwd": project, "timeout": 30,
+        })
+        repeated_result = repeated.json()
+        record(repeated.status_code == 200 and repeated_result.get("exit_code") == 0
+               and repeated_result.get("stdout", "").strip() == "RESUME_INDEPENDENT_OK",
+               "L3 independent remote held-out assertions pass after exact-session resume")
     except Exception as exc:
         print(f"[FAIL] L3 coding acceptance aborted ({type(exc).__name__}); response content omitted", flush=True)
         record(False, "L3 real coding acceptance completed")
@@ -141,7 +212,7 @@ def check_model_call(client: httpx.Client) -> None:
 
 def main() -> int:
     headers = {}
-    token = os.environ.get("ABX_SERVER_TOKEN", "")
+    token = os.environ.get("E2E_TOKEN") or os.environ.get("ABX_SERVER_TOKEN", "")
     if token:
         headers["Authorization"] = "Bearer " + token
     with httpx.Client(base_url=BASE_URL, headers=headers, timeout=40) as client:

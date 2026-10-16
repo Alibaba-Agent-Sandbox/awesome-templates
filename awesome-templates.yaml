@@ -106,28 +106,28 @@ templates:
       opensandbox: push-image-then-pass-uri
 
   - name: qoder
-    description: "Python and Node.js dev sandbox. qoder_run executes a local script; the Qoder CLI is not installed."
+    description: "Qoder coding CLI @qoder-ai/qodercli@1.1.72 with version, read-only setup and bounded headless execution."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: qoder
     tags: [qoder, ai-coding, ai-agent, development]
     author: alibaba-agent-sandbox
-    capabilities: [shell, files, code, terminal, ports]
-    status: official
+    capabilities: [shell, files, code, ports]
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
-      cubesandbox: unsupported-needs-pty
+      cubesandbox: preexisting-template-id
       e2b: preexisting-template-id
       opensandbox: push-image-then-pass-uri
 
   - name: agents-cli
-    description: "Agents API for Codex and Qwen Code. The image does not preinstall either CLI."
+    description: "Restricted local Agents HTTP API with pinned Codex 0.162.1 and Qwen Code 0.23.0."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: agents-cli
     tags: [agents-api, codex, qwen-code, self-hosted]
     author: alibaba-agent-sandbox
-    capabilities: [shell, files, ports]
-    status: official
+    capabilities: [ports]
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
@@ -142,22 +142,22 @@ templates:
     tags: [qwen, qwen-code, dashscope, ai-coding, ai-agent, deploy]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: official
+    status: experimental
     providers:
-      alicloud-express: supported
+      alicloud-express: install-build
       alicloud-container: preexisting-template-id
       cubesandbox: preexisting-template-id
       e2b: preexisting-template-id
       opensandbox: push-image-then-pass-uri
 
   - name: deepseek-harness
-    description: "DeepSeek Agent Runtime — DeepSeek model-driven AI coding agent"
+    description: "Bounded DeepSeek-compatible coding agent with read, write, list and shell tools."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: deepseek-harness
     tags: [deepseek, ai-agent, ai-coding, code-generation]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: official
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
@@ -166,13 +166,13 @@ templates:
       opensandbox: push-image-then-pass-uri
 
   - name: hermes-agent
-    description: "Chat completion against an OpenAI-compatible endpoint. This template does not register tools."
+    description: "NousResearch Hermes 0.22.1 with pinned upstream runtime, local file/terminal tools and bounded headless execution."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: hermes-agent
     tags: [hermes, nousresearch, ai-agent, tool-calling]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: official
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
@@ -196,13 +196,13 @@ templates:
       opensandbox: push-image-then-pass-uri
 
   - name: openclaw
-    description: "OpenClaw AI Agent runtime — open-source AI coding agent gateway"
+    description: "OpenClaw 2026.10.4 gateway with authenticated health, owned process lifecycle and Node.js 24.16.0."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: openclaw
     tags: [openclaw, ai-agent, ai-coding, gateway]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: official
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
@@ -232,9 +232,9 @@ templates:
     tags: [amp, sourcegraph, ai-agent, ai-coding]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: official
+    status: experimental
     providers:
-      alicloud-express: supported
+      alicloud-express: install-build
       alicloud-container: preexisting-template-id
       cubesandbox: preexisting-template-id
       e2b: preexisting-template-id
@@ -249,7 +249,7 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: supported
+      alicloud-express: install-build
       alicloud-container: preexisting-template-id
       cubesandbox: preexisting-template-id
       e2b: preexisting-template-id

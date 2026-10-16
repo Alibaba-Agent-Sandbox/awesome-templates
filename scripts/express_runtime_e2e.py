@@ -24,7 +24,7 @@ from agent_sandbox import Sandbox
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('template', choices=['codex', 'codex-agent-api', 'python-hello',
-                                         'opencode', 'browser-automation', 'node-web'])
+                                         'opencode', 'browser-automation', 'node-web', 'amp', 'droid', 'qwen-code', 'gemini'])
 parser.add_argument('--server-wheel', type=Path, required=True)
 parser.add_argument('--output-dir', type=Path, required=True)
 parser.add_argument('--base-template', default='base')
@@ -33,9 +33,10 @@ parser.add_argument('--sdk-source-commit', default='not recorded')
 ARGS = parser.parse_args()
 IS_CODEX = ARGS.template in {'codex', 'codex-agent-api'}
 IS_OPENCODE = ARGS.template == 'opencode'
-MODEL_REQUIRED = IS_CODEX or IS_OPENCODE
+IS_QWEN = ARGS.template == 'qwen-code'
+MODEL_REQUIRED = IS_CODEX or IS_OPENCODE or IS_QWEN
 if MODEL_REQUIRED and not ARGS.model.strip():
-    parser.error('--model is required for Codex and OpenCode templates')
+    parser.error('--model is required for coding-agent model templates')
 if IS_OPENCODE:
     if '/' not in ARGS.model:
         ARGS.model = 'dashscope/' + ARGS.model
@@ -47,13 +48,17 @@ if IS_CODEX and not all(os.environ.get(name) for name in ('OPENAI_API_KEY', 'OPE
     parser.error('Codex templates require OPENAI_API_KEY and OPENAI_BASE_URL in the environment')
 if IS_OPENCODE and not all(os.environ.get(name) for name in ('ABX_LLM_API_KEY', 'ABX_LLM_BASE_URL')):
     parser.error('OpenCode requires ABX_LLM_API_KEY and ABX_LLM_BASE_URL in the environment')
+if IS_QWEN and not all(os.environ.get(name) for name in ('OPENAI_API_KEY', 'OPENAI_BASE_URL')):
+    parser.error('Qwen Code requires OPENAI_API_KEY and OPENAI_BASE_URL in the environment')
 TEMPLATE = ARGS.template
 OUT = ARGS.output_dir.resolve()
 OUT.mkdir(parents=True, exist_ok=True)
 VALUES = dict(os.environ)
 SERVER_TOKEN = secrets.token_urlsafe(32)
 logging.disable(logging.CRITICAL)
-os.environ['ABX_ENGINE_SOCKET'] = f'/tmp/abx-runtime-{os.getpid()}.sock'
+# Concurrent native execs can expose the same PID while sharing the filesystem.
+# A run nonce prevents attaching to another process's short-lived engine.
+os.environ['ABX_ENGINE_SOCKET'] = f'/tmp/abx-runtime-{os.getpid()}-{secrets.token_hex(6)}.sock'
 os.environ['ABX_ENGINE_INPROCESS'] = '1'
 
 
@@ -69,6 +74,8 @@ def runtime_files() -> dict[str, bytes]:
     files = {'commands.py': (ROOT / TEMPLATE / 'commands.py').read_bytes()}
     if IS_OPENCODE:
         files['opencode.json'] = (ROOT / TEMPLATE / 'opencode.json').read_bytes()
+    elif TEMPLATE == 'amp':
+        files['settings.json'] = (ROOT / TEMPLATE / 'settings.json').read_bytes()
     elif TEMPLATE == 'node-web':
         index = (ROOT / TEMPLATE / 'index.js').read_bytes()
         files.update({'index.js': index, 'workspace/index.js': index})
@@ -81,13 +88,44 @@ def runtime_files() -> dict[str, bytes]:
     return files
 
 
+async def background_install(sb: Sandbox, install: str, remote: str) -> tuple[int, str]:
+    """Poll an owned install job using short RPCs, instead of one long stream."""
+    status = remote + '/install.exit'
+    job = (install + '; code=$?; printf "%s" "$code" >' + status + '.tmp; '
+           'mv ' + status + '.tmp ' + status)
+    launch = ('nohup sh -c ' + shlex.quote(job) + ' </dev/null >' + remote + '/install.log 2>&1 &')
+    started = await sb.commands.run('sh -c ' + shlex.quote(launch), timeout=15)
+    if started.exit_code != 0:
+        raise RuntimeError('could not start owned dependency installation')
+    loop = asyncio.get_running_loop()
+    deadline = loop.time() + 300
+    last_notice = loop.time()
+    while loop.time() < deadline:
+        result = await sb.commands.run(
+            'if test -f ' + status + '; then cat ' + status + '; else printf RUNNING; fi',
+            timeout=15, shell=True,
+        )
+        value = result.stdout.strip()
+        if result.exit_code != 0:
+            raise RuntimeError('could not inspect owned dependency installation')
+        if value.isdecimal():
+            return int(value), await sb.files.read(remote + '/install.log')
+        if value != 'RUNNING':
+            raise RuntimeError('invalid owned installation status')
+        if loop.time() - last_notice >= 20:
+            print('owned dependency installation: RUNNING', flush=True)
+            last_notice = loop.time()
+        await asyncio.sleep(2)
+    raise RuntimeError('owned dependency installation exceeded 300 seconds; sandbox cleanup will stop it')
+
+
 async def main() -> int:
     sb = None
     child = None
     files = runtime_files()
     source_paths = [ROOT / TEMPLATE / name for name in ('commands.py', 'e2e_test.py', 'Dockerfile', 'template.yaml')]
     source_paths.append(Path(__file__).resolve())
-    source_paths.extend(ROOT / TEMPLATE / name for name in ('opencode.json', 'index.js')
+    source_paths.extend(ROOT / TEMPLATE / name for name in ('opencode.json', 'index.js', 'settings.json')
                         if (ROOT / TEMPLATE / name).is_file())
     report = {
         'date': datetime.now(timezone.utc).isoformat(),
@@ -104,6 +142,10 @@ async def main() -> int:
             'python-hello': 'pytest==8.4.2', 'opencode': 'opencode-ai@1.19.0',
             'browser-automation': 'playwright==1.58.0 and its pinned Chromium; system libraries supplied by base image',
             'node-web': 'base-image Node.js 20; dependency-free public sample',
+            'amp': '@ampcode/cli@0.0.1792022479-ge66e24; keyless inspection only',
+            'droid': '@factory/cli@0.241.1; keyless inspection only',
+            'qwen-code': '@qwen-code/qwen-code@0.23.0',
+            'gemini': '@google/gemini-cli@0.64.0; keyless inspection only',
         }[TEMPLATE],
         'server_wheel_sha256': hashlib.sha256(ARGS.server_wheel.read_bytes()).hexdigest(),
         'sdk_version': importlib.metadata.version('agent-sandbox-client'),
@@ -123,6 +165,7 @@ async def main() -> int:
 
     try:
         sb = await Sandbox.create(template=ARGS.base_template, timeout=900, request_timeout=45,
+                                  cpu=2, memory=4096 if TEMPLATE in {'qwen-code', 'gemini'} else 2048,
                                   metadata={'purpose': 'agent-sandbox-e2e', 'run': 'source-runtime-' + TEMPLATE + '-' + secrets.token_hex(6)})
         record('owned Express base sandbox', True)
         remote = '/home/user/abx-' + TEMPLATE + '-runtime'
@@ -148,10 +191,26 @@ async def main() -> int:
                         f'PLAYWRIGHT_BROWSERS_PATH={remote}/playwright python3 -m playwright install chromium')
         elif TEMPLATE == 'python-hello':
             install += ' pytest==8.4.2'
-        installed = await sb.commands.run(install, timeout=240, shell=True)
-        (OUT / (TEMPLATE + '-runtime-install.log')).write_text(scrub(installed.stdout + '\n' + installed.stderr))
-        record('pinned runtime dependency install', installed.exit_code == 0)
-        if installed.exit_code != 0:
+        elif TEMPLATE == 'amp':
+            install += (f' && npm install --prefix {remote}/tools --registry=https://registry.npmjs.org '
+                        '--no-audit --no-fund @ampcode/cli@0.0.1792022479-ge66e24')
+        elif TEMPLATE == 'droid':
+            install += (f' && npm install --prefix {remote}/tools --registry=https://registry.npmjs.org '
+                        '--no-audit --no-fund @factory/cli@0.241.1')
+        elif IS_QWEN:
+            install += (f' && npm install --prefix {remote}/tools --registry=https://registry.npmjs.org '
+                        '--no-audit --no-fund @qwen-code/qwen-code@0.23.0')
+        elif TEMPLATE == 'gemini':
+            install += (f' && npm install --prefix {remote}/tools --registry=https://registry.npmjs.org '
+                        '--no-audit --no-fund @google/gemini-cli@0.64.0')
+        if TEMPLATE in {'amp', 'droid', 'qwen-code', 'gemini'}:
+            install_code, install_log = await background_install(sb, install, remote)
+        else:
+            installed = await sb.commands.run(install, timeout=240, shell=True)
+            install_code, install_log = installed.exit_code, installed.stdout + '\n' + installed.stderr
+        (OUT / (TEMPLATE + '-runtime-install.log')).write_text(scrub(install_log))
+        record('pinned runtime dependency install', install_code == 0)
+        if install_code != 0:
             raise RuntimeError('runtime install failed; see sanitized installation log')
         env = {
             'PYTHONPATH': remote + '/site',
@@ -171,6 +230,13 @@ async def main() -> int:
             env['PLAYWRIGHT_BROWSERS_PATH'] = remote + '/playwright'
         elif TEMPLATE == 'node-web':
             env.update({'NODE_ENV': 'production', 'PORT': '3000'})
+        elif TEMPLATE == 'amp':
+            env['AMP_SETTINGS_FILE'] = remote + '/settings.json'
+        elif TEMPLATE == 'droid':
+            env['FACTORY_DROID_AUTO_UPDATE_ENABLED'] = 'false'
+        elif IS_QWEN:
+            env.update({'OPENAI_API_KEY': VALUES['OPENAI_API_KEY'],
+                        'OPENAI_BASE_URL': VALUES['OPENAI_BASE_URL'], 'OPENAI_MODEL': ARGS.model})
 
         if TEMPLATE == 'browser-automation':
             # Do not run --with-deps here: it would try sudo on non-root Express.
@@ -230,6 +296,26 @@ async def main() -> int:
                 record('base Node.js 20 runtime', version.exit_code == 0 and version.stdout.strip().startswith('v20.'))
                 result = await server.commands.run('smoke')
                 record('real bundled Node HTTP smoke through SDK', result == 'node-web ready')
+            elif TEMPLATE == 'amp':
+                original = files['settings.json']
+                version = await server.commands.run('amp_version')
+                record('pinned Amp version through SDK', version == '0.0.1792022479-ge66e24')
+                setup = await server.commands.run('amp_setup_check')
+                record('Amp keyless read-only configuration smoke', isinstance(setup, dict)
+                       and setup.get('installed') is True and setup.get('api_key_set') is False
+                       and setup.get('settings_exists') is True
+                       and setup.get('dangerously_allow_all') is False
+                       and setup.get('updates_mode') == 'disabled')
+                unchanged = await sb.files.read_bytes(remote + '/settings.json')
+                record('Amp version and setup preserve settings bytes', unchanged == original)
+            elif TEMPLATE in {'droid', 'qwen-code', 'gemini'}:
+                prefix = 'qwen' if IS_QWEN else TEMPLATE
+                version = await server.commands.run(prefix + '_version')
+                expected_version = {'qwen-code': '0.23.0', 'droid': '0.241.1', 'gemini': '0.64.0'}[TEMPLATE]
+                record('pinned ' + prefix + ' version through SDK', version == expected_version)
+                setup = await server.commands.run(prefix + '_setup_check')
+                record(prefix + ' read-only installation smoke', isinstance(setup, dict)
+                       and setup.get('installed') is True and setup.get('api_key_set') is IS_QWEN)
 
         # The HTTP verifier needs no GitHub or cloud control-plane credentials.
         keep = {'PATH', 'HOME', 'LANG', 'LC_ALL', 'SSL_CERT_FILE', 'SSL_CERT_DIR',
@@ -245,6 +331,8 @@ async def main() -> int:
             'E2E_RUN_LLM': '1' if MODEL_REQUIRED else '0',
             'E2E_REQUIRE_LLM': '1' if MODEL_REQUIRED else '0', 'E2E_LLM_TIMEOUT': '420',
         })
+        if TEMPLATE in {'droid', 'qwen-code', 'gemini'}:
+            child_env.update({'E2E_BASE_DIR': remote + '/workspace', 'E2E_REQUIRE_CLI': '1'})
         child = await asyncio.create_subprocess_exec(
             sys.executable, str(ROOT / TEMPLATE / 'e2e_test.py'),
             env=child_env, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT,

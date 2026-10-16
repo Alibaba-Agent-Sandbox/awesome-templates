@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-16T03:48:35.400286+00:00",
+  "provider": "alicloud-express",
+  "template": "droid",
+  "scope": "patched-source runtime on existing base; NOT Dockerfile L1 or template-deploy L2",
+  "source_sha256": "b67e5b8ba50f1e2be6b3d094f806a112b4900999278e50535fb748aee0b66419",
+  "source_files_sha256": {
+    "droid/commands.py": "b67e5b8ba50f1e2be6b3d094f806a112b4900999278e50535fb748aee0b66419",
+    "droid/e2e_test.py": "1cf103b08e663b8c43fe42e82fbf30529a581b4854ef2332a1dd5f6337dec4e4",
+    "droid/Dockerfile": "30c40a76865e8abf7599405718693a86a164efa923f181b6ed39198497178880",
+    "droid/template.yaml": "155f433626bc97187a88d66a800fb3682bd3d6e804a16bc2591890a0e2b83b81",
+    "scripts/express_runtime_e2e.py": "0d9939c2a78a480ee990d0687399ee069c6274bc5fdcb435667a795106502a6b"
+  },
+  "uploaded_files_sha256": {
+    "commands.py": "b67e5b8ba50f1e2be6b3d094f806a112b4900999278e50535fb748aee0b66419"
+  },
+  "generated_fixtures": [],
+  "required_model_acceptance": false,
+  "runtime_dependencies": "@factory/cli@0.241.1; keyless inspection only",
+  "server_wheel_sha256": "a09a4846fef8b49f3a059d1c65e38d283986aa4fbf879dd09192100c30039fc9",
+  "sdk_version": "0.3.0",
+  "sdk_source_commit": "fbe506349693f9bb26c1755aa3d13ce855e1ab69",
+  "base_template": "base",
+  "verification_type": "source-runtime",
+  "image_build_verified": false,
+  "template_deploy_verified": false,
+  "checks": [
+    {
+      "name": "owned Express base sandbox",
+      "ok": true
+    },
+    {
+      "name": "public runtime source and config upload",
+      "ok": true
+    },
+    {
+      "name": "pinned runtime dependency install",
+      "ok": true
+    },
+    {
+      "name": "patched server process start",
+      "ok": true
+    },
+    {
+      "name": "external SDK health",
+      "ok": true
+    },
+    {
+      "name": "pinned droid version through SDK",
+      "ok": true
+    },
+    {
+      "name": "droid read-only installation smoke",
+      "ok": true
+    },
+    {
+      "name": "remote HTTP suite",
+      "ok": true,
+      "detail": "exit=0; PASS lines=9; FAIL lines=0"
+    },
+    {
+      "name": "owned sandbox cleanup",
+      "ok": true
+    }
+  ],
+  "passed": true
+}

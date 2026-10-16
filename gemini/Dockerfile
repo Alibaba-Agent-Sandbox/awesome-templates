@@ -1,37 +1,20 @@
-FROM python:3.12-slim
+FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG=C.UTF-8
-# Alias flash-lite in @google/gemini-cli@0.64.0 resolves to this id.
-ENV GEMINI_MODEL=gemini-3.1-flash-lite
+ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8
+# Gemini CLI 0.64.0 supports the base image's Node.js >=20.
+RUN npm install -g @google/gemini-cli@0.64.0 \
+    && gemini --version \
+    && npm cache clean --force
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        ca-certificates \
-        curl \
-        git \
-        gnupg \
-        ripgrep \
-    && rm -rf /var/lib/apt/lists/*
-
-# Node.js 22, then the pinned Gemini CLI.
-# npm view @google/gemini-cli version on 2026-10-14 resolved dist-tag latest to 0.64.0.
-# The package bin name is gemini.
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y nodejs \
-    && rm -rf /var/lib/apt/lists/* \
-    && npm install -g @google/gemini-cli@0.64.0 \
-    && gemini --version
-
-# Install agent-sandbox-server (the in-sandbox HTTP server, import agent_sandbox.server).
-# abx template deploy injects the wheel into the build context. Without a wheel, install from PyPI.
 COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
         pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
     else \
-        pip install --no-cache-dir agent-sandbox-server; \
+        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/35da216a300f1e2e84254a1cf4b4a7ea98681505.tar.gz#subdirectory=server-sdk"; \
     fi
 
-WORKDIR /app
-COPY commands.py .
+ENV HOME=/home/user WORKSPACE=/home/user/app GEMINI_MODEL=gemini-3.1-flash-lite
+WORKDIR /home/user/app
+COPY --chown=user:user commands.py .
+USER user
 EXPOSE 9000
-CMD ["python3", "commands.py"]

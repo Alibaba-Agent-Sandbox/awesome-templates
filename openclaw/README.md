@@ -1,222 +1,132 @@
 # openclaw
 
-> [中文版](#中文) | [English](#english)
+[简体中文](README.zh-CN.md)
 
----
+## What it does
 
-## English
+Runs an authenticated OpenClaw WebSocket gateway as an owned background process. Named commands start, inspect, check and stop it without installing a system service. Gateway readiness proves the runtime works; it does not prove a coding agent or model response.
 
-Sandbox runtime for the OpenClaw open-source AI coding agent, providing agent gateway and runtime support.
+## Stack
 
-### Environment
+- Alibaba FC base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (deployment resolves the placeholders).
+- Node.js `24.16.0`, npm package `openclaw@2026.10.4`. The upstream package requires Node >=24.16.0; the base image Node 20 is insufficient.
+- `agent-sandbox-server` pinned to python-sdk commit `35da216a300f1e2e84254a1cf4b4a7ea98681505`, unless deployment injects a wheel.
+- Non-root `user`, work directory `/home/user/app`, generation 2, HTTP server port 9000 and optional gateway port 18789.
 
-This template comes preinstalled with the following tools and dependencies:
+## Problem solved
 
-| Category | Details |
-|----------|---------|
-| **Base image** | python:3.12-slim |
-| **Node.js** | Node.js 22.x + npm (core runtime) |
-| **Node packages** | `openclaw` |
-| **System tools** | git, curl |
-| **Ports** | 18789 (Gateway) |
-| **Resources** | 2 CPU / 4096 MB memory |
+A gateway is a long-lived server. Running `openclaw start` synchronously is neither the correct gateway command nor a usable named command lifecycle. This template runs `openclaw gateway run`, waits for an authenticated WebSocket health RPC, then returns while retaining its process handle. It never trusts a PID file or uses upstream `--force` to reclaim a port.
 
-### Installation
+## Quick start (CLI)
 
-**Install from a local path:**
+Use an installed `abx` with your provider configuration. Inject an unpredictable gateway token from the local environment; keep it out of shell history and source files.
 
 ```bash
 abx template install ./openclaw --registry-type local
+abx create --template <template-id> --env "OPENCLAW_GATEWAY_TOKEN=$OPENCLAW_GATEWAY_TOKEN"
+abx run <sandbox-id> gateway_status
+abx run <sandbox-id> gateway_start --json-args '{"port":18789,"bind":"loopback","command_timeout":60}'
+abx run <sandbox-id> gateway_health --json-args '{"command_timeout":20}'
+abx run <sandbox-id> gateway_stop --json-args '{"command_timeout":10}'
+abx kill <sandbox-id> -y
 ```
 
-**Install from GitHub:**
+`loopback` is the default. Use `bind=lan` only when you need sandbox port forwarding. Returned URLs are inside the sandbox; use the provider's port URL for external access and authenticate using the gateway token. Do not confuse it with `ABX_SERVER_TOKEN` for port 9000.
 
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//openclaw
-```
+## Quick start (Python SDK)
 
-### Usage
-
-Create a sandbox instance and pass in the API key:
-
-```bash
-abx create --template openclaw --env ANTHROPIC_API_KEY=sk-ant-xxx
-```
-
-OpenAI can also be used as the backend:
-
-```bash
-abx create --template openclaw --env OPENAI_API_KEY=sk-xxx
-```
-
-Launch OpenClaw inside the sandbox:
-
-```bash
-abx exec <sandbox-id> -- openclaw --help
-```
-
-Using the Python SDK:
+Install `agent-sandbox-client`; the import is `agent_sandbox`. For unpublished versions, use the [paired source installation](../docs/python-client-installation.md).
 
 ```python
+import asyncio
+import os
 from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create_sync(
-    template="openclaw",
-    env={"ANTHROPIC_API_KEY": "sk-ant-xxx"}
-)
+async def main():
+    sb = await Sandbox.create(
+        template="<template-id>", timeout=300,
+        envs={"OPENCLAW_GATEWAY_TOKEN": os.environ["OPENCLAW_GATEWAY_TOKEN"]},
+    )
+    try:
+        print(await sb.run("gateway_start", port=18789, bind="loopback", command_timeout=60, timeout=90))
+        print(await sb.run("gateway_health", command_timeout=20, timeout=35))
+    finally:
+        try:
+            await sb.run("gateway_stop", command_timeout=10, timeout=25)
+        finally:
+            await sb.kill()
 
-result = sandbox.commands.run("openclaw --version")
-print(result.stdout)
+asyncio.run(main())
 ```
 
-### Configuration
+`command_timeout` controls the server process deadline; SDK `timeout` controls the HTTP wait and is reserved by `Sandbox.run`. Set the HTTP wait above the server deadline and cleanup margin. Named commands use `sb.run`; shell execution uses `sb.commands.run`. If you enable `ABX_SERVER_TOKEN`, use `sb.server_at(9000, token=...)` for authenticated named calls as documented in the [template spec](../docs/template-spec.md).
 
-#### Environment Variables
+## Quick start (HTTP POST)
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `ANTHROPIC_API_KEY` | Anthropic API key | One of the two |
-| `OPENAI_API_KEY` | OpenAI API key | One of the two |
-| `WORKSPACE` | Working directory path, defaults to `/workspace` | No |
-
-#### Ports
-
-| Port | Description |
-|------|-------------|
-| 18789 | OpenClaw Gateway service port |
-
-#### Custom Configuration
-
-To install extra dependencies on top of this template, run the following after the sandbox is created:
+`ABX_SERVER_URL` is the port-9000 server URL. The gateway token must already exist in the server's environment.
 
 ```bash
-abx exec <sandbox-id> -- npm install -g <package-name>
+curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/gateway_start"  \
+  -H "Authorization: Bearer $ABX_SERVER_TOKEN"  \
+  -H 'Content-Type: application/json'  \
+  --data '{"port":18789,"bind":"loopback","command_timeout":60}'
+curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/gateway_health"  \
+  -H "Authorization: Bearer $ABX_SERVER_TOKEN"  \
+  -H 'Content-Type: application/json' --data '{"command_timeout":20}'
+curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/gateway_stop"  \
+  -H "Authorization: Bearer $ABX_SERVER_TOKEN"  \
+  -H 'Content-Type: application/json' --data '{}'
 ```
 
-### Notes
+Omit the Authorization header when server authentication is disabled. Parameters are the JSON body directly. HTTP 200 wraps the value in `{"result":...}`. Missing/mistyped parameters produce 400; authentication failures produce 401; invalid ranges/actions, missing CLI/token, occupied ports, startup timeout and failed gateway health produce 500 with `{"error","type"}`. Execution errors are never healthy results. An HTTP client disconnect does not cancel the server operation; start and stop have their own bounds.
 
-- **API key security**: Never hardcode API keys into the template; always inject them via the `--env` option or environment variables.
-- **Multi-model support**: OpenClaw supports multiple LLM backends such as Anthropic and OpenAI — configure the corresponding API key as needed.
-- **Gateway port**: Listens on port 18789 by default; reachable through sandbox port mapping.
-- **Network access**: The LLM provider API must be reachable — make sure the sandbox has outbound internet connectivity.
+The current server exposes `/health` as a public probe; business routes such as `/commands` require authentication when configured.
 
----
+## Command reference
 
-## 中文
+| Command | Parameters (all optional) | Return and upstream behavior |
+|---|---|---|
+| `gateway_start` | `port: int=18789` (1024..65535 except 9000); `bind: str="loopback"` (`loopback` or `lan`); `command_timeout: int=60` (1..120 seconds) | `{running:true,healthy:true,url,bind}` after `openclaw gateway run --allow-unconfigured --bind <bind> --auth token --port <port>` and authenticated health. Repeating matching arguments checks health; changing a running gateway's port/bind requires stop first. |
+| `gateway_status` | none | `{running,owned,url}` for this server's handle only; never implies health. |
+| `gateway_health` | `command_timeout: int=20` (1..120 seconds) | `{healthy:true,url}` only after `openclaw gateway health --json --timeout <milliseconds>` with the isolated config/token environment; otherwise raises. |
+| `gateway_stop` | `command_timeout: int=10` (1..120 seconds) | `{running:false,owned:false}`; sends TERM to the owned process group, then KILL on timeout with at most five additional seconds for reaping. Idempotent. |
+| `gateway` | `action: str="start"` (`start`, `status`, `health`, `stop`); `port: int=18789`; `bind: str="loopback"`; `command_timeout: int=60` | Compatibility alias to the corresponding command. Port/bind apply only to start; command_timeout applies to start/health/stop. It no longer forwards arbitrary main commands to the CLI. |
 
-OpenClaw 开源 AI 编程 Agent 的沙箱运行环境，提供 Agent 网关与运行时支持。
+Health probes allow a bounded cleanup margin after their execution deadline for group termination, reaping and pipe-reader shutdown; failed startup also cleans its owned gateway. The server owns a single gateway. No systemd/service installation is required. Abrupt server death loses the in-memory handle: this implementation deliberately will not adopt or kill an unknown process after restart. Destroying the sandbox cleans up its processes. State is temporary and removed by stop; configure persistent upstream agents separately rather than assuming this smoke runtime preserves sessions.
 
-### 环境说明
+## Configuration
 
-本模板预装以下工具和依赖：
+On Linux, each short-lived gateway health RPC drains its output and keeps its leader unreaped until owned-group cleanup, including success, error and timeout. This never stops the separate long-running gateway group. A process that deliberately escapes with setsid is outside that group.
 
-| 类别 | 内容 |
-|------|------|
-| **基础镜像** | python:3.12-slim |
-| **Node.js** | Node.js 22.x + npm（核心运行时） |
-| **Node 包** | `openclaw` |
-| **系统工具** | git、curl |
-| **端口** | 18789（Gateway） |
-| **资源配置** | 2 CPU / 4096 MB 内存 |
+| Variable | Default | Meaning |
+|---|---|---|
+| `OPENCLAW_GATEWAY_TOKEN` | empty | Required for gateway start; inject via sandbox environment, never a command parameter. It is passed in the child environment and referenced by name in isolated config, never returned or included in argv. |
+| `ABX_SERVER_TOKEN` | empty | Optional bearer authentication for port-9000 business routes; `/health` is public. |
+| `ABX_SERVER_PORT` | 9000 | Local `python commands.py` HTTP port; cloud start command explicitly uses 9000. |
+| `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` | empty | Optional upstream model credentials; gateway health does not need them. No model call is implemented or validated by these commands. |
 
-### 安装方式
+The gateway uses a private temporary state/config directory, disables browser/control UI and skips channels. Local user OpenClaw configuration is not modified. Gateway logs are discarded to avoid exposing upstream credential-bearing output through the command API. Diagnose upstream configuration in a separate controlled session; do not publish raw logs.
 
-**从本地安装：**
+## Resources
 
-```bash
-abx template install ./openclaw --registry-type local
-```
+2 vCPU, 4096 MB RAM; approximately 10G Express rootfs. No Docker or extra capabilities are required for the gateway itself. Nested Docker-based agent sandboxing is outside this template's verified slice.
 
-**从 GitHub 安装：**
+## Verified
 
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//openclaw
-```
+No provider has passing image/cloud evidence for this revision. Local real CLI gateway start, authenticated health, persistent process status and cleanup are recorded in [engineering evidence](../.agents/evidence/verify/2026-10-16-openclaw-owned-gateway.md). L1 image build and L2 Express remain required; local runtime evidence is not either tier. Model/coding L3 has not been run.
 
-### 使用示例
+## Secondary development
 
-创建沙箱实例并传入 API Key：
+Read [design](../docs/design/openclaw.md). Keep upstream versions pinned, command argv as lists, token values in environment, and owned process handles rather than PID files. Add functional regressions for lifecycle changes and keep both READMEs current. Adding agent/model commands requires a separate contract and real-model acceptance.
 
-```bash
-abx create --template openclaw --env ANTHROPIC_API_KEY=sk-ant-xxx
-```
+## Contributing
 
-也可以使用 OpenAI 作为后端：
+Follow [CONTRIBUTING.md](../CONTRIBUTING.md) and [template spec](../docs/template-spec.md). Run `python3 scripts/check_template.py openclaw` and `python3 -m pytest openclaw/test_commands.py`. For local HTTP smoke, start `python3 openclaw/commands.py` and run `python3 openclaw/e2e_test.py` with matching `E2E_BASE_URL`, server auth and gateway token. A synthetic random gateway token suffices for a real local gateway test; a model key is unnecessary. Keep `tested_on: []` until provider evidence passes. Required image/cloud acceptance must remain explicit if unavailable.
 
-```bash
-abx create --template openclaw --env OPENAI_API_KEY=sk-xxx
-```
+## Issues
 
-在沙箱中启动 OpenClaw：
+Track this work in [awesome-templates#20](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/20). File runtime/server defects in [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues), CLI defects in [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues), using `[templates]` in the title. Upstream reference: [Gateway CLI](https://docs.openclaw.ai/cli/gateway); version and options are also checked against the installed `2026.10.4` binary.
 
-```bash
-abx exec <sandbox-id> -- openclaw --help
-```
+## License
 
-使用 Python SDK：
-
-```python
-from agent_sandbox import Sandbox
-
-sandbox = Sandbox.create_sync(
-    template="openclaw",
-    env={"ANTHROPIC_API_KEY": "sk-ant-xxx"}
-)
-
-result = sandbox.commands.run("openclaw --version")
-print(result.stdout)
-```
-
-### 配置说明
-
-#### 环境变量
-
-| 变量名 | 说明 | 必填 |
-|--------|------|------|
-| `ANTHROPIC_API_KEY` | Anthropic API 密钥 | 二选一 |
-| `OPENAI_API_KEY` | OpenAI API 密钥 | 二选一 |
-| `WORKSPACE` | 工作目录路径，默认 `/workspace` | 否 |
-
-#### 端口说明
-
-| 端口 | 说明 |
-|------|------|
-| 18789 | OpenClaw Gateway 服务端口 |
-
-#### 自定义配置
-
-如需在模板基础上安装额外依赖，可在创建沙箱后执行：
-
-```bash
-abx exec <sandbox-id> -- npm install -g <package-name>
-```
-
-### 注意事项
-
-- **API Key 安全**：请勿将 API Key 硬编码到模板中，始终通过 `--env` 参数或环境变量注入。
-- **多模型支持**：OpenClaw 支持 Anthropic 和 OpenAI 等多种 LLM 后端，按需配置对应的 API Key。
-- **Gateway 端口**：默认监听 18789 端口，可通过沙箱端口映射访问。
-- **网络访问**：需要访问 LLM 提供商 API，确保沙箱具备外网连接能力。
-
-## Deploy and local e2e
-
-Install and register this template:
-
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//openclaw
-```
-
-From this directory (build, push, and register):
-
-```bash
-abx deploy
-```
-
-From the repository root, with `agent-sandbox-server` and `httpx` installed:
-
-```bash
-python3 scripts/run_local_e2e.py
-```
-
-That starts `python3 commands.py` in this directory and runs `e2e_test.py`.
-
+[Apache-2.0](../LICENSE). OpenClaw retains its upstream license and attribution.

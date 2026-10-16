@@ -18,18 +18,16 @@ from __future__ import annotations
 
 import json
 import os
+import signal
 import shutil
 import subprocess
+import threading
+import time
 from pathlib import Path
 
 from agent_sandbox.server import command, start
 
 PACKAGE = "@ampcode/cli"
-SETTINGS_KEYS = {
-    "amp.dangerouslyAllowAll": True,
-    "amp.updates.mode": "disabled",
-    "amp.notifications.enabled": False,
-}
 _MISSING_KEY = (
     "AMP_API_KEY is required to run amp -x. Create an access token at "
     "https://ampcode.com/settings/security#access-token and pass it as AMP_API_KEY. "
@@ -54,10 +52,9 @@ def _settings_path() -> Path:
     return Path.cwd() / ".e2e_amp" / "settings.json"
 
 
-def _ensure_settings() -> dict:
+def _read_settings() -> dict:
+    """Inspect configuration without creating or changing it."""
     path = _settings_path()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    data: dict = {}
     if path.is_file():
         try:
             loaded = json.loads(path.read_text(encoding="utf-8"))
@@ -65,21 +62,20 @@ def _ensure_settings() -> dict:
             raise RuntimeError(f"Amp settings file is not JSON: {path}") from exc
         if not isinstance(loaded, dict):
             raise RuntimeError(f"Amp settings file must be a JSON object: {path}")
-        data = loaded
-    data.update(SETTINGS_KEYS)
-    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
-    try:
-        os.chmod(path, 0o600)
-    except OSError:
-        pass
-    return data
+        return loaded
+    return {}
 
 
 def _redact(text: str) -> str:
-    key = os.environ.get("AMP_API_KEY", "")
-    if key:
-        text = text.replace(key, "***")
-    return text.strip()
+    secrets = {
+        value for name, value in os.environ.items()
+        if value and any(part in name.upper() for part in
+                         ("KEY", "TOKEN", "SECRET", "PASSWORD", "CREDENTIAL"))
+    }
+    for secret in sorted(secrets, key=len, reverse=True):
+        text = text.replace(json.dumps(secret)[1:-1], "[REDACTED]")
+        text = text.replace(secret, "[REDACTED]")
+    return text
 
 
 def _require_key() -> None:
@@ -97,23 +93,82 @@ def _amp_executable() -> str:
     return found
 
 
+def _run_process(argv: list[str], *, cwd: str, timeout: int | float,
+                 env: dict | None = None, input_text: str | None = None) -> tuple[int, str, str]:
+    """Keep the Linux session leader unreaped until its owned group is stopped."""
+    process = subprocess.Popen(argv, cwd=cwd, env=env,
+        stdin=subprocess.PIPE if input_text is not None else subprocess.DEVNULL,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+    stdout_parts: list[bytes] = []
+    stderr_parts: list[bytes] = []
+    def drain(stream, parts):
+        try:
+            while chunk := stream.read(65536):
+                parts.append(chunk)
+        except OSError:
+            pass
+        finally:
+            stream.close()
+    readers = [threading.Thread(target=drain, args=(process.stdout, stdout_parts), daemon=True),
+               threading.Thread(target=drain, args=(process.stderr, stderr_parts), daemon=True)]
+    for reader in readers:
+        reader.start()
+    if input_text is not None:
+        def feed():
+            try:
+                process.stdin.write(input_text.encode())
+                process.stdin.close()
+            except (OSError, ValueError):
+                pass
+            finally:
+                try:
+                    process.stdin.close()
+                except (OSError, ValueError):
+                    pass
+        threading.Thread(target=feed, daemon=True).start()
+    deadline = time.monotonic() + timeout
+    timed_out = False
+    try:
+        while os.waitid(os.P_PID, process.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT) is None:
+            if time.monotonic() >= deadline:
+                timed_out = True
+                break
+            time.sleep(0.02)
+    finally:
+        # WNOWAIT pins the original PID/PGID even after leader exit. No poll(),
+        # wait() or communicate() may reap it before group cleanup.
+        if timed_out:
+            try:
+                os.killpg(process.pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+            grace = time.monotonic() + 1
+            while time.monotonic() < grace:
+                if os.waitid(os.P_PID, process.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT) is not None:
+                    break
+                time.sleep(0.02)
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            raise RuntimeError("owned process cleanup timed out") from None
+        for reader in readers:
+            reader.join(timeout=2)
+    if timed_out:
+        raise RuntimeError(f"amp timed out after {timeout} seconds") from None
+    return (process.returncode, b"".join(stdout_parts).decode("utf-8", "replace"),
+            b"".join(stderr_parts).decode("utf-8", "replace"))
+
+
 def _run_amp(args: list[str], timeout: int) -> subprocess.CompletedProcess[str]:
-    _ensure_settings()
     env = os.environ.copy()
     env["AMP_SETTINGS_FILE"] = str(_settings_path())
-    try:
-        return subprocess.run(
-            [_amp_executable(), *args],
-            cwd=_workdir(),
-            stdin=subprocess.DEVNULL,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            env=env,
-            check=False,
-        )
-    except subprocess.TimeoutExpired as exc:
-        raise RuntimeError(f"amp timed out after {timeout} seconds") from exc
+    argv = [_amp_executable(), *args]
+    code, stdout, stderr = _run_process(argv, cwd=_workdir(), timeout=timeout, env=env)
+    return subprocess.CompletedProcess(argv, code, stdout, stderr)
 
 
 def _workdir() -> str:
@@ -138,7 +193,7 @@ def _read_version() -> str:
     if result.returncode != 0:
         detail = _redact(result.stderr or result.stdout or "")
         raise RuntimeError(detail or f"amp version exited {result.returncode}")
-    return _version_token(result.stdout)
+    return _redact(_version_token(result.stdout))
 
 
 @command("amp_version", description="Print the installed Amp CLI version (amp version).")
@@ -149,11 +204,11 @@ def amp_version() -> str:
 
 @command(
     "amp_setup_check",
-    description="Report whether amp is installed, write settings, and whether AMP_API_KEY is set.",
+    description="Inspect the Amp installation, settings, and key presence without changing settings.",
 )
 def amp_setup_check() -> dict:
-    """Write Amp settings and report install state. Does not call ``amp -x``."""
-    settings = _ensure_settings()
+    """Read Amp settings and report install state. Does not call ``amp -x``."""
+    settings = _read_settings()
     installed = shutil.which("amp") is not None
     version = _read_version() if installed else ""
     return {
@@ -162,22 +217,24 @@ def amp_setup_check() -> dict:
         "version": version,
         "api_key_set": bool(os.environ.get("AMP_API_KEY", "").strip()),
         "settings_path": str(_settings_path()),
-        "dangerously_allow_all": bool(settings.get("amp.dangerouslyAllowAll")),
-        "updates_mode": str(settings.get("amp.updates.mode")),
+        "settings_exists": _settings_path().is_file(),
+        "dangerously_allow_all": settings.get("amp.dangerouslyAllowAll") is True,
+        "updates_mode": str(settings.get("amp.updates.mode", "default")),
     }
 
 
-def _execute(prompt: str, stream_json: bool = False) -> str:
+def _execute(prompt: str, stream_json: bool = False, dangerously_allow_all: bool = False) -> str:
     text = prompt.strip()
     if not text:
         raise ValueError("prompt is required")
     _require_key()
     argv = [
-        "--dangerously-allow-all",
         "--no-color",
         "--no-notifications",
         "--no-ide",
     ]
+    if dangerously_allow_all:
+        argv.append("--dangerously-allow-all")
     if stream_json:
         argv.append("--stream-json")
     argv.extend(["-x", text])
@@ -185,22 +242,22 @@ def _execute(prompt: str, stream_json: bool = False) -> str:
     if result.returncode != 0:
         detail = _redact(result.stderr or result.stdout or "")
         raise RuntimeError(detail or f"amp exited {result.returncode}")
-    return result.stdout
+    return _redact(result.stdout)
 
 
 @command(
     "amp_execute",
     description="Run amp -x. Requires AMP_API_KEY. Optional stream_json adds --stream-json.",
 )
-def amp_execute(prompt: str, stream_json: bool = False) -> str:
+def amp_execute(prompt: str, stream_json: bool = False, dangerously_allow_all: bool = False) -> str:
     """Run execute mode. ``stream_json`` returns the full JSONL stdout after exit."""
-    return _execute(prompt, stream_json=stream_json)
+    return _execute(prompt, stream_json=stream_json, dangerously_allow_all=dangerously_allow_all)
 
 
 @command("amp", description="Previous name for amp_execute. Same arguments.")
-def amp(prompt: str, stream_json: bool = False) -> str:
+def amp(prompt: str, stream_json: bool = False, dangerously_allow_all: bool = False) -> str:
     """Backward-compatible name. The directory used to register only this command."""
-    return _execute(prompt, stream_json=stream_json)
+    return _execute(prompt, stream_json=stream_json, dangerously_allow_all=dangerously_allow_all)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-16",
+  "scope": "local real OpenClaw gateway runtime; not image/cloud/model acceptance",
+  "result": "pass",
+  "openclaw_version": "2026.10.4",
+  "node_version": "24.16.0",
+  "regressions_passed": 15,
+  "http_checks_passed": 11,
+  "authenticated_health": true,
+  "wrong_token_rejected": true,
+  "background_process_persisted": true,
+  "owned_cleanup": true,
+  "providers_verified": [],
+  "model_called": false,
+  "L1": "blocked: Docker unavailable",
+  "L2": "blocked: image prerequisite",
+  "L3": "not run",
+  "L4": "not run"
+}

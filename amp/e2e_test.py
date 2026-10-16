@@ -3,14 +3,17 @@
 
 Express runs go through scripts/express_e2e.py (CLI and SDK). This file is
 the no-cloud check. A live ``amp -x`` call is SKIP unless AMP_API_KEY is set
-and E2E_RUN_LLM is not 0. E2E_REQUIRE_LLM=1 turns a missing key or a missing
-ABX_E2E_OK marker into FAIL.
+and E2E_RUN_LLM is not 0. L3 additionally requires changed source, downloaded
+artifacts, preserved tests, and independently executed target-side tests.
 """
 from __future__ import annotations
 
+import base64
 import json
 import os
+import shlex
 import sys
+import uuid
 
 import httpx
 
@@ -18,6 +21,7 @@ BASE_URL = os.environ.get("E2E_BASE_URL", "http://127.0.0.1:9000").rstrip("/")
 PINNED_VERSION = "0.0.1792022479-ge66e24"
 MARKER = "ABX_E2E_OK"
 TIMEOUT = httpx.Timeout(connect=10.0, read=30.0, write=30.0, pool=10.0)
+TOKEN = os.environ.get("E2E_TOKEN", "")
 LLM_TIMEOUT = float(os.environ.get("E2E_LLM_TIMEOUT", "600"))
 RUN_LLM = os.environ.get("E2E_RUN_LLM", "").strip().lower()
 REQUIRE = os.environ.get("E2E_REQUIRE_LLM", "").strip().lower() in {"1", "true", "yes"}
@@ -41,7 +45,8 @@ def _short(value: object, limit: int = 240) -> str:
 
 def main() -> int:
     failures = 0
-    with httpx.Client(base_url=BASE_URL, timeout=TIMEOUT) as client:
+    headers = {"Authorization": f"Bearer {TOKEN}"} if TOKEN else {}
+    with httpx.Client(base_url=BASE_URL, timeout=TIMEOUT, headers=headers) as client:
         health = client.get("/health")
         ok = health.status_code == 200 and health.json().get("status") == "ok"
         record("PASS" if ok else "FAIL", "GET /health", f"HTTP {health.status_code}")
@@ -119,8 +124,9 @@ def _setup(client: httpx.Client) -> int:
     ok = (
         result.get("package") == "@ampcode/cli"
         and isinstance(key_set, bool)
-        and result.get("dangerously_allow_all") is True
-        and result.get("updates_mode") == "disabled"
+        and isinstance(result.get("dangerously_allow_all"), bool)
+        and isinstance(result.get("settings_exists"), bool)
+        and isinstance(result.get("updates_mode"), str)
         and isinstance(result.get("settings_path"), str)
         and result["settings_path"]
         and isinstance(result.get("installed"), bool)
@@ -136,29 +142,29 @@ def _setup(client: httpx.Client) -> int:
     )
     if not ok:
         return 1
-    path = result["settings_path"]
-    try:
-        settings = json.loads(open(path, encoding="utf-8").read())
-    except OSError as exc:
-        record("FAIL", "settings file", f"unreadable {path}: {exc}")
-        return 1
-    file_ok = (
-        settings.get("amp.dangerouslyAllowAll") is True
-        and settings.get("amp.updates.mode") == "disabled"
-        and settings.get("amp.notifications.enabled") is False
-    )
-    record("PASS" if file_ok else "FAIL", "settings file", path)
-    return 0 if file_ok else 1
+    # Paths returned by a remote server belong to that server, not this client.
+    repeated = client.post("/commands/amp_setup_check", json={})
+    stable = repeated.status_code == 200 and repeated.json().get("result") == result
+    record("PASS" if stable else "FAIL", "setup is stable across repeated inspection")
+    return 0 if stable else 1
 
 
 def _auth_or_live(client: httpx.Client) -> int:
     test = "POST /commands/amp_execute"
-    key = os.environ.get("AMP_API_KEY", "").strip()
     forced_off = RUN_LLM in {"0", "false", "no"}
     if REQUIRE and forced_off:
         record("FAIL", test, "E2E_REQUIRE_LLM=1 conflicts with E2E_RUN_LLM=0")
         return 1
-    if not key:
+    if forced_off:
+        record("SKIP", test, "E2E_RUN_LLM disables all execute calls")
+        return 0
+    # The server owns the credentials. The controller never needs a copy.
+    setup = client.post("/commands/amp_setup_check", json={})
+    result = setup.json().get("result", {})
+    if setup.status_code != 200 or not isinstance(result.get("api_key_set"), bool):
+        record("FAIL", test, "could not inspect remote Amp key presence")
+        return 1
+    if not result["api_key_set"]:
         response = client.post(
             "/commands/amp_execute",
             json={"prompt": f"Reply with exactly: {MARKER}"},
@@ -188,27 +194,91 @@ def _auth_or_live(client: httpx.Client) -> int:
             record("FAIL", test, "AMP_API_KEY is missing and E2E_REQUIRE_LLM=1")
             return 1
         return 0 if ok else 1
-    if forced_off:
-        record("SKIP", test, f"E2E_RUN_LLM={RUN_LLM!r}; AMP_API_KEY is set but the live call is off")
-        return 0
+    return _coding(client)
+
+
+def _coding(client: httpx.Client) -> int:
+    """Prove code changes through remote files and isolated target processes."""
+    failures = 0
+
+    def check(ok: bool, label: str) -> None:
+        nonlocal failures
+        failures += not ok
+        record("PASS" if ok else "FAIL", label)
+
+    workspace = os.environ.get("E2E_WORKSPACE") or os.environ.get("E2E_BASE_DIR") or "/home/user/app"
+    project = workspace.rstrip("/") + "/abx_e2e_amp_" + uuid.uuid4().hex
+    marker = MARKER + "_" + uuid.uuid4().hex
+    source = "def add(a, b):\n    return a - b\n"
+    tests = ("import unittest\nfrom calculator import add\nclass AddTests(unittest.TestCase):\n"
+             "    def test_positive(self): self.assertEqual(add(2, 3), 5)\n"
+             "    def test_negative(self): self.assertEqual(add(-4, -3), -7)\n"
+             "    def test_zero(self): self.assertEqual(add(0, 0), 0)\n")
+    test_command = "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -I -c " + shlex.quote(
+        "import sys,unittest;sys.path.insert(0,'.');"
+        "result=unittest.TextTestRunner().run(unittest.defaultTestLoader.discover('.',pattern='test_calculator.py'));"
+        "sys.exit(not result.wasSuccessful())"
+    )
+
+    def read(name: str) -> str:
+        response = client.get("/files/download-stream", params={"path": project + "/" + name})
+        response.raise_for_status()
+        return base64.b64decode(response.json()["content_base64"]).decode()
+
     try:
-        response = client.post(
-            "/commands/amp_execute",
-            json={"prompt": f"Reply with exactly: {MARKER}", "stream_json": False},
-            timeout=LLM_TIMEOUT,
+        for name, content in (("calculator.py", source), ("test_calculator.py", tests)):
+            response = client.post("/files/upload-stream", json={
+                "path": project + "/" + name,
+                "content_base64": base64.b64encode(content.encode()).decode(),
+            })
+            response.raise_for_status()
+        response = client.post("/shell", json={"command": test_command, "cwd": project, "timeout": 30})
+        before = response.json()
+        reproduced = (response.status_code == 200 and before.get("exit_code") == 1
+                      and "AssertionError" in before.get("stderr", "")
+                      and "Ran 3 tests" in before.get("stderr", ""))
+        check(reproduced, "L3 seeded source fails independent target tests")
+        if not reproduced:
+            return failures
+        prompt = (f"Work exclusively in {project}. Fix calculator.py so add(a,b) adds numbers correctly. "
+                  "Do not modify test_calculator.py. Create REPORT.md explaining the bug and fix. "
+                  f"Create acceptance.txt containing exactly {marker} followed by a newline. "
+                  "Perform these file edits and run the tests before finishing.")
+        response = client.post("/commands/amp_execute", json={
+            "prompt": prompt, "stream_json": False, "dangerously_allow_all": True,
+        }, timeout=LLM_TIMEOUT)
+        completed = response.status_code == 200 and isinstance(response.json().get("result"), str)
+        check(completed, "L3 real headless coding request completes")
+        if not completed:
+            return failures
+        check(read("calculator.py") != source, "L3 existing source changed on target")
+        check(read("test_calculator.py") == tests, "L3 original independent tests preserved")
+        check(bool(read("REPORT.md").strip()), "L3 new report artifact downloaded")
+        check(read("acceptance.txt") == marker + "\n", "L3 new exact artifact downloaded")
+        response = client.post("/shell", json={"command": test_command, "cwd": project, "timeout": 30})
+        after = response.json()
+        check(response.status_code == 200 and after.get("exit_code") == 0
+              and "Ran 3 tests" in after.get("stderr", ""), "L3 independent target tests pass")
+        heldout = (
+            "import importlib.util;"
+            f"spec=importlib.util.spec_from_file_location('calculator_under_test',{project + '/calculator.py'!r});"
+            "module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);"
+            "assert all(module.add(a,b)==a+b for a,b in [(2,3),(-4,-3),(0,0),(127,83),(-91,13),(0.5,1.25)]);"
+            "print('INDEPENDENT_OK')"
         )
-        payload = response.json()
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", test, f"exception: {exc}")
-        return 1
-    result = payload.get("result") if isinstance(payload, dict) else None
-    found = isinstance(result, str) and MARKER in result
-    ok = response.status_code == 200 and found
-    detail = f"HTTP {response.status_code}, marker={found}"
-    if not ok and isinstance(payload, dict):
-        detail += f", error={_short(payload.get('error') or payload)}"
-    record("PASS" if ok else "FAIL", test, detail)
-    return 0 if ok else 1
+        response = client.post("/shell", json={
+            "command": "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -I -c " + shlex.quote(heldout),
+            "cwd": project, "timeout": 30,
+        })
+        checked = response.json()
+        check(response.status_code == 200 and checked.get("exit_code") == 0
+              and checked.get("stdout", "").strip() == "INDEPENDENT_OK", "L3 held-out target assertions pass")
+    except Exception as exc:
+        check(False, f"L3 aborted ({type(exc).__name__}); response omitted")
+    finally:
+        response = client.delete("/files", params={"path": project})
+        check(response.status_code in {200, 404}, "L3 owned project cleanup")
+    return failures
 
 
 def _summary(failures: int) -> int:

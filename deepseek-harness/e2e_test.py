@@ -1,216 +1,157 @@
 #!/usr/bin/env python3
-"""End-to-end test suite for the ``deepseek-harness`` template.
-
-Exercises built-in routes (/health, /commands), the custom ``deepseek``
-command, FILE_OPS round-trip and PROCESS shell execution against a
-running server.
-
-The ``deepseek`` command calls the DeepSeek API through the ``openai``
-client inside the sandbox, which requires ``DEEPSEEK_API_KEY`` in the
-sandbox environment. Without the key the command test is marked
-``[SKIP]`` instead of failing.
-
-Usage::
-
-    python3 e2e_test.py                                # http://localhost:9000
-    E2E_BASE_URL=http://host:9000 python3 e2e_test.py
-    E2E_DEEPSEEK_PROMPT="Say hi" python3 e2e_test.py   # custom LLM prompt
-"""
+"""Local HTTP smoke and opt-in real coding acceptance. No response-only L3 passes."""
 from __future__ import annotations
 
 import base64
 import json
 import os
+import shlex
 import sys
+import uuid
 
 import httpx
 
-BASE_URL = os.environ.get("E2E_BASE_URL", "http://localhost:9000").rstrip("/")
-WORKSPACE = os.environ.get("E2E_WORKSPACE", "")  # empty → auto-detect
-HAS_DEEPSEEK_KEY = bool(os.environ.get("DEEPSEEK_API_KEY", "").strip())
-RUN_LLM = os.environ.get("E2E_RUN_LLM", "").strip().lower()
-REQUIRE = os.environ.get("E2E_REQUIRE_LLM", "").strip().lower() in {"1", "true", "yes"}
-MARKER = "ABX_E2E_OK"
-LLM_PROMPT = os.environ.get("E2E_DEEPSEEK_PROMPT", f"Reply with exactly: {MARKER}")
-MODEL = os.environ.get("E2E_DEEPSEEK_MODEL", "deepseek-coder")
-TIMEOUT = httpx.Timeout(connect=10.0, read=150.0, write=30.0, pool=10.0)
-
-RESULTS: list[tuple[str, str, str]] = []
+BASE_URL = os.environ.get("E2E_BASE_URL", "http://127.0.0.1:9000").rstrip("/")
+BASE_DIR = os.environ.get("E2E_BASE_DIR", "/home/user").rstrip("/")
+TOKEN = os.environ.get("E2E_TOKEN", "")
+FAILED = 0
+COMMAND_TIMEOUT = int(os.environ.get("E2E_COMMAND_TIMEOUT", "600"))
+if not 1 <= COMMAND_TIMEOUT <= 1800:
+    raise ValueError("E2E_COMMAND_TIMEOUT must be 1..1800 seconds")
 
 
-def record(status: str, test: str, detail: str = "") -> None:
-    RESULTS.append((status, test, detail))
-    line = f"[{status}] {test}"
-    if detail:
-        line += f" — {detail}"
-    print(line, flush=True)
+def enabled(name: str) -> bool:
+    return os.environ.get(name, "").lower() in {"1", "true", "yes"}
 
 
-def _short(value: object, limit: int = 160) -> str:
-    text = value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)
-    return text if len(text) <= limit else text[: limit - 3] + "..."
+def record(ok: bool, label: str) -> None:
+    global FAILED
+    FAILED += not ok
+    print(f"[{'PASS' if ok else 'FAIL'}] {label}", flush=True)
 
 
-def detect_workspace(client: httpx.Client) -> str:
-    """Find a writable directory accepted by the server's path guard."""
-    candidates = ([WORKSPACE] if WORKSPACE else []) + ["/home/user", "/workspace"]
-    for candidate in candidates:
-        probe = f"{candidate}/.e2e_probe"
-        try:
-            resp = client.post("/files/upload-stream", json={
-                "path": probe,
-                "content_base64": base64.b64encode(b"probe").decode(),
-            })
-            if resp.status_code == 200:
-                client.delete("/files", params={"path": probe})
-                return candidate
-        except Exception:  # noqa: BLE001
-            continue
-    return ""
+def upload(client: httpx.Client, path: str, text: str) -> None:
+    response = client.post("/files/upload-stream", json={"path": path, "content_base64": base64.b64encode(text.encode()).decode()})
+    response.raise_for_status()
 
 
-def preflight(client: httpx.Client) -> bool:
-    try:
-        resp = client.get("/health")
-        ok = resp.status_code == 200 and resp.json().get("status") == "ok"
-        print(f"[{'PASS' if ok else 'FAIL'}] preflight GET /health — HTTP {resp.status_code}",
-              flush=True)
-        return ok
-    except Exception as exc:  # noqa: BLE001
-        print(f"[FAIL] preflight GET /health — {exc}", flush=True)
-        return False
+def read(client: httpx.Client, path: str) -> str:
+    response = client.get("/files/download-stream", params={"path": path})
+    response.raise_for_status()
+    return base64.b64decode(response.json()["content_base64"]).decode()
 
 
-def group_builtin(client: httpx.Client) -> None:
-    try:
-        resp = client.get("/commands")
-        body = resp.json()
-        entries = body.get("commands", body if isinstance(body, list) else [])
-        names = {c.get("name") for c in entries}
-        ok = resp.status_code == 200 and "deepseek" in names
-        record("PASS" if ok else "FAIL", "GET /commands",
-               f"HTTP {resp.status_code}, listed={sorted(n for n in names if n)}")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", "GET /commands", f"exception: {exc}")
-
-
-def group_commands(client: httpx.Client) -> None:
-    # Missing required argument must surface a clean 400.
-    try:
-        resp = client.post("/commands/deepseek", json={})
-        ok = resp.status_code == 400 and "error" in resp.json()
-        record("PASS" if ok else "FAIL", "POST /commands/deepseek (missing prompt)",
-               f"HTTP {resp.status_code} (expected 400)")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", "POST /commands/deepseek (missing prompt)", f"exception: {exc}")
-
-    # Real LLM call requires DEEPSEEK_API_KEY in the sandbox environment.
-    ep = "POST /commands/deepseek (LLM)"
-    forced_off = RUN_LLM in {"0", "false", "no"}
-    if REQUIRE and forced_off:
-        record("FAIL", ep, "E2E_REQUIRE_LLM=1 conflicts with E2E_RUN_LLM=0")
-    elif forced_off or not HAS_DEEPSEEK_KEY:
-        status = "FAIL" if REQUIRE or RUN_LLM in {"1", "true", "yes"} else "SKIP"
-        if forced_off and not REQUIRE:
-            status = "SKIP"
-        reason = "E2E_RUN_LLM=0" if forced_off else "DEEPSEEK_API_KEY not set"
-        record(status, ep, reason)
-    else:
-        try:
-            resp = client.post("/commands/deepseek",
-                               json={"prompt": LLM_PROMPT, "model": MODEL})
-            body = resp.json()
-            stdout = str(body.get("result", ""))
-            found = MARKER in stdout
-            ok = resp.status_code == 200 and found
-            record("PASS" if ok else "FAIL", ep,
-                   f"HTTP {resp.status_code}, marker={found}, output={_short(stdout, 120)}")
-        except Exception as exc:  # noqa: BLE001
-            record("FAIL", ep, f"exception: {exc}")
-
-
-def group_files(client: httpx.Client) -> None:
-    if not WORKSPACE:
-        record("SKIP", "files upload/download round-trip",
-               "no writable workspace detected — set E2E_WORKSPACE")
+def coding(client: httpx.Client, setup: dict | None = None) -> None:
+    required = enabled("E2E_REQUIRE_LLM")
+    forced_off = os.environ.get("E2E_RUN_LLM", "").lower() in {"0", "false", "no"}
+    if forced_off:
+        record(False, "required L3 must not skip model invocation") if required else print("[SKIP] L3 real coding; no acceptance claimed", flush=True)
         return
-    path = f"{WORKSPACE}/e2e_deepseek_harness.txt"
-    encoded = base64.b64encode(b"deepseek-harness e2e file round-trip\n").decode()
+    if setup is None:
+        response = client.post("/commands/deepseek_setup_check", json={})
+        candidate = response.json().get("result")
+        if response.status_code != 200 or not isinstance(candidate, dict):
+            record(False, "target setup inspection is required before model acceptance")
+            return
+        setup = candidate
+    # The controller never needs the target's model credentials. Trust only the
+    # read-only target diagnostic, not a similarly named local environment value.
+    has_key = setup.get("api_key_set") is True
+    if not has_key:
+        if required or enabled("E2E_RUN_LLM"):
+            record(False, "required L3 target has no compatible deepseek-harness API key")
+        else:
+            print("[SKIP] L3 target has no compatible deepseek-harness API key; no acceptance claimed", flush=True)
+        return
+    project = BASE_DIR + "/abx_e2e_deepseek_" + uuid.uuid4().hex[:10]
+    source = "def add(a, b):\n    return a - b\n"
+    tests = ("import unittest\nfrom calculator import add\nclass AddTests(unittest.TestCase):\n"
+             "    def test_positive(self): self.assertEqual(add(2, 3), 5)\n"
+             "    def test_negative(self): self.assertEqual(add(-4, -3), -7)\n"
+             "    def test_zero(self): self.assertEqual(add(0, 0), 0)\n")
+    marker = "ABX_E2E_OK_" + uuid.uuid4().hex
+    test_command = "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -I -c " + shlex.quote(
+        "import sys,unittest;sys.path.insert(0,'.');"
+        "result=unittest.TextTestRunner().run(unittest.defaultTestLoader.discover('.',pattern='test_calculator.py'));"
+        "sys.exit(not result.wasSuccessful())"
+    )
     try:
-        up = client.post("/files/upload-stream",
-                         json={"path": path, "content_base64": encoded})
-        down = client.get("/files/download-stream", params={"path": path})
-        ok = up.status_code == 200 and down.status_code == 200 \
-            and down.json().get("content_base64") == encoded
-        record("PASS" if ok else "FAIL", "files upload/download round-trip",
-               f"upload HTTP {up.status_code}, download HTTP {down.status_code}")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", "files upload/download round-trip", f"exception: {exc}")
-    try:
-        resp = client.get("/files/list", params={"path": WORKSPACE})
-        ok = resp.status_code == 200
-        record("PASS" if ok else "FAIL", "GET /files/list", f"HTTP {resp.status_code}")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", "GET /files/list", f"exception: {exc}")
-
-
-def group_shell(client: httpx.Client) -> None:
-    try:
-        resp = client.post("/shell", json={"command": "python3 --version"})
-        body = resp.json()
-        stdout = str(body.get("stdout", "")).strip()
-        ok = resp.status_code == 200 and stdout.startswith("Python")
-        record("PASS" if ok else "FAIL", "POST /shell python3 --version",
-               f"HTTP {resp.status_code}, {stdout!r}")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", "POST /shell python3 --version", f"exception: {exc}")
-    try:
-        resp = client.post("/shell", json={"command": "echo hello"})
-        ok = resp.status_code == 200 and "hello" in str(resp.json().get("stdout", ""))
-        record("PASS" if ok else "FAIL", "POST /shell echo", f"HTTP {resp.status_code}")
-    except Exception as exc:  # noqa: BLE001
-        record("FAIL", "POST /shell echo", f"exception: {exc}")
-
-
-def summary() -> int:
-    passed = sum(1 for s, _, _ in RESULTS if s == "PASS")
-    failed = sum(1 for s, _, _ in RESULTS if s == "FAIL")
-    skipped = sum(1 for s, _, _ in RESULTS if s == "SKIP")
-    print("\n" + "=" * 74, flush=True)
-    print("SUMMARY — deepseek-harness", flush=True)
-    print("=" * 74, flush=True)
-    print(f"{passed} passed, {failed} failed, {skipped} skipped "
-          f"(total {len(RESULTS)})", flush=True)
-    if failed:
-        print("\nFailed tests:", flush=True)
-        for s, t, d in RESULTS:
-            if s == "FAIL":
-                print(f"  - {t}: {d}", flush=True)
-    print("=" * 74, flush=True)
-    return 1 if failed else 0
+        upload(client, project + "/calculator.py", source)
+        upload(client, project + "/test_calculator.py", tests)
+        baseline = client.post("/shell", json={"command": test_command, "cwd": project, "timeout": 30})
+        before = baseline.json()
+        reproduced = (baseline.status_code == 200 and before.get("exit_code") == 1
+                      and "AssertionError" in before.get("stderr", "")
+                      and "Ran 3 tests" in before.get("stderr", ""))
+        record(reproduced, "seeded source fails before model edits")
+        if not reproduced:
+            return
+        prompt = ("In the current directory, fix calculator.py so add(a,b) adds numbers correctly. "
+                  "Do not modify test_calculator.py. Create REPORT.md explaining the bug and fix. "
+                  f"Create acceptance.txt containing exactly {marker} followed by a newline. "
+                  "The controller runs independent Python tests after your edits. Perform the file edits, do not just describe them.")
+        payload = {"prompt": prompt, "cwd": project, "command_timeout": COMMAND_TIMEOUT}
+        response = client.post("/commands/deepseek", json=payload, timeout=COMMAND_TIMEOUT + 30)
+        ok = response.status_code == 200 and isinstance(response.json().get("result"), str)
+        error = str(response.json().get("error", "")).lower() if not ok else ""
+        failure = ("deadline exceeded" if "timed out" in error else
+                   "provider request failed" if "request failed" in error else "execution failed")
+        record(ok, "real coding execution completes" + ("" if ok else ": " + failure))
+        if response.status_code != 200:
+            return
+        updated = read(client, project + "/calculator.py")
+        record(updated != source, "existing source changed via target files API")
+        record(read(client, project + "/test_calculator.py") == tests, "original test file preserved")
+        record(bool(read(client, project + "/REPORT.md").strip()), "new report artifact retrieved")
+        record(read(client, project + "/acceptance.txt") == marker + "\n", "new exact artifact retrieved")
+        result = client.post("/shell", json={"command": test_command, "cwd": project, "timeout": 30})
+        body = result.json()
+        record(result.status_code == 200 and body.get("exit_code") == 0 and "Ran 3 tests" in body.get("stderr", "") + body.get("stdout", ""), "independent target unittest process passes")
+        # Isolated Python starts without importing writable cwd/sitecustomize.
+        # Load only the target source, then check original and held-out inputs.
+        heldout = (
+            "import importlib.util;"
+            f"spec=importlib.util.spec_from_file_location('calculator_under_test',{project + '/calculator.py'!r});"
+            "module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);"
+            "assert all(module.add(a,b)==a+b for a,b in [(2,3),(-4,-3),(0,0),(127,83),(-91,13),(0.5,1.25)]);"
+            "print('INDEPENDENT_OK')"
+        )
+        result = client.post("/shell", json={"command": "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -I -c " + shlex.quote(heldout), "cwd": project, "timeout": 30})
+        record(result.status_code == 200 and result.json().get("exit_code") == 0
+               and result.json().get("stdout", "").strip() == "INDEPENDENT_OK", "independent held-out calculations pass")
+    except Exception as exc:
+        record(False, f"L3 aborted ({type(exc).__name__}); response omitted")
+    finally:
+        result = client.delete("/files", params={"path": project})
+        record(result.status_code in {200, 404}, "owned coding project cleanup")
 
 
 def main() -> int:
-    print("deepseek-harness end-to-end suite", flush=True)
-    print(f"  base_url        : {BASE_URL}", flush=True)
-    print(f"  deepseek key    : {'set' if HAS_DEEPSEEK_KEY else 'not set'}", flush=True)
-    print(f"  model / prompt  : {MODEL} / {LLM_PROMPT!r}", flush=True)
-    print("-" * 74, flush=True)
-    with httpx.Client(base_url=BASE_URL, timeout=TIMEOUT) as client:
-        if not preflight(client):
-            print("server unreachable — aborting", flush=True)
-            return 2
-        print("\n-- Built-in routes --", flush=True)
-        group_builtin(client)
-        print("\n-- Custom commands (deepseek) --", flush=True)
-        group_commands(client)
-        print("\n-- File ops --", flush=True)
-        global WORKSPACE
-        WORKSPACE = detect_workspace(client)
-        group_files(client)
-        print("\n-- Shell --", flush=True)
-        group_shell(client)
-    return summary()
+    headers = {"X-Access-Token": TOKEN} if TOKEN else {}
+    with httpx.Client(base_url=BASE_URL, headers=headers, timeout=60) as client:
+        record(client.get("/health").status_code == 200, "health")
+        response = client.get("/commands")
+        entries = {c["name"]: c for c in response.json().get("commands", [])}
+        record(response.status_code == 200 and {"deepseek", "run", "deepseek_tools", "deepseek_setup_check"} <= entries.keys(), "registered command names")
+        types = {p["name"]: p["type"] for p in entries.get("deepseek", {}).get("args", [])}
+        record(types.get("prompt") == "string" and types.get("cwd") == "string" and types.get("command_timeout") == "integer", "typed command parameters")
+        for payload in ({}, {"prompt": "x", "command_timeout": "bad"}):
+            record(client.post("/commands/deepseek", json=payload).status_code == 400, "invalid arguments are HTTP 400")
+        record(client.post("/commands/no_such_command", json={}).status_code == 404, "unknown command is HTTP 404")
+        response = client.post("/commands/deepseek_setup_check", json={})
+        state = response.json().get("result", {})
+        record(response.status_code == 200 and isinstance(state, dict), "read-only setup inspection")
+
+        response = client.post("/commands/deepseek_tools", json={})
+        record(response.status_code == 200 and response.json().get("result") == "list_files,read_file,run_shell,write_file", "coding tools registered")
+
+        if not state.get("api_key_set"):
+            payload = {"prompt": "test", "model": "test-model"}
+            response = client.post("/commands/deepseek", json=payload)
+            record(response.status_code == 500 and "required" in response.json().get("error", ""), "missing-key guard prevents login/network call")
+        coding(client, state)
+    print(f"{FAILED} failed", flush=True)
+    return int(bool(FAILED))
 
 
 if __name__ == "__main__":

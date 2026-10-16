@@ -1,198 +1,110 @@
-# qoder
+# Qoder
 
-> [中文版](#中文) | [English](#english)
+## What it does
 
----
+Run the real Qoder coding assistant headlessly against files in a sandbox. The existing `qoder_run` Python script command remains available.
 
-## English
+## Stack
 
-Sandbox runtime for the Qoder AI coding assistant — an intelligent development sandbox combining Python 3.12 and Node.js 22.
+Qoder CLI `@qoder-ai/qodercli@1.1.72`; platform Python 3.13 / Node.js 20; Agent Sandbox server.
 
-### Environment
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml) · [Upstream](https://docs.qoder.com/cli/run-in-scripts)
 
-This template comes preinstalled with the following tools and dependencies:
+## Problem solved
 
-| Category | Details |
-|----------|---------|
-| **Base image** | python:3.12-slim |
-| **Python** | Python 3.12 + venv (at `/opt/venv`) |
-| **Node.js** | Node.js 22.x + npm |
-| **Python packages** | `httpx`, `rich`, `pyyaml` |
-| **System tools** | git, curl, wget, ripgrep, jq, build-essential, openssh-client |
-| **Resources** | 2 CPU / 4096 MB memory |
+Expose a typed, bounded coding task through one named command; inject model credentials at sandbox creation.
 
-### Installation
-
-**Install from a local path:**
-
-```bash
-abx template install ./qoder --registry-type local
-```
-
-**Install from GitHub:**
+## Quick start (CLI)
 
 ```bash
 abx template install alibaba-agent-sandbox/awesome-templates//qoder
+abx create --template <template-id> --env QODER_PERSONAL_ACCESS_TOKEN="$QODER_PERSONAL_ACCESS_TOKEN"
+abx run <sandbox-id> qoder --arg prompt="Inspect this project and fix the failing calculation"
 ```
 
-### Usage
+## Quick start (Python SDK)
 
-Create a sandbox instance:
-
-```bash
-abx create --template qoder
-```
-
-Run development tasks inside the sandbox:
-
-```bash
-abx exec <sandbox-id> -- python3 -c "print('Hello from Qoder sandbox')"
-abx exec <sandbox-id> -- node -e "console.log('Node.js ready')"
-```
-
-Using the Python SDK:
+The client distribution is `agent-sandbox-client`. See [installation](../docs/python-client-installation.md) for availability and pinned source installation.
 
 ```python
+import asyncio
+import os
 from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create_sync(
-    template="qoder",
-    env={"WORKSPACE": "/app"}
-)
+async def main():
+    sb = await Sandbox.create(template="<template-id>", timeout=900,
+                              envs={"QODER_PERSONAL_ACCESS_TOKEN": os.environ["QODER_PERSONAL_ACCESS_TOKEN"]})
+    try:
+        print(await sb.run("qoder", prompt="Inspect and fix the calculation",
+                           timeout=660))
+    finally:
+        await sb.kill()
 
-result = sandbox.commands.run("python3 --version && node --version")
-print(result.stdout)
+asyncio.run(main())
 ```
 
-### Configuration
-
-#### Environment Variables
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `WORKSPACE` | Working directory inside the sandbox. Default `/app`. | No |
-
-#### Custom Configuration
-
-To install extra dependencies on top of this template, run the following after the sandbox is created:
+## Quick start (HTTP POST)
 
 ```bash
-abx exec <sandbox-id> -- pip install <package-name>
-abx exec <sandbox-id> -- npm install -g <package-name>
+curl -X POST "$SANDBOX_PORT_9000_URL/commands/qoder" \
+  -H 'Content-Type: application/json' \
+  -H "X-Access-Token: $GATEWAY_ACCESS_TOKEN" \
+  -H "Authorization: Bearer $ABX_SERVER_TOKEN" \
+  --data '{"prompt":"Inspect and fix the calculation","command_timeout":600}'
 ```
 
-### Notes
+Success is `{"result":"buffered output"}`. Send arguments directly, with no `args` wrapper. The provider defines gateway access credentials; `ABX_SERVER_TOKEN` separately protects this server. Omit Authorization when unset. The SDK supports `sb.server_at(9000, token=...)`.
 
-- **Working directory**: `WORKSPACE` defaults to `/app`.
-- **Dual runtimes**: The environment supports both Python 3.12 and Node.js 22 — pick whichever fits your project.
-- **Virtual environment**: Python packages are installed in `/opt/venv`; no manual activation is needed since `PATH` is preconfigured.
-- **SSH support**: `openssh-client` is preinstalled, enabling Git-over-SSH operations.
+HTTP 400: missing/invalid/range arguments; 401: authentication; 404: unknown command; 500: missing credentials, execution failure or timeout. Results are buffered. `command_timeout` bounds execution; SDK `timeout` only controls HTTP waiting and does not guarantee cancellation. Use process APIs for background work.
 
----
+## Command reference
 
-## 中文
+`qoder` → buffered string.
 
-Qoder AI 编程助手的沙箱运行环境，集成 Python 3.12 与 Node.js 22 的智能开发沙箱。
+| Parameter | Type | Required/default | Meaning |
+|---|---|---|---|
+| prompt | string | required | Task text; nonempty. |
+| cwd | string | "" | Existing directory; relative paths resolve under WORKSPACE. |
+| command_timeout | integer | 600 | Execution deadline, 1–1800 seconds. |
 
-### 环境说明
+| Additional command | Parameters | Result |
+|---|---|---|
+| qoder_version | none | Installed CLI version. |
+| qoder_setup_check | none | Read-only installed/version/PAT-presence diagnostic. |
+| qoder_run | script: string = main.py | Local Python stdout; does not call Qoder. |
 
-本模板预装以下工具和依赖：
+## Configuration
 
-| 类别 | 内容 |
-|------|------|
-| **基础镜像** | python:3.12-slim |
-| **Python** | Python 3.12 + venv 虚拟环境（位于 `/opt/venv`） |
-| **Node.js** | Node.js 22.x + npm |
-| **Python 包** | `httpx`、`rich`、`pyyaml` |
-| **系统工具** | git、curl、wget、ripgrep、jq、build-essential、openssh-client |
-| **资源配置** | 2 CPU / 4096 MB 内存 |
+`WORKSPACE=/home/user/app`. `QODER_PERSONAL_ACCESS_TOKEN` is required for model execution; browser/OAuth login is never started. `accept_edits` auto-approves file edits; upstream rejects shell confirmations. Sessions are not persisted and automatic updates are disabled.
 
-### 安装方式
+Secret declarations in template.yaml are empty; do not copy credentials into images or logs.
 
-**从本地安装：**
+## Resources
+
+2 vCPU · 2048 MB · port 9000 · `/home/user/app` · non-root `user`.
+
+## Verified
+
+No provider has a passing run recorded for this template.
+
+## Secondary development
 
 ```bash
-abx template install ./qoder --registry-type local
-```
-
-**从 GitHub 安装：**
-
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//qoder
-```
-
-### 使用示例
-
-创建沙箱实例：
-
-```bash
-abx create --template qoder
-```
-
-在沙箱中执行开发任务：
-
-```bash
-abx exec <sandbox-id> -- python3 -c "print('Hello from Qoder sandbox')"
-abx exec <sandbox-id> -- node -e "console.log('Node.js ready')"
-```
-
-使用 Python SDK：
-
-```python
-from agent_sandbox import Sandbox
-
-sandbox = Sandbox.create_sync(
-    template="qoder",
-    env={"WORKSPACE": "/app"}
-)
-
-result = sandbox.commands.run("python3 --version && node --version")
-print(result.stdout)
-```
-
-### 配置说明
-
-#### 环境变量
-
-| 变量名 | 说明 | 必填 |
-|--------|------|------|
-| `WORKSPACE` | 沙箱内工作目录，默认 `/app` | 否 |
-
-#### 自定义配置
-
-如需在模板基础上安装额外依赖，可在创建沙箱后执行：
-
-```bash
-abx exec <sandbox-id> -- pip install <package-name>
-abx exec <sandbox-id> -- npm install -g <package-name>
-```
-
-### 注意事项
-
-- **工作目录**：`WORKSPACE` 默认为 `/app`。
-- **双运行时**：环境同时支持 Python 3.12 和 Node.js 22，可根据项目需求选择。
-- **虚拟环境**：Python 包安装在 `/opt/venv` 中，使用时无需手动激活，`PATH` 已自动配置。
-- **SSH 支持**：已安装 `openssh-client`，支持 Git SSH 协议操作。
-
-## Deploy and local e2e
-
-Install and register this template:
-
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//qoder
-```
-
-From this directory (build, push, and register):
-
-```bash
-abx deploy
-```
-
-From the repository root, with `agent-sandbox-server` and `httpx` installed:
-
-```bash
+python3 scripts/check_template.py qoder
+python3 -m pytest -q qoder/test_commands.py
 python3 scripts/run_local_e2e.py
 ```
 
-That starts `python3 commands.py` in this directory and runs `e2e_test.py`.
+`E2E_COMMAND_TIMEOUT` controls the model acceptance command budget (default 600 seconds, range 1–1800). L0 does not call a model. `E2E_REQUIRE_LLM=1` forces real coding acceptance. L3 uses target setup diagnostics, seeds failing source/tests, verifies changed source/new artifacts/unchanged tests through target file APIs, then independently executes unittest and held-out calculations. A missing key is not acceptance.
 
+## Contributing
+
+[CONTRIBUTING.md](../CONTRIBUTING.md) · [spec](../docs/template-spec.md) · [design](../docs/design/qoder.md).
+
+## Issues
+
+[Template issues](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues). [Python SDK/server issues](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues); [CLI issues](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues). Include sanitized commands, versions and provider; omit keys.
+
+## License
+
+Apache-2.0 template code. Upstream tools retain their own licenses and attribution. See [LICENSE](../LICENSE).
