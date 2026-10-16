@@ -54,18 +54,21 @@ def main():
                       'evaluator':{'func':'check_include_exclude','result':{'type':'accessibility_tree'},'expected':{'type':'rule','rules':{'include':['Completed external-雪'],'exclude':['Awaiting external input']}}}}
                 upload(html_path,html);upload(task_path,json.dumps(task))
                 check(call('desktop_start')['running'] is True,'external controller starts a real desktop')
-                check(call('run_task_config',task_path=task_path)['applied']==1,'uploaded OSWorld task setup applies')
+                applied=call('run_task_config',task_path=task_path)
+                check(applied['applied']==1,'uploaded OSWorld task setup applies')
+                geometry=applied['browser_geometry']
+                offset_x=geometry['content_x'];offset_y=geometry['content_y']
                 for _ in range(30):
                     if 'External task input' in call('a11y_tree'):break
                     time.sleep(.1)
                 check(call('evaluate',task_path=task_path)['score']==0,'external task baseline evaluates to zero')
                 before=call('screenshot');before_png=base64.b64decode(before['base64'],validate=True)
                 check(before_png.startswith(b'\x89PNG\r\n\x1a\n') and struct.unpack('>II',before_png[16:24])==(1024,768),'controller independently decodes the real desktop PNG')
-                call('click',x=150,y=210)
+                call('click',x=int(offset_x+150),y=int(offset_y+210))
                 call('type',text='temporary')
                 call('hotkey',keys='ctrl,a')
                 call('type',text='external-雪')
-                call('click',x=200,y=340)
+                call('click',x=int(offset_x+200),y=int(offset_y+340))
                 score=None
                 for _ in range(30):
                     score=call('evaluate',task_path=task_path)

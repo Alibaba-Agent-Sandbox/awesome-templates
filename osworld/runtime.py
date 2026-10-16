@@ -236,9 +236,27 @@ class Desktop:
         self.browser = self.playwright.chromium.connect_over_cdp(f"http://127.0.0.1:{port}")
         self.context = self.browser.contexts[0]
         self.page = self.context.pages[0]
-        self.page.wait_for_function("innerWidth === 1024 && innerHeight === 768", timeout=10000, polling=50)
+        self.stage = "browser-viewport"
+        self.page.wait_for_function("document.visibilityState === 'visible' && innerWidth > 0 && innerHeight > 0",
+                                    timeout=10000, polling=50)
+        self.geometry()
         self.metrics = load_functions("metrics_general.py", ("check_include_exclude", "exact_match"))
         self.getters = load_functions("getters_misc.py", ("get_rule", "get_accessibility_tree"))
+
+    def geometry(self):
+        # Xvfb/screenshot size and the page viewport are different measurements.
+        # Read coordinates only; never resize/emulate the page to satisfy a test.
+        value = self.page.evaluate("""({screen_width:screen.width,screen_height:screen.height,
+            outer_width:outerWidth,outer_height:outerHeight,viewport_width:innerWidth,
+            viewport_height:innerHeight,content_x:screenX+(outerWidth-innerWidth)/2,
+            content_y:screenY+outerHeight-innerHeight})""")
+        names = {"screen_width", "screen_height", "outer_width", "outer_height",
+                 "viewport_width", "viewport_height", "content_x", "content_y"}
+        if (not isinstance(value, dict) or set(value) != names or
+                any(type(v) not in (int, float) or not -65536 <= v <= 65536 for v in value.values()) or
+                any(value[k] <= 0 for k in names - {"content_x", "content_y"})):
+            raise RuntimeError("invalid browser geometry")
+        return value
 
     def focus_browser(self):
         # Native transient browser/clipboard windows can retain X input focus
@@ -297,7 +315,8 @@ class Desktop:
                     page = self.page if index == 0 else self.context.new_page()
                     page.goto(url, wait_until="load", timeout=15000)
                 self.page.bring_to_front()
-        return {"applied": len(task.get("config", [])), "supported_slice": "linux-browser"}
+        return {"applied": len(task.get("config", [])), "supported_slice": "linux-browser",
+                "browser_geometry": self.geometry()}
 
     def evaluate(self, task):
         evaluator = task["evaluator"]
@@ -390,7 +409,8 @@ class Desktop:
                 raise RuntimeError("baseline evaluation must fail before GUI actions")
             if "Task text" not in self.tree():
                 raise RuntimeError("real browser accessibility nodes are missing")
-            offset = self.page.evaluate("({x:screenX+(outerWidth-innerWidth)/2,y:screenY+outerHeight-innerHeight})")
+            geometry = self.geometry()
+            offset = {"x": geometry["content_x"], "y": geometry["content_y"]}
             box = self.page.locator("#entry").bounding_box()
             self.stage = "keyboard-input"
             self.dispatch({"operation": "click", "x": int(offset["x"] + box["x"] + 20), "y": int(offset["y"] + box["y"] + 20), "button": "left"})
@@ -454,7 +474,8 @@ def main():
         # Libraries must not corrupt or leak into the one-line RPC stream.
         with contextlib.redirect_stdout(io.StringIO()):
             desktop = Desktop(STATE)
-        protocol.write(json.dumps({"result": {"running": True, "width": 1024, "height": 768}}) + "\n")
+        protocol.write(json.dumps({"result": {"running": True, "width": 1024, "height": 768,
+                                               "browser_geometry": desktop.geometry()}}) + "\n")
         protocol.flush()
         for line in sys.stdin:
             if len(line.encode()) > 32768:

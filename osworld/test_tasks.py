@@ -76,3 +76,14 @@ def test_supported_official_task_shape_and_local_file_boundary(monkeypatch,tmp_p
     assert validate(monkeypatch,tmp_path,value)==value
     outside=tmp_path.parent/'outside.html';outside.write_text('outside')
     with pytest.raises(ValueError):runtime.validate_url(outside.as_uri())
+
+
+def test_geometry_preserves_a_viewport_distinct_from_the_desktop():
+    observed={'screen_width':1024,'screen_height':768,'outer_width':1024,'outer_height':768,
+              'viewport_width':1024,'viewport_height':680,'content_x':0,'content_y':88}
+    desktop=runtime.Desktop.__new__(runtime.Desktop)
+    desktop.page=SimpleNamespace(evaluate=lambda expression:observed.copy())
+    assert desktop.geometry()==observed
+    for invalid in ('private-path',float('nan'),float('inf'),-1):
+        observed['viewport_height']=invalid
+        with pytest.raises(RuntimeError,match='invalid browser geometry'):desktop.geometry()

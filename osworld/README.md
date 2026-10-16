@@ -72,14 +72,14 @@ The JSON body contains arguments directly. Success is `{"result": ...}`. Omit un
 | Command | Parameters | Result |
 |---|---|---|
 | osworld_setup_check | none | Source commit, dependency booleans, running state, explicit slice. |
-| desktop_start | none | Start/reuse one owned session; running and initial size. |
+| desktop_start | none | Start/reuse one owned session; running, screen size and numeric browser geometry. |
 | desktop_stop | none | Stop the owned group, remove private state; `stopped`. |
 | screenshot | none | Real PNG base64, MIME, SHA256, width=1024, height=768. |
 | click | x: int required, y: int required, button: str = left | Real click; coordinates inside 1024x768, left/middle/right. |
 | type | text: str required | Private X11 clipboard paste with real Ctrl+V, 1..4096 Unicode characters, no NUL. |
 | hotkey | keys: str required | 1..4 comma-separated PyAutoGUI key names. |
 | a11y_tree | none | Real upstream AT-SPI XML, at most 2 MiB. |
-| run_task_config | task_path: str required | Apply validated supported setup, return applied-step count. |
+| run_task_config | task_path: str required | Apply validated supported setup, return applied-step count and current browser geometry. |
 | evaluate | task_path: str required | Upstream metric score over actual accessibility state. |
 | osworld_desktop_smoke | none | Real offline task and cleanup; no existing session permitted. |
 
@@ -136,3 +136,5 @@ Follow [CONTRIBUTING](../CONTRIBUTING.md) and the [template spec](../docs/templa
 ## License
 
 Apache-2.0. The original OSWorld files, full [upstream license](upstream/LICENSE) and source SHA256 manifest are retained. PyAutoGUI and dependencies retain their installed distribution licenses; Chromium and Debian packages retain their installed notices.
+
+The 1024×768 PNG/Xvfb screen and the browser page viewport are separate measurements. Browser initialization requires a visible, nonzero viewport; it does not resize/emulate a page to force screen equality. `desktop_start` and `run_task_config` return `browser_geometry` with numeric screen, outer-window, viewport and content-offset fields. The disposable smoke prints only these numeric fields for image diagnostics. Native click coordinates remain screen coordinates. The smoke uses the actual content offset and DOM rectangle, and still requires real input, upstream score 0→1, changed PNG pixels and complete 4096-character destination readback. See the [viewport follow-up](../.agents/evidence/verify/2026-10-16-osworld-viewport.md).

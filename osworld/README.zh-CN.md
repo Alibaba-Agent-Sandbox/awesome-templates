@@ -72,14 +72,14 @@ JSON body 直接放参数，成功返回 `{"result": ...}`。未设置的认证�
 | 命令 | 参数 | 返回 |
 |---|---|---|
 | osworld_setup_check | 无 | 源码 commit、依赖布尔值、运行状态、明确切片。 |
-| desktop_start | 无 | 启动/复用一个 owned 会话；运行状态和初始尺寸。 |
+| desktop_start | 无 | 启动/复用一个 owned 会话；运行状态、屏幕尺寸与数值型浏览器几何信息。 |
 | desktop_stop | 无 | 停止 owned 进程组并删私有状态；`stopped`。 |
 | screenshot | 无 | 真实 PNG base64、MIME、SHA256、width=1024、height=768。 |
 | click | x: int 必填，y: int 必填，button: str = left | 1024x768 内真实点击；left/middle/right。 |
 | type | text: str 必填 | 私有 X11 剪贴板加真实 Ctrl+V 粘贴 1..4096 个 Unicode 字符，拒绝 NUL。 |
 | hotkey | keys: str 必填 | 1..4 个逗号分隔的 PyAutoGUI 键名。 |
 | a11y_tree | 无 | 上游真实 AT-SPI XML，最多 2 MiB。 |
-| run_task_config | task_path: str 必填 | 应用已完整校验的支持步骤，返回数量。 |
+| run_task_config | task_path: str 必填 | 应用已完整校验的支持步骤，返回数量及当前浏览器几何信息。 |
 | evaluate | task_path: str 必填 | 上游 metric 对真实可访问性状态计算的分数。 |
 | osworld_desktop_smoke | 无 | 真实离线任务及清理；不允许已有会话。 |
 
@@ -136,3 +136,5 @@ required GUI 模式缺依赖即失败。默认本地 HTTP 检查只报告 GUI SK
 ## 许可证
 
 Apache-2.0。保留原 OSWorld 文件、完整[上游许可证](upstream/LICENSE)与源码 SHA256 清单。PyAutoGUI 等依赖保留安装分发的许可证；Chromium 和 Debian 包保留安装自带 notices。
+
+1024×768 PNG/Xvfb 屏幕与浏览器页面 viewport 是不同测量值。启动只要求可见且非零的 viewport，不会通过缩放或模拟把页面改成屏幕大小。`desktop_start` 和 `run_task_config` 返回 `browser_geometry`，仅包含屏幕、外层窗口、viewport 和内容偏移的数值字段；独立 smoke 仅打印这些数值用于镜像诊断。`click` 仍接受屏幕坐标，smoke 使用实际内容偏移和 DOM 矩形，继续要求真实输入、上游评分 0→1、PNG 像素变化及完整 4096 字符目标值读回。参见[viewport 后续证据](../.agents/evidence/verify/2026-10-16-osworld-viewport.md)。

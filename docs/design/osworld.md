@@ -13,14 +13,14 @@ One private 1024x768 Xvfb display, Openbox, session/accessibility DBus, AT-SPI r
 | Command | Parameters | Result / actual implementation |
 |---|---|---|
 | osworld_setup_check | none | Pinned source, available executables, running boolean and explicit slice; no GUI startup. |
-| desktop_start | none | Running/size object; start owned runtime Python worker, Xvfb, Openbox, private DBus/registry and Chromium. Existing owned session is reused. |
+| desktop_start | none | Running/screen/browser-geometry object; start owned runtime Python worker, Xvfb, Openbox, private DBus/registry and Chromium. Existing owned session is reused. |
 | desktop_stop | none | `stopped`; group cleanup and private profile removal, idempotent. |
 | screenshot | none | PNG base64, SHA256, MIME, width/height; pinned OSWorld `/screenshot` handler through an internal test client. |
 | click | x: int required; y: int required; button: str = left | `clicked`; PyAutoGUI click inside 1024x768, left/middle/right. |
 | type | text: str required | `typed`; Private X11 clipboard plus actual PyAutoGUI Ctrl+V, 1..4096 Unicode characters (NUL refused), stdin rather than argv; release owned clipboard after paste. |
 | hotkey | keys: str required | `pressed`; 1..4 comma-separated actual PyAutoGUI key names. |
 | a11y_tree | none | XML string, at most 2 MiB; pinned upstream AT-SPI handler. |
-| run_task_config | task_path: str required | Applied-step count; complete validation before setup. |
+| run_task_config | task_path: str required | Applied-step count and browser geometry; complete validation before setup. |
 | evaluate | task_path: str required | Actual float score, metric, getter, source commit. Never accepts a submitted score. |
 | osworld_desktop_smoke | none | Real GUI/evaluator check then cleanup; refuses to replace an existing session. |
 
@@ -57,3 +57,5 @@ L0: `pytest -q osworld/test_commands.py osworld/test_tasks.py osworld/test_http.
 L1: actual standalone Docker build and `template.yaml` smoke run non-root with networking disabled. Smoke must require a real PNG/tree, baseline score 0, actual click/type/hotkey events, independent browser input/result state, final upstream score 1 and changed screenshot pixels, followed by owned cleanup. It also requires exact independent DOM readback of 4096 Unicode characters after native clipboard paste. Merely checking versions cannot pass.
 
 L2: deploy/register the changed image on Express, use SDK/HTTP/CLI named commands, run the required desktop e2e and verify cleanup. Source-runtime probes are separate evidence. L3 full upstream benchmark/model acceptance and L4 other providers remain unverified; no response marker or version is a benchmark score.
+
+Screen and viewport are independent: the PNG remains 1024×768, while startup waits for a visible nonzero viewport. Read-only numeric `browser_geometry` accompanies startup/setup; smoke records it and uses actual content offset plus DOM rect for native clicks without CDP viewport emulation. Actual interaction/evaluation and Unicode destination gates remain required. See [viewport evidence](../../.agents/evidence/verify/2026-10-16-osworld-viewport.md).

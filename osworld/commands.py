@@ -262,7 +262,8 @@ def osworld_desktop_smoke() -> str:
         if _running():
             raise RuntimeError("stop the existing desktop before running the disposable smoke")
         try:
-            desktop_start()
+            session = desktop_start()
+            print("OSWorld browser geometry: " + json.dumps(session["browser_geometry"], sort_keys=True), flush=True)
             return _request("smoke", timeout=60)
         finally:
             _stop()

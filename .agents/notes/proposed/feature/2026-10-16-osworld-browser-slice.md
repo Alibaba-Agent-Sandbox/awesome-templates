@@ -42,3 +42,5 @@ Real process regressions cover normal stop, unexpected leader exit, redirected d
 - [ ] Review and normal PR delivery complete.
 
 These criteria cover only the browser slice. Full OSWorld benchmark/model tasks remain unimplemented and Issue 36 must stay open.
+
+The screen/viewport distinction and latest failed image run are tracked in [viewport follow-up](../../../evidence/verify/2026-10-16-osworld-viewport.md); real image/provider acceptance remains pending.
