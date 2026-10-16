@@ -47,6 +47,12 @@ catalog, provider-pass file or CI workflow is changed.
 
 ## Honest limits and cleanup
 
+Maintenance clarification: both a361 and the initial cleanup fix already passed
+`--acr-repo <owned-alias>` and an explicit derived tag, so the reviewed heads did
+not use catalog repository/latest defaults. The follow-up makes the tag `review`
+and records `acr_repo`/`acr_tag` in plan/private intent; regressions assert actual
+deploy arguments. This is intent clarity, not evidence of a prior overwrite bug.
+
 All CLI/SDK cloud operations in these unit tests are explicitly synthetic or
 patched; no Express/Docker/model acceptance is claimed. Actual canonical deploy,
 official alias lookup, lost-response cloud recovery and provider smoke have NOT

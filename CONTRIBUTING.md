@@ -43,6 +43,9 @@ already passes `scripts/check_template.py`. It is not a catalog entry.
    account/provider configuration. Recovery matches exact aliases/template IDs;
    an empty inventory after an unknown response does not prove cancellation.
    Successful recovery does not turn the failed attempt into L2 acceptance.
+   The deploy explicitly uses the owned alias as ACR repository and the fixed
+   temporary tag `review`; plan/private intent records both. Registry image
+   retention/deletion is separate from the runner's sandbox/template cleanup.
 
 Do not commit `__pycache__/`, `.env`, or secret values. Declare secret
 *names* with empty values in `template.yaml` `env`.

@@ -306,6 +306,8 @@ An unresolved response stays blocked; recovery success does not grant provider
 acceptance to the original failed run. Registry-image retention is a separate
 operator responsibility; this runner cleans sandbox/template resources and local
 deploy processes.
+The canonical deploy passes `--acr-repo <owned-alias> --tag review`; the private
+intent records these exact registry identifiers for the operator.
 
 ```json
 {

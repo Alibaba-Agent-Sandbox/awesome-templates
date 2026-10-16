@@ -80,6 +80,7 @@ DEFAULT_READY = "agent-sandbox-server healthcheck --port 9000"
 DEFAULT_PUSH_LOCK = Path("/tmp/abx-acr-push.lock")
 DEFAULT_IDLE_TIMEOUT = 180
 DEFAULT_PUSH_RETRIES = 2
+OWNED_ACR_TAG = "review"
 
 # Older binaries. Current main accepts a string base, reads start/ready from
 # template.yaml, envelopes gen2 envd streams, and does not treat the Express
@@ -545,6 +546,8 @@ def plan_document(options: Options) -> dict[str, Any]:
         "name": options.template_name,
         "version": options.template_version,
         "alias": options.alias,
+        "acr_repo": options.alias,
+        "acr_tag": OWNED_ACR_TAG,
         "generation": options.generation,
         "start_cmd": options.start_cmd,
         "ready_cmd": options.ready_cmd,
@@ -827,7 +830,8 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
 
     intent_dir = Path(tempfile.mkdtemp(prefix="abx-express-owned-"))
     intent_path = intent_dir / "intent.json"
-    intent = {"version": 1, "alias": options.alias, "template_ids": [], "sandbox_ids": [],
+    intent = {"version": 1, "alias": options.alias, "acr_repo": options.alias, "acr_tag": OWNED_ACR_TAG,
+              "template_ids": [], "sandbox_ids": [],
               "deploy_attempted": False, "create_attempted": False, "ownership_confirmed": False}
     save_intent(intent_path, intent)
     def conduct() -> int:
@@ -850,9 +854,9 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
             "--alias",
             options.alias,
             "--acr-repo",
-            options.alias,
+            intent["acr_repo"],
             "--tag",
-            options.alias.split("-")[-1],
+            intent["acr_tag"],
             "--timeout",
             str(options.deploy_timeout),
             "--verbose",

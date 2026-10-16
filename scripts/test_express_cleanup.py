@@ -168,7 +168,11 @@ class CleanupTest(unittest.TestCase):
                 calls.append(args)
                 self.assertFalse((project / "evidence").exists())
                 if "--official-api" in args: return harness.Proc(0, "[]", "")
-                if "deploy" in args: return harness.Proc(0, '{"TemplateID":"owned-template","Status":"ready"}', "")
+                if "deploy" in args:
+                    self.assertEqual(args[args.index("--acr-repo") + 1], options.alias)
+                    self.assertEqual(args[args.index("--tag") + 1], "review")
+                    self.assertNotEqual(args[args.index("--acr-repo") + 1], "product")
+                    return harness.Proc(0, '{"TemplateID":"owned-template","Status":"ready"}', "")
                 if "create" in args: return harness.Proc(0, '{"ID":"owned-sandbox"}', "")
                 if "run" in args: return harness.Proc(0, '{"result":"ok"}', "")
                 return harness.Proc(0, "", "")
