@@ -27,6 +27,7 @@ SPEC.loader.exec_module(e2e)
     ("fix", "wrong_session"), ("fix", "bad_hash"), ("fix", "bad_results"),
     ("fix", "tamper_report"), ("fix", "tamper_source"), ("fix", "tamper_tests"),
     ("fix", "missing_artifact"),
+    *((mode, "not_run") for mode in ("static_sys_exit", "static_os_exit", "zero_test_exit", "skip_tests", "stale_pyc")),
 ])
 def test_remote_coding_protocol_detects_real_fix_and_rejects_false_success(
     monkeypatch, tmp_path, agent_behavior, resume_behavior
@@ -103,6 +104,23 @@ def test_remote_coding_protocol_detects_real_fix_and_rejects_false_success(
             marker = re.search(r"ABX_E2E_[0-9a-f]+", payload["prompt"]).group()
             if agent_behavior == "fix":
                 (seeded_project / "calc.py").write_text("def add(a, b):\n    return (a + b)\n")
+            elif agent_behavior in {"static_sys_exit", "static_os_exit", "zero_test_exit", "skip_tests", "stale_pyc"}:
+                source = "def add(a,b): return a+b\n"
+                if agent_behavior in {"static_sys_exit", "static_os_exit"}:
+                    terminate = "sys.exit(0)" if agent_behavior == "static_sys_exit" else "__import__('os')._exit(0)"
+                    source = "import sys\nif sys.argv[0]=='-c':\n print('INDEPENDENT_OK',flush=True)\n " + terminate + "\ndef add(a,b): return a+b if (a,b) in [(2,3),(-2,-3),(0,0)] else 0\n"
+                elif agent_behavior == "zero_test_exit":
+                    source = "import sys\nprint('Ran 3 tests',file=sys.stderr)\nsys.exit(0)\n"
+                elif agent_behavior == "skip_tests":
+                    source = "import unittest\ndef skip(*a,**kw): raise unittest.SkipTest('synthetic skipped original')\nunittest.TestCase.assertEqual=skip\ndef add(a,b): return a+b\n"
+                (seeded_project / "calc.py").write_text(source)
+                if agent_behavior == "stale_pyc":
+                    code = ("import py_compile;from pathlib import Path;p=Path('calc.py');"
+                            "py_compile.compile(str(p),doraise=True,invalidation_mode=py_compile.PycInvalidationMode.UNCHECKED_HASH);"
+                            "p.write_text('def add(a,b): return a+b if (a,b) in [(2,3),(-2,-3),(0,0)] else 0\\n');"
+                            "from calc import add;assert add(99,101)==200")
+                    cached=subprocess.run(['python3','-c',code],cwd=seeded_project,capture_output=True,text=True,timeout=10)
+                    assert cached.returncode==0,cached.stderr
             elif agent_behavior == "tamper_tests":
                 (seeded_project / "test_calc.py").write_text("# agent deleted the failing tests\n")
             (seeded_project / "report.txt").write_text("Changed addition; simulated agent report.\n")
@@ -143,6 +161,8 @@ def test_remote_coding_protocol_detects_real_fix_and_rejects_false_success(
     elif agent_behavior == "tamper_tests":
         assert "L3 seeded independent tests were preserved" in failed
         assert "L3 independent remote fixed-test rerun passes" in failed
+    elif agent_behavior in {"static_sys_exit", "static_os_exit", "zero_test_exit", "skip_tests", "stale_pyc"}:
+        assert "L3 independent remote fixed-test rerun passes" in failed or "L3 independent remote held-out assertions pass" in failed
     elif resume_behavior == "wrong_session":
         assert "L3 exact-session resume response preserves the returned session id" in failed
     elif resume_behavior in {"bad_hash", "bad_results"}:
@@ -154,3 +174,19 @@ def test_remote_coding_protocol_detects_real_fix_and_rejects_false_success(
     else:
         assert resume_behavior == "missing_artifact"
         assert "L3 real coding acceptance completed" in failed
+
+
+@pytest.mark.parametrize("tests", [False, True])
+@pytest.mark.parametrize("shadow", ["none", "unittest", "sitecustomize"])
+def test_isolated_verifier_uses_actual_source_and_preloaded_stdlib(tmp_path, tests, shadow):
+    (tmp_path / "calc.py").write_text("def add(a,b): return a+b\n")
+    (tmp_path / "test_calc.py").write_text("import unittest\nfrom calc import add\nclass Original(unittest.TestCase):\n def test_one(self): self.assertEqual(add(2,3),5)\n def test_two(self): self.assertEqual(add(-2,-3),-5)\n def test_three(self): self.assertEqual(add(0,0),0)\n")
+    if shadow == "unittest":
+        (tmp_path / "unittest.py").write_text("raise RuntimeError('shadow must not load')\n")
+    elif shadow == "sitecustomize":
+        (tmp_path / "sitecustomize.py").write_text("from pathlib import Path;Path('startup-ran').write_text('unexpected')\n")
+    import secrets
+    ack=secrets.token_hex(32)
+    completed=subprocess.run(['python3','-I','-c',e2e._verifier_source(str(tmp_path),ack,tests=tests)],cwd=tmp_path,capture_output=True,text=True,timeout=10)
+    assert completed.returncode==0 and completed.stdout.strip()==ack
+    assert not (tmp_path / 'startup-ran').exists()

@@ -27,3 +27,6 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 - [Verification](evidence/verify/2026-10-16-catalog-completion-review.md)
 - [Image-build gate](notes/proposed/process/2026-10-16-template-image-build-gate.md)
 - [Image-build preparation evidence](evidence/verify/2026-10-16-template-image-build-gate.md)
+
+- [OpenCode verifier decision](notes/proposed/process/2026-10-16-opencode-verifier-completion.md)
+- [OpenCode verifier evidence](evidence/verify/2026-10-16-opencode-verifier-completion.md)

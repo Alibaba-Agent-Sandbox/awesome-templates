@@ -212,3 +212,13 @@ After the coding checks pass, the verifier makes a second `opencode_run` call wi
 External HTTP target requests respect environment proxy settings. The sandbox-internal loopback health check alone connects directly to its own serve process. The fake-remote protocol tests validate coding and exact-session continuation, including wrong-session/hash/calculation responses and file tampering, using actual local test subprocesses; they do not establish real model/provider acceptance.
 
 On 2026-10-16 the Express source-runtime run passed all 28 HTTP checks with a real `dashscope/qwen3.8-flash` model, including the exact-session continuation above and both project/sandbox cleanup. This run uploaded source/configuration to an existing base sandbox and installed pinned dependencies there. Image build L1 and new-template deploy L2 remain unverified; `tested_on` stays empty. See the [verification record](../.agents/evidence/verify/2026-10-16-opencode-session-resume-clean-wheel.md).
+
+Independent test and held-out processes run isolated Python, preload the standard
+library and compile the actual source bytes. The three original tests must all
+run successfully without skips or expected failures. Each post-agent verifier,
+including the exact-session resume recheck, requires its own newly generated
+completion acknowledgement. Static output, early zero exits and stale bytecode
+cannot stand in for completed checks. This detects incomplete execution; it is
+not an OS isolation boundary against hostile code with the same user authority.
+Historical real-model results predate this guard; the hardened controller needs
+its own actual-image/model run before that new acceptance is claimed.
