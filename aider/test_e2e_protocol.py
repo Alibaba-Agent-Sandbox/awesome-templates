@@ -4,6 +4,7 @@ import importlib.util
 import json
 from pathlib import Path
 import subprocess
+import shlex
 
 import httpx
 import pytest
@@ -33,7 +34,7 @@ def test_controller_key_cannot_replace_target_key(monkeypatch):
     assert e2e.FAILED == 1
 
 
-@pytest.mark.parametrize("mode", ["correct", "marker-only", "tests-modified", "heldout-failure"])
+@pytest.mark.parametrize("mode", ["correct", "marker-only", "tests-modified", "heldout-failure", "static-sys-exit", "static-os-exit", "zero-test-exit", "skip-tests", "stale-pyc"])
 @pytest.mark.parametrize("shadow", ["none", "unittest", "sitecustomize"])
 def test_actual_target_test_process_rejects_false_acceptance(monkeypatch, tmp_path, mode, shadow):
     monkeypatch.setenv("E2E_RUN_LLM", "1")
@@ -57,7 +58,7 @@ def test_actual_target_test_process_rejects_false_acceptance(monkeypatch, tmp_pa
             return httpx.Response(200, json={"content_base64": base64.b64encode(path.read_bytes()).decode()})
         if route == "/shell":
             body = json.loads(request.content)
-            result = subprocess.run(body["command"], shell=True, cwd=body["cwd"], capture_output=True, text=True, timeout=10)
+            result = subprocess.run(shlex.split(body["command"]), shell=False, cwd=body["cwd"], capture_output=True, text=True, timeout=10)
             if not body["command"].startswith("git init"):
                 shell_runs.append(result)
             return httpx.Response(200, json={"exit_code": result.returncode, "stdout": result.stdout, "stderr": result.stderr})
@@ -73,6 +74,32 @@ def test_actual_target_test_process_rejects_false_acceptance(monkeypatch, tmp_pa
                 (project/"calculator.py").write_text(source)
                 (project/"REPORT.md").write_text("Source fixed")
                 (project/"acceptance.txt").write_text(marker+"\n")
+                if mode in {"static-sys-exit", "static-os-exit"}:
+                    exit_code = "raise SystemExit(0)" if mode == "static-sys-exit" else "__import__('os')._exit(0)"
+                    (project/"calculator.py").write_text(
+                        "if __name__ == 'calculator_under_test':\n print('INDEPENDENT_OK',flush=True)\n " + exit_code + "\n"
+                        "def add(a,b): return a+b if (a,b) in [(2,3),(-4,-3),(0,0)] else 0\n"
+                    )
+                elif mode == "zero-test-exit":
+                    (project/"calculator.py").write_text(
+                        "import sys\nif __name__ == 'calculator':\n print('Ran 3 tests',file=sys.stderr)\n sys.exit(0)\n"
+                        "def add(a,b): return a+b\n"
+                    )
+                elif mode == "skip-tests":
+                    (project/"calculator.py").write_text(
+                        "import unittest\ndef skip(*a,**kw): raise unittest.SkipTest('synthetic skipped original')\n"
+                        "unittest.TestCase.assertEqual=skip\ndef add(a,b): return a+b\n"
+                    )
+                elif mode == "stale-pyc":
+                    code = (
+                        "import py_compile; from pathlib import Path; p=Path('calculator.py'); "
+                        "py_compile.compile(str(p),doraise=True,invalidation_mode=py_compile.PycInvalidationMode.UNCHECKED_HASH); "
+                        "p.write_text(\"def add(a,b): return a+b if (a,b) in [(2,3),(-4,-3),(0,0)] else 0\\n\"); "
+                        "from calculator import add; assert add(127,83)==210"
+                    )
+                    cached=subprocess.run(['env','-i','PATH=/usr/local/bin:/usr/bin:/bin','python3','-c',code],
+                                          cwd=project,capture_output=True,text=True,timeout=10)
+                    assert cached.returncode==0,cached.stderr
                 if mode == "tests-modified":
                     (project/"test_calculator.py").write_text("# removed tests\n")
                 if shadow == "unittest":

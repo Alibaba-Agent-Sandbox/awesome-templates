@@ -186,6 +186,12 @@ analytics-disabled 状态可能保留在该专用沙箱原生 `.aider`，随实�
 自有 helper、实例、模板、registry 均已清理并回查。
 保留[首轮失败记录](evidence/image-runtime-2026-10-16-attempt1.json)。
 
+[加固验收器后的镜像复验](evidence/image-runtime-hardened-2026-10-16.json)
+使用 `f76687e` 验收器与同一不可变镜像，真实模型检查 21 项通过，零失败、零跳过。
+直接编译源码、完整执行原始测试及新的完成确认值，可以拒绝提前退出和旧缓存造成的误通过。
+七项自有资源清理检查和单独的官方模板严格缺席回查均通过；旧记录保留，
+其真实模型结果发生在这次完成性校验加固之前。
+
 目录仍是 experimental，`tested_on: []`：canonical
 `scripts/express_e2e.py` → `abx template deploy` 的 L2 wrapper 尚未通过。
 其他 provider 未验。参见[设计](../docs/design/aider.md)。
@@ -225,3 +231,10 @@ python3 aider/verify_upstream_guards.py
 
 此命令使用确定性的 loopback 模型验证 slash/bang 分派与未选中路径拒绝，
 不代表真实模型 coding 或实际镜像部署通过。
+
+### 独立测试完整执行
+
+编程控制器在隔离的 Python 进程中直接编译实际源码，核验三个原始测试逐字节不变且全部执行成功，
+拒绝跳过、预期失败或未完整执行的测试。测试和隐藏用例分别要求在 Agent 退出后才生成的独立完成确认。
+静态 marker、提前退出及旧字节码不能证明通过。这些检查用于确认任务完成，不构成操作系统隔离边界。
+原先真实模型证据作为历史保留；加固后的验证器须单独进行真实模型测试。
