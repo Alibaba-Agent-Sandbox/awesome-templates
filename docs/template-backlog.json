@@ -536,16 +536,18 @@
     "name": "aider",
     "title": "Aider",
     "priority": "P1",
-    "upstream": "https://github.com/Aider-AI/aider v0.86.0",
-    "install": "`pip install aider-chat==0.86.0`（release 2025-08-09，Apache-2.0）。仓库 2026-05-22 后无推送。",
-    "headless_call": "aider --yes --message \"<prompt>\"",
-    "needs": "OPENAI_API_KEY 或 ANTHROPIC_API_KEY。",
+    "upstream": "https://github.com/Aider-AI/aider v0.86.2; official PyPI aider-chat0.86.2 metadata verified.",
+    "install": "Fixed aider-chat==0.86.2 needs Python >=3.10,<3.13. Dedicated SHA256-verified python-build-standalone3.12.12/20260211; base server Python3.13 and Node20 unchanged.",
+    "headless_call": "aider --chat-mode ask|whole --message-file <owned-temp-file>; explicit file staging, no commits, allow_write required for guarded writeback.",
+    "needs": "AIDER_API_KEY、AIDER_BASE_URL、AIDER_MODEL；专用沙箱原生 home 无默认配置。",
     "express_feasible": "yes",
-    "rationale": "安装钉得死，形态和现有 CLI 一样。 切片：整条 CLI。",
+    "rationale": "Issue50. Official default home config search cannot be fully disabled; existing defaults fail closed, fresh dedicated sandbox runtime required. Experimental until image and named-template provider acceptance are recorded.",
     "named_commands": [
-      "aider"
+      "aider",
+      "aider_version",
+      "aider_setup_check"
     ],
-    "analysis_ref": "docs/template-market-survey-2026-10.md#aider",
+    "analysis_ref": "docs/design/aider.md",
     "batch": "1",
     "source": [
       "upstream:Aider-AI/aider"
