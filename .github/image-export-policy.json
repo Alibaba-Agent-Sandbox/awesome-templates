@@ -1,4 +1,4 @@
 {
-  "automatic": "all-selected",
-  "reason": "Temporary 2026-10-16 authorized changed-image L2 acceptance; disable after the batch."
+  "automatic": "default",
+  "reason": "The a361f49 run completed all 17 image archives; end the temporary all-selected L2 transfer batch."
 }
