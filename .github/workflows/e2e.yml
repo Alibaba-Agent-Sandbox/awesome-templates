@@ -31,7 +31,7 @@ jobs:
 
       - name: Install the in-sandbox server and the test client
         run: |
-          python -m pip install ./vendor/python-sdk/server-sdk httpx==0.28.1 pyyaml==6.0.3 pytest==9.1.1 playwright==1.58.0
+          python -m pip install ./vendor/python-sdk/server-sdk httpx==0.28.1 pyyaml==6.0.3 pytest==9.1.1 playwright==1.58.0 Pillow==11.3.0
           python -m playwright install --with-deps chromium
 
       - name: Install pinned upstream CLIs for local smoke checks
@@ -79,6 +79,7 @@ jobs:
           python -m pytest -q deepseek-harness/test_commands.py deepseek-harness/test_e2e_protocol.py
           python -m pytest -q hermes-agent/test_commands.py hermes-agent/test_e2e_protocol.py
           python -m pytest -q pi/test_commands.py pi/test_e2e_protocol.py pi/test_cli_protocol.py pi/test_install_tools.py scripts/test_select_image_templates.py
+          python -m pytest -q ocr/test_commands.py ocr/test_http.py
           python -m pytest -q agents-cli/test_protocol.py
           python -m pytest -q scripts/test_express_runtime_socket.py
           python -m pytest -q qwen-code/test_commands.py qwen-code/test_e2e_protocol.py

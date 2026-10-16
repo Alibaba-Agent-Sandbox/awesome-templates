@@ -1,0 +1,13 @@
+{
+  "sha256": "6b05fba52096147100a7b362fedaa20d454832a8768d687ef13911d96ccb989f",
+  "expected_words": [
+    "SANDBOX",
+    "OCR",
+    "314159",
+    "ALPHA",
+    "BETA"
+  ],
+  "width": 1280,
+  "height": 360,
+  "generator": "Pillow 11.3.0; DejaVu Sans Bold 70; black text on white; no font file redistributed"
+}
