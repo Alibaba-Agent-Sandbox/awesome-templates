@@ -121,6 +121,14 @@ curl --fail-with-body -X POST "$SERVER_URL/commands/stop" \
 
 ## 二次开发
 
+HTTP 验收脚本为每项断言输出 `[PASS]` 或 `[FAIL]` 行。外层验收要求退出0、无失败
+且通过计数大于0；即使退出0，识别到零项断言也会被拒。运行
+`python -m pytest --import-mode=importlib -q node-web/test_http_output.py`，可执行真实
+本地 server/Node/npm 的完整60项套件，再使用相同严格计数器检查；另用真实 HTTP503
+fixture 检查非零退出和可识别失败。测试仅使用自有临时 npm cache，保留原 HOME，
+无需安装依赖或调用模型。此前无方括号输出的云验收仍保留为计数协议不兼容而被拒收，
+不会追改为通过。
+
 把项目上传至 `/home/user/app` 下并提交依赖锁文件。衍生镜像用 `npm ci` 从锁文件安装精确版本；依赖安装放在最终 `COPY commands.py` 之前，npm 缓存在同层清理。保留锁定 server、Alibaba 基础镜像、非 root 用户、generation 2 的启动/就绪命令，无 Docker CMD/ENTRYPOINT。Express/Fastify 可用 serve，或提供 start/dev/build 脚本。模板不预装框架，不创建 Next/Vite 项目。
 
 ## 贡献
