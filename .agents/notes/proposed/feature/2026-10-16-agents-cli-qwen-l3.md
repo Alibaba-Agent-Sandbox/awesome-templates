@@ -60,3 +60,11 @@ and model evidence. Full_access is disclosed; this is not hostile-code isolation
 - Own Sandbox create/kill and paginated absence; failed cleanup cannot pass.
 - Bilingual docs and exact local/image/cloud evidence, preserving prior failures.
 - Draft PR; Issue25, canonical deploy, Codex and formal verification remain open.
+
+## Verification checkpoint
+
+Root independently reviewed frozen1f975ff and reran41 regressions. Actual CI
+image/Qwen SDK coding then passed, with8 owned cleanup flags and5 independent
+read-only readbacks. [Evidence](../../../evidence/verify/2026-10-16-agents-cli-qwen-l3.md).
+This decision remains proposed because the PR is draft and canonical/Codex gates
+are not completed. Refs [PR101](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/101).

@@ -191,10 +191,17 @@ curl --fail-with-body "$ABX_SERVER_URL/v1/agents/sessions/<id>/items?limit=100&o
 
 ## 已验证
 
-尚未记录任何通过的提供方测试。
+2026-10-16，已审阅的实际 CI 镜像通过自有 Express/Qwen SDK 编码切片：真实
+`qwen3.8-flash` 会话、已有源码修改、原测试字节不变、精确产物/报告、完整 unittest
+模块及六个独立用例。八项清理标志全部通过，随后五项独立只读回查通过，详见
+[镜像/SDK 证据](./evidence/qwen-image-sdk-2026-10-16.json)及
+[严格回查](./evidence/qwen-image-sdk-strict-readback-2026-10-16.json)。
 
-本地真实 CLI 诊断、HTTP 契约与 fixture 协议测试分别记录，均不能证明镜像部署或真实
-模型编码完成。L1/L2 及基于独立产物验证的 L3 仍需通过。
+镜像源提交为 `a361f49`，官方 artifact12026073735；宿主验证器运行冻结的 `1f975ff`。
+两者的 commands、policy、Dockerfile、YAML 字节相同，没有覆盖镜像内源码。
+这是实际镜像注册/SDK/模型证据；完整本地 `abx template deploy` 包装链尚未执行，
+因此正式 `tested_on` 仍为空。该套件未验证 Codex 编码或其他提供方。
+fixture 协议测试和禁用模型的 HTTP 检查分别记录。
 
 ## 二次开发
 

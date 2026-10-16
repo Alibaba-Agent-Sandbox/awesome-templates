@@ -213,11 +213,20 @@ memory and latency have not been measured; no image-size acceptance is claimed.
 
 ## Verified
 
-No provider has a passing run recorded for this template.
+On 2026-10-16 the reviewed actual CI image passed the owned Express/Qwen SDK
+coding slice: real `qwen3.8-flash` session, changed existing source, original tests
+unchanged, exact artifact/report, complete unittest modules and six held-out cases.
+All eight cleanup flags passed, followed by five independent read-only absence
+checks. See [image/SDK evidence](./evidence/qwen-image-sdk-2026-10-16.json) and
+[strict readbacks](./evidence/qwen-image-sdk-strict-readback-2026-10-16.json).
 
-Local real-CLI diagnostics and HTTP contract checks are separate from fixture
-protocol tests. Neither establishes image deployment or actual model/coding
-acceptance. L1/L2 and artifact-based real-model L3 remain required.
+The image came from source `a361f49` and official artifact12026073735; the host
+verifier ran frozen `1f975ff`. Product commands/policy/Dockerfile/YAML are identical
+between these commits. No source was overlaid into the image. This is actual
+image registration/SDK/model evidence, separate from the complete local
+`abx template deploy` wrapper, which was not run. Formal `tested_on` remains empty;
+Codex coding and other providers remain unverified by this suite. Fixture
+protocol tests and model-disabled HTTP checks are recorded separately.
 
 ## Secondary development
 

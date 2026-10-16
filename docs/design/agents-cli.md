@@ -130,3 +130,10 @@ journal. One permission error stops that path. Qwen compatibility uses existing
 OpenAI-compatible auth; Codex Responses compatibility remains independently
 unverified by this Qwen suite. Canonical deploy and formal provider metadata
 remain unchanged until their actual separate gates pass.
+
+Actual-image evidence on2026-10-16: the frozen host SDK controller1f975ff passed
+real Qwen coding against original artifact12026073735/sourcea361f49, whose four
+product runtime/build/config files are identical. All8 lifecycle flags and5
+independent post-run absence checks passed. See [image SDK result](../../agents-cli/evidence/qwen-image-sdk-2026-10-16.json)
+and [strict readback](../../agents-cli/evidence/qwen-image-sdk-strict-readback-2026-10-16.json).
+Canonical deploy, Codex and formal metadata are still separate incomplete gates.
