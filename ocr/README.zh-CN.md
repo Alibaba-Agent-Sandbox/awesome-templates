@@ -8,7 +8,7 @@
 
 ## 技术栈
 
-Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，默认区域/版本为 `cn-hangzhou` / `v0.0.49`。Debian 13 的 Tesseract/libtesseract 固定为 `5.5.0-1+b1`，英文和方向数据为 `1:4.1.0-2`，Leptonica 为 `1.84.1-4`；其他系统依赖由发行版仓库解析。Pillow `11.3.0` 使用提交的 wheel SHA256 白名单，禁止源码安装。SDK 优先使用构建时注入的 wheel，否则使用固定源码提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a`。以非 root 的 `user` 运行，工作区 `/home/user/app`，端口 9000；保留原 HOME。
+Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，默认区域/版本为 `cn-hangzhou` / `v0.0.49`。Debian 13 的 Tesseract/libtesseract 固定为 `5.5.0-1+b1`，英文和方向数据为 `1:4.1.0-2`，Leptonica 为 `1.84.1-4`；其他系统依赖由发行版仓库解析。Pillow `11.3.0` 先按提交的 wheel SHA256 白名单下载，再以 --no-index/--no-deps 离线安装，禁止源码安装。SDK 优先使用构建时注入的 wheel，否则使用固定源码提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a`。以非 root 的 `user` 运行，工作区 `/home/user/app`，端口 9000；保留原 HOME。
 
 ## 解决的问题
 

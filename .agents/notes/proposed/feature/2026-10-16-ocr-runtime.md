@@ -36,3 +36,5 @@ Real process success/error/deadline/cancellation descendants and foreign-group c
 ## Evidence
 
 [Verification](../../../evidence/verify/2026-10-16-ocr-runtime.md). Issue 57 remains open for remote/canonical delivery gates.
+
+Image-install follow-up: [first actual L1 failure and minimal offline-wheel repair](../../../evidence/verify/2026-10-16-ocr-image-install.md).

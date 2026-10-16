@@ -13,7 +13,10 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /tmp/ocr-requirements.txt
-RUN pip install --no-cache-dir --only-binary=:all: --require-hashes Pillow==11.3.0 -r /tmp/ocr-requirements.txt
+RUN pip download --no-cache-dir --only-binary=:all: --require-hashes \
+        -r /tmp/ocr-requirements.txt --dest /tmp/ocr-verified-wheels \
+    && pip install --no-cache-dir --no-index --no-deps /tmp/ocr-verified-wheels/*.whl \
+    && rm -rf /tmp/ocr-verified-wheels /tmp/ocr-requirements.txt
 
 COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
