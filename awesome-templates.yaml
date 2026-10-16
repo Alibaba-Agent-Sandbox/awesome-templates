@@ -293,3 +293,12 @@ templates:
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
     status: experimental
+
+  - name: ocr
+    description: "CPU English image OCR with pinned Tesseract 5.5.0 and bounded private TXT/TSV artifacts."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: ocr
+    tags: [ocr, tesseract, images, english]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
