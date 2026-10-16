@@ -9,7 +9,7 @@
 | 工具 | 作用 |
 |---|---|
 | `scripts/check_template.py` | 静态检查。目录符合本规范时退出码为 0。 |
-| `scripts/express_e2e.py` | 在 `alicloud-express` 上做 L2。只有通过才写证据，然后删除沙箱和模板。用文件锁串行化 ACR 推送，并在推送没有进展时停掉它。 |
+| `scripts/express_e2e.py` | 在 `alicloud-express` 上做 L2。只有烟测及自有沙箱、模板清理均通过后才写证据。用文件锁串行化 ACR 推送，并在推送没有进展时停掉它。 |
 | `scripts/run_local_e2e.py` | 对每个带 `commands.py` 和 `e2e_test.py` 的目录做 L0，并运行检查器。 |
 | `scripts/image_size_report.py` | 打印本地镜像每一层的大小（`docker history`）。 |
 
@@ -294,6 +294,14 @@ asyncio.run(main())
 | L4 | `e2b`、`opensandbox`、`alicloud-container` 或 `cubesandbox`，只有在该提供方上真实跑过之后。 |
 
 `scripts/express_e2e.py <dir>` 是 L2 运行器。只有每条 smoke 命令都经 CLI 和 SDK 通过时，才写 `evidence/express-<YYYY-MM-DD>.json`：
+
+写入通过记录及退出 0 还要求自有沙箱、模板清理成功。运行器通过
+`abx --json template list --official-api` 拒绝已存在的同名 alias；清理失败或
+部署／创建响应不明时，在检出目录之外保留仅含自有标识、不含凭据的私有 intent。
+使用同一账号配置执行 `python3 scripts/express_e2e.py --recover-intent PRIVATE_PATH`
+可通过现有官方模板查询／删除及 SDK 沙箱查询／销毁 API 恢复清理，仅匹配本次精确
+alias／模板 ID。响应不明后的空列表不能证明已取消；恢复成功也不把原失败变成提供方
+验收通过。仓库镜像的保留由操作者另行处理，本运行器清理沙箱、模板及本地部署进程。
 
 ```json
 {

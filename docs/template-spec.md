@@ -9,7 +9,7 @@ Tooling that later template work relies on:
 | Tool | Role |
 |---|---|
 | `scripts/check_template.py` | Static lint. Exit 0 when the directory matches this spec. |
-| `scripts/express_e2e.py` | L2 on `alicloud-express`. Writes evidence only after a pass, then deletes the sandbox and the template. Serializes ACR pushes with a file lock and stops a push that makes no progress. |
+| `scripts/express_e2e.py` | L2 on `alicloud-express`. Writes evidence only after smoke and owned sandbox/template cleanup pass. Serializes ACR pushes with a file lock and stops a push that makes no progress. |
 | `scripts/run_local_e2e.py` | L0 for every directory that has `commands.py` and `e2e_test.py`. Also runs the checker. |
 | `scripts/image_size_report.py` | Per-layer sizes of a local image (`docker history`). |
 
@@ -295,6 +295,17 @@ Record a level only when it passed. The README Verified table and `tested_on` li
 | L4 | `e2b`, `opensandbox`, `alicloud-container`, or `cubesandbox`, only after a run on that provider. |
 
 `scripts/express_e2e.py <dir>` is the L2 runner. It writes `evidence/express-<YYYY-MM-DD>.json` only when every smoke command passed through the CLI and the SDK:
+
+The runner also requires successful owned sandbox/template cleanup before writing
+the pass file or returning exit 0. It refuses an existing exact alias through
+`abx --json template list --official-api`. Cleanup failures and unknown deploy/create
+responses retain a private, credential-free owned intent.
+`python3 scripts/express_e2e.py --recover-intent PRIVATE_PATH` uses existing official
+template list/delete and SDK sandbox list/kill APIs to reconcile only that attempt.
+An unresolved response stays blocked; recovery success does not grant provider
+acceptance to the original failed run. Registry-image retention is a separate
+operator responsibility; this runner cleans sandbox/template resources and local
+deploy processes.
 
 ```json
 {

@@ -232,6 +232,8 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(args)
+                if "--official-api" in args:
+                    return Proc(0, "[]", "")
                 if "deploy" in args:
                     return Proc(1, "", "BuildModeError: base must be a mapping")
                 return Proc(0, "", "")
@@ -255,6 +257,8 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(list(args))
+                if "--official-api" in args:
+                    return Proc(0, "[]", "")
                 if "deploy" in args:
                     return Proc(0, json.dumps({"TemplateID": "tmpl-spec", "Status": "ready"}), "")
                 if "create" in args:
@@ -300,6 +304,8 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(list(args))
+                if "--official-api" in args:
+                    return Proc(0, "[]", "")
                 if "deploy" in args:
                     return Proc(0, json.dumps({"TemplateID": "tmpl-spec", "Status": "ready"}), "")
                 if "create" in args:
@@ -331,6 +337,8 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(list(args))
+                if "--official-api" in args:
+                    return Proc(0, "[]", "")
                 if "deploy" in args:
                     attempt = sum(1 for item in calls if "deploy" in item)
                     if attempt < 3:
@@ -348,8 +356,9 @@ class HarnessTest(unittest.TestCase):
             code = express_e2e.execute(options, runner=runner, sdk=lambda *_args: "Hello, E2E!")
             self.assertEqual(code, 0)
             self.assertEqual(sum(1 for args in calls if "deploy" in args), 3)
-            self.assertIn("--verbose", calls[0])
-            self.assertIn("--timeout", calls[0])
+            deploy_call = next(args for args in calls if "deploy" in args)
+            self.assertIn("--verbose", deploy_call)
+            self.assertIn("--timeout", deploy_call)
 
     def test_build_failure_is_not_retried(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -361,6 +370,8 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(list(args))
+                if "--official-api" in args:
+                    return Proc(0, "[]", "")
                 return Proc(1, "", "Docker build failed (exit 1)")
 
             options = express_e2e.build_options(
@@ -368,7 +379,7 @@ class HarnessTest(unittest.TestCase):
             )
             code = express_e2e.execute(options, runner=runner, sdk=lambda *_args: "Hello, E2E!")
             self.assertEqual(code, 1)
-            self.assertEqual(len(calls), 1)
+            self.assertEqual(sum("deploy" in args for args in calls), 1)
 
 
 class MonitorTest(unittest.TestCase):
@@ -508,4 +519,9 @@ class ImageReportTest(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    import test_express_cleanup
+    suite = unittest.TestSuite([
+        unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__]),
+        unittest.defaultTestLoader.loadTestsFromModule(test_express_cleanup),
+    ])
+    raise SystemExit(not unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful())
