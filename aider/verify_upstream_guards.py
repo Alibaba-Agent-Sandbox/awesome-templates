@@ -82,7 +82,7 @@ def main() -> None:
             existing.write_text("UNCHANGED_PRIVATE_FIXTURE\n")
             paths = (str(root / "absolute-escape" / "created.txt"),
                 "../../" + root.name + "/relative-escape/created.txt", str(existing))
-            for escape in paths:
+            for kind, escape in zip(("absolute-create", "relative-create", "absolute-existing"), paths):
                 before = len(calls)
                 response = edit_response(escape)
                 assert response.splitlines() == [escape, "```", "UNSELECTED", "```"], "invalid multiline edit fixture"
@@ -94,7 +94,12 @@ def main() -> None:
                 assert not (root / "relative-escape").exists(), "relative unselected artifact created"
                 assert existing.read_text() == "UNCHANGED_PRIVATE_FIXTURE\n", "unselected existing file changed"
                 assert result["changed_files"] == [], "unselected model response changed selected files"
-                assert "Skipping edits to" in result["stdout"] + result["stderr"], "upstream did not reject unselected path"
+                # Safety is the observed artifact state. Upstream git path checks
+                # can reject an absolute path before the confirmation code runs.
+                output = result["stdout"] + result["stderr"]
+                print("INFO unselected guard " + kind + " " + json.dumps({
+                    "explicit_refusal_text": "Skipping edits to" in output,
+                    "upstream_path_error_text": "not in the subpath" in output}), flush=True)
             assert selected.read_text() == "original\n", "selected source changed unexpectedly"
             print("PASS actual Aider CLI rejects unselected absolute/relative creation and existing edits", flush=True)
     finally:

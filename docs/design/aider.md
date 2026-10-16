@@ -83,7 +83,10 @@ default Yes. Therefore the owned stdin feeder continually supplies No until CLI
 exit, then joins after group cleanup. This refuses create/edit requests for
 unselected absolute or parent-relative paths before touch/write. All selected
 paths are precreated in stage. These controls require actual installed-CLI loopback negative
-controls in addition to unit argv assertions.
+controls in addition to unit argv assertions. Artifact state, successful model
+invocation and the positive selected edit are the authority; outside paths may
+be rejected earlier by upstream git checks without a particular refusal message.
+Do not infer that every external-path test reached the No confirmation feeder.
 Reject symlinks/traversal/config paths and detected stale originals before writeback.
 Per-file atomic replacement preserves old mode; a multi-file change is not a
 transaction. Uncooperative external writers are outside the concurrency guarantee.
@@ -93,6 +96,14 @@ preventing PID/PGID reuse before kill. Deadline, leader exit and Python cancella
 kill only that group; profile cleanup is in the surrounding context manager.
 HTTP client disconnect does not itself cancel a named command. Never delete an
 unrelated provider resource or shared home state during cleanup.
+
+The Express named-command server may already be running before create-time envd
+settings apply. `Sandbox.create(envs=...)` does not retroactively configure that
+process. Start a new owned instance of the already installed server on port 9010
+with public `commands.start(env=...)`, consume its stream, and use actual SDK
+`server_port=9010`, CLI `--server-port 9010` and the 9010 HTTP URL. Confirm the
+target setup booleans through all three clients before model acceptance. Do not
+replace commands.py or change HOME. Kill the owned sandbox and close the stream.
 
 ## Test plan
 

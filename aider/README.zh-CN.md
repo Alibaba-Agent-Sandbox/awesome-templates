@@ -25,16 +25,22 @@ venv 中安装固定 Aider。server 使用源码构建的 wheel，或 Dockerfile
 ```bash
 abx template install alibaba-agent-sandbox/awesome-templates//aider
 abx template deploy ./aider -y
-abx create --template <template-id> --env AIDER_API_KEY=REPLACE_ME \
-  --env AIDER_BASE_URL=https://example.invalid/v1 --env AIDER_MODEL=your-model
-abx exec <sandbox-id> -- sh -c 'mkdir -p /home/user/project && cd /home/user/project && git init -q'
+abx create --template <template-id>
+abx exec <sandbox-id> --background --env AIDER_API_KEY=REPLACE_ME \
+  --env AIDER_BASE_URL=https://example.invalid/v1 --env AIDER_MODEL=your-model \
+  -- agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py
+abx exec <sandbox-id> -- agent-sandbox-server healthcheck --port 9010
+abx run <sandbox-id> aider_setup_check --server-port 9010
+abx exec <sandbox-id> -- sh -c 'mkdir -p /home/user/app/project && cd /home/user/app/project && git init -q'
 # 先用 abx upload 上传 calculator.py。
-abx run <sandbox-id> aider --json-args '{"prompt":"解释此文件","cwd":"/home/user/project","files":"[\"calculator.py\"]"}'
-abx run <sandbox-id> aider --json-args '{"prompt":"修复 calculator.py 并创建 REPORT.md","cwd":"/home/user/project","files":"[\"calculator.py\",\"REPORT.md\"]","allow_write":true,"command_timeout":180}'
-abx exec <sandbox-id> -- sh -c 'cd /home/user/project && git diff -- calculator.py'
+abx run <sandbox-id> aider --server-port 9010 --json-args '{"prompt":"解释此文件","cwd":"/home/user/app/project","files":"[\"calculator.py\"]"}'
+abx run <sandbox-id> aider --server-port 9010 --json-args '{"prompt":"修复 calculator.py 并创建 REPORT.md","cwd":"/home/user/app/project","files":"[\"calculator.py\",\"REPORT.md\"]","allow_write":true,"command_timeout":180}'
+abx exec <sandbox-id> -- sh -c 'cd /home/user/app/project && git diff -- calculator.py'
 abx kill <sandbox-id>
 ```
 
+等待 9010 healthcheck 成功并确认三个配置布尔值均为 true。CLI env 与 JSON prompt
+会进入宿主 argv；需要避免凭据进入宿主 argv/history 时，使用下方 SDK 进程 env。
 退出码零只说明 CLI 完成，不代表代码正确；自行检查 diff 并执行独立测试。
 
 ## 快速开始（Python SDK）
@@ -45,30 +51,56 @@ abx kill <sandbox-id>
 ```python
 import asyncio
 import json
+import os
 from agent_sandbox import Sandbox
 
 async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=600, envs={
-        "AIDER_API_KEY": "REPLACE_ME", "AIDER_BASE_URL": "https://example.invalid/v1",
-        "AIDER_MODEL": "your-model",
-    })
+    sb = await Sandbox.create(template="<template-id>", timeout=600)
+    stream = None
+    server_task = None
     try:
-        await sb.commands.run("mkdir -p /home/user/project && cd /home/user/project && git init -q")
-        await sb.files.write("/home/user/project/calculator.py", "def add(a,b): return a-b\n")
-        result = await sb.run("aider", prompt="修复 add 并创建 REPORT.md", cwd="/home/user/project",
+        stream = await sb.commands.start(
+            "agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py",
+            env={"AIDER_API_KEY": os.environ["AIDER_API_KEY"],
+                 "AIDER_BASE_URL": os.environ["AIDER_BASE_URL"],
+                 "AIDER_MODEL": os.environ["AIDER_MODEL"],
+                 "ABX_SERVER_BASE_DIR": "/home/user/app"}, timeout=600)
+        async def drain():
+            async for _ in stream:
+                pass
+        server_task = asyncio.create_task(drain())
+        for attempt in range(30):
+            try:
+                state = await sb.run("aider_setup_check", server_port=9010, timeout=10)
+            except Exception:
+                if attempt == 29:
+                    raise
+                await asyncio.sleep(1)
+                continue
+            if not all(state[name] for name in ("api_key_set", "base_url_set", "model_set")):
+                raise RuntimeError("the configured server did not receive all settings")
+            break
+        await sb.commands.run("mkdir -p /home/user/app/project && cd /home/user/app/project && git init -q")
+        await sb.files.write("/home/user/app/project/calculator.py", "def add(a,b): return a-b\n")
+        result = await sb.run("aider", prompt='修复 add 并创建 REPORT.md', cwd="/home/user/app/project",
             files=json.dumps(["calculator.py", "REPORT.md"]), allow_write=True,
-            command_timeout=180, timeout=210)
+            server_port=9010, command_timeout=180, timeout=210)
         print(result["changed_files"])
-        print(await sb.files.read("/home/user/project/REPORT.md"))
+        print(await sb.files.read("/home/user/app/project/REPORT.md"))
     finally:
         await sb.kill()
+        if server_task is not None:
+            server_task.cancel()
+            await asyncio.gather(server_task, return_exceptions=True)
+        if stream is not None:
+            await stream.cancel()
 
 asyncio.run(main())
 ```
 
 ## 快速开始（HTTP POST）
 
-通过 `sb.network.get_url(9000)` 获得 server 地址。JSON 直接放参数对象，
+通过 `sb.network.get_url(9010)` 获得 server 地址。JSON 直接放参数对象，
 不要再套 `args`：
 
 ```http
@@ -76,12 +108,12 @@ POST /commands/aider
 Content-Type: application/json
 Authorization: Bearer REPLACE_ME
 
-{"prompt":"解释 calculator.py","cwd":"/home/user/project","files":"[\"calculator.py\"]","allow_write":false,"command_timeout":180}
+{"prompt":"解释 calculator.py","cwd":"/home/user/app/project","files":"[\"calculator.py\"]","allow_write":false,"command_timeout":180}
 ```
 
 结果结构为 `{"result":{"stdout":"...","stderr":"...","exit_code":0,"changed_files":[]}}`。
 只有配置了 `ABX_SERVER_TOKEN` 才需要示例 bearer；provider gateway 认证是另一层。
-SDK 使用 `sb.server_at(9000, token=...)`。不要把 envd token 当作 server bearer。
+SDK 使用 `sb.server_at(9010, token=...)`。不要把 envd token 当作 server bearer。
 缺少必填参数、参数类型或请求格式错误返回 400，认证错误 401，未知命令 404，
 语义校验、上游失败或超时返回 500，包含 `error` 与 `type`，不回显上游错误原文。
 
@@ -121,6 +153,12 @@ Python 取消会终止自己的进程组，并删除临时消息、配置和 sta
 | `AIDER_MODEL` | 空；必需 model ID，自动加 LiteLLM `openai/` 前缀 |
 | `WORKSPACE` | `/home/user/app`；默认工作目录 |
 | `ABX_SERVER_TOKEN` | 空；可选 server 认证 |
+
+**预热进程边界：** `Sandbox.create(envs=...)` 配置 envd 及后续原生进程，
+不会追溯修改已启动的 9000 命名命令 server 环境。必须从镜像已安装的原 commands
+启动自有 9010 server，通过 `commands.start(env=...)` 明确注入配置并消费 stream，
+CLI/SDK/HTTP 均使用该端口。示例不更改 HOME、不覆盖镜像源码；销毁自有沙箱
+时两个 server 一并停止。
 
 兼容配置使用 `extra_body.enable_thinking=false`，用于已验证的 Qwen 兼容路由；
 扩展其他后端时调整并重新验收。key 不写入 stage 文件；选中源码仍会发往模型服务。

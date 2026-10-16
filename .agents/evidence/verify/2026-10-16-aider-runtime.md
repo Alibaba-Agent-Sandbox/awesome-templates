@@ -23,7 +23,7 @@ No host or child HOME was replaced. Shared profile/store files remain untouched.
 
 ## Local checks
 
-- `python -m pytest aider -q`:57 PASS in 8.52 seconds, including real Python child
+- `python -m pytest aider -q`:57 PASS in 7.55 seconds, including real Python child
   process cleanup, timeout/cancellation, explicit/default write behavior, stale
   edits, symlinks, private output, and real independent test-process controller
   negative controls. Fake executable/model fixtures do not prove upstream/model.
@@ -104,3 +104,48 @@ checks succeed (including actual image build), before the continuous-No/input
 fix in the next source head. Its archive metadata is artifact `12027335721`,
 472704050 bytes, run `38855333392`; no archive SHA is claimed from metadata.
 A small log-artifact download attempt returned HTTP401 and was not retried.
+
+## Continuous regression coverage correction
+
+Final review identified that the shared e2e workflow explicitly listed each
+existing template's regressions but did not yet run Aider's 57 tests. The four
+successful checks on product head `ecbabafca49fd8f5d0cf980842a7fa69ee66d7c6`
+therefore establish its actual image and HTTP L0 checks, not remote execution of
+all 57 Aider regressions. Add the scoped Aider pytest row to the existing e2e
+workflow; no image selection/build contract changes. Fresh CI for that coverage
+change must pass. Product commands/runner bytes remain frozen to the reviewed
+image source. Root independently reviewed final process, file, literal-input
+and deterministic actual-CLI guard paths; live results remain separate gates.
+
+## First final-image run: FAIL, all owned cleanup PASS
+
+[Immutable failed run](../../../aider/evidence/image-runtime-2026-10-16-attempt1.json)
+uses actual image artifact `12026949932`, run `38856361807`, product source
+`ecbabafca49fd8f5d0cf980842a7fa69ee66d7c6`, archive SHA256
+`13006e0577a904435eb7384698d8530bce82f08d1abe8ceb12372c3984076cd0`.
+The archive was downloaded/SHA-verified/pushed inside an owned Express helper;
+only small ZIP manifest ranges reached the host. Official generation-2 template
+registration and READY passed. All 56 installed server module hashes matched
+pinned SDK `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; actual SDK/HTTP/CLI
+Aider version passed, with the non-model external suite 9 PASS / 1 explicit SKIP.
+
+Actual official CLI selected whole-file editing and slash/bang literal-input
+controls passed. The first absolute-path artifact-state assertions passed, then
+an overly specific `Skipping edits to` text assertion failed; later relative and
+existing-file cases were unrun in that attempt. The corrected guard requires
+actual artifact state, model-call occurrence and the selected positive parse,
+with fixed-category diagnostic booleans for upstream refusal/path-error text.
+It does not infer that every outside-path case reached confirmation logic.
+
+The model HTTP suite reported 9 PASS / 1 FAIL: the prewarmed port-9000 target
+lacked compatible settings, so no real model call occurred. Create-time envd
+settings do not update that already-running process. The documented correction
+uses public `commands.start(env=...)` to start the installed original image server
+on port 9010, consumes its process stream, and verifies configured target state
+via SDK/HTTP/CLI before model execution. No product source overlay or HOME change.
+The English/Chinese examples now show that activation, port and owned cleanup.
+
+Both runtime instances and the transfer helper were killed and absent from
+scoped list readback. The template was deleted and absent; official ACR tag and
+repository deletion were verified HTTP404. No failed-run resource was reused.
+The retry uses a new unique repository, template name and private per-run journal.

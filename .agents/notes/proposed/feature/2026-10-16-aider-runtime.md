@@ -43,6 +43,12 @@ command_timeout: int=600) -> dict`. Complete types, limits, output and errors ar
 in both template READMEs and `docs/design/aider.md`. Command and client HTTP
 timeouts are distinct; an HTTP disconnect does not itself cancel the process.
 
+Create-time envd settings do not update a prewarmed named-command server. Start
+an owned process from the installed image commands with explicit SDK
+commands.start(env=...) on port 9010, consume its stream, and use that port in
+CLI/SDK/HTTP. Confirm target setup before calling a model; do not copy source
+over the deployed image or rely on host-only credential visibility.
+
 ## Alternatives considered
 
 - Install into base Python 3.13: incompatible with official package metadata.

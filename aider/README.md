@@ -28,19 +28,27 @@ selected-file workflow, not a general replacement for interactive Aider.
 ```bash
 abx template install alibaba-agent-sandbox/awesome-templates//aider
 abx template deploy ./aider -y
-abx create --template <template-id> --env AIDER_API_KEY=REPLACE_ME \
-  --env AIDER_BASE_URL=https://example.invalid/v1 --env AIDER_MODEL=your-model
-abx exec <sandbox-id> -- sh -c 'mkdir -p /home/user/project && cd /home/user/project && git init -q'
-abx run <sandbox-id> aider --json-args '{"prompt":"Explain the selected file","cwd":"/home/user/project","files":"[\"calculator.py\"]"}'
+abx create --template <template-id>
+abx exec <sandbox-id> --background --env AIDER_API_KEY=REPLACE_ME \
+  --env AIDER_BASE_URL=https://example.invalid/v1 --env AIDER_MODEL=your-model \
+  -- agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py
+abx exec <sandbox-id> -- agent-sandbox-server healthcheck --port 9010
+abx run <sandbox-id> aider_setup_check --server-port 9010
+abx exec <sandbox-id> -- sh -c 'mkdir -p /home/user/app/project && cd /home/user/app/project && git init -q'
+abx run <sandbox-id> aider --server-port 9010 --json-args '{"prompt":"Explain the selected file","cwd":"/home/user/app/project","files":"[\"calculator.py\"]"}'
 ```
 
 Upload your source with `abx upload` first. Explicit write request:
 
 ```bash
-abx run <sandbox-id> aider --json-args '{"prompt":"Fix calculator.py and write REPORT.md","cwd":"/home/user/project","files":"[\"calculator.py\",\"REPORT.md\"]","allow_write":true,"command_timeout":180}'
-abx exec <sandbox-id> -- sh -c 'cd /home/user/project && git diff -- calculator.py'
+abx run <sandbox-id> aider --server-port 9010 --json-args '{"prompt":"Fix calculator.py and write REPORT.md","cwd":"/home/user/app/project","files":"[\"calculator.py\",\"REPORT.md\"]","allow_write":true,"command_timeout":180}'
+abx exec <sandbox-id> -- sh -c 'cd /home/user/app/project && git diff -- calculator.py'
 abx kill <sandbox-id>
 ```
+
+Wait for the port-9010 healthcheck and all three setup booleans before calling
+Aider. The CLI env options and JSON prompts are host argv; use the SDK process
+`env` example below when credentials must stay out of host argv/history.
 
 The caller creates/owns the working tree. Review diffs and run your own tests;
 exit code zero means the CLI completed, not that generated code is correct.
@@ -54,43 +62,70 @@ unpublished. `pip install agent-sandbox` is an unrelated project.
 ```python
 import asyncio
 import json
+import os
 from agent_sandbox import Sandbox
 
 async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=600, envs={
-        "AIDER_API_KEY": "REPLACE_ME", "AIDER_BASE_URL": "https://example.invalid/v1",
-        "AIDER_MODEL": "your-model",
-    })
+    sb = await Sandbox.create(template="<template-id>", timeout=600)
+    stream = None
+    server_task = None
     try:
-        await sb.commands.run("mkdir -p /home/user/project && cd /home/user/project && git init -q")
-        await sb.files.write("/home/user/project/calculator.py", "def add(a,b): return a-b\n")
-        result = await sb.run("aider", prompt="Fix add and write REPORT.md", cwd="/home/user/project",
+        stream = await sb.commands.start(
+            "agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py",
+            env={"AIDER_API_KEY": os.environ["AIDER_API_KEY"],
+                 "AIDER_BASE_URL": os.environ["AIDER_BASE_URL"],
+                 "AIDER_MODEL": os.environ["AIDER_MODEL"],
+                 "ABX_SERVER_BASE_DIR": "/home/user/app"}, timeout=600)
+        async def drain():
+            async for _ in stream:
+                pass
+        server_task = asyncio.create_task(drain())
+        for attempt in range(30):
+            try:
+                state = await sb.run("aider_setup_check", server_port=9010, timeout=10)
+            except Exception:
+                if attempt == 29:
+                    raise
+                await asyncio.sleep(1)
+                continue
+            if not all(state[name] for name in ("api_key_set", "base_url_set", "model_set")):
+                raise RuntimeError("the configured server did not receive all settings")
+            break
+        await sb.commands.run("mkdir -p /home/user/app/project && cd /home/user/app/project && git init -q")
+        await sb.files.write("/home/user/app/project/calculator.py", "def add(a,b): return a-b\n")
+        result = await sb.run("aider", prompt='Fix add and write REPORT.md', cwd="/home/user/app/project",
             files=json.dumps(["calculator.py", "REPORT.md"]), allow_write=True,
-            command_timeout=180, timeout=210)
+            server_port=9010, command_timeout=180, timeout=210)
         print(result["changed_files"])
-        print(await sb.files.read("/home/user/project/REPORT.md"))
+        print(await sb.files.read("/home/user/app/project/REPORT.md"))
     finally:
         await sb.kill()
+        if server_task is not None:
+            server_task.cancel()
+            await asyncio.gather(server_task, return_exceptions=True)
+        if stream is not None:
+            await stream.cancel()
 
 asyncio.run(main())
 ```
 
 ## Quick start (HTTP POST)
 
-Port 9000 is the sandbox server. Obtain its URL from `sb.network.get_url(9000)`.
-Send the command's direct argument object, without an `args` wrapper:
+Port 9000 is the sandbox server. Obtain its URL from `sb.network.get_url(9010)`.
+Use the configured process URL from `sb.network.get_url(9010)`. Send the command's
+direct argument object, without an `args` wrapper:
 
 ```http
 POST /commands/aider
 Content-Type: application/json
 Authorization: Bearer REPLACE_ME
 
-{"prompt":"Explain calculator.py","cwd":"/home/user/project","files":"[\"calculator.py\"]","allow_write":false,"command_timeout":180}
+{"prompt":"Explain calculator.py","cwd":"/home/user/app/project","files":"[\"calculator.py\"]","allow_write":false,"command_timeout":180}
 ```
 
 The shape is `{"result":{"stdout":"...","stderr":"...","exit_code":0,"changed_files":[]}}`.
 The bearer token is needed only when you configure `ABX_SERVER_TOKEN`; provider
-gateway authentication is separate. Configure `sb.server_at(9000, token=...)`
+gateway authentication is separate. Configure `sb.server_at(9010, token=...)`
 when using server authentication. Do not substitute the envd gateway token for
 the server bearer token. HTTP 400 means missing/mistyped arguments or malformed
 request framing, 401 authentication failure, 404 unknown command, and 500 a
@@ -140,6 +175,13 @@ placed in argv; the key is provided in child env.
 | `AIDER_MODEL` | empty; required model ID, `openai/` prefix added for LiteLLM |
 | `WORKSPACE` | `/home/user/app`; default working directory |
 | `ABX_SERVER_TOKEN` | empty; optional server authentication |
+
+**Prewarmed-server boundary:** `Sandbox.create(envs=...)` configures envd and
+subsequent native processes; it does not retroactively configure the already
+started port-9000 named-command server. Start an owned server from the installed
+image commands on port 9010 with explicit `commands.start(env=...)`, consume its
+stream, and address that port in CLI/SDK/HTTP. The examples preserve HOME and do
+not replace image source. Destroying the owned sandbox stops both servers.
 
 The compatible-model settings disable thinking with `extra_body.enable_thinking=false`.
 This was chosen for the verified Qwen-compatible route; adjust and retest this
