@@ -29,3 +29,5 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 - [Image-build preparation evidence](evidence/verify/2026-10-16-template-image-build-gate.md)
 - [Canonical cleanup decision](notes/proposed/process/2026-10-16-express-cleanup-outcome.md)
 - [Canonical cleanup evidence](evidence/verify/2026-10-16-express-cleanup-outcome.md)
+- [Canonical Express CI decision](notes/proposed/process/2026-10-16-canonical-express-ci.md)
+- [Canonical Express CI preparation](evidence/verify/2026-10-16-canonical-express-ci.md)
