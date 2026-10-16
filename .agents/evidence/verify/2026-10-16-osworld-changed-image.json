@@ -1,0 +1,94 @@
+{
+  "result": "PASS",
+  "pass": true,
+  "template": "osworld",
+  "provider": "alicloud-express",
+  "reviewed_head": "9a53b56c23624b3959da707083f5aa402bacb7bb",
+  "checks": [
+    "official generation-2 CreateTemplate for exact OSWorld config",
+    "official template READY",
+    "real SDK/HTTP/CLI full desktop smoke",
+    "external required-GUI HTTP18 PASS, 0 FAIL, 0 SKIP"
+  ],
+  "commands": [
+    {
+      "command": "osworld_desktop_smoke",
+      "sdk": true,
+      "http": true,
+      "cli": true
+    }
+  ],
+  "cleanup": {
+    "registry_tag_delete_verified": true,
+    "registry_repository_delete_verified": true,
+    "push_helper_kill": true,
+    "push_helper_absence_verified": true,
+    "template_delete": true,
+    "template_absence_verified": true,
+    "sandbox_kill": true,
+    "sandbox_absence_verified": true
+  },
+  "boundary": "Actual CI image, owned daemonless cloud transfer and official gen2 registration; full local abx deploy wrapper/model/full benchmark not claimed",
+  "controller_sha256": "17ad23b72d17f8106e4fddd4de29bc2f8bb51db8bcc950e94483e720d5dfb01b",
+  "inventory_validator_sha256": "83d90a37ee18751b9facf3f5a401451cca8025f2ddde62343b35ff39d1dbef39",
+  "stage": "actual changed-image SDK/HTTP/CLI and required-GUI HTTP18",
+  "image_provenance": {
+    "format": "docker-archive",
+    "template": "osworld",
+    "repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "checkout_commit": "fee18700a24dd5e212bd8b37ca7919a69fe5d727",
+    "source_head_commit": "9a53b56c23624b3959da707083f5aa402bacb7bb",
+    "workflow_run_id": "38863603298",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "local_image_id": "sha256:72463b779c684b407c4cc204ced3205981ca42b810de3a175c046086fb89c3f8",
+    "archive_sha256": "725e4292eca837599a4fcb1b7f6b330c6641e1f4d2554bb6b61ae6b8d50d9087",
+    "acceptance": "L1 only; no provider registration, registry push, or model call",
+    "archive_bytes": 2107649536,
+    "artifact_id": 12030222981,
+    "artifact_zip_bytes": 870886096,
+    "metadata_verification": "Bounded exact ZIP ranges/CRC; full archive SHA is checked separately in owned transfer helper"
+  },
+  "registry_transfer": {
+    "method": "official crane in owned Express helper",
+    "same_reviewed_archive_sha256_verified": true,
+    "crane_sha256": "8e75c326adb43b053cfd78b9b987663f8f4fe4557f4d3915905643f25c730992"
+  },
+  "image_digest": "sha256:d36ac62dba5e78759333092d725709ffacb4a86a2b3538a54b505d42d5d02e41",
+  "deployed_provenance": {
+    "all_files_match_exact_reviewed_bytes": true,
+    "app_files": 9,
+    "sdk_modules": 56,
+    "manifest_sha256": "80aab659add4b9fb21f6d2e31f6e830e01e595a30e3e8a07bc02dd8656831061"
+  },
+  "full_http_suite": {
+    "PASS": 18,
+    "FAIL": 0,
+    "SKIP": 0,
+    "exit_code": 0,
+    "checks": [
+      "[PASS] server health",
+      "[PASS] typed desktop commands registered",
+      "[PASS] pinned source and explicit browser slice",
+      "[PASS] invalid click input fails",
+      "[PASS] invalid type input fails",
+      "[PASS] invalid hotkey input fails",
+      "[PASS] real offline GUI task, upstream observations/evaluator, independent browser state",
+      "[PASS] disposable desktop cleaned up",
+      "[PASS] external controller starts a real desktop",
+      "[PASS] uploaded OSWorld task setup applies",
+      "[PASS] external task baseline evaluates to zero",
+      "[PASS] controller independently decodes the real desktop PNG",
+      "[PASS] external GUI actions produce an upstream task score of one",
+      "[PASS] fresh real accessibility observation contains the completed state",
+      "[PASS] controller independently checks changed screenshot pixels",
+      "[PASS] owned cleanup is idempotent",
+      "[PASS] owned controller task artifact cleanup",
+      "[PASS] owned controller task artifact cleanup"
+    ],
+    "controller_sha256": "07a4fa0615a9329dff948d19c411c0e60e8b916465d725ea5aeff2f2ea3ab2d1"
+  },
+  "date": "2026-10-16",
+  "sdk_version": "0.3.0",
+  "acceptance_kind": "Supplemental changed-image Express verification; canonical abx template deploy L2 runner not executed"
+}
