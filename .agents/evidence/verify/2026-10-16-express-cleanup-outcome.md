@@ -19,10 +19,10 @@ catalog, provider-pass file or CI workflow is changed.
 
 ## Executed checks
 
-- PASS: `python scripts/test_spec_tools.py`, exit 0, 33 unittest methods including
+- PASS: `python scripts/test_spec_tools.py`, exit 0, 35 unittest methods including
   cleanup subcases. The initial version passed 31 parametrized pytest cases;
   tests were then expressed as standard-library unittest so the existing CI
-  entry point includes them without a new dependency. The final 33-method run
+  entry point includes them without a new dependency. The final 35-method run
   includes actual redirected-descendant completion, SDK pagination fixtures and
   cleanup-readback negative controls. Both the normal environment (11.209s) and
   a server-only import environment matching keyless CI (11.195s) passed 33/33.
@@ -78,3 +78,10 @@ synthetic failure-intent files outside the checkout, containing no secrets or
 real resource IDs. No broad temporary-directory deletion is performed.
 
 Reference: [Issue 90](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/90).
+
+Final fail-closed follow-up: a matching official alias without a valid template
+ID is a shape error, and malformed SDK inventory elements raise. Neither is
+filtered into an absence proof. Two regressions cover these invalid responses.
+
+The final invalid-inventory follow-up passes 35/35 methods in the normal
+environment (11.177s) and server-only CI-shaped imports (11.180s).

@@ -745,9 +745,15 @@ def official_templates(run: Runner, alias: str) -> list[str]:
         return []
     if not isinstance(data, list) or any(not isinstance(item, dict) for item in data):
         raise RuntimeError("unexpected official template list response")
-    return [str(item["TemplateID"]) for item in data
-            if alias in {item.get("Name"), item.get("Alias")}
-            and isinstance(item.get("TemplateID"), str) and item["TemplateID"] not in {"", "N/A"}]
+    found = []
+    for item in data:
+        if alias not in {item.get("Name"), item.get("Alias")}:
+            continue
+        identifier = item.get("TemplateID")
+        if not isinstance(identifier, str) or identifier.strip() in {"", "N/A"}:
+            raise RuntimeError("matching official template has no valid ID")
+        found.append(identifier)
+    return found
 
 
 def _list_owned_sandboxes(template_ids: set[str], known: set[str]) -> set[str]:
@@ -761,6 +767,9 @@ def _list_owned_sandboxes(template_ids: set[str], known: set[str]) -> set[str]:
         while True:
             rows = await Sandbox.list(provider="alicloud-express", limit=100, offset=offset)
             for row in rows:
+                if (not isinstance(row.template, str) or not row.template.strip() or
+                    not isinstance(row.sandbox_id, str) or not row.sandbox_id.strip()):
+                    raise RuntimeError("unexpected sandbox list element shape")
                 if row.template in template_ids or row.sandbox_id in known:
                     found.add(row.sandbox_id)
             if len(rows) < 100:

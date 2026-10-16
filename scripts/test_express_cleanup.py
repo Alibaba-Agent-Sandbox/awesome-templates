@@ -32,6 +32,26 @@ def case():
 
 
 class CleanupTest(unittest.TestCase):
+    def test_exact_alias_without_valid_id_is_not_absent(self):
+        for identifier in (None, "", " ", "N/A", 3):
+            with self.subTest(identifier=identifier):
+                row = {"Name":"e2e-cleanup-regression"}
+                if identifier is not None: row["TemplateID"] = identifier
+                def run(*args): return harness.Proc(0, json.dumps([row]), "")
+                with self.assertRaises(RuntimeError):
+                    harness.official_templates(run, "e2e-cleanup-regression")
+
+    def test_sdk_inventory_invalid_elements_fail_closed(self):
+        for row in (SimpleNamespace(), SimpleNamespace(template="owned-template",sandbox_id=""),
+                    SimpleNamespace(template="",sandbox_id="owned-sandbox")):
+            with self.subTest(row=row):
+                class SDK:
+                    @staticmethod
+                    async def list(**kwargs): return [row]
+                with patch.dict(sys.modules, {"agent_sandbox":SimpleNamespace(Sandbox=SDK)}):
+                    with self.assertRaises((AttributeError, RuntimeError)):
+                        harness._list_owned_sandboxes({"owned-template"}, {"owned-sandbox"})
+
     def test_cleanup_ack_without_independent_absence_cannot_publish(self):
         for raises in (False, True):
             with self.subTest(raises=raises), case() as (project, options, intents):
