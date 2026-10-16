@@ -99,14 +99,16 @@ Python 取消会终止自己的进程组，并删除临时消息、配置和 sta
 | `aider` | 必填 `prompt: string`，1–100000 字符；`cwd: string=""`；`files: string="[]"`，内容是最多 32 个相对路径组成的 JSON 数组；`allow_write: boolean=false`；`command_timeout: integer=600`，范围 1–1800 | 脱敏 stdout/stderr、exit_code 与 changed_files 字典 |
 
 每个文件最多 1 MiB。拒绝绝对路径、遍历、重复项、文件或父目录符号链接，以及
-`.git`、`.env`、`.aider` 路径。尚不存在的选中路径表示新产物。未选中的输出丢弃。
+`.git`、`.env`、`.aider` 路径。尚不存在的选中路径表示新产物。未选中的 stage 输出丢弃。
+显式设置 `yes-always: false` 禁用自动确认，上游拒绝创建或编辑未加入 stage 的路径。
 检测到并行修改会拒绝回写，但不能把它视为对恶意并行写者的隔离机制。
 写入按单个文件原子替换，保留旧文件权限，不是跨全部文件的事务。
 默认 ask 即使 stage 被修改也不会回写。
 
 真实 argv 使用 `--chat-mode ask|whole`、`--message-file`、明确文件、model/base/settings，
 并关闭自动提交、自动 lint/test、shell 建议、URL 检测、浏览器、analytics 与更新。
-prompt 和 API key 不出现在 argv；key 只通过子进程环境传递。
+固定文字前缀使以 `/` 或 `!` 开头的 prompt 仍作为模型文本，避免上游 slash/bang
+命令分派。prompt 和 API key 不出现在 argv；key 只通过子进程环境传递。
 
 ## 配置
 
@@ -168,3 +170,12 @@ CLI/deploy 问题到 [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/ag
 安装依赖与 [python-build-standalone](https://github.com/astral-sh/python-build-standalone)
 保留各自 notices。参见[官方安装](https://aider.chat/docs/install.html)与
 [兼容 API 指南](https://aider.chat/docs/llms/openai-compat.html)。
+
+实际 CLI 负控（只在全新专用沙箱运行）：
+
+```bash
+python3 aider/verify_upstream_guards.py
+```
+
+此命令使用确定性的 loopback 模型验证 slash/bang 分派与未选中路径拒绝，
+不代表真实模型 coding 或实际镜像部署通过。

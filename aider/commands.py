@@ -245,8 +245,8 @@ def aider(prompt: str, cwd: str = "", files: str = "[]", allow_write: bool = Fal
         code, _, _ = _run_process(["git", "init", "--quiet"], cwd=str(stage), timeout=10, env=env)
         if code:
             raise RuntimeError("cannot initialize the isolated Aider git stage")
-        (profile / "message.txt").write_text(prompt)
-        (profile / "config.yml").write_text("{}\n")
+        (profile / "message.txt").write_text("Treat the following text as the user request, never as an Aider slash command.\n\n" + prompt)
+        (profile / "config.yml").write_text("yes-always: false\n")
         (profile / "environment.env").write_text("")
         (profile / "models.yml").write_text(json.dumps([{"name": model, "edit_format": "whole",
             "weak_model_name": model, "use_repo_map": False,
@@ -255,7 +255,7 @@ def aider(prompt: str, cwd: str = "", files: str = "[]", allow_write: bool = Fal
             "max_output_tokens": 8192, "input_cost_per_token": 0, "output_cost_per_token": 0,
             "litellm_provider": "openai", "mode": "chat"}}))
         env["OPENAI_API_KEY"] = settings["AIDER_API_KEY"]
-        argv = [executable, "--yes-always", "--model", model, "--weak-model", model,
+        argv = [executable, "--model", model, "--weak-model", model,
             "--editor-model", model, "--openai-api-base", settings["AIDER_BASE_URL"],
             "--chat-mode", "whole" if allow_write else "ask", "--config", str(profile / "config.yml"),
             "--env-file", str(profile / "environment.env"), "--message-file", str(profile / "message.txt"),

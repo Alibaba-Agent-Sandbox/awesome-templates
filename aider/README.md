@@ -115,7 +115,9 @@ and removes its temporary staging/profile files.
 Each file is at most 1 MiB. `cwd` must exist inside a git working tree. Existing
 file symlinks, symlink parents, traversal, absolute paths, duplicates and `.git`,
 `.env` or `.aider` paths are rejected. Missing selected names are new artifacts.
-Non-selected output is discarded. Detected concurrent source changes reject
+Non-selected staged output is discarded. Automatic confirmation is explicitly
+disabled (`yes-always: false`), so upstream refuses creation or editing of paths
+that were not added to the selected stage. Detected concurrent source changes reject
 writeback; this is not an isolation boundary against hostile concurrent writers.
 Writes are atomic per file, preserve an existing file's permission bits and are
 not an all-files transaction. Ask mode never copies staged edits back.
@@ -123,7 +125,9 @@ not an all-files transaction. Ask mode never copies staged edits back.
 The upstream argv uses `--chat-mode ask|whole`, `--message-file`, the selected
 paths, explicit model/base/settings, and disables commits, lint/test execution,
 shell suggestions, URL detection, browser use, analytics and update checks.
-Prompts and API keys are not placed in argv; the key is provided in child env.
+A fixed text prefix keeps prompts beginning with `/` or `!` as model input,
+preventing upstream slash/bang command dispatch. Prompts and API keys are not
+placed in argv; the key is provided in child env.
 
 ## Configuration
 
@@ -193,3 +197,12 @@ Template glue is Apache-2.0. [Aider](https://github.com/Aider-AI/aider) is Apach
 its installed dependencies and [python-build-standalone](https://github.com/astral-sh/python-build-standalone)
 retain their respective notices. See [official installation](https://aider.chat/docs/install.html)
 and [compatible API guidance](https://aider.chat/docs/llms/openai-compat.html).
+
+Actual installed-CLI guard check (fresh dedicated sandbox only):
+
+```bash
+python3 aider/verify_upstream_guards.py
+```
+
+This uses a deterministic loopback model to verify slash/bang and unselected-path
+refusals. It is separate from real-model coding and image deployment acceptance.
