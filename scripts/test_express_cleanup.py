@@ -92,10 +92,25 @@ class CleanupTest(unittest.TestCase):
             def runner(args, timeout):
                 calls.append(args)
                 return harness.Proc(0, '[{"TemplateID":"unrelated-template","Name":"e2e-cleanup-regression"}]', "")
-            self.assertEqual(harness.execute(options, runner=runner, sdk=lambda *a: "ok"), 2)
+            with patch.object(harness, "stop_deploy_processes") as stop, patch.object(harness, "_cleanup") as cleanup:
+                self.assertEqual(harness.execute(options, runner=runner, sdk=lambda *a: "ok"), 2)
+                stop.assert_not_called()
+                cleanup.assert_not_called()
             self.assertEqual(len(calls), 1)
             self.assertIn("--official-api", calls[0])
             self.assertFalse((project / "evidence").exists())
+
+    def test_failed_preflight_does_not_mutate_unowned_process_or_marker(self):
+        with case() as (project, options, intents):
+            marker = project / "Dockerfile.abx-build"
+            def runner(args, timeout):
+                marker.write_text("concurrent unowned marker")
+                return harness.Proc(1, "", "synthetic list rejection")
+            with patch.object(harness, "stop_deploy_processes") as stop, patch.object(harness, "_cleanup") as cleanup:
+                self.assertEqual(harness.execute(options, runner=runner, sdk=lambda *a: "ok"), 1)
+                stop.assert_not_called()
+                cleanup.assert_not_called()
+            self.assertEqual(marker.read_text(), "concurrent unowned marker")
 
     def test_recovery_uses_exact_alias_and_ignores_unrelated_template(self):
         rows = [{"TemplateID":"owned-template","Name":"e2e-cleanup-regression"},
