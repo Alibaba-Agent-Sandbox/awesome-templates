@@ -182,11 +182,19 @@ Fibonacci assertions, and a separate unittest run. All 16 HTTP checks passed, an
 the owned sandbox was deleted. The source and runtime package hashes are in
 [evidence](evidence/runtime-express-2026-10-16.json), with the [check log](evidence/runtime-express-2026-10-16.log).
 This used an existing platform base sandbox with runtime-installed dependencies;
-the Dockerfile image build and new-template deployment remain unverified.
+that source-only run did not verify the Dockerfile image or new-template deployment.
+
+A later reviewed-image run used the hardened public controller at `06071e4` and
+passed 17 real-model HTTP checks without failures or skips. It verified an existing
+source correction, unchanged original tests, exact artifacts and trusted independent
+test completion. Its owned sandbox and officially registered template were confirmed
+absent afterward; the shared image registry remains owned by the ongoing review batch.
+See the [sanitized image evidence](evidence/image-runtime-hardened-2026-10-16.json).
+The full `abx template deploy` runner remains unrun; this is supplemental component evidence.
 
 ## Verified
 
-No provider has a passing run recorded for this template.
+No provider has a passing canonical deployment receipt recorded for this template.
 
 ## Secondary development
 
@@ -204,7 +212,7 @@ The nested sandbox probe is `sandbox_status()` in `commands.py`. Do not apt-inst
 
 From the repository root, run `python3 -m unittest discover -s codex -p test_commands.py -v`, `python3 scripts/check_template.py codex`, and `python3 scripts/run_local_e2e.py`. The unit suite checks explicit permissions, automatic fallback, result redaction, and false agent-success markers. L0 checks HTTP command contracts and may skip the model task; it does not establish L1 image builds, L2 cloud execution, or L3 agent acceptance.
 
-For L3 against a local or remote template server, run `E2E_BASE_URL=http://127.0.0.1:9000 E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 E2E_MODEL=<model> python3 codex/e2e_test.py` with authorized model configuration already supplied to both processes. The agent must create a Fibonacci implementation and unittest file, execute a command successfully, and write `acceptance.txt`. The test requires the final assistant marker, checks the files, independently asserts Fibonacci results and negative-input rejection, and reruns the generated tests. A chat reply or an echoed marker in tool events fails. Artifact reads use the remote files API, and independent assertions/tests run through the remote shell API. Set `E2E_WORKSPACE` to a writable directory inside the server file root (default `/home/user/workspace`) and `E2E_TOKEN` if the server requires authentication. Each run uses a unique directory and deletes only that directory. Record only actual passing provider evidence, and report model skips separately.
+For L3 against a local or remote template server, run `E2E_BASE_URL=http://127.0.0.1:9000 E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 E2E_MODEL=<model> python3 codex/e2e_test.py` with authorized model configuration already supplied to both processes. The controller seeds an incorrect existing Fibonacci implementation and original tests, and verifies the expected failing baseline. The agent must fix that implementation, preserve the original tests byte for byte, add unittest coverage and `REPORT.md`, execute a command successfully, and write exact `acceptance.txt` content. The test requires the final assistant marker, checks the changed source and artifacts, independently asserts Fibonacci results and negative-input rejection, and reruns both the original and generated tests. The independent verifiers use isolated Python, compile actual source bytes, require complete successful test results, and require fresh completion acknowledgements chosen after the agent exits. Early process exit, skipped or expected-failing tests, shadowed unittest modules and stale bytecode cannot supply a passing receipt. This checks completion; it is not an isolation boundary against hostile code with the same operating-system authority. A chat reply or an echoed marker in tool events fails. Artifact reads use the remote files API, and independent assertions/tests run through the remote shell API. Set `E2E_WORKSPACE` to a writable directory inside the server file root (default `/home/user/workspace`) and `E2E_TOKEN` if the server requires authentication. Each run uses a unique directory and deletes only that directory. Record only actual passing provider evidence, and report model skips separately.
 
 ## Issues
 

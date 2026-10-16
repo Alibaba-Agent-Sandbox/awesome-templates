@@ -11,6 +11,7 @@ import base64
 import os
 import shlex
 import sys
+import textwrap
 import uuid
 
 import httpx
@@ -26,6 +27,13 @@ MARKER = "ABX_E2E_OK"
 TOKEN = os.environ.get("E2E_TOKEN", "")
 PROBE_ROOT = os.path.join(WORK, "abx_e2e_codex_" + uuid.uuid4().hex)
 KEY_ENVS = ("OPENAI_API_KEY", "CODEX_API_KEY", "ABX_LLM_API_KEY")
+BASELINE_SOURCE = "def fib(n):\n    return n\n"
+ORIGINAL_TESTS = (
+    "import unittest\nfrom fibonacci import fib\n"
+    "class OriginalTests(unittest.TestCase):\n"
+    "    def test_zero(self): self.assertEqual(fib(0), 0)\n"
+    "    def test_existing_positive(self): self.assertEqual(fib(7), 13)\n"
+)
 COMMANDS = {
     "codex_version",
     "codex_setup_check",
@@ -236,6 +244,65 @@ def _agent_result_ok(result: dict) -> bool:
     return result.get("last_message", "").strip() == MARKER and completed_command
 
 
+def _trusted_verifier_source(task: str, ack: str, *, suites: bool) -> str:
+    """Build an independent source verifier for an isolated Python process.
+
+    The controller generates a new unpredictable ACK for EACH verifier call and
+    accepts only HTTP200, exit0 and stdout.strip()==ACK. Never include the ACK in
+    the model prompt. This is ordinary premature-exit protection, not a proof
+    against arbitrary hostile code with the verifier's own OS authority.
+    """
+    prefix = '''
+import contextlib, io, pathlib, sys, types, unittest
+TASK = pathlib.Path(TASK_LITERAL)
+ACK = ACK_LITERAL
+# Import trusted stdlib above before adding the agent's directory. -I prevents
+# cwd/user sitecustomize or an agent-written unittest.py at interpreter startup.
+def load_source(name, path):
+    module = types.ModuleType(name)
+    module.__file__ = str(path)
+    sys.modules[name] = module
+    # Compile verified source bytes directly, avoiding agent-supplied .pyc files.
+    exec(compile(path.read_bytes(), str(path), 'exec'), module.__dict__)
+    return module
+try:
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+        sys.path.insert(0, str(TASK))
+        fibonacci = load_source('fibonacci', TASK / 'fibonacci.py')
+BODY
+except BaseException:
+    raise SystemExit(1)
+print(ACK, flush=True)
+'''.replace('TASK_LITERAL', repr(task)).replace('ACK_LITERAL', repr(ack))
+    if suites:
+        body = '''
+original = load_source('test_original', TASK / 'test_original.py')
+generated = load_source('test_fibonacci', TASK / 'test_fibonacci.py')
+loader = unittest.TestLoader()
+original_suite = loader.loadTestsFromModule(original)
+generated_suite = loader.loadTestsFromModule(generated)
+if original_suite.countTestCases() != 2 or generated_suite.countTestCases() < 1:
+    raise AssertionError('test counts')
+suite = unittest.TestSuite([original_suite, generated_suite])
+result = unittest.TextTestRunner(stream=io.StringIO()).run(suite)
+if (result.testsRun < 3 or not result.wasSuccessful() or result.skipped
+        or result.expectedFailures or result.unexpectedSuccesses):
+    raise AssertionError('tests did not all run successfully')
+'''
+    else:
+        body = '''
+fib = fibonacci.fib
+if [fib(n) for n in (0,1,2,7,10)] != [0,1,1,13,55]:
+    raise AssertionError('held-out results')
+try:
+    fib(-1)
+except ValueError:
+    pass
+else:
+    raise AssertionError('negative input')
+'''
+    return textwrap.dedent(prefix).replace('BODY', textwrap.indent(textwrap.dedent(body).strip(), '        '))
+
 def _llm(client: httpx.Client, check) -> None:
     test = "codex_exec real coding task"
     forced_off = RUN_LLM in {"0", "false", "no"}
@@ -250,12 +317,38 @@ def _llm(client: httpx.Client, check) -> None:
             check(test, False, "model key or E2E_RUN_LLM is missing")
         return
     task = os.path.join(PROBE_ROOT, "agent-task")
+    shell_prefix = "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 "
+    seed = (
+        "from pathlib import Path; r=Path(" + repr(task) + "); r.mkdir(parents=True); "
+        "(r/'fibonacci.py').write_text(" + repr(BASELINE_SOURCE) + "); "
+        "(r/'test_original.py').write_text(" + repr(ORIGINAL_TESTS) + ")"
+    )
+    seeded = client.post("/shell", json={
+        "command": shell_prefix + "-c " + shlex.quote(seed), "cwd": WORK, "timeout": 30,
+    })
+    if seeded.status_code != 200 or seeded.json().get("exit_code") != 0:
+        check("existing project seed", False)
+        return
+    baseline = client.post("/shell", json={
+        "command": shell_prefix + "-m unittest -v test_original.py", "cwd": task, "timeout": 30,
+    })
+    baseline_body = baseline.json() if baseline.status_code == 200 else {}
+    baseline_log = baseline_body.get("stderr", "")
+    baseline_failed = baseline_body.get("exit_code") == 1 and all(
+        expected in baseline_log for expected in (
+            "FAIL: test_existing_positive", "Ran 2 tests", "FAILED (failures=1)",
+        )
+    ) and "ERROR:" not in baseline_log
+    check("existing original tests fail before agent correction", baseline_failed)
+    if not baseline_failed:
+        return
     payload: dict = {
         "prompt": (
-            "Create fibonacci.py implementing fib(n): fib(0)=0, fib(1)=1, "
-            "and negative input raises ValueError. Create test_fibonacci.py using "
+            "Fix the existing fibonacci.py implementing fib(n): fib(0)=0, fib(1)=1, "
+            "and negative input raises ValueError. Preserve test_original.py byte for byte. "
+            "Write REPORT.md explaining the correction and validation. Create test_fibonacci.py using "
             "stdlib unittest to cover zero, positive, and negative inputs. Run the "
-            "tests with python3 -m unittest -v test_fibonacci.py using your command "
+            "tests with python3 -m unittest -v test_original.py test_fibonacci.py using your command "
             "tool. After the tests pass, write acceptance.txt containing exactly "
             f"{MARKER} followed by a newline. Reply with exactly: {MARKER}"
         ),
@@ -274,7 +367,9 @@ def _llm(client: httpx.Client, check) -> None:
     try:
         files_ok = (
             _read_file(client, os.path.join(task, "acceptance.txt")) == MARKER + "\n"
-            and bool(_read_file(client, os.path.join(task, "fibonacci.py")).strip())
+            and _read_file(client, os.path.join(task, "fibonacci.py")) != BASELINE_SOURCE
+            and _read_file(client, os.path.join(task, "test_original.py")) == ORIGINAL_TESTS
+            and bool(_read_file(client, os.path.join(task, "REPORT.md")).strip())
             and bool(_read_file(client, os.path.join(task, "test_fibonacci.py")).strip())
         )
     except (httpx.HTTPError, KeyError, ValueError):
@@ -283,26 +378,27 @@ def _llm(client: httpx.Client, check) -> None:
           f"HTTP {response.status_code} agent_tools={completed} artifacts={files_ok}")
     if response.status_code != 200 or not completed or not files_ok:
         return
-    assertions = (
-        "from fibonacci import fib\n"
-        "assert [fib(n) for n in (0, 1, 2, 7, 10)] == [0, 1, 1, 13, 55]\n"
-        "try:\n fib(-1)\nexcept ValueError:\n pass\nelse:\n raise AssertionError('negative input accepted')\n"
-    )
-    # /shell uses shlex.split + exec, not a shell interpreter. Supply cwd as
-    # an API argument and keep operators such as `cd` / `&&` out of argv.
-    shell_prefix = "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 "
+    assertions_marker = "ABX_HELDOUT_" + uuid.uuid4().hex
+    assertions = _trusted_verifier_source(task, assertions_marker, suites=False)
+    # The completion marker is chosen only after the agent has exited. An
+    # imported module calling sys.exit(0) or os._exit(0) cannot count as passing.
     verified = client.post("/shell", json={
-        "command": shell_prefix + "-c " + shlex.quote(assertions), "cwd": task, "timeout": 30,
+        "command": shell_prefix + "-I -c " + shlex.quote(assertions), "cwd": task, "timeout": 30,
     })
+    verified_body = verified.json() if verified.status_code == 200 else {}
     check("independent remote Fibonacci assertions", verified.status_code == 200
-          and verified.json().get("exit_code") == 0)
+          and verified_body.get("exit_code") == 0
+          and verified_body.get("stdout", "").strip() == assertions_marker)
+    tests_marker = "ABX_TESTS_" + uuid.uuid4().hex
+    test_runner = _trusted_verifier_source(task, tests_marker, suites=True)
     tests = client.post("/shell", json={
-        "command": shell_prefix + "-m unittest -v test_fibonacci.py", "cwd": task, "timeout": 30,
+        "command": shell_prefix + "-I -c " + shlex.quote(test_runner), "cwd": task, "timeout": 30,
     })
-    check("remote agent-written unittest rerun", tests.status_code == 200
-          and tests.json().get("exit_code") == 0
-          and "Ran 0 tests" not in tests.json().get("stderr", "")
-          and "Ran " in tests.json().get("stderr", ""))
+    tests_body = tests.json() if tests.status_code == 200 else {}
+    check("remote original and agent-written unittest rerun", tests.status_code == 200
+          and tests_body.get("exit_code") == 0
+          and tests_body.get("stdout", "").strip() == tests_marker)
+
 
 
 if __name__ == "__main__":

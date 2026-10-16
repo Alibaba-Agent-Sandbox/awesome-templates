@@ -134,7 +134,7 @@ class AgentAcceptanceTests(unittest.TestCase):
         }}
         self.assertTrue(e2e._agent_result_ok({"last_message": e2e.MARKER, "events": [completed]}))
 
-    def test_agent_acceptance_uses_remote_files_and_direct_exec_shell(self):
+    def run_remote_acceptance(self, tamper=None):
         # A fake model creates a real project on the fake remote server. Its
         # shell handler follows the real server's shlex.split + shell=False
         # semantics and actually executes the independent acceptance checks.
@@ -143,8 +143,10 @@ class AgentAcceptanceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as storage:
             project = Path(storage)
             def handle(request):
+                nonlocal project
                 requests.append(request)
                 if request.url.path == "/commands/codex_exec":
+                    project = Path(storage) / "seed"
                     (project / "fibonacci.py").write_text(
                         "def fib(n):\n"
                         "    if n < 0: raise ValueError('negative')\n"
@@ -161,6 +163,62 @@ class AgentAcceptanceTests(unittest.TestCase):
                         "        with self.assertRaises(ValueError): fib(-1)\n"
                     )
                     (project / "acceptance.txt").write_text(e2e.MARKER + "\n")
+                    (project / "REPORT.md").write_text("Corrected existing Fibonacci and ran tests.\n")
+                    if tamper == "original-tests":
+                        (project / "test_original.py").write_text("# replaced tests\n")
+                    elif tamper == "unchanged-source":
+                        (project / "fibonacci.py").write_text(e2e.BASELINE_SOURCE)
+                    elif tamper == "missing-report":
+                        (project / "REPORT.md").unlink()
+                    elif tamper == "incorrect-held-out":
+                        (project / "fibonacci.py").write_text(
+                            "def fib(n):\n"
+                            "    if n < 0: raise ValueError('negative')\n"
+                            "    return {0:0, 7:13}.get(n, -1)\n"
+                        )
+                    elif tamper == "sys-exit":
+                        (project / "fibonacci.py").write_text(
+                            "import sys\nprint('Ran 2 tests',file=sys.stderr)\nsys.exit(0)\n"
+                        )
+                    elif tamper == "os-exit":
+                        (project / "fibonacci.py").write_text("import os\nos._exit(0)\n")
+                    elif tamper == "zero-generated-tests":
+                        (project / "test_fibonacci.py").write_text("# No tests\n")
+                    elif tamper == "test-loader-exit":
+                        (project / "test_fibonacci.py").write_text("import sys\nsys.exit(0)\n")
+                    elif tamper == "expected-failure":
+                        (project / "test_fibonacci.py").write_text(
+                            "import unittest\nclass Generated(unittest.TestCase):\n"
+                            "    @unittest.expectedFailure\n"
+                            "    def test_fake(self): self.assertTrue(False)\n"
+                        )
+                    elif tamper == "shadowed-unittest":
+                        (project / "test_fibonacci.py").write_text(
+                            "import unittest\nclass Generated(unittest.TestCase):\n"
+                            "    def test_fake(self): self.assertTrue(False)\n"
+                        )
+                        (project / "unittest.py").write_text(
+                            "from types import SimpleNamespace as S\n"
+                            "defaultTestLoader=S(loadTestsFromName=lambda name: S(countTestCases=lambda:2 if name=='test_original' else 1))\n"
+                            "TestSuite=lambda suites:suites\n"
+                            "TextTestRunner=lambda **kw:S(run=lambda suite:S(wasSuccessful=lambda:True,testsRun=3,skipped=[]))\n"
+                        )
+                    elif tamper == "stale-pyc":
+                        # Use the SAME actual interpreter as the fake remote
+                        # shell. Forge a valid timestamp/size cache for good code,
+                        # then leave equally sized incorrect source on disk.
+                        compile_cache = (
+                            "from pathlib import Path; import os,py_compile; "
+                            "p=Path('fibonacci.py'); good=p.read_bytes(); st=p.stat(); "
+                            "py_compile.compile(str(p),doraise=True); "
+                            "bad=" + repr(b"def fib(n):\n    return -1\n") + "; "
+                            "compile(bad.decode(),str(p),'exec'); p.write_bytes(bad.ljust(len(good),b' ')); "
+                            "os.utime(p,ns=(st.st_atime_ns,st.st_mtime_ns)); "
+                            "from fibonacci import fib; assert fib(7)==13"
+                        )
+                        cache = subprocess.run(["python3", "-c", compile_cache], cwd=project,
+                            capture_output=True, text=True, timeout=10, env={"PATH":os.defpath})
+                        self.assertEqual(cache.returncode, 0, cache.stderr)
                     return httpx.Response(200, json={"result": {
                         "last_message": e2e.MARKER,
                         "events": [{"type": "item.completed", "item": {
@@ -168,13 +226,23 @@ class AgentAcceptanceTests(unittest.TestCase):
                         }}],
                     }})
                 if request.url.path == "/files/download-stream":
-                    content = (project / Path(request.url.params["path"]).name).read_bytes()
+                    target = project / Path(request.url.params["path"]).name
+                    if not target.is_file():
+                        return httpx.Response(404, json={"error": "missing fixture"})
+                    content = target.read_bytes()
                     return httpx.Response(200, json={"content_base64": base64.b64encode(content).decode()})
                 if request.url.path == "/shell":
                     body = json.loads(request.content)
-                    self.assertEqual(body["cwd"], remote + "/agent-task")
+                    self.assertIn(body["cwd"], (e2e.WORK, remote + "/agent-task"))
+                    if tamper == "baseline-error" and body["command"].endswith("-m unittest -v test_original.py"):
+                        return httpx.Response(200, json={
+                            "exit_code": 1, "stdout": "", "stderr": "ERROR: test import failed\nRan 1 test\nFAILED (errors=1)\n",
+                        })
+                    seeded_project = Path(storage) / "seed"
+                    command = body["command"].replace(remote + "/agent-task", str(seeded_project))
                     proc = subprocess.run(
-                        shlex.split(body["command"]), cwd=project, capture_output=True,
+                        shlex.split(command), cwd=seeded_project if seeded_project.exists() else Path(storage),
+                        capture_output=True,
                         text=True, timeout=10, shell=False, env={"PATH": os.defpath},
                     )
                     return httpx.Response(200, json={
@@ -188,13 +256,32 @@ class AgentAcceptanceTests(unittest.TestCase):
                 transport=httpx.MockTransport(handle), base_url="http://test"
             ) as client:
                 e2e._llm(client, lambda label, ok, *detail: checks.append((label, ok)))
-        self.assertEqual(len(checks), 3)
+        if tamper:
+            expected = (
+                "existing original tests fail before agent correction" if tamper == "baseline-error"
+                else "independent remote Fibonacci assertions" if tamper in ("incorrect-held-out", "sys-exit", "os-exit", "stale-pyc")
+                else "remote original and agent-written unittest rerun" if tamper in ("zero-generated-tests", "test-loader-exit", "expected-failure", "shadowed-unittest")
+                else "codex_exec real coding task"
+            )
+            self.assertIn((expected, False), checks)
+            if tamper == "baseline-error":
+                self.assertFalse(any(req.url.path == "/commands/codex_exec" for req in requests))
+            return
+        self.assertEqual(len(checks), 4)
         self.assertTrue(all(ok for _, ok in checks), checks)
-        self.assertEqual(sum(request.url.path == "/files/download-stream" for request in requests), 3)
-        self.assertEqual(sum(request.url.path == "/shell" for request in requests), 2)
-        payload = json.loads(requests[0].content)
+        self.assertEqual(sum(request.url.path == "/files/download-stream" for request in requests), 5)
+        self.assertEqual(sum(request.url.path == "/shell" for request in requests), 4)
+        payload = json.loads(next(req.content for req in requests if req.url.path == "/commands/codex_exec"))
         self.assertEqual(payload["cwd"], remote + "/agent-task")
         self.assertLess(payload["timeout_s"], e2e.LLM_TIMEOUT)
+
+    def test_agent_acceptance_uses_remote_files_and_direct_exec_shell(self):
+        self.run_remote_acceptance()
+
+    def test_existing_source_gate_rejects_invalid_agent_artifacts(self):
+        for tamper in ("original-tests", "unchanged-source", "missing-report", "incorrect-held-out", "baseline-error", "sys-exit", "os-exit", "zero-generated-tests", "test-loader-exit", "expected-failure", "shadowed-unittest", "stale-pyc"):
+            with self.subTest(tamper=tamper):
+                self.run_remote_acceptance(tamper)
 
 
 if __name__ == "__main__":
