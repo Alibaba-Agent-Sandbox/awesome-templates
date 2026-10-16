@@ -1,0 +1,27 @@
+{
+  "repository": "https://github.com/xlang-ai/OSWorld",
+  "commit": "b138d348256078fa634fc3b73567a7337c793e6b",
+  "license": "Apache-2.0",
+  "files": {
+    "main.py": {
+      "path": "desktop_env/server/main.py",
+      "sha256": "3034c869ca18dd3da5e870c66bdd7d68596501938ff69f7bc3265b79b760d3ba"
+    },
+    "pyxcursor.py": {
+      "path": "desktop_env/server/pyxcursor.py",
+      "sha256": "87d09a465bf87c3766ac3b8584f80c3288890e874b45d9a56b811b0a4268e840"
+    },
+    "metrics_general.py": {
+      "path": "desktop_env/evaluators/metrics/general.py",
+      "sha256": "22cafba4a4b49a2c478a6266cfd98c6eb54e1bad4691d243b5113ba8896e41d7"
+    },
+    "getters_misc.py": {
+      "path": "desktop_env/evaluators/getters/misc.py",
+      "sha256": "573fa6bf7ab627a1f69f7696efe41759c5d06e3109269b0e999bfc703620bb10"
+    },
+    "LICENSE": {
+      "path": "LICENSE",
+      "sha256": "a8d1d88a0f9cce3cdbff73b03a80dc5e5d69e3ba2443946c268815a550c9e0ec"
+    }
+  }
+}
