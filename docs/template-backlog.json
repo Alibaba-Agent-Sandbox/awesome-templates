@@ -509,16 +509,18 @@
     "name": "pi",
     "title": "Pi coding agent",
     "priority": "P0",
-    "upstream": "pi-mono v1.2.0 MIT；https://docs.e2b.dev/agents/pi.md；https://pi.dev/docs/latest/cli",
-    "install": "优先 https://github.com/badlogic/pi-mono/releases/download/v1.2.0/pi-linux-x64.tar.gz （42611136 字节）。是否自带 Node unverified。否则 Node ≥22.19 且 `npm install -g --ignore-scripts @earendil-works/pi-coding-agent@1.2.0`。Cloudflare README 指向 https://github.com/earendil-works/pi ，和 badlogic/pi-mono 是否同一远程 unverified。",
-    "headless_call": "pi -p \"<prompt>\"（pi.dev 写 --print，以 v1.2.0 --help 为准）",
-    "needs": "ANTHROPIC_API_KEY 或其他 provider。无权限弹窗。",
-    "express_feasible": "yes",
-    "rationale": "issue #41 已存在，不新建 issue。 切片：整条 CLI。",
+    "upstream": "earendil-works/pi v1.3.0 MIT；https://github.com/earendil-works/pi/tree/v1.3.0；官方 badlogic/pi-mono 已重定向。",
+    "install": "Node >=22.19；本模板校验官方 Node 24.16.0 SHA256，并固定 npm install -g --ignore-scripts --registry=https://registry.npmjs.org @earendil-works/pi-coding-agent@1.3.0。官方包实际 --version/--help 已验证；npm 传递依赖未锁定。",
+    "headless_call": "pi --print --mode text --no-session；prompt 通过 stdin；明确 --tools 白名单，禁用扩展、MCP 和项目配置。",
+    "needs": "PI_BASE_URL、PI_MODEL、PI_API_KEY；默认只读工具，allow_tools=true 才加入 edit/write/bash。--no-approve 仅控制项目配置信任。",
+    "express_feasible": "slice",
+    "rationale": "复用 Issue #41。独立官方 Pi CLI print 模板，不依赖 E2B 注册；本地源码服务与 qwen3.8-flash 的独立编程验收通过。Pi 镜像 L1/Express L2 待实际执行，保持 experimental。",
     "named_commands": [
-      "pi"
+      "pi",
+      "pi_version",
+      "pi_setup_check"
     ],
-    "analysis_ref": "docs/template-market-survey-2026-10.md#pi",
+    "analysis_ref": "docs/design/pi.md",
     "batch": "1",
     "source": [
       "e2b:pi",

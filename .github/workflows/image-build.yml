@@ -5,38 +5,60 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      templates:
+        description: "Comma-separated catalog template names to build (no full matrix by default)"
+        default: python-hello
+        required: true
+        type: string
+      export_images:
+        description: "Export selected successful images for a separate local transfer"
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
 jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      templates: ${{ steps.select.outputs.templates }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install pyyaml==6.0.3
+      - id: select
+        name: Select changed image contexts or explicit dispatch targets
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          REQUESTED_TEMPLATES: ${{ inputs.templates || 'python-hello' }}
+        run: |
+          templates=$(python scripts/select_image_templates.py --event "$EVENT_NAME" --base "$BASE_SHA" --head "$HEAD_SHA" --templates "$REQUESTED_TEMPLATES")
+          echo "templates=$templates" >> "$GITHUB_OUTPUT"
+          echo "Selected image contexts: $templates"
+
   image-build:
+    needs: plan
+    if: needs.plan.outputs.templates != '[]'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     strategy:
       fail-fast: false
       max-parallel: 4
       matrix:
-        template:
-          - agents-cli
-          - amp
-          - browser-automation
-          - claude-code
-          - codex
-          - codex-agent-api
-          - deepseek-harness
-          - droid
-          - gemini
-          - hermes-agent
-          - node-web
-          - openclaw
-          - opencode
-          - python-hello
-          - qoder
-          - qwen-code
+        template: ${{ fromJSON(needs.plan.outputs.templates) }}
     env:
       TEMPLATE: ${{ matrix.template }}
       SERVER_SDK_SHA: e2cb27e24fde0a67112f82b8d44af463445a5d1a
+      SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -113,6 +135,7 @@ jobs:
           config = yaml.safe_load((Path(template) / "template.yaml").read_text())
           pins = {
               "agents-cli": [("node --version", "v24.16.0"), ("codex --version", "0.162.1"), ("qwen --version", "0.23.0")],
+              "pi": [("node --version", "v24.16.0"), ("pi --version", "1.3.0")],
               "amp": [("amp version", "0.0.1792022479-ge66e24")],
               "claude-code": [("claude --version", "2.0.76")],
               "codex": [("codex --version", "0.162.1")],
@@ -170,10 +193,10 @@ jobs:
                           "abx-l1:" + template, "-c", code, json.dumps(payload)], check=True, timeout=240)
           PY
 
-      - name: Export only python-hello for a separate local registry transfer
-        if: success() && matrix.template == 'python-hello'
+      - name: Export selected images for a separate local registry transfer
+        if: success() && ((github.event_name == 'workflow_dispatch' && inputs.export_images) || (github.event_name != 'workflow_dispatch' && matrix.template == 'python-hello'))
         run: |
-          docker image save --output "$RUNNER_TEMP/python-hello-image.tar" abx-l1:python-hello
+          docker image save --output "$RUNNER_TEMP/$TEMPLATE-image.tar" "abx-l1:$TEMPLATE"
           python - <<'PY'
           import hashlib
           import json
@@ -182,36 +205,38 @@ jobs:
           import subprocess
 
           root = Path(os.environ["RUNNER_TEMP"])
-          archive = root / "python-hello-image.tar"
+          template = os.environ["TEMPLATE"]
+          archive = root / (template + "-image.tar")
           with archive.open("rb") as stream:
               checksum = hashlib.file_digest(stream, "sha256").hexdigest()
-          (root / "python-hello-image.tar.sha256").write_text(checksum + "  " + archive.name + "\n")
+          (root / (template + "-image.tar.sha256")).write_text(checksum + "  " + archive.name + "\n")
           metadata = {
               "format": "docker-archive",
-              "template": "python-hello",
+              "template": template,
               "repository": os.environ["GITHUB_REPOSITORY"],
               "checkout_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
+              "source_head_commit": os.environ["SOURCE_HEAD_SHA"],
               "workflow_run_id": os.environ["GITHUB_RUN_ID"],
               "server_sdk_commit": os.environ["SERVER_SDK_SHA"],
               "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
               "local_image_id": subprocess.check_output(
-                  ["docker", "image", "inspect", "--format", "{{.Id}}", "abx-l1:python-hello"], text=True).strip(),
+                  ["docker", "image", "inspect", "--format", "{{.Id}}", "abx-l1:" + template], text=True).strip(),
               "archive_sha256": checksum,
               "acceptance": "L1 only; no provider registration, registry push, or model call",
           }
-          (root / "python-hello-image-metadata.json").write_text(json.dumps(metadata, indent=2) + "\n")
-          print("Exported the already built python-hello Docker archive and SHA256; no image rebuild or registry credentials")
+          (root / (template + "-image-metadata.json")).write_text(json.dumps(metadata, indent=2) + "\n")
+          print("Exported the already built selected Docker archive and SHA256; no image rebuild or registry credentials")
           PY
 
-      - name: Retain the single transferable image for one day
-        if: success() && matrix.template == 'python-hello'
+      - name: Retain selected transferable images for one day
+        if: success() && ((github.event_name == 'workflow_dispatch' && inputs.export_images) || (github.event_name != 'workflow_dispatch' && matrix.template == 'python-hello'))
         uses: actions/upload-artifact@v4
         with:
-          name: image-python-hello-${{ github.sha }}
+          name: image-${{ matrix.template }}-${{ github.sha }}
           path: |
-            ${{ runner.temp }}/python-hello-image.tar
-            ${{ runner.temp }}/python-hello-image.tar.sha256
-            ${{ runner.temp }}/python-hello-image-metadata.json
+            ${{ runner.temp }}/${{ matrix.template }}-image.tar
+            ${{ runner.temp }}/${{ matrix.template }}-image.tar.sha256
+            ${{ runner.temp }}/${{ matrix.template }}-image-metadata.json
           retention-days: 1
           compression-level: 1
           if-no-files-found: error

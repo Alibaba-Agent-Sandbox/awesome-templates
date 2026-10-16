@@ -37,6 +37,8 @@ jobs:
       - name: Install pinned upstream CLIs for local smoke checks
         run: |
           npm install --global @openai/codex@0.162.1 @anthropic-ai/claude-code@2.0.76 opencode-ai@1.19.0 @factory/cli@0.241.1 @qwen-code/qwen-code@0.23.0 @ampcode/cli@0.0.1792022479-ge66e24 @google/gemini-cli@0.64.0 @qoder-ai/qodercli@1.1.72 openclaw@2026.10.4
+          npm install --global --ignore-scripts --registry=https://registry.npmjs.org @earendil-works/pi-coding-agent@1.3.0
+          test "$(pi --version)" = "1.3.0"
           codex --version
           claude --version
           test "$(opencode --version)" = "1.19.0"
@@ -71,6 +73,7 @@ jobs:
           python -m pytest -q qoder/test_commands.py qoder/test_e2e_protocol.py
           python -m pytest -q deepseek-harness/test_commands.py deepseek-harness/test_e2e_protocol.py
           python -m pytest -q hermes-agent/test_commands.py hermes-agent/test_e2e_protocol.py
+          python -m pytest -q pi/test_commands.py pi/test_e2e_protocol.py pi/test_cli_protocol.py scripts/test_select_image_templates.py
           python -m pytest -q agents-cli/test_protocol.py
           python -m pytest -q scripts/test_express_runtime_socket.py
           python -m pytest -q qwen-code/test_commands.py qwen-code/test_e2e_protocol.py
