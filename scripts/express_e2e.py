@@ -7,7 +7,9 @@ creates one sandbox, calls each smoke command through ``abx run`` and through
 ``await Sandbox.connect`` / ``await sb.run``, and always deletes that sandbox and that
 template in a ``finally`` block.
 
-A passing run writes ``<template>/evidence/express-<YYYY-MM-DD>.json``.
+A passing run writes ``<template>/evidence/express-<YYYY-MM-DD>.json`` only after
+owned sandbox/template cleanup succeeds. Failed or ambiguous attempts retain a
+private owned intent; ``--recover-intent PATH`` retries exact owned recovery.
 A failed or blocked run does not write evidence and does not list the provider
 as verified. Known CLI/SDK failures (an older ``abx`` or SDK) exit 2 with the
 issue URL. Other failures exit 1.
@@ -58,6 +60,7 @@ import signal
 import subprocess
 import sys
 import threading
+import tempfile
 import time
 import uuid
 from contextlib import contextmanager
@@ -77,6 +80,7 @@ DEFAULT_READY = "agent-sandbox-server healthcheck --port 9000"
 DEFAULT_PUSH_LOCK = Path("/tmp/abx-acr-push.lock")
 DEFAULT_IDLE_TIMEOUT = 180
 DEFAULT_PUSH_RETRIES = 2
+OWNED_ACR_TAG = "review"
 
 # Older binaries. Current main accepts a string base, reads start/ready from
 # template.yaml, envelopes gen2 envd streams, and does not treat the Express
@@ -339,9 +343,11 @@ def run_monitored(
     reason = ""
     try:
         while True:
-            code = proc.poll()
+            # Keep the original leader unreaped until its process group is
+            # stopped; poll()/wait() here would release the PID/PGID identity.
+            exited = os.waitid(os.P_PID, proc.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
             now = time.monotonic()
-            if code is not None:
+            if exited is not None:
                 break
             if now - progress["at"] >= idle_timeout:
                 reason = "idle"
@@ -365,12 +371,12 @@ def run_monitored(
                     kill_docker_pushes(marker)
                 break
             time.sleep(0.1)
-        try:
-            proc.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            _kill_process_group(pgid)
-            proc.wait(timeout=5)
     finally:
+        try:
+            os.killpg(pgid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        proc.wait(timeout=5)
         for thread in threads:
             thread.join(timeout=2)
         if marker:
@@ -540,6 +546,8 @@ def plan_document(options: Options) -> dict[str, Any]:
         "name": options.template_name,
         "version": options.template_version,
         "alias": options.alias,
+        "acr_repo": options.alias,
+        "acr_tag": OWNED_ACR_TAG,
         "generation": options.generation,
         "start_cmd": options.start_cmd,
         "ready_cmd": options.ready_cmd,
@@ -717,7 +725,112 @@ def _print_proc(label: str, proc: Proc) -> None:
         print(tail, flush=True)
 
 
-def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None = None) -> int:
+def save_intent(path: Path, intent: dict[str, Any]) -> None:
+    """Persist only owned identifiers, never credentials or raw command output."""
+    temporary = path.with_suffix(".new")
+    descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_NOFOLLOW, 0o600)
+    with os.fdopen(descriptor, "w") as stream:
+        json.dump(intent, stream)
+        stream.write("\n")
+    temporary.replace(path)
+
+
+def official_templates(run: Runner, alias: str) -> list[str]:
+    """Use the existing official CLI list API and exact unique-name matching."""
+    proc = run(["--json", "template", "list", "--official-api"], 120)
+    if proc.returncode:
+        raise RuntimeError("official template reconciliation failed")
+    data = json.loads(proc.stdout)
+    if isinstance(data, dict) and data.get("status") == "success" and str(data.get("message", "")).startswith("No official templates found"):
+        return []
+    if not isinstance(data, list) or any(not isinstance(item, dict) for item in data):
+        raise RuntimeError("unexpected official template list response")
+    found = []
+    for item in data:
+        if alias not in {item.get("Name"), item.get("Alias")}:
+            continue
+        identifier = item.get("TemplateID")
+        if not isinstance(identifier, str) or identifier.strip() in {"", "N/A"}:
+            raise RuntimeError("matching official template has no valid ID")
+        found.append(identifier)
+    return found
+
+
+def _list_owned_sandboxes(template_ids: set[str], known: set[str]) -> set[str]:
+    """Read every page; matching exact recorded IDs/templates is not a prefix scan."""
+    import asyncio
+    from agent_sandbox import Sandbox
+
+    async def listing() -> set[str]:
+        found: set[str] = set()
+        offset = 0
+        while True:
+            rows = await Sandbox.list(provider="alicloud-express", limit=100, offset=offset)
+            for row in rows:
+                if (not isinstance(row.template, str) or not row.template.strip() or
+                    not isinstance(row.sandbox_id, str) or not row.sandbox_id.strip()):
+                    raise RuntimeError("unexpected sandbox list element shape")
+                if row.template in template_ids or row.sandbox_id in known:
+                    found.add(row.sandbox_id)
+            if len(rows) < 100:
+                return found
+            offset += len(rows)
+
+    return asyncio.run(asyncio.wait_for(listing(), 90))
+
+
+def _recover_sandboxes(template_ids: set[str], known: set[str]) -> set[str]:
+    import asyncio
+    from agent_sandbox import Sandbox
+
+    found = _list_owned_sandboxes(template_ids, known)
+    async def kill() -> None:
+        for sandbox_id in found:
+            await Sandbox.kill_by_id(sandbox_id, provider="alicloud-express")
+    asyncio.run(asyncio.wait_for(kill(), 180))
+    if _list_owned_sandboxes(template_ids, known):
+        raise RuntimeError("owned sandboxes remain listed after kill")
+    return found
+
+
+def owned_resources_absent(intent: dict[str, Any], run: Runner) -> bool:
+    """Independent readback is required even after CLI cleanup acknowledgement."""
+    if official_templates(run, intent["alias"]):
+        return False
+    return not _list_owned_sandboxes(set(intent["template_ids"]), set(intent["sandbox_ids"]))
+
+
+def recover_owned(intent: dict[str, Any], run: Runner) -> bool:
+    """Fail closed on an unknown create; never signal/delete by a broad prefix."""
+    alias = intent.get("alias")
+    if not isinstance(alias, str) or not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,62}", alias):
+        raise ValueError("invalid owned alias")
+    if intent.get("ownership_confirmed") is not True:
+        return not intent.get("deploy_attempted")
+    if not intent.get("deploy_attempted"):
+        return True
+    current = set(official_templates(run, alias))
+    template_ids = set(intent.get("template_ids", [])) | current
+    if not template_ids:
+        print("BLOCKED unknown deployment response; exact owned intent retained", flush=True)
+        return False
+    if intent.get("create_attempted"):
+        known = set(intent.get("sandbox_ids", []))
+        found = _recover_sandboxes(template_ids, known)
+        if not known and not found:
+            print("BLOCKED unknown create response; absence is not proof of cancellation", flush=True)
+            return False
+        intent["sandbox_ids"] = sorted(known | found)
+    intent["template_ids"] = sorted(template_ids)
+    for template_id in current:
+        proc = run(["template", "delete", template_id, "-y"], 120)
+        if proc.returncode:
+            return False
+    return not official_templates(run, alias)
+
+
+def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None = None,
+            verify: Callable[[dict[str, Any], Runner], bool] | None = None) -> int:
     if options.plan:
         print(json.dumps(plan_document(options), indent=2, ensure_ascii=False))
         return 0
@@ -738,7 +851,14 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
             blocked = found
         return found is not None
 
-    try:
+    intent_dir = Path(tempfile.mkdtemp(prefix="abx-express-owned-"))
+    intent_path = intent_dir / "intent.json"
+    intent = {"version": 1, "alias": options.alias, "acr_repo": options.alias, "acr_tag": OWNED_ACR_TAG,
+              "template_ids": [], "sandbox_ids": [],
+              "deploy_attempted": False, "create_attempted": False, "ownership_confirmed": False}
+    save_intent(intent_path, intent)
+    def conduct() -> int:
+        nonlocal template_id, sandbox_id
         if runner is None and not os.environ.get("ABX") and not _which("abx"):
             print("ABX is not set and abx is not on PATH", file=sys.stderr)
             return 1
@@ -757,13 +877,15 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
             "--alias",
             options.alias,
             "--acr-repo",
-            options.alias,
+            intent["acr_repo"],
             "--tag",
-            options.alias.split("-")[-1],
+            intent["acr_tag"],
             "--timeout",
             str(options.deploy_timeout),
             "--verbose",
         ]
+        intent["deploy_attempted"] = True
+        save_intent(intent_path, intent)
         print(
             f"deploy alias={options.alias} generation={options.generation} "
             f"lock={acr_lock_path()} idle={options.idle_timeout}s wall={options.wall_timeout}s",
@@ -780,6 +902,8 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
             raw_id = str(payload.get("TemplateID") or payload.get("templateID") or "").strip()
             if raw_id and raw_id != "N/A":
                 template_id = raw_id
+                intent["template_ids"] = [template_id]
+                save_intent(intent_path, intent)
         combined = deployed.stdout + "\n" + deployed.stderr
         if deployed.returncode != 0 or not template_id:
             note_blocker(combined)
@@ -794,6 +918,8 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
             note_blocker(combined)
             return 2 if blocked else 1
 
+        intent["create_attempted"] = True
+        save_intent(intent_path, intent)
         created = run(
             ["--json", "create", "--template", template_id, "-y", "--timeout", "300"],
             420,
@@ -802,6 +928,9 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
         created_payload = _last_json(created)
         if isinstance(created_payload, dict):
             sandbox_id = str(created_payload.get("ID") or created_payload.get("id") or "").strip() or None
+            if sandbox_id:
+                intent["sandbox_ids"] = [sandbox_id]
+                save_intent(intent_path, intent)
         if created.returncode != 0 or not sandbox_id:
             text = created.stdout + "\n" + created.stderr
             note_blocker(text)
@@ -864,19 +993,60 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
                     passed = False
 
         if passed and not blocked:
-            _write_evidence(options, results)
             return 0
         if blocked:
             print(f"BLOCKED {blocked[0]} {blocked[1]}", flush=True)
             return 2
         print("smoke failed; evidence was not written", flush=True)
         return 1
+
+    status = 1
+    cleanup_ok = False
+    try:
+        # Refuse a pre-existing alias before the CLI can update that template.
+        if official_templates(run, options.alias):
+            print("BLOCKED deploy alias already exists; no owned cloud action attempted", flush=True)
+            return 2
+        intent["ownership_confirmed"] = True
+        save_intent(intent_path, intent)
+        status = conduct()
+    except Exception as exc:
+        print(f"harness operation failed: {type(exc).__name__}; upstream details omitted", flush=True)
+        status = 1
     finally:
-        try:
-            stop_deploy_processes(options.alias)
-        except Exception as exc:  # noqa: BLE001 - cleanup must not hide the deploy result
-            print(f"deploy process cleanup failed: {scrub(str(exc))}", flush=True)
-        _cleanup(run, sandbox_id, template_id, marker, marker_existed)
+        uncertain = (intent["deploy_attempted"] and not template_id) or (intent["create_attempted"] and not sandbox_id)
+        if intent["ownership_confirmed"] and intent["deploy_attempted"]:
+            try:
+                stop_deploy_processes(options.alias)
+                if not uncertain:
+                    cleanup_ok = _cleanup(run, sandbox_id, template_id, marker, marker_existed)
+                    if cleanup_ok:
+                        cleanup_ok = (verify or owned_resources_absent)(intent, run)
+                        intent["readback_confirmed"] = cleanup_ok
+            except Exception as exc:
+                cleanup_ok = False
+                print(f"owned cleanup failed: {type(exc).__name__}", flush=True)
+        else:
+            # A refused/failed read-only preflight establishes no ownership of
+            # similarly named pushes or a concurrently generated build marker.
+            cleanup_ok = True
+        if uncertain or not cleanup_ok:
+            try:
+                intent["recovery_complete"] = recover_owned(intent, run)
+            except Exception as exc:
+                intent["recovery_complete"] = False
+                print(f"owned recovery failed: {type(exc).__name__}; intent retained", flush=True)
+            cleanup_ok = False  # The failed/ambiguous attempt never becomes provider-pass evidence.
+        intent["cleanup_complete"] = cleanup_ok
+        intent["result"] = "PASS" if status == 0 and cleanup_ok else "FAIL"
+        save_intent(intent_path, intent)
+        if status == 0 and cleanup_ok:
+            _write_evidence(options, results)
+            intent_path.unlink()
+            intent_dir.rmdir()
+        else:
+            print(f"owned intent retained at {intent_path}; recover with --recover-intent", flush=True)
+    return status if status else int(not cleanup_ok)
 
 
 def _which(name: str) -> str | None:
@@ -898,6 +1068,7 @@ def _write_evidence(options: Options, results: list[dict[str, Any]]) -> None:
         "sdk_version": _sdk_version(),
         "cli": "abx",
         "passed": True,
+        "cleanup_verified": True,
         "commands": results,
     }
     # Template ids are ephemeral and must not be stored.
@@ -915,25 +1086,49 @@ def _cleanup(
     template_id: str | None,
     marker: Path,
     marker_existed: bool,
-) -> None:
+) -> bool:
+    ok = True
     if sandbox_id:
         try:
             proc = run(["kill", sandbox_id, "-y"], 90)
             _print_proc("kill", proc)
+            if proc.returncode:
+                ok = False
         except Exception as exc:  # noqa: BLE001
-            print(f"kill failed: {scrub(str(exc))}", flush=True)
-    if template_id:
+            print(f"kill failed: {type(exc).__name__}", flush=True)
+            ok = False
+    if template_id and ok:
         try:
             proc = run(["template", "delete", template_id, "-y"], 90)
             _print_proc("template delete", proc)
+            if proc.returncode:
+                ok = False
         except Exception as exc:  # noqa: BLE001
-            print(f"template delete failed: {scrub(str(exc))}", flush=True)
+            print(f"template delete failed: {type(exc).__name__}", flush=True)
+            ok = False
     if marker.exists() and not marker_existed:
         marker.unlink()
+    return ok
 
 
 def main(argv: list[str] | None = None) -> int:
-    options = build_options(argv)
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments[:1] == ["--recover-intent"]:
+        if len(arguments) != 2:
+            raise SystemExit("usage: express_e2e.py --recover-intent PRIVATE_PATH")
+        path = Path(arguments[1])
+        if path.is_symlink() or not path.is_file() or path.stat().st_uid != os.getuid() or path.stat().st_mode & 0o077:
+            raise SystemExit("owned intent must be a private regular file owned by this user")
+        intent = json.loads(path.read_text())
+        try:
+            complete = recover_owned(intent, default_runner)
+        except Exception as exc:
+            print(f"owned recovery failed: {type(exc).__name__}; intent retained", flush=True)
+            return 2
+        intent["recovery_complete"] = complete
+        save_intent(path, intent)
+        return 0 if complete else 2
+    options = build_options(arguments)
     return execute(options)
 
 
