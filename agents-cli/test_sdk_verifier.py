@@ -254,6 +254,24 @@ def test_private_journal_symlink_refused_without_touching_target(tmp_path):
     assert target.read_text() == 'preserve'
 
 
+def test_run_marks_forbidden_cleanup_intent_and_never_retries(tmp_path, monkeypatch):
+    class Factory:
+        calls = 0
+        @classmethod
+        async def create(cls, *args, **kwargs): raise TimeoutError('synthetic uncertain create')
+        @classmethod
+        async def list(cls, **kwargs):
+            cls.calls += 1
+            raise PermissionError('synthetic forbidden path')
+    monkeypatch.setenv('OPENAI_API_KEY', 'synthetic-model-key')
+    monkeypatch.setenv('OPENAI_BASE_URL', 'https://example.invalid/v1')
+    args = SimpleNamespace(template='synthetic-template', model='model', turn_timeout=30,
+                           journal=tmp_path / 'journal.json', report=tmp_path / 'report.json')
+    result = asyncio.run(module.run(args, factory=Factory))
+    assert result['result'] == 'FAIL' and result['cleanup']['sandbox_absence_verified'] is False
+    assert Factory.calls == 1 and json.loads(args.journal.read_text())['cleanup_permission_denied'] is True
+
+
 @pytest.mark.parametrize('required', [False, True])
 def test_actual_http_suite_keeps_required_model_gate_closed(tmp_path, required):
     # Real SDK HTTP server, explicit synthetic CLI PATH only for this protocol

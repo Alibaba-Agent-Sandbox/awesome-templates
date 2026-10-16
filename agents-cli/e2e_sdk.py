@@ -378,6 +378,10 @@ async def run(args, *, factory=None) -> dict:
                 report['result'] = 'FAIL'
                 report['cleanup_error_category'] = type(exc).__name__
                 # One permission error ends this path. Keep recovery intent.
+                if (isinstance(exc, PermissionError)
+                        or getattr(getattr(exc, 'response', None), 'status_code', None) == 403
+                        or re.search(r'\b403\b', str(exc))):
+                    state['cleanup_permission_denied'] = True
                 save_private(args.journal, state)
         if drain is not None:
             drain.cancel()

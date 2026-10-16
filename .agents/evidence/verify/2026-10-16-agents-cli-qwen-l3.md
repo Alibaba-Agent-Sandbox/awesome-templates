@@ -25,6 +25,8 @@ image. Existing historical evidence is preserved.
 - PASS: `python scripts/check_template.py --all`, all18 directories conformant.
 - PASS: `git diff --check`.
 - PASS: final combined40 regressions rerun after explicit stream closure,5.04s.
+- PASS: subsequent41 combined regressions,4.88s, after persisting a permission
+  denial marker so an external recovery controller cannot retry that403 path.
 - PASS: all13 relative Markdown links in both READMEs/design/new records exist;
   both bilingual Python examples parse with ast.parse.
 - Pending: normal remote CI.
