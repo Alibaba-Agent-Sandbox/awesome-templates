@@ -1,92 +1,118 @@
 # gemini
 
-## 这是什么
+Experimental Gemini CLI template. [中文](README.zh-CN.md).
 
-这是 Gemini CLI 的 Agent Sandbox 模板。镜像基于 `python:3.12-slim`，安装 Node.js 22，再全局安装 npm 包 `@google/gemini-cli@0.64.0`（2026-10-14 对 registry 执行 `npm view @google/gemini-cli version`，dist-tag `latest` 是 0.64.0）。包提供的命令名是 `gemini`。
+## What it does
 
-沙箱里的 HTTP 服务是 `agent_sandbox.server`，监听 **9000**。具名命令 `gemini` 在被调用时执行非交互的 `gemini -p`。能力是 `shell`、`files`、`code`、`ports`。资源是 2 CPU、4096 MB 内存。
+Runs pinned Gemini CLI headlessly through the named `gemini` command. `gemini_version` and `gemini_setup_check` inspect installation and configuration. Model execution needs a genuine Gemini API key; an OpenAI-compatible key does not substitute for it.
 
-默认模型是该版本里的 `DEFAULT_GEMINI_FLASH_LITE_MODEL`：`gemini-3.1-flash-lite`。状态是 `experimental`。2026-10-14 的 `docker build` 已经在日志里看到 `@google/gemini-cli@0.64.0` 和 `gemini --version` 的 `0.64.0`，记录在 [docs/gemini-image-build.md](../docs/gemini-image-build.md)。带密钥且输出含 `ABX_E2E_OK` 的调用还没有记录。
+## Stack
 
-镜像不写入任何密钥。
+Alibaba runtime base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (deploy resolves region/tag), Node.js >=20, `@google/gemini-cli@0.64.0`, and `agent-sandbox-server` pinned to python-sdk commit `35da216a300f1e2e84254a1cf4b4a7ea98681505` unless deploy injects a wheel. Runs as `user` in `/home/user/app`; generation 2 uses the start/readiness commands in [template.yaml](template.yaml), without Docker CMD/ENTRYPOINT.
 
-## 怎么创建
+## Problem solved
 
-极速版从模板目录安装、发布，再按名字创建：
+Provides buffered, typed command calls with a missing-key guard, read-only setup diagnostics, an explicit tool-permission choice and a process-group execution deadline. The default approval mode is upstream `plan` (read-only); `yolo=true` explicitly approves editing and shell tools. The sandbox runtime is the isolation boundary; the cwd check only constrains the starting directory.
+
+## Quick start (CLI)
+
+Deploy from the repository checkout with your existing provider configuration:
 
 ```bash
-abx template install alibaba-agent-sandbox/awesome-templates//gemini
-abx deploy
-abx create --template gemini --env GEMINI_API_KEY=<你的密钥>
+abx template deploy ./gemini -y
+abx create --template <template-id> -y --env GEMINI_API_KEY="$GEMINI_API_KEY"
+abx run <sandbox-id> gemini_version
+abx run <sandbox-id> gemini_setup_check
+abx run <sandbox-id> gemini --json-args '{"prompt":"Describe the project files","command_timeout":120,"yolo":false}'
 ```
 
-`abx template install` 会构建并注册该目录（只要没有加 `--download-only`）。密钥在创建时注入，不要写进 `template.yaml`。
+For an authorized coding task, explicitly pass `"yolo":true` and choose an existing project `cwd` inside `WORKSPACE`. Use a new alias when replacing a generation-1 template; do not update it in place with generation-2 startup options. Clean up task-owned resources with `abx kill <sandbox-id> -y` and `abx template delete <template-id> -y`.
 
-## 怎么调用
+## Quick start (Python SDK)
 
-发布到极速版之后，用 Python SDK 的具名命令：
+Install `agent-sandbox-client`; check release availability or use the [paired source installation](../docs/python-client-installation.md). Import `agent_sandbox`.
 
 ```python
-result = await sandbox.run("gemini", prompt="用一句话说明当前目录里有什么")
-print(result)
+import asyncio
+import os
+from agent_sandbox import Sandbox
+
+async def main():
+    sb = await Sandbox.create(template="<template-id>", timeout=300,
+                              envs={"GEMINI_API_KEY": os.environ["GEMINI_API_KEY"]})
+    try:
+        print(await sb.run("gemini", prompt="Describe the project files",
+                           command_timeout=120, yolo=False, timeout=150))
+        print(sb.network.get_url(9000))
+    finally:
+        await sb.kill()
+
+asyncio.run(main())
 ```
 
-换模型时多传 `model`：
+`sb.run` invokes a named command. `sb.commands.run` executes a shell process. `command_timeout` limits the server's CLI process group; `timeout` controls the client's HTTP request and does not guarantee cancellation. Use the process API for background tasks and cancellation.
 
-```python
-result = await sandbox.run(
-    "gemini",
-    prompt="只回复 ABX_E2E_OK",
-    model="gemini-3.1-flash-lite",
-)
-```
+## Quick start (HTTP POST)
 
-CLI：
+`ABX_SERVER_URL` is the sandbox port-9000 URL from `sb.network.get_url(9000)`, or `http://127.0.0.1:9000` locally:
 
 ```bash
-abx run <sandbox-id> gemini --json-args '{"prompt":"用一句话说明当前目录里有什么"}'
+curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/gemini" \
+  --header "Content-Type: application/json" \
+  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
+  --data '{"prompt":"Describe the project files","command_timeout":120,"yolo":false}'
 ```
 
-`@command("gemini")` 实际执行的命令行（参数数组，不经过 shell）是：
+Send parameters directly, without an `args` wrapper. HTTP 200 returns `{"result":"<buffered Gemini JSON output>"}`. Omit Authorization when server `ABX_SERVER_TOKEN` is empty. Provider gateway authentication is separate: also send the gateway access header required by your provider. No server secret is automatically a provider token.
 
-```text
-gemini -p <prompt> --yolo --model <model>
-```
+Missing or mistyped arguments return HTTP 400; failed server authentication 401; unknown commands 404; invalid ranges/paths, empty prompts, missing keys, missing CLI, deadline expiry and upstream failures return 500 with `{"error":"...","type":"..."}`. Argument values are converted by the server before invoking Python; use JSON numbers and booleans. Successful and failed CLI output is redacted using secret-valued environment variables.
 
-`<model>` 取调用参数 `model`；参数为空时用环境变量 `GEMINI_MODEL`；两者都空时用 `gemini-3.1-flash-lite`。`-p` 进入 headless。`--yolo` 自动批准工具调用，它本身不决定是否 headless。标准输入设为 `/dev/null`。超时 600 秒。没有 `GEMINI_API_KEY` 时，命令抛出 `RuntimeError`，不会去启动 CLI。
+## Command reference
 
-## 需要的环境变量
+| Command | Parameters | Returns |
+|---|---|---|
+| `gemini` | `prompt`: required nonempty string; `model`: string, default `""` → `GEMINI_MODEL` → `gemini-3.1-flash-lite`; `cwd`: string, default `""` → `WORKSPACE`; `command_timeout`: integer 1–1800 seconds, default 600; `yolo`: boolean, default false | string containing buffered upstream JSON |
+| `gemini_version` | none | installed CLI version string, expected `0.64.0` |
+| `gemini_setup_check` | none | object: installation/version/pin, API-key presence boolean, model-presence/workspace and settings-file metadata; no credential/settings values |
 
-| 变量 | 作用 |
-| --- | --- |
-| `GEMINI_API_KEY` | Gemini API 密钥。模板里是空字符串。命令被调用时如果为空，直接失败。 |
-| `GEMINI_MODEL` | 传给 `--model`。模板默认 `gemini-3.1-flash-lite`。 |
-| `ABX_SERVER_PORT` | 沙箱内 HTTP 服务端口，默认 `9000`。 |
+`cwd` must exist inside resolved `WORKSPACE`; relative paths resolve there, and symlink/traversal escapes are rejected. The executable receives an argv array: `gemini -p <prompt> --model <model> --output-format json --approval-mode plan` (or `yolo` only when opted in). stdin is closed. No unsupported turn-limit flag is invented. Diagnostics do not rewrite `~/.gemini/settings.json` or project `.gemini/settings.json`; settings parsing reports JSON-object validity, not schema validity.
 
-## 本地 e2e
+## Configuration
 
-在仓库根目录，安装 `agent-sandbox-server` 和 `httpx` 之后：
+This subprocess lifecycle requires Linux. The command closes its owned process group on success and error as well as at the deadline. It drains both output pipes while keeping the leader unreaped until group cleanup, so redirected background descendants cannot outlive a completed command.
 
-```bash
-python3 scripts/run_local_e2e.py
-```
+| Name | Default | Purpose |
+|---|---|---|
+| `GEMINI_API_KEY` | empty | Required for model calls; missing/whitespace fails before CLI launch and prevents interactive OAuth login |
+| `GEMINI_MODEL` | `gemini-3.1-flash-lite` | Default model; must be available to the supplied key |
+| `WORKSPACE` | `/home/user/app` | Existing execution root |
+| `ABX_SERVER_TOKEN` | empty | Optional server bearer authentication; inject at create time |
+| `ABX_SERVER_PORT` | `9000` | Local standalone server port |
 
-该脚本强制 `E2E_RUN_LLM=0`，并且不转发 `GEMINI_API_KEY`。模型调用记为 SKIP。没有 FAIL 时进程退出码是 0。这只说明 `/health`、`/commands` 和缺 `prompt` 时的 4xx 过了。
+Existing upstream auth/settings remain user-owned. The wrapper does not reconfigure an OAuth/Vertex-selected profile; inspect your profile if it conflicts with API-key authentication. Never put real secrets in a template, image, report or committed environment file.
 
-带密钥的验收在本目录另开两个进程。服务进程和测试进程都要能看到密钥，并且不要设置 `E2E_RUN_LLM=0`：
+## Resources
 
-```bash
-GEMINI_API_KEY=<你的密钥> ABX_SERVER_PORT=9000 python3 commands.py
-```
+2 vCPU, 4096 MB RAM, port 9000; Express rootfs is about 10G. No nested Docker, KVM or extra capabilities are required.
 
-```bash
-GEMINI_API_KEY=<你的密钥> E2E_REQUIRE_LLM=1 E2E_BASE_URL=http://127.0.0.1:9000 python3 e2e_test.py
-```
+## Verified
 
-提示词要求模型只回复 `ABX_E2E_OK`。输出里没有这个标记、密钥为空，或同时又设置了 `E2E_RUN_LLM=0`，都记为 FAIL，退出码为 1。
+No provider acceptance is recorded. Local diagnostics and mocked regressions do not prove image, cloud or model acceptance. `tested_on` remains empty and catalog status remains experimental. See [verification record](../.agents/evidence/verify/2026-10-16-gemini-runtime.md).
 
-## 其他 provider
+## Secondary development
 
-`sandbox.run("gemini", prompt=...)` 只用于已经发布了这份模板、并且提供方有具名命令数据面的沙箱。E2B 上具名命令返回 `E8004`，不要对 E2B 调用 `sandbox.run("gemini", ...)`。本仓库也不把 `gemini` 登记成 E2B 的预置模板 id。
+Read [design](../docs/design/gemini.md). Keep exact npm/server pins, Alibaba base, non-root user and generation-2 startup. Run `python3 scripts/check_template.py gemini`, `python3 -m pytest gemini/test_commands.py gemini/test_e2e_protocol.py -q`, and `python3 scripts/run_local_e2e.py` with the server/client dependencies installed. `E2E_RUN_LLM=0` skips model execution and sends no coding requests.
 
-OpenSandbox 上要跑这份镜像时，先推送构建产物，再把镜像地址传给 `Sandbox.create(template="<镜像地址>", provider="opensandbox")`。短名字 `gemini` 不是 OpenSandbox 已发布的沙箱镜像。
+L1 requires a real image build; L2 requires deployment plus external CLI/SDK calls. For L3, start the target with `GEMINI_API_KEY`, set controller `E2E_BASE_URL` and target `E2E_BASE_DIR` inside `WORKSPACE`, then run `E2E_REQUIRE_LLM=1 E2E_RUN_LLM=1 python3 gemini/e2e_test.py`. Only the target needs the model key. The test seeds failing source/tests through the target files API, requests a fix plus new artifacts with explicit yolo, preserves the tests, independently executes original and held-out tests remotely, and removes its unique project. A response marker alone fails.
+
+## Contributing
+
+Follow [CONTRIBUTING.md](../CONTRIBUTING.md), [template specification](../docs/template-spec.md) and repository engineering records. Reuse [Issue #30](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/30). Record failed, skipped and blocked tiers separately; a missing key is a blocked required L3, not a pass.
+
+## Issues
+
+Template problems: [awesome-templates](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues). Server/client problems: [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues). CLI problems: [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues), using `[templates]` for SDK/CLI reports.
+
+## License
+
+Apache-2.0. See [LICENSE](../LICENSE).

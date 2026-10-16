@@ -1,214 +1,183 @@
 # claude-code
 
-> [中文版](#中文) | [English](#english)
+[中文](README.zh-CN.md)
 
----
+## What it does
 
-## English
+Runs the pinned Anthropic Claude Code CLI through the named `claude` command.
+The agent can edit a project and produce files in its workspace. A completed
+text response alone does not prove that a coding task succeeded; download the
+files and run project tests independently.
 
-Sandbox runtime for Anthropic Claude Code, preinstalled with the Claude Code CLI to support AI-driven coding, debugging, and refactoring.
+## Stack
 
-### Environment
+Alibaba runtime base (Python 3.13 and Node 20), Claude Code **2.0.76**, and
+`agent-sandbox-server` pinned to python-sdk commit
+`35da216a300f1e2e84254a1cf4b4a7ea98681505` unless the deploy CLI injects a wheel.
+Claude Code 2.0.76 supports Node >=18. No extra Node installation is needed.
+`commands.py` is copied after the install layers so edits can reuse those layers.
 
-This template comes preinstalled with the following tools and dependencies:
+## Problem solved
 
-| Category | Details |
-|----------|---------|
-| **Base image** | python:3.12-slim |
-| **Node.js** | Node.js 22.x + npm (core runtime) |
-| **Python** | Python 3.12 + venv (at `/opt/venv`) |
-| **Node packages** | `@anthropic-ai/claude-code` |
-| **Python packages** | `anthropic`, `httpx`, `rich` |
-| **System tools** | git, curl, ripgrep, build-essential |
-| **Resources** | 2 CPU / 4096 MB memory |
+Provides a reproducible headless coding environment with one command contract
+across the CLI, Python SDK, and HTTP. Generated artifacts remain accessible via
+the files API, while process and terminal routes are provided by the server.
 
-### Installation
-
-**Install from a local path:**
-
-```bash
-abx template install ./claude-code --registry-type local
-```
-
-**Install from GitHub:**
+## Quick start (CLI)
 
 ```bash
 abx template install alibaba-agent-sandbox/awesome-templates//claude-code
+# Use the template id returned by installation. Inject the existing key at creation.
+abx create --template <template-id> --env ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY"
+abx run <sandbox-id> claude_version
+abx run <sandbox-id> claude --arg prompt='Create hello.py that prints hello'
+abx run <sandbox-id> claude --json-args '{"prompt":"Fix calculator.py and run its tests","cwd":"project","allowed_tools":"Read,Edit,Write,Bash(python3:*)","command_timeout":300}'
 ```
 
-### Usage
+Create `project` first with the files or shell API. Keep shell tracing disabled
+when injecting credentials. Use the environment's secret injection mechanism
+where available; command-line arguments may be visible to local processes.
 
-Create a sandbox instance and pass in the API key:
+## Quick start (Python SDK)
 
-```bash
-abx create --template claude-code --env ANTHROPIC_API_KEY=sk-ant-xxx
-```
-
-Launch Claude Code inside the sandbox:
-
-```bash
-abx exec <sandbox-id> -- claude "Write a Python HTTP server"
-```
-
-Run a task in non-interactive mode:
-
-```bash
-abx exec <sandbox-id> -- claude -p "Refactor this function for better performance" --allowedTools "Edit,Read,Write"
-```
-
-Using the Python SDK:
+Install the client with `python3 -m pip install agent-sandbox-client`.
 
 ```python
+import asyncio
+import json
+import os
 from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create_sync(
-    template="claude-code",
-    env={"ANTHROPIC_API_KEY": "sk-ant-xxx"}
-)
+async def main():
+    sb = await Sandbox.create(
+        template="<template-id>", timeout=600,
+        envs={"ANTHROPIC_API_KEY": os.environ["ANTHROPIC_API_KEY"]},
+    )
+    try:
+        result = await sb.run("claude", prompt="Create hello.py that prints hello", timeout=420)
+        print(json.loads(result)["result"])
+        print(await sb.files.read("/home/user/app/hello.py"))
+    finally:
+        await sb.kill()
 
-result = sandbox.commands.run("claude -p 'Generate a REST API scaffold'")
-print(result.stdout)
+asyncio.run(main())
 ```
 
-### Configuration
+`sb.run` returns the command's result value, a JSON **string** for `claude`.
+`sb.run(timeout=...)` controls the HTTP timeout; `command_timeout` controls the CLI deadline. It is a buffered response; use the process streaming API for live CLI stdout.
 
-#### Environment Variables
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `ANTHROPIC_API_KEY` | Anthropic API key | Yes |
-| `WORKSPACE` | Working directory path, defaults to `/workspace` | No |
-
-#### Custom Configuration
-
-To install extra dependencies on top of this template, run the following after the sandbox is created:
+## Quick start (HTTP POST)
 
 ```bash
-abx exec <sandbox-id> -- pip install <package-name>
-abx exec <sandbox-id> -- npm install -g <package-name>
+curl --request POST "$SANDBOX_SERVER_URL/commands/claude" \
+  --header 'Content-Type: application/json' \
+  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
+  --max-time 420 \
+  --data '{"prompt":"Create hello.py that prints hello","command_timeout":300}'
 ```
 
-### Notes
+Set `SANDBOX_SERVER_URL` to the sandbox's port 9000 URL. Omit the Authorization
+header when server authentication is unset. HTTP 200 is `{"result":"<upstream JSON>"}`;
+400 means invalid arguments, 401 authentication failed, and 500 command failure.
+The 300-second CLI deadline is independent of the 420-second HTTP deadline.
+A client timeout does not prove that the upstream process stopped.
 
-- **API key security**: Never hardcode `ANTHROPIC_API_KEY` into the template; always inject it via the `--env` option or environment variables.
-- **Network access**: Claude Code needs to reach the Anthropic API — make sure the sandbox has outbound internet connectivity.
-- **Node.js is the core runtime**: The Claude Code CLI runs on Node.js; Node.js 22 is a core dependency.
-- **Resource usage**: AI code-generation tasks may consume significant memory; keeping 4096 MB or more is recommended.
-- **Virtual environment**: Python packages are installed in `/opt/venv`; no manual activation is needed since `PATH` is preconfigured.
+## Command reference
 
----
+| Command/parameter | Type/default | Behavior |
+|---|---|---|
+| `claude_version()` | no arguments | Installed CLI version; no key or model call. |
+| `claude.prompt` | required string | Prompt passed as a separate argv element. |
+| `claude.model` | string, `sonnet` | Upstream model name or alias. |
+| `claude.cwd` | string, empty | Existing directory inside `WORKSPACE`; relative or absolute. Symlink escapes rejected. |
+| `claude.allowed_tools` | string, `Read,Edit,Write` | Claude tool permission rules; shell commands require explicit permission. |
+| `claude.resume` | string, empty | Optional upstream session id. |
+| `claude.command_timeout` | integer, `300` | 1–900 seconds; set the client request timeout higher. |
 
-## 中文
+Equivalent raw HTTP request to the sandbox's port 9000 URL:
 
-Anthropic Claude Code 的沙箱运行环境，预装 Claude Code CLI，支持 AI 驱动的代码编写、调试和重构。
+```http
+POST /commands/claude
+Content-Type: application/json
 
-### 环境说明
+{"prompt":"Create hello.py that prints hello","model":"sonnet","cwd":"","allowed_tools":"Read,Edit,Write","command_timeout":300}
+```
 
-本模板预装以下工具和依赖：
+HTTP 200 wraps the string as `{"result":"<upstream JSON>"}`. Missing or mistyped
+parameters return HTTP 400. Non-zero CLI exit, timeout, invalid JSON, and an
+upstream `is_error` result return HTTP 500 with sanitized diagnostics. The
+command never returns a non-zero exit as success. `GET /commands` describes the
+live parameter schema. This endpoint is buffered, not SSE.
 
-| 类别 | 内容 |
-|------|------|
-| **基础镜像** | python:3.12-slim |
-| **Node.js** | Node.js 22.x + npm（核心运行时） |
-| **Python** | Python 3.12 + venv 虚拟环境（位于 `/opt/venv`） |
-| **Node 包** | `@anthropic-ai/claude-code` |
-| **Python 包** | `anthropic`、`httpx`、`rich` |
-| **系统工具** | git、curl、ripgrep、build-essential |
-| **资源配置** | 2 CPU / 4096 MB 内存 |
+## Configuration
 
-### 安装方式
+| Environment name | Purpose |
+|---|---|
+| `ANTHROPIC_API_KEY` | Required inside the sandbox for model calls; inject at creation. |
+| `WORKSPACE` | Command working directory root; default `/home/user/app`. |
+| `ABX_SERVER_TOKEN` | Optional named-command server authentication, injected at creation. |
+| `E2E_RUN_LLM` | `0` skips the real agent case; `1` requires its host-side key check. |
+| `E2E_REQUIRE_LLM` | `1` fails on missing key or a forced skip. |
+| `E2E_MODEL` | Optional model override for acceptance. |
 
-**从本地安装：**
+`--permission-mode dontAsk` denies tools requiring approval unless permitted by
+`allowed_tools` or upstream settings. The wrapper never enables blanket
+permission bypass. These rules and `cwd` validation are not OS isolation: the
+agent runs as sandbox `user`, and allowed Bash can access that user's files,
+network and injected credentials. Use disposable sandboxes and only necessary
+credentials; do not mount host secrets or run untrusted prompts alongside them.
+Do not log model output indiscriminately: it can contain workspace data. The
+wrapper suppresses upstream stderr and exception payloads, and redacts known
+secret environment values from successful JSON output.
+
+With `ABX_SERVER_TOKEN`, raw HTTP needs `Authorization: Bearer <token>` or
+`X-Access-Token: <token>`. For the SDK use
+`await sb.server_at(9000, token=os.environ["ABX_SERVER_TOKEN"]).commands.run("claude", prompt="...", timeout=420)`.
+The sandbox gateway token and this server token are separate credentials.
+
+## Resources
+
+2 vCPU, 2048 MB; no GPU, Docker, KVM, or privileged capabilities. Model calls
+require outbound access to Anthropic and consume the account's model budget.
+See [upstream CLI reference](https://code.claude.com/docs/en/cli-reference)
+and [headless usage](https://code.claude.com/docs/en/headless) for tool rules.
+
+## Verified
+
+No provider has a passing run recorded for this template.
+
+## Secondary development
+
+Change `commands.py` and keep prompts as argv. Change the exact npm version in
+both the Dockerfile and smoke expectation when upgrading. Do not bake secrets
+into layers. Local checks from the repository root:
 
 ```bash
-abx template install ./claude-code --registry-type local
-```
-
-**从 GitHub 安装：**
-
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//claude-code
-```
-
-### 使用示例
-
-创建沙箱实例并传入 API Key：
-
-```bash
-abx create --template claude-code --env ANTHROPIC_API_KEY=sk-ant-xxx
-```
-
-在沙箱中启动 Claude Code：
-
-```bash
-abx exec <sandbox-id> -- claude "编写一个 Python HTTP 服务器"
-```
-
-非交互模式执行任务：
-
-```bash
-abx exec <sandbox-id> -- claude -p "重构这个函数以提高性能" --allowedTools "Edit,Read,Write"
-```
-
-使用 Python SDK：
-
-```python
-from agent_sandbox import Sandbox
-
-sandbox = Sandbox.create_sync(
-    template="claude-code",
-    env={"ANTHROPIC_API_KEY": "sk-ant-xxx"}
-)
-
-result = sandbox.commands.run("claude -p '生成一个 REST API 框架'")
-print(result.stdout)
-```
-
-### 配置说明
-
-#### 环境变量
-
-| 变量名 | 说明 | 必填 |
-|--------|------|------|
-| `ANTHROPIC_API_KEY` | Anthropic API 密钥 | 是 |
-| `WORKSPACE` | 工作目录路径，默认 `/workspace` | 否 |
-
-#### 自定义配置
-
-如需在模板基础上安装额外依赖，可在创建沙箱后执行：
-
-```bash
-abx exec <sandbox-id> -- pip install <package-name>
-abx exec <sandbox-id> -- npm install -g <package-name>
-```
-
-### 注意事项
-
-- **API Key 安全**：请勿将 `ANTHROPIC_API_KEY` 硬编码到模板中，始终通过 `--env` 参数或环境变量注入。
-- **网络访问**：Claude Code 需要访问 Anthropic API，确保沙箱具备外网连接能力。
-- **Node.js 核心**：Claude Code CLI 基于 Node.js 运行，Node.js 22 为核心依赖。
-- **资源消耗**：AI 代码生成任务可能消耗较多内存，建议保持 4096 MB 以上的内存配置。
-- **虚拟环境**：Python 包安装在 `/opt/venv` 中，使用时无需手动激活，`PATH` 已自动配置。
-
-## Deploy and local e2e
-
-Install and register this template:
-
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//claude-code
-```
-
-From this directory (build, push, and register):
-
-```bash
-abx deploy
-```
-
-From the repository root, with `agent-sandbox-server` and `httpx` installed:
-
-```bash
+python3 scripts/check_template.py claude-code
+python3 -m unittest discover -s claude-code/tests -v
 python3 scripts/run_local_e2e.py
 ```
 
-That starts `python3 commands.py` in this directory and runs `e2e_test.py`.
+L0 skips model calls. L1 requires an actual image build; L2 requires deployment
+and external CLI/SDK smoke calls. For L3, run `e2e_test.py` against the created
+sandbox with `E2E_REQUIRE_LLM=1`, `E2E_RUN_LLM=1`, and its URL/token plus the
+host-side key configured without printing it. The suite seeds a broken project,
+requires a real agent edit and new artifact/report files, preserves test sources,
+and independently runs two unit tests. It cleans up only its own unique files,
+processes and PTY sessions. Missing credentials are a failure in required mode.
+Only record provider evidence after the corresponding real run passes.
 
+## Contributing
+
+Follow [CONTRIBUTING](../CONTRIBUTING.md) and the [template spec](../docs/template-spec.md).
+
+## Issues
+
+Report template problems to [awesome-templates](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues).
+SDK/server problems go to [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues)
+and CLI problems to [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues),
+with the `[templates]` prefix. Search existing issues and redact credentials.
+
+## License
+
+Apache-2.0 for this template. Claude Code has its own upstream terms.

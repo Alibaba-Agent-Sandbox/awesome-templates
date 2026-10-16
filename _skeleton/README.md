@@ -59,7 +59,20 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-`await sb.run("hello", name="Ada")` returns the string `Hello, Ada!`. `sb.commands.run` runs a shell command. It is not this named command. `sb.network.get_url(9000)` is the server's port URL. `Sandbox.create_sync` raises `TypeError` on python-sdk 0.3.0 ([python-sdk#22](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues/22)); use `await Sandbox.create`.
+`await sb.run("hello", name="Ada")` returns the string `Hello, Ada!`. `sb.commands.run` runs a shell command. It is not this named command. `sb.network.get_url(9000)` is the server's port URL. The checked-out SDK includes the sync-classmethod fix in [python-sdk#24](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/24). Upgrade older commits or use the async constructors if they raise TypeError.
+
+## Quick start (HTTP POST)
+
+Use the sandbox port-9000 URL, or http://127.0.0.1:9000 locally. Include the authentication header when ABX_SERVER_TOKEN is set on the server.
+
+```bash
+curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/hello" \
+  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
+  --header "Content-Type: application/json" \
+  --data '{"name":"Ada"}'
+```
+
+The JSON body contains command parameters directly, without an args wrapper. HTTP 200 returns `{"result":"Hello, Ada!"}`. Invalid arguments return 400, failed authentication 401, and execution errors 500; error responses contain error and type. Results are buffered until completion. An HTTP client timeout does not guarantee server-side cancellation; manage long tasks through the process API.
 
 ## Command reference
 

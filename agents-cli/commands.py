@@ -1,39 +1,37 @@
-"""Codex and Qwen Code on the sandbox Agents API.
+"""Pinned Codex/Qwen Agents API with an explicit endpoint allowlist.
 
-The image does not install either CLI. A turn looks up ``codex`` or ``qwen``
-on ``PATH`` and runs only that binary. Install the one you are about to call:
-
-    npm install -g @openai/codex
-    npm install -g @qwen-code/qwen-code
-
-``E2E_RUN_LLM=0`` (set by the local template runner) prepends ``e2e-bin/``.
-Those scripts stand in for the CLIs so the HTTP surface can be tested without
-a model key. They are not shipped as the default ``PATH``.
+Synthetic CLIs belong to protocol tests and are never selected here.
 """
-
 from __future__ import annotations
 
 import os
 from pathlib import Path
+import shutil
+import subprocess
 
-from agent_sandbox.server import SandboxServer, ServerPolicy
+from agent_sandbox.server import ServerPolicy, command, start
 
 _HERE = Path(__file__).resolve().parent
-if os.environ.get("E2E_RUN_LLM") == "0":
-    os.environ["PATH"] = str(_HERE / "e2e-bin") + os.pathsep + os.environ.get("PATH", "")
+POLICY = ServerPolicy.from_file(str(_HERE / "server-policy.json"))
+VERSIONS = {"codex": "0.162.1", "qwen": "0.23.0"}
 
-# Endpoint rules are the only switch: ``ServerPolicy.only`` turns every endpoint off
-# except the ones named here. An exact rule also opens an endpoint of an opt-in group
-# such as ``agents``. Add an endpoint id to expose that one route.
-policy = ServerPolicy.only(
-    "agents_sessions_create",
-    "agents_sessions_get",
-    "agents_sessions_list",
-    "agents_sessions_events_create",
-    "agents_sessions_items_list",
-    "agents_runtimes_list",
-)
 
-server = SandboxServer(policy=policy)
+@command("agents_version", description="Check both pinned CLI versions without a model call.")
+def agents_version() -> str:
+    for binary, expected in VERSIONS.items():
+        executable = shutil.which(binary)
+        if executable is None:
+            raise RuntimeError(f"{binary} is missing; rebuild the pinned template")
+        try:
+            result = subprocess.run([executable, "--version"], capture_output=True,
+                                    text=True, timeout=20, check=False)
+        except (OSError, subprocess.TimeoutExpired):
+            raise RuntimeError(f"{binary} version check failed") from None
+        # Raw CLI output can contain local paths or credentials.
+        if result.returncode != 0 or result.stdout.strip() not in {expected, f"codex-cli {expected}"}:
+            raise RuntimeError(f"{binary} version does not match the template pin")
+    return "codex 0.162.1; qwen-code 0.23.0"
+
+
 if __name__ == "__main__":
-    server.serve(port=int(os.environ.get("ABX_SERVER_PORT", "9000")))
+    start(int(os.environ.get("ABX_SERVER_PORT", "9000")), policy=POLICY)

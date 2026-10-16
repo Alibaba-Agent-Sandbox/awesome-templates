@@ -1,0 +1,10 @@
+[PASS] target health
+[PASS] target command signatures
+[PASS] missing required prompt returns 400
+[PASS] unknown command returns 404
+[PASS] invalid command values fail before upstream execution
+[PASS] invalid command values fail before upstream execution
+[PASS] invalid command values fail before upstream execution
+[PASS] actual target version matches pin
+[PASS] actual target setup inspection
+[NOT RUN] L3 disabled by E2E_RUN_LLM

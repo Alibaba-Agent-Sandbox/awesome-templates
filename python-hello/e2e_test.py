@@ -16,12 +16,14 @@ import base64
 import json
 import os
 import sys
+import uuid
 
 import httpx
 
 BASE_URL = os.environ.get("E2E_BASE_URL", "http://localhost:9000").rstrip("/")
 WORKSPACE = os.environ.get("E2E_WORKSPACE", "")  # empty → auto-detect
 TIMEOUT = httpx.Timeout(connect=10.0, read=60.0, write=30.0, pool=10.0)
+TOKEN = os.environ.get("E2E_TOKEN", "")
 
 RESULTS: list[tuple[str, str, str]] = []  # (status, test, detail)
 
@@ -82,7 +84,7 @@ def group_builtin(client: httpx.Client) -> None:
         ok = (
             resp.status_code == 200
             and "hello" in names
-            and "run_script" in names
+            and {"run_script", "run", "test"} <= names
             and "_debug_info" not in names  # hidden commands are not listed
         )
         record("PASS" if ok else "FAIL", "GET /commands",
@@ -108,12 +110,24 @@ def group_commands(client: httpx.Client) -> None:
            lambda r: r.strip() == "42")
 
     try:
-        resp = run_cmd(client, "run_script", {"code": "import sys; sys.exit(3)"})
-        ok = resp.status_code == 500 and "error" in resp.json()
+        marker = "synthetic-private-python-value"
+        resp = run_cmd(client, "run_script", {
+            "code": f"import sys; print('{marker}', file=sys.stderr); sys.exit(3)"
+        })
+        ok = (resp.status_code == 500 and "error" in resp.json()
+              and marker not in resp.text and "exited 3" in resp.json()["error"])
         record("PASS" if ok else "FAIL", "POST /commands/run_script (error)",
                f"HTTP {resp.status_code} (expected 500)")
     except Exception as exc:  # noqa: BLE001
         record("FAIL", "POST /commands/run_script (error)", f"exception: {exc}")
+
+    for name, arguments, expected in (
+        ("run_script", {}, 400),
+        ("unknown_e2e_command", {}, 404),
+    ):
+        resp = run_cmd(client, name, arguments)
+        record("PASS" if resp.status_code == expected else "FAIL",
+               f"{name} argument/routing error", f"HTTP {resp.status_code} (expected {expected})")
 
     # Hidden command is callable even though not listed.
     cmd_ok(client, "POST /commands/_debug_info (hidden)", "_debug_info", {},
@@ -142,34 +156,27 @@ def group_routes(client: httpx.Client) -> None:
 
 
 def detect_workspace(client: httpx.Client) -> str:
-    """Find a writable directory accepted by the server's path guard.
+    """Use the explicit workspace or ask the command process for its real cwd.
 
-    The server restricts file operations to ``ABX_SERVER_BASE_DIR``
-    (default ``/home/user``); Docker templates typically use ``/workspace``.
-    An explicit ``E2E_WORKSPACE`` always wins.
+    A rejected file operation is a failure, never a reason to try another path.
     """
-    candidates = ([WORKSPACE] if WORKSPACE else []) + ["/home/user", "/workspace"]
-    for candidate in candidates:
-        probe = f"{candidate}/.e2e_probe"
-        try:
-            resp = client.post("/files/upload-stream", json={
-                "path": probe,
-                "content_base64": base64.b64encode(b"probe").decode(),
-            })
-            if resp.status_code == 200:
-                client.delete("/files", params={"path": probe})
-                return candidate
-        except Exception:  # noqa: BLE001
-            continue
-    return ""
+    if WORKSPACE:
+        return WORKSPACE
+    resp = run_cmd(client, "run_script", {"code": "import os; print(os.getcwd())"})
+    resp.raise_for_status()
+    workspace = str(resp.json()["result"]).strip()
+    if not workspace.startswith("/"):
+        raise RuntimeError("run_script did not return an absolute workspace")
+    return workspace
 
 
 def group_files(client: httpx.Client) -> None:
     if not WORKSPACE:
-        record("SKIP", "files upload/download round-trip",
-               "no writable workspace detected — set E2E_WORKSPACE")
+        record("FAIL", "files upload/download round-trip",
+               "workspace discovery failed — set E2E_WORKSPACE")
         return
-    path = f"{WORKSPACE}/e2e_python_hello.txt"
+    filename = f"e2e_python_hello_{uuid.uuid4().hex}.txt"
+    path = f"{WORKSPACE}/{filename}"
     content = "python-hello e2e file round-trip\n"
     encoded = base64.b64encode(content.encode()).decode()
 
@@ -179,6 +186,8 @@ def group_files(client: httpx.Client) -> None:
         ok = resp.status_code == 200
         record("PASS" if ok else "FAIL", "POST /files/upload-stream",
                f"HTTP {resp.status_code}, {_short(resp.json(), 120)}")
+        if not ok:
+            return
     except Exception as exc:  # noqa: BLE001
         record("FAIL", "POST /files/upload-stream", f"exception: {exc}")
         return
@@ -196,7 +205,7 @@ def group_files(client: httpx.Client) -> None:
         resp = client.get("/files/list", params={"path": WORKSPACE})
         entries = resp.json().get("entries", resp.json().get("files", []))
         names = [e.get("name") for e in entries] if isinstance(entries, list) else []
-        ok = resp.status_code == 200 and "e2e_python_hello.txt" in names
+        ok = resp.status_code == 200 and filename in names
         record("PASS" if ok else "FAIL", "GET /files/list",
                f"HTTP {resp.status_code}, {len(names)} entr(ies), file present={ok}")
     except Exception as exc:  # noqa: BLE001
@@ -209,6 +218,62 @@ def group_files(client: httpx.Client) -> None:
                f"HTTP {resp.status_code}")
     except Exception as exc:  # noqa: BLE001
         record("FAIL", "DELETE /files", f"exception: {exc}")
+
+
+def group_python_workflow(client: httpx.Client) -> None:
+    """Upload real source/tests, execute them, and prove a failing test fails."""
+    if not WORKSPACE:
+        record("FAIL", "Python development workflow", "workspace unavailable")
+        return
+    marker = uuid.uuid4().hex
+    source = f"e2e_python_{marker}.py"
+    test_file = f"e2e_pytest_{marker}.py"
+    failing_test_file = f"e2e_pytest_failing_{marker}.py"
+    files = {
+        source: "print(6 * 7)\n",
+        test_file: "def test_calculation():\n    assert 6 * 7 == 42\n",
+    }
+    uploaded = []
+    try:
+        for name, content in files.items():
+            path = f"{WORKSPACE}/{name}"
+            resp = client.post("/files/upload-stream", json={
+                "path": path,
+                "content_base64": base64.b64encode(content.encode()).decode(),
+            })
+            if resp.status_code != 200:
+                record("FAIL", "upload Python workflow", f"HTTP {resp.status_code}")
+                return
+            uploaded.append(path)
+        cmd_ok(client, "run uploaded script", "run", {"file": source},
+               lambda result: result.strip() == "42")
+        cmd_ok(client, "pytest uploaded test", "test", {"path": test_file},
+               lambda result: "1 passed" in result)
+        # A same-size rewrite within one timestamp tick can reuse pytest's
+        # assertion-rewrite bytecode cache. Use a fresh negative-control module
+        # so the check always executes the failing source, including on fast CI.
+        failing_path = f"{WORKSPACE}/{failing_test_file}"
+        resp = client.post("/files/upload-stream", json={
+            "path": failing_path,
+            "content_base64": base64.b64encode(
+                b"def test_calculation():\n    assert 6 * 7 == 41\n"
+            ).decode(),
+        })
+        if resp.status_code != 200:
+            record("FAIL", "upload failing Python test", f"HTTP {resp.status_code}")
+            return
+        uploaded.append(failing_path)
+        resp = run_cmd(client, "test", {"path": failing_test_file})
+        ok = resp.status_code == 500 and "error" in resp.json()
+        record("PASS" if ok else "FAIL", "pytest failing test returns sanitized 500",
+               f"HTTP {resp.status_code}")
+    except Exception as exc:
+        record("FAIL", "Python development workflow", str(exc))
+    finally:
+        for path in uploaded:
+            resp = client.delete("/files", params={"path": path})
+            record("PASS" if resp.status_code == 200 else "FAIL", "cleanup Python workflow",
+                   f"HTTP {resp.status_code}")
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -250,7 +315,8 @@ def main() -> int:
     print("python-hello end-to-end suite", flush=True)
     print(f"  base_url : {BASE_URL}", flush=True)
     print("-" * 74, flush=True)
-    with httpx.Client(base_url=BASE_URL, timeout=TIMEOUT) as client:
+    headers = {"Authorization": f"Bearer {TOKEN}"} if TOKEN else {}
+    with httpx.Client(base_url=BASE_URL, timeout=TIMEOUT, headers=headers) as client:
         if not preflight(client):
             print("server unreachable — aborting", flush=True)
             return 2
@@ -262,8 +328,14 @@ def main() -> int:
         group_routes(client)
         print("\n-- File ops --", flush=True)
         global WORKSPACE
-        WORKSPACE = detect_workspace(client)
+        try:
+            WORKSPACE = detect_workspace(client)
+        except Exception as exc:
+            record("FAIL", "workspace discovery", str(exc))
+            WORKSPACE = ""
         group_files(client)
+        print("\n-- Python development workflow --", flush=True)
+        group_python_workflow(client)
         print("\n-- Shell --", flush=True)
         group_shell(client)
     return summary()

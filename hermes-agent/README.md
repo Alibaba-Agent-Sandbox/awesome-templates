@@ -1,262 +1,117 @@
-# hermes-agent
+# Hermes Agent
 
-> [中文版](#中文) | [English](#english)
+## What it does
 
----
+Run the actual upstream Hermes Agent CLI with its local terminal and file toolsets. This template exposes the coding slice; messaging gateways, browser/desktop integrations and external terminal backends are not provisioned.
 
-## English
+## Stack
 
-Sandbox runtime for AI agents driven by NousResearch Hermes models, supporting tool calling and multimodal tasks.
+NousResearch Hermes Agent v0.22.1, commit `297552a9d646119871391d202509822cd86330df`; private Python 3.14.6; `uv==0.12.3`; upstream frozen `uv.lock`; platform Agent Sandbox server.
 
-### Environment
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml) · [Upstream](https://github.com/NousResearch/hermes-agent/tree/297552a9d646119871391d202509822cd86330df)
 
-This template comes preinstalled with the following tools and dependencies:
+## Problem solved
 
-| Category | Details |
-|----------|---------|
-| **Base image** | python:3.12-slim |
-| **Python** | Python 3.12 + venv (at `/opt/venv`) |
-| **Node.js** | Node.js 22.x + npm |
-| **Python packages** | `uv`, `openai>=1.0`, `httpx`, `rich`, `pyyaml` |
-| **System tools** | git, curl, xz-utils, build-essential, ripgrep, ffmpeg |
-| **Resources** | 2 CPU / 4096 MB memory (8192 MB recommended for browser scenarios) |
+Expose the real Hermes headless CLI through a typed named command with a bounded CLI wait; inject model credentials at sandbox creation. Accepted gateway work has a separate lifecycle.
 
-### Installation
-
-**Install from a local path:**
-
-```bash
-abx template install ./hermes-agent --registry-type local
-```
-
-**Install from GitHub:**
+## Quick start (CLI)
 
 ```bash
 abx template install alibaba-agent-sandbox/awesome-templates//hermes-agent
+abx create --template <template-id> --env OPENROUTER_API_KEY="$OPENROUTER_API_KEY"
+abx run <sandbox-id> hermes --arg prompt="Inspect this project and fix the failing calculation" --arg model="<model-id>"
 ```
 
-### Usage
+Hermes requires a compatible model argument or HERMES_MODEL at creation.
 
-Create a sandbox instance and pass in the LLM configuration:
+## Quick start (Python SDK)
 
-```bash
-abx create --template hermes-agent \
-    --env OPENAI_API_KEY=sk-xxx \
-    --env OPENAI_BASE_URL=https://api.your-provider.com/v1
-```
-
-Quickly install agent frameworks with uv:
-
-```bash
-abx exec <sandbox-id> -- uv pip install langchain langgraph
-```
-
-Call a Hermes model via the OpenAI-compatible interface:
-
-```bash
-abx exec <sandbox-id> -- python3 -c "
-from openai import OpenAI
-client = OpenAI()
-response = client.chat.completions.create(
-    model='NousResearch/Hermes-3-Llama-3.1-8B',
-    messages=[{'role': 'user', 'content': 'Write a file search tool'}],
-    tools=[{
-        'type': 'function',
-        'function': {
-            'name': 'search_files',
-            'description': 'Search files',
-            'parameters': {'type': 'object', 'properties': {'query': {'type': 'string'}}}
-        }
-    }]
-)
-print(response.choices[0].message)
-"
-```
-
-Using the Python SDK:
+The client distribution is `agent-sandbox-client`. See [installation](../docs/python-client-installation.md) for availability and pinned source installation.
 
 ```python
+import asyncio
+import os
 from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create_sync(
-    template="hermes-agent",
-    env={
-        "OPENAI_API_KEY": "sk-xxx",
-        "OPENAI_BASE_URL": "https://api.your-provider.com/v1"
-    }
-)
+async def main():
+    sb = await Sandbox.create(template="<template-id>", timeout=900,
+                              envs={"OPENROUTER_API_KEY": os.environ["OPENROUTER_API_KEY"]})
+    try:
+        print(await sb.run("hermes", prompt="Inspect and fix the calculation", model="<model-id>",
+                           timeout=660))
+    finally:
+        await sb.kill()
 
-result = sandbox.commands.run("python3 --version && uv --version")
-print(result.stdout)
+asyncio.run(main())
 ```
 
-### Configuration
-
-#### Environment Variables
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `OPENAI_API_KEY` | LLM provider API key | Yes |
-| `OPENAI_BASE_URL` | LLM API base URL (for self-hosted or third-party hosting) | No |
-| `WORKSPACE` | Working directory path, defaults to `/workspace` | No |
-
-#### Managing Dependencies with uv
-
-This template ships with `uv`, a high-performance Python package manager. Using `uv` instead of `pip` is recommended:
+## Quick start (HTTP POST)
 
 ```bash
-# Install packages with uv (much faster than pip)
-abx exec <sandbox-id> -- uv pip install <package-name>
-
-# Create a project with uv
-abx exec <sandbox-id> -- uv init my-agent-project
+curl -X POST "$SANDBOX_PORT_9000_URL/commands/hermes" \
+  -H 'Content-Type: application/json' \
+  -H "X-Access-Token: $GATEWAY_ACCESS_TOKEN" \
+  -H "Authorization: Bearer $ABX_SERVER_TOKEN" \
+  --data '{"prompt":"Inspect and fix the calculation","command_timeout":600,"model":"<model-id>"}'
 ```
 
-### Notes
+Success is `{"result":"buffered output"}`. Send arguments directly, with no `args` wrapper. The provider defines gateway access credentials; `ABX_SERVER_TOKEN` separately protects this server. Omit Authorization when unset. The SDK supports `sb.server_at(9000, token=...)`.
 
-- **API key security**: Never hardcode API keys into the template; always inject them via the `--env` option or environment variables.
-- **Model compatibility**: Hermes models are accessed via the OpenAI-compatible interface; configure `OPENAI_BASE_URL` to point at the actual hosting address.
-- **Resource recommendations**: 4096 MB of memory is sufficient for basic agent tasks; 8192 MB is recommended for browser automation or multimedia processing.
-- **ffmpeg support**: ffmpeg is preinstalled for audio/video processing tasks.
-- **Virtual environment**: Python packages are installed in `/opt/venv`; no manual activation is needed since `PATH` is preconfigured.
+HTTP 400: missing/invalid/range arguments; 401: authentication; 404: unknown command; 500: missing credentials, execution failure or timeout. Results are buffered. `command_timeout` bounds the CLI process and its owned process group; SDK `timeout` only controls HTTP waiting. Hermes v0.22.1 executes accepted turns through a separate canonical gateway and managed workers. Those can continue after either timeout. Destroy the sandbox to stop all work; per-turn gateway cancellation is not provided by this template. Use process APIs for background work.
 
----
+## Command reference
 
-## 中文
+`hermes` → buffered string.
 
-NousResearch Hermes 系列模型驱动的 AI Agent 沙箱运行环境，支持工具调用（Tool Calling）和多模态任务。
+| Parameter | Type | Required/default | Meaning |
+|---|---|---|---|
+| prompt | string | required | Task text; nonempty. |
+| model | string | "" | Required argument or HERMES_MODEL; no implicit model choice. |
+| provider | string | "" | Argument or HERMES_PROVIDER=openrouter; openrouter / openai-api / custom. |
+| cwd | string | "" | Existing directory; relative to WORKSPACE. |
+| max_turns | integer | 20 | Maximum tool rounds, 1–100. |
+| command_timeout | integer | 600 | CLI process deadline, 1–1800 seconds; accepted gateway work can continue. |
 
-### 环境说明
+| Additional command | Parameters | Result |
+|---|---|---|
+| hermes_version | none | Installed upstream version and provenance. |
+| hermes_setup_check | none | Read-only CLI/version/provider-key diagnostic. |
+| run | script: string = main.py | Local Python stdout (compatibility). |
 
-本模板预装以下工具和依赖：
+## Configuration
 
-| 类别 | 内容 |
-|------|------|
-| **基础镜像** | python:3.12-slim |
-| **Python** | Python 3.12 + venv 虚拟环境（位于 `/opt/venv`） |
-| **Node.js** | Node.js 22.x + npm |
-| **Python 包** | `uv`、`openai>=1.0`、`httpx`、`rich`、`pyyaml` |
-| **系统工具** | git、curl、xz-utils、build-essential、ripgrep、ffmpeg |
-| **资源配置** | 2 CPU / 4096 MB 内存（建议 8192 MB 带浏览器场景） |
+`WORKSPACE=/home/user/app`; `HERMES_HOME=/home/user/.hermes`; `HERMES_PROVIDER=openrouter`. Supply `HERMES_MODEL` or the model argument. OpenRouter requires `OPENROUTER_API_KEY`; openai-api/custom require `OPENAI_API_KEY`. Custom also requires `OPENAI_BASE_URL`. The command uses `-Q --yolo`, terminal/file toolsets and the local terminal backend. It ignores user config and rules, does not run interactive setup, and kills the owned process group on timeout. Hermes may persist session/memory state under HERMES_HOME. Its CLI auto-starts the canonical gateway when needed; that detached authority exits after upstream idle conditions are satisfied. Killing the CLI does not cancel an accepted gateway turn. Messaging adapters are not configured, while the internal canonical gateway is part of this upstream CLI execution path.
 
-### 安装方式
+Secret declarations in template.yaml are empty; do not copy credentials into images or logs.
 
-**从本地安装：**
+Hermes runs through its private Python 3.14 shebang. The image exposes only its `hermes` launcher on the platform PATH; `python3` and `agent-sandbox-server` continue to use the server environment. For local direct `python3 commands.py` development, select the environment with agent-sandbox-server installed; placing the entire Hermes venv first on PATH would select a different interpreter.
+
+## Resources
+
+2 vCPU · 2048 MB · port 9000 · `/home/user/app` · non-root `user`.
+
+## Verified
+
+No provider has a passing run recorded for this template.
+
+## Secondary development
 
 ```bash
-abx template install ./hermes-agent --registry-type local
-```
-
-**从 GitHub 安装：**
-
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//hermes-agent
-```
-
-### 使用示例
-
-创建沙箱实例并传入 LLM 配置：
-
-```bash
-abx create --template hermes-agent \
-    --env OPENAI_API_KEY=sk-xxx \
-    --env OPENAI_BASE_URL=https://api.your-provider.com/v1
-```
-
-使用 uv 快速安装 Agent 框架：
-
-```bash
-abx exec <sandbox-id> -- uv pip install langchain langgraph
-```
-
-通过 OpenAI 兼容接口调用 Hermes 模型：
-
-```bash
-abx exec <sandbox-id> -- python3 -c "
-from openai import OpenAI
-client = OpenAI()
-response = client.chat.completions.create(
-    model='NousResearch/Hermes-3-Llama-3.1-8B',
-    messages=[{'role': 'user', 'content': '编写一个文件搜索工具'}],
-    tools=[{
-        'type': 'function',
-        'function': {
-            'name': 'search_files',
-            'description': '搜索文件',
-            'parameters': {'type': 'object', 'properties': {'query': {'type': 'string'}}}
-        }
-    }]
-)
-print(response.choices[0].message)
-"
-```
-
-使用 Python SDK：
-
-```python
-from agent_sandbox import Sandbox
-
-sandbox = Sandbox.create_sync(
-    template="hermes-agent",
-    env={
-        "OPENAI_API_KEY": "sk-xxx",
-        "OPENAI_BASE_URL": "https://api.your-provider.com/v1"
-    }
-)
-
-result = sandbox.commands.run("python3 --version && uv --version")
-print(result.stdout)
-```
-
-### 配置说明
-
-#### 环境变量
-
-| 变量名 | 说明 | 必填 |
-|--------|------|------|
-| `OPENAI_API_KEY` | LLM 提供商 API 密钥 | 是 |
-| `OPENAI_BASE_URL` | LLM API 基础 URL（用于自部署或第三方托管） | 否 |
-| `WORKSPACE` | 工作目录路径，默认 `/workspace` | 否 |
-
-#### 使用 uv 管理依赖
-
-本模板预装 `uv` 作为高性能 Python 包管理器，建议使用 `uv` 替代 `pip`：
-
-```bash
-# 使用 uv 安装包（速度远快于 pip）
-abx exec <sandbox-id> -- uv pip install <package-name>
-
-# 使用 uv 创建项目
-abx exec <sandbox-id> -- uv init my-agent-project
-```
-
-### 注意事项
-
-- **API Key 安全**：请勿将 API Key 硬编码到模板中，始终通过 `--env` 参数或环境变量注入。
-- **模型兼容**：Hermes 模型通过 OpenAI 兼容接口访问，需配置 `OPENAI_BASE_URL` 指向实际托管地址。
-- **资源建议**：基础 Agent 任务使用 4096 MB 内存即可；涉及浏览器自动化或多媒体处理时建议 8192 MB。
-- **ffmpeg 支持**：已预装 ffmpeg，支持音视频处理任务。
-- **虚拟环境**：Python 包安装在 `/opt/venv` 中，使用时无需手动激活，`PATH` 已自动配置。
-
-## Deploy and local e2e
-
-Install and register this template:
-
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//hermes-agent
-```
-
-From this directory (build, push, and register):
-
-```bash
-abx deploy
-```
-
-From the repository root, with `agent-sandbox-server` and `httpx` installed:
-
-```bash
+python3 scripts/check_template.py hermes-agent
+python3 -m pytest -q hermes-agent/test_commands.py
 python3 scripts/run_local_e2e.py
 ```
 
-That starts `python3 commands.py` in this directory and runs `e2e_test.py`.
+`E2E_COMMAND_TIMEOUT` controls the model acceptance command budget (default 600 seconds, range 1–1800). L0 does not call a model. `E2E_REQUIRE_LLM=1` forces real coding acceptance. L3 uses target setup diagnostics, seeds failing source/tests, verifies changed source/new artifacts/unchanged tests through target file APIs, then independently executes unittest and held-out calculations. A missing key is not acceptance.
 
+## Contributing
+
+[CONTRIBUTING.md](../CONTRIBUTING.md) · [spec](../docs/template-spec.md) · [design](../docs/design/hermes-agent.md).
+
+## Issues
+
+[Template issues](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues). [Python SDK/server issues](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues); [CLI issues](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues). Include sanitized commands, versions and provider; omit keys.
+
+## License
+
+Apache-2.0 template code. Upstream tools retain their own licenses and attribution. See [LICENSE](../LICENSE).

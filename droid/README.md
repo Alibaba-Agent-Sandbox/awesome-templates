@@ -1,56 +1,128 @@
-# droid
+# Factory Droid
 
-## 这是什么
+## What it does
 
-这是 Factory Droid 编码 CLI 的 Agent Sandbox 模板。镜像里预装官方 npm 包 `@factory/cli@0.241.1`（命令名 `droid`），版本与官方安装脚本 `https://app.factory.ai/cli` 当前固定的 `VER=0.241.1` 一致。命名命令 `droid` 以参数数组调用无头命令 `droid exec`，提示词是单独的 argv，不拼进 shell 字符串。
+Run Factory Droid 0.241.1 headlessly on an existing project. Named commands expose a bounded coding call, the installed version, and a setup inspection without calling a model.
 
-## 安装
+## Stack
 
-极速版从模板库安装：
+Install the pinned CLI from `https://registry.npmjs.org` with optional platform packages included. The base image npm mirror returned 404 for the required native package; its absence triggers an upstream fallback that can leave a self-referencing binary link.
+
+Alibaba FC base image (normally `v0.0.49`), its Python 3.13 and Node.js 20, npm `@factory/cli@0.241.1`, and the pinned in-sandbox `agent-sandbox-server` source in [Dockerfile](Dockerfile). The template uses generation 2 and runs as `user` on port 9000.
+
+## Problem solved
+
+An automation can upload a project, ask Droid to edit it, inspect files, and run independent tests through Agent Sandbox. Missing Factory credentials fail before launching interactive login. `WORKSPACE` controls the project root; success and error text redact configured secret values.
+
+## Quick start (CLI)
+
+Install the CLI following the [official installation instructions](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#readme), then build this template on `alicloud-express`:
 
 ```bash
 abx template install alibaba-agent-sandbox/awesome-templates//droid
+abx create --template <template-id>
+abx run <sandbox-id> droid_version
+abx run <sandbox-id> droid_setup_check
+abx run <sandbox-id> droid --arg prompt='Review the existing project' --arg auto=''
 ```
 
-本地目录：
+Use the template ID returned by installation. Inject `FACTORY_API_KEY` through your private environment configuration at sandbox creation; provider credentials and the Factory product key are separate. The final command requires the Factory key. Upload a project with the SDK files API before a coding task. Remove the sandbox with `abx kill <sandbox-id> -y` when done.
 
-```bash
-abx template install ./droid --registry-type local
-```
+## Quick start (Python SDK)
 
-## 使用
-
-创建沙箱时注入 `FACTORY_API_KEY`。不要把密钥写进模板或镜像。
+Use `agent-sandbox-client`, imported as `agent_sandbox`. For an unpublished release, use the [paired source installation](../docs/python-client-installation.md).
 
 ```python
+import asyncio
+import os
 from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create_sync(
-    template="droid",
-    env={"FACTORY_API_KEY": "fk-..."},
-)
-result = sandbox.run("droid", prompt="用一句话说明这个仓库做什么")
-print(result)
+async def main():
+    sb = await Sandbox.create(
+        template="<template-id>", timeout=600,
+        envs={"FACTORY_API_KEY": os.environ["FACTORY_API_KEY"]},
+    )
+    try:
+        await sb.files.write("/home/user/app/calc.py", "def add(a, b):\n    return a - b\n")
+        print(await sb.run("droid_version"))  # "0.241.1"
+        print(await sb.run("droid", prompt="Fix calc.py so add returns the sum.",
+                           auto="low", command_timeout=300, timeout=360))
+        print(await sb.files.read("/home/user/app/calc.py"))
+    finally:
+        await sb.kill()
+
+asyncio.run(main())
 ```
 
-`sandbox.run("droid", prompt=...)` 对应容器内的 `droid exec <prompt>`。未设置 `FACTORY_API_KEY` 时，命令抛出 `RuntimeError`。
+`command_timeout` is the server-side execution deadline. `Sandbox.run(timeout=360)` is the client HTTP timeout; a shorter client timeout does not guarantee cancellation. Results are buffered. For background jobs, progress and cancellation, use the SDK process API.
 
-## 本地 e2e
+## Quick start (HTTP POST)
 
-在本目录安装 `agent-sandbox-server` 和 `httpx` 后：
+Obtain the sandbox URL for port 9000 using `sb.network.get_url(9000)`:
 
 ```bash
-ABX_SERVER_PORT=9000 python3 commands.py
+curl -X POST '<sandbox-port-9000-url>/commands/droid' \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer ${ABX_SERVER_TOKEN}" \
+  -d '{"prompt":"Fix calc.py so add returns the sum.","auto":"low","command_timeout":300}'
 ```
 
-另一个终端：
+The request body is the direct argument object. A successful reply is `{"result":"<buffered Droid output>"}`. If `ABX_SERVER_TOKEN` is empty, omit that header. A nonempty server token requires `Authorization: Bearer <token>` or `X-Access-Token: <token>`; with the Python SDK, use `sb.server_at(9000, token=...)`. Provider gateway authentication is separate: add the access header required by your provider in addition to server authentication. `GET /commands` describes signatures. `POST /commands/droid_version` and `/commands/droid_setup_check` accept `{}`.
+
+HTTP 400 indicates missing or mistyped arguments; 401 indicates server authentication failure; 404 indicates an unknown command; 500 indicates invalid value ranges, missing Factory credentials, upstream failure or execution timeout. No streamed response is returned.
+
+## Command reference
+
+| Command | Parameters | Result / upstream call |
+| --- | --- | --- |
+| `droid_version` | None | Version string from `droid --version`; no model key needed. |
+| `droid_setup_check` | None | Object with `installed` (bool), `package`, `version`, `expected_version` (strings), `api_key_set`, `workspace_exists`, `auto_update_enabled` (bool). No model call; no key values returned. |
+| `droid` | `prompt`: required nonempty string; `auto`: string, default `low`, one of `""`, `low`, `medium`, `high`; `cwd`: string, default `""`, existing directory within `WORKSPACE`; `command_timeout`: integer, default 300, range 1–600 seconds | Buffered stdout string from `droid exec [--auto LEVEL] -- PROMPT`. Nonzero exit or timeout raises a sanitized execution error. |
+
+Relative `cwd` resolves from `WORKSPACE`. Absolute paths must remain inside that root after symlink resolution. `auto=""` omits the flag and uses upstream read-only mode; `low` allows project edits, `medium` also allows development commands, and `high` allows riskier operations. The template never passes `--skip-permissions-unsafe`. **Compatibility:** 1.1.0 uses `/home/user/app` instead of `/app` and defaults the coding command to explicit `--auto low`; use `auto=""` for the previous read-only behavior.
+
+## Configuration
+
+This subprocess lifecycle requires Linux. The command closes its owned process group on success and error as well as at the deadline. It drains both output pipes while keeping the leader unreaped until group cleanup, so redirected background descendants cannot outlive a completed command.
+
+| Name | Default | Purpose |
+| --- | --- | --- |
+| `FACTORY_API_KEY` | Empty | Factory account API key, injected at creation. Required only for `droid`. |
+| `ABX_SERVER_TOKEN` | Empty | Optional HTTP server authentication. |
+| `WORKSPACE` | `/home/user/app` | Existing project root; an invalid explicit root fails. |
+| `FACTORY_DROID_AUTO_UPDATE_ENABLED` | `false` | Forced off in subprocesses to preserve the pin. |
+
+Factory credentials are obtained from [Factory API key settings](https://app.factory.ai/settings/api-keys). A DashScope or OpenAI key is not a replacement for `FACTORY_API_KEY`. A custom model configuration is outside this template's API. Upstream behavior is documented in [Droid Exec](https://docs.factory.com/droid-exec/overview); the exact pinned CLI help is the authority for flags. Redaction covers raw and JSON-escaped configured secret values in stdout and error messages. Agent-written project files still require normal secret hygiene. The cwd constraint selects the project and is not an operating-system security boundary.
+
+## Resources
+
+Default: 2 vCPU, 2048 MB RAM, port 9000. Model calls require external Factory network access. The platform starts `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py` and probes `agent-sandbox-server healthcheck --port 9000`.
+
+## Verified
+
+No provider has a passing run recorded for this template.
+
+## Secondary development
+
+Keep the Alibaba base, exact CLI/server pins and non-root user. Extend [commands.py](commands.py) through `@command`; pass argv directly and keep secret redaction, key guards and deadline cleanup. Build with BuildKit; deployment may inject a server wheel. Run:
 
 ```bash
-E2E_RUN_LLM=0 python3 e2e_test.py
+python3 -m pytest -q droid/test_commands.py droid/test_e2e_protocol.py
+python3 scripts/check_template.py droid
+python3 scripts/run_local_e2e.py
+python3 scripts/express_e2e.py droid
 ```
 
-`e2e_test.py` 用 httpx 检查 `GET /health`、`GET /commands` 是否列出 `droid`，以及缺少 `prompt` 时是否返回客户端错误（HTTP 4xx）。`E2E_RUN_LLM=0` 时模型调用记为 SKIP。带密钥的验收设置 `E2E_REQUIRE_LLM=1`，服务进程和测试进程都要有 `FACTORY_API_KEY`，输出里必须有 `ABX_E2E_OK`。密钥为空则 FAIL。
+The local suite requires the real pinned `droid` on the server PATH; it never substitutes a fake version. L1 additionally requires a Docker build. L2 requires a real Express deployment and externally asserted smoke commands. L3 requires `E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1`, a Factory key on the server, and the coding acceptance in [e2e_test.py](e2e_test.py): seeded failing code, source modification, preserved tests, new downloaded artifacts, independent test reruns and held-out assertions. The verifier uses remote file/process APIs and removes its own project. Missing keys fail required L3; a response marker alone cannot pass.
 
-## E2B
+## Contributing
 
-E2B 上如果已经存在模板 id `droid`，创建沙箱时客户端读取 `ABX_E2B_API_KEY`。`FACTORY_API_KEY` 是 Droid 调模型用的密钥，在创建时注入沙箱。两者都不要写进仓库。E2B 没有沙箱内具名命令，`sandbox.run("droid", prompt=...)` 会得到 `E8004`。那张预置沙箱里要直接执行 `droid exec`，用 `sandbox.commands.run`。`sandbox.run("droid", prompt=...)` 只用在极速版发布后的本模板上。
+Read [CONTRIBUTING.md](../CONTRIBUTING.md), the [template spec](../docs/template-spec.md), and the [design](../docs/design/droid.md). Keep this README and [Chinese README](README.zh-CN.md) synchronized; include regression tests, engineering records and actual evidence with a scoped PR. Keep the catalog experimental until required acceptance passes.
+
+## Issues
+
+Continue [Droid issue #19](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/19). Report template defects in [awesome-templates](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues), client/server defects in [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues), or CLI defects in [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues). Include versions, provider, generation and sanitized reproduction; never include keys or raw private logs.
+
+## License
+
+Template source: [Apache-2.0](../LICENSE). Factory Droid is distributed separately under its upstream terms; installing the CLI does not relicense it.

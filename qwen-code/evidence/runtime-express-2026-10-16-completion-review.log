@@ -1,0 +1,18 @@
+[PASS] health
+[PASS] registered command names
+[PASS] typed command parameters
+[PASS] invalid arguments are HTTP 400
+[PASS] invalid arguments are HTTP 400
+[PASS] unknown command is HTTP 404
+[PASS] read-only setup inspection
+[PASS] real CLI version equals pin
+[PASS] seeded source fails before model edits
+[PASS] real headless CLI completes
+[PASS] existing source changed via target files API
+[PASS] original test file preserved
+[PASS] new report artifact retrieved
+[PASS] new exact artifact retrieved
+[PASS] independent target unittest process passes
+[PASS] independent held-out calculations pass
+[PASS] owned coding project cleanup
+0 failed

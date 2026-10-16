@@ -83,13 +83,29 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-`await sb.run("codex_exec", prompt="...")` 返回结果对象（`last_message`、`events`、`thread_id`）。`sb.commands.run` 是 shell，不是这条命名命令。python-sdk 0.3.0 上 `Sandbox.create_sync` 会抛 `TypeError`（[python-sdk#22](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues/22)）；请用 `await Sandbox.create`。
+`await sb.run("codex_exec", prompt="...")` 返回结果对象（`last_message`、`events`、`thread_id`）。`sb.commands.run` 是 shell API；沙箱生命周期管理使用上面的异步 `Sandbox.create` 示例。
 
 用第一次结果里的 `thread_id` 续跑：
 
 ```python
 await sb.run("codex_exec", prompt="继续。", resume="<thread_id>")
 ```
+
+## 快速开始（HTTP POST）
+
+对于 `http://127.0.0.1:9000` 可访问的服务（例如本地模板进程）：
+
+```bash
+curl --fail-with-body -X POST http://127.0.0.1:9000/commands/codex_exec \
+  -H 'Content-Type: application/json' \
+  --data '{"prompt":"总结工作区。","sandbox":"read-only","approval":"never","json_events":true,"timeout_s":120}'
+```
+
+远程沙箱使用 `sb.network.get_url(9000)` 返回的网关地址及其要求的认证。应用配置了 `ABX_SERVER_TOKEN` 时，使用应用的秘密管理机制在授权头传递 bearer token。响应将命令结果包在 `{"result": ...}` 中；工具事件和 stderr 会对已知秘密环境变量值脱敏。
+
+执行成功返回 HTTP 200，正文为 `{"result":{"last_message":"...","events":[],"thread_id":"..."}}`。缺少必填参数或类型不符返回 HTTP 400；应用认证失败返回 HTTP 401。沙箱策略非法或上游执行失败返回 HTTP 500，正文为 `{"error":"...","type":"RuntimeError"}`（非法值使用 `ValueError`）。
+
+`timeout_s` 默认为 300，接受 1 到 3600 的整数。HTTP 读取超时应大于此值并预留服务和网关开销。客户端或网关可能先超时，这不代表子进程已停止；服务端 Codex 超时返回 HTTP 500。命名命令只返回一份完整 JSON；需要实时输出时使用进程 API。
 
 ## 命令参考
 
@@ -124,7 +140,9 @@ await sb.run("codex_exec", prompt="继续。", resume="<thread_id>")
 
 `codex_config_write` 拒绝 `responses` 以外的 `wire_api`，也拒绝 provider id `openai`、`ollama`、`lmstudio`。文件里 `supports_websockets = false`，兼容端点走 HTTPS。
 
-`codex_setup_check` 的 `use_bypass` 为 true 时，`codex_exec` 加上 `--dangerously-bypass-approvals-and-sandbox`。该标志跳过 Codex 的 bubblewrap/seccomp 沙箱和审批提示。隔离边界是 Express 容器。探测成功时，`sandbox=auto` 使用 `--sandbox workspace-write` 和 `approval_policy="never"`。
+`sandbox=auto` 在探测成功时使用 `workspace-write`，失败时回退到 `--dangerously-bypass-approvals-and-sandbox`。`sandbox=bypass` 显式选择该标志。它跳过 Codex 的 bubblewrap/seccomp 沙箱和审批提示，隔离边界此时由 Express 容器提供。显式指定 `read-only`、`workspace-write` 或 `danger-full-access` 而 Linux 沙箱探测失败时，命令会拒绝执行；拒绝发生在写入工作区、git、provider 配置和 `AGENTS.md` 之前，绝不会静默改成 bypass。探测本身可能创建独立的 `sandbox-probe` 状态目录。
+
+`codex_config_write` 的参数为 `base_url`（默认依次取 `ABX_LLM_BASE_URL`、`OPENAI_BASE_URL`）、`provider`（默认 `compatible`）、`env_key`（变量名）、`model`、`wire_api`（只支持 `responses`）及 `codex_home`（默认 `CODEX_HOME` 或 `~/.codex`）。它会以 `0600` 模式覆盖 `config.toml`。`codex_agents_write` 接受必填 `content` 及可选 `cwd`，会覆盖 `cwd/AGENTS.md`。
 
 ## 配置
 
@@ -156,6 +174,14 @@ await sb.run("codex_exec", prompt="继续。", resume="<thread_id>")
 
 较长的 agent 运行可能需要比这项声明更多的内存。平台可能忽略 memory 字段并使用自己的规格。
 
+## 源码运行验证
+
+2026-10-16，修改后的命令源码和固定 Codex 0.162.1 在 `alicloud-express`
+完成真实模型编程任务：远端读取代码/产物、独立 Fibonacci 断言及单独重跑 unittest。
+HTTP 检查全部 16 项通过，本次沙箱已删除。源码和运行包的哈希见
+[证据](evidence/runtime-express-2026-10-16.json)，另有[检查日志](evidence/runtime-express-2026-10-16.log)。
+本次使用现有平台基础沙箱并在运行时安装依赖；Dockerfile 镜像构建和新模板部署尚未验收。
+
 ## 已验证
 
 尚未记录任何通过的提供方测试。
@@ -173,6 +199,10 @@ await sb.run("codex_exec", prompt="继续。", resume="<thread_id>")
 ## 贡献
 
 [CONTRIBUTING.md](../CONTRIBUTING.md) 和 [docs/template-spec.md](../docs/template-spec.md)。设计说明：[docs/design/codex.md](../docs/design/codex.md)。
+
+在仓库根目录执行 `python3 -m unittest discover -s codex -p test_commands.py -v`、`python3 scripts/check_template.py codex` 和 `python3 scripts/run_local_e2e.py`。单元测试覆盖显式权限、自动回退、结果脱敏和误判成功的 marker。L0 检查 HTTP 命令契约并可能跳过模型任务，不代表 L1 镜像构建、L2 云端执行或 L3 Agent 验收已通过。
+
+对于本地或远程模板服务，双方进程已配置获授权的模型环境后，执行 `E2E_BASE_URL=http://127.0.0.1:9000 E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 E2E_MODEL=<model> python3 codex/e2e_test.py` 做 L3。Agent 必须创建 Fibonacci 实现及 unittest 文件，成功执行工具命令并写出 `acceptance.txt`。测试要求最后的助手消息为 marker，核验产物，独立断言 Fibonacci 结果和负数拒绝行为，并重跑生成的测试。只聊天或在工具事件里回显 marker 均不通过。产物通过远程文件 API 读取，独立断言和测试通过远程 shell API 执行。`E2E_WORKSPACE` 应设为服务端文件根目录内可写的目录（默认 `/home/user/workspace`），服务要求认证时还应设置 `E2E_TOKEN`。每次使用唯一目录，清理时只删除该目录。只记录真实通过的 provider evidence，单独报告模型跳过。
 
 ## 问题反馈
 

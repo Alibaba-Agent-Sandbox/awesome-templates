@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-16T03:48:33.911259+00:00",
+  "provider": "alicloud-express",
+  "template": "qwen-code",
+  "scope": "patched-source runtime on existing base; NOT Dockerfile L1 or template-deploy L2",
+  "source_sha256": "0e78e2130607cb8bafc2eed638a2b10f2f8eb514630d5bd38fd0ab414b9383a0",
+  "source_files_sha256": {
+    "qwen-code/commands.py": "0e78e2130607cb8bafc2eed638a2b10f2f8eb514630d5bd38fd0ab414b9383a0",
+    "qwen-code/e2e_test.py": "0fd1ec63d70c09325e4af17ef4c1a29be9e56b10271ec5de80c97d36f98200ec",
+    "qwen-code/Dockerfile": "3fd1f4a96d04d10ea9690279da152f5d0445dfca13c1f52e7bc39bfbb5996c97",
+    "qwen-code/template.yaml": "72799d2211de1d8603fd98265bfa90487d66bc343e1dbae27c81e8e534b61f4d",
+    "scripts/express_runtime_e2e.py": "0d9939c2a78a480ee990d0687399ee069c6274bc5fdcb435667a795106502a6b"
+  },
+  "uploaded_files_sha256": {
+    "commands.py": "0e78e2130607cb8bafc2eed638a2b10f2f8eb514630d5bd38fd0ab414b9383a0"
+  },
+  "generated_fixtures": [],
+  "required_model_acceptance": true,
+  "runtime_dependencies": "@qwen-code/qwen-code@0.23.0",
+  "server_wheel_sha256": "a09a4846fef8b49f3a059d1c65e38d283986aa4fbf879dd09192100c30039fc9",
+  "sdk_version": "0.3.0",
+  "sdk_source_commit": "fbe506349693f9bb26c1755aa3d13ce855e1ab69",
+  "base_template": "base",
+  "verification_type": "source-runtime",
+  "image_build_verified": false,
+  "template_deploy_verified": false,
+  "checks": [
+    {
+      "name": "owned Express base sandbox",
+      "ok": true
+    },
+    {
+      "name": "public runtime source and config upload",
+      "ok": true
+    },
+    {
+      "name": "pinned runtime dependency install",
+      "ok": true
+    },
+    {
+      "name": "patched server process start",
+      "ok": true
+    },
+    {
+      "name": "external SDK health",
+      "ok": true
+    },
+    {
+      "name": "pinned qwen version through SDK",
+      "ok": true
+    },
+    {
+      "name": "qwen read-only installation smoke",
+      "ok": true
+    },
+    {
+      "name": "remote HTTP suite with real model required",
+      "ok": true,
+      "detail": "exit=0; PASS lines=17; FAIL lines=0"
+    },
+    {
+      "name": "owned sandbox cleanup",
+      "ok": true
+    }
+  ],
+  "passed": true
+}

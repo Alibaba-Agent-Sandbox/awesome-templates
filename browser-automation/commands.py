@@ -1,238 +1,144 @@
-"""browser-automation 模板命令 — 基于内置 BROWSER 能力组的高层浏览器自动化。
-
-本模板利用 Server 提供的 CapabilityGroup.BROWSER 能力组（8 个内置端点），
-并在此之上注册面向 AI Agent 的高层业务命令：
-
-- browse   — 智能浏览（导航 + 截图 / 提取文本 / 提取链接 / 全量信息）
-- scrape   — 按 CSS 选择器提取元素文本
-- fill_form — 自动填写表单
-
-内置 BROWSER 端点（由 CapabilityGroup.BROWSER 启用）：
-    POST /browser/navigate, POST /browser/screenshot, GET /browser/content,
-    POST /browser/click, POST /browser/type, POST /browser/evaluate,
-    POST /browser/pdf, GET /browser/console
-"""
+"""Isolated, buffered Playwright commands; no shared browser state or value logging."""
 from __future__ import annotations
 
 import json
-import time
-from typing import Any
+import os
+import subprocess
+import sys
+from contextlib import contextmanager
+from pathlib import Path
+from typing import Any, Iterator
+from urllib.parse import urlsplit
+from uuid import uuid4
 
-from agent_sandbox.server import (
-    CapabilityGroup,
-    command,
-    default_table,
-    start,
-)
-
-# ---------------------------------------------------------------------------
-# Opt-in capability group
-# ---------------------------------------------------------------------------
-
-table = default_table()
-table.enable_group(CapabilityGroup.BROWSER)    # opt-in: 8 built-in browser endpoints
-
-# ---------------------------------------------------------------------------
-# Module-level Playwright singleton (lazy-initialised)
-# ---------------------------------------------------------------------------
-
-_playwright: Any = None
-_browser: Any = None
-_page: Any = None
+from agent_sandbox.server import command, start
 
 
-def _ensure_browser() -> Any:
-    """Return the shared Playwright *page*, creating the singleton on first call.
-
-    The browser instance persists across command invocations for performance.
-    """
-    global _playwright, _browser, _page  # noqa: PLW0603
-
-    if _page is not None and not _page.is_closed():
-        return _page
-
-    from playwright.sync_api import sync_playwright  # noqa: PLC0415
-
-    if _playwright is None:
-        _playwright = sync_playwright().start()
-        _browser = _playwright.chromium.launch(headless=True)
-
-    _page = _browser.new_page()
-    return _page
+def _workspace() -> Path:
+    return Path(os.environ.get("WORKSPACE", "/home/user/app")).resolve()
 
 
-# ---------------------------------------------------------------------------
-# Named commands — high-level business commands
-# ---------------------------------------------------------------------------
-
-@command(
-    "browse",
-    description=(
-        "Smart browse — navigate to a URL and perform an action. "
-        "action: screenshot | extract | links | full"
-    ),
-)
-def browse(url: str, action: str = "screenshot") -> dict[str, Any]:
-    """Navigate to *url* and execute *action*.
-
-    Actions:
-        screenshot — take a screenshot, return the saved file path.
-        extract    — return the page's visible text content.
-        links      — extract all hyperlinks as a list of {href, text} objects.
-        full       — screenshot + title + first 500 chars of text.
-    """
-    page = _ensure_browser()
-    page.goto(url, wait_until="networkidle", timeout=30000)
-
-    if action == "screenshot":
-        ts = int(time.time() * 1000)
-        path = f"/app/screenshot_{ts}.png"
-        page.screenshot(path=path, full_page=True)
-        return {"action": "screenshot", "url": page.url, "path": path}
-
-    if action == "extract":
-        text = page.inner_text("body")
-        return {"action": "extract", "url": page.url, "title": page.title(), "text": text}
-
-    if action == "links":
-        raw_links = page.evaluate(
-            """() => Array.from(document.querySelectorAll('a[href]')).map(a => ({
-                href: a.href, text: a.innerText.trim()
-            }))"""
-        )
-        return {"action": "links", "url": page.url, "count": len(raw_links), "links": raw_links}
-
-    if action == "full":
-        ts = int(time.time() * 1000)
-        path = f"/app/screenshot_{ts}.png"
-        page.screenshot(path=path, full_page=True)
-        text = page.inner_text("body")
-        return {
-            "action": "full",
-            "url": page.url,
-            "title": page.title(),
-            "screenshot": path,
-            "text_preview": text[:500],
-        }
-
-    raise ValueError(f"Unknown action: {action!r}. Expected: screenshot, extract, links, full")
+def _validate(url: str, timeout_s: int) -> None:
+    if not 1 <= timeout_s <= 120:
+        raise ValueError("timeout_s must be between 1 and 120")
+    parsed = urlsplit(url)
+    if parsed.scheme not in ("http", "https", "data"):
+        raise ValueError("url must use http, https, or data")
+    if parsed.username or parsed.password:
+        raise ValueError("URL credentials are not allowed")
+    if parsed.scheme in ("http", "https") and not parsed.hostname:
+        raise ValueError("url must contain a host")
+    if parsed.scheme == "data" and not url.startswith("data:text/html,"):
+        raise ValueError("only data:text/html, inline pages are supported")
 
 
-@command(
-    "scrape",
-    description="Scrape — navigate to a URL and extract text from a CSS selector.",
-)
-def scrape(url: str, selector: str) -> dict[str, Any]:
-    """Navigate to *url* and return the text content of elements matching *selector*."""
-    page = _ensure_browser()
-    page.goto(url, wait_until="networkidle", timeout=30000)
+@contextmanager
+def _page(url: str, timeout_s: int) -> Iterator[Any]:
+    """Each request owns its browser in its HTTP worker thread."""
+    _validate(url, timeout_s)
+    try:
+        from playwright.sync_api import sync_playwright
 
-    elements = page.query_selector_all(selector)
-    if not elements:
-        return {
-            "url": page.url,
-            "selector": selector,
-            "count": 0,
-            "texts": [],
-        }
+        with sync_playwright() as runtime:
+            browser = runtime.chromium.launch(
+                headless=True, args=["--disable-dev-shm-usage"], timeout=timeout_s * 1000,
+            )
+            try:
+                page = browser.new_page()
+                page.set_default_timeout(timeout_s * 1000)
+                page.goto(url, wait_until="load", timeout=timeout_s * 1000)
+                yield page
+            finally:
+                browser.close()
+    except Exception:
+        # Playwright exceptions can contain URLs, form values and call logs.
+        raise RuntimeError(
+            "Browser operation failed; ensure pinned Playwright and Chromium are installed "
+            "and the page and selectors are reachable. Request values are omitted."
+        ) from None
 
-    texts = [el.inner_text() for el in elements]
-    return {
-        "url": page.url,
-        "selector": selector,
-        "count": len(texts),
-        "texts": texts,
-    }
+
+def _screenshot(page: Any) -> str:
+    directory = _workspace() / "browser-artifacts"
+    directory.mkdir(parents=True, exist_ok=True)
+    path = directory / f"screenshot-{uuid4().hex}.png"
+    page.screenshot(path=str(path), full_page=True)
+    return str(path)
 
 
-@command(
-    "fill_form",
-    description=(
-        "Auto-fill a form — navigate to a URL and fill fields. "
-        'fields_json: \'[{"selector": "#email", "value": "test@example.com"}]\''
-    ),
-)
-def fill_form(url: str, fields_json: str) -> dict[str, Any]:
-    """Navigate to *url* and fill form fields described by *fields_json*.
+@command("browse", description="Navigate and screenshot, extract text, list links, or return a summary.")
+def browse(url: str, action: str = "screenshot", timeout_s: int = 30) -> dict[str, Any]:
+    if action not in ("screenshot", "extract", "links", "full"):
+        raise ValueError("action must be screenshot, extract, links, or full")
+    with _page(url, timeout_s) as page:
+        result: dict[str, Any] = {"action": action, "title": page.title()}
+        if action == "screenshot":
+            result["path"] = _screenshot(page)
+        elif action == "extract":
+            result["text"] = page.inner_text("body")
+        elif action == "links":
+            links = page.locator("a[href]").evaluate_all(
+                "nodes => nodes.map(a => ({href: a.href, text: a.innerText.trim()}))"
+            )
+            result.update(count=len(links), links=links)
+        else:
+            result.update(screenshot=_screenshot(page), text_preview=page.inner_text("body")[:500])
+        return result
 
-    *fields_json* is a JSON array of objects, each with ``selector`` and ``value``::
 
-        [{"selector": "#email", "value": "test@example.com"},
-         {"selector": "#password", "value": "secret"}]
-    """
-    page = _ensure_browser()
-    page.goto(url, wait_until="networkidle", timeout=30000)
+@command("scrape", description="Extract visible text from elements matching a CSS selector.")
+def scrape(url: str, selector: str, timeout_s: int = 30) -> dict[str, Any]:
+    if not selector.strip():
+        raise ValueError("selector must be non-empty")
+    with _page(url, timeout_s) as page:
+        texts = page.locator(selector).all_inner_texts()
+        return {"count": len(texts), "texts": texts}
 
-    fields: list[dict[str, str]] = json.loads(fields_json)
-    filled: list[dict[str, str]] = []
 
+@command("fill_form", description="Fill fields without returning selectors, input values, or URL.")
+def fill_form(url: str, fields_json: str, timeout_s: int = 30) -> dict[str, Any]:
+    try:
+        fields = json.loads(fields_json)
+    except (ValueError, TypeError):
+        raise ValueError("fields_json must encode a JSON array of selector/value objects") from None
+    if not isinstance(fields, list) or not 1 <= len(fields) <= 100:
+        raise ValueError("fields_json must contain between 1 and 100 fields")
     for field in fields:
-        sel = field["selector"]
-        val = field["value"]
-        page.fill(sel, val)
-        filled.append({"selector": sel, "value": val})
-
-    return {
-        "url": page.url,
-        "fields_filled": len(filled),
-        "details": filled,
-    }
-
-
-# ---------------------------------------------------------------------------
-# Hidden diagnostic command
-# ---------------------------------------------------------------------------
-
-
-@command(hidden=True)
-def _browser_status() -> dict[str, Any]:
-    """Return the current browser singleton status (not listed in /commands)."""
-    running = _browser is not None and _browser.is_connected()
-    current_url: str | None = None
-    pages = 0
-
-    if running and _browser is not None:
-        contexts = _browser.contexts
-        for ctx in contexts:
-            pages += len(ctx.pages)
-        if _page is not None and not _page.is_closed():
-            current_url = _page.url
-
-    return {
-        "browser_running": running,
-        "current_url": current_url,
-        "pages": pages,
-    }
+        if not isinstance(field, dict) or set(field) != {"selector", "value"}:
+            raise ValueError("each field must contain only selector and value")
+        if not isinstance(field["selector"], str) or not field["selector"].strip():
+            raise ValueError("each selector must be a non-empty string")
+        if not isinstance(field["value"], str):
+            raise ValueError("each value must be a string")
+    with _page(url, timeout_s) as page:
+        for field in fields:
+            locator = page.locator(field["selector"])
+            locator.fill(field["value"])
+            if locator.input_value() != field["value"]:
+                raise RuntimeError("Field verification failed")
+        # Avoid page.url/title/DOM: page scripts can copy sensitive input into them.
+        return {"fields_filled": len(fields)}
 
 
-# ---------------------------------------------------------------------------
-# Freeze & serve
-# ---------------------------------------------------------------------------
-
-
-def _run(argv: list[str], *, timeout: int, cwd: str = "/app") -> str:
-    """Run *argv* in ``/app`` when that directory exists and return stdout."""
-    import os
-    import subprocess
-
-    workdir = cwd if os.path.isdir(cwd) else (os.environ.get("WORKSPACE") or os.getcwd())
-    result = subprocess.run(
-        argv, cwd=workdir, capture_output=True, text=True, timeout=timeout,
-    )
-    if result.returncode != 0:
-        detail = (result.stderr or result.stdout or "").strip()
-        raise RuntimeError(detail or f"command exited {result.returncode}")
+@command("run", description="Run a workspace Python browser script and return buffered stdout.")
+def run(script: str = "main.py", timeout_s: int = 120) -> str:
+    if not 1 <= timeout_s <= 120:
+        raise ValueError("timeout_s must be between 1 and 120")
+    workspace = _workspace()
+    path = (workspace / script).resolve()
+    if not path.is_relative_to(workspace) or not path.is_file():
+        raise ValueError("script must be an existing file inside the workspace")
+    try:
+        result = subprocess.run(
+            [sys.executable, str(path)], cwd=workspace, capture_output=True,
+            text=True, timeout=timeout_s,
+        )
+    except subprocess.TimeoutExpired:
+        raise RuntimeError("Browser script exceeded timeout_s; captured output omitted") from None
+    if result.returncode:
+        raise RuntimeError(f"Browser script exited {result.returncode}; captured output omitted")
     return result.stdout
 
 
-
-@command("run", description="Run a browser automation script.")
-def run(script: str = "main.py") -> str:
-    """Run a Python script (``python3 {script}``)."""
-    return _run(["python3", script], timeout=120)
-
-
 if __name__ == "__main__":
-    import os
-
     start(int(os.environ.get("ABX_SERVER_PORT", "9000")))

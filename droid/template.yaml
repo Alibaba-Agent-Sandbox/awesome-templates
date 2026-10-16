@@ -1,40 +1,27 @@
 name: droid
-version: "1.0.0"
-description: "Factory Droid 编码 CLI 沙箱 - 通过 droid exec 无头执行编程任务"
+version: "1.1.0"
+description: "Factory Droid headless coding with bounded execution and installation checks."
 author: "alibaba-agent-sandbox"
-tags:
-  - droid
-  - factory
-  - ai-coding
-  - ai-agent
-
-base: python:3.12-slim
-
-system_packages:
-  - python3
-  - python3-pip
-  - git
-  - curl
-  - ca-certificates
-  - ripgrep
-  - build-essential
-
-node_packages:
-  - "@factory/cli@0.241.1"
-
-capabilities:
-  - shell
-  - files
-  - code
-  - ports
-
-ports:
-  - 9000
-
+license: Apache-2.0
+spec_version: 2
+base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
+generation: 2
+start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
+ready_cmd: "agent-sandbox-server healthcheck --port 9000"
+tags: [droid, factory, ai-coding, ai-agent]
+priority: P1
+wave: 1
+tested_on: []
+capabilities: [shell, files, code, ports]
+ports: [9000]
 env:
   FACTORY_API_KEY: ""
-  WORKSPACE: "/app"
-
+  ABX_SERVER_TOKEN: ""
+  WORKSPACE: "/home/user/app"
 resources:
   cpu: 2
-  memory: 4096
+  memory: 2048
+smoke:
+  - command: droid_version
+    args: {}
+    expect: "0.241.1"

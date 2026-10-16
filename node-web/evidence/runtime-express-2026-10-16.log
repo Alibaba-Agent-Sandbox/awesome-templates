@@ -1,0 +1,61 @@
+PASS server health
+PASS complete command discovery
+PASS workspace mkdir
+PASS stop: HTTP 200
+PASS status: HTTP 200
+PASS initial stopped
+PASS serve: HTTP 500
+PASS serve: HTTP 400
+PASS logs: HTTP 500
+PASS not_a_command: HTTP 404
+PASS upload index.js
+PASS upload package.json
+PASS upload build.js
+PASS serve: HTTP 200
+PASS high-output HTTP readiness
+PASS request: HTTP 200
+PASS actual Node response
+PASS request: HTTP 200
+PASS application HTTP error preserved
+PASS status: HTTP 200
+PASS status probes HTTP
+PASS logs: HTTP 200
+PASS 4 MiB drained; stderr available
+PASS logs: HTTP 200
+PASS bounded log response
+PASS request: HTTP 500
+PASS serve: HTTP 500
+PASS independent socket request
+PASS stop: HTTP 200
+PASS status: HTTP 200
+PASS serve process stopped
+PASS request: HTTP 500
+PASS build: HTTP 200
+PASS real npm build
+PASS independently read build artifact
+PASS start: HTTP 200
+PASS npm start starts in background
+PASS request: HTTP 200
+PASS npm start HTTP response
+PASS stop: HTTP 200
+PASS dev: HTTP 200
+PASS npm dev starts in background
+PASS request: HTTP 200
+PASS npm dev HTTP response
+PASS stop: HTTP 200
+PASS upload build.js
+PASS build: HTTP 500
+PASS upload build.js
+PASS build: HTTP 500
+PASS upload no-http.js
+PASS serve: HTTP 500
+PASS status: HTTP 200
+PASS TCP-only listener fails HTTP readiness and is killed
+PASS serve: HTTP 200
+PASS stop: HTTP 200
+PASS stop: HTTP 200
+PASS smoke: HTTP 200
+PASS bundled sample real HTTP smoke
+PASS stop: HTTP 200
+PASS workspace cleanup
+node-web: 60 passed; L0 only

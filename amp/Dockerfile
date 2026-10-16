@@ -22,13 +22,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && amp version \
     && command -v amp
 
-# agent-sandbox-server is not on PyPI. Pin is python-sdk main 61c43e0 (PR #21).
-# The echo keeps agent-sandbox-server==61c43e0be65a1f57aa09186d578e7b399e48429b in the build log.
-RUN pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/61c43e0be65a1f57aa09186d578e7b399e48429b.tar.gz#subdirectory=server-sdk" \
-    && echo "agent-sandbox-server==61c43e0be65a1f57aa09186d578e7b399e48429b"
+# Keep source-built wheel injection compatible with standalone template contexts.
+COPY *.whl /tmp/
+RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
+        pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
+    else \
+        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/61c43e0be65a1f57aa09186d578e7b399e48429b.tar.gz#subdirectory=server-sdk"; \
+    fi
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py .
+COPY --chown=user:user settings.json /home/user/.config/amp/settings.json
 RUN mkdir -p /home/user/.config/amp /home/user/.cache/amp/logs /home/user/app \
     && chown -R user:user /home/user/.config /home/user/.cache /home/user/app
 USER user

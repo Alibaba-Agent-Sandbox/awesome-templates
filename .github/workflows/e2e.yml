@@ -6,7 +6,10 @@ on:
 
 jobs:
   local-e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      E2E_RUN_LLM: "0"
     steps:
       - uses: actions/checkout@v4
 
@@ -14,17 +17,66 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: alibaba-agent-sandbox/python-sdk
+          # Includes the postponed-annotation dataclass command-loader fix.
+          ref: e2cb27e24fde0a67112f82b8d44af463445a5d1a
           path: vendor/python-sdk
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.16.0"
 
       - name: Install the in-sandbox server and the test client
-        run: python -m pip install --upgrade pip && python -m pip install ./vendor/python-sdk/server-sdk httpx pyyaml
+        run: |
+          python -m pip install ./vendor/python-sdk/server-sdk httpx==0.28.1 pyyaml==6.0.3 pytest==9.1.1 playwright==1.58.0
+          python -m playwright install --with-deps chromium
+
+      - name: Install pinned upstream CLIs for local smoke checks
+        run: |
+          npm install --global @openai/codex@0.162.1 @anthropic-ai/claude-code@2.0.76 opencode-ai@1.19.0 @factory/cli@0.241.1 @qwen-code/qwen-code@0.23.0 @ampcode/cli@0.0.1792022479-ge66e24 @google/gemini-cli@0.64.0 @qoder-ai/qodercli@1.1.72 openclaw@2026.10.4
+          codex --version
+          claude --version
+          test "$(opencode --version)" = "1.19.0"
+
+      - name: Install the pinned upstream Hermes runtime
+        run: |
+          python -m pip install uv==0.12.3
+          hermes_source="$RUNNER_TEMP/hermes-agent"
+          mkdir -p "$hermes_source" "$RUNNER_TEMP/hermes-bin"
+          curl -fsSL https://codeload.github.com/NousResearch/hermes-agent/tar.gz/297552a9d646119871391d202509822cd86330df | tar -xz --strip-components=1 -C "$hermes_source"
+          UV_PYTHON_INSTALL_DIR="$RUNNER_TEMP/hermes-python" uv sync --project "$hermes_source" --frozen --no-default-groups --python 3.14.6
+          "$hermes_source/.venv/bin/python" "$hermes_source/scripts/write_install_stamp.py" --output "$hermes_source/install-stamp.json" --commit 297552a9d646119871391d202509822cd86330df --base-version 0.22.1 --distance 0 --source ci --update-mechanism external
+          ln -s "$hermes_source/.venv/bin/hermes" "$RUNNER_TEMP/hermes-bin/hermes"
+          echo "$RUNNER_TEMP/hermes-bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/hermes-bin/hermes" --version
 
       - name: Lint templates and unit-test the checker
-        run: python3 scripts/test_spec_tools.py && python3 scripts/check_template.py --all
+        run: |
+          python3 scripts/test_spec_tools.py
+          python3 scripts/check_template.py --all --strict
+
+      - name: Run process, privacy, and acceptance-harness regressions
+        run: |
+          python -m pytest -q python-hello/test_command_errors.py
+          python -m pytest -q claude-code/tests
+          python -m pytest -q codex/test_commands.py
+          python -m pytest -q opencode/test_commands.py opencode/test_e2e_protocol.py
+          python -m pytest -q amp/test_commands.py amp/test_e2e_protocol.py
+          python -m pytest -q droid/test_commands.py droid/test_e2e_protocol.py
+          python -m pytest -q gemini/test_commands.py gemini/test_e2e_protocol.py
+          python -m pytest -q openclaw/test_commands.py
+          python -m pytest -q qoder/test_commands.py qoder/test_e2e_protocol.py
+          python -m pytest -q deepseek-harness/test_commands.py deepseek-harness/test_e2e_protocol.py
+          python -m pytest -q hermes-agent/test_commands.py hermes-agent/test_e2e_protocol.py
+          python -m pytest -q agents-cli/test_protocol.py
+          python -m pytest -q scripts/test_express_runtime_socket.py
+          python -m pytest -q qwen-code/test_commands.py qwen-code/test_e2e_protocol.py
+          python -m pytest -q codex-agent-api/test_commands.py codex-agent-api/test_e2e_protocol.py codex-agent-api/test_http_runtime.py
 
       - name: Run template e2e against locally started servers
-        run: python3 scripts/run_local_e2e.py
+        run: |
+          python3 scripts/run_local_e2e.py
+          echo "Local L0 checks only; image builds, cloud deployment, and real model acceptance are not covered."

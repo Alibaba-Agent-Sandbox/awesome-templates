@@ -1,0 +1,30 @@
+[PASS] health
+[PASS] named command discovery
+[PASS] create saved agent
+[PASS] list saved agents
+[PASS] update saved agent
+[PASS] create session from saved agent
+[PASS] get session
+[PASS] update session
+[PASS] list sessions
+[PASS] empty items
+[PASS] missing input rejected
+[PASS] mistyped stream rejected
+[PASS] unsupported tool rejected
+[PASS] secret artifact denied
+[PASS] idle event subscription
+[PASS] delete session
+[PASS] deleted session missing
+[PASS] delete saved agent
+[PASS] L3 existing source reproduces fixed-test failures
+[PASS] L3 real upstream background coding completion
+[PASS] L3 existing source changed on target
+[PASS] L3 independent new report contents
+[PASS] L3 artifact API matches remote report
+[PASS] L3 controller-owned fixed tests pass on target
+[PASS] L3 exact-thread resume SSE completion
+[PASS] L3 independently verified resume artifact
+[PASS] L3 resume preserves fixed source and first artifact
+[PASS] L3 final independent fixed-test rerun
+[PASS] L3 owned session cleanup
+[PASS] L3 owned coding project cleanup
