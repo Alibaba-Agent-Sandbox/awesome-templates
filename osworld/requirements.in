@@ -1,0 +1,8 @@
+PyAutoGUI==0.9.54
+Pillow==11.3.0
+Flask==3.1.2
+numpy==2.3.3
+lxml==6.0.1
+requests==2.32.5
+python3-Xlib==0.15
+playwright==1.58.0
