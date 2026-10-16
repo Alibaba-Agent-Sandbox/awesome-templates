@@ -44,7 +44,7 @@ an executed model result for this PR's updated public Fibonacci controller.
 
 ## Outstanding gates
 
-The initial public controller at `24a029e` passed 17 actual model checks, and its independently owned target sandbox/template were confirmed absent. A later peer review reproduced a false positive from `sys.exit(0)` before assertions, with fake unittest output. That initial run remains historical evidence and does not establish acceptance for the hardened controller. The hardened current public controller has not yet executed against a real model. Actual
+The initial public controller at `24a029e` passed 17 actual model checks, and its independently owned target sandbox/template were confirmed absent. A later peer review reproduced a false positive from `sys.exit(0)` before assertions, with fake unittest output. That initial run remains historical evidence and does not establish acceptance for the hardened controller. The hardened controller at `06071e4` subsequently passed 17 actual-image model checks and independent owned sandbox/template cleanup. See the separate early-exit verification record for exact provenance and the remaining registry/canonical gates. Actual
 image/cloud deployment through the canonical runner, normal remote CI, parent
 landing and complete owned batch cleanup remain separate gates. This patch stays
 draft and makes no official/tested-provider claim. Refs

@@ -41,3 +41,31 @@ explicitly SKIP. The available host CLI reports 0.159.2, so that local result is
 not evidence for the image's pinned 0.162.1 CLI. The initial 24a029e head's two
 complete remote local suites, image-build(codex) and plan all passed; these are
 historical checks and must not stand in for the hardened head's new CI.
+
+## Hardened actual-image model run
+
+PASS: frozen controller `06071e48fb00aa6bdfe280c2b8f498c9afd41c8d`
+against the unchanged, byte-reviewed image from parent `a361f49`:
+17 HTTP/model checks, zero FAIL, zero SKIP; compatible qwen3.8-flash. The specific
+existing Fibonacci baseline, actual CLI tool execution, original-test preservation,
+report/exact marker artifact, isolated actual-source held-out assertions and the
+trusted complete test rerun all passed. A separate existing-calculator task also
+passed its original tests and six held-out cases using the hardened external
+source verifier. Both actual verifier receipts require completion after agent exit.
+
+Root independently compared the public controller SHA256 with the exact source
+file and checked all nine external existing-source boolean flags and all four
+owned sandbox/template cleanup flags. SDK sandbox absence and strict paginated
+official exact-template-name absence passed. The borrowed registry image remains
+owned by the ongoing 13-image batch and is not final registry cleanup acceptance.
+Sanitized component evidence:
+[codex image runtime](../../../codex/evidence/image-runtime-hardened-2026-10-16.json).
+Full canonical deployment remains NOT RUN; the PR and provider status remain draft
+and experimental. No express-*.json receipt or tested_on promotion is created.
+
+The hardened product head `06071e4` subsequently completed all four actual remote
+checks successfully: two full local HTTP/regression CI runs, image-build(codex)
+and plan. The final documentation/evidence-only head gets its own CI; this
+product-head result is not relabeled as that later head's checks. Final scoped
+document checks: 25 existing local link targets, strict Codex checker and diff
+whitespace pass.

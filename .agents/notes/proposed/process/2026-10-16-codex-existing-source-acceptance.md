@@ -50,5 +50,5 @@ actual image, cloud and model runs separately with exact controller provenance.
 - [x] Original tests, changed source, report and exact artifact are checked.
 - [x] Independent hidden assertions and original/generated test reruns are required.
 - [x] Positive and twelve invalid-baseline/artifact regressions exercise actual subprocesses.
-- [ ] The updated public controller passes a real model run on a reviewed image.
+- [x] The updated public controller passes a real model run on a reviewed image (`06071e4`, 17 PASS / zero FAIL / zero SKIP).
 - [ ] Required parent, canonical cloud and remote CI gates pass before normal merge.

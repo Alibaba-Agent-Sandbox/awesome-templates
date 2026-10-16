@@ -182,11 +182,19 @@ Fibonacci assertions, and a separate unittest run. All 16 HTTP checks passed, an
 the owned sandbox was deleted. The source and runtime package hashes are in
 [evidence](evidence/runtime-express-2026-10-16.json), with the [check log](evidence/runtime-express-2026-10-16.log).
 This used an existing platform base sandbox with runtime-installed dependencies;
-the Dockerfile image build and new-template deployment remain unverified.
+that source-only run did not verify the Dockerfile image or new-template deployment.
+
+A later reviewed-image run used the hardened public controller at `06071e4` and
+passed 17 real-model HTTP checks without failures or skips. It verified an existing
+source correction, unchanged original tests, exact artifacts and trusted independent
+test completion. Its owned sandbox and officially registered template were confirmed
+absent afterward; the shared image registry remains owned by the ongoing review batch.
+See the [sanitized image evidence](evidence/image-runtime-hardened-2026-10-16.json).
+The full `abx template deploy` runner remains unrun; this is supplemental component evidence.
 
 ## Verified
 
-No provider has a passing run recorded for this template.
+No provider has a passing canonical deployment receipt recorded for this template.
 
 ## Secondary development
 
