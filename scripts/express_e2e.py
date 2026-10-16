@@ -750,32 +750,45 @@ def official_templates(run: Runner, alias: str) -> list[str]:
             and isinstance(item.get("TemplateID"), str) and item["TemplateID"] not in {"", "N/A"}]
 
 
-def _recover_sandboxes(template_ids: set[str], known: set[str]) -> set[str]:
-    """Discover/kill only instances of this owned template via real SDK APIs."""
+def _list_owned_sandboxes(template_ids: set[str], known: set[str]) -> set[str]:
+    """Read every page; matching exact recorded IDs/templates is not a prefix scan."""
     import asyncio
     from agent_sandbox import Sandbox
 
-    async def owned() -> dict[str, Any]:
-        found: dict[str, Any] = {}
+    async def listing() -> set[str]:
+        found: set[str] = set()
         offset = 0
         while True:
             rows = await Sandbox.list(provider="alicloud-express", limit=100, offset=offset)
             for row in rows:
                 if row.template in template_ids or row.sandbox_id in known:
-                    found[row.sandbox_id] = row
+                    found.add(row.sandbox_id)
             if len(rows) < 100:
                 return found
             offset += len(rows)
 
-    async def recover() -> set[str]:
-        found = await owned()
+    return asyncio.run(asyncio.wait_for(listing(), 90))
+
+
+def _recover_sandboxes(template_ids: set[str], known: set[str]) -> set[str]:
+    import asyncio
+    from agent_sandbox import Sandbox
+
+    found = _list_owned_sandboxes(template_ids, known)
+    async def kill() -> None:
         for sandbox_id in found:
             await Sandbox.kill_by_id(sandbox_id, provider="alicloud-express")
-        if await owned():
-            raise RuntimeError("owned sandboxes remain listed after kill")
-        return set(found)
+    asyncio.run(asyncio.wait_for(kill(), 180))
+    if _list_owned_sandboxes(template_ids, known):
+        raise RuntimeError("owned sandboxes remain listed after kill")
+    return found
 
-    return asyncio.run(asyncio.wait_for(recover(), 180))
+
+def owned_resources_absent(intent: dict[str, Any], run: Runner) -> bool:
+    """Independent readback is required even after CLI cleanup acknowledgement."""
+    if official_templates(run, intent["alias"]):
+        return False
+    return not _list_owned_sandboxes(set(intent["template_ids"]), set(intent["sandbox_ids"]))
 
 
 def recover_owned(intent: dict[str, Any], run: Runner) -> bool:
@@ -807,7 +820,8 @@ def recover_owned(intent: dict[str, Any], run: Runner) -> bool:
     return not official_templates(run, alias)
 
 
-def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None = None) -> int:
+def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None = None,
+            verify: Callable[[dict[str, Any], Runner], bool] | None = None) -> int:
     if options.plan:
         print(json.dumps(plan_document(options), indent=2, ensure_ascii=False))
         return 0
@@ -997,7 +1011,11 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
                 stop_deploy_processes(options.alias)
                 if not uncertain:
                     cleanup_ok = _cleanup(run, sandbox_id, template_id, marker, marker_existed)
+                    if cleanup_ok:
+                        cleanup_ok = (verify or owned_resources_absent)(intent, run)
+                        intent["readback_confirmed"] = cleanup_ok
             except Exception as exc:
+                cleanup_ok = False
                 print(f"owned cleanup failed: {type(exc).__name__}", flush=True)
         else:
             # A refused/failed read-only preflight establishes no ownership of
@@ -1041,6 +1059,7 @@ def _write_evidence(options: Options, results: list[dict[str, Any]]) -> None:
         "sdk_version": _sdk_version(),
         "cli": "abx",
         "passed": True,
+        "cleanup_verified": True,
         "commands": results,
     }
     # Template ids are ephemeral and must not be stored.

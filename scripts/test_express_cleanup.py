@@ -32,6 +32,37 @@ def case():
 
 
 class CleanupTest(unittest.TestCase):
+    def test_cleanup_ack_without_independent_absence_cannot_publish(self):
+        for raises in (False, True):
+            with self.subTest(raises=raises), case() as (project, options, intents):
+                def runner(args, timeout):
+                    if "--official-api" in args: return harness.Proc(0, "[]", "")
+                    if "deploy" in args: return harness.Proc(0, '{"TemplateID":"owned-template","Status":"ready"}', "")
+                    if "create" in args: return harness.Proc(0, '{"ID":"owned-sandbox"}', "")
+                    if "run" in args: return harness.Proc(0, '{"result":"ok"}', "")
+                    return harness.Proc(0, "", "")
+                def verify(intent, run):
+                    self.assertEqual(intent["sandbox_ids"], ["owned-sandbox"])
+                    if raises: raise RuntimeError("synthetic readback unavailable")
+                    return False
+                with patch.object(harness, "recover_owned", return_value=True):
+                    self.assertEqual(harness.execute(options, runner=runner, sdk=lambda *a: "ok", verify=verify), 1)
+                self.assertFalse((project / "evidence").exists())
+                intent = json.loads(intents[0].read_text())
+                self.assertIs(intent["cleanup_complete"], False)
+
+    def test_readback_checks_alias_and_exact_known_sandbox_ids(self):
+        intent = {"alias":"e2e-cleanup-regression", "template_ids":["owned-template"],
+                  "sandbox_ids":["owned-sandbox"]}
+        with patch.object(harness, "official_templates", return_value=[]), patch.object(harness, "_list_owned_sandboxes", return_value=set()) as listing:
+            self.assertTrue(harness.owned_resources_absent(intent, lambda *a: None))
+            listing.assert_called_once_with({"owned-template"}, {"owned-sandbox"})
+        with patch.object(harness, "official_templates", return_value=["owned-template"]), patch.object(harness, "_list_owned_sandboxes") as listing:
+            self.assertFalse(harness.owned_resources_absent(intent, lambda *a: None))
+            listing.assert_not_called()
+        with patch.object(harness, "official_templates", return_value=[]), patch.object(harness, "_list_owned_sandboxes", return_value={"owned-sandbox"}):
+            self.assertFalse(harness.owned_resources_absent(intent, lambda *a: None))
+
     def test_unknown_create_retains_template_until_sandbox_reconciliation(self):
         with case() as (project, options, intents):
             calls = []
@@ -42,7 +73,7 @@ class CleanupTest(unittest.TestCase):
                 if "create" in args: return harness.Proc(1, "", "synthetic unknown response")
                 self.fail("unknown create must reconcile before any cloud delete")
             with patch.object(harness, "recover_owned", return_value=False) as recovery:
-                self.assertEqual(harness.execute(options, runner=runner, sdk=lambda *a: "ok"), 1)
+                self.assertEqual(harness.execute(options, runner=runner, sdk=lambda *a: "ok", verify=lambda *_: True), 1)
                 recovery.assert_called_once()
             self.assertFalse(any("delete" in args for args in calls))
             intent = json.loads(intents[0].read_text())
@@ -51,7 +82,6 @@ class CleanupTest(unittest.TestCase):
             self.assertIs(intent["recovery_complete"], False)
 
     def test_sdk_recovery_paginates_and_kills_only_owned_template(self):
-        from agent_sandbox import Sandbox
         calls = []
         killed = []
         async def listing(**kwargs):
@@ -63,7 +93,8 @@ class CleanupTest(unittest.TestCase):
         async def kill(sandbox_id, **kwargs):
             self.assertEqual(kwargs["provider"], "alicloud-express")
             killed.append(sandbox_id)
-        with patch.object(Sandbox, "list", listing), patch.object(Sandbox, "kill_by_id", kill):
+        fake_sdk = SimpleNamespace(Sandbox=SimpleNamespace(list=listing, kill_by_id=kill))
+        with patch.dict(sys.modules, {"agent_sandbox": fake_sdk}):
             self.assertEqual(harness._recover_sandboxes({"owned-template"}, set()), {"owned-sandbox"})
         self.assertEqual(killed, ["owned-sandbox"])
         self.assertIn(100, calls)
@@ -93,7 +124,7 @@ class CleanupTest(unittest.TestCase):
                         return harness.Proc(7, "", "synthetic cleanup rejection")
                     return harness.Proc(0, "", "")
                 with patch.object(harness, "recover_owned", lambda intent, run: recovered.append(intent.copy()) or True):
-                    self.assertEqual(harness.execute(options, runner=runner, sdk=lambda *a: "ok"), 1)
+                    self.assertEqual(harness.execute(options, runner=runner, sdk=lambda *a: "ok", verify=lambda *_: True), 1)
                 self.assertFalse((project / "evidence").exists())
                 intent = json.loads(intents[0].read_text())
                 self.assertEqual(intent["result"], "FAIL")
@@ -111,7 +142,7 @@ class CleanupTest(unittest.TestCase):
                 calls.append(args)
                 return harness.Proc(0, '[{"TemplateID":"unrelated-template","Name":"e2e-cleanup-regression"}]', "")
             with patch.object(harness, "stop_deploy_processes") as stop, patch.object(harness, "_cleanup") as cleanup:
-                self.assertEqual(harness.execute(options, runner=runner, sdk=lambda *a: "ok"), 2)
+                self.assertEqual(harness.execute(options, runner=runner, sdk=lambda *a: "ok", verify=lambda *_: True), 2)
                 stop.assert_not_called()
                 cleanup.assert_not_called()
             self.assertEqual(len(calls), 1)
@@ -125,7 +156,7 @@ class CleanupTest(unittest.TestCase):
                 marker.write_text("concurrent unowned marker")
                 return harness.Proc(1, "", "synthetic list rejection")
             with patch.object(harness, "stop_deploy_processes") as stop, patch.object(harness, "_cleanup") as cleanup:
-                self.assertEqual(harness.execute(options, runner=runner, sdk=lambda *a: "ok"), 1)
+                self.assertEqual(harness.execute(options, runner=runner, sdk=lambda *a: "ok", verify=lambda *_: True), 1)
                 stop.assert_not_called()
                 cleanup.assert_not_called()
             self.assertEqual(marker.read_text(), "concurrent unowned marker")
@@ -176,7 +207,7 @@ class CleanupTest(unittest.TestCase):
                 if "create" in args: return harness.Proc(0, '{"ID":"owned-sandbox"}', "")
                 if "run" in args: return harness.Proc(0, '{"result":"ok"}', "")
                 return harness.Proc(0, "", "")
-            self.assertEqual(harness.execute(options, runner=runner, sdk=lambda *a: "ok"), 0)
+            self.assertEqual(harness.execute(options, runner=runner, sdk=lambda *a: "ok", verify=lambda *_: True), 0)
             self.assertEqual(len(list((project / "evidence").glob("express-*.json"))), 1)
             self.assertFalse(intents[0].exists())
             self.assertEqual(calls[-2:], [["kill", "owned-sandbox", "-y"], ["template", "delete", "owned-template", "-y"]])

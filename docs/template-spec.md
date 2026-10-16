@@ -297,7 +297,9 @@ Record a level only when it passed. The README Verified table and `tested_on` li
 `scripts/express_e2e.py <dir>` is the L2 runner. It writes `evidence/express-<YYYY-MM-DD>.json` only when every smoke command passed through the CLI and the SDK:
 
 The runner also requires successful owned sandbox/template cleanup before writing
-the pass file or returning exit 0. It refuses an existing exact alias through
+the pass file or returning exit 0, including independent SDK/official-list
+readback that the known sandbox IDs/templates and exact alias are absent. CLI
+kill/delete acknowledgements alone do not establish that. It refuses an existing exact alias through
 `abx --json template list --official-api`. Cleanup failures and unknown deploy/create
 responses retain a private, credential-free owned intent.
 `python3 scripts/express_e2e.py --recover-intent PRIVATE_PATH` uses existing official
@@ -318,6 +320,7 @@ intent records these exact registry identifiers for the operator.
   "sdk_version": "0.3.0",
   "cli": "abx",
   "passed": true,
+  "cleanup_verified": true,
   "commands": [
     {"name": "hello", "via": "cli", "args": {"name": "Express"}, "ok": true, "result": "Hello, Express!", "duration_s": 0.4},
     {"name": "hello", "via": "sdk", "args": {"name": "Express"}, "ok": true, "result": "Hello, Express!", "duration_s": 0.3}

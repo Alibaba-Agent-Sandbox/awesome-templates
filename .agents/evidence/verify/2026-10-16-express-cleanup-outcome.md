@@ -19,11 +19,15 @@ catalog, provider-pass file or CI workflow is changed.
 
 ## Executed checks
 
-- PASS: `python scripts/test_spec_tools.py`, exit 0, 31 unittest methods including
+- PASS: `python scripts/test_spec_tools.py`, exit 0, 33 unittest methods including
   cleanup subcases. The initial version passed 31 parametrized pytest cases;
   tests were then expressed as standard-library unittest so the existing CI
-  entry point includes them without a new dependency. The final 31-method run
-  includes actual redirected-descendant completion and SDK pagination fixtures.
+  entry point includes them without a new dependency. The final 33-method run
+  includes actual redirected-descendant completion, SDK pagination fixtures and
+  cleanup-readback negative controls. Both the normal environment (11.209s) and
+  a server-only import environment matching keyless CI (11.195s) passed 33/33.
+  The first new readback run exposed an exception-path stale success boolean;
+  that real negative-control failure was fixed before these passing reruns.
 - Independent source review found that rejected/failed preflight still called
   process/marker cleanup and could mutate a pre-existing alias's work. Fixed:
   those mutators require confirmed ownership and an actual deploy attempt.
@@ -41,11 +45,20 @@ catalog, provider-pass file or CI workflow is changed.
 - PASS: real local Linux leaders exiting 0 and 7 leave no redirected descendant
   marker after the cleanup deadline. Existing idle/wall/progress/push-lock tests
   also pass. WNOWAIT holds leader identity until group kill and reap.
-- PASS: strict checker, 18 conformant directories and zero failures; all 19
-  relative links in scoped docs resolve; three Python sources parse; scoped
+- PASS: strict checker, 18 conformant directories and zero failures; all 11
+  relative links in the four changed public/evidence docs resolve; three Python sources parse; scoped
   `git diff --check` passes. Configured-secret scan runs on the staged scope.
 
 ## Honest limits and cleanup
+
+The initial remote CI checker step failed before pagination fixture execution:
+the new test imported client Sandbox, while existing keyless CI installs only
+the server package. [Observed failing run](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38857930363)
+is preserved. The test now explicitly substitutes the existing SDK API shape;
+no client dependency is added to keyless CI. Independent readback is also now
+required before pass/intent removal: SDK paginated exact ID/template absence
+and official exact-alias absence. Negative readback or API failure keeps failure
+intent and refuses provider evidence, even if later recovery succeeds.
 
 Maintenance clarification: both a361 and the initial cleanup fix already passed
 `--acr-repo <owned-alias>` and an explicit derived tag, so the reviewed heads did

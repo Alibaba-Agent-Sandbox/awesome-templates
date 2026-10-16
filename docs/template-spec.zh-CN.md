@@ -295,7 +295,8 @@ asyncio.run(main())
 
 `scripts/express_e2e.py <dir>` 是 L2 运行器。只有每条 smoke 命令都经 CLI 和 SDK 通过时，才写 `evidence/express-<YYYY-MM-DD>.json`：
 
-写入通过记录及退出 0 还要求自有沙箱、模板清理成功。运行器通过
+写入通过记录及退出 0 还要求自有沙箱、模板清理成功，并独立使用 SDK／官方查询确认
+已知沙箱 ID／模板及精确 alias 均不再存在，不能只依据 CLI 销毁／删除的成功应答。运行器通过
 `abx --json template list --official-api` 拒绝已存在的同名 alias；清理失败或
 部署／创建响应不明时，在检出目录之外保留仅含自有标识、不含凭据的私有 intent。
 使用同一账号配置执行 `python3 scripts/express_e2e.py --recover-intent PRIVATE_PATH`
@@ -314,6 +315,7 @@ canonical 部署显式使用 `--acr-repo <本轮alias> --tag review`，私有 in
   "sdk_version": "0.3.0",
   "cli": "abx",
   "passed": true,
+  "cleanup_verified": true,
   "commands": [
     {"name": "hello", "via": "cli", "args": {"name": "Express"}, "ok": true, "result": "Hello, Express!", "duration_s": 0.4},
     {"name": "hello", "via": "sdk", "args": {"name": "Express"}, "ok": true, "result": "Hello, Express!", "duration_s": 0.3}

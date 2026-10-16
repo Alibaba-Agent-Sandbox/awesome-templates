@@ -241,7 +241,7 @@ class HarnessTest(unittest.TestCase):
             options = express_e2e.build_options(
                 [str(dest), "--command", "hello", "--arg", "name=E2E", "--expect", "Hello, E2E!"]
             )
-            code = express_e2e.execute(options, runner=runner, sdk=lambda *_: "Hello, E2E!")
+            code = express_e2e.execute(options, runner=runner, sdk=lambda *_: "Hello, E2E!", verify=lambda *_: True)
             self.assertEqual(code, 2)
             self.assertFalse((dest / "evidence").exists())
             self.assertTrue(any("deploy" in args for args in calls))
@@ -282,7 +282,7 @@ class HarnessTest(unittest.TestCase):
                     "agent-sandbox-server healthcheck --port 9000",
                 ]
             )
-            code = express_e2e.execute(options, runner=runner, sdk=lambda *_args: "Hello, E2E!")
+            code = express_e2e.execute(options, runner=runner, sdk=lambda *_args: "Hello, E2E!", verify=lambda *_: True)
             self.assertEqual(code, 0)
             evidence = list((dest / "evidence").glob("express-*.json"))
             self.assertEqual(len(evidence), 1)
@@ -320,7 +320,7 @@ class HarnessTest(unittest.TestCase):
             options = express_e2e.build_options(
                 [str(dest), "--command", "hello", "--arg", "name=E2E", "--expect", "Hello, E2E!"]
             )
-            code = express_e2e.execute(options, runner=runner, sdk=sdk)
+            code = express_e2e.execute(options, runner=runner, sdk=sdk, verify=lambda *_: True)
             self.assertEqual(code, 2)
             self.assertFalse((dest / "evidence").exists())
             self.assertTrue(any(args[:1] == ["kill"] for args in calls))
@@ -353,7 +353,7 @@ class HarnessTest(unittest.TestCase):
             options = express_e2e.build_options(
                 [str(dest), "--command", "hello", "--arg", "name=E2E", "--expect", "Hello, E2E!", "--push-retries", "2"]
             )
-            code = express_e2e.execute(options, runner=runner, sdk=lambda *_args: "Hello, E2E!")
+            code = express_e2e.execute(options, runner=runner, sdk=lambda *_args: "Hello, E2E!", verify=lambda *_: True)
             self.assertEqual(code, 0)
             self.assertEqual(sum(1 for args in calls if "deploy" in args), 3)
             deploy_call = next(args for args in calls if "deploy" in args)
@@ -377,7 +377,7 @@ class HarnessTest(unittest.TestCase):
             options = express_e2e.build_options(
                 [str(dest), "--command", "hello", "--push-retries", "2"]
             )
-            code = express_e2e.execute(options, runner=runner, sdk=lambda *_args: "Hello, E2E!")
+            code = express_e2e.execute(options, runner=runner, sdk=lambda *_args: "Hello, E2E!", verify=lambda *_: True)
             self.assertEqual(code, 1)
             self.assertEqual(sum("deploy" in args for args in calls), 1)
 
