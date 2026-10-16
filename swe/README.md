@@ -22,9 +22,9 @@ Install the CLI using the [project instructions](https://github.com/Alibaba-Agen
 abx template deploy ./swe
 # Create a dedicated sandbox from the resulting template through the SDK below.
 abx run "$SANDBOX_ID" swe_version
-abx run "$SANDBOX_ID" swe_prepare --server-port 9010
-abx run "$SANDBOX_ID" swe_run_agent --server-port 9010 --arg run_id="$RUN_ID" --arg allow_execution=true --arg command_timeout=300
-abx run "$SANDBOX_ID" swe_evaluate --server-port 9010 --arg run_id="$RUN_ID"
+ABX_HTTP_TIMEOUT=240 abx run "$SANDBOX_ID" swe_prepare --server-port 9010
+ABX_HTTP_TIMEOUT=360 abx run "$SANDBOX_ID" swe_run_agent --server-port 9010 --arg run_id="$RUN_ID" --arg allow_execution=true --arg command_timeout=300
+ABX_HTTP_TIMEOUT=240 abx run "$SANDBOX_ID" swe_evaluate --server-port 9010 --arg run_id="$RUN_ID"
 abx run "$SANDBOX_ID" swe_report --server-port 9010 --arg run_id="$RUN_ID"
 abx run "$SANDBOX_ID" swe_cleanup --server-port 9010 --arg run_id="$RUN_ID"
 ```
@@ -47,7 +47,8 @@ async def main():
     try:
         stream = await sandbox.commands.start(
             'agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py',
-            env={key: os.environ[key] for key in ('SWE_API_KEY', 'SWE_BASE_URL', 'SWE_MODEL')},
+            env={key: os.environ[key] for key in ('SWE_API_KEY', 'SWE_BASE_URL', 'SWE_MODEL')}
+                | {'WORKSPACE': '/home/user/app', 'ABX_SERVER_BASE_DIR': '/home/user/app'},
             timeout=900,
         )
         async def drain():

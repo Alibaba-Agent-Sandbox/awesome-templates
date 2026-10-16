@@ -26,6 +26,14 @@ def valid_evaluation(evaluation):
         and evaluation.get('pass_to_pass')==dict.fromkeys(manifest['pass_to_pass'],'passed'))
 
 
+def valid_baseline(baseline):
+    manifest=json.loads((Path(__file__).parent/'instance.json').read_text())
+    return (baseline.get('failed')==1 and baseline.get('passed')==59
+        and baseline.get('errors')==0 and baseline.get('skipped')==0
+        and baseline.get('fail_to_pass')==dict.fromkeys(manifest['fail_to_pass'],'failed')
+        and baseline.get('pass_to_pass')==dict.fromkeys(manifest['pass_to_pass'],'passed'))
+
+
 def acceptance(client):
     value=client.post('/commands/swe_setup_check',json={})
     setup=value.json().get('result',{}) if value.status_code==200 else {}
@@ -42,7 +50,9 @@ def acceptance(client):
         record(response.status_code==200,'real pinned instance baseline prepared')
         if response.status_code!=200:return
         prepared=response.json()['result'];run_id=prepared['run_id'];baseline=prepared['baseline']
-        record(baseline['failed']==1 and baseline['passed']==59 and not baseline['skipped'] and not baseline['errors'],'real 1FAIL 59PASS baseline reproduced')
+        baseline_ok=valid_baseline(baseline)
+        record(baseline_ok,'real exact declared failing/passing baseline reproduced')
+        if not baseline_ok:return
         response=client.post('/commands/swe_run_agent',json={'run_id':run_id,'allow_execution':True,'command_timeout':300},timeout=360)
         record(response.status_code==200 and response.json().get('result',{}).get('model_calls',0)>0,'genuine mini CLI real model submits')
         if response.status_code!=200:return
@@ -57,7 +67,7 @@ def acceptance(client):
         record('src/flask/blueprints.py' in patch and len(patch)>80,'nonempty source patch retrieved from remote files API')
         response=client.get('/files/download-stream',params={'path':evaluation['report_path']})
         report=json.loads(base64.b64decode(response.json()['content_base64'])) if response.status_code==200 else {}
-        record(report.get('resolved_slice') is True,'independent report artifact retrieved')
+        record(valid_evaluation(report),'independent report artifact retrieved')
     finally:
         if run_id:
             response=client.post('/commands/swe_cleanup',json={'run_id':run_id})

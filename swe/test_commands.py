@@ -75,8 +75,15 @@ def test_marker_alone_is_not_test_execution(tmp_path):
 
 
 def _assert_process_not_running(pid):
-    status=Path(f'/proc/{pid}/stat')
-    if status.exists():assert status.read_text().split()[2]=='Z'
+    status=Path(f'/proc/{pid}/stat'); deadline=time.monotonic()+1
+    while True:
+        try:
+            state=status.read_text().split()[2]
+        except FileNotFoundError:
+            return
+        if state=='Z':return
+        if time.monotonic()>=deadline:pytest.fail('owned child is still running')
+        time.sleep(.01)
 
 
 @pytest.mark.parametrize('deadline', [False,True])

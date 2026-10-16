@@ -39,3 +39,12 @@ def test_required_model_explicit_off_cannot_skip(monkeypatch):
     e.FAILED=0
     with httpx.Client(base_url='http://owned.test',transport=httpx.MockTransport(lambda r:httpx.Response(200,json={'result':{}}))) as client:e.acceptance(client)
     assert e.FAILED==1
+
+
+def test_wrong_failing_baseline_node_with_same_counts_refused():
+    value=report()|{'passed':59,'failed':1,'resolved_slice':False}
+    value['fail_to_pass']=dict.fromkeys(manifest['fail_to_pass'],'failed')
+    assert e.valid_baseline(value)
+    value['fail_to_pass'][manifest['fail_to_pass'][0]]='passed'
+    value['pass_to_pass'][manifest['pass_to_pass'][0]]='failed'
+    assert not e.valid_baseline(value)

@@ -40,7 +40,9 @@ def main():
         assert code!=0 and state['info']['exit_status']=='RuntimeError' and state['info']['model_stats']['api_calls']==1,'CLI swallowed environment timeout and continued'
         assert not after.exists(),'CLI continued after fatal action timeout'
         pid=int(pid_file.read_text());stat=Path('/proc')/str(pid)/'stat'
-        assert not stat.exists() or stat.read_text().split()[2]=='Z','ordinary action child survived owned CLI cleanup'
+        try:state_code=stat.read_text().split()[2]
+        except FileNotFoundError:state_code='absent'
+        assert state_code in ('absent','Z'),'ordinary action child survived owned CLI cleanup'
         print('PASS actual official CLI fatal action timeout stops loop and owned child is absent or exited',flush=True)
     return 0
 
