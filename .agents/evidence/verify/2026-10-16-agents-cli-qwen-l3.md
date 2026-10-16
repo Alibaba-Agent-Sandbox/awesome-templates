@@ -31,6 +31,13 @@ image. Existing historical evidence is preserved.
   both bilingual Python examples parse with ast.parse.
 - Pending: normal remote CI.
 
+Root review of the controller accepted its API/state/evaluator/cleanup design
+and requested accurate -B wording (only explicit source compilation avoids
+reading pyc), plus larger1800/1500-second sandbox/server budgets with the same
+turn≤600 deadline and immediate cleanup. These changes are included. Readiness
+requests are individually5 seconds and private state probes10 seconds. Inspected
+the actual turn polling code: its session-status200 assertion is not duplicated.
+
 ## Image and model scope
 
 Not run for this new controller yet. A previously built matching image may be

@@ -114,6 +114,8 @@ code. Run only in a newly owned disposable sandbox without valuable files or
 other credentials. The verifier checks ordinary correctness; it does not isolate
 hostile code that can inspect or alter its own OS processes. The host turn deadline
 defaults to 540 seconds (30–600 configurable); HTTP disconnect is not cancellation.
+The owned sandbox TTL is 1800 seconds and the new server deadline is 1500 seconds;
+these leave setup/evaluation headroom and do not replace immediate cleanup.
 `finally` destroys the owned sandbox and checks a paginated provider listing for
 its ID and random metadata nonce. A permission/readback failure fails acceptance
 and retains the private recovery journal. Resolve its exact owned resources before

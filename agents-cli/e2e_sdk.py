@@ -158,8 +158,9 @@ else:
 
 
 async def native(sandbox, code: str, *, timeout: int = 30):
-    # -I excludes cwd/user site packages, -S excludes sitecustomize, -B ignores
-    # agent-supplied bytecode. Shell quoting preserves literal source bytes.
+    # -I excludes cwd/user site packages, -S excludes sitecustomize, and -B
+    # prevents bytecode writes. Explicit compile(source_bytes) above avoids
+    # loading agent-supplied .pyc. Shell quoting preserves literal source bytes.
     return await sandbox.commands.run('python3 -I -S -B -c ' + shlex.quote(code), timeout=timeout)
 
 
@@ -295,7 +296,7 @@ async def run(args, *, factory=None) -> dict:
     try:
         state['sandbox_create_attempted'] = attempted = True
         save_private(args.journal, state)
-        sandbox = await factory.create(args.template, provider='alicloud-express', timeout=900,
+        sandbox = await factory.create(args.template, provider='alicloud-express', timeout=1800,
             request_timeout=120, metadata={'acceptance_run': state['nonce'], 'purpose': 'agents-cli-qwen-l3'})
         state['sandbox_id'] = sandbox.id
         save_private(args.journal, state)
@@ -315,7 +316,7 @@ async def run(args, *, factory=None) -> dict:
         selected = selected_env(root, state_dir, args.model, token)
         reader = await sandbox.commands.start(
             'agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py '
-            '--policy /home/user/app/server-policy.json', env=selected, timeout=800)
+            '--policy /home/user/app/server-policy.json', env=selected, timeout=1500)
         started, errors = asyncio.Event(), []
         async def consume():
             try:
@@ -336,7 +337,7 @@ async def run(args, *, factory=None) -> dict:
         async with httpx.AsyncClient(base_url=url, headers=headers, timeout=30) as client:
             for _ in range(40):
                 try:
-                    response = await client.get('/health')
+                    response = await client.get('/health', timeout=5)
                     if response.status_code == 200:
                         break
                 except httpx.HTTPError:
@@ -356,7 +357,7 @@ async def run(args, *, factory=None) -> dict:
         # finish before inspecting it through the separate management channel.
         for attempt in range(10):
             ack = secrets.token_hex(32)
-            completed = await native(sandbox, completed_source(state_dir, session, ack))
+            completed = await native(sandbox, completed_source(state_dir, session, ack), timeout=10)
             if completed.exit_code == 0 and completed.stdout.strip() == ack:
                 break
             if attempt == 9:

@@ -121,6 +121,8 @@ permission/limit overrides. Model execution must use a newly owned disposable
 sandbox without other credentials/valuable data. The host polling deadline is
 30–600 seconds; disconnect does not cancel a background turn. Entire-sandbox
 destruction is the resource boundary, including agent subprocesses that detach.
+The sandbox/server deadlines are1800/1500 seconds to leave bounded setup and
+evaluation headroom; neither replaces the immediate finally cleanup.
 These are ordinary correctness controls, not isolation from arbitrary hostile
 same-user code capable of inspecting or altering its own processes. Failed
 cleanup/readback fails acceptance and retains an atomic mode0600 private recovery
