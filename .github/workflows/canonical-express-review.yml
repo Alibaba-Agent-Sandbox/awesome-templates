@@ -1,0 +1,148 @@
+name: Canonical Express review (explicit authorization only)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+  workflow_dispatch:
+    inputs:
+      templates:
+        description: "One reviewed template, comma-separated names, or all (17); default python-hello"
+        default: python-hello
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: canonical-express-review-20261016
+  cancel-in-progress: false
+
+jobs:
+  authorization:
+    runs-on: ubuntu-24.04
+    outputs:
+      enabled: ${{ steps.authorize.outputs.enabled }}
+      templates: ${{ steps.authorize.outputs.templates }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install pyyaml==6.0.3
+      - name: Verify authorization and evidence gates without cloud calls
+        run: python scripts/test_canonical_express_review.py
+      - id: authorize
+        name: Default BLOCKED; require exact reviewed workflow SHA and explicit secret
+        env:
+          REVIEW_ENABLE: ${{ secrets.ABX_REVIEW_20261016_ENABLE_CANONICAL_L2 }}
+          REVIEW_APPROVED_SHA: ${{ secrets.ABX_REVIEW_20261016_APPROVED_WORKFLOW_SHA }}
+          REVIEW_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          REVIEW_SAME_REPOSITORY: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+          REVIEW_TEMPLATES: ${{ inputs.templates || vars.ABX_REVIEW_20261016_TEMPLATES || 'python-hello' }}
+        run: python scripts/canonical_express_review.py plan
+      - uses: actions/upload-artifact@v4
+        with:
+          name: canonical-authorization-${{ github.run_id }}-${{ github.run_attempt }}
+          path: canonical-authorization.json
+          retention-days: 3
+
+  canonical:
+    needs: authorization
+    if: needs.authorization.outputs.enabled == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: true
+      max-parallel: 1
+      matrix:
+        template: ${{ fromJSON(needs.authorization.outputs.templates) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Checkout immutable reviewed template Docker inputs
+        uses: actions/checkout@v4
+        with:
+          repository: Alibaba-Agent-Sandbox/awesome-templates
+          ref: a361f490555ead0ff67081ffb4874abf292a1b2f
+          path: reviewed/templates
+          persist-credentials: false
+      - name: Checkout canonical runner with cleanup-outcome fix
+        uses: actions/checkout@v4
+        with:
+          repository: Alibaba-Agent-Sandbox/awesome-templates
+          ref: 3572927fbd0ab25ad028a9186bc2820ff7a8a854
+          path: reviewed/harness
+          persist-credentials: false
+      - name: Checkout reviewed production CLI and wheel rewriter
+        uses: actions/checkout@v4
+        with:
+          repository: Alibaba-Agent-Sandbox/agent-sandbox
+          ref: 37b6d276bdca875811ce7fb0ae88aca64882fcaa
+          path: reviewed/cli
+          persist-credentials: false
+      - name: Checkout accepted controller client and workspace dependency fix
+        uses: actions/checkout@v4
+        with:
+          repository: Alibaba-Agent-Sandbox/python-sdk
+          ref: 666657b5706945d8899061033edc09b6eb2af953
+          path: reviewed/controller
+          persist-credentials: false
+      - name: Checkout exact server wheel source independently
+        uses: actions/checkout@v4
+        with:
+          repository: Alibaba-Agent-Sandbox/python-sdk
+          ref: e2cb27e24fde0a67112f82b8d44af463445a5d1a
+          path: reviewed/server
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.16.0"
+      - name: Install public source client and build tools
+        run: python -m pip install ./reviewed/controller/server-sdk ./reviewed/controller/client-sdk pyyaml==6.0.3 build==1.6.1 hatchling==1.32.4
+      - name: Build production CLI from its lockfile
+        working-directory: reviewed/cli
+        run: |
+          npm ci
+          npm run build
+      - name: Run canonical deploy, real CLI/SDK smoke and owned-resource reconciliation
+        env:
+          REVIEW_ENABLE: ${{ secrets.ABX_REVIEW_20261016_ENABLE_CANONICAL_L2 }}
+          REVIEW_APPROVED_SHA: ${{ secrets.ABX_REVIEW_20261016_APPROVED_WORKFLOW_SHA }}
+          REVIEW_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          REVIEW_SAME_REPOSITORY: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+          ALICLOUD_ACCESS_KEY_ID: ${{ secrets.ABX_REVIEW_20261016_ALICLOUD_ACCESS_KEY_ID }}
+          ALICLOUD_ACCESS_KEY_SECRET: ${{ secrets.ABX_REVIEW_20261016_ALICLOUD_ACCESS_KEY_SECRET }}
+          ACR_NAMESPACE: ${{ secrets.ABX_REVIEW_20261016_ACR_NAMESPACE }}
+          ABX_SANDBOX_API_KEY: ${{ secrets.ABX_REVIEW_20261016_SANDBOX_API_KEY }}
+          ABX_SANDBOX_BASE_URL: ${{ secrets.ABX_REVIEW_20261016_SANDBOX_BASE_URL }}
+          ABX_SANDBOX_DOMAIN: ${{ secrets.ABX_REVIEW_20261016_SANDBOX_DOMAIN }}
+          ALIBABA_CLOUD_REGION_ID: cn-hangzhou
+        run: python scripts/canonical_express_review.py run --template '${{ matrix.template }}'
+      - name: Retry exact owned cleanup even after cancellation/failure
+        if: always()
+        env:
+          ALICLOUD_ACCESS_KEY_ID: ${{ secrets.ABX_REVIEW_20261016_ALICLOUD_ACCESS_KEY_ID }}
+          ALICLOUD_ACCESS_KEY_SECRET: ${{ secrets.ABX_REVIEW_20261016_ALICLOUD_ACCESS_KEY_SECRET }}
+          ACR_NAMESPACE: ${{ secrets.ABX_REVIEW_20261016_ACR_NAMESPACE }}
+          ABX_SANDBOX_API_KEY: ${{ secrets.ABX_REVIEW_20261016_SANDBOX_API_KEY }}
+          ABX_SANDBOX_BASE_URL: ${{ secrets.ABX_REVIEW_20261016_SANDBOX_BASE_URL }}
+          ABX_SANDBOX_DOMAIN: ${{ secrets.ABX_REVIEW_20261016_SANDBOX_DOMAIN }}
+          ALIBABA_CLOUD_REGION_ID: cn-hangzhou
+        run: python scripts/canonical_express_review.py cleanup --template '${{ matrix.template }}'
+      - name: Retain sanitized status and only accepted canonical provider evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: canonical-${{ matrix.template }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: canonical-output/${{ matrix.template }}/
+          if-no-files-found: error
+          retention-days: 3
