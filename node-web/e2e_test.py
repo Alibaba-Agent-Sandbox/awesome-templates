@@ -18,10 +18,10 @@ PASSED = 0
 
 def check(condition: bool, label: str) -> None:
     global PASSED
+    print(f"[{'PASS' if condition else 'FAIL'}] {label}", flush=True)
     if not condition:
         raise AssertionError(label)
     PASSED += 1
-    print(f"PASS {label}", flush=True)
 
 
 def main() -> int:
