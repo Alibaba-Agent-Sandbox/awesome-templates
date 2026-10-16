@@ -1,0 +1,233 @@
+{
+  "date": "2026-10-16",
+  "result": "PARTIAL",
+  "checkpoint_source": "a361f490555ead0ff67081ffb4874abf292a1b2f",
+  "scope": "Actual image L1 only; canonical provider/model gates remain separate",
+  "runs": [
+    {
+      "id": 38850050144,
+      "head_sha": "7cb0d9430768eec22f500ebb80b3fe9517ab1cbc",
+      "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38850050144",
+      "status": "completed",
+      "conclusion": "success",
+      "successful_image_jobs": 16,
+      "jobs": [
+        {
+          "name": "image-build (claude-code)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38850050144/job/116809051581"
+        },
+        {
+          "name": "image-build (gemini)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38850050144/job/116809051746"
+        },
+        {
+          "name": "image-build (deepseek-harness)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38850050144/job/116809051749"
+        },
+        {
+          "name": "image-build (python-hello)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38850050144/job/116809051770"
+        },
+        {
+          "name": "image-build (droid)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38850050144/job/116809051774"
+        },
+        {
+          "name": "image-build (hermes-agent)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38850050144/job/116809051782"
+        },
+        {
+          "name": "image-build (amp)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38850050144/job/116809051789"
+        },
+        {
+          "name": "image-build (opencode)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38850050144/job/116809051790"
+        },
+        {
+          "name": "image-build (openclaw)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38850050144/job/116809051822"
+        },
+        {
+          "name": "image-build (agents-cli)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38850050144/job/116809051827"
+        },
+        {
+          "name": "image-build (browser-automation)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38850050144/job/116809051840"
+        },
+        {
+          "name": "image-build (codex)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38850050144/job/116809051845"
+        },
+        {
+          "name": "image-build (node-web)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38850050144/job/116809051862"
+        },
+        {
+          "name": "image-build (codex-agent-api)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38850050144/job/116809051867"
+        },
+        {
+          "name": "image-build (qwen-code)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38850050144/job/116809053044"
+        },
+        {
+          "name": "image-build (qoder)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38850050144/job/116809053077"
+        }
+      ]
+    },
+    {
+      "id": 38853293050,
+      "head_sha": "a361f490555ead0ff67081ffb4874abf292a1b2f",
+      "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38853293050",
+      "status": "completed",
+      "conclusion": "success",
+      "successful_image_jobs": 17,
+      "jobs": [
+        {
+          "name": "plan",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38853293050/job/116819069232"
+        },
+        {
+          "name": "image-build (claude-code)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38853293050/job/116819126409"
+        },
+        {
+          "name": "image-build (codex)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38853293050/job/116819126427"
+        },
+        {
+          "name": "image-build (amp)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38853293050/job/116819126436"
+        },
+        {
+          "name": "image-build (hermes-agent)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38853293050/job/116819126444"
+        },
+        {
+          "name": "image-build (browser-automation)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38853293050/job/116819126448"
+        },
+        {
+          "name": "image-build (gemini)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38853293050/job/116819126450"
+        },
+        {
+          "name": "image-build (codex-agent-api)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38853293050/job/116819126470"
+        },
+        {
+          "name": "image-build (droid)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38853293050/job/116819126473"
+        },
+        {
+          "name": "image-build (pi)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38853293050/job/116819126485"
+        },
+        {
+          "name": "image-build (openclaw)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38853293050/job/116819126508"
+        },
+        {
+          "name": "image-build (deepseek-harness)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38853293050/job/116819126540"
+        },
+        {
+          "name": "image-build (opencode)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38853293050/job/116819126541"
+        },
+        {
+          "name": "image-build (node-web)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38853293050/job/116819126545"
+        },
+        {
+          "name": "image-build (agents-cli)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38853293050/job/116819126808"
+        },
+        {
+          "name": "image-build (python-hello)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38853293050/job/116819127949"
+        },
+        {
+          "name": "image-build (qwen-code)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38853293050/job/116819128015"
+        },
+        {
+          "name": "image-build (qoder)",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/38853293050/job/116819128054"
+        }
+      ]
+    }
+  ],
+  "exported_artifact_count": 17
+}
