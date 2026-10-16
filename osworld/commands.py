@@ -178,7 +178,8 @@ def desktop_start() -> dict:
         # No cloud/model credentials or inherited DISPLAY enter the worker.
         env = {name: os.environ[name] for name in (
             "HOME", "PATH", "LANG", "LC_ALL", "LD_LIBRARY_PATH", "GI_TYPELIB_PATH",
-            "PYTHONPATH", "XDG_DATA_DIRS", "IMLIB2_LOADER_PATH", "OSWORLD_BROWSER") if name in os.environ}
+            "PYTHONPATH", "XDG_DATA_DIRS", "IMLIB2_LOADER_PATH", "OSWORLD_BROWSER",
+            "PLAYWRIGHT_BROWSERS_PATH") if name in os.environ}
         env.update({"XDG_CONFIG_HOME": _STATE.name + "/config",
                     "XDG_CACHE_HOME": _STATE.name + "/cache", "XDG_RUNTIME_DIR": _STATE.name,
                     "XDG_SESSION_TYPE": "x11", "WORKSPACE": str(_root()),

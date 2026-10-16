@@ -27,7 +27,7 @@ See [design](../../../../docs/design/osworld.md) for signatures. `screenshot`, `
 
 ## Dependencies
 
-Pinned source and Apache-2.0 license are under `osworld/upstream`. Python requirements include a complete hash lock; Playwright 1.58.0 selects its browser revision. Critical Debian packages have exact versions; their transitive system security dependencies remain repository-resolved. No new provider or SDK contract is introduced. The source server wheel is handled by the existing L1 pipeline.
+Pinned source and Apache-2.0 license are under `osworld/upstream`. Python requirements include a complete hash lock; Playwright 1.58.0 selects its browser revision. Critical Debian packages have exact versions; their transitive system security dependencies remain repository-resolved. No new provider or SDK contract is introduced. The source server wheel is handled by the existing L1 pipeline. The worker must preserve PLAYWRIGHT_BROWSERS_PATH so its safe environment allowlist resolves the image-installed Chromium rather than a user cache. Initialization errors identify only fixed phases and exception classes, omitting paths/input.
 
 ## Test Strategy
 

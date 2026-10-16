@@ -28,6 +28,16 @@ def test_pinned_vendored_files_match_recorded_official_source_sha256():
         assert hashlib.sha256((runtime.SOURCE/name).read_bytes()).hexdigest()==data['sha256']
 
 
+def test_initialization_diagnostics_only_expose_fixed_stage_and_exception_class(monkeypatch,tmp_path):
+    def fail(self):
+        self.stage='browser-location'
+        raise RuntimeError('synthetic-private-browser-path')
+    monkeypatch.setattr(runtime.Desktop,'start',fail)
+    with pytest.raises(runtime.InitializationError) as error:runtime.Desktop(tmp_path)
+    assert error.value.stage=='browser-location' and error.value.cause=='RuntimeError'
+    assert 'synthetic-private' not in str(error.value)
+
+
 def test_actual_upstream_metric_observes_state_and_does_not_read_submission_score(monkeypatch,tmp_path,capsys):
     value=validate(monkeypatch,tmp_path,task())
     metric=runtime.load_functions('metrics_general.py',('check_include_exclude','exact_match'))

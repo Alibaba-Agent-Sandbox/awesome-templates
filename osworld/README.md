@@ -109,11 +109,11 @@ Call `run_task_config` then `evaluate` with that file's `task_path`. Setup accep
 
 ## Resources
 
-2 vCPU / 2048 MB, generation 2, non-root `user`, port 9000. No KVM, GPU, Docker daemon or extra capabilities. The image includes the browser/system libraries; no runtime GUI download occurs. Use a disposable sandbox for untrusted pages.
+2 vCPU / 2048 MB, generation 2, non-root `user`, port 9000. No KVM, GPU, Docker daemon or extra capabilities. The image includes the browser/system libraries; no runtime GUI download occurs. The worker explicitly preserves the image's `PLAYWRIGHT_BROWSERS_PATH=/opt/osworld-browser` when locating the installed browser. Use a disposable sandbox for untrusted pages.
 
 ## Verified
 
-No provider acceptance is claimed yet. `tested_on` is empty and the catalog is experimental. Native source GUI validation is separate from changed-image L1 and Express L2. Full OSWorld benchmark/model acceptance remains unverified. See [verification evidence](../.agents/evidence/verify/2026-10-16-osworld-browser-slice.md).
+No provider acceptance is claimed yet. `tested_on` is empty and the catalog is experimental. Native source GUI validation is separate from changed-image L1 and Express L2. Full OSWorld benchmark/model acceptance remains unverified. See [initial verification](../.agents/evidence/verify/2026-10-16-osworld-browser-slice.md) and the [browser-path fix evidence](../.agents/evidence/verify/2026-10-16-osworld-browser-cache.md).
 
 ## Secondary development
 

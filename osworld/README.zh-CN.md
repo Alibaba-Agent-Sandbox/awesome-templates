@@ -109,11 +109,11 @@ JSON body 直接放参数，成功返回 `{"result": ...}`。未设置的认证�
 
 ## 资源
 
-2 vCPU / 2048 MB，generation 2，非 root `user`，9000 端口。不需要 KVM、GPU、Docker daemon 或额外 capability。镜像包含浏览器和系统库，运行时不下载 GUI。用一次性 sandbox 访问不可信页面。
+2 vCPU / 2048 MB，generation 2，非 root `user`，9000 端口。不需要 KVM、GPU、Docker daemon 或额外 capability。镜像包含浏览器和系统库，运行时不下载 GUI。worker 显式保留镜像的 `PLAYWRIGHT_BROWSERS_PATH=/opt/osworld-browser`，从安装路径查找固定浏览器。用一次性 sandbox 访问不可信页面。
 
 ## 已验证
 
-当前不声明 provider 验收。`tested_on` 为空，目录为 experimental。native 源码 GUI 验证与变更镜像 L1、Express L2 分开；完整 OSWorld benchmark/模型验收尚未验证。见[验证记录](../.agents/evidence/verify/2026-10-16-osworld-browser-slice.md)。
+当前不声明 provider 验收。`tested_on` 为空，目录为 experimental。native 源码 GUI 验证与变更镜像 L1、Express L2 分开；完整 OSWorld benchmark/模型验收尚未验证。见[初始验证记录](../.agents/evidence/verify/2026-10-16-osworld-browser-slice.md)与[浏览器路径修复记录](../.agents/evidence/verify/2026-10-16-osworld-browser-cache.md)。
 
 ## 二次开发
 

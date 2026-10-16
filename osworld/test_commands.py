@@ -45,7 +45,8 @@ def test_real_worker_preserves_home_but_isolates_profile_without_secrets_or_prom
     monkeypatch.setenv('OPENAI_API_KEY', 'fixture-private-key')
     monkeypatch.setenv('ABX_SERVER_TOKEN', 'fixture-server-token')
     monkeypatch.setenv('DISPLAY', ':0')
-    worker(monkeypatch,tmp_path,"print(json.dumps({'result':{'running':True}}),flush=True)\nfor line in sys.stdin:\n request=json.loads(line)\n print(json.dumps({'result':{'keys':list(os.environ),'home':os.environ['HOME'],'config':os.environ['XDG_CONFIG_HOME'],'no_user_site':os.environ['PYTHONNOUSERSITE'],'argv':sys.argv,'text':request.get('text')}}),flush=True)\n")
+    monkeypatch.setenv('PLAYWRIGHT_BROWSERS_PATH',str(tmp_path/'pinned-browser-cache'))
+    worker(monkeypatch,tmp_path,"print(json.dumps({'result':{'running':True}}),flush=True)\nfor line in sys.stdin:\n request=json.loads(line)\n print(json.dumps({'result':{'keys':list(os.environ),'home':os.environ['HOME'],'config':os.environ['XDG_CONFIG_HOME'],'no_user_site':os.environ['PYTHONNOUSERSITE'],'browser_cache':os.environ.get('PLAYWRIGHT_BROWSERS_PATH'),'argv':sys.argv,'text':request.get('text')}}),flush=True)\n")
     assert commands.desktop_start() == {'running':True}
     state = Path(commands._STATE.name)
     assert state.stat().st_mode & 0o777 == 0o700
@@ -53,6 +54,7 @@ def test_real_worker_preserves_home_but_isolates_profile_without_secrets_or_prom
     assert {'OPENAI_API_KEY','ABX_SERVER_TOKEN','DISPLAY'}.isdisjoint(reply['keys'])
     assert reply['home'] == os.environ['HOME'] and reply['config'] == str(state/'config')
     assert reply['no_user_site']=='1' and 'private-' not in ' '.join(reply['argv'])
+    assert reply['browser_cache']==str(tmp_path/'pinned-browser-cache')
     assert reply['text'] == 'private-$(_never_execute_)'
     assert commands._request('type_text',text='🙂'*4096)['text']=='🙂'*4096
     assert commands.desktop_start() == {'running':True,'reused':True}

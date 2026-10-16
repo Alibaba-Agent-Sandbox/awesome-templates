@@ -29,6 +29,13 @@ SOURCE = Path(__file__).with_name("upstream")
 STATE = Path(sys.argv[1]) if __name__ == "__main__" else None
 
 
+class InitializationError(RuntimeError):
+    def __init__(self, stage: str, cause: str):
+        super().__init__("desktop initialization failed")
+        self.stage = stage
+        self.cause = cause
+
+
 def load_functions(filename: str, names: tuple[str, ...]) -> dict:
     """Compile only named, unchanged upstream definitions, not dependency imports.
 
@@ -121,7 +128,10 @@ class Desktop:
         self.browser = None
         self.accessibility_thread = None
         self.stage = "initialization"
-        self.start()
+        try:
+            self.start()
+        except Exception as exc:
+            raise InitializationError(self.stage, type(exc).__name__) from None
 
     def spawn(self, argv, **kwargs):
         process = subprocess.Popen(argv, stdin=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
@@ -130,6 +140,7 @@ class Desktop:
         return process
 
     def start(self):
+        self.stage = "x11-display"
         authority = self.directory / "Xauthority"
         # Never remove or adopt another session's X socket/lock.
         for _ in range(100):
@@ -150,6 +161,7 @@ class Desktop:
             time.sleep(.05)
         else:
             raise RuntimeError("Xvfb failed to become ready")
+        self.stage = "private-dbus"
         bus = self.spawn(["dbus-daemon", "--session", "--nofork", "--print-address=1"], stdout=subprocess.PIPE)
         os.environ["DBUS_SESSION_BUS_ADDRESS"] = bus.stdout.readline().decode().strip()
         bus.stdout.close()
@@ -170,6 +182,7 @@ class Desktop:
                                                   Xatom.STRING, 8, os.environ["AT_SPI_BUS_ADDRESS"].encode())
         connection.sync()
         connection.close()
+        self.stage = "window-manager"
         config = self.directory / "openbox.xml"
         config.write_text('<openbox_config xmlns="http://openbox.org/3.4/rc"><applications><application class="*"><decor>no</decor></application></applications></openbox_config>')
         self.spawn(["openbox", "--sm-disable", "--config-file", str(config)])
@@ -182,6 +195,7 @@ class Desktop:
         else:
             raise RuntimeError("window manager did not become ready")
         connection.close()
+        self.stage = "upstream-observations"
         upstream = self.directory / "upstream"
         upstream.mkdir()
         for name in ("main.py", "pyxcursor.py"):
@@ -199,11 +213,13 @@ class Desktop:
         if not shutil.which("libreoffice"):
             self.server._get_libreoffice_version = lambda: ()
         self.client = self.server.app.test_client()
+        self.stage = "browser-location"
         from playwright.sync_api import sync_playwright
         self.playwright = sync_playwright().start()
         binary = os.environ.get("OSWORLD_BROWSER") or self.playwright.chromium.executable_path
         if not Path(binary).is_file():
             raise RuntimeError("the pinned browser is missing")
+        self.stage = "browser-startup"
         self.browser_process = self.spawn([binary, "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--no-first-run",
                     "--no-default-browser-check", "--password-store=basic", "--force-renderer-accessibility",
                     "--remote-debugging-address=127.0.0.1", "--remote-debugging-port=0", "--kiosk",
@@ -216,6 +232,7 @@ class Desktop:
         else:
             raise RuntimeError("browser did not become ready")
         port = int(port_file.read_text().splitlines()[0])
+        self.stage = "browser-attachment"
         self.browser = self.playwright.chromium.connect_over_cdp(f"http://127.0.0.1:{port}")
         self.context = self.browser.contexts[0]
         self.page = self.context.pages[0]
@@ -452,7 +469,8 @@ def main():
             protocol.write(json.dumps(reply) + "\n")
             protocol.flush()
     except Exception as exc:
-        protocol.write(json.dumps({"error": "desktop initialization failed: " + type(exc).__name__}) + "\n")
+        detail = (exc.cause + " (" + exc.stage + ")") if isinstance(exc, InitializationError) else type(exc).__name__
+        protocol.write(json.dumps({"error": "desktop initialization failed: " + detail}) + "\n")
         protocol.flush()
     finally:
         if desktop is not None:
