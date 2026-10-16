@@ -1,0 +1,38 @@
+{
+  "result": "FAIL",
+  "scope": "source runtime only; not actual image or official Docker benchmark",
+  "checks": [
+    "official mini-swe-agent 2.4.6 and isolated pinned evaluation venv installed",
+    "mini-swe-agent 2.4.6"
+  ],
+  "cleanup": {
+    "owned_sandbox_kill": true,
+    "owned_sandbox_absence_verified": true
+  },
+  "source_hashes": {
+    "test_e2e_protocol.py": "dbe365bdb079c83d69e67b34b7984dc0eb0e0ef20462927b8eafa47f20cad291",
+    "swe_process.py": "0a3a6c91fd177db53050661fc5d2cf4cf2911754cab9253510a9d898830f87fa",
+    "commands.py": "7a1729a662a4a7d23301e3913b8a6b52b566350b48ea34aba96afb027707e21a",
+    "test_commands.py": "5dd41502c6490e63b86909e5843b3a7af5ed09db1878b0abc97b3ff62cb068e0",
+    "swe_environment.py": "b79502c0582c36c0f5019dc65db49f5dd660626a71af199e6d3d1689c6d5d47e",
+    "verify_upstream.py": "9eabe4787e75d147a3feb9e38a6d61c1935cdd11cf5796b58fcbd0a0f4be303a",
+    "e2e_test.py": "71d159a393799f84afd1e65d8ff769476f034d06cc2021b06c45e1c13f6e7d07"
+  },
+  "stage": "real instance baseline",
+  "server_wheel": {
+    "sha256": "a09a4846fef8b49f3a059d1c65e38d283986aa4fbf879dd09192100c30039fc9",
+    "source": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "matching_modules": 56
+  },
+  "install_exit_code": 0,
+  "upstream_guards": {
+    "exit_code": 0,
+    "checks": [
+      "PASS actual official CLI propagates Unicode stdout/stderr and nonzero action result",
+      "PASS actual official CLI fatal action timeout stops loop and owned child is absent or exited"
+    ],
+    "scope": "actual official CLI with deterministic upstream model; not real model"
+  },
+  "error_category": "CommandExecutionError",
+  "failure_category": "baseline must reproduce"
+}

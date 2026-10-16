@@ -37,6 +37,8 @@ is recorded.
 | [gemini](./gemini/README.md) | Gemini CLI. Command gemini -p. Package @google/gemini-cli@0.64.0. | experimental | |
 | [pi](./pi/README.md) | Official Pi CLI 1.3.0 with ephemeral compatible-model settings and explicit writable tools. | experimental | |
 | [aider](./aider/README.md) | Official Aider 0.86.2 with read-only ask and explicit selected-file edits. | experimental | |
+| [swe](./swe/README.md) | Real mini-swe-agent 2.4.6 and one independently evaluated SWE-bench instance; no official Docker score. | experimental | |
+
 OpenSandbox's public sandbox images (code-interpreter, code-interpreter-base, desktop, playwright, vscode) are resolved by the SDK. This catalog does not vendor those Dockerfiles.
 
 `abx template install` builds these Dockerfile templates on

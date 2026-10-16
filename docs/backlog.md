@@ -6,9 +6,9 @@
 
 ## SWE-bench / SWE-agent
 
-SWE-bench 按实例评分：每道题有自己的仓库快照和 `FAIL_TO_PASS` 测试，官方 harness 用该实例的 Docker 镜像跑测试。SWE-agent 的入口是 `sweagent`，它自己再起一个环境去改仓库。
+[swe](../swe/README.md) 实现一个明确的非 Docker 切片：官方 mini-swe-agent 2.4.6、真正的 `pallets__flask-5014` base/test_patch、1FAIL+59PASS 基线及全新目录/venv 中的60项独立评价。显式授权才执行模型 shell，输出源码补丁与报告；不会下载整份数据集，也不包含标准答案补丁。实现与验收状态见 [Issue35](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/35) 和 [设计](./design/swe.md)。
 
-缺的是评测底层，不是又一个编码 CLI。当前沙箱是单个容器里的 `agent_sandbox.server`，没有实例镜像仓库，也没有从沙箱里启动兄弟容器的权限。嵌套 Docker 和下面的 K3s 是同一类缺口。没有这层，命名命令无法检出题目、跑隐藏测试、交回补丁分数。
+仍缺官方每题 Docker 镜像和原始 Python3.11 环境；首个 Python3.13 镜像被原始弃用警告门槛拒绝，评测现固定官方 SHA 的原题 Python3.11.10；仍需单独验证新环境，不能发布官方 SWE-bench 分数。完整 SWE-agent、任意实例、批量 benchmark、SWE-rebench 和需要额外系统依赖的题目继续留在 backlog。沙箱没有 Docker 不能推出所有非 Docker 子流程都不可做。
 
 ## OSWorld
 

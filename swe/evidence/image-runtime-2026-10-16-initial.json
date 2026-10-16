@@ -1,0 +1,89 @@
+{
+  "result": "FAIL",
+  "pass": false,
+  "date": "2026-10-16",
+  "template": "swe",
+  "provider": "alicloud-express",
+  "checks": [
+    "official generation-2 CreateTemplate for actual SWE config",
+    "official template READY",
+    "SDK create from uniquely registered reviewed image",
+    "all 56 installed server modules match exact pinned SDK bytes",
+    "HTTP /health",
+    "full external HTTP suite, real installed CLI required, model calls disabled"
+  ],
+  "commands": [
+    {
+      "command": "swe_version",
+      "sdk": {
+        "ok": true
+      },
+      "http": {
+        "ok": true
+      },
+      "cli": {
+        "ok": true
+      }
+    }
+  ],
+  "cleanup": {
+    "push_helper_kill": true,
+    "push_helper_absence_verified": true,
+    "sandbox_kill": true,
+    "sandbox_absence_verified": true,
+    "model_sandbox_kill": true,
+    "model_sandbox_absence_verified": true,
+    "template_delete": true,
+    "template_absence_verified": true,
+    "registry_tag_delete_verified": true,
+    "registry_repository_delete_verified": true
+  },
+  "reviewed_head": "bb37790b44ec648821a183c4d33d95d4572ebc08",
+  "boundary": "Actual CI image, native cloud push and official registration; full local abx template deploy wrapper not run",
+  "image_provenance": {
+    "artifact_id": 12030220694,
+    "workflow_run_id": 38862469952,
+    "archive_sha256": "0d3ffd2da9f32094622e033b500c7ad91c89750d250e2dec2d05aa1b0bdc64e4",
+    "source_head_commit": "bb37790b44ec648821a183c4d33d95d4572ebc08",
+    "checkout_commit": "5187f550d8eaf8259f8e467835f25fb8ea96f7de",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a"
+  },
+  "stage": "actual image baseline diagnostics; no model call",
+  "registry_transfer": {
+    "method": "official crane in owned Express helper",
+    "same_reviewed_archive_sha256_verified": true,
+    "crane_sha256": "8e75c326adb43b053cfd78b9b987663f8f4fe4557f4d3915905643f25c730992"
+  },
+  "image_digest": "sha256:cc60b2654e021c8f69916903b38912d915713b2414dab551282e54d116f416be",
+  "installed_server_provenance": {
+    "modules_compared": 56,
+    "all_module_bytes_match_recorded_sdk_source": true,
+    "expected_source_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "source_manifest_sha256": "dac8868dcff05c87cd3f3230b38dfb00530c622f86832b5c9592f846dfb019c8"
+  },
+  "full_http_suite": {
+    "PASS": 5,
+    "FAIL": 0,
+    "SKIP": 1,
+    "exit_code": 0,
+    "source_sha256": "39e2a1f12162ae3abeb2abe97539782ab6fb2c3743b937e703e670738b1b43cf",
+    "failed_cases": []
+  },
+  "baseline_diagnostic": {
+    "passed": 2,
+    "failed": 0,
+    "errors": 58,
+    "skipped": 0,
+    "python": "3.13.13",
+    "fail_to_pass": {
+      "tests/test_blueprints.py::test_empty_name_not_allowed": "error"
+    },
+    "failure_categories": [
+      "deprecation_warning",
+      "pkgutil_deprecation"
+    ],
+    "valid_baseline": false
+  },
+  "error_category": "RuntimeError",
+  "error_http_categories": []
+}
