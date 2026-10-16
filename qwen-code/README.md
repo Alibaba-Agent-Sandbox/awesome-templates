@@ -100,6 +100,8 @@ Diagnostics inspect `~/.qwen/settings.json` and `<workspace>/.qwen/settings.json
 
 ## Verified
 
+The current coding controller imports trusted standard-library code under `python3 -I`, compiles the actual calculator and original-test source bytes, and requires exactly all three original tests to succeed without skips, expected failures or unexpected successes. Each test/held-out process must return a fresh completion acknowledgment generated after the model response; it is never included in the model prompt. Premature `SystemExit`, `os._exit(0)`, a static `INDEPENDENT_OK` string and stale bytecode cannot supply that acknowledgment. This protects ordinary acceptance against premature exits; it is not a security boundary against hostile Python with the same OS authority. Historical model runs retain their original controller hashes and do not prove this new gate; record a separate actual model run at the new controller revision on the reviewed image. Canonical deployment/provider qualification remains a separate required gate.
+
 No provider has a passing run recorded for this template.
 
 Local CLI installation/version and HTTP regression results are recorded in the [verification record](../.agents/evidence/verify/2026-10-16-qwen-code-v2.md). L1 image build and L2 Express are blocked by the unavailable Docker daemon. A local model run cannot establish cloud/image acceptance.
