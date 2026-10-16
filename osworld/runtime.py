@@ -396,6 +396,7 @@ class Desktop:
         # observations and upstream evaluator. No marker contributes to score.
         fixture = Path(os.environ["WORKSPACE"]) / (".osworld-smoke-" + secrets.token_hex(8) + ".html")
         try:
+            self.stage = "fixture-creation"
             fixture.write_text('<!doctype html><title>OSWorld desktop task</title><label for="entry" style="position:absolute;left:100px;top:100px">Task text</label><input id="entry" aria-label="Task text" style="position:absolute;left:100px;top:180px;width:500px;height:60px;font-size:24px"><button id="apply" style="position:absolute;left:100px;top:300px;width:400px;height:80px" onclick="document.getElementById(\'result\').textContent=\'Completed: \'+document.getElementById(\'entry\').value">Apply task</button><p id="result" role="status" aria-live="polite" style="position:absolute;left:100px;top:450px">Awaiting input</p>')
             task = {"config": [{"type": "chrome_open_tabs", "parameters": {"urls_to_open": [fixture.as_uri()]}}],
                     "evaluator": {"func": "check_include_exclude", "result": {"type": "accessibility_tree"},

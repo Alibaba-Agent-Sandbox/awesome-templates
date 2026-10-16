@@ -138,3 +138,5 @@ required GUI 模式缺依赖即失败。默认本地 HTTP 检查只报告 GUI SK
 Apache-2.0。保留原 OSWorld 文件、完整[上游许可证](upstream/LICENSE)与源码 SHA256 清单。PyAutoGUI 等依赖保留安装分发的许可证；Chromium 和 Debian 包保留安装自带 notices。
 
 1024×768 PNG/Xvfb 屏幕与浏览器页面 viewport 是不同测量值。启动只要求可见且非零的 viewport，不会通过缩放或模拟把页面改成屏幕大小。`desktop_start` 和 `run_task_config` 返回 `browser_geometry`，仅包含屏幕、外层窗口、viewport 和内容偏移的数值字段；独立 smoke 仅打印这些数值用于镜像诊断。`click` 仍接受屏幕坐标，smoke 使用实际内容偏移和 DOM 矩形，继续要求真实输入、上游评分 0→1、PNG 像素变化及完整 4096 字符目标值读回。参见[viewport 后续证据](../.agents/evidence/verify/2026-10-16-osworld-viewport.md)。
+
+镜像显式将 `/home/user/app` 目录归属运行用户，使上传的任务文件和一次性 smoke fixture 可以在非 root 身份下写入；仅给 `COPY` 文件设置 owner 并不会自动修正 WORKDIR 本身。

@@ -44,3 +44,5 @@ Real process regressions cover normal stop, unexpected leader exit, redirected d
 These criteria cover only the browser slice. Full OSWorld benchmark/model tasks remain unimplemented and Issue 36 must stay open.
 
 The screen/viewport distinction and latest failed image run are tracked in [viewport follow-up](../../../evidence/verify/2026-10-16-osworld-viewport.md); real image/provider acceptance remains pending.
+
+The third actual image smoke exposed a non-root WORKDIR ownership defect; [workspace follow-up](../../../evidence/verify/2026-10-16-osworld-workspace.md) preserves the failed run and the necessary Docker ownership correction.

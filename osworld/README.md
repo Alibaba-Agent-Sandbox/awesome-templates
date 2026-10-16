@@ -109,7 +109,7 @@ Call `run_task_config` then `evaluate` with that file's `task_path`. Setup accep
 
 ## Resources
 
-2 vCPU / 2048 MB, generation 2, non-root `user`, port 9000. No KVM, GPU, Docker daemon or extra capabilities. The image includes the browser/system libraries; no runtime GUI download occurs. The worker explicitly preserves the image's `PLAYWRIGHT_BROWSERS_PATH=/opt/osworld-browser` when locating the installed browser. Use a disposable sandbox for untrusted pages.
+2 vCPU / 2048 MB, generation 2, non-root `user`, port 9000. No KVM, GPU, Docker daemon or extra capabilities. The image includes the browser/system libraries; no runtime GUI download occurs. Its `/home/user/app` directory is explicitly owned by the runtime user for task uploads and disposable fixture writes. The worker explicitly preserves the image's `PLAYWRIGHT_BROWSERS_PATH=/opt/osworld-browser` when locating the installed browser. Use a disposable sandbox for untrusted pages.
 
 ## Verified
 

@@ -59,3 +59,5 @@ L1: actual standalone Docker build and `template.yaml` smoke run non-root with n
 L2: deploy/register the changed image on Express, use SDK/HTTP/CLI named commands, run the required desktop e2e and verify cleanup. Source-runtime probes are separate evidence. L3 full upstream benchmark/model acceptance and L4 other providers remain unverified; no response marker or version is a benchmark score.
 
 Screen and viewport are independent: the PNG remains 1024×768, while startup waits for a visible nonzero viewport. Read-only numeric `browser_geometry` accompanies startup/setup; smoke records it and uses actual content offset plus DOM rect for native clicks without CDP viewport emulation. Actual interaction/evaluation and Unicode destination gates remain required. See [viewport evidence](../../.agents/evidence/verify/2026-10-16-osworld-viewport.md).
+
+The Dockerfile explicitly assigns `/home/user/app` itself to the runtime user. File-level `COPY --chown` does not grant write access to a root-created WORKDIR. The real non-root smoke must create and remove its file-backed task there.
