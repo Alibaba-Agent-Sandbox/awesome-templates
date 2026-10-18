@@ -1,0 +1,57 @@
+{
+  "template": "droid",
+  "provider": "alicloud-express",
+  "scope": "patched-source runtime on existing base; NOT Dockerfile L1 or template-deploy L2",
+  "verification_type": "source-runtime",
+  "image_build_verified": false,
+  "template_deploy_verified": false,
+  "sdk_source_commit": "76268024fb6e046b78ebc0f797ebcaf162ef2a55",
+  "server_wheel_sha256": "1eeeba8533d24e0ba2ae461c411289ce0b13897465ef7ce8925790ac4cb16c2f",
+  "source_files_sha256": {
+    "droid/commands.py": "b67e5b8ba50f1e2be6b3d094f806a112b4900999278e50535fb748aee0b66419",
+    "droid/e2e_test.py": "1cf103b08e663b8c43fe42e82fbf30529a581b4854ef2332a1dd5f6337dec4e4",
+    "droid/Dockerfile": "e6863dc35e54f3b595bb4e5ffede0431fff75c31da1143f3103b404bb3f1a5f9",
+    "droid/template.yaml": "155f433626bc97187a88d66a800fb3682bd3d6e804a16bc2591890a0e2b83b81",
+    "scripts/express_runtime_e2e.py": "0d9939c2a78a480ee990d0687399ee069c6274bc5fdcb435667a795106502a6b"
+  },
+  "passed": true,
+  "exit": 0,
+  "checks": [
+    {
+      "name": "owned Express base sandbox",
+      "ok": true
+    },
+    {
+      "name": "public runtime source and config upload",
+      "ok": true
+    },
+    {
+      "name": "pinned runtime dependency install",
+      "ok": true
+    },
+    {
+      "name": "patched server process start",
+      "ok": true
+    },
+    {
+      "name": "external SDK health",
+      "ok": true
+    },
+    {
+      "name": "pinned droid version through SDK",
+      "ok": true
+    },
+    {
+      "name": "droid read-only installation smoke",
+      "ok": true
+    },
+    {
+      "name": "remote HTTP suite",
+      "ok": true
+    },
+    {
+      "name": "owned sandbox cleanup",
+      "ok": true
+    }
+  ]
+}

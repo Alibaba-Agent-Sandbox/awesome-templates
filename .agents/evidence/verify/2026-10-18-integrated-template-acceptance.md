@@ -16,8 +16,11 @@ COUNT, invalidating Git subprocess fixtures; corrected to a minimal allowlist.
 Pillow11.3.0 from the workflow was initially absent and installed, then affected
 groups reran successfully. No product code was weakened for those failures.
 Full local source HTTP runner:17 PASS /7 FAIL across23 products+skeleton;
-required upstream binaries/native versions are unavailable in this local
-runtime. These failures are not called passes. Hosted native/image checks
+six failures require unavailable/mismatched upstream CLIs or browser runtime.
+The media failure comes from workspace filesystem constraints: its actual
+43-test native suite and full source HTTP verifier both PASS in native temporary
+filesystem, including independent PCM/artifact checks and cleanup. The original
+seven failed runner results remain disclosed, not relabeled. Hosted native/image checks
 remain authoritative for their own exact heads, not canonical provider proof.
 First integration head15e77ed:hosted local checker exposed missing client
 package names in four updated SDK README sections; corrected within those
@@ -29,3 +32,6 @@ This environment has no Docker daemon. Explicit temporary Actions-secret storage
 approval remains pending under docs/canonical-express-review.md. Canonical smoke
 covers CLI/SDK, not full external HTTP or image-backed model acceptance.
 The configuration job's BLOCKED receipt is not a provider pass.
+
+Droid native-SDK source-runtime follow-up:all nine checks PASS; see the separate
+[canonical owner record](2026-10-18-droid-native-runtime.md). No provider badge change.
