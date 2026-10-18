@@ -90,7 +90,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Alibaba-Agent-Sandbox/python-sdk
-          ref: a60e9ad351e745ccaa5b5733344ef86584ad5031
+          ref: e86cb0be24e0083a27396b260298e7cf27b660d6
           path: reviewed/controller
           persist-credentials: false
       - name: Checkout exact server wheel source independently

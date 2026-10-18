@@ -5,7 +5,7 @@
 READY、新沙箱、CLI／SDK 烟测及清理；镜像转移加官方注册仍是独立的补充验证。
 
 模板／Docker 输入固定 integrated23 `b30833c`，生产 CLI 固定 `37b6d27`，控制器 SDK 固定
-已合并的 `a60e9ad`，注入的 server 轮子源码独立固定 `e2cb27e`。canonical
+已合并的 `e86cb0b`，注入的 server 轮子源码独立固定 `e2cb27e`。canonical
 运行器使用控制器常量中另行固定的清理修复版本，与模板固定同一个含清理修复的集成提交 b30833c。
 CLI 使用 lockfile 的 `npm ci`；Python 使用固定公开源码包及明确的构建工具版本。
 

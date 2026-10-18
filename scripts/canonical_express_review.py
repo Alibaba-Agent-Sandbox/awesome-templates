@@ -32,7 +32,7 @@ TEMPLATES = ("agents-cli", "amp", "browser-automation", "claude-code", "codex",
 PINS = {"templates": "b30833c469e0e6b4fa5ee2134391b276dbb42c8e",
         "harness": "b30833c469e0e6b4fa5ee2134391b276dbb42c8e",
         "cli": "37b6d276bdca875811ce7fb0ae88aca64882fcaa",
-        "controller": "a60e9ad351e745ccaa5b5733344ef86584ad5031",
+        "controller": "e86cb0be24e0083a27396b260298e7cf27b660d6",
         "server": "e2cb27e24fde0a67112f82b8d44af463445a5d1a"}
 REQUIRED = ("ALICLOUD_ACCESS_KEY_ID", "ALICLOUD_ACCESS_KEY_SECRET", "ACR_NAMESPACE",
             "ABX_SANDBOX_API_KEY", "ABX_SANDBOX_BASE_URL", "ABX_SANDBOX_DOMAIN")

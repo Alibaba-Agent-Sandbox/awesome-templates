@@ -35,3 +35,16 @@ The configuration job's BLOCKED receipt is not a provider pass.
 
 Droid native-SDK source-runtime follow-up:all nine checks PASS; see the separate
 [canonical owner record](2026-10-18-droid-native-runtime.md). No provider badge change.
+
+Final preparation after published1d84fcf: all29 image/native/local checks PASS,
+canonical cloud job SKIP. This is L1/native evidence, not canonical/provider proof.
+Accepted native controller/source install pin e86cb0be24e0083a27396b260298e7cf27b660d6:
+fresh public archive pair install exit0, pip check exit0, paired0.3.0 imports exit0.
+No injected-server/harness source pin or provider badge changed.
+Issue110: running the old local runner deleted active e2e_sdk.py; restored exact
+tracked bytes. New temporary-directory source/artifact cleanup regression FAIL
+before fix (missing e2e_sdk.py), PASS after (three Python source bytes preserved,
+generated files/directories removed). No source is classified as orphan solely
+from its filename. New regression added to retained PR/main local CI. Latest
+head hosted checks pending. Temporary Actions storage approval remains pending;
+no credentials uploaded and no cloud workflow dispatched.

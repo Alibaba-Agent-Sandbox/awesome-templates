@@ -9,7 +9,7 @@ owned cleanup. Supplementary image transfer/registration remains a separate path
 ## Fixed source and default gates
 
 The workflow pins template/Docker inputs to integrated23 `b30833c`, production CLI to
-`37b6d27`, controller SDK to accepted `a60e9ad`, and injected server-wheel source
+`37b6d27`, controller SDK to accepted `e86cb0b`, and injected server-wheel source
 independently to `e2cb27e`. Its canonical harness is separately pinned to the
 cleanup-fix revision recorded in `scripts/canonical_express_review.py`; it does
 run the same integrated cleanup-fixed revision b30833c. Controller/server checkouts are distinct

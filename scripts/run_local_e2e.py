@@ -168,7 +168,7 @@ def _cleanup(directory: Path) -> None:
         name = child.name
         if name.startswith("abx_e2e_") and child.is_dir():
             shutil.rmtree(child, ignore_errors=True)
-        elif name != "e2e_test.py" and (
+        elif child.suffix != ".py" and (
             name.startswith("e2e_") or name.startswith(".e2e_") or name.startswith("screenshot_")
         ):
             if child.is_dir():

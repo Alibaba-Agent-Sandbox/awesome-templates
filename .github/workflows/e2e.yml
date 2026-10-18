@@ -2,6 +2,7 @@ name: e2e
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 jobs:
@@ -134,7 +135,7 @@ jobs:
 
       - name: Lint templates and unit-test the checker
         run: |
-          python3 scripts/test_spec_tools.py
+          python3 scripts/test_local_cleanup.py && python3 scripts/test_spec_tools.py
           python3 scripts/check_template.py --all --strict
 
       - name: Run process, privacy, and acceptance-harness regressions

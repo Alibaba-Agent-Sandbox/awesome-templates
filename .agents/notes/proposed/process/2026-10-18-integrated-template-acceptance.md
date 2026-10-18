@@ -57,3 +57,12 @@ Actions-secret storage approval. L3/model and full external HTTP remain separate
 ## Evidence
 
 [Verification](../../../evidence/verify/2026-10-18-integrated-template-acceptance.md).
+
+Final review also fixes Issue110: local cleanup previously deleted the active
+agents-cli/e2e_sdk.py source. Restore that source and preserve Python verifier
+files while still removing generated outputs; a real temporary-directory
+regression fails before/pass after the fix. CI executes that regression. Use
+accepted native SDK e86cb0b for controller/source-install examples, retaining
+independent injected-server/harness pins. Restrict duplicate push jobs to main
+while retaining every PR and main gate; no canonical acceptance is weakened.
+https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/110

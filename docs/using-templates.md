@@ -136,3 +136,5 @@ registry builds its public catalog from source repositories. Do not copy either
 frontend or generated catalog back here.
 
 [中文](using-templates.zh-CN.md)
+
+Local acceptance cleanup preserves Python verifier sources, including `e2e_sdk.py`, while removing generated artifacts and caches. The SDK controller must remain available for subsequent acceptance.
