@@ -329,3 +329,23 @@ templates:
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
     status: experimental
+  - name: aider
+    description: "Official Aider 0.86.2 with read-only ask and guarded selected-file writeback."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: aider
+    tags: [aider, coding-agent, openai-compatible]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+
+  - name: swe
+    description: "mini-swe-agent 2.4.6 with one real SWE-bench Flask instance and independent non-Docker evaluation."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: swe
+    tags: [swe-bench, mini-swe-agent, evaluation]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: supported
+      opensandbox: push-image-then-pass-uri

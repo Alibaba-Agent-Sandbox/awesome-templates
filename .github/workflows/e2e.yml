@@ -152,6 +152,8 @@ jobs:
           python -m pytest -q hermes-agent/test_commands.py hermes-agent/test_e2e_protocol.py
           python -m pytest -q pi/test_commands.py pi/test_e2e_protocol.py pi/test_cli_protocol.py pi/test_install_tools.py scripts/test_select_image_templates.py
           python -m pytest -q ocr/test_commands.py ocr/test_http.py
+          python -m pytest -q aider/test_commands.py aider/test_e2e_protocol.py
+          python -m pytest -q swe/test_commands.py swe/test_e2e_protocol.py
           python -m pytest -q agents-cli/test_protocol.py
           python -m pytest -q scripts/test_express_runtime_socket.py
           python -m pytest -q qwen-code/test_commands.py qwen-code/test_e2e_protocol.py
