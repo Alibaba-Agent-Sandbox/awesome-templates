@@ -20,13 +20,15 @@ from agent_sandbox.models.errors import CommandArgumentError, CommandExecutionEr
 
 
 @pytest.fixture
-def server(tmp_path):
+def server(tmp_path, request):
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
     token = secrets.token_hex(16)
     env = {k: v for k, v in os.environ.items() if not any(word in k.upper() for word in ("TOKEN", "SECRET", "API_KEY", "PASSWORD"))}
     env.update(WORKSPACE=str(tmp_path), ABX_SERVER_BASE_DIR=str(tmp_path), ABX_SERVER_PORT=str(port), ABX_SERVER_TOKEN=token, ABX_PTY_PORT="0")
+    if getattr(request, "param", None) == "missing-native":
+        env["DOCUMENT_PANDOC_BINARY"] = "/document-tools-no-native-engine"
     process = subprocess.Popen([sys.executable, str(Path(__file__).with_name("commands.py"))], env=env,
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     url = f"http://127.0.0.1:{port}"
@@ -95,3 +97,23 @@ def test_authenticated_sdk_docx_and_text_artifacts(server):
                     await client.files.delete(path)
                     assert not await client.files.exists(path)
     asyncio.run(run())
+
+
+@pytest.mark.parametrize("server", ["missing-native"], indirect=True)
+def test_real_http_path_validation_without_engine_and_valid_conversion_refusal(server):
+    url, token, root = server
+    with httpx.Client(base_url=url, headers={"Authorization": "Bearer " + token}) as client:
+        setup = client.post("/commands/document_setup_check", json={})
+        assert setup.status_code == 200 and setup.json()["result"]["available"] is False
+        for path in ("../private.md", "https://example.com/input.md"):
+            response = client.post("/commands/convert", json={"input_path": path, "output_name": "out.docx"})
+            assert response.status_code == 500 and response.json()["type"] == "ValueError"
+        source = root / "source.md"
+        source.write_text("# Actual valid document\n")
+        try:
+            response = client.post("/commands/convert", json={"input_path": "source.md", "output_name": "out.docx"})
+            assert response.status_code == 500 and response.json()["type"] == "RuntimeError"
+            assert "unavailable" in response.json()["error"]
+            assert not (root / "out.docx").exists()
+        finally:
+            source.unlink()

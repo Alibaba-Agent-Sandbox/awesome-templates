@@ -53,6 +53,14 @@ def test_operator_binary_with_wrong_version_refused(workspace, monkeypatch):
     assert not (workspace / "out.docx").exists()
 
 
+@pytest.mark.parametrize("input_path", ["../private.md", "https://example.com/input.md", "file:/private.md"])
+def test_path_validation_does_not_require_native_engine(workspace, monkeypatch, input_path):
+    monkeypatch.setenv("DOCUMENT_PANDOC_BINARY", "/document-tools-no-native-engine")
+    with pytest.raises(ValueError):
+        document.convert(input_path, "out.docx")
+    assert not (workspace / "out.docx").exists()
+
+
 @pytest.mark.parametrize("output_format", ["docx", "txt"])
 def test_actual_conversion_independent_content_and_hash(workspace, output_format):
     original = (workspace / "source.md").read_bytes()

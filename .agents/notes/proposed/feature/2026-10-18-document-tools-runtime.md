@@ -14,6 +14,8 @@ Add a standalone `document-tools` spec-v2 experimental template for Markdown →
 
 New commands: `document_version`, `document_setup_check`, `convert` and `document_smoke`. See [the design](../../../../docs/design/document-tools.md). Existing public server/client contracts do not change. General shared shell/files authority remains unchanged; the restrictions apply to this named conversion interface.
 
+Path/size/UTF-8 validation precedes native availability checks, so malformed input keeps its argument error even on a host without Pandoc. Every valid conversion then checks the actual executable pin within the same total deadline before native parsing; missing/wrong engines cannot produce successful artifacts.
+
 ## Alternatives considered
 
 Block all coding on canonical cloud configuration: rejected; native document behavior can be implemented and verified independently. Claim the whole original office task complete from Markdown conversion: rejected; Issue 55 stays open. Run arbitrary `soffice`/Pandoc argv or let the DOCX writer resolve untrusted images: rejected. Use DOCX `--sandbox` with Debian's non-embedded-data package: actually attempted and failed because internal package templates cannot be found; retain sandbox parsing and an application AST gate instead of misrepresenting the writer boundary. A 512 MiB address-space cap also failed actual Haskell OS-thread startup; the final bounded 1 GiB virtual address space plus 256 MiB heap and two runtime capabilities fit the 2 GiB sandbox budget. Allocator arenas are capped at two.

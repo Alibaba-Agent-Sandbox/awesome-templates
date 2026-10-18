@@ -114,6 +114,8 @@ Read [the design](../docs/design/document-tools.md), then run `python3 scripts/c
 
 Native cleanup keeps the leader unreaped via `waitid(WNOWAIT)` until killing its owned group, including success/nonzero leaders and redirected descendants. Deliberate `setsid` escapes and server SIGKILL are outside that guarantee. Sandbox destruction remains the final isolation boundary.
 
+The runtime workspace must permit hardlinks for atomic no-clobber publication. Some managed source mounts reject this syscall; run a byte-identical local test context on an ordinary writable Linux filesystem, or set an appropriate process-start workspace before startup. A rejected hardlink fails conversion and does not fall back to overwriting files.
+
 ## Contributing
 
 [CONTRIBUTING.md](../CONTRIBUTING.md), [template specification](../docs/template-spec.md), [Issue 55](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/55).

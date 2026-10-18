@@ -234,7 +234,6 @@ def convert(input_path: str, output_name: str, output_format: str = "docx", comm
     if not _LOCK.acquire(blocking=False):
         raise RuntimeError("another document operation is active")
     try:
-        _assert_version(deadline)
         root, descriptor = _root()
         try:
             with tempfile.TemporaryDirectory(prefix=".document-", dir=root) as directory:
@@ -248,6 +247,7 @@ def convert(input_path: str, output_name: str, output_format: str = "docx", comm
                 except (UnicodeError, ValueError):
                     raise ValueError("input must be nonempty UTF-8 Markdown without NUL bytes") from None
                 source.write_text(text, encoding="utf-8")
+                _assert_version(deadline)
                 raw = _pandoc(["--sandbox", "--fail-if-warnings", "--from=gfm-raw_html", "--to=json", str(source)], cwd=job, deadline=deadline)
                 document = _validated_ast(raw)
                 if not document["blocks"]:

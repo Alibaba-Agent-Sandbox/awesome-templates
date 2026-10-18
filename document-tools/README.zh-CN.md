@@ -114,6 +114,8 @@ JSON 对象直接包含参数。HTTP 200 返回 `{"result":{"output_path":"/home
 
 原生清理通过 `waitid(WNOWAIT)` 保持 leader 未 reap，先终止 owned 进程组，覆盖成功、非零退出及重定向后代。主动 `setsid` 脱离和 server 被 SIGKILL 不在此保证内；销毁沙箱是最终隔离边界。
 
+运行时工作目录的文件系统必须支持硬链接，才能原子且不覆盖地发布产物。部分托管源码挂载拒绝该调用；可在普通可写 Linux 文件系统中运行字节一致的本地测试副本，或在进程启动前设置合适工作目录。硬链接失败会拒绝转换，不退回覆盖已有文件的实现。
+
 ## 贡献
 
 [CONTRIBUTING.md](../CONTRIBUTING.md)、[模板规范](../docs/template-spec.md)、[Issue 55](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/55)。
