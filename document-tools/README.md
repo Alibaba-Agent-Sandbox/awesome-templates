@@ -32,6 +32,8 @@ Upload `report.md` to `/home/user/app` first. `document_smoke` creates original 
 
 ## Quick start (Python SDK)
 
+Use `agent-sandbox-client` with its paired `agent-sandbox-server`; follow [the pinned source installation recipe](../docs/python-client-installation.md).
+
 Install the paired source packages using [the pinned SDK installation recipe](../docs/python-client-installation.md). The Python import is `agent_sandbox`.
 
 ```python

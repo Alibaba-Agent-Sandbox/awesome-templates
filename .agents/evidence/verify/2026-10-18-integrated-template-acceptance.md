@@ -10,7 +10,19 @@ The whitelist now equals the catalog; local controller fixtures13 PASS.
 Spec tooling35 PASS; strict checker23 products plus skeleton,zero failures.
 Every product's EN/ZH README has CLI, SDK and HTTP POST guidance; installation
 and authentication/ownership detail links the shared maintained guide.
-Full local regression groups and hosted image/native jobs are pending.
+All21 scoped regression groups after prerequisite correction:758 PASS /7 SKIP,
+zero failures. The initial launcher stripped GIT_CONFIG_KEY but retained its
+COUNT, invalidating Git subprocess fixtures; corrected to a minimal allowlist.
+Pillow11.3.0 from the workflow was initially absent and installed, then affected
+groups reran successfully. No product code was weakened for those failures.
+Full local source HTTP runner:17 PASS /7 FAIL across23 products+skeleton;
+required upstream binaries/native versions are unavailable in this local
+runtime. These failures are not called passes. Hosted native/image checks
+remain authoritative for their own exact heads, not canonical provider proof.
+First integration head15e77ed:hosted local checker exposed missing client
+package names in four updated SDK README sections; corrected within those
+sections. Fresh strict checkerzero failures and spec tooling35 PASS.
+Latest-head full hosted image/native/local gates remain pending.
 
 No cloud secrets uploaded, cloud workflow dispatched or provider badge added.
 This environment has no Docker daemon. Explicit temporary Actions-secret storage

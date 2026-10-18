@@ -31,6 +31,8 @@ Inspect a screenshot/tree before choosing coordinates. The disposable smoke requ
 
 ## Quick start (Python SDK)
 
+Use `agent-sandbox-client` with its paired `agent-sandbox-server`; follow [the pinned source installation recipe](../docs/python-client-installation.md).
+
 Install the paired source packages using [the pinned SDK installation recipe](../docs/python-client-installation.md). The Python import is `agent_sandbox`.
 
 ```python

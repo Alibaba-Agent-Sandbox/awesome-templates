@@ -29,6 +29,8 @@ abx template delete <template-id> -y
 
 ## 快速开始（Python SDK）
 
+使用 `agent-sandbox-client` 与配套 `agent-sandbox-server`；按[固定源码安装说明](../docs/python-client-installation.md)安装。
+
 按[固定版本源码安装说明](../docs/python-client-installation.md)安装客户端与配套服务端，导入 `agent_sandbox`。
 
 ```python
