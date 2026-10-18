@@ -29,6 +29,19 @@ def test_actual_pinned_version():
     assert document.document_version() == "pandoc 3.1.11.1"
 
 
+def test_actual_native_version_resource_limits_diagnostic():
+    # Version-only input contains no user document; retain its native diagnostic
+    # to explain platform-specific GHC startup failures without exposing data.
+    binary = os.environ.get("DOCUMENT_PANDOC_BINARY", "/usr/bin/pandoc")
+    env = {k: os.environ[k] for k in ("HOME", "PATH", "LD_LIBRARY_PATH") if k in os.environ}
+    env.update(LANG="C.UTF-8", LC_ALL="C.UTF-8", MALLOC_ARENA_MAX="2",
+               pandoc_datadir=os.environ.get("DOCUMENT_PANDOC_DATA_DIR", "/usr/share/pandoc"))
+    result = subprocess.run([sys.executable, "-I", "-c", document._LIMIT_EXEC, binary,
+                             "--version", "+RTS", "-N2", "-M256M", "-RTS"],
+                            env=env, capture_output=True, timeout=10)
+    assert result.returncode == 0, result.stderr.decode("utf-8", "replace")[-3000:]
+
+
 def test_operator_binary_with_wrong_version_refused(workspace, monkeypatch):
     monkeypatch.setenv("DOCUMENT_PANDOC_BINARY", "/bin/echo")
     with pytest.raises(RuntimeError, match="pinned version"):

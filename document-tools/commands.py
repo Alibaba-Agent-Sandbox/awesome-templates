@@ -25,6 +25,7 @@ MAX_FILE = 1024 * 1024
 MAX_DIAGNOSTICS = 1024 * 1024
 _LOCK = threading.Lock()
 _LIMIT_EXEC = ("import os,resource,sys;resource.setrlimit(resource.RLIMIT_CORE,(0,0));"
+               "resource.setrlimit(resource.RLIMIT_STACK,(8388608,8388608));"
                "resource.setrlimit(resource.RLIMIT_AS,(1073741824,1073741824));"
                "resource.setrlimit(resource.RLIMIT_CPU,(30,31));"
                "resource.setrlimit(resource.RLIMIT_FSIZE,(8388608,8388608));"
