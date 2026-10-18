@@ -14,6 +14,8 @@ Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag
 
 ## 快速开始（CLI）
 
+运行配置：以下创建时注入密钥的示例，要求命名服务启动时实际获得这些值。预热服务请先检查模板提供的 setup 标志（如有），再按[显式进程配置](../docs/runtime-environment.zh-CN.md)操作；创建沙箱不会重新配置已运行的服务。
+
 已有提供方配置时，在仓库根目录执行：
 
 ```bash
@@ -70,7 +72,7 @@ curl --fail-with-body -X POST "$SERVER_URL/commands/stop" \
 
 请求结果：`{"result":{"status_code":200,"body":"node-web ready\n","truncated":false}}`。serve 返回 `pid`、`port`、`status`、`cwd`、`http_status`；stop 返回 `status` 与 `pid`。
 
-沙箱中配置 `ABX_SERVER_TOKEN` 后，每次命令请求须添加 `Authorization: Bearer $ABX_SERVER_TOKEN` 或 `X-Access-Token: $ABX_SERVER_TOKEN`。Python 使用 `sb.server_at(9000, token=server_token).run(...)`，token 与创建沙箱时注入的一致。提供方网关鉴权独立：按该提供方要求添加访问头（Express 为 `X-Access-Token: $SANDBOX_ACCESS_TOKEN`）。同时启用时，server token 放 `Authorization`，网关 token 放 `X-Access-Token`。仅从已授权运行配置取得值，示例不含真实凭据。
+沙箱中配置 `ABX_SERVER_TOKEN` 后，每次命令请求须添加 `Authorization: Bearer $ABX_SERVER_TOKEN` 或 `X-Access-Token: $ABX_SERVER_TOKEN`。Python 使用 `sb.server_at(9000, token=server_token).commands.run(...)`，token 与该服务启动前获得的值一致。提供方网关鉴权独立：按该提供方要求添加访问头（Express 为 `X-Access-Token: $SANDBOX_ACCESS_TOKEN`）。同时启用时，server token 放 `Authorization`，网关 token 放 `X-Access-Token`。仅从已授权运行配置取得值，示例不含真实凭据。
 
 错误体为 `{"error":"...","type":"..."}`：参数缺失、类型错误、未知参数为 400；server 鉴权失败 401；未知命令 404；命令执行失败 500（包括数值越界、端口占用、构建失败、就绪超时）。命令结果一次缓冲返回。应用本身返回 HTTP 404 时，命令 API 仍是 HTTP 200，应用码位于 `request.result.status_code`。
 
