@@ -41,6 +41,42 @@ jobs:
           assert status == "pass", detail
           PY
 
+  media-tools-offline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container: debian:13-slim
+    steps:
+      - name: Install the exact Debian media engine and test prerequisites
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git ca-certificates python3 python3-venv ffmpeg=7:7.1.5-0+deb13u1
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Checkout the public pinned server SDK
+        uses: actions/checkout@v4
+        with:
+          repository: alibaba-agent-sandbox/python-sdk
+          ref: e2cb27e24fde0a67112f82b8d44af463445a5d1a
+          path: vendor/python-sdk
+          persist-credentials: false
+      - name: Install scoped test dependencies
+        run: |
+          python3 -m venv /tmp/media-venv
+          /tmp/media-venv/bin/pip install ./vendor/python-sdk/server-sdk ./vendor/python-sdk/client-sdk httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3
+      - name: Verify real CPU codecs, limits, descendants and HTTP artifact bytes
+        env:
+          E2E_REQUIRE_MEDIA: "1"
+        run: |
+          /tmp/media-venv/bin/python -m pytest -q media-tools/test_commands.py media-tools/test_http.py
+          PATH="/tmp/media-venv/bin:$PATH" /tmp/media-venv/bin/python - <<'PY'
+          from pathlib import Path
+          from scripts.run_local_e2e import _run_one
+          status, detail = _run_one(Path("media-tools").resolve(), "")
+          print(status, detail)
+          assert status == "pass", detail
+          PY
+
   local-e2e:
     runs-on: ubuntu-24.04
     timeout-minutes: 30

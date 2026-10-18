@@ -280,6 +280,24 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
 
+  - name: media-tools
+    description: Bounded offline CPU MP4, WAV and FLAC conversion with pinned FFmpeg.
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: media-tools
+    tags:
+    - ffmpeg
+    - media
+    - cpu
+    - audio
+    - video
+    author: alibaba-agent-sandbox
+    capabilities:
+    - shell
+    - files
+    - code
+    - ports
+    status: experimental
+
   # Add your template here! Submit a PR following the schema above.
   # Set status to "community" and make sure your repo contains a valid template.yaml.
   #
