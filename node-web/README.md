@@ -35,6 +35,9 @@ abx template install alibaba-agent-sandbox/awesome-templates//node-web
 
 ### Usage
 
+The named `serve` command rejects a missing entry file before launching Node.
+Its startup delay checks only early process exit; it does not establish HTTP readiness.
+
 Create a sandbox instance:
 
 ```bash
@@ -161,6 +164,9 @@ abx template install alibaba-agent-sandbox/awesome-templates//node-web
 ```
 
 ### 使用示例
+
+命名命令 `serve` 会在启动 Node 前拒绝不存在的入口文件。
+启动等待仅检查进程是否提前退出，不能证明 HTTP 服务已经就绪。
 
 创建沙箱实例：
 

@@ -2,6 +2,7 @@ name: e2e
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 jobs:
@@ -14,6 +15,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: alibaba-agent-sandbox/python-sdk
+          ref: e43a4d8e2e656adf9f25c20c6ef6ea93ab90f142
           path: vendor/python-sdk
 
       - uses: actions/setup-python@v5
@@ -21,10 +23,13 @@ jobs:
           python-version: "3.12"
 
       - name: Install the in-sandbox server and the test client
-        run: python -m pip install --upgrade pip && python -m pip install ./vendor/python-sdk/server-sdk httpx pyyaml
+        run: python -m pip install --upgrade pip && python -m pip install ./vendor/python-sdk/server-sdk httpx pyyaml pytest==9.1.1
 
       - name: Lint templates and unit-test the checker
         run: python3 scripts/test_spec_tools.py && python3 scripts/check_template.py --all
+
+      - name: Reject nonexistent Node entries before startup
+        run: python -m pytest -q node-web/test_startup.py
 
       - name: Run template e2e against locally started servers
         run: python3 scripts/run_local_e2e.py

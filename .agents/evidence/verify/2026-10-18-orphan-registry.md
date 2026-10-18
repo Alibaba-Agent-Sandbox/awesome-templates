@@ -18,3 +18,15 @@ Full local source HTTP run:16 PASS /1 FAIL across16 products+skeleton. OpenCode
 fails because installed1.18.33 differs from pinned1.19.0 and its fixed image path
 is not writable in this host. This prerequisite failure is unrelated to deleted
 HTML/JSON; it remains disclosed, not called PASS. Hosted CI remains pending.
+
+## Current-head convergence after startup repair
+
+The old cc69f1b9 head had both successful PR and failed push runs. Logs and a
+controlled delayed-real-Node regression establish a main-branch startup race,
+not a consequence of removing catalog assets.
+https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/113 merged at
+4eb66f7577522fc7036d08dd3e6f4595ee707940 after its current-head basic check passed.
+This branch ordinarily merges that accepted main; the SDK input is now immutable
+and feature push checks are removed, while PR/main checks remain. Historical
+failed results are retained. Current-head required checks must pass before merge.
+The separate 23-template source-runtime/model and image-deploy gates remain separate.
