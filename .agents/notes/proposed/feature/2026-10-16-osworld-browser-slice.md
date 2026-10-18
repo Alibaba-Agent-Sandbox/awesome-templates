@@ -1,10 +1,10 @@
 # OSWorld browser desktop slice
 
-Status: proposed
+Status: proposed; browser-slice implementation, L1 and supplemental changed-image cloud checks passed; draft delivery remains pending
 
 ## Problem
 
-[Issue 36](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/36) explicitly requests the feasible non-KVM computer-use slice. Its full benchmark and provider acceptance remain open. Official OSWorld also has a container desktop adapter; a VM-only blanket blocker does not describe this narrow workload.
+[Issue 36](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/36) explicitly requests the feasible non-KVM computer-use slice. Its full benchmark and canonical deploy L2 acceptance remain open. Official OSWorld also has a container desktop adapter; a VM-only blanket blocker does not describe this narrow workload.
 
 ## Decision
 
@@ -37,12 +37,12 @@ Real process regressions cover normal stop, unexpected leader exit, redirected d
 
 - [x] Strict v2 conformance, bilingual usage, design and accurate experimental catalog.
 - [x] Scoped process/task/HTTP regressions and final native source functional check pass.
-- [ ] Actual non-root, network-disabled image build/smoke pass on the submitted head.
-- [ ] Actual Express changed-image SDK/HTTP/CLI acceptance and owned cleanup pass.
+- [x] Actual non-root, network-disabled image build/smoke pass on source 9a53b56.
+- [x] Actual Express changed-image SDK/HTTP/CLI full smoke, HTTP18/0skip and independent owned cleanup pass on that exact image.
 - [ ] Review and normal PR delivery complete.
 
 These criteria cover only the browser slice. Full OSWorld benchmark/model tasks remain unimplemented and Issue 36 must stay open.
 
-The screen/viewport distinction and latest failed image run are tracked in [viewport follow-up](../../../evidence/verify/2026-10-16-osworld-viewport.md); real image/provider acceptance remains pending.
+The screen/viewport distinction and latest failed image run are tracked in [viewport follow-up](../../../evidence/verify/2026-10-16-osworld-viewport.md); later exact image/cloud results are recorded separately in the [final evidence](../../../evidence/verify/2026-10-16-osworld-changed-image.md). Canonical deploy L2 remains unexecuted.
 
 The third actual image smoke exposed a non-root WORKDIR ownership defect; [workspace follow-up](../../../evidence/verify/2026-10-16-osworld-workspace.md) preserves the failed run and the necessary Docker ownership correction.

@@ -113,7 +113,7 @@ Call `run_task_config` then `evaluate` with that file's `task_path`. Setup accep
 
 ## Verified
 
-No provider acceptance is claimed yet. `tested_on` is empty and the catalog is experimental. Native source GUI validation is separate from changed-image L1 and Express L2. Full OSWorld benchmark/model acceptance remains unverified. See [initial verification](../.agents/evidence/verify/2026-10-16-osworld-browser-slice.md) and the [browser-path fix evidence](../.agents/evidence/verify/2026-10-16-osworld-browser-cache.md).
+Canonical deploy L2 has not passed; `tested_on` stays empty and the catalog remains experimental. The exact image from source `9a53b56` passed standalone non-root/network-disabled L1 and supplemental Express verification: SDK/HTTP/CLI each ran the full real GUI task and 4096-character Unicode readback; the external required-GUI suite passed 18 checks with no skips, followed by independent owned-resource absence and registry deletion checks. This used CI build plus official image registration; the complete local `abx template deploy`/canonical L2 runner was not executed. Full benchmark/model acceptance remains unverified. See [final image/cloud evidence](../.agents/evidence/verify/2026-10-16-osworld-changed-image.md); earlier native/image failures remain historical.
 
 ## Secondary development
 
