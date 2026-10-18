@@ -6,8 +6,83 @@ on:
   pull_request:
 
 jobs:
+  document-tools-offline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container: debian:13-slim
+    steps:
+      - name: Install pinned Debian document engine and test prerequisites
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git ca-certificates python3 python3-venv pandoc=3.1.11.1+ds-2 pandoc-data=3.1.11.1-3
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Checkout paired pinned public SDK sources
+        uses: actions/checkout@v4
+        with:
+          repository: alibaba-agent-sandbox/python-sdk
+          ref: e2cb27e24fde0a67112f82b8d44af463445a5d1a
+          path: vendor/python-sdk
+          persist-credentials: false
+      - name: Install scoped test dependencies
+        run: |
+          python3 -m venv /tmp/document-venv
+          /tmp/document-venv/bin/pip install ./vendor/python-sdk/server-sdk ./vendor/python-sdk/client-sdk httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3
+      - name: Verify actual document conversion, limits, SDK and external HTTP artifacts
+        env:
+          E2E_REQUIRE_DOCUMENT: "1"
+        run: |
+          /tmp/document-venv/bin/python -m pytest -q document-tools/test_commands.py document-tools/test_http.py
+          PATH="/tmp/document-venv/bin:$PATH" /tmp/document-venv/bin/python - <<'PY'
+          from pathlib import Path
+          from scripts.run_local_e2e import _run_one
+          status, detail = _run_one(Path("document-tools").resolve(), "")
+          print(status, detail)
+          assert status == "pass", detail
+          PY
+
+  media-tools-offline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container: debian:13-slim
+    steps:
+      - name: Install the exact Debian media engine and test prerequisites
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git ca-certificates python3 python3-venv ffmpeg=7:7.1.5-0+deb13u1
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Checkout the public pinned server SDK
+        uses: actions/checkout@v4
+        with:
+          repository: alibaba-agent-sandbox/python-sdk
+          ref: e2cb27e24fde0a67112f82b8d44af463445a5d1a
+          path: vendor/python-sdk
+          persist-credentials: false
+      - name: Install scoped test dependencies
+        run: |
+          python3 -m venv /tmp/media-venv
+          /tmp/media-venv/bin/pip install ./vendor/python-sdk/server-sdk ./vendor/python-sdk/client-sdk httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3
+      - name: Verify real CPU codecs, limits, descendants and HTTP artifact bytes
+        env:
+          E2E_REQUIRE_MEDIA: "1"
+        run: |
+          /tmp/media-venv/bin/python -m pytest -q media-tools/test_commands.py media-tools/test_http.py
+          PATH="/tmp/media-venv/bin:$PATH" /tmp/media-venv/bin/python - <<'PY'
+          from pathlib import Path
+          from scripts.run_local_e2e import _run_one
+          status, detail = _run_one(Path("media-tools").resolve(), "")
+          print(status, detail)
+          assert status == "pass", detail
+          PY
+
   local-e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      E2E_RUN_LLM: "0"
     steps:
       - uses: actions/checkout@v4
 
@@ -15,21 +90,79 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: alibaba-agent-sandbox/python-sdk
-          ref: e43a4d8e2e656adf9f25c20c6ef6ea93ab90f142
+          # Includes the postponed-annotation dataclass command-loader fix.
+          ref: e2cb27e24fde0a67112f82b8d44af463445a5d1a
           path: vendor/python-sdk
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.16.0"
 
       - name: Install the in-sandbox server and the test client
-        run: python -m pip install --upgrade pip && python -m pip install ./vendor/python-sdk/server-sdk httpx pyyaml pytest==9.1.1
+        run: |
+          python -m pip install ./vendor/python-sdk/server-sdk httpx==0.28.1 pyyaml==6.0.3 pytest==9.1.1 playwright==1.58.0 Pillow==11.3.0
+          python -m playwright install --with-deps chromium
+
+      - name: Install pinned upstream CLIs for local smoke checks
+        run: |
+          npm install --global @openai/codex@0.162.1 @anthropic-ai/claude-code@2.0.76 opencode-ai@1.19.0 @factory/cli@0.241.1 @qwen-code/qwen-code@0.23.0 @ampcode/cli@0.0.1792022479-ge66e24 @google/gemini-cli@0.64.0 @qoder-ai/qodercli@1.1.72 openclaw@2026.10.4
+          mkdir -p "$RUNNER_TEMP/pi-cli"
+          cp pi/package.json pi/package-lock.json "$RUNNER_TEMP/pi-cli/"
+          npm ci --prefix "$RUNNER_TEMP/pi-cli" --ignore-scripts --omit=dev --registry=https://registry.npmjs.org
+          test "$("$RUNNER_TEMP/pi-cli/node_modules/.bin/pi" --version)" = "1.3.0"
+          echo "$RUNNER_TEMP/pi-cli/node_modules/.bin" >> "$GITHUB_PATH"
+          python pi/install_tools.py --root "$RUNNER_TEMP/pi-tools" --bin "$RUNNER_TEMP/pi-tools-bin"
+          echo "$RUNNER_TEMP/pi-tools-bin" >> "$GITHUB_PATH"
+          codex --version
+          claude --version
+          test "$(opencode --version)" = "1.19.0"
+
+      - name: Install the pinned upstream Hermes runtime
+        run: |
+          python -m pip install uv==0.12.3
+          hermes_source="$RUNNER_TEMP/hermes-agent"
+          mkdir -p "$hermes_source" "$RUNNER_TEMP/hermes-bin"
+          curl -fsSL https://codeload.github.com/NousResearch/hermes-agent/tar.gz/297552a9d646119871391d202509822cd86330df | tar -xz --strip-components=1 -C "$hermes_source"
+          UV_PYTHON_INSTALL_DIR="$RUNNER_TEMP/hermes-python" uv sync --project "$hermes_source" --frozen --no-default-groups --python 3.14.6
+          "$hermes_source/.venv/bin/python" "$hermes_source/scripts/write_install_stamp.py" --output "$hermes_source/install-stamp.json" --commit 297552a9d646119871391d202509822cd86330df --base-version 0.22.1 --distance 0 --source ci --update-mechanism external
+          ln -s "$hermes_source/.venv/bin/hermes" "$RUNNER_TEMP/hermes-bin/hermes"
+          echo "$RUNNER_TEMP/hermes-bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/hermes-bin/hermes" --version
 
       - name: Lint templates and unit-test the checker
-        run: python3 scripts/test_spec_tools.py && python3 scripts/check_template.py --all
+        run: |
+          python3 scripts/test_local_cleanup.py && python3 scripts/test_spec_tools.py
+          python3 scripts/check_template.py --all --strict
 
-      - name: Reject nonexistent Node entries before startup
-        run: python -m pytest -q node-web/test_startup.py
+      - name: Run process, privacy, and acceptance-harness regressions
+        run: |
+          python -m pytest -q python-hello/test_command_errors.py
+          python -m pytest -q node-web/test_startup.py node-web/test_http_output.py
+          python -m pytest -q claude-code/tests
+          python -m pytest -q codex/test_commands.py
+          python -m pytest -q opencode/test_commands.py opencode/test_e2e_protocol.py
+          python -m pytest -q amp/test_commands.py amp/test_e2e_protocol.py
+          python -m pytest -q droid/test_commands.py droid/test_e2e_protocol.py
+          python -m pytest -q gemini/test_commands.py gemini/test_e2e_protocol.py
+          python -m pytest -q openclaw/test_commands.py
+          python -m pytest -q qoder/test_commands.py qoder/test_e2e_protocol.py
+          python -m pytest -q deepseek-harness/test_commands.py deepseek-harness/test_e2e_protocol.py
+          python -m pytest -q hermes-agent/test_commands.py hermes-agent/test_e2e_protocol.py
+          python -m pytest -q pi/test_commands.py pi/test_e2e_protocol.py pi/test_cli_protocol.py pi/test_install_tools.py scripts/test_select_image_templates.py
+          python -m pytest -q ocr/test_commands.py ocr/test_http.py
+          python -m pytest -q aider/test_commands.py aider/test_e2e_protocol.py
+          python -m pytest -q swe/test_commands.py swe/test_e2e_protocol.py
+          python -m pytest -q osworld/test_commands.py osworld/test_tasks.py osworld/test_http.py
+          python -m pytest -q agents-cli/test_protocol.py agents-cli/test_sdk_verifier.py
+          python -m pytest -q scripts/test_express_runtime_socket.py
+          python -m pytest -q qwen-code/test_commands.py qwen-code/test_e2e_protocol.py
+          python -m pytest -q codex-agent-api/test_commands.py codex-agent-api/test_e2e_protocol.py codex-agent-api/test_http_runtime.py
 
       - name: Run template e2e against locally started servers
-        run: python3 scripts/run_local_e2e.py
+        run: |
+          python3 scripts/run_local_e2e.py
+          echo "Local L0 checks only; image builds, cloud deployment, and real model acceptance are not covered."

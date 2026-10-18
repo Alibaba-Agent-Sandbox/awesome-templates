@@ -1,5 +1,5 @@
 name: amp
-version: "1.1.0"
+version: "1.2.0"
 description: "Sourcegraph Amp CLI. amp_execute runs amp -x; amp_version and amp_setup_check do not need a key."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0
@@ -25,8 +25,7 @@ tags:
 
 priority: P1
 wave: 1
-tested_on:
-  - alicloud-express
+tested_on: []
 
 capabilities:
   - shell
@@ -50,5 +49,6 @@ smoke:
       version: "0.0.1792022479-ge66e24"
       api_key_set: false
       settings_path: "/home/user/.config/amp/settings.json"
-      dangerously_allow_all: true
+      settings_exists: true
+      dangerously_allow_all: false
       updates_mode: "disabled"

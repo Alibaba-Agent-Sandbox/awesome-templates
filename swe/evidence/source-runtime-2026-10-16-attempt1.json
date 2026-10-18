@@ -1,0 +1,16 @@
+{
+  "result": "FAIL",
+  "scope": "first source-runtime attempt only",
+  "install_exit_code": 0,
+  "checks": [
+    "official pinned mini and evaluation packages installed in owned cloud venvs"
+  ],
+  "stage": "configured source server",
+  "failure_category": "default provider base has no agent-sandbox-server executable; no baseline or model execution",
+  "controller_secondary_failure": "uncaught ended server stream error interrupted report serialization; recovered from exact private journal and independently verified absence",
+  "source_provenance": "initial uncommitted source attempt; not current/final image proof",
+  "cleanup": {
+    "owned_sandbox_kill": true,
+    "owned_sandbox_absence_verified": true
+  }
+}

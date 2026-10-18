@@ -1,0 +1,194 @@
+{
+  "result": "PASS",
+  "pass": true,
+  "date": "2026-10-16",
+  "template": "swe",
+  "provider": "alicloud-express",
+  "checks": [
+    "official generation-2 CreateTemplate for actual SWE config",
+    "official template READY",
+    "SDK create from uniquely registered reviewed image",
+    "all 56 installed server modules match exact pinned SDK bytes",
+    "HTTP /health",
+    "full external HTTP suite, real installed CLI required, model calls disabled",
+    "actual image original commands configured through explicit native process env; SDK/HTTP/CLI agree",
+    "real mini CLI model edit; exact fresh original tests60PASS; nonempty source patch and JSON report read through remote files API; owned run cleanup"
+  ],
+  "commands": [
+    {
+      "command": "swe_version",
+      "sdk": {
+        "ok": true
+      },
+      "http": {
+        "ok": true
+      },
+      "cli": {
+        "ok": true
+      }
+    }
+  ],
+  "cleanup": {
+    "push_helper_kill": true,
+    "push_helper_absence_verified": true,
+    "sandbox_kill": true,
+    "sandbox_absence_verified": true,
+    "model_sandbox_kill": true,
+    "model_sandbox_absence_verified": true,
+    "template_delete": true,
+    "template_absence_verified": true,
+    "registry_tag_delete_verified": true,
+    "registry_repository_delete_verified": true
+  },
+  "reviewed_head": "be40e5513de0354d77e66dfde928fa153b4877e1",
+  "boundary": "Actual CI image, native cloud push and official registration; full local abx template deploy wrapper not run",
+  "image_provenance": {
+    "artifact_id": 12030755531,
+    "workflow_run_id": 38864008303,
+    "archive_sha256": "4cb24657ed5a3e95091d790184ccde709ea51d66f92da246145ec75d06e98e79",
+    "source_head_commit": "be40e5513de0354d77e66dfde928fa153b4877e1",
+    "checkout_commit": "62e9cac1da0bb60242dfa8c3ff9257d166b64350",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "runtime_file_sha256": {
+      "commands.py": "e2701eca81b7429b9e5b6878d4c72113c590f0cb355ab8aaf2c6bdf3d190d1ca",
+      "swe_process.py": "0a3a6c91fd177db53050661fc5d2cf4cf2911754cab9253510a9d898830f87fa",
+      "swe_environment.py": "b79502c0582c36c0f5019dc65db49f5dd660626a71af199e6d3d1689c6d5d47e",
+      "instance.json": "cf72c05184c0ea202af2848b4523706f56703910ca7ecccbe558e0599e74b865"
+    }
+  },
+  "stage": "actual image exact baseline and real mini model evaluation",
+  "registry_transfer": {
+    "method": "official crane in owned Express helper",
+    "same_reviewed_archive_sha256_verified": true,
+    "crane_sha256": "8e75c326adb43b053cfd78b9b987663f8f4fe4557f4d3915905643f25c730992"
+  },
+  "image_digest": "sha256:a78cfe9cf9fe6953e60a37b57f38b19a28730499b86e043f916bd0fedbd07e35",
+  "installed_server_provenance": {
+    "modules_compared": 56,
+    "all_module_bytes_match_recorded_sdk_source": true,
+    "expected_source_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "source_manifest_sha256": "dac8868dcff05c87cd3f3230b38dfb00530c622f86832b5c9592f846dfb019c8"
+  },
+  "full_http_suite": {
+    "PASS": 5,
+    "FAIL": 0,
+    "SKIP": 1,
+    "exit_code": 0,
+    "source_sha256": "39e2a1f12162ae3abeb2abe97539782ab6fb2c3743b937e703e670738b1b43cf",
+    "failed_cases": []
+  },
+  "configured_server": {
+    "port": 9010,
+    "sdk_setup": true,
+    "http_setup": true,
+    "cli_setup": true,
+    "source_overlay": false,
+    "default_prewarmed_server_configured": false
+  },
+  "actual_cli_controls": {
+    "exit_code": 0,
+    "checks": [
+      "PASS actual official CLI propagates Unicode stdout/stderr and nonzero action result",
+      "PASS actual official CLI fatal action timeout stops loop and owned child is absent or exited"
+    ],
+    "runner_sha256": "0ee60df969c508ee99670a8dd705013c040d93e4eac2c1b6d9df453df13dab80",
+    "scope": "actual official mini CLI with upstream deterministic model; not real model"
+  },
+  "sdk_baseline": {
+    "fail_to_pass": {
+      "tests/test_blueprints.py::test_empty_name_not_allowed": "failed"
+    },
+    "pass_to_pass": {
+      "tests/test_blueprints.py::test_blueprint_specific_error_handling": "passed",
+      "tests/test_blueprints.py::test_blueprint_specific_user_error_handling": "passed",
+      "tests/test_blueprints.py::test_blueprint_app_error_handling": "passed",
+      "tests/test_blueprints.py::test_blueprint_prefix_slash[-/-/]": "passed",
+      "tests/test_blueprints.py::test_blueprint_prefix_slash[/--/]": "passed",
+      "tests/test_blueprints.py::test_blueprint_prefix_slash[/-/-/]": "passed",
+      "tests/test_blueprints.py::test_blueprint_prefix_slash[/foo--/foo]": "passed",
+      "tests/test_blueprints.py::test_blueprint_prefix_slash[/foo/--/foo/]": "passed",
+      "tests/test_blueprints.py::test_blueprint_prefix_slash[-/bar-/bar]": "passed",
+      "tests/test_blueprints.py::test_blueprint_prefix_slash[/foo/-/bar-/foo/bar]": "passed",
+      "tests/test_blueprints.py::test_blueprint_prefix_slash[/foo/-bar-/foo/bar]": "passed",
+      "tests/test_blueprints.py::test_blueprint_prefix_slash[/foo-/bar-/foo/bar]": "passed",
+      "tests/test_blueprints.py::test_blueprint_prefix_slash[/foo/-//bar-/foo/bar]": "passed",
+      "tests/test_blueprints.py::test_blueprint_prefix_slash[/foo//-/bar-/foo/bar]": "passed",
+      "tests/test_blueprints.py::test_blueprint_url_defaults": "passed",
+      "tests/test_blueprints.py::test_blueprint_url_processors": "passed",
+      "tests/test_blueprints.py::test_templates_and_static": "passed",
+      "tests/test_blueprints.py::test_default_static_max_age": "passed",
+      "tests/test_blueprints.py::test_templates_list": "passed",
+      "tests/test_blueprints.py::test_dotted_name_not_allowed": "passed",
+      "tests/test_blueprints.py::test_dotted_names_from_app": "passed",
+      "tests/test_blueprints.py::test_empty_url_defaults": "passed",
+      "tests/test_blueprints.py::test_route_decorator_custom_endpoint": "passed",
+      "tests/test_blueprints.py::test_route_decorator_custom_endpoint_with_dots": "passed",
+      "tests/test_blueprints.py::test_endpoint_decorator": "passed",
+      "tests/test_blueprints.py::test_template_filter": "passed",
+      "tests/test_blueprints.py::test_add_template_filter": "passed",
+      "tests/test_blueprints.py::test_template_filter_with_name": "passed",
+      "tests/test_blueprints.py::test_add_template_filter_with_name": "passed",
+      "tests/test_blueprints.py::test_template_filter_with_template": "passed",
+      "tests/test_blueprints.py::test_template_filter_after_route_with_template": "passed",
+      "tests/test_blueprints.py::test_add_template_filter_with_template": "passed",
+      "tests/test_blueprints.py::test_template_filter_with_name_and_template": "passed",
+      "tests/test_blueprints.py::test_add_template_filter_with_name_and_template": "passed",
+      "tests/test_blueprints.py::test_template_test": "passed",
+      "tests/test_blueprints.py::test_add_template_test": "passed",
+      "tests/test_blueprints.py::test_template_test_with_name": "passed",
+      "tests/test_blueprints.py::test_add_template_test_with_name": "passed",
+      "tests/test_blueprints.py::test_template_test_with_template": "passed",
+      "tests/test_blueprints.py::test_template_test_after_route_with_template": "passed",
+      "tests/test_blueprints.py::test_add_template_test_with_template": "passed",
+      "tests/test_blueprints.py::test_template_test_with_name_and_template": "passed",
+      "tests/test_blueprints.py::test_add_template_test_with_name_and_template": "passed",
+      "tests/test_blueprints.py::test_context_processing": "passed",
+      "tests/test_blueprints.py::test_template_global": "passed",
+      "tests/test_blueprints.py::test_request_processing": "passed",
+      "tests/test_blueprints.py::test_app_request_processing": "passed",
+      "tests/test_blueprints.py::test_app_url_processors": "passed",
+      "tests/test_blueprints.py::test_nested_blueprint": "passed",
+      "tests/test_blueprints.py::test_nested_callback_order": "passed",
+      "tests/test_blueprints.py::test_nesting_url_prefixes[/parent-/child-None-None]": "passed",
+      "tests/test_blueprints.py::test_nesting_url_prefixes[/parent-None-None-/child]": "passed",
+      "tests/test_blueprints.py::test_nesting_url_prefixes[None-None-/parent-/child]": "passed",
+      "tests/test_blueprints.py::test_nesting_url_prefixes[/other-/something-/parent-/child]": "passed",
+      "tests/test_blueprints.py::test_nesting_subdomains": "passed",
+      "tests/test_blueprints.py::test_child_and_parent_subdomain": "passed",
+      "tests/test_blueprints.py::test_unique_blueprint_names": "passed",
+      "tests/test_blueprints.py::test_self_registration": "passed",
+      "tests/test_blueprints.py::test_blueprint_renaming": "passed"
+    },
+    "passed": 59,
+    "failed": 1,
+    "errors": 0,
+    "skipped": 0,
+    "resolved_slice": false,
+    "official_benchmark_score": false,
+    "python": "3.11.10"
+  },
+  "real_model_image_acceptance": {
+    "PASS": 14,
+    "FAIL": 0,
+    "SKIP": 0,
+    "exit_code": 0,
+    "checks": [
+      "[PASS] health",
+      "[PASS] shell execution refuses by default",
+      "[PASS] typed boolean arguments",
+      "[PASS] unsupported benchmark instances refuse before checkout",
+      "[PASS] target settings return booleans only",
+      "[PASS] real pinned instance baseline prepared",
+      "[PASS] real exact declared failing/passing baseline reproduced",
+      "[PASS] genuine mini CLI real model submits",
+      "[PASS] independent evaluator completes",
+      "[PASS] original 60 test identities pass in fresh checkout/venv",
+      "[PASS] local portability slice is not an official benchmark score",
+      "[PASS] nonempty source patch retrieved from remote files API",
+      "[PASS] independent report artifact retrieved",
+      "[PASS] owned instance workdir cleaned"
+    ],
+    "model": "qwen3.8-flash",
+    "controller_sha256": "39e2a1f12162ae3abeb2abe97539782ab6fb2c3743b937e703e670738b1b43cf"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "result": "PASS",
+  "template": "agents-cli",
+  "date": "2026-10-16",
+  "provider": "alicloud-express",
+  "reviewed_head": "1f975ff99957dbec9927d0ca9b1b1c35a841c416",
+  "checks": [
+    "original official artifact same SHA, serialized fresh auth, owned cloud push/digest",
+    "official actual Agents CLI generation2 configuration READY"
+  ],
+  "cleanup": {
+    "push_helper_kill": true,
+    "push_helper_absence_verified": true,
+    "model_sandbox_kill": true,
+    "model_sandbox_absence_verified": true,
+    "template_delete": true,
+    "template_absence_verified": true,
+    "registry_tag_delete_verified": true,
+    "registry_repository_delete_verified": true
+  },
+  "image_provenance": {
+    "artifact_id": 12026073735,
+    "workflow_run_id": 38853293050,
+    "source_head_commit": "a361f490555ead0ff67081ffb4874abf292a1b2f",
+    "checkout_commit": "adbf760b80ce551bfea210bf9a473ea74001efa8",
+    "archive_sha256": "f5d0da999e973ff3354113c3e6bc814d19a1b8d39334e607261962dd4b4d7164",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a"
+  },
+  "boundary": "actual reviewed image and genuine Qwen SDK coding; not canonical deploy, Codex or official provider completion",
+  "stage": "independent owned SDK Qwen coding verifier",
+  "registry_transfer": {
+    "method": "official crane in owned Express helper",
+    "same_reviewed_archive_sha256_verified": true,
+    "crane_sha256": "8e75c326adb43b053cfd78b9b987663f8f4fe4557f4d3915905643f25c730992"
+  },
+  "image_digest": "sha256:473fbcfe8cb16cc8aa24f47c061fa1335a0a334654a1e71e304d9ef4caf589c4",
+  "sdk_verifier": {
+    "result": "PASS",
+    "adapter": "qwen-code",
+    "provider": "alicloud-express",
+    "model": "qwen3.8-flash",
+    "checks": [
+      "exact original baseline: test_seven FAIL, test_zero PASS",
+      "new9010 configured, actual pinned CLIs, original restricted HTTP policy",
+      "actual Qwen HTTP session/events/reconnect/items turn",
+      "changed existing source, unchanged original tests, exact artifact/report, complete original and generated unittest modules",
+      "six independent held-out cases, source compilation, post-agent random ACK"
+    ],
+    "cleanup": {
+      "sandbox_kill": true,
+      "sandbox_absence_verified": true
+    },
+    "boundary": "real owned-image SDK/session coding acceptance; not canonical deploy, hosted Agents, or Codex acceptance",
+    "runtime_file_sha256": {
+      "commands.py": "58bf1f93f54c53ae1992431b09502e2c5f8a5b820016a993241ab6979bef35bf",
+      "server-policy.json": "4a7f79435940b0d952c5fb0dba6ee049197bdc412a76a201b371efac9290a996"
+    }
+  }
+}

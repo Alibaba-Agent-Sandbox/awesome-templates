@@ -20,6 +20,8 @@
 
 ## 快速开始（CLI）
 
+运行配置：以下创建时注入密钥的示例，要求命名服务启动时实际获得这些值。预热服务请先检查模板提供的 setup 标志（如有），再按[显式进程配置](../docs/runtime-environment.zh-CN.md)操作；创建沙箱不会重新配置已运行的服务。
+
 在本仓库检出目录，环境里放好极速版凭证（变量见规范）：
 
 ```bash
@@ -43,7 +45,7 @@ abx template delete <template-id> -y
 
 ## 快速开始（Python SDK）
 
-客户端的 PyPI 名称是 `agent-sandbox-client`（`python3 -m pip install agent-sandbox-client`）。导入名仍是 `agent_sandbox`。`pip install agent-sandbox` 是另一个无关项目。
+客户端发行名为 `agent-sandbox-client`，导入名为 `agent_sandbox`。配套版本发布前，请按[固定提交的双包安装说明](../docs/python-client-installation.md)安装。
 
 ```python
 import asyncio
@@ -59,7 +61,20 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-`await sb.run("hello", name="Ada")` 返回字符串 `Hello, Ada!`。`sb.commands.run` 跑的是 shell，不是这个命名命令。`sb.network.get_url(9000)` 是服务端口的 URL。python-sdk 0.3.0 上 `Sandbox.create_sync` 会抛 `TypeError`（[python-sdk#22](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues/22)），请用 `await Sandbox.create`。
+`await sb.run("hello", name="Ada")` 返回字符串 `Hello, Ada!`。`sb.commands.run` 跑的是 shell，不是这个命名命令。`sb.network.get_url(9000)` 是服务端口的 URL。当前检出的 SDK 已在 [python-sdk#24](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/24) 修复同步类方法；旧提交遇到 TypeError 时请升级或使用异步构造。
+
+## 快速开始（HTTP POST）
+
+使用沙箱端口 9000 的 URL；本地默认 http://127.0.0.1:9000。服务启用了 ABX_SERVER_TOKEN 时才添加认证头。
+
+```bash
+curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/hello" \
+  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
+  --header "Content-Type: application/json" \
+  --data '{"name":"Ada"}'
+```
+
+请求体直接包含命名命令参数，不嵌套在 args 中。HTTP 200 的响应为 `{"result":"Hello, Ada!"}`。参数错误为 HTTP 400，认证失败为 401，执行异常为 500；错误响应包含 error 和 type。命令响应在执行完成后整体返回。HTTP 客户端超时不保证取消服务端命令；长任务使用进程 API 管理。
 
 ## 命令参考
 
@@ -76,7 +91,7 @@ asyncio.run(main())
 | `ABX_SERVER_TOKEN` | 否 | 空 | 沙箱内设置之后，客户端发送 `Authorization: Bearer`。`template.yaml` 里的值是空字符串。 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 本地执行 `python3 commands.py` 时 `start()` 监听的端口。 |
 
-密钥放在 `abx create --env` 或 `Sandbox.create(envs=...)`。不要写进镜像、Dockerfile 或日志。
+密钥在命名服务启动前传入；仅在提供方实际使用创建环境启动服务时采用创建时注入。参考[运行环境](../docs/runtime-environment.zh-CN.md)。不要写进镜像、Dockerfile 或日志。
 
 ## 资源
 

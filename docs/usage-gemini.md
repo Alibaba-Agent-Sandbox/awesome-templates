@@ -1,45 +1,9 @@
-# gemini
+# Gemini CLI template usage
 
-## 这是什么
+The maintained usage contract is in the template's [English README](../gemini/README.md) and [中文 README](../gemini/README.zh-CN.md). They include deployment, CLI, Python SDK, direct HTTP POST, typed parameters, authentication, deadlines, tool permissions, errors, development and contribution instructions.
 
-`gemini` 是 Gemini CLI 的沙箱模板，状态是 experimental。镜像基于 `python:3.12-slim`，预装 Node.js 22 和 `@google/gemini-cli@0.64.0`。入口是 `python3 commands.py`，命名命令 `gemini` 执行：
+Gemini CLI remains pinned to `@google/gemini-cli@0.64.0`. The template now uses the Alibaba base, generation 2, `/home/user/app` and non-root `user`; it has no image CMD/ENTRYPOINT. `gemini_setup_check` and `gemini_version` are read-only diagnostics. The named `gemini` command defaults to upstream read-only plan mode; set `yolo=true` only for an authorized coding task. `cwd` must resolve inside `WORKSPACE`.
 
-```text
-gemini -p <prompt> --yolo --model <model>
-```
+`GEMINI_API_KEY` must be a real Gemini-compatible key. Missing keys fail before CLI launch; an OpenAI key is not substituted. Setup never rewrites user configuration. Keep server and provider gateway authentication separate.
 
-`<model>` 默认 `gemini-3.1-flash-lite`。超时 600 秒。`prompt` 必填。没有 `GEMINI_API_KEY` 时命令失败，不会启动 CLI。
-
-## 本地 e2e
-
-```bash
-python3 -m pip install agent-sandbox-server httpx
-python3 scripts/run_local_e2e.py
-```
-
-根目录这条命令强制 `E2E_RUN_LLM=0`，不转发密钥。模型调用是 SKIP，退出码 0 只说明 server 契约过了。
-
-带密钥时，在 `gemini/` 里让服务和测试都能读到 `GEMINI_API_KEY`：
-
-```bash
-GEMINI_API_KEY=<你的密钥> E2E_REQUIRE_LLM=1 E2E_BASE_URL=http://127.0.0.1:9000 python3 e2e_test.py
-```
-
-输出必须包含 `ABX_E2E_OK`。缺密钥是 FAIL。
-
-## 极速版
-
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//gemini
-abx deploy
-abx create --template gemini --env GEMINI_API_KEY=<你的密钥>
-abx run <sandbox-id> gemini --json-args '{"prompt":"只回复 ABX_E2E_OK"}'
-```
-
-Python：
-
-```python
-await sandbox.run("gemini", prompt="只回复 ABX_E2E_OK", model="gemini-3.1-flash-lite")
-```
-
-这是极速版上发布后的具名命令。E2B 的具名命令是 E8004，不要在 E2B 上调用 `sandbox.run("gemini", ...)`。
+Acceptance now requires fixing an existing source file, new artifacts, original tests preserved, independent target-side tests and held-out checks. A response containing `ABX_E2E_OK` alone cannot pass. Forced-off L0 invokes no model; a missing key blocks required L3. No provider acceptance is claimed until passing evidence exists. See [design](design/gemini.md) and [verification](../.agents/evidence/verify/2026-10-16-gemini-runtime.md).

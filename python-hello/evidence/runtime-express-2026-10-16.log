@@ -1,0 +1,42 @@
+python-hello end-to-end suite
+  base_url : https://9000-[OWNED_SANDBOX].cn-hangzhou.e2b.fc.aliyuncs.com
+--------------------------------------------------------------------------
+[PASS] preflight GET /health — HTTP 200
+
+-- Built-in routes --
+[PASS] GET /commands — HTTP 200, listed=['hello', 'run', 'run_script', 'test']
+
+-- Custom commands --
+[PASS] POST /commands/hello — HTTP 200, {"result": "Hello, E2E!"}
+[PASS] POST /commands/hello (default) — HTTP 200, {"result": "Hello, World!"}
+[PASS] POST /commands/run_script — HTTP 200, {"result": "42\n"}
+[PASS] POST /commands/run_script (error) — HTTP 500 (expected 500)
+[PASS] run_script argument/routing error — HTTP 400 (expected 400)
+[PASS] unknown_e2e_command argument/routing error — HTTP 404 (expected 404)
+[PASS] POST /commands/_debug_info (hidden) — HTTP 200, {"result": {"python": "3.13.13", "system": "Linux"}}
+
+-- Custom routes --
+[PASS] GET /hello/{name} — HTTP 200, greeting='Hello, E2E!'
+
+-- File ops --
+[PASS] POST /files/upload-stream — HTTP 200, {"path": "/home/user/abx-python-hello-runtime/workspace/e2e_python_hello_1f2b97cb9dcf4ea798124b195aa6a6a3.txt", "byte...
+[PASS] GET /files/download-stream — HTTP 200, content matches=True
+[PASS] GET /files/list — HTTP 200, 1 entr(ies), file present=True
+[PASS] DELETE /files — HTTP 200
+
+-- Python development workflow --
+[PASS] run uploaded script — HTTP 200, {"result": "42\n"}
+[PASS] pytest uploaded test — HTTP 200, {"result": "============================= test session starts ==============================\nplatform linux -- Python 3.13.13, pytest-8.4.2, plugg...
+[PASS] pytest failing test returns sanitized 500 — HTTP 500
+[PASS] cleanup Python workflow — HTTP 200
+[PASS] cleanup Python workflow — HTTP 200
+[PASS] cleanup Python workflow — HTTP 200
+
+-- Shell --
+[PASS] POST /shell echo — HTTP 200, stdout='hello'
+
+==========================================================================
+SUMMARY — python-hello
+==========================================================================
+20 passed, 0 failed, 0 skipped (total 20)
+==========================================================================

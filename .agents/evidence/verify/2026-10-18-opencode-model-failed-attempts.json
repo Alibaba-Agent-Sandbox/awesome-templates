@@ -1,0 +1,162 @@
+{
+  "status": "FAIL",
+  "scope": "Historical pre-fix source-runtime attempts; not provider pass evidence",
+  "attempts": [
+    {
+      "date": "2026-10-18T12:52:17.021672+00:00",
+      "provider": "alicloud-express",
+      "template": "opencode",
+      "scope": "patched-source runtime on existing base; NOT Dockerfile L1 or template-deploy L2",
+      "source_sha256": "e49f601544443658b517f14b60027e7f58dab71cbb38b8572139ea0a13802768",
+      "source_files_sha256": {
+        "opencode/commands.py": "e49f601544443658b517f14b60027e7f58dab71cbb38b8572139ea0a13802768",
+        "opencode/e2e_test.py": "017eaff113de228bc0d748ba4c98cfae7a1309b420b756e5751d11ae236a247c",
+        "opencode/Dockerfile": "f155b1ac054074414268221cc906e1d364ffde5558782fe511f4250ade07cd9a",
+        "opencode/template.yaml": "eb4a138df2893d502f0665ebe47bfd637023f12f29ee157441deab5d43bf0cb1",
+        "scripts/express_runtime_e2e.py": "0d9939c2a78a480ee990d0687399ee069c6274bc5fdcb435667a795106502a6b",
+        "opencode/opencode.json": "80f3c55ef5170410b30fa94f810e4e3fd4d9291fe45f300e94fbbbca45a76bd9"
+      },
+      "uploaded_files_sha256": {
+        "commands.py": "e49f601544443658b517f14b60027e7f58dab71cbb38b8572139ea0a13802768",
+        "opencode.json": "80f3c55ef5170410b30fa94f810e4e3fd4d9291fe45f300e94fbbbca45a76bd9"
+      },
+      "generated_fixtures": [],
+      "required_model_acceptance": true,
+      "runtime_dependencies": "opencode-ai@1.19.0",
+      "server_wheel_sha256": "c4f3c17868615ae78f4becb1d55e1e3fb007689bce2c4922a62418635400a319",
+      "sdk_version": "0.3.0",
+      "sdk_source_commit": "421ee4da78a1014e4e925a42edb6d9c4bf00b2b5",
+      "base_template": "base",
+      "verification_type": "source-runtime",
+      "image_build_verified": false,
+      "template_deploy_verified": false,
+      "checks": [
+        {
+          "name": "owned Express base sandbox",
+          "ok": true
+        },
+        {
+          "name": "public runtime source and config upload",
+          "ok": true
+        },
+        {
+          "name": "pinned runtime dependency install",
+          "ok": true
+        },
+        {
+          "name": "patched server process start",
+          "ok": true
+        },
+        {
+          "name": "external SDK health",
+          "ok": true
+        },
+        {
+          "name": "pinned OpenCode version through SDK",
+          "ok": true,
+          "detail": "1.19.0"
+        },
+        {
+          "name": "OpenCode public configuration smoke",
+          "ok": true
+        },
+        {
+          "name": "remote HTTP suite with real model required",
+          "ok": false,
+          "detail": "exit=1; PASS lines=17; FAIL lines=1"
+        },
+        {
+          "name": "owned sandbox cleanup",
+          "ok": true
+        }
+      ],
+      "passed": false,
+      "model": "dashscope/qwen3-coder-flash",
+      "independent_cleanup": {
+        "owned_created": 1,
+        "owned_remaining": 0,
+        "listed_count": 1,
+        "passed": true,
+        "scope": "independent readback after the completed OpenCode attempt; other owned active tests left untouched",
+        "initial_controller_error": "used id instead of SandboxInfo.sandbox_id; corrected for readback"
+      }
+    },
+    {
+      "date": "2026-10-18T12:58:36.077621+00:00",
+      "provider": "alicloud-express",
+      "template": "opencode",
+      "scope": "patched-source runtime on existing base; NOT Dockerfile L1 or template-deploy L2",
+      "source_sha256": "e49f601544443658b517f14b60027e7f58dab71cbb38b8572139ea0a13802768",
+      "source_files_sha256": {
+        "opencode/commands.py": "e49f601544443658b517f14b60027e7f58dab71cbb38b8572139ea0a13802768",
+        "opencode/e2e_test.py": "017eaff113de228bc0d748ba4c98cfae7a1309b420b756e5751d11ae236a247c",
+        "opencode/Dockerfile": "f155b1ac054074414268221cc906e1d364ffde5558782fe511f4250ade07cd9a",
+        "opencode/template.yaml": "eb4a138df2893d502f0665ebe47bfd637023f12f29ee157441deab5d43bf0cb1",
+        "scripts/express_runtime_e2e.py": "0d9939c2a78a480ee990d0687399ee069c6274bc5fdcb435667a795106502a6b",
+        "opencode/opencode.json": "80f3c55ef5170410b30fa94f810e4e3fd4d9291fe45f300e94fbbbca45a76bd9"
+      },
+      "uploaded_files_sha256": {
+        "commands.py": "e49f601544443658b517f14b60027e7f58dab71cbb38b8572139ea0a13802768",
+        "opencode.json": "80f3c55ef5170410b30fa94f810e4e3fd4d9291fe45f300e94fbbbca45a76bd9"
+      },
+      "generated_fixtures": [],
+      "required_model_acceptance": true,
+      "runtime_dependencies": "opencode-ai@1.19.0",
+      "server_wheel_sha256": "c4f3c17868615ae78f4becb1d55e1e3fb007689bce2c4922a62418635400a319",
+      "sdk_version": "0.3.0",
+      "sdk_source_commit": "421ee4da78a1014e4e925a42edb6d9c4bf00b2b5",
+      "base_template": "base",
+      "verification_type": "source-runtime",
+      "image_build_verified": false,
+      "template_deploy_verified": false,
+      "checks": [
+        {
+          "name": "owned Express base sandbox",
+          "ok": true
+        },
+        {
+          "name": "public runtime source and config upload",
+          "ok": true
+        },
+        {
+          "name": "pinned runtime dependency install",
+          "ok": true
+        },
+        {
+          "name": "patched server process start",
+          "ok": true
+        },
+        {
+          "name": "external SDK health",
+          "ok": true
+        },
+        {
+          "name": "pinned OpenCode version through SDK",
+          "ok": true,
+          "detail": "1.19.0"
+        },
+        {
+          "name": "OpenCode public configuration smoke",
+          "ok": true
+        },
+        {
+          "name": "remote HTTP suite with real model required",
+          "ok": false,
+          "detail": "exit=1; PASS lines=17; FAIL lines=1"
+        },
+        {
+          "name": "owned sandbox cleanup",
+          "ok": true
+        }
+      ],
+      "passed": false,
+      "model": "dashscope/qwen3.8-flash",
+      "independent_cleanup": {
+        "owned_created": 1,
+        "owned_remaining": 0,
+        "listed_count": 1,
+        "passed": true
+      }
+    }
+  ]
+}

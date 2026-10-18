@@ -1,286 +1,148 @@
 # node-web
 
-> [中文版](#中文) | [English](#english)
+## What it does
 
----
+Runs one real Node HTTP application per sandbox. `serve` starts a JavaScript entry point; `start` and `dev` run package scripts in the background. Readiness requires HTTP 2xx/3xx from the owned child. `status`, `request`, `logs`, and `stop` inspect and manage that service. A dependency-free `index.js` is included for a first request.
 
-## English
+## Stack
 
-Node.js 20 web service sandbox environment, suited for rapid development and deployment with Express, Fastify, Koa, and similar frameworks.
+Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` supplies Node 20 and Python 3.13. Deployment resolves the placeholders to `cn-hangzhou` / `v0.0.49` unless configured otherwise. The server fallback is pinned to python-sdk commit `35da216a300f1e2e84254a1cf4b4a7ea98681505`; a CLI-injected server wheel takes precedence. There are no additional npm dependencies. Work directory `/home/user/app`; non-root `user`; generation 2. Platform `start_cmd` runs the server on 9000 and `ready_cmd` runs its healthcheck; no Docker CMD/ENTRYPOINT is added.
 
-### Environment
+## Problem solved
 
-| Category | Details |
-|----------|---------|
-| **Base image** | python:3.12-slim (Node.js installed for the web runtime) |
-| **Node.js** | Node.js 20.x + npm |
-| **Global tools** | yarn, nodemon, pm2 |
-| **System tools** | curl, wget, git, jq |
-| **Resources** | 1 CPU / 2048 MB memory |
-| **Exposed port** | 3000 |
+A successful spawn or open TCP port does not prove an application works. This template checks HTTP, drains stdout/stderr continuously, retains bounded service logs, and stops the npm launcher together with its Node children. `build` executes the application's actual build script and reports a nonzero exit as a failure.
 
-### Installation
+## Quick start (CLI)
 
-**Install from a local path:**
+Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
+
+With the provider already configured, deploy from the repository root:
 
 ```bash
-abx template install ./node-web --registry-type local
+abx template deploy ./node-web -y
+abx create --template <template-id> -y
+abx run <sandbox-id> serve --json-args '{"entry":"index.js","port":3000}'
+abx run <sandbox-id> request --json-args '{"path":"/"}'
+abx run <sandbox-id> logs --json-args '{"max_bytes":16384}'
+abx run <sandbox-id> stop
+abx kill <sandbox-id> -y
+abx template delete <template-id> -y
 ```
 
-**Install from GitHub:**
+The request returns `status_code: 200` and `body: "node-web ready\n"`. Upload your application and its locked dependencies before using a custom `entry` or `cwd`. `start`/`dev`/`build` require your `package.json` scripts; the bundled sample needs none. A service must honor `PORT` and bind to `0.0.0.0` for a gateway preview. Preview its provider URL for port 3000; the command API uses port 9000.
 
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//node-web
-```
+## Quick start (Python SDK)
 
-### Usage
-
-The named `serve` command rejects a missing entry file before launching Node.
-Its startup delay checks only early process exit; it does not establish HTTP readiness.
-
-Create a sandbox instance:
-
-```bash
-abx create --template node-web
-```
-
-Initialize an Express project inside the sandbox and start it:
-
-```bash
-abx exec <sandbox-id> -- bash -c "
-cd /workspace && \
-npm init -y && \
-npm install express && \
-cat > index.js << 'EOF'
-const express = require('express');
-const app = express();
-const port = process.env.PORT || 3000;
-
-app.get('/', (req, res) => {
-  res.json({ message: 'Hello from Agent Sandbox!' });
-});
-
-app.listen(port, () => {
-  console.log('Server running on port ' + port);
-});
-EOF
-node index.js
-"
-```
-
-Using the Python SDK:
+The client distribution is `agent-sandbox-client` (import `agent_sandbox`). Until the matching release is available, use the [paired, pinned source installation](../docs/python-client-installation.md).
 
 ```python
+import asyncio
 from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create_sync(template="node-web")
+async def main():
+    sb = await Sandbox.create(template="<template-id>", timeout=300)
+    try:
+        print(await sb.run("serve", entry="index.js", port=3000, timeout_s=20))
+        result = await sb.run("request", path="/")
+        assert result["status_code"] == 200
+        assert result["body"] == "node-web ready\n"
+        print(sb.network.get_url(3000))
+        print(await sb.run("logs", max_bytes=16384))
+        await sb.run("stop")
+    finally:
+        await sb.kill()
 
-# Write the server code
-sandbox.files.write("/workspace/index.js", """
-const http = require('http');
-const server = http.createServer((req, res) => {
-    res.writeHead(200, {'Content-Type': 'application/json'});
-    res.end(JSON.stringify({status: 'ok'}));
-});
-server.listen(3000);
-""")
-
-# Start the service
-sandbox.commands.run("node /workspace/index.js &")
-
-# Test access
-result = sandbox.commands.run("curl -s http://localhost:3000")
-print(result.stdout)
+asyncio.run(main())
 ```
 
-### Configuration
+`sb.run` returns the value inside the HTTP `result` wrapper. `sb.commands.run` is the separate shell/process API. For long builds, set an HTTP `timeout` greater than `timeout_s`, e.g. `await sb.run("build", cwd="/home/user/app/my-app", timeout_s=120, timeout=150)`. `timeout_s` is the execution/readiness deadline; the client's `timeout` only limits the request and does not guarantee cancellation. Use process APIs for reconnectable jobs.
 
-#### Environment Variables
+## Quick start (HTTP POST)
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NODE_ENV` | Node.js runtime environment | `production` |
-| `PORT` | Web service listen port | `3000` |
-
-#### Managing Processes with pm2
-
-pm2 is preinstalled and available for process management:
+Set `SERVER_URL` to the provider's sandbox port-9000 URL (`sb.network.get_url(9000)`), or `http://127.0.0.1:9000` for local L0. The following requests use direct JSON parameter objects, without an `args` wrapper:
 
 ```bash
-# Start the service
-pm2 start index.js --name my-app
-
-# Check status
-pm2 status
-
-# View logs
-pm2 logs my-app
+curl --fail-with-body -X POST "$SERVER_URL/commands/serve" \
+  -H 'Content-Type: application/json' -d '{"entry":"index.js","port":3000,"timeout_s":20}'
+curl --fail-with-body -X POST "$SERVER_URL/commands/request" \
+  -H 'Content-Type: application/json' -d '{"path":"/"}'
+curl --fail-with-body -X POST "$SERVER_URL/commands/stop" \
+  -H 'Content-Type: application/json' -d '{}'
 ```
 
-#### Development Mode with nodemon
+The request response is `{"result":{"status_code":200,"body":"node-web ready\n","truncated":false}}`. The serve response includes `pid`, `port`, `status`, `cwd`, and `http_status`; stop returns `status` and `pid`.
 
-During development, use nodemon for hot reload:
+If `ABX_SERVER_TOKEN` is set inside the sandbox, add `Authorization: Bearer $ABX_SERVER_TOKEN` or `X-Access-Token: $ABX_SERVER_TOKEN` to **every** command request. For Python, use `sb.server_at(9000, token=server_token).commands.run(...)` with the same token supplied to that server before startup. Provider gateway authentication is separate: add the header required by the chosen provider (Express uses `X-Access-Token: $SANDBOX_ACCESS_TOKEN`); when both are needed, put the server token in `Authorization` and the gateway token in `X-Access-Token`. Obtain both from your authorized runtime configuration; examples contain no real values.
 
-```bash
-NODE_ENV=development nodemon index.js
-```
+Errors use `{"error":"...","type":"..."}`: 400 for missing/mistyped/unknown arguments, 401 for server authentication, 404 for an unknown named command, and 500 for command execution failures (including out-of-range values, unavailable ports, failed builds and readiness deadlines). All named responses are buffered. A service's own HTTP 404 is returned in `request.result.status_code`, with command HTTP 200.
 
-### Notes
+## Command reference
 
-- **Port mapping**: Port 3000 is exposed by default; to use other ports, specify them via configuration when creating the sandbox.
-- **Production environment**: `NODE_ENV` defaults to `production`; during development, set it to `development` for detailed error messages.
-- **Package managers**: Both npm and yarn are installed — choose based on project needs.
-- **Process management**: In production, using pm2 to manage Node.js processes is recommended for stable service operation.
+All parameters are optional. `cwd` is a string defaulting to empty: use `WORKSPACE`, then `/home/user/app`, then the server working directory if that default path is absent. Explicit `cwd` must exist. Start commands share `port: int = 3000` (1024–65535, excluding the command-server port), `ready_path: str = "/"` (local absolute path, no `//` or CR/LF), and `timeout_s: int = 20` (1–120 seconds).
 
----
+| Command | Parameters | Returns / executed argv |
+|---|---|---|
+| `serve` | shared parameters; `entry: str = "index.js"`; `cwd: str = ""` | Running metadata after HTTP readiness; `node <resolved-entry>` in `cwd` |
+| `start` | shared parameters; `cwd: str = ""` | Running metadata; `npm start` |
+| `dev` | shared parameters; `cwd: str = ""` | Running metadata; `npm run dev` |
+| `status` | none | `status`, `pid`, and `http_ready`; after a launch also `port`, `exit_code`, `http_status` |
+| `stop` | none | `status: stopped`, `pid`; SIGTERM then SIGKILL to owned process group; safe to repeat |
+| `logs` | `max_bytes: int = 16384`, 1–131072 | `output`, `max_bytes`; latest merged stdout/stderr, retained after stop |
+| `request` | `path: str = "/"`, local path only; `timeout_s: int = 5`, 1–30 | Real loopback GET: `status_code`, UTF-8 `body` (up to 65536 bytes), `truncated`; no redirect following |
+| `build` | `cwd: str = ""`; `timeout_s: int = 120`, 1–600 | `npm run build`; `exit_code: 0`, latest 131072 bytes of `output`, `truncated`; raises on failure/timeout |
+| `smoke` | none | Starts bundled sample on 3000, asserts exact HTTP response, stops in `finally`, returns `node-web ready` |
 
-## 中文
+One service can run at a time; a second start fails until `stop`. Readiness tests the configured path, accepts only HTTP 200–399, and fails if the child exits. `request` probes only the managed loopback port. Logs rotate at 1 MiB (two files maximum) in a private temporary directory. `build` uses a temporary output file and removes it after execution; output returned to callers is bounded. Very verbose builds can use temporary disk space before completion. The manager is in memory; restarting the command server loses its process registry. Destroying the sandbox is the final cleanup boundary.
 
-Node.js 20 Web 服务沙箱环境，适用于 Express、Fastify、Koa 等框架的快速开发与部署。
+## Configuration
 
-### 环境说明
+| Variable | Default | Purpose |
+|---|---|---|
+| `NODE_ENV` | `production` | Passed to application processes; set at sandbox creation for development |
+| `PORT` | `3000` | Sample default; each launch overrides with the `port` argument |
+| `HOST` | set to `0.0.0.0` by launch | Hint to compatible application servers; application must honor it |
+| `WORKSPACE` | unset | Default application working directory |
+| `ABX_SERVER_PORT` | `9000` | Local command server port |
+| `ABX_SERVER_TOKEN` | empty | Optional command-server authentication; secret name declared with an empty value |
 
-| 类别 | 内容 |
-|------|------|
-| **基础镜像** | python:3.12-slim（镜像内安装 Node.js，作为 Web 运行时） |
-| **Node.js** | Node.js 20.x + npm |
-| **全局工具** | yarn、nodemon、pm2 |
-| **系统工具** | curl、wget、git、jq |
-| **资源配置** | 1 CPU / 2048 MB 内存 |
-| **暴露端口** | 3000 |
+No model/cloud key is needed by these commands. Keep secret values out of source, images and logs. Inject them only through authorized runtime configuration; do not log environment variables. App stdout is user controlled and can contain secrets: applications must redact before logging, and logs must not be attached to public issues without review.
 
-### 安装方式
+## Resources
 
-**从本地安装：**
+2 vCPU, 2048 MB memory. Port 9000 is the command API; 3000 is the sample service. Custom ports need provider gateway support. No privileged operations, Docker-in-sandbox, GPU, KVM, or browser. Application dependencies and artifacts consume the provider's rootfs budget (about 10 GB on Express).
 
-```bash
-abx template install ./node-web --registry-type local
-```
+## Verified
 
-**从 GitHub 安装：**
+No provider has a passing run recorded for this template.
 
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//node-web
-```
+2026-10-16 local L0 passed all 60 assertions with real Node 22.22.2, isolated npm 10.9.4, agent-sandbox-server 0.3.0 and httpx 0.28.1: HTTP API discovery, 4 MiB pre-readiness output, real HTTP requests, stderr logs, npm build artifact, npm start/dev and process-group stop/rebind, build nonzero/timeout and readiness failure. This is a local host run; it does not establish the Node 20 image build or cloud behavior. L1 is pending because Docker is absent. L2/L4 are pending; `tested_on` remains empty. No model call is required for this service template.
 
-### 使用示例
+## Express source-runtime verification
 
-命名命令 `serve` 会在启动 Node 前拒绝不存在的入口文件。
-启动等待仅检查进程是否提前退出，不能证明 HTTP 服务已经就绪。
+On 2026-10-16, all 60 external HTTP assertions passed against the patched source on an owned Express base sandbox with its actual Node.js 20 runtime. The run covers bundled smoke, uploaded application build/start/dev, HTTP readiness, bounded logs, shutdown, port reuse and cleanup. The owned instance was destroyed. [JSON evidence](evidence/runtime-express-2026-10-16.json) records source/config/fixture/wheel hashes; [HTTP results](evidence/runtime-express-2026-10-16.log) record the assertions. This does not establish a Dockerfile build or deployment of a new template image; `tested_on` remains empty. See [the runner](../docs/express-source-runtime.md).
 
-创建沙箱实例：
+## Secondary development
 
-```bash
-abx create --template node-web
-```
+The HTTP acceptance script emits one `[PASS]` or `[FAIL]` line per assertion.
+Acceptance consumers require exit0, no failures and a positive pass count; exit0
+with zero recognized assertions is rejected. Run
+`python -m pytest --import-mode=importlib -q node-web/test_http_output.py` to exercise
+the actual local server/Node/npm full60-assertion suite and the same strict result
+counter. A separate real HTTP503 fixture checks nonzero/countable failure. Tests
+use an owned temporary npm cache and keep the original HOME; no installation or
+model call is required. The earlier unbracketed-output run remains rejected by
+the image acceptance counter and is not retroactively relabeled as a pass.
 
-在沙箱中初始化 Express 项目并启动：
+Upload a project beneath `/home/user/app`, include its dependency lockfile, and install exact versions when building a derivative image (`npm ci` against the committed lockfile). Keep package installs before the final `COPY commands.py`, remove the npm cache in the same image layer, retain the pinned server, Alibaba base, non-root user and generation-2 start/ready commands. Do not add Docker CMD/ENTRYPOINT. Express/Fastify applications use `serve`, or define `start`/`dev`/`build` scripts. This template does not install a framework or generate a Next/Vite project.
 
-```bash
-abx exec <sandbox-id> -- bash -c "
-cd /workspace && \
-npm init -y && \
-npm install express && \
-cat > index.js << 'EOF'
-const express = require('express');
-const app = express();
-const port = process.env.PORT || 3000;
+## Contributing
 
-app.get('/', (req, res) => {
-  res.json({ message: 'Hello from Agent Sandbox!' });
-});
+Read [CONTRIBUTING.md](../CONTRIBUTING.md), the [template spec](../docs/template-spec.md), and [design](../docs/design/node-web.md). Run `python3 scripts/check_template.py node-web`, then `python3 scripts/run_local_e2e.py` from the repository root with server SDK, httpx, PyYAML, Node and npm available. The suite runs real processes and asserts outputs, not mocks. With Docker and authorized Express access, run `python3 scripts/express_e2e.py node-web`; only a successful run may add provider evidence. Keep `tested_on` and Verified empty until then. Cross-review process lifecycle and failure cases before merging.
 
-app.listen(port, () => {
-  console.log('Server running on port ' + port);
-});
-EOF
-node index.js
-"
-```
+## Issues
 
-使用 Python SDK：
+Track this template in [awesome-templates#29](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/29). Search existing issues before filing. Include sanitized command arguments, expected/actual behavior, test level, provider, generation 2 and SDK commit. Template problems go to awesome-templates; server/client bugs to [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues) with `[templates]`; CLI problems to [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues) with the same prefix. Never attach `.env`, access tokens or unreviewed application logs.
 
-```python
-from agent_sandbox import Sandbox
+## License
 
-sandbox = Sandbox.create_sync(template="node-web")
-
-# 写入服务器代码
-sandbox.files.write("/workspace/index.js", """
-const http = require('http');
-const server = http.createServer((req, res) => {
-    res.writeHead(200, {'Content-Type': 'application/json'});
-    res.end(JSON.stringify({status: 'ok'}));
-});
-server.listen(3000);
-""")
-
-# 启动服务
-sandbox.commands.run("node /workspace/index.js &")
-
-# 测试访问
-result = sandbox.commands.run("curl -s http://localhost:3000")
-print(result.stdout)
-```
-
-### 配置说明
-
-#### 环境变量
-
-| 变量名 | 说明 | 默认值 |
-|--------|------|--------|
-| `NODE_ENV` | Node.js 运行环境 | `production` |
-| `PORT` | Web 服务监听端口 | `3000` |
-
-#### 使用 pm2 管理进程
-
-pm2 已预装，可用于进程管理：
-
-```bash
-# 启动服务
-pm2 start index.js --name my-app
-
-# 查看状态
-pm2 status
-
-# 查看日志
-pm2 logs my-app
-```
-
-#### 使用 nodemon 开发模式
-
-开发阶段可使用 nodemon 实现热重载：
-
-```bash
-NODE_ENV=development nodemon index.js
-```
-
-### 注意事项
-
-- **端口映射**：默认暴露 3000 端口，如需其他端口，请在创建沙箱时通过配置指定。
-- **生产环境**：`NODE_ENV` 默认为 `production`，开发时可设为 `development` 以获取详细错误信息。
-- **包管理器**：npm 和 yarn 均已安装，根据项目需要选择使用。
-- **进程管理**：生产环境建议使用 pm2 管理 Node.js 进程，确保服务稳定运行。
-
-## Deploy and local e2e
-
-Install and register this template:
-
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//node-web
-```
-
-From this directory (build, push, and register):
-
-```bash
-abx deploy
-```
-
-From the repository root, with `agent-sandbox-server` and `httpx` installed:
-
-```bash
-python3 scripts/run_local_e2e.py
-```
-
-That starts `python3 commands.py` in this directory and runs `e2e_test.py`.
-
+Apache-2.0; see the repository [LICENSE](../LICENSE).

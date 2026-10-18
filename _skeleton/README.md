@@ -20,6 +20,8 @@ Gives a new template one directory that already satisfies [docs/template-spec.md
 
 ## Quick start (CLI)
 
+Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
+
 From a checkout of this repository, with Express credentials in the environment (listed in the spec):
 
 ```bash
@@ -43,7 +45,7 @@ abx template delete <template-id> -y
 
 ## Quick start (Python SDK)
 
-Install the client from PyPI as `agent-sandbox-client` (`python3 -m pip install agent-sandbox-client`). The import is `agent_sandbox`. `pip install agent-sandbox` is an unrelated project.
+The client distribution is `agent-sandbox-client` (import `agent_sandbox`). Until the matching release is available, use the [paired, pinned source installation](../docs/python-client-installation.md).
 
 ```python
 import asyncio
@@ -59,7 +61,20 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-`await sb.run("hello", name="Ada")` returns the string `Hello, Ada!`. `sb.commands.run` runs a shell command. It is not this named command. `sb.network.get_url(9000)` is the server's port URL. `Sandbox.create_sync` raises `TypeError` on python-sdk 0.3.0 ([python-sdk#22](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues/22)); use `await Sandbox.create`.
+`await sb.run("hello", name="Ada")` returns the string `Hello, Ada!`. `sb.commands.run` runs a shell command. It is not this named command. `sb.network.get_url(9000)` is the server's port URL. The checked-out SDK includes the sync-classmethod fix in [python-sdk#24](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/24). Upgrade older commits or use the async constructors if they raise TypeError.
+
+## Quick start (HTTP POST)
+
+Use the sandbox port-9000 URL, or http://127.0.0.1:9000 locally. Include the authentication header when ABX_SERVER_TOKEN is set on the server.
+
+```bash
+curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/hello" \
+  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
+  --header "Content-Type: application/json" \
+  --data '{"name":"Ada"}'
+```
+
+The JSON body contains command parameters directly, without an args wrapper. HTTP 200 returns `{"result":"Hello, Ada!"}`. Invalid arguments return 400, failed authentication 401, and execution errors 500; error responses contain error and type. Results are buffered until completion. An HTTP client timeout does not guarantee server-side cancellation; manage long tasks through the process API.
 
 ## Command reference
 
@@ -76,7 +91,7 @@ asyncio.run(main())
 | `ABX_SERVER_TOKEN` | no | empty | When set inside the sandbox, clients send `Authorization: Bearer`. The value in `template.yaml` is empty. |
 | `ABX_SERVER_PORT` | no | `9000` | Port `start()` binds for a local `python3 commands.py`. |
 
-Set secret values on `abx create --env` or `Sandbox.create(envs=...)`. Do not write them into the image, the Dockerfile, or a log.
+Provide secret values before the command server starts; use create-time env only when the provider starts that server with it. See [runtime environment](../docs/runtime-environment.md). Do not write them into the image, the Dockerfile, or a log.
 
 ## Resources
 

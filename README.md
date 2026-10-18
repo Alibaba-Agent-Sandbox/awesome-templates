@@ -1,7 +1,7 @@
 # Awesome Templates for Agent Sandbox
 
 A curated collection of sandbox templates for the
-[Agent Sandbox](https://pypi.org/project/agent-sandbox/) SDK and the `abx` CLI.
+[Agent Sandbox](https://github.com/Alibaba-Agent-Sandbox/python-sdk) SDK and the `abx` CLI.
 
 How to build, list, and accept a template is
 [docs/template-spec.md](./docs/template-spec.md)
@@ -17,39 +17,61 @@ is recorded.
 
 ## Templates
 
+The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](docs/verification-2026-10-18.zh-CN.md)) lists all 23 current/main-plus-draft templates and unresolved provider/deployment gates.
+
 | Template | Description | Status | Verified on |
 |----------|-------------|--------|-------------|
-| [python-hello](./python-hello/README.md) | A minimal Python hello world template for testing | official | alicloud-express |
-| [browser-automation](./browser-automation/README.md) | Browser automation sandbox with Playwright + Chromium for web scraping and UI testing | official | |
-| [claude-code](./claude-code/README.md) | Claude Code Agent runtime — Anthropic Claude-powered AI coding assistant | official | |
+| [python-hello](./python-hello/README.md) | A minimal Python hello world template for testing | experimental | |
+| [browser-automation](./browser-automation/README.md) | Browser automation sandbox with Playwright + Chromium for web scraping and UI testing | experimental | |
+| [claude-code](./claude-code/README.md) | Claude Code Agent runtime — Anthropic Claude-powered AI coding assistant | experimental | |
 | [codex](./codex/README.md) | OpenAI Codex CLI (@openai/codex@0.162.1). codex exec, JSON events, sandbox bypass, OpenAI-compatible config.toml. | experimental | |
-| [codex-agent-api](./codex-agent-api/README.md) | Self-hosted OpenAI Agents API compatible service powered by Codex CLI | official | |
-| [qoder](./qoder/README.md) | Python and Node.js dev sandbox. qoder_run executes a local script; the Qoder CLI is not installed. | official | |
-| [agents-cli](./agents-cli/README.md) | Agents API for Codex and Qwen Code. The image does not preinstall either CLI. | official | |
-| [qwen-code](./qwen-code/README.md) | Qwen Code Agent runtime — Dashscope-powered AI autonomous deployment agent | official | |
-| [deepseek-harness](./deepseek-harness/README.md) | DeepSeek Agent Runtime — DeepSeek model-driven AI coding agent | official | |
-| [hermes-agent](./hermes-agent/README.md) | Chat completion against an OpenAI-compatible endpoint. This template does not register tools. | official | |
-| [node-web](./node-web/README.md) | Node.js web service runtime for Express, Fastify and other frameworks | official | |
-| [openclaw](./openclaw/README.md) | OpenClaw AI Agent runtime — open-source AI coding agent gateway | official | |
+| [codex-agent-api](./codex-agent-api/README.md) | Codex 0.162.1 HTTP session adapter with bounded turns and SSE; project API subset | experimental | |
+| [qoder](./qoder/README.md) | Qoder coding CLI @qoder-ai/qodercli@1.1.72 with version, read-only setup and bounded headless execution. | experimental | |
+| [agents-cli](./agents-cli/README.md) | Restricted local Agents HTTP API with pinned Codex 0.162.1 and Qwen Code 0.23.0. | experimental | |
+| [qwen-code](./qwen-code/README.md) | Qwen Code Agent runtime — Dashscope-powered AI autonomous deployment agent | experimental | |
+| [deepseek-harness](./deepseek-harness/README.md) | Bounded DeepSeek-compatible coding agent with read, write, list and shell tools. | experimental | |
+| [hermes-agent](./hermes-agent/README.md) | NousResearch Hermes 0.22.1 with pinned upstream runtime, local file/terminal tools and bounded headless execution. | experimental | |
+| [node-web](./node-web/README.md) | Node.js web service runtime for Express, Fastify and other frameworks | experimental | |
+| [openclaw](./openclaw/README.md) | OpenClaw 2026.10.4 gateway with authenticated health, owned process lifecycle and Node.js 24.16.0. | experimental | |
 | [opencode](./opencode/README.md) | OpenCode coding agent. Headless opencode run and optional opencode serve. Package opencode-ai@1.19.0. | experimental | |
-| [amp](./amp/README.md) | Sourcegraph Amp CLI. amp_execute runs amp -x; amp_version and amp_setup_check do not need a key. | official | alicloud-express |
+| [amp](./amp/README.md) | Sourcegraph Amp CLI. amp_execute runs amp -x; amp_version and amp_setup_check do not need a key. | experimental | |
 | [droid](./droid/README.md) | Factory Droid. Command droid exec. Package @factory/cli@0.241.1. | experimental | |
 | [gemini](./gemini/README.md) | Gemini CLI. Command gemini -p. Package @google/gemini-cli@0.64.0. | experimental | |
-The CLI supports the builtin Express provider and installable provider plugins.
-The Dockerfile deployment examples here target `alicloud-express`. Other providers
-use their own image/template contracts; see the maintained
-[provider documentation](https://github.com/Alibaba-Agent-Sandbox/awesome-providers).
-OpenSandbox accepts an image URI; its short aliases and startup behavior are
-owned by its plugin rather than this template catalog.
+| [osworld](./osworld/README.md) | OSWorld Linux browser slice with real X11 input, screenshots, AT-SPI and selected task evaluators. | experimental | |
+| [pi](./pi/README.md) | Official Pi CLI 1.3.0 with ephemeral compatible-model settings and explicit writable tools. | experimental | |
+| [ocr](./ocr/README.md) | CPU English image OCR with pinned Tesseract 5.5.0 and bounded private TXT/TSV artifacts. | experimental | |
+| [document-tools](./document-tools/README.md) | Bounded offline Markdown to DOCX/plain-text conversion using pinned Pandoc. | experimental | |
+| [media-tools](./media-tools/README.md) | Bounded offline CPU MP4, WAV and FLAC conversion with pinned FFmpeg. | experimental | |
+| [aider](./aider/README.md) | Official Aider 0.86.2 with read-only ask and explicit selected-file edits. | experimental | |
+| [swe](./swe/README.md) | Real mini-swe-agent 2.4.6 and one independently evaluated SWE-bench instance; no official Docker score. | experimental | |
 
-CLI 支持内置 Express 与可安装的提供方插件；这里的 Dockerfile 部署示例针对
-`alicloud-express`，其他厂商按各自插件的镜像/模板及启动契约使用。
+OpenSandbox's public sandbox images (code-interpreter, code-interpreter-base, desktop, playwright, vscode) are resolved by the SDK. This catalog does not vendor those Dockerfiles.
 
-The maintained catalog site is owned by the [registry repository](https://github.com/Alibaba-Agent-Sandbox/registry) and served at [Agent Sandbox Registry](https://registry.agent-sandbox.cn). Template metadata remains in `awesome-templates.yaml`.
+`abx template install` builds these Dockerfile templates on
+`alicloud-express` only through its built-in Dockerfile deployment workflow.
+The CLI also loads installed provider plugins; template operations require the
+plugin's declared template capability. A provider that accepts an existing
+template ID does not thereby support building this catalog's Dockerfiles.
+`base` and `code-interpreter-v1` are CLI builtins, so a bare install does
+not use the directories in this repo. OpenSandbox create takes an image
+URI and replaces the container entrypoint, so these Dockerfiles do not
+start there until the image is pushed and the server is started by hand.
 
-目录站点由独立的 [registry 仓库](https://github.com/Alibaba-Agent-Sandbox/registry)维护；本仓库通过 `awesome-templates.yaml` 提供模板元数据。
+The maintained registry website and ingestion code live in the separate
+[registry repository](https://github.com/Alibaba-Agent-Sandbox/registry).
+The public site is [registry.agent-sandbox.cn](https://registry.agent-sandbox.cn).
+This repository owns `awesome-templates.yaml` and template docs, which that
+registry ingests. The unused local `registry/index.html`/`catalog.json` copy has
+been retired; consumers should use the maintained registry's public catalog.
+
+For installation prerequisites, all three calling interfaces, evidence levels
+and provider limits, start with [Using templates](docs/using-templates.md)
+([中文](docs/using-templates.zh-CN.md)). Each template README contains its own
+CLI, Python SDK and HTTP POST examples plus command/authentication/error details.
 
 ## Deploy
+
+Install the CLI and paired Python packages using the [source-aware setup guide](docs/using-templates.md#installation), then configure the selected provider.
 
 Install from this index (builds and registers the template):
 

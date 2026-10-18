@@ -11,6 +11,7 @@ import threading
 import time
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import check_template
 import express_e2e
@@ -34,6 +35,41 @@ def _process_dead(pid: int) -> bool:
 
 
 class CheckerTest(unittest.TestCase):
+    def test_catalog_capabilities_match_template_ignoring_order(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            dest = root / "example"
+            shutil.copytree(SKELETON, dest)
+            metadata = check_template.yaml.safe_load((dest / "template.yaml").read_text())
+            metadata["name"] = "example"
+            metadata["capabilities"] = ["shell", "files", "ports"]
+            (dest / "template.yaml").write_text(check_template.yaml.safe_dump(metadata))
+            for capabilities, rejected in ((["ports", "files", "shell"], False),
+                                             (["ports"], True), ({"ports": True}, True)):
+                with self.subTest(capabilities=capabilities):
+                    (root / "awesome-templates.yaml").write_text(check_template.yaml.safe_dump({
+                        "templates": [{"name": "example", "path": "example", "status": "experimental",
+                                       "capabilities": capabilities}]}))
+                    violations = check_template.check_directory(dest)
+                    self.assertEqual(any(item.code == "index-capabilities" for item in violations), rejected)
+
+    def test_http_section_requires_request_and_result(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp) / "_skeleton"
+            shutil.copytree(SKELETON, dest)
+            for filename, heading in (
+                ("README.md", "Quick start (HTTP POST)"),
+                ("README.zh-CN.md", "快速开始（HTTP POST）"),
+            ):
+                with self.subTest(filename=filename):
+                    readme = dest / filename
+                    original = readme.read_text(encoding="utf-8")
+                    sections = check_template._sections(original)
+                    readme.write_text(original.replace(sections[heading], "HTTP is available.\n\n"), encoding="utf-8")
+                    violations = check_template.check_directory(dest)
+                    self.assertTrue(any(v.code == "readme-http" and filename in v.message for v in violations))
+                    readme.write_text(original, encoding="utf-8")
+
     def test_skeleton_conforms(self) -> None:
         violations = check_template.check_directory(SKELETON)
         self.assertEqual([str(item) for item in violations], [])
@@ -83,6 +119,15 @@ class CheckerTest(unittest.TestCase):
             )
             codes = {item.code for item in check_template.check_directory(dest)}
             self.assertNotIn("verified-evidence", codes)
+
+            evidence_file = evidence / "express-2026-10-15.json"
+            original = json.loads(evidence_file.read_text(encoding="utf-8"))
+            for field, value in (("template", "another-template"), ("template_version", "0.9.0")):
+                with self.subTest(field=field):
+                    evidence_file.write_text(json.dumps({**original, field: value}), encoding="utf-8")
+                    codes = {item.code for item in check_template.check_directory(dest)}
+                    self.assertIn("verified-evidence", codes)
+            evidence_file.write_text(json.dumps(original), encoding="utf-8")
 
     def test_dockerfile_cmd_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -187,6 +232,8 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(args)
+                if "--official-api" in args:
+                    return Proc(0, "[]", "")
                 if "deploy" in args:
                     return Proc(1, "", "BuildModeError: base must be a mapping")
                 return Proc(0, "", "")
@@ -194,7 +241,7 @@ class HarnessTest(unittest.TestCase):
             options = express_e2e.build_options(
                 [str(dest), "--command", "hello", "--arg", "name=E2E", "--expect", "Hello, E2E!"]
             )
-            code = express_e2e.execute(options, runner=runner, sdk=lambda *_: "Hello, E2E!")
+            code = express_e2e.execute(options, runner=runner, sdk=lambda *_: "Hello, E2E!", verify=lambda *_: True)
             self.assertEqual(code, 2)
             self.assertFalse((dest / "evidence").exists())
             self.assertTrue(any("deploy" in args for args in calls))
@@ -210,6 +257,8 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(list(args))
+                if "--official-api" in args:
+                    return Proc(0, "[]", "")
                 if "deploy" in args:
                     return Proc(0, json.dumps({"TemplateID": "tmpl-spec", "Status": "ready"}), "")
                 if "create" in args:
@@ -233,7 +282,7 @@ class HarnessTest(unittest.TestCase):
                     "agent-sandbox-server healthcheck --port 9000",
                 ]
             )
-            code = express_e2e.execute(options, runner=runner, sdk=lambda *_args: "Hello, E2E!")
+            code = express_e2e.execute(options, runner=runner, sdk=lambda *_args: "Hello, E2E!", verify=lambda *_: True)
             self.assertEqual(code, 0)
             evidence = list((dest / "evidence").glob("express-*.json"))
             self.assertEqual(len(evidence), 1)
@@ -255,6 +304,8 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(list(args))
+                if "--official-api" in args:
+                    return Proc(0, "[]", "")
                 if "deploy" in args:
                     return Proc(0, json.dumps({"TemplateID": "tmpl-spec", "Status": "ready"}), "")
                 if "create" in args:
@@ -269,7 +320,7 @@ class HarnessTest(unittest.TestCase):
             options = express_e2e.build_options(
                 [str(dest), "--command", "hello", "--arg", "name=E2E", "--expect", "Hello, E2E!"]
             )
-            code = express_e2e.execute(options, runner=runner, sdk=sdk)
+            code = express_e2e.execute(options, runner=runner, sdk=sdk, verify=lambda *_: True)
             self.assertEqual(code, 2)
             self.assertFalse((dest / "evidence").exists())
             self.assertTrue(any(args[:1] == ["kill"] for args in calls))
@@ -286,6 +337,8 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(list(args))
+                if "--official-api" in args:
+                    return Proc(0, "[]", "")
                 if "deploy" in args:
                     attempt = sum(1 for item in calls if "deploy" in item)
                     if attempt < 3:
@@ -300,11 +353,12 @@ class HarnessTest(unittest.TestCase):
             options = express_e2e.build_options(
                 [str(dest), "--command", "hello", "--arg", "name=E2E", "--expect", "Hello, E2E!", "--push-retries", "2"]
             )
-            code = express_e2e.execute(options, runner=runner, sdk=lambda *_args: "Hello, E2E!")
+            code = express_e2e.execute(options, runner=runner, sdk=lambda *_args: "Hello, E2E!", verify=lambda *_: True)
             self.assertEqual(code, 0)
             self.assertEqual(sum(1 for args in calls if "deploy" in args), 3)
-            self.assertIn("--verbose", calls[0])
-            self.assertIn("--timeout", calls[0])
+            deploy_call = next(args for args in calls if "deploy" in args)
+            self.assertIn("--verbose", deploy_call)
+            self.assertIn("--timeout", deploy_call)
 
     def test_build_failure_is_not_retried(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -316,14 +370,16 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(list(args))
+                if "--official-api" in args:
+                    return Proc(0, "[]", "")
                 return Proc(1, "", "Docker build failed (exit 1)")
 
             options = express_e2e.build_options(
                 [str(dest), "--command", "hello", "--push-retries", "2"]
             )
-            code = express_e2e.execute(options, runner=runner, sdk=lambda *_args: "Hello, E2E!")
+            code = express_e2e.execute(options, runner=runner, sdk=lambda *_args: "Hello, E2E!", verify=lambda *_: True)
             self.assertEqual(code, 1)
-            self.assertEqual(len(calls), 1)
+            self.assertEqual(sum("deploy" in args for args in calls), 1)
 
 
 class MonitorTest(unittest.TestCase):
@@ -403,6 +459,43 @@ class MonitorTest(unittest.TestCase):
             self.assertEqual(order, ["a-in", "a-out", "b-in"])
 
 
+class ImageBuildContextTest(unittest.TestCase):
+    def test_actual_template_contexts_preserve_heredocs_and_sdk_install(self) -> None:
+        """Exercise the real context step; no Docker process is mocked or invoked."""
+        import contextlib
+        import io
+
+        workflow = check_template.yaml.safe_load((ROOT / ".github/workflows/image-build.yml").read_text())
+        job = workflow["jobs"]["image-build"]
+        step = next(item for item in job["steps"] if item.get("name") == "Prepare the standalone template context")
+        code = step["run"].split("python - <<'PY'\n", 1)[1].rsplit("\nPY", 1)[0]
+        templates = sorted(item["path"] for item in check_template.yaml.safe_load((ROOT / "awesome-templates.yaml").read_text())["templates"])
+        self.assertEqual(job["strategy"]["matrix"]["template"], "${{ fromJSON(needs.plan.outputs.templates) }}")
+        catalog = check_template.yaml.safe_load((ROOT / "awesome-templates.yaml").read_text())["templates"]
+        self.assertEqual(set(templates), {item["path"] for item in catalog})
+        with tempfile.TemporaryDirectory() as folder:
+            runner = Path(folder)
+            wheel_dir = runner / "server-wheel"
+            wheel_dir.mkdir()
+            # The prepare step only copies this opaque fixture; it never claims
+            # that these bytes are an installed or executable server wheel.
+            wheel = wheel_dir / "agent_sandbox_server-0.3.0-py3-none-any.whl"
+            wheel.write_bytes(b"context-copy fixture, not an installable package")
+            environment = {"RUNNER_TEMP": folder, "GITHUB_ENV": str(runner / "environment"),
+                           "SERVER_SDK_SHA": "e2cb27e24fde0a67112f82b8d44af463445a5d1a"}
+            for name in templates:
+                with self.subTest(template=name), patch.dict(os.environ, {**environment, "TEMPLATE": str(ROOT / name)}):
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        exec(compile(code, "image-build.yml::prepare", "exec"), {})
+                    context = runner / ("image-context-" + name)
+                    materialized = (context / "Dockerfile").read_bytes()
+                    original = (ROOT / name / "Dockerfile").read_bytes()
+                    self.assertEqual(materialized.replace(
+                        b"FROM fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+                        b"FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"), original)
+                    self.assertEqual((context / wheel.name).read_bytes(), wheel.read_bytes())
+
+
 class ImageReportTest(unittest.TestCase):
     def test_render_lists_layers_and_guidance(self) -> None:
         text = image_size_report.render(
@@ -426,4 +519,9 @@ class ImageReportTest(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    import test_express_cleanup
+    suite = unittest.TestSuite([
+        unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__]),
+        unittest.defaultTestLoader.loadTestsFromModule(test_express_cleanup),
+    ])
+    raise SystemExit(not unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful())

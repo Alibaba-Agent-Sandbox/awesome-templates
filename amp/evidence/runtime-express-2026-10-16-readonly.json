@@ -1,0 +1,73 @@
+{
+  "date": "2026-10-16T02:36:22.588091+00:00",
+  "provider": "alicloud-express",
+  "template": "amp",
+  "scope": "patched-source runtime on existing base; NOT Dockerfile L1 or template-deploy L2",
+  "source_sha256": "aedfd4161af350125abe39473d7aa6798ed61f02c04af0e0d9274dafc1cbcc86",
+  "source_files_sha256": {
+    "amp/commands.py": "aedfd4161af350125abe39473d7aa6798ed61f02c04af0e0d9274dafc1cbcc86",
+    "amp/e2e_test.py": "f4810ba5f45f9cc9e84fd47cf05a9efd71d5d5f1e2d5377adc3159675a639e3d",
+    "amp/Dockerfile": "10307b7defc26f0c871b7add02ea8bc162bf5e8c173228792edc2b2c1b515882",
+    "amp/template.yaml": "872b259a5d7de1052f85c79fb122db1ad2ada081ae9823df1a4b1d100158c4cc",
+    "scripts/express_runtime_e2e.py": "1c214b0f67f965840677ad7988bf20bfd4714ef5e0c9896dc482a98b63a2d97c",
+    "amp/settings.json": "b78d612e8f49cca42bf3e8cd200c501cd62116d75c48dbd48592c0ca4872791b"
+  },
+  "uploaded_files_sha256": {
+    "commands.py": "aedfd4161af350125abe39473d7aa6798ed61f02c04af0e0d9274dafc1cbcc86",
+    "settings.json": "b78d612e8f49cca42bf3e8cd200c501cd62116d75c48dbd48592c0ca4872791b"
+  },
+  "generated_fixtures": [],
+  "required_model_acceptance": false,
+  "runtime_dependencies": "@ampcode/cli@0.0.1792022479-ge66e24; keyless inspection only",
+  "server_wheel_sha256": "a09a4846fef8b49f3a059d1c65e38d283986aa4fbf879dd09192100c30039fc9",
+  "sdk_version": "0.3.0",
+  "sdk_source_commit": "bb7881dc703ccdc3b97ff5ad67bcb129c4ea80ea",
+  "base_template": "base",
+  "verification_type": "source-runtime",
+  "image_build_verified": false,
+  "template_deploy_verified": false,
+  "checks": [
+    {
+      "name": "owned Express base sandbox",
+      "ok": true
+    },
+    {
+      "name": "public runtime source and config upload",
+      "ok": true
+    },
+    {
+      "name": "pinned runtime dependency install",
+      "ok": true
+    },
+    {
+      "name": "patched server process start",
+      "ok": true
+    },
+    {
+      "name": "external SDK health",
+      "ok": true
+    },
+    {
+      "name": "pinned Amp version through SDK",
+      "ok": true
+    },
+    {
+      "name": "Amp keyless read-only configuration smoke",
+      "ok": true
+    },
+    {
+      "name": "Amp version and setup preserve settings bytes",
+      "ok": true
+    },
+    {
+      "name": "remote HTTP suite",
+      "ok": true,
+      "detail": "exit=0; PASS lines=7; FAIL lines=0"
+    },
+    {
+      "name": "owned sandbox cleanup",
+      "ok": true
+    }
+  ],
+  "passed": true
+}

@@ -5,23 +5,31 @@ Shows ``@command`` named commands, a hidden command, a custom HTTP route and the
 """
 from __future__ import annotations
 
+import os
+from pathlib import Path
+import subprocess
+import sys
+
 from agent_sandbox.server import CapabilityGroup, ServerResponse, command, default_table, start
 
 table = default_table()
 
 
-def _run(argv: list[str], *, timeout: int, cwd: str = "/app") -> str:
-    """Run *argv* in ``/app`` when that directory exists and return stdout."""
-    import os
-    import subprocess
-
-    workdir = cwd if os.path.isdir(cwd) else (os.environ.get("WORKSPACE") or os.getcwd())
-    result = subprocess.run(
-        argv, cwd=workdir, capture_output=True, text=True, timeout=timeout,
-    )
+def _run(argv: list[str], *, timeout: float) -> str:
+    """Use WORKSPACE, or this module's directory, for every Python command."""
+    workdir = os.environ.get("WORKSPACE") or str(Path(__file__).resolve().parent)
+    try:
+        result = subprocess.run(
+            argv, cwd=workdir, capture_output=True, text=True, timeout=timeout,
+        )
+    except subprocess.TimeoutExpired:
+        # TimeoutExpired includes argv, including the full inline source code.
+        raise RuntimeError("Python command exceeded its execution deadline; output omitted") from None
+    except OSError:
+        # OS errors can include user-provided file paths or other request data.
+        raise RuntimeError("Python command could not start; request details omitted") from None
     if result.returncode != 0:
-        detail = (result.stderr or result.stdout or "").strip()
-        raise RuntimeError(detail or f"command exited {result.returncode}")
+        raise RuntimeError(f"Python command exited {result.returncode}; output omitted")
     return result.stdout
 
 
@@ -34,26 +42,19 @@ def hello(name: str = "World") -> str:
 @command("run_script", description="Execute Python code and return stdout.")
 def run_script(code: str) -> str:
     """Execute Python code and return stdout."""
-    import subprocess
-
-    result = subprocess.run(
-        ["python3", "-c", code], capture_output=True, text=True, timeout=30
-    )
-    if result.returncode != 0:
-        raise RuntimeError(result.stderr)
-    return result.stdout
+    return _run([sys.executable, "-c", code], timeout=30)
 
 
 @command("run", description="Run a Python script.")
 def run(file: str = "main.py") -> str:
     """Run a Python script (``python3 {file}``)."""
-    return _run(["python3", file], timeout=60)
+    return _run([sys.executable, file], timeout=60)
 
 
 @command("test", description="Run tests with pytest.")
 def test(path: str = ".") -> str:
     """Run pytest (``python3 -m pytest {path}``)."""
-    return _run(["python3", "-m", "pytest", path], timeout=120)
+    return _run([sys.executable, "-m", "pytest", "-p", "no:cacheprovider", path], timeout=120)
 
 
 @command(hidden=True)
@@ -77,6 +78,4 @@ def hello_route(request: object) -> ServerResponse:
 
 
 if __name__ == "__main__":
-    import os
-
     start(int(os.environ.get("ABX_SERVER_PORT", "9000")))

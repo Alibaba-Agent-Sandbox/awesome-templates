@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-16T01:47:26.547783+00:00",
+  "provider": "alicloud-express",
+  "template": "codex-agent-api",
+  "scope": "patched-source runtime on existing base; NOT Dockerfile L1 or template-deploy L2",
+  "source_sha256": "666cd1e7f0badcd70f3e5df7429164c5595b9bf6c993578cb7fa38f4b9c99b6b",
+  "server_wheel_sha256": "a09a4846fef8b49f3a059d1c65e38d283986aa4fbf879dd09192100c30039fc9",
+  "sdk_version": "0.3.0",
+  "sdk_source_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+  "base_template": "base",
+  "verification_type": "source-runtime",
+  "image_build_verified": false,
+  "template_deploy_verified": false,
+  "checks": [
+    {
+      "name": "owned Express base sandbox",
+      "ok": true
+    },
+    {
+      "name": "pinned runtime dependency install",
+      "ok": true
+    },
+    {
+      "name": "patched server process start",
+      "ok": true
+    },
+    {
+      "name": "external SDK health",
+      "ok": true
+    },
+    {
+      "name": "pinned Codex version through SDK",
+      "ok": true,
+      "detail": "0.162.1"
+    },
+    {
+      "name": "remote HTTP suite with real model required",
+      "ok": true,
+      "detail": "exit=0; PASS lines=30; FAIL lines=0"
+    },
+    {
+      "name": "owned sandbox cleanup",
+      "ok": true
+    }
+  ],
+  "passed": true
+}

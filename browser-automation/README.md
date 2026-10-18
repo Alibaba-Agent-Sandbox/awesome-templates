@@ -1,346 +1,187 @@
 # browser-automation
 
-> [中文版](#中文) | [English](#english)
+## What it does
 
----
+Navigate with headless Chromium, save PNG screenshots, extract text and links,
+and fill forms. Each named command owns and closes a fresh browser; concurrent
+requests do not share cookies, DOM state, or form values. Form filling verifies
+input values internally and returns only a count. It does not submit the form.
 
-## English
+## Stack
 
-Sandbox environment with Playwright + Chromium preinstalled, suited for web scraping, UI automation testing, and browser interaction tasks.
+Alibaba runtime base (default `v0.0.49`, Python 3.13); Playwright `1.58.0` with
+its matching Chromium revision; pinned `agent-sandbox-server` archive in the
+Dockerfile. Browser launches use `--disable-dev-shm-usage` for the Express 64 MB
+shared-memory limit. This template exposes named commands, files and process
+APIs; optional built-in `/browser/*` endpoints are not enabled.
 
-This template enables the built-in **BROWSER** capability group, exposing 8 low-level browser endpoints while also registering 3 high-level business commands for AI agents.
+## Problem solved
 
-### Environment
+Give an agent reproducible browser operations and downloadable artifacts without
+requiring Docker, KVM, a desktop, a model API key, or a persistent browser session.
 
-| Category | Details |
-|----------|---------|
-| **Base image** | python:3.12-slim (Playwright and Chromium installed) |
-| **Browser** | Chromium (managed by Playwright) |
-| **Python packages** | `playwright`, `beautifulsoup4`, `lxml`, `httpx`, `Pillow` |
-| **System tools** | curl, wget, xvfb, jq |
-| **Resources** | 2 CPU / 4096 MB memory |
-| **Enabled capability groups** | `BROWSER`, `FILE_OPS`, `PROCESS` |
+## Quick start (CLI)
 
-### Installation
-
-**Install from a local path:**
-
-```bash
-abx template install ./browser-automation --registry-type local
-```
-
-**Install from GitHub:**
+Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
 
 ```bash
 abx template install alibaba-agent-sandbox/awesome-templates//browser-automation
+abx create --template <template-id>
+abx run <sandbox-id> browse --arg url=https://example.com --arg action=extract
+abx run <sandbox-id> browse --json-args '{"url":"https://example.com","action":"screenshot","timeout_s":30}'
+abx run <sandbox-id> scrape --arg url=https://example.com --arg selector=h1
 ```
 
-### High-Level Business Commands
+Use the installed template id and sandbox id returned by the CLI. `abx run`
+invokes named commands. `abx exec` runs shell programs. `--arg` passes strings;
+use `--json-args` for typed integer `timeout_s`. Do not put real form secrets on
+the command line or in shell history; use the SDK from a secret-aware process.
 
-The template registers the following high-level commands for AI agent workflows:
+## Quick start (Python SDK)
 
-#### `browse(url, action="screenshot")`
-
-Smart browsing — navigates to a URL and performs different operations based on `action`.
-
-| action | Behavior |
-|--------|----------|
-| `screenshot` | Take a full-page screenshot and return the saved path |
-| `extract` | Retrieve the visible text content of the page |
-| `links` | Extract all hyperlinks on the page (href + text) |
-| `full` | Screenshot + title + first 500 characters of text summary |
-
-#### `scrape(url, selector)`
-
-Extract element text content by CSS selector. Returns an array of the matched elements' texts.
-
-#### `fill_form(url, fields_json)`
-
-Auto form filling — navigates to a URL and fills each form field as described by the JSON.
-
-`fields_json` format:
-
-```json
-[
-  {"selector": "#email", "value": "test@example.com"},
-  {"selector": "#password", "value": "123456"}
-]
-```
-
-### Built-in BROWSER Endpoints
-
-After enabling `CapabilityGroup.BROWSER`, the following low-level HTTP endpoints are directly callable:
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/browser/navigate` | Navigate to the specified URL |
-| POST | `/browser/screenshot` | Capture a page screenshot (returns base64) |
-| GET  | `/browser/content` | Get page HTML or plain text |
-| POST | `/browser/click` | Click the specified element |
-| POST | `/browser/type` | Type text into the specified element |
-| POST | `/browser/evaluate` | Execute JavaScript in the page |
-| POST | `/browser/pdf` | Generate a PDF of the page (returns base64) |
-| GET  | `/browser/console` | Get the collected console logs |
-
-### Usage
-
-Create a sandbox instance:
-
-```bash
-abx create --template browser-automation
-```
-
-Take a screenshot with a high-level command:
-
-```bash
-abx exec <sandbox-id> browse --url https://example.com --action screenshot
-```
-
-Extract text with a high-level command:
-
-```bash
-abx exec <sandbox-id> browse --url https://example.com --action extract
-```
-
-Scrape a specific element with a high-level command:
-
-```bash
-abx exec <sandbox-id> scrape --url https://example.com --selector "h1"
-```
-
-Using the Python SDK:
+The client distribution is `agent-sandbox-client` (import `agent_sandbox`). Until the matching release is available, use the [paired, pinned source installation](../docs/python-client-installation.md).
 
 ```python
+import asyncio
 from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create_sync(template="browser-automation")
+async def main():
+    sb = await Sandbox.create(template="<template-id>", timeout=300)
+    try:
+        result = await sb.run("browse", url="https://example.com", action="extract", timeout=90)
+        print(result["title"])
+        screenshot = await sb.run("browse", url="https://example.com", action="screenshot", timeout=90)
+        await sb.server.files.download_file(screenshot["path"], "example.png")
+        print(sb.network.get_url(9000))
+    finally:
+        await sb.kill()
 
-# Take a webpage screenshot (registered command; returns the result value)
-result = sandbox.run_sync("browse", url="https://example.com", action="screenshot")
-print(result)  # {"action": "screenshot", "url": "...", "path": "/workspace/screenshot_xxx.png"}
-
-# Extract page text
-result = sandbox.run_sync("browse", url="https://example.com", action="extract")
-print(result["text"])
-
-# Scrape by selector
-result = sandbox.run_sync("scrape", url="https://example.com", selector="h1")
-print(result["texts"])
-
-# Auto form filling
-import json
-fields = [
-    {"selector": "#email", "value": "test@example.com"},
-    {"selector": "#password", "value": "secret"},
-]
-result = sandbox.run_sync("fill_form", url="https://example.com/login", fields_json=json.dumps(fields))
-print(result)
+asyncio.run(main())
 ```
 
-### Configuration
+`sb.run` returns the unwrapped `result`. `timeout=90` is the client HTTP timeout;
+command `timeout_s=30` defaults to 30 seconds per browser launch/navigation/action,
+not a wall-clock deadline for the whole command. Each form field may consume one
+action timeout. A client timeout does not guarantee cancellation. Use the process
+API for background browser scripts, reconnecting and cancellation. With
+`ABX_SERVER_TOKEN`, use `sb.server_at(9000, token=server_token, timeout=90).commands.run(...)`.
 
-#### Environment Variables
+## Quick start (HTTP POST)
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DISPLAY` | X virtual framebuffer display number | `:99` |
-| `PLAYWRIGHT_BROWSERS_PATH` | Browser installation path | `/ms-playwright` |
-
-#### Headless vs. Headed Mode
-
-Runs in headless mode by default (no GUI needed). For headed mode, start Xvfb first:
+`BASE_URL` is the sandbox's port 9000 URL from `sb.network.get_url(9000)`.
+For an unauthenticated local server:
 
 ```bash
-Xvfb :99 -screen 0 1920x1080x24 &
+curl --fail-with-body -X POST "$BASE_URL/commands/browse" \
+  -H 'Content-Type: application/json' \
+  --data '{"url":"https://example.com","action":"extract","timeout_s":30}'
 ```
 
-### Notes
-
-- **Persistent browser instance**: The template uses a module-level Playwright singleton, created on first call and reused by subsequent commands — far more performant than creating and destroying one each time.
-- **Memory usage**: Browsers consume considerable memory at runtime; keeping at least 4096 MB is recommended.
-- **Chromium only**: To keep the image small, only Chromium is installed by default. For Firefox or WebKit, run `python3 -m playwright install firefox` inside the sandbox.
-- **Network access**: Web scraping tasks require outbound internet access; make sure the sandbox network policy allows outbound connections.
-- **Screenshots and files**: Generated screenshots and files are saved under `/workspace` and can be downloaded via the file API.
-
----
-
-## 中文
-
-预装 Playwright + Chromium 的沙箱环境，适用于网页抓取、UI 自动化测试和浏览器交互任务。
-
-本模板启用了 **BROWSER** 内置能力组，提供 8 个低层浏览器端点，同时注册了 3 个面向 AI Agent 的高层业务命令。
-
-### 环境说明
-
-| 类别 | 内容 |
-|------|------|
-| **基础镜像** | python:3.12-slim（镜像内安装 Playwright 与 Chromium） |
-| **浏览器** | Chromium（通过 Playwright 管理） |
-| **Python 包** | `playwright`、`beautifulsoup4`、`lxml`、`httpx`、`Pillow` |
-| **系统工具** | curl、wget、xvfb、jq |
-| **资源配置** | 2 CPU / 4096 MB 内存 |
-| **启用能力组** | `BROWSER`、`FILE_OPS`、`PROCESS` |
-
-### 安装方式
-
-**从本地安装：**
-
-```bash
-abx template install ./browser-automation --registry-type local
-```
-
-**从 GitHub 安装：**
-
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//browser-automation
-```
-
-### 高层业务命令
-
-模板注册了以下面向 AI Agent 工作流的高层命令：
-
-#### `browse(url, action="screenshot")`
-
-智能浏览 — 导航到 URL 并根据 action 执行不同操作。
-
-| action | 行为 |
-|--------|------|
-| `screenshot` | 截取整页截图，返回保存路径 |
-| `extract` | 获取页面可见文本内容 |
-| `links` | 提取页面中所有超链接（href + text） |
-| `full` | 截图 + 标题 + 前 500 字文本摘要 |
-
-#### `scrape(url, selector)`
-
-按 CSS 选择器提取元素文本内容。返回匹配元素的文本数组。
-
-#### `fill_form(url, fields_json)`
-
-自动填表 — 导航到 URL，按 JSON 描述逐个填写表单字段。
-
-`fields_json` 格式：
+Response shape (page text may change):
 
 ```json
-[
-  {"selector": "#email", "value": "test@example.com"},
-  {"selector": "#password", "value": "123456"}
-]
+{"result":{"action":"extract","title":"Example Domain","text":"Example Domain\n..."}}
 ```
 
-### 内置 BROWSER 端点
+Send the argument object directly, without an `args` wrapper. Server authentication
+is optional: if `ABX_SERVER_TOKEN` was injected when creating the sandbox, add
+`Authorization: Bearer ${SERVER_TOKEN}` or `X-Access-Token: ${SERVER_TOKEN}`.
+Provider gateway authentication is separate: use the access headers returned by
+`sb.network.get_access_headers()` when required by that provider. The Express port
+9000 URL is currently public at the gateway; do not send its sandbox access token
+as a server token. When both layers require credentials, preserve the server
+Authorization header and the provider's distinct gateway header. Never log either.
 
-启用 `CapabilityGroup.BROWSER` 后，以下低层 HTTP 端点可直接调用：
+HTTP 400 means missing or mistyped arguments, 401 means server authentication
+failed, 404 means an unknown command, and 500 means browser/script failure or
+semantic validation (invalid action, URL, range, or form JSON). Errors use
+`{"error":"...","type":"..."}`. Browser execution errors omit request values.
 
-| 方法 | 端点 | 说明 |
-|------|------|------|
-| POST | `/browser/navigate` | 导航到指定 URL |
-| POST | `/browser/screenshot` | 截取页面截图（返回 base64） |
-| GET  | `/browser/content` | 获取页面 HTML 或纯文本 |
-| POST | `/browser/click` | 点击指定元素 |
-| POST | `/browser/type` | 向指定元素输入文本 |
-| POST | `/browser/evaluate` | 在页面中执行 JavaScript |
-| POST | `/browser/pdf` | 生成页面 PDF（返回 base64） |
-| GET  | `/browser/console` | 获取收集的控制台日志 |
+## Command reference
 
-### 使用示例
+All commands use `POST /commands/<name>` and return `{"result": ...}`.
+All results are buffered, not streaming.
 
-创建沙箱实例：
+| Command | Parameters (type; required/default; range) | Result |
+|---|---|---|
+| `browse` | `url`: string, required; `action`: string=`screenshot`, one of `screenshot`, `extract`, `links`, `full`; `timeout_s`: integer=30, 1–120 | Always `action`, `title`; screenshot adds absolute PNG `path`; extract adds `text`; links adds `count`, `links:[{href,text}]`; full adds `screenshot`, `text_preview` (first 500 characters) |
+| `scrape` | `url`: string, required; `selector`: nonempty CSS string, required; `timeout_s`: integer=30, 1–120 | `{count,texts:[string]}`; no matches returns count 0 |
+| `fill_form` | `url`: string, required; `fields_json`: string, required, JSON array of 1–100 `{selector: nonempty string,value: string}` objects with no other keys; `timeout_s`: integer=30, 1–120 | `{fields_filled:integer}`; never echoes values, selectors, URL, title or DOM |
+| `run` | `script`: string=`main.py`, existing workspace Python file (resolved symlinks must stay in the workspace); `timeout_s`: integer=120, 1–120, subprocess deadline | Successful stdout string; nonzero exit/timeout fails without returning captured output |
 
-```bash
-abx create --template browser-automation
+Browser URLs accept `http`, `https`, and inline `data:text/html,` pages. Embedded
+URL username/password and `file:` URLs are rejected. Redirects and subresources
+are browser-controlled; the template is not a network allowlist. `fill_form`
+uses Playwright `locator.fill` and checks `input_value`; it supports text-like
+inputs and textareas, not checkbox/select/submit actions.
+
+Example form argument (synthetic values only):
+
+```json
+{"url":"https://example.com/login","fields_json":"[{\"selector\":\"#email\",\"value\":\"sample@example.invalid\"}]"}
 ```
 
-使用高层命令截图：
+## Configuration
 
-```bash
-abx exec <sandbox-id> browse --url https://example.com --action screenshot
-```
+| Variable | Default | Purpose |
+|---|---|---|
+| `PLAYWRIGHT_BROWSERS_PATH` | `/opt/playwright` in the image | Shared readable Chromium installation |
+| `WORKSPACE` | `/home/user/app` | Script root and `browser-artifacts/` output root; keep aligned with the server file policy |
+| `ABX_SERVER_TOKEN` | unset/empty | Optional server authentication, injected at sandbox creation |
+| `ABX_SERVER_PORT` | `9000` | Local `python3 commands.py` server port |
 
-使用高层命令提取文本：
+Outputs from extraction, screenshots, links and user scripts may contain sensitive
+page content. Treat artifacts as private; do not print them into shared logs.
+Never bake credentials into images or YAML. Form errors and success responses do
+not echo entered values. User scripts are responsible for their own stdout.
 
-```bash
-abx exec <sandbox-id> browse --url https://example.com --action extract
-```
+## Resources
 
-使用高层命令抓取指定元素：
+2 vCPU, 2048 MB memory, port 9000. Headless Chromium uses `/tmp` rather than the
+small `/dev/shm`; concurrent browser requests increase memory usage. Delete old
+`browser-artifacts/` files through the files API to reclaim sandbox rootfs space.
 
-```bash
-abx exec <sandbox-id> scrape --url https://example.com --selector "h1"
-```
+## Verified
 
-使用 Python SDK：
+No provider has a passing run recorded for this template.
 
-```python
-from agent_sandbox import Sandbox
+Local browser acceptance and static conformance can be run independently. They
+are not cloud-provider acceptance. L1 requires an actual image build; L2 requires
+a READY sandbox and external CLI and SDK calls. Missing Chromium fails L0;
+a skipped browser suite cannot count as acceptance.
 
-sandbox = Sandbox.create_sync(template="browser-automation")
+## Secondary development
 
-# 截取网页截图（调用自定义命令，返回 CommandResult）
-result = sandbox.run_sync("browse", url="https://example.com", action="screenshot")
-print(result)  # {"action": "screenshot", "url": "...", "path": "/workspace/screenshot_xxx.png"}
+Build from this directory using `abx template deploy` or the install command
+above. The deployer replaces Alibaba region/tag placeholders and can inject a
+server wheel from `ABX_SERVER_SDK_SOURCE`; the archive pin remains the fallback.
+Keep heavyweight installs before the final `COPY commands.py`. Dockerfile has
+no `CMD`/`ENTRYPOINT`; generation 2 uses YAML `start_cmd` and `ready_cmd` as `user`.
 
-# 提取页面文本
-result = sandbox.run_sync("browse", url="https://example.com", action="extract")
-print(result["text"])
+For local tests, install the pinned Playwright and matching Chromium in a writable
+cache. Set `PLAYWRIGHT_BROWSERS_PATH` consistently for installation and execution.
+Start `python3 commands.py` with `WORKSPACE` and `ABX_SERVER_BASE_DIR` pointing at
+the same writable directory, then run `E2E_BASE_URL=http://127.0.0.1:9000 python3 e2e_test.py`.
+The suite navigates inline pages, downloads real PNGs over the server files API,
+checks form redaction and concurrency, and exits nonzero without Chromium.
 
-# 按选择器抓取
-result = sandbox.run_sync("scrape", url="https://example.com", selector="h1")
-print(result["texts"])
+## Contributing
 
-# 自动填表
-import json
-fields = [
-    {"selector": "#email", "value": "test@example.com"},
-    {"selector": "#password", "value": "secret"},
-]
-result = sandbox.run_sync("fill_form", url="https://example.com/login", fields_json=json.dumps(fields))
-print(result)
-```
+Follow [CONTRIBUTING.md](../CONTRIBUTING.md), the bilingual
+[template spec](../docs/template-spec.md), and
+[design](../docs/design/browser-automation.md). Run
+`python3 scripts/check_template.py browser-automation` and
+`python3 scripts/run_local_e2e.py` from the repository root. Record actual levels;
+keep catalog status experimental until all required acceptance levels pass.
 
-### 配置说明
+## Issues
 
-#### 环境变量
+Template tracking: [awesome-templates#22](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/22).
+Report server/client defects to python-sdk and CLI defects to agent-sandbox with
+`[templates]` in the title. Include redacted reproduction, provider, generation,
+SDK commit, expected and actual results. Search existing issues first.
 
-| 变量名 | 说明 | 默认值 |
-|--------|------|--------|
-| `DISPLAY` | X 虚拟帧缓冲显示编号 | `:99` |
-| `PLAYWRIGHT_BROWSERS_PATH` | 浏览器安装路径 | `/ms-playwright` |
+## License
 
-#### Headless 与 Headed 模式
-
-默认以 headless 模式运行（无需 GUI）。如需 headed 模式，请先启动 Xvfb：
-
-```bash
-Xvfb :99 -screen 0 1920x1080x24 &
-```
-
-### 注意事项
-
-- **持久化浏览器实例**：模板使用模块级 Playwright 单例，首次调用时创建，后续命令复用同一实例，性能远优于每次创建/销毁。
-- **内存消耗**：浏览器运行时内存消耗较大，建议保持 4096 MB 以上配置。
-- **仅含 Chromium**：为减小镜像体积，默认只安装 Chromium。如需 Firefox 或 WebKit，可在沙箱内执行 `python3 -m playwright install firefox`。
-- **网络访问**：网页抓取任务需要外网访问权限，请确保沙箱网络策略允许出站连接。
-- **截图与文件**：生成的截图和文件保存在 `/workspace` 目录下，可通过文件 API 下载。
-
-## Deploy and local e2e
-
-Install and register this template:
-
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//browser-automation
-```
-
-From this directory (build, push, and register):
-
-```bash
-abx deploy
-```
-
-From the repository root, with `agent-sandbox-server` and `httpx` installed:
-
-```bash
-python3 scripts/run_local_e2e.py
-```
-
-That starts `python3 commands.py` in this directory and runs `e2e_test.py`.
-
+Apache-2.0. Playwright is Apache-2.0; Chromium and bundled dependencies retain
+their upstream notices.

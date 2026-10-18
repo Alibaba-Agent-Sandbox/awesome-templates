@@ -1,228 +1,116 @@
-# deepseek-harness
+# DeepSeek coding harness
 
-> [中文版](#中文) | [English](#english)
+## What it does
 
----
+Run a repository-owned coding agent using the official DeepSeek Chat Completions function-call protocol. Each turn executes read_file, write_file, list_files or run_shell and returns tool results to the model until a final answer.
 
-## English
+## Stack
 
-Sandbox runtime for a DeepSeek model-driven AI coding agent, supporting code generation, completion, and intelligent programming assistance.
+Python 3.13; `httpx==0.28.1`; Agent Sandbox server. No third-party agent CLI.
 
-### Environment
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml) · [Upstream](https://api-docs.deepseek.com/guides/tool_calls/)
 
-This template comes preinstalled with the following tools and dependencies:
+## Problem solved
 
-| Category | Details |
-|----------|---------|
-| **Base image** | python:3.12-slim |
-| **Node.js** | Node.js 22.x + npm (core runtime) |
-| **Python** | Python 3.12 + venv (at `/opt/venv`) |
-| **Python packages** | `openai>=1.0`, `httpx`, `rich` |
-| **System tools** | git, curl, build-essential |
-| **Resources** | 2 CPU / 4096 MB memory |
+Expose a typed, bounded coding task through one named command; inject model credentials at sandbox creation.
 
-### Installation
+## Quick start (CLI)
 
-**Install from a local path:**
-
-```bash
-abx template install ./deepseek-harness --registry-type local
-```
-
-**Install from GitHub:**
+Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
 
 ```bash
 abx template install alibaba-agent-sandbox/awesome-templates//deepseek-harness
+abx create --template <template-id> --env DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY"
+abx run <sandbox-id> deepseek --arg prompt="Inspect this project and fix the failing calculation"
 ```
 
-### Usage
+## Quick start (Python SDK)
 
-Create a sandbox instance and pass in the API key:
-
-```bash
-abx create --template deepseek-harness --env DEEPSEEK_API_KEY=sk-xxx
-```
-
-Call a DeepSeek model inside the sandbox via the OpenAI-compatible interface:
-
-```bash
-abx exec <sandbox-id> -- python3 -c "
-from openai import OpenAI
-client = OpenAI(
-    api_key='your-deepseek-key',
-    base_url='https://api.deepseek.com'
-)
-response = client.chat.completions.create(
-    model='deepseek-coder',
-    messages=[{'role': 'user', 'content': 'Write a quicksort algorithm'}]
-)
-print(response.choices[0].message.content)
-"
-```
-
-Using the Python SDK:
+The client distribution is `agent-sandbox-client`. See [installation](../docs/python-client-installation.md) for availability and pinned source installation.
 
 ```python
+import asyncio
+import os
 from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create_sync(
-    template="deepseek-harness",
-    env={"DEEPSEEK_API_KEY": "sk-xxx"}
-)
+async def main():
+    sb = await Sandbox.create(template="<template-id>", timeout=900,
+                              envs={"DEEPSEEK_API_KEY": os.environ["DEEPSEEK_API_KEY"]})
+    try:
+        print(await sb.run("deepseek", prompt="Inspect and fix the calculation",
+                           timeout=660))
+    finally:
+        await sb.kill()
 
-result = sandbox.commands.run("python3 --version && node --version")
-print(result.stdout)
+asyncio.run(main())
 ```
 
-### Configuration
-
-#### Environment Variables
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DEEPSEEK_API_KEY` | DeepSeek API key | Yes |
-| `WORKSPACE` | Working directory path, defaults to `/workspace` | No |
-
-#### Manual Agent Plugin Installation
-
-This template provides a base development runtime. To install a specific agent plugin or framework:
+## Quick start (HTTP POST)
 
 ```bash
-# Install a Python agent framework
-abx exec <sandbox-id> -- pip install langchain langgraph
-
-# Install a Node.js agent tool
-abx exec <sandbox-id> -- npm install -g <agent-tool>
+curl -X POST "$SANDBOX_PORT_9000_URL/commands/deepseek" \
+  -H 'Content-Type: application/json' \
+  -H "X-Access-Token: $GATEWAY_ACCESS_TOKEN" \
+  -H "Authorization: Bearer $ABX_SERVER_TOKEN" \
+  --data '{"prompt":"Inspect and fix the calculation","command_timeout":600}'
 ```
 
-### Notes
+Success is `{"result":"buffered output"}`. Send arguments directly, with no `args` wrapper. The provider defines gateway access credentials; `ABX_SERVER_TOKEN` separately protects this server. Omit Authorization when unset. The SDK supports `sb.server_at(9000, token=...)`.
 
-- **API key security**: Never hardcode `DEEPSEEK_API_KEY` into the template; always inject it via the `--env` option or environment variables.
-- **API compatibility**: DeepSeek offers an OpenAI-compatible interface with the base URL `https://api.deepseek.com`.
-- **Network access**: The DeepSeek API must be reachable — make sure the sandbox has outbound internet connectivity.
-- **Dual runtimes**: The environment supports both Python 3.12 and Node.js 22 — pick whichever fits your plugin needs.
-- **Virtual environment**: Python packages are installed in `/opt/venv`; no manual activation is needed since `PATH` is preconfigured.
+HTTP 400: missing/invalid/range arguments; 401: authentication; 404: unknown command; 500: missing credentials, execution failure or timeout. Results are buffered. `command_timeout` bounds execution; SDK `timeout` only controls HTTP waiting and does not guarantee cancellation. Use process APIs for background work.
 
----
+## Command reference
 
-## 中文
+`deepseek` → buffered string.
 
-DeepSeek 模型驱动的 AI 编程 Agent 沙箱运行环境，支持代码生成、补全和智能编程辅助。
+| Parameter | Type | Required/default | Meaning |
+|---|---|---|---|
+| prompt | string | required | Task text; nonempty. |
+| model | string | "" | Argument, then DEEPSEEK_MODEL, then deepseek-flash. |
+| cwd | string | "" | Existing directory; relative to WORKSPACE. |
+| max_turns | integer | 20 | Maximum API rounds, 1–100. |
+| command_timeout | integer | 600 | Worker execution deadline, 1–1800 seconds. |
 
-### 环境说明
+| Additional command | Parameters | Result |
+|---|---|---|
+| deepseek_setup_check | none | Read-only key-presence/model/tool diagnostic. |
+| deepseek_tools | none | Comma-separated registered tool names; no API call. |
+| run | script: string = main.py | Local Python stdout (compatibility). |
 
-本模板预装以下工具和依赖：
+## Configuration
 
-| 类别 | 内容 |
-|------|------|
-| **基础镜像** | python:3.12-slim |
-| **Node.js** | Node.js 22.x + npm（核心运行时） |
-| **Python** | Python 3.12 + venv 虚拟环境（位于 `/opt/venv`） |
-| **Python 包** | `openai>=1.0`、`httpx`、`rich` |
-| **系统工具** | git、curl、build-essential |
-| **资源配置** | 2 CPU / 4096 MB 内存 |
+`DEEPSEEK_BASE_URL=https://api.deepseek.com`; `DEEPSEEK_MODEL=deepseek-flash`; `WORKSPACE=/home/user/app`. `DEEPSEEK_API_KEY` falls back to `OPENAI_API_KEY`. To use a compatible service, supply its base URL and model explicitly. Native DeepSeek and compatible-service acceptance are separate claims. Tool shell processes do not inherit environment credentials. File tools reject traversal/symlink escapes from cwd, read/write at most 128 KiB, and shell results retain the last 64 KiB per stream. Shell execution has sandbox-user authority and is not confined by file-tool path rules.
 
-### 安装方式
+Secret declarations in template.yaml are empty; do not copy credentials into images or logs.
 
-**从本地安装：**
+## Resources
+
+2 vCPU · 2048 MB · port 9000 · `/home/user/app` · non-root `user`.
+
+## Verified
+
+The current coding controller imports trusted standard-library code under `python3 -I`, compiles the actual calculator and original-test source bytes, and requires exactly all three original tests to succeed without skips, expected failures or unexpected successes. Each test/held-out process must return a fresh completion acknowledgment generated after the model response; it is never included in the model prompt. Premature `SystemExit`, `os._exit(0)`, a static `INDEPENDENT_OK` string and stale bytecode cannot supply that acknowledgment. This protects ordinary acceptance against premature exits; it is not a security boundary against hostile Python with the same OS authority. Historical model runs retain their original controller hashes and do not prove this new gate; record a separate actual model run at the new controller revision on the reviewed image. Canonical deployment/provider qualification remains a separate required gate.
+
+No provider has a passing run recorded for this template.
+
+## Secondary development
 
 ```bash
-abx template install ./deepseek-harness --registry-type local
-```
-
-**从 GitHub 安装：**
-
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//deepseek-harness
-```
-
-### 使用示例
-
-创建沙箱实例并传入 API Key：
-
-```bash
-abx create --template deepseek-harness --env DEEPSEEK_API_KEY=sk-xxx
-```
-
-在沙箱中通过 OpenAI 兼容接口调用 DeepSeek 模型：
-
-```bash
-abx exec <sandbox-id> -- python3 -c "
-from openai import OpenAI
-client = OpenAI(
-    api_key='your-deepseek-key',
-    base_url='https://api.deepseek.com'
-)
-response = client.chat.completions.create(
-    model='deepseek-coder',
-    messages=[{'role': 'user', 'content': '编写一个快速排序算法'}]
-)
-print(response.choices[0].message.content)
-"
-```
-
-使用 Python SDK：
-
-```python
-from agent_sandbox import Sandbox
-
-sandbox = Sandbox.create_sync(
-    template="deepseek-harness",
-    env={"DEEPSEEK_API_KEY": "sk-xxx"}
-)
-
-result = sandbox.commands.run("python3 --version && node --version")
-print(result.stdout)
-```
-
-### 配置说明
-
-#### 环境变量
-
-| 变量名 | 说明 | 必填 |
-|--------|------|------|
-| `DEEPSEEK_API_KEY` | DeepSeek API 密钥 | 是 |
-| `WORKSPACE` | 工作目录路径，默认 `/workspace` | 否 |
-
-#### 手动安装 Agent 插件
-
-本模板提供基础开发运行时，如需安装特定 Agent 插件或框架：
-
-```bash
-# 安装 Python Agent 框架
-abx exec <sandbox-id> -- pip install langchain langgraph
-
-# 安装 Node.js Agent 工具
-abx exec <sandbox-id> -- npm install -g <agent-tool>
-```
-
-### 注意事项
-
-- **API Key 安全**：请勿将 `DEEPSEEK_API_KEY` 硬编码到模板中，始终通过 `--env` 参数或环境变量注入。
-- **API 兼容性**：DeepSeek 提供 OpenAI 兼容接口，base URL 为 `https://api.deepseek.com`。
-- **网络访问**：需要访问 DeepSeek API，确保沙箱具备外网连接能力。
-- **双运行时**：环境同时支持 Python 3.12 和 Node.js 22，可根据插件需求选择。
-- **虚拟环境**：Python 包安装在 `/opt/venv` 中，使用时无需手动激活，`PATH` 已自动配置。
-
-## Deploy and local e2e
-
-Install and register this template:
-
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//deepseek-harness
-```
-
-From this directory (build, push, and register):
-
-```bash
-abx deploy
-```
-
-From the repository root, with `agent-sandbox-server` and `httpx` installed:
-
-```bash
+python3 scripts/check_template.py deepseek-harness
+python3 -m pytest -q deepseek-harness/test_commands.py
 python3 scripts/run_local_e2e.py
 ```
 
-That starts `python3 commands.py` in this directory and runs `e2e_test.py`.
+`E2E_COMMAND_TIMEOUT` controls the model acceptance command budget (default 600 seconds, range 1–1800). L0 does not call a model. `E2E_REQUIRE_LLM=1` forces real coding acceptance. L3 uses target setup diagnostics, seeds failing source/tests, verifies changed source/new artifacts/unchanged tests through target file APIs, then independently executes unittest and held-out calculations. A missing key is not acceptance.
 
+## Contributing
+
+[CONTRIBUTING.md](../CONTRIBUTING.md) · [spec](../docs/template-spec.md) · [design](../docs/design/deepseek-harness.md).
+
+## Issues
+
+[Template issues](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues). [Python SDK/server issues](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues); [CLI issues](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues). Include sanitized commands, versions and provider; omit keys.
+
+## License
+
+Apache-2.0 template code. Upstream tools retain their own licenses and attribution. See [LICENSE](../LICENSE).

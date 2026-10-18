@@ -1,52 +1,4 @@
-"""codex-agent-api — Self-hosted OpenAI Agents API compatible service.
-
-Exposes /v1/agents/sessions/* endpoints that are 100% compatible with the
-OpenAI Agents API specification. Internally drives Codex CLI in headless
-mode (codex exec --json) for LLM orchestration.
-
-Architecture::
-
-    +-----------------------------------------+
-    | SandboxServer (port 9000)               |
-    |                                         |
-    | Standard routes:                        |
-    |   /health, /commands, /files/*, etc.    |
-    |                                         |
-    | Agent API routes (new):                 |
-    |   POST   /v1/agents/sessions            |
-    |   GET    /v1/agents/sessions            |
-    |   GET    /v1/agents/sessions/{id}       |
-    |   POST   /v1/agents/sessions/{id}       |
-    |   DELETE /v1/agents/sessions/{id}       |
-    |   POST   /v1/agents/sessions/{id}/events|
-    |   GET    /v1/agents/sessions/{id}/events|
-    |   GET    /v1/agents/sessions/{id}/items |
-    |   GET    /v1/agents/sessions/{id}/       |
-    |          artifacts/{artifact_id}        |
-    |   DELETE /v1/agents/sessions/{id}/       |
-    |          artifacts/{artifact_id}        |
-    |   POST   /v1/agents                     |
-    |   GET    /v1/agents                     |
-    |   GET    /v1/agents/{agent_id}          |
-    |   POST   /v1/agents/{agent_id}          |
-    |   DELETE /v1/agents/{agent_id}          |
-    +---------------------+-------------------+
-                          |
-                          v
-                  codex exec --json
-                  (subprocess per turn)
-
-Usage with OpenAI Python SDK::
-
-    from openai import OpenAI
-
-    client = OpenAI(base_url="http://<sandbox-host>:9000/v1")
-    session = client.beta.agents.sessions.create(
-        agent={"model": "codex-mini"},
-        input="Write hello world in Python",
-        stream=True,
-    )
-"""
+"""Project session HTTP adapter backed exclusively by pinned Codex exec JSONL."""
 from __future__ import annotations
 
 import atexit
@@ -54,6 +6,9 @@ import base64
 import json
 import os
 import re
+import selectors
+import signal
+from collections import deque
 import subprocess
 import threading
 import time
@@ -73,11 +28,118 @@ from agent_sandbox.server import (
 
 # ── Configuration ──────────────────────────────────────────────────────
 
-DEFAULT_MODEL = os.environ.get("CODEX_MODEL", "codex-mini")
+PINNED_VERSION = "0.162.1"
+DEFAULT_MODEL = os.environ.get("CODEX_MODEL") or os.environ.get("ABX_LLM_MODEL", "")
 MAX_SESSIONS = int(os.environ.get("AGENT_MAX_SESSIONS", "20"))
 SESSION_TTL = int(os.environ.get("AGENT_SESSION_TTL", "1800"))  # seconds
 TURN_TIMEOUT = 300  # seconds per turn
-WORKSPACE = os.environ.get("WORKSPACE", "/app")
+WORKSPACE = os.environ.get("WORKSPACE", "/home/user/workspace")
+MAX_EVENTS = 1000
+MAX_REPLAY_BYTES = 2_000_000
+MAX_EVENT_BYTES = 256_000
+MAX_TURNS = 100
+MAX_AGENTS = 200
+_ACTIVE: set = set()
+_ACTIVE_LOCK = threading.Lock()
+
+
+def _redact(text: str, extra_secrets: tuple = ()) -> str:
+    secrets = list(extra_secrets) + [value for name, value in os.environ.items()
+                                   if value and re.search(r"KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL", name, re.I)]
+    for value in sorted(set(secrets), key=len, reverse=True):
+        if value:
+            text = text.replace(value, "[REDACTED]")
+    return re.sub(r"(?i)(Bearer\s+)[^\s\"\']+", r"\1[REDACTED]", text)
+
+
+def _redact_event(value: Any, extra_secrets: tuple = ()) -> Any:
+    if isinstance(value, str):
+        return _redact(value, extra_secrets)
+    if isinstance(value, list):
+        return [_redact_event(item, extra_secrets) for item in value]
+    if isinstance(value, dict):
+        return {_redact(str(key), extra_secrets): ("[REDACTED]" if re.search(
+            r"(?i)(?:authorization|headers|api_key|secret|password|credential|private_key|access_token|refresh_token)$", key
+        ) else _redact_event(item, extra_secrets)) for key, item in value.items()}
+    return value
+
+def _session_secrets(session: Any) -> tuple:
+    values = []
+    for tool in session.tools:
+        transport = tool.get("transport", {})
+        for headers in (tool.get("headers"), transport.get("headers") if isinstance(transport, dict) else None):
+            if isinstance(headers, dict):
+                for value in headers.values():
+                    if isinstance(value, str) and value:
+                        values.append(value)
+                        if value.lower().startswith("bearer "):
+                            values.append(value[7:])
+    return tuple(values)
+
+
+class EventBuffer(list):
+    """Bounded list with incremental byte accounting, avoiding quadratic JSON work."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._sizes: deque = deque()
+        self.byte_size = 0
+
+    def append(self, event: dict) -> None:
+        size = len(json.dumps(event).encode())
+        super().append(event)
+        self._sizes.append(size)
+        self.byte_size += size
+        while len(self) > MAX_EVENTS or (self.byte_size > MAX_REPLAY_BYTES and len(self) > 1):
+            super().__delitem__(0)
+            self.byte_size -= self._sizes.popleft()
+
+    def clear(self) -> None:
+        super().clear()
+        self._sizes.clear()
+        self.byte_size = 0
+
+
+def _append_bounded(items: EventBuffer, event: dict) -> None:
+    items.append(event)
+
+
+def _validate_body(body: Any) -> str:
+    if not isinstance(body, dict):
+        return "JSON body must be an object"
+    for name in ("stream", "background"):
+        if name in body and not isinstance(body[name], bool):
+            return f"{name} must be a boolean"
+    if body.get("stream") and body.get("background"):
+        return "stream and background cannot both be true"
+    if len(json.dumps(body).encode()) > 1_000_000:
+        return "Request body exceeds 1000000 bytes"
+    config = body.get("agent", body)
+    if isinstance(config, str):
+        return ""
+    if not isinstance(config, dict):
+        return "agent must be an object or saved agent id"
+    for name in ("model", "instructions", "name"):
+        if name in config and not isinstance(config[name], str):
+            return f"{name} must be a string"
+    if "metadata" in config and not isinstance(config["metadata"], dict):
+        return "metadata must be an object"
+    tools = config.get("tools", [])
+    if not isinstance(tools, list):
+        return "tools must be a list"
+    if len(tools) > 50:
+        return "At most 50 MCP servers are supported"
+    for tool in tools:
+        if not isinstance(tool, dict) or tool.get("type") != "mcp":
+            return "Only URL-based MCP tools are supported"
+        transport = tool.get("transport", {})
+        if not isinstance(transport, dict):
+            return "MCP transport must be an object"
+        url = transport.get("server_url") or transport.get("url") or tool.get("server_url") or tool.get("url")
+        if not isinstance(url, str) or not url.startswith(("https://", "http://")):
+            return "MCP tools require an http(s) server_url"
+    return ""
+
 
 # ── Route table ───────────────────────────────────────────────────────
 
@@ -86,19 +148,36 @@ table = default_table()
 # ── Named commands (basic codex command for backward compat) ──────────
 
 
-@command("codex", description="Run Codex agent.")
-def codex_cmd(prompt: str, model: str = "") -> str:
-    """Run Codex agent (simple mode)."""
-    m = model or DEFAULT_MODEL
-    result = subprocess.run(
-        ["codex", "-p", prompt, "--model", m, "--yolo", "--output-format", "json"],
-        capture_output=True,
-        text=True,
-        timeout=300,
-    )
-    if result.returncode != 0:
-        raise RuntimeError(result.stderr)
-    return result.stdout
+@command("codex_version", description="Print the installed Codex CLI version without a model call.")
+def codex_version() -> str:
+    proc = subprocess.run(["codex", "--version"], capture_output=True, text=True,
+                          timeout=20, stdin=subprocess.DEVNULL, check=False)
+    match = re.search(r"\d+\.\d+\.\d+", proc.stdout)
+    if proc.returncode or not match:
+        raise RuntimeError("Unable to determine Codex version")
+    return match.group(0)
+
+
+@command("codex", description="Run one bounded Codex exec turn; return JSON events.")
+def codex_cmd(prompt: str, model: str = "", timeout_s: int = 300) -> dict:
+    if not prompt.strip():
+        raise ValueError("prompt is required")
+    if not 1 <= timeout_s <= 3600:
+        raise ValueError("timeout_s must be between 1 and 3600")
+    session = Session(model=model or DEFAULT_MODEL)
+    turn = Turn()
+    session.turns.append(turn)
+    proc = spawn_codex_turn(session, prompt, timeout=timeout_s)
+    events = EventBuffer()
+    event_count = 0
+    for event in iter_codex_events(proc):
+        event_count += 1
+        _append_bounded(events, event)
+    if turn.status != "completed":
+        raise RuntimeError(next((str(e.get("error", {}).get("message", "Codex failed"))
+                                 for e in reversed(events) if e.get("type") in ("error", "turn.failed")), "Codex failed"))
+    return {"thread_id": session.thread_id, "events": events, "status": turn.status,
+            "events_truncated": event_count > len(events)}
 
 
 # ── Session data model ─────────────────────────────────────────────────
@@ -112,7 +191,7 @@ class Turn:
     status: str = "in_progress"  # in_progress | completed | failed | cancelled
     created_at: int = field(default_factory=lambda: int(time.time()))
     completed_at: int | None = None
-    items: list[dict[str, Any]] = field(default_factory=list)
+    items: list[dict[str, Any]] = field(default_factory=EventBuffer)
 
 
 @dataclass
@@ -128,28 +207,30 @@ class Session:
     created_at: int = field(default_factory=lambda: int(time.time()))
     last_active: int = field(default_factory=lambda: int(time.time()))
     turns: list[Turn] = field(default_factory=list)
-    items: list[dict[str, Any]] = field(default_factory=list)
+    items: list[dict[str, Any]] = field(default_factory=EventBuffer)
     # Token usage accumulated from Codex ``turn.completed`` events.
     usage: dict[str, int] = field(
         default_factory=lambda: {"input_tokens": 0, "output_tokens": 0}
     )
     # Codex thread id recorded from the first turn (used for resume).
     thread_id: str = ""
+    error: dict | None = None
     _process: subprocess.Popen[bytes] | None = field(default=None, repr=False)
-    _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
+    _lock: threading.RLock = field(default_factory=threading.RLock, repr=False)
 
     def to_dict(self) -> dict[str, Any]:
-        """Serialize to OpenAI-compatible JSON."""
-        return {
+        """Serialize this adapter's public JSON contract."""
+        return _redact_event({
             "id": self.id,
             "object": self.object,
             "status": self.status,
             "model": self.model,
-            "instructions": self.instructions,
-            "tools": self.tools,
+            "instructions": _redact(self.instructions, _session_secrets(self)),
+            "tools": _redact_event(self.tools),
             "created_at": self.created_at,
             "metadata": {},
-        }
+            "error": self.error,
+        }, _session_secrets(self))
 
     def to_dict_with_output(self) -> dict[str, Any]:
         """Serialize with output items (for completed sessions)."""
@@ -167,16 +248,23 @@ class CapacityError(Exception):
 
 
 def _kill_process(proc: subprocess.Popen[bytes]) -> None:
-    """Safely terminate a subprocess."""
-    try:
-        proc.terminate()
-        proc.wait(timeout=5)
-    except Exception:
+    """Reap the CLI and terminate descendants in its dedicated process group."""
+    for sig in (signal.SIGTERM, signal.SIGKILL):
         try:
-            proc.kill()
-            proc.wait(timeout=2)
-        except Exception:
-            pass
+            os.killpg(proc.pid, sig)
+        except ProcessLookupError:
+            break
+        try:
+            proc.wait(timeout=0.3)
+        except subprocess.TimeoutExpired:
+            continue
+        # The parent can exit before a tool child; always signal the group again.
+        if sig == signal.SIGTERM:
+            continue
+    try:
+        proc.wait(timeout=1)
+    except subprocess.TimeoutExpired:
+        pass
 
 
 class SessionStore:
@@ -213,6 +301,7 @@ class SessionStore:
         with self._lock:
             session = self._sessions.pop(session_id, None)
             if session and session._process:
+                session.status = "cancelled"
                 _kill_process(session._process)
             return session is not None
 
@@ -228,6 +317,7 @@ class SessionStore:
         for sid in expired:
             s = self._sessions.pop(sid, None)
             if s and s._process:
+                s.status = "cancelled"
                 _kill_process(s._process)
 
     def _gc_loop(self) -> None:
@@ -244,10 +334,11 @@ store = SessionStore()
 
 # Cleanup on exit
 def _cleanup() -> None:
-    """Terminate any live turn processes when the server exits."""
-    for s in store.list_all():
-        if s._process:
-            _kill_process(s._process)
+    """Terminate every active turn, including standalone named command calls."""
+    with _ACTIVE_LOCK:
+        monitors = list(_ACTIVE)
+    for monitor in monitors:
+        _kill_process(monitor.proc)
 
 
 atexit.register(_cleanup)
@@ -270,17 +361,17 @@ class AgentConfig:
     created_at: int = field(default_factory=lambda: int(time.time()))
 
     def to_dict(self) -> dict[str, Any]:
-        """Serialize to OpenAI-compatible JSON."""
-        return {
+        """Serialize this adapter's public JSON contract."""
+        return _redact_event({
             "id": self.id,
             "object": self.object,
             "model": self.model,
-            "instructions": self.instructions,
-            "tools": self.tools,
+            "instructions": _redact(self.instructions, _session_secrets(self)),
+            "tools": _redact_event(self.tools),
             "name": self.name,
-            "metadata": self.metadata,
+            "metadata": _redact_event(self.metadata),
             "created_at": self.created_at,
-        }
+        }, _session_secrets(self))
 
 
 class AgentStore:
@@ -300,6 +391,8 @@ class AgentStore:
     ) -> AgentConfig:
         """Create and store a new agent configuration."""
         with self._lock:
+            if len(self._agents) >= MAX_AGENTS:
+                raise CapacityError("Saved agent limit reached")
             agent = AgentConfig(
                 model=model,
                 instructions=instructions,
@@ -348,12 +441,7 @@ agent_store = AgentStore()
 
 
 def _unique_mcp_label(raw_label: Any, index: int, used: set[str]) -> str:
-    """Return a config-safe, unique label for an MCP server.
-
-    Codex config keys are dotted paths and quoted path segments are rejected
-    (verified against Codex CLI 0.158.0: ``mcp_servers."a.b"`` fails to parse),
-    so labels are restricted to ``[A-Za-z0-9_-]`` and de-duplicated.
-    """
+    """Return a config-safe, unique MCP label without dotted path segments."""
     base = re.sub(r"[^A-Za-z0-9_-]", "_", str(raw_label or "")).strip("_") or f"mcp_{index}"
     label = base
     suffix = 2
@@ -365,14 +453,7 @@ def _unique_mcp_label(raw_label: Any, index: int, used: set[str]) -> str:
 
 
 def _mcp_server_overrides(tools: list[dict[str, Any]]) -> list[str]:
-    """Translate Agents API MCP tool definitions into ``-c`` config overrides.
-
-    Codex CLI 0.158.0 has no ``--mcp-config`` flag; remote MCP servers are
-    configured through ``mcp_servers.<label>.url`` / ``.http_headers`` keys
-    passed as ``-c key=value`` overrides (the value portion is parsed as TOML
-    by Codex — verified with ``--strict-config``). Only URL-based servers can
-    be proxied: hosted ``connector_id`` tools are host-side and are skipped.
-    """
+    """Translate this adapter's remote MCP tools into Codex config overrides."""
     overrides: list[str] = []
     used_labels: set[str] = set()
     for tool in tools:
@@ -404,18 +485,11 @@ def _mcp_server_overrides(tools: list[dict[str, Any]]) -> list[str]:
 
 
 def _provider_overrides() -> list[str]:
-    """Translate a custom ``OPENAI_BASE_URL`` into Codex provider overrides.
+    """Use an explicit Responses provider for an OpenAI-compatible gateway.
 
-    Codex CLI 0.158.0 does *not* re-route its built-in ``openai`` provider
-    from the ``OPENAI_BASE_URL`` environment variable alone (verified against
-    the real binary: requests still hit ``api.openai.com`` and fail with
-    ``401 Missing bearer``).  When this adapter is pointed at an
-    OpenAI-compatible gateway (e.g. Alibaba Cloud MaaS / Bailian), declare a
-    custom provider through ``-c`` config overrides so every turn talks to
-    that endpoint using the ``OPENAI_API_KEY`` from the environment.  When
-    ``OPENAI_BASE_URL`` is unset the default OpenAI provider is kept.
+    ABX_LLM_BASE_URL is the fallback. API keys remain in the child environment.
     """
-    base_url = os.environ.get("OPENAI_BASE_URL", "").strip()
+    base_url = (os.environ.get("OPENAI_BASE_URL") or os.environ.get("ABX_LLM_BASE_URL", "")).strip()
     if not base_url:
         return []
     prefix = "model_providers.openai_compatible"
@@ -442,9 +516,9 @@ def _track_codex_event(session: Session, event: dict[str, Any], turn: Turn | Non
     """
     event_type = event.get("type")
     if event_type in ("item.started", "item.completed"):
-        session.items.append(event)
+        _append_bounded(session.items, event)
         if turn is not None:
-            turn.items.append(event)
+            _append_bounded(turn.items, event)
     elif event_type == "thread.started":
         thread_id = event.get("thread_id")
         if isinstance(thread_id, str) and thread_id:
@@ -458,85 +532,197 @@ def _track_codex_event(session: Session, event: dict[str, Any], turn: Turn | Non
                     session.usage[key] += int(value)
 
 
-def spawn_codex_turn(session: Session, input_text: str) -> subprocess.Popen[bytes]:
-    """Spawn a ``codex exec`` process for a new turn.
+def spawn_codex_turn(session: Session, input_text: str, timeout: float = TURN_TIMEOUT) -> subprocess.Popen[bytes]:
+    """Start pinned upstream Codex and an independent bounded output monitor.
 
-    The argv shape is locked against Codex CLI 0.158.0 (verified against the
-    real binary):
-
-    * first turn — ``codex exec --json ... -- <prompt>``
-    * later turns — ``codex exec --json ... resume <thread_id|--last> -- <prompt>``
-
-    ``resume`` does not accept ``--sandbox``, so every option is passed at the
-    ``exec`` level before the subcommand (verified: they apply to the resumed
-    turn). ``--`` terminates option parsing so prompts beginning with ``-``
-    are not mistaken for flags.
-
-    When ``OPENAI_BASE_URL`` points at an OpenAI-compatible gateway, a custom
-    Codex provider is injected via :func:`_provider_overrides` so the turn
-    does not silently fall back to ``api.openai.com``.
+    First turns never use resume --last. Subsequent turns require their exact
+    thread id so concurrent sessions cannot accidentally share a conversation.
     """
-    cmd = [
-        "codex",
-        "exec",
-        "--json",
-        "--dangerously-bypass-approvals-and-sandbox",
-        "--skip-git-repo-check",
-        "--model",
-        session.model,
-    ]
+    cmd = ["codex", "exec", "--json", "--color", "never", "--skip-git-repo-check"]
+    # This mode is opt-in. Container isolation must be an explicit deployment choice.
+    mode = os.environ.get("CODEX_SANDBOX", "workspace-write")
+    if mode == "bypass":
+        cmd.append("--dangerously-bypass-approvals-and-sandbox")
+    elif mode in ("read-only", "workspace-write", "danger-full-access"):
+        cmd.extend(["--sandbox", mode, "-c", 'approval_policy="never"'])
+    else:
+        raise ValueError("Invalid CODEX_SANDBOX")
+    if session.model:
+        cmd.extend(["--model", session.model])
     cmd.extend(_provider_overrides())
     cmd.extend(_mcp_server_overrides(session.tools))
-    if session.turns:
-        # Prefer the exact thread recorded from the first turn; fall back to
-        # the most recent thread in the workspace only when no id was captured.
-        cmd.extend(["resume", session.thread_id or "--last"])
+    if session.instructions:
+        cmd.extend(["-c", f"developer_instructions={json.dumps(session.instructions)}"])
+    if len(session.turns) > 1:
+        if not session.thread_id:
+            raise RuntimeError("Previous turn has no Codex thread id; create a new session")
+        cmd.extend(["resume", session.thread_id])
     cmd.extend(["--", input_text])
-
-    proc = subprocess.Popen(  # noqa: S603
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        stdin=subprocess.DEVNULL,
-        cwd=WORKSPACE,
-    )
+    env = os.environ.copy()
+    if not env.get("OPENAI_API_KEY") and env.get("ABX_LLM_API_KEY"):
+        env["OPENAI_API_KEY"] = env["ABX_LLM_API_KEY"]
+    if not (env.get("OPENAI_BASE_URL") or env.get("ABX_LLM_BASE_URL")) and not env.get("CODEX_API_KEY") and env.get("OPENAI_API_KEY"):
+        env["CODEX_API_KEY"] = env["OPENAI_API_KEY"]
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            stdin=subprocess.DEVNULL, cwd=WORKSPACE, env=env,
+                            start_new_session=True)
+    session._process = proc
+    # Exactly one background reader drains both pipes even after HTTP disconnect.
+    monitor = TurnMonitor(proc, session, session.turns[-1], timeout)
+    proc._turn_monitor = monitor
+    monitor.start()
     return proc
 
 
-def iter_codex_events(
-    proc: subprocess.Popen[bytes],
-    timeout: int = TURN_TIMEOUT,
-) -> Iterator[dict[str, Any]]:
-    """Read JSONL events from ``codex exec`` stdout."""
-    start = time.monotonic()
-    assert proc.stdout is not None
-    for raw_line in proc.stdout:
-        if time.monotonic() - start > timeout:
-            _kill_process(proc)
-            yield {"type": "error", "error": {"message": "Turn timeout exceeded"}}
-            return
-        line = raw_line.decode("utf-8", errors="replace").strip()
-        if not line:
-            continue
-        try:
-            yield json.loads(line)
-        except json.JSONDecodeError:
-            continue
-    returncode = proc.wait()
-    if returncode:
-        # ``resume`` of an unknown thread id (or another early failure) can
-        # exit non-zero without emitting a JSONL error event — surface the
-        # stderr tail so the turn is not silently marked as completed.
-        detail = ""
-        if proc.stderr is not None:
+class TurnMonitor:
+    """Own both pipes, a deadline and a bounded replay buffer for subscribers."""
+
+    def __init__(self, proc: subprocess.Popen[bytes], session: Session, turn: Turn, timeout: float):
+        self.proc, self.session, self.turn = proc, session, turn
+        self.timeout = timeout
+        self.events: deque = deque(maxlen=MAX_EVENTS)
+        self.condition = threading.Condition()
+        self.buffer_bytes = 0
+        self.sequence = 0
+        self.done = False
+        self.thread = threading.Thread(target=self.run, daemon=True)
+
+    def start(self) -> None:
+        with _ACTIVE_LOCK:
+            _ACTIVE.add(self)
+        self.thread.start()
+
+    def emit(self, event: dict) -> None:
+        event = _redact_event(event, _session_secrets(self.session))
+        size = len(json.dumps(event).encode())
+        if size > MAX_REPLAY_BYTES:
+            raise RuntimeError("Codex event exceeds bounded replay size after redaction")
+        with self.session._lock:
+            _track_codex_event(self.session, event, self.turn)
+            if event.get("type") in ("error", "turn.failed"):
+                detail = event.get("error") or {"message": event.get("message", "Codex failed")}
+                self.session.error = detail if isinstance(detail, dict) else {"message": str(detail)}
+        with self.condition:
+            if len(self.events) == MAX_EVENTS:
+                self.buffer_bytes -= len(json.dumps(self.events.popleft()[1]).encode())
+            while self.events and self.buffer_bytes + size > MAX_REPLAY_BYTES:
+                self.buffer_bytes -= len(json.dumps(self.events.popleft()[1]).encode())
+            self.events.append((self.sequence, event))
+            self.buffer_bytes += size
+            self.sequence += 1
+            self.condition.notify_all()
+
+    def run(self) -> None:
+        proc = self.proc
+        deadline = time.monotonic() + self.timeout
+        stdout = bytearray()
+        stderr = bytearray()
+        failed = False
+        completed = False
+        completion_event = None
+        secret_overlap = max([len(value.encode()) for key, value in os.environ.items()
+                              if re.search(r"KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL", key, re.I)]
+                             + [len(value.encode()) for value in _session_secrets(self.session)] or [0])
+        def consume_line(raw: bytes) -> None:
+            nonlocal failed, completed, completion_event
+            if time.monotonic() >= deadline:
+                raise TimeoutError("Turn timeout exceeded")
+            if len(raw) > MAX_EVENT_BYTES:
+                raise RuntimeError("Codex JSONL event exceeds 256000 bytes")
             try:
-                detail = proc.stderr.read().decode("utf-8", errors="replace").strip()
-            except Exception:  # noqa: BLE001
-                detail = ""
-        message = f"codex exec exited with code {returncode}"
-        if detail:
-            message = f"{message}: {detail[-2000:]}"
-        yield {"type": "error", "error": {"message": message}}
+                event = json.loads(raw)
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                return
+            if isinstance(event, dict):
+                failed |= event.get("type") in ("error", "turn.failed")
+                completed |= event.get("type") == "turn.completed"
+                if event.get("type") == "turn.completed":
+                    completion_event = event
+                else:
+                    self.emit(event)
+
+        selector = selectors.DefaultSelector()
+        try:
+            for name, pipe in (("stdout", proc.stdout), ("stderr", proc.stderr)):
+                os.set_blocking(pipe.fileno(), False)
+                selector.register(pipe, selectors.EVENT_READ, name)
+            while selector.get_map() or proc.poll() is None:
+                if time.monotonic() >= deadline:
+                    failed = True
+                    self.emit({"type": "error", "error": {"message": "Turn timeout exceeded"}})
+                    break
+                for key, _ in selector.select(min(0.1, max(0, deadline - time.monotonic()))):
+                    chunk = os.read(key.fileobj.fileno(), 65536)
+                    if not chunk:
+                        selector.unregister(key.fileobj)
+                        continue
+                    if key.data == "stderr":
+                        stderr.extend(chunk)
+                        del stderr[:-(8192 + secret_overlap)]
+                        continue
+                    stdout.extend(chunk)
+                    while b"\n" in stdout:
+                        raw, _, rest = stdout.partition(b"\n")
+                        stdout[:] = rest
+                        consume_line(raw)
+                    if len(stdout) > MAX_EVENT_BYTES:
+                        raise RuntimeError("Codex JSONL event exceeds 256000 bytes")
+            if stdout.strip():
+                consume_line(bytes(stdout))
+            if not failed and proc.wait(timeout=1) != 0:
+                failed = True
+                # Redact the whole bounded tail before truncation to avoid exposing a
+                # credential straddling the truncation boundary.
+                detail = _redact(stderr.decode("utf-8", "replace"), _session_secrets(self.session)).strip()[-2000:]
+                self.emit({"type": "error", "error": {"message": f"codex exec failed: {detail or 'non-zero exit'}"}})
+            if not failed and not completed:
+                failed = True
+                self.emit({"type": "error", "error": {"message": "Codex exited without turn.completed"}})
+            if not failed and completion_event is not None:
+                self.emit(completion_event)
+        except Exception as exc:
+            failed = True
+            self.emit({"type": "error", "error": {"message": _redact(str(exc))}})
+        finally:
+            _kill_process(proc)
+            selector.close()
+            for pipe in (proc.stdout, proc.stderr):
+                if pipe is not None:
+                    pipe.close()
+            with self.session._lock:
+                cancelled = self.session.status == "cancelled"
+                self.turn.status = "cancelled" if cancelled else ("failed" if failed else "completed")
+                self.turn.completed_at = int(time.time())
+                self.session.status = "cancelled" if cancelled else ("failed" if failed else "idle")
+                self.session._process = None
+                self.session.last_active = int(time.time())
+            with _ACTIVE_LOCK:
+                _ACTIVE.discard(self)
+            with self.condition:
+                self.done = True
+                self.condition.notify_all()
+
+    def iterate(self) -> Iterator[dict[str, Any]]:
+        cursor = 0
+        while True:
+            with self.condition:
+                while cursor >= self.sequence and not self.done:
+                    self.condition.wait(0.2)
+                gap = bool(self.events and cursor < self.events[0][0])
+                batch = [(index, event) for index, event in self.events if index >= cursor]
+                done = self.done
+            if gap:
+                yield {"type": "events.truncated", "message": "Replay buffer limited to last 1000 events"}
+            for index, event in batch:
+                cursor = index + 1
+                yield event
+            if done:
+                return
+
+
+def iter_codex_events(proc: subprocess.Popen[bytes], timeout: float = TURN_TIMEOUT) -> Iterator[dict[str, Any]]:
+    """Subscribe without reading pipes or taking ownership from another client."""
+    yield from proc._turn_monitor.iterate()
 
 
 # Codex event type -> OpenAI Agents API event type
@@ -549,11 +735,12 @@ _EVENT_TYPE_MAP = {
     "message.delta": "agent.session.output_text.delta",
     "message.completed": "agent.session.output_text.done",
     "error": "agent.session.turn.failed",
+    "turn.failed": "agent.session.turn.failed",
 }
 
 
 def map_event(event: dict[str, Any], session_id: str, turn_id: str) -> str | None:
-    """Map a Codex JSONL event to an OpenAI Agents API SSE event string.
+    """Map a Codex JSONL event to this adapter's documented SSE contract.
 
     Returns a formatted SSE string like::
 
@@ -595,7 +782,7 @@ def map_event(event: dict[str, Any], session_id: str, turn_id: str) -> str | Non
         data["status"] = event["status"]
 
     # Copy over any additional fields from the original event
-    for key in ("result", "output", "text", "code", "tool_call", "function_call"):
+    for key in ("result", "output", "text", "code", "tool_call", "function_call", "usage", "thread_id"):
         if key in event:
             data[key] = event[key]
 
@@ -633,13 +820,25 @@ def _sse(event_type: str, payload: dict[str, Any]) -> str:
     return f"event: {event_type}\ndata: {json.dumps(payload)}\n\n"
 
 
-def _finish_turn(session: Session, turn: Turn) -> None:
-    """Mark a turn (and its session) as completed."""
-    turn.status = "completed"
-    turn.completed_at = int(time.time())
-    session.status = "idle"
-    session._process = None
-    session.last_active = int(time.time())
+def _turn_response(session: Session, turn: Turn, proc: subprocess.Popen, stream: bool,
+                   created: bool = False, background: bool = False) -> SSEResponse | ServerResponse:
+    if background:
+        return ServerResponse.ok(session.to_dict_with_output())
+    if not stream:
+        for _ in iter_codex_events(proc):
+            pass
+        return ServerResponse.ok(session.to_dict_with_output())
+
+    def event_gen() -> Iterator[str]:
+        if created:
+            yield _sse("agent.session.created", session.to_dict())
+        yield _sse("agent.session.turn.started", {"turn_id": turn.id, "session_id": session.id})
+        for event in iter_codex_events(proc):
+            mapped = map_event(event, session.id, turn.id)
+            if mapped:
+                yield mapped
+        # Completed/failed events originate from upstream or monitor, never fake PASS.
+    return SSEResponse(event_iterator=event_gen())
 
 
 # ── Agent API routes ───────────────────────────────────────────────────
@@ -649,14 +848,19 @@ def _finish_turn(session: Session, turn: Turn) -> None:
 @table.route("POST", "/v1/agents/sessions", group=CapabilityGroup.COMMANDS, streaming=True)
 def create_session(request: ServerRequest) -> SSEResponse | ServerResponse:
     """Create a session and optionally run a first turn."""
-    body = request.body or {}
+    body = request.body if request.body is not None else {}
+    invalid = _validate_body(body)
+    if invalid:
+        return ServerResponse.error(400, invalid, "ValueError")
     agent_config = body.get("agent", {})
     if isinstance(agent_config, str):
         # `agent` may reference a saved agent by ID instead of an inline dict.
         saved_agent = agent_store.get(agent_config)
         if not saved_agent:
             return ServerResponse.error(404, f"Agent {agent_config} not found", "NotFoundError")
-        agent_config = saved_agent.to_dict()
+        # Internal execution must retain MCP headers; public serialization redacts them.
+        agent_config = {"model": saved_agent.model, "instructions": saved_agent.instructions,
+                        "tools": saved_agent.tools}
     if not isinstance(agent_config, dict):
         agent_config = {}
     model = agent_config.get("model", DEFAULT_MODEL)
@@ -678,9 +882,14 @@ def create_session(request: ServerRequest) -> SSEResponse | ServerResponse:
     # atomically under the session lock so concurrent requests cannot
     # interleave state transitions on this session.
     with session._lock:
+        if len(session.turns) >= MAX_TURNS:
+            return ServerResponse.error(429, "Session turn limit reached", "CapacityError")
+        for previous in session.turns:
+            previous.items.clear()
         turn = Turn()
         session.turns.append(turn)
         session.status = "in_progress"
+        session.error = None
         session.last_active = int(time.time())
 
         try:
@@ -689,68 +898,9 @@ def create_session(request: ServerRequest) -> SSEResponse | ServerResponse:
         except Exception as exc:  # noqa: BLE001
             session.status = "failed"
             turn.status = "failed"
-            return ServerResponse.error(500, str(exc), "SpawnError")
+            return ServerResponse.error(500, _redact(str(exc)), "SpawnError")
 
-    if stream:
-        # Return SSE stream
-        def event_gen() -> Iterator[str]:
-            # Emit session created event
-            yield _sse("agent.session.created", session.to_dict())
-            yield _sse("agent.session.turn.started", {"turn_id": turn.id, "session_id": session.id})
-
-            failed = False
-            try:
-                for codex_event in iter_codex_events(proc):
-                    _track_codex_event(session, codex_event, turn)
-
-                    if codex_event.get("type") == "error":
-                        failed = True
-
-                    sse_str = map_event(codex_event, session.id, turn.id)
-                    if sse_str:
-                        yield sse_str
-            except Exception as exc:  # noqa: BLE001
-                failed = True
-                yield _sse(
-                    "agent.session.turn.failed",
-                    {"error": {"message": str(exc)}, "session_id": session.id},
-                )
-
-            # Update state atomically — an error event (e.g. a turn timeout)
-            # must not leave the turn marked as completed. Yields stay
-            # outside the lock so it is never held while streaming.
-            with session._lock:
-                if failed:
-                    session.status = "failed"
-                    turn.status = "failed"
-                    session._process = None
-                    session.last_active = int(time.time())
-                else:
-                    _finish_turn(session, turn)
-
-            if not failed:
-                yield _sse(
-                    "agent.session.turn.completed",
-                    {"turn_id": turn.id, "session_id": session.id, "status": "completed"},
-                )
-
-        return SSEResponse(event_iterator=event_gen())
-    # Synchronous: collect all events and return completed session
-    failed = False
-    for codex_event in iter_codex_events(proc):
-        _track_codex_event(session, codex_event, turn)
-        if codex_event.get("type") == "error":
-            failed = True
-
-    with session._lock:
-        if failed:
-            session.status = "failed"
-            turn.status = "failed"
-            session._process = None
-            session.last_active = int(time.time())
-        else:
-            _finish_turn(session, turn)
-    return ServerResponse.ok(session.to_dict_with_output())
+    return _turn_response(session, turn, proc, stream, created=True, background=body.get("background", False))
 
 
 # GET /v1/agents/sessions — List sessions
@@ -786,7 +936,10 @@ def update_session(request: ServerRequest) -> ServerResponse:
     if not session:
         return ServerResponse.error(404, f"Session {session_id} not found", "NotFoundError")
 
-    body = request.body or {}
+    body = request.body if request.body is not None else {}
+    invalid = _validate_body(body)
+    if invalid:
+        return ServerResponse.error(400, invalid, "ValueError")
     if "model" in body:
         session.model = body["model"]
     if "instructions" in body:
@@ -828,17 +981,25 @@ def send_event(request: ServerRequest) -> SSEResponse | ServerResponse:
         if session.status == "in_progress":
             return ServerResponse.error(409, "Session has an active turn", "ConflictError")
 
-        body = request.body or {}
+        body = request.body if request.body is not None else {}
+        invalid = _validate_body(body)
+        if invalid:
+            return ServerResponse.error(400, invalid, "ValueError")
         input_text = _extract_input_text(body)
 
         if not input_text:
             return ServerResponse.error(400, "Missing input text", "ValueError")
 
-        stream = body.get("stream", True)  # default to streaming for events endpoint
+        stream = body.get("stream", not body.get("background", False))  # default to streaming for events endpoint
 
+        if len(session.turns) >= MAX_TURNS:
+            return ServerResponse.error(429, "Session turn limit reached", "CapacityError")
+        for previous in session.turns:
+            previous.items.clear()
         turn = Turn()
         session.turns.append(turn)
         session.status = "in_progress"
+        session.error = None
         session.last_active = int(time.time())
 
         try:
@@ -847,66 +1008,9 @@ def send_event(request: ServerRequest) -> SSEResponse | ServerResponse:
         except Exception as exc:  # noqa: BLE001
             session.status = "failed"
             turn.status = "failed"
-            return ServerResponse.error(500, str(exc), "SpawnError")
+            return ServerResponse.error(500, _redact(str(exc)), "SpawnError")
 
-    if stream:
-
-        def event_gen() -> Iterator[str]:
-            yield _sse("agent.session.turn.started", {"turn_id": turn.id, "session_id": session.id})
-
-            failed = False
-            try:
-                for codex_event in iter_codex_events(proc):
-                    _track_codex_event(session, codex_event, turn)
-
-                    if codex_event.get("type") == "error":
-                        failed = True
-
-                    sse_str = map_event(codex_event, session.id, turn.id)
-                    if sse_str:
-                        yield sse_str
-            except Exception as exc:  # noqa: BLE001
-                failed = True
-                yield _sse(
-                    "agent.session.turn.failed",
-                    {"error": {"message": str(exc)}, "session_id": session.id},
-                )
-
-            # Update state atomically — an error event (e.g. a turn timeout)
-            # must not leave the turn marked as completed. Yields stay
-            # outside the lock so it is never held while streaming.
-            with session._lock:
-                if failed:
-                    session.status = "failed"
-                    turn.status = "failed"
-                    session._process = None
-                    session.last_active = int(time.time())
-                else:
-                    _finish_turn(session, turn)
-
-            if not failed:
-                yield _sse(
-                    "agent.session.turn.completed",
-                    {"turn_id": turn.id, "session_id": session.id, "status": "completed"},
-                )
-
-        return SSEResponse(event_iterator=event_gen())
-    # Synchronous mode
-    failed = False
-    for codex_event in iter_codex_events(proc):
-        _track_codex_event(session, codex_event, turn)
-        if codex_event.get("type") == "error":
-            failed = True
-
-    with session._lock:
-        if failed:
-            session.status = "failed"
-            turn.status = "failed"
-            session._process = None
-            session.last_active = int(time.time())
-        else:
-            _finish_turn(session, turn)
-    return ServerResponse.ok(session.to_dict_with_output())
+    return _turn_response(session, turn, proc, stream, background=body.get("background", False))
 
 
 # GET /v1/agents/sessions/{session_id}/events — SSE subscribe
@@ -926,42 +1030,7 @@ def subscribe_events(request: ServerRequest) -> SSEResponse | ServerResponse:
     if session.status != "in_progress" or not session._process:
         return ServerResponse.ok({"status": session.status, "message": "No active turn"})
 
-    proc = session._process
-    current_turn = session.turns[-1] if session.turns else None
-    turn_id = current_turn.id if current_turn else "unknown"
-
-    def event_gen() -> Iterator[str]:
-        failed = False
-        try:
-            for codex_event in iter_codex_events(proc):
-                _track_codex_event(session, codex_event, current_turn)
-
-                if codex_event.get("type") == "error":
-                    failed = True
-
-                sse_str = map_event(codex_event, session.id, turn_id)
-                if sse_str:
-                    yield sse_str
-        except Exception as exc:  # noqa: BLE001
-            failed = True
-            yield _sse(
-                "agent.session.turn.failed",
-                {"error": {"message": str(exc)}, "session_id": session.id},
-            )
-
-        # Update turn/session state atomically so the session does not stay
-        # stuck in "in_progress" after the stream ends.
-        with session._lock:
-            if current_turn is not None:
-                if failed:
-                    session.status = "failed"
-                    current_turn.status = "failed"
-                    session._process = None
-                    session.last_active = int(time.time())
-                else:
-                    _finish_turn(session, current_turn)
-
-    return SSEResponse(event_iterator=event_gen())
+    return _turn_response(session, session.turns[-1], session._process, True)
 
 
 # GET /v1/agents/sessions/{session_id}/items — List items
@@ -1003,8 +1072,12 @@ def _resolve_artifact_path(file_path: str) -> str | None:
     Returns the normalised absolute path, or ``None`` when the path escapes
     the workspace (e.g. ``../../etc/passwd`` or an absolute foreign path).
     """
-    root = os.path.normpath(WORKSPACE)
-    full_path = os.path.normpath(os.path.join(root, file_path))
+    root = os.path.realpath(WORKSPACE)
+    full_path = os.path.realpath(os.path.join(root, file_path))
+    resolved_relative = os.path.relpath(full_path, root)
+    path_parts = file_path.split("/") + resolved_relative.split(os.sep)
+    if any(part in (".env", ".aws", ".codex", ".ssh") or part.startswith(".env.") for part in path_parts):
+        return None
     if full_path == root or full_path.startswith(root + os.sep):
         return full_path
     return None
@@ -1031,23 +1104,25 @@ def get_artifact(request: ServerRequest) -> ServerResponse:
         return ServerResponse.error(403, "Access denied: path outside workspace", "ForbiddenError")
 
     if not os.path.isfile(full_path):
-        return ServerResponse.error(404, f"Artifact not found: {file_path}", "NotFoundError")
+        return ServerResponse.error(404, _redact(f"Artifact not found: {file_path}", _session_secrets(session)), "NotFoundError")
 
     try:
+        if os.path.getsize(full_path) > 1_000_000:
+            return ServerResponse.error(413, "Artifact exceeds 1000000 bytes", "ValueError")
         with open(full_path, encoding="utf-8", errors="replace") as f:
-            content = f.read()
+            content = _redact(f.read(), _session_secrets(session))
         return ServerResponse.ok(
             {
                 "id": artifact_id,
                 "object": "artifact",
                 "session_id": session_id,
-                "file_path": file_path,
+                "file_path": _redact(file_path, _session_secrets(session)),
                 "content": content,
                 "size": os.path.getsize(full_path),
             }
         )
     except Exception as exc:  # noqa: BLE001
-        return ServerResponse.error(500, str(exc), "ReadError")
+        return ServerResponse.error(500, _redact(str(exc), _session_secrets(session)), "ReadError")
 
 
 # DELETE /v1/agents/sessions/{session_id}/artifacts/{artifact_id} — Delete artifact
@@ -1071,13 +1146,13 @@ def delete_artifact(request: ServerRequest) -> ServerResponse:
         return ServerResponse.error(403, "Access denied: path outside workspace", "ForbiddenError")
 
     if not os.path.isfile(full_path):
-        return ServerResponse.error(404, f"Artifact not found: {file_path}", "NotFoundError")
+        return ServerResponse.error(404, _redact(f"Artifact not found: {file_path}", _session_secrets(session)), "NotFoundError")
 
     try:
         os.remove(full_path)
         return ServerResponse.ok({"id": artifact_id, "object": "artifact", "deleted": True})
     except Exception as exc:  # noqa: BLE001
-        return ServerResponse.error(500, str(exc), "DeleteError")
+        return ServerResponse.error(500, _redact(str(exc), _session_secrets(session)), "DeleteError")
 
 
 # ── Saved agents CRUD routes ─────────────────────────────────────
@@ -1092,14 +1167,20 @@ def delete_artifact(request: ServerRequest) -> ServerResponse:
 @table.route("POST", "/v1/agents", group=CapabilityGroup.COMMANDS)
 def create_agent(request: ServerRequest) -> ServerResponse:
     """Create a reusable agent configuration."""
-    body = request.body or {}
-    agent = agent_store.create(
-        model=body.get("model", DEFAULT_MODEL),
-        instructions=body.get("instructions", ""),
-        tools=body.get("tools", []),
-        name=body.get("name", ""),
-        metadata=body.get("metadata", {}),
-    )
+    body = request.body if request.body is not None else {}
+    invalid = _validate_body(body)
+    if invalid:
+        return ServerResponse.error(400, invalid, "ValueError")
+    try:
+        agent = agent_store.create(
+            model=body.get("model", DEFAULT_MODEL),
+            instructions=body.get("instructions", ""),
+            tools=body.get("tools", []),
+            name=body.get("name", ""),
+            metadata=body.get("metadata", {}),
+        )
+    except CapacityError:
+        return ServerResponse.error(429, "Saved agent limit reached", "CapacityError")
     return ServerResponse.ok(agent.to_dict())
 
 
@@ -1127,7 +1208,10 @@ def get_agent(request: ServerRequest) -> ServerResponse:
 def update_agent(request: ServerRequest) -> ServerResponse:
     """Update a saved agent's model / instructions / tools / name / metadata."""
     agent_id = request.path_params.get("agent_id", "")
-    body = request.body or {}
+    body = request.body if request.body is not None else {}
+    invalid = _validate_body(body)
+    if invalid:
+        return ServerResponse.error(400, invalid, "ValueError")
     updates = {
         k: v for k, v in body.items() if k in ("model", "instructions", "tools", "name", "metadata")
     }
@@ -1162,7 +1246,7 @@ def agent_status() -> str:
         {"id": session.id, "status": session.status, "model": session.model}
         for session in store.list_all()
     ]
-    return json.dumps(sessions)
+    return _redact(json.dumps(sessions))
 
 
 if __name__ == "__main__":

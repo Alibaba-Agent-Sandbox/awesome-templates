@@ -1,134 +1,89 @@
 #!/usr/bin/env python3
-"""Local check of the Agents API template.
+"""Actual pinned-CLI diagnostics and restricted HTTP contracts, without model turns.
 
-The server must already be running with ``E2E_RUN_LLM=0`` so ``e2e-bin`` is
-on ``PATH``. No model API key is read or sent.
+Fixture adapters are exercised only by test_protocol.py using an explicit test PATH.
+This smoke never infers real coding acceptance from a protocol message.
 """
-
 from __future__ import annotations
 
-import json
 import os
 import sys
-import time
-import urllib.error
-import urllib.request
 
-BASE = os.environ.get("E2E_BASE_URL", "http://127.0.0.1:9000").rstrip("/")
+import httpx
 
-
-def call(method: str, path: str, body: dict | None = None) -> tuple[int, object, dict[str, str]]:
-    data = None if body is None else json.dumps(body).encode("utf-8")
-    request = urllib.request.Request(BASE + path, data=data, method=method)
-    request.add_header("Accept", "application/json")
-    if data is not None:
-        request.add_header("Content-Type", "application/json")
-    try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            raw = response.read().decode("utf-8")
-            headers = {k.lower(): v for k, v in response.headers.items()}
-            return response.status, json.loads(raw) if raw else {}, headers
-    except urllib.error.HTTPError as exc:
-        raw = exc.read().decode("utf-8", errors="replace")
-        headers = {k.lower(): v for k, v in exc.headers.items()}
-        try:
-            parsed: object = json.loads(raw) if raw else {}
-        except json.JSONDecodeError:
-            parsed = raw
-        return exc.code, parsed, headers
+EXPECTED = "codex 0.162.1; qwen-code 0.23.0"
 
 
-def texts(payload: object) -> list[str]:
-    if not isinstance(payload, dict):
-        return []
-    found: list[str] = []
-    for item in payload.get("data") or []:
-        if not isinstance(item, dict) or item.get("type") != "message":
-            continue
-        for part in item.get("content") or []:
-            if isinstance(part, dict) and part.get("text"):
-                found.append(str(part["text"]))
-    return found
-
-
-def expect(title: str, status: int, want: int, payload: object) -> None:
-    print(f"[{'ok' if status == want else 'fail'}] {title} ({status})")
-    if status != want:
-        print(json.dumps(payload, ensure_ascii=False)[:500])
-        raise SystemExit(1)
-
-
-def turn(adapter: str, needle: str) -> None:
-    workspace = os.environ.get("E2E_WORKSPACE", "/tmp")
-    status, created, headers = call(
-        "POST",
-        "/v1/agents/sessions",
-        {
-            "agent": {"model": adapter},
-            "environment": {"type": "self_hosted", "workspace_directory": workspace},
-        },
-    )
-    expect(f"POST session {adapter}", status, 200, created)
-    if headers.get("x-agent-sandbox-local") != "1":
-        print("missing X-Agent-Sandbox-Local")
-        raise SystemExit(1)
-    if not isinstance(created, dict) or "id" not in created:
-        print(created)
-        raise SystemExit(1)
-    session_id = str(created["id"])
-    status, acked, _headers = call(
-        "POST",
-        f"/v1/agents/sessions/{session_id}/events",
-        {
-            "events": [
-                {
-                    "type": "agent.session.input.message",
-                    "input": [{"role": "user", "content": [{"type": "input_text", "text": "hi"}]}],
-                }
-            ]
-        },
-    )
-    expect(f"POST events {adapter}", status, 202, acked)
-    deadline = time.time() + 20
-    items: object = {}
-    status = 0
-    while time.time() < deadline:
-        status, items, _headers = call(
-            "GET", f"/v1/agents/sessions/{session_id}/items?limit=100&order=asc"
-        )
-        if status == 200 and needle in texts(items):
-            print(f"[ok] items {adapter} contains {needle}")
-            return
-        time.sleep(0.2)
-    print(f"[fail] items {adapter} missing {needle} ({status})")
-    print(json.dumps(items, ensure_ascii=False)[:800])
-    _status, session, _headers = call("GET", f"/v1/agents/sessions/{session_id}")
-    print(json.dumps(session, ensure_ascii=False)[:800])
-    raise SystemExit(1)
+def check(ok: bool, label: str) -> None:
+    print(f"[{'PASS' if ok else 'FAIL'}] {label}", flush=True)
+    if not ok:
+        raise AssertionError(label)
 
 
 def main() -> int:
-    status, health, _headers = call("GET", "/health")
-    expect("GET /health", status, 200, health)
-
-    status, missing, _headers = call("POST", "/v1/agents/sessions", {"agent": {"model": "gpt-5"}})
-    expect("omitted adapter uses the first runtime", status, 200, missing)
-    agent = missing.get("agent") if isinstance(missing, dict) else None
-    if not isinstance(agent, dict) or agent.get("id") != "codex" or agent.get("model") != "gpt-5":
-        print(missing)
-        raise SystemExit(1)
-
-    status, refused, _headers = call(
-        "POST",
-        "/v1/agents/sessions",
-        {"adapter": "claude-code", "agent": {"model": "gpt-5"}},
-    )
-    expect("claude-code is not in this slice", status, 404, refused)
-
-    turn("codex", "hello-from-fake-codex")
-    turn("qwen-code", "hello-from-fake-qwen")
+    headers = {}
+    gateway_token = os.environ.get("E2E_TOKEN", "")
+    server_token = os.environ.get("E2E_SERVER_TOKEN") or os.environ.get("ABX_SERVER_TOKEN", "")
+    if gateway_token:
+        headers["X-Access-Token"] = gateway_token
+    if server_token:
+        headers["Authorization"] = "Bearer " + server_token
+    workspace = os.environ.get("E2E_WORKSPACE") or os.environ.get("WORKSPACE") or "/home/user/workspace"
+    with httpx.Client(base_url=os.environ.get("E2E_BASE_URL", "http://127.0.0.1:9000"),
+                      headers=headers, timeout=60) as client:
+        response = client.get("/health")
+        check(response.status_code == 200 and response.json().get("status") == "ok", "health")
+        response = client.get("/commands")
+        check(response.status_code == 200 and
+              {item["name"] for item in response.json().get("commands", [])} == {"agents_version"},
+              "named diagnostics only")
+        response = client.post("/commands/agents_version", json={})
+        check(response.status_code == 200 and response.json().get("result") == EXPECTED,
+              "both actual installed CLI versions match pins")
+        response = client.get("/v1/agents/runtimes")
+        entries = {item["id"]: item for item in response.json().get("data", [])}
+        check(response.status_code == 200 and all(
+            entries.get(name, {}).get("implemented") is True and entries[name].get("installed") is True
+            for name in ("codex", "qwen-code")), "both local runtimes are implemented and installed")
+        for method, path in (("POST", "/shell"), ("GET", "/files"),
+                             ("POST", "/process/start"), ("GET", "/v1/models"),
+                             ("POST", "/v1/agents/responses")):
+            response = client.request(method, path, json={} if method == "POST" else None)
+            check(response.status_code == 404, "disabled route remains inaccessible: " + path)
+        response = client.post("/v1/agents/sessions", json={"adapter": "claude-code"})
+        check(response.status_code == 404, "unimplemented runtime is rejected")
+        sessions = []
+        for adapter in ("codex", "qwen-code"):
+            response = client.post("/v1/agents/sessions", json={
+                "adapter": adapter, "agent": {"model": adapter},
+                "environment": {"type": "self_hosted", "workspace_directory": workspace},
+            })
+            check(response.status_code == 200 and response.headers.get("X-Agent-Sandbox-Local") == "1"
+                  and isinstance(response.json().get("id"), str), adapter + " session creates without a turn")
+            session = response.json()["id"]
+            sessions.append(session)
+            response = client.get("/v1/agents/sessions/" + session)
+            check(response.status_code == 200 and response.json().get("id") == session,
+                  adapter + " session reconnects")
+            response = client.get("/v1/agents/sessions/" + session + "/items")
+            check(response.status_code == 200 and response.json().get("data") == [],
+                  adapter + " new session has no model output")
+        response = client.get("/v1/agents/sessions")
+        check(response.status_code == 200 and set(sessions) <= {item["id"] for item in response.json().get("data", [])},
+              "created sessions are listed")
+        if server_token:
+            response = httpx.get(str(client.base_url).rstrip("/") + "/commands", timeout=10)
+            check(response.status_code == 401, "server token protects business routes")
+    requested = any(os.environ.get(name, "").lower() in {"1", "true", "yes"}
+                    for name in ("E2E_RUN_LLM", "E2E_REQUIRE_LLM"))
+    check(not requested, "HTTP-only smoke cannot establish L3; run agents-cli/e2e_sdk.py for owned SDK coding verification")
+    print("[SKIP] model/coding acceptance: no model turn or artifact acceptance was performed", flush=True)
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except Exception as exc:
+        print(f"[FAIL] HTTP smoke aborted ({type(exc).__name__}); response omitted", flush=True)
+        sys.exit(1)

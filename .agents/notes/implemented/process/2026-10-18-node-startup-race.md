@@ -1,5 +1,5 @@
 # Decision: reject nonexistent Node entries before startup
-Status: proposed
+Status: implemented
 
 ## Problem
 

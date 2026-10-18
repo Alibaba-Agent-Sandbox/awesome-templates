@@ -1,5 +1,5 @@
 # Decision: Retire the unused template-local registry snapshot
-Status: proposed
+Status: implemented
 
 ## Problem
 

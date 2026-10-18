@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-18T12:55:31.218000+00:00",
+  "provider": "alicloud-express",
+  "template": "codex",
+  "scope": "patched-source runtime on existing base; NOT Dockerfile L1 or template-deploy L2",
+  "source_sha256": "caebcfb64d80725ad724adbd45f27ca21c3850f118b52444e0f99af5d15c5044",
+  "source_files_sha256": {
+    "codex/commands.py": "caebcfb64d80725ad724adbd45f27ca21c3850f118b52444e0f99af5d15c5044",
+    "codex/e2e_test.py": "305cab4505bbabd5a2e25e78fa03132ee320dcc29ea0ad115e09dbcd783a81db",
+    "codex/Dockerfile": "925c54f783899e383139876f1cc858c04f79646eca6103259e778b610234a643",
+    "codex/template.yaml": "5bcc031ca9f003d087e3b380cf9e1921a8b58dfd7a6a331d22431759d2bb3f58",
+    "scripts/express_runtime_e2e.py": "0d9939c2a78a480ee990d0687399ee069c6274bc5fdcb435667a795106502a6b"
+  },
+  "uploaded_files_sha256": {
+    "commands.py": "caebcfb64d80725ad724adbd45f27ca21c3850f118b52444e0f99af5d15c5044"
+  },
+  "generated_fixtures": [],
+  "required_model_acceptance": true,
+  "runtime_dependencies": "@openai/codex@0.162.1",
+  "server_wheel_sha256": "c4f3c17868615ae78f4becb1d55e1e3fb007689bce2c4922a62418635400a319",
+  "sdk_version": "0.3.0",
+  "sdk_source_commit": "421ee4da78a1014e4e925a42edb6d9c4bf00b2b5",
+  "base_template": "base",
+  "verification_type": "source-runtime",
+  "image_build_verified": false,
+  "template_deploy_verified": false,
+  "checks": [
+    {
+      "name": "owned Express base sandbox",
+      "ok": true
+    },
+    {
+      "name": "public runtime source and config upload",
+      "ok": true
+    },
+    {
+      "name": "pinned runtime dependency install",
+      "ok": true
+    },
+    {
+      "name": "patched server process start",
+      "ok": true
+    },
+    {
+      "name": "external SDK health",
+      "ok": true
+    },
+    {
+      "name": "pinned Codex version through SDK",
+      "ok": true,
+      "detail": "0.162.1"
+    },
+    {
+      "name": "remote HTTP suite with real model required",
+      "ok": true,
+      "detail": "exit=0; PASS lines=17; FAIL lines=0"
+    },
+    {
+      "name": "owned sandbox cleanup",
+      "ok": true
+    }
+  ],
+  "passed": true,
+  "model": "qwen3.8-flash",
+  "tested_template_revision": "89a91e642be156cc6c62bebabc05766dcb3c589e",
+  "independent_cleanup": {
+    "owned_created": 1,
+    "owned_remaining": 0,
+    "listed_count": 0,
+    "passed": true
+  }
+}

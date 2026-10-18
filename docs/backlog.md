@@ -1,20 +1,20 @@
-# 这批不做
+# 暂缓项目与已启动切片
 
-下面这些先不要在 `awesome-templates` 里建目录。验收以 [docs/template-spec.md](./template-spec.md) 为准：阿里云基础镜像、`commands.py` 里的 `@command` 真正去调上游 CLI，版本钉死，再用对应级别的 e2e 跑通。底层跑不了，或者安装方式还没钉成可复现的包版本，就留在这里。
+已启动的 Pi、Aider、SWE 和 OSWorld 浏览器切片见下文；其余计划尚未交付。验收以 [template-spec.md](./template-spec.md) 为准，实际运行时、固定版本和对应级别证据必须匹配。
 
 `abx template install` 只在阿里云极速版（`alicloud-express`）上构建。新建一个目录不会变成 OpenSandbox 镜像，也不会变成 E2B 的 template id。
 
 ## SWE-bench / SWE-agent
 
-SWE-bench 按实例评分：每道题有自己的仓库快照和 `FAIL_TO_PASS` 测试，官方 harness 用该实例的 Docker 镜像跑测试。SWE-agent 的入口是 `sweagent`，它自己再起一个环境去改仓库。
+[swe](../swe/README.md) 实现一个明确的非 Docker 切片：官方 mini-swe-agent 2.4.6、真正的 `pallets__flask-5014` base/test_patch、1FAIL+59PASS 基线及全新目录/venv 中的60项独立评价。显式授权才执行模型 shell，输出源码补丁与报告；不会下载整份数据集，也不包含标准答案补丁。实现与验收状态见 [Issue35](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/35) 和 [设计](./design/swe.md)。
 
-缺的是评测底层，不是又一个编码 CLI。当前沙箱是单个容器里的 `agent_sandbox.server`，没有实例镜像仓库，也没有从沙箱里启动兄弟容器的权限。嵌套 Docker 和下面的 K3s 是同一类缺口。没有这层，命名命令无法检出题目、跑隐藏测试、交回补丁分数。
+仍缺官方每题 Docker 镜像和原始 Python3.11 环境；首个 Python3.13 镜像被原始弃用警告门槛拒绝，评测现固定官方 SHA 的原题 Python3.11.10；仍需单独验证新环境，不能发布官方 SWE-bench 分数。完整 SWE-agent、任意实例、批量 benchmark、SWE-rebench 和需要额外系统依赖的题目继续留在 backlog。沙箱没有 Docker 不能推出所有非 Docker 子流程都不可做。
 
 ## OSWorld
 
-OSWorld 在一台带桌面的虚拟机里做计算机使用评测：截图或无障碍树进、鼠标键盘出。任务跑在 Ubuntu（也有 Windows）客户机上，不是一条 headless CLI。
+完整 OSWorld benchmark 仍需要各应用、VM 快照/reset 和相应任务/evaluator 集合；它不是一条 headless CLI。Express 无 KVM，不能据此承诺完整 benchmark 或排行榜分数。
 
-缺虚拟机管理器、桌面会话、截图通道和输入注入。本仓库的 `desktop` 只是 E2B 上已有的 template id，OpenSandbox 没有接这张镜像，也不能当作 OSWorld 的客户机。一个 `python:3.12-slim` 目录替代不了这台虚拟机。
+[Issue 36](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/36) 明确允许非特权桌面切片。新的 [osworld](../osworld/README.zh-CN.md) 目录独立基于 Alibaba 镜像，固定上游源码，提供真实 Xvfb/Openbox/DBus/Chromium、截图、AT-SPI、原生鼠标键盘/私有剪贴板 Unicode 输入，以及明确的浏览器 task 配置和上游评估函数子集。native 源码任务及独立 DOM/PNG 验证已通过；9a53b56 镜像已实际通过 L1、官方注册后的 Express 三端真实 GUI smoke、HTTP18/0skip 与 owned 清理。该补充 changed-image 云验证不替代完整 `abx template deploy`/规范 L2 runner，tested_on 仍空、状态仍 experimental。详见[最终证据](../.agents/evidence/verify/2026-10-16-osworld-changed-image.md)。Office、任意 launch/shell、VM/完整 benchmark 不包含在此切片，原 Issue 保持开放。它不是复制 E2B `desktop` template id，也不声明 OpenSandbox 客户机已可用。
 
 ## Windows Agent Arena
 
@@ -40,11 +40,21 @@ xAI 的编码 CLI 已经存在：命令是 `grok`，非交互是 `grok -p "<prom
 
 这批仍不建目录。那个安装入口是一段不钉版本的脚本，`docker build` 日志里看不到像 `@qwen-code/qwen-code@0.23.0` 这样的固定版本。验收要求先核实安装方式，再写进目录。缺的是可复现的安装物（钉死版本的包或二进制）以及一份对着这个二进制的 `commands.py`。Grok 自己的 `--sandbox` 是 CLI 内部的权限档，不是 Agent Sandbox 的模板。
 
-## Pi（E2B 的 `pi`）
+## Pi（Alibaba 独立 CLI 切片）
 
-Pi 是终端编码代理，自己的非交互入口是 `pi -p "<prompt>"`。E2B 已经发布了预置模板 id `pi`（文档里的创建方式是 `e2b sbx create pi`，或 `Sandbox.create('pi')`，密钥 `E2B_API_KEY` / `ANTHROPIC_API_KEY`）。在 E2B 上再派生用 `Template().fromTemplate('pi')`。
+[pi/](../pi/README.zh-CN.md) 已作为独立 experimental 模板实现：在 Alibaba 基础镜像内安装官方 `@earendil-works/pi-coding-agent@1.3.0` 和经 SHA256 校验的 Node 24.16.0，提供一次性 print 模式、只读诊断与显式可写工具。默认工具是 read/grep/find/ls；`allow_tools=true` 才允许 edit/write/bash。模型端点由 PI_BASE_URL、PI_MODEL、PI_API_KEY 配置，不复用用户扩展或持久会话。
 
-缺的是 E2B 模板注册这条链路。`abx template install` 写不进 E2B。在本仓库放一个 `pi/` 目录，不会变成 E2B 上那个 `pi`，也不会替换 `e2b sbx create pi` 拉起的镜像。要改 E2B 的 Pi 环境，用 E2B 的 template build，而不是极速版的安装命令。
+官方 CLI 的本地源码服务已用 `qwen3.8-flash` 完成真实编程验收：先重现失败测试，模型改源码并生成新产物，保留原测试，再由独立进程运行隔离 unittest 与 held-out 检查。Pi 镜像 L1 正由独立 [PR #86](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/86) 的实际 CI 验证；镜像 Express L2 和镜像模型 L3 尚未通过，不列入 provider verified。详见[设计](design/pi.md)与[验证记录](../.agents/evidence/verify/2026-10-16-pi-runtime.md)。
+
+E2B 的预置 `pi` template ID 及其注册/派生流程是另一条路线。本仓库安装 Alibaba CLI 模板既不向 E2B 注册，也不替换或验证 E2B 的镜像；E2B 注册缺口不再阻塞这个独立 Alibaba 切片。交互 TUI、RPC 会话和扩展安装不在本次命令面内。
+
+## Aider（Alibaba 独立 CLI 切片）
+
+[aider/](../aider/README.zh-CN.md) 已作为 independent experimental 模板实现，安装官方 PyPI `aider-chat==0.86.2`。该包要求 Python `>=3.10,<3.13`，因此单独固定 SHA256 校验的 Python 3.12.12，保留 Alibaba base 的 Python 3.13 server 和 Node 20。默认 ask 只读；显式 `allow_write=true` 才把选中文件的 stage 结果回写，禁自动提交、slash/bang 命令分派与自动确认。
+
+实际 CI 镜像已完成独立 Express push、官方注册/READY、SDK/HTTP/CLI 和真实模型验收：预热 server 不会追溯接收 create-time envd 配置，需明确 `commands.start(env=...)` 启动镜像原 commands 的 9010 进程，并用对应端口访问。Qwen3.8-flash 真实改已有源码、生成报告及精确产物，原测试不变，独立 3 个 unittest 和 6 个 held-out 计算通过（完整模型 suite 21 PASS / 0 FAIL / 0 SKIP）。全部自有资源已清理回查。
+
+[PR #88](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/88) 保持 draft；canonical `express_e2e.py` / `abx template deploy` L2 wrapper 尚未通过，不列入 provider verified。详见[设计](design/aider.md)、[补充镜像证据](../aider/evidence/image-runtime-2026-10-16-configured.json)和[工程验证记录](../.agents/evidence/verify/2026-10-16-aider-runtime.md)。
 
 ## K3s
 
@@ -76,6 +86,5 @@ Omarchy 是一套 Arch Linux 桌面配置（Hyprland 会话），安装对象是
 
 - Gemini CLI：目录 `gemini/` 已经按 experimental 接上 `@google/gemini-cli@0.64.0`，命令是 `gemini -p <prompt> --yolo --model <model>`，密钥 `GEMINI_API_KEY`。还缺带密钥且输出含 `ABX_E2E_OK` 的记录，所以不能标 official。
 - Kimi CLI：命令 `kimi -p "<prompt>"`（包 `@moonshot-ai/kimi-code`）。`-p` 不进 TUI，脚本场景再用 `kimi --print -p "<prompt>"` 自动批准工具调用。
-- Aider：命令 `aider --yes --message "<prompt>"`（PyPI 包 `aider-chat`）。它直接改当前 git 仓库并退出，适合收成一个带 `prompt` 的命名命令。
 - OpenHands：命令 `openhands --headless -t "<task>"`。headless 必带 `-t` 或 `-f`，并且会自动批准动作，适合收成一个带任务文本的命名命令。
 - Goose：命令 `goose run -t "<text>"`（长选项 `--text`）。`goose run` 执行完这段文本就退出，和命名命令「入参是一段任务、返回进程输出」的形态一致。

@@ -21,6 +21,7 @@ def test_missing_entry_rejected_before_delayed_node_startup(tmp_path, monkeypatc
     script.write_text('#!/bin/sh\nsleep 3\nexec ' + shlex.quote(node) + ' "$@"\n')
     script.chmod(0o755)
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('WORKSPACE', str(tmp_path))
     monkeypatch.setenv('PATH', str(shim) + os.pathsep + os.environ['PATH'])
     spec = importlib.util.spec_from_file_location('node_web_startup_regression', Path(__file__).with_name('commands.py'))
     module = importlib.util.module_from_spec(spec)
@@ -35,7 +36,7 @@ def test_missing_entry_rejected_before_delayed_node_startup(tmp_path, monkeypatc
 
     monkeypatch.setattr(subprocess, 'Popen', owned_popen)
     try:
-        with pytest.raises(RuntimeError, match='entry'):
+        with pytest.raises((RuntimeError, ValueError), match='entry'):
             module.serve(entry='missing-entry.js', port=3999)
     finally:
         for process in processes:

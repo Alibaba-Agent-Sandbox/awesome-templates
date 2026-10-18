@@ -1,0 +1,134 @@
+{
+  "result": "PASS",
+  "pass": true,
+  "date": "2026-10-16",
+  "template": "aider",
+  "provider": "alicloud-express",
+  "checks": [
+    "official generation-2 CreateTemplate for actual Aider config",
+    "official template READY",
+    "SDK create from uniquely registered reviewed image",
+    "all 56 installed server modules match exact pinned SDK bytes",
+    "HTTP /health",
+    "full external HTTP suite, real installed CLI required, model calls disabled",
+    "actual deployed image commands match exact reviewed source; no source overlay",
+    "new owned original-image server started with explicit env; SDK/HTTP/CLI configured target proven",
+    "actual installed official Aider help flags",
+    "actual official CLI native-home negative control; valid explicit config does not suppress defaults",
+    "actual deployed named command refuses malicious home config",
+    "real final-image ask/coding/artifact retrieval and independent original plus held-out tests"
+  ],
+  "commands": [
+    {
+      "command": "aider_version",
+      "sdk": {
+        "ok": true
+      },
+      "http": {
+        "ok": true
+      },
+      "cli": {
+        "ok": true
+      }
+    }
+  ],
+  "cleanup": {
+    "push_helper_kill": true,
+    "push_helper_absence_verified": true,
+    "sandbox_kill": true,
+    "sandbox_absence_verified": true,
+    "model_sandbox_kill": true,
+    "model_sandbox_absence_verified": true,
+    "template_delete": true,
+    "template_absence_verified": true,
+    "registry_tag_delete_verified": true,
+    "registry_repository_delete_verified": true
+  },
+  "reviewed_head": "ecbabafca49fd8f5d0cf980842a7fa69ee66d7c6",
+  "boundary": "Actual CI image, native cloud push and official registration; full local abx template deploy wrapper not run",
+  "image_provenance": {
+    "artifact_id": 12026949932,
+    "workflow_run_id": 38856361807,
+    "archive_sha256": "13006e0577a904435eb7384698d8530bce82f08d1abe8ceb12372c3984076cd0",
+    "source_head_commit": "ecbabafca49fd8f5d0cf980842a7fa69ee66d7c6",
+    "checkout_commit": "caf1f55d6562c562456419551d623703652bb796",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "commands_sha256": "bc11b5eda480d25554ae2ee61ace873eaf978cdaa3bcc67ad808c88749019684"
+  },
+  "stage": "actual image negative controls and real Qwen coding",
+  "registry_transfer": {
+    "method": "official crane in owned Express helper",
+    "same_reviewed_archive_sha256_verified": true,
+    "crane_sha256": "8e75c326adb43b053cfd78b9b987663f8f4fe4557f4d3915905643f25c730992"
+  },
+  "image_digest": "sha256:aa567a4f1b0b7c07819e89135204ba0df1c67932a24329bc8119109811fea868",
+  "installed_server_provenance": {
+    "modules_compared": 56,
+    "all_module_bytes_match_recorded_sdk_source": true,
+    "expected_source_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "source_manifest_sha256": "dac8868dcff05c87cd3f3230b38dfb00530c622f86832b5c9592f846dfb019c8"
+  },
+  "full_http_suite": {
+    "PASS": 9,
+    "FAIL": 0,
+    "SKIP": 1,
+    "exit_code": 0,
+    "source_sha256": "be5904b3ff2278804001c0e42afe1beace88118e5b924c1099c34939f2503a08",
+    "failed_cases": []
+  },
+  "configured_server": {
+    "server_port": 9010,
+    "sdk_setup": true,
+    "http_setup": true,
+    "cli_setup": true,
+    "configuration": "explicit SDK commands.start env, only named Aider settings; HOME unchanged",
+    "source_overlay": false,
+    "default_prewarmed_server_configured": false
+  },
+  "actual_cli_loopback": {
+    "exit_code": 0,
+    "checks": [
+      "PASS actual Aider CLI applies explicit selected whole-file edit",
+      "PASS actual Aider CLI slash/bang requests remain literal model text",
+      "PASS actual Aider CLI rejects unselected absolute/relative creation and existing edits"
+    ],
+    "diagnostic_labels": [
+      "INFO unselected guard absolute-create {\"explicit_refusal_text\": false, \"upstream_path_error_text\": false}",
+      "INFO unselected guard relative-create {\"explicit_refusal_text\": true, \"upstream_path_error_text\": false}",
+      "INFO unselected guard absolute-existing {\"explicit_refusal_text\": false, \"upstream_path_error_text\": true}"
+    ],
+    "runner_sha256": "751f3a3ff912533b00e5ede5129b561e5a719fd6c2b3f354bf24a112f680995c",
+    "scope": "actual official CLI with deterministic loopback model; not real-model proof"
+  },
+  "real_model_image_acceptance": {
+    "PASS": 21,
+    "FAIL": 0,
+    "SKIP": 0,
+    "exit_code": 0,
+    "checks": [
+      "[PASS] health",
+      "[PASS] registered command names",
+      "[PASS] typed command parameters",
+      "[PASS] invalid arguments are HTTP 400",
+      "[PASS] invalid arguments are HTTP 400",
+      "[PASS] unknown command is HTTP 404",
+      "[PASS] read-only setup inspection",
+      "[PASS] real CLI version equals pin",
+      "[PASS] owned git working tree initialized",
+      "[PASS] seeded source fails before model edits",
+      "[PASS] real default ask has no writeback",
+      "[PASS] default ask preserves original source bytes",
+      "[PASS] real coding execution completes",
+      "[PASS] explicit selected artifact writeback reported",
+      "[PASS] existing source changed via target files API",
+      "[PASS] original test file preserved",
+      "[PASS] new report artifact retrieved",
+      "[PASS] new exact artifact retrieved",
+      "[PASS] independent target unittest process passes",
+      "[PASS] independent held-out calculations pass",
+      "[PASS] owned coding project cleanup"
+    ],
+    "model": "qwen3.8-flash",
+    "controller_sha256": "be5904b3ff2278804001c0e42afe1beace88118e5b924c1099c34939f2503a08"
+  }
+}

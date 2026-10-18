@@ -37,7 +37,7 @@ templates:
     tags: [python, hello-world, example]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: official
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
@@ -52,7 +52,7 @@ templates:
     tags: [browser, playwright, chromium, automation, web-scraping]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: official
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
@@ -67,7 +67,7 @@ templates:
     tags: [claude, anthropic, ai-coding, ai-agent]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, terminal, ports]
-    status: official
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
@@ -91,13 +91,13 @@ templates:
       opensandbox: push-image-then-pass-uri
 
   - name: codex-agent-api
-    description: "Self-hosted OpenAI Agents API compatible service powered by Codex CLI"
+    description: "Codex 0.162.1 HTTP session adapter with bounded turns and SSE; project API subset, not full OpenAI API compatibility."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: codex-agent-api
     tags: [codex, openai, agents-api, ai-agent, self-hosted]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: official
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
@@ -106,28 +106,28 @@ templates:
       opensandbox: push-image-then-pass-uri
 
   - name: qoder
-    description: "Python and Node.js dev sandbox. qoder_run executes a local script; the Qoder CLI is not installed."
+    description: "Qoder coding CLI @qoder-ai/qodercli@1.1.72 with version, read-only setup and bounded headless execution."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: qoder
     tags: [qoder, ai-coding, ai-agent, development]
     author: alibaba-agent-sandbox
-    capabilities: [shell, files, code, terminal, ports]
-    status: official
+    capabilities: [shell, files, code, ports]
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
-      cubesandbox: unsupported-needs-pty
+      cubesandbox: preexisting-template-id
       e2b: preexisting-template-id
       opensandbox: push-image-then-pass-uri
 
   - name: agents-cli
-    description: "Agents API for Codex and Qwen Code. The image does not preinstall either CLI."
+    description: "Restricted local Agents HTTP API with pinned Codex 0.162.1 and Qwen Code 0.23.0."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: agents-cli
     tags: [agents-api, codex, qwen-code, self-hosted]
     author: alibaba-agent-sandbox
-    capabilities: [shell, files, ports]
-    status: official
+    capabilities: [ports]
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
@@ -142,22 +142,22 @@ templates:
     tags: [qwen, qwen-code, dashscope, ai-coding, ai-agent, deploy]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: official
+    status: experimental
     providers:
-      alicloud-express: supported
+      alicloud-express: install-build
       alicloud-container: preexisting-template-id
       cubesandbox: preexisting-template-id
       e2b: preexisting-template-id
       opensandbox: push-image-then-pass-uri
 
   - name: deepseek-harness
-    description: "DeepSeek Agent Runtime — DeepSeek model-driven AI coding agent"
+    description: "Bounded DeepSeek-compatible coding agent with read, write, list and shell tools."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: deepseek-harness
     tags: [deepseek, ai-agent, ai-coding, code-generation]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: official
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
@@ -166,13 +166,13 @@ templates:
       opensandbox: push-image-then-pass-uri
 
   - name: hermes-agent
-    description: "Chat completion against an OpenAI-compatible endpoint. This template does not register tools."
+    description: "NousResearch Hermes 0.22.1 with pinned upstream runtime, local file/terminal tools and bounded headless execution."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: hermes-agent
     tags: [hermes, nousresearch, ai-agent, tool-calling]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: official
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
@@ -187,7 +187,7 @@ templates:
     tags: [nodejs, web, express, api, javascript]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: official
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
@@ -196,13 +196,13 @@ templates:
       opensandbox: push-image-then-pass-uri
 
   - name: openclaw
-    description: "OpenClaw AI Agent runtime — open-source AI coding agent gateway"
+    description: "OpenClaw 2026.10.4 gateway with authenticated health, owned process lifecycle and Node.js 24.16.0."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: openclaw
     tags: [openclaw, ai-agent, ai-coding, gateway]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: official
+    status: experimental
     providers:
       alicloud-express: supported
       alicloud-container: preexisting-template-id
@@ -232,9 +232,9 @@ templates:
     tags: [amp, sourcegraph, ai-agent, ai-coding]
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
-    status: official
+    status: experimental
     providers:
-      alicloud-express: supported
+      alicloud-express: install-build
       alicloud-container: preexisting-template-id
       cubesandbox: preexisting-template-id
       e2b: preexisting-template-id
@@ -249,7 +249,7 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: supported
+      alicloud-express: install-build
       alicloud-container: preexisting-template-id
       cubesandbox: preexisting-template-id
       e2b: preexisting-template-id
@@ -271,6 +271,33 @@ templates:
       opensandbox: push-image-then-pass-uri
 
   # === Community Templates ===
+  - name: document-tools
+    description: "Bounded offline Markdown to DOCX/plain-text conversion using pinned Pandoc."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: document-tools
+    tags: [pandoc, documents, markdown, docx, cpu]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+
+  - name: media-tools
+    description: Bounded offline CPU MP4, WAV and FLAC conversion with pinned FFmpeg.
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: media-tools
+    tags:
+    - ffmpeg
+    - media
+    - cpu
+    - audio
+    - video
+    author: alibaba-agent-sandbox
+    capabilities:
+    - shell
+    - files
+    - code
+    - ports
+    status: experimental
+
   # Add your template here! Submit a PR following the schema above.
   # Set status to "community" and make sure your repo contains a valid template.yaml.
   #
@@ -284,3 +311,49 @@ templates:
   #     author: your-github-handle
   #     capabilities: [shell, files, code]
   #     status: community
+
+  - name: pi
+    description: "Official Pi CLI 1.3.0 with ephemeral compatible-model settings and explicit writable tools."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: pi
+    tags: [pi, coding-agent, openai-compatible]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+
+  - name: ocr
+    description: "CPU English image OCR with pinned Tesseract 5.5.0 and bounded private TXT/TSV artifacts."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: ocr
+    tags: [ocr, tesseract, images, english]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+  - name: aider
+    description: "Official Aider 0.86.2 with read-only ask and guarded selected-file writeback."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: aider
+    tags: [aider, coding-agent, openai-compatible]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+
+  - name: swe
+    description: "mini-swe-agent 2.4.6 with one real SWE-bench Flask instance and independent non-Docker evaluation."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: swe
+    tags: [swe-bench, mini-swe-agent, evaluation]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: supported
+      opensandbox: push-image-then-pass-uri
+  - name: osworld
+    description: "Pinned OSWorld Linux browser slice: real X11 input, screenshots, AT-SPI and selected task evaluators."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: osworld
+    tags: [osworld, computer-use, desktop, browser]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental

@@ -9,7 +9,7 @@
 | 工具 | 作用 |
 |---|---|
 | `scripts/check_template.py` | 静态检查。目录符合本规范时退出码为 0。 |
-| `scripts/express_e2e.py` | 在 `alicloud-express` 上做 L2。只有通过才写证据，然后删除沙箱和模板。用文件锁串行化 ACR 推送，并在推送没有进展时停掉它。 |
+| `scripts/express_e2e.py` | 在 `alicloud-express` 上做 L2。只有烟测及自有沙箱、模板清理均通过后才写证据。用文件锁串行化 ACR 推送，并在推送没有进展时停掉它。 |
 | `scripts/run_local_e2e.py` | 对每个带 `commands.py` 和 `e2e_test.py` 的目录做 L0，并运行检查器。 |
 | `scripts/image_size_report.py` | 打印本地镜像每一层的大小（`docker history`）。 |
 
@@ -215,7 +215,9 @@ if __name__ == "__main__":
 
 ### 认证令牌
 
-进程启动时读取 `ABX_SERVER_TOKEN`。变量非空时，每个请求都要带 `Authorization: Bearer <token>` 或 `X-Access-Token: <token>`。在 `env` 里声明这个名字，值为空字符串。真正的值在 `abx create --env` 或 `Sandbox.create(envs=...)` 时注入。
+`/health` 不要求 server token；提供方网关仍可能认证该请求。health 成功不证明命名命令认证或模型配置正确。
+
+进程启动时读取 `ABX_SERVER_TOKEN`。变量非空时，受保护的请求需要带 `Authorization: Bearer <token>` 或 `X-Access-Token: <token>`。在 `env` 里声明这个名字，值为空字符串。真正的值必须在服务进程启动前传入。创建时注入（`abx create --env` 或 `Sandbox.create(envs=...)`）仅适用于提供方实际使用这些值启动服务的情况，不能重新配置预热进程。参考[运行环境配置](runtime-environment.zh-CN.md)，检查实际服务并选中已配置端口。
 
 变量未设置时允许匿名调用。极速版网关仍可能带上沙箱访问令牌。当前 `abx`（`agent-sandbox` main，`#16` 的部署与运行修复）在 401 后会不带该头重试一次。当前 `agent_sandbox.Sandbox.server` 不会把沙箱令牌发给端口 9000。模板若设置了 `ABX_SERVER_TOKEN`，要写明客户端如何把 `token=` 传给 `server_at`。
 
@@ -233,6 +235,9 @@ abx exec <sandbox-id> -- python3 -c 'print(1)'
 `--arg` 的值是字符串。数字和布尔用 `--json-args`。`abx exec` 是 shell 或 argv，不是命名命令。
 
 Python SDK。PyPI 上的客户端发行名是 `agent-sandbox-client`。导入名仍是 `agent_sandbox`。`pip install agent-sandbox` 会装上一个无关项目。
+
+使用下面的索引安装命令前先确认发行包已发布。尚未发布时，按
+[Python 客户端安装](./python-client-installation.md) 同时从固定提交安装两个配套包。
 
 ```bash
 python3 -m pip install agent-sandbox-client
@@ -256,9 +261,27 @@ asyncio.run(main())
 
 `sb.run` 把关键字参数作为 `POST /commands/hello` 的 JSON 正文，并返回 `result`。`sb.commands.run` 是 shell API。连接已有沙箱用 `await Sandbox.connect(sandbox_id)`。
 
-python-sdk 0.3.0 上，`Sandbox.create_sync`、`Sandbox.connect_sync`、`Sandbox.list_sync`、`Sandbox.kill_by_id_sync` 会抛 `TypeError`（类参数被丢掉）。`await Sandbox.connect` 得到实例之后，`sb.run_sync` 这类实例方法可用。在 [python-sdk#22](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues/22) 修复前使用上面的异步构造。
+当前检出的 python-sdk 已由 [python-sdk#24](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/24) 修复同步类方法。旧提交若因类参数丢失抛出 `TypeError`，请升级 SDK 或使用异步构造；验收同时记录源码提交与发行版本。
 
 本地 L0 不创建云沙箱。`scripts/run_local_e2e.py` 启动 `python3 commands.py`，设置 `E2E_BASE_URL`，再运行 `e2e_test.py`。该测试可以对 `E2E_BASE_URL` 发 HTTP。所有云上路径使用上面的 SDK。
+
+### HTTP POST 契约
+
+每个 README 在 Python SDK 章节后包含独立的“快速开始（HTTP POST）”章节。
+使用与 CLI/SDK 相同的任务，给出沙箱端口 URL、`POST /commands/<name>`、
+`Content-Type: application/json`、直接参数 JSON（不嵌套 args）及 `{"result": ...}`。
+说明必填值、默认值、类型、范围，以及参数错误 400、认证失败 401、命令不存在
+404、执行错误 500。分别说明 ABX_SERVER_TOKEN 与提供方网关认证；示例只使用
+环境变量或占位符，不得出现真实凭据。
+
+命名命令在执行完成后整体返回。`Sandbox.run(timeout=...)` 控制客户端 HTTP
+超时，因此命令执行截止时间应采用 command_timeout 或 timeout_s 等独立参数名。
+客户端超时不保证取消服务端执行。后台运行、重连与取消使用进程 API。
+编程 Agent 的 L3 必须修改已有源码、创建新产物，并在沙箱内独立运行测试；
+远端服务的产物验证必须走远端 files/process API，不能读取宿主文件冒充通过。
+仅回复 marker 不构成 L3。同步类方法旧缺陷已由
+[python-sdk#24](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/24) 修复；
+验证时同时记录 SDK 提交和包版本，旧提交请升级或使用异步构造。
 
 ## 测试级别
 
@@ -269,10 +292,21 @@ python-sdk 0.3.0 上，`Sandbox.create_sync`、`Sandbox.connect_sync`、`Sandbox
 | L0 | `python3 scripts/run_local_e2e.py` 能启动该模板，且 `e2e_test.py` 退出码为 0。某个用例因缺少模型密钥可以打印 SKIP。这个 SKIP 不是该 Agent 已验收。本地脚本会设置 `E2E_RUN_LLM=0`。 |
 | L1 | `docker build` 成功，日志里能看到钉死的上游版本。 |
 | L2 | `abx template deploy` 到达 READY，`Sandbox.create(template=<id>)`（或 `connect`）成功，并且每条 smoke 命令都从沙箱外经 SDK 调用并断言。记录提供方 `alicloud-express`、UTC 日期、模板版本、SDK 版本。不记录模板 id。 |
-| L3 | 用本环境已有的密钥做一次真实模型或产品调用。提示词要求标记 `ABX_E2E_OK`，输出里包含它。`E2E_REQUIRE_LLM=1` 时空密钥是失败，不是跳过。 |
+| L3 | 用兼容凭据运行真实模型/产品。编程 Agent 必须修改已有源码、创建新产物，并在沙箱内独立运行测试；远端文件/进程 API 验证产物，回复 marker 不足以通过。`E2E_REQUIRE_LLM=1` 时空密钥是失败。 |
 | L4 | `e2b`、`opensandbox`、`alicloud-container` 或 `cubesandbox`，只有在该提供方上真实跑过之后。 |
 
 `scripts/express_e2e.py <dir>` 是 L2 运行器。只有每条 smoke 命令都经 CLI 和 SDK 通过时，才写 `evidence/express-<YYYY-MM-DD>.json`：
+
+写入通过记录及退出 0 还要求自有沙箱、模板清理成功，并独立使用 SDK／官方查询确认
+已知沙箱 ID／模板及精确 alias 均不再存在，不能只依据 CLI 销毁／删除的成功应答。运行器通过
+`abx --json template list --official-api` 拒绝已存在的同名 alias；清理失败或
+部署／创建响应不明时，在检出目录之外保留仅含自有标识、不含凭据的私有 intent。
+使用同一账号配置执行 `python3 scripts/express_e2e.py --recover-intent PRIVATE_PATH`
+可通过现有官方模板查询／删除及 SDK 沙箱查询／销毁 API 恢复清理，仅匹配本次精确
+alias／模板 ID。响应不明后的空列表不能证明已取消；恢复成功也不把原失败变成提供方
+验收通过。仓库镜像的保留由操作者另行处理，本运行器清理沙箱、模板及本地部署进程。
+canonical 部署显式使用 `--acr-repo <本轮alias> --tag review`，私有 intent
+记录该精确仓库与 tag，便于操作者处理镜像保留／删除。
 
 ```json
 {
@@ -283,6 +317,7 @@ python-sdk 0.3.0 上，`Sandbox.create_sync`、`Sandbox.connect_sync`、`Sandbox
   "sdk_version": "0.3.0",
   "cli": "abx",
   "passed": true,
+  "cleanup_verified": true,
   "commands": [
     {"name": "hello", "via": "cli", "args": {"name": "Express"}, "ok": true, "result": "Hello, Express!", "duration_s": 0.4},
     {"name": "hello", "via": "sdk", "args": {"name": "Express"}, "ok": true, "result": "Hello, Express!", "duration_s": 0.3}
@@ -301,7 +336,7 @@ Verified 表里出现 `alicloud-express` 时，检查器要求存在上述形状
 ## 安全
 
 - 密钥的值不进入镜像、`template.yaml`、Docker 历史或证据 JSON。
-- `env` 只声明名字和空字符串。创建沙箱时注入值。
+- `env` 只声明名字和空字符串。真正的值在使用它的进程启动前明确传入；创建请求不能更新已有进程。
 - 日志和异常文本不包含令牌。`scripts/express_e2e.py` 在打印前会涂掉名字里含 `KEY`、`SECRET`、`TOKEN` 或 `PASSWORD` 的环境变量值。
 - 不要提交 `.env`、云凭证或 `Dockerfile.abx-build`。
 
@@ -316,6 +351,7 @@ Verified 表里出现 `alicloud-express` 时，检查器要求存在上述形状
 | Problem solved | 解决的问题 |
 | Quick start (CLI) | 快速开始（CLI） |
 | Quick start (Python SDK) | 快速开始（Python SDK） |
+| Quick start (HTTP POST) | 快速开始（HTTP POST） |
 | Command reference | 命令参考 |
 | Configuration | 配置 |
 | Resources | 资源 |
@@ -392,7 +428,6 @@ python3 scripts/check_template.py --all --strict   # 旧模板的违规也导致
 ## 极速版 harness
 
 ```bash
-export HOME=/home/ubuntu
 unset ABX_PROVIDER
 export ABX='node /path/to/agent-sandbox/dist/bin/abx.js'
 export ACR_NAMESPACE=...
@@ -405,13 +440,10 @@ export ALIBABA_CLOUD_REGION_ID=cn-hangzhou
 # 可选：用一份检出构建镜像里的 server
 export ABX_SERVER_SDK_SOURCE=/path/to/python-sdk/server-sdk
 
-python3 scripts/express_e2e.py python-hello \
-  --start-cmd 'agent-sandbox-server serve --port 9000 --commands /app/commands.py' \
-  --ready-cmd 'agent-sandbox-server healthcheck --port 9000' \
-  --command hello --arg name=E2E --expect 'Hello, E2E!'
+python3 scripts/express_e2e.py python-hello
 ```
 
-main 上的 `python-hello` 还没有 `smoke`、`start_cmd` 和阿里云基础镜像，所以上面的标志补上这些值。`spec_version: 2` 的目录不需要标志：harness 读 `template.yaml`。
+当前 spec_version 2 的 `python-hello` 已在 `template.yaml` 中声明 smoke 和启动命令，harness 直接读取。保留调用者原有的 HOME。
 
 远端名字是唯一的 `e2e-<name>-<hex>` 别名，不是目录里的名字，因此已有的 generation 1 模板会被留下。`finally` 对本进程创建的 id 执行 `abx kill <id> -y` 和 `abx template delete <id> -y`。它还会杀掉部署进程组，以及命令行里包含该别名的 `docker push`。以前只按墙钟杀掉 `abx` 时，推送不在同一个进程组里，会继续占着仓库连接。
 

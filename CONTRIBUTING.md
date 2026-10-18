@@ -34,6 +34,21 @@ already passes `scripts/check_template.py`. It is not a catalog entry.
    when that command exits 0. `python3 scripts/image_size_report.py IMAGE`
    prints per-layer sizes.
 
+   The runner refuses an existing official template alias and requires
+   `abx --json template list --official-api` for ownership checks. Exit 0 and
+   provider-pass evidence require successful owned sandbox/template cleanup.
+   The runner independently reads back known sandbox IDs/templates and the exact
+   official alias before publishing; cleanup acknowledgements alone are insufficient.
+   A failed or ambiguous deploy/create keeps a private `intent.json` outside the
+   checkout containing only owned identifiers, never credentials. Reconcile with
+   `python3 scripts/express_e2e.py --recover-intent PRIVATE_PATH` using the same
+   account/provider configuration. Recovery matches exact aliases/template IDs;
+   an empty inventory after an unknown response does not prove cancellation.
+   Successful recovery does not turn the failed attempt into L2 acceptance.
+   The deploy explicitly uses the owned alias as ACR repository and the fixed
+   temporary tag `review`; plan/private intent records both. Registry image
+   retention/deletion is separate from the runner's sandbox/template cleanup.
+
 Do not commit `__pycache__/`, `.env`, or secret values. Declare secret
 *names* with empty values in `template.yaml` `env`.
 

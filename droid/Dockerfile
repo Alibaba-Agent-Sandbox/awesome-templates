@@ -1,49 +1,31 @@
-FROM python:3.12-slim
+FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8
+ENV HOME=/home/user
+ENV FACTORY_DROID_AUTO_UPDATE_ENABLED=false
+ENV WORKSPACE=/home/user/app
 
-# python:3.12-slim already provides python3 and pip. Install them when the base image does not.
-RUN if ! command -v python3 >/dev/null 2>&1 || ! command -v pip >/dev/null 2>&1; then \
-        apt-get update && apt-get install -y --no-install-recommends python3 python3-pip \
-        && rm -rf /var/lib/apt/lists/*; \
-    fi
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        build-essential \
-        ca-certificates \
-        curl \
-        git \
-        gnupg \
-        ripgrep \
-    && rm -rf /var/lib/apt/lists/*
-
-# Factory Droid CLI, pinned to the version the official installer publishes.
-# https://app.factory.ai/cli sets VER=0.241.1.
-# npm @factory/cli@0.241.1 (bin: droid) is the same release; npm builds disable auto-update.
-# Docs: https://docs.factory.ai/droid-cli/cli-reference (npm install -g droid@<version>).
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y nodejs \
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates git ripgrep \
     && rm -rf /var/lib/apt/lists/* \
-    && npm install -g @factory/cli@0.241.1 \
-    && droid --version
+    && mkdir -p /home/user/app \
+    && chown -R user:user /home/user
 
-RUN pip install --no-cache-dir --upgrade pip
+# The platform image already provides Node >=20, required by this exact release.
+# The base npm mirror lacks this release's native optional packages. The
+# upstream fallback installer can otherwise leave bin/droid self-linked.
+RUN npm install -g @factory/cli@0.241.1 --registry https://registry.npmjs.org --include=optional \
+    && test "$(droid --version)" = "0.241.1" \
+    && npm cache clean --force
 
-# Install agent-sandbox-server (the in-sandbox HTTP server, import agent_sandbox.server).
-# abx template deploy injects the wheel into the build context. Without a wheel, install from PyPI.
 COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
         pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
     else \
-        pip install --no-cache-dir agent-sandbox-server; \
+        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/61c43e0be65a1f57aa09186d578e7b399e48429b.tar.gz#subdirectory=server-sdk"; \
     fi
 
-# npm builds already disable auto-update. Keep that behavior if the binary is invoked directly.
-ENV FACTORY_DROID_AUTO_UPDATE_ENABLED=false
-ENV WORKSPACE=/app
-
-WORKDIR /app
-COPY commands.py .
+WORKDIR /home/user/app
+COPY --chown=user:user commands.py .
+USER user
 EXPOSE 9000
-CMD ["python3", "commands.py"]

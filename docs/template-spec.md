@@ -9,7 +9,7 @@ Tooling that later template work relies on:
 | Tool | Role |
 |---|---|
 | `scripts/check_template.py` | Static lint. Exit 0 when the directory matches this spec. |
-| `scripts/express_e2e.py` | L2 on `alicloud-express`. Writes evidence only after a pass, then deletes the sandbox and the template. Serializes ACR pushes with a file lock and stops a push that makes no progress. |
+| `scripts/express_e2e.py` | L2 on `alicloud-express`. Writes evidence only after smoke and owned sandbox/template cleanup pass. Serializes ACR pushes with a file lock and stops a push that makes no progress. |
 | `scripts/run_local_e2e.py` | L0 for every directory that has `commands.py` and `e2e_test.py`. Also runs the checker. |
 | `scripts/image_size_report.py` | Per-layer sizes of a local image (`docker history`). |
 
@@ -215,7 +215,9 @@ if __name__ == "__main__":
 
 ### Auth token
 
-The server reads `ABX_SERVER_TOKEN` when the process starts. When the variable is non-empty, every request needs `Authorization: Bearer <token>` or `X-Access-Token: <token>`. Declare the name in `env` with an empty value. Inject the real value at `abx create --env` or `Sandbox.create(envs=...)`.
+`/health` is exempt from server-token authentication; the provider gateway may still authenticate that request. A successful health probe does not prove named-command authentication or model configuration.
+
+The server reads `ABX_SERVER_TOKEN` when the process starts. When the variable is non-empty, protected requests need `Authorization: Bearer <token>` or `X-Access-Token: <token>`. Declare the name in `env` with an empty value. Provide the real value to the server process before it starts. Create-time injection (`abx create --env` or `Sandbox.create(envs=...)`) applies only when that provider starts the server with those values; it cannot reconfigure a prewarmed process. Follow [runtime environment configuration](runtime-environment.md), inspect the actual service and target its configured port.
 
 When the variable is unset, anonymous calls are allowed. On Express the gateway may still present the sandbox access token. Current `abx` (agent-sandbox main, the deploy/run fix in `#16`) retries a 401 once without that header. Current `agent_sandbox.Sandbox.server` does not send the sandbox token to port 9000. A template that sets `ABX_SERVER_TOKEN` must document how the client passes `token=` to `server_at`.
 
@@ -233,6 +235,10 @@ abx exec <sandbox-id> -- python3 -c 'print(1)'
 `--arg` values are strings. Use `--json-args` for numbers and booleans. `abx exec` is a shell or argv, not a named command.
 
 Python SDK. The client distribution on PyPI is `agent-sandbox-client`. The import stays `agent_sandbox`. `pip install agent-sandbox` installs an unrelated project.
+
+Check package availability before using the index command below. For an
+unpublished release, use the paired, pinned source installation in
+[Python client installation](./python-client-installation.md).
 
 ```bash
 python3 -m pip install agent-sandbox-client
@@ -256,9 +262,27 @@ asyncio.run(main())
 
 `sb.run` posts the keyword arguments as the JSON body of `POST /commands/hello` and returns the `result` value. `sb.commands.run` is the shell API. Attach to an existing sandbox with `await Sandbox.connect(sandbox_id)`.
 
-On python-sdk 0.3.0, `Sandbox.create_sync`, `Sandbox.connect_sync`, `Sandbox.list_sync`, and `Sandbox.kill_by_id_sync` raise `TypeError` (the class argument is dropped). Instance methods such as `sb.run_sync` work after `await Sandbox.connect`. Use the async constructors above until [python-sdk#22](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues/22) is fixed.
+The checked-out python-sdk includes the sync-classmethod fix in [python-sdk#24](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/24). Older commits that drop the class argument raise `TypeError`; update the SDK or use async constructors. Record the source commit as well as the package version when validating a checkout.
 
 Local L0 does not create a cloud sandbox. `scripts/run_local_e2e.py` starts `python3 commands.py`, sets `E2E_BASE_URL`, and runs `e2e_test.py`. That test may use HTTP against `E2E_BASE_URL`. Every cloud path uses the SDK above.
+
+### HTTP POST contract
+
+Every README has a dedicated `Quick start (HTTP POST)` section after the Python
+SDK section. It shows the same task as CLI/SDK, the sandbox port URL,
+`POST /commands/<name>`, `Content-Type: application/json`, the direct JSON
+argument object (no `args` wrapper), and the `{"result": ...}` response.
+Document required/default values, types, allowed ranges, 400 argument errors,
+401 authentication, 404 unknown commands, and 500 execution errors. Explain
+`ABX_SERVER_TOKEN` authentication separately from provider gateway authentication;
+never put real credentials in an example. Use the gateway access header required
+by the selected provider in addition to any server authentication.
+
+Named commands return buffered results. Distinguish a command execution deadline
+from the client HTTP timeout: `Sandbox.run(timeout=...)` controls the HTTP request,
+so a command deadline parameter must have a different name, such as
+`command_timeout` or `timeout_s`. A client timeout does not guarantee cancellation.
+Use process APIs for running, reconnecting to, and cancelling background tasks.
 
 ## Test levels
 
@@ -269,10 +293,25 @@ Record a level only when it passed. The README Verified table and `tested_on` li
 | L0 | `python3 scripts/run_local_e2e.py` starts the template and `e2e_test.py` exits 0. A missing model key inside one case may print SKIP. That SKIP is not acceptance of the agent. `E2E_RUN_LLM=0` is what the local script sets. |
 | L1 | `docker build` succeeds and the log shows the pinned upstream version. |
 | L2 | `abx template deploy` reaches READY, `Sandbox.create(template=<id>)` (or `connect`) succeeds, and each smoke command is invoked from outside the sandbox through the SDK and asserted. Record provider `alicloud-express`, the UTC date, template version, and SDK version. Do not record the template id. |
-| L3 | A real model or product call with a key this environment has. The prompt asks for the marker `ABX_E2E_OK` and the output contains it. An empty key is a failure, not a skip, when `E2E_REQUIRE_LLM=1`. |
+| L3 | A real model or product call with a compatible key. Coding agents must modify an existing source file, create a new artifact, and pass independently executed tests in the sandbox. Verify artifacts through the remote files/process APIs when the server is remote. A response marker alone is insufficient. An empty key fails when `E2E_REQUIRE_LLM=1`. |
 | L4 | `e2b`, `opensandbox`, `alicloud-container`, or `cubesandbox`, only after a run on that provider. |
 
 `scripts/express_e2e.py <dir>` is the L2 runner. It writes `evidence/express-<YYYY-MM-DD>.json` only when every smoke command passed through the CLI and the SDK:
+
+The runner also requires successful owned sandbox/template cleanup before writing
+the pass file or returning exit 0, including independent SDK/official-list
+readback that the known sandbox IDs/templates and exact alias are absent. CLI
+kill/delete acknowledgements alone do not establish that. It refuses an existing exact alias through
+`abx --json template list --official-api`. Cleanup failures and unknown deploy/create
+responses retain a private, credential-free owned intent.
+`python3 scripts/express_e2e.py --recover-intent PRIVATE_PATH` uses existing official
+template list/delete and SDK sandbox list/kill APIs to reconcile only that attempt.
+An unresolved response stays blocked; recovery success does not grant provider
+acceptance to the original failed run. Registry-image retention is a separate
+operator responsibility; this runner cleans sandbox/template resources and local
+deploy processes.
+The canonical deploy passes `--acr-repo <owned-alias> --tag review`; the private
+intent records these exact registry identifiers for the operator.
 
 ```json
 {
@@ -283,6 +322,7 @@ Record a level only when it passed. The README Verified table and `tested_on` li
   "sdk_version": "0.3.0",
   "cli": "abx",
   "passed": true,
+  "cleanup_verified": true,
   "commands": [
     {"name": "hello", "via": "cli", "args": {"name": "Express"}, "ok": true, "result": "Hello, Express!", "duration_s": 0.4},
     {"name": "hello", "via": "sdk", "args": {"name": "Express"}, "ok": true, "result": "Hello, Express!", "duration_s": 0.3}
@@ -301,7 +341,7 @@ Inside the template README, `## Verified` is either the sentence `No provider ha
 ## Security
 
 - Secret values are not copied into the image, `template.yaml`, Docker history, or evidence JSON.
-- `env` declares the name and an empty string. The create call injects the value.
+- `env` declares the name and an empty string. Pass values explicitly to the process that needs them before it starts; a create call does not update existing processes.
 - Logs and exception text omit tokens. `scripts/express_e2e.py` redacts environment values whose names contain `KEY`, `SECRET`, `TOKEN`, or `PASSWORD` before printing.
 - Do not commit `.env`, cloud credentials, or `Dockerfile.abx-build`.
 
@@ -316,6 +356,7 @@ Inside the template README, `## Verified` is either the sentence `No provider ha
 | Problem solved | 解决的问题 |
 | Quick start (CLI) | 快速开始（CLI） |
 | Quick start (Python SDK) | 快速开始（Python SDK） |
+| Quick start (HTTP POST) | 快速开始（HTTP POST） |
 | Command reference | 命令参考 |
 | Configuration | 配置 |
 | Resources | 资源 |
@@ -392,7 +433,6 @@ Violation codes include `required-file`, `readme-section`, `base-image`, `docker
 ## Express harness
 
 ```bash
-export HOME=/home/ubuntu
 unset ABX_PROVIDER
 export ABX='node /path/to/agent-sandbox/dist/bin/abx.js'
 export ACR_NAMESPACE=...
@@ -405,13 +445,10 @@ export ALIBABA_CLOUD_REGION_ID=cn-hangzhou
 # optional: build the in-image server from a checkout
 export ABX_SERVER_SDK_SOURCE=/path/to/python-sdk/server-sdk
 
-python3 scripts/express_e2e.py python-hello \
-  --start-cmd 'agent-sandbox-server serve --port 9000 --commands /app/commands.py' \
-  --ready-cmd 'agent-sandbox-server healthcheck --port 9000' \
-  --command hello --arg name=E2E --expect 'Hello, E2E!'
+python3 scripts/express_e2e.py python-hello
 ```
 
-`python-hello` on main does not yet declare `smoke`, `start_cmd`, or the Alibaba base image, so the flags above supply them. A spec_version 2 directory needs no flags: the harness reads `template.yaml`.
+The current spec_version 2 `python-hello` declares its smoke and startup commands in `template.yaml`; the harness reads them directly. Preserve the caller’s native HOME.
 
 The remote name is a unique `e2e-<name>-<hex>` alias, not the catalog name, so a pre-existing generation-1 template is left alone. The `finally` block runs `abx kill <id> -y` and `abx template delete <id> -y` for ids this process created. It also kills the deploy process group and any `docker push` whose command line contains that alias. A wall-clock kill of only the `abx` process used to leave the push running (the push is not in the same process group unless the harness starts one).
 

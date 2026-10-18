@@ -1,0 +1,33 @@
+[PASS] target health
+[PASS] target command registration and parameters
+CONTROLLER_RESPONSE_METADATA {"http_status": 400, "result_type": "NoneType", "error_markers": [], "exit_codes": []}
+[PASS] missing required prompt returns 400
+CONTROLLER_RESPONSE_METADATA {"http_status": 500, "result_type": "NoneType", "error_markers": [], "exit_codes": []}
+[PASS] empty prompt fails before CLI execution
+[PASS] unknown command returns 404
+[PASS] actual target Python execution
+[PASS] target code artifact downloaded via files API
+[PASS] owned code artifact cleanup
+[PASS] required target CLI version matches pin
+[PASS] required target setup check
+[PASS] target serve startup and target-side authenticated health/version
+[PASS] target serve status
+[PASS] target serve start is idempotent
+[PASS] target serve stop
+[PASS] target serve stopped state
+[PASS] L3 seeded existing source reproduces failing independent tests
+CONTROLLER_RESPONSE_METADATA {"http_status": 200, "result_type": "dict", "text_length": 40, "session_present": true, "model": "dashscope/qwen3.8-flash", "event_types": ["step_start", "tool_use", "step_finish", "step_start", "tool_use", "step_finish", "step_start", "tool_use", "step_finish", "step_start", "tool_use", "tool_use", "step_finish", "step_start", "tool_use", "step_finish", "step_start", "tool_use", "step_finish", "step_start", "text", "step_finish"]}
+[PASS] L3 real headless coding response and session
+[PASS] L3 existing source was modified on target
+[PASS] L3 seeded independent tests were preserved
+[PASS] L3 new agent report and exact artifact downloaded from target
+[PASS] L3 independent remote fixed-test rerun passes
+[PASS] L3 independent remote held-out assertions pass
+[PASS] L3 resume artifact absent before exact-session turn
+CONTROLLER_RESPONSE_METADATA {"http_status": 200, "result_type": "dict", "text_length": 43, "session_present": true, "model": "dashscope/qwen3.8-flash", "event_types": ["step_start", "tool_use", "tool_use", "step_finish", "step_start", "tool_use", "step_finish", "step_start", "text", "step_finish"]}
+[PASS] L3 exact-session resume response preserves the returned session id
+[PASS] L3 resume artifact independently matches original report SHA-256 and held-out calculations
+[PASS] L3 resume preserves original source tests report and acceptance artifact
+[PASS] L3 independent remote held-out assertions pass after exact-session resume
+[PASS] L3 owned coding project cleanup
+SUMMARY 28 PASS, 0 FAIL, 0 SKIP (L3 status printed separately)

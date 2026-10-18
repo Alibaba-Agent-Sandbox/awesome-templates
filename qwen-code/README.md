@@ -1,270 +1,125 @@
-# qwen-code
+# Qwen Code
 
-> [中文版](#中文) | [English](#english)
+[中文](README.zh-CN.md)
 
----
+## What it does
 
-## English
+Runs the pinned Qwen Code CLI as a non-interactive coding agent, with named HTTP commands for coding, installation diagnostics and Python execution. The template is experimental; the acceptance levels below describe what was actually checked.
 
-Sandbox runtime for the Qwen coding agent — supports qwen-code-driven autonomous deployment and provides a Python 3.12 + Node.js 22 AI coding foundation.
+## Stack
 
-### Environment
+Alibaba FC generation-2 base, Python from the platform, Node.js 22 when the base does not provide Node >=22, `@qwen-code/qwen-code@0.23.0`, and the pinned in-sandbox server in [Dockerfile](Dockerfile). No extra DashScope or OpenAI Python library is needed by the CLI.
 
-This template comes preinstalled with the following tools and dependencies:
+## Problem solved
 
-| Category | Details |
-|----------|---------|
-| **Base image** | python:3.12-slim |
-| **Python** | Python 3.12 + venv (at `/opt/venv`) |
-| **Node.js** | Node.js 22.x + npm |
-| **Python packages** | `dashscope`, `openai>=1.0`, `httpx`, `rich` |
-| **Node.js packages** | `@qwen-code/qwen-code@0.23.0` |
-| **System tools** | git, curl, wget, ripgrep, jq, build-essential |
-| **Resources** | 2 CPU / 4096 MB memory |
+Provides a reproducible headless CLI rather than requiring browser OAuth or configuring each sandbox by hand. The wrapper explicitly selects OpenAI-compatible authentication and rejects a missing key before starting the agent.
 
-### Installation
+## Quick start (CLI)
 
-**Install from a local path:**
+Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
+
+Build/register with Express credentials and an available Docker daemon:
 
 ```bash
 abx template install ./qwen-code --registry-type local
+abx create --template <template-id> --env OPENAI_API_KEY="$OPENAI_API_KEY"
+abx run <sandbox-id> qwen_version
+abx run <sandbox-id> qwen_setup_check
+abx run <sandbox-id> qwen --json-args '{"prompt":"Fix the existing calculator.py and write REPORT.md explaining the fix; run its tests","max_turns":20,"yolo":true,"command_timeout":300}'
 ```
 
-**Install from GitHub:**
+Upload the project before invoking the agent. `yolo=true` approves all agent tool actions; use it only for a sandbox and project you intend the agent to modify. The default is `false`. Results are buffered JSON text emitted by Qwen, not live events.
 
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//qwen-code
-```
+## Quick start (Python SDK)
 
-### Usage
-
-Create a sandbox instance and pass in the API key:
-
-```bash
-abx create --template qwen-code --env DASHSCOPE_API_KEY=sk-xxx
-```
-
-Call a Qwen model inside the sandbox via the DashScope SDK:
-
-```bash
-abx exec <sandbox-id> -- python3 -c "
-import dashscope
-from dashscope import Generation
-response = Generation.call(model='qwen-turbo', prompt='Write a quicksort algorithm')
-print(response.output.text)
-"
-```
-
-The OpenAI-compatible interface is also supported:
-
-```bash
-abx exec <sandbox-id> -- python3 -c "
-from openai import OpenAI
-client = OpenAI(
-    api_key='your-dashscope-key',
-    base_url='https://dashscope.aliyuncs.com/compatible-mode/v1'
-)
-response = client.chat.completions.create(
-    model='qwen-turbo',
-    messages=[{'role': 'user', 'content': 'Write a quicksort'}]
-)
-print(response.choices[0].message.content)
-"
-```
-
-Using the Python SDK:
+Use `agent-sandbox-client` with the paired server; see [source installation](../docs/python-client-installation.md) if the matching version is unpublished. The Python import remains `agent_sandbox`.
 
 ```python
+import asyncio
+import os
 from agent_sandbox import Sandbox
 
-sandbox = Sandbox.create_sync(
-    template="qwen-code",
-    env={"DASHSCOPE_API_KEY": "sk-xxx"}
-)
+async def main():
+    sb = await Sandbox.create(template="<template-id>", timeout=600,
+        envs={"OPENAI_API_KEY": os.environ["OPENAI_API_KEY"]})
+    try:
+        print(await sb.run("qwen_version"))
+        await sb.files.write("/home/user/app/calculator.py", "def add(a,b):\n    return a-b\n")
+        print(await sb.run("qwen", prompt="Fix calculator.py and write REPORT.md explaining the fix; run its tests",
+            max_turns=20, yolo=True, command_timeout=300, timeout=330))
+        print((await sb.commands.run("cd /home/user/app && python3 -c 'from calculator import add; assert add(2,3)==5'")).exit_code)
+    finally:
+        await sb.kill()
 
-result = sandbox.commands.run("python3 --version && node --version")
-print(result.stdout)
+asyncio.run(main())
 ```
 
-### Configuration
+`timeout=330` controls the client's HTTP wait; `command_timeout=300` limits the owned agent process group. A client timeout does not guarantee cancellation. Use process APIs for background jobs and cancellation. If `ABX_SERVER_TOKEN` is configured, use `sb.server_at(9000, token=os.environ["ABX_SERVER_TOKEN"]).commands.run(...)` for named commands.
 
-#### Environment Variables
+## Quick start (HTTP POST)
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DASHSCOPE_API_KEY` | Alibaba Cloud DashScope API key | Yes |
-| `WORKSPACE` | Working directory path, defaults to `/workspace` | No |
-
-#### Manual AI Coding Tool Installation
-
-This template already ships with the qwen-code CLI, ready to use:
+Use the port-9000 URL returned by `sb.network.get_url(9000)`. On Express, include its gateway `X-Access-Token` in addition to any separately configured server `Authorization: Bearer` token. Omit a header only if that layer does not require authentication.
 
 ```bash
-# Use qwen-code for NL-based deployment
-abx run <sandbox-id> qwen --prompt "Deploy this FastAPI project"
-
-# Or use the qwen command directly inside the sandbox
-abx exec <sandbox-id> -- qwen -p "Analyze the project and deploy it" --yolo
+curl -X POST "$SANDBOX_PORT_9000_URL/commands/qwen" \
+  -H 'Content-Type: application/json' \
+  -H "X-Access-Token: $SANDBOX_GATEWAY_TOKEN" \
+  -H "Authorization: Bearer $ABX_SERVER_TOKEN" \
+  -d '{"prompt":"Fix calculator.py and write REPORT.md explaining the fix; run its tests","max_turns":20,"yolo":true,"command_timeout":300}'
 ```
 
-To install additional tools:
+The request is the direct argument object, without an `args` wrapper. Response: `{"result":"<buffered Qwen JSON output>"}`. `POST /commands/qwen_version` with `{}` returns `{"result":"0.23.0"}`. Missing or mistyped arguments return 400; missing authentication returns 401; an unknown command returns 404; command validation, missing keys/CLI, upstream nonzero exits and execution deadlines return 500 with `{"error":"...","type":"RuntimeError"}` or `ValueError`. Error and success text redact secret environment values.
 
-```bash
-# Install extra Python packages
-abx exec <sandbox-id> -- pip install <agent-package>
+## Command reference
 
-# Install extra Node.js tools
-abx exec <sandbox-id> -- npm install -g <agent-tool>
-```
+| Command | Parameters | Result / upstream |
+| --- | --- | --- |
+| `qwen` | `prompt: str` required, nonempty; `max_turns: int=100` (1–1000); `model: str=""` uses `OPENAI_MODEL`; `cwd: str=""` uses workspace; `command_timeout: int=600` (1–1800 seconds); `yolo: bool=false` | String from `qwen -p PROMPT --auth-type openai --output-format json --max-session-turns N --max-wall-time SECONDS --no-chat-recording`; adds `--model MODEL`, `--yolo` when supplied |
+| `qwen_version` | None | Real `qwen --version` string, no key needed |
+| `qwen_setup_check` | None | Object with installed/version, pin, key/model/base-url presence and settings-file existence/JSON validity; never returns settings values or writes files |
+| `run` | `script: str="main.py"` | Python stdout; compatibility command with 120-second deadline |
 
-### Notes
+`cwd` can be absolute or relative to `WORKSPACE` and must exist. Named commands use argv lists without shell interpolation. Coding can change files and run shell commands through the upstream agent.
 
-- **API key security**: Never hardcode `DASHSCOPE_API_KEY` into the template; always inject it via the `--env` option or environment variables.
-- **Network access**: The DashScope API (`dashscope.aliyuncs.com`) must be reachable — make sure the sandbox has outbound internet connectivity.
-- **Compatible interface**: DashScope offers an OpenAI-compatible mode, so Qwen models can be called directly through the `openai` library.
-- **Virtual environment**: Python packages are installed in `/opt/venv`; no manual activation is needed since `PATH` is preconfigured.
+This Linux runtime drains both output pipes and keeps its session leader unreaped until owned process-group cleanup. Success, nonzero exit and deadline paths all stop that group before returning.
 
----
+## Configuration
 
-## 中文
+| Variable | Meaning |
+| --- | --- |
+| `OPENAI_API_KEY` | Primary model key, required in the command-server process |
+| `DASHSCOPE_API_KEY` | Fallback model key when `OPENAI_API_KEY` is empty; mapped only in the child process |
+| `OPENAI_BASE_URL` | Default `https://dashscope.aliyuncs.com/compatible-mode/v1`; override for a compatible endpoint |
+| `OPENAI_MODEL` | Default `qwen3-coder-plus`; explicit command `model` wins |
+| `WORKSPACE` | Default `/home/user/app` |
+| `ABX_SERVER_TOKEN` | Optional independent HTTP server authentication token; never the model key |
 
-通义千问（Qwen）编码 Agent 的沙箱运行环境，支持 qwen-code 驱动的 AI 自主部署，提供 Python 3.12 + Node.js 22 的 AI 编程基础环境。
+Diagnostics inspect `~/.qwen/settings.json` and `<workspace>/.qwen/settings.json` without altering contents or permissions. Normal upstream coding may maintain its own runtime cache. Upstream [model-provider configuration](https://github.com/QwenLM/qwen-code/blob/v0.23.0/docs/users/configuration/model-providers.md) and [headless usage](https://github.com/QwenLM/qwen-code/blob/v0.23.0/docs/users/features/headless.md) describe compatibility; each endpoint/model still requires a real acceptance run. Do not enable API logging with secrets in public artifacts.
 
-### 环境说明
+## Resources
 
-本模板预装以下工具和依赖：
+2 vCPU, 4096 MB RAM, port 9000; outbound access to the selected model service. Generation 2 runs as non-root `user`. No Docker-in-Docker or elevated capabilities are required by Qwen.
 
-| 类别 | 内容 |
-|------|------|
-| **基础镜像** | python:3.12-slim |
-| **Python** | Python 3.12 + venv 虚拟环境（位于 `/opt/venv`） |
-| **Node.js** | Node.js 22.x + npm |
-| **Python 包** | `dashscope`、`openai>=1.0`、`httpx`、`rich` |
-| **Node.js 包** | `@qwen-code/qwen-code@0.23.0` |
-| **系统工具** | git、curl、wget、ripgrep、jq、build-essential |
-| **资源配置** | 2 CPU / 4096 MB 内存 |
+## Verified
 
-### 安装方式
+The current coding controller imports trusted standard-library code under `python3 -I`, compiles the actual calculator and original-test source bytes, and requires exactly all three original tests to succeed without skips, expected failures or unexpected successes. Each test/held-out process must return a fresh completion acknowledgment generated after the model response; it is never included in the model prompt. Premature `SystemExit`, `os._exit(0)`, a static `INDEPENDENT_OK` string and stale bytecode cannot supply that acknowledgment. This protects ordinary acceptance against premature exits; it is not a security boundary against hostile Python with the same OS authority. Historical model runs retain their original controller hashes and do not prove this new gate; record a separate actual model run at the new controller revision on the reviewed image. Canonical deployment/provider qualification remains a separate required gate.
 
-**从本地安装：**
+No provider has a passing run recorded for this template.
 
-```bash
-abx template install ./qwen-code --registry-type local
-```
+Local CLI installation/version and HTTP regression results are recorded in the [verification record](../.agents/evidence/verify/2026-10-16-qwen-code-v2.md). L1 image build and L2 Express are blocked by the unavailable Docker daemon. A local model run cannot establish cloud/image acceptance.
 
-**从 GitHub 安装：**
+## Secondary development
 
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//qwen-code
-```
+Extend `commands.py` with typed `@command` functions; keep `start()` under the main guard. Preserve the `qwen` and `run` names and document new arguments in both languages. Pin CLI/server versions. Inspect [design](../docs/design/qwen-code.md) before changing runtime behavior.
 
-### 使用示例
+## Contributing
 
-创建沙箱实例并传入 API Key：
+Read [contributor instructions](../CONTRIBUTING.md) and [specification](../docs/template-spec.md). Run `python3 scripts/check_template.py qwen-code`, `python3 -m pytest -q qwen-code/test_commands.py`, and `python3 scripts/run_local_e2e.py`. Local checks skip a missing CLI unless `E2E_REQUIRE_CLI=1`; a skip never proves runtime acceptance. For coding acceptance run the server with compatible key/base URL/model, then `E2E_REQUIRE_CLI=1 E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 python3 qwen-code/e2e_test.py`. The test changes existing source, retrieves a new report and exact artifact via files APIs, then runs independent tests and held-out calculations through the target shell API. It removes only its unique test project. Preserve engineering records; do not commit secrets or failed provider-pass JSON.
 
-```bash
-abx create --template qwen-code --env DASHSCOPE_API_KEY=sk-xxx
-```
+## Issues
 
-在沙箱中通过 DashScope SDK 调用 Qwen 模型：
+Track template work in [issue #26](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/26). File SDK/server bugs in [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues) and CLI bugs in [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues). Include sanitized commands, versions and actual failed gates.
 
-```bash
-abx exec <sandbox-id> -- python3 -c "
-import dashscope
-from dashscope import Generation
-response = Generation.call(model='qwen-turbo', prompt='编写一个快速排序算法')
-print(response.output.text)
-"
-```
+## License
 
-也支持使用 OpenAI 兼容接口：
-
-```bash
-abx exec <sandbox-id> -- python3 -c "
-from openai import OpenAI
-client = OpenAI(
-    api_key='your-dashscope-key',
-    base_url='https://dashscope.aliyuncs.com/compatible-mode/v1'
-)
-response = client.chat.completions.create(
-    model='qwen-turbo',
-    messages=[{'role': 'user', 'content': '编写一个快速排序'}]
-)
-print(response.choices[0].message.content)
-"
-```
-
-使用 Python SDK：
-
-```python
-from agent_sandbox import Sandbox
-
-sandbox = Sandbox.create_sync(
-    template="qwen-code",
-    env={"DASHSCOPE_API_KEY": "sk-xxx"}
-)
-
-result = sandbox.commands.run("python3 --version && node --version")
-print(result.stdout)
-```
-
-### 配置说明
-
-#### 环境变量
-
-| 变量名 | 说明 | 必填 |
-|--------|------|------|
-| `DASHSCOPE_API_KEY` | 阿里云 DashScope API 密钥 | 是 |
-| `WORKSPACE` | 工作目录路径，默认 `/workspace` | 否 |
-
-#### 手动安装 AI 编码工具
-
-本模板已预装 qwen-code CLI 工具，可直接使用：
-
-```bash
-# 使用 qwen-code 进行 NL 部署
-abx run <sandbox-id> qwen --prompt "部署这个 FastAPI 项目"
-
-# 或在沙箱内直接使用 qwen 命令
-abx exec <sandbox-id> -- qwen -p "分析项目并部署" --yolo
-```
-
-如需安装额外工具：
-
-```bash
-# 安装额外 Python 包
-abx exec <sandbox-id> -- pip install <agent-package>
-
-# 安装额外 Node.js 工具
-abx exec <sandbox-id> -- npm install -g <agent-tool>
-```
-
-### 注意事项
-
-- **API Key 安全**：请勿将 `DASHSCOPE_API_KEY` 硬编码到模板中，始终通过 `--env` 参数或环境变量注入。
-- **网络访问**：需要访问 DashScope API（`dashscope.aliyuncs.com`），确保沙箱具备外网连接能力。
-- **兼容接口**：DashScope 提供 OpenAI 兼容模式，可通过 `openai` 库直接调用 Qwen 模型。
-- **虚拟环境**：Python 包安装在 `/opt/venv` 中，使用时无需手动激活，`PATH` 已自动配置。
-
-## Deploy and local e2e
-
-Install and register this template:
-
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//qwen-code
-```
-
-From this directory (build, push, and register):
-
-```bash
-abx deploy
-```
-
-From the repository root, with `agent-sandbox-server` and `httpx` installed:
-
-```bash
-python3 scripts/run_local_e2e.py
-```
-
-That starts `python3 commands.py` in this directory and runs `e2e_test.py`.
-
+Apache-2.0 for this template. Qwen Code retains its [upstream license](https://github.com/QwenLM/qwen-code/blob/v0.23.0/LICENSE).

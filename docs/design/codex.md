@@ -81,7 +81,7 @@ Argv when the probe succeeds and `sandbox=auto`:
 codex exec --color never --json --skip-git-repo-check -C <cwd> --sandbox workspace-write -c approval_policy="never" -- <prompt>
 ```
 
-Argv when the probe fails, or `sandbox=bypass`:
+Argv when `sandbox=auto` and the probe fails, or `sandbox=bypass`:
 
 ```text
 codex exec --color never --json --skip-git-repo-check -C <cwd> --dangerously-bypass-approvals-and-sandbox -- <prompt>
@@ -89,7 +89,7 @@ codex exec --color never --json --skip-git-repo-check -C <cwd> --dangerously-byp
 
 Resume inserts `resume --last` or `resume <session_id>` before `--`. `--model` is added only when `model` is non-empty. `--full-auto` is not used.
 
-`auto` with a failed probe still bypasses for `read-only`, `workspace-write`, and `danger-full-access`, because those modes cannot be enforced. The result records both the request and `sandbox_applied=bypass`.
+Only `auto` falls back after a failed probe. Explicit `read-only`, `workspace-write`, and `danger-full-access` requests fail before workspace, git, or configuration writes when the sandbox cannot be enforced. Explicit `bypass` remains an operator choice. The result records both the request and the applied mode.
 
 ### codex_config_write
 
@@ -186,5 +186,5 @@ Isolation for an Express run that had to bypass is the platform sandbox, not Cod
 - L0: `python3 scripts/run_local_e2e.py` (or this directory's `e2e_test.py` against `E2E_BASE_URL`). Expect `/health`, the six command names, HTTP 400 for a missing `prompt`, HTTP 500 `ValueError` for `sandbox=nope` and for `wire_api=chat`, a `codex_setup_check` object whose `bypass_flag` is `--dangerously-bypass-approvals-and-sandbox`, a `config.toml` that contains `wire_api = "responses"` and no key material, and an `AGENTS.md` write. `codex_version` is asserted when `codex` is on PATH and asserted as "not on PATH" when it is not. `E2E_RUN_LLM=0` skips the model case.
 - L1: `docker build` of this Dockerfile after substituting the base-image placeholder. The log shows `@openai/codex@0.162.1` and the python-sdk archive `61c43e0be65a1f57aa09186d578e7b399e48429b`.
 - L2: `python3 scripts/express_e2e.py codex` on `alicloud-express`. Smoke is `codex_version` expecting `0.162.1`, then `codex_setup_check` (success, no exact body). Both `abx run` and `Sandbox.run`. Evidence only after both pass.
-- L3: only with a real key. Prompt `Reply with exactly: ABX_E2E_OK`, `sandbox=bypass` or `auto`, model from `E2E_MODEL` or `CODEX_MODEL` (the compatible endpoint used in this environment lists `qwen-plus` and answered that marker on `POST /responses` on 2026-10-15). Empty key with `E2E_REQUIRE_LLM=1` is a failure. A chat-only endpoint cannot pass, because this pin will not send `wire_api = "chat"`.
+- L3: only with a real authorized key and a Responses-compatible endpoint. The HTTP controller seeds an incorrect existing Fibonacci implementation and two original tests, requires the specific one-failure baseline, and asks the agent to fix the source without changing the original tests. Successful command events and the final marker, a nonempty report, exact acceptance artifact, independent held-out assertions, and reruns of both original and generated tests are required. Empty keys with `E2E_REQUIRE_LLM=1` fail. Independent verifier processes preload standard-library modules with Python `-I`, compile actual source bytes, catch premature exits, require fresh post-agent completion acknowledgements, and reject missing/skipped/expected-failing tests. This ordinary completion guard is not an OS security boundary. This test definition alone establishes no provider acceptance.
 - L4: not planned. No e2b, opensandbox, alicloud-container, or cubesandbox credentials will be used.
