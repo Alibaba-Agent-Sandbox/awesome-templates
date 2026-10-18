@@ -34,7 +34,7 @@ _LIMIT_EXEC = ("import os,resource,sys;resource.setrlimit(resource.RLIMIT_CORE,(
 def _process(argv: list[str], *, cwd: str, timeout: float) -> bytes:
     """Drain bounded output and kill the owned group before reaping its leader."""
     env = {key: os.environ[key] for key in ("HOME", "PATH", "LD_LIBRARY_PATH") if key in os.environ}
-    env.update(LANG="C.UTF-8", LC_ALL="C.UTF-8", OMP_NUM_THREADS="2", OPENBLAS_NUM_THREADS="2")
+    env.update(LANG="C.UTF-8", LC_ALL="C.UTF-8", OMP_NUM_THREADS="2", OPENBLAS_NUM_THREADS="2", MALLOC_ARENA_MAX="2")
     process = subprocess.Popen(argv, cwd=cwd, env=env, stdin=subprocess.DEVNULL,
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
     parts: list[list[bytes]] = [[], []]
@@ -293,6 +293,33 @@ def media_smoke() -> str:
                     os.unlink(output_name, dir_fd=descriptor)
             finally:
                 os.close(descriptor)
+
+
+@command("media_video_smoke", description="Generate owned synthetic video, run the MP4 preset, verify H.264 dimensions and clean up.")
+def media_video_smoke() -> str:
+    root, descriptor = _root()
+    name = "media-video-" + uuid.uuid4().hex
+    output = name + ".mp4"
+    output_created = False
+    try:
+        with tempfile.TemporaryDirectory(prefix=".media-video-", dir=root) as directory:
+            source = Path(directory) / "input.mkv"
+            _tool("ffmpeg", ["-nostdin", "-v", "error", "-f", "lavfi", "-i", "testsrc=size=160x120:rate=12:duration=1",
+                             "-c:v", "mpeg4", "-threads", "2", "-n", str(source)], cwd=root, deadline=_timeout(20))
+            result = transcode(str(source.relative_to(root)), output, max_seconds=1)
+            output_created = True
+            actual = _probe(root / output, _timeout(10))
+            if (result["streams"][0].get("codec_name") != "h264" or actual["streams"][0].get("codec_name") != "h264"
+                    or actual["streams"][0].get("width") != 640 or actual["streams"][0].get("height") != 480
+                    or not .9 <= actual["duration_s"] <= 1.1):
+                raise RuntimeError("video codec/dimension self-test failed")
+            return "FFmpeg CPU H.264 video transcode OK"
+    finally:
+        try:
+            if output_created:
+                os.unlink(output, dir_fd=descriptor)
+        finally:
+            os.close(descriptor)
 
 
 if __name__ == "__main__":

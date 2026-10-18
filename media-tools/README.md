@@ -75,6 +75,7 @@ Arguments are the direct JSON object. HTTP 200 returns `{"result":{"output_path"
 | `media_probe` | required `input_path`: string; `command_timeout`: integer, default 30, range 1–120 | object | Duration, format, streams and input byte count. |
 | `transcode` | required `input_path`, `output_name`: strings; `preset`: `mp4` (default), `wav` or `flac`; `max_seconds`: integer, default 5, range 1–30; `command_timeout`: integer, default 60, range 1–120 | object | Artifact path, size, SHA256, duration, format and streams. |
 | `media_smoke` | none | string | Owned synthetic WAV → actual FLAC → independent PCM decode and exact sample equality, with cleanup. |
+| `media_video_smoke` | none | string | Owned synthetic MPEG4 → actual H.264 MP4 with independently checked dimensions/duration, then cleanup. |
 
 Inputs are regular files of at most 64 MiB with relative paths beneath `WORKSPACE`; parent traversal, absolute paths, symlink components, devices and FIFOs are rejected. A descriptor-based read creates a private input snapshot. Accepted demuxers are MOV/MP4, Matroska/WebM, WAV, FLAC, MP3, Ogg and AVI, with only `file` protocol enabled. Content must have 1–8 audio/video streams, a finite duration up to 600 seconds, video up to 4096×2160, audio up to 8 channels and 192 kHz. Playlists, subtitles, attachments and network inputs are rejected.
 

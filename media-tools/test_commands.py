@@ -35,6 +35,11 @@ def test_actual_selftest_cleans_owned_files(workspace):
     assert not list(workspace.glob("media-smoke-*"))
 
 
+def test_actual_video_smoke_cleans_owned_files(workspace):
+    assert media.media_video_smoke() == "FFmpeg CPU H.264 video transcode OK"
+    assert not list(workspace.glob("media-video-*"))
+
+
 @pytest.mark.parametrize("preset,codec", [("mp4", "h264"), ("wav", "pcm_s16le"), ("flac", "flac")])
 def test_actual_transcode_and_independent_probe(workspace, preset, codec):
     result = media.transcode("input.mkv", "converted." + preset, preset=preset, max_seconds=1)
@@ -71,7 +76,7 @@ def test_actual_mp4_native_limits_diagnostic(workspace):
                  "-c:a", "aac", "-ac", "2", "-ar", "48000", "-movflags", "+faststart",
                  "-fs", str(media.MAX_FILE), "-n", str(workspace / "native.mp4")]
     env = {k: os.environ[k] for k in ("HOME", "PATH", "LD_LIBRARY_PATH") if k in os.environ}
-    env.update(LANG="C.UTF-8", LC_ALL="C.UTF-8", OMP_NUM_THREADS="2", OPENBLAS_NUM_THREADS="2")
+    env.update(LANG="C.UTF-8", LC_ALL="C.UTF-8", OMP_NUM_THREADS="2", OPENBLAS_NUM_THREADS="2", MALLOC_ARENA_MAX="2")
     result = subprocess.run(arguments, env=env, capture_output=True, timeout=20)
     assert result.returncode == 0, result.stderr.decode("utf-8", "replace")[-3000:]
 
@@ -198,7 +203,7 @@ if sys.argv[2]=='failure':raise SystemExit(7)
     for _ in range(100):
         try:
             state = Path(f"/proc/{child}/stat").read_text().split(") ", 1)[1].split()[0]
-        except FileNotFoundError:
+        except (FileNotFoundError, ProcessLookupError):
             break
         if state == "Z":
             break

@@ -26,3 +26,6 @@ smoke:
   - command: media_smoke
     args: {}
     expect: "FFmpeg CPU audio transcode OK"
+  - command: media_video_smoke
+    args: {}
+    expect: "FFmpeg CPU H.264 video transcode OK"

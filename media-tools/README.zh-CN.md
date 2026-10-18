@@ -75,6 +75,7 @@ JSON 对象直接包含参数。HTTP 200 返回 `{"result":{"output_path":"/home
 | `media_probe` | 必填字符串 `input_path`；整数 `command_timeout` 默认 30，范围 1–120 | 对象 | 时长、格式、流信息及输入字节数。 |
 | `transcode` | 必填字符串 `input_path`、`output_name`；`preset` 为默认 `mp4`、`wav` 或 `flac`；整数 `max_seconds` 默认 5，范围 1–30；整数 `command_timeout` 默认 60，范围 1–120 | 对象 | 产物路径、字节数、SHA256、时长、格式和流。 |
 | `media_smoke` | 无 | 字符串 | 自有合成 WAV → 真实 FLAC → 独立 PCM 解码逐样本比对，并清理。 |
+| `media_video_smoke` | 无 | 字符串 | 自有合成 MPEG4 → 真实 H.264 MP4，独立检查尺寸/时长后清理。 |
 
 输入必须是 `WORKSPACE` 内相对路径指向的普通文件，最大 64 MiB；拒绝父目录穿越、绝对路径、各层软链接、设备和 FIFO。通过目录描述符读取后生成私有快照。仅允许 MOV/MP4、Matroska/WebM、WAV、FLAC、MP3、Ogg、AVI 解复用器和 `file` 协议。输入需要 1–8 路音视频流、有限且不超过 600 秒的时长，视频不超过 4096×2160，音频不超过 8 声道/192 kHz。拒绝播放列表、字幕、附件和网络输入。
 

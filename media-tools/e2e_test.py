@@ -54,6 +54,9 @@ def main():
             response = client.post("/commands/media_smoke", json={})
             check(response.status_code == 200 and response.json().get("result") == "FFmpeg CPU audio transcode OK",
                   "actual lossless conversion and independent PCM decode; owned files cleaned")
+            response = client.post("/commands/media_video_smoke", json={})
+            check(response.status_code == 200 and response.json().get("result") == "FFmpeg CPU H.264 video transcode OK",
+                  "actual MP4 H.264 video, dimensions and owned cleanup")
             root = (os.environ.get("E2E_WORKSPACE") or os.environ.get("E2E_BASE_DIR") or "/home/user/app").rstrip("/")
             name = "media-controller-" + uuid.uuid4().hex
             owned = []
