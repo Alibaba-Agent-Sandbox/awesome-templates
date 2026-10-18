@@ -63,7 +63,7 @@ def test_actual_mp4_native_limits_diagnostic(workspace):
     # All inputs are the generated fixture above. Native stderr in this specific
     # regression is safe to disclose and diagnoses platform-dependent allocation.
     arguments = [sys.executable, "-I", "-c", media._LIMIT_EXEC, "/usr/bin/ffmpeg",
-                 "-nostdin", "-v", "error", "-filter_threads", "2", "-threads", "2",
+                 "-nostdin", "-v", "verbose", "-filter_threads", "2", "-threads", "2",
                  "-protocol_whitelist", "file", "-format_whitelist", media.FORMATS,
                  "-i", str(workspace / "input.mkv"), "-t", "1", "-map_metadata", "-1", "-map_chapters", "-1",
                  "-map", "0:v:0", "-map", "0:a:0?", "-vf", "scale=640:-2,fps=24",
