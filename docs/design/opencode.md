@@ -128,3 +128,18 @@ L2: `python3 scripts/express_e2e.py opencode` on `alicloud-express`. The smoke c
 L3: the real agent/file and exact-session continuation acceptance above with provider-injected model configuration. Local credential-free checks never establish this result. The 2026-10-16 Express source-runtime run recorded 28 HTTP checks passing with a real `dashscope/qwen3.8-flash` model, including the coding turn, exact-session continuation, independent artifact/hash/calculation checks and owned-project cleanup. A separate repeat rebuilt the server wheel from clean SDK source (`bb7881dc703ccdc3b97ff5ad67bcb129c4ea80ea`), verified all 56 packaged Python modules against that git archive, and passed the same 28 checks. Each owning sandbox was killed in `finally`. Source-runtime checks use uploaded commands/configuration and separately installed dependencies on an existing base template. They do not verify this Dockerfile or deployment of a newly built template image; keep `tested_on` empty until the image L1/L2 gates pass.
 
 L4: no other provider has been accepted. All provider evidence remains empty.
+
+
+## Independent verifier completion
+
+The legacy held-out process accepted a static marker with exit zero even when
+source exited before assertions. A real local subprocess reproduction confirmed
+this gap. Three separate post-agent processes now use isolated Python with trusted
+stdlib loaded before the project, direct compilation of actual source bytes and
+fresh controller-generated completion acknowledgements. Original tests must run
+exactly three cases with no skipped/expected failures; both held-out phases also
+check the original cases, continuation cases and an additional decimal pair.
+The agent API, exact-session flow and runtime files are unchanged. Same-user
+hostile-code containment is not claimed. Historical genuine model results remain
+history and do not establish this new gate. Actual hardened-image/model recheck,
+canonical deployment, parents and final remote checks remain pending.
