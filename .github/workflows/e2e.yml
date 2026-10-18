@@ -140,6 +140,7 @@ jobs:
       - name: Run process, privacy, and acceptance-harness regressions
         run: |
           python -m pytest -q python-hello/test_command_errors.py
+          python -m pytest -q node-web/test_http_output.py
           python -m pytest -q claude-code/tests
           python -m pytest -q codex/test_commands.py
           python -m pytest -q opencode/test_commands.py opencode/test_e2e_protocol.py

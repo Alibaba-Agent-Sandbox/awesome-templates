@@ -121,6 +121,16 @@ On 2026-10-16, all 60 external HTTP assertions passed against the patched source
 
 ## Secondary development
 
+The HTTP acceptance script emits one `[PASS]` or `[FAIL]` line per assertion.
+Acceptance consumers require exit0, no failures and a positive pass count; exit0
+with zero recognized assertions is rejected. Run
+`python -m pytest --import-mode=importlib -q node-web/test_http_output.py` to exercise
+the actual local server/Node/npm full60-assertion suite and the same strict result
+counter. A separate real HTTP503 fixture checks nonzero/countable failure. Tests
+use an owned temporary npm cache and keep the original HOME; no installation or
+model call is required. The earlier unbracketed-output run remains rejected by
+the image acceptance counter and is not retroactively relabeled as a pass.
+
 Upload a project beneath `/home/user/app`, include its dependency lockfile, and install exact versions when building a derivative image (`npm ci` against the committed lockfile). Keep package installs before the final `COPY commands.py`, remove the npm cache in the same image layer, retain the pinned server, Alibaba base, non-root user and generation-2 start/ready commands. Do not add Docker CMD/ENTRYPOINT. Express/Fastify applications use `serve`, or define `start`/`dev`/`build` scripts. This template does not install a framework or generate a Next/Vite project.
 
 ## Contributing

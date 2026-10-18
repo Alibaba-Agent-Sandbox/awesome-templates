@@ -48,6 +48,18 @@ Build output uses a temporary file to avoid pipe deadlock/unbounded returned out
 
 ## Test plan
 
+`check()` emits bracketed `[PASS]`/`[FAIL]` labels consumed by the strict external
+image acceptance counter. The prior script had a valid entrypoint and exited0
+but emitted unbracketed `PASS`; the counter recognized0 assertions and correctly
+refused acceptance. Preserve that historical rejected result. The focused
+`test_http_output.py` launches the real SDK server and Node/npm lifecycle suite,
+requires all60 countable assertions with no failure/skip, and exercises a real
+HTTP503 failure fixture. It preserves original HOME and uses an owned temporary
+npm cache; no packages or models are installed. Runtime commands, base/build
+configuration, public API and shared counter remain unchanged. All17 current
+product template formatters were inspected; node-web was the sole unbracketed
+outlier, so no broad legacy-format allowance is added.
+
 L0: `python3 scripts/run_local_e2e.py` (with Node/npm and SDK installed). `e2e_test.py` uses the real server HTTP API to upload a 4 MiB noisy Node application, assert HTTP response through both named command and independent process API, inspect stderr logs, stop/rebind, run npm start/dev, build an artifact and read it via files API. It asserts missing-entry, malformed arguments, unknown command, duplicate launch, nonlocal paths, build nonzero/timeout and readiness timeout errors. Cleanup always stops the service and deletes only the test-owned UUID directory. The bundled smoke independently asserts a real exact HTTP response and stops the sample.
 
 2026-10-16: focused repository L0 harness `_run_one(node-web)` passed all 60 assertions with the local server SDK checkout (0.3.0), Node 22.22.2, isolated npm 10.9.4 and httpx 0.28.1. This does not constitute Node 20 image validation. L1 pending: Docker is unavailable; a future build must show the pinned server and base runtime versions. L2 pending: `python3 scripts/express_e2e.py node-web` invokes smoke through CLI and Python SDK, expects `node-web ready`, and may write evidence only after success. No cloud provider is recorded. L3 model acceptance is inapplicable to this HTTP runtime. L4 is unverified and not claimed.

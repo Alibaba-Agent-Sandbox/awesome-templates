@@ -23,6 +23,8 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 
 ## Current review
 
+- [Node Web HTTP output protocol](notes/proposed/process/2026-10-16-node-web-http-output.md)
+- [Node Web protocol verification](evidence/verify/2026-10-16-node-web-http-output.md)
 - [Catalog completion decision](notes/proposed/feature/2026-10-16-catalog-completion-review.md)
 - [Verification](evidence/verify/2026-10-16-catalog-completion-review.md)
 - [Image-build gate](notes/proposed/process/2026-10-16-template-image-build-gate.md)
