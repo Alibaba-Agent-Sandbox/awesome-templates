@@ -1,0 +1,26 @@
+# Pandoc text conversion verification
+
+Date: 2026-10-18
+Result: PARTIAL
+
+## Exact source and environment
+
+Scoped new `document-tools/`, design/catalog/README integration, dedicated Debian CI job and owner records, on immutable OCR base `a4a18b0dbb18a18ccf5e2d5c113454bff9319bc4`. No media-tools branch changes are included. Linux x86_64 Debian 13/Python 3.13; actual downloaded/extracted official Debian `pandoc=3.1.11.1+ds-2`, `pandoc-data=3.1.11.1-3`, with its liblua dependency. No host system package was replaced. Native override settings point only to those extracted packages. Isolated source-built server/client 0.3.0 from python-sdk `fbe506349693f9bb26c1755aa3d13ce855e1ab69`, httpx 0.28.1, pytest 9.1.1 and pyyaml 6.0.3 are distinct from the Dockerfile's fallback source pin.
+
+## Executed native and HTTP checks
+
+- PASS: final combined `python -m pytest -q document-tools/test_commands.py document-tools/test_http.py`: 41 passed, zero skips, exit 0 (2.09 seconds). Native conversion runs the actual fixed Pandoc, independently parses DOCX ZIP/XML heading/bold/Chinese/list content and TXT, compares complete byte counts/hashes, preserves inputs, rejects unsafe paths/URIs/argv/symlinks/FIFOs/oversized/binary/empty/image/raw/non-web-link inputs, refuses overwrites/concurrency/invalid limits/formats, drains bounded diagnostics and excludes model keys. Actual child leaders on success/nonzero/timeout leave no live redirected descendants. Actual SDK test authenticates `/commands`, exercises typed argument/execution errors, uploads fresh nonce/Unicode input, downloads DOCX/TXT through the real typed client, inspects content/hash and reads back all three owned paths absent after deletion.
+- PASS: ordinary credential-sanitized `scripts/run_local_e2e.py::_run_one` for document-tools with `E2E_REQUIRE_DOCUMENT=1`: 20 passed, zero failed/skipped; driver exit 0. It checks HTTP contracts, actual version/native smoke, external unique Markdown upload, downloaded artifact hashes, independent DOCX heading/bold/XML and TXT contents, nonce/Unicode preservation, byte-identical original input and three owned cleanup responses. The runner terminated/reaped the actual server.
+- Independent reviewer read the entire command source and accepted the explicit sandbox-parser → AST gate → fixed DOCX writer boundary, requesting docstring and missing-source cleanup corrections. Both were applied; an actual smoke failure with source removal still cleans the previously published DOCX.
+
+## Failed attempts preserved
+
+Initial package download requested a nonexistent equal `pandoc-data` version and failed; `apt-cache` and official metadata establish the distinct final data version. Actual Debian `--sandbox` DOCX writing failed because package data is not embedded; no such execution is represented as a pass. The 512 MiB native address-space cap failed Haskell OS-thread initialization; a measured bounded 1 GiB cap permits the fixed 256 MiB heap/two capabilities. One test initially expected raw HTML to be emitted as text, but actual GFM produced Raw nodes and the implemented gate correctly rejected them; the negative expectation was corrected. A harmful JavaScript link may fail at the sandbox parser's `--fail-if-warnings` stage or the AST gate, both explicit failures before output publication.
+
+A later combined native/SDK run exposed intermittent native thread initialization under default glibc allocator arenas. The final child environment caps `MALLOC_ARENA_MAX=2` while retaining the resource caps; the final 41-test and 20-HTTP executions above use that setting. This is source-runtime evidence, not a claim about an unexecuted container.
+
+## Remaining gates and resource scope
+
+PASS: `python scripts/test_spec_tools.py` completed 22 tests, exit 0; `python scripts/check_template.py --all --strict` reported 20 conformant directories and no violation, exit 0; scoped relative links, Python/YAML/bash syntax and diff checks passed. The spec-tool Express scenarios are fixtures, not cloud acceptance. The latest follow-up source regression includes per-operation pin validation and an actual wrong-version executable negative control: 42 passed, zero skips, exit 0 (2.66 seconds). The independent reviewer separately ran 41 native/SDK tests before the pin-only follow-up, then actual additional DOCX list/table/safe-hyperlink and Unicode/TXT/hash/input/cleanup assertions, all passing. No broader unrelated local agent-runtime suite was run here; remote CI remains authoritative. Docker executable/engine is unavailable locally: real image build, package compatibility and non-root image smoke remain PENDING until remote execution. Canonical `scripts/express_e2e.py` through actual `abx template deploy`, external CLI/SDK and strict official cleanup is NOT RUN. No provider receipt or tested_on value is written; status remains experimental. L3 is N/A, L4 NOT RUN. HTML/PDF/slides/LibreOffice functionality remains NOT IMPLEMENTED; Issue 55 must stay open.
+
+Only unique local native/HTTP/SDK temporary paths were created; native groups were killed/reaped and controller artifacts removed. No cloud sandbox, official template, registry repository, model turn or uploaded credential was created by these checks. General artifact lifetime belongs to callers.
