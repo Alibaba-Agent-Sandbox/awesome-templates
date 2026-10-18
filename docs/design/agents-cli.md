@@ -83,3 +83,57 @@ executed tests observed through a separate authorized process/files channel.
 ABX_E2E_OK response text or a fixture turn cannot establish acceptance. Requesting
 required model acceptance in this smoke exits nonzero. L4 only after an actual
 additional-provider run; none is claimed.
+
+## Independent Qwen SDK acceptance
+
+`agents-cli/e2e_sdk.py` owns an Express sandbox from `Sandbox.create` through
+`finally` kill and paginated ID/nonce absence verification. It accepts a private
+pre-provisioned template ID; template/registry lifecycle belongs to the caller.
+It compares installed commands/policy hashes, seeds an existing-source project
+through provider-native SDK commands, and verifies the precise broken baseline
+(`test_zero` PASS, `test_seven` FAIL). It starts original installed commands/policy on a
+new9010 process with selected OPENAI key/base/model, a fresh server token and
+private workspace/state directory, consuming the lazy process stream. Original
+HOME is retained; no host/cloud/GitHub credentials enter target env. A create-time
+env does not retroactively configure prewarmed9000.
+
+One actual Qwen session submits a coding task and polls items/reconnect until
+idle. The fixed server's idle state alone cannot prove the final turn succeeded:
+wire_sessions maps terminal turn events to SSE, but this policy permits only
+POST events, not GET events or turn-status routes. Native code therefore reads
+the original e2cb27e server's own explicit private state directory and requires
+this session's sole turn completed without error. This is internal diagnostic
+observation, not a public endpoint, receipt, transcript export, or standalone
+coding proof. The sanitized report stores only checks/statuses.
+
+Independent isolated Python processes compile exact source bytes (not .pyc),
+compare original tests byte-for-byte, require changed existing source, exact JSON
+artifact and a nonempty report, run complete original and generated unittest
+modules without skips/expected failures, and run six held-out cases. Each call
+requires an unpredictable ACK generated after the agent finishes; exit0 without
+that ACK fails. No arbitrary verifier command/hook or external receipt is trusted.
+The HTTP-only e2e still rejects E2E_REQUIRE_LLM/E2E_RUN_LLM and points to this SDK
+controller. No-network regressions prove false-green/cleanup guards, not a model
+or provider run.
+
+The inline session API maps to full_access by default and offers no per-session
+permission/limit overrides. Model execution must use a newly owned disposable
+sandbox without other credentials/valuable data. The host polling deadline is
+30–600 seconds; disconnect does not cancel a background turn. Entire-sandbox
+destruction is the resource boundary, including agent subprocesses that detach.
+The sandbox/server deadlines are1800/1500 seconds to leave bounded setup and
+evaluation headroom; neither replaces the immediate finally cleanup.
+These are ordinary correctness controls, not isolation from arbitrary hostile
+same-user code capable of inspecting or altering its own processes. Failed
+cleanup/readback fails acceptance and retains an atomic mode0600 private recovery
+journal. One permission error stops that path. Qwen compatibility uses existing
+OpenAI-compatible auth; Codex Responses compatibility remains independently
+unverified by this Qwen suite. Canonical deploy and formal provider metadata
+remain unchanged until their actual separate gates pass.
+
+Actual-image evidence on2026-10-16: the frozen host SDK controller1f975ff passed
+real Qwen coding against original artifact12026073735/sourcea361f49, whose four
+product runtime/build/config files are identical. All8 lifecycle flags and5
+independent post-run absence checks passed. See [image SDK result](../../agents-cli/evidence/qwen-image-sdk-2026-10-16.json)
+and [strict readback](../../agents-cli/evidence/qwen-image-sdk-strict-readback-2026-10-16.json).
+Canonical deploy, Codex and formal metadata are still separate incomplete gates.

@@ -1,0 +1,12 @@
+{
+  "result": "PASS",
+  "operation": "independent read-only strict post-run absence checks",
+  "checks": {
+    "push_helper_absent": true,
+    "model_sandbox_absent": true,
+    "owned_template_absent": true,
+    "registry_tag_404": true,
+    "registry_repository_404": true
+  },
+  "boundary": "exact owned IDs/nonces/template name/tag/repository only; no deletion"
+}

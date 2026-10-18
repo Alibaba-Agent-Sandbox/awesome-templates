@@ -155,7 +155,7 @@ jobs:
           python -m pytest -q aider/test_commands.py aider/test_e2e_protocol.py
           python -m pytest -q swe/test_commands.py swe/test_e2e_protocol.py
           python -m pytest -q osworld/test_commands.py osworld/test_tasks.py osworld/test_http.py
-          python -m pytest -q agents-cli/test_protocol.py
+          python -m pytest -q agents-cli/test_protocol.py agents-cli/test_sdk_verifier.py
           python -m pytest -q scripts/test_express_runtime_socket.py
           python -m pytest -q qwen-code/test_commands.py qwen-code/test_e2e_protocol.py
           python -m pytest -q codex-agent-api/test_commands.py codex-agent-api/test_e2e_protocol.py codex-agent-api/test_http_runtime.py
