@@ -9,8 +9,12 @@ from agent_sandbox.server import start as serve_http
 def serve(entry: str = "index.js", port: int = 3000) -> dict:
     """Start a Node.js web application server."""
     import os
+    from pathlib import Path
     import subprocess
     import time
+
+    if not Path(entry).is_file():
+        raise RuntimeError("Server entry must name an existing JavaScript file")
 
     env = {**os.environ, "PORT": str(port)}
     proc = subprocess.Popen(
