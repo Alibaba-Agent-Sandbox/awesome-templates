@@ -102,7 +102,7 @@ Default: 2 vCPU, 2048 MB RAM, port 9000. Model calls require external Factory ne
 
 Source-runtime follow-up on 2026-10-18: the native Python SDK completed the pinned Droid background install, SDK keyless/version checks, external HTTP suite and owned cleanup (nine checks PASS). See [exact-scope evidence](../.agents/evidence/verify/2026-10-18-droid-native-runtime.md). This is not image-backed/canonical L2 or model acceptance; `tested_on` remains unchanged.
 
-No provider has a passing run recorded for this template.
+No canonical image-deployment provider pass is recorded for this template.
 
 ## Secondary development
 

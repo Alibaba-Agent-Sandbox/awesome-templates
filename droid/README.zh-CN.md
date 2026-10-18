@@ -102,7 +102,7 @@ Factory 凭据在 [Factory API 密钥设置](https://app.factory.ai/settings/api
 
 2026-10-18 源码运行验收：原生 Python SDK 完成固定版本 Droid 后台安装、SDK 无密钥版本/配置检查、外部 HTTP 套件与自有资源清理，九项记录均通过。见[准确范围证据](../.agents/evidence/verify/2026-10-18-droid-native-runtime.md)。这不是镜像标准部署 L2 或模型验收，`tested_on` 不变。
 
-尚未记录任何通过的提供方测试。
+尚未记录通过的标准镜像部署厂商验收。
 
 ## 二次开发
 

@@ -11,7 +11,7 @@ status polls, started the uploaded public command server, passed external SDK
 health, exact Droid version/keyless setup and the external HTTP suite.
 All nine recorded acceptance/cleanup checks passed, controller exit0.
 No model key was forwarded or model call made. Owned sandbox cleanup passed;
-independent readback is recorded separately in the completion audit.
+independent readonly platform readback found zero source-runtime-droid resources.
 
 This completes the missing Droid source-runtime reproduction from SDK Issue35:
 https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues/35.
