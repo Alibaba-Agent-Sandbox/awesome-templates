@@ -37,7 +37,7 @@ the command line or in shell history; use the SDK from a secret-aware process.
 
 ## Quick start (Python SDK)
 
-Install the client distribution with `python3 -m pip install agent-sandbox-client`.
+The client distribution is `agent-sandbox-client` (import `agent_sandbox`). Until the matching release is available, use the [paired, pinned source installation](../docs/python-client-installation.md).
 
 ```python
 import asyncio
