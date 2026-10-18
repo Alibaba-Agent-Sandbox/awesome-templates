@@ -106,7 +106,7 @@ Prewarmed servers read their process-start configuration before subsequent shell
 
 No provider has a passing run recorded for this template.
 
-See [source verification and pending gates](../.agents/evidence/verify/2026-10-18-document-tools-runtime.md). Local native/SDK/HTTP results do not establish Docker L1 or canonical provider L2. Status remains experimental with empty `tested_on`.
+Actual image L1 and dedicated native/SDK/HTTP CI passed on the recorded runtime source; see [the CI confirmation](../.agents/evidence/verify/2026-10-18-document-tools-ci-confirmation.md). Local preparation and initial remote failures remain in [the original record](../.agents/evidence/verify/2026-10-18-document-tools-runtime.md). Canonical provider L2 has not run. Status remains experimental with empty `tested_on`.
 
 ## Secondary development
 

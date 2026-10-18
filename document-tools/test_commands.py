@@ -29,14 +29,18 @@ def test_actual_pinned_version():
     assert document.document_version() == "pandoc 3.1.11.1"
 
 
-def test_actual_native_version_resource_limits_diagnostic():
+@pytest.mark.parametrize("inherited_stack", [8 * 1024 * 1024, 256 * 1024 * 1024])
+def test_actual_native_version_resource_limits_diagnostic(inherited_stack):
     # Version-only input contains no user document; retain its native diagnostic
     # to explain platform-specific GHC startup failures without exposing data.
     binary = os.environ.get("DOCUMENT_PANDOC_BINARY", "/usr/bin/pandoc")
     env = {k: os.environ[k] for k in ("HOME", "PATH", "LD_LIBRARY_PATH") if k in os.environ}
     env.update(LANG="C.UTF-8", LC_ALL="C.UTF-8", MALLOC_ARENA_MAX="2",
                pandoc_datadir=os.environ.get("DOCUMENT_PANDOC_DATA_DIR", "/usr/share/pandoc"))
-    result = subprocess.run([sys.executable, "-I", "-c", document._LIMIT_EXEC, binary,
+    prefix = ("import resource;_test_stack_hard=resource.getrlimit(resource.RLIMIT_STACK)[1];"
+              f"resource.setrlimit(resource.RLIMIT_STACK,(min({inherited_stack},_test_stack_hard) "
+              f"if _test_stack_hard>=0 else {inherited_stack},_test_stack_hard));")
+    result = subprocess.run([sys.executable, "-I", "-c", prefix + document._LIMIT_EXEC, binary,
                              "--version", "+RTS", "-N2", "-M256M", "-RTS"],
                             env=env, capture_output=True, timeout=10)
     assert result.returncode == 0, result.stderr.decode("utf-8", "replace")[-3000:]

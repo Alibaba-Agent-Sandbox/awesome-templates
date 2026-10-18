@@ -106,7 +106,7 @@ JSON 对象直接包含参数。HTTP 200 返回 `{"result":{"output_path":"/home
 
 尚未记录任何通过的提供方测试。
 
-见[源码验证与待完成门禁](../.agents/evidence/verify/2026-10-18-document-tools-runtime.md)。本地原生/SDK/HTTP 不证明 Docker L1 或 canonical L2；保持 experimental 和空 `tested_on`。
+记录的运行时代码已实际通过镜像 L1 和专门的原生/SDK/HTTP CI，见 [CI 确认](../.agents/evidence/verify/2026-10-18-document-tools-ci-confirmation.md)。本地准备及首次远端失败保留在[原始记录](../.agents/evidence/verify/2026-10-18-document-tools-runtime.md)。canonical L2 尚未运行；保持 experimental 和空 `tested_on`。
 
 ## 二次开发
 

@@ -38,3 +38,4 @@ Use actual extracted Debian native packages in source tests; generated Markdown 
 ## Evidence
 
 [Verification record](../../../evidence/verify/2026-10-18-document-tools-runtime.md).
+[Actual image and native CI confirmation](../../../evidence/verify/2026-10-18-document-tools-ci-confirmation.md).
