@@ -29,3 +29,4 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 - [Image-build preparation evidence](evidence/verify/2026-10-16-template-image-build-gate.md)
 - [Image CI checkpoint decision](notes/proposed/process/2026-10-16-image-ci-checkpoint.md)
 - [Image CI checkpoint evidence](evidence/verify/2026-10-16-image-ci-checkpoint.md)
+- [Prewarmed server configuration](notes/proposed/process/2026-10-16-prewarmed-server-configuration.md) · [verification](evidence/verify/2026-10-16-prewarmed-server-configuration.md)

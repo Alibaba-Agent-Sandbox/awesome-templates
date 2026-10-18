@@ -16,6 +16,8 @@ Alibaba FC generation 2 基础镜像、平台 Python、基础镜像未提供 Nod
 
 ## 快速开始（CLI）
 
+运行配置：以下创建时注入密钥的示例，要求命名服务启动时实际获得这些值。预热服务请先检查模板提供的 setup 标志（如有），再按[显式进程配置](../docs/runtime-environment.zh-CN.md)操作；创建沙箱不会重新配置已运行的服务。
+
 安装需要 Express 授权配置和可用 Docker daemon：
 
 ```bash
@@ -52,7 +54,7 @@ async def main():
 asyncio.run(main())
 ```
 
-`timeout=330` 限制客户端 HTTP 等待，`command_timeout=300` 限制代理进程组执行。客户端超时不保证取消执行。后台任务和取消使用进程 API。配置 `ABX_SERVER_TOKEN` 时，命名命令使用 `sb.server_at(9000, token=os.environ["ABX_SERVER_TOKEN"]).run(...)`。
+`timeout=330` 限制客户端 HTTP 等待，`command_timeout=300` 限制代理进程组执行。客户端超时不保证取消执行。后台任务和取消使用进程 API。配置 `ABX_SERVER_TOKEN` 时，命名命令使用 `sb.server_at(9000, token=os.environ["ABX_SERVER_TOKEN"]).commands.run(...)`。
 
 ## 快速开始（HTTP POST）
 
@@ -85,7 +87,7 @@ curl -X POST "$SANDBOX_PORT_9000_URL/commands/qwen" \
 
 | 变量 | 含义 |
 | --- | --- |
-| `OPENAI_API_KEY` | 创建时注入的主要模型密钥 |
+| `OPENAI_API_KEY` | 命名服务进程必须持有的主要模型密钥 |
 | `DASHSCOPE_API_KEY` | 主要密钥为空时的备选值，仅在子进程映射 |
 | `OPENAI_BASE_URL` | 默认 `https://dashscope.aliyuncs.com/compatible-mode/v1`，可覆盖为兼容端点 |
 | `OPENAI_MODEL` | 默认 `qwen3-coder-plus`，命令参数 `model` 优先 |
