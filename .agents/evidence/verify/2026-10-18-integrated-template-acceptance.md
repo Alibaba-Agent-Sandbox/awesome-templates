@@ -36,7 +36,7 @@ The configuration job's BLOCKED receipt is not a provider pass.
 Droid native-SDK source-runtime follow-up:all nine checks PASS; see the separate
 [canonical owner record](2026-10-18-droid-native-runtime.md). No provider badge change.
 
-Final preparation after published1d84fcf: all29 image/native/local checks PASS,
+Final preparation after published1d84fcf: all required image/native/local checks PASS,
 canonical cloud job SKIP. This is L1/native evidence, not canonical/provider proof.
 Accepted native controller/source install pin e86cb0be24e0083a27396b260298e7cf27b660d6:
 fresh public archive pair install exit0, pip check exit0, paired0.3.0 imports exit0.
@@ -48,3 +48,11 @@ generated files/directories removed). No source is classified as orphan solely
 from its filename. New regression added to retained PR/main local CI. Latest
 head hosted checks pending. Temporary Actions storage approval remains pending;
 no credentials uploaded and no cloud workflow dispatched.
+
+Prepared source f463b1f7ad43fbab72155d84d19c9b9fa447e30c has every one of23 image
+jobs PASS, with all retained local/native/plan/authorization gates PASS; canonical
+job SKIP. Count by unique gate names:28 PASS/1 SKIP. PR-body authorization events
+can create additional authorization/canonical check runs on the same SHA; raw
+run counts must not be confused with independent template/provider coverage.
+This record-only clarification changes no tested runtime, controller or workflow.
+Temporary credential storage approval and canonical/model gates remain blocked.
