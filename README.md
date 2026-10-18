@@ -17,6 +17,8 @@ is recorded.
 
 ## Templates
 
+The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](docs/verification-2026-10-18.zh-CN.md)) lists all 23 current/main-plus-draft templates and unresolved provider/deployment gates.
+
 | Template | Description | Status | Verified on |
 |----------|-------------|--------|-------------|
 | [python-hello](./python-hello/README.md) | A minimal Python hello world template for testing | experimental | |
@@ -47,11 +49,21 @@ not use the directories in this repo. OpenSandbox create takes an image
 URI and replaces the container entrypoint, so these Dockerfiles do not
 start there until the image is pushed and the server is started by hand.
 
-The static registry page is [registry/index.html](./registry/index.html).
-It is the page intended for `registry.agent-sandbox.cn`; that DNS name is
-not wired up here.
+The maintained registry website and ingestion code live in the separate
+[registry repository](https://github.com/Alibaba-Agent-Sandbox/registry).
+The public site is [registry.agent-sandbox.cn](https://registry.agent-sandbox.cn).
+This repository owns `awesome-templates.yaml` and template docs, which that
+registry ingests. The unused local `registry/index.html`/`catalog.json` copy has
+been retired; consumers should use the maintained registry's public catalog.
+
+For installation prerequisites, all three calling interfaces, evidence levels
+and provider limits, start with [Using templates](docs/using-templates.md)
+([中文](docs/using-templates.zh-CN.md)). Each template README contains its own
+CLI, Python SDK and HTTP POST examples plus command/authentication/error details.
 
 ## Deploy
+
+Install the CLI and paired Python packages using the [source-aware setup guide](docs/using-templates.md#installation), then configure the selected provider.
 
 Install from this index (builds and registers the template):
 

@@ -55,7 +55,7 @@ abx template delete <template-id> -y
 
 ## 快速开始（Python SDK）
 
-客户端的 PyPI 名称是 `agent-sandbox-client`（`python3 -m pip install agent-sandbox-client`）。导入名仍是 `agent_sandbox`。`pip install agent-sandbox` 是另一个无关项目。
+客户端发行名为 `agent-sandbox-client`，导入名为 `agent_sandbox`。配套版本发布前，请按[固定提交的双包安装说明](../docs/python-client-installation.md)安装。
 
 ```python
 import asyncio
