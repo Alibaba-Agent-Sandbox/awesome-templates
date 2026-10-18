@@ -40,3 +40,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [OpenCode verifier decision](notes/proposed/process/2026-10-16-opencode-verifier-completion.md)
 - [OpenCode verifier evidence](evidence/verify/2026-10-16-opencode-verifier-completion.md)
 - [Documentation ownership](notes/proposed/process/2026-10-18-template-documentation-ownership.md)
+- [Canonical cleanup decision](notes/proposed/process/2026-10-16-express-cleanup-outcome.md)
+- [Canonical cleanup evidence](evidence/verify/2026-10-16-express-cleanup-outcome.md)
