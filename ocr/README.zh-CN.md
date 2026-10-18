@@ -29,7 +29,7 @@ abx template delete <template-id> -y
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，导入 `agent_sandbox`。
+按[固定版本源码安装说明](../docs/python-client-installation.md)安装客户端与配套服务端，导入 `agent_sandbox`。
 
 ```python
 import asyncio
@@ -117,3 +117,5 @@ Linux 进程管理通过 `waitid(WNOWAIT)` 保留 leader 身份，持续排空�
 ## 许可证
 
 模板代码和原创生成样例图片采用仓库 [Apache-2.0](../LICENSE)。官方 [Tesseract 5.5.0](https://github.com/tesseract-ocr/tesseract/tree/5.5.0) 采用 Apache-2.0，镜像保留 Debian 版权/归属文件和 Pillow 安装包许可证。不重新分发字体文件；样例只是原创文字的栅格图。各依赖保留其原有许可证。
+
+CLI 安装、SDK 源码安装、HTTP 认证与资源所有权见[模板使用指南](../docs/using-templates.zh-CN.md)。

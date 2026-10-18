@@ -28,10 +28,16 @@ class AuthorizationTest(unittest.TestCase):
 
     def test_explicit_small_or_full_matrix_only(self):
         self.assertEqual(review.select("python-hello,pi"), ["python-hello", "pi"])
-        self.assertEqual(len(review.select("all")), 17)
+        self.assertEqual(len(review.select("all")), 23)
         for text in ("", "../python-hello", "python-hello,python-hello", "python-hello;echo bad"):
             with self.subTest(text=text), self.assertRaises(ValueError):
                 review.select(text)
+
+    def test_full_selection_matches_every_integrated_catalog_entry(self):
+        import yaml
+        root = Path(__file__).resolve().parents[1]
+        catalog = yaml.safe_load((root / "awesome-templates.yaml").read_text())
+        self.assertEqual(set(review.select("all")), {row["path"] for row in catalog["templates"]})
 
     def test_missing_credentials_never_calls_source_or_cloud(self):
         with tempfile.TemporaryDirectory() as directory:

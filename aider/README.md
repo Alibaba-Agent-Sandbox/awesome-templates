@@ -274,3 +274,5 @@ exits. Held-out calculations have a separate acknowledgement. Static marker outp
 premature exit and cached bytecode do not establish a pass. These are completion
 checks within the disposable sandbox, not an OS security boundary. Earlier real
 model evidence is retained separately; the hardened verifier needs its own run.
+
+For CLI setup, SDK installation, HTTP authentication and resource ownership, see [Using templates](../docs/using-templates.md).

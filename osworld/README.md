@@ -31,7 +31,7 @@ Inspect a screenshot/tree before choosing coordinates. The disposable smoke requ
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client`; see [source installation](../docs/python-client-installation.md).
+Install the paired source packages using [the pinned SDK installation recipe](../docs/python-client-installation.md). The Python import is `agent_sandbox`.
 
 ```python
 import asyncio
@@ -138,3 +138,5 @@ Follow [CONTRIBUTING](../CONTRIBUTING.md) and the [template spec](../docs/templa
 Apache-2.0. The original OSWorld files, full [upstream license](upstream/LICENSE) and source SHA256 manifest are retained. PyAutoGUI and dependencies retain their installed distribution licenses; Chromium and Debian packages retain their installed notices.
 
 The 1024×768 PNG/Xvfb screen and the browser page viewport are separate measurements. Browser initialization requires a visible, nonzero viewport; it does not resize/emulate a page to force screen equality. `desktop_start` and `run_task_config` return `browser_geometry` with numeric screen, outer-window, viewport and content-offset fields. The disposable smoke prints only these numeric fields for image diagnostics. Native click coordinates remain screen coordinates. The smoke uses the actual content offset and DOM rectangle, and still requires real input, upstream score 0→1, changed PNG pixels and complete 4096-character destination readback. See the [viewport follow-up](../.agents/evidence/verify/2026-10-16-osworld-viewport.md).
+
+For CLI setup, SDK installation, HTTP authentication and resource ownership, see [Using templates](../docs/using-templates.md).

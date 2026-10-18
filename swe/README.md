@@ -33,7 +33,7 @@ abx run "$SANDBOX_ID" swe_cleanup --server-port 9010 --arg run_id="$RUN_ID"
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` following the [client installation guide](../docs/python-client-installation.md). Supply `SWE_TEMPLATE`, `SWE_API_KEY`, `SWE_BASE_URL` (OpenAI-compatible `/v1` endpoint) and raw model name `SWE_MODEL` (for example `qwen3.8-flash`) in your client environment. Provider credentials use the SDK's documented configuration. Use a fresh sandbox containing no other workloads or credentials.
+Install the paired source packages using [the pinned SDK installation recipe](../docs/python-client-installation.md). The Python import is `agent_sandbox`.
 
 ```python
 import asyncio
@@ -143,3 +143,5 @@ Run `python -m pytest -q swe/test_commands.py swe/test_e2e_protocol.py`, `python
 ## License
 
 Wrapper Apache-2.0. mini-swe-agent 2.4.6 is MIT; Flask is BSD-3-Clause. SWE-bench Verified metadata/test patch follows the dataset's MIT license. Bundled CPython retains its distribution license files. Provenance and upstream license links are in [NOTICE](./NOTICE.md); upstream source archives retain their own license files.
+
+For CLI setup, SDK installation, HTTP authentication and resource ownership, see [Using templates](../docs/using-templates.md).

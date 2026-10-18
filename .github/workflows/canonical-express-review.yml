@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       templates:
-        description: "One reviewed template, comma-separated names, or all (17); default python-hello"
+        description: "One reviewed template, comma-separated names, or all (23); default python-hello"
         default: python-hello
         required: true
         type: string
@@ -69,14 +69,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Alibaba-Agent-Sandbox/awesome-templates
-          ref: a361f490555ead0ff67081ffb4874abf292a1b2f
+          ref: b30833c469e0e6b4fa5ee2134391b276dbb42c8e
           path: reviewed/templates
           persist-credentials: false
       - name: Checkout canonical runner with cleanup-outcome fix
         uses: actions/checkout@v4
         with:
           repository: Alibaba-Agent-Sandbox/awesome-templates
-          ref: 3572927fbd0ab25ad028a9186bc2820ff7a8a854
+          ref: b30833c469e0e6b4fa5ee2134391b276dbb42c8e
           path: reviewed/harness
           persist-credentials: false
       - name: Checkout reviewed production CLI and wheel rewriter
@@ -90,7 +90,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Alibaba-Agent-Sandbox/python-sdk
-          ref: 666657b5706945d8899061033edc09b6eb2af953
+          ref: a60e9ad351e745ccaa5b5733344ef86584ad5031
           path: reviewed/controller
           persist-credentials: false
       - name: Checkout exact server wheel source independently

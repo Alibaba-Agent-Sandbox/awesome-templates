@@ -123,3 +123,5 @@ Linux runner 使用 `waitid(WNOWAIT)` 固定 owned group 身份，先终止进�
 ## 许可证
 
 模板 Python 代码：[Apache-2.0](../LICENSE)。FFmpeg 与 libx264 保留各自许可证及已安装的 Debian copyright 文件。Debian FFmpeg 启用了包括 libx264 的 GPL 组件，不能改标 Apache-2.0。参见[上游许可证](https://ffmpeg.org/legal.html)、[精确 Debian 源码包](https://packages.debian.org/source/trixie/ffmpeg)及镜像 `/usr/share/doc/ffmpeg/copyright`。smoke 音频由模板原创生成。
+
+CLI 安装、SDK 源码安装、HTTP 认证与资源所有权见[模板使用指南](../docs/using-templates.zh-CN.md)。

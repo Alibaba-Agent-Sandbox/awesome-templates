@@ -143,3 +143,5 @@ L0 可以跳过缺失的上游运行时/模型前置，这不证明代理运行�
 ## 许可证
 
 Wrapper 为 Apache-2.0；mini-swe-agent 2.4.6 为 MIT；Flask 为 BSD-3-Clause；SWE-bench Verified 元数据和测试补丁遵循数据集 MIT 许可证。随附 CPython 保留其 distribution 许可证文件。来源和许可证链接见 [NOTICE](./NOTICE.md)，原始源码归档保留自己的许可证文件。
+
+CLI 安装、SDK 源码安装、HTTP 认证与资源所有权见[模板使用指南](../docs/using-templates.zh-CN.md)。

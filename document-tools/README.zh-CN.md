@@ -127,3 +127,5 @@ JSON 对象直接包含参数。HTTP 200 返回 `{"result":{"output_path":"/home
 ## 许可证
 
 模板 Python 代码：[Apache-2.0](../LICENSE)。[Pandoc](https://pandoc.org/) 保留 GPL-2.0-or-later 及 Debian copyright 文件，不改标为 Apache-2.0。精确发行源码见 [Debian pandoc](https://packages.debian.org/source/trixie/pandoc) 和 [pandoc-data](https://packages.debian.org/source/trixie/pandoc-data)。smoke Markdown 为原创生成文本。
+
+CLI 安装、SDK 源码安装、HTTP 认证与资源所有权见[模板使用指南](../docs/using-templates.zh-CN.md)。

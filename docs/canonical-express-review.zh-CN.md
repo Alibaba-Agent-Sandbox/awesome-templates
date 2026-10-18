@@ -4,9 +4,9 @@
 清理结果的 `scripts/express_e2e.py`，覆盖生产 CLI 的 Docker 构建／推送、模板
 READY、新沙箱、CLI／SDK 烟测及清理；镜像转移加官方注册仍是独立的补充验证。
 
-模板／Docker 输入固定 Pi `a361f49`，生产 CLI 固定 `37b6d27`，控制器 SDK 固定
-已合并的 `666657b`，注入的 server 轮子源码独立固定 `e2cb27e`。canonical
-运行器使用控制器常量中另行固定的清理修复版本，不执行 a361 中已知有缺陷的运行器。
+模板／Docker 输入固定 integrated23 `b30833c`，生产 CLI 固定 `37b6d27`，控制器 SDK 固定
+已合并的 `a60e9ad`，注入的 server 轮子源码独立固定 `e2cb27e`。canonical
+运行器使用控制器常量中另行固定的清理修复版本，与模板固定同一个含清理修复的集成提交 b30833c。
 CLI 使用 lockfile 的 `npm ci`；Python 使用固定公开源码包及明确的构建工具版本。
 
 默认只生成 BLOCKED 授权报告，配置检查为绿不代表 L2。只有同仓 PR、显式开关
@@ -21,7 +21,7 @@ Express API key／URL／domain。地域固定杭州，不上传整个 `.env`、�
 或模型凭据。云密钥仅注入实际执行和清理步骤。
 
 先选 `python-hello`。之后可通过 dispatch 的 `templates` 或 PR 路径使用的仓库
-变量 `ABX_REVIEW_20261016_TEMPLATES` 选择白名单名称、逗号列表或 `all`（17 个）。
+变量 `ABX_REVIEW_20261016_TEMPLATES` 选择白名单名称、逗号列表或 `all`（23 个）。
 串行执行，任一失败即停止排队的矩阵；全局 concurrency 防止同批重叠。工作流未进入
 默认分支前，GitHub 不提供新 dispatch；取得存储授权并配置精确 SHA 后，操作者可
 编辑同仓 PR 描述，触发支持的 `pull_request: edited` 事件。本文件不声称已调度。

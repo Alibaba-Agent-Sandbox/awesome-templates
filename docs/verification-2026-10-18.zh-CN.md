@@ -30,7 +30,7 @@
 
 镜像构建成功和源码运行 HTTP/模型证据仍分开记录。所有模板都有 CLI、Python SDK、HTTP POST 说明；新模板和具体参数以所属 PR 的双语 README 为准。源代码诊断不代表该版 Dockerfile 已通过标准部署。没有执行的原生厂商不能标记通过，历史 `tested_on` 不能转移到变更后的版本。
 
-标准部署控制器 [PR #92](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/92) 仍默认关闭，当前选择器只支持其固定的 17 个输入，**不覆盖全部 23 个模板**。本机缺少 Docker；向 GitHub Actions 临时存储云配置还需单独明确批准。批准并更新准确审查提交与模板输入前，不能把 `all` 解释为全部现有模板，不能声称这批 PR 已全部可合并。
+标准部署控制器 [PR #92](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/92) 仍默认关闭，原 PR92 选择器只覆盖17个输入；本集成分支扩充为全部23个目录项并固定组合源码，这项配置修改不代表厂商验收通过。本机缺少 Docker；向 GitHub Actions 临时存储云配置还需单独明确批准。执行前仍需明确批准并审查准确提交；不能声称这批产品 PR 已全部可合并。
 
 其他厂商（原生 E2B、Cube、OpenSandbox、容器版）按其实际环境、镜像适配和凭据分别验收；Express 配置不能转发给 E2B。已有镜像 URI 支持不代表原生模板部署已验收。
 

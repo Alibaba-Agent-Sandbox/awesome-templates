@@ -44,3 +44,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Canonical cleanup evidence](evidence/verify/2026-10-16-express-cleanup-outcome.md)
 - [Canonical Express CI decision](notes/proposed/process/2026-10-16-canonical-express-ci.md)
 - [Canonical Express CI preparation](evidence/verify/2026-10-16-canonical-express-ci.md)
+
+- [Integrated23 acceptance](notes/proposed/process/2026-10-18-integrated-template-acceptance.md) · [verification](evidence/verify/2026-10-18-integrated-template-acceptance.md)

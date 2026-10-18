@@ -32,7 +32,7 @@ Upload `report.md` to `/home/user/app` first. `document_smoke` creates original 
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` following [the client installation guide](../docs/python-client-installation.md); import `agent_sandbox`.
+Install the paired source packages using [the pinned SDK installation recipe](../docs/python-client-installation.md). The Python import is `agent_sandbox`.
 
 ```python
 import asyncio
@@ -127,3 +127,5 @@ Template integration: [awesome-templates](https://github.com/Alibaba-Agent-Sandb
 ## License
 
 Template Python code: [Apache-2.0](../LICENSE). [Pandoc](https://pandoc.org/) retains GPL-2.0-or-later and installed Debian copyright notices; it is not relabeled as template Apache-2.0 code. Exact distribution source: [Debian pandoc](https://packages.debian.org/source/trixie/pandoc) and [pandoc-data](https://packages.debian.org/source/trixie/pandoc-data). Smoke Markdown is original generated text.
+
+For CLI setup, SDK installation, HTTP authentication and resource ownership, see [Using templates](../docs/using-templates.md).

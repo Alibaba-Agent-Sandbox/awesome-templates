@@ -33,7 +33,7 @@ Upload custom images through the SDK files API into the workspace before calling
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client`; the import is `agent_sandbox`.
+Install the paired source packages using [the pinned SDK installation recipe](../docs/python-client-installation.md). The Python import is `agent_sandbox`.
 
 ```python
 import asyncio
@@ -121,3 +121,5 @@ Template/OCR integration: [awesome-templates issues](https://github.com/Alibaba-
 ## License
 
 Template code and the original generated fixture: [Apache-2.0](../LICENSE). Official [Tesseract 5.5.0](https://github.com/tesseract-ocr/tesseract/tree/5.5.0) is Apache-2.0; Debian package copyright/attribution files remain installed. Pillow retains its distribution license. No font binary is redistributed; the committed image contains rendered original text. Dependency licenses remain their respective upstream licenses.
+
+For CLI setup, SDK installation, HTTP authentication and resource ownership, see [Using templates](../docs/using-templates.md).

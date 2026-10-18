@@ -8,11 +8,11 @@ owned cleanup. Supplementary image transfer/registration remains a separate path
 
 ## Fixed source and default gates
 
-The workflow pins template/Docker inputs to Pi `a361f49`, production CLI to
-`37b6d27`, controller SDK to accepted `666657b`, and injected server-wheel source
+The workflow pins template/Docker inputs to integrated23 `b30833c`, production CLI to
+`37b6d27`, controller SDK to accepted `a60e9ad`, and injected server-wheel source
 independently to `e2cb27e`. Its canonical harness is separately pinned to the
 cleanup-fix revision recorded in `scripts/canonical_express_review.py`; it does
-not run the known-broken a361 harness. Controller/server checkouts are distinct
+run the same integrated cleanup-fixed revision b30833c. Controller/server checkouts are distinct
 because the older server source predates the workspace dependency fix. The CLI
 uses `npm ci`; Python installs the public pinned source packages and explicit
 build tools through their existing package metadata (no SDK lockfile exists).
@@ -50,7 +50,7 @@ use that head, rather than silently running a different merge checkout.
 ## Selecting and triggering a reviewed run
 
 Start with `python-hello`. Dispatch accepts one name, comma-separated reviewed
-names or `all` (17). The PR path reads repository variable
+names or `all` (23). The PR path reads repository variable
 `ABX_REVIEW_20261016_TEMPLATES`, default `python-hello`. Selection is a strict
 whitelist; arbitrary paths/commands and duplicates are rejected. Cloud jobs run
 serially and stop the queued matrix on failure. The concurrency group prevents
