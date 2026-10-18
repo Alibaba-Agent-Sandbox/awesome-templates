@@ -1,5 +1,9 @@
 # Template acceptance review: 2026-10-18
 
+## Current local-first follow-up
+
+The user now selects local Express deployment/model acceptance; Actions cloud/model execution and temporary Actions secret storage are not task prerequisites. See [the newer local review](local-express-review-2026-10-18.md). The historical snapshot below retains its original pending gates; Docker image deployment still needs a working local engine.
+
 This is a dated snapshot, not a release or provider certification. Main and existing drafts contain **23 product templates** in total. This documentation branch builds on the 16 directories in PR #82; other templates live in their linked owner PRs. Each row applies only to its exact revision.
 
 | Template | Source PR / revision | Image and normal CI | Current canonical L2 |

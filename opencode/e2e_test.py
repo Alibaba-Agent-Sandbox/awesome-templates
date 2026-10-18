@@ -103,6 +103,49 @@ if not all(module.add(a,b) == a+b for a,b in
     )
 
 
+def _completed_final_text(result: dict) -> str:
+    """Read the last completed stop step, excluding earlier tool commentary.
+
+    Aggregated result.text intentionally includes all text events. A marker in
+    an unfinished/tool-only step or an event from another session cannot prove
+    completion. Code/artifact verification still runs independently afterward.
+    """
+    session = result.get("session_id")
+    stdout = result.get("stdout")
+    if not isinstance(session, str) or not session or not isinstance(stdout, str):
+        return ""
+    opened = False
+    parts: list[str] = []
+    final = ""
+    for line in stdout.splitlines():
+        if not line.strip():
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            return ""
+        if not isinstance(event, dict) or event.get("sessionID") != session:
+            return ""
+        kind = event.get("type")
+        part = event.get("part")
+        if kind == "error":
+            return ""
+        if kind == "step_start":
+            if opened:
+                return ""
+            opened, parts, final = True, [], ""
+        elif kind == "text":
+            if not opened or not isinstance(part, dict) or not isinstance(part.get("text"), str):
+                return ""
+            parts.append(part["text"])
+        elif kind == "step_finish":
+            if not opened or not isinstance(part, dict):
+                return ""
+            final = "".join(parts) if part.get("reason") == "stop" else ""
+            opened = False
+    return "" if opened else final
+
+
 def check_model_call(client: httpx.Client) -> None:
     enabled = RUN_LLM in {"1", "true", "yes"}
     if not enabled:
@@ -152,7 +195,7 @@ def check_model_call(client: httpx.Client) -> None:
         }, timeout=float(os.environ.get("E2E_LLM_TIMEOUT", "600")))
         result = response.json().get("result", {})
         responded = (response.status_code == 200 and isinstance(result, dict)
-                     and result.get("text", "").strip() == marker
+                     and _completed_final_text(result).strip() == marker
                      and isinstance(result.get("session_id"), str) and bool(result.get("session_id")))
         record(responded, "L3 real headless coding response and session")
         if not responded:
@@ -227,7 +270,7 @@ def check_model_call(client: httpx.Client) -> None:
         }, timeout=float(os.environ.get("E2E_LLM_TIMEOUT", "600")))
         resumed_result = resumed.json().get("result", {})
         resumed_ok = (resumed.status_code == 200 and isinstance(resumed_result, dict)
-                      and resumed_result.get("text", "").strip() == resume_marker
+                      and _completed_final_text(resumed_result).strip() == resume_marker
                       and resumed_result.get("session_id") == session_id)
         record(resumed_ok, "L3 exact-session resume response preserves the returned session id")
         if not resumed_ok:

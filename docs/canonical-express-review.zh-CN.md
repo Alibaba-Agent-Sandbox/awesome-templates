@@ -1,5 +1,24 @@
 # 需明确授权的 canonical Express 验收
 
+## 当前任务：本地极速版验收
+
+用户于 2026-10-18 明确选择在本地发起真实部署和模型验收；本任务不要求在
+Actions 运行云端／模型验收，本地执行也不等待临时 Actions Secret 存储授权。
+下文 Actions 方案作为可选准备保留，尚未调度；正常 PR 的基础检查保留。
+
+本地具备可用 Docker Engine、已授权的 Express／ACR 环境配置，并在 `ABX`
+指定审查过的源码构建 CLI 后，执行现有命令：
+
+```bash
+python scripts/express_e2e.py python-hello --timeout 900 --idle-timeout 300 --wall-timeout 3600 --push-retries 0
+```
+
+逐个运行已审查模板，出现未完成的自有 intent 时先核对清理，再继续。
+此命令覆盖真实镜像部署及 CLI／SDK 烟测；编码模板仍需严格真实模型验收。
+见[源码运行指南](express-source-runtime.md)和[本轮结果](local-express-review-2026-10-18.md)。
+当前控制端没有 Docker 可执行文件、socket 或引擎端点，完整镜像部署验收因本地
+前置条件缺失而 BLOCKED。源码模型通过不能代替镜像部署证据，也不填写 `tested_on`。
+
 此工作流仅供审查：尚未上传云凭据、调度云运行或获得 L2 通过。它真实执行已修复
 清理结果的 `scripts/express_e2e.py`，覆盖生产 CLI 的 Docker 构建／推送、模板
 READY、新沙箱、CLI／SDK 烟测及清理；镜像转移加官方注册仍是独立的补充验证。

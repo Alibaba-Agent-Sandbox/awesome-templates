@@ -1,5 +1,28 @@
 # Canonical Express acceptance on an explicitly authorized runner
 
+## Current task: local Express acceptance
+
+The user selected local real deployment and model acceptance on 2026-10-18.
+Actions cloud/model execution is not required for this task; no temporary secret
+storage approval is pending for local execution. The Actions procedure below is
+an optional prepared alternative and has not been dispatched. Existing basic
+repository checks remain part of normal PR review.
+
+With a working local Docker Engine, authorized Express/ACR configuration and the
+reviewed source-built CLI in `ABX`, use the existing local command:
+
+```bash
+python scripts/express_e2e.py python-hello --timeout 900 --idle-timeout 300 --wall-timeout 3600 --push-retries 0
+```
+
+Run reviewed templates serially and reconcile any private owned intent before
+continuing. This command covers real image deployment and CLI/SDK smoke; coding
+templates still need their strict real-model verifier. See [source-runtime
+instructions](express-source-runtime.md) and the [local review](local-express-review-2026-10-18.md).
+The current controller has no Docker executable, socket or engine endpoint, so
+full image-deploy acceptance is BLOCKED by that local prerequisite. Source-runtime
+model success does not fill `tested_on` or replace image-deploy evidence.
+
 This workflow is prepared for review. No cloud credentials have been uploaded,
 no cloud run has been dispatched, and preparation/unit tests establish no L2 pass.
 It executes the real cleanup-fixed `scripts/express_e2e.py`, including production

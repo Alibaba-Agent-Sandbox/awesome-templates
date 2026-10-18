@@ -1,5 +1,7 @@
 # opencode
 
+`text` 包含中间步骤的说明；严格最终回复验收从 `stdout` 读取同一会话最后一个以 `stop` 完成的步骤，并继续执行独立代码、产物和会话续接检查。
+
 Agent Sandbox 里的 OpenCode（`sst/opencode`）。镜像安装 npm 包 `opencode-ai@1.19.0`。命名命令调用这个 CLI。主调用是无头的 `opencode run`。`opencode serve` 是端口 4096 上的另一套 HTTP 服务。
 
 ## 做什么

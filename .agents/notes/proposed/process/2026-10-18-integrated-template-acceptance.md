@@ -44,8 +44,11 @@ docs/catalog; no default-branch publication or provider support claim is made.
 
 Strict spec/checker, all local regression groups, real source HTTP where
 available, all23 exact-head hosted image jobs and specialized native jobs.
-Canonical deploy/provider proof remains blocked until explicit temporary
-Actions-secret storage approval. L3/model and full external HTTP remain separate.
+The user now requires locally initiated real Express deployment/model acceptance;
+Actions cloud/model execution is not a task gate. No Actions secret upload is
+needed for this local path. Image deploy remains blocked by the absent local
+Docker Engine; source-runtime model runs are recorded separately. Preserve
+basic PR/main checks, immutable inputs, exact ownership and cleanup readback.
 
 ## Acceptance criteria
 
@@ -66,3 +69,9 @@ accepted native SDK e86cb0b for controller/source-install examples, retaining
 independent injected-server/harness pins. Restrict duplicate push jobs to main
 while retaining every PR and main gate; no canonical acceptance is weakened.
 https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/110
+
+The current convergence ordinarily merges accepted main e258fdc2, preserving
+both completed orphan retirement and the full integrated Node lifecycle. The
+new delayed-Node regression also applies to the integrated ValueError API and
+sets its own WORKSPACE explicitly. Retain specialized media/document jobs and
+independently pinned server input e2cb27e; do not restore mutable SDK main.

@@ -46,3 +46,9 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Canonical Express CI preparation](evidence/verify/2026-10-16-canonical-express-ci.md)
 
 - [Integrated23 acceptance](notes/proposed/process/2026-10-18-integrated-template-acceptance.md) · [verification](evidence/verify/2026-10-18-integrated-template-acceptance.md)
+
+- [Accepted Node startup repair](notes/implemented/process/2026-10-18-node-startup-race.md) · [verification](evidence/verify/2026-10-18-node-startup-race.md)
+- [Accepted registry artifact retirement](notes/implemented/process/2026-10-18-orphan-registry.md) · [verification](evidence/verify/2026-10-18-orphan-registry.md)
+
+- [Local Express/model review](evidence/verify/2026-10-18-local-express-model-review.md)
+- [OpenCode completed-step decision](notes/proposed/process/2026-10-18-opencode-completion-steps.md)

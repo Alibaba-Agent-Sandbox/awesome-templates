@@ -22,6 +22,24 @@ e2e = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(e2e)
 
 
+def completed_response(text, session, commentary=False):
+    events = []
+    if commentary:
+        events += [
+            {"type": "step_start", "sessionID": session, "part": {}},
+            {"type": "text", "sessionID": session, "part": {"text": "Inspecting the existing code."}},
+            {"type": "step_finish", "sessionID": session, "part": {"reason": "tool-calls"}},
+        ]
+    events += [
+        {"type": "step_start", "sessionID": session, "part": {}},
+        {"type": "text", "sessionID": session, "part": {"text": text}},
+        {"type": "step_finish", "sessionID": session, "part": {"reason": "stop"}},
+    ]
+    return {"text": ("Inspecting the existing code." if commentary else "") + text,
+            "session_id": session, "stdout": "\n".join(json.dumps(event) for event in events)}
+
+
+@pytest.mark.parametrize("commentary", [False, True])
 @pytest.mark.parametrize("agent_behavior,resume_behavior", [
     ("fix", "valid"), ("marker_only", "not_run"), ("tamper_tests", "not_run"),
     ("fix", "wrong_session"), ("fix", "bad_hash"), ("fix", "bad_results"),
@@ -30,7 +48,7 @@ SPEC.loader.exec_module(e2e)
     *((mode, "not_run") for mode in ("static_sys_exit", "static_os_exit", "zero_test_exit", "skip_tests", "stale_pyc")),
 ])
 def test_remote_coding_protocol_detects_real_fix_and_rejects_false_success(
-    monkeypatch, tmp_path, agent_behavior, resume_behavior
+    monkeypatch, tmp_path, agent_behavior, resume_behavior, commentary
 ):
     monkeypatch.setattr(e2e, "WORKSPACE", str(tmp_path))
     monkeypatch.setattr(e2e, "RUN_LLM", "1")
@@ -94,8 +112,8 @@ def test_remote_coding_protocol_detects_real_fix_and_rejects_false_success(
                     (seeded_project / "test_calc.py").write_text("# replaced tests on resume\n")
                 if resume_behavior != "missing_artifact":
                     (seeded_project / "resume.json").write_text(json.dumps(resume))
-                return httpx.Response(200, json={"result": {"text": marker,
-                    "session_id": "ses_wrong_session" if resume_behavior == "wrong_session" else payload["session"]}})
+                return httpx.Response(200, json={"result": completed_response(marker,
+                    "ses_wrong_session" if resume_behavior == "wrong_session" else payload["session"], commentary)})
             assert set(payload) == {"prompt", "cwd"}
             assert payload["cwd"] == str(seeded_project)
             assert (seeded_project / "calc.py").read_text() == "def add(a, b):\n    return a - b\n"
@@ -125,7 +143,7 @@ def test_remote_coding_protocol_detects_real_fix_and_rejects_false_success(
                 (seeded_project / "test_calc.py").write_text("# agent deleted the failing tests\n")
             (seeded_project / "report.txt").write_text("Changed addition; simulated agent report.\n")
             (seeded_project / "acceptance.txt").write_text(marker + "\n")
-            return httpx.Response(200, json={"result": {"text": marker, "session_id": "ses_fake_protocol_only"}})
+            return httpx.Response(200, json={"result": completed_response(marker, "ses_fake_protocol_only", commentary)})
         if request.url.path == "/files/download-stream" and request.method == "GET":
             path = Path(request.url.params["path"])
             assert path.parent == seeded_project
@@ -190,3 +208,23 @@ def test_isolated_verifier_uses_actual_source_and_preloaded_stdlib(tmp_path, tes
     completed=subprocess.run(['python3','-I','-c',e2e._verifier_source(str(tmp_path),ack,tests=tests)],cwd=tmp_path,capture_output=True,text=True,timeout=10)
     assert completed.returncode==0 and completed.stdout.strip()==ack
     assert not (tmp_path / 'startup-ran').exists()
+
+
+@pytest.mark.parametrize("mutation", ["truncated", "tool_only", "wrong_session", "error", "new_unfinished_step", "invalid_json"])
+def test_final_marker_requires_complete_stop_step_in_same_session(mutation):
+    result = completed_response("FINAL_MARKER", "ses_fixture", True)
+    events = [json.loads(line) for line in result["stdout"].splitlines()]
+    if mutation == "truncated":
+        events.pop()
+    elif mutation == "tool_only":
+        events[-1]["part"]["reason"] = "tool-calls"
+    elif mutation == "wrong_session":
+        events[-1]["sessionID"] = "ses_other"
+    elif mutation == "error":
+        events.append({"type": "error", "sessionID": "ses_fixture"})
+    elif mutation == "new_unfinished_step":
+        events.append({"type": "step_start", "sessionID": "ses_fixture", "part": {}})
+    result["stdout"] = "\n".join(json.dumps(event) for event in events)
+    if mutation == "invalid_json":
+        result["stdout"] += "\nnot-json"
+    assert e2e._completed_final_text(result) == ""

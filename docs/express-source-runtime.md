@@ -74,3 +74,16 @@ and evidence; the catalog's provider acceptance stays empty until its gates pass
 ## Amp inspection slice
 
 The runner also accepts `amp`. It installs the pinned CLI without an Amp key, uploads public conservative settings and verifies the SDK version/config inspection plus unchanged settings bytes. Model execution is explicitly disabled; this is not coding-agent acceptance. A bounded background install is polled through short RPCs so a long dependency install does not require one uninterrupted streaming RPC. The sandbox is still destroyed in `finally`.
+
+## Local-first review on 2026-10-18
+
+The current task uses local Express real deployment/model acceptance without
+Actions cloud/model execution. The runner also accepts Qwen Code with
+`OPENAI_API_KEY`, `OPENAI_BASE_URL` and `--model`; the key is forwarded only to
+the target process environment. See [the local result table](local-express-review-2026-10-18.md)
+for exact model/source outcomes, failed attempts and Docker prerequisites.
+This diagnostic remains source-runtime evidence and does not deploy the image.
+
+当前任务在本地发起极速版真实部署／模型验收，不要求 Actions 云端验收。
+Qwen Code 使用环境中的 `OPENAI_API_KEY`、`OPENAI_BASE_URL` 和 `--model`；
+密钥仅注入目标进程环境。结果、失败历史和 Docker 前置条件见上方本轮结果表。

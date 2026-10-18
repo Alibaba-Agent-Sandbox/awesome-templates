@@ -4,6 +4,11 @@ OpenCode (`sst/opencode`) in an Agent Sandbox. The image installs npm package `o
 
 ## What it does
 
+`text` combines text from every assistant step, including intermediate commentary.
+For strict final-response checks, inspect the last completed `step_finish` with
+reason `stop` in `stdout`, scoped to the returned session. The verifier also
+requires independent code, artifact and exact-session continuation checks.
+
 `agent-sandbox-server` listens on port 9000 and registers commands that run `opencode`. `opencode_run` executes one non-interactive `opencode run --format json` and returns the assistant text, sanitized JSON events, and the session id. `opencode_version` and `opencode_setup_check` check the pinned binary and `opencode.json` without calling a model.
 
 `opencode_serve_start` starts `opencode serve` on port 4096 bound to `0.0.0.0`. That process is OpenCode's own HTTP API (`GET /global/health`). Reach it with `sb.network.get_url(4096)`. The platform `start_cmd` does not start it.
