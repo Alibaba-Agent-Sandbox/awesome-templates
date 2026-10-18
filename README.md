@@ -35,18 +35,19 @@ is recorded.
 | [amp](./amp/README.md) | Sourcegraph Amp CLI. amp_execute runs amp -x; amp_version and amp_setup_check do not need a key. | official | alicloud-express |
 | [droid](./droid/README.md) | Factory Droid. Command droid exec. Package @factory/cli@0.241.1. | experimental | |
 | [gemini](./gemini/README.md) | Gemini CLI. Command gemini -p. Package @google/gemini-cli@0.64.0. | experimental | |
-OpenSandbox's public sandbox images (code-interpreter, code-interpreter-base, desktop, playwright, vscode) are resolved by the SDK. This catalog does not vendor those Dockerfiles.
+The CLI supports the builtin Express provider and installable provider plugins.
+The Dockerfile deployment examples here target `alicloud-express`. Other providers
+use their own image/template contracts; see the maintained
+[provider documentation](https://github.com/Alibaba-Agent-Sandbox/awesome-providers).
+OpenSandbox accepts an image URI; its short aliases and startup behavior are
+owned by its plugin rather than this template catalog.
 
-`abx template install` builds these Dockerfile templates on
-`alicloud-express` only. The CLI does not load the other providers.
-`base` and `code-interpreter-v1` are CLI builtins, so a bare install does
-not use the directories in this repo. OpenSandbox create takes an image
-URI and replaces the container entrypoint, so these Dockerfiles do not
-start there until the image is pushed and the server is started by hand.
+CLI 支持内置 Express 与可安装的提供方插件；这里的 Dockerfile 部署示例针对
+`alicloud-express`，其他厂商按各自插件的镜像/模板及启动契约使用。
 
-The static registry page is [registry/index.html](./registry/index.html).
-It is the page intended for `registry.agent-sandbox.cn`; that DNS name is
-not wired up here.
+The maintained catalog site is owned by the [registry repository](https://github.com/Alibaba-Agent-Sandbox/registry) and served at [Agent Sandbox Registry](https://registry.agent-sandbox.cn). Template metadata remains in `awesome-templates.yaml`.
+
+目录站点由独立的 [registry 仓库](https://github.com/Alibaba-Agent-Sandbox/registry)维护；本仓库通过 `awesome-templates.yaml` 提供模板元数据。
 
 ## Deploy
 
