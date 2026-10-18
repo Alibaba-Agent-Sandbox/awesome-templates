@@ -37,3 +37,4 @@ Execute actual pinned CPU codecs and independently run ffprobe on MP4/WAV/FLAC a
 ## Evidence
 
 [Verification record](../../../evidence/verify/2026-10-18-media-tools-runtime.md).
+[Actual image and CI confirmation](../../../evidence/verify/2026-10-18-media-tools-ci-confirmation.md).

@@ -104,7 +104,7 @@ JSON 对象直接包含参数。HTTP 200 返回 `{"result":{"output_path":"/home
 
 尚未记录任何通过的提供方测试。
 
-源码验证及待完成镜像/云门禁见[工程证据](../.agents/evidence/verify/2026-10-18-media-tools-runtime.md)。本地结果不证明 L1 镜像或 canonical L2 云验收；保持 experimental 和空 `tested_on`。
+记录的源码版本已实际通过镜像 L1、43 项原生/SDK 回归及 21 项 HTTP 检查，见 [CI 确认](../.agents/evidence/verify/2026-10-18-media-tools-ci-confirmation.md)。失败尝试及本地准备保留在[原始证据](../.agents/evidence/verify/2026-10-18-media-tools-runtime.md)。canonical L2 云验收尚未运行；保持 experimental 和空 `tested_on`。
 
 ## 二次开发
 

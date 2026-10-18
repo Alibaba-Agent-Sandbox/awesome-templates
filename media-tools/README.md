@@ -104,7 +104,7 @@ Set server process configuration before startup. A prewarmed command server may 
 
 No provider has a passing run recorded for this template.
 
-Source verification and pending image/cloud gates are recorded in [the engineering evidence](../.agents/evidence/verify/2026-10-18-media-tools-runtime.md). Local results do not establish L1 image or canonical L2 provider acceptance. Catalog status is experimental and `tested_on` is empty.
+Actual image L1, 43 native/SDK regressions and 21 HTTP assertions passed on the recorded source; see [the CI confirmation](../.agents/evidence/verify/2026-10-18-media-tools-ci-confirmation.md). Failed attempts and local preparation remain in [the original evidence](../.agents/evidence/verify/2026-10-18-media-tools-runtime.md). Canonical L2 provider acceptance has not run. Catalog status is experimental and `tested_on` is empty.
 
 ## Secondary development
 
