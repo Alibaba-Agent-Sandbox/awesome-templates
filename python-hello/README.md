@@ -41,7 +41,7 @@ abx template delete <template-id> -y
 
 ## Quick start (Python SDK)
 
-Install the client with `python3 -m pip install agent-sandbox-client`. The import is `agent_sandbox`.
+The client distribution is `agent-sandbox-client` (import `agent_sandbox`). Until the matching release is available, use the [paired, pinned source installation](../docs/python-client-installation.md).
 
 ```python
 import asyncio

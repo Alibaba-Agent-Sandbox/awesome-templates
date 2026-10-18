@@ -39,3 +39,4 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Aider hardened image recheck](evidence/verify/2026-10-16-aider-hardened-image-recheck.md)
 - [OpenCode verifier decision](notes/proposed/process/2026-10-16-opencode-verifier-completion.md)
 - [OpenCode verifier evidence](evidence/verify/2026-10-16-opencode-verifier-completion.md)
+- [Documentation ownership](notes/proposed/process/2026-10-18-template-documentation-ownership.md)

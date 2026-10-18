@@ -40,7 +40,7 @@ where available; command-line arguments may be visible to local processes.
 
 ## Quick start (Python SDK)
 
-Install the client with `python3 -m pip install agent-sandbox-client`.
+The client distribution is `agent-sandbox-client` (import `agent_sandbox`). Until the matching release is available, use the [paired, pinned source installation](../docs/python-client-installation.md).
 
 ```python
 import asyncio
