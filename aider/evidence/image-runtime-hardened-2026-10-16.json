@@ -1,0 +1,72 @@
+{
+  "result": "PARTIAL",
+  "date": "2026-10-16",
+  "template": "aider",
+  "provider": "alicloud-express",
+  "supplemental_image_model_result": "PASS",
+  "controller_provenance": {
+    "controller_commit": "f76687e32a87d52fd50f7c774266db6155da3bcd",
+    "controller_sha256": "8184b5ff26871ac62eea9f7870da67d5a04d3a529b749cfc17e1f9d4db5bfc06",
+    "selection": "committed host controller",
+    "image_source_overlay": false
+  },
+  "image_provenance": {
+    "artifact_id": 12026949932,
+    "workflow_run_id": 38856361807,
+    "archive_sha256": "13006e0577a904435eb7384698d8530bce82f08d1abe8ceb12372c3984076cd0",
+    "source_head_commit": "ecbabafca49fd8f5d0cf980842a7fa69ee66d7c6",
+    "checkout_commit": "caf1f55d6562c562456419551d623703652bb796",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "commands_sha256": "bc11b5eda480d25554ae2ee61ace873eaf978cdaa3bcc67ad808c88749019684",
+    "template": "aider"
+  },
+  "installed_server_provenance": {
+    "modules_compared": 56,
+    "all_module_bytes_match_recorded_sdk_source": true,
+    "expected_source_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "source_manifest_sha256": "dac8868dcff05c87cd3f3230b38dfb00530c622f86832b5c9592f846dfb019c8"
+  },
+  "keyless_http_suite": {
+    "PASS": 9,
+    "FAIL": 0,
+    "SKIP": 1,
+    "exit_code": 0,
+    "source_sha256": "8184b5ff26871ac62eea9f7870da67d5a04d3a529b749cfc17e1f9d4db5bfc06",
+    "failed_cases": []
+  },
+  "actual_model_http_suite": {
+    "PASS": 21,
+    "FAIL": 0,
+    "SKIP": 0,
+    "exit_code": 0,
+    "server_port": 9010,
+    "controller_sha256": "8184b5ff26871ac62eea9f7870da67d5a04d3a529b749cfc17e1f9d4db5bfc06",
+    "model": "qwen3.8-flash",
+    "source_overlay": false,
+    "settings_delivery": "explicit selected native process env; unchanged image commands",
+    "codex_adapter_isolation": "template documented default",
+    "boundary": "actual HTTP model suite; canonical deploy and per-template L3 criteria remain separate"
+  },
+  "cleanup": {
+    "push_helper_kill": true,
+    "push_helper_absence_verified": true,
+    "sandbox_kill": true,
+    "sandbox_absence_verified": true,
+    "template_delete": true,
+    "registry_tag_delete_verified": true,
+    "registry_repository_delete_verified": true,
+    "independent_exact_template_absence_verified": true
+  },
+  "local_regressions": {
+    "passed": 72,
+    "seconds": 14.28,
+    "backend": "actual subprocess fixtures; synthetic HTTP/model"
+  },
+  "peer_negative_controls": {
+    "passed": 6,
+    "seconds": 1.55,
+    "scope": "static early-exit controls"
+  },
+  "boundary": "Actual reviewed image, genuine compatible Qwen model, hardened host controller, unchanged image commands and native HOME. Canonical scripts/express_e2e.py -> abx template deploy NOT RUN. No express receipt, tested_on, provider promotion or merge claim.",
+  "historical_evidence": "image-runtime-2026-10-16-configured.json is retained unchanged; its earlier genuine model pass predates the early-exit completion guard."
+}

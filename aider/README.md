@@ -214,6 +214,14 @@ The configured model server runs on 9010; the prewarmed 9000 server is separate.
 All owned helper/instances/template/registry resources were cleaned and read back.
 The [earlier failed run](evidence/image-runtime-2026-10-16-attempt1.json) is retained.
 
+[Hardened-controller image recheck](evidence/image-runtime-hardened-2026-10-16.json)
+subsequently passed 21 genuine model checks with no failures or skips, using
+controller `f76687e` against the same immutable image. Actual source compilation,
+complete original-test execution and fresh completion acknowledgements now reject
+early-exit and stale-cache false positives. Seven owned-resource cleanup checks
+and a separate strict official template-absence readback passed. Earlier evidence
+is preserved and predates this completion guard.
+
 The catalog remains experimental with `tested_on: []`: the canonical
 `scripts/express_e2e.py` → `abx template deploy` L2 wrapper has not passed.
 Other providers remain unverified. See [design](../docs/design/aider.md).
@@ -256,3 +264,13 @@ python3 aider/verify_upstream_guards.py
 
 This uses a deterministic loopback model to verify slash/bang and unselected-path
 refusals. It is separate from real-model coding and image deployment acceptance.
+
+### Independent test completion
+
+The coding controller verifies all three unchanged original tests in an isolated
+Python process, compiles actual source bytes, rejects skipped/expected-failing or
+incomplete tests, and requires fresh acknowledgements chosen after the agent
+exits. Held-out calculations have a separate acknowledgement. Static marker output,
+premature exit and cached bytecode do not establish a pass. These are completion
+checks within the disposable sandbox, not an OS security boundary. Earlier real
+model evidence is retained separately; the hardened verifier needs its own run.
