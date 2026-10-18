@@ -1,6 +1,6 @@
 # 暂缓项目与已启动切片
 
-除下文已启动的 Pi 与 Aider 切片外，其余条目暂不在 `awesome-templates` 里建目录。验收以 [docs/template-spec.md](./template-spec.md) 为准：阿里云基础镜像、`commands.py` 里的 `@command` 真正去调上游 CLI，版本钉死，再用对应级别的 e2e 跑通。底层跑不了，或者安装方式还没钉成可复现的包版本，就留在这里。
+已启动的 Pi、Aider、SWE 和 OSWorld 浏览器切片见下文；其余计划尚未交付。验收以 [template-spec.md](./template-spec.md) 为准，实际运行时、固定版本和对应级别证据必须匹配。
 
 `abx template install` 只在阿里云极速版（`alicloud-express`）上构建。新建一个目录不会变成 OpenSandbox 镜像，也不会变成 E2B 的 template id。
 
@@ -12,9 +12,9 @@
 
 ## OSWorld
 
-OSWorld 在一台带桌面的虚拟机里做计算机使用评测：截图或无障碍树进、鼠标键盘出。任务跑在 Ubuntu（也有 Windows）客户机上，不是一条 headless CLI。
+完整 OSWorld benchmark 仍需要各应用、VM 快照/reset 和相应任务/evaluator 集合；它不是一条 headless CLI。Express 无 KVM，不能据此承诺完整 benchmark 或排行榜分数。
 
-缺虚拟机管理器、桌面会话、截图通道和输入注入。本仓库的 `desktop` 只是 E2B 上已有的 template id，OpenSandbox 没有接这张镜像，也不能当作 OSWorld 的客户机。一个 `python:3.12-slim` 目录替代不了这台虚拟机。
+[Issue 36](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/36) 明确允许非特权桌面切片。新的 [osworld](../osworld/README.zh-CN.md) 目录独立基于 Alibaba 镜像，固定上游源码，提供真实 Xvfb/Openbox/DBus/Chromium、截图、AT-SPI、原生鼠标键盘/私有剪贴板 Unicode 输入，以及明确的浏览器 task 配置和上游评估函数子集。native 源码任务及独立 DOM/PNG 验证已通过；实际镜像 L1 与 Express L2 待验证，状态仍 experimental。Office、任意 launch/shell、VM/完整 benchmark 不包含在此切片，原 Issue 保持开放。它不是复制 E2B `desktop` template id，也不声明 OpenSandbox 客户机已可用。
 
 ## Windows Agent Arena
 

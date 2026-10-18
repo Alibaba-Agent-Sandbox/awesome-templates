@@ -349,3 +349,11 @@ templates:
     providers:
       alicloud-express: supported
       opensandbox: push-image-then-pass-uri
+  - name: osworld
+    description: "Pinned OSWorld Linux browser slice: real X11 input, screenshots, AT-SPI and selected task evaluators."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: osworld
+    tags: [osworld, computer-use, desktop, browser]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
