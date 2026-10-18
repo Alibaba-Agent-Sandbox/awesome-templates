@@ -174,17 +174,22 @@ curl --fail-with-body -X POST http://127.0.0.1:9000/commands/codex_exec \
 
 较长的 agent 运行可能需要比这项声明更多的内存。平台可能忽略 memory 字段并使用自己的规格。
 
-## 源码运行验证
+## 运行验证
 
 2026-10-16，修改后的命令源码和固定 Codex 0.162.1 在 `alicloud-express`
 完成真实模型编程任务：远端读取代码/产物、独立 Fibonacci 断言及单独重跑 unittest。
 HTTP 检查全部 16 项通过，本次沙箱已删除。源码和运行包的哈希见
 [证据](evidence/runtime-express-2026-10-16.json)，另有[检查日志](evidence/runtime-express-2026-10-16.log)。
-本次使用现有平台基础沙箱并在运行时安装依赖；Dockerfile 镜像构建和新模板部署尚未验收。
+该次使用现有平台基础沙箱并在运行时安装依赖；该源码测试没有验证 Dockerfile 镜像或新模板部署。
+
+后续使用已审核镜像和加固后的公开控制器 `06071e4`，完成 17 项真实模型 HTTP 检查，无失败、无跳过。
+测试核对现有源码修复、原测试不变、精确产物及独立测试完整执行；本次沙箱和官方注册的模板已独立确认不存在。
+共享镜像仓库仍由正在执行的审核批次负责清理，见[脱敏镜像证据](evidence/image-runtime-hardened-2026-10-16.json)。
+完整 `abx template deploy` 流程尚未执行；上述结果属于补充组件证据。
 
 ## 已验证
 
-尚未记录任何通过的提供方测试。
+尚无通过规范完整部署流程的提供方验收凭据。
 
 ## 二次开发
 
@@ -202,7 +207,7 @@ HTTP 检查全部 16 项通过，本次沙箱已删除。源码和运行包的�
 
 在仓库根目录执行 `python3 -m unittest discover -s codex -p test_commands.py -v`、`python3 scripts/check_template.py codex` 和 `python3 scripts/run_local_e2e.py`。单元测试覆盖显式权限、自动回退、结果脱敏和误判成功的 marker。L0 检查 HTTP 命令契约并可能跳过模型任务，不代表 L1 镜像构建、L2 云端执行或 L3 Agent 验收已通过。
 
-对于本地或远程模板服务，双方进程已配置获授权的模型环境后，执行 `E2E_BASE_URL=http://127.0.0.1:9000 E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 E2E_MODEL=<model> python3 codex/e2e_test.py` 做 L3。Agent 必须创建 Fibonacci 实现及 unittest 文件，成功执行工具命令并写出 `acceptance.txt`。测试要求最后的助手消息为 marker，核验产物，独立断言 Fibonacci 结果和负数拒绝行为，并重跑生成的测试。只聊天或在工具事件里回显 marker 均不通过。产物通过远程文件 API 读取，独立断言和测试通过远程 shell API 执行。`E2E_WORKSPACE` 应设为服务端文件根目录内可写的目录（默认 `/home/user/workspace`），服务要求认证时还应设置 `E2E_TOKEN`。每次使用唯一目录，清理时只删除该目录。只记录真实通过的 provider evidence，单独报告模型跳过。
+对于本地或远程模板服务，双方进程已配置获授权的模型环境后，执行 `E2E_BASE_URL=http://127.0.0.1:9000 E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 E2E_MODEL=<model> python3 codex/e2e_test.py` 做 L3。控制器先写入有错误的现有 Fibonacci 实现及原始测试，并确认预期失败的基线。Agent 必须修复该实现，逐字节保留原始测试，补充 unittest 及 `REPORT.md`，成功执行工具命令并写出内容准确的 `acceptance.txt`。测试要求最后的助手消息为 marker，核验源码变更及产物，独立断言 Fibonacci 结果和负数拒绝行为，并重跑原始测试与生成的测试。独立验证器使用隔离的 Python 进程，直接编译实际源码，要求测试完整成功，并核对在 Agent 退出后才生成的完成确认。提前退出、跳过或预期失败的测试、同名 unittest 模块及旧字节码都无法提供通过凭据。这用于确认任务完成，不是针对具有相同操作系统权限的恶意代码的隔离边界。只聊天或在工具事件里回显 marker 均不通过。产物通过远程文件 API 读取，独立断言和测试通过远程 shell API 执行。`E2E_WORKSPACE` 应设为服务端文件根目录内可写的目录（默认 `/home/user/workspace`），服务要求认证时还应设置 `E2E_TOKEN`。每次使用唯一目录，清理时只删除该目录。只记录真实通过的 provider evidence，单独报告模型跳过。
 
 ## 问题反馈
 
