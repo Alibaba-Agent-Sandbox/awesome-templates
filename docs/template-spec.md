@@ -215,7 +215,9 @@ if __name__ == "__main__":
 
 ### Auth token
 
-The server reads `ABX_SERVER_TOKEN` when the process starts. When the variable is non-empty, every request needs `Authorization: Bearer <token>` or `X-Access-Token: <token>`. Declare the name in `env` with an empty value. Inject the real value at `abx create --env` or `Sandbox.create(envs=...)`.
+`/health` is exempt from server-token authentication; the provider gateway may still authenticate that request. A successful health probe does not prove named-command authentication or model configuration.
+
+The server reads `ABX_SERVER_TOKEN` when the process starts. When the variable is non-empty, protected requests need `Authorization: Bearer <token>` or `X-Access-Token: <token>`. Declare the name in `env` with an empty value. Provide the real value to the server process before it starts. Create-time injection (`abx create --env` or `Sandbox.create(envs=...)`) applies only when that provider starts the server with those values; it cannot reconfigure a prewarmed process. Follow [runtime environment configuration](runtime-environment.md), inspect the actual service and target its configured port.
 
 When the variable is unset, anonymous calls are allowed. On Express the gateway may still present the sandbox access token. Current `abx` (agent-sandbox main, the deploy/run fix in `#16`) retries a 401 once without that header. Current `agent_sandbox.Sandbox.server` does not send the sandbox token to port 9000. A template that sets `ABX_SERVER_TOKEN` must document how the client passes `token=` to `server_at`.
 
@@ -339,7 +341,7 @@ Inside the template README, `## Verified` is either the sentence `No provider ha
 ## Security
 
 - Secret values are not copied into the image, `template.yaml`, Docker history, or evidence JSON.
-- `env` declares the name and an empty string. The create call injects the value.
+- `env` declares the name and an empty string. Pass values explicitly to the process that needs them before it starts; a create call does not update existing processes.
 - Logs and exception text omit tokens. `scripts/express_e2e.py` redacts environment values whose names contain `KEY`, `SECRET`, `TOKEN`, or `PASSWORD` before printing.
 - Do not commit `.env`, cloud credentials, or `Dockerfile.abx-build`.
 
@@ -431,7 +433,6 @@ Violation codes include `required-file`, `readme-section`, `base-image`, `docker
 ## Express harness
 
 ```bash
-export HOME=/home/ubuntu
 unset ABX_PROVIDER
 export ABX='node /path/to/agent-sandbox/dist/bin/abx.js'
 export ACR_NAMESPACE=...
@@ -444,13 +445,10 @@ export ALIBABA_CLOUD_REGION_ID=cn-hangzhou
 # optional: build the in-image server from a checkout
 export ABX_SERVER_SDK_SOURCE=/path/to/python-sdk/server-sdk
 
-python3 scripts/express_e2e.py python-hello \
-  --start-cmd 'agent-sandbox-server serve --port 9000 --commands /app/commands.py' \
-  --ready-cmd 'agent-sandbox-server healthcheck --port 9000' \
-  --command hello --arg name=E2E --expect 'Hello, E2E!'
+python3 scripts/express_e2e.py python-hello
 ```
 
-`python-hello` on main does not yet declare `smoke`, `start_cmd`, or the Alibaba base image, so the flags above supply them. A spec_version 2 directory needs no flags: the harness reads `template.yaml`.
+The current spec_version 2 `python-hello` declares its smoke and startup commands in `template.yaml`; the harness reads them directly. Preserve the caller’s native HOME.
 
 The remote name is a unique `e2e-<name>-<hex>` alias, not the catalog name, so a pre-existing generation-1 template is left alone. The `finally` block runs `abx kill <id> -y` and `abx template delete <id> -y` for ids this process created. It also kills the deploy process group and any `docker push` whose command line contains that alias. A wall-clock kill of only the `abx` process used to leave the push running (the push is not in the same process group unless the harness starts one).
 

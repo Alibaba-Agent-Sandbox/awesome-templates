@@ -14,6 +14,8 @@ Use Pi through typed sandbox commands with a deadline, isolated model configurat
 
 ## Quick start (CLI)
 
+Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
+
 ```bash
 abx template install alibaba-agent-sandbox/awesome-templates//pi
 abx create --template <template-id> --env PI_BASE_URL="$PI_BASE_URL" --env PI_MODEL="$PI_MODEL" --env PI_API_KEY="$PI_API_KEY"

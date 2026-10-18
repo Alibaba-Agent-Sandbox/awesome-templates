@@ -16,6 +16,8 @@ Provides a reproducible headless CLI rather than requiring browser OAuth or conf
 
 ## Quick start (CLI)
 
+Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
+
 Build/register with Express credentials and an available Docker daemon:
 
 ```bash
@@ -52,7 +54,7 @@ async def main():
 asyncio.run(main())
 ```
 
-`timeout=330` controls the client's HTTP wait; `command_timeout=300` limits the owned agent process group. A client timeout does not guarantee cancellation. Use process APIs for background jobs and cancellation. If `ABX_SERVER_TOKEN` is configured, use `sb.server_at(9000, token=os.environ["ABX_SERVER_TOKEN"]).run(...)` for named commands.
+`timeout=330` controls the client's HTTP wait; `command_timeout=300` limits the owned agent process group. A client timeout does not guarantee cancellation. Use process APIs for background jobs and cancellation. If `ABX_SERVER_TOKEN` is configured, use `sb.server_at(9000, token=os.environ["ABX_SERVER_TOKEN"]).commands.run(...)` for named commands.
 
 ## Quick start (HTTP POST)
 
@@ -85,7 +87,7 @@ This Linux runtime drains both output pipes and keeps its session leader unreape
 
 | Variable | Meaning |
 | --- | --- |
-| `OPENAI_API_KEY` | Primary model key, injected at creation |
+| `OPENAI_API_KEY` | Primary model key, required in the command-server process |
 | `DASHSCOPE_API_KEY` | Fallback model key when `OPENAI_API_KEY` is empty; mapped only in the child process |
 | `OPENAI_BASE_URL` | Default `https://dashscope.aliyuncs.com/compatible-mode/v1`; override for a compatible endpoint |
 | `OPENAI_MODEL` | Default `qwen3-coder-plus`; explicit command `model` wins |

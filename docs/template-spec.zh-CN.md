@@ -215,7 +215,9 @@ if __name__ == "__main__":
 
 ### 认证令牌
 
-进程启动时读取 `ABX_SERVER_TOKEN`。变量非空时，每个请求都要带 `Authorization: Bearer <token>` 或 `X-Access-Token: <token>`。在 `env` 里声明这个名字，值为空字符串。真正的值在 `abx create --env` 或 `Sandbox.create(envs=...)` 时注入。
+`/health` 不要求 server token；提供方网关仍可能认证该请求。health 成功不证明命名命令认证或模型配置正确。
+
+进程启动时读取 `ABX_SERVER_TOKEN`。变量非空时，受保护的请求需要带 `Authorization: Bearer <token>` 或 `X-Access-Token: <token>`。在 `env` 里声明这个名字，值为空字符串。真正的值必须在服务进程启动前传入。创建时注入（`abx create --env` 或 `Sandbox.create(envs=...)`）仅适用于提供方实际使用这些值启动服务的情况，不能重新配置预热进程。参考[运行环境配置](runtime-environment.zh-CN.md)，检查实际服务并选中已配置端口。
 
 变量未设置时允许匿名调用。极速版网关仍可能带上沙箱访问令牌。当前 `abx`（`agent-sandbox` main，`#16` 的部署与运行修复）在 401 后会不带该头重试一次。当前 `agent_sandbox.Sandbox.server` 不会把沙箱令牌发给端口 9000。模板若设置了 `ABX_SERVER_TOKEN`，要写明客户端如何把 `token=` 传给 `server_at`。
 
@@ -334,7 +336,7 @@ Verified 表里出现 `alicloud-express` 时，检查器要求存在上述形状
 ## 安全
 
 - 密钥的值不进入镜像、`template.yaml`、Docker 历史或证据 JSON。
-- `env` 只声明名字和空字符串。创建沙箱时注入值。
+- `env` 只声明名字和空字符串。真正的值在使用它的进程启动前明确传入；创建请求不能更新已有进程。
 - 日志和异常文本不包含令牌。`scripts/express_e2e.py` 在打印前会涂掉名字里含 `KEY`、`SECRET`、`TOKEN` 或 `PASSWORD` 的环境变量值。
 - 不要提交 `.env`、云凭证或 `Dockerfile.abx-build`。
 
@@ -426,7 +428,6 @@ python3 scripts/check_template.py --all --strict   # 旧模板的违规也导致
 ## 极速版 harness
 
 ```bash
-export HOME=/home/ubuntu
 unset ABX_PROVIDER
 export ABX='node /path/to/agent-sandbox/dist/bin/abx.js'
 export ACR_NAMESPACE=...
@@ -439,13 +440,10 @@ export ALIBABA_CLOUD_REGION_ID=cn-hangzhou
 # 可选：用一份检出构建镜像里的 server
 export ABX_SERVER_SDK_SOURCE=/path/to/python-sdk/server-sdk
 
-python3 scripts/express_e2e.py python-hello \
-  --start-cmd 'agent-sandbox-server serve --port 9000 --commands /app/commands.py' \
-  --ready-cmd 'agent-sandbox-server healthcheck --port 9000' \
-  --command hello --arg name=E2E --expect 'Hello, E2E!'
+python3 scripts/express_e2e.py python-hello
 ```
 
-main 上的 `python-hello` 还没有 `smoke`、`start_cmd` 和阿里云基础镜像，所以上面的标志补上这些值。`spec_version: 2` 的目录不需要标志：harness 读 `template.yaml`。
+当前 spec_version 2 的 `python-hello` 已在 `template.yaml` 中声明 smoke 和启动命令，harness 直接读取。保留调用者原有的 HOME。
 
 远端名字是唯一的 `e2e-<name>-<hex>` 别名，不是目录里的名字，因此已有的 generation 1 模板会被留下。`finally` 对本进程创建的 id 执行 `abx kill <id> -y` 和 `abx template delete <id> -y`。它还会杀掉部署进程组，以及命令行里包含该别名的 `docker push`。以前只按墙钟杀掉 `abx` 时，推送不在同一个进程组里，会继续占着仓库连接。
 

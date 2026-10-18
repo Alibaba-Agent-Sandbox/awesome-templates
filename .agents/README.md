@@ -52,3 +52,8 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Local Express/model review](evidence/verify/2026-10-18-local-express-model-review.md)
 - [OpenCode completed-step decision](notes/proposed/process/2026-10-18-opencode-completion-steps.md)
+- [Image CI checkpoint decision](notes/proposed/process/2026-10-16-image-ci-checkpoint.md)
+- [Image CI checkpoint evidence](evidence/verify/2026-10-16-image-ci-checkpoint.md)
+- [Prewarmed server configuration](notes/proposed/process/2026-10-16-prewarmed-server-configuration.md) · [verification](evidence/verify/2026-10-16-prewarmed-server-configuration.md)
+
+- [Delivery integration review](evidence/verify/2026-10-18-template-delivery-review.md)

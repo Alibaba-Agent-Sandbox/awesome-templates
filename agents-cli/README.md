@@ -31,6 +31,8 @@ actual CLIs; disabling model tests never substitutes synthetic programs.
 
 ## Quick start (CLI)
 
+Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
+
 From this repository with the required provider build credentials:
 
 ```bash

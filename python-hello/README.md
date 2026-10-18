@@ -19,6 +19,8 @@ Use this template to learn the named-command contract or to upload a Python prog
 
 ## Quick start (CLI)
 
+Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
+
 Run from this repository with an already configured Express provider:
 
 ```bash
@@ -85,7 +87,7 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/run_script" \
 
 The body is the direct JSON argument object, without an `args` wrapper. `POST /commands/run` with `{"file":"main.py"}` executes an uploaded script; `POST /commands/test` with `{"path":"test_main.py"}` runs an uploaded test. Both return `{"result":"<stdout>"}` when successful. `GET /commands` discovers public commands, and `GET /hello/Ada` returns `{"greeting":"Hello, Ada!"}`.
 
-Server authentication is separate from provider authentication. If you set `ABX_SERVER_TOKEN` inside the sandbox, include `Authorization: Bearer $ABX_SERVER_TOKEN` on every request. For the SDK use `sb.server_at(9000, token=server_token).commands.run(...)` with the token supplied securely by your application. A provider whose gateway requires an access header also needs that header (for example `X-Access-Token` from `sb.network.get_access_headers()`), in addition to the server bearer token. Only Express has historical provider evidence for this template; other providers remain unverified.
+Server authentication is separate from provider authentication. If you set `ABX_SERVER_TOKEN` inside the sandbox, include `Authorization: Bearer $ABX_SERVER_TOKEN` on protected requests; `/health` is exempt from server-token authentication. For the SDK use `sb.server_at(9000, token=server_token).commands.run(...)` with the token supplied securely by your application. A provider whose gateway requires an access header also needs that header (for example `X-Access-Token` from `sb.network.get_access_headers()`), in addition to the server bearer token. Only Express has historical provider evidence for this template; other providers remain unverified.
 
 Missing or invalid arguments return HTTP 400, failed authentication 401, unknown commands 404, and execution failures 500. Errors contain `error` and `type`. Named-command stdout is buffered until completion. The HTTP client timeout controls how long the caller waits; it does not cancel work on the server.
 

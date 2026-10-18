@@ -16,6 +16,8 @@
 
 ## 快速开始（CLI）
 
+运行配置：以下创建时注入密钥的示例，要求命名服务启动时实际获得这些值。预热服务请先检查模板提供的 setup 标志（如有），再按[显式进程配置](../docs/runtime-environment.zh-CN.md)操作；创建沙箱不会重新配置已运行的服务。
+
 按[官方安装说明](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#readme)安装 CLI，在 `alicloud-express` 构建：
 
 ```bash

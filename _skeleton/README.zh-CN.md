@@ -20,6 +20,8 @@
 
 ## 快速开始（CLI）
 
+运行配置：以下创建时注入密钥的示例，要求命名服务启动时实际获得这些值。预热服务请先检查模板提供的 setup 标志（如有），再按[显式进程配置](../docs/runtime-environment.zh-CN.md)操作；创建沙箱不会重新配置已运行的服务。
+
 在本仓库检出目录，环境里放好极速版凭证（变量见规范）：
 
 ```bash
@@ -89,7 +91,7 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/hello" \
 | `ABX_SERVER_TOKEN` | 否 | 空 | 沙箱内设置之后，客户端发送 `Authorization: Bearer`。`template.yaml` 里的值是空字符串。 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 本地执行 `python3 commands.py` 时 `start()` 监听的端口。 |
 
-密钥放在 `abx create --env` 或 `Sandbox.create(envs=...)`。不要写进镜像、Dockerfile 或日志。
+密钥在命名服务启动前传入；仅在提供方实际使用创建环境启动服务时采用创建时注入。参考[运行环境](../docs/runtime-environment.zh-CN.md)。不要写进镜像、Dockerfile 或日志。
 
 ## 资源
 

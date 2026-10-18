@@ -16,6 +16,8 @@ Expose a typed, bounded coding task through one named command; inject model cred
 
 ## Quick start (CLI)
 
+Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
+
 ```bash
 abx template install alibaba-agent-sandbox/awesome-templates//deepseek-harness
 abx create --template <template-id> --env DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY"
