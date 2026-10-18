@@ -83,7 +83,7 @@ def _process(argv: list[str], *, cwd: str, timeout: float) -> bytes:
     if overflow.is_set():
         raise RuntimeError("media diagnostics exceeded the byte limit")
     if process.returncode:
-        raise RuntimeError("media tool failed; native diagnostics omitted")
+        raise RuntimeError(f"media tool failed (exit {process.returncode}); native diagnostics omitted")
     return b"".join(parts[0])
 
 

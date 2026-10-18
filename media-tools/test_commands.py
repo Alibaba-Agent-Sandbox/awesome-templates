@@ -59,6 +59,23 @@ def test_probe_actual_streams(workspace):
     assert result["bytes"] == (workspace / "input.mkv").stat().st_size
 
 
+def test_actual_mp4_native_limits_diagnostic(workspace):
+    # All inputs are the generated fixture above. Native stderr in this specific
+    # regression is safe to disclose and diagnoses platform-dependent allocation.
+    arguments = [sys.executable, "-I", "-c", media._LIMIT_EXEC, "/usr/bin/ffmpeg",
+                 "-nostdin", "-v", "error", "-filter_threads", "2", "-threads", "2",
+                 "-protocol_whitelist", "file", "-format_whitelist", media.FORMATS,
+                 "-i", str(workspace / "input.mkv"), "-t", "1", "-map_metadata", "-1", "-map_chapters", "-1",
+                 "-map", "0:v:0", "-map", "0:a:0?", "-vf", "scale=640:-2,fps=24",
+                 "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-threads", "2",
+                 "-c:a", "aac", "-ac", "2", "-ar", "48000", "-movflags", "+faststart",
+                 "-fs", str(media.MAX_FILE), "-n", str(workspace / "native.mp4")]
+    env = {k: os.environ[k] for k in ("HOME", "PATH", "LD_LIBRARY_PATH") if k in os.environ}
+    env.update(LANG="C.UTF-8", LC_ALL="C.UTF-8", OMP_NUM_THREADS="2", OPENBLAS_NUM_THREADS="2")
+    result = subprocess.run(arguments, env=env, capture_output=True, timeout=20)
+    assert result.returncode == 0, result.stderr.decode("utf-8", "replace")[-3000:]
+
+
 @pytest.mark.parametrize("input_path", ["../escape.mkv", "/etc/passwd", "https://example.com/a.mp4",
                                          "file:/etc/passwd", "pipe:0", "", "bad\x00name"])
 def test_rejects_nonworkspace_input(workspace, input_path):

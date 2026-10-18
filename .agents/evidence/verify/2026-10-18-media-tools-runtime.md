@@ -24,6 +24,8 @@ The coordinating reviewer independently read the complete commands and regressio
 
 ## Remaining gates and cleanup
 
+First remote source CI at `0c19fb5ce81f0ecd4319e5344848af673aa1187e` failed the actual Debian native job: 39/41 tests passed, while MP4 encoding failed in two cases. WAV/FLAC and the typed SDK case passed. This remote failure is retained; the next revision adds a native MP4 reproducer using the same resource caps and only generated fixtures so safe native diagnostics can identify the platform difference. No limit is weakened and no failed case is skipped.
+
 Actual Docker L1 and non-root container verification are PENDING. A successful host package/version check does not establish installation compatibility with the Alibaba base. Canonical `scripts/express_e2e.py` through actual `abx template deploy`, CLI/SDK smoke and strict official cleanup is NOT RUN. No provider receipt, `tested_on` value or official status is added. L3 is not applicable because this template does not call a model. L4 is NOT RUN.
 
 The final combined `python -m pytest -q media-tools/test_commands.py media-tools/test_http.py` completed with 41 passed, zero skips, exit 0 (7.60 seconds). The additional test installs the actual source-built agent-sandbox-client 0.3.0 from python-sdk `fbe506349693f9bb26c1755aa3d13ce855e1ab69`, starts a real token-configured server, uses its actual typed `ServerClient` command/files APIs, checks unauthorized `/commands`, typed argument/execution errors, exact artifact hashes and every random PCM roundtrip sample, and independently confirms all three deleted SDK paths no longer exist. This is local SDK-over-HTTP acceptance; no cloud `Sandbox.create` occurred.
