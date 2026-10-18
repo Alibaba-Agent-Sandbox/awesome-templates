@@ -30,3 +30,4 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 
 - [Codex existing-source acceptance](notes/proposed/process/2026-10-16-codex-existing-source-acceptance.md)
 - [Codex premature-exit and actual-image verification](evidence/verify/2026-10-16-codex-early-exit-regression.md)
+Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-16-four-coding-verifier-completion.md) and [verification](evidence/verify/2026-10-16-four-coding-verifier-completion.md).
