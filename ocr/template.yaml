@@ -1,5 +1,5 @@
 name: ocr
-version: "1.0.0"
+version: "1.0.1"
 description: "CPU English image OCR with pinned Tesseract 5.5.0 and bounded private TXT/TSV artifacts."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0

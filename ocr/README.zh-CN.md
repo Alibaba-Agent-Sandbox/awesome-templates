@@ -102,6 +102,16 @@ HTTP 200 返回 `{"result": ...}`；参数缺失/类型错误为 400，认证失
 
 ## 已验证
 
+资源比例修复正式递增为1.0.1。此前1.0.0候选源码的CPU1/1GB配置已取得19项真实通过，但原始回执只认证其原版本和哈希，不能迁作新版本证据。1.0.1待独立重跑。
+
+## 历史验收
+
+| Provider | Scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | Actual CI image, official READY, CLI/SDK, full HTTP19 PASS/0 SKIP and independent sandbox/template/registry cleanup | [2026-10-19](evidence/express-2026-10-19.json) |
+
+当前1vCPU/1024MB配置已通过真实极速版完整验收，包括随机数字图片、原图字节不变、TXT/TSV下载及独立内容/哈希/像素边界检查、空白负例和所有权清理。[完整记录](evidence/image-http-2026-10-19T181012Z.json)。较早2vCPU/1GB配置被平台拒绝及本机控制器缺少Pillow的失败保留，均不重标为通过。
+
 源码回归实际使用 Tesseract 5.5.0 / Pillow 11.3.0，27 项通过。source HTTP 验证 19 通过、0 失败、0 跳过，包括独立随机数字图片、下载 TXT/TSV 后核对哈希/文字/置信度/坐标，以及空白图片负控。这些是源码运行结果。实际镜像 L1、补充 changed-image Express 验证仍待执行；正式 `abx template deploy` / `scripts/express_e2e.py` L2 未执行。`tested_on` 保持空，目录状态为 experimental。详见[验证记录](../.agents/evidence/verify/2026-10-16-ocr-runtime.md)。
 
 ## 二次开发

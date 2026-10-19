@@ -106,6 +106,16 @@ The last two settings support native diagnostics; they are not command parameter
 
 ## Verified
 
+The resource-profile correction is formally versioned1.0.1. The earlier1.0.0 candidate with CPU1/1GB passed19 real checks, but its receipts certify only that original version/hash. A separate1.0.1 run is required; no receipt is relabeled.
+
+## Historical verification
+
+| Provider | Scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | Actual CI image, official READY, CLI/SDK, full HTTP19 PASS/0 SKIP and independent sandbox/template/registry cleanup | [2026-10-19](evidence/express-2026-10-19.json) |
+
+The corrected1vCPU/1024MB profile passed genuine Express full OCR: random-digit pixels, original-image bytes, independently downloaded TXT/TSV/hash/confidence/bounds, blank negative control and owned artifact cleanup. [Full receipt](evidence/image-http-2026-10-19T181012Z.json). Earlier resource rejection and missing local Pillow controller attempts remain failures.
+
 Source tests: 27 passed with actual Tesseract 5.5.0 / Pillow 11.3.0. Source HTTP verification: 19 passed, zero failed, zero skipped, including a newly generated random-digit image, independently downloaded TXT/TSV, confidence/bounds checks and a blank-image negative control. These are source-runtime results. Actual image L1 and supplemental changed-image Express verification are pending; canonical `abx template deploy` / `scripts/express_e2e.py` L2 is not run. `tested_on` stays empty and catalog status remains experimental. See [verification](../.agents/evidence/verify/2026-10-16-ocr-runtime.md).
 
 ## Secondary development
