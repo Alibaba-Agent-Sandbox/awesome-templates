@@ -19,7 +19,7 @@ import asyncio
 import os
 
 import httpx
-from agent_sandbox import Sandbox
+from agent_sandbox.api.sandbox import Sandbox
 
 
 async def main():

@@ -70,7 +70,7 @@ if __name__ == "__main__":
 ```
 
 Callers use `abx run <sandbox-id> hello --arg name=Ada` or
-`await sb.run("hello", name="Ada")` after `from agent_sandbox import Sandbox`
+`await sb.run("hello", name="Ada")` after `from agent_sandbox.api.sandbox import Sandbox`
 and `await Sandbox.create(...)`.
 A shell string is `sb.commands.run("echo hi")` or `abx exec`.
 

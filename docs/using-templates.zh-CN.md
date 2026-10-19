@@ -48,7 +48,7 @@ abx run <sandbox-id> hello --arg name=Ada
 
 ```python
 import asyncio
-from agent_sandbox import Sandbox
+from agent_sandbox.api.sandbox import Sandbox
 
 async def main():
     sb = await Sandbox.create(template="<template-id>", timeout=300)
@@ -122,3 +122,26 @@ README，并完成该厂商实际测试，再增加已验证标记。
 [English](using-templates.md)
 
 本地验收清理会保留 Python 验收源码（包括 `e2e_sdk.py`），仅移除生成产物和缓存。源码应留在工作树中供后续 SDK 验收使用。
+
+
+## 客户端入口兼容性
+
+自定义命令、provider、会话和 `sb.server` 示例显式导入
+`from agent_sandbox.api.sandbox import Sandbox`。这个原生异步入口可用于当前
+主分支及标准客户端候选版本，避免根入口切换为同步 `Sandbox` 后误用 await。
+标准 `Sandbox` / `AsyncSandbox` 与解释器导入属于另一个契约，见
+[SDK47](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/47)。
+
+CLI 构建可能具有不同入口；不能仅凭同一个包版本号判断。运行
+`abx create --help`：若列出 `--detach`，使用下表标准语法；否则使用原生语法。
+
+| 操作 | 标准极速版入口 | 原生 CLI 构建 |
+| --- | --- | --- |
+| 脚本创建 | `abx create <template-id> --detach` | `abx create --template <template-id> -y` |
+| Shell | `abx exec --cwd /tmp <sandbox-id> sh -c 'echo hello'` | `abx exec <sandbox-id> --cwd /tmp -- sh -c 'echo hello'` |
+| 清理本任务沙箱 | `abx kill <sandbox-id>` | `abx kill <sandbox-id> -y` |
+
+`template deploy`、命名命令 `abx run`、上传/下载仍为项目扩展。
+标准 exec 没有本地 `--stream`/`--timeout` 参数；输出默认流式传输。
+标准 create 不带 `--detach` 会打开 PTY，并在默认生命周期下退出后缩短租约。
+不要在已有原生安装上直接套用标准语法。模板源代码和对应厂商验收等级未改变。

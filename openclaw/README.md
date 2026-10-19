@@ -19,6 +19,8 @@ A gateway is a long-lived server. Running `openclaw start` synchronously is neit
 
 ## Quick start (CLI)
 
+Check the installed entry with `abx create --help`. The complete example below uses native CLI syntax. If help lists `--detach`, use the standard Express entry: create with `abx create <template-id> --detach` and clean up with `abx kill <sandbox-id>` without `-y`; named commands through `abx run` are unchanged. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
+
 Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
 
 Use an installed `abx` with your provider configuration. Inject an unpredictable gateway token from the local environment; keep it out of shell history and source files.
@@ -42,7 +44,7 @@ Install `agent-sandbox-client`; the import is `agent_sandbox`. For unpublished v
 ```python
 import asyncio
 import os
-from agent_sandbox import Sandbox
+from agent_sandbox.api.sandbox import Sandbox
 
 async def main():
     sb = await Sandbox.create(

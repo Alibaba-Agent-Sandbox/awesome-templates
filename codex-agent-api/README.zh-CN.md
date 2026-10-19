@@ -16,6 +16,8 @@ Alibaba 平台基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/bas
 
 ## 快速开始（CLI）
 
+先用 `abx create --help` 确认已安装入口。下面的完整示例使用原生 CLI 语法。若帮助列出 `--detach`，则是标准极速版入口：创建改用 `abx create <template-id> --detach`，清理改用 `abx kill <sandbox-id>`（不加 `-y`）；命名命令 `abx run` 不变。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
+
 运行配置：以下创建时注入密钥的示例，要求命名服务启动时实际获得这些值。预热服务请先检查模板提供的 setup 标志（如有），再按[显式进程配置](../docs/runtime-environment.zh-CN.md)操作；创建沙箱不会重新配置已运行的服务。
 
 在仓库根目录，使用已有的提供方配置：
@@ -37,7 +39,7 @@ abx run <sandbox-id> codex --arg prompt='Reply with hello' --arg timeout_s=120
 ```python
 import asyncio
 import os
-from agent_sandbox import Sandbox
+from agent_sandbox.api.sandbox import Sandbox
 
 async def main():
     runtime_env = {name: os.environ[name] for name in (

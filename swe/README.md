@@ -16,6 +16,8 @@ Separates an actual source repair from an agent saying it finished. The evaluato
 
 ## Quick start (CLI)
 
+Check the installed entry with `abx create --help`. The complete example below uses native CLI syntax. If help lists `--detach`, use the standard Express entry: create with `abx create <template-id> --detach` and clean up with `abx kill <sandbox-id>` without `-y`; named commands through `abx run` are unchanged. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
+
 Install the CLI using the [project instructions](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#readme), then build with Docker available locally:
 
 ```bash
@@ -40,7 +42,7 @@ Install the paired source packages using [the pinned SDK installation recipe](..
 ```python
 import asyncio
 import os
-from agent_sandbox import Sandbox
+from agent_sandbox.api.sandbox import Sandbox
 
 async def main():
     sandbox = await Sandbox.create(os.environ['SWE_TEMPLATE'], provider='alicloud-express', timeout=900)

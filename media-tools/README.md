@@ -19,6 +19,8 @@ Give media workflows a small, predictable CPU conversion interface with independ
 
 ## Quick start (CLI)
 
+Check the installed entry with `abx create --help`. The complete example below uses native CLI syntax. If help lists `--detach`, use the standard Express entry: create with `abx create <template-id> --detach` and clean up with `abx kill <sandbox-id>` without `-y`; named commands through `abx run` are unchanged. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
+
 ```bash
 abx template deploy ./media-tools -y --generation 2
 abx create --template <template-id> -y
@@ -36,7 +38,7 @@ Install the `agent-sandbox-client` distribution using [the verified client insta
 
 ```python
 import asyncio
-from agent_sandbox import Sandbox
+from agent_sandbox.api.sandbox import Sandbox
 
 async def main():
     sb = await Sandbox.create(template="<template-id>", timeout=300)

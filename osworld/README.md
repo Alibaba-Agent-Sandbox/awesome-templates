@@ -14,6 +14,8 @@ Use real browser desktop observations and actions on Express without KVM, a Dock
 
 ## Quick start (CLI)
 
+Check the installed entry with `abx create --help`. The complete example below uses native CLI syntax. If help lists `--detach`, use the standard Express entry: create with `abx create <template-id> --detach` and clean up with `abx kill <sandbox-id>` without `-y`; named commands through `abx run` are unchanged. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
+
 ```bash
 abx template install alibaba-agent-sandbox/awesome-templates//osworld
 abx create --template <template-id>
@@ -39,7 +41,7 @@ Install the paired source packages using [the pinned SDK installation recipe](..
 import asyncio
 import base64
 from pathlib import Path
-from agent_sandbox import Sandbox
+from agent_sandbox.api.sandbox import Sandbox
 
 async def main():
     sb = await Sandbox.create(template="<template-id>", timeout=900)

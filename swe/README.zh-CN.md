@@ -16,6 +16,8 @@
 
 ## 快速开始（CLI）
 
+先用 `abx create --help` 确认已安装入口。下面的完整示例使用原生 CLI 语法。若帮助列出 `--detach`，则是标准极速版入口：创建改用 `abx create <template-id> --detach`，清理改用 `abx kill <sandbox-id>`（不加 `-y`）；命名命令 `abx run` 不变。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
+
 按[项目说明](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#readme)安装 CLI，本地有 Docker 时构建：
 
 ```bash
@@ -38,7 +40,7 @@ abx run "$SANDBOX_ID" swe_cleanup --server-port 9010 --arg run_id="$RUN_ID"
 ```python
 import asyncio
 import os
-from agent_sandbox import Sandbox
+from agent_sandbox.api.sandbox import Sandbox
 
 async def main():
     sandbox = await Sandbox.create(os.environ['SWE_TEMPLATE'], provider='alicloud-express', timeout=900)
