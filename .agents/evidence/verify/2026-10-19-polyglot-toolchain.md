@@ -9,3 +9,14 @@ not have the exact distributions. Initial local harness used system Python and
 failed its server import; corrected PATH to the paired test venv, then reran.
 Generated native steps serialize to11548bytes, below the conservative15KB limit;
 this preflight is not cloud acceptance. Actual L1/Express remain pending.
+
+Container filesystem review corrected the budget measurement: df/statvfs on a
+Docker overlay reports its host backing usage. The installer now uses du -sx
+--block-size=1 / to enforce8GiB on the actual visible image rootfs. The true
+Express runtime still reports rootfs used/free through statvfs. This is a
+measurement correction, not permission to exceed the same image budget.
+
+CI selector follow-up: preserve the frozen23-template canonical source approval
+boundary while permitting new independently verified catalog entries. The
+authorization regression rejects every unreviewed added name; no credentials
+or cloud workflow authorization are broadened.13 real authorization tests PASS.

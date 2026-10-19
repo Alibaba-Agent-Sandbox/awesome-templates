@@ -67,8 +67,8 @@ def install(prefix: Path) -> None:
             subprocess.run(["sh", str(roots[0] / "install.sh"), "--prefix=" + str(prefix / "rust"), "--disable-ldconfig"], check=True, timeout=180)
             shutil.rmtree(directory)
     # This is the actual rootfs, not a compressed archive size estimate.
-    used = shutil.disk_usage(prefix).used
-    print(json.dumps({"installed_rootfs_used_bytes": used, "budget_bytes": 8 * 1024**3}))
+    used = int(subprocess.check_output(["du", "-sx", "--block-size=1", "/"], timeout=120).split()[0])
+    print(json.dumps({"visible_rootfs_used_bytes": used, "budget_bytes": 8 * 1024**3}))
     if used > 8 * 1024**3:
         raise RuntimeError("toolchains exceed the reviewed 8 GiB used-rootfs budget")
 
