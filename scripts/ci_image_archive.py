@@ -300,8 +300,9 @@ def push_verified(stage: Path,source: Path,binary: str,journal_path: Path) -> tu
     private=repo_is_private(acr_request('GET',base))
     if not private:raise ValueError('registry repository privacy is unconfirmed')
     journal['digest']=digest;save_private(journal_path,journal)
-    proof.update(pushed_image_digest=digest,registry_push_verified=True,registry_private_repo_verified=True)
-    return REGISTRY+'/'+namespace+'/'+repository+'@'+digest,proof,journal
+    proof.update(pushed_image_digest=digest,registry_push_verified=True,registry_private_repo_verified=True,
+        registration_reference_type='owned tag with digest readback',tag_digest_verified_before_registration=True,tag_digest_verified_after_runtime=False)
+    return tagged,proof,journal
 
 
 def main():

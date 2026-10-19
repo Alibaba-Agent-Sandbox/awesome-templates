@@ -46,9 +46,9 @@ only in an anonymous Linux RAM fd. A private temporary directory contains a
 symlink to that inherited fd, which is removed on exit. The client never receives
 long-term cloud keys. It first uploads an empty public-content ownership guard,
 requires the new repository to be PRIVATE, then transfers the reviewed image
-and reads back its immutable digest. Existing account policy is never changed.
+and reads back its content digest. Existing account policy is never changed.
 
-Actual `abx template create` registers that digest, official API polling requires
+Actual `abx template create` registers the nonce-owned review tag; live digest readback before registration and after runtime requires an unchanged content digest. Official API polling requires
 READY, and real CLI/SDK smoke precedes external HTTP acceptance. Model acceptance
 is explicitly NOT_RUN by this controller; use a separate strict image-backed
 model verifier when the owner Issue requires it. `--smoke-only` explicitly omits
@@ -68,3 +68,5 @@ journal before discarding it. A failed or ambiguous registration remains failed;
 cleanup recovery cannot relabel it as acceptance. Historical step failures remain
 separate from a later successful image run. Hosted CI and ordinary PR review are
 still required before merge.
+
+Actual digest-form registration attempted to pull latest and failed on2026-10-19. This provider path therefore uses the nonce-owned tag plus before/after digest readback; no provider digest-reference support or registry tag immutability is claimed.

@@ -11,7 +11,7 @@ Express runtime acceptance. The controller host has no Docker daemon.
 
 Use explicit keyless public CI archive export, inspect exact source/image bytes,
 transfer to a nonce-owned private ACR repository with RAM-only temporary auth,
-and invoke real native template create with an immutable digest. Preserve step
+and invoke real native template create with the nonce-owned review tag. Live digest readbacks before registration and after runtime bind that tag to checked bytes. Preserve step
 failures and clearly record image mode. Publish acceptance only after independent
 sandbox/template and registry cleanup.
 
@@ -48,3 +48,5 @@ No secret-bearing files/CI uploads; no unverified provider badges; no PASS recei
 before owned resource absence; immutable provenance and failures preserved; current
 head CI and ordinary merge. Every template retains its own required product/model
 gates.
+
+Actual digest-form registration attempted to pull latest and failed on2026-10-19. This provider path therefore uses the nonce-owned tag plus before/after digest readback; no provider digest-reference support or registry tag immutability is claimed.

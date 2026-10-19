@@ -465,7 +465,7 @@ def build_options(argv: list[str] | None = None) -> Options:
     parser.add_argument("template", type=Path)
     parser.add_argument("--build", choices=("dockerfile", "steps", "image"), default="dockerfile",
                         help="Explicit image deployment path. Steps needs a materialized manifest.")
-    parser.add_argument("--image-ref", default="", help="Immutable ACR digest for --build image")
+    parser.add_argument("--image-ref", default="", help="Nonce-owned ACR review tag bound to checked digest for --build image")
     parser.add_argument("--image-proof", type=Path, help="Verified public CI archive/source/registry proof")
     parser.add_argument("--sandbox-timeout", type=int, default=300, help="Owned sandbox lifetime, separate from build readiness")
     parser.add_argument("--start-cmd", default=None)
@@ -727,6 +727,19 @@ def _sdk_version() -> str:
         return "unknown"
 
 
+def image_digest(image_ref: str) -> str:
+    """Read the actual owned registry tag through verified crane and RAM auth."""
+    try:
+        from .ci_image_archive import crane_call
+    except ImportError:
+        from ci_image_archive import crane_call
+    binary=os.environ.get("ABX_IMAGE_CRANE", "")
+    if not binary:
+        raise RuntimeError("verified crane path is required for live image digest readback")
+    return crane_call(binary,["digest",image_ref],os.environ["ABX_IMAGE_REGISTRY_USERNAME"],
+                      os.environ["ABX_IMAGE_REGISTRY_PASSWORD"],90)
+
+
 def default_sdk(sandbox_id: str, command: str, args: dict[str, Any]) -> Any:
     """Call a native named command, then close the borrowed local client.
 
@@ -974,6 +987,8 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
             if not username or not password:
                 print("BLOCKED explicit temporary image registry credentials are missing", flush=True)
                 return 2
+            if image_digest(options.image_ref) != options.image_provenance["pushed_image_digest"]:
+                raise RuntimeError("image tag differs from checked archive digest before registration")
             config = _load_yaml(options.template_dir)
             resources = config.get("resources", {})
             deploy_args = ["--json", "template", "create", options.image_ref,
@@ -1098,6 +1113,10 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
                     passed = False
 
         if passed and not blocked:
+            if options.build_mode == "image":
+                if image_digest(options.image_ref) != options.image_provenance["pushed_image_digest"]:
+                    raise RuntimeError("image tag changed during runtime acceptance")
+                options.image_provenance["tag_digest_verified_after_runtime"] = True
             return 0
         if blocked:
             print(f"BLOCKED {blocked[0]} {blocked[1]}", flush=True)

@@ -19,6 +19,7 @@ PUBLIC_PROOF_KEYS = {
     'image_config_sha256','pushed_image_digest','server_sdk_commit','context_sha256',
     'artifact_verified','image_context_verified','image_non_root','registry_push_verified',
     'registry_private_repo_verified','registry_credentials_storage',
+    'registration_reference_type','tag_digest_verified_before_registration','tag_digest_verified_after_runtime',
 }
 
 
@@ -58,7 +59,9 @@ def context_sha256(source: Path) -> dict[str,str]:
 
 def validate_proof(source: Path, proof: dict, image_ref: str) -> dict:
     if not isinstance(proof,dict) or set(proof)-PUBLIC_PROOF_KEYS:raise ValueError('image proof contains unapproved fields')
-    if not re.fullmatch(r'registry\.[a-z0-9-]+\.aliyuncs\.com/[a-z0-9_.-]+/[a-z0-9_.-]+@sha256:[a-f0-9]{64}',image_ref):raise ValueError('an immutable personal ACR digest reference is required')
+    if not re.fullmatch(r'registry\.[a-z0-9-]+\.aliyuncs\.com/[a-z0-9_.-]+/e2e-ci-image-[a-f0-9]{16}:review',image_ref):raise ValueError('a nonce-owned personal ACR review tag is required')
+    if proof.get('registration_reference_type')!='owned tag with digest readback' or proof.get('tag_digest_verified_before_registration') is not True:
+        raise ValueError('owned image tag needs independently read-back digest before registration')
     config=yaml.safe_load((source/'template.yaml').read_text())
     validate_resources(config)
     if proof.get('schema_version')!=1 or proof.get('verification_type')!='ci-docker-archive':raise ValueError('unsupported image proof schema')
@@ -68,7 +71,7 @@ def validate_proof(source: Path, proof: dict, image_ref: str) -> dict:
         if not re.fullmatch(r'[a-f0-9]{40}',str(proof.get(key,''))):raise ValueError('image proof lacks immutable source')
     for key in ['archive_sha256','image_config_sha256']:
         if not re.fullmatch(r'[a-f0-9]{64}',str(proof.get(key,''))):raise ValueError('image proof lacks checked bytes')
-    if proof.get('pushed_image_digest')!=image_ref.rsplit('@',1)[1]:raise ValueError('registry digest does not match image proof')
+    if not re.fullmatch(r'sha256:[a-f0-9]{64}',str(proof.get('pushed_image_digest',''))):raise ValueError('image proof lacks a checked registry digest')
     if proof.get('server_sdk_commit')!=SERVER_COMMIT:raise ValueError('image server source differs from reviewed CI pin')
     for key in ['artifact_verified','image_context_verified','image_non_root','registry_push_verified','registry_private_repo_verified']:
         if proof.get(key) is not True:raise ValueError('required image proof is not verified: '+key)

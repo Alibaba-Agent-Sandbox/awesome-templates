@@ -26,3 +26,18 @@ Hosted CI exposed an existing SWE cleanup-test procfs race: /proc PID disappeare
 between opening stat and reading it, raising ProcessLookupError. Treat that
 confirmed disappearance like FileNotFoundError; the live/zombie checks remain.
 No runtime/SWE image source change; actual cleanup regressions rerun.
+
+Actual Pi immutable-digest registration failed: official provider reason attempted
+GET manifests/latest despite the supplied @sha256 reference. No sandbox created;
+owned template/registry absence confirmed. Preserve this failed attempt. The
+implementation now uses a nonce-owned tag with live digest readback immediately
+before registration and after runtime; changing the tag prevents publication.
+No digest-reference support or registry tag immutability is claimed. An interrupted
+following transfer was reconciled using its exact private owned journal; both tags
+and repository absence independently confirmed. No cloud PASS inferred yet.
+
+PASS:56 targeted tests plus18 subtests after tag-binding correction, including
+changed-tag rejection before mutation and required post-runtime readback.116
+current-document links PASS. New actual Hermes run reuses its original previously
+verified CI archive after source/config/runtime/archive hash revalidation; no
+rebuilt-image or download is invented. Its cloud/model outcome remains pending.

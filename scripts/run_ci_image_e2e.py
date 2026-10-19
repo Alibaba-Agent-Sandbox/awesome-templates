@@ -26,6 +26,8 @@ def publish(source: Path, receipt: dict, report: dict) -> None:
     """Never publish an acceptance receipt before all owned cleanup passes."""
     if not (report.get('passed') is True and report.get('registry_cleanup_verified') is True):
         raise ValueError('acceptance publication requires independently verified registry cleanup')
+    if report.get('image_provenance',{}).get('tag_digest_verified_after_runtime') is not True:
+        raise ValueError('acceptance requires registry tag digest readback after runtime')
     directory=source/'evidence';directory.mkdir(exist_ok=True)
     stamp=datetime.now(timezone.utc).strftime('%Y-%m-%dT%H%M%SZ')
     receipt=dict(receipt,registry_cleanup_verified=True)
@@ -56,8 +58,8 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True) -> int:
             '--alias','e2e-image-'+source.name+'-'+uuid.uuid4().hex[:8],'--timeout','900',
             '--wall-timeout','1200','--idle-timeout','600','--push-retries','0','--sandbox-timeout','1200'])
         username,password=images.temporary_registry_credentials()
-        prior={key:os.environ.get(key) for key in ['ABX_IMAGE_REGISTRY_USERNAME','ABX_IMAGE_REGISTRY_PASSWORD']}
-        os.environ.update(ABX_IMAGE_REGISTRY_USERNAME=username,ABX_IMAGE_REGISTRY_PASSWORD=password)
+        prior={key:os.environ.get(key) for key in ['ABX_IMAGE_REGISTRY_USERNAME','ABX_IMAGE_REGISTRY_PASSWORD','ABX_IMAGE_CRANE']}
+        os.environ.update(ABX_IMAGE_REGISTRY_USERNAME=username,ABX_IMAGE_REGISTRY_PASSWORD=password,ABX_IMAGE_CRANE=crane)
         done=False
         async def endpoint(sid):
             from agent_sandbox.api.sandbox import Sandbox
@@ -88,9 +90,13 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True) -> int:
             for key,value in prior.items():
                 if value is None:os.environ.pop(key,None)
                 else:os.environ[key]=value
+        final_digest=images.crane_call(crane,['digest',image_ref],username,password,90)
+        if final_digest!=proof['pushed_image_digest']:raise ValueError('owned registry tag changed during acceptance')
+        proof['tag_digest_verified_after_runtime']=True
         report.update(image_provenance=proof,cleanup_verified=status==0)
         if status==0:
             receipt=json.loads(next((runtime/'evidence').glob('express-*.json')).read_text())
+            receipt['image_provenance']=proof
     except Exception as exc:
         # Upstream exceptions can embed temporary signed locations or credentials.
         report['failure_type']=type(exc).__name__;status=1
