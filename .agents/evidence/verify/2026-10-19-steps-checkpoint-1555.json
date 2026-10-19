@@ -1,0 +1,89 @@
+{
+  "date": "2026-10-19",
+  "result": "PARTIAL",
+  "passing_source_templates": 16,
+  "catalog_source_templates": 23,
+  "scope": "real generated Express step deployment, official READY, CLI and SDK smoke, independent owned cleanup; no new L3 claim",
+  "passes": [
+    {
+      "template": "agents-cli",
+      "receipt": "agents-cli/evidence/express-2026-10-19.json",
+      "sha256": "7e4a4333db61d04085209243eb8b25d60759281f9e1c45766f285b8c2ef05f16"
+    },
+    {
+      "template": "amp",
+      "receipt": "amp/evidence/express-2026-10-19.json",
+      "sha256": "bdf5327f37a499c7216ff3925a2bfedc5d16cf4acb536564cf55b92966c03bac"
+    },
+    {
+      "template": "claude-code",
+      "receipt": "claude-code/evidence/express-2026-10-19.json",
+      "sha256": "b84d5ea780bdb3d0f6996902a5324d578dbc26df12acf9084f1f8cf446d5fe9b"
+    },
+    {
+      "template": "codex",
+      "receipt": "codex/evidence/express-2026-10-19.json",
+      "sha256": "5820bc3f66f8aad2ede53d582a071f5b626e946d9eb33d3eaa4b501fc410c2d3"
+    },
+    {
+      "template": "codex-agent-api",
+      "receipt": "codex-agent-api/evidence/express-2026-10-19.json",
+      "sha256": "d8f03ea1ce821e50f63a63458d8f34da31b718cb8da84a83981136d8aeb0454e"
+    },
+    {
+      "template": "deepseek-harness",
+      "receipt": "deepseek-harness/evidence/express-2026-10-19.json",
+      "sha256": "bd6545105009ad87ca938507580b89d00ef8bc86ad3431c701297ffedb0df15a"
+    },
+    {
+      "template": "document-tools",
+      "receipt": "document-tools/evidence/express-2026-10-19.json",
+      "sha256": "a0644758efd202091fafeb49f7f99a6e80bb95e80b5c1d5f76c454ca295d1beb"
+    },
+    {
+      "template": "droid",
+      "receipt": "droid/evidence/express-2026-10-19.json",
+      "sha256": "7ea88dd6d24d481dee71f077ec70ad812dae41363bd6af1db3b1067ec6544146"
+    },
+    {
+      "template": "gemini",
+      "receipt": "gemini/evidence/express-2026-10-19.json",
+      "sha256": "afde0d2aecb6216bf5326f74414a64677f23c73a51dc807ca012bf0c87ed7aa7"
+    },
+    {
+      "template": "media-tools",
+      "receipt": "media-tools/evidence/express-2026-10-19.json",
+      "sha256": "3aec432ec3e714967b7675456930bf3dea7821b6fdc05a133ec1c2d5e3bff23f"
+    },
+    {
+      "template": "node-web",
+      "receipt": "node-web/evidence/express-2026-10-19.json",
+      "sha256": "aba9ff64177b6310bac0e87153ea58909fd95ae2ba1411fbc4eb88f1ae46a8ba"
+    },
+    {
+      "template": "openclaw",
+      "receipt": "openclaw/evidence/express-2026-10-19.json",
+      "sha256": "1494f6c87a28a0ec870e385a4cdc1f48a2305803337483370c4b9e15745c5ae0"
+    },
+    {
+      "template": "opencode",
+      "receipt": "opencode/evidence/express-2026-10-19.json",
+      "sha256": "96f4e81bd4e50b5969fa4627f60d4e9a852fa05846bec915f73c4a09f60b9849"
+    },
+    {
+      "template": "python-hello",
+      "receipt": "python-hello/evidence/express-2026-10-19.json",
+      "sha256": "0743346c76820dc9415cea5fee572b96d9ffe5d74ca8706c902e64ddab34463d"
+    },
+    {
+      "template": "qoder",
+      "receipt": "qoder/evidence/express-2026-10-19.json",
+      "sha256": "5a7c7920a6e2dcd2644a96f5f73b9727ae880964c9f8fc6d6504924482ffc04e"
+    },
+    {
+      "template": "qwen-code",
+      "receipt": "qwen-code/evidence/express-2026-10-19.json",
+      "sha256": "76f26bb02b08f1d4c72b053e7c841ecd898e29f8cb2aa9fe574c1f128e5f9a1a"
+    }
+  ]
+}

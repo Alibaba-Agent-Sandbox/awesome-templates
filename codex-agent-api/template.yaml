@@ -15,7 +15,7 @@ ports: [9000]
 tags: [codex, openai, agents-api, ai-agent, self-hosted]
 priority: P1
 wave: 1
-tested_on: []
+tested_on: [alicloud-express]
 capabilities: [shell, files, code, ports]
 env:
   OPENAI_API_KEY: ""

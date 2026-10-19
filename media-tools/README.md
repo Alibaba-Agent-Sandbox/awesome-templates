@@ -104,9 +104,20 @@ Set server process configuration before startup. A prewarmed command server may 
 
 ## Verified
 
+| Provider | Executed scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
+
+This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+
+<details>
+<summary>Earlier checkpoint text (historical; current steps result is above)</summary>
+
 No provider has a passing run recorded for this template.
 
 Actual image L1, 43 native/SDK regressions and 21 HTTP assertions passed on the recorded source; see [the CI confirmation](../.agents/evidence/verify/2026-10-18-media-tools-ci-confirmation.md). Failed attempts and local preparation remain in [the original evidence](../.agents/evidence/verify/2026-10-18-media-tools-runtime.md). Canonical L2 provider acceptance has not run. Catalog status is experimental and `tested_on` is empty.
+
+</details>
 
 ## Secondary development
 

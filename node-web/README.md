@@ -115,9 +115,20 @@ No model/cloud key is needed by these commands. Keep secret values out of source
 
 ## Verified
 
+| Provider | Executed scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
+
+This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+
+<details>
+<summary>Earlier checkpoint text (historical; current steps result is above)</summary>
+
 No provider has a passing run recorded for this template.
 
 2026-10-16 local L0 passed all 60 assertions with real Node 22.22.2, isolated npm 10.9.4, agent-sandbox-server 0.3.0 and httpx 0.28.1: HTTP API discovery, 4 MiB pre-readiness output, real HTTP requests, stderr logs, npm build artifact, npm start/dev and process-group stop/rebind, build nonzero/timeout and readiness failure. This is a local host run; it does not establish the Node 20 image build or cloud behavior. L1 is pending because Docker is absent. L2/L4 are pending; `tested_on` remains empty. No model call is required for this service template.
+
+</details>
 
 ## Express source-runtime verification
 

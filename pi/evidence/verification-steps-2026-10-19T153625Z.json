@@ -1,0 +1,33 @@
+{
+  "template": "pi",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-19T153625Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "pi",
+    "materializer_sha256": "2aafcc836d6f84ccec672b5f50a9f77553aa38ec6d19e038b19a2e4cd233f07b",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "copy_source_commit": "aed374918f6d45023cf7820b24505c136c81a4eb",
+    "steps_json_bytes": 6191,
+    "inputs_sha256": {
+      "Dockerfile": "a64118f9addb95de661ff856ad6591d09a6cbcef0b1e5a27f0c124967f2c88d7",
+      "template.yaml": "89f98b01c2ce9189a86231a2caf2f0ac037e80bcc678d76980f9075bf84ab53f",
+      "package.json": "c39f3eb812b3a2daa8bff3c8964df7861fcd29f5c05ae87368111848680f855a",
+      "package-lock.json": "e64115f18f9b0cc9ed07589f4408acacd79a1da381b735865fb4a736a33ac348",
+      "install_tools.py": "4465680886fcfa5a8ea45de2493933b68417265c58459ae4f89c396a40537763",
+      "commands.py": "f8e3841f94fb87660ebb4d8b17a95c323f433c87dba028dae0375bec697b1c59",
+      "tools_smoke.mjs": "881b45666eee98eb4a5b8a08b64f83ec3bdba6197e3be48b93c380bf1824ff12"
+    },
+    "generated_manifest_sha256": "76d26805d1f1adb23175ad8523befbccdab809cbcf496d23b1264cb79883a494"
+  },
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "duration_s": 905.816
+}
