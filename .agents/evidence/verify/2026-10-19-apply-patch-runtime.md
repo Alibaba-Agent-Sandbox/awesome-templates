@@ -28,3 +28,9 @@ CI selector follow-up: preserve the frozen23-template canonical source approval
 boundary while permitting new independently verified catalog entries. The
 authorization regression rejects every unreviewed added name; no credentials
 or cloud workflow authorization are broadened.13 real authorization tests PASS.
+
+Hosted L1 actual image passed. Local CI found global npm installation may nest
+optional native dependencies below the Codex package; it is not the flat locked
+context assumed by the installer argument. CI now uses npm ci with the exact
+committed apply-patch lockfile and its own node_modules, matching the proven
+Docker/Express layout. No runtime input or prior cloud receipt changed.

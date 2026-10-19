@@ -131,7 +131,8 @@ jobs:
           echo "$RUNNER_TEMP/pi-cli/node_modules/.bin" >> "$GITHUB_PATH"
           python pi/install_tools.py --root "$RUNNER_TEMP/pi-tools" --bin "$RUNNER_TEMP/pi-tools-bin"
           echo "$RUNNER_TEMP/pi-tools-bin" >> "$GITHUB_PATH"
-          python apply-patch/install_alias.py --node-modules "$(npm root --global)" --bin "$RUNNER_TEMP/apply-patch-bin"
+          npm ci --prefix apply-patch --omit=dev --ignore-scripts --no-audit --no-fund
+          python apply-patch/install_alias.py --node-modules "$GITHUB_WORKSPACE/apply-patch/node_modules" --bin "$RUNNER_TEMP/apply-patch-bin"
           echo "$RUNNER_TEMP/apply-patch-bin" >> "$GITHUB_PATH"
           codex --version
           claude --version
