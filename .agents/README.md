@@ -4,6 +4,9 @@ This repository owns template source, specification, catalog and acceptance reco
 Read [CONTRIBUTING.md](../CONTRIBUTING.md) and [the specification](../docs/template-spec.md).
 New engineering records use English and stay in this repository.
 
+- [Kimi Code runtime](notes/proposed/feature/2026-10-19-kimi-code.md)
+  · [verification](evidence/verify/2026-10-19-kimi-code.md)
+
 - [Contributor standards and platform steps](notes/proposed/process/2026-10-19-standards-and-platform-steps.md)
   · [verification](evidence/verify/2026-10-19-standards-and-platform-steps.md)
   · [actual platform limits and reruns](evidence/verify/2026-10-19-step-platform-limits.md)
