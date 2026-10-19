@@ -468,3 +468,7 @@ Exit 2 means the output matched a known CLI or SDK failure mode (string `base` r
 Exit 1 is any other failure. Exit 0 writes the evidence file.
 
 Alibaba FC resource profile: memory must be a multiple of64MB and1..4GiB per vCPU. The checker rejects invalid declared profiles before cloud use. [Official CreateFunction contract](https://api.alibabacloud.com/document/FC/2023-03-30/CreateFunction).
+
+## Provider-managed catalog entries
+
+`managed_templates` is an additive catalog namespace separate from installable source `templates`. Its fields are name/provider/template_id/kind/documentation/evidence/verification_scope/native_interpreter_verified. Managed IDs have no repository-owned Dockerfile, image version, commands.py or build context, so source image selection, steps generation and deploy checks do not apply. Runtime acceptance must record SDK fallbacks, observed inventory and independent owned cleanup; it cannot certify another provider or a native interpreter. See [base](managed/base/README.md) and [code-interpreter-v1](managed/code-interpreter-v1/README.md).
