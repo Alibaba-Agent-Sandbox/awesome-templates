@@ -167,6 +167,12 @@ jobs:
 
           payload = json.loads(sys.argv[1])
           assert os.geteuid() != 0, "the image must run as its non-root USER"
+          import tempfile
+          with tempfile.TemporaryDirectory(prefix=".l1-workspace-", dir="/home/user/app") as workspace:
+              artifact=Path(workspace)/"write-probe.txt"
+              artifact.write_bytes(b"workspace-write-proof")
+              assert artifact.read_bytes()==b"workspace-write-proof"
+          print("PASS actual non-root workspace write/read/removal",flush=True)
           assert importlib.metadata.version("agent-sandbox-server") == "0.3.0"
           print("PASS agent-sandbox-server 0.3.0 (source wheel); non-root image user", flush=True)
           for command, expected in payload["pins"]:
