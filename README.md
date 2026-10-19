@@ -168,3 +168,5 @@ abx --provider e2b template launch alibaba-agent-sandbox/awesome-templates//pyth
 These provider-managed IDs are listed separately from buildable source templates.
 Native interpreter service was HTTP404 in both recorded tests; no native interpreter
 or other-provider certification is claimed.
+
+[Development database template](dev-services/README.md) · experimental; provider acceptance pending.
