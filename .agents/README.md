@@ -70,3 +70,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Native acceptance entry](notes/proposed/process/2026-10-19-native-acceptance-entry.md) · [verification](evidence/verify/2026-10-19-native-acceptance-entry.md)
 
 - [Provider-owned template launch](notes/proposed/feature/2026-10-19-provider-template-launch.md) · [verification](evidence/verify/2026-10-19-provider-template-launch.md)
+
+- [Express steps checkpoint](evidence/verify/2026-10-19-steps-checkpoint-1555.md)
