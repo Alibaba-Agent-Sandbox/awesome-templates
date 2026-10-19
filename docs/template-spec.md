@@ -466,3 +466,5 @@ Concurrent harnesses take an exclusive `flock` on `/tmp/abx-acr-push.lock` (`ABX
 Exit 2 means the output matched a known CLI or SDK failure mode (string `base` rejected, generation-1 update, `AuthError` / HTTP 401, or envd `promised N bytes in enveloped message`). Those were tracked as agent-sandbox `#12` `#13` `#14` and python-sdk `#15` `#17`. The deploy/run CLI fix is on `agent-sandbox` main (`#16`). The envd framing and port-9000 auth fix is on `python-sdk` main. The harness still classifies the old messages so an older binary stays explicit.
 
 Exit 1 is any other failure. Exit 0 writes the evidence file.
+
+Alibaba FC resource profile: memory must be a multiple of64MB and1..4GiB per vCPU. The checker rejects invalid declared profiles before cloud use. [Official CreateFunction contract](https://api.alibabacloud.com/document/FC/2023-03-30/CreateFunction).

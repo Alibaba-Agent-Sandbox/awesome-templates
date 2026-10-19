@@ -99,7 +99,7 @@ The last two settings support native diagnostics; they are not command parameter
 
 | Resource | Value |
 |---|---|
-| CPU | 2 vCPU; engine uses one OpenMP thread |
+| CPU | 1 vCPU; engine uses one OpenMP thread |
 | Memory | 1024 MB sandbox; native engine address space capped at 512 MiB |
 | Port | 9000 |
 | Disk | Platform rootfs; callers must remove retained result directories |

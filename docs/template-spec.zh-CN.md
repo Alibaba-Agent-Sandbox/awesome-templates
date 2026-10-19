@@ -461,3 +461,5 @@ harness 用现有标志调用 `abx template deploy`（`--json`、`-y`、`--gener
 退出码 2 表示输出命中了已知的 CLI 或 SDK 失败（字符串 `base` 被拒绝、generation 1 更新、`AuthError` / HTTP 401，或 envd 的 `promised N bytes in enveloped message`）。这些曾记在 agent-sandbox `#12` `#13` `#14` 和 python-sdk `#15` `#17`。部署与运行的 CLI 修复已在 `agent-sandbox` main（`#16`）。envd 帧和端口 9000 认证的修复已在 `python-sdk` main。harness 仍然识别旧的报错，这样旧二进制也会给出明确结果。
 
 退出码 1 是其他失败。退出码 0 会写入证据文件。
+
+阿里云 FC 资源配置：内存须为64MB倍数，每 vCPU 对应1..4GiB内存。检查器在上云前拒绝无效声明。[Official CreateFunction contract](https://api.alibabacloud.com/document/FC/2023-03-30/CreateFunction).
