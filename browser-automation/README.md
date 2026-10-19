@@ -154,6 +154,12 @@ a skipped browser suite cannot count as acceptance.
 
 ## Secondary development
 
+Version2.0.1 separates Python package installation, system dependencies and
+Chromium download into three RUN steps to fit the observed roughly300-second
+Express per-RUN deadline. Playwright and the full Chromium profile are unchanged;
+older version receipts remain history.
+
+
 Build from this directory using `abx template deploy` or the install command
 above. The deployer replaces Alibaba region/tag placeholders and can inject a
 server wheel from `ABX_SERVER_SDK_SOURCE`; the archive pin remains the fallback.

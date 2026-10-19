@@ -143,6 +143,10 @@ HTTP 400 为缺少参数或类型错误；401 为服务端认证失败；404 为
 
 ## 二次开发
 
+2.0.1 将 Python 包、系统依赖、Chromium 下载拆为三个构建 RUN，避免
+极速版单步约 300 秒截止。Playwright 版本及完整 Chromium 不变；旧版本证据保留。
+
+
 在本目录运行 `abx template deploy` 或上述安装命令。部署器替换阿里云 region/tag
 占位符，并可从 `ABX_SERVER_SDK_SOURCE` 注入服务端 wheel；否则使用归档提交钉。
 重型安装放前层，`COPY commands.py` 放最后。Dockerfile 无 CMD/ENTRYPOINT，

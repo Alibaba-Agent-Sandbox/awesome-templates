@@ -31,7 +31,10 @@ URLs accept http/https and inline data:text/html,; no file: or embedded credenti
 
 [Dockerfile](../../browser-automation/Dockerfile) uses Alibaba base placeholders
 (default `v0.0.49`), Playwright `==1.58.0` and Chromium revision selected by that
-pin. `playwright install --with-deps chromium` runs during build, before USER user.
+pin. Separate `pip install`, `playwright install-deps chromium`, and `playwright install chromium`
+RUN steps execute during build before USER user. Version2.0.1 splits the build to
+respect the observed roughly300-second per-RUN Express deadline; runtime APIs and
+the full Chromium profile are unchanged.
 The browser path is `/opt/playwright`. The server wheel injected by deploy wins;
 fallback is python-sdk archive `35da216a300f1e2e84254a1cf4b4a7ea98681505`.
 Generation 2 uses `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`
