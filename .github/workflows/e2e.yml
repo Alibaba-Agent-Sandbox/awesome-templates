@@ -131,6 +131,8 @@ jobs:
           echo "$RUNNER_TEMP/pi-cli/node_modules/.bin" >> "$GITHUB_PATH"
           python pi/install_tools.py --root "$RUNNER_TEMP/pi-tools" --bin "$RUNNER_TEMP/pi-tools-bin"
           echo "$RUNNER_TEMP/pi-tools-bin" >> "$GITHUB_PATH"
+          python apply-patch/install_alias.py --node-modules "$(npm root --global)" --bin "$RUNNER_TEMP/apply-patch-bin"
+          echo "$RUNNER_TEMP/apply-patch-bin" >> "$GITHUB_PATH"
           codex --version
           claude --version
           test "$(opencode --version)" = "1.19.0"
@@ -163,6 +165,7 @@ jobs:
 
       - name: Run process, privacy, and acceptance-harness regressions
         run: |
+          python -m pytest -q apply-patch/test_commands.py
           python -m pytest -q python-hello/test_command_errors.py
           python -m pytest -q node-web/test_startup.py node-web/test_http_output.py
           python -m pytest -q claude-code/tests
