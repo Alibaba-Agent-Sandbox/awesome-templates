@@ -111,3 +111,25 @@ recipe at its recorded hashes; it does not prove a local Docker build, reproduce
 an untested dependency pin, satisfy an unrun real-model L3, or verify another
 provider. Consult the current per-template attempt records and the
 [acceptance specification](template-spec.md#test-levels).
+
+## Reproducing the tested native CLI
+
+This pins the actual Linux x86_64 native entry used by these receipts alongside the standard entry. The controller used Node22.22.2/npm; the standalone binary needs these two exact external Alibaba SDK modules. The asset, SHA256 and module combination were actually used. A displayed version alone does not establish interface compatibility. This step downloads public tools without creating cloud resources.
+
+```bash
+ABX_NATIVE_DIR="$(mktemp -d /tmp/abx-native-review.XXXXXX)"
+curl --fail --location --max-time 120 \
+  --output "$ABX_NATIVE_DIR/abx" \
+  https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/releases/download/v0.3.0/abx-0.3.0-linux-x64
+printf '%s  %s\n' \
+  e6d1c46626fd3f48e86b23bc99b0b8d565dfadd3f61a42ea352a27cb637d9cdd \
+  "$ABX_NATIVE_DIR/abx" | sha256sum --check
+chmod 700 "$ABX_NATIVE_DIR/abx"
+npm install --prefix "$ABX_NATIVE_DIR/modules" --ignore-scripts --no-audit --no-fund \
+  --save-exact @alicloud/fcsandbox20260509@1.5.1 @alicloud/openapi-core@1.0.8
+export ABX="$ABX_NATIVE_DIR/abx"
+export NODE_PATH="$ABX_NATIVE_DIR/modules/node_modules"
+"$ABX" template deploy --help
+```
+
+Then configure the existing Express account in the process environment and run the pinned-server commands above. ABX/NODE_PATH select this isolated tool directory. Use the native acceptance syntax consistently. Remove only your own tool directory after owned cloud resources and private journals are reconciled.

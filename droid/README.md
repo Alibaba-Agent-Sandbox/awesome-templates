@@ -104,9 +104,20 @@ Default: 2 vCPU, 2048 MB RAM, port 9000. Model calls require external Factory ne
 
 ## Verified
 
+| Provider | Executed scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
+
+This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+
+<details>
+<summary>Earlier checkpoint text (historical; current steps result is above)</summary>
+
 Source-runtime follow-up on 2026-10-18: the native Python SDK completed the pinned Droid background install, SDK keyless/version checks, external HTTP suite and owned cleanup (nine checks PASS). See [exact-scope evidence](../.agents/evidence/verify/2026-10-18-droid-native-runtime.md). This is not image-backed/canonical L2 or model acceptance; `tested_on` remains unchanged.
 
 No canonical image-deployment provider pass is recorded for this template.
+
+</details>
 
 ## Secondary development
 
