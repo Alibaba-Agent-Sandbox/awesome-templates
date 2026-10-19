@@ -30,9 +30,9 @@ import uuid
 import zipfile
 import yaml
 try:
-    from .ci_image import context_sha256,SERVER_COMMIT
+    from .ci_image import context_sha256,SERVER_COMMIT,validate_resources
 except ImportError:
-    from ci_image import context_sha256,SERVER_COMMIT
+    from ci_image import context_sha256,SERVER_COMMIT,validate_resources
 
 GITHUB='https://api.github.com/repos/Alibaba-Agent-Sandbox/awesome-templates'
 REGION='cn-hangzhou'
@@ -137,6 +137,7 @@ def verify_source(source: Path, checkout: str, expected: dict[str,str]) -> None:
 
 def download_verified(artifact_id: int, source: Path, output: Path) -> dict:
     source=source.resolve()
+    validate_resources(yaml.safe_load((source/'template.yaml').read_text()))
     if output.resolve().is_relative_to(source.parent):raise ValueError('image staging must stay outside the repository')
     output.mkdir(parents=True,exist_ok=False);output.chmod(0o700)
     archive_zip=output/'artifact.zip';artifact=artifact_download(artifact_id,archive_zip)

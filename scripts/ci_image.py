@@ -22,6 +22,13 @@ PUBLIC_PROOF_KEYS = {
 }
 
 
+def validate_resources(config: dict) -> None:
+    resources=config.get('resources',{});cpu=resources.get('cpu');memory=resources.get('memory')
+    if (not isinstance(cpu,int) or isinstance(cpu,bool) or cpu<1 or not isinstance(memory,int)
+        or isinstance(memory,bool) or memory%64 or not 1024*cpu<=memory<=4096*cpu):
+        raise ValueError('Alibaba FC requires64MiB memory multiples and1..4GiB per vCPU')
+
+
 def context_sha256(source: Path) -> dict[str,str]:
     source=source.resolve()
     dockerfile=(source/'Dockerfile').read_bytes()
@@ -53,6 +60,7 @@ def validate_proof(source: Path, proof: dict, image_ref: str) -> dict:
     if not isinstance(proof,dict) or set(proof)-PUBLIC_PROOF_KEYS:raise ValueError('image proof contains unapproved fields')
     if not re.fullmatch(r'registry\.[a-z0-9-]+\.aliyuncs\.com/[a-z0-9_.-]+/[a-z0-9_.-]+@sha256:[a-f0-9]{64}',image_ref):raise ValueError('an immutable personal ACR digest reference is required')
     config=yaml.safe_load((source/'template.yaml').read_text())
+    validate_resources(config)
     if proof.get('schema_version')!=1 or proof.get('verification_type')!='ci-docker-archive':raise ValueError('unsupported image proof schema')
     if proof.get('template')!=config['name'] or proof.get('template_version')!=str(config['version']):raise ValueError('image proof template/version mismatch')
     if proof.get('github_repository','').lower()!='alibaba-agent-sandbox/awesome-templates':raise ValueError('image proof repository mismatch')

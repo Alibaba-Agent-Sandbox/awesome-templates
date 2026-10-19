@@ -15,3 +15,14 @@ cloud outcomes and image-backed model acceptance are not inferred from these che
 PASS:37 specification/controller tests, strict23-template plus skeleton conformance,
 and116 current documentation links. HTTP verifier subprocesses use unreaped-leader
 process-group cleanup on success and timeout. Hosted checks remain pending.
+
+Fresh real OCR image transfer and native template create executed, but official
+state ERROR rejected the original2vCPU/1024MB manifest ratio before any sandbox.
+Independent owned template absence and both ACR tags/repository absence PASS.
+The failed attempt is separate and OCR profile correction is PR130. Image
+resource preflight now rejects this pair before artifact download/mutation.
+
+Hosted CI exposed an existing SWE cleanup-test procfs race: /proc PID disappeared
+between opening stat and reading it, raising ProcessLookupError. Treat that
+confirmed disappearance like FileNotFoundError; the live/zombie checks remain.
+No runtime/SWE image source change; actual cleanup regressions rerun.

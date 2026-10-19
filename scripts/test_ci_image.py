@@ -84,3 +84,13 @@ def test_failed_image_readiness_never_creates_sandbox_or_receipt(tmp_path,monkey
         return h.Proc(0,'','')
     with patch.object(h,'wait_for_steps_ready',return_value=False):assert h.execute(options,runner=run,sdk=lambda *_:'ok',verify=lambda *_:True)==1
     assert not (source/'evidence').exists()
+
+
+def test_invalid_declared_resources_fail_before_any_artifact_or_cloud_call(tmp_path):
+    import ci_image_archive
+    source,proof,path=fixture(tmp_path)
+    manifest=source/'template.yaml';manifest.write_text(manifest.read_text().replace('memory: 2048','memory: 1024'))
+    with patch.object(ci_image_archive,'artifact_download',side_effect=AssertionError('invalid resource preflight must be read-only')):
+        with pytest.raises(ValueError,match='per vCPU'):
+            ci_image_archive.download_verified(123,source,tmp_path/'private')
+    assert not (tmp_path/'private').exists()
