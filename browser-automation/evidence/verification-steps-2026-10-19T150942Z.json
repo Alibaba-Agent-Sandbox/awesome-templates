@@ -1,0 +1,29 @@
+{
+  "template": "browser-automation",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-19T150942Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "browser-automation",
+    "materializer_sha256": "2aafcc836d6f84ccec672b5f50a9f77553aa38ec6d19e038b19a2e4cd233f07b",
+    "template_version": "2.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "copy_source_commit": null,
+    "steps_json_bytes": 5817,
+    "inputs_sha256": {
+      "Dockerfile": "f7b53d14b91d24dcd32e7a54f951cf0d6eb82a0e46392951fd293a3267a8e7c8",
+      "template.yaml": "9ef952e2c39fbae0e5a2ebe2ef1c5c1ae7069fb99cfcf6c812ac06c9d9e2b5ee",
+      "commands.py": "a5c01ab42212226f30b0cddfaa58818a1c7e8981638058aa056cac1fe4a6c91f"
+    },
+    "generated_manifest_sha256": "726c55c942794fa359892d74e3394c44ab32b683668c2dd713aac72e8c7c4dc9"
+  },
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "duration_s": 904.672
+}

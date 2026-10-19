@@ -115,7 +115,18 @@ Linux 下短生命周期健康检查 RPC 会持续读取输出，并在清理自
 
 ## 已验证
 
+| 提供方 | 已执行范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
+
+该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
+
+<details>
+<summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
+
 本修订尚无 provider 镜像或云端通过证据。本地真实 CLI 的启动、认证健康、返回后持续运行与清理记录在[工程验证](../.agents/evidence/verify/2026-10-16-openclaw-owned-gateway.md)。L1镜像构建、L2 Express仍待执行；本地运行不能替代。L3模型/编程验收尚未运行。
+
+</details>
 
 ## 二次开发
 
