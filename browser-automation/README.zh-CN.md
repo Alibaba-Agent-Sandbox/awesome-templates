@@ -144,7 +144,7 @@ HTTP 400 为缺少参数或类型错误；401 为服务端认证失败；404 为
 ## 二次开发
 
 2.0.1 将 Python 包、系统依赖、Chromium 下载拆为三个构建 RUN，避免
-极速版单步约 300 秒截止。Playwright 版本及完整 Chromium 不变；旧版本证据保留。
+一次真实构建流截止。后续成功诊断超过300秒，不能推断极速版统一单步时限。Playwright 版本及完整 Chromium 不变；旧版本证据保留。
 
 
 在本目录运行 `abx template deploy` 或上述安装命令。部署器替换阿里云 region/tag
@@ -179,3 +179,5 @@ generation 2 使用 YAML 的 `start_cmd`、`ready_cmd`，以 `user` 运行。
 ## 许可证
 
 Apache-2.0。Playwright 为 Apache-2.0；Chromium 及其依赖保留各自上游许可声明。
+
+后续真实构建网络诊断运行超过300秒，因此早先流截止不代表统一单步执行上限；拆分阶段保留，慢速大资产传输仍待解决。

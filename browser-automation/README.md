@@ -155,8 +155,8 @@ a skipped browser suite cannot count as acceptance.
 ## Secondary development
 
 Version2.0.1 separates Python package installation, system dependencies and
-Chromium download into three RUN steps to fit the observed roughly300-second
-Express per-RUN deadline. Playwright and the full Chromium profile are unchanged;
+Chromium download into three RUN steps after an observed RUN stream deadline.
+A later successful build diagnostic exceeded300 seconds; there is no verified universal per-RUN cap. Playwright and the full Chromium profile are unchanged;
 older version receipts remain history.
 
 
@@ -197,3 +197,5 @@ SDK commit, expected and actual results. Search existing issues first.
 
 Apache-2.0. Playwright is Apache-2.0; Chromium and bundled dependencies retain
 their upstream notices.
+
+Follow-up real build-network execution exceeded300seconds, so the earlier stream deadline is not a universal per-RUN cap. Stage separation is retained; slow large-asset transport remains unresolved.

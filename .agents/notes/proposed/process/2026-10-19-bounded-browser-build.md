@@ -3,7 +3,7 @@ Status: proposed
 
 ## Problem
 
-Actual generated Express browser build failed with RUN stream deadline_exceeded after306.777seconds. Its combined pip, system dependency and Chromium download step exceeds the observed individual-step deadline; increasing overall readiness cannot extend it.
+Actual generated Express browser build failed with RUN stream deadline_exceeded after306.777seconds. The combined pip, system dependency and Chromium download step failed. A later successful400-second step disproves a universal300-second execution cap; large-asset transport remains a measured constraint.
 
 ## Decision
 
@@ -15,7 +15,7 @@ No runtime/SDK contract change; both Dockerfile and generated platform steps inh
 
 ## Alternatives considered
 
-Increasing readiness timeout failed because the individual RUN ended. Skipping Chromium or marking source-only execution passed would not satisfy browser acceptance. Keep the same full browser install and actual tests.
+Increasing overall readiness did not make the observed attempt succeed. Skipping Chromium or marking source-only execution passed would not satisfy browser acceptance. Keep the same full browser install and actual tests.
 
 ## Dependencies
 
@@ -28,3 +28,5 @@ Static/spec/doc checks, exact generated phases; actual cloud build and CLI/SDK b
 ## Acceptance criteria
 
 Real build and full external browser behavior, independent owned cleanup, preserved historical failures, current-head CI and ordinary merge.
+
+Follow-up real build-network execution exceeded300seconds, so the earlier stream deadline is not a universal per-RUN cap. Stage separation is retained; slow large-asset transport remains unresolved.
