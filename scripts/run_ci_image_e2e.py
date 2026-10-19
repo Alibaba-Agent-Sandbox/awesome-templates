@@ -6,6 +6,8 @@ account credentials in the process environment. Credentials never enter CI.
 """
 from __future__ import annotations
 import argparse
+import ast
+import importlib.util
 import asyncio
 import contextlib
 from datetime import datetime,timezone
@@ -20,6 +22,14 @@ import tempfile
 import uuid
 import ci_image_archive as images
 import express_e2e as harness
+
+
+def controller_missing_imports(source: Path) -> list[str]:
+    tree=ast.parse((source/'e2e_test.py').read_text());names=set()
+    for node in ast.walk(tree):
+        if isinstance(node,ast.Import):names.update(alias.name.split('.')[0] for alias in node.names)
+        elif isinstance(node,ast.ImportFrom) and not node.level and node.module:names.add(node.module.split('.')[0])
+    return sorted(name for name in names if not (source/(name+'.py')).exists() and importlib.util.find_spec(name) is None)
 
 
 def publish(source: Path, receipt: dict, report: dict) -> None:
@@ -45,6 +55,11 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True) -> int:
         'verification_type':'ci-image-backed-external-http','passed':False,'registry_cleanup_verified':False,
         'model_acceptance':'NOT_RUN','http_acceptance':checks}
     try:
+        missing=controller_missing_imports(source) if http else []
+        if missing:
+            report['missing_controller_modules']=missing
+            print('BLOCKED local HTTP controller prerequisites: '+', '.join(missing),flush=True)
+            raise RuntimeError('controller prerequisites missing before artifact or cloud operation')
         print(source.name+': verifying exact-source CI image archive',flush=True)
         stage=private/'archive';images.download_verified(artifact_id,source,stage)
         print(source.name+': verified archive; transferring to owned private registry',flush=True)
@@ -64,15 +79,20 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True) -> int:
         async def endpoint(sid):
             from agent_sandbox.api.sandbox import Sandbox
             sandbox=await Sandbox.connect(sid)
-            try:return sandbox.network.get_url(9000)
+            try:
+                import yaml
+                ports=yaml.safe_load((source/'template.yaml').read_text()).get('ports',[9000])
+                return {port:sandbox.network.get_url(port) for port in ports}
             finally:await sandbox.close()
         def sdk(sid,command,args):
             nonlocal done
             result=harness.default_sdk(sid,command,args)
             if http and not done:
-                done=True;base=asyncio.run(endpoint(sid));script=source/'e2e_test.py'
+                done=True;urls=asyncio.run(endpoint(sid));base=urls[9000];script=source/'e2e_test.py'
                 env={k:v for k,v in os.environ.items() if not any(x in k.upper() for x in ['TOKEN','API_KEY','SECRET','PASSWORD','ACCESS_KEY'])}
                 env.update(E2E_BASE_URL=base,E2E_BASE_DIR='/home/user/app',E2E_WORKSPACE='/home/user/app',E2E_RUN_LLM='0',E2E_REQUIRE_CLI='1')
+                if source.name=='code-server':env['E2E_CODE_SERVER_URL']=urls[8443]
+                if source.name=='next-app':env.update(E2E_NEXT_URL=urls[3000],E2E_VITE_URL=urls[5173])
                 result_http=harness.run_monitored([sys.executable,str(script)],env=env,idle_timeout=600,wall_timeout=600)
                 (private/'http.log').write_text(result_http.stdout+'\n'+result_http.stderr)
                 lines=(result_http.stdout+'\n'+result_http.stderr).splitlines()
@@ -85,7 +105,11 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True) -> int:
         print(source.name+': actual native template create, READY and CLI/SDK verification',flush=True)
         try:
             with (private/'harness.log').open('w') as output,contextlib.redirect_stdout(output),contextlib.redirect_stderr(output):
-                status=harness.execute(options,sdk=sdk)
+                def verify_owned(intent,runner):
+                    observed=harness.owned_resources_absent(intent,runner)
+                    report['cleanup_verified']=observed
+                    return observed
+                status=harness.execute(options,sdk=sdk,verify=verify_owned)
         finally:
             for key,value in prior.items():
                 if value is None:os.environ.pop(key,None)
@@ -93,7 +117,8 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True) -> int:
         final_digest=images.crane_call(crane,['digest',image_ref],username,password,90)
         if final_digest!=proof['pushed_image_digest']:raise ValueError('owned registry tag changed during acceptance')
         proof['tag_digest_verified_after_runtime']=True
-        report.update(image_provenance=proof,cleanup_verified=status==0)
+        report.update(image_provenance=proof)
+        report.setdefault('cleanup_verified',False)
         if status==0:
             receipt=json.loads(next((runtime/'evidence').glob('express-*.json')).read_text())
             receipt['image_provenance']=proof
