@@ -57,3 +57,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Prewarmed server configuration](notes/proposed/process/2026-10-16-prewarmed-server-configuration.md) · [verification](evidence/verify/2026-10-16-prewarmed-server-configuration.md)
 
 - [Delivery integration review](evidence/verify/2026-10-18-template-delivery-review.md)
+
+- [Consumer entry compatibility](notes/proposed/process/2026-10-19-consumer-entries.md) · [verification](evidence/verify/2026-10-19-consumer-entries.md)

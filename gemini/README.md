@@ -16,6 +16,8 @@ Provides buffered, typed command calls with a missing-key guard, read-only setup
 
 ## Quick start (CLI)
 
+Check the installed entry with `abx create --help`. The complete example below uses native CLI syntax. If help lists `--detach`, use the standard Express entry: create with `abx create <template-id> --detach` and clean up with `abx kill <sandbox-id>` without `-y`; named commands through `abx run` are unchanged. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
+
 Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
 
 Deploy from the repository checkout with your existing provider configuration:
@@ -37,7 +39,7 @@ Install `agent-sandbox-client`; check release availability or use the [paired so
 ```python
 import asyncio
 import os
-from agent_sandbox import Sandbox
+from agent_sandbox.api.sandbox import Sandbox
 
 async def main():
     sb = await Sandbox.create(template="<template-id>", timeout=300,

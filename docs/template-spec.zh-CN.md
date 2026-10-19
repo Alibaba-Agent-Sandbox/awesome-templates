@@ -245,7 +245,7 @@ python3 -m pip install agent-sandbox-client
 
 ```python
 import asyncio
-from agent_sandbox import Sandbox
+from agent_sandbox.api.sandbox import Sandbox
 
 async def main() -> None:
     sb = await Sandbox.create(template="<template-id>", timeout=300)

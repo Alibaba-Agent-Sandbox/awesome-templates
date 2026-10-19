@@ -54,7 +54,7 @@ Template-specific READMEs show complete examples for their own commands.
 
 ```python
 import asyncio
-from agent_sandbox import Sandbox
+from agent_sandbox.api.sandbox import Sandbox
 
 async def main():
     sb = await Sandbox.create(template="<template-id>", timeout=300)
@@ -138,3 +138,28 @@ frontend or generated catalog back here.
 [中文](using-templates.zh-CN.md)
 
 Local acceptance cleanup preserves Python verifier sources, including `e2e_sdk.py`, while removing generated artifacts and caches. The SDK controller must remain available for subsequent acceptance.
+
+
+## Client entry compatibility
+
+Custom commands, providers, sessions and `sb.server` examples explicitly import
+`from agent_sandbox.api.sandbox import Sandbox`. This native async entry works on
+accepted main and the standard-client candidate, avoiding await on the synchronous
+root Sandbox. Standard Sandbox/AsyncSandbox and interpreter imports have a separate
+contract: [SDK47](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/47).
+
+CLI builds may expose different entries even with the same package version. Run
+`abx create --help`: if it lists `--detach`, use the standard column; otherwise use
+the native column.
+
+| Operation | Standard Express entry | Native CLI build |
+| --- | --- | --- |
+| Scripted create | `abx create <template-id> --detach` | `abx create --template <template-id> -y` |
+| Shell | `abx exec --cwd /tmp <sandbox-id> sh -c 'echo hello'` | `abx exec <sandbox-id> --cwd /tmp -- sh -c 'echo hello'` |
+| Owned cleanup | `abx kill <sandbox-id>` | `abx kill <sandbox-id> -y` |
+
+Template deploy, named commands through abx run, upload and download remain project
+extensions. Standard exec streams by default and has no local --stream/--timeout
+option. Standard create without --detach opens a PTY and shortens its default lease
+after exit. Keep native syntax on existing native installations. Template sources
+and provider acceptance tiers do not change with this documentation update.

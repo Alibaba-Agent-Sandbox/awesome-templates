@@ -19,6 +19,8 @@ FFmpeg 离线 CPU 媒体转码。[English](README.md)。
 
 ## 快速开始（CLI）
 
+先用 `abx create --help` 确认已安装入口。下面的完整示例使用原生 CLI 语法。若帮助列出 `--detach`，则是标准极速版入口：创建改用 `abx create <template-id> --detach`，清理改用 `abx kill <sandbox-id>`（不加 `-y`）；命名命令 `abx run` 不变。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
+
 ```bash
 abx template deploy ./media-tools -y --generation 2
 abx create --template <template-id> -y
@@ -36,7 +38,7 @@ abx template delete <template-id> -y
 
 ```python
 import asyncio
-from agent_sandbox import Sandbox
+from agent_sandbox.api.sandbox import Sandbox
 
 async def main():
     sb = await Sandbox.create(template="<template-id>", timeout=300)
