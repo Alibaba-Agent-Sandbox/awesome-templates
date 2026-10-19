@@ -77,3 +77,12 @@ provider ID conversion or unsupported product replacement is counted as completi
 The complete original roadmap, every generated template's real Express outcome,
 required real-model acceptance, final current-head CI and actual PR merge remain
 pending. This record does not declare the user's complete request fulfilled.
+
+## Reproducible operator entry and current metadata
+
+The public steps guide now includes the actually tested Linux x64 CLI0.3.0 asset
+SHA256 and official SDK modules1.5.1/1.0.8 instead of relying on mutable main or
+version-label compatibility. Sixteen current-version real steps receipts now
+update tested_on and bilingual scoped Verified tables. Older checkpoint wording
+is explicitly preserved as historical. Runtime/version/catalog status do not
+change; basic smoke does not certify whole-product/model or Dockerfile L1.

@@ -104,9 +104,20 @@ JSON 对象直接包含参数。HTTP 200 返回 `{"result":{"output_path":"/home
 
 ## 已验证
 
+| 提供方 | 已执行范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
+
+该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
+
+<details>
+<summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
+
 尚未记录任何通过的提供方测试。
 
 记录的源码版本已实际通过镜像 L1、43 项原生/SDK 回归及 21 项 HTTP 检查，见 [CI 确认](../.agents/evidence/verify/2026-10-18-media-tools-ci-confirmation.md)。失败尝试及本地准备保留在[原始证据](../.agents/evidence/verify/2026-10-18-media-tools-runtime.md)。canonical L2 云验收尚未运行；保持 experimental 和空 `tested_on`。
+
+</details>
 
 ## 二次开发
 

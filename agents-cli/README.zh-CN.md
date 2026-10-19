@@ -195,6 +195,15 @@ curl --fail-with-body "$ABX_SERVER_URL/v1/agents/sessions/<id>/items?limit=100&o
 
 ## 已验证
 
+| 提供方 | 已执行范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
+
+该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
+
+<details>
+<summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
+
 2026-10-16，已审阅的实际 CI 镜像通过自有 Express/Qwen SDK 编码切片：真实
 `qwen3.8-flash` 会话、已有源码修改、原测试字节不变、精确产物/报告、完整 unittest
 模块及六个独立用例。八项清理标志全部通过，随后五项独立只读回查通过，详见
@@ -206,6 +215,8 @@ curl --fail-with-body "$ABX_SERVER_URL/v1/agents/sessions/<id>/items?limit=100&o
 这是实际镜像注册/SDK/模型证据；完整本地 `abx template deploy` 包装链尚未执行，
 因此正式 `tested_on` 仍为空。该套件未验证 Codex 编码或其他提供方。
 fixture 协议测试和禁用模型的 HTTP 检查分别记录。
+
+</details>
 
 ## 二次开发
 
