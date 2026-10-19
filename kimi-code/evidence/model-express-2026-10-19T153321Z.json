@@ -1,0 +1,49 @@
+{
+  "passed": false,
+  "exit_code": 1,
+  "assertions": [
+    "[PASS] health",
+    "[PASS] registered command names",
+    "[PASS] typed command parameters",
+    "[PASS] invalid arguments are HTTP 400",
+    "[PASS] invalid arguments are HTTP 400",
+    "[PASS] unknown command is HTTP 404",
+    "[PASS] read-only setup inspection",
+    "[FAIL] required target CLI is installed",
+    "[PASS] seeded source fails before model edits",
+    "[FAIL] real headless CLI completes",
+    "[PASS] owned coding project cleanup"
+  ],
+  "model": "qwen3.8-flash",
+  "verification_type": "image-backed-model",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "kimi-code",
+    "materializer_sha256": "33ae3dc0658828fb7277ce6e9227400dc3f9860b8f90cde0831660389e331c7a",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "steps_json_bytes": 9253,
+    "inputs_sha256": {
+      "Dockerfile": "9843a5a7c0af94f4430ec2c577388577859302919fc15dd9e970cc8b0b3beaa9",
+      "template.yaml": "527c8ce1be6a2aca47d2309e4bf134462f37077df9bc09055adcf26af4d5a613",
+      "commands.py": "3bf4902d64c7d23dab353dd119a02787721924dc3e3e2690a07d0d60de7d92f9"
+    },
+    "generated_manifest_sha256": "8de3f683acb1f61c1021125f7300fc3927f15c5f8eb13c507ba550561a712851"
+  },
+  "provider": "alicloud-express",
+  "template": "kimi-code",
+  "cleanup_verified": true,
+  "date": "2026-10-19",
+  "source_sha256": {
+    "commands.py": "3bf4902d64c7d23dab353dd119a02787721924dc3e3e2690a07d0d60de7d92f9",
+    "e2e_test.py": "16d0420416e33835c122c00cf4dd4e70f5884f49b5701a57afc6a584a680a070",
+    "Dockerfile": "9843a5a7c0af94f4430ec2c577388577859302919fc15dd9e970cc8b0b3beaa9",
+    "template.yaml": "527c8ce1be6a2aca47d2309e4bf134462f37077df9bc09055adcf26af4d5a613"
+  },
+  "failure_reason": "secondary verification process omitted runtime Node PATH; image primary CLI and SDK smoke passed",
+  "result": "FAIL"
+}
