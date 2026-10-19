@@ -82,3 +82,25 @@ server override。完整成功记录包含 build_mode steps、外部调用结果
 当前全部 Dockerfile profile 可以本地转换；这不代表全部真实构建通过。step 通过仅
 证明记录哈希的生成配方，不证明本地 Docker 构建、未实测依赖、未运行模型 L3 或其他
 提供方通过。以每模板本轮记录及[分级规范](template-spec.zh-CN.md)为准。
+
+## 本次实测的原生 CLI 配方
+
+下面固定的是本次实际运行的 Linux x86_64 原生入口，与现有标准入口并存。控制器使用 Node22.22.2/npm；独立二进制本身需要下列两个精确版本的阿里云 SDK 外部模块。来源、SHA256 和模块组合已经实际使用，不能仅凭显示版本号替换接口。该步骤只下载公开工具，不创建云资源。
+
+```bash
+ABX_NATIVE_DIR="$(mktemp -d /tmp/abx-native-review.XXXXXX)"
+curl --fail --location --max-time 120 \
+  --output "$ABX_NATIVE_DIR/abx" \
+  https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/releases/download/v0.3.0/abx-0.3.0-linux-x64
+printf '%s  %s\n' \
+  e6d1c46626fd3f48e86b23bc99b0b8d565dfadd3f61a42ea352a27cb637d9cdd \
+  "$ABX_NATIVE_DIR/abx" | sha256sum --check
+chmod 700 "$ABX_NATIVE_DIR/abx"
+npm install --prefix "$ABX_NATIVE_DIR/modules" --ignore-scripts --no-audit --no-fund \
+  --save-exact @alicloud/fcsandbox20260509@1.5.1 @alicloud/openapi-core@1.0.8
+export ABX="$ABX_NATIVE_DIR/abx"
+export NODE_PATH="$ABX_NATIVE_DIR/modules/node_modules"
+"$ABX" template deploy --help
+```
+
+随后按上文配置进程环境中的极速版账号，并使用固定服务端提交的构建命令。脚本通过 ABX/NODE_PATH 使用该独立工具目录。不要把标准入口的参数与原生验收入口混用。清理本次沙箱、模板和日志后，再删除自己创建的工具目录。
