@@ -1,5 +1,5 @@
 name: qoder
-version: "1.1.0"
+version: "1.1.1"
 description: "Pinned Qoder headless CLI with typed named commands and a local Python compatibility command."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0
@@ -15,7 +15,7 @@ ports: [9000]
 tags: [qoder, ai-coding, development]
 priority: P2
 wave: other
-tested_on: [alicloud-express]
+tested_on: []
 capabilities: [shell, files, code, ports]
 env:
   WORKSPACE: "/home/user/app"

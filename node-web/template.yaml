@@ -1,5 +1,5 @@
 name: node-web
-version: "1.1.0"
+version: "1.1.1"
 description: "Manage a Node HTTP service with readiness, process cleanup and bounded logs."
 author: alibaba-agent-sandbox
 license: Apache-2.0
@@ -15,7 +15,7 @@ ports: [3000, 9000]
 tags: [nodejs, web, express, api, javascript]
 priority: P1
 wave: 1
-tested_on: [alicloud-express]
+tested_on: []
 capabilities: [shell, files, code, ports]
 env:
   NODE_ENV: production

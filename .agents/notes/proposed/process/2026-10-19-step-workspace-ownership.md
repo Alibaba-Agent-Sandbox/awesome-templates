@@ -28,3 +28,14 @@ Materializer regressions and strict docs/spec; actual Dockerfile L1 non-root wor
 ## Acceptance criteria
 
 Writable declared workspace under user, complete reference workflows pass, failed/baseline receipts preserved without relabeling, exact generated provenance, current-head CI and ordinary merge before Issue closure.
+
+## Follow-up source-image evidence
+
+The new actual non-root image probe also failed with permission denied for
+Node, Hermes, DeepSeek, Gemini, browser, Aider and Pi, with further matrix jobs
+in progress. Source Docker ownership must therefore be repaired as well. Add
+an explicit chown only where no existing post-WORKDIR RUN already owns the
+app directory, bump each affected contract patch version, and clear current
+provider qualification until that new version is genuinely verified. Preserve
+all previous receipts and move their README descriptions into a separate
+historical section. Old receipts never certify the changed contract.

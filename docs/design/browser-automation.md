@@ -29,6 +29,8 @@ URLs accept http/https and inline data:text/html,; no file: or embedded credenti
 
 ## How to build
 
+Template2.0.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
+
 [Dockerfile](../../browser-automation/Dockerfile) uses Alibaba base placeholders
 (default `v0.0.49`), Playwright `==1.58.0` and Chromium revision selected by that
 pin. `playwright install --with-deps chromium` runs during build, before USER user.

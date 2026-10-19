@@ -220,7 +220,7 @@ def _evidence_passes(template_dir: Path, provider: str) -> bool:
             prefix = f"{slug}-"
             if path.name.startswith(prefix) and path.suffix == ".json":
                 date = path.name[len(prefix) : -len(".json")]
-                if re.fullmatch(r"\d{4}-\d{2}-\d{2}", date):
+                if re.fullmatch(r"\d{4}-\d{2}-\d{2}(?:T\d{6}Z)?", date):
                     matched = True
                     break
         if not matched:
@@ -231,7 +231,7 @@ def _evidence_passes(template_dir: Path, provider: str) -> bool:
             continue
         if not isinstance(payload, dict):
             continue
-        if payload.get("provider") != provider or payload.get("passed") is not True:
+        if payload.get("provider") != provider or payload.get("passed") is not True or payload.get("cleanup_verified") is not True:
             continue
         if payload.get("template") != metadata.get("name") or str(payload.get("template_version")) != str(metadata.get("version")):
             continue

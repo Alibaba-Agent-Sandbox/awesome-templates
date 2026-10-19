@@ -32,6 +32,8 @@ full-repository agent session is exposed by the named command.
 
 ## How to build
 
+Template1.0.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
+
 [Dockerfile](../../aider/Dockerfile) retains the Alibaba FC base, non-root user,
 port 9000 and generation 2 server commands. Official PyPI metadata for
 [aider-chat 0.86.2](https://pypi.org/project/aider-chat/0.86.2/) requires Python

@@ -29,6 +29,8 @@ preserves the old command name with an explicit bounded action enum.
 
 ## How to build
 
+Template2.0.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
+
 [Dockerfile](../../openclaw/Dockerfile) uses the Alibaba FC base, installs pinned
 Node 24.16.0 from the official architecture-specific tarball with embedded
 SHA256 verification (x64/arm64), and OpenClaw 2026.10.4, cleans npm cache, then installs a deployment

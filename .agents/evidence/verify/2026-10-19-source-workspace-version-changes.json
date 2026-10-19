@@ -1,0 +1,107 @@
+{
+  "scope": "source Dockerfile permission repair, pending new-version acceptance",
+  "templates": [
+    {
+      "template": "_skeleton",
+      "previous_version": "1.0.0",
+      "version": "1.0.1",
+      "reason": "Enforce explicit non-root writable workspace; actual L1 failures exposed the common missing-ownership pattern"
+    },
+    {
+      "template": "agents-cli",
+      "previous_version": "2.0.0",
+      "version": "2.0.1",
+      "reason": "Enforce explicit non-root writable workspace; actual L1 failures exposed the common missing-ownership pattern"
+    },
+    {
+      "template": "aider",
+      "previous_version": "1.0.0",
+      "version": "1.0.1",
+      "reason": "Enforce explicit non-root writable workspace; actual L1 failures exposed the common missing-ownership pattern"
+    },
+    {
+      "template": "browser-automation",
+      "previous_version": "2.0.0",
+      "version": "2.0.1",
+      "reason": "Enforce explicit non-root writable workspace; actual L1 failures exposed the common missing-ownership pattern"
+    },
+    {
+      "template": "claude-code",
+      "previous_version": "1.1.0",
+      "version": "1.1.1",
+      "reason": "Enforce explicit non-root writable workspace; actual L1 failures exposed the common missing-ownership pattern"
+    },
+    {
+      "template": "deepseek-harness",
+      "previous_version": "1.1.0",
+      "version": "1.1.1",
+      "reason": "Enforce explicit non-root writable workspace; actual L1 failures exposed the common missing-ownership pattern"
+    },
+    {
+      "template": "droid",
+      "previous_version": "1.1.0",
+      "version": "1.1.1",
+      "reason": "Enforce explicit non-root writable workspace; actual L1 failures exposed the common missing-ownership pattern"
+    },
+    {
+      "template": "gemini",
+      "previous_version": "2.0.0",
+      "version": "2.0.1",
+      "reason": "Enforce explicit non-root writable workspace; actual L1 failures exposed the common missing-ownership pattern"
+    },
+    {
+      "template": "hermes-agent",
+      "previous_version": "1.1.0",
+      "version": "1.1.1",
+      "reason": "Enforce explicit non-root writable workspace; actual L1 failures exposed the common missing-ownership pattern"
+    },
+    {
+      "template": "node-web",
+      "previous_version": "1.1.0",
+      "version": "1.1.1",
+      "reason": "Enforce explicit non-root writable workspace; actual L1 failures exposed the common missing-ownership pattern"
+    },
+    {
+      "template": "openclaw",
+      "previous_version": "2.0.0",
+      "version": "2.0.1",
+      "reason": "Enforce explicit non-root writable workspace; actual L1 failures exposed the common missing-ownership pattern"
+    },
+    {
+      "template": "opencode",
+      "previous_version": "2.0.0",
+      "version": "2.0.1",
+      "reason": "Enforce explicit non-root writable workspace; actual L1 failures exposed the common missing-ownership pattern"
+    },
+    {
+      "template": "pi",
+      "previous_version": "1.0.0",
+      "version": "1.0.1",
+      "reason": "Enforce explicit non-root writable workspace; actual L1 failures exposed the common missing-ownership pattern"
+    },
+    {
+      "template": "python-hello",
+      "previous_version": "1.1.0",
+      "version": "1.1.1",
+      "reason": "Enforce explicit non-root writable workspace; actual L1 failures exposed the common missing-ownership pattern"
+    },
+    {
+      "template": "qoder",
+      "previous_version": "1.1.0",
+      "version": "1.1.1",
+      "reason": "Enforce explicit non-root writable workspace; actual L1 failures exposed the common missing-ownership pattern"
+    },
+    {
+      "template": "qwen-code",
+      "previous_version": "2.1.0",
+      "version": "2.1.1",
+      "reason": "Enforce explicit non-root writable workspace; actual L1 failures exposed the common missing-ownership pattern"
+    },
+    {
+      "template": "swe",
+      "previous_version": "1.0.0",
+      "version": "1.0.1",
+      "reason": "Enforce explicit non-root writable workspace; actual L1 failures exposed the common missing-ownership pattern"
+    }
+  ]
+}

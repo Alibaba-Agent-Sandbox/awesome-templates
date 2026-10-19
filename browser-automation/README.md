@@ -145,6 +145,10 @@ small `/dev/shm`; concurrent browser requests increase memory usage. Delete old
 
 ## Verified
 
+Version2.0.1 explicitly repairs non-root workspace-directory ownership. Current-version provider acceptance must be rerun. Earlier receipts establish only their original versions/hashes/scopes and are preserved below.
+
+## Historical verification
+
 No provider has a passing run recorded for this template.
 
 Local browser acceptance and static conformance can be run independently. They

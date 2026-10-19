@@ -1,5 +1,5 @@
 name: python-hello
-version: "1.1.0"
+version: "1.1.1"
 description: "Python command server with script execution, pytest, and file examples"
 author: "alibaba-agent-sandbox"
 license: Apache-2.0
@@ -16,7 +16,7 @@ tags: [python, hello-world, example, pytest]
 priority: P2
 wave: other
 # The retained 2026-10-15 evidence covers hello on 1.0.0, not this revision.
-tested_on: [alicloud-express]
+tested_on: []
 capabilities: [shell, files, code, ports]
 env:
   LANG: C.UTF-8

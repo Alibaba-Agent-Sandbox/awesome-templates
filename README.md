@@ -26,30 +26,30 @@ The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](do
 
 | Template | Description | Status | Verified on |
 |----------|-------------|--------|-------------|
-| [python-hello](./python-hello/README.md) | A minimal Python hello world template for testing | experimental | [alicloud-express (steps smoke)](./python-hello/evidence/express-2026-10-19.json) |
-| [browser-automation](./browser-automation/README.md) | Browser automation sandbox with Playwright + Chromium for web scraping and UI testing | experimental | |
-| [claude-code](./claude-code/README.md) | Claude Code Agent runtime — Anthropic Claude-powered AI coding assistant | experimental | [alicloud-express (steps smoke)](./claude-code/evidence/express-2026-10-19.json) |
+| [python-hello](./python-hello/README.md) | A minimal Python hello world template for testing | experimental | Revalidation pending (workspace ownership) |
+| [browser-automation](./browser-automation/README.md) | Browser automation sandbox with Playwright + Chromium for web scraping and UI testing | experimental | Revalidation pending (workspace ownership) |
+| [claude-code](./claude-code/README.md) | Claude Code Agent runtime — Anthropic Claude-powered AI coding assistant | experimental | Revalidation pending (workspace ownership) |
 | [codex](./codex/README.md) | OpenAI Codex CLI (@openai/codex@0.162.1). codex exec, JSON events, sandbox bypass, OpenAI-compatible config.toml. | experimental | [alicloud-express (steps smoke)](./codex/evidence/express-2026-10-19.json) |
 | [codex-agent-api](./codex-agent-api/README.md) | Codex 0.162.1 HTTP session adapter with bounded turns and SSE; project API subset | experimental | [alicloud-express (steps smoke)](./codex-agent-api/evidence/express-2026-10-19.json) |
-| [qoder](./qoder/README.md) | Qoder coding CLI @qoder-ai/qodercli@1.1.72 with version, read-only setup and bounded headless execution. | experimental | [alicloud-express (steps smoke)](./qoder/evidence/express-2026-10-19.json) |
-| [agents-cli](./agents-cli/README.md) | Restricted local Agents HTTP API with pinned Codex 0.162.1 and Qwen Code 0.23.0. | experimental | [alicloud-express (steps smoke)](./agents-cli/evidence/express-2026-10-19.json) |
-| [qwen-code](./qwen-code/README.md) | Qwen Code Agent runtime — Dashscope-powered AI autonomous deployment agent | experimental | [alicloud-express (steps smoke)](./qwen-code/evidence/express-2026-10-19.json) |
-| [deepseek-harness](./deepseek-harness/README.md) | Bounded DeepSeek-compatible coding agent with read, write, list and shell tools. | experimental | [alicloud-express (steps smoke)](./deepseek-harness/evidence/express-2026-10-19.json) |
+| [qoder](./qoder/README.md) | Qoder coding CLI @qoder-ai/qodercli@1.1.72 with version, read-only setup and bounded headless execution. | experimental | Revalidation pending (workspace ownership) |
+| [agents-cli](./agents-cli/README.md) | Restricted local Agents HTTP API with pinned Codex 0.162.1 and Qwen Code 0.23.0. | experimental | Revalidation pending (workspace ownership) |
+| [qwen-code](./qwen-code/README.md) | Qwen Code Agent runtime — Dashscope-powered AI autonomous deployment agent | experimental | Revalidation pending (workspace ownership) |
+| [deepseek-harness](./deepseek-harness/README.md) | Bounded DeepSeek-compatible coding agent with read, write, list and shell tools. | experimental | Revalidation pending (workspace ownership) |
 | [kimi-code](./kimi-code/README.md) | Official Kimi Code 2.2.0 with private headless turns and explicit tool permission. | experimental | [alicloud-express (steps + model)](./kimi-code/evidence/express-2026-10-19.json) |
-| [hermes-agent](./hermes-agent/README.md) | NousResearch Hermes 0.22.1 with pinned upstream runtime, local file/terminal tools and bounded headless execution. | experimental | |
-| [node-web](./node-web/README.md) | Node.js web service runtime for Express, Fastify and other frameworks | experimental | [alicloud-express (steps smoke)](./node-web/evidence/express-2026-10-19.json) |
-| [openclaw](./openclaw/README.md) | OpenClaw 2026.10.4 gateway with authenticated health, owned process lifecycle and Node.js 24.16.0. | experimental | [alicloud-express (steps smoke)](./openclaw/evidence/express-2026-10-19.json) |
-| [opencode](./opencode/README.md) | OpenCode coding agent. Headless opencode run and optional opencode serve. Package opencode-ai@1.19.0. | experimental | [alicloud-express (steps smoke)](./opencode/evidence/express-2026-10-19.json) |
+| [hermes-agent](./hermes-agent/README.md) | NousResearch Hermes 0.22.1 with pinned upstream runtime, local file/terminal tools and bounded headless execution. | experimental | Revalidation pending (workspace ownership) |
+| [node-web](./node-web/README.md) | Node.js web service runtime for Express, Fastify and other frameworks | experimental | Revalidation pending (workspace ownership) |
+| [openclaw](./openclaw/README.md) | OpenClaw 2026.10.4 gateway with authenticated health, owned process lifecycle and Node.js 24.16.0. | experimental | Revalidation pending (workspace ownership) |
+| [opencode](./opencode/README.md) | OpenCode coding agent. Headless opencode run and optional opencode serve. Package opencode-ai@1.19.0. | experimental | Revalidation pending (workspace ownership) |
 | [amp](./amp/README.md) | Sourcegraph Amp CLI. amp_execute runs amp -x; amp_version and amp_setup_check do not need a key. | experimental | [alicloud-express (steps smoke)](./amp/evidence/express-2026-10-19.json) |
-| [droid](./droid/README.md) | Factory Droid. Command droid exec. Package @factory/cli@0.241.1. | experimental | [alicloud-express (steps smoke)](./droid/evidence/express-2026-10-19.json) |
-| [gemini](./gemini/README.md) | Gemini CLI. Command gemini -p. Package @google/gemini-cli@0.64.0. | experimental | [alicloud-express (steps smoke)](./gemini/evidence/express-2026-10-19.json) |
+| [droid](./droid/README.md) | Factory Droid. Command droid exec. Package @factory/cli@0.241.1. | experimental | Revalidation pending (workspace ownership) |
+| [gemini](./gemini/README.md) | Gemini CLI. Command gemini -p. Package @google/gemini-cli@0.64.0. | experimental | Revalidation pending (workspace ownership) |
 | [osworld](./osworld/README.md) | OSWorld Linux browser slice with real X11 input, screenshots, AT-SPI and selected task evaluators. | experimental | |
-| [pi](./pi/README.md) | Official Pi CLI 1.3.0 with ephemeral compatible-model settings and explicit writable tools. | experimental | |
+| [pi](./pi/README.md) | Official Pi CLI 1.3.0 with ephemeral compatible-model settings and explicit writable tools. | experimental | Revalidation pending (workspace ownership) |
 | [ocr](./ocr/README.md) | CPU English image OCR with pinned Tesseract 5.5.0 and bounded private TXT/TSV artifacts. | experimental | |
 | [document-tools](./document-tools/README.md) | Bounded offline Markdown to DOCX/plain-text conversion using pinned Pandoc. | experimental | [alicloud-express (steps smoke)](./document-tools/evidence/express-2026-10-19.json) |
 | [media-tools](./media-tools/README.md) | Bounded offline CPU MP4, WAV and FLAC conversion with pinned FFmpeg. | experimental | [alicloud-express (steps smoke)](./media-tools/evidence/express-2026-10-19.json) |
-| [aider](./aider/README.md) | Official Aider 0.86.2 with read-only ask and explicit selected-file edits. | experimental | |
-| [swe](./swe/README.md) | Real mini-swe-agent 2.4.6 and one independently evaluated SWE-bench instance; no official Docker score. | experimental | |
+| [aider](./aider/README.md) | Official Aider 0.86.2 with read-only ask and explicit selected-file edits. | experimental | Revalidation pending (workspace ownership) |
+| [swe](./swe/README.md) | Real mini-swe-agent 2.4.6 and one independently evaluated SWE-bench instance; no official Docker score. | experimental | Revalidation pending (workspace ownership) |
 
 OpenSandbox's public sandbox images (code-interpreter, code-interpreter-base, desktop, playwright, vscode) are resolved by the SDK. This catalog does not vendor those Dockerfiles.
 

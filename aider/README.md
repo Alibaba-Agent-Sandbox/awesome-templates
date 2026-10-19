@@ -208,6 +208,10 @@ this is not an installed-image size. The separate Python 3.12 archive adds about
 
 ## Verified
 
+Version1.0.1 explicitly repairs non-root workspace-directory ownership. Current-version provider acceptance must be rerun. Earlier receipts establish only their original versions/hashes/scopes and are preserved below.
+
+## Historical verification
+
 [Express supplemental image/runtime acceptance](evidence/image-runtime-2026-10-16-configured.json)
 passed against the actual CI-built image: official READY, exact source/server
 provenance, SDK/HTTP/CLI version and configured-target checks, actual CLI guards,

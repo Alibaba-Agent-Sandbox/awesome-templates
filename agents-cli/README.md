@@ -217,6 +217,10 @@ memory and latency have not been measured; no image-size acceptance is claimed.
 
 ## Verified
 
+Version2.0.1 explicitly repairs non-root workspace-directory ownership. Current-version provider acceptance must be rerun. Earlier receipts establish only their original versions/hashes/scopes and are preserved below.
+
+## Historical verification
+
 | Provider | Executed scope | Evidence |
 | --- | --- | --- |
 | alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
