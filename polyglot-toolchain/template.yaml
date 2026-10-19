@@ -1,0 +1,38 @@
+name: polyglot-toolchain
+version: 1.0.0
+description: Pinned Go 1.25.14, Rust 1.90.0 and Eclipse Temurin 21 toolchains with
+  actual compilation proof.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+spec_version: 2
+base: fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
+generation: 2
+start_cmd: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+ready_cmd: agent-sandbox-server healthcheck --port 9000
+resources:
+  cpu: 2
+  memory: 2048
+ports:
+- 9000
+tags:
+- go
+- rust
+- java
+- toolchain
+priority: P1
+wave: 2
+tested_on: []
+capabilities:
+- shell
+- files
+- code
+- ports
+env:
+  ABX_SERVER_TOKEN: ''
+smoke:
+- command: toolchain_smoke
+  expect:
+    go: GO_OK
+    rust: RUST_OK
+    java: JAVA_OK
+    cleanup_verified: true

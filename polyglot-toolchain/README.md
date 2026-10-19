@@ -1,0 +1,101 @@
+# polyglot-toolchain
+
+## What it does
+
+Runs Go 1.25.14, Rust/Cargo 1.90.0 and Eclipse Temurin JDK 21.0.12.1+1 in one non-root sandbox. `toolchain_smoke` compiles and executes a separate program with each language, then removes its owned sources, binaries and Go cache.
+
+## Stack
+
+Alibaba FC base v0.0.49, generation 2, 2 vCPU / 2048 MB, agent-sandbox-server on port 9000. Official upstream archives and SHA256 for x86_64/aarch64 are pinned in [toolchains.json](toolchains.json). No rustup, version manager or runtime automatic Go toolchain download. Rustc, the target standard library and Cargo are installed as individual official components. GCC supplies the system linker. The installer rejects actual rootfs use above 8 GiB.
+
+## Problem solved
+
+Coding agents can build Go, Rust and Java projects without installing compilers during a model turn. No API key is required; compilation smoke is entirely local. Dependency downloads for user projects remain caller-controlled.
+
+## Quick start (CLI)
+
+Use the native CLI syntax (`abx create --help` lists `--template`):
+
+```bash
+abx template deploy ./polyglot-toolchain -y
+abx create --template <template-id> --timeout 300 -y
+abx run <sandbox-id> toolchain_versions
+abx run <sandbox-id> toolchain_smoke
+abx kill <sandbox-id> -y
+abx template delete <template-id> -y
+```
+
+For the standard CLI entry and paired client installation, see [using templates](../docs/using-templates.md).
+
+## Quick start (Python SDK)
+
+Install the [paired `agent-sandbox-client`](../docs/python-client-installation.md):
+
+```python
+import asyncio
+from agent_sandbox.api.sandbox import Sandbox
+
+async def main():
+    sb = await Sandbox.create(template="<template-id>", timeout=300)
+    try:
+        print(await sb.run("toolchain_versions"))
+        print(await sb.run("toolchain_smoke"))
+    finally:
+        await sb.kill()
+        await sb.close()
+
+asyncio.run(main())
+```
+
+## Command reference
+
+| Command | Parameters | Result |
+| --- | --- | --- |
+| toolchain_versions | none | version/disk/non_root object |
+| toolchain_smoke | none | go/rust/java/cleanup_verified object |
+
+Both commands take no parameters. `toolchain_versions() -> dict` returns actual version lines, used/free rootfs bytes and non-root state; absent local compilers return null. `toolchain_smoke() -> dict` requires all compilers, invokes `go build`, `rustc`, `javac` and the resulting programs, and requires `{go: GO_OK, rust: RUST_OK, java: JAVA_OK, cleanup_verified: true}`. Each trusted subprocess has a 90-second deadline and owned process-group cleanup. No caller-provided program or shell string is accepted by these inspection commands.
+
+## Secondary development
+
+Change the official archive/version/hash together and retain upstream licenses. Use [platform steps](../docs/platform-steps.md) with `python scripts/prepare_steps.py polyglot-toolchain --output /tmp/toolchain-steps`. That prepares files only. Real Express acceptance: `python scripts/run_steps_e2e.py polyglot-toolchain --timeout 1800`; Dockerfile acceptance remains `python scripts/express_e2e.py polyglot-toolchain`. Run L0 with `python scripts/run_local_e2e.py`; a host lacking the exact tools reports a skip. Images must compile all three, and local absence cannot certify them.
+
+## Contributing
+
+Follow [CONTRIBUTING.md](../CONTRIBUTING.md), the [spec](../docs/template-spec.md) and [design](../docs/design/polyglot-toolchain.md). Keep both README languages and immutable receipts current.
+
+## Issues
+
+CLI: [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues).
+
+Report template defects at [awesome-templates Issues](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues). Delivery is tracked in [Issue 62](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/62). SDK defects belong to [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues).
+
+## Verified
+
+No provider has a passing run recorded for this template.
+
+## License
+
+Template: Apache-2.0. Go: BSD-3-Clause plus bundled notices. Rust: MIT OR Apache-2.0 and third-party notices. Eclipse Temurin/OpenJDK: GPL-2.0 WITH Classpath-exception-2.0 and upstream legal notices. Original LICENSE/COPYRIGHT/legal files remain in the installed distributions; see [Go](https://go.dev/LICENSE), [Rust](https://github.com/rust-lang/rust/tree/1.90.0), and [Temurin](https://github.com/adoptium/temurin21-binaries/releases).
+
+## Quick start (HTTP POST)
+
+Response: `{"result":{"go":"GO_OK","rust":"RUST_OK","java":"JAVA_OK","cleanup_verified":true}}`.
+
+```bash
+curl -fsS -X POST -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <server-token>' \
+  -d '{}' '<sandbox-port-9000-url>/commands/toolchain_smoke'
+```
+
+The server token is set in the named-command server process. See [runtime environment](../docs/runtime-environment.md).
+
+## Configuration
+
+No model key. `ABX_SERVER_TOKEN` is an optional empty manifest placeholder; inject the value into the server process. `JAVA_HOME=/opt/toolchains/java`, `GOTOOLCHAIN=local`; image PATH selects only the pinned toolchains. The smoke owns its Go build cache and removes it.
+
+## Resources
+
+2 vCPU, 2048 MB, port 9000. Installer rejects actual used rootfs above 8 GiB. Non-root runtime; no KVM, Docker or additional capabilities. Each tool subprocess deadline is 90 seconds. Temporary source/binary/cache artifacts are deleted before a successful response.
+
+CLI defects: [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues).
