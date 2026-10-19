@@ -1,0 +1,9 @@
+{
+  "scope": "owned temporary cache for public upstream build assets only",
+  "created": true,
+  "anonymous_read": false,
+  "cleanup_verified": true,
+  "failure_type": "AccessDenied",
+  "failure_code": "AccessDenied",
+  "http_status": 403
+}
