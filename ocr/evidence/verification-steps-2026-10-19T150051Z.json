@@ -1,0 +1,29 @@
+{
+  "template": "ocr",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-19T150051Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "ocr",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "inputs_sha256": {
+      "Dockerfile": "99ab9329cdb8c8f7b54fb7bbd21e124afcac8e08e1759118278fd62bacb66ca9",
+      "template.yaml": "900412230f1ca23432cb5ddd1b2e8e968ba936d72bc2f9cee626238c331a2477",
+      "requirements.txt": "09fc6a57b723ca08602ec6f30d04c0be1ebb77b056eee344f0a532389417da42",
+      "commands.py": "5dacdea6d2949f8ba94e8604c0a47c0128764ee8669020da9b2fffc1fb130366",
+      "fixtures/sample.json": "8a05cdda3836e40232e975db5516c6d5098bccdf8006425c43bbf14bdddb1e74",
+      "fixtures/sample.png": "6b05fba52096147100a7b362fedaa20d454832a8768d687ef13911d96ccb989f"
+    },
+    "generated_manifest_sha256": "4de3634e8561e985f93bf8f5b5ea132e9c0813d72c8fbe9c6b3d34e219976e3b"
+  },
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "duration_s": 37.729
+}

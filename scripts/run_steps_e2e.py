@@ -32,7 +32,8 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
     result = {"template": name, "provider": "alicloud-express", "build_mode": "steps",
               "attempt": stamp, "result": "FAIL", "passed": False, "model_acceptance": "NOT_RUN"}
     try:
-        manifest, proof = prepare(source, region=args.region, tag=args.base_tag, server_commit=args.server_commit)
+        manifest, proof = prepare(source, region=args.region, tag=args.base_tag,
+                                  server_commit=args.server_commit, base_path=args.base_path)
         (stage / "template.yaml").write_text(yaml.safe_dump(manifest, sort_keys=False, allow_unicode=True))
         (stage / "steps-provenance.json").write_text(json.dumps(proof, indent=2) + "\n")
         result["build_provenance"] = proof
@@ -82,6 +83,7 @@ def main() -> int:
     parser.add_argument("--all", action="store_true")
     parser.add_argument("--region", default="cn-hangzhou")
     parser.add_argument("--base-tag", default="v0.0.49")
+    parser.add_argument("--base-path", help="Verified base PATH when selecting a different image tag")
     parser.add_argument("--server-commit", help="Optional immutable source override, recorded separately")
     parser.add_argument("--timeout", type=int, default=900)
     args = parser.parse_args()

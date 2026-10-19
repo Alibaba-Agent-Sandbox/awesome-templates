@@ -1,0 +1,28 @@
+{
+  "template": "openclaw",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-19T150156Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "openclaw",
+    "template_version": "2.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "copy_source_commit": "76b86edc20b2e0689e11040665663d134f42a313",
+    "steps_json_bytes": 2484,
+    "inputs_sha256": {
+      "Dockerfile": "c58bd1f0a3bd616b361776df17d4c7e788355f56b603cce18142cb49afc11a4d",
+      "template.yaml": "d27fba6b7e1aa9a4d081f8b97f0301eda6c083dc396bea6bfbd6a4fce5503c9d",
+      "commands.py": "7dd8aed4b1c1f82b195f110e93a8c361ab2a87e60540f25b1028caa4f913096a"
+    },
+    "generated_manifest_sha256": "e2f1125809768936143e78e8764db2595cb06bdb46f7febdea70e1802df550d2"
+  },
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "duration_s": 486.52
+}

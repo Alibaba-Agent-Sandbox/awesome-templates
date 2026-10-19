@@ -60,6 +60,12 @@ Do not commit `__pycache__/`, `.env`, or secret values. Declare secret
 
 ## Review and completion
 
+The source directory remains authoritative across providers. Follow
+[provider-owned preparation](docs/provider-preparation.md): each provider owns
+base/image/registration adaptation; cross-cloud IDs are never converted.
+Missing terminal/code or other required capabilities stay unsupported.
+Catalog prerequisites and launch hints do not establish native backend acceptance.
+
 Run `python scripts/check_docs.py` for local document links. Add a regression for
 behavior-changing fixes; run affected tests and applicable CI gates. Keep both
 README languages, command schemas and design current. Every contribution includes

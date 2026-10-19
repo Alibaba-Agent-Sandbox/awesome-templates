@@ -63,6 +63,10 @@ not use the directories in this repo. OpenSandbox create takes an image
 URI and replaces the container entrypoint, so these Dockerfiles do not
 start there until the image is pushed and the server is started by hand.
 
+Catalog provider values are preparation prerequisites, not verification. See
+[provider-owned source preparation](docs/provider-preparation.md) ([中文](docs/provider-preparation.zh-CN.md));
+missing capabilities remain unsupported and provider IDs never convert across clouds.
+
 The maintained registry website and ingestion code live in the separate
 [registry repository](https://github.com/Alibaba-Agent-Sandbox/registry).
 The public site is [registry.agent-sandbox.cn](https://registry.agent-sandbox.cn).
@@ -83,7 +87,7 @@ Install from this index (builds and registers the template):
 
 ```bash
 abx template install python-hello
-abx template install alibaba-agent-sandbox/awesome-templates//codex@v1.0.0
+abx template install alibaba-agent-sandbox/awesome-templates//codex@052051411a5f78743083d68467ba952a4e71e08b
 ```
 
 Publish the template in the current directory:

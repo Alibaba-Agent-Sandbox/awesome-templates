@@ -39,6 +39,9 @@ checkout 精确提交的归档，并在写入前逐文件验证，临时网络�
 通配符/secret 命名的 COPY、过大文件、浮动提交和重复输出目录均拒绝。它是当前目录
 profile 的适配器，不是通用 Dockerfile 解释器。Express 的 steps 序列化上限为 16 KiB；
 RUN/源码压缩，超过保守的 15,000 字节预算在云调用前拒绝，记录实际大小及源码提交。
+原生 ENV 未一致传给后续 RUN，因此转换器对 RUN 显式导出构建环境与工作目录，
+并按真实独有 base 探针的 v0.0.49 PATH 展开运行 PATH。其他 tag 需传入独立验证的
+--base-path，不使用控制器本机 PATH。
 部署前检查生成 manifest 和
 steps-provenance.json；仅含公共源码，不包含凭据或模型运行设置。
 
