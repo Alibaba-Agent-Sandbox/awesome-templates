@@ -32,6 +32,30 @@ def case():
 
 
 class CleanupTest(unittest.TestCase):
+    def test_standard_root_does_not_capture_native_named_command(self):
+        events = []
+        class Standard:
+            @staticmethod
+            def connect(*args, **kwargs):
+                raise AssertionError("synchronous standard root captured native call")
+        class Connected:
+            async def run(self, command, **kwargs):
+                events.append((command, kwargs))
+                return {"native": True}
+            async def close(self):
+                events.append("closed")
+        class Native:
+            @staticmethod
+            async def connect(sandbox_id):
+                events.append(sandbox_id)
+                return Connected()
+        with patch.dict(sys.modules, {
+            "agent_sandbox": SimpleNamespace(Sandbox=Standard),
+            "agent_sandbox.api.sandbox": SimpleNamespace(Sandbox=Native),
+        }):
+            self.assertEqual(harness.default_sdk("owned", "hello", {"name": "Ada"}), {"native": True})
+        self.assertEqual(events, ["owned", ("hello", {"name": "Ada"}), "closed"])
+
     def test_exact_alias_without_valid_id_is_not_absent(self):
         for identifier in (None, "", " ", "N/A", 3):
             with self.subTest(identifier=identifier):
@@ -48,7 +72,7 @@ class CleanupTest(unittest.TestCase):
                 class SDK:
                     @staticmethod
                     async def list(**kwargs): return [row]
-                with patch.dict(sys.modules, {"agent_sandbox":SimpleNamespace(Sandbox=SDK)}):
+                with patch.dict(sys.modules, {"agent_sandbox.api.sandbox":SimpleNamespace(Sandbox=SDK)}):
                     with self.assertRaises((AttributeError, RuntimeError)):
                         harness._list_owned_sandboxes({"owned-template"}, {"owned-sandbox"})
 
@@ -114,7 +138,7 @@ class CleanupTest(unittest.TestCase):
             self.assertEqual(kwargs["provider"], "alicloud-express")
             killed.append(sandbox_id)
         fake_sdk = SimpleNamespace(Sandbox=SimpleNamespace(list=listing, kill_by_id=kill))
-        with patch.dict(sys.modules, {"agent_sandbox": fake_sdk}):
+        with patch.dict(sys.modules, {"agent_sandbox.api.sandbox": fake_sdk}):
             self.assertEqual(harness._recover_sandboxes({"owned-template"}, set()), {"owned-sandbox"})
         self.assertEqual(killed, ["owned-sandbox"])
         self.assertIn(100, calls)

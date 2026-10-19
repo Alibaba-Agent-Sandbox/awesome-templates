@@ -2,7 +2,7 @@
 """Local smoke for _skeleton against E2E_BASE_URL.
 
 Express runs go through scripts/express_e2e.py, which uses the CLI and
-``from agent_sandbox import Sandbox``. This file is the no-cloud check.
+``from agent_sandbox.api.sandbox import Sandbox``. This file is the no-cloud check.
 """
 from __future__ import annotations
 

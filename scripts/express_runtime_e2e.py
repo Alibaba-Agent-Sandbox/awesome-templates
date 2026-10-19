@@ -19,7 +19,7 @@ import sys
 from datetime import datetime, timezone
 
 import httpx
-from agent_sandbox import Sandbox
+from agent_sandbox.api.sandbox import Sandbox
 
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
