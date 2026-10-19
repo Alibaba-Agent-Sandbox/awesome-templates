@@ -1,0 +1,74 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-19",
+  "template": "media-tools",
+  "template_version": "1.0.0",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "steps",
+  "harness_sha256": "1832710941a4824714aab40236b0111804a02c81d77a98590530131914d009b6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "media_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 7.207,
+      "result": "FFmpeg 7.1.5-0+deb13u1"
+    },
+    {
+      "name": "media_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 7.92,
+      "result": "FFmpeg 7.1.5-0+deb13u1"
+    },
+    {
+      "name": "media_smoke",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.602,
+      "result": "FFmpeg CPU audio transcode OK"
+    },
+    {
+      "name": "media_smoke",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 1.809,
+      "result": "FFmpeg CPU audio transcode OK"
+    },
+    {
+      "name": "media_video_smoke",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.702,
+      "result": "FFmpeg CPU H.264 video transcode OK"
+    },
+    {
+      "name": "media_video_smoke",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 1.887,
+      "result": "FFmpeg CPU H.264 video transcode OK"
+    }
+  ],
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "media-tools",
+    "materializer_sha256": "743cf113087cb19d98ac8e8aae0656138853af84ed8a844b6af4a433382a0581",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "steps_json_bytes": 12982,
+    "inputs_sha256": {
+      "Dockerfile": "ee58ba235efe6bde19d49b54858abca2fb69f5b874886fed6c68003c550a304e",
+      "template.yaml": "265c10a6ae5ac3bcafdde259f7bcda96a0bd80f78168426903173fcbc414f41d",
+      "commands.py": "3c8bc2f19cf2b966fa02856b55d426864ba95ee3e257f7a3cd994d28490910b3"
+    },
+    "generated_manifest_sha256": "af8035cd9feda80ae059c221cd9d41be7de34398cec52590c27d7d48dc8b3902"
+  }
+}

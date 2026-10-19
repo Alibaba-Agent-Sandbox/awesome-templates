@@ -31,3 +31,25 @@ and123 current-document links PASS. The same-day timestamp receipt validator
 now requires exact current version and cleanup_verified; old date-only files
 remain immutable. Updated fixtures target the current Verified section rather
 than relying on historical prose. New contract version cloud reruns pending.
+
+## Genuine new-version results
+
+PASS: Python1.1.1 complete external HTTP21 assertions, Node1.1.1 complete60
+assertions plus independent SDK-forwarded3000 response, both with real steps
+READY/CLI/SDK and independently confirmed owned cleanup. PASS: agents-cli,
+Claude, DeepSeek, Droid, Gemini, OpenClaw, OpenCode, Qoder and Qwen new patch
+profiles genuine steps READY/CLI/SDK/basic smoke and independent cleanup.
+Their current-version strict models remain NOT_RUN. Each timestamped receipt
+retains exact source/provenance; provider qualification now cites only its
+matching new-version receipt. Historical failures and old-version passes are
+unchanged. Full remote image matrix on f59af03 also passed31 checks; later
+metadata/evidence commits still require their own current-head CI.
+
+Additional unchanged media1.0.0 genuine step build and complete external HTTP
+21 assertions PASS/0 FAIL/0 SKIP, independently confirmed owned cleanup.
+This is recorded separately from the basic receipt and does not change runtime.
+Post-qualification strict24+skeleton and123 document checks PASS; current-head
+CI is required after this evidence commit. The source/Dockerfile-unchanged
+statements above describe the initial materializer-only checkpoint, before the
+subsequent source repair documented here. Overall batch remains PARTIAL until
+changed heavy profiles and strict model gates pass.

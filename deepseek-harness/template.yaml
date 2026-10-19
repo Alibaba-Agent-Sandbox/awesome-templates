@@ -15,7 +15,7 @@ ports: [9000]
 tags: [deepseek-harness, ai-coding, ai-agent]
 priority: P1
 wave: 1
-tested_on: []
+tested_on: [alicloud-express]
 capabilities: [shell, files, code, ports]
 env:
   WORKSPACE: "/home/user/app"

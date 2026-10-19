@@ -104,7 +104,11 @@ Factory 凭据在 [Factory API 密钥设置](https://app.factory.ai/settings/api
 
 ## 已验证
 
-版本1.1.1显式修复非root运行用户的工作区目录归属，当前版本的提供方验收尚待重跑。此前回执仅证明原始版本/哈希的已记录范围，保留在下面历史部分。
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.1.1; steps构建、官方READY、CLI/SDK基础冒烟、独立清理；当前版本真实模型尚未执行 | [2026-10-19](evidence/express-2026-10-19T183451Z.json) |
+
+新版本的目录归属已在真实生成步骤中验证。旧版本回执保持历史范围；基础冒烟不能推断完整模型验收。
 
 ## 历史验收
 

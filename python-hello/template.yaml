@@ -16,7 +16,7 @@ tags: [python, hello-world, example, pytest]
 priority: P2
 wave: other
 # The retained 2026-10-15 evidence covers hello on 1.0.0, not this revision.
-tested_on: []
+tested_on: [alicloud-express]
 capabilities: [shell, files, code, ports]
 env:
   LANG: C.UTF-8
