@@ -137,3 +137,23 @@ entry in `awesome-templates.yaml`. The bar for adding one is
 ## License
 
 Apache-2.0. See [LICENSE](./LICENSE).
+
+## Automatic preparation on another provider
+
+Use a CLI build that includes `template launch` and configure the selected provider once. The adapter builds or registers the source and passes its returned ID, name or image directly to sandbox creation:
+
+```sh
+abx --provider e2b template launch alibaba-agent-sandbox/awesome-templates//python-hello --yes
+```
+
+Third-party providers remain Beta. `provider-prepared` is a workflow hint, not a native verification receipt. Required runtime capabilities are checked before building; a missing PTY/code feature is not repaired by converting a reference. Native base images, registry access and cluster requirements belong to each provider. See the [provider preparation guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/guide/template-launch.md). Existing provider/template evidence remains authoritative; no Verified-on claim changes here.
+
+## 在其他提供方上自动准备
+
+使用包含 `template launch` 的 CLI，并完成一次提供方配置。适配器构建或登记本目录，把返回的 ID、名称或镜像直接传给沙箱创建，无需手动查找 ID：
+
+```sh
+abx --provider e2b template launch alibaba-agent-sandbox/awesome-templates//python-hello --yes
+```
+
+第三方提供方继续为 Beta。`provider-prepared` 是流程提示，不是原生验收记录。构建前会检查运行时能力，引用转换不会补齐 PTY 或代码执行能力。原生基础镜像、镜像仓库和集群条件由各提供方维护。见[自动准备指南](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/zh/guide/template-launch.md)。已有验收证据仍为准，本次不修改 Verified-on 声明。

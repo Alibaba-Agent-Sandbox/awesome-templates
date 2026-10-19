@@ -21,3 +21,10 @@ claimed. Existing real Express step receipts stay separate. Current-head CI,
 normal PR merge and then Issue118 closure remain pending.
 
 Tracking: https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/118.
+
+## Concurrent main integration
+
+Integrated main commit d1f1f11 (PR #120). Its provider launch hints and explicit
+unsupported-needs-pty/capability restrictions take precedence over generic
+preparation placeholders; launch hints still cannot promote tested_on or badges.
+Historical records from that contribution remain unchanged.
