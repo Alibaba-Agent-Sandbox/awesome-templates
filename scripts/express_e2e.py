@@ -692,15 +692,13 @@ def _sdk_version() -> str:
 
 
 def default_sdk(sandbox_id: str, command: str, args: dict[str, Any]) -> Any:
-    """Call one named command.
+    """Call a native named command, then close the borrowed local client.
 
-    ``Sandbox.connect_sync`` / ``create_sync`` on python-sdk 0.3.0 drop the
-    class argument (``TypeError: missing sandbox_id``). The async methods are
-    the ones that work.
+    The root standard Sandbox is synchronous and does not own named server calls.
     """
     import asyncio
 
-    from agent_sandbox import Sandbox
+    from agent_sandbox.api.sandbox import Sandbox
 
     async def _call() -> Any:
         sandbox = await Sandbox.connect(sandbox_id)
@@ -759,7 +757,7 @@ def official_templates(run: Runner, alias: str) -> list[str]:
 def _list_owned_sandboxes(template_ids: set[str], known: set[str]) -> set[str]:
     """Read every page; matching exact recorded IDs/templates is not a prefix scan."""
     import asyncio
-    from agent_sandbox import Sandbox
+    from agent_sandbox.api.sandbox import Sandbox
 
     async def listing() -> set[str]:
         found: set[str] = set()
@@ -781,7 +779,7 @@ def _list_owned_sandboxes(template_ids: set[str], known: set[str]) -> set[str]:
 
 def _recover_sandboxes(template_ids: set[str], known: set[str]) -> set[str]:
     import asyncio
-    from agent_sandbox import Sandbox
+    from agent_sandbox.api.sandbox import Sandbox
 
     found = _list_owned_sandboxes(template_ids, known)
     async def kill() -> None:

@@ -276,7 +276,7 @@ def selected_env(root: str, state_dir: str, model: str, token: str) -> dict[str,
 
 async def run(args, *, factory=None) -> dict:
     if factory is None:
-        from agent_sandbox import Sandbox
+        from agent_sandbox.api.sandbox import Sandbox
         factory = Sandbox
     require(args.template and args.model and 30 <= args.turn_timeout <= 600, 'invalid template/model/timeout')
     require(all(os.environ.get(name) for name in ('OPENAI_API_KEY', 'OPENAI_BASE_URL')), 'compatible model configuration missing')

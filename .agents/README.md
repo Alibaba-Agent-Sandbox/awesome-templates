@@ -59,3 +59,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Delivery integration review](evidence/verify/2026-10-18-template-delivery-review.md)
 
 - [Consumer entry compatibility](notes/proposed/process/2026-10-19-consumer-entries.md) · [verification](evidence/verify/2026-10-19-consumer-entries.md)
+
+- [Native acceptance entry](notes/proposed/process/2026-10-19-native-acceptance-entry.md) · [verification](evidence/verify/2026-10-19-native-acceptance-entry.md)
