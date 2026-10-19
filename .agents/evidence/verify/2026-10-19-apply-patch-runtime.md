@@ -23,3 +23,8 @@ See template-local express-2026-10-19.json and full-http-steps-2026-10-19T160512
 README/tested_on now record this exact steps scope; source runtime/version stay
 unchanged and status remains experimental. Current-head hosted L1/CI and ordinary
 merge remain pending.
+
+CI selector follow-up: preserve the frozen23-template canonical source approval
+boundary while permitting new independently verified catalog entries. The
+authorization regression rejects every unreviewed added name; no credentials
+or cloud workflow authorization are broadened.13 real authorization tests PASS.
