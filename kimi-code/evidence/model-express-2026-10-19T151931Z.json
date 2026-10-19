@@ -1,0 +1,33 @@
+{
+  "provider": "alicloud-express",
+  "template": "kimi-code",
+  "cleanup_verified": true,
+  "date": "2026-10-19",
+  "source_sha256": {
+    "commands.py": "3bf4902d64c7d23dab353dd119a02787721924dc3e3e2690a07d0d60de7d92f9",
+    "Dockerfile": "0436139ff0e298a583cf1c4bdcd8bb64384b29a482599ea3aef3e69d6791a8ba",
+    "template.yaml": "527c8ce1be6a2aca47d2309e4bf134462f37077df9bc09055adcf26af4d5a613",
+    "e2e_test.py": "16d0420416e33835c122c00cf4dd4e70f5884f49b5701a57afc6a584a680a070"
+  },
+  "passed": false,
+  "result": "FAIL",
+  "reason": "step build did not reach READY; no model call was made",
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "kimi-code",
+    "materializer_sha256": "2aafcc836d6f84ccec672b5f50a9f77553aa38ec6d19e038b19a2e4cd233f07b",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "copy_source_commit": null,
+    "steps_json_bytes": 7806,
+    "inputs_sha256": {
+      "Dockerfile": "0436139ff0e298a583cf1c4bdcd8bb64384b29a482599ea3aef3e69d6791a8ba",
+      "template.yaml": "527c8ce1be6a2aca47d2309e4bf134462f37077df9bc09055adcf26af4d5a613",
+      "commands.py": "3bf4902d64c7d23dab353dd119a02787721924dc3e3e2690a07d0d60de7d92f9"
+    },
+    "generated_manifest_sha256": "6463a617ee74222a6f3bf1b32052a9ac03b8f77d2e9c19b20b5a907236326adc"
+  }
+}
