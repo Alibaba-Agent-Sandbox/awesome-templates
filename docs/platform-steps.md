@@ -133,3 +133,6 @@ export NODE_PATH="$ABX_NATIVE_DIR/modules/node_modules"
 ```
 
 Then configure the existing Express account in the process environment and run the pinned-server commands above. ABX/NODE_PATH select this isolated tool directory. Use the native acceptance syntax consistently. Remove only your own tool directory after owned cloud resources and private journals are reconciled.
+
+For heavy assets, the separately recorded [CI image acceptance path](ci-image-acceptance.md)
+uses real Dockerfile CI export and native image registration, with its own provenance.

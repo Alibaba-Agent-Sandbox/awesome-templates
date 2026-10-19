@@ -104,3 +104,6 @@ export NODE_PATH="$ABX_NATIVE_DIR/modules/node_modules"
 ```
 
 随后按上文配置进程环境中的极速版账号，并使用固定服务端提交的构建命令。脚本通过 ABX/NODE_PATH 使用该独立工具目录。不要把标准入口的参数与原生验收入口混用。清理本次沙箱、模板和日志后，再删除自己创建的工具目录。
+
+大型资产也可使用独立记录的 [CI 镜像验收路径](ci-image-acceptance.zh-CN.md)，
+通过真实 Dockerfile CI 导出及原生镜像注册运行，保留独立来源信息。
