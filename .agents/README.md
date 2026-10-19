@@ -74,3 +74,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Managed runtime catalog](notes/proposed/feature/2026-10-19-managed-template-catalog.md) · [verification](evidence/verify/2026-10-19-managed-template-catalog.md)
 
 - [Express steps checkpoint](evidence/verify/2026-10-19-steps-checkpoint-1555.md)
+
+- [Heavy template image acceptance](notes/proposed/process/2026-10-19-heavy-template-image-acceptance.md) · [verification](evidence/verify/2026-10-19-heavy-template-image-acceptance.md)
