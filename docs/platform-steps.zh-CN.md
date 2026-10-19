@@ -29,12 +29,17 @@ python scripts/prepare_steps.py python-hello --output /tmp/python-hello-steps-re
 
 输出目录必须全新。可选 server 提交与现有镜像 CI 注入的源码一致并单独记录；省略时
 使用 Dockerfile 固定 fallback。转换器保留 RUN/ENV/WORKDIR/USER 顺序、heredoc 和
-续行，将明确 COPY 的公共源码连同哈希和权限嵌入步骤；可选本地 wheel 分支替换为
+续行，仅传输明确 COPY 的公共源码及哈希和权限。优先压缩内嵌；较大配方下载已发布
+checkout 精确提交的归档，并在写入前逐文件验证，临时网络错误有界重试。构建阶段显式
+选择 root 安装 Docker profile 的依赖，最后恢复 USER user。云端构建前先发布不可变提交。
+可选本地 wheel 分支替换为
 固定源码安装。保留 USER user，EXPOSE 由 manifest ports 表达。
 
 仅接受单 stage 阿里云 FC profile；未知指令、未审查的 wheel 分支、目录外/符号链接/
 通配符/secret 命名的 COPY、过大文件、浮动提交和重复输出目录均拒绝。它是当前目录
-profile 的适配器，不是通用 Dockerfile 解释器。部署前检查生成 manifest 和
+profile 的适配器，不是通用 Dockerfile 解释器。Express 的 steps 序列化上限为 16 KiB；
+RUN/源码压缩，超过保守的 15,000 字节预算在云调用前拒绝，记录实际大小及源码提交。
+部署前检查生成 manifest 和
 steps-provenance.json；仅含公共源码，不包含凭据或模型运行设置。
 
 ## 部署与调用

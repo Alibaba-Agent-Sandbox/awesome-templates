@@ -6,6 +6,7 @@ New engineering records use English and stay in this repository.
 
 - [Contributor standards and platform steps](notes/proposed/process/2026-10-19-standards-and-platform-steps.md)
   · [verification](evidence/verify/2026-10-19-standards-and-platform-steps.md)
+  · [actual platform limits and reruns](evidence/verify/2026-10-19-step-platform-limits.md)
 
 ## Layout and lifecycle
 

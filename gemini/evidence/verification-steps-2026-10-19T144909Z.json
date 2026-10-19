@@ -1,0 +1,28 @@
+{
+  "template": "gemini",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-19T144909Z",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "gemini",
+    "template_version": "2.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "inputs_sha256": {
+      "Dockerfile": "8202a5dd9213c43bdcc159ce0b73baafc668df2cbe3d3c0100db347b907120a9",
+      "template.yaml": "f4b53f8cf695672f7c8c9c8eb0353a1a1364d9304550b5a3adb6735ec2f2dce9",
+      "commands.py": "f18cdf7d9e5409c6fbcb5e5a50fe0de168388d6542f906013940a407c4d9c228"
+    },
+    "generated_manifest_sha256": "61e7266bb9ba0a4ed8c393fdf2385f458eeabd79489cba126da53fa1bd461f6c"
+  },
+  "exit_code": 0,
+  "cleanup_verified": true,
+  "receipt": "gemini/evidence/express-2026-10-19.json",
+  "command_calls": 2,
+  "duration_s": 180.463
+}

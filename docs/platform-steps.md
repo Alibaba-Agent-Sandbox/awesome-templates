@@ -39,13 +39,21 @@ Use a new output directory. The optional server commit matches the existing
 image CI's injected server source and is recorded as an override; omitting it
 uses the Dockerfile's own immutable fallback. The materializer preserves ordered
 RUN, ENV, WORKDIR and USER instructions, interprets heredocs/continuations, and
-embeds only explicit public COPY inputs with hashes and file modes. It replaces
+transfers only explicit public COPY inputs with hashes and file modes. Inputs
+are compressed inline when they fit. Larger profiles fetch the exact public
+checkout archive and verify every copied file before publication; publish that
+immutable commit before a cloud build. Transient archive failures retry within
+a bounded budget. Build steps explicitly select root for the Docker dependency
+installation profile, then return to USER user for runtime. It replaces
 the optional local-wheel branch with its pinned public-source install. USER user
 remains required. EXPOSE is represented by the unchanged manifest ports.
 
 The accepted profile is a single Alibaba FC base stage. Unknown instructions,
 unreviewed wheel fallback shapes, external/symlink/glob/secret-named COPY inputs,
-oversized files, floating server commits and output-directory reuse are rejected.
+oversized files, floating commits and output-directory reuse are rejected.
+Express limits the serialized steps to 16 KiB. RUN/source payloads are compressed,
+and preparation rejects steps above a conservative 15,000-byte budget before
+making any cloud request. Provenance records the wire size and COPY source commit.
 This is a catalog-profile adapter, not a general Dockerfile implementation.
 Inspect `steps-provenance.json` and the generated manifest before deployment.
 Generated source is public code, never credentials or runtime model settings.

@@ -1,5 +1,7 @@
 """Verify source transfer and platform-step acceptance boundaries without cloud."""
 import json
+import io
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -8,6 +10,7 @@ from unittest.mock import patch
 import pytest
 
 import express_e2e as harness
+import prepare_steps
 from prepare_steps import BASE, ROOT, instructions, prepare
 
 
@@ -60,7 +63,46 @@ def test_all_catalog_profiles_generate_with_explicit_pins():
         assert data["build"]["steps"][-1] == {"type": "USER", "args": ["user"]}
         assert "<" not in data["base"]
         assert proof["inputs_sha256"]["Dockerfile"]
-        assert "35da216a300f1e2e84254a1cf4b4a7ea98681505" not in json.dumps(data["build"])
+        assert proof["server_commit_override"] == "e2cb27e24fde0a67112f82b8d44af463445a5d1a"
+        assert proof["steps_json_bytes"] <= 15000
+
+
+def test_immutable_source_fetch_checks_bytes_before_publication(tmp_path: Path):
+    import shlex
+    import tarfile
+    from types import SimpleNamespace
+    import urllib.request
+    source = fixture(tmp_path)
+    data = (source / "commands.py").read_bytes()
+    target = tmp_path / "restored.py"
+    with patch.object(prepare_steps.subprocess, "run", return_value=SimpleNamespace(returncode=0, stdout=data)):
+        command, _ = prepare_steps._copy(source, "commands.py " + str(target), "/", "a" * 40)
+    code = shlex.split(command)[2]
+    code = code.replace("/tmp/abx-step-source-", str(tmp_path / "source-cache-"))
+    def archive(content):
+        output = io.BytesIO()
+        with tarfile.open(fileobj=output, mode="w:gz") as tar:
+            entry = tarfile.TarInfo("awesome-templates-" + "a" * 40 + "/source/commands.py")
+            entry.size = len(content)
+            tar.addfile(entry, io.BytesIO(content))
+        return output.getvalue()
+    with patch.object(urllib.request, "urlopen", return_value=io.BytesIO(archive(data))):
+        exec(code, {})
+    assert target.read_bytes() == data
+    target.unlink()
+    for cache in tmp_path.glob("source-cache-*"):
+        cache.unlink()
+    with patch.object(urllib.request, "urlopen", return_value=io.BytesIO(archive(b"changed upstream bytes"))):
+        with pytest.raises(RuntimeError, match="integrity mismatch"):
+            exec(code, {})
+    assert not target.exists()
+
+
+def test_oversized_random_copy_cannot_reach_cloud(tmp_path: Path):
+    source = fixture(tmp_path)
+    (source / "commands.py").write_bytes(os.urandom(50000))
+    with pytest.raises(ValueError, match="16 KiB"):
+        prepare(source)
 
 
 @pytest.mark.parametrize("status", ["ready", {"state": "ready"}, '{"state":"ready"}', "{'state': 'ready'}"])

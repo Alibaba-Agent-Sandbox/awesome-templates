@@ -1,0 +1,29 @@
+{
+  "template": "deepseek-harness",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-19T144359Z",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "deepseek-harness",
+    "template_version": "1.1.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "steps_json_bytes": 9535,
+    "inputs_sha256": {
+      "Dockerfile": "705686a79c5539fbbfc3ce629889d23c79ab6cedbd60d41d1304a61519b9b5f1",
+      "template.yaml": "b4a1e620cc9e13632947399768de4160009ae797f8ae9aa85ae3c3b553e7959d",
+      "commands.py": "006329b669b81b8d1b0c557b5b24cc6820eee38fb04c35e003ebff0e8640356f"
+    },
+    "generated_manifest_sha256": "5e4633e63207796dcf7705d69b4299c86d025af89b705b4f8865f044bf4cea72"
+  },
+  "exit_code": 0,
+  "cleanup_verified": true,
+  "receipt": "deepseek-harness/evidence/express-2026-10-19.json",
+  "command_calls": 2,
+  "duration_s": 193.622
+}

@@ -53,6 +53,7 @@ from __future__ import annotations
 import argparse
 import ast
 import fcntl
+import hashlib
 import json
 import os
 import re
@@ -150,6 +151,7 @@ class Proc:
 
 Runner = Callable[[list[str], float], Proc]
 Sdk = Callable[[str, str, dict[str, Any]], Any]
+HARNESS_SHA256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 
 # (pgid, alias) for deploys this process started and has not reaped yet.
 _ACTIVE_DEPLOYS: list[tuple[int, str]] = []
@@ -552,6 +554,7 @@ def plan_document(options: Options) -> dict[str, Any]:
         "version": options.template_version,
         "alias": options.alias,
         "build_mode": options.build_mode,
+        "harness_sha256": HARNESS_SHA256,
         "acr_repo": options.alias if options.build_mode == "dockerfile" else None,
         "acr_tag": OWNED_ACR_TAG if options.build_mode == "dockerfile" else None,
         "generation": options.generation,
@@ -821,13 +824,16 @@ def template_state(payload: dict[str, Any]) -> str:
     return state.lower()
 
 
-def wait_for_steps_ready(template_id: str, options: Options, run: Runner) -> bool:
+def wait_for_steps_ready(template_id: str, options: Options, run: Runner,
+                         diagnostic_path: Path | None = None) -> bool:
     """submitted is not acceptance: independently poll official GetTemplate."""
     deadline = time.monotonic() + options.deploy_timeout
     while time.monotonic() < deadline:
         proc = run(["--json", "template", "info", template_id, "--official-api"],
                    min(120, max(1, deadline - time.monotonic())))
         payload = _last_json(proc)
+        if diagnostic_path is not None:
+            save_intent(diagnostic_path, {"exit_code": proc.returncode, "payload": payload})
         if proc.returncode or not payload:
             return False
         state = template_state(payload)
@@ -957,7 +963,7 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
             return 1
         status = template_state(payload or {})
         if options.build_mode == "steps" and status == "submitted":
-            if not wait_for_steps_ready(template_id, options, run):
+            if not wait_for_steps_ready(template_id, options, run, intent_dir / "readiness.json"):
                 print("step build did not independently reach READY", flush=True)
                 return 1
             status = "ready"
@@ -1090,6 +1096,7 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
         save_intent(intent_path, intent)
         if status == 0 and cleanup_ok:
             _write_evidence(options, results)
+            (intent_dir / "readiness.json").unlink(missing_ok=True)
             intent_path.unlink()
             intent_dir.rmdir()
         else:
@@ -1116,6 +1123,7 @@ def _write_evidence(options: Options, results: list[dict[str, Any]]) -> None:
         "sdk_version": _sdk_version(),
         "cli": "abx",
         "build_mode": options.build_mode,
+        "harness_sha256": HARNESS_SHA256,
         "passed": True,
         "cleanup_verified": True,
         "commands": results,

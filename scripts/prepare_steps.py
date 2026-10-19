@@ -13,10 +13,13 @@ import json
 from pathlib import Path
 import re
 import shlex
+import subprocess
+import zlib
 
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
+MATERIALIZER_SHA256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 BASE = "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
 
 
@@ -44,7 +47,7 @@ def instructions(text: str) -> list[tuple[str, str]]:
     return result
 
 
-def _copy(source: Path, value: str, workdir: str) -> tuple[str, dict[str, str]]:
+def _copy(source: Path, value: str, workdir: str, source_commit: str | None = None) -> tuple[str, dict[str, str]]:
     words = shlex.split(value)
     owner = None
     if words and words[0].startswith("--chown="):
@@ -57,6 +60,7 @@ def _copy(source: Path, value: str, workdir: str) -> tuple[str, dict[str, str]]:
     sources = words[:-1]
     directory = len(sources) > 1 or words[-1].endswith("/") or words[-1] in {".", "./"}
     files = []
+    fetched = []
     hashes = {}
     for item in sources:
         if any(char in item for char in "*?["):
@@ -77,10 +81,44 @@ def _copy(source: Path, value: str, workdir: str) -> tuple[str, dict[str, str]]:
                 raise ValueError("COPY input exceeds the 2 MiB per-file step limit")
             target = (destination / entry.relative_to(path) if path.is_dir() else
                       destination / entry.name if directory else destination)
-            files.append([str(target), base64.b64encode(data).decode(), entry.stat().st_mode & 0o777])
-            hashes[str(entry.relative_to(source))] = hashlib.sha256(data).hexdigest()
-    code = ("import base64,json,os,pwd,grp\nfrom pathlib import Path\n"
-            "for name,data,mode in json.loads(" + repr(json.dumps(files)) + "):\n"
+            digest = hashlib.sha256(data).hexdigest()
+            mode = entry.stat().st_mode & 0o777
+            relative = str(entry.relative_to(source))
+            can_fetch = False
+            if source_commit:
+                remote_path = source.name + "/" + relative
+                previous = subprocess.run(["git", "show", source_commit + ":" + remote_path],
+                                          cwd=source, capture_output=True)
+                can_fetch = previous.returncode == 0 and previous.stdout == data
+            if can_fetch:
+                fetched.append([str(target), remote_path, digest, mode])
+            else:
+                files.append([str(target), base64.b64encode(data).decode(), mode])
+            hashes[relative] = digest
+    packed = base64.b64encode(zlib.compress(json.dumps(files).encode(), 9)).decode()
+    fetch = ""
+    if fetched:
+        fetch = ("cache=Path('/tmp/abx-step-source-" + str(source_commit) + ".tar.gz')\n"
+            "if not cache.exists():\n"
+            " for attempt in range(4):\n"
+            "  try:\n"
+            "   request=urllib.request.Request('https://codeload.github.com/Alibaba-Agent-Sandbox/awesome-templates/tar.gz/"
+            + str(source_commit) + "',headers={'User-Agent':'AgentSandbox-Template'})\n"
+            "   archive=urllib.request.urlopen(request,timeout=90).read(33554433)\n"
+            "   if len(archive)>33554432: raise RuntimeError('source archive exceeds 32 MiB')\n"
+            "   cache.write_bytes(archive);break\n"
+            "  except (urllib.error.URLError,TimeoutError):\n"
+            "   if attempt==3: raise RuntimeError('pinned source archive download failed') from None\n"
+            "   time.sleep(2**attempt)\n"
+            "archive=tarfile.open(cache,mode='r:gz')\n"
+            "for name,relative,digest,mode in " + repr(fetched) + ":\n"
+            " data=archive.extractfile('awesome-templates-" + str(source_commit) + "/'+relative).read(2097153)\n"
+            " if len(data)>2097152 or hashlib.sha256(data).hexdigest()!=digest: raise RuntimeError('immutable COPY integrity mismatch')\n"
+            " files.append([name,base64.b64encode(data).decode(),mode])\n"
+            "archive.close()\n")
+    code = ("import base64,json,os,pwd,grp,zlib,urllib.request,urllib.error,hashlib,tarfile,time\nfrom pathlib import Path\n"
+            "files=json.loads(zlib.decompress(base64.b64decode(" + repr(packed) + ")))\n" + fetch +
+            "for name,data,mode in files:\n"
             " p=Path(name); p.parent.mkdir(parents=True,exist_ok=True); p.write_bytes(base64.b64decode(data)); p.chmod(mode)\n")
     if owner:
         if not re.fullmatch(r"[a-z_][a-z0-9_-]*:[a-z_][a-z0-9_-]*", owner):
@@ -90,15 +128,33 @@ def _copy(source: Path, value: str, workdir: str) -> tuple[str, dict[str, str]]:
     return "python3 -c " + shlex.quote(code), hashes
 
 
+def compact_run(command: str) -> str:
+    if len(command.encode()) < 1024:
+        return command
+    packed = base64.b64encode(zlib.compress(command.encode(), 9)).decode()
+    code = ("import base64,zlib,os;os.execv('/bin/sh',['sh','-c',"
+            "zlib.decompress(base64.b64decode(" + repr(packed) + ")).decode()])")
+    compact = "python3 -c " + shlex.quote(code)
+    return compact if len(compact.encode()) < len(command.encode()) else command
+
+
 def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
-            server_commit: str | None = None) -> tuple[dict, dict]:
+            server_commit: str | None = None, source_commit: str | None = None,
+            _inline: bool = True) -> tuple[dict, dict]:
     if not re.fullmatch(r"[a-z]+-[a-z]+(?:-\d+)?", region) or not re.fullmatch(r"v\d+\.\d+\.\d+", tag):
         raise ValueError("use an explicit Alibaba region and versioned base tag")
     if server_commit is not None and not re.fullmatch(r"[0-9a-f]{40}", server_commit):
         raise ValueError("server source must be an immutable 40-character commit")
     source = source.resolve()
+    if source_commit is None and source.parent == ROOT:
+        head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=source, capture_output=True, text=True)
+        source_commit = head.stdout.strip() if head.returncode == 0 else None
+    if source_commit is not None and not re.fullmatch(r"[0-9a-f]{40}", source_commit):
+        raise ValueError("source commit must be an immutable 40-character commit")
     data = yaml.safe_load((source / "template.yaml").read_text())
-    steps = []
+    # Express executes steps as user by default; Docker's build profile installs
+    # dependencies as root and explicitly returns to USER user for the runtime.
+    steps = [{"type": "USER", "args": ["root"]}]
     copied = {}
     workdir = "/"
     seen_from = False
@@ -111,7 +167,7 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
         elif kind == "COPY":
             if value == "*.whl /tmp/":
                 continue  # Local source-wheel injection has no remote COPY context.
-            command, hashes = _copy(source, value, workdir)
+            command, hashes = _copy(source, value, workdir, None if _inline else source_commit)
             copied.update(hashes)
             steps.append({"type": "RUN", "args": [command]})
         elif kind == "RUN":
@@ -146,11 +202,25 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
             raise ValueError(f"unsupported Docker instruction: {kind}")
     if not seen_from or not steps or steps[-1] != {"type": "USER", "args": ["user"]}:
         raise ValueError("the catalog profile must end with USER user")
+    if not _inline and source_commit:
+        steps.insert(len(steps) - 1, {"type": "RUN", "args": ["rm -f /tmp/abx-step-source-" + source_commit + ".tar.gz"]})
+    for step in steps:
+        if step["type"] == "RUN":
+            step["args"] = [compact_run(step["args"][0])]
+    wire_bytes = len(json.dumps(steps, ensure_ascii=False).encode())
+    if wire_bytes > 15000:
+        if _inline and source_commit:
+            return prepare(source, region=region, tag=tag, server_commit=server_commit,
+                           source_commit=source_commit, _inline=False)
+        raise ValueError("compressed steps exceed the provider's 16 KiB limit; use an immutable source archive or Dockerfile mode")
     data["base"] = BASE.replace("<region>", region).replace("<tag>", tag)
     data["build"] = {"mode": "steps", "steps": steps}
     provenance = {"schema_version": 1, "template": source.name,
+                  "materializer_sha256": MATERIALIZER_SHA256,
                   "template_version": str(data["version"]), "build_mode": "steps",
                   "base_image": data["base"], "server_commit_override": server_commit,
+                  "copy_source_commit": None if _inline else source_commit,
+                  "steps_json_bytes": wire_bytes,
                   "inputs_sha256": {"Dockerfile": hashlib.sha256(dockerfile.encode()).hexdigest(),
                                     "template.yaml": hashlib.sha256((source / "template.yaml").read_bytes()).hexdigest(),
                                     **copied}}
@@ -168,8 +238,10 @@ def main() -> int:
     parser.add_argument("--region", default="cn-hangzhou")
     parser.add_argument("--base-tag", default="v0.0.49")
     parser.add_argument("--server-commit")
+    parser.add_argument("--source-commit", help="Immutable public source; unchanged COPY files are fetched and hash-checked")
     args = parser.parse_args()
-    data, provenance = prepare(args.template, region=args.region, tag=args.base_tag, server_commit=args.server_commit)
+    data, provenance = prepare(args.template, region=args.region, tag=args.base_tag,
+                               server_commit=args.server_commit, source_commit=args.source_commit)
     args.output.mkdir(parents=True, exist_ok=False)
     (args.output / "template.yaml").write_text(yaml.safe_dump(data, sort_keys=False, allow_unicode=True))
     (args.output / "steps-provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
