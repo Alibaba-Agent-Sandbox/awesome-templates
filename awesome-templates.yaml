@@ -39,11 +39,11 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: supported
-      alicloud-container: preexisting-template-id
-      cubesandbox: preexisting-template-id
-      e2b: preexisting-template-id
-      opensandbox: push-image-then-pass-uri
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
 
   - name: browser-automation
     description: "Browser automation sandbox with Playwright + Chromium for web scraping and UI testing"
@@ -54,11 +54,11 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: supported
-      alicloud-container: preexisting-template-id
-      cubesandbox: preexisting-template-id
-      e2b: preexisting-template-id
-      opensandbox: push-image-then-pass-uri
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
 
   - name: claude-code
     description: "Claude Code Agent runtime — Anthropic Claude-powered AI coding assistant"
@@ -69,11 +69,11 @@ templates:
     capabilities: [shell, files, code, terminal, ports]
     status: experimental
     providers:
-      alicloud-express: supported
-      alicloud-container: preexisting-template-id
-      cubesandbox: unsupported-needs-pty
-      e2b: preexisting-template-id
-      opensandbox: push-image-then-pass-uri
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
 
   - name: codex
     description: "OpenAI Codex CLI (@openai/codex@0.162.1). codex exec, JSON events, sandbox bypass, OpenAI-compatible config.toml."
@@ -84,11 +84,11 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: supported
-      alicloud-container: preexisting-template-id
-      cubesandbox: preexisting-template-id
-      e2b: preexisting-template-id
-      opensandbox: push-image-then-pass-uri
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
 
   - name: codex-agent-api
     description: "Codex 0.162.1 HTTP session adapter with bounded turns and SSE; project API subset, not full OpenAI API compatibility."
@@ -99,11 +99,11 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: supported
-      alicloud-container: preexisting-template-id
-      cubesandbox: preexisting-template-id
-      e2b: preexisting-template-id
-      opensandbox: push-image-then-pass-uri
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
 
   - name: qoder
     description: "Qoder coding CLI @qoder-ai/qodercli@1.1.72 with version, read-only setup and bounded headless execution."
@@ -114,11 +114,11 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: supported
-      alicloud-container: preexisting-template-id
-      cubesandbox: preexisting-template-id
-      e2b: preexisting-template-id
-      opensandbox: push-image-then-pass-uri
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
 
   - name: agents-cli
     description: "Restricted local Agents HTTP API with pinned Codex 0.162.1 and Qwen Code 0.23.0."
@@ -129,11 +129,11 @@ templates:
     capabilities: [ports]
     status: experimental
     providers:
-      alicloud-express: supported
-      alicloud-container: preexisting-template-id
-      cubesandbox: preexisting-template-id
-      e2b: preexisting-template-id
-      opensandbox: push-image-then-pass-uri
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
 
   - name: qwen-code
     description: "Qwen Code Agent runtime — Dashscope-powered AI autonomous deployment agent"
@@ -144,11 +144,11 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: install-build
-      alicloud-container: preexisting-template-id
-      cubesandbox: preexisting-template-id
-      e2b: preexisting-template-id
-      opensandbox: push-image-then-pass-uri
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
 
   - name: deepseek-harness
     description: "Bounded DeepSeek-compatible coding agent with read, write, list and shell tools."
@@ -159,11 +159,11 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: supported
-      alicloud-container: preexisting-template-id
-      cubesandbox: preexisting-template-id
-      e2b: preexisting-template-id
-      opensandbox: push-image-then-pass-uri
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
 
   - name: hermes-agent
     description: "NousResearch Hermes 0.22.1 with pinned upstream runtime, local file/terminal tools and bounded headless execution."
@@ -174,11 +174,11 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: supported
-      alicloud-container: preexisting-template-id
-      cubesandbox: preexisting-template-id
-      e2b: preexisting-template-id
-      opensandbox: push-image-then-pass-uri
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
 
   - name: node-web
     description: "Node.js web service runtime for Express, Fastify and other frameworks"
@@ -189,11 +189,11 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: supported
-      alicloud-container: preexisting-template-id
-      cubesandbox: preexisting-template-id
-      e2b: preexisting-template-id
-      opensandbox: push-image-then-pass-uri
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
 
   - name: openclaw
     description: "OpenClaw 2026.10.4 gateway with authenticated health, owned process lifecycle and Node.js 24.16.0."
@@ -204,11 +204,11 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: supported
-      alicloud-container: preexisting-template-id
-      cubesandbox: preexisting-template-id
-      e2b: preexisting-template-id
-      opensandbox: push-image-then-pass-uri
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
 
   - name: opencode
     description: "OpenCode coding agent. Headless opencode run and optional opencode serve. Package opencode-ai@1.19.0."
@@ -219,11 +219,11 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: supported
-      alicloud-container: preexisting-template-id
-      cubesandbox: preexisting-template-id
-      e2b: preexisting-template-id
-      opensandbox: push-image-then-pass-uri
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
 
   - name: amp
     description: "Sourcegraph Amp CLI. amp_execute runs amp -x; amp_version and amp_setup_check do not need a key. Package @ampcode/cli@0.0.1792022479-ge66e24."
@@ -234,11 +234,11 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: install-build
-      alicloud-container: preexisting-template-id
-      cubesandbox: preexisting-template-id
-      e2b: preexisting-template-id
-      opensandbox: push-image-then-pass-uri
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
 
   - name: droid
     description: "Factory Droid. Command droid exec. Package @factory/cli@0.241.1."
@@ -249,11 +249,11 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: install-build
-      alicloud-container: preexisting-template-id
-      cubesandbox: preexisting-template-id
-      e2b: preexisting-template-id
-      opensandbox: push-image-then-pass-uri
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
 
   - name: gemini
     description: "Gemini CLI. Command gemini -p. Package @google/gemini-cli@0.64.0."
@@ -264,11 +264,11 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: supported
-      alicloud-container: preexisting-template-id
-      cubesandbox: preexisting-template-id
-      e2b: preexisting-template-id
-      opensandbox: push-image-then-pass-uri
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
 
   # === Community Templates ===
   - name: document-tools
@@ -279,7 +279,12 @@ templates:
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
     status: experimental
-
+    providers:
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
   - name: media-tools
     description: Bounded offline CPU MP4, WAV and FLAC conversion with pinned FFmpeg.
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
@@ -311,7 +316,12 @@ templates:
   #     author: your-github-handle
   #     capabilities: [shell, files, code]
   #     status: community
-
+    providers:
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
   - name: pi
     description: "Official Pi CLI 1.3.0 with ephemeral compatible-model settings and explicit writable tools."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
@@ -320,7 +330,12 @@ templates:
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
     status: experimental
-
+    providers:
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
   - name: ocr
     description: "CPU English image OCR with pinned Tesseract 5.5.0 and bounded private TXT/TSV artifacts."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
@@ -329,6 +344,12 @@ templates:
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
     status: experimental
+    providers:
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
   - name: aider
     description: "Official Aider 0.86.2 with read-only ask and guarded selected-file writeback."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
@@ -337,7 +358,12 @@ templates:
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
     status: experimental
-
+    providers:
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required
   - name: swe
     description: "mini-swe-agent 2.4.6 with one real SWE-bench Flask instance and independent non-Docker evaluation."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
@@ -347,8 +373,11 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: supported
-      opensandbox: push-image-then-pass-uri
+      alicloud-express: provider-preparation-required
+      opensandbox: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
   - name: osworld
     description: "Pinned OSWorld Linux browser slice: real X11 input, screenshots, AT-SPI and selected task evaluators."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
@@ -357,3 +386,9 @@ templates:
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
     status: experimental
+    providers:
+      alicloud-express: provider-preparation-required
+      alicloud-container: provider-preparation-required
+      cubesandbox: provider-preparation-required
+      e2b: provider-preparation-required
+      opensandbox: provider-preparation-required

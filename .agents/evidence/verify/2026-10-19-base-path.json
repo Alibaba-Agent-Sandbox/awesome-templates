@@ -1,0 +1,8 @@
+{
+  "date": "2026-10-19",
+  "base_template": "base",
+  "path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+  "cleanup_verified": true,
+  "scope": "owned Express base runtime probe; not template build acceptance",
+  "sdk_source_commit": "d4d93e8cbb986f33a8868f7a4139ed0edb49eaba"
+}

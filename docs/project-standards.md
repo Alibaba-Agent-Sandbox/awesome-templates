@@ -46,6 +46,17 @@ published because a package name exists. Record package and source versions.
 For a dependency update, recheck architecture, platform compatibility, license,
 installed version, command flags and affected runtime tests.
 
+## Code conventions
+
+Use the existing Python style: four-space indentation, descriptive snake_case
+functions, explicit public signatures/types and JSON-serializable command results.
+Keep imports free of server startup and cloud mutation. Separate argument validation,
+upstream execution and artifact verification. Catch errors only where the code can
+recover or produce a stable sanitized contract; never turn execution failure into
+a successful string. Standalone templates stay independent of sibling folders.
+Use existing checker/test tooling. Introduce a formatter/linter only as a scoped
+repository decision; do not reformat unrelated files.
+
 ## Public compatibility and versioning
 
 The manifest version describes the template contract. Change it when runtime
@@ -116,6 +127,11 @@ a task branch, inspect checks/reviews for its latest head, and resolve feedback.
 Merge only through a permitted method after applicable checks and required review
 pass; never bypass protection, force shared history or push to main. Confirm
 remote MERGED state, linked-Issue criteria and post-merge checks.
+
+Catalog qualification and package publication are separate from merging. Never
+invent tags, package releases or registry publication. Release/tag operations
+need authorized scope, compatibility notes and verified artifacts; example install
+references must resolve to an actual published commit or tag.
 
 ## Definition of done
 

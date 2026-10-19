@@ -53,6 +53,10 @@ HTTP body 直接是参数对象，响应是 result envelope。进程启动配置
 
 ## Issue、评审与完成
 
+跨提供方以源码目录为权威，按[提供方准备规则](docs/provider-preparation.zh-CN.md)
+由各提供方负责 base、镜像和注册，不转换跨云 ID。缺少 terminal/code 等必要能力时
+仍是不支持，目录提示和启动命令不能代替原生后端验收。
+
 模板、目录、规范问题提交到本仓库；SDK/server 问题提交到
 [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues)，CLI 问题提交到
 [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues)，标题前缀

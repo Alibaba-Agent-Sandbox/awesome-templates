@@ -54,6 +54,11 @@ oversized files, floating commits and output-directory reuse are rejected.
 Express limits the serialized steps to 16 KiB. RUN/source payloads are compressed,
 and preparation rejects steps above a conservative 15,000-byte budget before
 making any cloud request. Provenance records the wire size and COPY source commit.
+Native ENV does not consistently feed subsequent RUN processes. The adapter
+exports the declared build environment and working directory explicitly for RUN,
+and resolves runtime PATH against the actual v0.0.49 Express base PATH observed
+in a clean owned probe. A different base tag requires its independently verified
+`--base-path`; local controller PATH is never substituted.
 This is a catalog-profile adapter, not a general Dockerfile implementation.
 Inspect `steps-provenance.json` and the generated manifest before deployment.
 Generated source is public code, never credentials or runtime model settings.

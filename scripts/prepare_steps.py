@@ -14,6 +14,7 @@ from pathlib import Path
 import re
 import shlex
 import subprocess
+from string import Template
 import zlib
 
 import yaml
@@ -21,6 +22,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 MATERIALIZER_SHA256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 BASE = "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
+BASE_PATH = "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b"
 
 
 def instructions(text: str) -> list[tuple[str, str]]:
@@ -140,7 +142,7 @@ def compact_run(command: str) -> str:
 
 def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
             server_commit: str | None = None, source_commit: str | None = None,
-            _inline: bool = True) -> tuple[dict, dict]:
+            base_path: str | None = None, _inline: bool = True) -> tuple[dict, dict]:
     if not re.fullmatch(r"[a-z]+-[a-z]+(?:-\d+)?", region) or not re.fullmatch(r"v\d+\.\d+\.\d+", tag):
         raise ValueError("use an explicit Alibaba region and versioned base tag")
     if server_commit is not None and not re.fullmatch(r"[0-9a-f]{40}", server_commit):
@@ -152,6 +154,9 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
     if source_commit is not None and not re.fullmatch(r"[0-9a-f]{40}", source_commit):
         raise ValueError("source commit must be an immutable 40-character commit")
     data = yaml.safe_load((source / "template.yaml").read_text())
+    if base_path is None and tag != "v0.0.49":
+        raise ValueError("an unverified base tag requires an explicit verified --base-path")
+    build_env = {"PATH": base_path or BASE_PATH}
     # Express executes steps as user by default; Docker's build profile installs
     # dependencies as root and explicitly returns to USER user for the runtime.
     steps = [{"type": "USER", "args": ["root"]}]
@@ -159,6 +164,12 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
     workdir = "/"
     seen_from = False
     dockerfile = (source / "Dockerfile").read_text()
+    def run_step(command: str) -> dict:
+        # Native ENV configures the resulting runtime but did not affect RUN's
+        # npm/PATH in the real platform probe. Recreate Docker build state explicitly.
+        exports = "".join("export " + shlex.quote(key + "=" + val) + "\n" for key, val in build_env.items())
+        directory = shlex.quote(workdir)
+        return {"type": "RUN", "args": [exports + "mkdir -p " + directory + " || exit $?\ncd " + directory + " || exit $?\n" + command]}
     for kind, value in instructions(dockerfile):
         if kind == "FROM":
             if seen_from or value != BASE:
@@ -169,7 +180,7 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
                 continue  # Local source-wheel injection has no remote COPY context.
             command, hashes = _copy(source, value, workdir, None if _inline else source_commit)
             copied.update(hashes)
-            steps.append({"type": "RUN", "args": [command]})
+            steps.append(run_step(command))
         elif kind == "RUN":
             if "if ls /tmp/*.whl" in value:
                 match = re.fullmatch(r"if ls /tmp/\*\.whl.*?; then\s+.*?else\s+(.*?)\s*;\s*fi(.*)", value, re.S)
@@ -180,7 +191,7 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
                     value, count = re.subn(r"(?<=python-sdk/archive/)[0-9a-f]{40}(?=\.tar\.gz)", server_commit, value)
                     if count != 1:
                         raise ValueError("expected one pinned server-source fallback")
-            steps.append({"type": kind, "args": [value]})
+            steps.append(run_step(value))
         elif kind == "WORKDIR":
             if not value.startswith("/"):
                 raise ValueError("WORKDIR must be absolute")
@@ -188,11 +199,20 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
             steps.append({"type": kind, "args": [value]})
         elif kind == "ENV":
             pairs = []
+            updates = {}
             for item in shlex.split(value):
                 if "=" not in item:
                     raise ValueError("ENV requires explicit key=value declarations")
                 key, val = item.split("=", 1)
+                if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key):
+                    raise ValueError("invalid ENV name")
+                try:
+                    val = Template(val).substitute(build_env)
+                except (KeyError, ValueError):
+                    raise ValueError("ENV references an unverified base variable") from None
                 pairs.extend([key, val])
+                updates[key] = val
+            build_env.update(updates)
             steps.append({"type": kind, "args": pairs})
         elif kind == "USER":
             steps.append({"type": kind, "args": [value]})
@@ -211,7 +231,7 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
     if wire_bytes > 15000:
         if _inline and source_commit:
             return prepare(source, region=region, tag=tag, server_commit=server_commit,
-                           source_commit=source_commit, _inline=False)
+                           source_commit=source_commit, base_path=base_path, _inline=False)
         raise ValueError("compressed steps exceed the provider's 16 KiB limit; use an immutable source archive or Dockerfile mode")
     data["base"] = BASE.replace("<region>", region).replace("<tag>", tag)
     data["build"] = {"mode": "steps", "steps": steps}
@@ -219,6 +239,7 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
                   "materializer_sha256": MATERIALIZER_SHA256,
                   "template_version": str(data["version"]), "build_mode": "steps",
                   "base_image": data["base"], "server_commit_override": server_commit,
+                  "verified_base_path": base_path or BASE_PATH,
                   "copy_source_commit": None if _inline else source_commit,
                   "steps_json_bytes": wire_bytes,
                   "inputs_sha256": {"Dockerfile": hashlib.sha256(dockerfile.encode()).hexdigest(),
@@ -237,11 +258,13 @@ def main() -> int:
     parser.add_argument("--output", required=True, type=Path, help="New standalone staging directory")
     parser.add_argument("--region", default="cn-hangzhou")
     parser.add_argument("--base-tag", default="v0.0.49")
+    parser.add_argument("--base-path", help="Verified PATH when using a different base-image tag")
     parser.add_argument("--server-commit")
     parser.add_argument("--source-commit", help="Immutable public source; unchanged COPY files are fetched and hash-checked")
     args = parser.parse_args()
     data, provenance = prepare(args.template, region=args.region, tag=args.base_tag,
-                               server_commit=args.server_commit, source_commit=args.source_commit)
+                               server_commit=args.server_commit, source_commit=args.source_commit,
+                               base_path=args.base_path)
     args.output.mkdir(parents=True, exist_ok=False)
     (args.output / "template.yaml").write_text(yaml.safe_dump(data, sort_keys=False, allow_unicode=True))
     (args.output / "steps-provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")

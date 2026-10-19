@@ -105,6 +105,23 @@ def test_oversized_random_copy_cannot_reach_cloud(tmp_path: Path):
         prepare(source)
 
 
+def test_run_uses_declared_path_without_native_env_propagation(tmp_path: Path):
+    binary = tmp_path / "bin"
+    binary.mkdir()
+    tool = binary / "abx-declared-tool"
+    tool.write_text("#!/bin/sh\nprintf DECLARED_PATH_OK\n")
+    tool.chmod(0o755)
+    source = fixture(tmp_path, f'ENV PATH="{binary}:${{PATH}}"\nRUN abx-declared-tool\n')
+    manifest, _ = prepare(source)
+    first_run = next(step for step in manifest["build"]["steps"] if step["type"] == "RUN")
+    result = subprocess.run(first_run["args"][0], shell=True, text=True, capture_output=True, check=True)
+    assert result.stdout == "DECLARED_PATH_OK"
+    path_step = [step for step in manifest["build"]["steps"] if step["type"] == "ENV"][-1]
+    assert path_step["args"][0] == "PATH"
+    assert "${PATH}" not in path_step["args"][1]
+    assert path_step["args"][1].startswith(str(binary) + ":")
+
+
 @pytest.mark.parametrize("status", ["ready", {"state": "ready"}, '{"state":"ready"}', "{'state': 'ready'}"])
 def test_ready_status_formats(status):
     assert harness.template_state({"status": status}) == "ready"
