@@ -135,6 +135,11 @@ jobs:
           claude --version
           test "$(opencode --version)" = "1.19.0"
 
+      - name: Install the pinned standalone browser IDE for real local checks
+        run: |
+          python code-server/install_runtime.py --prefix "$RUNNER_TEMP/code-server-runtime"
+          echo "$RUNNER_TEMP/code-server-runtime/current/bin" >> "$GITHUB_PATH"
+
       - name: Checkout the pinned upstream Hermes runtime
         uses: actions/checkout@v4
         with:
@@ -163,6 +168,7 @@ jobs:
 
       - name: Run process, privacy, and acceptance-harness regressions
         run: |
+          python -m pytest -q code-server/test_commands.py
           python -m pytest -q python-hello/test_command_errors.py
           python -m pytest -q node-web/test_startup.py node-web/test_http_output.py
           python -m pytest -q claude-code/tests
