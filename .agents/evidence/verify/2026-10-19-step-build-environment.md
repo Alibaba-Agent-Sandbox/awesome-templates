@@ -25,3 +25,22 @@ even without native ENV propagation, and confirms runtime PATH contains no unexp
 reference. Combined spec/materializer/docs/cleanup checks pass60 tests and48 subtests;
 all24 existing profiles still fit the wire budget. Real corrected OpenClaw and other
 remaining catalog builds are in progress; this record is not their cloud pass.
+
+## Large-asset follow-up
+
+Independent build-network measurement retrieved8MiB code-server/Rust ranges in
+385.267/398.173seconds, versus0.737/1.607seconds for Go/Hermes source. The
+[build probe](2026-10-19-step-asset-network.json) completed real CLI/SDK report
+retrieval and independent owned cleanup. It is a partial download diagnostic,
+not a template acceptance receipt. A runtime base probe also completed and
+independently cleaned; its64KiB samples are recorded separately.
+
+The earlier306.777-second RUN stream deadline failure does not establish a
+universal300-second RUN execution limit: this successful diagnostic RUN ran
+longer. Separate installation phases remain useful, but large asset transport
+is a verified remaining constraint. Whole-build timeouts are not successes.
+
+An optional owned OSS public-cache probe created a private bucket, but object
+public access was denied403. The object/bucket were deleted and independent
+absence confirmed; no account policy was changed. Use of existing public CI
+image export plus private local registry transfer is under separate review.
