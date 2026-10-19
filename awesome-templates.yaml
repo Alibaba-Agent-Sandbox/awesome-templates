@@ -357,7 +357,6 @@ templates:
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
     status: experimental
-
   - name: kimi-code
     description: Official Kimi Code 2.2.0 with isolated headless turns and explicit
       tool permission.
@@ -380,3 +379,22 @@ templates:
       cubesandbox: provider-prepared
       e2b: provider-prepared
       opensandbox: provider-prepared
+
+# Provider-managed IDs have no source build context; never pass these to image selection.
+managed_templates:
+  - name: base
+    provider: alicloud-express
+    template_id: base
+    kind: provider-managed
+    documentation: docs/managed/base/README.md
+    evidence: docs/managed/evidence/base-2026-10-19T154144Z.json
+    verification_scope: shell-files-code-fallback
+    native_interpreter_verified: false
+  - name: code-interpreter-v1
+    provider: alicloud-express
+    template_id: code-interpreter-v1
+    kind: provider-managed
+    documentation: docs/managed/code-interpreter-v1/README.md
+    evidence: docs/managed/evidence/code-interpreter-v1-2026-10-19T154153Z.json
+    verification_scope: shell-files-code-fallback
+    native_interpreter_verified: false

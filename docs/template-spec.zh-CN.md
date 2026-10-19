@@ -461,3 +461,7 @@ harness 用现有标志调用 `abx template deploy`（`--json`、`-y`、`--gener
 退出码 2 表示输出命中了已知的 CLI 或 SDK 失败（字符串 `base` 被拒绝、generation 1 更新、`AuthError` / HTTP 401，或 envd 的 `promised N bytes in enveloped message`）。这些曾记在 agent-sandbox `#12` `#13` `#14` 和 python-sdk `#15` `#17`。部署与运行的 CLI 修复已在 `agent-sandbox` main（`#16`）。envd 帧和端口 9000 认证的修复已在 `python-sdk` main。harness 仍然识别旧的报错，这样旧二进制也会给出明确结果。
 
 退出码 1 是其他失败。退出码 0 会写入证据文件。
+
+## 提供方托管条目
+
+`managed_templates` 是附加目录命名空间，与可安装源码 `templates` 分开。字段包含 name/provider/template_id/kind/documentation/evidence/verification_scope/native_interpreter_verified。托管 ID 没有此仓库拥有的 Dockerfile、镜像版本、commands.py 或构建上下文，因此不参与源码模板的镜像选择、steps 生成和部署检查。实测必须写明 SDK 回退、运行时版本及独立清理，不能继承其他提供方或原生解释器验证。参见 [base](managed/base/README.zh-CN.md) 和 [code-interpreter-v1](managed/code-interpreter-v1/README.zh-CN.md)。
