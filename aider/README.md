@@ -236,6 +236,10 @@ process-group cleanup and original-file checks. Upgrade Python/Aider pins only
 with official metadata, actual help/version and a new image/model run. Keep
 upstream licenses in installed distributions and standalone Python archives.
 
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py aider` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+
 ## Contributing
 
 See [repository contribution rules](../CONTRIBUTING.md). Run

@@ -121,6 +121,10 @@ python3 scripts/express_e2e.py droid
 
 The local suite requires the real pinned `droid` on the server PATH; it never substitutes a fake version. L1 additionally requires a Docker build. L2 requires a real Express deployment and externally asserted smoke commands. L3 requires `E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1`, a Factory key on the server, and the coding acceptance in [e2e_test.py](e2e_test.py): seeded failing code, source modification, preserved tests, new downloaded artifacts, independent test reruns and held-out assertions. The verifier uses remote file/process APIs and removes its own project. Missing keys fail required L3; a response marker alone cannot pass.
 
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py droid` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+
 ## Contributing
 
 Read [CONTRIBUTING.md](../CONTRIBUTING.md), the [template spec](../docs/template-spec.md), and the [design](../docs/design/droid.md). Keep this README and [Chinese README](README.zh-CN.md) synchronized; include regression tests, engineering records and actual evidence with a scoped PR. Keep the catalog experimental until required acceptance passes.

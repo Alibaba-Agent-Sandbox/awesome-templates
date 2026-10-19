@@ -13,6 +13,9 @@
 | `scripts/run_local_e2e.py` | 对每个带 `commands.py` 和 `e2e_test.py` 的目录做 L0，并运行检查器。 |
 | `scripts/image_size_report.py` | 打印本地镜像每一层的大小（`docker history`）。 |
 
+项目治理与完成条件见[项目规范](project-standards.zh-CN.md)，写作与翻译要求见
+[文档规范](documentation-standards.zh-CN.md)。
+
 ## 目录布局
 
 一个模板是仓库根目录下的一个目录。目录名、`template.yaml` 的 `name`、`awesome-templates.yaml` 里的 `path` 是同一个字符串。产品名符合 `^[a-z0-9][a-z0-9-]*$`。下划线目录只有 `_skeleton`，它不会被安装。

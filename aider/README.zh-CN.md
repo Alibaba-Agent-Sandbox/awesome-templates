@@ -204,6 +204,10 @@ analytics-disabled 状态可能保留在该专用沙箱原生 `.aider`，随实�
 保留白名单、原文件校验和进程组清理。升级 Python/Aider pin 必须重新查官方
 metadata、真实 help/version，并重跑镜像与模型测试。保留安装依赖和 Python 归档许可证。
 
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py aider`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+
 ## 贡献
 
 遵循[仓库规则](../CONTRIBUTING.md)，运行

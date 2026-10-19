@@ -109,6 +109,10 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/gemini" \
 
 L1 必须真实构建；L2 必须部署并从外部调用 CLI/SDK。L3 在目标服务注入 `GEMINI_API_KEY`，控制端设置 `E2E_BASE_URL` 与目标 `WORKSPACE` 内的 `E2E_BASE_DIR`，运行 `E2E_REQUIRE_LLM=1 E2E_RUN_LLM=1 python3 gemini/e2e_test.py`。仅目标需要密钥。测试经远端 files API 创建失败源码和测试，显式 yolo 要求修复和新增产物，核对测试未改写，独立远端运行原测试与保留计算，最后删除唯一项目。仅返回标记不能通过。
 
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py gemini`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+
 ## 贡献
 
 遵守[贡献规则](../CONTRIBUTING.md)、[模板规范](../docs/template-spec.zh-CN.md)及工程记录。复用 [Issue #30](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/30)。失败、跳过和阻塞分别记录；缺真实密钥是必需 L3 的阻塞，不是通过。

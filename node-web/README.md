@@ -137,6 +137,10 @@ the image acceptance counter and is not retroactively relabeled as a pass.
 
 Upload a project beneath `/home/user/app`, include its dependency lockfile, and install exact versions when building a derivative image (`npm ci` against the committed lockfile). Keep package installs before the final `COPY commands.py`, remove the npm cache in the same image layer, retain the pinned server, Alibaba base, non-root user and generation-2 start/ready commands. Do not add Docker CMD/ENTRYPOINT. Express/Fastify applications use `serve`, or define `start`/`dev`/`build` scripts. This template does not install a framework or generate a Next/Vite project.
 
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py node-web` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+
 ## Contributing
 
 Read [CONTRIBUTING.md](../CONTRIBUTING.md), the [template spec](../docs/template-spec.md), and [design](../docs/design/node-web.md). Run `python3 scripts/check_template.py node-web`, then `python3 scripts/run_local_e2e.py` from the repository root with server SDK, httpx, PyYAML, Node and npm available. The suite runs real processes and asserts outputs, not mocks. With Docker and authorized Express access, run `python3 scripts/express_e2e.py node-web`; only a successful run may add provider evidence. Keep `tested_on` and Verified empty until then. Cross-review process lifecycle and failure cases before merging.

@@ -171,6 +171,10 @@ and independently runs two unit tests. It cleans up only its own unique files,
 processes and PTY sessions. Missing credentials are a failure in required mode.
 Only record provider evidence after the corresponding real run passes.
 
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py claude-code` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+
 ## Contributing
 
 Follow [CONTRIBUTING](../CONTRIBUTING.md) and the [template spec](../docs/template-spec.md).

@@ -190,6 +190,10 @@ The version pin is `@ampcode/cli@0.0.1792022479-ge66e24` in the Dockerfile (`AMP
 
 To add a command, register another `@command` function that calls `amp` with an argv list. `start()` stays under `if __name__ == "__main__"`.
 
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py amp` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+
 ## Contributing
 
 [CONTRIBUTING.md](../CONTRIBUTING.md) and [docs/template-spec.md](../docs/template-spec.md). Design notes are in [docs/design/amp.md](../docs/design/amp.md).

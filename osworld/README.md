@@ -129,6 +129,10 @@ E2E_BASE_URL=http://127.0.0.1:9000 E2E_REQUIRE_DESKTOP=1 E2E_RUN_DESKTOP=1 pytho
 
 The required GUI mode fails on missing dependencies. Default local HTTP checks report GUI SKIP without claiming desktop acceptance. The actual image smoke verifies PNG/tree, baseline score 0, native actions, independent browser state, final score 1, changed pixels and cleanup; a marker does not contribute to scoring. The image smoke also pastes 4096 Unicode characters including emoji and independently reads the entire DOM value; task scores use ASCII/CJK, with emoji accessibility representation unverified.
 
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py osworld` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+
 ## Contributing
 
 Follow [CONTRIBUTING](../CONTRIBUTING.md) and the [template spec](../docs/template-spec.md). Keep the source pin/license, translations, supported subset and acceptance records accurate.

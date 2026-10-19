@@ -114,6 +114,10 @@ Run `python3 scripts/check_template.py ocr --strict`, the scoped pytest files an
 
 The Linux runner keeps its process leader unreaped with `waitid(WNOWAIT)`, drains bounded pipes, then stops the owned process group before reaping on success, nonzero exit, timeout or Python cancellation. Deliberate `setsid` escapes are outside that group boundary; killing the server with SIGKILL cannot execute Python cleanup. Sandbox destruction remains the final isolation boundary.
 
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py ocr` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+
 ## Contributing
 
 [CONTRIBUTING.md](../CONTRIBUTING.md), [template specification](../docs/template-spec.md), [Issue 57](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/57).

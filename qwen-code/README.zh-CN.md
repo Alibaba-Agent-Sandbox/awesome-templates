@@ -114,6 +114,10 @@ curl -X POST "$SANDBOX_PORT_9000_URL/commands/qwen" \
 
 在 `commands.py` 添加类型化 `@command`，`start()` 保持在主入口保护内。保留 `qwen`、`run` 名称，双语更新参数文档，固定 CLI/server 版本。修改前阅读[设计](../docs/design/qwen-code.md)。
 
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py qwen-code`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+
 ## 贡献
 
 遵守[贡献规则](../CONTRIBUTING.md)和[模板规范](../docs/template-spec.md)。运行 `python3 scripts/check_template.py qwen-code`、`python3 -m pytest -q qwen-code/test_commands.py`、`python3 scripts/run_local_e2e.py`。本地 CLI 缺失时可跳过实版本测试，`E2E_REQUIRE_CLI=1` 时必须失败，跳过不代表运行时通过。真实编码验收先用兼容密钥/base URL/model 启动服务器，再运行 `E2E_REQUIRE_CLI=1 E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 python3 qwen-code/e2e_test.py`。测试修改现有源文件，经文件 API 读取新报告和精确产物，再经目标 shell API 独立运行原测试及保留计算；只清理本次唯一项目目录。保留工程记录，不提交密钥或失败的提供方通过证据。

@@ -121,6 +121,10 @@ Linux 下短生命周期健康检查 RPC 会持续读取输出，并在清理自
 
 阅读[设计文档](../docs/design/openclaw.md)。固定上游版本，argv使用列表，token放环境，保留拥有的进程对象，不使用PID文件。生命周期变更应增加行为回归并同步双语文档。新增Agent/模型命令需要独立契约和真实模型验收。
 
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py openclaw`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+
 ## 贡献
 
 遵循[贡献指南](../CONTRIBUTING.md)和[模板规范](../docs/template-spec.md)。执行 `python3 scripts/check_template.py openclaw`、`python3 -m pytest openclaw/test_commands.py`。本地HTTP验收先启动 `python3 openclaw/commands.py`，再用一致的 `E2E_BASE_URL`、server认证、网关token执行 `python3 openclaw/e2e_test.py`。随机合成token足以验收真实本地网关，无需模型key。provider证据通过前保留 `tested_on: []`；缺少镜像或云端门禁时明确记录。

@@ -9,6 +9,11 @@ How to build, list, and accept a template is
 [`_skeleton/`](./_skeleton/README.md) is a directory that passes that spec.
 It is not a catalog entry.
 
+Repository maintenance follows the [project standards and definition of done](docs/project-standards.md)
+([中文](docs/project-standards.zh-CN.md)) and [documentation standard](docs/documentation-standards.md)
+([中文](docs/documentation-standards.zh-CN.md)). Contribution instructions are
+[English](CONTRIBUTING.md) / [中文](CONTRIBUTING.zh-CN.md).
+
 The index in [`awesome-templates.yaml`](./awesome-templates.yaml) is what
 `abx template search` and `abx template install <name>` read.
 **Verified on** lists a provider only when that template has a passing

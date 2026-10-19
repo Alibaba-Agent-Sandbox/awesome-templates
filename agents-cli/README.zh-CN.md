@@ -224,6 +224,10 @@ python scripts/run_local_e2e.py
 `python -m pytest --import-mode=importlib -q agents-cli/test_sdk_verifier.py`；它们与实际
 模型/提供方验收分别记录。
 
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py agents-cli`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+
 ## 贡献
 
 阅读 [CONTRIBUTING.md](../CONTRIBUTING.md)、[规范](../docs/template-spec.md)和

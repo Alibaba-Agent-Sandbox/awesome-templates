@@ -191,6 +191,10 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/opencode_version"
 
 只有在做另一个模板时才复制 `_skeleton`。本目录就是 OpenCode 条目。改动对照 [docs/template-spec.zh-CN.md](../docs/template-spec.zh-CN.md) 和 [docs/design/opencode.md](../docs/design/opencode.md)。
 
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py opencode`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+
 ## 贡献
 
 [CONTRIBUTING.md](../CONTRIBUTING.md) 和 [docs/template-spec.zh-CN.md](../docs/template-spec.zh-CN.md)。

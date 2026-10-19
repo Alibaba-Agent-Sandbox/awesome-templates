@@ -154,6 +154,10 @@ generation 2 使用 YAML 的 `start_cmd`、`ready_cmd`，以 `user` 运行。
 `E2E_BASE_URL=http://127.0.0.1:9000 python3 e2e_test.py`。测试导航内联页面、
 通过服务端文件 API 下载真实 PNG、检查表单脱敏及并发隔离，缺浏览器退出非零。
 
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py browser-automation`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+
 ## 贡献
 
 遵守 [CONTRIBUTING.md](../CONTRIBUTING.md)、

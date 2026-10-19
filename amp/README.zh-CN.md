@@ -189,6 +189,10 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/amp_version" \
 
 要加命令，再注册一个用参数数组调用 `amp` 的 `@command`。`start()` 只放在 `if __name__ == "__main__"` 下面。
 
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py amp`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+
 ## 贡献
 
 见 [CONTRIBUTING.md](../CONTRIBUTING.md) 和 [docs/template-spec.zh-CN.md](../docs/template-spec.zh-CN.md)。设计说明在 [docs/design/amp.md](../docs/design/amp.md)。

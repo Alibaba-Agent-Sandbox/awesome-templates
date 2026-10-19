@@ -252,6 +252,10 @@ receipt or arbitrary verifier hook. Run
 `python -m pytest --import-mode=importlib -q agents-cli/test_sdk_verifier.py` for
 no-network negative controls; those are separate from actual model/provider runs.
 
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py agents-cli` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+
 ## Contributing
 
 Read [CONTRIBUTING.md](../CONTRIBUTING.md), the [template spec](../docs/template-spec.md)

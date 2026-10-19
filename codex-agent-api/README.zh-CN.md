@@ -157,6 +157,10 @@ E2E_REQUIRE_LLM=1 E2E_MODEL=your-model E2E_BASE_URL=https://your-sandbox \
 
 先读[设计说明](../docs/design/codex-agent-api.md)、[贡献规范](../CONTRIBUTING.md)和[模板规范](../docs/template-spec.zh-CN.md)。围绕 Codex JSONL 扩展适配，不另写 agent 循环。CLI pin 与 `codex` 保持一致。[OpenAI 官方 CLI 文档](https://developers.openai.com/codex/cli/reference/)。
 
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py codex-agent-api`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+
 ## 贡献
 
 评审前运行 checker 和本地回归，在 PR 中准确说明 L1/L2/L3 的真实结果和限制。仅保存通过的提供方 evidence。禁止提交 `.env`、认证头、秘密值或生成的凭据/配置文件。

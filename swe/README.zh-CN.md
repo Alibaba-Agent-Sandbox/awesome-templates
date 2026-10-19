@@ -134,6 +134,10 @@ L0 可以跳过缺失的上游运行时/模型前置，这不证明代理运行�
 
 阅读[设计](../docs/design/swe.md)与[规范](../docs/template-spec.md)。新增题目前核对固定源归档、许可证、原始测试补丁、精确 FAIL_TO_PASS/PASS_TO_PASS、兼容的固定依赖及独立失败/通过结果。不要通过 API 暴露任意 shell 测试命令、URL 下载或调用者自带补丁。manifest 故意不包含上游标准答案补丁。
 
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py swe`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+
 ## 贡献
 
 执行 `python -m pytest -q swe/test_commands.py swe/test_e2e_protocol.py`、`python3 scripts/check_template.py swe`、`python3 scripts/test_spec_tools.py` 与 `python3 scripts/run_local_e2e.py`。构建真实镜像，跑[标准 Express 部署](../scripts/express_e2e.py)，再配置兼容模型后执行 `E2E_REQUIRE_LLM=1 E2E_RUN_LLM=1 E2E_BASE_URL=<已配置服务> python swe/e2e_test.py`。保留失败/跳过，记录准确版本、测试身份、补丁读取与自有资源清理。不要提交原始 trajectory、凭据或私有资源 ID。

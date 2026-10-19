@@ -123,6 +123,10 @@ No provider has passing image/cloud evidence for this revision. Local real CLI g
 
 Read [design](../docs/design/openclaw.md). Keep upstream versions pinned, command argv as lists, token values in environment, and owned process handles rather than PID files. Add functional regressions for lifecycle changes and keep both READMEs current. Adding agent/model commands requires a separate contract and real-model acceptance.
 
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py openclaw` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+
 ## Contributing
 
 Follow [CONTRIBUTING.md](../CONTRIBUTING.md) and [template spec](../docs/template-spec.md). Run `python3 scripts/check_template.py openclaw` and `python3 -m pytest openclaw/test_commands.py`. For local HTTP smoke, start `python3 openclaw/commands.py` and run `python3 openclaw/e2e_test.py` with matching `E2E_BASE_URL`, server auth and gateway token. A synthetic random gateway token suffices for a real local gateway test; a model key is unnecessary. Keep `tested_on: []` until provider evidence passes. Required image/cloud acceptance must remain explicit if unavailable.

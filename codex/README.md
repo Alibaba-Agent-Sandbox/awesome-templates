@@ -210,6 +210,10 @@ To point Codex at another OpenAI-compatible Responses endpoint, call `codex_conf
 
 The nested sandbox probe is `sandbox_status()` in `commands.py`. Do not apt-install `bubblewrap` unless you have confirmed Codex will use that `bwrap`: the CLI prefers a `bwrap` on `PATH` over the bundled helper.
 
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py codex` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+
 ## Contributing
 
 [CONTRIBUTING.md](../CONTRIBUTING.md) and [docs/template-spec.md](../docs/template-spec.md). Design notes: [docs/design/codex.md](../docs/design/codex.md).

@@ -121,6 +121,10 @@ python3 scripts/express_e2e.py droid
 
 本地套件要求服务端 PATH 有真实固定版本 `droid`，不伪造版本。L1 还需真实 Docker 构建；L2 需要真实极速版部署并从外部断言 smoke 命令。L3 设置 `E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1`，服务端提供 Factory 密钥，执行 [e2e_test.py](e2e_test.py) 的编码验收：预置失败代码、修改现有源文件、保持原测试、新建并下载产物、独立重跑测试和隐藏用例。验证器通过远端文件/进程 API 检查并清理自己的项目。缺少密钥会使必需 L3 失败；仅有响应标记不能通过。
 
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py droid`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+
 ## 贡献
 
 阅读 [CONTRIBUTING.md](../CONTRIBUTING.md)、[模板规范](../docs/template-spec.zh-CN.md)与[设计](../docs/design/droid.md)。同步[英文 README](README.md)，PR 包含回归、工程记录与真实验证证据。必要验收通过前保持 experimental。

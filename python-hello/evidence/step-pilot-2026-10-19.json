@@ -1,0 +1,79 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-19",
+  "template": "python-hello",
+  "template_version": "1.1.0",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "steps",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "hello",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.803,
+      "args": {
+        "name": "Express"
+      },
+      "result": "Hello, Express!"
+    },
+    {
+      "name": "hello",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 1.147,
+      "args": {
+        "name": "Express"
+      },
+      "result": "Hello, Express!"
+    },
+    {
+      "name": "run_script",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.602,
+      "args": {
+        "code": "print(21 * 2)"
+      },
+      "result": "42\n"
+    },
+    {
+      "name": "run_script",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 0.883,
+      "args": {
+        "code": "print(21 * 2)"
+      },
+      "result": "42\n"
+    },
+    {
+      "name": "run_script",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.302,
+      "args": {
+        "code": "import os, getpass; print(\"step_environment=\"+os.environ.get(\"STEP_PROBE\",\"missing\")+\";user=\"+getpass.getuser())"
+      },
+      "result": "step_environment=present;user=user\n"
+    },
+    {
+      "name": "run_script",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 0.933,
+      "args": {
+        "code": "import os, getpass; print(\"step_environment=\"+os.environ.get(\"STEP_PROBE\",\"missing\")+\";user=\"+getpass.getuser())"
+      },
+      "result": "step_environment=present;user=user\n"
+    }
+  ],
+  "verification_type": "platform-step-pilot",
+  "scope": "Real RUN plus ENV key/value, WORKDIR and USER; supplementary pilot, not generated Dockerfile-recipe acceptance",
+  "source_base": "052051411a5f78743083d68467ba952a4e71e08b",
+  "sdk_source_commit": "d4d93e8cbb986f33a8868f7a4139ed0edb49eaba",
+  "server_source_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+  "cli_binary_sha256": "e6d1c46626fd3f48e86b23bc99b0b8d565dfadd3f61a42ea352a27cb637d9cdd"
+}

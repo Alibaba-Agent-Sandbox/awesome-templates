@@ -109,6 +109,10 @@ Read [design](../docs/design/gemini.md). Keep exact npm/server pins, Alibaba bas
 
 L1 requires a real image build; L2 requires deployment plus external CLI/SDK calls. For L3, start the target with `GEMINI_API_KEY`, set controller `E2E_BASE_URL` and target `E2E_BASE_DIR` inside `WORKSPACE`, then run `E2E_REQUIRE_LLM=1 E2E_RUN_LLM=1 python3 gemini/e2e_test.py`. Only the target needs the model key. The test seeds failing source/tests through the target files API, requests a fix plus new artifacts with explicit yolo, preserves the tests, independently executes original and held-out tests remotely, and removes its unique project. A response marker alone fails.
 
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py gemini` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+
 ## Contributing
 
 Follow [CONTRIBUTING.md](../CONTRIBUTING.md), [template specification](../docs/template-spec.md) and repository engineering records. Reuse [Issue #30](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/30). Record failed, skipped and blocked tiers separately; a missing key is a blocked required L3, not a pass.

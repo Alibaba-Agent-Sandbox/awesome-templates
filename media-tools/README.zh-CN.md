@@ -114,6 +114,10 @@ JSON 对象直接包含参数。HTTP 200 返回 `{"result":{"output_path":"/home
 
 Linux runner 使用 `waitid(WNOWAIT)` 固定 owned group 身份，先终止进程组再 reap leader，覆盖成功、非零退出和重定向后代进程。主动 `setsid` 脱离及 server 被 SIGKILL 不在该清理保证内；沙箱销毁是最终隔离边界。
 
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py media-tools`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+
 ## 贡献
 
 [CONTRIBUTING.md](../CONTRIBUTING.md)、[模板规范](../docs/template-spec.md)、[Issue 58](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/58)。

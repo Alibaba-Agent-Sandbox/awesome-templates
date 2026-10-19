@@ -194,6 +194,10 @@ To change the default model, edit `OPENCODE_MODEL` in `template.yaml` and the `m
 
 Copy `_skeleton` only when starting a different template. This directory is the OpenCode entry. Fill changes against [docs/template-spec.md](../docs/template-spec.md) and [docs/design/opencode.md](../docs/design/opencode.md).
 
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py opencode` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+
 ## Contributing
 
 [CONTRIBUTING.md](../CONTRIBUTING.md) and [docs/template-spec.md](../docs/template-spec.md).

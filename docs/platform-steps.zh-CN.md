@@ -1,0 +1,76 @@
+# 使用 Agent Sandbox step 构建模板
+
+`abx template deploy --build steps` 向阿里云极速版发送基础镜像和有序步骤，
+不需要本地 Docker 或 ACR 上传。[English](platform-steps.md)。
+
+## 前置条件和模式
+
+通过环境配置已有授权的 Express API 与阿里云控制面凭据。CLI 的 deploy、官方
+list/info/delete 和 sandbox 命令须匹配[验收运行器](../scripts/express_e2e.py)。
+[安装指南](using-templates.zh-CN.md)中的源码 CLI 提供这些接口。仅有版本号不足以
+证明兼容：公开 0.4.0 的标准 list/create 接口与本运行器的原生接口不同；0.3.0
+独立二进制还需要可用的官方阿里云 SDK 模块，固定源码构建会安装它们。
+
+auto 有 Dockerfile 时选 Dockerfile；显式 steps 使用 manifest 步骤。不与
+`--acr-namespace` 或 `--legacy-api` 混用；创建 sandbox 不选择构建模式。
+CLI 的[模式契约](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/design/template-build-modes.md)
+说明发送形式，提供方仍需实际验证。Express ENV 参数是交替键值，例如
+`{type: ENV, args: [LANG, C.UTF-8]}`；2026-10-19 真实试验拒绝了单参数
+`LANG=C.UTF-8`，失败记录保留。
+
+## 准备真实模板
+
+steps 不自动上传 COPY 源文件。生成独立临时 manifest：
+
+```bash
+python scripts/prepare_steps.py python-hello --output /tmp/python-hello-steps-review \
+  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
+```
+
+输出目录必须全新。可选 server 提交与现有镜像 CI 注入的源码一致并单独记录；省略时
+使用 Dockerfile 固定 fallback。转换器保留 RUN/ENV/WORKDIR/USER 顺序、heredoc 和
+续行，将明确 COPY 的公共源码连同哈希和权限嵌入步骤；可选本地 wheel 分支替换为
+固定源码安装。保留 USER user，EXPOSE 由 manifest ports 表达。
+
+仅接受单 stage 阿里云 FC profile；未知指令、未审查的 wheel 分支、目录外/符号链接/
+通配符/secret 命名的 COPY、过大文件、浮动提交和重复输出目录均拒绝。它是当前目录
+profile 的适配器，不是通用 Dockerfile 解释器。部署前检查生成 manifest 和
+steps-provenance.json；仅含公共源码，不包含凭据或模型运行设置。
+
+## 部署与调用
+
+在源码仓库执行完整真实验收：
+
+```bash
+python scripts/run_steps_e2e.py python-hello \
+  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
+```
+
+CLI 不在 PATH 时通过 ABX 环境变量指定已验证命令。可以传多个目录，或用 `--all`
+顺序验证全部模板。命令会产生真实云端费用，使用唯一自有资源，私有恢复记录留在
+checkout 外，不上传 Actions 凭据。
+
+已准备目录的底层等价命令为：
+
+```bash
+python scripts/express_e2e.py /tmp/python-hello-steps-review --build steps --push-retries 0
+```
+
+运行器执行真实 CLI deploy，先私有记录返回 ID，再轮询官方 GetTemplate 到 READY，
+创建新实例，通过外部 CLI 和 SDK 调用全部 smoke，清理后独立读回确认 sandbox 和
+template 不存在。submitted、构建失败、未知状态、smoke 错误、超时或不确定清理不能
+写 pass。恢复沿用精确所有权的 `--recover-intent`。
+
+手动操作可用 `abx template deploy /tmp/python-hello-steps-review --build steps -y`，
+等官方 READY 后使用原模板 README 的 CLI/SDK/HTTP 调用，结束时只删除本次资源。
+提交成功本身不是验收记录。
+
+## 证据与限制
+
+批量运行器在原模板 evidence 中保留每次脱敏结果，包括失败、源码哈希、基础镜像和
+server override。完整成功记录包含 build_mode steps、外部调用结果和清理确认。
+旧记录不覆盖，原始云日志与资源 ID 不进入仓库。
+
+当前全部 Dockerfile profile 可以本地转换；这不代表全部真实构建通过。step 通过仅
+证明记录哈希的生成配方，不证明本地 Docker 构建、未实测依赖、未运行模型 L3 或其他
+提供方通过。以每模板本轮记录及[分级规范](template-spec.zh-CN.md)为准。

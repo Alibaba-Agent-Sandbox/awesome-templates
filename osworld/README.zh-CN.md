@@ -127,6 +127,10 @@ E2E_BASE_URL=http://127.0.0.1:9000 E2E_REQUIRE_DESKTOP=1 E2E_RUN_DESKTOP=1 pytho
 
 required GUI 模式缺依赖即失败。默认本地 HTTP 检查只报告 GUI SKIP，不声明桌面通过。真实镜像 smoke 验证 PNG/树、基线分数 0、原生操作、独立浏览器状态、最终分数 1、像素变化和清理；marker 不参与评分。镜像smoke另用私有剪贴板粘贴4096个含emoji的Unicode字符，并独立读取完整DOM值；任务评分使用ASCII/CJK，emoji的可访问性表示不计通过。
 
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py osworld`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+
 ## 贡献
 
 遵循[贡献指南](../CONTRIBUTING.md)与[模板规范](../docs/template-spec.zh-CN.md)，保持固定源码/许可证、翻译、支持范围和证据准确。

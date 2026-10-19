@@ -158,6 +158,10 @@ On 2026-10-16, the patched source passed 30 external HTTP checks on an owned Exp
 
 Read [the design](../docs/design/codex-agent-api.md), [CONTRIBUTING](../CONTRIBUTING.md) and [template spec](../docs/template-spec.md). Extend the adapter around Codex's JSONL contract; do not implement a second agent loop. Keep the same CLI pin as `codex`. Official CLI reference: [OpenAI documentation](https://developers.openai.com/codex/cli/reference/).
 
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py codex-agent-api` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+
 ## Contributing
 
 Run the checker and local regressions before review. Include real L1/L2/L3 results and limitations in the PR; publish evidence only for passing provider runs. Never include `.env`, authentication headers, secret values, or generated credential/config files.
