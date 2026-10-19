@@ -357,13 +357,43 @@ templates:
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
     status: experimental
+  - name: kimi-code
+    description: Official Kimi Code 2.2.0 with isolated headless turns and explicit
+      tool permission.
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: kimi-code
+    tags:
+    - kimi
+    - coding-agent
+    - openai-compatible
+    author: alibaba-agent-sandbox
+    capabilities:
+    - shell
+    - files
+    - code
+    - ports
+    status: experimental
+    providers:
+      alicloud-express: install-build
+      alicloud-container: provider-prepared
+      cubesandbox: provider-prepared
+      e2b: provider-prepared
+      opensandbox: provider-prepared
   - name: dev-services
-    description: "Pinned non-root PostgreSQL17.11 and Redis8.0.2 with owned lifecycle."
+    description: Pinned non-root PostgreSQL17.11 and Redis8.0.2 with owned lifecycle.
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: dev-services
-    tags: [database, postgresql, redis, development]
+    tags:
+    - database
+    - postgresql
+    - redis
+    - development
     author: alibaba-agent-sandbox
-    capabilities: [shell, files, code, ports]
+    capabilities:
+    - shell
+    - files
+    - code
+    - ports
     status: experimental
 
 # Provider-managed IDs have no source build context; never pass these to image selection.
