@@ -1,0 +1,38 @@
+{
+  "passed": true,
+  "provider": "existing operator-configured compatible endpoint",
+  "model": "qwen3.8-flash",
+  "scope": "local real CLI/model; not Express deployment",
+  "exit_code": 0,
+  "assertions": [
+    "[PASS] health",
+    "[PASS] registered command names",
+    "[PASS] typed command parameters",
+    "[PASS] invalid arguments are HTTP 400",
+    "[PASS] invalid arguments are HTTP 400",
+    "[PASS] unknown command is HTTP 404",
+    "[PASS] read-only setup inspection",
+    "[PASS] real CLI version equals pin",
+    "[PASS] seeded source fails before model edits",
+    "[PASS] real headless CLI completes",
+    "[PASS] existing source changed via target files API",
+    "[PASS] original test file preserved",
+    "[PASS] new report artifact retrieved",
+    "[PASS] new exact artifact retrieved",
+    "[PASS] independent target unittest process passes",
+    "[PASS] independent held-out calculations pass",
+    "[PASS] owned coding project cleanup",
+    "0 failed"
+  ],
+  "template": "kimi-code",
+  "cli_version": "2.2.0",
+  "sdk_source_commit": "d4d93e8cbb986f33a8868f7a4139ed0edb49eaba",
+  "source_sha256": {
+    "commands.py": "3bf4902d64c7d23dab353dd119a02787721924dc3e3e2690a07d0d60de7d92f9",
+    "e2e_test.py": "16d0420416e33835c122c00cf4dd4e70f5884f49b5701a57afc6a584a680a070",
+    "Dockerfile": "0436139ff0e298a583cf1c4bdcd8bb64384b29a482599ea3aef3e69d6791a8ba",
+    "template.yaml": "527c8ce1be6a2aca47d2309e4bf134462f37077df9bc09055adcf26af4d5a613"
+  },
+  "cleanup_verified": true,
+  "assertion_count": 17
+}
