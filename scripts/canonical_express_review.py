@@ -26,6 +26,8 @@ import urllib.parse
 import urllib.request
 import uuid
 
+# Reviewed source snapshot at PINS["templates"], deliberately independent of HEAD
+# additions. New templates use their own exact-source acceptance controller.
 TEMPLATES = ("agents-cli", "amp", "browser-automation", "claude-code", "codex",
     "codex-agent-api", "deepseek-harness", "droid", "gemini", "hermes-agent",
     "node-web", "openclaw", "opencode", "pi", "python-hello", "qoder", "qwen-code", "aider", "swe", "osworld", "ocr", "media-tools", "document-tools")
