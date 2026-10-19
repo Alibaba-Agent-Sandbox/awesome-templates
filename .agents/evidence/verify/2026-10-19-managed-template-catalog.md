@@ -11,3 +11,8 @@ Specific catalog-only scope from Issues31/32 is implemented; copied source Docke
 Executed static checks: Markdown links118 documents/0 failures; strict source
 conformance23 plus skeleton/0 failures; test_spec_tools37 tests PASS. Native
 CLI help was checked for create --template/timeout, exec and cleanup syntax.
+
+CI selector follow-up: preserve the frozen23-template canonical source approval
+boundary while permitting new independently verified catalog entries. The
+authorization regression rejects every unreviewed added name; no credentials
+or cloud workflow authorization are broadened.13 real authorization tests PASS.

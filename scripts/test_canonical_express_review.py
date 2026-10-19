@@ -33,11 +33,17 @@ class AuthorizationTest(unittest.TestCase):
             with self.subTest(text=text), self.assertRaises(ValueError):
                 review.select(text)
 
-    def test_full_selection_matches_every_integrated_catalog_entry(self):
+    def test_reviewed_snapshot_is_present_without_authorizing_new_catalog_entries(self):
         import yaml
         root = Path(__file__).resolve().parents[1]
         catalog = yaml.safe_load((root / "awesome-templates.yaml").read_text())
-        self.assertEqual(set(review.select("all")), {row["path"] for row in catalog["templates"]})
+        self.assertTrue(set(review.select("all")).issubset({row["path"] for row in catalog["templates"]}))
+        # This workflow deploys immutable reviewed/templates, not HEAD. Adding a
+        # catalog entry must not silently authorize an unreviewed cloud source.
+        for row in catalog["templates"]:
+            if row["path"] not in review.TEMPLATES:
+                with self.subTest(template=row["path"]), self.assertRaises(ValueError):
+                    review.select(row["path"])
 
     def test_missing_credentials_never_calls_source_or_cloud(self):
         with tempfile.TemporaryDirectory() as directory:
