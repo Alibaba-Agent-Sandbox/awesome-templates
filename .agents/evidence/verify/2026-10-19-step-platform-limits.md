@@ -61,3 +61,11 @@ full-model L3, new Dockerfile L1 or completed original-64 roadmap is claimed.
 Existing credentials remain local; private provider diagnostics/journals are not
 committed or uploaded. All known failed pilot resources were reconciled by exact
 ownership with independent absence readback.
+
+## Persistent upstream archive throttling
+
+The second current-head local-e2e attempt also failed before tests: all five
+bounded codeload retries returned HTTP429. The next candidate uses the existing
+actions/checkout mechanism for the identical public Hermes commit, explicitly
+checks HEAD, disables persisted credentials, and retains frozen installation and
+all Hermes tests. This changes source transport only; no runtime gate is skipped.
