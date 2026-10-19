@@ -123,7 +123,7 @@ jobs:
 
       - name: Install pinned upstream CLIs for local smoke checks
         run: |
-          npm install --global @openai/codex@0.162.1 @anthropic-ai/claude-code@2.0.76 opencode-ai@1.19.0 @factory/cli@0.241.1 @qwen-code/qwen-code@0.23.0 @ampcode/cli@0.0.1792022479-ge66e24 @google/gemini-cli@0.64.0 @qoder-ai/qodercli@1.1.72 openclaw@2026.10.4
+          npm install --global @openai/codex@0.162.1 @anthropic-ai/claude-code@2.0.76 opencode-ai@1.19.0 @factory/cli@0.241.1 @qwen-code/qwen-code@0.23.0 @ampcode/cli@0.0.1792022479-ge66e24 @google/gemini-cli@0.64.0 @qoder-ai/qodercli@1.1.72 openclaw@2026.10.4 @moonshot-ai/kimi-code@2.2.0
           mkdir -p "$RUNNER_TEMP/pi-cli"
           cp pi/package.json pi/package-lock.json "$RUNNER_TEMP/pi-cli/"
           npm ci --prefix "$RUNNER_TEMP/pi-cli" --ignore-scripts --omit=dev --registry=https://registry.npmjs.org
@@ -172,6 +172,7 @@ jobs:
           python -m pytest -q droid/test_commands.py droid/test_e2e_protocol.py
           python -m pytest -q gemini/test_commands.py gemini/test_e2e_protocol.py
           python -m pytest -q openclaw/test_commands.py
+          python -m pytest -q kimi-code/test_commands.py
           python -m pytest -q qoder/test_commands.py qoder/test_e2e_protocol.py
           python -m pytest -q deepseek-harness/test_commands.py deepseek-harness/test_e2e_protocol.py
           python -m pytest -q hermes-agent/test_commands.py hermes-agent/test_e2e_protocol.py
