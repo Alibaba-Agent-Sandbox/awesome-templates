@@ -1,0 +1,44 @@
+{
+  "template": "apply-patch",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "verification_type": "image-backed-external-http",
+  "result": "PASS",
+  "passed": true,
+  "cleanup_verified": true,
+  "model_acceptance": "NOT_RUN",
+  "verifier_sha256": "345320c89530e7adc250649ba746b6b4c13c65d096537fd368814a301e688a74",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "apply-patch",
+    "materializer_sha256": "33ae3dc0658828fb7277ce6e9227400dc3f9860b8f90cde0831660389e331c7a",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "05995ccbd788eeb75b87daec3c7d73632b0afafe",
+    "steps_json_bytes": 5061,
+    "inputs_sha256": {
+      "Dockerfile": "b9d8d57b29beffcb0dc5727761a1b2b5af02f837aae416ba76682880fda58c4c",
+      "template.yaml": "3edc30817cdd9e3af8494677ff83c997b6466b34a6a4ef0f633098c1d68d4569",
+      "package.json": "9529460a112246a71904e58e436960a60f5f806a1a645f1bb2ee84d38ecdd051",
+      "package-lock.json": "a604bcf1808ade4b10e79da46aec9fc868bcc8a3ecdb804de263f2937f9d8d58",
+      "upstream-LICENSE": "d17f227e4df5da1600391338865ce0f3055211760a36688f816941d58232d8dc",
+      "install_alias.py": "f0821f5093e85b08572d0e5b8ec3d17b2e05e907c5d9955c3ab5b7395d470e5c",
+      "commands.py": "86c8827584fe1f85245b2fcf8332ee3ac1d6cac226e5926f2dd490e118d19cb2"
+    },
+    "generated_manifest_sha256": "fa213cf3dcc5f18be4da9723a27aa36e6059381eabf40572edf5ee9e6d53470f"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "passed": true,
+    "assertions": [
+      "[PASS] actual pinned binary and add/update/move/delete/literal-input smoke",
+      "[PASS] remote modified bytes retrieved through files API",
+      "[PASS] invalid upstream patch is a nonzero result",
+      "[PASS] missing/undeclared/unknown/path-escape rejection",
+      "[PASS] owned remote proof file cleanup and absence"
+    ]
+  }
+}

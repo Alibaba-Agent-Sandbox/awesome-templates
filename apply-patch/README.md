@@ -81,7 +81,20 @@ No model key. WORKSPACE defaults to /home/user/app. Inject the optional ABX_SERV
 
 ## Verified
 
+| Provider | Executed scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
+
+This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+
+Full external HTTP acceptance also passed: actual file bytes, error/boundary behavior and cleanup readback are in the [receipt](evidence/full-http-steps-2026-10-19T160512Z.json).
+
+<details>
+<summary>Earlier checkpoint text (historical; current steps result is above)</summary>
+
 No provider has a passing run recorded for this template.
+
+</details>
 
 ## Secondary development
 

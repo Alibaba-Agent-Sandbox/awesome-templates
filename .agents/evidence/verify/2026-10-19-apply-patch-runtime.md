@@ -10,3 +10,16 @@ PASS:10 real parser/path/Unicode/descendant/deadline/output-limit regressions.
 Strict target conformance and Markdown links117 documents/0 failures. Initial
 uncommitted inline step payload exceeded15KB preflight and did not call cloud;
 preparation after publishing exact source will hash-check immutable COPY input.
+
+## Genuine Express deployment and complete external HTTP
+
+PASS: generated steps5061 bytes using exact published source05995cc and verified
+COPY file hashes. Official READY, all4 CLI+SDK smoke calls, complete external
+HTTP suite5 assertions and independently confirmed owned sandbox/template cleanup.
+Actual remote file bytes and absence were retrieved through the files API, not
+controller filesystem paths. No model was needed or run.
+
+See template-local express-2026-10-19.json and full-http-steps-2026-10-19T160512Z.json.
+README/tested_on now record this exact steps scope; source runtime/version stay
+unchanged and status remains experimental. Current-head hosted L1/CI and ordinary
+merge remain pending.
