@@ -17,3 +17,8 @@ PASS: full actual HTTP L0 after the correction,5 assertions including a separate
 forwarded local8443 authentication/workbench document and cross-request state.
 PASS: strict target conformance; Markdown links117 documents/0 failures.
 Image/Express/hosted current-head CI and merge remain pending.
+
+CI selector follow-up: preserve the frozen23-template canonical source approval
+boundary while permitting new independently verified catalog entries. The
+authorization regression rejects every unreviewed added name; no credentials
+or cloud workflow authorization are broadened.13 real authorization tests PASS.
