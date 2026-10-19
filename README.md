@@ -157,3 +157,14 @@ abx --provider e2b template launch alibaba-agent-sandbox/awesome-templates//pyth
 ```
 
 第三方提供方继续为 Beta。`provider-prepared` 是流程提示，不是原生验收记录。构建前会检查运行时能力，引用转换不会补齐 PTY 或代码执行能力。原生基础镜像、镜像仓库和集群条件由各提供方维护。见[自动准备指南](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/zh/guide/template-launch.md)。已有验收证据仍为准，本次不修改 Verified-on 声明。
+
+## Provider-managed runtime catalog
+
+| ID | Provider | Documentation | Verified scope |
+| --- | --- | --- | --- |
+| base | alicloud-express | [English](docs/managed/base/README.md) · [中文](docs/managed/base/README.zh-CN.md) | shell, files, SDK shell-fallback code, CLI exec; owned cleanup |
+| code-interpreter-v1 | alicloud-express | [English](docs/managed/code-interpreter-v1/README.md) · [中文](docs/managed/code-interpreter-v1/README.zh-CN.md) | shell, files, SDK shell-fallback code, CLI exec; owned cleanup |
+
+These provider-managed IDs are listed separately from buildable source templates.
+Native interpreter service was HTTP404 in both recorded tests; no native interpreter
+or other-provider certification is claimed.

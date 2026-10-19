@@ -71,4 +71,6 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Provider-owned template launch](notes/proposed/feature/2026-10-19-provider-template-launch.md) · [verification](evidence/verify/2026-10-19-provider-template-launch.md)
 
+- [Managed runtime catalog](notes/proposed/feature/2026-10-19-managed-template-catalog.md) · [verification](evidence/verify/2026-10-19-managed-template-catalog.md)
+
 - [Express steps checkpoint](evidence/verify/2026-10-19-steps-checkpoint-1555.md)

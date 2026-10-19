@@ -466,3 +466,7 @@ Concurrent harnesses take an exclusive `flock` on `/tmp/abx-acr-push.lock` (`ABX
 Exit 2 means the output matched a known CLI or SDK failure mode (string `base` rejected, generation-1 update, `AuthError` / HTTP 401, or envd `promised N bytes in enveloped message`). Those were tracked as agent-sandbox `#12` `#13` `#14` and python-sdk `#15` `#17`. The deploy/run CLI fix is on `agent-sandbox` main (`#16`). The envd framing and port-9000 auth fix is on `python-sdk` main. The harness still classifies the old messages so an older binary stays explicit.
 
 Exit 1 is any other failure. Exit 0 writes the evidence file.
+
+## Provider-managed catalog entries
+
+`managed_templates` is an additive catalog namespace separate from installable source `templates`. Its fields are name/provider/template_id/kind/documentation/evidence/verification_scope/native_interpreter_verified. Managed IDs have no repository-owned Dockerfile, image version, commands.py or build context, so source image selection, steps generation and deploy checks do not apply. Runtime acceptance must record SDK fallbacks, observed inventory and independent owned cleanup; it cannot certify another provider or a native interpreter. See [base](managed/base/README.md) and [code-interpreter-v1](managed/code-interpreter-v1/README.md).
