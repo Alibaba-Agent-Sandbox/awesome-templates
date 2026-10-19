@@ -101,6 +101,10 @@ python3 scripts/run_local_e2e.py
 
 Local checks default to no model. Set `E2E_REQUIRE_CLI=1` to require the pin; `E2E_REQUIRE_LLM=1` forces real coding acceptance using the target's configuration. The verifier seeds failing source/tests, invokes Pi with writable tools, downloads changed source and new artifacts, checks original tests are intact, then independently reruns isolated unittest and held-out inputs. A response marker alone fails. `E2E_COMMAND_TIMEOUT` controls the model deadline; `E2E_SERVER_TOKEN` is the optional server bearer credential and `E2E_TOKEN` is the gateway token.
 
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py pi` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+
 ## Contributing
 
 [Contribution rules](../CONTRIBUTING.md) · [specification](../docs/template-spec.md) · [design](../docs/design/pi.md).

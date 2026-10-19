@@ -115,9 +115,20 @@ curl --fail-with-body -X POST "$SERVER_URL/commands/stop" \
 
 ## 已验证
 
+| 提供方 | 已执行范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
+
+该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
+
+<details>
+<summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
+
 尚未记录任何通过的提供方测试。
 
 2026-10-16 本地 L0 使用真实 Node 22.22.2、隔离 npm 10.9.4、agent-sandbox-server 0.3.0、httpx 0.28.1，60 项断言全部通过：HTTP API 发现、就绪前 4 MiB 高输出、真实 HTTP 请求、stderr 日志、npm 构建产物、start/dev 及进程组停止后端口重用、构建非零/超时、就绪失败。该结果仅为本地主机验证，未证明 Node 20 镜像或云端行为。Docker 缺失，L1 待运行；L2/L4 待运行，`tested_on` 保持空。服务模板不需要模型调用。
+
+</details>
 
 ## Express 源码运行验证
 
@@ -134,6 +145,10 @@ fixture 检查非零退出和可识别失败。测试仅使用自有临时 npm c
 不会追改为通过。
 
 把项目上传至 `/home/user/app` 下并提交依赖锁文件。衍生镜像用 `npm ci` 从锁文件安装精确版本；依赖安装放在最终 `COPY commands.py` 之前，npm 缓存在同层清理。保留锁定 server、Alibaba 基础镜像、非 root 用户、generation 2 的启动/就绪命令，无 Docker CMD/ENTRYPOINT。Express/Fastify 可用 serve，或提供 start/dev/build 脚本。模板不预装框架，不创建 Next/Vite 项目。
+
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py node-web`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
 
 ## 贡献
 

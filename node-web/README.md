@@ -115,9 +115,20 @@ No model/cloud key is needed by these commands. Keep secret values out of source
 
 ## Verified
 
+| Provider | Executed scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
+
+This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+
+<details>
+<summary>Earlier checkpoint text (historical; current steps result is above)</summary>
+
 No provider has a passing run recorded for this template.
 
 2026-10-16 local L0 passed all 60 assertions with real Node 22.22.2, isolated npm 10.9.4, agent-sandbox-server 0.3.0 and httpx 0.28.1: HTTP API discovery, 4 MiB pre-readiness output, real HTTP requests, stderr logs, npm build artifact, npm start/dev and process-group stop/rebind, build nonzero/timeout and readiness failure. This is a local host run; it does not establish the Node 20 image build or cloud behavior. L1 is pending because Docker is absent. L2/L4 are pending; `tested_on` remains empty. No model call is required for this service template.
+
+</details>
 
 ## Express source-runtime verification
 
@@ -136,6 +147,10 @@ model call is required. The earlier unbracketed-output run remains rejected by
 the image acceptance counter and is not retroactively relabeled as a pass.
 
 Upload a project beneath `/home/user/app`, include its dependency lockfile, and install exact versions when building a derivative image (`npm ci` against the committed lockfile). Keep package installs before the final `COPY commands.py`, remove the npm cache in the same image layer, retain the pinned server, Alibaba base, non-root user and generation-2 start/ready commands. Do not add Docker CMD/ENTRYPOINT. Express/Fastify applications use `serve`, or define `start`/`dev`/`build` scripts. This template does not install a framework or generate a Next/Vite project.
+
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py node-web` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
 
 ## Contributing
 

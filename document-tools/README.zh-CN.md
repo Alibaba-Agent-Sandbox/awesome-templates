@@ -106,9 +106,20 @@ JSON 对象直接包含参数。HTTP 200 返回 `{"result":{"output_path":"/home
 
 ## 已验证
 
+| 提供方 | 已执行范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
+
+该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
+
+<details>
+<summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
+
 尚未记录任何通过的提供方测试。
 
 记录的运行时代码已实际通过镜像 L1 和专门的原生/SDK/HTTP CI，见 [CI 确认](../.agents/evidence/verify/2026-10-18-document-tools-ci-confirmation.md)。本地准备及首次远端失败保留在[原始记录](../.agents/evidence/verify/2026-10-18-document-tools-runtime.md)。canonical L2 尚未运行；保持 experimental 和空 `tested_on`。
+
+</details>
 
 ## 二次开发
 
@@ -117,6 +128,10 @@ JSON 对象直接包含参数。HTTP 200 返回 `{"result":{"output_path":"/home
 原生清理通过 `waitid(WNOWAIT)` 保持 leader 未 reap，先终止 owned 进程组，覆盖成功、非零退出及重定向后代。主动 `setsid` 脱离和 server 被 SIGKILL 不在此保证内；销毁沙箱是最终隔离边界。
 
 运行时工作目录的文件系统必须支持硬链接，才能原子且不覆盖地发布产物。部分托管源码挂载拒绝该调用；可在普通可写 Linux 文件系统中运行字节一致的本地测试副本，或在进程启动前设置合适工作目录。硬链接失败会拒绝转换，不退回覆盖已有文件的实现。
+
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py document-tools`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
 
 ## 贡献
 

@@ -173,6 +173,15 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/amp_version" \
 
 ## 已验证
 
+| 提供方 | 已执行范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
+
+该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
+
+<details>
+<summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
+
 尚未记录任何通过的提供方测试。
 
 1.2.0 修改了权限默认值与检查接口；当前版本尚未完成镜像构建、部署和模型验收。
@@ -181,6 +190,8 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/amp_version" \
 
 2026-10-16 在真实 Express base 中通过固定 Amp 版本、无密钥检查、设置字节不变及 7 项外部 HTTP 检查，实例已清理。[证据](./evidence/runtime-express-2026-10-16-readonly.json)。模型执行明确关闭（1 项跳过），不声称真实编码验收或 1.2.0 镜像构建、部署通过。
 
+</details>
+
 ## 二次开发
 
 版本钉在 Dockerfile 的 `AMP_CLI_VERSION`（`@ampcode/cli@0.0.1792022479-ge66e24`）和 `template.yaml` 里 `amp_version` 的 smoke 期望值。跑过 `npm view @ampcode/cli version` 之后，同时改这两处，以及 `e2e_test.py` 里的 `PINNED_VERSION`，再跑一次 `amp version`，让 smoke 字符串等于输出的第一个字段。
@@ -188,6 +199,10 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/amp_version" \
 `amp_execute` 用参数数组调用 CLI。不要把 prompt 拼进 shell 字符串。`AMP_API_KEY` 检查必须放在 `subprocess` 之前，避免缺密钥时堵在设备登录。检查必须只读，权限绕过只能显式启用。在仓库根目录运行 `python -m pytest amp/test_commands.py` 和 `python scripts/run_local_e2e.py` 验证本地行为；本地通过不等于模型验收。目标具有兼容密钥时，设置 `E2E_BASE_URL`、`E2E_WORKSPACE` 并运行 `E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 python amp/e2e_test.py`：先证明源码测试失败，再验证真实文件修改、新建产物、原测试未改动，以及隔离 Python 测试和独立额外断言。该显式验收允许工具修改唯一的临时项目并在结束后清理；回复标记本身不能通过。
 
 要加命令，再注册一个用参数数组调用 `amp` 的 `@command`。`start()` 只放在 `if __name__ == "__main__"` 下面。
+
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py amp`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
 
 ## 贡献
 

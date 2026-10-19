@@ -101,6 +101,10 @@ python3 scripts/run_local_e2e.py
 
 默认本地检查不调用模型。`E2E_REQUIRE_CLI=1` 要求实际固定版本；`E2E_REQUIRE_LLM=1` 使用目标配置强制真实编程验收。验证器先创建失败源码和测试，明确允许 Pi 写入，再下载改动源码、新产物，确认原测试未修改，最后独立运行隔离 unittest 和 held-out 输入；仅返回 marker 会失败。`E2E_COMMAND_TIMEOUT` 控制模型期限；`E2E_SERVER_TOKEN` 是可选 server bearer token，`E2E_TOKEN` 是网关 token。
 
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py pi`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+
 ## 贡献
 
 [贡献规范](../CONTRIBUTING.md) · [模板规范](../docs/template-spec.zh-CN.md) · [设计](../docs/design/pi.md)。

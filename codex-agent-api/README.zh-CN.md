@@ -132,6 +132,15 @@ SSE 包括 `agent.session.created`、`agent.session.turn.started`、`agent.sessi
 
 ## 已验证
 
+| 提供方 | 已执行范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
+
+该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
+
+<details>
+<summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
+
 尚未记录任何通过的提供方测试。
 
 本地真实子进程回归覆盖静默 stdout 超时、大量 stderr、进程组清理、无人订阅后台到期、秘密脱敏、回放边界及多订阅用量统计。HTTP 冒烟覆盖 CRUD 和参数拒绝。`test_http_runtime.py` 用明确的合成 CLI fixture 验证真实 HTTP/后台/SSE/取消及 MCP header 隔离，不冒充上游执行验证。静态检查或 L0 不代表镜像、云提供方或真实模型验收。本机已执行固定版本 CLI 的 version/help；本次恢复尚无 L1 镜像构建或 L2 提供方部署通过结果。
@@ -149,6 +158,8 @@ E2E_REQUIRE_LLM=1 E2E_MODEL=your-model E2E_BASE_URL=https://your-sandbox \
 
 真实 coding 验证先上传已有故障 `normalizer.py`，通过 `/shell` 执行控制端持有的六项固定测试并确认失败，再要求后台 agent 修复原源码并创建 `normalization-report.json`。控制端下载源码，分别用 files/artifact API 读取并核对新产物，再运行同样六项固定测试，必须 exit 0。测试一直留在控制端，不上传为模型可修改的文件。随后通过同会话 SSE 确切线程恢复，生成包含报告真实 SHA-256 和输出数量的第二产物；核对原源码/报告未变并再次运行固定测试。仅回复 `ABX_E2E_OK`、`ABX_RESUME_OK` 不能通过。`E2E_REQUIRE_LLM=1` 强制执行，远端缺少凭据、上游错误或显式关闭执行均失败；只有未请求模型的可选 L0 会报告 SKIP。`E2E_TOKEN` 优先、兼容 `ABX_SERVER_TOKEN`，用于服务认证；工作区不为 `/home/user/workspace` 时设置 `E2E_WORKSPACE`，可用 `E2E_LLM_TIMEOUT` 调整控制端轮询期限。最后只删除本次唯一探针目录和会话。fake-remote 协议回归覆盖成功分支，并拒绝仅 marker、错误报告及错误恢复产物；它们不属于真实模型/提供方证据。固定 archive 已支持 `agent-sandbox-server serve --commands` 加载带延迟注解的 dataclass；若注入 server wheel，应从相同的已修复 commit 构建。
 
+</details>
+
 ## Express 源码运行验证
 
 2026-10-16，改动后的源码在自有 Express base 实例中使用固定 Codex 0.162.1 与真实 Responses 兼容模型通过 30 项外部 HTTP 检查。正式 `serve --commands` 入口成功加载含 dataclass 的模块。验收修复已有故障源码，通过控制端持有的六项固定测试，核对新报告，再恢复同一上游线程并独立检查第二产物与报告 SHA-256。自有实例已销毁。[JSON 证据](evidence/runtime-express-2026-10-16.json)与[HTTP 结果](evidence/runtime-express-2026-10-16.log)包含源码、wheel 溯源信息。此结果不等于 Dockerfile L1 或新模板部署 L2，`tested_on` 保持为空；复现步骤见[共享诊断工具](../docs/express-source-runtime.md)。
@@ -156,6 +167,10 @@ E2E_REQUIRE_LLM=1 E2E_MODEL=your-model E2E_BASE_URL=https://your-sandbox \
 ## 二次开发
 
 先读[设计说明](../docs/design/codex-agent-api.md)、[贡献规范](../CONTRIBUTING.md)和[模板规范](../docs/template-spec.zh-CN.md)。围绕 Codex JSONL 扩展适配，不另写 agent 循环。CLI pin 与 `codex` 保持一致。[OpenAI 官方 CLI 文档](https://developers.openai.com/codex/cli/reference/)。
+
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py codex-agent-api`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
 
 ## 贡献
 

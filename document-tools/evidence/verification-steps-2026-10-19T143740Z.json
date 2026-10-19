@@ -1,0 +1,26 @@
+{
+  "template": "document-tools",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-19T143740Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "document-tools",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "inputs_sha256": {
+      "Dockerfile": "25d8cdf83f5936f559026a2d5d8ba4bada5908348d274fca1f76ad4bad9ffb97",
+      "template.yaml": "ed1d28fd29a0bb40916c0e2dab6f5656de625dea126cd4c5cbe1b4af72941e53",
+      "commands.py": "e0c5ef817ed3e69a265b918ee2da34e28f71650a185635f08e0589a69a77838f"
+    },
+    "generated_manifest_sha256": "3eb379bb1b8c591f5af41c6b8a869189b983c606d9c617ac97ca1af3d3025a77"
+  },
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "duration_s": 113.437
+}

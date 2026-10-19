@@ -101,13 +101,28 @@ Existing upstream auth/settings remain user-owned. The wrapper does not reconfig
 
 ## Verified
 
+| Provider | Executed scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
+
+This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+
+<details>
+<summary>Earlier checkpoint text (historical; current steps result is above)</summary>
+
 No provider acceptance is recorded. Local diagnostics and mocked regressions do not prove image, cloud or model acceptance. `tested_on` remains empty and catalog status remains experimental. See [verification record](../.agents/evidence/verify/2026-10-16-gemini-runtime.md).
+
+</details>
 
 ## Secondary development
 
 Read [design](../docs/design/gemini.md). Keep exact npm/server pins, Alibaba base, non-root user and generation-2 startup. Run `python3 scripts/check_template.py gemini`, `python3 -m pytest gemini/test_commands.py gemini/test_e2e_protocol.py -q`, and `python3 scripts/run_local_e2e.py` with the server/client dependencies installed. `E2E_RUN_LLM=0` skips model execution and sends no coding requests.
 
 L1 requires a real image build; L2 requires deployment plus external CLI/SDK calls. For L3, start the target with `GEMINI_API_KEY`, set controller `E2E_BASE_URL` and target `E2E_BASE_DIR` inside `WORKSPACE`, then run `E2E_REQUIRE_LLM=1 E2E_RUN_LLM=1 python3 gemini/e2e_test.py`. Only the target needs the model key. The test seeds failing source/tests through the target files API, requests a fix plus new artifacts with explicit yolo, preserves the tests, independently executes original and held-out tests remotely, and removes its unique project. A response marker alone fails.
+
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py gemini` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
 
 ## Contributing
 

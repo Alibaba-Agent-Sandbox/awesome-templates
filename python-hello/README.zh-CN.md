@@ -133,9 +133,20 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/run_script" \
 
 ## 已验证
 
+| 提供方 | 已执行范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
+
+该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
+
+<details>
+<summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
+
 尚未记录任何通过的提供方测试。
 
 此状态对应 **1.1.0**。[2026-10-15 Express 历史证据](./evidence/express-2026-10-15.json) 仅证明 **1.0.0** 的 `hello` 经 CLI 和 SDK 成功，不能证明新版基础镜像、pytest、文件或脚本操作已通过。新 provider 验证成功前 `tested_on` 保持空列表。本地 HTTP 是 L0，不能代替镜像构建或云端验收。
+
+</details>
 
 ## 二次开发
 
@@ -151,6 +162,10 @@ python3 scripts/express_e2e.py python-hello
 ```
 
 本地 runner 启动真实 HTTP 服务和工作目录，测试文件上传/下载/列表/删除、上传脚本执行、pytest 成功和故意失败的用例。文件错误视为失败，不再 SKIP。Express harness 需要已配置凭据和 Docker，仅在 CLI/SDK smoke 全部通过后写入证据，并清理本次创建的资源。Express smoke 通过不代表所有本地回归都已在云端执行。
+
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py python-hello`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
 
 ## 贡献
 

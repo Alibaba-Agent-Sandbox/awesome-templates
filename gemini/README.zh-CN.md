@@ -101,13 +101,28 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/gemini" \
 
 ## 已验证
 
+| 提供方 | 已执行范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
+
+该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
+
+<details>
+<summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
+
 尚无 provider 验收记录。本地诊断与 mock 回归不代表镜像、云端或模型通过；`tested_on` 为空，目录状态保持 experimental。见[验证记录](../.agents/evidence/verify/2026-10-16-gemini-runtime.md)。
+
+</details>
 
 ## 二次开发
 
 阅读[设计](../docs/design/gemini.md)，保留固定 npm/server 版本、Alibaba base、非 root 与 generation-2 启动。运行 `python3 scripts/check_template.py gemini`、`python3 -m pytest gemini/test_commands.py gemini/test_e2e_protocol.py -q`、`python3 scripts/run_local_e2e.py`。本地套件需要 server/client 依赖；`E2E_RUN_LLM=0` 跳过模型且不发编码请求。
 
 L1 必须真实构建；L2 必须部署并从外部调用 CLI/SDK。L3 在目标服务注入 `GEMINI_API_KEY`，控制端设置 `E2E_BASE_URL` 与目标 `WORKSPACE` 内的 `E2E_BASE_DIR`，运行 `E2E_REQUIRE_LLM=1 E2E_RUN_LLM=1 python3 gemini/e2e_test.py`。仅目标需要密钥。测试经远端 files API 创建失败源码和测试，显式 yolo 要求修复和新增产物，核对测试未改写，独立远端运行原测试与保留计算，最后删除唯一项目。仅返回标记不能通过。
+
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py gemini`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
 
 ## 贡献
 

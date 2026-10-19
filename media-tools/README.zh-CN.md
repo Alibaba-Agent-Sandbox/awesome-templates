@@ -104,15 +104,30 @@ JSON 对象直接包含参数。HTTP 200 返回 `{"result":{"output_path":"/home
 
 ## 已验证
 
+| 提供方 | 已执行范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
+
+该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
+
+<details>
+<summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
+
 尚未记录任何通过的提供方测试。
 
 记录的源码版本已实际通过镜像 L1、43 项原生/SDK 回归及 21 项 HTTP 检查，见 [CI 确认](../.agents/evidence/verify/2026-10-18-media-tools-ci-confirmation.md)。失败尝试及本地准备保留在[原始证据](../.agents/evidence/verify/2026-10-18-media-tools-runtime.md)。canonical L2 云验收尚未运行；保持 experimental 和空 `tested_on`。
+
+</details>
 
 ## 二次开发
 
 阅读[设计](../docs/design/media-tools.md)，运行 `python3 scripts/check_template.py media-tools`、`python3 -m pytest -q media-tools/test_commands.py media-tools/test_http.py` 及仓库本地 E2E runner。codec 回归实际运行固定 Debian 工具，不模拟原生进程。HTTP 验收设置 `E2E_REQUIRE_MEDIA=1`，缺少固定工具就失败；未要求时显式 SKIP，不算媒体功能通过。验收上传随机 PCM、下载产物核对完整哈希，再独立解析 WAV 往返产物并逐样本比对，最后删除自有文件。
 
 Linux runner 使用 `waitid(WNOWAIT)` 固定 owned group 身份，先终止进程组再 reap leader，覆盖成功、非零退出和重定向后代进程。主动 `setsid` 脱离及 server 被 SIGKILL 不在该清理保证内；沙箱销毁是最终隔离边界。
+
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py media-tools`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
 
 ## 贡献
 

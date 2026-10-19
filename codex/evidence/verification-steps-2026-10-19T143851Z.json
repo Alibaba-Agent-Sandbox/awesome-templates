@@ -1,0 +1,27 @@
+{
+  "template": "codex",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-19T143851Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "codex",
+    "template_version": "2.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "inputs_sha256": {
+      "Dockerfile": "925c54f783899e383139876f1cc858c04f79646eca6103259e778b610234a643",
+      "template.yaml": "5bcc031ca9f003d087e3b380cf9e1921a8b58dfd7a6a331d22431759d2bb3f58",
+      "commands.py": "caebcfb64d80725ad724adbd45f27ca21c3850f118b52444e0f99af5d15c5044",
+      "AGENTS.md": "767e4f6ce54424cdc11207656ad10e0c08a28242b484a57259fe72f2abd852de"
+    },
+    "generated_manifest_sha256": "24d292b13651ab3082baa9c74a1d169a39172c2a937dacde70a7cf5275bd8abe"
+  },
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "duration_s": 114.962
+}

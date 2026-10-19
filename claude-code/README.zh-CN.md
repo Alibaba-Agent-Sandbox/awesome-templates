@@ -132,7 +132,18 @@ HTTP 200 包装为 `{"result":"<上游 JSON>"}`。缺参或类型错误返回 HT
 
 ## 已验证
 
+| 提供方 | 已执行范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
+
+该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
+
+<details>
+<summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
+
 尚未记录任何通过的提供方测试。
+
+</details>
 
 ## 二次开发
 
@@ -150,6 +161,10 @@ L0 跳过模型。L1 要真实构建；L2 要部署和外部 CLI/SDK smoke。L3 
 不打印秘密。套件先复现项目失败，要求真实 Agent 修改代码、新建产物与报告，保持测试文件不变，
 再独立运行两项测试。只清理本次唯一目录、进程与 PTY 会话。必需模式缺密钥会失败。
 提供方记录必须等真实运行通过后填写。
+
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py claude-code`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
 
 ## 贡献
 

@@ -133,6 +133,15 @@ The service retains at most 200 saved agent configurations; each session allows 
 
 ## Verified
 
+| Provider | Executed scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
+
+This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+
+<details>
+<summary>Earlier checkpoint text (historical; current steps result is above)</summary>
+
 No provider has a passing run recorded for this template.
 
 Local child-process regressions cover silent stdout deadlines, large stderr, process-group cleanup, background expiry, redaction, replay bounds, and subscriber accounting. Local HTTP smoke exercises CRUD and parameter rejection. `test_http_runtime.py` uses an explicitly synthetic CLI fixture to check real HTTP/background/SSE/cancellation and MCP header isolation; it does not certify upstream execution. Neither static review nor L0 establishes image/provider/model acceptance. The pinned binary's version/help were executed locally; no L1 image build or L2 provider deployment has passed in this resumed session.
@@ -150,6 +159,8 @@ E2E_REQUIRE_LLM=1 E2E_MODEL=your-model E2E_BASE_URL=https://your-sandbox \
 
 The real coding checks upload a faulty existing `normalizer.py`, reproduce failures in six controller-owned tests via `/shell`, then require the background agent to fix that source and create `normalization-report.json`. The controller downloads the files, validates the report through both files and artifact APIs, and reruns the same six fixed tests to exit 0. These tests remain in the controller and are never uploaded as model-editable files. Exact-thread SSE resume must create a second artifact containing the actual report SHA-256 and output count, preserve the first source/report, and pass the fixed tests again. Agent messages `ABX_E2E_OK` and `ABX_RESUME_OK` alone cannot pass acceptance. `E2E_REQUIRE_LLM=1` forces execution and turns missing remote credentials, errors or disabled execution into failure; optional L0 without a model request reports SKIP. Set `E2E_TOKEN` (or `ABX_SERVER_TOKEN`) for server authentication, `E2E_WORKSPACE` to the server workspace when it differs from `/home/user/workspace`, and optionally `E2E_LLM_TIMEOUT` for controller polling. The harness deletes only its unique probe directory and session. Fake-remote protocol tests exercise the success branch and reject marker-only, incorrect report and incorrect resume output; they are not model/provider evidence. The pinned archive and an optional injected wheel both support `agent-sandbox-server serve --commands` with postponed-annotation dataclasses; when injecting a wheel, build it from the same fixed source commit.
 
+</details>
+
 ## Express source-runtime verification
 
 On 2026-10-16, the patched source passed 30 external HTTP checks on an owned Express base sandbox with pinned Codex 0.162.1 and a real Responses-compatible model. The production `serve --commands` startup loaded the dataclass-containing module. Acceptance repaired an existing broken source file, passed six controller-owned tests, verified a newly generated report, resumed the exact upstream thread, and independently checked the second artifact and report SHA-256. The owned sandbox was destroyed. [JSON evidence](evidence/runtime-express-2026-10-16.json) and [HTTP results](evidence/runtime-express-2026-10-16.log) include source/wheel provenance. This source-runtime result does not establish Dockerfile L1 or new-template deployment L2; `tested_on` remains empty. Reproduce with [the shared runner](../docs/express-source-runtime.md).
@@ -157,6 +168,10 @@ On 2026-10-16, the patched source passed 30 external HTTP checks on an owned Exp
 ## Secondary development
 
 Read [the design](../docs/design/codex-agent-api.md), [CONTRIBUTING](../CONTRIBUTING.md) and [template spec](../docs/template-spec.md). Extend the adapter around Codex's JSONL contract; do not implement a second agent loop. Keep the same CLI pin as `codex`. Official CLI reference: [OpenAI documentation](https://developers.openai.com/codex/cli/reference/).
+
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py codex-agent-api` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
 
 ## Contributing
 

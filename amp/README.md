@@ -173,6 +173,15 @@ A live agent turn with tools was not measured. The keyless commands (`amp_versio
 
 ## Verified
 
+| Provider | Executed scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
+
+This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+
+<details>
+<summary>Earlier checkpoint text (historical; current steps result is above)</summary>
+
 No provider has a passing run recorded for this template.
 
 Version 1.2.0 changes permission defaults and the setup contract. Its image build,
@@ -182,6 +191,8 @@ checks only; it does not verify 1.2.0 or a real agent coding task.
 
 Source-runtime inspection on a real Express base passed on 2026-10-16: pinned Amp version, keyless setup, unchanged settings bytes and 7 external HTTP checks; the owned instance was destroyed. [Evidence](./evidence/runtime-express-2026-10-16-readonly.json). Model execution was explicitly disabled (1 skip); no Amp coding acceptance is claimed. This does not build or deploy the 1.2.0 image.
 
+</details>
+
 ## Secondary development
 
 The version pin is `@ampcode/cli@0.0.1792022479-ge66e24` in the Dockerfile (`AMP_CLI_VERSION`) and the `amp_version` smoke expect in `template.yaml`. After `npm view @ampcode/cli version`, update both, plus `PINNED_VERSION` in `e2e_test.py`, and re-run `amp version` so the smoke string is the first token of that output.
@@ -189,6 +200,10 @@ The version pin is `@ampcode/cli@0.0.1792022479-ge66e24` in the Dockerfile (`AMP
 `amp_execute` builds an argv list. Do not interpolate the prompt into a shell string. Keep the `AMP_API_KEY` check in front of `subprocess` so a missing key cannot block on device login. Keep setup read-only and permission bypass explicitly opt-in. Run `python -m pytest amp/test_commands.py` from the repository root; `python scripts/run_local_e2e.py` checks local HTTP behavior without claiming model acceptance. With a compatible key on the target, `E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 python amp/e2e_test.py` runs the coding acceptance: seeded failing source, actual edits, downloaded artifacts, preserved tests, isolated target unittest and held-out assertions. Set `E2E_BASE_URL` and `E2E_WORKSPACE` to the target server/workspace. This opt-in acceptance explicitly grants tool approval to edit its unique disposable project; a response marker alone never passes.
 
 To add a command, register another `@command` function that calls `amp` with an argv list. `start()` stays under `if __name__ == "__main__"`.
+
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py amp` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
 
 ## Contributing
 

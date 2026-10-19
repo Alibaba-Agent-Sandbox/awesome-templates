@@ -1,0 +1,67 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-19",
+  "template": "python-hello",
+  "template_version": "1.1.0",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "steps",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "hello",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.402,
+      "args": {
+        "name": "Express"
+      },
+      "result": "Hello, Express!"
+    },
+    {
+      "name": "hello",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 1.121,
+      "args": {
+        "name": "Express"
+      },
+      "result": "Hello, Express!"
+    },
+    {
+      "name": "run_script",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.202,
+      "args": {
+        "code": "print(21 * 2)"
+      },
+      "result": "42\n"
+    },
+    {
+      "name": "run_script",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 0.86,
+      "args": {
+        "code": "print(21 * 2)"
+      },
+      "result": "42\n"
+    }
+  ],
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "python-hello",
+    "template_version": "1.1.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "inputs_sha256": {
+      "Dockerfile": "7ea5968e85cd97accb08b30250590390e226eae7f7b1dedddd495c00af4ed416",
+      "template.yaml": "2d97ffbaa494d5be8eb3e3ff206a909d932016c5dc4a5f353489aba312c251af",
+      "commands.py": "819dd5d91a67edc9d681b01dc44caac479c6d693d947f1818d5a1253cc9b9ceb"
+    },
+    "generated_manifest_sha256": "4eaddea38f819477b2314c99912dc292eb20c0af54e8c332b6918f08a58fb5ca"
+  }
+}

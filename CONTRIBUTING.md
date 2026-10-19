@@ -1,5 +1,11 @@
 # Contributing to Awesome Templates for Agent Sandbox
 
+[中文](CONTRIBUTING.zh-CN.md). Before implementation, read the
+[project standards and definition of done](docs/project-standards.md),
+[documentation standard](docs/documentation-standards.md), and
+[engineering-record rules](.agents/README.md). These cover ownership, compatibility,
+licenses, security, reproducibility, review, resource cleanup and Issue completion.
+
 The rules for a template are [docs/template-spec.md](./docs/template-spec.md)
 ([中文](./docs/template-spec.zh-CN.md)). `_skeleton/` is a directory that
 already passes `scripts/check_template.py`. It is not a catalog entry.
@@ -51,6 +57,28 @@ already passes `scripts/check_template.py`. It is not a catalog entry.
 
 Do not commit `__pycache__/`, `.env`, or secret values. Declare secret
 *names* with empty values in `template.yaml` `env`.
+
+## Review and completion
+
+The source directory remains authoritative across providers. Follow
+[provider-owned preparation](docs/provider-preparation.md): each provider owns
+base/image/registration adaptation; cross-cloud IDs are never converted.
+Missing terminal/code or other required capabilities stay unsupported.
+Catalog prerequisites and launch hints do not establish native backend acceptance.
+
+Run `python scripts/check_docs.py` for local document links. Add a regression for
+behavior-changing fixes; run affected tests and applicable CI gates. Keep both
+README languages, command schemas and design current. Every contribution includes
+an indexed `.agents/` decision and dated verification, with failures and skipped
+or blocked checks distinguished from passes.
+
+Reuse the matching Issue and verify every acceptance criterion before closing it.
+In particular, merging an experimental implementation does not fulfill an Issue's
+required Express deployment or real-model run. Work on a scoped branch, use
+Conventional Commits and the PR template, and merge only after latest-head checks
+and required review pass. Confirm actual remote merge and cleanup. Preserve
+historical evidence and unrelated work. See the complete
+[definition of done](docs/project-standards.md#definition-of-done).
 
 ## Named commands
 

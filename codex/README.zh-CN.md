@@ -193,7 +193,18 @@ HTTP 检查全部 16 项通过，本次沙箱已删除。源码和运行包的�
 
 ## 已验证
 
+| 提供方 | 已执行范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
+
+该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
+
+<details>
+<summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
+
 尚无通过规范完整部署流程的提供方验收凭据。
+
+</details>
 
 ## 二次开发
 
@@ -204,6 +215,10 @@ HTTP 检查全部 16 项通过，本次沙箱已删除。源码和运行包的�
 要把 Codex 指到别的 OpenAI 兼容 Responses 端点，调用 `codex_config_write`，或在第一次 `codex_exec` 之前设置 `OPENAI_BASE_URL` / `ABX_LLM_BASE_URL`。项目规则用 `codex_agents_write` 写入 `AGENTS.md`，或直接放在工作区。
 
 嵌套沙箱探测在 `commands.py` 的 `sandbox_status()`。不要 apt 安装 `bubblewrap`，除非确认 Codex 会使用那个 `bwrap`：CLI 会优先用 `PATH` 上的 `bwrap`，而不是自带的 helper。
+
+### Agent Sandbox step 构建
+
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py codex`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
 
 ## 贡献
 

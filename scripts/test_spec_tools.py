@@ -35,6 +35,22 @@ def _process_dead(pid: int) -> bool:
 
 
 class CheckerTest(unittest.TestCase):
+    def test_provider_preparation_hint_cannot_certify_a_template(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            dest = root / "_skeleton"
+            shutil.copytree(SKELETON, dest)
+            index = {"templates": [{"name": "_skeleton", "path": "_skeleton", "status": "experimental",
+                "providers": {"alicloud-express": "provider-preparation-required"}}]}
+            (root / "awesome-templates.yaml").write_text(check_template.yaml.safe_dump(index))
+            path = dest / "README.md"
+            path.write_text(path.read_text().replace(
+                "No provider has a passing run recorded for this template.",
+                "| Provider | Date | Level |\n|---|---|---|\n| alicloud-express | 2026-10-19 | L2 |"))
+            violations = check_template.check_directory(dest)
+            self.assertTrue(any(v.code == "verified-evidence" for v in violations))
+            self.assertFalse(check_template._evidence_passes(dest, "alicloud-express"))
+
     def test_catalog_capabilities_match_template_ignoring_order(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

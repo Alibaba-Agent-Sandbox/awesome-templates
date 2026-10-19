@@ -13,6 +13,9 @@ Tooling that later template work relies on:
 | `scripts/run_local_e2e.py` | L0 for every directory that has `commands.py` and `e2e_test.py`. Also runs the checker. |
 | `scripts/image_size_report.py` | Per-layer sizes of a local image (`docker history`). |
 
+Repository governance and completion criteria are in [project standards](project-standards.md);
+shared writing and translation rules are in [documentation standards](documentation-standards.md).
+
 ## Directory layout
 
 A template is one directory at the repository root. The directory name, `template.yaml` `name`, and the `path` in `awesome-templates.yaml` are the same string. Product names match `^[a-z0-9][a-z0-9-]*$`. `_skeleton` is the only underscore directory, and it is not installed.
@@ -426,7 +429,7 @@ python3 scripts/check_template.py --all
 python3 scripts/check_template.py --all --strict   # fail on legacy templates too
 ```
 
-`--all` prints a conformance list and exits 0 when every `spec_version: 2` directory passes. Legacy directories are listed with their violation codes and do not fail the process. CI runs `--all`. `scripts/run_local_e2e.py` runs it as well and fails the script when a spec_version 2 directory fails.
+`--all` prints a conformance list and exits 0 when every `spec_version: 2` directory passes. Legacy directories are listed with their violation codes and do not fail the process. CI runs `--all --strict`. `scripts/run_local_e2e.py` runs it as well and fails the script when a spec_version 2 directory fails.
 
 Violation codes include `required-file`, `readme-section`, `base-image`, `dockerfile-cmd`, `dockerfile-user`, `yaml-field`, `commands-start`, `verified-evidence`, `pinned-version`, `readme-client`, `secrets`. `pinned-version` fails when a `RUN` has neither allowed server pin above. `readme-client` fails when a spec_version 2 SDK section does not name `agent-sandbox-client`, or when a README tells the reader to `pip install agent-sandbox`.
 

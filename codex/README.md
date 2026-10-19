@@ -198,7 +198,18 @@ The full `abx template deploy` runner remains unrun; this is supplemental compon
 
 ## Verified
 
+| Provider | Executed scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
+
+This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+
+<details>
+<summary>Earlier checkpoint text (historical; current steps result is above)</summary>
+
 No provider has a passing canonical deployment receipt recorded for this template.
+
+</details>
 
 ## Secondary development
 
@@ -209,6 +220,10 @@ Add a named command in `commands.py` with `@command`. Pass the upstream argv as 
 To point Codex at another OpenAI-compatible Responses endpoint, call `codex_config_write` or set `OPENAI_BASE_URL` / `ABX_LLM_BASE_URL` before the first `codex_exec`. Put project rules in `AGENTS.md` via `codex_agents_write` or by writing the file under the workspace.
 
 The nested sandbox probe is `sandbox_status()` in `commands.py`. Do not apt-install `bubblewrap` unless you have confirmed Codex will use that `bwrap`: the CLI prefers a `bwrap` on `PATH` over the bundled helper.
+
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py codex` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
 
 ## Contributing
 

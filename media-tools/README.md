@@ -104,15 +104,30 @@ Set server process configuration before startup. A prewarmed command server may 
 
 ## Verified
 
+| Provider | Executed scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
+
+This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+
+<details>
+<summary>Earlier checkpoint text (historical; current steps result is above)</summary>
+
 No provider has a passing run recorded for this template.
 
 Actual image L1, 43 native/SDK regressions and 21 HTTP assertions passed on the recorded source; see [the CI confirmation](../.agents/evidence/verify/2026-10-18-media-tools-ci-confirmation.md). Failed attempts and local preparation remain in [the original evidence](../.agents/evidence/verify/2026-10-18-media-tools-runtime.md). Canonical L2 provider acceptance has not run. Catalog status is experimental and `tested_on` is empty.
+
+</details>
 
 ## Secondary development
 
 Read [the design](../docs/design/media-tools.md), run `python3 scripts/check_template.py media-tools`, `python3 -m pytest -q media-tools/test_commands.py media-tools/test_http.py`, and the repository local E2E runner. The codec regressions require the actual pinned Debian tools and do not mock native execution. `E2E_REQUIRE_MEDIA=1` makes the HTTP suite fail if the pinned engine is unavailable; otherwise absence is explicitly SKIP and does not prove media functionality. It uploads random PCM, downloads converted artifacts, checks full hashes, independently parses the WAV roundtrip and compares every sample, then deletes its own files.
 
 The Linux process runner uses `waitid(WNOWAIT)` to keep its owned group identity until group kill and leader reap, including successful and nonzero leaders with redirected descendants. A deliberately detached `setsid` process or server SIGKILL is outside this cleanup guarantee; destroying the sandbox is the final isolation boundary.
+
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py media-tools` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
 
 ## Contributing
 

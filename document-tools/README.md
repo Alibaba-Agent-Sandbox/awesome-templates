@@ -108,9 +108,20 @@ Prewarmed servers read their process-start configuration before subsequent shell
 
 ## Verified
 
+| Provider | Executed scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
+
+This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+
+<details>
+<summary>Earlier checkpoint text (historical; current steps result is above)</summary>
+
 No provider has a passing run recorded for this template.
 
 Actual image L1 and dedicated native/SDK/HTTP CI passed on the recorded runtime source; see [the CI confirmation](../.agents/evidence/verify/2026-10-18-document-tools-ci-confirmation.md). Local preparation and initial remote failures remain in [the original record](../.agents/evidence/verify/2026-10-18-document-tools-runtime.md). Canonical provider L2 has not run. Status remains experimental with empty `tested_on`.
+
+</details>
 
 ## Secondary development
 
@@ -119,6 +130,10 @@ Read [the design](../docs/design/document-tools.md), then run `python3 scripts/c
 Native cleanup keeps the leader unreaped via `waitid(WNOWAIT)` until killing its owned group, including success/nonzero leaders and redirected descendants. Deliberate `setsid` escapes and server SIGKILL are outside that guarantee. Sandbox destruction remains the final isolation boundary.
 
 The runtime workspace must permit hardlinks for atomic no-clobber publication. Some managed source mounts reject this syscall; run a byte-identical local test context on an ordinary writable Linux filesystem, or set an appropriate process-start workspace before startup. A rejected hardlink fails conversion and does not fall back to overwriting files.
+
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py document-tools` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
 
 ## Contributing
 

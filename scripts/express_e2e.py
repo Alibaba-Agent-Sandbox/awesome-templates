@@ -51,7 +51,9 @@ Exit status: 0 passed, 2 blocked on a known CLI/SDK bug, 1 any other failure.
 from __future__ import annotations
 
 import argparse
+import ast
 import fcntl
+import hashlib
 import json
 import os
 import re
@@ -137,6 +139,7 @@ class Options:
     plan: bool = False
     template_name: str = ""
     template_version: str = ""
+    build_mode: str = "dockerfile"
 
 
 @dataclass
@@ -148,6 +151,7 @@ class Proc:
 
 Runner = Callable[[list[str], float], Proc]
 Sdk = Callable[[str, str, dict[str, Any]], Any]
+HARNESS_SHA256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 
 # (pgid, alias) for deploys this process started and has not reaped yet.
 _ACTIVE_DEPLOYS: list[tuple[int, str]] = []
@@ -456,6 +460,8 @@ def parse_smoke_json(text: str) -> list[Smoke]:
 def build_options(argv: list[str] | None = None) -> Options:
     parser = argparse.ArgumentParser(description="Express L2 harness for one template.")
     parser.add_argument("template", type=Path)
+    parser.add_argument("--build", choices=("dockerfile", "steps"), default="dockerfile",
+                        help="Explicit image deployment path. Steps needs a materialized manifest.")
     parser.add_argument("--start-cmd", default=None)
     parser.add_argument("--ready-cmd", default=None)
     parser.add_argument("--generation", type=int, default=None)
@@ -537,6 +543,7 @@ def build_options(argv: list[str] | None = None) -> Options:
         plan=args.plan,
         template_name=str(data.get("name") or template_dir.name),
         template_version=str(data.get("version") or ""),
+        build_mode=args.build,
     )
 
 
@@ -546,8 +553,10 @@ def plan_document(options: Options) -> dict[str, Any]:
         "name": options.template_name,
         "version": options.template_version,
         "alias": options.alias,
-        "acr_repo": options.alias,
-        "acr_tag": OWNED_ACR_TAG,
+        "build_mode": options.build_mode,
+        "harness_sha256": HARNESS_SHA256,
+        "acr_repo": options.alias if options.build_mode == "dockerfile" else None,
+        "acr_tag": OWNED_ACR_TAG if options.build_mode == "dockerfile" else None,
         "generation": options.generation,
         "start_cmd": options.start_cmd,
         "ready_cmd": options.ready_cmd,
@@ -555,7 +564,7 @@ def plan_document(options: Options) -> dict[str, Any]:
         "idle_timeout": options.idle_timeout,
         "wall_timeout": options.wall_timeout,
         "push_retries": options.push_retries,
-        "acr_push_lock": str(acr_lock_path()),
+        "acr_push_lock": str(acr_lock_path()) if options.build_mode == "dockerfile" else None,
         "smoke": [
             {"command": item.command, "args": item.args, "expect": item.expect} for item in options.smoke
         ],
@@ -798,6 +807,46 @@ def owned_resources_absent(intent: dict[str, Any], run: Runner) -> bool:
     return not _list_owned_sandboxes(set(intent["template_ids"]), set(intent["sandbox_ids"]))
 
 
+def template_state(payload: dict[str, Any]) -> str:
+    """Read native status and the older CLI's Python-dict string formatting."""
+    state = payload.get("status", payload.get("Status", ""))
+    if isinstance(state, str) and state.startswith("{"):
+        if len(state) > 4096:
+            raise ValueError("oversized template state")
+        try:
+            state = json.loads(state)
+        except json.JSONDecodeError:
+            state = ast.literal_eval(state)
+    if isinstance(state, dict):
+        state = state.get("state", "")
+    if not isinstance(state, str):
+        raise ValueError("unexpected template state")
+    return state.lower()
+
+
+def wait_for_steps_ready(template_id: str, options: Options, run: Runner,
+                         diagnostic_path: Path | None = None) -> bool:
+    """submitted is not acceptance: independently poll official GetTemplate."""
+    deadline = time.monotonic() + options.deploy_timeout
+    while time.monotonic() < deadline:
+        proc = run(["--json", "template", "info", template_id, "--official-api"],
+                   min(120, max(1, deadline - time.monotonic())))
+        payload = _last_json(proc)
+        if diagnostic_path is not None:
+            save_intent(diagnostic_path, {"exit_code": proc.returncode, "payload": payload})
+        if proc.returncode or not payload:
+            return False
+        state = template_state(payload)
+        if state == "ready":
+            return True
+        if state in {"error", "failed", "failure", "cancelled", "canceled"}:
+            return False
+        if state not in {"submitted", "pending", "building", "creating", "initializing", "processing"}:
+            return False
+        time.sleep(min(2, max(0, deadline - time.monotonic())))
+    return False
+
+
 def recover_owned(intent: dict[str, Any], run: Runner) -> bool:
     """Fail closed on an unknown create; never signal/delete by a broad prefix."""
     alias = intent.get("alias")
@@ -851,7 +900,9 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
 
     intent_dir = Path(tempfile.mkdtemp(prefix="abx-express-owned-"))
     intent_path = intent_dir / "intent.json"
-    intent = {"version": 1, "alias": options.alias, "acr_repo": options.alias, "acr_tag": OWNED_ACR_TAG,
+    intent = {"version": 1, "alias": options.alias,
+              "acr_repo": options.alias if options.build_mode == "dockerfile" else None,
+              "acr_tag": OWNED_ACR_TAG if options.build_mode == "dockerfile" else None,
               "template_ids": [], "sandbox_ids": [],
               "deploy_attempted": False, "create_attempted": False, "ownership_confirmed": False}
     save_intent(intent_path, intent)
@@ -874,14 +925,14 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
             options.ready_cmd,
             "--alias",
             options.alias,
-            "--acr-repo",
-            intent["acr_repo"],
-            "--tag",
-            intent["acr_tag"],
+            "--build",
+            options.build_mode,
             "--timeout",
             str(options.deploy_timeout),
             "--verbose",
         ]
+        if options.build_mode == "dockerfile":
+            deploy_args += ["--acr-repo", intent["acr_repo"], "--tag", intent["acr_tag"]]
         intent["deploy_attempted"] = True
         save_intent(intent_path, intent)
         print(
@@ -889,7 +940,7 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
             f"lock={acr_lock_path()} idle={options.idle_timeout}s wall={options.wall_timeout}s",
             flush=True,
         )
-        if runner is None:
+        if runner is None and options.build_mode == "dockerfile":
             with acr_push_lock():
                 deployed = _deploy_with_retries(options, deploy_args, None)
         else:
@@ -910,7 +961,12 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
                 return 2
             print("deploy did not return a template id", flush=True)
             return 1
-        status = str((payload or {}).get("Status") or (payload or {}).get("status") or "").lower()
+        status = template_state(payload or {})
+        if options.build_mode == "steps" and status == "submitted":
+            if not wait_for_steps_ready(template_id, options, run, intent_dir / "readiness.json"):
+                print("step build did not independently reach READY", flush=True)
+                return 1
+            status = "ready"
         if status and status not in {"ready", "success", "succeeded"}:
             print(f"deploy status {status!r} is not READY", flush=True)
             note_blocker(combined)
@@ -1040,6 +1096,7 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
         save_intent(intent_path, intent)
         if status == 0 and cleanup_ok:
             _write_evidence(options, results)
+            (intent_dir / "readiness.json").unlink(missing_ok=True)
             intent_path.unlink()
             intent_dir.rmdir()
         else:
@@ -1065,15 +1122,22 @@ def _write_evidence(options: Options, results: list[dict[str, Any]]) -> None:
         "template_version": options.template_version,
         "sdk_version": _sdk_version(),
         "cli": "abx",
+        "build_mode": options.build_mode,
+        "harness_sha256": HARNESS_SHA256,
         "passed": True,
         "cleanup_verified": True,
         "commands": results,
     }
+    provenance = options.template_dir / "steps-provenance.json"
+    if options.build_mode == "steps" and provenance.is_file():
+        payload["build_provenance"] = json.loads(provenance.read_text())
     # Template ids are ephemeral and must not be stored.
     text = json.dumps(payload, indent=2, ensure_ascii=False) + "\n"
     if classify_blocker(text):
         raise RuntimeError("refusing to write evidence that matches a known failure")
     path = directory / f"express-{date}.json"
+    if path.exists():
+        raise RuntimeError("refusing to overwrite an existing acceptance receipt; use a fresh staging directory")
     path.write_text(text, encoding="utf-8")
     print(f"evidence {path}", flush=True)
 

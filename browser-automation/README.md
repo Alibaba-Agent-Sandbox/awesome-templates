@@ -167,6 +167,10 @@ the same writable directory, then run `E2E_BASE_URL=http://127.0.0.1:9000 python
 The suite navigates inline pages, downloads real PNGs over the server files API,
 checks form redaction and concurrency, and exits nonzero without Chromium.
 
+### Agent Sandbox platform steps
+
+From a repository checkout, `python scripts/run_steps_e2e.py browser-automation` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+
 ## Contributing
 
 Follow [CONTRIBUTING.md](../CONTRIBUTING.md), the bilingual

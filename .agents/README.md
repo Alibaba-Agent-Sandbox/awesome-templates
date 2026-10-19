@@ -4,6 +4,13 @@ This repository owns template source, specification, catalog and acceptance reco
 Read [CONTRIBUTING.md](../CONTRIBUTING.md) and [the specification](../docs/template-spec.md).
 New engineering records use English and stay in this repository.
 
+- [Contributor standards and platform steps](notes/proposed/process/2026-10-19-standards-and-platform-steps.md)
+  · [verification](evidence/verify/2026-10-19-standards-and-platform-steps.md)
+  · [actual platform limits and reruns](evidence/verify/2026-10-19-step-platform-limits.md)
+  · [RUN environment verification](evidence/verify/2026-10-19-step-build-environment.md)
+- [Provider-owned preparation](notes/proposed/process/2026-10-19-provider-preparation.md)
+  · [verification](evidence/verify/2026-10-19-provider-preparation.md)
+
 ## Layout and lifecycle
 
 - `notes/proposed/<architecture|feature|process>/YYYY-MM-DD-<slug>.md`: pending decisions.
@@ -63,3 +70,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Native acceptance entry](notes/proposed/process/2026-10-19-native-acceptance-entry.md) · [verification](evidence/verify/2026-10-19-native-acceptance-entry.md)
 
 - [Provider-owned template launch](notes/proposed/feature/2026-10-19-provider-template-launch.md) · [verification](evidence/verify/2026-10-19-provider-template-launch.md)
+
+- [Express steps checkpoint](evidence/verify/2026-10-19-steps-checkpoint-1555.md)
