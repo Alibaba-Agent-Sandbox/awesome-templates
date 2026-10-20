@@ -80,6 +80,8 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Express steps checkpoint](evidence/verify/2026-10-19-steps-checkpoint-1555.md)
 
+- [OCR Express resources](notes/proposed/process/2026-10-19-ocr-resource-profile.md) · [verification](evidence/verify/2026-10-19-ocr-resource-profile.md)
+
 - [Exact-source CI image acceptance](notes/proposed/process/2026-10-19-ci-image-acceptance.md) · [verification](evidence/verify/2026-10-19-ci-image-acceptance.md)
 
 - [Controller prerequisites](notes/proposed/process/2026-10-19-controller-prerequisite-preflight.md) · [verification](evidence/verify/2026-10-19-controller-prerequisite-preflight.md)

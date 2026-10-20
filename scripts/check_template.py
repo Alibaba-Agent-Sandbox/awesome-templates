@@ -537,6 +537,10 @@ def check_directory(template_dir: Path) -> list[Violation]:
                 violations.append(Violation("yaml-resources", "resources.cpu must be a positive integer (vCPU)"))
             if not isinstance(memory, int) or isinstance(memory, bool) or memory < 128:
                 violations.append(Violation("yaml-resources", "resources.memory must be a positive integer (MB)"))
+            valid_cpu = isinstance(cpu, int) and not isinstance(cpu, bool) and cpu >= 1
+            valid_memory = isinstance(memory, int) and not isinstance(memory, bool) and memory >= 128
+            if valid_cpu and valid_memory and (memory % 64 or not 1024 * cpu <= memory <= 4096 * cpu):
+                violations.append(Violation("yaml-resources", "Alibaba FC memory must be a multiple of64MB and1..4GiB per vCPU"))
         ports = data.get("ports")
         if not isinstance(ports, list) or 9000 not in ports:
             violations.append(Violation("yaml-ports", "ports must include 9000"))
