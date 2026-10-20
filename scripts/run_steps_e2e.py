@@ -40,7 +40,7 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
         options = express_e2e.build_options([str(stage), "--build", "steps", "--alias",
             f"e2e-steps-{name}-{uuid.uuid4().hex[:8]}", "--timeout", str(args.timeout),
             "--idle-timeout", str(args.timeout), "--wall-timeout", str(args.timeout + 180),
-            "--push-retries", "0"])
+            "--push-retries", "0", "--sandbox-create", args.sandbox_create])
         with (stage / "private-harness.log").open("x") as output, redirect_stdout(output), redirect_stderr(output):
             status = express_e2e.execute(options)
         result["exit_code"] = status
@@ -86,6 +86,7 @@ def main() -> int:
     parser.add_argument("--base-path", help="Verified base PATH when selecting a different image tag")
     parser.add_argument("--server-commit", help="Optional immutable source override, recorded separately")
     parser.add_argument("--timeout", type=int, default=900)
+    parser.add_argument("--sandbox-create", choices=("cli", "sdk"), default="cli")
     args = parser.parse_args()
     names = catalog_names()
     selected = names if args.all else args.templates

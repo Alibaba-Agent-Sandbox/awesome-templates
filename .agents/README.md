@@ -74,6 +74,7 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Provider-owned template launch](notes/proposed/feature/2026-10-19-provider-template-launch.md) · [verification](evidence/verify/2026-10-19-provider-template-launch.md)
 
+- [Polyglot toolchain](notes/proposed/feature/2026-10-19-polyglot-toolchain.md) · [verification](evidence/verify/2026-10-19-polyglot-toolchain.md)
 - [Native apply_patch](notes/proposed/feature/2026-10-19-apply-patch-runtime.md) · [verification](evidence/verify/2026-10-19-apply-patch-runtime.md)
 
 - [Managed runtime catalog](notes/proposed/feature/2026-10-19-managed-template-catalog.md) · [verification](evidence/verify/2026-10-19-managed-template-catalog.md)
@@ -81,6 +82,7 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Express steps checkpoint](evidence/verify/2026-10-19-steps-checkpoint-1555.md)
 
+- [Heavy template image acceptance](notes/proposed/process/2026-10-19-heavy-template-image-acceptance.md) · [verification](evidence/verify/2026-10-19-heavy-template-image-acceptance.md)
 - [OCR Express resources](notes/proposed/process/2026-10-19-ocr-resource-profile.md) · [verification](evidence/verify/2026-10-19-ocr-resource-profile.md)
 
 - [Exact-source CI image acceptance](notes/proposed/process/2026-10-19-ci-image-acceptance.md) · [verification](evidence/verify/2026-10-19-ci-image-acceptance.md)
@@ -91,3 +93,7 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Goose runtime](notes/proposed/feature/2026-10-20-goose-runtime.md) · [verification](evidence/verify/2026-10-20-goose-runtime.md)
 - [Current heavy-image acceptance](evidence/verify/2026-10-20-current-heavy-image-acceptance.md)
 - [OCR step acceptance](notes/proposed/process/2026-10-20-ocr-step-acceptance.md) · [verification](evidence/verify/2026-10-20-ocr-step-acceptance.md)
+
+- [Actual SDK creation acceptance](notes/proposed/process/2026-10-20-sdk-created-acceptance.md) · [verification](evidence/verify/2026-10-20-sdk-created-acceptance.md)
+
+- [Four exact-controller image/model reruns](evidence/verify/2026-10-20-four-coding-image-revalidation.json)

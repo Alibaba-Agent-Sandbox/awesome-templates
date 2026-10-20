@@ -357,6 +357,17 @@ templates:
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
     status: experimental
+
+  - name: polyglot-toolchain
+    description: "Pinned Go, Rust and Temurin JDK with real compile-and-run verification."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: polyglot-toolchain
+    tags: [go, rust, java, toolchain]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: install-build
   - name: kimi-code
     description: Official Kimi Code 2.2.0 with isolated headless turns and explicit
       tool permission.

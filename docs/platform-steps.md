@@ -149,3 +149,22 @@ Heavy templates still need their own successful current-profile receipt; a
 partial network probe, local install or CI-only build cannot supply it.
 
 Generated steps explicitly assign /home/user/app to user:user before selecting the runtime user. Genuine full Python/Node HTTP workflows exposed root-owned native WORKDIR preventing file writes; COPY file ownership alone was insufficient. Version/basic smoke cannot replace a workspace file roundtrip. Historical failures and basic receipts retain their original scope.
+
+### Select actual Python SDK creation
+
+Add `--sandbox-create sdk` to the step or verified-image runner when acceptance
+requires executing `agent_sandbox.api.sandbox.Sandbox.create`. The default is
+`cli`, preserving existing `abx create` behavior. Both routes wait for the owned
+template to reach READY, execute named smoke commands through CLI and SDK, and
+retain the same independently read-back sandbox/template cleanup gates.
+
+For example, `python scripts/run_steps_e2e.py python-hello --sandbox-create sdk`
+builds genuine platform steps and creates the resulting sandbox through Python.
+The verified-image equivalent adds `--sandbox-create sdk` to
+`scripts/run_ci_image_e2e.py` with the existing reviewed artifact ID and verified
+crane arguments. The receipt's `sandbox_create` is `python-sdk-Sandbox.create`
+or `abx create`; earlier receipts do not establish an unrecorded SDK-create call.
+The SDK timeout is sandbox lifetime, independent of build readiness and request
+timeouts. A lost creation response keeps the private recovery intent and never
+publishes acceptance. Local client close does not delete the cloud sandbox;
+the harness performs owned destruction and independent absence checks afterward.

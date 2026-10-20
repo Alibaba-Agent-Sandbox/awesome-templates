@@ -1,0 +1,73 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-20",
+  "template": "python-hello",
+  "template_version": "1.1.1",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "steps",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "harness_sha256": "91592778b24797075915b40f31f219f6517526b17cd2b3a75fe777f73fe6afd6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "hello",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.302,
+      "args": {
+        "name": "Express"
+      },
+      "result": "Hello, Express!"
+    },
+    {
+      "name": "hello",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 0.815,
+      "args": {
+        "name": "Express"
+      },
+      "result": "Hello, Express!"
+    },
+    {
+      "name": "run_script",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.302,
+      "args": {
+        "code": "print(21 * 2)"
+      },
+      "result": "42\n"
+    },
+    {
+      "name": "run_script",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 0.922,
+      "args": {
+        "code": "print(21 * 2)"
+      },
+      "result": "42\n"
+    }
+  ],
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "python-hello",
+    "materializer_sha256": "743cf113087cb19d98ac8e8aae0656138853af84ed8a844b6af4a433382a0581",
+    "template_version": "1.1.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "steps_json_bytes": 4605,
+    "inputs_sha256": {
+      "Dockerfile": "1a6204a898596328e72a4d2b3acfab129b5aef8b366112303ad24e0509941738",
+      "template.yaml": "2cb2f417fea19d8ae3e2f09ab06c7e9e3aabab30f6ee2415bf44936e7c336c96",
+      "commands.py": "819dd5d91a67edc9d681b01dc44caac479c6d693d947f1818d5a1253cc9b9ceb"
+    },
+    "generated_manifest_sha256": "6bc33e374b71316594c7b580af7c68650bd9f852e04553cf34bd81cc377b311c"
+  }
+}

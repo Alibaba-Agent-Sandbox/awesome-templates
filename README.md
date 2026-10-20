@@ -33,8 +33,8 @@ The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](do
 | [codex-agent-api](./codex-agent-api/README.md) | Codex 0.162.1 HTTP session adapter with bounded turns and SSE; project API subset | experimental | [alicloud-express (steps smoke)](./codex-agent-api/evidence/express-2026-10-19.json) |
 | [qoder](./qoder/README.md) | Qoder coding CLI @qoder-ai/qodercli@1.1.72 with version, read-only setup and bounded headless execution. | experimental | [alicloud-express (1.1.1 steps smoke)](./qoder/evidence/express-2026-10-19T184147Z.json) |
 | [agents-cli](./agents-cli/README.md) | Restricted local Agents HTTP API with pinned Codex 0.162.1 and Qwen Code 0.23.0. | experimental | [alicloud-express (2.0.1 steps smoke)](./agents-cli/evidence/express-2026-10-19T183102Z.json) |
-| [qwen-code](./qwen-code/README.md) | Qwen Code Agent runtime — Dashscope-powered AI autonomous deployment agent | experimental | [alicloud-express (2.1.1 steps smoke)](./qwen-code/evidence/express-2026-10-19T184254Z.json) |
-| [deepseek-harness](./deepseek-harness/README.md) | Bounded DeepSeek-compatible coding agent with read, write, list and shell tools. | experimental | [alicloud-express (1.1.1 steps smoke)](./deepseek-harness/evidence/express-2026-10-19T183349Z.json) |
+| [qwen-code](./qwen-code/README.md) | Qwen Code Agent runtime — Dashscope-powered AI autonomous deployment agent | experimental | [alicloud-express (2.1.1 image, SDK create, model17)](./qwen-code/evidence/express-2026-10-20.json) |
+| [deepseek-harness](./deepseek-harness/README.md) | Bounded DeepSeek-compatible coding agent with read, write, list and shell tools. | experimental | [alicloud-express (1.1.1 image, SDK create, model17)](./deepseek-harness/evidence/express-2026-10-20.json) |
 | [kimi-code](./kimi-code/README.md) | Official Kimi Code 2.2.0 with private headless turns and explicit tool permission. | experimental | [alicloud-express (steps + model)](./kimi-code/evidence/express-2026-10-19.json) |
 | [hermes-agent](./hermes-agent/README.md) | NousResearch Hermes 0.22.1 with pinned upstream runtime, local file/terminal tools and bounded headless execution. | experimental | [alicloud-express (1.1.1 image, strict model)](./hermes-agent/evidence/express-2026-10-20.json) |
 | [node-web](./node-web/README.md) | Node.js web service runtime for Express, Fastify and other frameworks | experimental | [alicloud-express (1.1.1 full HTTP)](./node-web/evidence/express-2026-10-19T183324Z.json) |
@@ -159,6 +159,7 @@ abx --provider e2b template launch alibaba-agent-sandbox/awesome-templates//pyth
 
 第三方提供方继续为 Beta。`provider-prepared` 是流程提示，不是原生验收记录。构建前会检查运行时能力，引用转换不会补齐 PTY 或代码执行能力。原生基础镜像、镜像仓库和集群条件由各提供方维护。见[自动准备指南](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/zh/guide/template-launch.md)。已有验收证据仍为准，本次不修改 Verified-on 声明。
 
+Pinned Go/Rust/Java runtime: [polyglot-toolchain](polyglot-toolchain/README.md) (experimental; verification gates recorded separately).
 Model-free file tool: [apply-patch](apply-patch/README.md) (experimental).
 
 Official terminal agent: [goose](goose/README.md) (experimental; [alicloud-express1.0.0 SDK image + model17](goose/evidence/express-2026-10-20.json)).
