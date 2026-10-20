@@ -57,6 +57,12 @@ def _invoke(operation,data,timeout):
                 stage=diagnostic.get('native_stage')
                 if kind in ['TypeError','ValueError','AttributeError','RuntimeError','NativeIncomplete','ValidationError','FileNotFoundError','ModuleNotFoundError','KeyError','APIConnectionError','RateLimitError','BadRequestError','AuthenticationError']and stage in ['request','upstream','task','configuration','native_run','summary','artifact','replay']:
                     detail='; '+stage+' ('+kind+')'
+                    bootstrap_kind=diagnostic.get('bootstrap_error_type')
+                    if bootstrap_kind in ['ModuleNotFoundError','ImportError','PermissionError','FileNotFoundError','TypeError','AttributeError','RuntimeError','ValueError','NativeInstallerNonzero']:
+                        detail+='; installer='+bootstrap_kind
+                        missing=diagnostic.get('missing_module')
+                        if isinstance(missing,str)and re.fullmatch(r'[A-Za-z_][A-Za-z0-9_.]{0,127}',missing)and not any(secret and secret in missing for secret in _CONFIG.values()):
+                            detail+='; missing module '+missing
                     reason=diagnostic.get('native_termination')
                     if reason in ['max_steps','timeout','too_many_errors','agent_error','user_error','infrastructure_error','context_window_exceeded','unexpected_error']:
                         detail+='; termination='+reason

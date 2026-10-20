@@ -15,12 +15,15 @@ import shutil
 import stat
 import subprocess
 import sys
+import tempfile
 import zipfile
 from pathlib import Path, PurePosixPath
 
 BOOTSTRAP=Path('/opt/appworld-bootstrap')
 STAGE='request'
 META=None
+BOOTSTRAP_ERROR=None
+MISSING_MODULE=None
 
 
 class NativeIncomplete(RuntimeError):
@@ -41,7 +44,7 @@ def identity():
 
 
 def bootstrap():
-    global META,STAGE
+    global META,STAGE,BOOTSTRAP_ERROR,MISSING_MODULE
     STAGE='upstream'
     meta,original=identity()
     root=Path.cwd()/'private-package'
@@ -55,9 +58,19 @@ def bootstrap():
     # import after protected apps exist, avoiding stale app-discovery caches.
     install_env=dict(os.environ)
     install_env['PYTHONPATH']=str(root)
-    subprocess.run([sys.executable,'-m','appworld.cli','install'],env=install_env,
-                   stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,
-                   timeout=90,check=True)
+    with tempfile.TemporaryFile() as errors:
+        installed=subprocess.run([sys.executable,'-m','appworld.cli','install'],env=install_env,
+                   stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=errors,
+                   timeout=90)
+        if installed.returncode:
+            errors.seek(0,2)
+            errors.seek(max(0,errors.tell()-8192))
+            text=errors.read().decode('utf-8','replace')
+            names=re.findall(r'^([A-Za-z_][A-Za-z0-9_]{0,63}(?:Error|Exception)):',text,re.M)
+            BOOTSTRAP_ERROR=names[-1] if names else 'NativeInstallerNonzero'
+            missing=re.findall(r"^ModuleNotFoundError: No module named '([A-Za-z_][A-Za-z0-9_.]{0,127})'",text,re.M)
+            MISSING_MODULE=missing[-1] if missing else None
+            raise RuntimeError('original private installer failed; raw diagnostics omitted')
     from appworld.common.constants import PASSWORD,SALT
     from appworld.common.utils import unpack_bundle
     unpack_bundle(str(BOOTSTRAP/'data.bundle'),str(world_root),PASSWORD,SALT)
@@ -284,5 +297,5 @@ if __name__=='__main__':
         result=main()
         print(json.dumps(result,ensure_ascii=False))
     except Exception as exc:
-        print(json.dumps({'error_type':type(exc).__name__,'native_stage':STAGE}),file=sys.stderr)
+        print(json.dumps({'error_type':type(exc).__name__,'native_stage':STAGE,'bootstrap_error_type':BOOTSTRAP_ERROR,'missing_module':MISSING_MODULE}),file=sys.stderr)
         raise SystemExit(1)
