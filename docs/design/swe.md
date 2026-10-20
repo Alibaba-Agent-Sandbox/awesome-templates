@@ -14,6 +14,8 @@ See the complete typed/default/range table in [README](../../swe/README.md#comma
 
 ## How to build
 
+Template1.0.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
+
 [Dockerfile](../../swe/Dockerfile) preserves the Alibaba base/Python 3.13/Node20, pins mini-swe-agent 2.4.6 and LiteLLM 1.82.6 in an agent venv, and uses official SHA-pinned python-build-standalone20241016 Python3.11.10 for an independent Flask evaluation venv. It downloads only the 692792-byte official Flask archive, checks SHA256 `b1a4c83b7d12981b81e5f8d2028a73eacfbd153f4e425504c254a6f177b99997`, installs the exact server source wheel/fallback and leaves `USER user` with no CMD/ENTRYPOINT. Generation2 uses the required port9000 serve/healthcheck commands. New9010 processes in the usage docs receive explicit model configuration because a prewarmed9000 process may precede create-time envd settings.
 
 ## Express feasibility

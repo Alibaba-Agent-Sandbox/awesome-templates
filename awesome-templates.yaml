@@ -357,15 +357,64 @@ templates:
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
     status: experimental
+  - name: kimi-code
+    description: Official Kimi Code 2.2.0 with isolated headless turns and explicit
+      tool permission.
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: kimi-code
+    tags:
+    - kimi
+    - coding-agent
+    - openai-compatible
+    author: alibaba-agent-sandbox
+    capabilities:
+    - shell
+    - files
+    - code
+    - ports
+    status: experimental
+    providers:
+      alicloud-express: install-build
+      alicloud-container: provider-prepared
+      cubesandbox: provider-prepared
+      e2b: provider-prepared
+      opensandbox: provider-prepared
+  - name: apply-patch
+    description: Official Codex patch dialect with bounded native execution and relative
+      workspace paths.
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: apply-patch
+    tags:
+    - patch
+    - files
+    - codex
+    author: alibaba-agent-sandbox
+    capabilities:
+    - shell
+    - files
+    - code
+    - ports
+    status: experimental
+    providers:
+      alicloud-express: install-build
+
   - name: next-app
-    description: "Pinned Next.js16.4.2 and Vite8.3.4 frontend scaffold and owned preview lifecycle."
+    description: Pinned Next.js16.4.2 and Vite8.3.4 frontend scaffold and owned preview
+      lifecycle.
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: next-app
-    tags: [node, nextjs, vite, preview]
+    tags:
+    - node
+    - nextjs
+    - vite
+    - preview
     author: alibaba-agent-sandbox
-    capabilities: [shell, files, code, ports]
+    capabilities:
+    - shell
+    - files
+    - code
+    - ports
     status: experimental
-
 
 # Provider-managed IDs have no source build context; never pass these to image selection.
 managed_templates:

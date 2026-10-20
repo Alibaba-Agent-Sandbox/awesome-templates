@@ -1,0 +1,41 @@
+{
+  "template": "ocr",
+  "provider": "alicloud-express",
+  "build_mode": "image",
+  "verification_type": "ci-image-backed-external-http",
+  "passed": false,
+  "registry_cleanup_verified": true,
+  "model_acceptance": "NOT_RUN",
+  "http_acceptance": {},
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "ocr",
+    "template_version": "1.0.0",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "256c3e509f2b29ca6003fda901bb2f110f084eac",
+    "checkout_commit": "256c3e509f2b29ca6003fda901bb2f110f084eac",
+    "workflow_run_id": "39288663144",
+    "artifact_id": "12204667334",
+    "archive_sha256": "09f93d3827a7f5d9e813943cc52352d7d4fbed3a6e4507c93ee939f6b8a4571e",
+    "image_config_sha256": "cbe6b9e285a3aba3a6b7a4b4628d8e982e15e1ed53b465fe0af13ef3090d6bc8",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "99ab9329cdb8c8f7b54fb7bbd21e124afcac8e08e1759118278fd62bacb66ca9",
+      "template.yaml:contract": "b6785063ea657c431427a714f465b5cfc6791767f9c23f2cac04549db88ec0a5",
+      "requirements.txt": "09fc6a57b723ca08602ec6f30d04c0be1ebb77b056eee344f0a532389417da42",
+      "commands.py": "5dacdea6d2949f8ba94e8604c0a47c0128764ee8669020da9b2fffc1fb130366",
+      "fixtures/sample.json": "8a05cdda3836e40232e975db5516c6d5098bccdf8006425c43bbf14bdddb1e74",
+      "fixtures/sample.png": "6b05fba52096147100a7b362fedaa20d454832a8768d687ef13911d96ccb989f"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:3b0535d62a2c3d2253050c0e98c5e9c47f949403d9ae3d495573c00be60afeff"
+  },
+  "cleanup_verified": false,
+  "result": "FAIL"
+}

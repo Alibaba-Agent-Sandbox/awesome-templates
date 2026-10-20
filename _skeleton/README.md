@@ -106,6 +106,10 @@ Provide secret values before the command server starts; use create-time env only
 
 ## Verified
 
+Version1.0.1 explicitly repairs non-root workspace-directory ownership. Current-version provider acceptance must be rerun. Earlier receipts establish only their original versions/hashes/scopes and are preserved below.
+
+## Historical verification
+
 No provider has a passing run recorded for this template.
 
 ## Secondary development

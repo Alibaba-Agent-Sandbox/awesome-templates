@@ -19,6 +19,8 @@ Each call owns a temporary config directory with `models.json`, using `api: open
 
 ## How to build
 
+Template1.0.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
+
 [Dockerfile](../../pi/Dockerfile) uses the Alibaba base placeholder, SHA256-verified official Node 24.16.0 archives for x64/arm64, and exact `@earendil-works/pi-coding-agent@1.3.0` with upstream-recommended `--ignore-scripts`. The committed package-lock freezes the complete 118-package dependency tree and npm ci installs it with ignore-scripts/omit-dev. Official fd 10.5.0 and ripgrep 15.2.0 musl archives for x64/arm64 use fixed GitHub-published SHA256 digests. Complete extracted directories retain fd LICENSE-MIT/LICENSE-APACHE and rg LICENSE-MIT/UNLICENSE/COPYING, plus README/other distribution files, under /opt/pi-tools. Direct fd/rg executable links avoid Debian fdfind naming ambiguity. The server uses a copied source-built wheel or full source commit e2cb27e24fde0a67112f82b8d44af463445a5d1a. No cloud/model key is a build input.
 
 Generation 2 starts `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`; readiness uses `agent-sandbox-server healthcheck --port 9000`. The image runs as `user` and does not replace the platform entrypoint.
@@ -47,3 +49,5 @@ Official references: [tagged CLI](https://github.com/earendil-works/pi/blob/v1.3
 ### Premature-exit acceptance guard
 
 The current coding controller imports trusted standard-library code under `python3 -I`, compiles the actual calculator and original-test source bytes, and requires exactly all three original tests to succeed without skips, expected failures or unexpected successes. Each test/held-out process must return a fresh completion acknowledgment generated after the model response; it is never included in the model prompt. Premature `SystemExit`, `os._exit(0)`, a static `INDEPENDENT_OK` string and stale bytecode cannot supply that acknowledgment. This protects ordinary acceptance against premature exits; it is not a security boundary against hostile Python with the same OS authority. Historical model runs retain their original controller hashes and do not prove this new gate; record a separate actual model run at the new controller revision on the reviewed image. Canonical deployment/provider qualification remains a separate required gate.
+
+Current-version acceptance on 2026-10-20: version 1.0.1 genuine image READY/CLI/SDK and 18 strict real-model assertions (qwen3.8-flash, OpenAI-compatible), source edit/new artifact/unchanged original tests/independent held-out completion. Independently verified sandbox/template/registry cleanup. Historical pending statements describe earlier checkpoints; see the current [Verified table](../../pi/README.md#verified).

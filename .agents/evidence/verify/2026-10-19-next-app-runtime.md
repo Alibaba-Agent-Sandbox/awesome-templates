@@ -11,5 +11,6 @@ qualification; no cloud/image pass inferred.
 Follow-up PASS:6 actual-process tests including full self-test project cleanup
 and absence of a synthetic model key from the actual Node child environment.
 
-Follow-up PASS:6 actual-process tests including full self-test project cleanup
-and absence of a synthetic model key from the actual Node child environment.
+## Current-main integration and independent port controller
+
+Main integration preserves Kimi, apply-patch, workspace ownership and both preview/process test rows. A separate SDK controller independently requests the actual SDK URLs on3000 and5173, requires correct HTML markers, edits real source through SDK files and waits for newly generated marker bytes over forwarded HTTP, then stops only its owned worker and removes its nonce project. It refuses a caller's running server. Three controller regressions PASS: pre-existing server refusal, failed forwarded HTTP and wrong application markers both fail and still clean the owned server/project. These are controller tests, not provider acceptance. Strict26+skeleton,129 documents/0 failures, specification25 cases and38 subtests PASS. Actual image/forwarded proof pending. Browser rendering and WebSocket/HMR are explicitly NOT_RUN; default FC HTML attachment is not a rendered-page pass.

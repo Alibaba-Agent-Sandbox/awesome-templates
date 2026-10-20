@@ -1,5 +1,5 @@
 name: ocr
-version: "1.0.0"
+version: "1.0.1"
 description: "CPU English image OCR with pinned Tesseract 5.5.0 and bounded private TXT/TSV artifacts."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0
@@ -9,13 +9,13 @@ generation: 2
 start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
 ready_cmd: "agent-sandbox-server healthcheck --port 9000"
 resources:
-  cpu: 2
+  cpu: 1
   memory: 1024
 ports: [9000]
 tags: [ocr, tesseract, images, english]
 priority: P2
 wave: 1
-tested_on: []
+tested_on: [alicloud-express]
 capabilities: [shell, files, code, ports]
 env:
   ABX_SERVER_TOKEN: ""

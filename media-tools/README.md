@@ -107,6 +107,7 @@ Set server process configuration before startup. A prewarmed command server may 
 | Provider | Executed scope | Evidence |
 | --- | --- | --- |
 | alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
+| alicloud-express | complete media HTTP21 assertions, actual steps READY/CLI/SDK and independent cleanup | [full run](evidence/full-http-steps-2026-10-19T184323Z.json), [provenance](evidence/steps-full-http-2026-10-19T184323Z.json) |
 
 This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
 

@@ -25,5 +25,6 @@ ENV HERMES_HOME=/home/user/.hermes
 ENV WORKSPACE=/home/user/app
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py .
+RUN chown user:user /home/user/app
 USER user
 EXPOSE 9000

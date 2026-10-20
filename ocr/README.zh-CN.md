@@ -95,12 +95,32 @@ HTTP 200 返回 `{"result": ...}`；参数缺失/类型错误为 400，认证失
 
 | 资源 | 值 |
 |---|---|
-| CPU | 2 vCPU；引擎为 OpenMP 单线程 |
+| CPU | 1 vCPU；引擎为 OpenMP 单线程 |
 | 内存 | 沙箱 1024 MB；引擎地址空间上限 512 MiB |
 | 端口 | 9000 |
 | 磁盘 | 平台 rootfs；调用者清理保留的结果目录 |
 
 ## 已验证
+
+| 提供方 | 范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 版本1.0.1真实CI镜像、官方READY、CLI/SDK、完整HTTP19通过/0跳过，沙箱/模板/镜像仓库独立清理确认 | [2026-10-20](evidence/express-2026-10-20.json)、[完整检查](evidence/image-http-2026-10-20T054627Z.json) |
+| alicloud-express | 1.0.1 真实平台 step 构建、官方 READY、CLI/SDK 和完整 HTTP 19 通过 / 0 失败 / 0 跳过；独立确认 sandbox/template 清理 | [step 回执](evidence/express-2026-10-20T061143Z.json)、[完整 HTTP](evidence/full-http-steps-2026-10-20T061143Z.json) |
+
+1vCPU/1024MB资源修复正式版本1.0.1已独立验收，包括随机数字图像、原始输入
+字节不变、下载TXT/TSV后的文字/哈希/置信度/边界检查、空白负例和产物删除。
+此前1.0.0候选通过及失败记录保留在历史部分，没有重标版本。本次使用已核验
+CI镜像和真实原生镜像登记。上述另一组 step 成功回执证明同版本真实执行了
+平台 step；较早失败尝试仍作为历史保留。
+
+
+## 历史验收
+
+| Provider | Scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | Actual CI image, official READY, CLI/SDK, full HTTP19 PASS/0 SKIP and independent sandbox/template/registry cleanup | [2026-10-19](evidence/express-2026-10-19.json) |
+
+当前1vCPU/1024MB配置已通过真实极速版完整验收，包括随机数字图片、原图字节不变、TXT/TSV下载及独立内容/哈希/像素边界检查、空白负例和所有权清理。[完整记录](evidence/image-http-2026-10-19T181012Z.json)。较早2vCPU/1GB配置被平台拒绝及本机控制器缺少Pillow的失败保留，均不重标为通过。
 
 源码回归实际使用 Tesseract 5.5.0 / Pillow 11.3.0，27 项通过。source HTTP 验证 19 通过、0 失败、0 跳过，包括独立随机数字图片、下载 TXT/TSV 后核对哈希/文字/置信度/坐标，以及空白图片负控。这些是源码运行结果。实际镜像 L1、补充 changed-image Express 验证仍待执行；正式 `abx template deploy` / `scripts/express_e2e.py` L2 未执行。`tested_on` 保持空，目录状态为 experimental。详见[验证记录](../.agents/evidence/verify/2026-10-16-ocr-runtime.md)。
 
@@ -112,7 +132,7 @@ Linux 进程管理通过 `waitid(WNOWAIT)` 保留 leader 身份，持续排空�
 
 ### Agent Sandbox step 构建
 
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py ocr`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py ocr --timeout 1200 --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。公开 runner 执行 CLI/SDK fixture smoke；另一完整 HTTP 控制器在 READY 后通过了全部 19 项断言，见[实际执行步骤](../.agents/evidence/verify/2026-10-20-ocr-step-acceptance.md)。此原生 OCR 任务不需要模型。
 
 ## 贡献
 

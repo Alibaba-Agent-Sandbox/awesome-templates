@@ -96,6 +96,14 @@ Hermes runs through its private Python 3.14 shebang. The image exposes only its 
 
 ## Verified
 
+Version 1.1.1 passed actual CI-image registration, official READY, CLI/SDK and 17 strict real-model assertions (qwen3.8-flash, OpenAI-compatible), source edit/new artifact/unchanged original tests/independent held-out completion. Independently confirmed sandbox/template/registry cleanup. Status remains experimental; other providers are unverified.
+
+| Provider | Scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | Exact current version, actual image and independently verified cleanup | [canonical receipt](evidence/express-2026-10-20.json), [HTTP](evidence/image-http-2026-10-20T062649Z.json), [strict model](evidence/model-image-2026-10-20T062649Z.json) |
+
+## Historical verification
+
 The current coding controller imports trusted standard-library code under `python3 -I`, compiles the actual calculator and original-test source bytes, and requires exactly all three original tests to succeed without skips, expected failures or unexpected successes. Each test/held-out process must return a fresh completion acknowledgment generated after the model response; it is never included in the model prompt. Premature `SystemExit`, `os._exit(0)`, a static `INDEPENDENT_OK` string and stale bytecode cannot supply that acknowledgment. This protects ordinary acceptance against premature exits; it is not a security boundary against hostile Python with the same OS authority. Historical model runs retain their original controller hashes and do not prove this new gate; record a separate actual model run at the new controller revision on the reviewed image. Canonical deployment/provider qualification remains a separate required gate.
 
 No provider has a passing run recorded for this template.

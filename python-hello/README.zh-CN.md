@@ -133,6 +133,14 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/run_script" \
 
 ## 已验证
 
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.1.1; steps构建、官方READY、CLI/SDK、完整HTTP21项、独立清理 | [2026-10-19](evidence/express-2026-10-19T183219Z.json) |
+
+新版本的目录归属已在真实生成步骤中验证。旧版本回执保持历史范围；基础冒烟不能推断完整模型验收。
+
+## 历史验收
+
 | 提供方 | 已执行范围 | 证据 |
 | --- | --- | --- |
 | alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |

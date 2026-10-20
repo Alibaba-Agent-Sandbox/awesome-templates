@@ -1,0 +1,48 @@
+{
+  "template": "hermes-agent",
+  "provider": "alicloud-express",
+  "build_mode": "image",
+  "verification_type": "ci-image-backed-external-http",
+  "passed": true,
+  "registry_cleanup_verified": true,
+  "model_acceptance": "NOT_RUN",
+  "http_acceptance": {
+    "passed": true,
+    "exit_code": 0,
+    "pass_count": 9,
+    "fail_count": 0,
+    "skip_count": 1,
+    "verifier_sha256": "2301f0966f4f749a42d551cbe5c5bb5dcef4e423337f88600e5073e60a531626"
+  },
+  "cleanup_verified": true,
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "hermes-agent",
+    "template_version": "1.1.1",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "58e8e79b641766982fe579d3b623900513ea5d30",
+    "checkout_commit": "58e8e79b641766982fe579d3b623900513ea5d30",
+    "workflow_run_id": "39375232415",
+    "artifact_id": "12243351763",
+    "archive_sha256": "91d834f236bb12c66f6c3579459c919fd3a5b71f7c43020beed2f1fa4ef45573",
+    "image_config_sha256": "95a973243bb22728e60ff11cd2681b53c251488dc92fbecf803bca7ff385dddb",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "42e3c3987020f5e63d823f35a21a7f57a9ede36042642694f59b207dcf00c23b",
+      "template.yaml:contract": "82dae7182a524437291be902aa90fdbf78786866dc6542b38c1d0fd7150410c6",
+      "commands.py": "d849006ecdb653c53c474ccd687b592741437034a505b391c5b80cb6be49333c"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:ac102335999f5ed3d7e7db3371f756ee655ca04e83d4c4e287d719f5474b78fd",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "result": "PASS"
+}

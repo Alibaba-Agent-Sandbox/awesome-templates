@@ -134,6 +134,9 @@ export NODE_PATH="$ABX_NATIVE_DIR/modules/node_modules"
 
 Then configure the existing Express account in the process environment and run the pinned-server commands above. ABX/NODE_PATH select this isolated tool directory. Use the native acceptance syntax consistently. Remove only your own tool directory after owned cloud resources and private journals are reconciled.
 
+For heavy assets, the separately recorded [CI image acceptance path](ci-image-acceptance.md)
+uses real Dockerfile CI export and native image registration, with its own provenance.
+
 ## Observed large-asset constraint
 
 On2026-10-19 an actual step-build diagnostic retrieved8MiB in385/398seconds
@@ -144,3 +147,5 @@ it does not establish a universal300-second execution cap. Split build phases,
 bound transfers and preserve errors. A timed-out build is not acceptance.
 Heavy templates still need their own successful current-profile receipt; a
 partial network probe, local install or CI-only build cannot supply it.
+
+Generated steps explicitly assign /home/user/app to user:user before selecting the runtime user. Genuine full Python/Node HTTP workflows exposed root-owned native WORKDIR preventing file writes; COPY file ownership alone was insufficient. Version/basic smoke cannot replace a workspace file roundtrip. Historical failures and basic receipts retain their original scope.

@@ -54,7 +54,7 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
             target = source / "evidence" / receipts[0].name
             target.parent.mkdir(exist_ok=True)
             if target.exists():
-                target = target.with_name("steps-" + stamp + ".json")
+                target = target.with_name("express-" + stamp + ".json")
             # Exclusive creation preserves every historical receipt.
             with target.open("x") as stream:
                 json.dump(receipt, stream, indent=2, ensure_ascii=False)
