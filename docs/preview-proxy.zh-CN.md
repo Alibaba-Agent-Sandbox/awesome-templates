@@ -51,3 +51,5 @@ python code-server/browser_e2e_test.py --sandbox-id <owned-sandbox-id> --preview
 最后停止本次 IDE、删除本次文件、关闭本地代理，沙箱销毁仍由调用者负责。
 默认 --preview-mode direct 保留直接域名检查，该模式下 HTML 被强制下载仍失败。
 结果明确记录预览模式、上游 TLS 和清理。当前云端结果见模板[已验证部分](../code-server/README.zh-CN.md#已验证)。
+
+首次访问私有入口时，工具先在本机以303跳转交换认证 cookie，再进入应用的原始路径；应用登录和资源路径不会包含本地入口前缀。

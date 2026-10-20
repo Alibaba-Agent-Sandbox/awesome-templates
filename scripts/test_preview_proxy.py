@@ -105,7 +105,7 @@ def test_compressed_html_bytes_remain_encoded_once():
     async def run():
         async with backend() as (url,seen,html):
             async with PreviewRelay(url,_test_http=True) as relay:
-                async with aiohttp.ClientSession(auto_decompress=False) as client:
+                async with aiohttp.ClientSession(auto_decompress=False,cookie_jar=aiohttp.CookieJar(unsafe=True)) as client:
                     response=await client.get(relay.url+'/gzip');data=await response.read()
                     assert response.status==200 and response.headers['Content-Encoding']=='gzip'
                     assert 'Content-Disposition' not in response.headers and gzip.decompress(data)==html
@@ -152,3 +152,18 @@ def test_tls_handshake_rejects_unknown_ca_and_accepts_explicit_trust(tmp_path):
     relay=PreviewRelay('https://127.0.0.1',_ssl_context=trusted)
     assert relay.ssl_context.check_hostname and relay.ssl_context.verify_mode==ssl.CERT_REQUIRED
     handshake(relay.ssl_context)
+
+
+def test_private_entry_redirects_to_canonical_app_path_before_login():
+    async def run():
+        async with backend() as (url,seen,html):
+            async with PreviewRelay(url,_test_http=True) as relay:
+                async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar(unsafe=True)) as client:
+                    response=await client.get(relay.url+'/login?folder=owned',allow_redirects=False)
+                    assert response.status==303
+                    assert response.headers['Location']=='/login?folder=owned'
+                    assert not seen, 'entry must only exchange the local capability'
+                    response=await client.get(relay.origin+response.headers['Location'])
+                    assert response.status==200 and await response.read()==html
+                    assert seen==['/login']
+    asyncio.run(run())

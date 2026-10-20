@@ -74,6 +74,8 @@ async def verify_ui(sandbox, *, workspace='/home/user/app', preview_mode='direct
     result = {'passed': False, 'preview_mode': preview_mode}
     started = False
     browser = playwright = None
+    page = None
+    browser_events = []
     relay_context = relay = None
     relay_entered = False
     write_attempted = False
@@ -112,6 +114,14 @@ async def verify_ui(sandbox, *, workspace='/home/user/app', preview_mode='direct
             playwright = await async_playwright().start()
             browser = await playwright.chromium.launch(headless=True, env=browser_env)
             page = await browser.new_page(locale='en-US')
+            if os.environ.get('E2E_BROWSER_DIAGNOSTICS') == '1':
+                def event(kind, value):
+                    browser_events.append({'kind':kind,'detail':str(value)[:2000]})
+                    del browser_events[:-200]
+                page.on('pageerror', lambda error: event('pageerror', error))
+                page.on('console', lambda message: event('console', message.text) if message.type == 'error' else None)
+                page.on('requestfailed', lambda request: event('requestfailed', request.url + ' ' + str(request.failure)))
+                page.on('response', lambda response: event('http-error', str(response.status) + ' ' + response.url) if response.status >= 400 else None)
             await page.goto(url + '/?folder=' + workspace, wait_until='domcontentloaded', timeout=120000)
             await page.locator('input[name="password"]').fill(password)
             await page.locator('input[type="submit"],button[type="submit"]').click()
@@ -176,6 +186,21 @@ async def verify_ui(sandbox, *, workspace='/home/user/app', preview_mode='direct
             else:
                 raise RuntimeError('actual browser editor save did not produce expected bytes')
             result['browser_editor_independent_file_readback'] = True
+        except Exception:
+            # Explicit opt-in private diagnostics never enter public receipts.
+            if page is not None and os.environ.get('E2E_BROWSER_DIAGNOSTICS') == '1':
+                diagnostic = Path(tempfile.mkdtemp(prefix='abx-ide-browser-private-'))
+                diagnostic.chmod(0o700)
+                try:
+                    payload = {'url':page.url,'title':await page.title(),'events':browser_events}
+                    (diagnostic/'diagnosis.json').write_text(json.dumps(payload,indent=2))
+                    (diagnostic/'page.html').write_text((await page.content())[:2*1024**2])
+                    await page.screenshot(path=str(diagnostic/'page.png'))
+                    for item in diagnostic.iterdir():item.chmod(0o600)
+                    print('Private browser diagnostics retained at', diagnostic, flush=True)
+                except Exception:
+                    pass
+            raise
         finally:
             errors = []
             for resource in [browser, playwright]:

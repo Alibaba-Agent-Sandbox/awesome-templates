@@ -124,6 +124,13 @@ class PreviewRelay:
         authenticated = secrets.compare_digest(request.cookies.get(self.cookie, ''), self.token)
         if not entry and not authenticated:
             raise web.HTTPForbidden(text='open the private local preview entry first')
+        if entry:
+            # Give applications their canonical browser path before they derive
+            # login cookie paths or absolute asset URLs from location.href.
+            path = '/' + request.raw_path[len(self.entry):].lstrip('/')
+            response = web.Response(status=303, headers={'Location':path, 'Cache-Control':'no-store'})
+            response.set_cookie(self.cookie, self.token, httponly=True, samesite='Strict', path='/')
+            return response
         target = self._target(request)
         headers = self._headers(request)
         try:
@@ -149,9 +156,6 @@ class PreviewRelay:
                     outgoing.popall('Content-Disposition', None)
                     self.html_attachment_normalized = True
                 response = web.StreamResponse(status=upstream.status, headers=outgoing)
-                if entry:
-                    response.set_cookie(self.cookie, self.token, httponly=True, samesite='Strict', path='/')
-                    response.headers['Cache-Control'] = 'no-store'
                 await response.prepare(request)
                 async for chunk in upstream.content.iter_chunked(64 * 1024):
                     await response.write(chunk)

@@ -25,7 +25,7 @@ application login there. Stop the relay with Ctrl+C. The caller owns application
 stop and sandbox destruction; the relay only closes its local listener, HTTP/WS
 clients and RAM cookie jar. It never starts or destroys the borrowed sandbox.
 
-The initial URL carries a random local entry capability. Later requests require
+The initial URL carries a random local entry capability, exchanged locally by a303 redirect to the application's canonical path before application login. Later requests require
 an HttpOnly SameSite=Strict local cookie. Host and Origin checks accept only the
 actual loopback origin. Application cookies stay in a per-relay RAM jar; unrelated
 browser/local-port cookies are not sent upstream. The target is always the SDK's
