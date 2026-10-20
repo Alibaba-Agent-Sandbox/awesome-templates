@@ -47,3 +47,9 @@ Legacy statvfs response field names remain compatible; both READMEs explicitly
 distinguish visible filesystem capacity from actual du-based image-size budget.
 The new1.0.1 archive can be reused only when all image/runtime inputs match the
 export's exact public Git revision. Current-head CI remains required.
+
+## Actual current-version image acceptance, 2026-10-20
+
+PASS: genuine1.0.1 image artifact12243561416 from successful workflow39375831850; exact source/runtime/archive/config/commands provenance validated. Native registration reached official READY; both CLI and SDK executed the three-language compilation smoke. Complete external HTTP required all five version pins and actual Go/Rust/Java build-and-run outputs, with1 combined PASS/0 FAIL/0 SKIP. Sandbox/template/registry cleanup and post-runtime registry digest were independently confirmed. See [canonical receipt](../../../polyglot-toolchain/evidence/express-2026-10-20.json) and [complete controller](../../../polyglot-toolchain/evidence/image-http-2026-10-20T070826Z.json). A local compiler skip and prior1.0.0 archive failure were not promoted. Current-version tested_on/Verified now cite this exact receipt; source runtime/image bytes are unchanged by qualification. Normal current-main integration, ordered README headings and complete Chinese translation repair are included. Current-head checks and merge remain required.
+
+Qualification/document validation: strict26 catalog templates plus skeleton PASS;129 Markdown documents/0 broken links and whitespace check PASS. Source process regressions and actual L1 were unchanged and retain their previous6-test/current-image results; latest-head CI remains required.

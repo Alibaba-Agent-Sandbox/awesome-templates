@@ -21,7 +21,7 @@ tags:
 - toolchain
 priority: P1
 wave: 2
-tested_on: []
+tested_on: [alicloud-express]
 capabilities:
 - shell
 - files

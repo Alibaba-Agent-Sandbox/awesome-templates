@@ -14,7 +14,7 @@
 
 ## 快速开始（CLI）
 
-Use the native CLI syntax (`abx create --help` lists `--template`):
+以下使用原生 CLI 语法，`abx create --help` 列出 `--template` 参数。`<template-id>` 和 `<sandbox-id>` 分别替换为前一步返回的模板 ID 和沙箱 ID。
 
 ```bash
 abx template deploy ./polyglot-toolchain -y
@@ -25,12 +25,11 @@ abx kill <sandbox-id> -y
 abx template delete <template-id> -y
 ```
 
-For the standard CLI entry and paired client installation, see [using templates](../docs/using-templates.md).
-
+标准 CLI 入口及配套客户端安装见[模板使用指南](../docs/using-templates.md)。
 
 ## 快速开始（Python SDK）
 
-Install the [paired `agent-sandbox-client`](../docs/python-client-installation.md):
+先安装[配套的 `agent-sandbox-client`](../docs/python-client-installation.md)，将 `<template-id>` 替换为已部署模板 ID：
 
 ```python
 import asyncio
@@ -48,15 +47,46 @@ async def main():
 asyncio.run(main())
 ```
 
+## 快速开始（HTTP POST）
+
+返回示例： `{"result":{"go":"GO_OK","rust":"RUST_OK","java":"JAVA_OK","cleanup_verified":true}}`.
+
+```bash
+curl -fsS -X POST -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <server-token>' \
+  -d '{}' '<sandbox-port-9000-url>/commands/toolchain_smoke'
+```
+
+将 `<sandbox-port-9000-url>` 替换为 SDK 返回的 9000 端口 URL；`<server-token>` 是在命名命令服务进程中设置的 token，见[运行环境](../docs/runtime-environment.zh-CN.md)。HTTP 200 以 `result` 包装结果，参数错误返回 400，认证缺失或错误返回 401，执行错误返回 500。输出缓冲返回，客户端时限应覆盖整个多编译器流程。示例描述公开操作，实际云端执行范围以已验证记录为准。
 
 ## 命令参考
 
-| Command | Parameters | Result |
+| 命令 | 参数 | 返回值 |
 | --- | --- | --- |
-| toolchain_versions | none | version/disk/non_root object |
-| toolchain_smoke | none | go/rust/java/cleanup_verified object |
+| toolchain_versions | 无 | 实际版本、磁盘与 non_root 对象 |
+| toolchain_smoke | 无 | go/rust/java/cleanup_verified 对象 |
 
 两个命令均无参数。`toolchain_versions() -> dict` 返回实际版本、根文件系统已用和可用字节、非 root 状态；本地缺少编译器时对应值为 null。`toolchain_smoke() -> dict` 要求所有编译器可用，执行 go build、rustc、javac 及生成的程序，必须得到 `{go: GO_OK, rust: RUST_OK, java: JAVA_OK, cleanup_verified: true}`。每个可信子进程最多 90 秒，清理自己创建的进程组。不接受调用者的程序或 shell 字符串。
+
+## 配置
+
+无需模型密钥。`ABX_SERVER_TOKEN` 在 manifest 中保留空值占位，通过服务进程环境注入实际值。`JAVA_HOME=/opt/toolchains/java`，`GOTOOLCHAIN=local`；镜像 PATH 只选择已固定工具链。编译检查独占本次 Go 缓存并在结束后删除。
+
+版本 1.0.1 显式修复运行工作区归属。原生子进程仅继承 PATH/HOME/JAVA_HOME/TMPDIR，另固定语言环境与 GOTOOLCHAIN=local；不继承云端、模型、服务端凭据或注入的编译器/加载器选项。并发读取输出，每路限制 256 KiB，操作时限 90 秒并清理自有进程组。此前 1.0.0 尝试不能证明新版本通过。
+
+响应中的旧字段名 `rootfs_used_bytes`、`rootfs_free_bytes` 是可见文件系统的 statvfs 容量计数，可能包含共享底层存储；它们不是镜像层大小，也不能证明 8 GiB 镜像预算通过。安装器单独使用 `du -sx` 检查该预算。
+
+## 资源
+
+2 vCPU、2048 MB、端口 9000。安装器在实际可见根文件系统已用空间超过 8 GiB 时拒绝。运行用户为非 root，无需 KVM、Docker 或额外特权。每个工具子进程最多 90 秒；成功响应前删除本次临时源文件、二进制和缓存。
+
+## 已验证
+
+| 提供方 | 范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 1.0.1 精确源码 CI 镜像、原生登记/官方 READY、CLI 与 SDK；外部 HTTP 验证固定版本的 Go/Rust/Java 真实编译、运行和自有产物清理，无跳过 | [正式回执](evidence/express-2026-10-20.json)、[完整 HTTP](evidence/image-http-2026-10-20T070826Z.json) |
+
+已独立读回确认 sandbox/template/registry 清理，以及运行后的 registry digest。这是实际镜像验收，不代表平台 step 构建成功。较早 1.0.0 镜像下载失败和 step 尝试保留为历史。状态仍为 experimental；其他提供方未验证。
 
 ## 二次开发
 
@@ -72,36 +102,6 @@ CLI: [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issu
 
 模板问题提交到 [awesome-templates](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues)，本模板由 [Issue 62](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/62) 跟踪；SDK 问题提交到 [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues)。
 
-## 已验证
-
-尚未记录任何通过的提供方测试。
-
 ## 许可证
 
 模板：Apache-2.0。Go：BSD-3-Clause 及附带声明。Rust：MIT OR Apache-2.0 及第三方声明。Temurin/OpenJDK：GPL-2.0 WITH Classpath-exception-2.0 及上游 legal 声明。安装后保留各发行版原始 LICENSE/COPYRIGHT/legal 文件。参阅 [Go](https://go.dev/LICENSE)、[Rust](https://github.com/rust-lang/rust/tree/1.90.0)、[Temurin](https://github.com/adoptium/temurin21-binaries/releases)。
-
-## 快速开始（HTTP POST）
-
-Response: `{"result":{"go":"GO_OK","rust":"RUST_OK","java":"JAVA_OK","cleanup_verified":true}}`.
-
-```bash
-curl -fsS -X POST -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer <server-token>' \
-  -d '{}' '<sandbox-port-9000-url>/commands/toolchain_smoke'
-```
-
-The server token is set in the named-command server process. See [runtime environment](../docs/runtime-environment.md).
-
-## 配置
-
-No model key. `ABX_SERVER_TOKEN` is an optional empty manifest placeholder; inject the value into the server process. `JAVA_HOME=/opt/toolchains/java`, `GOTOOLCHAIN=local`; image PATH selects only the pinned toolchains. The smoke owns its Go build cache and removes it.
-
-## 资源
-
-2 vCPU, 2048 MB, port 9000. Installer rejects actual used rootfs above 8 GiB. Non-root runtime; no KVM, Docker or additional capabilities. Each tool subprocess deadline is 90 seconds. Temporary source/binary/cache artifacts are deleted before a successful response.
-
-CLI defects: [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues).
-
-版本1.0.1显式修复运行工作区归属。原生子进程仅继承 PATH/HOME/JAVA_HOME/TMPDIR，另固定语言环境与 GOTOOLCHAIN=local；不继承云端、模型、服务端凭据或注入的编译器/加载器选项。并发读取输出，每路限制256KiB，操作时限90秒并清理自有进程组。此前1.0.0尝试不能证明新版本通过。
-
-响应中的旧字段名 `rootfs_used_bytes`、`rootfs_free_bytes` 是可见文件系统的 statvfs 容量计数，可能包含共享底层存储；它们不是镜像层大小，也不能证明8GiB镜像预算通过。安装器单独使用 `du -sx` 检查该预算。
