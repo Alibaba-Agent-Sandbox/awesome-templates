@@ -1,5 +1,5 @@
 name: chrome
-version: "1.0.1"
+version: "1.0.2"
 description: "Pinned genuine headed Chrome with native CDP, authenticated noVNC framebuffer and owned non-root desktop lifecycle."
 author: alibaba-agent-sandbox
 license: Apache-2.0

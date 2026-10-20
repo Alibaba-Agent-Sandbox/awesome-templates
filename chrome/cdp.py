@@ -21,6 +21,7 @@ class Page:
             endpoint=urlsplit(target['webSocketDebuggerUrl']);base=urlsplit(self.base)
             url=urlunsplit(('wss'if base.scheme=='https'else'ws',base.netloc,endpoint.path,'',''))
             self.ws=await self.session.ws_connect(url,max_msg_size=4*1024*1024,heartbeat=20)
+            await self.send('Page.bringToFront')
             await self.send('Page.enable')
             return self
         except BaseException:
@@ -53,9 +54,9 @@ class Page:
         if result.get('errorText'):raise RuntimeError('native browser navigation failed')
         deadline=time.monotonic()+30
         while time.monotonic()<deadline:
-            state=await self.evaluate('({url:location.href,title:document.title,ready:document.readyState})')
+            state=await self.evaluate('({url:location.href,title:document.title,ready:document.readyState,visible:document.visibilityState,width:innerWidth,height:innerHeight})')
             tree=await self.send('Page.getFrameTree');frame=tree.get('frameTree',{}).get('frame',{})
             current=frame.get('loaderId')==result['loaderId']if result.get('loaderId')else state.get('url')==url
-            if current and state.get('ready')in ['interactive','complete']:return state
+            if current and state.get('ready')in ['interactive','complete']and state.get('visible')=='visible'and state.get('width',0)>0 and state.get('height',0)>0:return state
             await asyncio.sleep(.1)
         raise RuntimeError('native browser navigation deadline exceeded')

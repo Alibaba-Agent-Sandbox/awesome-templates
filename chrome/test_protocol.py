@@ -63,3 +63,26 @@ def test_actual_http_relay_rejects_missing_or_wrong_bearer_before_native():
                     async with client.get(f'http://127.0.0.1:{port}/json/version',headers=headers)as response:assert response.status==401
         finally:await runner.cleanup()
     asyncio.run(run())
+
+
+def test_real_cdp_client_activates_selected_page_before_observing_visibility():
+    cdp=load('chrome_page_activation_tests','cdp.py')
+    async def run():
+        import aiohttp
+        from aiohttp import web
+        calls=[]
+        async def listing(request):return web.json_response([{'type':'page','id':'owned','webSocketDebuggerUrl':'ws://native.invalid/devtools/page/owned'}])
+        async def websocket(request):
+            ws=web.WebSocketResponse();await ws.prepare(request)
+            async for message in ws:
+                assert message.type==aiohttp.WSMsgType.TEXT
+                value=message.json();calls.append(value['method'])
+                await ws.send_json({'id':value['id'],'result':{}})
+            return ws
+        app=web.Application();app.router.add_get('/json/list',listing);app.router.add_get('/devtools/page/owned',websocket)
+        runner=web.AppRunner(app);await runner.setup();site=web.TCPSite(runner,'127.0.0.1',0);await site.start()
+        try:
+            async with cdp.Page('http://127.0.0.1:'+str(site._server.sockets[0].getsockname()[1])):pass
+            assert calls==['Page.bringToFront','Page.enable']
+        finally:await runner.cleanup()
+    asyncio.run(run())
