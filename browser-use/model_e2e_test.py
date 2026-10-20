@@ -63,7 +63,8 @@ async def verify(sb,settings,diagnostics=None):
             else:raise RuntimeError('own configured command server failed readiness')
             report['checks']['configured_server_ready']=True
             task='On the current page, click Increment exactly three times, enter '+code+' into Verification code and click Submit. Confirm the count and saved code, then finish with a short summary. Use only the browser interactions; do not change URLs or access fixture state endpoints.'
-            result=await server.commands.run('browser_use',task=task,url=local,max_steps=8,command_timeout=300,timeout=360)
+            report['model_acceptance']='RUNNING'
+            result=await server.commands.run('browser_use',task=task,url=local,max_steps=12,command_timeout=600,timeout=660)
             if not isinstance(result,dict):raise AssertionError('native result is not an object')
             candidate=result.get('screenshot_path','')
             if not isinstance(candidate,str) or not re.fullmatch(r'/home/user/app/browser-use-artifacts/[0-9a-f]{32}\.png',candidate):raise AssertionError('native screenshot path is outside owned artifact profile')

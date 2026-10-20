@@ -119,7 +119,7 @@ Model settings enter private file stdin only; they are not inherited into Chromi
 
 ## Resources
 
-2vCPU/2048MB, named-command9000, optional explicit model server9010; the separate SDK verification fixture uses9011. --disable-dev-shm-usage avoids relying on a large /dev/shm. One browser operation per server; concurrent heavy calls fail busy500. max_steps1..20; max3 actions/step; model30seconds/0retry/4096tokens; native action30/step60/LLM40second guards; outer command1..900seconds plus bounded cleanup. Each captured stream256KiB. Private browser/config/files/processes removed on ordinary success/failure/deadline; the PNG remains caller-owned. Sandbox deletion is the final boundary after abrupt server loss or hostile same-user code. Image rootfs has an8GiB build gate.
+2vCPU/2048MB, named-command9000, optional explicit model server9010; the separate SDK verification fixture uses9011. --disable-dev-shm-usage avoids relying on a large /dev/shm. One browser operation per server; concurrent heavy calls fail busy500. max_steps1..20; max3 actions/step; model90seconds/0retry/4096tokens; native action30/step120/LLM100second guards; outer command1..900seconds plus bounded cleanup. Each captured stream256KiB. Private browser/config/files/processes removed on ordinary success/failure/deadline; the PNG remains caller-owned. Sandbox deletion is the final boundary after abrupt server loss or hostile same-user code. Image rootfs has an8GiB build gate.
 
 ## Verified
 

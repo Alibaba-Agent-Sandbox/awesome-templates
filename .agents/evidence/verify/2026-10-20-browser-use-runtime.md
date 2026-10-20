@@ -28,3 +28,23 @@ redaction before truncation. The SDK controller retains safe model-state and
 owned process/file/listener cleanup facts before acceptance assertions, including
 failures.14 actual native/controller cases PASS15.22seconds on the new source.
 Actual new image/model acceptance remains pending; diagnostics do not certify it.
+
+
+## Exact native timeout diagnosis
+
+The second actual SDK/image attempt atd8425df37eddfb4e05bb562ec66de4817ab960f4
+returned native done=true/success=false after3history entries, with the redacted
+native error `Request timed out.` Independent count stayed0and no code was
+submitted; final URL matched. Both owned fixture listeners/files/processes and
+outer sandbox/template/private registry cleanup were independently confirmed.
+Failure receipts remain immutable. Their separate model_acceptance=NOT_RUN field
+was stale: the model was actually attempted and failed; it is not an unexecuted
+scenario. The wrapper now marks actual model failure as FAIL and retains facts.
+The image HTTP controller's NOT_RUN remains correct because that controller is
+explicitly model-off.
+
+The next bounded profile gives each upstream model request90seconds, native LLM100
+and step120seconds, still zero retries/4096tokens/action30seconds. The strict SDK
+fixture keeps all counter3/code/PNG/URL/cleanup assertions, uses12steps/600seconds
+and a660second client wait. This responds to the observed native timeout; no
+passing provider/model claim is made before the new actual image succeeds.
