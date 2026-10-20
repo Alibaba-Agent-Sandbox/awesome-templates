@@ -79,6 +79,8 @@ The native argv fixes `--json --yolo --provider openai-compatible --model <confi
 
 Native output is capped256KiB per stream, with whole-process-group/pidfd/unique-owner descendant cleanup on success/failure/timeout/overflow. Calls serialize; overlap fails busy. The caller's original HOME is not used. Explicit model key/base values and JSON-escaped variants are redacted before returning output. Retain only the requested workspace artifacts; owned runtime HOME/config/cache/session/team files are removed after the call.
 
+Pinned3.0.73 checks JSON mode before reading piped input. A fixed, non-secret positional sentence enables that preflight; the actual task still arrives only through anonymous stdin and is appended by upstream. Runtime1.0.1 corrects the real1.0.0 cloud failure; no user prompt or credential is placed in argv.
+
 ## Configuration
 
 | Name | Required / default | Meaning |

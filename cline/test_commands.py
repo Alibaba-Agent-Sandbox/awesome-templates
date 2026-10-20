@@ -65,6 +65,7 @@ def test_actual_authored_process_literal_stdin_redaction_nonzero_and_private_cle
     capture=tmp_path/'capture.json';binary=tmp_path/'authored-cline'
     binary.write_text('#!'+sys.executable+'\nimport json,os,pathlib,sys\n'
         +f'pathlib.Path({str(capture)!r}).write_text(json.dumps({{"home":os.environ["HOME"],"argv":sys.argv[1:],"stdin":sys.stdin.read(),"providers":json.load(open(os.environ["CLINE_PROVIDER_SETTINGS_PATH"]))}}))\n'
+        +'assert "Complete the task provided on standard input." in sys.argv, "upstream JSON preflight requires a positional prompt before reading stdin"\n'
         +'print(os.environ["OPENAI_API_KEY"])\nprint(json.dumps(os.environ["OPENAI_API_KEY"]),file=sys.stderr)\nraise SystemExit(23)\n')
     binary.chmod(0o700);monkeypatch.setattr(c,'_paths',lambda:str(binary))
     prompt='--update; $(touch escaped)'

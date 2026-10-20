@@ -133,7 +133,8 @@ def cline(prompt: str,cwd: str='',command_timeout: int=300) -> dict:
         raise ValueError('cwd must exist inside WORKSPACE')
     _validate_config()
     args=['--json','--yolo','--provider','openai-compatible','--model',_CONFIG['MODEL'],'--cwd',str(directory),
-        '--compaction','off','--retries','2','--timeout',str(command_timeout)]
+        '--compaction','off','--retries','2','--timeout',str(command_timeout),
+        'Complete the task provided on standard input.']
     return _run(args,cwd=directory,timeout=command_timeout,model=True,prompt=prompt)
 
 
