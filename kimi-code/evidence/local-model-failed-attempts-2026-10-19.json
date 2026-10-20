@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-19",
+  "template": "kimi-code",
+  "scope": "local real acceptance attempts before the successful corrected run; no Express deployment claim",
+  "attempts": [
+    {
+      "passed": false,
+      "reason": "HTTP file operation outside configured server base directory; no model call occurred",
+      "cleanup": "owned controller temporary directory removed"
+    },
+    {
+      "passed": false,
+      "reason": "upstream CLI rejects --prompt together with --auto",
+      "checks": "9 initial/seed checks passed, model invocation failed, owned project cleanup passed"
+    }
+  ]
+}

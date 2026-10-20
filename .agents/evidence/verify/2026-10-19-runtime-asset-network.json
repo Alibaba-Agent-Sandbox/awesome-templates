@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-19",
+  "provider": "alicloud-express",
+  "scope": "partial public-asset network probe only; no template acceptance",
+  "cleanup_verified": true,
+  "results": [
+    {
+      "asset": "github-code-server",
+      "status": 206,
+      "bytes": 65536,
+      "elapsed_s": 2.03
+    },
+    {
+      "asset": "github-aider-python",
+      "status": 206,
+      "bytes": 65536,
+      "elapsed_s": 1.936
+    },
+    {
+      "asset": "codeload-hermes",
+      "status": 200,
+      "bytes": 65536,
+      "elapsed_s": 0.952
+    },
+    {
+      "asset": "go",
+      "status": 206,
+      "bytes": 65536,
+      "elapsed_s": 0.856
+    },
+    {
+      "asset": "rustc",
+      "status": 206,
+      "bytes": 65536,
+      "elapsed_s": 2.03
+    },
+    {
+      "asset": "node",
+      "status": 206,
+      "bytes": 65536,
+      "elapsed_s": 2.572
+    }
+  ]
+}

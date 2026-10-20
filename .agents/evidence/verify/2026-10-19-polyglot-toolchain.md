@@ -40,3 +40,10 @@ normal/nonzero descendant cleanup and timeout. The credential regression also
 fails against preserved original HEAD source, without printing real environment
 values. Strict target conformance and117 document links PASS. Current-head image
 and genuine1.0.1 provider acceptance remain pending.
+
+Integration preserved main's apply-patch checks, Kimi source row and separate
+managed-template namespace while retaining the compiler installation/test rows.
+Legacy statvfs response field names remain compatible; both READMEs explicitly
+distinguish visible filesystem capacity from actual du-based image-size budget.
+The new1.0.1 archive can be reused only when all image/runtime inputs match the
+export's exact public Git revision. Current-head CI remains required.

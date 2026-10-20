@@ -101,3 +101,5 @@ No model key. `ABX_SERVER_TOKEN` is an optional empty manifest placeholder; inje
 CLI defects: [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues).
 
 Version1.0.1 explicitly owns the runtime workspace. Native children inherit only PATH/HOME/JAVA_HOME/TMPDIR plus fixed locale and GOTOOLCHAIN=local; cloud/model/server credentials and injected compiler/loader options are excluded. Output is drained concurrently with a256KiB limit per stream, a90-second deadline and owned group cleanup. Earlier1.0.0 attempts do not qualify this changed profile.
+
+The legacy `rootfs_used_bytes` and `rootfs_free_bytes` response keys are visible-filesystem statvfs counters, which may include shared backing storage. They are capacity diagnostics, not image-layer size or acceptance of the8GiB image budget; the installer separately uses `du -sx` for that budget.

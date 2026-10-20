@@ -103,3 +103,5 @@ No model key. `ABX_SERVER_TOKEN` is an optional empty manifest placeholder; inje
 CLI defects: [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues).
 
 版本1.0.1显式修复运行工作区归属。原生子进程仅继承 PATH/HOME/JAVA_HOME/TMPDIR，另固定语言环境与 GOTOOLCHAIN=local；不继承云端、模型、服务端凭据或注入的编译器/加载器选项。并发读取输出，每路限制256KiB，操作时限90秒并清理自有进程组。此前1.0.0尝试不能证明新版本通过。
+
+响应中的旧字段名 `rootfs_used_bytes`、`rootfs_free_bytes` 是可见文件系统的 statvfs 容量计数，可能包含共享底层存储；它们不是镜像层大小，也不能证明8GiB镜像预算通过。安装器单独使用 `du -sx` 检查该预算。
