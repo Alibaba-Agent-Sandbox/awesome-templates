@@ -2,6 +2,8 @@
 
 ## What it does
 
+Python browse/scrape/fill_form requests each own a separate browser. Native MCP calls deliberately share one owned browser session until stop or idle close; mcp_stop removes its private profile/output.
+
 Navigate with headless Chromium, save PNG screenshots, extract text and links,
 and fill forms. Each named command owns and closes a fresh browser; concurrent
 requests do not share cookies, DOM state, or form values. Form filling verifies

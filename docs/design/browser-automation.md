@@ -9,7 +9,7 @@ sandbox files API, without requiring a desktop or a model credential.
 ## Capabilities
 
 Named `browse`, `scrape`, `fill_form` and `run` commands; shell, files, code and
-port 9000. One browser per named request avoids cross-thread Playwright handles
+port 9000. For the original Python browser commands, one browser per request avoids cross-thread Playwright handles
 and leaking cookies or form state to another invocation. Optional SDK BROWSER
 routes are not enabled. Express runs the entire headless slice, not desktop/VNC.
 
