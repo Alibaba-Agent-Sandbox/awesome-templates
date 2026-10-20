@@ -175,3 +175,5 @@ Official terminal agent: [goose](goose/README.md) (experimental; [alicloud-expre
 These provider-managed IDs are listed separately from buildable source templates.
 Native interpreter service was HTTP404 in both recorded tests; no native interpreter
 or other-provider certification is claimed.
+
+[Development database template](dev-services/README.md) · experimental; provider acceptance pending.
