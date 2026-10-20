@@ -52,3 +52,12 @@ def test_real_authored_memfd_stdin_does_not_forward_host_secret(tmp_path):
         source.write(json.dumps({'key':key}).encode());source.seek(0)
         code,out,_=c._PROCESS.run([sys.executable,'-c',"import os,sys,json;v=json.load(sys.stdin);assert 'HOST_PRIVATE_KEY' not in os.environ;print(len(v['key']))"],cwd=tmp_path,env={'PATH':os.environ['PATH']},timeout=10,input_file=source)
     assert code==0 and int(out)==len(key) and key not in out
+
+
+def test_failure_diagnostics_retain_only_bounded_phase_status_count():
+    secret='synthetic-only-private-value'
+    result=c._failure_summary({'failure_stage':'act','model_stage':'response','upstream_http_status':401,'model_calls':1,
+        'native_error_type':secret,'message':secret,'key':secret})
+    assert secret not in result and 'http_status=401' in result and 'model_calls=1' in result
+    result=c._failure_summary({'failure_stage':secret,'model_stage':secret,'upstream_http_status':True,'model_calls':100000})
+    assert secret not in result and 'http_status=None' in result and 'model_calls=None' in result

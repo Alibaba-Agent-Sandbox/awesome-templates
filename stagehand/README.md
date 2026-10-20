@@ -96,6 +96,8 @@ The wrapper uses upstream ClientLLM structured generation, maps text/images and 
 
 ## Verified
 
+Template1.1.1 adds only bounded phase/status/call diagnostics, never upstream bodies, keys or endpoints. Version1.1.0 passed real L1 and native HTTP13PASS/0FAIL/1explicit model skip, but the separate actual model failed with all owned cleanup confirmed, so the template remains unqualified. Independent structured JSON model-wire preflight passed; it does not establish native Stagehand acceptance.
+
 Template1.1.0 explicitly fixes pinned SDK4.3.0 local connect forwarding: its factory accepts but drops extensionId, then attempts Extensions.loadUnpacked over a debugging port that this Chromium rejects. The owned launcher now preloads the unmodified bundled npm extension, observes its actual service-worker ID and uses native localBrowser.connect/Stagehand.create/act/extract. The [build patch](patch_sdk.py) requires the pristine SDK SHA256 and forwards only the existing public parameter. The worker requires the exact patched source SHA256 `bdf3cd62126c1529e8a889cae17fd098303e24e962e491a4b20786de72c369e0`. This is a disclosed patched upstream distribution, not an unmodified release or substitute browser agent. Previous1.0.0native cloud/L1 failures remain historical and do not qualify1.1.0; fresh actual acceptance is required.
 
 No current provider or real-model pass is recorded yet. Source/import/fixture checks are not cloud acceptance. Keep `tested_on: []` and catalog experimental until exact current native L1, Express SDK creation/commands/model and independent cleanup receipts pass.

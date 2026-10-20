@@ -1,9 +1,13 @@
 // Explicit Stagehand4 ClientLLM transport. Browser actions remain upstream SDK work.
 export function compatibleModel(config, fetchImpl = fetch) {
   let calls = 0;
+  let lastStatus = null, stage = 'not-started';
   return {
     get calls() { return calls; },
+    get diagnostics() { return {model_calls:calls, upstream_http_status:lastStatus, model_stage:stage}; },
     async generate(params) {
+      stage = 'mapping';
+      lastStatus = null;
       if (++calls > 8) throw new RangeError('model call budget exhausted');
       if (params.responseFormat?.type !== 'json_schema') throw new TypeError('structured generation required');
       const messages = [];
@@ -21,9 +25,12 @@ export function compatibleModel(config, fetchImpl = fetch) {
           schema:params.responseFormat.schema, strict:true}},
         ...(params.temperature === undefined ? {} : {temperature:params.temperature})});
       if (Buffer.byteLength(body) > 2*1024*1024) throw new RangeError('model request too large');
+      stage = 'request';
       const response = await fetchImpl(config.base_url.replace(/\/+$/, '')+'/chat/completions', {
         method:'POST', redirect:'error', signal:AbortSignal.timeout(60000),
         headers:{'content-type':'application/json', authorization:'Bearer '+config.api_key}, body});
+      lastStatus = response.status;
+      stage = 'response';
       if (!response.ok) { await response.body?.cancel(); throw new Error('model request failed: HTTP '+response.status); }
       let size = 0; const parts = [];
       try {
@@ -33,10 +40,13 @@ export function compatibleModel(config, fetchImpl = fetch) {
           parts.push(part);
         }
       } catch (error) { await response.body?.cancel().catch(()=>{}); throw error; }
+      stage = 'decoding';
       const value = JSON.parse(Buffer.concat(parts).toString('utf8'));
       const text = value.choices?.[0]?.message?.content;
       if (value.choices?.[0]?.finish_reason !== 'stop' || typeof text !== 'string') throw new TypeError('model response incomplete');
-      return {role:'assistant', content:{type:'text', text}, outputFormat:'json_schema', structuredContent:JSON.parse(text)};
+      const structuredContent = JSON.parse(text);
+      stage = 'complete';
+      return {role:'assistant', content:{type:'text', text}, outputFormat:'json_schema', structuredContent};
     }
   };
 }

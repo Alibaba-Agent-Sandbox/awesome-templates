@@ -1,0 +1,28 @@
+{
+  "scope": "model wire preflight only, not native Stagehand/provider acceptance",
+  "provider": "alicloud-express",
+  "model": "qwen3.8-flash",
+  "passed": true,
+  "formats": [
+    {
+      "format": "json_schema",
+      "status": 200,
+      "completed": true,
+      "exact_value": true
+    },
+    {
+      "format": "json_object",
+      "status": 200,
+      "completed": true,
+      "exact_value": true
+    }
+  ],
+  "cleanup": {
+    "sandbox_kill": true,
+    "sandbox_absence_verified": true
+  },
+  "verification_type": "model-wire-preflight-only",
+  "native_stagehand_executed": false,
+  "template_acceptance": false,
+  "controller_sha256": "a76dd9ceaca3bf9cc6bd3867ae01799d6977e2b5d8df66f271049a3773cdf39e"
+}

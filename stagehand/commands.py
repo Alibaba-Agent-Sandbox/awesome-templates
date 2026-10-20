@@ -60,7 +60,11 @@ def _invoke(value=None):
                 source.seek(0)
                 code, output, _ = _PROCESS.run(argv, cwd=private, env=env, timeout=value.get('command_timeout',60), input_file=source)
         if code:
-            raise RuntimeError('native Stagehand operation failed; private upstream diagnostics omitted')
+            try:
+                details = json.loads(output)
+            except ValueError:
+                details = {}
+            raise RuntimeError(_failure_summary(details))
         try:
             result = json.loads(output)
         except ValueError:
@@ -79,6 +83,24 @@ def _invoke(value=None):
         return scrub(result)
     finally:
         _LOCK.release()
+
+
+def _failure_summary(value):
+    if not isinstance(value,dict):
+        value = {}
+    phase = value.get('failure_stage')
+    if phase not in ['startup','browser','native-init','navigation','act','extract','screenshot','cleanup']:
+        phase = 'unknown'
+    stage = value.get('model_stage')
+    if stage not in ['not-started','mapping','request','response','decoding','complete']:
+        stage = 'unknown'
+    status = value.get('upstream_http_status')
+    if type(status) is not int or not 100<=status<=599:
+        status = None
+    count = value.get('model_calls')
+    if type(count) is not int or not 0<=count<=9:
+        count = None
+    return f'native Stagehand failed at {phase}; model_stage={stage}, http_status={status}, model_calls={count}; private diagnostics omitted'
 
 
 def _browser():

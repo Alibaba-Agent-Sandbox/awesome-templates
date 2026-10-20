@@ -96,6 +96,8 @@ task／提取指令各最多32768 UTF-8字节，URL最多8192。结果含 `versi
 
 ## 已验证
 
+模板1.1.1 进一步仅公开有界阶段／HTTP状态／请求次数诊断，不返回上游正文、密钥或端点。1.1.0 已通过真实 L1 和原生 HTTP13PASS/0FAIL/1显式模型跳过，但单独真实模型失败、资源独立清理通过，不能据此标记整个模板通过。固定模型端点的独立结构化 JSON 预检实际通过，但不等于 Stagehand 原生模型验收。
+
 模板1.1.0 显式修复固定 SDK4.3.0 的连接参数转发：原生工厂接收却遗漏 `extensionId`，并通过调试端口执行当前 Chromium 拒绝的 `Extensions.loadUnpacked`。现在只预加载同一 npm 包随附的原始扩展，观察其真实 service-worker ID，再使用原生 localBrowser.connect、Stagehand.create/act/extract。构建时 [补丁](patch_sdk.py)强制校验原始源码 SHA-256，并只转发该现有公开参数；工作进程强制校验补丁后源码 SHA-256 `bdf3cd62126c1529e8a889cae17fd098303e24e962e491a4b20786de72c369e0`。这不是未修改的上游发行包，也不是替代浏览器 agent。浏览器／扩展仍为真实原生实现。原1.0.0的失败云端／L1记录保留，不能证明1.1.0通过。当前需重新执行真实验收。
 
 当前尚无提供方或真实模型通过记录。源码／import／fixture 检查不代表云端验收。精确版本的原生 L1、Express SDK 创建／命令／模型及独立清理通过之前，保持 `tested_on: []` 和 experimental。
