@@ -70,3 +70,5 @@ separate from a later successful image run. Hosted CI and ordinary PR review are
 still required before merge.
 
 Actual digest-form registration attempted to pull latest and failed on2026-10-19. This provider path therefore uses the nonce-owned tag plus before/after digest readback; no provider digest-reference support or registry tag immutability is claimed.
+
+The runner checks local external-controller imports before artifact/cloud work. Install the template controller dependencies first (OCR needs Pillow); a missing controller is not a provider pass. Failed test status and independently observed cloud cleanup are recorded separately. SDK secondary URLs are passed to the code-server/Next/Vite verifiers.

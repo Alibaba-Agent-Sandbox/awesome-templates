@@ -1,0 +1,51 @@
+{
+  "template": "ocr",
+  "provider": "alicloud-express",
+  "build_mode": "image",
+  "verification_type": "ci-image-backed-external-http",
+  "passed": true,
+  "registry_cleanup_verified": true,
+  "model_acceptance": "NOT_RUN",
+  "http_acceptance": {
+    "passed": true,
+    "exit_code": 0,
+    "pass_count": 19,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "76012220e1d8e98b32295cc072e0dcf8edada48a297b803ed3dab84d29ac7de7"
+  },
+  "cleanup_verified": true,
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "ocr",
+    "template_version": "1.0.0",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "bb0f625f1325c07c1897fa725bff67bbb97efec5",
+    "checkout_commit": "bb0f625f1325c07c1897fa725bff67bbb97efec5",
+    "workflow_run_id": "39294678242",
+    "artifact_id": "12206998177",
+    "archive_sha256": "79e3e0a6e5481b8da3482825ea13a33cff8e71f97ab594d9d15a692985c2e019",
+    "image_config_sha256": "e10c2e5c03899ee3783490c491de15510135d5810d99328aff6d35ffcb48aa38",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "99ab9329cdb8c8f7b54fb7bbd21e124afcac8e08e1759118278fd62bacb66ca9",
+      "template.yaml:contract": "66803813315d6c34503012218afe1d222c82727037c4856e0d8b1c9038cd185a",
+      "requirements.txt": "09fc6a57b723ca08602ec6f30d04c0be1ebb77b056eee344f0a532389417da42",
+      "commands.py": "5dacdea6d2949f8ba94e8604c0a47c0128764ee8669020da9b2fffc1fb130366",
+      "fixtures/sample.json": "8a05cdda3836e40232e975db5516c6d5098bccdf8006425c43bbf14bdddb1e74",
+      "fixtures/sample.png": "6b05fba52096147100a7b362fedaa20d454832a8768d687ef13911d96ccb989f"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:e2a156c7ef68434bff6ff7afc1c308debb29b80b926af3f58aab3b60cfc9c9ae",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "result": "PASS"
+}

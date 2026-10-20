@@ -1,0 +1,46 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-19",
+  "template": "openclaw",
+  "template_version": "2.0.1",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "steps",
+  "harness_sha256": "1832710941a4824714aab40236b0111804a02c81d77a98590530131914d009b6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "gateway_status",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 8.007,
+      "result": "{'running': False, 'owned': False, 'url': None}"
+    },
+    {
+      "name": "gateway_status",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 1.093,
+      "result": "{'running': False, 'owned': False, 'url': None}"
+    }
+  ],
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "openclaw",
+    "materializer_sha256": "743cf113087cb19d98ac8e8aae0656138853af84ed8a844b6af4a433382a0581",
+    "template_version": "2.0.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "steps_json_bytes": 10846,
+    "inputs_sha256": {
+      "Dockerfile": "9edf6532247e63bf930be76fba20a67c85409fbc16f402523447a5bfaa70762a",
+      "template.yaml": "b041b416df408b872cc17e12a44623e6bb54f8dc4b5900397a2538df7ba4a2cc",
+      "commands.py": "7dd8aed4b1c1f82b195f110e93a8c361ab2a87e60540f25b1028caa4f913096a"
+    },
+    "generated_manifest_sha256": "c48e3c486ad8fc72ba54b312e2346fd27544b323716704dd194b3e4288e1219a"
+  }
+}

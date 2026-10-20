@@ -181,6 +181,14 @@ analytics-disabled 状态可能保留在该专用沙箱原生 `.aider`，随实�
 
 ## 已验证
 
+版本 1.0.1 已通过真实 CI 镜像登记、官方 READY、CLI/SDK，以及 21 项严格真实模型检查（qwen3.8-flash、OpenAI 兼容协议），含源码修改、新产物、原始测试不变和独立 held-out 完成证明。独立确认 sandbox/template/registry 清理。状态仍为 experimental；其他提供方未验证。
+
+| 提供方 | 范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 精确当前版本、真实镜像和独立清理 | [正式回执](evidence/express-2026-10-20.json)、[HTTP](evidence/image-http-2026-10-20T064247Z.json)、[严格模型](evidence/model-image-2026-10-20T064248Z.json) |
+
+## 历史验收
+
 [Express 实际镜像补充验收](evidence/image-runtime-2026-10-16-configured.json)
 已通过：实际 CI 构建镜像的官方 READY、源码/server 字节溯源、SDK/HTTP/CLI
 版本与配置目标、真实 CLI 正负控，以及 qwen3.8-flash 真实编程 21 项检查，

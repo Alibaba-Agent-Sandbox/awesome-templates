@@ -99,12 +99,34 @@ The last two settings support native diagnostics; they are not command parameter
 
 | Resource | Value |
 |---|---|
-| CPU | 2 vCPU; engine uses one OpenMP thread |
+| CPU | 1 vCPU; engine uses one OpenMP thread |
 | Memory | 1024 MB sandbox; native engine address space capped at 512 MiB |
 | Port | 9000 |
 | Disk | Platform rootfs; callers must remove retained result directories |
 
 ## Verified
+
+| Provider | Scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | Version1.0.1 actual CI image, official READY, CLI/SDK, full HTTP19 PASS/0 SKIP and independent sandbox/template/registry cleanup | [2026-10-20](evidence/express-2026-10-20.json), [full run](evidence/image-http-2026-10-20T054627Z.json) |
+| alicloud-express | Version 1.0.1 genuine platform steps, official READY, CLI/SDK and full HTTP 19 PASS / 0 FAIL / 0 SKIP; independently confirmed sandbox/template cleanup | [step receipt](evidence/express-2026-10-20T061143Z.json), [full HTTP](evidence/full-http-steps-2026-10-20T061143Z.json) |
+
+The1vCPU/1024MB resource correction is formally versioned1.0.1 and independently
+verified at that exact contract. The controller checks random-digit pixels,
+original input bytes, downloaded TXT/TSV contents/hashes/confidence/bounds, blank
+negative control and artifact deletion. Earlier1.0.0 candidate passes and failed
+attempts remain in the historical section below; none was relabeled. This run
+uses a verified CI image and real native image registration, not Dockerfile or
+platform-step deployment. The separate passing step receipts above establish actual platform-step execution at the same version; earlier failed attempts remain history.
+
+
+## Historical verification
+
+| Provider | Scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | Actual CI image, official READY, CLI/SDK, full HTTP19 PASS/0 SKIP and independent sandbox/template/registry cleanup | [2026-10-19](evidence/express-2026-10-19.json) |
+
+The corrected1vCPU/1024MB profile passed genuine Express full OCR: random-digit pixels, original-image bytes, independently downloaded TXT/TSV/hash/confidence/bounds, blank negative control and owned artifact cleanup. [Full receipt](evidence/image-http-2026-10-19T181012Z.json). Earlier resource rejection and missing local Pillow controller attempts remain failures.
 
 Source tests: 27 passed with actual Tesseract 5.5.0 / Pillow 11.3.0. Source HTTP verification: 19 passed, zero failed, zero skipped, including a newly generated random-digit image, independently downloaded TXT/TSV, confidence/bounds checks and a blank-image negative control. These are source-runtime results. Actual image L1 and supplemental changed-image Express verification are pending; canonical `abx template deploy` / `scripts/express_e2e.py` L2 is not run. `tested_on` stays empty and catalog status remains experimental. See [verification](../.agents/evidence/verify/2026-10-16-ocr-runtime.md).
 
@@ -116,7 +138,7 @@ The Linux runner keeps its process leader unreaped with `waitid(WNOWAIT)`, drain
 
 ### Agent Sandbox platform steps
 
-From a repository checkout, `python scripts/run_steps_e2e.py ocr` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+From a repository checkout, `python scripts/run_steps_e2e.py ocr --timeout 1200 --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). The public runner performs CLI/SDK fixture smoke. The separate full-HTTP controller also passed all 19 assertions after READY; see the [executed procedure](../.agents/evidence/verify/2026-10-20-ocr-step-acceptance.md). No model is required for this native OCR task.
 
 ## Contributing
 

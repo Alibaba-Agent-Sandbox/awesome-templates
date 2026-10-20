@@ -74,10 +74,20 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Provider-owned template launch](notes/proposed/feature/2026-10-19-provider-template-launch.md) · [verification](evidence/verify/2026-10-19-provider-template-launch.md)
 
+- [Native apply_patch](notes/proposed/feature/2026-10-19-apply-patch-runtime.md) · [verification](evidence/verify/2026-10-19-apply-patch-runtime.md)
+
 - [Managed runtime catalog](notes/proposed/feature/2026-10-19-managed-template-catalog.md) · [verification](evidence/verify/2026-10-19-managed-template-catalog.md)
+- [Bounded browser build](notes/proposed/process/2026-10-19-bounded-browser-build.md) · [verification](evidence/verify/2026-10-19-bounded-browser-build.md)
 
 - [Express steps checkpoint](evidence/verify/2026-10-19-steps-checkpoint-1555.md)
 
 - [Development databases](notes/proposed/feature/2026-10-19-dev-services-runtime.md) · [verification](evidence/verify/2026-10-19-dev-services-runtime.md)
+- [OCR Express resources](notes/proposed/process/2026-10-19-ocr-resource-profile.md) · [verification](evidence/verify/2026-10-19-ocr-resource-profile.md)
 
 - [Exact-source CI image acceptance](notes/proposed/process/2026-10-19-ci-image-acceptance.md) · [verification](evidence/verify/2026-10-19-ci-image-acceptance.md)
+
+- [Step workspace ownership](notes/proposed/process/2026-10-19-step-workspace-ownership.md) · [verification](evidence/verify/2026-10-19-step-workspace-ownership.md)
+- [Controller prerequisites](notes/proposed/process/2026-10-19-controller-prerequisite-preflight.md) · [verification](evidence/verify/2026-10-19-controller-prerequisite-preflight.md)
+
+- [Current heavy-image acceptance](evidence/verify/2026-10-20-current-heavy-image-acceptance.md)
+- [OCR step acceptance](notes/proposed/process/2026-10-20-ocr-step-acceptance.md) · [verification](evidence/verify/2026-10-20-ocr-step-acceptance.md)
