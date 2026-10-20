@@ -140,5 +140,37 @@ def run(script: str = "main.py", timeout_s: int = 120) -> str:
     return result.stdout
 
 
+# Load only the local helper definitions; no listener/browser starts on import.
+import importlib.util as _mcp_import
+_mcp_spec = _mcp_import.spec_from_file_location('template_browser_mcp', Path(__file__).with_name('mcp_runtime.py'))
+_mcp = _mcp_import.module_from_spec(_mcp_spec)
+_mcp_spec.loader.exec_module(_mcp)
+
+
+@command("mcp_start", description="Start actual Playwright MCP0.0.83 on sandbox-loopback8931 using existing Chromium.")
+def mcp_start() -> dict:
+    return _mcp.start()
+
+
+@command("mcp_status", description="Inspect only this command server's owned MCP; never scans credentials.")
+def mcp_status() -> dict:
+    return _mcp.status()
+
+
+@command("mcp_call", description="Call owned actual MCP tools/list, tools/call or ping through authenticated command transport.")
+def mcp_call(method: str, params_json: str = "{}") -> dict:
+    return _mcp.call(method, params_json)
+
+
+@command("mcp_stop", description="Close the owned MCP session, process group and marked browser workers; verify listener absence.")
+def mcp_stop() -> dict:
+    return _mcp.stop()
+
+
+@command("mcp_self_test", description="Actual native MCP initializes, lists tools, clicks a real counter twice, screenshots and cleans its fixture.")
+def mcp_self_test() -> str:
+    return _mcp.self_test()
+
+
 if __name__ == "__main__":
     start(int(os.environ.get("ABX_SERVER_PORT", "9000")))

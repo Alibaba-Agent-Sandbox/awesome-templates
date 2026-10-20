@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@playwright/mcp": "0.0.83"
+  },
+  "name": "agent-sandbox-browser-mcp"
+}

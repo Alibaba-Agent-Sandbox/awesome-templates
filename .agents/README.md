@@ -105,8 +105,10 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Application event reserve compatibility](evidence/verify/2026-10-20-template-application-v3-event-reserve.md)
 - [Actual SDK creation acceptance](notes/proposed/process/2026-10-20-sdk-created-acceptance.md) · [verification](evidence/verify/2026-10-20-sdk-created-acceptance.md)
 
+- [SWE real-model budget](notes/proposed/process/2026-10-20-swe-real-model-budget.md) · [verification](evidence/verify/2026-10-20-swe-real-model-budget.md)
 - [Four exact-controller image/model reruns](evidence/verify/2026-10-20-four-coding-image-revalidation.json)
 
+- [Native browser MCP](notes/proposed/feature/2026-10-20-browser-native-mcp.md) · [verification](evidence/verify/2026-10-20-browser-native-mcp.md)
 - [Application current-main integration](evidence/verify/2026-10-20-template-application-v3-main-integration.md)
 
 - [V3 structural smoke expectations](notes/proposed/process/2026-10-20-v3-structured-smoke.md) · [verification](evidence/verify/2026-10-20-v3-structured-smoke.md)
