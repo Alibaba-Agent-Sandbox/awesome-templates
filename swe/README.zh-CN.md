@@ -164,3 +164,7 @@ L0 可以跳过缺失的上游运行时/模型前置，这不证明代理运行�
 Wrapper 为 Apache-2.0；mini-swe-agent 2.4.6 为 MIT；Flask 为 BSD-3-Clause；SWE-bench Verified 元数据和测试补丁遵循数据集 MIT 许可证。随附 CPython 保留其 distribution 许可证文件。来源和许可证链接见 [NOTICE](./NOTICE.md)，原始源码归档保留自己的许可证文件。
 
 CLI 安装、SDK 源码安装、HTTP 认证与资源所有权见[模板使用指南](../docs/using-templates.zh-CN.md)。
+
+### 当前平台 step 验收
+
+后续[当前版本真实 step 回执](evidence/express-2026-10-20T143844Z.json)及[完整外部 HTTP 结果](evidence/verification-steps-2026-10-20T143844Z.json)已通过：官方 READY、真实 Python SDK 创建和 CLI/SDK smoke，耗时 1090.426 秒；5 HTTP PASS / 0 FAIL / 1 explicit model SKIP。自有沙箱、模板和临时私有缓存已独立确认清理。此前失败记录保留；本次未运行模型，既有镜像／模型回执保持原范围。
