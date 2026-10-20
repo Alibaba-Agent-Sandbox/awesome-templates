@@ -148,3 +148,11 @@ If any required item is blocked, report the concrete missing prerequisite and
 the reviewable work completed. Do not describe partial implementation as done.
 
 For pip hash-lock installation, use --require-hashes -r with one explicitly copied local lockfile. Each requirement must use an exact version and SHA256; do not mix additional unpinned package arguments or external requirement/index directives. The checker supports simple COPY source-to-file mappings; image pip enforcement and pip check remain required.
+
+
+A template requiring a newer server contract may add `server-sdk.commit` with one
+lowercase40-character public commit and a newline. It must agree with its immutable
+Dockerfile server fallback. L1 checks out that source before building the wheel;
+archive and registration proof checks select the same pin. The opt-in file is part
+of the hashed context. Templates without it retain the historical common injected
+pin, so adding one consumer does not requalify or change other runtimes.

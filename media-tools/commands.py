@@ -31,7 +31,7 @@ _LIMIT_EXEC = ("import os,resource,sys;resource.setrlimit(resource.RLIMIT_CORE,(
                "os.execve(sys.argv[1],sys.argv[1:],os.environ)")
 
 
-def _process(argv: list[str], *, cwd: str, timeout: float) -> bytes:
+def _process(argv: list[str], *, cwd: str, timeout: float, capture_result: bool = False) -> bytes | dict:
     """Drain bounded output and kill the owned group before reaping its leader."""
     env = {key: os.environ[key] for key in ("HOME", "PATH", "LD_LIBRARY_PATH") if key in os.environ}
     env.update(LANG="C.UTF-8", LC_ALL="C.UTF-8", OMP_NUM_THREADS="2", OPENBLAS_NUM_THREADS="2", MALLOC_ARENA_MAX="2")
@@ -82,17 +82,21 @@ def _process(argv: list[str], *, cwd: str, timeout: float) -> bytes:
         raise RuntimeError("media operation exceeded its wall-clock deadline")
     if overflow.is_set():
         raise RuntimeError("media diagnostics exceeded the byte limit")
+    if capture_result:
+        return {"stdout": b"".join(parts[0]).decode("utf-8", "replace"),
+                "stderr": b"".join(parts[1]).decode("utf-8", "replace"),
+                "exit_code": process.returncode}
     if process.returncode:
         raise RuntimeError(f"media tool failed (exit {process.returncode}); native diagnostics omitted")
     return b"".join(parts[0])
 
 
-def _tool(name: str, arguments: list[str], *, cwd: Path, deadline: float) -> bytes:
+def _tool(name: str, arguments: list[str], *, cwd: Path, deadline: float, capture_result: bool = False) -> bytes | dict:
     remaining = deadline - time.monotonic()
     if remaining <= 0:
         raise RuntimeError("media operation exceeded its wall-clock deadline")
     return _process([sys.executable, "-I", "-c", _LIMIT_EXEC, "/usr/bin/" + name, *arguments],
-                    cwd=str(cwd), timeout=remaining)
+                    cwd=str(cwd), timeout=remaining, **({"capture_result": True} if capture_result else {}))
 
 
 def _timeout(command_timeout: int) -> float:
@@ -257,8 +261,103 @@ def transcode(input_path: str, output_name: str, preset: str = "mp4",
         _LOCK.release()
 
 
-@command("media_smoke", description="Transcode owned synthetic PCM to FLAC, independently decode and compare every sample, then clean up.")
-def media_smoke() -> str:
+
+def _argv(args: list[str], max_seconds: int) -> tuple[str, str, list[str]]:
+    """Validate one offline input, output options and one plain output name."""
+    if (not isinstance(args, list) or not 3 <= len(args) <= 64
+            or not all(isinstance(item, str) and item and "\x00" not in item for item in args)
+            or sum(len(item.encode("utf-8")) for item in args) > 8192):
+        raise ValueError("args must be 3-64 nonempty strings totaling at most 8192 UTF-8 bytes")
+    if args[0] != "-i":
+        raise ValueError("args must begin with -i and one relative workspace input")
+    output_name = args[-1]
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,119}\.(mp4|wav|flac)", output_name):
+        raise ValueError("args must end with one plain mp4, wav or flac output filename")
+    options = args[2:-1]
+    index = 0
+    singles = {"-an", "-vn"}
+    choices = {
+        "-c:v": {"libx264"}, "-c:a": {"aac", "pcm_s16le", "flac"},
+        "-preset": {"ultrafast", "superfast", "veryfast", "faster", "fast", "medium"},
+        "-pix_fmt": {"yuv420p"}, "-map": {"0:v:0", "0:v:0?", "0:a:0", "0:a:0?"},
+        "-movflags": {"+faststart"},
+    }
+    while index < len(options):
+        key = options[index]
+        if key in singles:
+            index += 1
+            continue
+        if index + 1 >= len(options):
+            raise ValueError("an output option is missing its value")
+        value = options[index + 1]
+        if key in choices:
+            valid = value in choices[key]
+        elif key in {"-t", "-ss", "-r", "-ac", "-ar"}:
+            upper = {"-t": max_seconds, "-ss": 600, "-r": 60, "-ac": 2, "-ar": 48000}[key]
+            try:
+                number = float(value)
+                valid = math.isfinite(number) and 0 < number <= upper
+                if key in {"-ac", "-ar"}:
+                    valid = valid and value.isdecimal()
+            except ValueError:
+                valid = False
+        elif key == "-vf":
+            match = re.fullmatch(r"scale=([1-9][0-9]{0,3}):(-2|[1-9][0-9]{0,3})", value)
+            valid = bool(match and int(match[1]) <= 1920 and (match[2] == "-2" or int(match[2]) <= 1080))
+        else:
+            raise ValueError("unsupported output option: " + key)
+        if not valid:
+            raise ValueError("invalid value for output option " + key)
+        index += 2
+    return args[1], output_name, options
+
+
+@command("transcode_args", description="Run a bounded offline FFmpeg argv vector and return actual stdout, stderr and exit_code.")
+def transcode_args(args: list[str], max_seconds: int = 5, command_timeout: int = 60) -> dict:
+    deadline = _timeout(command_timeout)
+    if type(max_seconds) is not int or not 1 <= max_seconds <= 30:
+        raise ValueError("max_seconds must be an integer from 1 to 30")
+    input_path, output_name, options = _argv(args, max_seconds)
+    extension = Path(output_name).suffix[1:]
+    if not _LOCK.acquire(blocking=False):
+        raise RuntimeError("another media operation is active")
+    try:
+        root, descriptor = _root()
+        try:
+            with tempfile.TemporaryDirectory(prefix=".media-", dir=root) as directory:
+                job = Path(directory)
+                source, output = job / "input.media", job / ("output." + extension)
+                _snapshot(descriptor, input_path, source)
+                _probe(source, deadline)
+                arguments = ["-nostdin", "-v", "error", "-filter_threads", "2", "-threads", "2",
+                             "-protocol_whitelist", "file", "-format_whitelist", FORMATS, "-i", str(source)]
+                arguments += options
+                # Later limits cannot be overridden by the accepted user options.
+                # Preserve a requested shorter duration; each option is validated above.
+                durations = [float(options[i + 1]) for i, option in enumerate(options) if option == "-t"]
+                arguments += ["-t", str(min([max_seconds, *durations])), "-map_metadata", "-1",
+                              "-map_chapters", "-1", "-threads", "2", "-fs", str(MAX_FILE), "-n", str(output)]
+                captured = _tool("ffmpeg", arguments, cwd=job, deadline=deadline, capture_result=True)
+                if captured["exit_code"] != 0:
+                    return captured
+                result = _probe(output, deadline)
+                size = output.stat().st_size
+                if not 0 < size < MAX_FILE or result["duration_s"] > max_seconds + .25:
+                    raise RuntimeError("media output exceeded its size or duration limit")
+                digest = hashlib.sha256(output.read_bytes()).hexdigest()
+                try:
+                    os.link(output, output_name, dst_dir_fd=descriptor, follow_symlinks=False)
+                except FileExistsError:
+                    raise ValueError("output_name already exists; choose a new artifact name") from None
+                return {**captured, "output_path": str(root / output_name), "bytes": size,
+                        "sha256": digest, **result}
+        finally:
+            os.close(descriptor)
+    finally:
+        _LOCK.release()
+
+
+def _audio_smoke(native_args: bool = False) -> str:
     media_version()
     root, descriptor = _root()
     name = "media-smoke-" + uuid.uuid4().hex
@@ -275,14 +374,17 @@ def media_smoke() -> str:
                 stream.setsampwidth(2)
                 stream.setframerate(16000)
                 stream.writeframes(pcm)
-        result = transcode(source.name, output_name, preset="flac", max_seconds=1)
+        result = (transcode_args(["-i", source.name, "-vn", "-c:a", "flac", "-ac", "1", "-ar", "16000", output_name], max_seconds=1)
+                  if native_args else transcode(source.name, output_name, preset="flac", max_seconds=1))
+        if native_args and result["exit_code"] != 0:
+            raise RuntimeError("native argv self-test failed")
         output_created = True
         decoded = _tool("ffmpeg", ["-nostdin", "-v", "error", "-threads", "2", "-protocol_whitelist", "file,pipe",
                                     "-i", str(root / output_name), "-map", "0:a:0", "-f", "s16le", "-c:a", "pcm_s16le", "pipe:1"],
                         cwd=root, deadline=_timeout(20))
         if decoded != pcm or result["streams"][0].get("codec_name") != "flac":
             raise RuntimeError("lossless media self-test failed")
-        return "FFmpeg CPU audio transcode OK"
+        return "FFmpeg native argv audio transcode OK" if native_args else "FFmpeg CPU audio transcode OK"
     finally:
         try:
             if source_created:
@@ -293,6 +395,16 @@ def media_smoke() -> str:
                     os.unlink(output_name, dir_fd=descriptor)
             finally:
                 os.close(descriptor)
+
+
+@command("media_smoke", description="Transcode owned PCM, independently compare every decoded sample and clean up.")
+def media_smoke() -> str:
+    return _audio_smoke()
+
+
+@command("media_args_smoke", description="Run an actual FFmpeg argv vector, independently decode every PCM sample and clean up.")
+def media_args_smoke() -> str:
+    return _audio_smoke(native_args=True)
 
 
 @command("media_video_smoke", description="Generate owned synthetic video, run the MP4 preset, verify H.264 dimensions and clean up.")

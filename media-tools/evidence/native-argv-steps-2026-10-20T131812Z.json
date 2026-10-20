@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "template": "media-tools",
+  "template_version": "1.1.0",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "server_sdk_commit": "fd72d3210b85079d93dcf08e19bfded73643162b",
+  "verification_type": "image-backed-cli-sdk-native-json-array",
+  "native_array_metadata": true,
+  "cli_native_argv": true,
+  "sdk_native_argv": true,
+  "pcm_samples_verified": 16000,
+  "original_upload_unchanged": true,
+  "owned_files_absent": true,
+  "controller_sha256": "558fdc92a4f13bcc6152ca00d347cc17d6c3d35bebc16a6447560413be7c5d19"
+}
