@@ -161,6 +161,17 @@ templates:
       e2b: provider-prepared
       opensandbox: provider-prepared
 
+  - name: deepagents
+    description: Native DeepAgents0.7.25 local file/shell compatible-provider runtime with no subagents.
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: deepagents
+    tags: [deepagents, coding-agent, openai-compatible]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: install-build
+
   - name: deepseek-harness
     description: "Bounded DeepSeek-compatible coding agent with read, write, list and shell tools."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
@@ -473,6 +484,35 @@ templates:
     - code
     - ports
     status: experimental
+
+  - name: next-app
+    description: Pinned Next.js16.4.2 and Vite8.3.4 frontend scaffold and owned preview
+      lifecycle.
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: next-app
+    tags:
+    - node
+    - nextjs
+    - vite
+    - preview
+    author: alibaba-agent-sandbox
+    capabilities:
+    - shell
+    - files
+    - code
+    - ports
+    status: experimental
+
+  - name: crush
+    description: Official Crush0.98.1 with private compatible-provider turns and explicit tools.
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: crush
+    tags: [crush, coding-agent, openai-compatible]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: install-build
 
 # Provider-managed IDs have no source build context; never pass these to image selection.
 managed_templates:

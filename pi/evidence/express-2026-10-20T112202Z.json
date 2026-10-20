@@ -1,0 +1,79 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-20",
+  "template": "pi",
+  "template_version": "1.0.1",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "image",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "harness_sha256": "91592778b24797075915b40f31f219f6517526b17cd2b3a75fe777f73fe6afd6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "pi_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 4.805,
+      "result": "1.3.0"
+    },
+    {
+      "name": "pi_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 5.078,
+      "result": "1.3.0"
+    },
+    {
+      "name": "pi_tools_check",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.403,
+      "result": "read/find/grep/ls OK"
+    },
+    {
+      "name": "pi_tools_check",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 1.163,
+      "result": "read/find/grep/ls OK"
+    }
+  ],
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "pi",
+    "template_version": "1.0.1",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "58e8e79b641766982fe579d3b623900513ea5d30",
+    "checkout_commit": "58e8e79b641766982fe579d3b623900513ea5d30",
+    "workflow_run_id": "39375232415",
+    "artifact_id": "12242921973",
+    "archive_sha256": "6a314159f0e5f20b2242547ddf7b6d3ba84236006839b83a5fc1dd950c88605b",
+    "image_config_sha256": "1e11233e7e1aaaf8e110f23c49a7bd22af98ea3d61f461f5e7baabec8b0a3021",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "adf3c31df8e4734cd915e4f1a79c249354f44e91f193baba373af3795e1c2978",
+      "template.yaml:contract": "8776dc25aef38d8af47e2cbaf9207fe90209b1b66b78d876ba76da23ddee286a",
+      "package.json": "c39f3eb812b3a2daa8bff3c8964df7861fcd29f5c05ae87368111848680f855a",
+      "package-lock.json": "e64115f18f9b0cc9ed07589f4408acacd79a1da381b735865fb4a736a33ac348",
+      "install_tools.py": "4465680886fcfa5a8ea45de2493933b68417265c58459ae4f89c396a40537763",
+      "commands.py": "f8e3841f94fb87660ebb4d8b17a95c323f433c87dba028dae0375bec697b1c59",
+      "tools_smoke.mjs": "881b45666eee98eb4a5b8a08b64f83ec3bdba6197e3be48b93c380bf1824ff12"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:bc1ec981e860d967c3a34e31f14b43820d339d7ddff6b10cd3e19cecaf8d9b9e",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "registration_operation": "abx template create",
+  "boundary": "Verified CI Dockerfile image + private registry transfer; no controller Docker build or platform-step build claimed",
+  "registry_cleanup_verified": true
+}

@@ -14,6 +14,8 @@ New engineering records use English and stay in this repository.
 - [Provider-owned preparation](notes/proposed/process/2026-10-19-provider-preparation.md)
   · [verification](evidence/verify/2026-10-19-provider-preparation.md)
 
+- [Native Crush](notes/proposed/feature/2026-10-20-crush-runtime.md) · [verification](evidence/verify/2026-10-20-crush-runtime.md)
+
 ## Layout and lifecycle
 
 - `notes/proposed/<architecture|feature|process>/YYYY-MM-DD-<slug>.md`: pending decisions.
@@ -83,6 +85,7 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Express steps checkpoint](evidence/verify/2026-10-19-steps-checkpoint-1555.md)
 
+- [Pinned preview runtime](notes/proposed/feature/2026-10-19-next-app-runtime.md) · [verification](evidence/verify/2026-10-19-next-app-runtime.md)
 - [Development databases](notes/proposed/feature/2026-10-19-dev-services-runtime.md) · [verification](evidence/verify/2026-10-19-dev-services-runtime.md)
 - [Standalone code-server](notes/proposed/feature/2026-10-19-code-server-runtime.md) · [verification](evidence/verify/2026-10-19-code-server-runtime.md)
 - [Heavy template image acceptance](notes/proposed/process/2026-10-19-heavy-template-image-acceptance.md) · [verification](evidence/verify/2026-10-19-heavy-template-image-acceptance.md)
@@ -93,6 +96,7 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Step workspace ownership](notes/proposed/process/2026-10-19-step-workspace-ownership.md) · [verification](evidence/verify/2026-10-19-step-workspace-ownership.md)
 - [Controller prerequisites](notes/proposed/process/2026-10-19-controller-prerequisite-preflight.md) · [verification](evidence/verify/2026-10-19-controller-prerequisite-preflight.md)
 
+- [Native DeepAgents](notes/proposed/feature/2026-10-20-deepagents-runtime.md) · [verification](evidence/verify/2026-10-20-deepagents-runtime.md)
 - [Goose runtime](notes/proposed/feature/2026-10-20-goose-runtime.md) · [verification](evidence/verify/2026-10-20-goose-runtime.md)
 - [Current heavy-image acceptance](evidence/verify/2026-10-20-current-heavy-image-acceptance.md)
 - [OCR step acceptance](notes/proposed/process/2026-10-20-ocr-step-acceptance.md) · [verification](evidence/verify/2026-10-20-ocr-step-acceptance.md)
@@ -115,3 +119,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Application current-main integration](evidence/verify/2026-10-20-template-application-v3-main-integration.md)
 
 - [V3 structural smoke expectations](notes/proposed/process/2026-10-20-v3-structured-smoke.md) · [verification](evidence/verify/2026-10-20-v3-structured-smoke.md)
+
+- [Three native SDK creation profiles](notes/proposed/process/2026-10-20-three-native-sdk-create.md) · [verification](evidence/verify/2026-10-20-three-native-sdk-create.md)

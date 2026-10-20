@@ -1,0 +1,18 @@
+{
+  "version": "0.98.1",
+  "source_repository": "https://github.com/charmbracelet/crush",
+  "source_commit": "8b1824282eccc78cc62c188c245cf375230a18ce",
+  "upstream_license": "FSL-1.1-MIT",
+  "assets": {
+    "x86_64": {
+      "url": "https://github.com/charmbracelet/crush/releases/download/v0.98.1/crush_0.98.1_Linux_x86_64.tar.gz",
+      "bytes": 26770143,
+      "sha256": "d85d913effef350f0152f594a70bd9749ad455bf15af77bb0d2b731036079885"
+    },
+    "aarch64": {
+      "url": "https://github.com/charmbracelet/crush/releases/download/v0.98.1/crush_0.98.1_Linux_arm64.tar.gz",
+      "bytes": 24701201,
+      "sha256": "098e875c1d9501822d08ef14ab094f24cfc87396385af5402994bf741a673b99"
+    }
+  }
+}

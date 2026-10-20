@@ -214,6 +214,8 @@ Version 1.0.1 passed actual CI-image registration, official READY, CLI/SDK and 2
 | --- | --- | --- |
 | alicloud-express | Exact current version, actual image and independently verified cleanup | [canonical receipt](evidence/express-2026-10-20.json), [HTTP](evidence/image-http-2026-10-20T064247Z.json), [strict model](evidence/model-image-2026-10-20T064248Z.json) |
 
+Additional native SDK creation acceptance2026-10-20: the same1.0.1 runtime was registered from its verified CI image, reached official READY and was actually created by Python Sandbox.create, then passed CLI/SDK smoke and its model-off HTTP controller. [New immutable SDK receipt](evidence/express-2026-10-20T112118Z.json), [HTTP/cleanup](evidence/image-http-2026-10-20T112118Z.json). Owned sandbox/template/registry absence and post-runtime image digest were independently confirmed. This run did not repeat the model; the prior exact-runtime/controller real-model pass above remains a separate unchanged receipt.
+
 ## Historical verification
 
 [Express supplemental image/runtime acceptance](evidence/image-runtime-2026-10-16-configured.json)

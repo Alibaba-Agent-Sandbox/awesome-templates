@@ -214,6 +214,30 @@ class CheckerTest(unittest.TestCase):
             dockerfile.write_text(text, encoding="utf-8")
             self.assertEqual([str(item) for item in check_template.check_directory(dest)], [])
 
+    def test_hash_enforced_local_lock_requires_every_pin_and_hash(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            dest=Path(tmp)/"_skeleton";shutil.copytree(SKELETON,dest)
+            path=dest/"requirements.lock";digest="a"*64
+            base=(dest/"Dockerfile").read_text()
+            copied="COPY requirements.lock /tmp/requirements.lock\n"
+            install="RUN python3 -m pip install --no-cache-dir --require-hashes -r /tmp/requirements.lock\n"
+            for content,extra,accepted in [
+                ("example==1.2.3 --hash=sha256:"+digest+"\n","",True),
+                ("example==1.2.3 --hash=sha256:"+digest+"\nother>=1 --hash=sha256:"+digest+"\n","",False),
+                ("example==1.2.3\n","",False),
+                ("--extra-index-url https://example.invalid\nexample==1.2.3 --hash=sha256:"+digest+"\n","",False),
+                ("example==1.2.3 --hash=sha256:"+digest+"\n"," unpinned-package",False),
+            ]:
+                with self.subTest(content=content,extra=extra):
+                    path.write_text(content)
+                    (dest/"Dockerfile").write_text(base+copied+install.rstrip()+extra+"\n")
+                    codes={v.code for v in check_template.check_directory(dest)}
+                    self.assertEqual("pinned-version" not in codes,accepted)
+            path.write_text("example==1.2.3 --hash=sha256:"+digest+"\n")
+            for malformed in [install.replace("--require-hashes ",""), install.replace("/tmp/requirements.lock","/tmp/other.lock")]:
+                (dest/"Dockerfile").write_text(base+copied+malformed)
+                self.assertIn("pinned-version",{v.code for v in check_template.check_directory(dest)})
+
     def test_comment_only_pin_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             dest = Path(tmp) / "_skeleton"
