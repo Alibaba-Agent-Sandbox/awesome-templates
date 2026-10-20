@@ -22,7 +22,7 @@ is recorded.
 
 ## Templates
 
-2026-10-20 accepted35-template Express platform-step checkpoint: **35/35 current native/runtime and required full HTTP PASS**, with official READY, actual CLI/SDK smoke and independent owned cleanup. [Immutable current35matrix](.agents/evidence/verify/2026-10-20-current-native-http35.json) · [operations and scope](docs/platform-steps.md) ([中文](docs/platform-steps.zh-CN.md)). This is not35new deployments, universal model/image acceptance or completion of all64Issues; new catalog entries require their own proof. The [historical34matrix](.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json) remains unchanged.
+2026-10-20 accepted37-template Express platform-step checkpoint: **37/37 current native/runtime and required full HTTP PASS**, with official READY, actual CLI/SDK smoke and independent owned cleanup. [Immutable current37matrix](.agents/evidence/verify/2026-10-20-current-native-http37.json) · [operations and scope](docs/platform-steps.md) ([中文](docs/platform-steps.zh-CN.md)). This is not37new deployments, universal model/image acceptance or completion of all64Issues; new entries require their own proof. Historical [35matrix](.agents/evidence/verify/2026-10-20-current-native-http35.json) and [34matrix](.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json) remain unchanged.
 
 The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](docs/verification-2026-10-18.zh-CN.md)) records the historical23-template checkpoint and its unresolved gates. Current scoped receipts are linked below.
 
@@ -34,6 +34,7 @@ The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](do
 | [browser-use](./browser-use/README.md) | Native text-DOM browser agent with private Chromium | experimental | [alicloud-express (1.0.0 SDK image, real model)](./browser-use/evidence/express-2026-10-20.json) |
 | [browser-automation](./browser-automation/README.md) | Browser automation sandbox with Playwright + Chromium for web scraping and UI testing | experimental | [alicloud-express (SDK steps, PDF and HTTP37)](./browser-automation/evidence/express-2026-10-20T103410Z.json) |
 | [claude-code](./claude-code/README.md) | Claude Code Agent runtime — Anthropic Claude-powered AI coding assistant | experimental | [alicloud-express (1.1.1 steps smoke)](./claude-code/evidence/express-2026-10-19T183255Z.json) |
+| [cline](./cline/README.md) | Native Cline3.0.73 headless coding with private compatible provider | experimental | [alicloud-express1.0.2 SDK steps and real coding](./cline/evidence/express-2026-10-20.json) |
 | [copilot-cli](./copilot-cli/README.md) | Native GitHub Copilot CLI1.0.100, explicit BYOK and bounded file-edit profile | experimental | [alicloud-express1.0 SDK steps/model17](./copilot-cli/evidence/express-2026-10-20T165141Z.json) |
 | [codex](./codex/README.md) | OpenAI Codex CLI (@openai/codex@0.162.1). codex exec, JSON events, sandbox bypass, OpenAI-compatible config.toml. | experimental | [alicloud-express (2.0.0 SDK image, strict model17)](./codex/evidence/express-2026-10-20.json) |
 | [codex-agent-api](./codex-agent-api/README.md) | Codex 0.162.1 HTTP session adapter with bounded turns and SSE; project API subset | experimental | [alicloud-express (steps smoke)](./codex-agent-api/evidence/express-2026-10-19.json) |

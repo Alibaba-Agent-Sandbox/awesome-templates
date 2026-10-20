@@ -1,0 +1,63 @@
+{
+  "template": "cline",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T193404Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "FAIL",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "cline",
+    "materializer_sha256": "a664256a8967838528c73dca748b8b8f2ef799f2d6c631671c27eaf4f9a1ba73",
+    "source_manifest_contract_sha256": "43279ff873d8db37d0aca6c186893c193942fb4591acebefe3734090d27a4844",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "94471c0eb040f8ce092ba0a579356facbe080c9f",
+    "asset_transport": "direct",
+    "steps_json_bytes": 7582,
+    "inputs_sha256": {
+      "Dockerfile": "80f369fdb8c3835fe07ee0666e89eefa1599c9549f2277a18933d1bb6a172203",
+      "template.yaml": "1d7b6cd3dd3ed23e6b283cbfda89c25bb25289a16e261a1382d3520094ee700d",
+      "package.json": "5d52107325cc988652f9cb6321d5767dcd9925404d07741f1cb12b168c6e3f99",
+      "package-lock.json": "5320a9b15ac7126b61c171b951567a745570ad18ebcae913bad0ae13072cc121",
+      "commands.py": "aba1dd5d24237be0db2445659eb6e4ba4d98cacb03097d085b43cf67c5abcdfd",
+      "process.py": "6e62f3e52e0f0f75356e2fb92b21d59444c2240d0d03e990c7133375de51e1f4",
+      "lifecycle.py": "9b13690cab589d79f0f9940f33ab5f36eb3d0f5524317600ba1a69acb34847b0",
+      "UPSTREAM-LICENSE.md": "f704446a5f1271608805598b557e4288cf8580477ea038c9c3d8b361f693f6b8"
+    },
+    "generated_manifest_sha256": "882ef94c0e68a09a9590c3f76067e8db2fbbd18d679cdfb1744dbf0d21ca2721"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 8,
+    "fail_count": 0,
+    "skip_count": 0,
+    "controller_sha256": "304faff6abea8379b2bf97108a1c2bc8c2f036c76d3f7070305e24dd1bc1346d"
+  },
+  "model_controller_sha256": "304faff6abea8379b2bf97108a1c2bc8c2f036c76d3f7070305e24dd1bc1346d",
+  "commands_sha256": "aba1dd5d24237be0db2445659eb6e4ba4d98cacb03097d085b43cf67c5abcdfd",
+  "native_model_acceptance": {
+    "model_acceptance": "FAIL",
+    "model": "qwen3.8-flash",
+    "model_protocol": "OpenAI-compatible Chat Completions",
+    "actual_sdk_named_command": true,
+    "native_version": "3.0.73",
+    "sdk_actual_native_version": true,
+    "sdk_explicit_byok_configured": true,
+    "exit_code": 1,
+    "pass_count": 10,
+    "fail_count": 1,
+    "skip_count": 0,
+    "secondary_server_stop_ack": true,
+    "owned_secondary_listener_and_native_state_absent": true
+  },
+  "cleanup_verified": true,
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "duration_s": 24.279
+}

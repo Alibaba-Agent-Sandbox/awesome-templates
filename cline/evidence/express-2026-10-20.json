@@ -1,0 +1,55 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-20",
+  "template": "cline",
+  "template_version": "1.0.2",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "steps",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "harness_sha256": "91592778b24797075915b40f31f219f6517526b17cd2b3a75fe777f73fe6afd6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "cline_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 10.31,
+      "result": "{'native_version': '3.0.73'}"
+    },
+    {
+      "name": "cline_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 64.902,
+      "result": "{'native_version': '3.0.73'}"
+    }
+  ],
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "cline",
+    "materializer_sha256": "478acb7d3bb6a9b6b995c0714636d3ed0e01c7ab80fe2dbe6bb84e99304f5548",
+    "source_manifest_contract_sha256": "d3172290d500f68f77b773f3b7be0d242fe33afa62fa4ae4f72aeae8c34c86da",
+    "template_version": "1.0.2",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "691c7d40b73863c38737f2f893c88f423617eddc",
+    "asset_transport": "direct",
+    "steps_json_bytes": 7586,
+    "inputs_sha256": {
+      "Dockerfile": "80f369fdb8c3835fe07ee0666e89eefa1599c9549f2277a18933d1bb6a172203",
+      "template.yaml": "e092f8c34bd3def2f65a1ce6515ba1c10c8cdaa1d8fde55686bd4a607dd69368",
+      "package.json": "5d52107325cc988652f9cb6321d5767dcd9925404d07741f1cb12b168c6e3f99",
+      "package-lock.json": "5320a9b15ac7126b61c171b951567a745570ad18ebcae913bad0ae13072cc121",
+      "commands.py": "aa1cb4a71d5e3e90b4802679d61124006261c299661587173a9354f00e19d5f3",
+      "process.py": "6e62f3e52e0f0f75356e2fb92b21d59444c2240d0d03e990c7133375de51e1f4",
+      "lifecycle.py": "9b13690cab589d79f0f9940f33ab5f36eb3d0f5524317600ba1a69acb34847b0",
+      "UPSTREAM-LICENSE.md": "f704446a5f1271608805598b557e4288cf8580477ea038c9c3d8b361f693f6b8"
+    },
+    "generated_manifest_sha256": "03945d951e6dccf9d3cf16ae8ed3a55800f2e624eb348648594c51232b35adc5"
+  }
+}

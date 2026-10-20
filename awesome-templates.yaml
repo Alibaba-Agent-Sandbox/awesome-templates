@@ -550,6 +550,18 @@ templates:
     providers:
       alicloud-express: supported
 
+  - name: cline
+    description: "Pinned genuine Cline3.0.73 CLI, private compatible provider and bounded headless coding."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: cline
+    tags: [cline, coding-agent, openai-compatible]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: supported
+
+
 # Provider-managed IDs have no source build context; never pass these to image selection.
 managed_templates:
   - name: base

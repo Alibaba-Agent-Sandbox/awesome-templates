@@ -152,10 +152,14 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Codex API final SDK/model acceptance](evidence/verify/2026-10-20-codex-api-sdk-model-final.md)
 - [Both native Agents CLI adapters: final acceptance](evidence/verify/2026-10-20-agents-cli-both-native-sdk-final.md)
 
+- [Native Cline CLI](notes/proposed/feature/2026-10-20-cline-native-cli.md) · [verification](evidence/verify/2026-10-20-cline-native-cli.md)
 - [Stagehand final native SDK/model acceptance](evidence/verify/2026-10-20-stagehand-native-final.md)
 
 - [Current35native/runtime and required HTTP receipt snapshot](evidence/verify/2026-10-20-current-native-http35.json)
 
+- [Cline final native SDK/model acceptance](evidence/verify/2026-10-20-cline-native-final.md)
 - [Official Grok Build native coding](notes/proposed/feature/2026-10-20-grok-official-native.md) · [verification](evidence/verify/2026-10-20-grok-official-native.md)
 
 - [Official Grok Build final native SDK/model acceptance](evidence/verify/2026-10-20-grok-official-native-final.md)
+
+- [Current37native/runtime and required full HTTP receipt snapshot](evidence/verify/2026-10-20-current-native-http37.json)
