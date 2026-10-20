@@ -539,6 +539,17 @@ templates:
       alicloud-express: supported
 
 
+  - name: tau2-bench
+    description: "Original Tau2 text retail runner with native agent/user models and strict trajectory replay."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: tau2-bench
+    tags: [tau2, benchmark, tools, retail]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: unverified
+
 # Provider-managed IDs have no source build context; never pass these to image selection.
 managed_templates:
   - name: base

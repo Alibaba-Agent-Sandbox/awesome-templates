@@ -265,6 +265,7 @@ jobs:
           python -m pytest -q goose/test_commands.py goose/test_controller.py
           python -m pytest -q crush/test_commands.py crush/test_controller.py
           python -m pytest -q copilot-cli/test_commands.py copilot-cli/test_model_controller.py
+          python -m pytest -q tau2-bench/test_runtime.py
           python -m pytest -q python-hello/test_command_errors.py
           python -m pytest -q node-web/test_startup.py node-web/test_http_output.py
           python -m pytest -q claude-code/tests

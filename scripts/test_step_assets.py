@@ -52,6 +52,33 @@ def test_actual_ranges_reconstruct_exact_bytes(tmp_path):
     assert target.read_bytes() == content
 
 
+def test_tau2_original_archive_recipe_fits_wire_and_preserves_source():
+    manifest, proof = prepare(ROOT / "tau2-bench", asset_transport="parallel",
+                              server_commit="e2cb27e24fde0a67112f82b8d44af463445a5d1a")
+    assert proof["steps_json_bytes"] <= 15000
+    assert len(proof["copy_source_commit"]) == 40
+    original = ROOT / "tau2-bench" / "install_source.py"
+    assert proof["inputs_sha256"]["install_source.py"] == hashlib.sha256(original.read_bytes()).hexdigest()
+    assets = proof["build_assets"]["x86_64"]
+    assert assets == [{"url": "https://codeload.github.com/sierra-research/tau2-bench/tar.gz/fc0055dc4e0a316c3f83133267fbd6faaa770992",
+                       "size": 92081935, "sha256": "7a227036d07fdeb088dbd0c99fdb40ee9b9e0ebc06aadbc4dec1217b3383e57e"}]
+    assert manifest["build"]["steps"][-1] == {"type": "USER", "args": ["user"]}
+    assert "/tmp/abx-step-assets" in manifest["build"]["steps"][-2]["args"][0]
+
+
+@pytest.mark.parametrize("field,value", [("url", "https://unreviewed.invalid/source"),
+                                         ("sha256", "0" * 64), ("size", 1)])
+def test_tau2_transport_refuses_changed_upstream_metadata(tmp_path, field, value):
+    from prepare_steps import parallel_assets
+    source = tmp_path / "tau2-bench"
+    source.mkdir()
+    item = json.loads((ROOT / "tau2-bench" / "upstream.json").read_text())
+    item[field] = value
+    (source / "upstream.json").write_text(json.dumps(item))
+    with pytest.raises(ValueError, match="unreviewed Tau2 source transport"):
+        parallel_assets(source)
+
+
 @pytest.mark.parametrize("failure", ["range", "size", "digest"])
 def test_invalid_archive_cannot_be_published(tmp_path, failure):
     content = b"archive" * 100
