@@ -122,3 +122,26 @@ def test_saved_reward_cannot_replace_independent_native_replay(tmp_path,monkeypa
     evaluate=lambda *a,**k:SimpleNamespace(reward=0.0)
     monkeypatch.setattr(w,'upstream',lambda:(lambda *a,**k:[task],None,model,None,SimpleNamespace(ALL='all'),evaluate))
     with pytest.raises(RuntimeError,match='replay score differs'):w.execute('verify',{'task_id':'0','artifact':str(artifact)})
+
+
+def test_actual_source_installer_retains_shared_native_user_guidelines(tmp_path,monkeypatch):
+    import io,tarfile,hashlib
+    installer=load('tau2_source_installer_boundary_tests','install_source.py')
+    entries={'src/tau2/__init__.py':b'# original source fixture',
+        'data/tau2/domains/retail/tasks.json':b'[]',
+        'data/tau2/user_simulator/simulation_guidelines.md':b'original shared user policy fixture',
+        'data/tau2/user_simulator/simulation_guidelines_tools.md':b'original shared tools policy fixture',
+        'data/tau2/domains/banking_knowledge/db.json':b'not in the selected slice'}
+    data=io.BytesIO()
+    with tarfile.open(fileobj=data,mode='w:gz')as archive:
+        for name,content in entries.items():
+            item=tarfile.TarInfo('tau2-fixture/'+name);item.size=len(content);archive.addfile(item,io.BytesIO(content))
+    raw=data.getvalue();urls=[]
+    def fetch(url,**kwargs):urls.append(url);return io.BytesIO(raw)
+    monkeypatch.setattr(installer.urllib.request,'urlopen',fetch)
+    root=tmp_path/'installed'
+    installer.install({'source_commit':w.SOURCE,'size':len(raw),'sha256':hashlib.sha256(raw).hexdigest()},root)
+    assert urls==['https://codeload.github.com/sierra-research/tau2-bench/tar.gz/'+w.SOURCE]
+    for name in list(entries)[:-1]:assert(root/name).read_bytes()==entries[name]
+    assert not(root/list(entries)[-1]).exists()
+    assert(root/'SOURCE_REV').read_text()==w.SOURCE+'\n'

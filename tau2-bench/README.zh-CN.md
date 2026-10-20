@@ -15,6 +15,8 @@ MIT 许可的[固定原版源码](https://github.com/sierra-research/tau2-bench/
 
 另由[兼容锁文件](requirements.compat.lock)明确新增 PSF-2.0 的 `audioop-lts==0.2.2`：Python3.13 已移除 `audioop`，但此版上游文本任务也会导入它；保留[许可证](AUDIOOP-LICENSE.txt)。
 
+选取数据同时包含原版共享用户模拟器指引和零售领域数据，不使用替代指引。
+
 ## 解决的问题
 
 为原版任务提供有界执行、原生评估、可单独下载的轨迹和独立严格重放。智能体与用户模拟器均使用明确配置的模型服务。

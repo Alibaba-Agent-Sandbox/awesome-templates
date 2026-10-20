@@ -33,6 +33,8 @@ no CMD/ENTRYPOINT, rootfs8GiB guard, immutable server source and an isolated nat
 venv. [upstream.json](../../tau2-bench/upstream.json) pins official source
 fc0055dc4e0a316c3f83133267fbd6faaa770992, measured archive size/digest. Installer
 rejects traversal/links and selects only source, license and retail data.
+It also retains original shared `data/tau2/user_simulator/` guidelines: native
+UserSimulator loads these independently of the chosen retail task data.
 [requirements.lock](../../tau2-bench/requirements.lock) is a frozen export of the
 unchanged original uv.lock, enforced by pip `--require-hashes` and `pip check`.
 The complete frozen export is retained as `requirements.upstream.lock`;

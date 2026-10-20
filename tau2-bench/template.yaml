@@ -1,5 +1,5 @@
 name: tau2-bench
-version: "1.0.1"
+version: "1.0.2"
 description: "Pinned upstream Tau2 text retail runner with real agent/user models and strict native trajectory replay."
 author: alibaba-agent-sandbox
 license: Apache-2.0
