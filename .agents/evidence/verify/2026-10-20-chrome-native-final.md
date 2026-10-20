@@ -83,4 +83,6 @@ checks are publication gates recorded after execution. Source-only native omissi
 never establish a native desktop/provider pass. No AI-generated image or substitute
 framebuffer is used.
 
-Publication checks: strict all-template0violations;179public Markdown documents and3explicit records0link failures; both actual bilingual SDK snippets syntax PASS; final source-only HTTP7PASS/0FAIL with native GUI explicitly SKIP. Full57spec checks PASS13.205seconds (exact log duration verified at publication). Current receipt audit and latest-head CI remain final delivery gates.
+Publication checks: strict all-template0violations;179public Markdown documents and3explicit records0link failures; both actual bilingual SDK snippets syntax PASS; final source-only HTTP7PASS/0FAIL with native GUI explicitly SKIP. Full57spec checks PASS13.253seconds. Current receipt audit and latest-head CI remain final delivery gates.
+
+Readonly qualified current39/39native/runtime and39/39required fullHTTP receipt audit PASS at qualification sourcea715f10fea527979591d23092222b8c6c29b1087. Historical38/37/35/34 snapshots remain unchanged. Final native/runtime source and controller hashes remain those actually qualified above; snapshot/publication changes do not alter execution. Latest-head CI/review/normal merge remain required delivery gates.

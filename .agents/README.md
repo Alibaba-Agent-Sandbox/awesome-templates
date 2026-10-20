@@ -177,3 +177,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Current38native/runtime and required HTTP after Droid1.2](evidence/verify/2026-10-20-current-native-http38-droid.json)
 
 - [Headed Chrome final native SDK/image acceptance](evidence/verify/2026-10-20-chrome-native-final.md)
+
+- [Current39native/runtime and required full HTTP snapshot](evidence/verify/2026-10-20-current-native-http39.json)
