@@ -1,0 +1,42 @@
+{
+  "template": "openclaw",
+  "provider": "alicloud-express",
+  "build_mode": "image",
+  "verification_type": "ci-image-backed-external-http",
+  "passed": true,
+  "registry_cleanup_verified": true,
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "model_acceptance": "NOT_RUN",
+  "http_acceptance": {},
+  "cleanup_verified": true,
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "openclaw",
+    "template_version": "2.1.0",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "9b51db92d63a3149d614eff96db340512da1e9bc",
+    "checkout_commit": "9b51db92d63a3149d614eff96db340512da1e9bc",
+    "workflow_run_id": "39447908449",
+    "artifact_id": "12277283296",
+    "archive_sha256": "0413ba29115008f75b82907a08d9c57e0f47ae2e7b7b502ac59c0cb6094b6a32",
+    "image_config_sha256": "89f52761ea59359224272397825ec0ebe1aa871fe7c3dcca6c151ffea9f3f26c",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "9edf6532247e63bf930be76fba20a67c85409fbc16f402523447a5bfaa70762a",
+      "template.yaml:contract": "ffa8e105807f61f9f319b3227fe5be4ea57a6079a3c23e0ead08ff63f1420d5d",
+      "commands.py": "86978657c80885c1d57f8aa000a4f0df3a83d1f5bb283490f6278e376c83050b"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:f6f96d1bee0c6b15f2a33b227a9fa32e0272ac7b399afc51d6bc38518f27f0e2",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "result": "PASS"
+}
