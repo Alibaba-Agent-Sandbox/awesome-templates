@@ -427,6 +427,17 @@ templates:
     providers:
       alicloud-express: install-build
 
+  - name: crush
+    description: Official Crush0.98.1 with private compatible-provider turns and explicit tools.
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: crush
+    tags: [crush, coding-agent, openai-compatible]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: install-build
+
 # Provider-managed IDs have no source build context; never pass these to image selection.
 managed_templates:
   - name: base
