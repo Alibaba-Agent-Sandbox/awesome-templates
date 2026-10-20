@@ -1,10 +1,10 @@
 {
   "scope": "current-version Express platform-step runtime acceptance; not model or Docker acceptance",
   "passed": 33,
-  "http_passed": 32,
+  "http_passed": 33,
   "require_http": true,
   "total": 33,
-  "complete": false,
+  "complete": true,
   "templates": [
     {
       "template": "agents-cli",
@@ -311,10 +311,13 @@
       "steps": "PASS",
       "receipts": [
         "openclaw/evidence/express-2026-10-19T183726Z.json",
-        "openclaw/evidence/express-2026-10-20.json"
+        "openclaw/evidence/express-2026-10-20.json",
+        "openclaw/evidence/express-2026-10-20T161954Z.json"
       ],
-      "http": "MISSING",
-      "http_receipts": []
+      "http": "PASS",
+      "http_receipts": [
+        "openclaw/evidence/verification-steps-2026-10-20T161954Z.json"
+      ]
     },
     {
       "template": "opencode",

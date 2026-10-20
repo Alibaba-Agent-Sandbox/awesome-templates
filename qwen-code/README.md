@@ -152,3 +152,7 @@ Track template work in [issue #26](https://github.com/Alibaba-Agent-Sandbox/awes
 ## License
 
 Apache-2.0 for this template. Qwen Code retains its [upstream license](https://github.com/QwenLM/qwen-code/blob/v0.23.0/LICENSE).
+
+### 2026-10-20 full step checkpoint: template2.1.1
+
+[Real current-version steps](evidence/express-2026-10-20T155502Z.json) and [complete external HTTP controller](evidence/verification-steps-2026-10-20T155502Z.json): official READY, actual Python SDK creation, all CLI/SDK smoke and 9 PASS/0 FAIL/1 SKIP; independent owned sandbox/template cleanup passed. Model acceptance remains NOT_RUN in this receipt; it does not relabel earlier image/model scope. Reproduction and exact server/controller provenance: [step guide](../docs/platform-steps.md).

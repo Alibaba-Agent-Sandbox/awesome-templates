@@ -157,3 +157,7 @@ Track this work in [awesome-templates#20](https://github.com/Alibaba-Agent-Sandb
 ## License
 
 [Apache-2.0](../LICENSE). OpenClaw retains its upstream license and attribution.
+
+### 2026-10-20 authenticated full step checkpoint
+
+[Real2.0.1 steps](evidence/express-2026-10-20T161954Z.json) and [original complete HTTP controller](evidence/verification-steps-2026-10-20T161954Z.json) passed official READY, Python SDK creation, all CLI/SDK smoke and 11 HTTP PASS/0 FAIL/1 model SKIP in703.799s. A per-run generated gateway token is supplied only after installers in the private recipe; actual authenticated readiness/health, persistent status, owned stop and stopped-health failure were exercised. Independent sandbox/template and exact private Node-cache object/bucket cleanup passed. No operator/model credential was used; public evidence omits token values. The earlier6/0/2 receipt retains its narrower scope and does not certify gateway lifecycle. [Strict audit and reproduction](../docs/platform-steps.md).

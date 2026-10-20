@@ -1,6 +1,6 @@
 # Complete platform-step acceptance verification
 
-Result: PARTIAL — strict current-source full-HTTP closure and OpenCode2.0.2 ownership regression repeat pending.
+Result: PASS — 33/33 current-source step/CLI/SDK plus complete HTTP controllers; final exact-head CI and merge verified separately in PR152.
 
 Baseline: ca3118e5123e7ce2ae2e43e2a8a05c88ecf3653d, 32 catalog source templates, 20 with current-version matching native step receipts. This is an independently counted scoped baseline, not the older 16/23 checkpoint. Existing image/model receipts retain their original scopes.
 
@@ -91,3 +91,9 @@ The original OpenClaw retry finally passed its narrower controller6/0/2 after1,1
 The first expanded gateway tooling run had122 PASS/1 FAIL: its new assertion searched the serialized compact RUN for plaintext helper text. The OpenClaw command had correctly been compressed at the unchanged threshold. The regression now safely decodes only the known compactor's literal base64 via AST and checks the actual underlying installer command; it does not skip the assertion or execute generated code on the controller. Corrected full rerun is required before publication.
 
 Corrected full gateway/source/privacy/cache audit suite:123 PASS in75.70s; affected actual controller-subprocess suite4 PASS. Strict33 source profiles plus skeleton PASS and153 Markdown files/0 link failures. No permission, source hash, wire, installer, model-scope or owned-cleanup gate was weakened. Authenticated OpenClaw cloud repeat is the remaining functional gate.
+
+## Final strict functional acceptance
+
+`python scripts/step_acceptance.py --require-http` exits0 with passed=33, http_passed=33, total=33 and complete=true. The final OpenClaw actual authenticated fixture passed703.799s:11 original HTTP PASS/0 FAIL/1 explicit model SKIP, including real authenticated gateway readiness/health, persistent running status, owned stop and stopped-health failure. Independent sandbox/template AND exact private Node-cache object/bucket absence passed. The generated final runtime ENV does not enter installer RUNs or public proof; the new credential-export guard accepted the sanitized canonical receipt. Operator/model credentials were never injected. Earlier skipped or failed reports remain their original historical scopes.
+
+This closes the current33-profile runtime/full-HTTP acceptance gap, including the verified OpenCode2.0.2 non-root state fix. The final matrix links separate CLI/SDK and full current-controller proof for every profile. Existing model/image scopes remain separate. Local verification:123 tooling/privacy/source/cache/HTTP audit regressions,57 OpenCode unit/protocol cases (including a demonstrated failing original permission check),56 specification tests, strict33 profiles plus skeleton,153 Markdown documents/0 link failures. Public CLI0.4.1, all five exact binary/checksum pairs, actual tagged CI tarball and default website installation passed. Independent npm registry E404 remains Issue66 with verified public binary/tarball fallback. Source143afff already passed all required runtime/image/offline/documentation CI; final evidence/README commit still needs its own latest-head checks before normal merge.

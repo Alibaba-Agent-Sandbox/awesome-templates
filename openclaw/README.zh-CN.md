@@ -155,3 +155,7 @@ Linux 下短生命周期健康检查 RPC 会持续读取输出，并在清理自
 ## 许可证
 
 [Apache-2.0](../LICENSE)。保留 OpenClaw 自身许可证及署名。
+
+### 2026-10-20真实认证网关完整 step 检查点
+
+[真实2.0.1 step](evidence/express-2026-10-20T161954Z.json)及[原完整 HTTP 控制器](evidence/verification-steps-2026-10-20T161954Z.json)已通过官方 READY、Python SDK 创建、全部 CLI/SDK smoke，以及11项 HTTP PASS/0 FAIL/1模型 SKIP，耗时703.799秒。独有测试令牌仅在私有配方安装步骤之后注入，实际验证认证就绪／健康、持续运行状态、自有停止及停止后的健康失败。沙箱、模板和精确私有 Node 缓存对象／bucket均独立确认清理；未使用操作者／模型凭据，公开回执无令牌值。早期6/0/2回执仅保留较窄范围，不算网关生命周期通过。[严格审计和复现](../docs/platform-steps.zh-CN.md)。

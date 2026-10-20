@@ -143,3 +143,7 @@ Template problems: [awesome-templates](https://github.com/Alibaba-Agent-Sandbox/
 ## License
 
 Apache-2.0. See [LICENSE](../LICENSE).
+
+### 2026-10-20 full step checkpoint: template2.0.1
+
+[Real current-version steps](evidence/express-2026-10-20.json) and [complete external HTTP controller](evidence/verification-steps-2026-10-20T155048Z.json): official READY, actual Python SDK creation, all CLI/SDK smoke and 9 PASS/0 FAIL/1 SKIP; independent owned sandbox/template cleanup passed. Model acceptance remains NOT_RUN in this receipt; it does not relabel earlier image/model scope. Reproduction and exact server/controller provenance: [step guide](../docs/platform-steps.md).

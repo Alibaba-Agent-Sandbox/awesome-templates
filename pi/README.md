@@ -130,3 +130,7 @@ Apache-2.0 template code; upstream Pi is MIT. Official fd archives retain LICENS
 ### Additional current-version platform-step acceptance
 
 [Actual native steps](evidence/express-2026-10-20T130320Z.json): official READY, Python SDK creation, current CLI/SDK smoke and independently confirmed owned sandbox/template cleanup. This step receipt covers version/tools smoke; its separate image/model receipt retains its original scope.
+
+### 2026-10-20 full step checkpoint: template1.0.1
+
+[Real current-version steps](evidence/express-2026-10-20T155246Z.json) and [complete external HTTP controller](evidence/verification-steps-2026-10-20T155246Z.json): official READY, actual Python SDK creation, all CLI/SDK smoke and 10 PASS/0 FAIL/1 SKIP; independent owned sandbox/template cleanup passed. Model acceptance remains NOT_RUN in this receipt; it does not relabel earlier image/model scope. Reproduction and exact server/controller provenance: [step guide](../docs/platform-steps.md).
