@@ -29,3 +29,7 @@ Private HOME/XDG/native config/data with local foreground mode; refuse caller pr
 ## Test plan
 
 L0 actual CLI/version, authored native HTTP/SSE and literal write tool, default0 versus exact8 tools, preserved caller home/config, argument/path guards, real deadline/output/descendant cleanup and four controller result regressions. No real model on operator host. L1 exact image/hash/version/user/SDK/rootfs budget. L2 fresh SDK-created Express CLI/SDK/full HTTP and independently verified owned cleanup. L3 real compatible model edit/report/unchanged original tests/fresh independent hidden calculations; L4 only for an actually executed other provider. Steps preparation and execution are separate.
+
+### Executed qualification
+
+Version1.0.0 actual SDK-created verified image and qwen3.8-flash strict model17/0/0 passed source edit/report/original tests/fresh hidden calculations and independent sandbox/template/registry cleanup. [Canonical receipt](../../crush/evidence/express-2026-10-20.json). Native steps did not independently reach READY; no successful step qualification or internal build cause is claimed.

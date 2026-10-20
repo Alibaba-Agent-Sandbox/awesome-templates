@@ -109,7 +109,13 @@ Private HOME/XDG/CRUSH config/data and correct native disable-default-providers/
 
 ## Verified
 
-No provider has a passing receipt for this new1.0.0 profile yet. Actual native binary/protocol fixtures are local L0 only. Image build, true SDK-created Express smoke/full API and strict real-model source edit/report/original-tests/held-out checks remain required. Failed or skipped checks remain separate.
+Version1.0.0 passed actual Alibaba Express registration of the verified CI image, official READY, native Python SDK Sandbox.create, CLI/SDK smoke and **17 strict real-model checks,0 FAIL/0 SKIP** using the explicit compatible qwen3.8-flash model. Source edits, new report/exact artifact, unchanged original tests and independent post-return held-out calculations passed. Sandbox/template/registry cleanup and post-runtime digest readback passed independently.
+
+| Version | Provider | Evidence |
+| --- | --- | --- |
+| 1.0.0 | alicloud-express | [SDK-created image](evidence/express-2026-10-20.json), [strict model17](evidence/model-image-2026-10-20T111012Z.json), [model-off HTTP](evidence/image-http-2026-10-20T111012Z.json) |
+
+The separate model-off HTTP controller has9 PASS and1 explicit model SKIP; it is not model proof. The [actual native step attempt](evidence/full-http-steps-2026-10-20T110221Z.json) did not independently reach READY and failed before any HTTP assertion; owned cleanup was independently confirmed. The available receipt does not establish the internal build failure cause. Other providers, arm64 execution and other upstream model/provider profiles remain unverified.
 
 ## Secondary development
 
