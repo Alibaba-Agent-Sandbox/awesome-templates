@@ -472,3 +472,5 @@ Alibaba FC resource profile: memory must be a multiple of64MB and1..4GiB per vCP
 ## Provider-managed catalog entries
 
 `managed_templates` is an additive catalog namespace separate from installable source `templates`. Its fields are name/provider/template_id/kind/documentation/evidence/verification_scope/native_interpreter_verified. Managed IDs have no repository-owned Dockerfile, image version, commands.py or build context, so source image selection, steps generation and deploy checks do not apply. Runtime acceptance must record SDK fallbacks, observed inventory and independent owned cleanup; it cannot certify another provider or a native interpreter. See [base](managed/base/README.md) and [code-interpreter-v1](managed/code-interpreter-v1/README.md).
+
+When a changed version is verified on the same UTC date, use a distinct express-YYYY-MM-DDTHHMMSSZ.json receipt and preserve the older date-only file. Provider qualification requires the current manifest version, both passed and cleanup_verified true, and successful real CLI/SDK calls. Prior-version receipts cannot certify a changed template.

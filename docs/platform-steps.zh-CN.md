@@ -116,3 +116,5 @@ export NODE_PATH="$ABX_NATIVE_DIR/modules/node_modules"
 300秒执行上限。应拆分构建阶段、限制下载并保留错误；超时不是验收通过。
 重型模板仍需自己的当前配置成功回执，部分网络探针、本机安装和单独CI构建
 均不能代替。
+
+运行用户切换前，生成的步骤显式将 /home/user/app 归属设为 user:user。真实完整 Python/Node HTTP 验证发现原生 WORKDIR 的 root 归属导致文件写入失败；仅设置 COPY 文件归属不足。基础版本冒烟不能代替工作区文件往返测试。旧失败与基础冒烟回执保留各自范围。

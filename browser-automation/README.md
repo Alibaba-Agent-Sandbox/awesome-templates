@@ -145,6 +145,17 @@ small `/dev/shm`; concurrent browser requests increase memory usage. Delete old
 
 ## Verified
 
+Version 2.0.2 passed actual CI-image registration, official READY, CLI/SDK and complete Chromium screenshot/PDF/independent artifact HTTP 24 PASS / 0 FAIL / 0 SKIP. Independently confirmed sandbox/template/registry cleanup. Status remains experimental; other providers are unverified.
+
+| Provider | Scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | Exact current version, actual image and independently verified cleanup | [canonical receipt](evidence/express-2026-10-20.json), [HTTP](evidence/image-http-2026-10-20T060053Z.json) |
+
+
+The separate platform-step attempt did not reach READY within 1200 seconds; last official state was building. It is a [retained failure](evidence/full-http-steps-2026-10-20T062809Z.json), not step qualification.
+
+## Historical verification
+
 No provider has a passing run recorded for this template.
 
 Local browser acceptance and static conformance can be run independently. They
@@ -153,6 +164,12 @@ a READY sandbox and external CLI and SDK calls. Missing Chromium fails L0;
 a skipped browser suite cannot count as acceptance.
 
 ## Secondary development
+
+Version2.0.2 separates Python package installation, system dependencies and
+Chromium download into three RUN steps after an observed RUN stream deadline.
+A later successful build diagnostic exceeded300 seconds; there is no verified universal per-RUN cap. Playwright and the full Chromium profile are unchanged;
+older version receipts remain history.
+
 
 Build from this directory using `abx template deploy` or the install command
 above. The deployer replaces Alibaba region/tag placeholders and can inject a
@@ -191,3 +208,5 @@ SDK commit, expected and actual results. Search existing issues first.
 
 Apache-2.0. Playwright is Apache-2.0; Chromium and bundled dependencies retain
 their upstream notices.
+
+Follow-up real build-network execution exceeded300seconds, so the earlier stream deadline is not a universal per-RUN cap. Stage separation is retained; slow large-asset transport remains unresolved.

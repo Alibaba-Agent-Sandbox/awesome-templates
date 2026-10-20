@@ -208,6 +208,14 @@ this is not an installed-image size. The separate Python 3.12 archive adds about
 
 ## Verified
 
+Version 1.0.1 passed actual CI-image registration, official READY, CLI/SDK and 21 strict real-model assertions (qwen3.8-flash, OpenAI-compatible), source edit/new artifact/unchanged original tests/independent held-out completion. Independently confirmed sandbox/template/registry cleanup. Status remains experimental; other providers are unverified.
+
+| Provider | Scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | Exact current version, actual image and independently verified cleanup | [canonical receipt](evidence/express-2026-10-20.json), [HTTP](evidence/image-http-2026-10-20T064247Z.json), [strict model](evidence/model-image-2026-10-20T064248Z.json) |
+
+## Historical verification
+
 [Express supplemental image/runtime acceptance](evidence/image-runtime-2026-10-16-configured.json)
 passed against the actual CI-built image: official READY, exact source/server
 provenance, SDK/HTTP/CLI version and configured-target checks, actual CLI guards,

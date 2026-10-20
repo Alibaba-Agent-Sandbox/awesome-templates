@@ -1,5 +1,5 @@
 name: swe
-version: "1.0.0"
+version: "1.0.1"
 description: "Pinned mini-SWE-agent with one genuine SWE-bench instance and independent non-Docker evaluation."
 author: alibaba-agent-sandbox
 license: Apache-2.0

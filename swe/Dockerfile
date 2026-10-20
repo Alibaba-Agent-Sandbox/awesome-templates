@@ -49,5 +49,6 @@ RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
 ENV WORKSPACE=/home/user/app PYTHON_DOTENV_DISABLED=1
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py swe_process.py swe_environment.py instance.json ./
+RUN chown user:user /home/user/app
 USER user
 EXPOSE 9000

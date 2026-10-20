@@ -22,5 +22,6 @@ ENV OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 ENV OPENAI_MODEL=qwen3-coder-plus
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py .
+RUN chown user:user /home/user/app
 USER user
 EXPOSE 9000
