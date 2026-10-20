@@ -267,7 +267,7 @@ jobs:
           python -m pytest -q amp/test_commands.py amp/test_e2e_protocol.py
           python -m pytest -q droid/test_commands.py droid/test_e2e_protocol.py
           python -m pytest -q gemini/test_commands.py gemini/test_e2e_protocol.py
-          python -m pytest -q openclaw/test_commands.py
+          python -m pytest -q openclaw/test_commands.py openclaw/test_sdk_controller.py
           python -m pytest -q kimi-code/test_commands.py
           python -m pytest -q qoder/test_commands.py qoder/test_e2e_protocol.py
           python -m pytest -q deepseek-harness/test_commands.py deepseek-harness/test_e2e_protocol.py

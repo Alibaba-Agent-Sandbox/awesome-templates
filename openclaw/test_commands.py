@@ -23,6 +23,7 @@ def test_missing_token_never_launches(monkeypatch):
 
 
 @pytest.mark.parametrize('value', ['0.0.0.0/0', '::/0', '224.0.0.0/4',
+                                 '::ffff:0:0/96', '::fffe:0:0/95',
                                  'https://proxy.invalid/', '127.0.0.1,,::1',
                                  ','.join(['127.0.0.1'] * 17), 'x' * 2049])
 def test_invalid_operator_proxy_list_never_launches(value, monkeypatch):

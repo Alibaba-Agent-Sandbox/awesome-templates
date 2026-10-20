@@ -40,7 +40,9 @@ def _trusted_proxies() -> list[str]:
             network = ipaddress.ip_network(value.strip(), strict=False)
         except ValueError:
             raise ValueError("OPENCLAW_TRUSTED_PROXIES requires explicit IPs/CIDRs") from None
-        if network.prefixlen == 0 or network.network_address.is_unspecified or network.is_multicast:
+        mapped_wildcard = (network.version == 6 and network.prefixlen <= 96
+                           and ipaddress.ip_network("::ffff:0:0/96").subnet_of(network))
+        if network.prefixlen == 0 or network.network_address.is_unspecified or network.is_multicast or mapped_wildcard:
             raise ValueError("OPENCLAW_TRUSTED_PROXIES refuses unrestricted or non-unicast networks")
         canonical = str(network)
         if canonical not in result:
