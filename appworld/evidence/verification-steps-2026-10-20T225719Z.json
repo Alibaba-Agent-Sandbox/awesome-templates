@@ -1,0 +1,66 @@
+{
+  "template": "appworld",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T225719Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "appworld",
+    "materializer_sha256": "35b92ad74a2b81d649f012c6a52de5ebfd5544dbd6dfaaf045b4cd656362dbe1",
+    "source_manifest_contract_sha256": "cdb1040c6fb31ffd63f7cb5b29e9d6971345bb31c354a2811f4439810f2558e5",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "cd5dee885a67adc4ffaca9190cb1fa8fffeed0e0",
+    "asset_transport": "oss",
+    "steps_json_bytes": 10993,
+    "inputs_sha256": {
+      "Dockerfile": "103512b3f33c1160a140ca03d6e7e0f91b5d7eb1c4a7a0fb02a02a83c7b5d87b",
+      "template.yaml": "7d5071fc653055f4c2a61bd005ba88efff7779c6bb778a57d1ba9db42b82d21e",
+      "requirements.lock": "ad0d34f478e8b92c4697665966fe4c30ec916cc68ac455ebb751f969034e3d66",
+      "upstream.json": "e79ff84717f4192d639be7879d5eedf16929544a8a4e8da30be59a440fb6486b",
+      "install_data.py": "62400075fa1a1cb89e50a2aa696aca39d0f509a34723b267c5c512e5c9c4ee8b",
+      "commands.py": "b16c5fbfea4ecea2036eb0eefe712e9441534d3d800afb8d10880e67ddc7ef99",
+      "worker.py": "4fd5b0f9204a0458a194e6bc45f3bd42545ef92a4fcd45666688afca66f8ffac",
+      "process.py": "64017ad17eb43927173ca56bb01bd5f2c6e0cf9f79e5d042c529ffa0cd139121",
+      "lifecycle.py": "eb2054cea22ad6dbfd10bc6d90cf920693f50e057d87bb7d82ccb8a1d38306f1",
+      "UPSTREAM-NOTICE.md": "64c8cedc4524edc07db2d7434911828254d5c6e829e2d93182915c7505962a66"
+    },
+    "asset_transport_sha256": "83f20ec571a29225637ddac11fce7fd86f29146b24622b43e326c6934f8594e3",
+    "asset_adapter_source_commit": "cd5dee885a67adc4ffaca9190cb1fa8fffeed0e0",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://s3.us-west-2.amazonaws.com/appworld.dev/data-0.1.0.bundle",
+          "size": 34280074,
+          "sha256": "fd9f9608c2ec71ed0ac25c3633a738b9129a318a129e31230425b9188e508250"
+        }
+      ]
+    },
+    "asset_cache_architecture": "x86_64",
+    "generated_manifest_sha256": "9a14208cd634d9212487939752ca716b2e8cef83aeee58f8be80e24719c1fb06"
+  },
+  "cleanup_verified": true,
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "asset_cache": {
+    "service": "Alibaba Cloud OSS",
+    "private_acl_verified": true,
+    "archives": [
+      {
+        "url": "https://s3.us-west-2.amazonaws.com/appworld.dev/data-0.1.0.bundle",
+        "sha256": "fd9f9608c2ec71ed0ac25c3633a738b9129a318a129e31230425b9188e508250",
+        "size": 34280074
+      }
+    ],
+    "signed_get_ttl_seconds": 3600,
+    "cleanup_verified": true
+  },
+  "duration_s": 142.263
+}

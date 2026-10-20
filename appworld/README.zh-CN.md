@@ -10,6 +10,10 @@
 
 Alibaba generation2 basev0.0.49、Linuxx64/Python3.13；独立[完整哈希依赖锁](requirements.lock)、原版 appworld0.1.3.post1 wheel 和34,280,074字节加密数据。服务端源码 e2cb27e24fde0a67112f82b8d44af463445a5d1a，user 运行、9000端口。[Dockerfile](Dockerfile)、[来源记录](upstream.json)、[设计](../docs/design/appworld.md)。可分发镜像内受保护源码和数据保持加密。
 
+
+
+Python3.13 兼容：原版 SQLAlchemy1.4.54 无对应 wheel，使用其未修改、SHA256 固定的源码及上游 DISABLE_SQLALCHEMY_CEXT=1 纯 Python 构建。先用独立哈希锁安装 setuptools80.9.0/wheel0.45.1，再 --no-build-isolation 安装完整固定依赖，不替换为不兼容的 SQLAlchemy2。
+
 ## 解决的问题
 
 无需嵌套 Docker 或在操作者环境安装基准，即可在一次性沙箱评估真实 AppWorld 任务。[固定上游](https://github.com/StonyBrookNLP/appworld/tree/66ad8099e12188ece0d3fe45e661dbc01880813b)支持直接 Python 执行，Docker 可选。保留原版执行安全默认值，评分使用原版 evaluator。

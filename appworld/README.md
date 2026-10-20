@@ -10,6 +10,10 @@ Run original AppWorld0.1.3.post1 training worlds, APIs, SQLite state and native 
 
 Alibaba generation2 basev0.0.49/Linuxx64/Python3.13, isolated [full Python hash lock](requirements.lock), original appworld0.1.3.post1 wheel and original34,280,074-byte encrypted dataset. Servere2cb27e24fde0a67112f82b8d44af463445a5d1a, user runtime/port9000. [Dockerfile](Dockerfile), [immutable provenance](upstream.json), [design](../docs/design/appworld.md). Protected app source/data stay encrypted in distributable images.
 
+
+
+Python3.13 compatibility: original SQLAlchemy1.4.54 has no matching wheel. Its unchanged SHA256-pinned source uses upstream DISABLE_SQLALCHEMY_CEXT=1 for pure Python; pinned setuptools80.9.0/wheel0.45.1 are installed from a separate hash lock before --no-build-isolation. All native/runtime requirements remain hash-pinned; SQLAlchemy2 is not substituted.
+
 ## Problem solved
 
 Evaluate genuine AppWorld tasks on a disposable sandbox without nested Docker or an operator-installed benchmark. The [pinned upstream](https://github.com/StonyBrookNLP/appworld/tree/66ad8099e12188ece0d3fe45e661dbc01880813b) supports direct Python execution; Docker is optional. The wrapper retains original AppWorld execution safety defaults and uses the original evaluator rather than a fabricated score.

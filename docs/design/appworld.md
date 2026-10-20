@@ -16,6 +16,10 @@ Original engine/API/SQLite/evaluator plus explicitly authored compatible-model A
 
 [Dockerfile](../../appworld/Dockerfile): Alibaba generation2v0.0.49/Python3.13/Linuxx64, isolated full SHA256 Python lock and pip check. Original published wheel0.1.3.post1 corresponds to public tag66ad8099e12188ece0d3fe45e661dbc01880813b, not a reproducible-build claim. Original encrypted package bundles are SHA checked. Official encrypted data34280074bytes/SHA256fd9f9608c2ec71ed0ac25c3633a738b9129a318a129e31230425b9188e508250 is controller-measured, not upstream-published. No protected unpack during public image build. Runtime copies the package and invokes original install/unpack only in its private HOME. Servere2cb27e24fde0a67112f82b8d44af463445a5d1a, non-root/9000,8GiB rootfs guard/noCMD/ENTRYPOINT. Exact S3 object transport remains hash-bound; arbitrary S3 paths are rejected.
 
+
+
+Python3.13 compatibility: original SQLAlchemy1.4.54 has no matching wheel. Its unchanged SHA256-pinned source uses upstream DISABLE_SQLALCHEMY_CEXT=1 for pure Python; pinned setuptools80.9.0/wheel0.45.1 are installed from a separate hash lock before --no-build-isolation. All native/runtime requirements remain hash-pinned; SQLAlchemy2 is not substituted.
+
 ## Express feasibility
 
 Feasible: slice. Limiting factor: original native dependencies/task/model/resource compatibility still require actual image and Express execution. Proposed2CPU/2048MB, noDocker/KVM/GPU. One original training task must pass actual original evaluator and keyless saved-database reevaluation; version/install/local tests alone are insufficient.

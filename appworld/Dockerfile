@@ -1,9 +1,12 @@
 FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8
 RUN python3 -c "import sys,platform; assert sys.version_info[:2]==(3,13) and platform.machine()=='x86_64', 'reviewed Linuxx64 Python3.13 required'"
-COPY requirements.lock /tmp/appworld-requirements.lock
+COPY requirements-build.lock /tmp/appworld-build.lock
 RUN python3 -m venv /opt/appworld-venv \
-    && PIP_ONLY_BINARY=:all: /opt/appworld-venv/bin/pip install --no-cache-dir --require-hashes -r /tmp/appworld-requirements.lock \
+    && PIP_ONLY_BINARY=:all: /opt/appworld-venv/bin/pip install --no-cache-dir --require-hashes -r /tmp/appworld-build.lock \
+    && rm /tmp/appworld-build.lock
+COPY requirements.lock /tmp/appworld-requirements.lock
+RUN DISABLE_SQLALCHEMY_CEXT=1 PIP_NO_BUILD_ISOLATION=false /opt/appworld-venv/bin/pip install --no-cache-dir --require-hashes -r /tmp/appworld-requirements.lock \
     && /opt/appworld-venv/bin/pip check && rm /tmp/appworld-requirements.lock
 COPY upstream.json /opt/appworld-bootstrap/upstream.json
 COPY install_data.py /tmp/appworld-install-data.py
