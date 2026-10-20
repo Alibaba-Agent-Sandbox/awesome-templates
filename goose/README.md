@@ -152,7 +152,11 @@ outside group cleanup; destroying the sandbox is the final boundary.
 
 ## Verified
 
-No provider has a passing run recorded for this template.
+| Version | Provider | Mode and result | Evidence |
+| --- | --- | --- | --- |
+| 1.0.0 | alicloud-express | SDK-created, verified CI image; CLI/SDK smoke and strict compatible-model17 PASS/0 FAIL/0 SKIP | [image](evidence/express-2026-10-20.json), [model](evidence/model-image-2026-10-20T073500Z.json) |
+
+The actual Goose agent edited source, created a new report, preserved and ran the original tests and passed independently generated held-out inputs using qwen3.8-flash. Owned sandbox/template/registry cleanup and registry digest readback passed independently. The separate model-off HTTP run has9 PASS and1 explicit model SKIP; that skip is not promoted to a model pass. This is the OpenAI-compatible provider profile, not every upstream provider. The actual step build failed in the native installer budget; [failed step diagnosis](evidence/steps-diagnosis-2026-10-20.json) remains a failure. Other providers and arm64 execution are unverified.
 
 ## Secondary development
 

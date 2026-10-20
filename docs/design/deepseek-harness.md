@@ -26,6 +26,8 @@ Upstream call: `HTTP POST BASE_URL/chat/completions with tools and assistant/too
 
 ## How to build
 
+Template1.1.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
+
 [Dockerfile](../../deepseek-harness/Dockerfile) uses the Alibaba generation-2 base, non-root user,
 2048 MB and `/home/user/app`. Python 3.13; `httpx==0.28.1`; Agent Sandbox server. No third-party agent CLI.
 The server archive is pinned to python-sdk commit `35da216a300f1e2e84254a1cf4b4a7ea98681505`;

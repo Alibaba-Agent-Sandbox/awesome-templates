@@ -39,8 +39,7 @@ Limiting factor: model endpoint reachability and configured credentials.
 No GPU/KVM/Docker/display required. Two CPU/2GB profile and ~81MB compressed
 asset; source generation does not establish a working cloud build. Local x64
 native/protocol proof is not arm64 or provider evidence. Actual model/Express
-qualification stays empty until complete source edit/artifact/original tests/
-held-out checks and independently verified owned cleanup pass.
+qualification for1.0.0 now has [actual SDK-created image and model17 proof](../../goose/evidence/model-image-2026-10-20T073500Z.json): source edit/artifact/original tests/held-out checks and independently verified owned cleanup passed. The failed native step build remains separate; no successful step receipt is claimed.
 
 ## Risks
 

@@ -17,6 +17,8 @@ The complete headless CLI can edit source, run tests and produce files. Named di
 
 ## How to build
 
+Template2.1.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
+
 [Dockerfile](../../qwen-code/Dockerfile) keeps the Alibaba FC base, `@qwen-code/qwen-code@0.23.0`, the existing approved pinned server source commit, `/home/user/app` and `USER user`. A task-built wheel takes precedence. Generation 2 uses `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py` and `agent-sandbox-server healthcheck --port 9000`. No image CMD or ENTRYPOINT. Removes unused unpinned Python libraries and root-only settings/skills from the legacy image.
 
 ## Express feasibility

@@ -22,6 +22,8 @@ Expose greetings, inline Python, uploaded scripts, pytest, one hidden debug comm
 
 ## How to build
 
+Template1.1.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
+
 The [Dockerfile](../../python-hello/Dockerfile) uses Alibaba base placeholders resolved by `abx` (default `cn-hangzhou`, `v0.0.49`), the server archive pinned to python-sdk `35da216a300f1e2e84254a1cf4b4a7ea98681505`, and `pytest==8.4.2`. An injected wheel takes precedence. BuildKit handles the optional wheel glob. Runtime is non-root `user` at `/home/user/app`. Generation-2 start command is `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`; ready command is `agent-sandbox-server healthcheck --port 9000`. No CMD/ENTRYPOINT overrides the platform entrypoint.
 
 ## Express feasibility

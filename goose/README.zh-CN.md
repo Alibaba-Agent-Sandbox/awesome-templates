@@ -141,7 +141,11 @@ PATH/可选CA与私有运行/模型设置，不继承云端、GitHub或命令ser
 
 ## 已验证
 
-尚未记录该模板的提供方通过回执。
+| 版本 | 提供方 | 路径及结果 | 证据 |
+| --- | --- | --- | --- |
+| 1.0.0 | alicloud-express | SDK 创建、已验证 CI 镜像；CLI/SDK 冒烟及兼容模型严格验收17 PASS/0 FAIL/0 SKIP | [镜像](evidence/express-2026-10-20.json)、[模型](evidence/model-image-2026-10-20T073500Z.json) |
+
+真实 Goose 代理通过 qwen3.8-flash 修改源码、新建报告、保留并运行原始测试，再通过独立生成的隐藏输入。自有沙箱、模板及镜像仓库清理和镜像摘要回查均独立通过。单独关闭模型的 HTTP 测试为9 PASS、1项明确模型 SKIP，该跳过项未记为模型通过。这只验证 OpenAI 兼容配置，不代表全部上游提供方。实际 step 构建在原生安装器预算检查失败，[失败诊断](evidence/steps-diagnosis-2026-10-20.json)保留为失败。其他提供方及 arm64 执行未经验证。
 
 ## 二次开发
 

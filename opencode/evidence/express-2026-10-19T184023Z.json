@@ -1,0 +1,61 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-19",
+  "template": "opencode",
+  "template_version": "2.0.1",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "steps",
+  "harness_sha256": "1832710941a4824714aab40236b0111804a02c81d77a98590530131914d009b6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "opencode_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 10.81,
+      "result": "1.19.0"
+    },
+    {
+      "name": "opencode_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 1.803,
+      "result": "1.19.0"
+    },
+    {
+      "name": "opencode_setup_check",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.803,
+      "result": "ok"
+    },
+    {
+      "name": "opencode_setup_check",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 1.698,
+      "result": "ok"
+    }
+  ],
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "opencode",
+    "materializer_sha256": "743cf113087cb19d98ac8e8aae0656138853af84ed8a844b6af4a433382a0581",
+    "template_version": "2.0.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "f59af03ccff4aa4aeacd330929ede90893f2c895",
+    "steps_json_bytes": 5216,
+    "inputs_sha256": {
+      "Dockerfile": "e99ab0d9a223a5f7ac326d453d31bd939f08162d1ff120123edb437308e842a1",
+      "template.yaml": "232bfddc4693e5846c00c23d9dba15ec134cc8957164b49f41933ecf92bccd05",
+      "commands.py": "e49f601544443658b517f14b60027e7f58dab71cbb38b8572139ea0a13802768",
+      "opencode.json": "80f3c55ef5170410b30fa94f810e4e3fd4d9291fe45f300e94fbbbca45a76bd9"
+    },
+    "generated_manifest_sha256": "6250d9fd548931a666c3e5857b221ccf7a4a46a90415da4806f4814cd5a26e66"
+  }
+}

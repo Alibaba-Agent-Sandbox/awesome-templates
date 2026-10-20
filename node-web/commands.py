@@ -108,6 +108,7 @@ def _launch(argv: list[str], cwd: str, port: int, ready_path: str, timeout_s: in
             _terminate(previous)
         # Avoid claiming an unrelated HTTP listener as our successful startup.
         with socket.socket() as probe:
+            probe.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             try:
                 probe.bind(("0.0.0.0", port))
             except OSError as exc:

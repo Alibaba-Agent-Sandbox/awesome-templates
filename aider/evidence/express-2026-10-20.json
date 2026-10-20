@@ -1,0 +1,60 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-20",
+  "template": "aider",
+  "template_version": "1.0.1",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "image",
+  "harness_sha256": "1832710941a4824714aab40236b0111804a02c81d77a98590530131914d009b6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "aider_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 6.807,
+      "result": "aider 0.86.2"
+    },
+    {
+      "name": "aider_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 22.615,
+      "result": "aider 0.86.2"
+    }
+  ],
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "aider",
+    "template_version": "1.0.1",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "58e8e79b641766982fe579d3b623900513ea5d30",
+    "checkout_commit": "58e8e79b641766982fe579d3b623900513ea5d30",
+    "workflow_run_id": "39375232415",
+    "artifact_id": "12242599450",
+    "archive_sha256": "4c340822ee4b9d5d1640b61138a5df8d98e04f9c8f723c865f2de491ba31b81c",
+    "image_config_sha256": "98ca6f828b927aad624cadb162f0929c941918f789e0dc8fedebd56a1ac3c4ca",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "c04473d7181d397e0a5ed19902e10b6abaf59a6765017f36833fdd98f0b1ea7f",
+      "template.yaml:contract": "daa52c7b664a6a9472353d39db3ffd8e68c5060c079442f4526ea79b505f4890",
+      "commands.py": "bc11b5eda480d25554ae2ee61ace873eaf978cdaa3bcc67ad808c88749019684"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:b2cc8b4591bdaf66c0d9cdde81b1163bac8b0c956de0df18dd8b11bcd30603d0",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "registration_operation": "abx template create",
+  "boundary": "Verified CI Dockerfile image + private registry transfer; no controller Docker build or platform-step build claimed",
+  "registry_cleanup_verified": true
+}
