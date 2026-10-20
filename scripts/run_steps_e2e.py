@@ -87,6 +87,9 @@ def http_callback(source: Path, stage: Path, result: dict, fixture_env: dict[str
             env["E2E_CODE_SERVER_URL"] = urls[8443]
         if source.name == "next-app":
             env.update(E2E_NEXT_URL=urls[3000], E2E_VITE_URL=urls[5173])
+        if source.name == "chrome":
+            env.update(E2E_CHROME_CDP_URL=urls[9222], E2E_CHROME_VNC_URL=urls[6080],
+                       E2E_WORKSPACE="/home/user/workspace", E2E_REQUIRE_CHROME="1")
         script = source / "e2e_test.py"
         response = express_e2e.run_monitored([sys.executable, str(script)], env=env,
                                             idle_timeout=600, wall_timeout=600)
@@ -102,6 +105,8 @@ def http_callback(source: Path, stage: Path, result: dict, fixture_env: dict[str
             raise RuntimeError("non-model gateway lifecycle was skipped; full acceptance refused")
         if source.name == "osworld" and (checks["skip_count"] or checks["pass_count"] < 18):
             raise RuntimeError("non-model desktop lifecycle was skipped or incomplete; full acceptance refused")
+        if source.name == "chrome" and checks["skip_count"]:
+            raise RuntimeError("native Chrome desktop was skipped; full acceptance refused")
         if response.returncode or checks["fail_count"] or not checks["pass_count"]:
             raise RuntimeError("external HTTP controller failed; private diagnostics retained")
         return value
