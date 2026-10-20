@@ -1,0 +1,39 @@
+{
+  "template": "browser-automation",
+  "template_version": "2.2.0",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "passed": true,
+  "cleanup_verified": true,
+  "model_acceptance": "NOT_RUN",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "browser-automation",
+    "materializer_sha256": "743cf113087cb19d98ac8e8aae0656138853af84ed8a844b6af4a433382a0581",
+    "template_version": "2.2.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "21a6b301d5468f568d8956ea059144ebe7567696",
+    "steps_json_bytes": 6978,
+    "inputs_sha256": {
+      "Dockerfile": "00e3a776441986c445a15f2f19060f792c343d2d7de3697d987023a6604cfd3c",
+      "template.yaml": "97e7a57c4683959f97e2eea79b90ec87a5458f00bda8cb09ffa06894d9bae265",
+      "package.json": "7ac04e08ea0dd0591fc1f7a311514ed124b5b7b23c898a64f402fc3aa76f6222",
+      "package-lock.json": "98b5436b4699eb533e9b22733eda571a3eff8709038ea274430c87193dec557f",
+      "commands.py": "192b39ba7d9c3ac3da5a2e11bd95d2b7ab57a3cf047f0a9b0d32b4f55b0a0820",
+      "mcp_runtime.py": "5096dec88a38ed13a0a1558e66c23605c05554e68ba4987d4a3b6e173d56105e",
+      "mcp_process.py": "b5714a38ec5aa1f339ffdd146b9ae13029401f69b911f7f5feb6a2655ec5f8fb",
+      "browser_process.py": "4e14e169a1ef6b7f5705f7655e7dd8660e0792a61de99a750f72b9540f665a64",
+      "pdf_worker.py": "4ec14e521113bbfac7e361318bfeec24ad2b3abdd43883ced2b485308ccac77c"
+    },
+    "generated_manifest_sha256": "7be0c4d9754c59fdad47ce24ecfa00668ddb9e3247bc1c478aaf31cdc92be7e9"
+  },
+  "controller_sha256": "a4de76afd092f73639ecfc7bbea4bc7e537344f607cafd698fcf2b9629f1d5c7",
+  "http_exit_code": 0,
+  "pass_count": 37,
+  "fail_count": 0,
+  "skip_count": 0
+}

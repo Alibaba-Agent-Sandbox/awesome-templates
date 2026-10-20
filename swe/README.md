@@ -25,7 +25,7 @@ abx template deploy ./swe
 # Create a dedicated sandbox from the resulting template through the SDK below.
 abx run "$SANDBOX_ID" swe_version
 ABX_HTTP_TIMEOUT=240 abx run "$SANDBOX_ID" swe_prepare --server-port 9010
-ABX_HTTP_TIMEOUT=360 abx run "$SANDBOX_ID" swe_run_agent --server-port 9010 --arg run_id="$RUN_ID" --arg allow_execution=true --arg command_timeout=300
+ABX_HTTP_TIMEOUT=660 abx run "$SANDBOX_ID" swe_run_agent --server-port 9010 --arg run_id="$RUN_ID" --arg allow_execution=true --arg max_steps=30 --arg command_timeout=600
 ABX_HTTP_TIMEOUT=240 abx run "$SANDBOX_ID" swe_evaluate --server-port 9010 --arg run_id="$RUN_ID"
 abx run "$SANDBOX_ID" swe_report --server-port 9010 --arg run_id="$RUN_ID"
 abx run "$SANDBOX_ID" swe_cleanup --server-port 9010 --arg run_id="$RUN_ID"
@@ -52,7 +52,7 @@ async def main():
         stream = await sandbox.commands.start(
             'agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py',
             env={key: os.environ[key] for key in ('SWE_API_KEY', 'SWE_BASE_URL', 'SWE_MODEL')}
-                | {'WORKSPACE': '/home/user/app', 'ABX_SERVER_BASE_DIR': '/home/user/app'},
+                | {'WORKSPACE': '/home/user/app', 'ABX_SERVER_BASE_DIR': '/home/user/app', 'SWE_MODEL_PROTOCOL': 'toolcall'},
             timeout=900,
         )
         async def drain():
@@ -70,7 +70,7 @@ async def main():
         prepared = await sandbox.run('swe_prepare', server_port=9010, timeout=240)
         run_id = prepared['run_id']
         await sandbox.run('swe_run_agent', run_id=run_id, allow_execution=True,
-                          command_timeout=300, server_port=9010, timeout=360)
+                          max_steps=30, command_timeout=600, server_port=9010, timeout=660)
         report = await sandbox.run('swe_evaluate', run_id=run_id, server_port=9010, timeout=240)
         patch = await sandbox.files.read(report['patch_path'])
         assert report['resolved_slice'] and report['passed'] == 60 and patch
@@ -92,8 +92,8 @@ Use `sandbox.network.get_url(9010)` from the configured SDK recipe as `BASE_URL`
 
 ```bash
 curl -fsS -X POST "$BASE_URL/commands/swe_prepare" -H 'Content-Type: application/json' -d '{}'
-curl -fsS --max-time 360 "$BASE_URL/commands/swe_run_agent" -H 'Content-Type: application/json' \
-  -d '{"run_id":"<prepare run_id>","allow_execution":true,"command_timeout":300}'
+curl -fsS --max-time 660 "$BASE_URL/commands/swe_run_agent" -H 'Content-Type: application/json' \
+  -d '{"run_id":"<prepare run_id>","allow_execution":true,"max_steps":30,"command_timeout":600}'
 curl -fsS --max-time 240 "$BASE_URL/commands/swe_evaluate" -H 'Content-Type: application/json' \
   -d '{"run_id":"<prepare run_id>"}'
 ```
@@ -107,7 +107,7 @@ Protect the named server using the server's documented token configuration if ex
 | `swe_version` | none | Actual `mini --help` and installed distribution version; no key |
 | `swe_setup_check` | none | Boolean runtime/key/base/model availability, no secret values |
 | `swe_prepare` | `instance_id: str = "pallets__flask-5014"` | Opaque `run_id`, independently reproduced baseline; other instances rejected |
-| `swe_run_agent` | `run_id: str` required; `allow_execution: bool = false`; `max_steps: int = 12` (1–30); `command_timeout: int = 300` (30–900) | Actual `mini -c <installed default.yaml> -c <private config.yaml> -o <private trajectory>`; requires explicit shell permission; returns model-call count and Submitted status |
+| `swe_run_agent` | `run_id: str` required; `allow_execution: bool = false`; `max_steps: int = 12` (1–30); `command_timeout: int = 300` (30–900) | Actual `mini -c <installed default.yaml or mini.yaml> -c <private config.yaml> -o <private trajectory>`; requires explicit shell permission; returns model-call count and Submitted status |
 | `swe_evaluate` | `run_id: str` required | Fresh base + original tests + supported source diff; exact test states, counts, `resolved_slice`, `official_benchmark_score: false`, patch/report artifact paths |
 | `swe_report` | `run_id: str` required | Last evaluation and artifact paths; refuses before evaluation |
 | `swe_cleanup` | `run_id: str` required | Deletes only that owned run; returns true |
@@ -115,6 +115,9 @@ Protect the named server using the server's documented token configuration if ex
 Malformed types/unknown arguments return HTTP 400. Invalid instance/run ID, missing explicit permission/settings, upstream failure, missing test identities or deadlines return HTTP 500 with sanitized errors. A failed test is a real report with `resolved_slice: false`; collection errors produce no score. Same-run operations use an exclusive lock and refuse conflicts. Operations are synchronous; an HTTP client disconnect is not a cancellation API. Set the command deadline or destroy the owned sandbox to stop work.
 
 ## Configuration
+
+The verified real-instance workflow explicitly permits30 agent steps and600 seconds, with a660-second HTTP deadline. Public API defaults remain12 steps/300 seconds; those conservative defaults did not complete the configured model in earlier attempts. A separate owned-cloud diagnostic submitted after25 calls and independently passed all60 original test identities. The strict repeat with that budget still failed before submission; that diagnostic success does not qualify the current template. Version1.1.0 adds the upstream native bash-tool protocol: set `SWE_MODEL_PROTOCOL=toolcall` when starting the configured command server. It selects official `mini.yaml` and LiteLLM native function calls. Default `text` retains the original `default.yaml` text protocol for existing clients. Unknown values fail before a run. Setup reports `native_tool_calls`; the strict controller requires this flag. Test identities, fresh evaluator and scoring/assertion gates remain unchanged. The fresh1.1.0 image and actual cloud/model acceptance passed as recorded below.
+
 
 Empty `SWE_API_KEY`, `SWE_BASE_URL`, `SWE_MODEL` are declared in YAML and must be injected explicitly into the server process. Model keys go only to the agent process environment; they are excluded from model-action environments. Credentials are absent from argv, config JSON, returned errors and persisted reports. The private trajectory/config directory is removed in `finally`. This is process hygiene, not protection from malicious code running as the same user.
 
@@ -128,7 +131,11 @@ Use only trusted tasks/models in a disposable sandbox: mini executes model-gener
 
 ## Verified
 
-Version1.0.1 explicitly repairs non-root workspace-directory ownership. Current-version provider acceptance must be rerun. Earlier receipts establish only their original versions/hashes/scopes and are preserved below.
+Version1.1.0 passed actual SDK-created Express image registration and official READY, CLI/SDK version smoke and14 strict compatible-model assertions. The actual mini2.4.6 native bash-tool protocol with qwen3.8-flash edited source, preserved all original tests, passed all60 exact test identities in an independent fresh evaluator and retrieved the source patch and report. Sandbox/template/registry cleanup and post-runtime digest were independently confirmed. This is the single-instance portability slice, not an official SWE-bench score. Other providers and full official harness remain unverified.
+
+| Version | Provider | Evidence |
+| --- | --- | --- |
+| 1.1.0 | alicloud-express | [image](evidence/express-2026-10-20.json), [HTTP](evidence/image-http-2026-10-20T091111Z.json), [strict model14](evidence/model-image-2026-10-20T091111Z.json) |
 
 ## Historical verification
 
@@ -141,6 +148,8 @@ L0 contract checks can skip missing upstream runtime/model prerequisites, and su
 Read [design](../docs/design/swe.md) and [spec](../docs/template-spec.md). Add another instance only after verifying its pinned source archive, license, original test patch, precise FAIL_TO_PASS/PASS_TO_PASS lists, compatible locked dependencies and independent failing/passing tests. Do not expose arbitrary shell test commands, URL downloads or caller-supplied patches through this API. The manifest deliberately excludes the upstream gold solution patch.
 
 ### Agent Sandbox platform steps
+The actual1.1.0 step attempt did not reach independently confirmed READY within1200seconds. It is a [failed attempt](evidence/verification-steps-2026-10-20T091943Z.json), with [separate confirmed cleanup](evidence/steps-cleanup-2026-10-20.json); it does not qualify step builds. The passing current image/model receipt remains separate.
+
 
 From a repository checkout, `python scripts/run_steps_e2e.py swe` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
 

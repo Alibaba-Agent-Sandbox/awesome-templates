@@ -140,3 +140,10 @@ def test_wrong_node_failure_with_same_counts_rejected():
     baseline['fail_to_pass'][c.MANIFEST['fail_to_pass'][0]]='passed'
     baseline['pass_to_pass'][c.MANIFEST['pass_to_pass'][0]]='failed'
     assert not c._valid_baseline(baseline)
+
+
+def test_unknown_model_protocol_refuses_before_workspace_mutation(tmp_path, monkeypatch):
+    monkeypatch.setenv('WORKSPACE',str(tmp_path));monkeypatch.setenv('SWE_MODEL_PROTOCOL','unsupported')
+    with pytest.raises(ValueError,match='SWE_MODEL_PROTOCOL'):
+        c.swe_run_agent('a'*32,allow_execution=True)
+    assert not (tmp_path/'.swe-runs').exists()

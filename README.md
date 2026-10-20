@@ -27,7 +27,7 @@ The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](do
 | Template | Description | Status | Verified on |
 |----------|-------------|--------|-------------|
 | [python-hello](./python-hello/README.md) | A minimal Python hello world template for testing | experimental | [alicloud-express (1.1.1 full HTTP)](./python-hello/evidence/express-2026-10-19T183219Z.json) |
-| [browser-automation](./browser-automation/README.md) | Browser automation sandbox with Playwright + Chromium for web scraping and UI testing | experimental | [alicloud-express (2.1.0 SDK steps, full HTTP29)](./browser-automation/evidence/express-2026-10-20T094547Z.json) |
+| [browser-automation](./browser-automation/README.md) | Browser automation sandbox with Playwright + Chromium for web scraping and UI testing | experimental | [alicloud-express (SDK steps, PDF and HTTP37)](./browser-automation/evidence/express-2026-10-20T103410Z.json) |
 | [claude-code](./claude-code/README.md) | Claude Code Agent runtime — Anthropic Claude-powered AI coding assistant | experimental | [alicloud-express (1.1.1 steps smoke)](./claude-code/evidence/express-2026-10-19T183255Z.json) |
 | [codex](./codex/README.md) | OpenAI Codex CLI (@openai/codex@0.162.1). codex exec, JSON events, sandbox bypass, OpenAI-compatible config.toml. | experimental | [alicloud-express (steps smoke)](./codex/evidence/express-2026-10-19.json) |
 | [codex-agent-api](./codex-agent-api/README.md) | Codex 0.162.1 HTTP session adapter with bounded turns and SSE; project API subset | experimental | [alicloud-express (steps smoke)](./codex-agent-api/evidence/express-2026-10-19.json) |
@@ -49,7 +49,7 @@ The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](do
 | [document-tools](./document-tools/README.md) | Bounded offline Markdown to DOCX/plain-text conversion using pinned Pandoc. | experimental | [alicloud-express (steps smoke)](./document-tools/evidence/express-2026-10-19.json) |
 | [media-tools](./media-tools/README.md) | Bounded offline CPU MP4, WAV and FLAC conversion with pinned FFmpeg. | experimental | [alicloud-express (steps smoke)](./media-tools/evidence/express-2026-10-19.json) |
 | [aider](./aider/README.md) | Official Aider 0.86.2 with read-only ask and explicit selected-file edits. | experimental | [alicloud-express (1.0.1 image, strict model)](./aider/evidence/express-2026-10-20.json) |
-| [swe](./swe/README.md) | Real mini-swe-agent 2.4.6 and one independently evaluated SWE-bench instance; no official Docker score. | experimental | Revalidation pending (workspace ownership) |
+| [swe](./swe/README.md) | Real mini-swe-agent 2.4.6 and one independently evaluated SWE-bench instance; no official Docker score. | experimental | [alicloud-express (1.1.0 SDK image, strict model14)](./swe/evidence/express-2026-10-20.json) |
 
 OpenSandbox's public sandbox images (code-interpreter, code-interpreter-base, desktop, playwright, vscode) are resolved by the SDK. This catalog does not vendor those Dockerfiles.
 
@@ -175,3 +175,5 @@ Official terminal agent: [goose](goose/README.md) (experimental; [alicloud-expre
 These provider-managed IDs are listed separately from buildable source templates.
 Native interpreter service was HTTP404 in both recorded tests; no native interpreter
 or other-provider certification is claimed.
+
+[Development database template](dev-services/README.md) · experimental; provider acceptance pending.
