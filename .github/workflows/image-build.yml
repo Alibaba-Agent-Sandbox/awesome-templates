@@ -150,7 +150,6 @@ jobs:
               "codex": [("codex --version", "0.162.1")],
               "codex-agent-api": [("codex --version", "0.162.1")],
               "droid": [("droid --version", "0.241.1")],
-              "grok": [("/opt/grok/bin/grok --version", "grok 1.0.62 (1474f9cbdd91)")],
               "gemini": [("gemini --version", "0.64.0")],
               "hermes-agent": [("hermes --version", "v0.22.1")],
               "openclaw": [("node --version", "v24.16.0"), ("openclaw --version", "2026.10.4")],
