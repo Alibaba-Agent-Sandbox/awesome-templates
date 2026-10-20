@@ -36,6 +36,8 @@ Keep per-template provider evidence in its established location and link to it.
 Preserve historical evidence; new runs receive distinct filenames. Do not store
 credentials, private prompts or unsanitized logs. Cross-repository links are absolute.
 
+- [Native Copilot CLI BYOK](notes/proposed/feature/2026-10-20-copilot-cli-byok.md) · [verification](evidence/verify/2026-10-20-copilot-cli-byok.md)
+
 ## Current review
 
 - [Node Web HTTP output protocol](notes/proposed/process/2026-10-16-node-web-http-output.md)

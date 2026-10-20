@@ -1,0 +1,10 @@
+{
+  "name": "agent-sandbox-copilot-cli-template",
+  "version": "1.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@github/copilot": "1.0.100",
+    "@github/copilot-linux-x64": "1.0.100"
+  }
+}
