@@ -123,7 +123,11 @@ curl --fail-with-body --max-time 90 -X POST "$ABX_SERVER_URL/commands/browser_us
 
 ## 已验证
 
-新1.0.0尚无提供方通过回执。真实本地库/Chromium/协议/动作/独立计数/PNG夹具仅为L0，不代表真实模型或云端。待镜像/最新CI、真实SDK创建极速版及独立真实模型浏览器流程。其他提供方及架构未验证。
+| 提供方 | 版本与实际范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express |1.0.0；真实 SDK 创建的非 root 镜像；CLI/SDK/CDP；真实模型点击3次、提交随机验证码、独立读取PNG；独立资源清理 | [镜像](evidence/express-2026-10-20.json) · [模型](evidence/model-image-2026-10-20T144123Z.json) |
+
+模型在8个原生步骤内完成任务；一次原生 JSON 格式错误及后续恢复保留在回执中。完整 HTTP 的11PASS/1SKIP属于明确关闭模型的基础阶段；单独模型控制器实际通过。沙箱、模板、镜像仓库，以及控制器自有进程、文件和9010/9011监听均独立确认清理。平台 step 构建在1200秒时仍为building，因此该次失败、不声称step通过；已确认删除其自有模板。其他提供方及架构未验证。见[完整记录](../.agents/evidence/verify/2026-10-20-browser-use-final.md)。
 
 ## 二次开发
 

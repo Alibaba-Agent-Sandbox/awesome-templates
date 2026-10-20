@@ -123,7 +123,11 @@ Model settings enter private file stdin only; they are not inherited into Chromi
 
 ## Verified
 
-No provider has a passing receipt for new1.0.0 yet. Actual local native library/Chromium/protocol/action/counter/PNG fixtures are L0 only, not real-model or cloud evidence. Image/current-head CI, genuine SDK-created Express and the independent real-model browser workflow remain required. Other providers and architectures remain unverified.
+| Provider | Version and executed scope | Evidence |
+| --- | --- | --- |
+| alicloud-express |1.0.0; actual SDK-created non-root image, CLI/SDK/CDP, real model counter3/submitted nonce/independent PNG and owned cleanup | [image](evidence/express-2026-10-20.json) · [model](evidence/model-image-2026-10-20T144123Z.json) |
+
+The native agent succeeds in8steps; one recovered native JSON-format error remains in its receipt. Basic full HTTP has11PASS/1SKIP with the model explicitly disabled; the separate actual model controller passes. Independent cleanup confirms sandbox/template/registry absence and controller-owned processes/files/9010/9011listeners. The native platform-step build remained building at1200seconds and failed that attempt; owned template deletion was independently confirmed. No passing step build is claimed. Other providers/architectures remain unverified. See [final acceptance](../.agents/evidence/verify/2026-10-20-browser-use-final.md).
 
 ## Secondary development
 
