@@ -37,6 +37,20 @@ def _runtime():
     return str(binary),str(Path(__file__).with_name('worker.py'))
 
 
+
+def worker_diagnostic(stderr):
+    for line in reversed(stderr.splitlines()):
+        if line.startswith('ABX_APPWORLD_FAILURE '):
+            line=line.removeprefix('ABX_APPWORLD_FAILURE ')
+        try:
+            value=json.loads(line)
+        except (ValueError,TypeError):
+            continue
+        if isinstance(value,dict)and 'error_type'in value and 'native_stage'in value:
+            return value
+    return {}
+
+
 def _invoke(operation,data,timeout):
     if not _LOCK.acquire(blocking=False):raise RuntimeError('another AppWorld native operation is active')
     try:
@@ -52,7 +66,7 @@ def _invoke(operation,data,timeout):
         if code:
             detail=''
             try:
-                diagnostic=json.loads(err.strip().splitlines()[-1])
+                diagnostic=worker_diagnostic(err)
                 kind=diagnostic.get('error_type')
                 stage=diagnostic.get('native_stage')
                 if isinstance(kind,str)and re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]{0,63}',kind)and not any(secret and secret in kind for secret in _CONFIG.values())and stage in ['request','upstream','private_copy','installer','data_unpack','task','configuration','world_init','model_request','tool_validation','native_api','native_completion_check','native_run','summary','artifact','replay']:
@@ -82,7 +96,7 @@ def _invoke(operation,data,timeout):
             detail+='; native_exit_code='+str(code)
             if operation=='version':
                 try:
-                    diagnostic=json.loads(err.strip().splitlines()[-1])
+                    diagnostic=worker_diagnostic(err)
                     missing=diagnostic.get('missing_module','')
                     if diagnostic.get('error_type')=='ModuleNotFoundError'and re.fullmatch(r'[A-Za-z_][A-Za-z0-9_.]{0,127}',missing):
                         if not any(secret and secret in missing for secret in _CONFIG.values()):detail='; missing module '+missing

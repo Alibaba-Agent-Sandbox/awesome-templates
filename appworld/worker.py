@@ -25,6 +25,7 @@ META=None
 BOOTSTRAP_ERROR=None
 MISSING_MODULE=None
 RUN_OBSERVATION={}
+FAILURE_STREAM=sys.stderr
 
 
 class NativeIncomplete(RuntimeError):
@@ -324,5 +325,5 @@ if __name__=='__main__':
         result=main()
         print(json.dumps(result,ensure_ascii=False))
     except Exception as exc:
-        print(json.dumps({'error_type':type(exc).__name__,'native_stage':STAGE,'bootstrap_error_type':BOOTSTRAP_ERROR,'missing_module':MISSING_MODULE,'native_counters':RUN_OBSERVATION,'http_status':getattr(exc,'status_code',None)}),file=sys.stderr)
+        print('\nABX_APPWORLD_FAILURE '+json.dumps({'error_type':type(exc).__name__,'native_stage':STAGE,'bootstrap_error_type':BOOTSTRAP_ERROR,'missing_module':MISSING_MODULE,'native_counters':RUN_OBSERVATION,'http_status':getattr(exc,'status_code',None)}),file=FAILURE_STREAM,flush=True)
         raise SystemExit(1)

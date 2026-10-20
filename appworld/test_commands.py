@@ -112,3 +112,15 @@ def test_original_installer_can_write_only_the_owned_copy_of_readonly_source(tmp
         assert source.stat().st_mode&0o777==0o444 and not (apps/'private_installed.py').exists()
     finally:
         original.chmod(0o700);apps.chmod(0o700);source.chmod(0o600)
+
+
+def test_native_diagnostic_survives_trailing_library_shutdown_stderr(tmp_path,monkeypatch):
+    worker=tmp_path/'late_stderr.py'
+    diagnostic={'error_type':'NativeIncomplete','native_stage':'native_completion_check','native_counters':{'model_steps':40,'bridge_api_calls':3,'private_body':'SYNTHETIC_PRIVATE_VALUE'}}
+    worker.write_text('import sys\nprint('+repr('ABX_APPWORLD_FAILURE '+json.dumps(diagnostic))+',file=sys.stderr)\nprint("Unrelated native shutdown text: SYNTHETIC_PRIVATE_VALUE",file=sys.stderr)\nraise SystemExit(1)\n')
+    monkeypatch.setattr(c,'_runtime',lambda:(sys.executable,str(worker)))
+    with pytest.raises(RuntimeError) as error:
+        c._invoke('run',{},10)
+    text=str(error.value)
+    assert 'native_completion_check (NativeIncomplete)' in text and 'model_steps=40' in text and 'bridge_api_calls=3' in text
+    assert 'SYNTHETIC_PRIVATE_VALUE' not in text and 'private_body' not in text

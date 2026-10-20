@@ -1,0 +1,90 @@
+{
+  "template": "appworld",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T233331Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "FAIL",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "appworld",
+    "materializer_sha256": "35b92ad74a2b81d649f012c6a52de5ebfd5544dbd6dfaaf045b4cd656362dbe1",
+    "source_manifest_contract_sha256": "d176bd5b86ab53217909de9e31c7612a220a26cce94f9e2f852ef928f38be041",
+    "template_version": "1.0.5",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "456945b544122fb26e4d054319a2c3a275f1e223",
+    "asset_transport": "oss",
+    "steps_json_bytes": 12931,
+    "inputs_sha256": {
+      "Dockerfile": "a55322f3bfdaafa20fc41df373703b5be0123b1dd06f2a9bcba55883428c38b6",
+      "template.yaml": "98befc5a30380955a8e34447de4c6078805ab3993eed767cb42cda9f2a5026c0",
+      "requirements-build.lock": "53615811dc1d1f22b94617262702e9d02d56d5d8a0a180227344c700fcddae60",
+      "requirements.lock": "4c3a2a379b5cef53282dcc1ae115aae5a1dc221f923694e5c2d7601f823b1c65",
+      "upstream.json": "e79ff84717f4192d639be7879d5eedf16929544a8a4e8da30be59a440fb6486b",
+      "install_data.py": "62400075fa1a1cb89e50a2aa696aca39d0f509a34723b267c5c512e5c9c4ee8b",
+      "commands.py": "f826912b2cf4cb103da8ee895f0eb5cb1794657db3eb388d67db70151a374c4d",
+      "worker.py": "40f01d232f5dc112612857544b084d08cd4b1e33b1959e7dac6fa18408fcf54f",
+      "process.py": "64017ad17eb43927173ca56bb01bd5f2c6e0cf9f79e5d042c529ffa0cd139121",
+      "lifecycle.py": "eb2054cea22ad6dbfd10bc6d90cf920693f50e057d87bb7d82ccb8a1d38306f1",
+      "UPSTREAM-NOTICE.md": "64c8cedc4524edc07db2d7434911828254d5c6e829e2d93182915c7505962a66"
+    },
+    "asset_transport_sha256": "83f20ec571a29225637ddac11fce7fd86f29146b24622b43e326c6934f8594e3",
+    "asset_adapter_source_commit": "456945b544122fb26e4d054319a2c3a275f1e223",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://s3.us-west-2.amazonaws.com/appworld.dev/data-0.1.0.bundle",
+          "size": 34280074,
+          "sha256": "fd9f9608c2ec71ed0ac25c3633a738b9129a318a129e31230425b9188e508250"
+        }
+      ]
+    },
+    "asset_cache_architecture": "x86_64",
+    "generated_manifest_sha256": "542c70e4934fa1c5cc794260fb14a736dba7ff3d97cc203fcd0abdeaee8a9427"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 9,
+    "fail_count": 0,
+    "skip_count": 0,
+    "controller_sha256": "c9aebeaab51c8beb2cc3bfa3e4fba5343b6095b43f3a3bedbe3fa96e1964bc85"
+  },
+  "model_controller_sha256": "c9aebeaab51c8beb2cc3bfa3e4fba5343b6095b43f3a3bedbe3fa96e1964bc85",
+  "native_model_acceptance": {
+    "model_acceptance": "FAIL",
+    "model": "qwen3.8-flash",
+    "original_engine_and_evaluator": true,
+    "authored_compatible_api_bridge": true,
+    "protected_artifact_scope": "original encrypted bundle; no operator benchmark execution",
+    "sdk_original_version": true,
+    "sdk_explicit_model_configured": true,
+    "exit_code": 1,
+    "pass_count": 9,
+    "fail_count": 1,
+    "skip_count": 0,
+    "secondary_server_stop_ack": true,
+    "owned_secondary_listener_and_native_state_absent": true
+  },
+  "cleanup_verified": true,
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "asset_cache": {
+    "service": "Alibaba Cloud OSS",
+    "private_acl_verified": true,
+    "archives": [
+      {
+        "url": "https://s3.us-west-2.amazonaws.com/appworld.dev/data-0.1.0.bundle",
+        "sha256": "fd9f9608c2ec71ed0ac25c3633a738b9129a318a129e31230425b9188e508250",
+        "size": 34280074
+      }
+    ],
+    "signed_get_ttl_seconds": 3600,
+    "cleanup_verified": true
+  },
+  "duration_s": 246.42
+}
