@@ -1,0 +1,86 @@
+{
+  "template": "grok",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T200408Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "FAIL",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "grok",
+    "materializer_sha256": "478acb7d3bb6a9b6b995c0714636d3ed0e01c7ab80fe2dbe6bb84e99304f5548",
+    "source_manifest_contract_sha256": "f3c35653af1b50384ce3dea9dfdaea0c16ef150436378904162bffcb94e16dd6",
+    "template_version": "1.0.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "57e7efdb7c1c79f55500faf3e32fb27487b0761f",
+    "asset_transport": "direct",
+    "steps_json_bytes": 7890,
+    "inputs_sha256": {
+      "Dockerfile": "0322bec75740fcc132bb47ccdc202ab9d3185d59e1f7ea05fba15de861e568c7",
+      "template.yaml": "13018e5208ec3be644477403a3dab31ce60308488562e51b4697da58daf1f699",
+      "package.json": "e7d95cb37cb5320d4d44f92c2c01eb106ec8a6f591e3e3c61fa830f358fb0feb",
+      "package-lock.json": "a0092181ef1277d2dc774f6bc7d158c7260cd1010973fc63e5f0bce8c9990272",
+      "commands.py": "73b59db9dc7820277a6033fa56cd0cd10e4f5036fe60ada55dc47aa64aec83b9",
+      "process.py": "03278a2922d5da0eace2772402efb7c50aba252bfdd6ffb901d52daeff7acba4",
+      "lifecycle.py": "00694367e205ce3de5c4e33d7d4d96dec86e096502cb8cb94c54fb57ab3095c5",
+      "UPSTREAM-LICENSE.md": "116f7778b9802e569b7fa3a532b17bd80eb13c67837def01eed093d4ea472f28",
+      "THIRD_PARTY_NOTICES.md": "e8785a6098a7ee780cd2db35745b8e53061cfb1b6da19147a308579466ea4e50"
+    },
+    "generated_manifest_sha256": "f9d90d4a480bff6268cd3931464fab62206be26ae7014a88a916d7136f764849"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 8,
+    "fail_count": 0,
+    "skip_count": 0,
+    "controller_sha256": "7d038ea966fcbe5f624ffebbd3a36cb8020fff24f479acdcaddd1a3d24c53626"
+  },
+  "model_controller_sha256": "7d038ea966fcbe5f624ffebbd3a36cb8020fff24f479acdcaddd1a3d24c53626",
+  "commands_sha256": "73b59db9dc7820277a6033fa56cd0cd10e4f5036fe60ada55dc47aa64aec83b9",
+  "native_model_acceptance": {
+    "model_acceptance": "FAIL",
+    "model": "qwen3.8-flash",
+    "model_protocol": "OpenAI-compatible Chat Completions",
+    "actual_sdk_named_command": true,
+    "native_version": "1.0.62",
+    "synthetic_native_transport": {
+      "passed": true,
+      "native_version": "1.0.62",
+      "native_exit_code": 0,
+      "actual_sdk_named_command": true,
+      "requests": 4,
+      "exact_owned_endpoint_model_and_auth": true,
+      "real_model_key_used": false,
+      "real_model_executed": false,
+      "observed_before_cleanup": {
+        "requests": 4,
+        "exact_owned_endpoint_model_and_auth": true,
+        "stream": true,
+        "request_keys": [
+          "max_tokens",
+          "messages",
+          "model",
+          "stream",
+          "stream_options"
+        ]
+      },
+      "owned_fixture_files_and_listeners_absent": true
+    },
+    "sdk_actual_native_version": true,
+    "sdk_explicit_byok_configured": true,
+    "exit_code": 1,
+    "pass_count": 9,
+    "fail_count": 0,
+    "skip_count": 0,
+    "secondary_server_stop_ack": false,
+    "owned_secondary_listener_and_native_state_absent": false
+  },
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "duration_s": 104.748
+}

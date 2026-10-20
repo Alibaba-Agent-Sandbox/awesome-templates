@@ -7,7 +7,7 @@ Status: PARTIAL. Proposed source/runtime preparation for
 
 Official annotated tagv1.0.1 resolves to source
 fc0055dc4e0a316c3f83133267fbd6faaa770992. Official codeload archive measured
-92,081,935 bytes and SHA256 matching [upstream.json](../../../../tau2-bench/upstream.json).
+92,081,935 bytes and SHA256 matching [upstream.json](../../../tau2-bench/upstream.json).
 This is a controller measurement, not an upstream-published checksum. Selected
 source/retail files total about38MB; original retail loader contains114 tasks.
 Original task0 has empty NL assertions; tasks requiring an NL judge are refused.

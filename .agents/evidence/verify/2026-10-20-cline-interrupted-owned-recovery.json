@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-10-20T201436Z",
+  "scope": "Exact owned known-template/no-create interrupted Cline attempt",
+  "verification": {
+    "template": "cline",
+    "recovery_exit_code": 0,
+    "recovery_complete": true,
+    "independent_owned_resources_absent": true,
+    "original_attempt_qualification": "FAIL_OR_INCOMPLETE"
+  },
+  "old_attempt_not_qualified": true
+}

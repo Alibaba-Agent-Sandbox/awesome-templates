@@ -1,0 +1,26 @@
+name: cline
+version: "1.0.2"
+description: "Pinned genuine Cline3.0.73 CLI, private OpenAI-compatible configuration and bounded headless coding."
+author: "alibaba-agent-sandbox"
+license: Apache-2.0
+spec_version: 2
+base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
+generation: 2
+start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
+ready_cmd: "agent-sandbox-server healthcheck --port 9000"
+resources: {cpu: 2, memory: 4096}
+ports: [9000]
+tags: [cline, coding-agent, openai-compatible]
+priority: P1
+wave: 2
+tested_on: [alicloud-express]
+capabilities: [shell, files, code, ports]
+env:
+  ABX_SERVER_TOKEN: ""
+  CLINE_MODEL_API_KEY: ""
+  CLINE_MODEL_BASE_URL: ""
+  CLINE_MODEL: ""
+  WORKSPACE: "/home/user/workspace"
+smoke:
+  - command: cline_version
+    expect: {native_version: "3.0.73"}
