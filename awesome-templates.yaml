@@ -539,6 +539,17 @@ templates:
       alicloud-express: supported
 
 
+  - name: grok
+    description: "Official xAI Grok Build1.0.62 native CLI with explicit compatible model and isolated bounded coding."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: grok
+    tags: [grok, xai, coding-agent, openai-compatible]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: supported
+
   - name: cline
     description: "Pinned genuine Cline3.0.73 CLI, private compatible provider and bounded headless coding."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
