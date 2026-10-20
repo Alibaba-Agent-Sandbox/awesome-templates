@@ -145,3 +145,20 @@ def test_private_execution_urls_never_enter_public_build_provenance():
     assert "synthetic-read-token" not in json.dumps(proof)
     assert "private.invalid" not in json.dumps(proof)
     assert manifest["build"]["steps"][-1] == {"type": "USER", "args": ["user"]}
+
+
+@pytest.mark.parametrize('url',['https://s3.us-west-2.amazonaws.com/other/data-0.1.0.bundle','https://s3.us-west-2.amazonaws.com/appworld.dev/unreviewed.bundle','https://s3.us-west-2.amazonaws.com/appworld.dev/data-0.1.0.bundle?credential=x'])
+def test_appworld_transport_does_not_admit_other_s3_objects(monkeypatch,tmp_path,url):
+    cache,bucket,content,assets=setup(monkeypatch,tmp_path)
+    assets[platform.machine()][0]['url']=url
+    with pytest.raises(ValueError,match='fixed official'):
+        cache.prepare(assets)
+    assert not bucket.exists and not bucket.objects and not cache.creation_attempted
+
+
+def test_exact_official_appworld_bundle_retains_integrity_and_private_cleanup(monkeypatch,tmp_path):
+    cache,bucket,content,assets=setup(monkeypatch,tmp_path)
+    assets[platform.machine()][0]['url']='https://s3.us-west-2.amazonaws.com/appworld.dev/data-0.1.0.bundle'
+    with patch('step_asset_cache.urllib.request.urlopen',return_value=io.BytesIO(content)):
+        cache.prepare(assets)
+    assert cache.cleanup() and not bucket.exists and not bucket.objects

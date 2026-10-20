@@ -1,0 +1,114 @@
+# appworld
+
+[中文](README.zh-CN.md)
+
+## What it does
+
+Run original AppWorld0.1.3.post1 training worlds, APIs, SQLite state and native evaluator with an authored compatible-model API bridge. The bridge offers original API documentation and actual API calls; the historical paper agent baseline is not claimed. Result artifacts retain the upstream encrypted bundle format. This is a single-training-task slice, not a leaderboard score.
+
+## Stack
+
+Alibaba generation2 basev0.0.49/Linuxx64/Python3.13, isolated [full Python hash lock](requirements.lock), original appworld0.1.3.post1 wheel and original34,280,074-byte encrypted dataset. Servere2cb27e24fde0a67112f82b8d44af463445a5d1a, user runtime/port9000. [Dockerfile](Dockerfile), [immutable provenance](upstream.json), [design](../docs/design/appworld.md). Protected app source/data stay encrypted in distributable images.
+
+## Problem solved
+
+Evaluate genuine AppWorld tasks on a disposable sandbox without nested Docker or an operator-installed benchmark. The [pinned upstream](https://github.com/StonyBrookNLP/appworld/tree/66ad8099e12188ece0d3fe45e661dbc01880813b) supports direct Python execution; Docker is optional. The wrapper retains original AppWorld execution safety defaults and uses the original evaluator rather than a fabricated score.
+
+## Quick start (CLI)
+
+Install CLI0.4.1 native entry and configure authorized Express access via [platform steps](../docs/platform-steps.md). `abx run` uses this release as `abx --native run`. Replace placeholders with unique owned values, publish the exact source commit for immutable COPY, and wait for official READY. The common model-free task initializes an original world and calls its actual API.
+
+```bash
+python scripts/prepare_steps.py appworld --output /tmp/appworld-steps-<unique-run> \
+  --asset-transport parallel --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
+abx --native template deploy /tmp/appworld-steps-<unique-run> --build steps -y
+abx --native create --template <owned-template-id> -y
+abx --native run <owned-sandbox-id> appworld_native_smoke
+abx --native kill <owned-sandbox-id> -y
+abx --native template delete <owned-template-id> -y
+```
+
+Complete canonical validation: `ABX="abx --native" python scripts/run_steps_e2e.py appworld --sandbox-create sdk --http --asset-transport oss`. Private OSS caches only exact original encrypted data and independently verifies owned cleanup. Steps acceptance does not prove Docker image acceptance. After explicit model setup, use `abx --native run <owned-sandbox-id> appworld_run --json-args '{"task":"","max_steps":40,"command_timeout":900}'` and verify the returned native score/artifact.
+
+## Quick start (Python SDK)
+
+Install `agent-sandbox-client` with the [paired source instructions](../docs/python-client-installation.md). This model-free example performs the same task as CLI/HTTP and owns cleanup; snippets are syntax checked, cloud acceptance remains pending.
+
+```python
+import asyncio
+from agent_sandbox.api.sandbox import Sandbox
+
+async def main():
+    sb = await Sandbox.create(template="<owned-template-id>", timeout=300)
+    try:
+        result = await sb.run("appworld_native_smoke", timeout=150)
+        assert result == "original AppWorld0.1.3.post1 native API and private cleanup OK"
+    finally:
+        await sb.kill()
+
+asyncio.run(main())
+```
+
+Once the named server has explicit APPWORLD_MODEL_API_KEY/BASE_URL/MODEL before startup and setup presence is true, call `await sb.run("appworld_run", task="", max_steps=40, command_timeout=900, timeout=1000)`, download the encrypted file via `sb.files.read_bytes(result["artifact_path"], max_bytes=64*1024**2)`, then `await sb.run("appworld_verify_artifact", path=result["artifact_path"], task=result["task"], timeout=200)`. Use the [explicit prewarmed-server configuration](../docs/runtime-environment.md): later create-time env does not reconfigure9000. For a separate Bearer server use `sb.server_at(port, token=...)`, its commands client and finally close it. Stop any explicitly started process and drain/cancel its stream before sandbox deletion. Never print model keys, private endpoints, decrypted protected tasks or trajectories.
+
+## Quick start (HTTP POST)
+
+Set ABX_SERVER_URL to `sb.network.get_url(9000)` and configure optional independent ABX_SERVER_TOKEN before server startup. Add the selected provider gateway access header when required.
+
+```bash
+curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/appworld_native_smoke" \
+  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
+  --header "Content-Type: application/json" --data '{}'
+```
+
+HTTP200 returns `{"result":"original AppWorld0.1.3.post1 native API and private cleanup OK"}`. Run accepts the direct `{task,max_steps,command_timeout}` JSON object, without an args wrapper; verify accepts `{path,task}`. Missing/type-invalid arguments400, server auth401, unknown command404, semantic/native execution errors500 with `{error,type}`. Native incomplete runs fail; a completed task can validly score0.0. A client timeout does not cancel a bounded worker.
+
+## Command reference
+
+| Command | Parameters / bounds | Result / effects |
+| --- | --- | --- |
+| appworld_version | none | native_version0.1.3.post1, source_commit, data_sha256, protected_bundles_encrypted:true; actual fixed package/data hashes, no unpack/model |
+| appworld_setup_check | none | mode, base_url_set/api_key_set/model_set booleans; no network/setup |
+| appworld_native_smoke | none | Exact smoke string after original training-world initialization/native API and owned private-process cleanup; no model |
+| appworld_run | task:string default empty, max64 safe identifier characters; empty selects first original train task; max_steps:int1..40 default30; command_timeout:int30..900seconds default600; booleans rejected | score0.0/1.0 (all native tests), success, num_tests/pass_count, task, original native/source/data identity, model/model_steps, bridge_api_calls/native_api_calls, task_completed, artifact_path/log_path aliases, artifact_bytes/artifact_sha256/artifact_encrypted, training_task_count; owns one new result directory |
+| appworld_verify_artifact | path:required workspace-contained existing encrypted file, max4096UTF8 bytes,1..64MiB; task:string default empty uses bound artifact task, otherwise original train task ID | verified:true, task, original_evaluator:true, model_credentials_used:false, score/success/num_tests/pass_count; independent original evaluator on reloaded saved databases, no model call |
+
+Native operations serialize and reject overlap. Requests at most32KiB; native stdout/stderr256KiB per stream. Whole process group/nonce/pidfd cleanup and private HOME/package/data/cache removal run on success/failure/timeout/overflow. Results are buffered. Successful encrypted artifacts persist in an exclusive0700 workspace directory with0600 file; caller or sandbox deletion removes them. Failed partial result directories are removed. Verify bounds the encrypted artifact64MiB,4096ZIP members and512MiB expanded; paths/symlinks/outside-experiment members are rejected.
+
+## Configuration
+
+| Name | Requirement / default | Meaning |
+| --- | --- | --- |
+| APPWORLD_MODEL_API_KEY | model required; empty | Approved compatible endpoint key, anonymous stdin to native worker, never argv or child environment |
+| APPWORLD_MODEL_BASE_URL | model required; empty | Explicit HTTPS base; literal loopback HTTP only for authored fixtures; no userinfo/query/fragment, max2048characters |
+| APPWORLD_MODEL | model required; empty | Actual model identifier,1..200 safe characters |
+| WORKSPACE | /home/user/workspace | Existing result root, captured at module startup |
+| ABX_SERVER_TOKEN | optional; empty | Independent named-server Bearer token |
+
+Configuration is captured at command-server startup. Key max8192characters/noCRLF/NUL. Worker environment excludes operator cloud/GitHub/model tokens; model settings travel via anonymous stdin into private memory. Original model execution guards remain enabled. Bridge validates allowed original app/API identifiers and renders JSON arguments as Python literals; it does not accept executable model Python. At most16tool calls/model response,160native interactions,50API calls/interaction,30seconds/native execution,60seconds/model HTTP without SDK retries. Native inspect/API tool output is bounded; model context at most1MiB.
+
+## Resources
+
+Declared2vCPU/2048MB/Linuxx64, port9000 and enforced image rootfs8GiB budget. No Docker/KVM/GPU. Private runtime copies and unpacks original protected code/data per call; no plaintext protected app/data is exported in the distributable image. Actual image/native dependency and Express memory/task feasibility remain pending. Model calling requires authorized compatible Chat Completions/tool calling and network egress; no other provider or all-task qualification.
+
+## Verified
+
+No provider has a passing run recorded for this template.
+
+Authored local boundary/cache tests and source-only HTTP7PASS/0FAIL/native SKIP do not establish a native benchmark/provider/model pass. Image, original native API, SDK-created Express steps, real task/score/keyless saved-state evaluation and independent cleanup remain pending. [Research/verification](../.agents/evidence/verify/2026-10-20-appworld-native-research.md).
+
+## Secondary development
+
+Keep original wheel/encrypted bundle/data hashes, runtime version, manifest and native evaluator consistent. Public source tag66ad8099e12188ece0d3fe45e661dbc01880813b is version correspondence, not proof of reproducible wheel construction. Training-only scope avoids held-out benchmark contamination. Every new model/task/profile requires real native evaluation. Preserve original protected licenses and encrypted distribution; result bundles use the original format and public upstream decryption mechanism, so they are not a confidentiality guarantee.
+
+## Contributing
+
+Follow [CONTRIBUTING](../CONTRIBUTING.md), [project standards](../docs/project-standards.md), [documentation standards](../docs/documentation-standards.md) and [design](../docs/design/appworld.md). Preserve immutable pass/fail receipts and independently confirmed owned cleanup.
+
+## Issues
+
+Tracked by [Issue70](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/70). Template/controller issues belong here; client/server issues to [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues), CLI issues to [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues).
+
+## License
+
+Authored wrapper and original public AppWorld source: Apache-2.0. Protected AppWorld app/task/API/data portions and derivatives additionally require encrypted public redistribution. See [UPSTREAM-NOTICE](UPSTREAM-NOTICE.md) and the original bundled licenses. Never publish decrypted protected source, databases, task details or trajectories. No upstream baseline/leaderboard result is implied.

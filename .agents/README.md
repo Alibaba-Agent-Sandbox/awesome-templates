@@ -174,3 +174,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Current38native/runtime and required HTTP receipt snapshot](evidence/verify/2026-10-20-current-native-http38.json)
 
 - [Current38native/runtime and required HTTP after Droid1.2](evidence/verify/2026-10-20-current-native-http38-droid.json)
+
+- [Original AppWorld private runtime](notes/proposed/feature/2026-10-20-appworld-native-runner.md) · [upstream research](evidence/verify/2026-10-20-appworld-native-research.md)
