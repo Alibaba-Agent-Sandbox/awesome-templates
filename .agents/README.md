@@ -174,3 +174,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Current38native/runtime and required HTTP receipt snapshot](evidence/verify/2026-10-20-current-native-http38.json)
 
 - [Current38native/runtime and required HTTP after Droid1.2](evidence/verify/2026-10-20-current-native-http38-droid.json)
+
+- [Original stable Prime Agent](notes/proposed/feature/2026-10-20-prime-agent-native.md) · [research](evidence/verify/2026-10-20-prime-agent-native-research.md)
