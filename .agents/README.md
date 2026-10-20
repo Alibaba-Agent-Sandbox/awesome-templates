@@ -155,3 +155,7 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Stagehand final native SDK/model acceptance](evidence/verify/2026-10-20-stagehand-native-final.md)
 
 - [Current35native/runtime and required HTTP receipt snapshot](evidence/verify/2026-10-20-current-native-http35.json)
+
+- [Official Grok Build native coding](notes/proposed/feature/2026-10-20-grok-official-native.md) · [verification](evidence/verify/2026-10-20-grok-official-native.md)
+
+- [Official Grok Build final native SDK/model acceptance](evidence/verify/2026-10-20-grok-official-native-final.md)
