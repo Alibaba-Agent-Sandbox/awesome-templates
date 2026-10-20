@@ -20,6 +20,48 @@ jobs:
       - run: python scripts/check_docs.py
       - run: python -m pytest -q scripts/test_check_docs.py
 
+  dev-services-offline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container: debian:13-slim
+    steps:
+      - name: Install exact database engines and test prerequisites
+        run: |
+          mkdir -p /etc/postgresql-common
+          printf 'create_main_cluster = false\n' > /etc/postgresql-common/createcluster.conf
+          printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d
+          chmod 755 /usr/sbin/policy-rc.d
+          apt-get update
+          apt-get install -y --no-install-recommends git ca-certificates python3 python3-venv util-linux passwd postgresql-17=17.11-0+deb13u1 postgresql-client-17=17.11-0+deb13u1 libpq5=17.11-0+deb13u1 redis-server=5:8.0.2-3+deb13u3 redis-tools=5:8.0.2-3+deb13u3
+          useradd --create-home --uid 1001 service-test
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Checkout exact paired public server SDK
+        uses: actions/checkout@v4
+        with:
+          repository: Alibaba-Agent-Sandbox/python-sdk
+          ref: e2cb27e24fde0a67112f82b8d44af463445a5d1a
+          path: vendor/python-sdk
+          persist-credentials: false
+      - name: Install test dependencies
+        run: |
+          python3 -m venv /tmp/database-venv
+          /tmp/database-venv/bin/pip install ./vendor/python-sdk/server-sdk httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3
+          chown -R service-test:service-test "$GITHUB_WORKSPACE"
+      - name: Exercise actual authenticated engines and HTTP as non-root
+        env:
+          E2E_REQUIRE_DATABASES: "1"
+        run: |
+          runuser -u service-test -- /tmp/database-venv/bin/python -m pytest -q dev-services/test_commands.py
+          runuser -u service-test -- env PATH="/tmp/database-venv/bin:$PATH" /tmp/database-venv/bin/python - <<'PYCODE'
+          from pathlib import Path
+          from scripts.run_local_e2e import _run_one
+          status, detail = _run_one(Path("dev-services").resolve(), "")
+          print(status, detail)
+          assert status == "pass", detail
+          PYCODE
+
   document-tools-offline:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -118,6 +160,8 @@ jobs:
 
       - name: Install the in-sandbox server and the test client
         run: |
+          export PLAYWRIGHT_BROWSERS_PATH="$RUNNER_TEMP/playwright"
+          echo "PLAYWRIGHT_BROWSERS_PATH=$PLAYWRIGHT_BROWSERS_PATH" >> "$GITHUB_ENV"
           python -m pip install ./vendor/python-sdk/server-sdk httpx==0.28.1 pyyaml==6.0.3 jsonschema==4.26.0 pytest==9.1.1 playwright==1.58.0 Pillow==11.3.0
           python -m playwright install --with-deps chromium
           sudo apt-get update
@@ -186,7 +230,7 @@ jobs:
 
       - name: Run process, privacy, and acceptance-harness regressions
         run: |
-          python -m pytest -q browser-automation/test_mcp.py
+          python -m pytest -q browser-automation/test_mcp.py browser-automation/test_pdf_runtime.py
           python -m pip install --require-hashes -r scripts/requirements-preview.txt
           python -m pytest -q code-server/test_commands.py code-server/test_browser_local.py scripts/test_preview_proxy.py
           python -m pytest -q polyglot-toolchain/test_commands.py

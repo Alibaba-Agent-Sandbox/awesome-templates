@@ -1,0 +1,34 @@
+{
+  "template": "dev-services",
+  "template_version": "1.0.0",
+  "provider": "alicloud-express",
+  "result": "FAIL",
+  "verification_type": "actual-sdk-owned-port-diagnosis",
+  "independent_socket_probe": [
+    {
+      "port": 5432,
+      "bind": true
+    },
+    {
+      "port": 6379,
+      "bind": false,
+      "errno": 98
+    }
+  ],
+  "before_owned_start": {
+    "running": false
+  },
+  "self_test": {
+    "http_status": 500,
+    "error": "database port is already in use"
+  },
+  "preexisting_listener_owner": "not determined; no signal or deletion authorized",
+  "cleanup_verified": true,
+  "registry_cleanup_verified": true,
+  "related_failed_receipts": [
+    "image-attempt-2026-10-20T090316Z.json",
+    "image-attempt-2026-10-20T091417Z.json",
+    "image-attempt-2026-10-20T092859Z.json"
+  ],
+  "next_version": "1.1.0 with explicit configurable ports and image default Redis16379; requires a fresh image"
+}

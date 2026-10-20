@@ -1,0 +1,15 @@
+{
+  "observed": "2026-10-19",
+  "packages": {
+    "postgresql-17": "17.11-0+deb13u1",
+    "postgresql-client-17": "17.11-0+deb13u1",
+    "libpq5": "17.11-0+deb13u1",
+    "redis-server": "5:8.0.2-3+deb13u3",
+    "redis-tools": "5:8.0.2-3+deb13u3"
+  },
+  "sources": [
+    "https://packages.debian.org/trixie/postgresql-17",
+    "https://packages.debian.org/trixie/redis-server"
+  ],
+  "licenses": "PostgreSQL License; Redis8 AGPLv3 option, installed Debian copyright/source references retained"
+}
