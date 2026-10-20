@@ -16,6 +16,8 @@ Headless CLI calls, read-only installation/setup diagnostics, files and process 
 
 ## How to build
 
+Template2.0.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
+
 [Dockerfile](../../gemini/Dockerfile) uses Alibaba runtime base (default v0.0.49 region cn-hangzhou, resolved by deploy), exact `@google/gemini-cli@0.64.0`, and server archive pin `35da216a300f1e2e84254a1cf4b4a7ea98681505` or an injected build wheel. Actual package metadata says Node >=20; local actual binary/help verified version and supported flags. Uses base Node instead of another unpinned Node installer. Workdir /home/user/app, user user, generation 2, start `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`, readiness `agent-sandbox-server healthcheck --port 9000`. No CMD/ENTRYPOINT. npm cache is removed in the install layer.
 
 ## Express feasibility

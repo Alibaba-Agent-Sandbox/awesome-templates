@@ -24,6 +24,8 @@ Upstream call: `qodercli --print PROMPT --output-format json --permission-mode a
 
 ## How to build
 
+Template1.1.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
+
 [Dockerfile](../../qoder/Dockerfile) uses the Alibaba generation-2 base, non-root user,
 2048 MB and `/home/user/app`. Qoder CLI `@qoder-ai/qodercli@1.1.72`; platform Python 3.13 / Node.js 20; Agent Sandbox server.
 The server archive is pinned to python-sdk commit `35da216a300f1e2e84254a1cf4b4a7ea98681505`;

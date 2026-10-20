@@ -77,6 +77,9 @@ Response: `{"result":"CODE_SERVER_OK"}`. The IDE is a separate password-protecte
 
 ## 配置
 
+保留上游 TLS 校验的 SDK 本机预览见[操作指南](../docs/preview-proxy.zh-CN.md)。控制器明确区分直接域名和 sdk-local 两种结果。
+
+
 WORKSPACE 默认 /home/user/app。CODE_SERVER_PASSWORD、ABX_SERVER_TOKEN 都是空占位符；前者也可逐次传 password 参数，后者只保护9000命令 API，不替代8443的 IDE 密码。预热服务的环境设置见[运行环境](../docs/runtime-environment.md)。配置文件权限0600，私有目录0700；不把云或模型密钥传入 IDE 进程。服务端关闭更新检查与遥测。
 
 ## 资源

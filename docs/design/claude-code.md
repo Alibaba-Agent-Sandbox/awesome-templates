@@ -30,6 +30,8 @@ response. The client request timeout must exceed the CLI deadline.
 
 ## How to build
 
+Template1.1.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
+
 [Dockerfile](../../claude-code/Dockerfile) uses the Alibaba runtime base and pins
 `@anthropic-ai/claude-code@2.0.76`, compatible with the base's Node 20. The server
 uses a wheel injected by the CLI or the pinned python-sdk archive. Generation 2

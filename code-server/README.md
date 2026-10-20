@@ -77,6 +77,9 @@ Passwords require12..256 UTF-8 bytes without NUL. Occupied ports and duplicate s
 
 ## Configuration
 
+For an operator-local SDK preview that preserves upstream TLS, see the [local preview operation](../docs/preview-proxy.md). Direct-domain and sdk-local controller results are recorded separately.
+
+
 WORKSPACE defaults to /home/user/app. CODE_SERVER_PASSWORD and ABX_SERVER_TOKEN are empty manifest placeholders. The former can be supplied per call; the latter protects the9000 command API and does not replace IDE authentication on8443. See [prewarmed environment](../docs/runtime-environment.md). Private directories/config are0700/0600. Cloud/model keys are not inherited by the IDE. Update checks and telemetry are disabled.
 
 ## Resources

@@ -1,0 +1,32 @@
+{
+  "template": "node-web",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "passed": true,
+  "cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "node-web",
+    "materializer_sha256": "743cf113087cb19d98ac8e8aae0656138853af84ed8a844b6af4a433382a0581",
+    "template_version": "1.1.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "steps_json_bytes": 10304,
+    "inputs_sha256": {
+      "Dockerfile": "c37033037841c36f038dfd5ef42cfb800e197f6250ffb24c26d929dd8b7aeacc",
+      "template.yaml": "9575bc28950bfde7d491da020ef7e301d27f5846e7eed9ca8b5db982e5ee6ade",
+      "index.js": "4b161d1c09cf94809c48ef88ab1cb79247d76da02a746e17cf0f4b4e76ca966b",
+      "commands.py": "a29b05240e330c1c1ab05c215c976338fe19b0f08abbfae6457c2fa14d7cc244"
+    },
+    "generated_manifest_sha256": "ec9a3b5c49a883ffac838de315affb73c6a033e6919aaf526c2a1e469339b80f"
+  },
+  "controller_sha256": "7a2f5e043124df77f4ef2fd36b9ed375d9ad2451b67f338e235ee847f95d2a5f",
+  "independent_forwarded_port_3000_http": true,
+  "http_exit_code": 0,
+  "pass_count": 60,
+  "fail_count": 0,
+  "skip_count": 0
+}

@@ -1,0 +1,47 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-19",
+  "template": "agents-cli",
+  "template_version": "2.0.1",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "steps",
+  "harness_sha256": "1832710941a4824714aab40236b0111804a02c81d77a98590530131914d009b6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "agents_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 14.413,
+      "result": "codex 0.162.1; qwen-code 0.23.0"
+    },
+    {
+      "name": "agents_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 1.589,
+      "result": "codex 0.162.1; qwen-code 0.23.0"
+    }
+  ],
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "agents-cli",
+    "materializer_sha256": "743cf113087cb19d98ac8e8aae0656138853af84ed8a844b6af4a433382a0581",
+    "template_version": "2.0.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "steps_json_bytes": 6840,
+    "inputs_sha256": {
+      "Dockerfile": "7e716d080206b9fd2da884992a396b547ad4fa4289d45482577310c3fc70c093",
+      "template.yaml": "a15ebae46b24967015a312864e02ea71d52a98f08c9a7b2d88a038f3aaca5553",
+      "commands.py": "58bf1f93f54c53ae1992431b09502e2c5f8a5b820016a993241ab6979bef35bf",
+      "server-policy.json": "4a7f79435940b0d952c5fb0dba6ee049197bdc412a76a201b371efac9290a996"
+    },
+    "generated_manifest_sha256": "f05abfd33dd7e3dc4cb8073f773d0d8cb0ca5f8a99caabafbd1c53e896111554"
+  }
+}

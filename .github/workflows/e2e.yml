@@ -173,7 +173,8 @@ jobs:
 
       - name: Run process, privacy, and acceptance-harness regressions
         run: |
-          python -m pytest -q code-server/test_commands.py code-server/test_browser_local.py
+          python -m pip install --require-hashes -r scripts/requirements-preview.txt
+          python -m pytest -q code-server/test_commands.py code-server/test_browser_local.py scripts/test_preview_proxy.py
           python -m pytest -q apply-patch/test_commands.py
           python -m pytest -q python-hello/test_command_errors.py
           python -m pytest -q node-web/test_startup.py node-web/test_http_output.py

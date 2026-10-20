@@ -8,6 +8,7 @@ import argparse
 import asyncio
 from contextlib import contextmanager
 import json
+import importlib.util
 import os
 from pathlib import Path
 import re
@@ -67,10 +68,14 @@ def browser_environment():
         yield env, len(imported)
 
 
-async def verify_ui(sandbox, *, workspace='/home/user/app') -> dict:
-    result = {'passed': False}
+async def verify_ui(sandbox, *, workspace='/home/user/app', preview_mode='direct') -> dict:
+    if preview_mode not in ('direct', 'sdk-local'):
+        raise ValueError('preview_mode must be direct or sdk-local')
+    result = {'passed': False, 'preview_mode': preview_mode}
     started = False
     browser = playwright = None
+    relay_context = relay = None
+    relay_entered = False
     write_attempted = False
     name = 'abx_e2e_ide_ui_' + secrets.token_hex(12) + '.txt'
     path = workspace.rstrip('/') + '/' + name
@@ -90,8 +95,20 @@ async def verify_ui(sandbox, *, workspace='/home/user/app') -> dict:
             attachment = response.headers.get('content-disposition', '').lower().startswith('attachment')
             content_type = response.headers.get('content-type', '').split(';')[0].lower()
             result['upstream_html_attachment'] = attachment and content_type == 'text/html'
-            if result['upstream_html_attachment']:
+            if result['upstream_html_attachment'] and preview_mode == 'direct':
                 raise PreviewDomainError('preview domain forces HTML download; a supported custom domain is required')
+            if preview_mode == 'sdk-local':
+                # This is a normal explicit local HTTP/WS relay, not browser
+                # response interception. The remote application stays real.
+                spec = importlib.util.spec_from_file_location('abx_ide_preview_proxy', Path(__file__).resolve().parents[1] / 'scripts/preview_proxy.py')
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                relay_context = module.sdk_preview(sandbox)
+                relay = await relay_context.__aenter__()
+                relay_entered = True
+                url = relay.url
+                result.update(upstream_tls_verification_enabled=True,
+                              browser_transport='http-loopback', local_proxy_loopback_only=True)
             playwright = await async_playwright().start()
             browser = await playwright.chromium.launch(headless=True, env=browser_env)
             page = await browser.new_page(locale='en-US')
@@ -171,6 +188,13 @@ async def verify_ui(sandbox, *, workspace='/home/user/app') -> dict:
                         await resource.stop()
                 except Exception:
                     errors.append('browser teardown')
+            if relay_entered:
+                try:
+                    await relay_context.__aexit__(None, None, None)
+                    result['owned_local_proxy_closed'] = True
+                    result['upstream_html_attachment_normalized'] = relay.html_attachment_normalized
+                except Exception:
+                    errors.append('owned local proxy cleanup')
             if started:
                 try:
                     await sandbox.run('code_server_stop')
@@ -190,15 +214,18 @@ async def verify_ui(sandbox, *, workspace='/home/user/app') -> dict:
     result['passed'] = all(result.get(key) is True for key in [
         'workbench_javascript_loaded', 'tls_verification_enabled', 'terminal_websocket_file_readback',
         'browser_editor_independent_file_readback', 'owned_ide_stop_confirmed', 'owned_ui_file_absence'])
+    if preview_mode == 'sdk-local':
+        result['passed'] = result['passed'] and all(result.get(key) is True for key in [
+            'upstream_tls_verification_enabled', 'local_proxy_loopback_only', 'owned_local_proxy_closed'])
     return result
 
 
-async def main(sandbox_id):
+async def main(sandbox_id, preview_mode='direct'):
     from agent_sandbox.api.sandbox import Sandbox
     sandbox = await Sandbox.connect(sandbox_id)
     try:
         try:
-            result = await verify_ui(sandbox)
+            result = await verify_ui(sandbox, preview_mode=preview_mode)
         except Exception as exc:
             result = {'passed': False, 'error_type': type(exc).__name__}
             if isinstance(exc, PreviewDomainError):
@@ -212,4 +239,6 @@ async def main(sandbox_id):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--sandbox-id', required=True, help='An exclusively caller-owned sandbox; the controller does not delete it')
-    raise SystemExit(asyncio.run(main(parser.parse_args().sandbox_id)))
+    parser.add_argument('--preview-mode', choices=('direct', 'sdk-local'), default='direct')
+    args = parser.parse_args()
+    raise SystemExit(asyncio.run(main(args.sandbox_id, args.preview_mode)))

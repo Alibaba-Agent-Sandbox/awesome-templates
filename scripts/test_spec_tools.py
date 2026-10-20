@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -35,6 +36,33 @@ def _process_dead(pid: int) -> bool:
 
 
 class CheckerTest(unittest.TestCase):
+    def test_same_day_versioned_receipts_are_immutable_and_require_cleanup(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            dest=Path(tmp)/"_skeleton";shutil.copytree(SKELETON,dest)
+            metadata=check_template.yaml.safe_load((dest/"template.yaml").read_text());version=str(metadata["version"])
+            evidence=dest/"evidence";evidence.mkdir(exist_ok=True)
+            old={"provider":"alicloud-express","template":"_skeleton","template_version":"0.0.1","passed":True,"cleanup_verified":True,
+                 "commands":[{"ok":True,"via":"cli"},{"ok":True,"via":"sdk"}]}
+            legacy=evidence/"express-2026-10-19.json";legacy.write_text(json.dumps(old));original=legacy.read_bytes()
+            self.assertFalse(check_template._evidence_passes(dest,"alicloud-express"))
+            current=dict(old,template_version=version,cleanup_verified=False)
+            dated=evidence/"express-2026-10-19T180000Z.json";dated.write_text(json.dumps(current))
+            self.assertFalse(check_template._evidence_passes(dest,"alicloud-express"))
+            current["cleanup_verified"]=True;dated.write_text(json.dumps(current))
+            self.assertTrue(check_template._evidence_passes(dest,"alicloud-express"))
+            self.assertEqual(legacy.read_bytes(),original)
+    def test_fc_resource_profile_rejects_actual_ocr_ratio_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp) / "_skeleton"
+            shutil.copytree(SKELETON, dest)
+            for cpu, memory, valid in [(2,1024,False),(1,1024,True),(2,2048,True),(1,4160,False),(1,1025,False)]:
+                with self.subTest(cpu=cpu,memory=memory):
+                    data=check_template.yaml.safe_load((dest/"template.yaml").read_text())
+                    data["resources"]={"cpu":cpu,"memory":memory}
+                    (dest/"template.yaml").write_text(check_template.yaml.safe_dump(data))
+                    errors=[v for v in check_template.check_directory(dest) if v.code=="yaml-resources"]
+                    self.assertEqual(not errors,valid)
+
     def test_provider_preparation_hint_cannot_certify_a_template(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -44,9 +72,9 @@ class CheckerTest(unittest.TestCase):
                 "providers": {"alicloud-express": "provider-preparation-required"}}]}
             (root / "awesome-templates.yaml").write_text(check_template.yaml.safe_dump(index))
             path = dest / "README.md"
-            path.write_text(path.read_text().replace(
-                "No provider has a passing run recorded for this template.",
-                "| Provider | Date | Level |\n|---|---|---|\n| alicloud-express | 2026-10-19 | L2 |"))
+            path.write_text(re.sub(r"(?ms)^## Verified\n.*?(?=^## |\Z)",
+                "## Verified\n\n| Provider | Date | Level |\n|---|---|---|\n| alicloud-express | 2026-10-19 | L2 |\n\n",
+                path.read_text()))
             violations = check_template.check_directory(dest)
             self.assertTrue(any(v.code == "verified-evidence" for v in violations))
             self.assertFalse(check_template._evidence_passes(dest, "alicloud-express"))
@@ -96,17 +124,13 @@ class CheckerTest(unittest.TestCase):
             shutil.copytree(SKELETON, dest)
             readme = dest / "README.md"
             text = readme.read_text(encoding="utf-8")
-            text = text.replace(
-                "No provider has a passing run recorded for this template.",
-                "| Provider | Date | Level | Evidence |\n|---|---|---|---|\n| alicloud-express | 2026-10-15 | L2 | evidence/express-2026-10-15.json |",
-            )
+            text = re.sub(r"(?ms)^## Verified\n.*?(?=^## |\Z)",
+                "## Verified\n\n| Provider | Date | Level | Evidence |\n|---|---|---|---|\n| alicloud-express | 2026-10-15 | L2 | evidence/express-2026-10-15.json |\n\n", text)
             readme.write_text(text, encoding="utf-8")
             zh = dest / "README.zh-CN.md"
             zh_text = zh.read_text(encoding="utf-8")
-            zh_text = zh_text.replace(
-                "尚未记录任何通过的提供方测试。",
-                "| Provider | Date | Level | Evidence |\n|---|---|---|---|\n| alicloud-express | 2026-10-15 | L2 | evidence/express-2026-10-15.json |",
-            )
+            zh_text = re.sub(r"(?ms)^## 已验证\n.*?(?=^## |\Z)",
+                "## 已验证\n\n| Provider | Date | Level | Evidence |\n|---|---|---|---|\n| alicloud-express | 2026-10-15 | L2 | evidence/express-2026-10-15.json |\n\n", zh_text)
             zh.write_text(zh_text, encoding="utf-8")
             yaml_path = dest / "template.yaml"
             yaml_text = yaml_path.read_text(encoding="utf-8").replace("tested_on: []", "tested_on: [alicloud-express]")
@@ -122,9 +146,10 @@ class CheckerTest(unittest.TestCase):
                         "provider": "alicloud-express",
                         "date": "2026-10-15",
                         "template": "_skeleton",
-                        "template_version": "1.0.0",
+                        "template_version": str(check_template.yaml.safe_load((dest / "template.yaml").read_text())["version"]),
                         "sdk_version": "0.3.0",
                         "passed": True,
+                        "cleanup_verified": True,
                         "commands": [
                             {"name": "hello", "via": "cli", "ok": True, "duration_s": 0.1},
                             {"name": "hello", "via": "sdk", "ok": True, "duration_s": 0.2},

@@ -54,6 +54,8 @@ Sends `SIGTERM` only to the live process group of the interpreter-owned Popen ch
 
 ## How to build
 
+Template2.0.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
+
 Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (the platform image already has Python 3.13 and Node.js 20). `npm view opencode-ai version` on 2026-10-15 still resolved `latest` to `1.19.0`; the Dockerfile installs `opencode-ai@1.19.0` and runs `opencode --version`.
 
 `agent-sandbox-server` comes from a wheel injected by `abx template deploy` when one is in the build context. Otherwise the Dockerfile installs python-sdk main `61c43e0be65a1f57aa09186d578e7b399e48429b` (the commit on `main` that includes PR #21) with:
