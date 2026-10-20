@@ -78,7 +78,8 @@ def model_check(client,workspace,base):
             'Use the native tools to edit the existing files and verify the change. '
             'Create report.txt explaining the source change. '
             f'Create acceptance.txt containing exactly {marker} followed by one newline. '
-            f'After completing all file changes, reply with exactly {marker}.',
+            f'After completing and verifying all file changes, call the native submit_and_exit tool with summary exactly {marker} and verified=true. '
+            'The summary must contain no other text. Put detailed verification notes only in report.txt; commentary is not the final summary.',
             'cwd':project,'command_timeout':600})
         ok=result.get('exit_code')==0 and result.get('native_version')=='3.0.73' and final_text(result.get('stdout','')).strip()==marker
         record(ok,'actual native BYOK final response and zero exit')
