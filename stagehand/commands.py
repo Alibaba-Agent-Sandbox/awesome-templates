@@ -95,7 +95,7 @@ def stagehand_version() -> str:
 
 @command('stagehand_setup_check', description='Read configuration presence only; no network or secret values.')
 def stagehand_setup_check() -> dict:
-    return {'mode':'local-browser-compatible-client-llm', 'browserbase_account_required':False,
+    return {'compatibility_profile':'explicit-native-extension-id','mode':'local-browser-compatible-client-llm', 'browserbase_account_required':False,
             **{name.lower()+'_set':bool(value) for name,value in _CONFIG.items()}}
 
 

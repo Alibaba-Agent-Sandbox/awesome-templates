@@ -12,7 +12,7 @@ from PIL import Image
 
 
 def validate(result,state,png,expected_url,code):
-    if not isinstance(result,dict) or result.get('version')!='4.3.0' or result.get('action',{}).get('success') is not True or not result.get('action',{}).get('actions'):
+    if not isinstance(result,dict) or result.get('sdk_sha256')!='bdf3cd62126c1529e8a889cae17fd098303e24e962e491a4b20786de72c369e0' or result.get('version')!='4.3.0' or result.get('action',{}).get('success') is not True or not result.get('action',{}).get('actions'):
         raise AssertionError('actual native Stagehand action missing')
     if result.get('final_url')!=expected_url or result.get('extracted',{}).get('text')!=code:
         raise AssertionError('native extraction or final URL differs from fresh receipt')
@@ -24,7 +24,7 @@ def validate(result,state,png,expected_url,code):
     with Image.open(io.BytesIO(png)) as image:
         if image.format!='PNG' or image.size!=(1024,768):raise AssertionError('independent PNG dimensions/format differ')
         image.verify()
-    return {'png_sha256':hashlib.sha256(png).hexdigest(),'png_bytes':len(png),'counter':1,'fresh_receipt_matches':True,'native_action_success':True,'native_extraction_matches':True,'final_url_matches':True,'model_calls':result['model_calls']}
+    return {'sdk_sha256':result['sdk_sha256'],'png_sha256':hashlib.sha256(png).hexdigest(),'png_bytes':len(png),'counter':1,'fresh_receipt_matches':True,'native_action_success':True,'native_extraction_matches':True,'final_url_matches':True,'model_calls':result['model_calls']}
 
 
 def _url(base,path):

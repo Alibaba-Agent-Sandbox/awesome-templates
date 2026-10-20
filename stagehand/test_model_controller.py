@@ -13,7 +13,7 @@ s.loader.exec_module(c)
 
 def fixture():
     output=io.BytesIO();Image.new('RGB',(1024,768),'white').save(output,format='PNG');png=output.getvalue()
-    result={'version':'4.3.0','action':{'success':True,'actions':[{'method':'click'}]},'final_url':'http://127.0.0.1:9011/owned/',
+    result={'sdk_sha256':'bdf3cd62126c1529e8a889cae17fd098303e24e962e491a4b20786de72c369e0','version':'4.3.0','action':{'success':True,'actions':[{'method':'click'}]},'final_url':'http://127.0.0.1:9011/owned/',
         'extracted':{'text':'fresh-fixture-receipt'},'model_calls':2,'png_bytes':len(png)}
     return result,{'count':1,'code':'fresh-fixture-receipt'},png
 
