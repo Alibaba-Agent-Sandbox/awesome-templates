@@ -1,6 +1,6 @@
 name: document-tools
-version: "1.0.0"
-description: "Bounded offline Markdown to DOCX/plain-text conversion using pinned Pandoc."
+version: "1.1.0"
+description: "Bounded Markdown/HTML to DOCX, TXT, PPTX and headless LibreOffice PDF."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0
 spec_version: 2
@@ -10,7 +10,7 @@ start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/com
 ready_cmd: "agent-sandbox-server healthcheck --port 9000"
 resources:
   cpu: 2
-  memory: 2048
+  memory: 4096
 ports: [9000]
 tags: [pandoc, documents, markdown, docx, cpu]
 priority: P1
@@ -26,3 +26,9 @@ smoke:
   - command: document_smoke
     args: {}
     expect: "Pandoc Markdown DOCX/TXT artifacts OK"
+  - command: office_version
+    args: {}
+    expect: "LibreOffice 4:25.2.3-2+deb13u8"
+  - command: document_extended_smoke
+    args: {}
+    expect: "Pandoc HTML/PPTX and LibreOffice PDF artifacts OK"

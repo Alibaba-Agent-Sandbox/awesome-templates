@@ -198,6 +198,15 @@ The full `abx template deploy` runner remains unrun; this is supplemental compon
 
 ## Verified
 
+| Provider | Current version and executed scope | Evidence |
+| --- | --- | --- |
+| alicloud-express |2.0.0; actual SDK-created non-root image, CLI/SDK commands,17strict real-model assertions and independent sandbox/template/registry cleanup | [image](evidence/express-2026-10-20.json) · [model](evidence/model-image-2026-10-20T145436Z.json) |
+
+Native Codex uses the template's actual Responses protocol with the compatible endpoint. The real model edits existing source, creates a new artifact and passes unchanged original tests plus independent assertions. Basic HTTP13PASS/1SKIP is explicitly model-off; the separate actual model has17PASS/0FAIL/0SKIP. The image injects the immutable e2cb27e server; the standalone Docker fallback is a separate build path. Version0.3.0 alone cannot distinguish those sources. See [current acceptance](../.agents/evidence/verify/2026-10-20-codex-sdk-image-acceptance.md).
+
+## Historical step verification
+
+
 | Provider | Executed scope | Evidence |
 | --- | --- | --- |
 | alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
