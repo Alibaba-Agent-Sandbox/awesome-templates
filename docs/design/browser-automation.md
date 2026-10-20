@@ -9,7 +9,7 @@ sandbox files API, without requiring a desktop or a model credential.
 ## Capabilities
 
 Named `browse`, `scrape`, `fill_form` and `run` commands; shell, files, code and
-port 9000. One browser per named request avoids cross-thread Playwright handles
+port 9000. For the original Python browser commands, one browser per request avoids cross-thread Playwright handles
 and leaking cookies or form state to another invocation. Optional SDK BROWSER
 routes are not enabled. Express runs the entire headless slice, not desktop/VNC.
 
@@ -38,7 +38,7 @@ RUN steps execute during build before USER user. Version2.0.2 splits the build t
 isolate installation phases after a stream deadline failure; runtime APIs and
 the full Chromium profile are unchanged.
 The browser path is `/opt/playwright`. The server wheel injected by deploy wins;
-fallback is python-sdk archive `35da216a300f1e2e84254a1cf4b4a7ea98681505`.
+current2.1.0 fallback is python-sdk archive `e2cb27e24fde0a67112f82b8d44af463445a5d1a`.
 Generation 2 uses `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`
 and readiness `agent-sandbox-server healthcheck --port 9000`. No CMD/ENTRYPOINT.
 
@@ -82,3 +82,7 @@ run. No provider evidence files until the corresponding complete run passes.
 Follow-up real build-network execution exceeded300seconds, so the earlier stream deadline is not a universal per-RUN cap. Stage separation is retained; slow large-asset transport remains unresolved.
 
 Current-version acceptance on 2026-10-20: version 2.0.2 genuine image READY/CLI/SDK and complete Chromium screenshot/PDF/independent artifact HTTP 24 PASS / 0 FAIL / 0 SKIP. Independently verified sandbox/template/registry cleanup. Historical pending statements describe earlier checkpoints; see the current [Verified table](../../browser-automation/README.md#verified).
+
+## Native MCP extension2.1.0
+
+Official npm0.0.83 and exact lockfile driver1.64.0-alpha-1790635538000 reuse Chromium1208; no second browser. New mcp_start/status/call/stop/self_test commands use native session negotiation and tools. Standard in-sandbox HTTP MCP on127.0.0.1:8931; external named transport retains shared-server auth and buffered4MiB limits. Real fixture counter and PNG, private profile/environment, reserved process-group leader plus unique-marker/pidfd detached worker cleanup are required. Old2.0.2 receipts remain historical; new runtime version resets tested_on. Actual pinned native local7 cases passed; new image/Express/full API required before qualification.

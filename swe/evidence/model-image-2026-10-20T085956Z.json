@@ -1,0 +1,13 @@
+{
+  "template": "swe",
+  "template_version": "1.1.0",
+  "provider": "alicloud-express",
+  "verification_type": "image-backed-strict-model",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "canonical_image_acceptance": false,
+  "cleanup_verified": false,
+  "registry_cleanup_verified": false,
+  "controller_sha256": "2843a09f3e40032350e9756af21ca16819f5350610aabd216e761040910ad518",
+  "commands_sha256": "e813fcf1ab3f424e5907cc7fb07d96c877f781bd0c2e6ea27e9fb6647a88a796",
+  "passed": false
+}

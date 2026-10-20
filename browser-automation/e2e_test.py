@@ -119,6 +119,16 @@ def main() -> int:
             return response.status_code == 200 and response.json()["result"]["title"] == title
         with ThreadPoolExecutor(max_workers=2) as pool:
             check("concurrent requests have independent browsers", all(pool.map(concurrent_browse, range(2))))
+        check("actual native MCP counter, screenshot and cleanup", client.post("/commands/mcp_self_test", json={}, timeout=180).json() == {"result":"PLAYWRIGHT_MCP_OK"})
+        try:
+            response = client.post("/commands/mcp_start", json={})
+            check("actual native MCP startup", response.status_code == 200 and response.json()["result"]["running"] is True)
+            response = client.post("/commands/mcp_call", json={"method":"tools/list"})
+            tools = response.json().get("result",{}).get("tools",[])
+            check("actual MCP tools over named command transport", response.status_code == 200 and {"browser_navigate","browser_snapshot","browser_click","browser_take_screenshot"} <= {tool["name"] for tool in tools})
+            check("invalid MCP transport method refused", client.post("/commands/mcp_call", json={"method":"initialize"}).status_code == 500)
+        finally:
+            check("owned MCP server stopped", client.post("/commands/mcp_stop", json={}).json() == {"result":{"running":False}} and client.post("/commands/mcp_status", json={}).json() == {"result":{"running":False}})
     print(f"SUMMARY: {PASSED} PASS, {FAILED} FAIL, 0 SKIP", flush=True)
     return 1 if FAILED else 0
 
