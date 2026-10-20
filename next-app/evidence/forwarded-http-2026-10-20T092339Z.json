@@ -1,0 +1,12 @@
+{
+  "template": "next-app",
+  "template_version": "1.0.0",
+  "provider": "alicloud-express",
+  "verification_type": "image-backed-sdk-forwarded-http",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "canonical_acceptance": false,
+  "cleanup_verified": true,
+  "registry_cleanup_verified": true,
+  "passed": false,
+  "controller_sha256": "fd28ea548e6081b87dde36d6188aea8b83e35f34d32c9ef8ec55579a1f8f0807"
+}

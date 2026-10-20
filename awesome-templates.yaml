@@ -463,6 +463,24 @@ templates:
     - ports
     status: experimental
 
+  - name: next-app
+    description: Pinned Next.js16.4.2 and Vite8.3.4 frontend scaffold and owned preview
+      lifecycle.
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: next-app
+    tags:
+    - node
+    - nextjs
+    - vite
+    - preview
+    author: alibaba-agent-sandbox
+    capabilities:
+    - shell
+    - files
+    - code
+    - ports
+    status: experimental
+
   - name: crush
     description: Official Crush0.98.1 with private compatible-provider turns and explicit tools.
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
