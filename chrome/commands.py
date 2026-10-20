@@ -200,7 +200,9 @@ def chrome_smoke() -> str:
     with LOCK:
         if alive():raise RuntimeError('smoke requires no active caller-owned browser session')
         try:
-            chrome_start();value=request('smoke',timeout=60)
+            info=chrome_start()
+            print('NATIVE_CHROME_SMOKE_RESOURCES '+json.dumps({key:info.get(key)for key in ['shm_bytes','memory_limit','cpu_quota','headed','width','height']},sort_keys=True),flush=True)
+            value=request('smoke',timeout=60)
             if not all(value.get(k)is True for k in ['native_cdp','authenticated_vnc','native_png','headed']):raise RuntimeError('native Chrome CDP/VNC smoke incomplete')
         finally:chrome_stop()
         return 'native headed Chrome145.0.7632.6 CDP/VNC/PNG and cleanup OK'
