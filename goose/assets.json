@@ -1,0 +1,17 @@
+{
+  "version": "1.54.0",
+  "source_repository": "https://github.com/block/goose",
+  "source_commit": "cd643d2126fffab4c6a6186905211ba868d6a657",
+  "assets": {
+    "x86_64": {
+      "url": "https://github.com/block/goose/releases/download/v1.54.0/goose-x86_64-unknown-linux-gnu.tar.bz2",
+      "bytes": 80909320,
+      "sha256": "bf01cb6359f7a2b1acb54ca4827e1d059b18aabb3d2b75202e21066cfd3a3396"
+    },
+    "aarch64": {
+      "url": "https://github.com/block/goose/releases/download/v1.54.0/goose-aarch64-unknown-linux-gnu.tar.bz2",
+      "bytes": 81645843,
+      "sha256": "8c7ad233bdaf05f10a52ef36f3ce50f839cb1d2d1df5b31b172af7150c1c288e"
+    }
+  }
+}
