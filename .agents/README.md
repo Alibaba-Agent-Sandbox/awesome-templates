@@ -50,6 +50,8 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 
 - [OSWorld SDK desktop and current gateway final acceptance](evidence/verify/2026-10-20-osworld-sdk-desktop-final.md)
 
+- [Both native Agents CLI SDK adapters](notes/proposed/process/2026-10-20-agents-cli-both-native-sdk.md) · [verification](evidence/verify/2026-10-20-agents-cli-both-native-sdk.md)
+
 ## Current review
 
 - [Node Web HTTP output protocol](notes/proposed/process/2026-10-16-node-web-http-output.md)
@@ -144,3 +146,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Native Media argv and exact SDK source](notes/implemented/feature/2026-10-20-native-media-args.md) · [verification](evidence/verify/2026-10-20-native-media-args-final.md).
 
 - [Codex current SDK image acceptance](notes/proposed/process/2026-10-20-codex-sdk-image-acceptance.md) · [verification](evidence/verify/2026-10-20-codex-sdk-image-acceptance.md)
+
+- [Both native Agents CLI adapters: final acceptance](evidence/verify/2026-10-20-agents-cli-both-native-sdk-final.md)
