@@ -1,0 +1,73 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-20",
+  "template": "browser-automation",
+  "template_version": "2.1.0",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "steps",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "harness_sha256": "91592778b24797075915b40f31f219f6517526b17cd2b3a75fe777f73fe6afd6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "browse",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 14.412,
+      "args": {
+        "url": "data:text/html,<title>ABX_E2E_OK</title><h1>ABX_E2E_OK</h1>",
+        "action": "extract"
+      },
+      "result": "{'action': 'extract', 'title': 'ABX_E2E_OK', 'text': 'ABX_E2E_OK'}"
+    },
+    {
+      "name": "browse",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 28.324,
+      "args": {
+        "url": "data:text/html,<title>ABX_E2E_OK</title><h1>ABX_E2E_OK</h1>",
+        "action": "extract"
+      },
+      "result": "{'action': 'extract', 'title': 'ABX_E2E_OK', 'text': 'ABX_E2E_OK'}"
+    },
+    {
+      "name": "mcp_self_test",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 5.906,
+      "result": "PLAYWRIGHT_MCP_OK"
+    },
+    {
+      "name": "mcp_self_test",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 5.081,
+      "result": "PLAYWRIGHT_MCP_OK"
+    }
+  ],
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "browser-automation",
+    "materializer_sha256": "743cf113087cb19d98ac8e8aae0656138853af84ed8a844b6af4a433382a0581",
+    "template_version": "2.1.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "b3264061482c11fd9a0d151d1b5a89a023be25fe",
+    "steps_json_bytes": 6232,
+    "inputs_sha256": {
+      "Dockerfile": "570147e2c80dbd13f1bf1803fd9c21ab5fb539610bced95d25ce196d203f8789",
+      "template.yaml": "40154e8d16cd1755ac7279c12ddd486d5ea024c8563d87b22e9d96f4784b7fd4",
+      "package.json": "7ac04e08ea0dd0591fc1f7a311514ed124b5b7b23c898a64f402fc3aa76f6222",
+      "package-lock.json": "98b5436b4699eb533e9b22733eda571a3eff8709038ea274430c87193dec557f",
+      "commands.py": "b33de3490795a3bb25fde5675524092b98758db9d2ae9d44717ec8c64a31060f",
+      "mcp_runtime.py": "5096dec88a38ed13a0a1558e66c23605c05554e68ba4987d4a3b6e173d56105e",
+      "mcp_process.py": "b5714a38ec5aa1f339ffdd146b9ae13029401f69b911f7f5feb6a2655ec5f8fb"
+    },
+    "generated_manifest_sha256": "72c3834da3f77dc97a2d3e83a118f7d7954ddb15ec44576e05224fb7ebd29b8a"
+  }
+}

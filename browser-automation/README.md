@@ -2,6 +2,8 @@
 
 ## What it does
 
+Python browse/scrape/fill_form requests each own a separate browser. Native MCP calls deliberately share one owned browser session until stop or idle close; mcp_stop removes its private profile/output.
+
 Navigate with headless Chromium, save PNG screenshots, extract text and links,
 and fill forms. Each named command owns and closes a fresh browser; concurrent
 requests do not share cookies, DOM state, or form values. Form filling verifies
@@ -123,6 +125,22 @@ Example form argument (synthetic values only):
 {"url":"https://example.com/login","fields_json":"[{\"selector\":\"#email\",\"value\":\"sample@example.invalid\"}]"}
 ```
 
+### Native Playwright MCP
+
+Version2.1.0 adds official `@playwright/mcp@0.0.83`, lockfile-pinned JavaScript Playwright1.64.0-alpha-1790635538000 and reuses the existing Chromium1208. No second Chromium or model credential is installed. The Python browser API remains pinned1.58.0. Both actual driver/browser combinations require acceptance; an npm version alone is not browser proof.
+
+| Command | Parameters | Result |
+| --- | --- | --- |
+| mcp_start | none | running, port8931, mcp_version and negotiated protocol_version |
+| mcp_status | none | running:false or current owned MCP status |
+| mcp_call | method:str required, tools/list or tools/call or ping; params_json:str="{}", JSON object up to64KiB | actual MCP result object; inspect isError for tool failures |
+| mcp_stop | none | running:false after owned process/browser/listener cleanup |
+| mcp_self_test | none | PLAYWRIGHT_MCP_OK only after actual initialization/tools, two browser clicks independently observed by an owned HTTP fixture, real PNG screenshot and cleanup |
+
+Run `abx run <sandbox-id> mcp_start`, then `abx run <sandbox-id> mcp_call --arg method=tools/list`. Inside that same sandbox a standard MCP client uses `http://127.0.0.1:8931/mcp` with the native MCP HTTP session/protocol headers. The listener is private to the sandbox;8931 is not an authenticated public gateway. Outside clients use SDK `await sb.run("mcp_call", method="tools/list")` through the command server's configured bearer authentication. For browser_click, the pinned upstream schema uses `target` from a fresh browser_snapshot; it does not use the old ref argument.
+
+A process-start diagnostic `MCP_NODE_MODULES` may select an independently installed exact lockfile tree; production uses /opt/playwright-mcp/node_modules. MCP HOME/profile/output are private and deleted on stop; no saved browser/profile/extensions are loaded. Default action/navigation limits10/20seconds, HTTP response4MiB, native output-file eviction threshold10MiB (not a hard disk quota) and idle browser60seconds. Calls are serialized; streaming stays on the native in-sandbox MCP endpoint, while mcp_call returns a buffered result. Native child environment excludes operator cloud/model/server keys and Node injection variables. Browser navigation shares the sandbox's egress authority; no SSRF policy is added. Caller requests, page data and results can be private and must not be publicly logged.
+
 ## Configuration
 
 | Variable | Default | Purpose |
@@ -144,6 +162,14 @@ small `/dev/shm`; concurrent browser requests increase memory usage. Delete old
 `browser-artifacts/` files through the files API to reclaim sandbox rootfs space.
 
 ## Verified
+
+Version2.1.0 passed actual Alibaba Express native steps, Python SDK Sandbox.create, CLI/SDK browser and native MCP smoke, and full remoteHTTP29 PASS/0 FAIL/0 SKIP. Native MCP discovery and actual navigation/snapshot/click/screenshot use the existing Chromium1208; the independent counter and PNG checks passed. Owned sandbox/template deletion and independent absence were confirmed. Other providers and all remaining upstream tool actions are not certified.
+
+| Version | Provider | Evidence |
+| --- | --- | --- |
+| 2.1.0 | alicloud-express | [SDK-created steps](evidence/express-2026-10-20T094547Z.json), [full HTTP29](evidence/full-http-steps-2026-10-20T094547Z.json) |
+
+## Historical2.0.2 verification
 
 Version 2.0.2 passed actual CI-image registration, official READY, CLI/SDK and complete Chromium screenshot/PDF/independent artifact HTTP 24 PASS / 0 FAIL / 0 SKIP. Independently confirmed sandbox/template/registry cleanup. Status remains experimental; other providers are unverified.
 
