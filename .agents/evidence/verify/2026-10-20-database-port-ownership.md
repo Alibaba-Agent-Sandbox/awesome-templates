@@ -1,0 +1,5 @@
+# Database port ownership verification
+
+Status: PARTIAL. Actual1.0.0 Express attempts failed before owned start because6379 was occupied. Native SDK independent bind probe:5432 success,6379 EADDRINUSE98. No unknown process was signaled; owned sandbox/template/registry cleanup independently true. Sanitized template-local port-conflict diagnosis preserves that failure.
+
+PASS before-fix regression reproduced the old failure with exact reviewed native PostgreSQL17.11/Redis8.0.2 and a controlled foreign6379 listener. The old source ignored alternate-port configuration; the foreign listener remained. After correction12 actual native cases PASS, full required-engine HTTP6 PASS/0SKIP, including SQL/Redis persistence/auth and owned listener/data cleanup. Private fixture packages came from reviewed artifact12210965954 with archive SHA verified before extraction; no system installation/model call or new-image qualification is implied. Source version1.1.0 and selected ports require fresh CI image and genuine SDK-created Express/full HTTP acceptance. Existing failed receipts remain immutable.

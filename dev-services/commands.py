@@ -45,6 +45,20 @@ def _data(path):
     return candidate
 
 
+def _ports(postgres_port=0,redis_port=0):
+    result=[]
+    for value,key,fallback in [(postgres_port,'DEV_SERVICES_POSTGRES_PORT',5432),(redis_port,'DEV_SERVICES_REDIS_PORT',6379)]:
+        if type(value) is not int:raise ValueError('database ports must be integers')
+        if value==0:
+            raw=os.environ.get(key,str(fallback))
+            if not re.fullmatch(r'[0-9]{1,5}',raw):raise ValueError('configured database port must be numeric')
+            value=int(raw)
+        if not 1024<=value<=65535 or value==9000:raise ValueError('database ports must be1024..65535 excluding command port9000')
+        result.append(value)
+    if result[0]==result[1]:raise ValueError('database ports must differ')
+    return tuple(result)
+
+
 def _run(argv,private,env=None,timeout=30):
     code,stdout,_=_PG._run_process(argv,cwd=str(private),env=env or _environment(private),timeout=timeout)
     if code:raise RuntimeError(Path(argv[0]).name+' failed with exit'+str(code)+'; diagnostics omitted')
@@ -59,7 +73,7 @@ def services_setup_check() -> dict:
     except RuntimeError:installed=False
     try:matched=installed and services_versions()=={'postgres':'17.11','redis':'8.0.2'}
     except RuntimeError:matched=False
-    return {'installed':installed,'pinned_versions_match':matched,'pinned_postgres':'17.11','pinned_redis':'8.0.2','password_configured':bool(os.environ.get('DEV_SERVICES_PASSWORD'))}
+    return {'installed':installed,'pinned_versions_match':matched,'pinned_postgres':'17.11','pinned_redis':'8.0.2','password_configured':bool(os.environ.get('DEV_SERVICES_PASSWORD')),'default_postgres_port':_ports()[0],'default_redis_port':_ports()[1]}
 
 
 @command('services_versions',description='Inspect actual PostgreSQL and Redis pins without starting services or creating data.')
@@ -87,12 +101,12 @@ def _spawn(life,argv,port):
 
 def _sql(sql,password,private):
     env=_environment(private);env['PGPASSWORD']=password;env['PGCONNECT_TIMEOUT']='3'
-    return _run([_binary('psql'),'-X','-A','-t','--no-password','--host','127.0.0.1','--port','5432','--username','sandbox','--dbname','postgres','--set','ON_ERROR_STOP=1','--command',sql],private,env=env)
+    return _run([_binary('psql'),'-X','-A','-t','--no-password','--host','127.0.0.1','--port',str(_SESSION.get('postgres_port',5432)),'--username','sandbox','--dbname','postgres','--set','ON_ERROR_STOP=1','--command',sql],private,env=env)
 
 
 def _redis(args,password,private):
     env=_environment(private);env['REDISCLI_AUTH']=password
-    return _run([_binary('redis-cli'),'-e','--raw','-h','127.0.0.1','-p','6379',*args],private,env=env)
+    return _run([_binary('redis-cli'),'-e','--raw','-h','127.0.0.1','-p',str(_SESSION.get('redis_port',6379)),*args],private,env=env)
 
 
 def _stop():
@@ -107,17 +121,18 @@ def _stop():
 
 
 @command('services_start',description='Start owned PostgreSQL/Redis with mandatory credentials, private config and explicit readiness. Existing caller data is preserved.')
-def services_start(password: str='',data_dir: str='service-data',expose: bool=False,timeout_s: int=60) -> dict:
+def services_start(password: str='',data_dir: str='service-data',expose: bool=False,timeout_s: int=60,postgres_port: int=0,redis_port: int=0) -> dict:
     password=password or os.environ.get('DEV_SERVICES_PASSWORD','')
     if not re.fullmatch(r'[A-Za-z0-9_-]{16,128}',password):raise ValueError('password must be16..128 URL-safe ASCII characters')
     if not isinstance(expose,bool) or not 1<=timeout_s<=120:raise ValueError('expose must be boolean and timeout_s1..120')
+    postgres_port,redis_port=_ports(postgres_port,redis_port)
     data=_data(data_dir)
     if not hasattr(os,'pidfd_open'):raise RuntimeError('Linux pidfd ownership is required')
     if os.geteuid()==0:raise RuntimeError('database services require the non-root image user')
     with _LOCK:
         if _SESSION or _PG._STATE or _REDIS._STATE:raise RuntimeError('stop existing owned services first')
         if services_versions()!={'postgres':'17.11','redis':'8.0.2'}:raise RuntimeError('installed database versions differ from reviewed pins')
-        for port in [5432,6379]:
+        for port in [postgres_port,redis_port]:
             with socket.socket() as listener:
                 listener.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
                 try:listener.bind(('0.0.0.0',port))
@@ -130,7 +145,7 @@ def services_start(password: str='',data_dir: str='service-data',expose: bool=Fa
                 raise ValueError('existing data_dir is not an initialized owned service directory')
             if any((data/name).is_symlink() for name in ['postgres','redis']):raise ValueError('service data must not be symlinked')
         private=tempfile.TemporaryDirectory(prefix='abx-services-config-');root=Path(private.name);root.chmod(0o700)
-        _SESSION.update(private=private,password=password,data=data)
+        _SESSION.update(private=private,password=password,data=data,postgres_port=postgres_port,redis_port=redis_port)
         try:
             postgres=data/'postgres';redis=data/'redis'
             if fresh:
@@ -145,15 +160,15 @@ def services_start(password: str='',data_dir: str='service-data',expose: bool=Fa
                 hba=postgres/'pg_hba.conf';text=hba.read_text()
                 if '# abx explicit expose' not in text:hba.write_text(text+'\n# abx explicit expose\nhost all all 0.0.0.0/0 scram-sha-256\n')
             config=root/'redis.conf'
-            config.write_text('bind '+host+'\nport 6379\nprotected-mode yes\nrequirepass '+password+'\ndir '+json.dumps(str(redis))+'\nappendonly yes\nappendfsync everysec\nmaxmemory 128mb\nmaxmemory-policy noeviction\nsave 60 1\n')
+            config.write_text('bind '+host+'\nport '+str(redis_port)+'\nprotected-mode yes\nrequirepass '+password+'\ndir '+json.dumps(str(redis))+'\nappendonly yes\nappendfsync everysec\nmaxmemory 128mb\nmaxmemory-policy noeviction\nsave 60 1\n')
             config.chmod(0o600)
-            _spawn(_PG,[_binary('postgres'),'-D',str(postgres),'-h',host,'-p','5432','-k',str(root),'-c','shared_buffers=64MB','-c','max_connections=20'],5432)
-            _spawn(_REDIS,[_binary('redis-server'),str(config)],6379)
+            _spawn(_PG,[_binary('postgres'),'-D',str(postgres),'-h',host,'-p',str(postgres_port),'-k',str(root),'-c','shared_buffers=64MB','-c','max_connections=20'],postgres_port)
+            _spawn(_REDIS,[_binary('redis-server'),str(config)],redis_port)
             deadline=time.monotonic()+timeout_s
             while time.monotonic()<deadline:
                 if not all(life._alive(life._STATE['process']) for life in [_PG,_REDIS]):raise RuntimeError('owned service exited before readiness')
                 try:
-                    if _sql('SELECT 1',password,root)=='1' and _redis(['PING'],password,root)=='PONG':return {'postgres':5432,'redis':6379,'running':True,'exposed':expose}
+                    if _sql('SELECT 1',password,root)=='1' and _redis(['PING'],password,root)=='PONG':return {'postgres':postgres_port,'redis':redis_port,'running':True,'exposed':expose}
                 except RuntimeError:pass
                 time.sleep(.1)
             raise RuntimeError('database readiness deadline exceeded')
@@ -168,7 +183,7 @@ def services_start(password: str='',data_dir: str='service-data',expose: bool=Fa
 def services_status() -> dict:
     with _LOCK:
         if not _SESSION:return {'running':False}
-        return {'running':all(life._STATE and life._alive(life._STATE['process']) for life in [_PG,_REDIS]),'postgres':5432,'redis':6379}
+        return {'running':all(life._STATE and life._alive(life._STATE['process']) for life in [_PG,_REDIS]),'postgres':_SESSION['postgres_port'],'redis':_SESSION['redis_port']}
 
 
 @command('services_sql',description='Execute bounded PostgreSQL SQL through literal psql argv; returns unaligned tuples, not raw diagnostics.')

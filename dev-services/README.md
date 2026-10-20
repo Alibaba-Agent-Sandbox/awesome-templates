@@ -4,7 +4,7 @@ Pinned PostgreSQL17.11 and Redis8.0.2 for application development, running as th
 
 ## What it does
 
-Initialize a private workspace database directory, start both actual servers, execute bounded SQL and selected Redis operations, inspect status and stop only owned workers. Default listeners are loopback5432/6379; command API9000. Both require a caller-supplied password. Existing unrelated data directories are rejected.
+Initialize a private workspace database directory, start both actual servers, execute bounded SQL and selected Redis operations, inspect status and stop only owned workers. Default listeners are loopback5432/16379; command API9000. Both require a caller-supplied password. Existing unrelated data directories are rejected.
 
 ## Stack
 
@@ -78,14 +78,16 @@ HTTP200 returns {"result":"POSTGRES_REDIS_OK"}. The self-test generates temporar
 |---|---|---|
 | services_setup_check | none / 无 | installed flag, declared pins and password-configured boolean; no credentials |
 | services_versions | none | actual {postgres,redis} semantic versions |
-| services_start | password:16..128 URL-safe ASCII chars, default DEV_SERVICES_PASSWORD; data_dir: single workspace name, default service-data; expose:bool=false; timeout_s:1..120=60, applied to initialization/readiness phases | {postgres:5432,redis:6379,running:true,exposed:bool} |
-| services_status | none | {running:false} or {running:bool,postgres:5432,redis:6379} |
+| services_start | password:16..128 URL-safe ASCII chars, default DEV_SERVICES_PASSWORD; data_dir: single workspace name, default service-data; expose:bool=false; timeout_s:1..120=60, applied to initialization/readiness phases | {postgres:5432,redis:16379,running:true,exposed:bool} |
+| services_status | none | {running:false} or {running:bool,postgres:5432,redis:16379} |
 | services_sql | sql:required1..16384UTF8 bytes | psql unaligned tuple stdout |
 | services_redis | action:PING/SET/GET/DEL/INCR=PING; key:required except PING,1..1024bytes; value:SET text, max64KiB | raw Redis reply string; missing GET is empty string |
 | services_stop | none | {running:false} after owned process/listener absence |
 | services_self_test | none; refuses already-running owned services | POSTGRES_REDIS_OK after real SQL/Redis/restart and owned data cleanup |
 
 psql uses -X/ON_ERROR_STOP, credentials in its process environment; redis-cli -e ensures protocol errors are failures. Both use literal argv without shell interpolation. SQL runs as the cluster user with sandbox OS permissions. Each client has30-second process and256KiB per-stream output bounds. New clusters use SCRAM-SHA-256; Redis uses mandatory requirepass. Private init password/config files have mode0600 under0700 directories. Redis memory128MiB/noeviction, PostgreSQL shared buffers64MiB/max connections20. Neither is configured for production HA.
+
+Version1.1.0 adds postgres_port:int=0 and redis_port:int=0 to services_start. Zero selects process-start DEV_SERVICES_POSTGRES_PORT/DEV_SERVICES_REDIS_PORT; this image defaults to5432/16379. Bare independently loaded source without those settings retains5432/6379. Explicit ports must be distinct integers1024..65535 excluding command port9000. Status and start return the actual selected ports. The original1.0.0 Express attempt found6379 occupied before any owned start (independent EADDRINUSE98); no foreign listener is stopped. The1.0.0 data marker denotes the unchanged storage format and remains readable in1.1.0. API/SQL/Redis auth and process ownership remain required. [Port diagnosis](evidence/port-conflict-2026-10-20.json).
 
 ## Configuration
 
@@ -103,7 +105,7 @@ Prewarmed command servers need [explicit process configuration](../docs/runtime-
 
 ## Resources
 
-2vCPU,2048MB, about10GiB rootfs; ports9000/5432/6379. No Docker/KVM/root/display. Linux pidfds/procfs required for worker identity and independent kernel LISTEN absence. Stop sends TERM then bounded KILL; a forced stop may require PostgreSQL recovery. Redis appendonly/everysec is development durability, not a zero-loss promise. Keep backups outside ephemeral sandbox disk when needed.
+2vCPU,2048MB, about10GiB rootfs; ports9000/5432/16379. No Docker/KVM/root/display. Linux pidfds/procfs required for worker identity and independent kernel LISTEN absence. Stop sends TERM then bounded KILL; a forced stop may require PostgreSQL recovery. Redis appendonly/everysec is development durability, not a zero-loss promise. Keep backups outside ephemeral sandbox disk when needed.
 
 ## Verified
 

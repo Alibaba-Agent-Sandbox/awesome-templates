@@ -1,5 +1,5 @@
 name: dev-services
-version: 1.0.0
+version: 1.1.0
 description: Pinned non-root PostgreSQL17.11 and Redis8.0.2 without Docker or systemd.
 author: alibaba-agent-sandbox
 license: Apache-2.0
@@ -14,7 +14,7 @@ resources:
 ports:
 - 9000
 - 5432
-- 6379
+- 16379
 tags:
 - database
 - postgresql
@@ -31,6 +31,8 @@ capabilities:
 env:
   ABX_SERVER_TOKEN: ''
   DEV_SERVICES_PASSWORD: ''
+  DEV_SERVICES_REDIS_PORT: '16379'
+  DEV_SERVICES_POSTGRES_PORT: '5432'
 smoke:
 - command: services_versions
   expect:

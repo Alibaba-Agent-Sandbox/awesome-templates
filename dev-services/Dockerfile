@@ -11,7 +11,7 @@ RUN mkdir -p /etc/postgresql-common \
        libpq5=17.11-0+deb13u1 redis-server=5:8.0.2-3+deb13u3 redis-tools=5:8.0.2-3+deb13u3 \
     && dpkg-query -W postgresql-17 postgresql-client-17 libpq5 redis-server redis-tools \
     && rm -rf /var/lib/apt/lists/*
-ENV WORKSPACE=/home/user/app
+ENV WORKSPACE=/home/user/app DEV_SERVICES_POSTGRES_PORT=5432 DEV_SERVICES_REDIS_PORT=16379
 COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
         pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
@@ -23,4 +23,4 @@ WORKDIR /home/user/app
 COPY --chown=user:user commands.py lifecycle.py .
 RUN chown user:user /home/user/app
 USER user
-EXPOSE 9000 5432 6379
+EXPOSE 9000 5432 16379

@@ -4,7 +4,7 @@
 
 ## 做什么
 
-初始化私有工作区数据库目录，启动两个真实服务，执行 SQL 和受限 Redis 操作，查看状态并停止本次进程。默认仅监听127.0.0.1:5432/6379，命令接口9000，必须提供密码。拒绝无所有权标记的已有目录。
+初始化私有工作区数据库目录，启动两个真实服务，执行 SQL 和受限 Redis 操作，查看状态并停止本次进程。默认仅监听127.0.0.1:5432/16379，命令接口9000，必须提供密码。拒绝无所有权标记的已有目录。
 
 ## 技术栈
 
@@ -74,14 +74,16 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/services_self_tes
 |---|---|---|
 | services_setup_check | none / 无 | installed flag, declared pins and password-configured boolean; no credentials |
 | services_versions | 无 | 实际 {postgres,redis} 版本 |
-| services_start | password:16..128 URL-safe ASCII 字符，默认 DEV_SERVICES_PASSWORD；data_dir:单层目录名，默认 service-data；expose:布尔，默认false；timeout_s:1..120，默认60，分别用于初始化/就绪阶段 | {postgres:5432,redis:6379,running:true,exposed:布尔} |
-| services_status | 无 | {running:false} 或 {running:布尔,postgres:5432,redis:6379} |
+| services_start | password:16..128 URL-safe ASCII 字符，默认 DEV_SERVICES_PASSWORD；data_dir:单层目录名，默认 service-data；expose:布尔，默认false；timeout_s:1..120，默认60，分别用于初始化/就绪阶段 | {postgres:5432,redis:16379,running:true,exposed:布尔} |
+| services_status | 无 | {running:false} 或 {running:布尔,postgres:5432,redis:16379} |
 | services_sql | sql:必填，1..16384 UTF8字节 | psql 非对齐行文本 |
 | services_redis | action:PING/SET/GET/DEL/INCR，默认PING；key:非PING必填，1..1024字节；value:SET文本，最多64KiB | Redis原始字符串，GET不存在返回空串 |
 | services_stop | 无 | 确认本次进程/监听消失后的 {running:false} |
 | services_self_test | 无；已有本次服务运行时拒绝 | 真实读写、停止重启及数据清理后的 POSTGRES_REDIS_OK |
 
 psql使用 -X、ON_ERROR_STOP；redis-cli使用 -e 将协议错误作为失败。参数不经 shell，密码仅在客户端进程环境中。单次客户端30秒、每输出流256KiB限制。PostgreSQL使用SCRAM-SHA-256，Redis强制requirepass；临时配置0600、目录0700。Redis内存128MiB/noeviction，PostgreSQL64MiB共享缓冲/20连接。默认数据库用户sandbox、数据库postgres；重启原数据目录须提供相同PostgreSQL密码。停止保留数据，删除沙箱不会保留临时磁盘。
+
+版本1.1.0为 services_start 新增 postgres_port:int=0、redis_port:int=0；0表示读取服务启动环境 DEV_SERVICES_POSTGRES_PORT/DEV_SERVICES_REDIS_PORT，本镜像默认5432/16379。不带这些设置单独加载源码时保留5432/6379。显式端口必须为1024..65535的不同整数，排除命令端口9000；启动和状态均返回实际端口。原1.0.0真实极速版尝试中，自有启动前6379已占用（独立探测EADDRINUSE98），不会停止无关监听。1.0.0数据标记代表未改变的存储格式，1.1.0仍可读取。认证和进程所有权要求保持原样。[端口诊断](evidence/port-conflict-2026-10-20.json)。
 
 ## 配置
 
@@ -99,7 +101,7 @@ psql使用 -X、ON_ERROR_STOP；redis-cli使用 -e 将协议错误作为失败�
 
 ## 资源
 
-2vCPU、2048MB、约10GiB根文件系统，端口9000/5432/6379。无Docker/KVM/root/显示器；依赖Linux pidfd/procfs。停止先TERM后有界KILL，强制退出后PostgreSQL可能恢复；Redis appendonly/everysec是开发持久化，不承诺零丢失。需要长期保存时在删除沙箱前备份数据。
+2vCPU、2048MB、约10GiB根文件系统，端口9000/5432/16379。无Docker/KVM/root/显示器；依赖Linux pidfd/procfs。停止先TERM后有界KILL，强制退出后PostgreSQL可能恢复；Redis appendonly/everysec是开发持久化，不承诺零丢失。需要长期保存时在删除沙箱前备份数据。
 
 ## 已验证
 
