@@ -78,3 +78,9 @@ document links PASS. The provisional unresolved merge HEAD could not authenticat
 new apply-patch source COPY and correctly hit the16KiB fallback guard; after
 recording the normal merge commit, the complete19-test generation suite passed.
 No limit/validation was weakened. Combined browser source checks follow below.
+
+Combined browser2.0.2 verification:19 source materializer tests PASS, strict25
+catalog templates plus skeleton PASS and126 local document links PASS. The
+current source includes both explicit non-root writable WORKDIR and three
+bounded install RUNs. No browser cloud qualification is claimed. Exporting
+new exact-source heavy images uses public CI only, with no cloud/model secrets.
