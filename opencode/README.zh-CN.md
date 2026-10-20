@@ -181,7 +181,11 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/opencode_version"
 
 ## 已验证
 
-模板2.0.2等待新的精确源码 step／完整 HTTP 验收。以下旧版本回执仅为历史范围。
+| Provider | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 2.0.2；真实非 root step、Python SDK 创建、CLI/SDK及15项完整 HTTP（含 serve 生命周期），独立清理 | [step](evidence/express-2026-10-20T160725Z.json) · [HTTP](evidence/verification-steps-2026-10-20T160725Z.json) |
+
+不从旧2.0.1推断2.0.2镜像／模型验收。修改后的 Dockerfile 也通过真实 CI 镜像构建；未宣称新增模型运行。
 
 ## 历史2.0.1镜像／模型验收
 
@@ -256,4 +260,4 @@ L0 成功不能替代模型验收。默认明确输出 L3 NOT RUN。模型配置
 
 ### 模板2.0.2运行目录属主
 
-2.0.1真实非 root step 中版本／setup 通过，但原生 serve 启动、状态及幂等检查失败；独立沙箱诊断复现 ~/.local/share/opencode/log/opencode.log 的 PermissionDenied。首次 HOME 属主交接发生在 root 安装／版本探测之前，最后仅修复 app。2.0.2在安装后递归交接模板自己的 app／.local／.config 给 user，保留 USER user 和 OpenCode1.19.0。只读 setup 检查不可写的原生状态，不读取日志或创建文件。[Issue156](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/156)记录回归与复测。既有2.0.1镜像／模型回执保持历史范围，不算2.0.2通过；新云端验证待完成。
+2.0.1真实非 root step 中版本／setup 通过，但原生 serve 启动、状态及幂等检查失败；独立沙箱诊断复现 ~/.local/share/opencode/log/opencode.log 的 PermissionDenied。首次 HOME 属主交接发生在 root 安装／版本探测之前，最后仅修复 app。2.0.2在安装后递归交接模板自己的 app／.local／.config 给 user，保留 USER user 和 OpenCode1.19.0。只读 setup 检查不可写的原生状态，不读取日志或创建文件。[Issue156](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/156)记录回归与复测。既有2.0.1镜像／模型回执保持历史范围，不算2.0.2通过；新2.0.2真实 step／完整 HTTP已通过15/0/0，耗时100.59秒，见[回执](evidence/verification-steps-2026-10-20T160725Z.json)。

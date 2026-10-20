@@ -1,0 +1,64 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-20",
+  "template": "opencode",
+  "template_version": "2.0.2",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "steps",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "harness_sha256": "91592778b24797075915b40f31f219f6517526b17cd2b3a75fe777f73fe6afd6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "opencode_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 10.71,
+      "result": "1.19.0"
+    },
+    {
+      "name": "opencode_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 9.859,
+      "result": "1.19.0"
+    },
+    {
+      "name": "opencode_setup_check",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 2.103,
+      "result": "ok"
+    },
+    {
+      "name": "opencode_setup_check",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 2.118,
+      "result": "ok"
+    }
+  ],
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "opencode",
+    "materializer_sha256": "2bb0f49392e4b4dfd4e9e15738fa2539f7ed7014f41b1985bf713852623270d6",
+    "template_version": "2.0.2",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "648fd8a1b36396b7c5e634d8171770257ed2970a",
+    "asset_transport": "direct",
+    "steps_json_bytes": 5260,
+    "inputs_sha256": {
+      "Dockerfile": "c4614be65c9ddd7c5c865d15cf876510993011e5d66772c2132c71cd3a10c0fc",
+      "template.yaml": "db37519b946c56a277fa3e090b83e878bc856de5ded29a7f6ce34c99582c1ed6",
+      "commands.py": "0989256a52d7195ea1b06f9a36e14b5def7aebde34f61f44e94c64b01eea5ace",
+      "opencode.json": "80f3c55ef5170410b30fa94f810e4e3fd4d9291fe45f300e94fbbbca45a76bd9"
+    },
+    "generated_manifest_sha256": "588810b29ff2215f4b8b18caf0bcd68ae4af29c460e1026620c60819a0e72487"
+  }
+}

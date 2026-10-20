@@ -1,7 +1,7 @@
 {
   "scope": "current-version Express platform-step runtime acceptance; not model or Docker acceptance",
-  "passed": 32,
-  "http_passed": 31,
+  "passed": 33,
+  "http_passed": 32,
   "require_http": true,
   "total": 33,
   "complete": false,
@@ -310,7 +310,8 @@
       "version": "2.0.1",
       "steps": "PASS",
       "receipts": [
-        "openclaw/evidence/express-2026-10-19T183726Z.json"
+        "openclaw/evidence/express-2026-10-19T183726Z.json",
+        "openclaw/evidence/express-2026-10-20.json"
       ],
       "http": "MISSING",
       "http_receipts": []
@@ -318,10 +319,14 @@
     {
       "template": "opencode",
       "version": "2.0.2",
-      "steps": "MISSING",
-      "receipts": [],
-      "http": "MISSING",
-      "http_receipts": []
+      "steps": "PASS",
+      "receipts": [
+        "opencode/evidence/express-2026-10-20T160725Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "opencode/evidence/verification-steps-2026-10-20T160725Z.json"
+      ]
     },
     {
       "template": "osworld",

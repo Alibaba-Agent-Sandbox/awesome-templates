@@ -22,7 +22,7 @@ is recorded.
 
 ## Templates
 
-2026-10-20 Express platform-step checkpoint: **32/33 PASS** (OpenCode2.0.2 permission fix under verification) with real READY, CLI/SDK smoke and independent cleanup. [Auditable per-template matrix](.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json) · [operations and scope](docs/platform-steps.md) ([中文](docs/platform-steps.zh-CN.md)). Model and image acceptance remain separate.
+2026-10-20 Express platform-step checkpoint: **33/33 step PASS; 32/33 full HTTP PASS** (OpenClaw authenticated gateway pending) with real READY, CLI/SDK smoke and independent cleanup. [Auditable per-template matrix](.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json) · [operations and scope](docs/platform-steps.md) ([中文](docs/platform-steps.zh-CN.md)). Model and image acceptance remain separate.
 
 The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](docs/verification-2026-10-18.zh-CN.md)) records the historical23-template checkpoint and its unresolved gates. Current scoped receipts are linked below.
 
@@ -42,7 +42,7 @@ The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](do
 | [hermes-agent](./hermes-agent/README.md) | NousResearch Hermes 0.22.1 with pinned upstream runtime, local file/terminal tools and bounded headless execution. | experimental | [alicloud-express (1.1.1 image, strict model)](./hermes-agent/evidence/express-2026-10-20.json) |
 | [node-web](./node-web/README.md) | Node.js web service runtime for Express, Fastify and other frameworks | experimental | [alicloud-express (1.1.1 full HTTP)](./node-web/evidence/express-2026-10-19T183324Z.json) |
 | [openclaw](./openclaw/README.md) | OpenClaw 2026.10.4 gateway with authenticated health, owned process lifecycle and Node.js 24.16.0. | experimental | [alicloud-express (2.0.1 steps smoke)](./openclaw/evidence/express-2026-10-19T183726Z.json) |
-| [opencode](./opencode/README.md) | OpenCode coding agent. Headless opencode run and optional opencode serve. Package opencode-ai@1.19.0. | experimental | [alicloud-express (2.0.1 SDK image, strict model28)](./opencode/evidence/express-2026-10-20.json) |
+| [opencode](./opencode/README.md) | OpenCode coding agent. Headless opencode run and optional opencode serve. Package opencode-ai@1.19.0. | experimental | [alicloud-express (2.0.2 steps, full HTTP15)](./opencode/evidence/express-2026-10-20T160725Z.json) |
 | [amp](./amp/README.md) | Sourcegraph Amp CLI. amp_execute runs amp -x; amp_version and amp_setup_check do not need a key. | experimental | [alicloud-express (steps smoke)](./amp/evidence/express-2026-10-19.json) |
 | [droid](./droid/README.md) | Factory Droid. Command droid exec. Package @factory/cli@0.241.1. | experimental | [alicloud-express (1.1.1 steps smoke)](./droid/evidence/express-2026-10-19T183451Z.json) |
 | [gemini](./gemini/README.md) | Gemini CLI. Command gemini -p. Package @google/gemini-cli@0.64.0. | experimental | [alicloud-express (2.0.1 steps smoke)](./gemini/evidence/express-2026-10-19T183608Z.json) |

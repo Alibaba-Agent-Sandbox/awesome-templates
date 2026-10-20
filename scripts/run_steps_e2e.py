@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 import hashlib
 import json
 import os
+import secrets
 from pathlib import Path
 import tempfile
 import sys
@@ -26,9 +27,30 @@ from prepare_steps import ROOT, parallel_assets, prepare
 from select_image_templates import catalog_names
 
 
-def http_callback(source: Path, stage: Path, result: dict):
+def configure_http_fixture(source: Path, manifest: dict, proof: dict) -> dict[str, str]:
+    """Configure an owned non-model gateway after installer RUNs, never in Git."""
+    if source.name != "openclaw":
+        return {}
+    token = secrets.token_urlsafe(32)
+    steps = manifest["build"]["steps"]
+    if steps[-1] != {"type": "USER", "args": ["user"]}:
+        raise ValueError("gateway fixture requires the reviewed non-root profile")
+    steps.insert(len(steps) - 1, {"type": "ENV", "args": ["OPENCLAW_GATEWAY_TOKEN", token]})
+    size = len(json.dumps(steps, ensure_ascii=False).encode())
+    if size > 15000:
+        raise ValueError("gateway fixture exceeds the unchanged step wire budget")
+    proof["steps_json_bytes"] = size
+    proof["generated_manifest_sha256"] = hashlib.sha256(yaml.safe_dump(manifest, sort_keys=False, allow_unicode=True).encode()).hexdigest()
+    proof["test_configuration"] = {"gateway_lifecycle_required": True, "generated_test_token": True,
+                                   "model_credentials_injected": False}
+    return {"OPENCLAW_GATEWAY_TOKEN": token}
+
+
+def http_callback(source: Path, stage: Path, result: dict, fixture_env: dict[str, str] | None = None):
     """Run the unchanged external controller once, inside canonical ownership."""
     done = False
+    if fixture_env and (source.name != "openclaw" or set(fixture_env) != {"OPENCLAW_GATEWAY_TOKEN"}):
+        raise ValueError("only the generated owned gateway fixture may enter the controller")
 
     async def endpoints(sandbox_id):
         from agent_sandbox.api.sandbox import Sandbox
@@ -55,6 +77,7 @@ def http_callback(source: Path, stage: Path, result: dict):
                    E2E_WORKSPACE="/home/user/app", E2E_RUN_LLM="0", E2E_REQUIRE_CLI="1",
                    E2E_REQUIRE_LLM="0",
                    E2E_REQUIRE_OCR="1", E2E_REQUIRE_DATABASES="1", E2E_REQUIRE_TOOLCHAIN="1")
+        env.update(fixture_env or {})
         if source.name == "code-server":
             env["E2E_CODE_SERVER_URL"] = urls[8443]
         if source.name == "next-app":
@@ -70,6 +93,8 @@ def http_callback(source: Path, stage: Path, result: dict):
                   "skip_count": sum(line.startswith("[SKIP]") for line in lines),
                   "controller_sha256": hashlib.sha256(script.read_bytes()).hexdigest()}
         result["http_acceptance"] = checks
+        if source.name == "openclaw" and (not fixture_env or any(line.startswith("[SKIP] real gateway lifecycle") for line in lines)):
+            raise RuntimeError("non-model gateway lifecycle was skipped; full acceptance refused")
         if response.returncode or checks["fail_count"] or not checks["pass_count"]:
             raise RuntimeError("external HTTP controller failed; private diagnostics retained")
         return value
@@ -101,6 +126,7 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
         manifest, proof = prepare(source, region=args.region, tag=args.base_tag,
                                   server_commit=args.server_commit, base_path=args.base_path,
                                   asset_transport=args.asset_transport, asset_cache=cache_config)
+        fixture_env = configure_http_fixture(source, manifest, proof) if args.http else {}
         (stage / "template.yaml").write_text(yaml.safe_dump(manifest, sort_keys=False, allow_unicode=True))
         (stage / "steps-provenance.json").write_text(json.dumps(proof, indent=2) + "\n")
         result["build_provenance"] = proof
@@ -109,7 +135,7 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
             "--idle-timeout", str(args.timeout), "--wall-timeout", str(args.timeout + 180),
             "--push-retries", "0", "--sandbox-create", args.sandbox_create,
             "--sandbox-timeout", "1200" if args.http else "300"])
-        callback = http_callback(source, stage, result) if args.http else None
+        callback = http_callback(source, stage, result, fixture_env) if args.http else None
         def verify_owned(intent, runner):
             observed = express_e2e.owned_resources_absent(intent, runner)
             result["cleanup_verified"] = observed
@@ -122,6 +148,8 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
             if len(receipts) != 1:
                 raise RuntimeError("missing unique successful step receipt")
             receipt = json.loads(receipts[0].read_text())
+            if any(value in json.dumps(receipt) for value in fixture_env.values()):
+                raise RuntimeError("refusing public evidence containing a generated runtime credential")
             if receipt.get("cleanup_verified") is not True or receipt.get("build_mode") != "steps":
                 raise RuntimeError("step receipt lacks required cleanup/build-mode evidence")
             if cache:

@@ -177,3 +177,5 @@ python scripts/run_steps_e2e.py goose --asset-transport oss --http \
 [当前源码完整矩阵](../.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json)记录最新限定范围 step 检查点；目录或源码变化后须重新运行审计。Hermes 最终路径还缓存其不可变上游提交源码包，SHA256为控制器实测；OSWorld 的 OSS profile 使用区域公共 PyPI 镜像，同时保留原版本、--require-hashes 和 --no-build-isolation，browser-use 保留原 Python3.13、哈希锁、Chromium --no-shell 及8GiB根文件系统断言，公开 PyPI／引导／浏览器传输仅用于构建；仅改变传输。模型 SKIP 仍是 NOT_RUN，已有镜像／模型回执不改范围。
 
 完整验收使用 `python scripts/step_acceptance.py --require-http`：除真实 step READY／CLI／SDK及独立清理，还必须有每个当前模板完整 e2e_test.py 的匹配哈希、成功退出及通过／失败计数。省略 --require-http 仅检查较窄的 smoke 范围；镜像或 smoke 不能替代完整 HTTP。模型跳过继续单独记录，不计为 L3。
+
+OpenClaw 的完整 HTTP 必须运行真实认证网关生命周期。运行器在全部安装 RUN 之后、USER user 之前，将独有随机测试令牌写入私有最终 ENV；原控制器只接收这一生成令牌，不使用操作者／模型凭据。公开回执仅含配置布尔值和哈希。--require-http 拒绝缺少配置／实际网关覆盖的回执；模型跳过继续单列。--asset-transport oss 可复用源码安装器已固定的 Node24.16.0 归档，原 SHA256、解包和版本逻辑不变。

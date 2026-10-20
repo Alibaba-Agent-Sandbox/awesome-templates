@@ -32,6 +32,21 @@ BASE_PATH = "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/s
 
 def parallel_assets(source: Path) -> dict:
     """Only reviewed installers with explicit public archive hashes opt in."""
+    if source.name == "openclaw":
+        for kind, command in instructions((source / "Dockerfile").read_text()):
+            if kind != "RUN" or "architectures = {" not in command:
+                continue
+            code = command.split("\n", 1)[1].rsplit("\n", 1)[0]
+            tree = ast.parse(code)
+            mapping = next(ast.literal_eval(node.value) for node in tree.body
+                           if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "architectures" for t in node.targets))
+            version = re.search(r'name = f"node-v([0-9.]+)-linux-\{arch\}"', code)
+            if not version:
+                raise ValueError("unreviewed OpenClaw Node archive installer")
+            pin = version[1]
+            return {arch: [{"url": f"https://nodejs.org/dist/v{pin}/node-v{pin}-linux-{item[0]}.tar.gz", "sha256": item[1]}]
+                    for arch, item in mapping.items()}
+        raise ValueError("missing pinned OpenClaw Node archive")
     if source.name in {"goose", "crush"}:
         metadata = json.loads((source / "assets.json").read_text())["assets"]
         return {arch: [entry] for arch, entry in metadata.items()}

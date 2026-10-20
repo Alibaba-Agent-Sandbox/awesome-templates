@@ -1,14 +1,18 @@
 """Exercise actual ranged HTTP, integrity failures and process-local caching."""
 from contextlib import contextmanager
+import ast
+import base64
 import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
 import platform
 import shutil
+import shlex
 import subprocess
 import sys
 import threading
+import zlib
 
 import pytest
 
@@ -61,7 +65,8 @@ def test_invalid_archive_cannot_be_published(tmp_path, failure):
     assert not list(tmp_path.glob("parts-*"))
 
 
-def test_installer_consumes_only_exact_verified_cache(tmp_path):
+@pytest.mark.parametrize("method", ["urlopen", "urlretrieve"])
+def test_installer_consumes_only_exact_verified_cache(tmp_path, method):
     content = b"immutable-official-archive"
     digest = hashlib.sha256(content).hexdigest()
     (tmp_path / digest).write_bytes(content)
@@ -69,7 +74,9 @@ def test_installer_consumes_only_exact_verified_cache(tmp_path):
     helper = tmp_path / "step_assets.py"
     shutil.copy2(Path(step_assets.__file__), helper)
     script = tmp_path / "installer.py"
-    script.write_text("import urllib.request\nwith urllib.request.urlopen('https://official.invalid/archive') as f: print(f.read().decode())\n")
+    script.write_text("import urllib.request\n" + (
+        "with urllib.request.urlopen('https://official.invalid/archive') as f: print(f.read().decode())\n" if method == "urlopen" else
+        "from pathlib import Path\npath,_=urllib.request.urlretrieve('https://official.invalid/archive');print(Path(path).read_text())\n"))
     command = [sys.executable, str(helper), "run", str(script)]
     assert subprocess.check_output(command, text=True).strip() == content.decode()
     (tmp_path / digest).write_bytes(b"tampered")
@@ -92,7 +99,7 @@ def test_osworld_private_transport_keeps_hashes_on_regional_package_mirror():
     assert "--default-index https://mirrors.aliyun.com/pypi/simple/" in command
 
 
-@pytest.mark.parametrize("name", ["goose", "crush", "code-server", "polyglot-toolchain", "aider", "swe", "hermes-agent"])
+@pytest.mark.parametrize("name", ["goose", "crush", "code-server", "polyglot-toolchain", "aider", "swe", "hermes-agent", "openclaw"])
 def test_generated_cache_preserves_original_source_and_is_removed_before_runtime(name):
     manifest, proof = prepare(ROOT / name, asset_transport="parallel", server_commit="e2cb27e24fde0a67112f82b8d44af463445a5d1a")
     steps = manifest["build"]["steps"]
@@ -100,7 +107,18 @@ def test_generated_cache_preserves_original_source_and_is_removed_before_runtime
     assert proof["steps_json_bytes"] <= 15000
     assert any("step_assets.py fetch 0" in step["args"][0] for step in steps if step["type"] == "RUN")
     if name not in {"hermes-agent", "aider"}:
-        assert any("step_assets.py run" in step["args"][0] for step in steps if step["type"] == "RUN")
+        commands = []
+        for step in steps:
+            if step["type"] != "RUN":
+                continue
+            command = step["args"][0]
+            if command.startswith("python3 -c ") and "os.execv(" in command:
+                tree = ast.parse(shlex.split(command)[2])
+                data = next(node.args[0].value for node in ast.walk(tree)
+                            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "b64decode")
+                command = zlib.decompress(base64.b64decode(data)).decode()
+            commands.append(command)
+        assert any("step_assets.py run" in command for command in commands)
     if name == "hermes-agent":
         assert proof["python_download_profile"].startswith("uv0.12.3")
         assert any("uv python install cpython-3.14.6-linux-$(uname -m)-gnu" in step["args"][0] for step in steps if step["type"] == "RUN")

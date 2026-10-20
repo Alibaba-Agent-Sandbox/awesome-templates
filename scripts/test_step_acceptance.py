@@ -88,3 +88,17 @@ def test_failed_or_misattributed_full_http_cannot_pass(tmp_path, field, value):
     assert inspect_http_receipt(tmp_path, receipt)[0]
     receipt["http_acceptance"][field] = value
     assert not inspect_http_receipt(tmp_path, receipt)[0]
+
+
+def test_gateway_lifecycle_skip_cannot_be_full_acceptance(tmp_path):
+    source = tmp_path / "openclaw"
+    source.mkdir()
+    receipt = example(source)
+    (source / "e2e_test.py").write_text("original lifecycle controller")
+    receipt["http_acceptance"] = {"exit_code": 0, "pass_count": 5, "fail_count": 0, "skip_count": 2,
+                                  "controller_sha256": hashlib.sha256((source / "e2e_test.py").read_bytes()).hexdigest()}
+    assert not inspect_http_receipt(source, receipt)[0]
+    receipt["build_provenance"]["test_configuration"] = {"gateway_lifecycle_required": True}
+    assert not inspect_http_receipt(source, receipt)[0]
+    receipt["http_acceptance"].update(pass_count=11, skip_count=1)
+    assert inspect_http_receipt(source, receipt)[0]

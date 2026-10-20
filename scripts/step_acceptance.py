@@ -66,6 +66,8 @@ def inspect_http_receipt(source: Path, receipt: dict) -> tuple[bool, str]:
     valid, reason = inspect_runtime(source, receipt)
     if not valid:
         return valid, reason
+    if source.name == "openclaw" and (receipt.get("build_provenance") or {}).get("test_configuration", {}).get("gateway_lifecycle_required") is not True:
+        return False, "missing required non-model gateway lifecycle configuration"
     counts = receipt.get("http_acceptance") or receipt
     if not isinstance(counts, dict):
         return False, "missing full HTTP controller result"
@@ -73,6 +75,8 @@ def inspect_http_receipt(source: Path, receipt: dict) -> tuple[bool, str]:
             or type(counts.get("pass_count")) is not int or counts["pass_count"] <= 0
             or type(counts.get("fail_count")) is not int or counts["fail_count"] != 0):
         return False, "full HTTP controller did not pass"
+    if source.name == "openclaw" and (counts["pass_count"] < 11 or counts.get("skip_count", 0) > 1):
+        return False, "non-model gateway lifecycle was not fully covered"
     controller = source / "e2e_test.py"
     if not controller.is_file() or counts.get("controller_sha256") != hashlib.sha256(controller.read_bytes()).hexdigest():
         return False, "HTTP controller changed or lacks provenance"

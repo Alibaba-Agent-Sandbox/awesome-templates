@@ -5,7 +5,11 @@ from unittest.mock import patch
 import pytest
 
 import express_e2e
-from run_steps_e2e import http_callback
+from run_steps_e2e import configure_http_fixture, http_callback
+from prepare_steps import ROOT, prepare
+import hashlib
+import json
+import yaml
 
 
 @pytest.mark.parametrize("exit_code,outcome", [(0, "PASS"), (1, "FAIL")])
@@ -44,3 +48,23 @@ def test_controller_runs_once_and_failed_assertions_cannot_pass(tmp_path, monkey
             assert callback("synthetic", "hello", {}) == "smoke"
             assert report["http_acceptance"]["pass_count"] == 1
         assert report["http_acceptance"]["exit_code"] == exit_code
+
+
+def test_gateway_fixture_is_generated_after_installers_and_absent_from_public_proof():
+    manifest, proof = prepare(ROOT / "openclaw")
+    original = list(manifest["build"]["steps"])
+    env = configure_http_fixture(ROOT / "openclaw", manifest, proof)
+    steps = manifest["build"]["steps"]
+    assert steps[:-2] + [steps[-1]] == original
+    assert steps[-2] == {"type": "ENV", "args": ["OPENCLAW_GATEWAY_TOKEN", env["OPENCLAW_GATEWAY_TOKEN"]]}
+    assert steps[-1] == {"type": "USER", "args": ["user"]}
+    assert len(env["OPENCLAW_GATEWAY_TOKEN"]) >= 40
+    assert env["OPENCLAW_GATEWAY_TOKEN"] not in json.dumps(proof)
+    assert proof["test_configuration"]["model_credentials_injected"] is False
+    assert proof["generated_manifest_sha256"] == hashlib.sha256(yaml.safe_dump(manifest, sort_keys=False, allow_unicode=True).encode()).hexdigest()
+    assert proof["steps_json_bytes"] <= 15000
+
+
+def test_controller_fixture_cannot_forward_an_operator_credential(tmp_path):
+    with pytest.raises(ValueError, match="only the generated owned gateway fixture"):
+        http_callback(tmp_path, tmp_path, {}, {"OPENAI_API_KEY": "synthetic-operator-secret"})
