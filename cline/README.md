@@ -81,6 +81,8 @@ Native output is capped256KiB per stream, with whole-process-group/pidfd/unique-
 
 Pinned3.0.73 checks JSON mode before reading piped input. A fixed, non-secret positional sentence enables that preflight; the actual task still arrives only through anonymous stdin and is appended by upstream. Runtime1.0.1 corrects the real1.0.0 cloud failure; no user prompt or credential is placed in argv.
 
+Runtime1.0.2 writes the provider profile at the exact native-resolved private data/settings/providers.json path: --data-dir overrides CLINE_PROVIDER_SETTINGS_PATH before native startup. Earlier1.0.1 was stopped after independent inspection found its intended base absent from the native-resolved profile. Routing is not qualified until a fresh synthetic-key native wire check confirms the exact owned endpoint before any approved real-model key is provided.
+
 ## Configuration
 
 | Name | Required / default | Meaning |

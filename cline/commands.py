@@ -55,7 +55,7 @@ def _environment(root,*,model):
     env.update(PATH='/opt/node/current/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin',
         HOME=str(root),TMPDIR=str(root),XDG_CACHE_HOME=str(root/'cache'),XDG_CONFIG_HOME=str(root/'config'),
         XDG_DATA_HOME=str(root/'xdg-data'),CLINE_DATA_DIR=str(root/'data'),CLINE_SANDBOX_DATA_DIR=str(root/'data'),CLINE_TEAM_DATA_DIR=str(root/'teams'),CLINE_SANDBOX='1',
-        CLINE_PROVIDER_SETTINGS_PATH=str(root/'providers.json'),CLINE_GLOBAL_SETTINGS_PATH=str(root/'global.json'),
+        CLINE_PROVIDER_SETTINGS_PATH=str(root/'data/settings/providers.json'),CLINE_GLOBAL_SETTINGS_PATH=str(root/'global.json'),
         CLINE_MCP_SETTINGS_PATH=str(root/'mcp.json'),CLINE_LOG_ENABLED='0',CLINE_LOG_LEVEL='silent',NO_COLOR='1',TERM='dumb',LANG='C.UTF-8')
     if model:
         _validate_config()
@@ -72,7 +72,9 @@ def _profile(root,*,model):
             'baseUrl':_CONFIG['MODEL_BASE_URL'],'maxTokens':4096,'contextWindow':65536,'timeout':60000,
             'modelCatalog':{'loadLatestOnInit':False,'includeClineCloudModels':False,'loadPrivateOnAuth':False}},
             'updatedAt':datetime.now(timezone.utc).isoformat().replace('+00:00','Z'),'tokenSource':'manual'}})
-    for filename,value in [('global.json',globals_),('providers.json',state),('mcp.json',{'mcpServers':{}})]:
+    # Native --data-dir rewrites the provider path before creating its manager.
+    (root/'data/settings').mkdir(parents=True,mode=0o700)
+    for filename,value in [('global.json',globals_),('data/settings/providers.json',state),('mcp.json',{'mcpServers':{}})]:
         path=root/filename
         with path.open('x') as output:
             path.chmod(0o600)

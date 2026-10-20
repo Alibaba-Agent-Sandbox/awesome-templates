@@ -52,10 +52,11 @@ def test_profile_contains_no_key_and_host_credentials_are_not_forwarded(configur
     env=c._environment(private,model=True);c._profile(private,model=True)
     assert env['OPENAI_API_KEY']==c._CONFIG['MODEL_API_KEY']
     assert not any(key in env for key in ['GITHUB_TOKEN','ALICLOUD_ACCESS_KEY_SECRET','CLINE_BIN_PATH','CLINE_API_KEY'])
-    settings=json.loads((private/'providers.json').read_text())['providers']['openai-compatible']['settings']
+    settings=json.loads((private/'data/settings/providers.json').read_text())['providers']['openai-compatible']['settings']
     assert settings['baseUrl']==c._CONFIG['MODEL_BASE_URL'] and settings['protocol']=='openai-chat'
+    assert Path(env['CLINE_PROVIDER_SETTINGS_PATH'])==private/'data/settings/providers.json'
     assert 'apiKey'not in settings
-    for path in private.iterdir():
+    for path in private.rglob("*.json"):
         assert path.stat().st_mode&0o777==0o600
         assert c._CONFIG['MODEL_API_KEY'] not in path.read_text()
     assert 'OPENAI_API_KEY'not in c._environment(private,model=False)
