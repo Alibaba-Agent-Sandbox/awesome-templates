@@ -125,3 +125,47 @@ def test_changed_tag_after_runtime_cannot_publish_even_when_cleanup_succeeds(tmp
         return h.Proc(0,'','')
     assert h.execute(options,runner=run,sdk=lambda *_:'ok',verify=lambda *_:True)==1
     assert not (source/'evidence').exists()
+
+
+def test_proof_requires_the_exact_template_server_pin(tmp_path):
+    source,proof,_=fixture(tmp_path)
+    pin='f'*40
+    (source/'server-sdk.commit').write_text(pin+'\n')
+    dockerfile=source/'Dockerfile'
+    dockerfile.write_text(dockerfile.read_text()+f'RUN pip install "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/{pin}.tar.gz#subdirectory=server-sdk"\n')
+    proof['context_sha256']=ci_image.context_sha256(source)
+    with pytest.raises(ValueError,match='server source'):
+        ci_image.validate_proof(source,proof,IMAGE)
+    proof['server_sdk_commit']=pin
+    assert ci_image.validate_proof(source,proof,IMAGE)==proof
+
+
+@pytest.mark.parametrize('archive', ['main.tar.gz#subdirectory=server-sdk', 'v0.3.0.tar.gz#subdirectory=server-sdk', 'a'*40+'.tar.gz#subdirectory=client-sdk'])
+def test_mutable_or_wrong_server_archives_are_refused(tmp_path,archive):
+    source,_,_=fixture(tmp_path)
+    (source/'server-sdk.commit').write_text('a'*40+'\n')
+    (source/'Dockerfile').write_text('RUN pip install https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/'+archive+'\n')
+    with pytest.raises(ValueError,match='exact public'):
+        ci_image.server_commit(source)
+
+
+def test_conflicting_server_pins_are_refused(tmp_path):
+    source,_,_=fixture(tmp_path)
+    (source/'server-sdk.commit').write_text('a'*40+'\n')
+    (source/'Dockerfile').write_text('\n'.join('RUN pip install https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/'+pin*40+'.tar.gz#subdirectory=server-sdk' for pin in ['a','b']))
+    with pytest.raises(ValueError,match='conflicting'):
+        ci_image.server_commit(source)
+
+
+def test_existing_templates_keep_historical_injected_server_pin(tmp_path):
+    source,_,_=fixture(tmp_path)
+    (source/'Dockerfile').write_text('RUN pip install https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/'+'a'*40+'.tar.gz#subdirectory=server-sdk\n')
+    assert ci_image.server_commit(source)==ci_image.SERVER_COMMIT
+
+
+@pytest.mark.parametrize('value',['main\n','a'*40,'A'*40+'\n','a'*40+'\nextra'])
+def test_template_server_opt_in_refuses_mutable_or_ambiguous_values(tmp_path,value):
+    source,_,_=fixture(tmp_path)
+    (source/'server-sdk.commit').write_text(value)
+    with pytest.raises(ValueError,match='immutable'):
+        ci_image.server_commit(source)

@@ -6,7 +6,7 @@ Deliver the CPU conversion slice requested by [Issue 58](https://github.com/Alib
 
 ## Capabilities
 
-Buffered named commands, workspace file artifacts, offline audio/video inspection and bounded CPU conversion. MP4 contains H.264 640-wide/24fps video with optional AAC audio; WAV/FLAC contain mono 16 kHz audio. Arbitrary argv, network streams, playlists, devices and live progress are outside this initial interface. The shared server still supplies shell/files/code/ports.
+Buffered named commands, workspace file artifacts, offline audio/video inspection and bounded CPU conversion. MP4 contains H.264 640-wide/24fps video with optional AAC audio; WAV/FLAC contain mono 16 kHz audio. Version1.1 also accepts native argv within a documented offline option allowlist; network streams, playlists, devices, arbitrary filters and live progress remain excluded. The shared server still supplies shell/files/code/ports.
 
 ## Exposed API
 
@@ -14,7 +14,7 @@ See [the command reference](../../media-tools/README.md#command-reference) for r
 
 ## How to build
 
-[Dockerfile](../../media-tools/Dockerfile) keeps the Alibaba base, generation 2 serve/healthcheck and non-root user. Install Debian FFmpeg and its ABI libraries at exact `7:7.1.5-0+deb13u1`; retain installed distribution license notices. The SDK fallback is immutable public source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; an injected wheel wins. No private artifact, model key or GPU package is required. Debian repository resolution is retained for unrelated system libraries. Package/version existence was verified from the official Debian package page and actual installed tools; no image build is inferred.
+[Dockerfile](../../media-tools/Dockerfile) keeps the Alibaba base, generation 2 serve/healthcheck and non-root user. Install Debian FFmpeg and its ABI libraries at exact `7:7.1.5-0+deb13u1`; retain installed distribution license notices. The SDK fallback is immutable public source `fd72d3210b85079d93dcf08e19bfded73643162b`; an injected wheel wins. No private artifact, model key or GPU package is required. Debian repository resolution is retained for unrelated system libraries. Package/version existence was verified from the official Debian package page and actual installed tools; no image build is inferred.
 
 ## Express feasibility
 
@@ -26,7 +26,7 @@ The template uses 2 vCPU, 2048 MB RAM, non-root ownership and writable workspace
 
 ## Risks
 
-Malformed native media is processed inside the sandbox with resource limits, local-only protocols/demuxers and snapshot files. Descriptor walks reject symlink components and traversal; exclusive output publication never overwrites existing files. Only normalized metadata is returned; native diagnostics and inherited model/cloud credentials are excluded. A single-operation lock prevents concurrent conversion memory amplification. General shell/files permissions, deliberate session escapes, server SIGKILL and accumulated retained artifacts remain outside the named operation's guarantees. Dependency licenses are preserved separately from template Apache-2.0 code. The original broad `args: list[str]` survey proposal was narrowed to typed presets to avoid creating a new arbitrary file/network command API.
+Malformed native media is processed inside the sandbox with resource limits, local-only protocols/demuxers and snapshot files. Descriptor walks reject symlink components and traversal; exclusive output publication never overwrites existing files. Preset calls return normalized metadata. The new argv entry additionally returns actual bounded native stdout/stderr/exit_code; inherited model/cloud credentials are excluded. A single-operation lock prevents concurrent conversion memory amplification. General shell/files permissions, deliberate session escapes, server SIGKILL and accumulated retained artifacts remain outside the named operation's guarantees. Dependency licenses are preserved separately from template Apache-2.0 code. The survey argv interface is delivered additively as `transcode_args(args: list[str], max_seconds=5, command_timeout=60)` to preserve the existing preset contract. Its allowlist and forced final resource limits retain the offline file boundary. Native nonzero exits never publish partial files. An explicit `server-sdk.commit` binds its CI wheel and archive proof to the same immutable server as its standalone Docker fallback.
 
 ## Test plan
 

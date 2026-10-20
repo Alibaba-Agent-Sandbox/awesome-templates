@@ -67,11 +67,16 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Resolve the template's immutable server source
+        run: |
+          sdk_sha=$(python3 scripts/server_sdk_pin.py "$TEMPLATE")
+          echo "SERVER_SDK_SHA=$sdk_sha" >> "$GITHUB_ENV"
+
       - name: Checkout the public pinned server source
         uses: actions/checkout@v4
         with:
           repository: alibaba-agent-sandbox/python-sdk
-          ref: e2cb27e24fde0a67112f82b8d44af463445a5d1a
+          ref: ${{ env.SERVER_SDK_SHA }}
           path: vendor/python-sdk
           persist-credentials: false
 
