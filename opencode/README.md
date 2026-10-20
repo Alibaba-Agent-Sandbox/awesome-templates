@@ -184,6 +184,10 @@ Set secret values on `abx create --env` or `Sandbox.create(envs=...)`. Do not wr
 
 ## Verified
 
+Template2.0.2 is awaiting its new exact-source step/full-HTTP qualification. Older versions below remain historical.
+
+## Historical2.0.1 image/model qualification
+
 | Provider | Current version and scope | Evidence |
 | --- | --- | --- |
 | alicloud-express | 2.0.1; actual SDK-created image, CLI/SDK commands,28strict real-model assertions and independent sandbox/template/registry cleanup | [2026-10-20](evidence/express-2026-10-20.json) · [model](evidence/model-image-2026-10-20T142001Z.json) |
@@ -254,3 +258,7 @@ cannot stand in for completed checks. This detects incomplete execution; it is
 not an OS isolation boundary against hostile code with the same user authority.
 Historical real-model results predate this guard; the hardened controller needs
 its own actual-image/model run before that new acceptance is claimed.
+
+### Template2.0.2 runtime ownership
+
+A real non-root step run of2.0.1 passed version/setup but failed native serve startup/status/idempotence. A separate owned runtime probe reproduced PermissionDenied opening ~/.local/share/opencode/log/opencode.log. Root installation/version probes ran after the first HOME ownership handoff, while the final handoff covered only the app directory. Version2.0.2 recursively hands the template-owned app/.local/.config state to user after installation; it retains USER user and unchanged OpenCode1.19.0. Read-only setup now detects unwritable native state without reading logs or creating files. [Issue156](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/156) tracks the real regression and repeat. Older2.0.1 image/model receipts are historical and do not qualify2.0.2; new cloud verification is pending.

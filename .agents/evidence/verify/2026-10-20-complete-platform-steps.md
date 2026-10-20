@@ -1,6 +1,6 @@
 # Complete platform-step acceptance verification
 
-Result: cloud acceptance PASS32/32 — final current-head CI and merge pending.
+Result: PARTIAL — strict current-source full-HTTP closure and OpenCode2.0.2 ownership regression repeat pending.
 
 Baseline: ca3118e5123e7ce2ae2e43e2a8a05c88ecf3653d, 32 catalog source templates, 20 with current-version matching native step receipts. This is an independently counted scoped baseline, not the older 16/23 checkpoint. Existing image/model receipts retain their original scopes.
 
@@ -63,3 +63,21 @@ CLI [PR90](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/pull/90) merge
 ## Expanded current-main catalog integration
 
 Accepted main74685a7 adds browser-use1.0.0, current Codex qualification and native document HTML/slides/headless-PDF source/proof. Normal merge6cf4d1d preserves both the new pypdf dependency and paired client/server SDK installation. The exact current audit is32/33; the new document source already has matching real steps, while browser-use has only image/model proof and its prior failed step remains failed. The new profile receives the existing exact Playwright1.58.0 archives, temporary uv0.12.3/hash-locked package transport and original Python3.13/non-root/8GiB rootfs requirements. Its --no-shell browser installer remains unchanged behind the verified loopback mirror. This extends the request to the current33-profile catalog, without relabelling image/model receipts.
+
+## Final expanded-catalog checkpoint
+
+Current accepted main74685a7 plus the scoped materializer yields33/33 PASS, complete=true, in the final matrix. The newly added browser-use1.0.0 actual cloud run passed224.94s: official READY, actual Python SDK creation, all current CLI/SDK smokes, native CDP navigation/title/PNG controls and11 HTTP PASS/0 FAIL/1 explicit model SKIP. It used the fresh official website CLI0.4.1 binary with --native and NODE_PATH unset, independently proving the bundled official management SDK path. Independent sandbox/template and private objects/bucket absence passed. The actual recipe is12,072bytes, below the unchanged15,000-byte preflight; Python3.13, original locks/version checks, Chromium --no-shell and8GiB rootfs assertion remain.
+
+Expanded local validation:111 tooling regressions PASS;56 specification tests PASS;33 profiles plus skeleton strict PASS;153 Markdown files/0 link failures. The original32-profile milestones remain historical checkpoints. Latest-head full CI and actual merge must be observed before Issue149 closes. CLI0.4.1 is publicly released; the official website mirrors all12 files and passed a fresh default install plus native/standard/version/full-notice checks. Independent npm registry publication returned E404 and remains Issue66; neither this matrix nor the binary publication claims that npm registry succeeded.
+
+## Full functional-controller closure audit
+
+The completed33-profile READY/CLI/SDK scope did not imply every full external HTTP controller had run. A separate exact current-controller/runtime hash audit found18/33 such controller receipts;15 historical profiles had only canonical step smoke (agents-cli, amp, apply-patch, claude-code, codex, codex-agent-api, deepseek-harness, droid, gemini, kimi-code, openclaw, opencode, pi, qoder and qwen-code). Four independently owned cloud runs at a time now execute their complete original controllers with the public website CLI0.4.1 and NODE_PATH unset. The stronger --require-http gate keeps complete=false until every profile passes both scopes; model cases remain explicitly NOT_RUN. Negative tests reject controller drift, nonzero exit, hidden failed counts, zero/boolean pass counts and image-only receipts. Prior smoke passes remain their original narrower evidence rather than being relabelled as full functionality.
+
+## OpenCode non-root state defect found by full HTTP
+
+The strict controller reproduced12 PASS/3 FAIL on2.0.1, specifically serve startup/status/idempotence; version/setup, target code and file controls passed. A separate owned repeat failed the same full controller. An actual target-side direct native invocation exited1 with PermissionDenied opening the default native log file. Both canonical attempts independently cleaned their resources. [Issue156](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/156) owns this defect. Source installs/probes OpenCode as root after its initial HOME handoff but repairs only app at the end.2.0.2 now recursively hands template-owned app/.local/.config to user after installation, preserves non-root runtime/pins, and adds a read-only native-state permission check with real-filesystem regression. OpenCode unit/protocol57 PASS on a non-root operator; the new permission case was not skipped. Current2.0.2 remains unqualified until its genuine step/full-HTTP repeat passes; old2.0.1 image/model evidence is not reused for the new version.
+
+The host npm12 remote-URL policy refused direct URL installation with EALLOWREMOTE. The safe verified public website tarball was downloaded with matching exact-tag SHA256, then freshly installed from that local file; native/standard/version/full-notice artifact gate passed. This did not override npm remote policy or claim npm registry publication.
+
+The new public setup regression was run against the original accepted commands.py and failed as expected (the old setup returned ok for a real read-only native log). After restoration of the fix, all57 OpenCode unit/protocol cases passed; no new permission test was skipped. A temporary strict spec run correctly rejected the old2.0.1 provider table when metadata moved to unqualified2.0.2. The old table is now explicitly under a historical heading in both languages; current Verified stays empty until real2.0.2 proof exists. No gate or historical evidence was removed.

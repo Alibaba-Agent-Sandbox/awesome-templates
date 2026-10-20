@@ -181,7 +181,7 @@ the harness performs owned destruction and independent absence checks afterward.
 
 ## Auditing complete current-version step acceptance
 
-Run `python scripts/step_acceptance.py` to check every current catalog entry. It exits nonzero for missing current-version native step receipts. The audit requires unchanged recorded Dockerfile/runtime input hashes, every current CLI/SDK smoke call and independent resource absence; historical versions and image-only successes cannot pass. This audit does not execute cloud requests or certify Docker/model acceptance.
+Run `python scripts/step_acceptance.py --require-http` for full current-catalog runtime plus external HTTP acceptance. Omit --require-http only to inspect the narrower READY/CLI/SDK smoke scope. It exits nonzero for missing current-version native step receipts. The audit requires unchanged recorded Dockerfile/runtime input hashes, every current CLI/SDK smoke call and independent resource absence; historical versions and image-only successes cannot pass. The strict mode also requires the full current e2e_test.py hash, successful controller exit/counts and independent cleanup for each template; smoke/image results cannot substitute. This audit does not execute cloud requests or certify Docker/model acceptance.
 
 Add `--http` to `scripts/run_steps_e2e.py` to execute the original complete external HTTP controller within the canonical owned sandbox. The receipt separately records controller hash, pass/fail/skip counts and exit status. Model cases remain explicitly off/NOT_RUN; a skipped model is not L3. Missing local controller prerequisites fail before cloud creation.
 

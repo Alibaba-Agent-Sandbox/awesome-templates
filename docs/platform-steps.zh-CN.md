@@ -175,3 +175,5 @@ python scripts/run_steps_e2e.py goose --asset-transport oss --http \
 云端执行前必须发布精确适配器源码提交。较大配方下载公开不可变助手并校验 SHA256，从而保留原有 wire 大小门禁；不支持或未发布的配方拒绝运行。可选 `ABX_STEP_LOCAL_ARCHIVE_DIR` 复用按 SHA256 命名的控制器本地归档，上传前仍逐字节校验原固定大小/哈希；不读取调用者凭据文件，也不改变运行时依赖要求。
 
 [当前源码完整矩阵](../.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json)记录最新限定范围 step 检查点；目录或源码变化后须重新运行审计。Hermes 最终路径还缓存其不可变上游提交源码包，SHA256为控制器实测；OSWorld 的 OSS profile 使用区域公共 PyPI 镜像，同时保留原版本、--require-hashes 和 --no-build-isolation，browser-use 保留原 Python3.13、哈希锁、Chromium --no-shell 及8GiB根文件系统断言，公开 PyPI／引导／浏览器传输仅用于构建；仅改变传输。模型 SKIP 仍是 NOT_RUN，已有镜像／模型回执不改范围。
+
+完整验收使用 `python scripts/step_acceptance.py --require-http`：除真实 step READY／CLI／SDK及独立清理，还必须有每个当前模板完整 e2e_test.py 的匹配哈希、成功退出及通过／失败计数。省略 --require-http 仅检查较窄的 smoke 范围；镜像或 smoke 不能替代完整 HTTP。模型跳过继续单独记录，不计为 L3。

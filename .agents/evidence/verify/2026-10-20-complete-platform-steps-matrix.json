@@ -1,6 +1,8 @@
 {
   "scope": "current-version Express platform-step runtime acceptance; not model or Docker acceptance",
   "passed": 32,
+  "http_passed": 31,
+  "require_http": true,
   "total": 33,
   "complete": false,
   "templates": [
@@ -9,7 +11,12 @@
       "version": "2.0.1",
       "steps": "PASS",
       "receipts": [
-        "agents-cli/evidence/express-2026-10-19T183102Z.json"
+        "agents-cli/evidence/express-2026-10-19T183102Z.json",
+        "agents-cli/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "agents-cli/evidence/verification-steps-2026-10-20T154625Z.json"
       ]
     },
     {
@@ -18,6 +25,10 @@
       "steps": "PASS",
       "receipts": [
         "aider/evidence/express-2026-10-20T135354Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "aider/evidence/verification-steps-2026-10-20T135354Z.json"
       ]
     },
     {
@@ -25,7 +36,12 @@
       "version": "1.2.0",
       "steps": "PASS",
       "receipts": [
-        "amp/evidence/express-2026-10-19.json"
+        "amp/evidence/express-2026-10-19.json",
+        "amp/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "amp/evidence/verification-steps-2026-10-20T154625Z.json"
       ]
     },
     {
@@ -33,7 +49,12 @@
       "version": "1.0.0",
       "steps": "PASS",
       "receipts": [
-        "apply-patch/evidence/express-2026-10-19.json"
+        "apply-patch/evidence/express-2026-10-19.json",
+        "apply-patch/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "apply-patch/evidence/verification-steps-2026-10-20T154625Z.json"
       ]
     },
     {
@@ -42,20 +63,35 @@
       "steps": "PASS",
       "receipts": [
         "browser-automation/evidence/express-2026-10-20T103410Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "browser-automation/evidence/full-http-steps-2026-10-20T103410Z.json"
       ]
     },
     {
       "template": "browser-use",
       "version": "1.0.0",
-      "steps": "MISSING",
-      "receipts": []
+      "steps": "PASS",
+      "receipts": [
+        "browser-use/evidence/express-2026-10-20T153859Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "browser-use/evidence/verification-steps-2026-10-20T153859Z.json"
+      ]
     },
     {
       "template": "claude-code",
       "version": "1.1.1",
       "steps": "PASS",
       "receipts": [
-        "claude-code/evidence/express-2026-10-19T183255Z.json"
+        "claude-code/evidence/express-2026-10-19T183255Z.json",
+        "claude-code/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "claude-code/evidence/verification-steps-2026-10-20T154625Z.json"
       ]
     },
     {
@@ -64,6 +100,10 @@
       "steps": "PASS",
       "receipts": [
         "code-server/evidence/express-2026-10-20T135352Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "code-server/evidence/verification-steps-2026-10-20T135352Z.json"
       ]
     },
     {
@@ -71,7 +111,12 @@
       "version": "2.0.0",
       "steps": "PASS",
       "receipts": [
-        "codex/evidence/express-2026-10-19.json"
+        "codex/evidence/express-2026-10-19.json",
+        "codex/evidence/express-2026-10-20T154825Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "codex/evidence/verification-steps-2026-10-20T154825Z.json"
       ]
     },
     {
@@ -79,7 +124,12 @@
       "version": "2.0.0",
       "steps": "PASS",
       "receipts": [
-        "codex-agent-api/evidence/express-2026-10-19.json"
+        "codex-agent-api/evidence/express-2026-10-19.json",
+        "codex-agent-api/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "codex-agent-api/evidence/verification-steps-2026-10-20T154830Z.json"
       ]
     },
     {
@@ -88,6 +138,10 @@
       "steps": "PASS",
       "receipts": [
         "crush/evidence/express-2026-10-20T131749Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "crush/evidence/verification-steps-2026-10-20T131749Z.json"
       ]
     },
     {
@@ -96,6 +150,10 @@
       "steps": "PASS",
       "receipts": [
         "deepagents/evidence/express-2026-10-20T141151Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "deepagents/evidence/verification-steps-2026-10-20T141151Z.json"
       ]
     },
     {
@@ -103,7 +161,12 @@
       "version": "1.1.1",
       "steps": "PASS",
       "receipts": [
-        "deepseek-harness/evidence/express-2026-10-19T183349Z.json"
+        "deepseek-harness/evidence/express-2026-10-19T183349Z.json",
+        "deepseek-harness/evidence/express-2026-10-20T154957Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "deepseek-harness/evidence/verification-steps-2026-10-20T154957Z.json"
       ]
     },
     {
@@ -112,6 +175,10 @@
       "steps": "PASS",
       "receipts": [
         "dev-services/evidence/express-2026-10-20T130648Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "dev-services/evidence/full-http-steps-2026-10-20T130648Z.json"
       ]
     },
     {
@@ -120,6 +187,10 @@
       "steps": "PASS",
       "receipts": [
         "document-tools/evidence/express-2026-10-20T143722Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "document-tools/evidence/full-http-steps-2026-10-20T143722Z.json"
       ]
     },
     {
@@ -127,7 +198,12 @@
       "version": "1.1.1",
       "steps": "PASS",
       "receipts": [
-        "droid/evidence/express-2026-10-19T183451Z.json"
+        "droid/evidence/express-2026-10-19T183451Z.json",
+        "droid/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "droid/evidence/verification-steps-2026-10-20T155022Z.json"
       ]
     },
     {
@@ -135,7 +211,12 @@
       "version": "2.0.1",
       "steps": "PASS",
       "receipts": [
-        "gemini/evidence/express-2026-10-19T183608Z.json"
+        "gemini/evidence/express-2026-10-19T183608Z.json",
+        "gemini/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "gemini/evidence/verification-steps-2026-10-20T155048Z.json"
       ]
     },
     {
@@ -144,6 +225,10 @@
       "steps": "PASS",
       "receipts": [
         "goose/evidence/express-2026-10-20T135350Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "goose/evidence/verification-steps-2026-10-20T135350Z.json"
       ]
     },
     {
@@ -152,6 +237,10 @@
       "steps": "PASS",
       "receipts": [
         "hermes-agent/evidence/express-2026-10-20T151019Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "hermes-agent/evidence/verification-steps-2026-10-20T151019Z.json"
       ]
     },
     {
@@ -159,7 +248,12 @@
       "version": "1.0.0",
       "steps": "PASS",
       "receipts": [
-        "kimi-code/evidence/express-2026-10-19.json"
+        "kimi-code/evidence/express-2026-10-19.json",
+        "kimi-code/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "kimi-code/evidence/verification-steps-2026-10-20T155159Z.json"
       ]
     },
     {
@@ -168,6 +262,10 @@
       "steps": "PASS",
       "receipts": [
         "media-tools/evidence/express-2026-10-20T131812Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "media-tools/evidence/full-http-steps-2026-10-20T131812Z.json"
       ]
     },
     {
@@ -176,6 +274,10 @@
       "steps": "PASS",
       "receipts": [
         "next-app/evidence/express-2026-10-20T130712Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "next-app/evidence/full-http-steps-2026-10-20T130712Z.json"
       ]
     },
     {
@@ -185,6 +287,10 @@
       "receipts": [
         "node-web/evidence/express-2026-10-19T183324Z.json",
         "node-web/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "node-web/evidence/full-http-steps-2026-10-19T183324Z.json"
       ]
     },
     {
@@ -193,6 +299,10 @@
       "steps": "PASS",
       "receipts": [
         "ocr/evidence/express-2026-10-20T061143Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "ocr/evidence/full-http-steps-2026-10-20T061143Z.json"
       ]
     },
     {
@@ -201,15 +311,17 @@
       "steps": "PASS",
       "receipts": [
         "openclaw/evidence/express-2026-10-19T183726Z.json"
-      ]
+      ],
+      "http": "MISSING",
+      "http_receipts": []
     },
     {
       "template": "opencode",
-      "version": "2.0.1",
-      "steps": "PASS",
-      "receipts": [
-        "opencode/evidence/express-2026-10-19T184023Z.json"
-      ]
+      "version": "2.0.2",
+      "steps": "MISSING",
+      "receipts": [],
+      "http": "MISSING",
+      "http_receipts": []
     },
     {
       "template": "osworld",
@@ -217,6 +329,10 @@
       "steps": "PASS",
       "receipts": [
         "osworld/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "osworld/evidence/verification-steps-2026-10-20T151021Z.json"
       ]
     },
     {
@@ -224,7 +340,12 @@
       "version": "1.0.1",
       "steps": "PASS",
       "receipts": [
-        "pi/evidence/express-2026-10-20T130320Z.json"
+        "pi/evidence/express-2026-10-20T130320Z.json",
+        "pi/evidence/express-2026-10-20T155246Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "pi/evidence/verification-steps-2026-10-20T155246Z.json"
       ]
     },
     {
@@ -233,6 +354,10 @@
       "steps": "PASS",
       "receipts": [
         "polyglot-toolchain/evidence/express-2026-10-20T135358Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "polyglot-toolchain/evidence/verification-steps-2026-10-20T135358Z.json"
       ]
     },
     {
@@ -244,6 +369,10 @@
         "python-hello/evidence/express-2026-10-20.json",
         "python-hello/evidence/express-2026-10-20T150421Z.json",
         "python-hello/evidence/express-2026-10-20T152235Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "python-hello/evidence/full-http-steps-2026-10-19T183219Z.json"
       ]
     },
     {
@@ -251,7 +380,12 @@
       "version": "1.1.1",
       "steps": "PASS",
       "receipts": [
-        "qoder/evidence/express-2026-10-19T184147Z.json"
+        "qoder/evidence/express-2026-10-19T184147Z.json",
+        "qoder/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "qoder/evidence/verification-steps-2026-10-20T155408Z.json"
       ]
     },
     {
@@ -259,7 +393,12 @@
       "version": "2.1.1",
       "steps": "PASS",
       "receipts": [
-        "qwen-code/evidence/express-2026-10-19T184254Z.json"
+        "qwen-code/evidence/express-2026-10-19T184254Z.json",
+        "qwen-code/evidence/express-2026-10-20T155502Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "qwen-code/evidence/verification-steps-2026-10-20T155502Z.json"
       ]
     },
     {
@@ -268,6 +407,10 @@
       "steps": "PASS",
       "receipts": [
         "swe/evidence/express-2026-10-20T143844Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "swe/evidence/verification-steps-2026-10-20T143844Z.json"
       ]
     }
   ]

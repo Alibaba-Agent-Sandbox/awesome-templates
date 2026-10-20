@@ -1,0 +1,63 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-20",
+  "template": "codex-agent-api",
+  "template_version": "2.0.0",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "steps",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "harness_sha256": "91592778b24797075915b40f31f219f6517526b17cd2b3a75fe777f73fe6afd6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "codex_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 8.411,
+      "result": "0.162.1"
+    },
+    {
+      "name": "codex_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 4.634,
+      "result": "0.162.1"
+    },
+    {
+      "name": "agent_status",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.502,
+      "result": "[]"
+    },
+    {
+      "name": "agent_status",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 1.04,
+      "result": "[]"
+    }
+  ],
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "codex-agent-api",
+    "materializer_sha256": "2bb0f49392e4b4dfd4e9e15738fa2539f7ed7014f41b1985bf713852623270d6",
+    "template_version": "2.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "01528c61cd37b4505dee60524cd6bed12e24d51f",
+    "asset_transport": "direct",
+    "steps_json_bytes": 4307,
+    "inputs_sha256": {
+      "Dockerfile": "de1b173fd51524c52cefab01bfaee9170e267193d29287beaecc792c6de1ba22",
+      "template.yaml": "5eeb2fc1703a9a47d3161497a106a22a8a3c04e17439088593d26d5b872027df",
+      "commands.py": "666cd1e7f0badcd70f3e5df7429164c5595b9bf6c993578cb7fa38f4b9c99b6b"
+    },
+    "generated_manifest_sha256": "20dd1aeab50a47359e4d4643efeceb09d508783f2094a237e0422394ea1ffe6a"
+  }
+}

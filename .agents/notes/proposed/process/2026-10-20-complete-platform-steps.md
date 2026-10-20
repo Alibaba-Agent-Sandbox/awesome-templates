@@ -12,7 +12,7 @@ Use an optional temporary private same-account OSS cache when direct official do
 
 ## API Design
 
-`scripts/step_acceptance.py` exits nonzero while any current catalog profile lacks its scoped receipt. `run_steps_e2e.py --http` executes external functional controls in canonical ownership; skipped model cases remain NOT_RUN. `--asset-transport parallel` prefetches exact public archives using verified bounded ranges into a temporary build-only cache; a process-local Python adapter lets the original installer consume those same bytes. Original direct transport remains the default.
+`scripts/step_acceptance.py --require-http` exits nonzero while any current catalog profile lacks its matching runtime/CLI/SDK or unchanged full external HTTP controller receipt. Default mode preserves the narrower smoke audit. `run_steps_e2e.py --http` executes external functional controls in canonical ownership; skipped model cases remain NOT_RUN. `--asset-transport parallel` prefetches exact public archives using verified bounded ranges into a temporary build-only cache; a process-local Python adapter lets the original installer consume those same bytes. Original direct transport remains the default.
 
 ## Alternatives considered
 
@@ -21,6 +21,8 @@ Reclassifying image-only success or older versions would invent coverage. Removi
 ## Dependencies
 
 Existing authorized Express API, reviewed native CLI and paired Python SDK/server. The CLI ENV argument correction is owned by https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues/84 and must land independently. No provider policy or shared account configuration is changed.
+
+The full functional closure also includes [OpenCode ownership Issue156](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/156): template2.0.2 fixes the post-install non-root state handoff and read-only setup diagnostics; prior image/model versions remain historical.
 
 ## Test Strategy
 
