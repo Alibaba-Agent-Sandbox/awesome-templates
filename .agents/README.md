@@ -148,3 +148,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Codex current SDK image acceptance](notes/proposed/process/2026-10-20-codex-sdk-image-acceptance.md) · [verification](evidence/verify/2026-10-20-codex-sdk-image-acceptance.md)
 
 - [Both native Agents CLI adapters: final acceptance](evidence/verify/2026-10-20-agents-cli-both-native-sdk-final.md)
+
+- [Native Cline CLI](notes/proposed/feature/2026-10-20-cline-native-cli.md) · [verification](evidence/verify/2026-10-20-cline-native-cli.md)
