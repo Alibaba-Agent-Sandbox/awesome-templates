@@ -177,3 +177,14 @@ def test_symlinked_or_invalid_sdk_pin_does_not_qualify(tmp_path):
     receipt=example(tmp_path)
     (tmp_path/'server-sdk.commit').write_text('not-a-commit\n')
     assert not inspect_receipt(tmp_path,receipt)[0]
+
+
+def test_osworld_nonmodel_gui_skip_is_not_full_http_acceptance(tmp_path):
+    source=tmp_path/'osworld';source.mkdir();receipt=example(source)
+    (source/'e2e_test.py').write_text('original external desktop controller')
+    receipt['http_acceptance']={'exit_code':0,'pass_count':6,'fail_count':0,'skip_count':1,'controller_sha256':hashlib.sha256((source/'e2e_test.py').read_bytes()).hexdigest()}
+    assert not inspect_http_receipt(source,receipt)[0]
+    receipt['build_provenance']['test_configuration']={'desktop_lifecycle_required':True}
+    assert not inspect_http_receipt(source,receipt)[0]
+    receipt['http_acceptance'].update(pass_count=18,skip_count=0)
+    assert inspect_http_receipt(source,receipt)[0]
