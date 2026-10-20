@@ -48,6 +48,8 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 - [OSWorld required external SDK desktop](notes/proposed/process/2026-10-20-osworld-required-sdk-desktop.md) · [verification](evidence/verify/2026-10-20-osworld-required-sdk-desktop.md)
 
 
+- [Codex API SDK/post-return completion](notes/proposed/process/2026-10-20-codex-api-sdk-postreturn.md) · [verification](evidence/verify/2026-10-20-codex-api-sdk-postreturn.md)
+
 ## Current review
 
 - [Node Web HTTP output protocol](notes/proposed/process/2026-10-16-node-web-http-output.md)

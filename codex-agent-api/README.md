@@ -165,6 +165,9 @@ The real coding checks upload a faulty existing `normalizer.py`, reproduce failu
 
 On 2026-10-16, the patched source passed 30 external HTTP checks on an owned Express base sandbox with pinned Codex 0.162.1 and a real Responses-compatible model. The production `serve --commands` startup loaded the dataclass-containing module. Acceptance repaired an existing broken source file, passed six controller-owned tests, verified a newly generated report, resumed the exact upstream thread, and independently checked the second artifact and report SHA-256. The owned sandbox was destroyed. [JSON evidence](evidence/runtime-express-2026-10-16.json) and [HTTP results](evidence/runtime-express-2026-10-16.log) include source/wheel provenance. This source-runtime result does not establish Dockerfile L1 or new-template deployment L2; `tested_on` remains empty. Reproduce with [the shared runner](../docs/express-source-runtime.md).
 
+
+The fixed-test reruns also require a fresh controller-only completion ACK emitted after all six tests genuinely complete with no skips/expected failures. Forged `Ran 6 tests`/`OK` text followed by an early exit cannot pass. This checks ordinary test completion; it is not an isolation boundary against hostile same-user code. `E2E_SERVER_TOKEN` supplies the explicit generation2 Bearer credential independently from the legacy E2E_TOKEN gateway header.
+
 ## Secondary development
 
 Read [the design](../docs/design/codex-agent-api.md), [CONTRIBUTING](../CONTRIBUTING.md) and [template spec](../docs/template-spec.md). Extend the adapter around Codex's JSONL contract; do not implement a second agent loop. Keep the same CLI pin as `codex`. Official CLI reference: [OpenAI documentation](https://developers.openai.com/codex/cli/reference/).

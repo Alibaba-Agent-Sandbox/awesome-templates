@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 import shlex
+import secrets
 import sys
 import time
 import uuid
@@ -43,13 +44,20 @@ class FixedAcceptance(unittest.TestCase):
         before = values.copy()
         self.assertEqual(module.normalize_usernames(values), ["a", "b"])
         self.assertEqual(values, before)
-unittest.main(argv=["controller-fixed-tests"], verbosity=2)
+program=unittest.main(argv=["controller-fixed-tests"], verbosity=2, exit=False)
+result=program.result
+if (result.testsRun != 6 or not result.wasSuccessful() or result.skipped
+        or result.expectedFailures or result.unexpectedSuccesses):
+    raise SystemExit(1)
 """
 
 
 def _headers() -> dict:
     token = os.environ.get("E2E_TOKEN") or os.environ.get("ABX_SERVER_TOKEN", "")
-    return {"X-Access-Token": token} if token else {}
+    headers={"X-Access-Token": token} if token else {}
+    server_token=os.environ.get("E2E_SERVER_TOKEN", "")
+    if server_token:headers["Authorization"]="Bearer "+server_token
+    return headers
 
 
 def _read_file(client: httpx.Client, path: str) -> str:
@@ -59,10 +67,14 @@ def _read_file(client: httpx.Client, path: str) -> str:
 
 
 def _fixed_tests(client: httpx.Client, task: str) -> dict:
-    command = "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -I -c " + shlex.quote(FIXED_TESTS) + " " + shlex.quote(task)
+    ack="FIXED_TESTS_COMPLETE_"+secrets.token_hex(32)
+    code=FIXED_TESTS+"\nprint("+repr(ack)+")\n"
+    command = "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -I -c " + shlex.quote(code) + " " + shlex.quote(task)
     response = client.post("/shell", json={"command": command, "cwd": task, "timeout": 30})
     response.raise_for_status()
-    return response.json()
+    result=response.json()
+    result["verification_complete"]=result.get("exit_code")==0 and result.get("stdout", "").strip()==ack
+    return result
 
 
 def _agent_message(items: list, marker: str) -> bool:
@@ -146,7 +158,7 @@ def _coding_acceptance(client: httpx.Client, check) -> None:
         check("L3 independent new report contents", report_ok)
         check("L3 artifact API matches remote report", _artifact(client, live_id, task_name + "/normalization-report.json") == report)
         rerun = _fixed_tests(client, task)
-        tests_ok = rerun.get("exit_code") == 0 and "Ran 6 tests" in rerun.get("stderr", "") and "OK" in rerun.get("stderr", "")
+        tests_ok = rerun.get("verification_complete") is True and rerun.get("exit_code") == 0 and "Ran 6 tests" in rerun.get("stderr", "") and "OK" in rerun.get("stderr", "")
         check("L3 controller-owned fixed tests pass on target", tests_ok)
         if not tests_ok or not report_ok or changed_source == BUGGY_SOURCE:
             return
@@ -174,7 +186,7 @@ def _coding_acceptance(client: httpx.Client, check) -> None:
         check("L3 resume preserves fixed source and first artifact",
               _read_file(client, source) == changed_source and _read_file(client, report_path) == report)
         final_tests = _fixed_tests(client, task)
-        check("L3 final independent fixed-test rerun", final_tests.get("exit_code") == 0
+        check("L3 final independent fixed-test rerun", final_tests.get("verification_complete") is True and final_tests.get("exit_code") == 0
               and "Ran 6 tests" in final_tests.get("stderr", "") and "OK" in final_tests.get("stderr", ""))
     except (httpx.HTTPError, KeyError, ValueError, TypeError):
         check("L3 coding request/schema/artifact verification", False)
