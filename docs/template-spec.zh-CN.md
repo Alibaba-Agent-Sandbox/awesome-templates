@@ -517,3 +517,5 @@ harness 用现有标志调用 `abx template deploy`（`--json`、`-y`、`--gener
 `managed_templates` 是附加目录命名空间，与可安装源码 `templates` 分开。字段包含 name/provider/template_id/kind/documentation/evidence/verification_scope/native_interpreter_verified。托管 ID 没有此仓库拥有的 Dockerfile、镜像版本、commands.py 或构建上下文，因此不参与源码模板的镜像选择、steps 生成和部署检查。实测必须写明 SDK 回退、运行时版本及独立清理，不能继承其他提供方或原生解释器验证。参见 [base](managed/base/README.zh-CN.md) 和 [code-interpreter-v1](managed/code-interpreter-v1/README.zh-CN.md)。
 
 同一天验证新版本时，使用独立的 express-YYYY-MM-DDTHHMMSSZ.json 回执，保留旧日期文件。提供方资格必须匹配当前清单版本，且 passed 和 cleanup_verified 都为 true，并含真实 CLI/SDK 成功调用；旧版本不能认证变更后的模板。
+
+V3 的 smoke 必须显式填写非 null 的 `expect`，支持字符串、数值、布尔、对象和数组，沿用现有结构化比较。v2 中没有期望值的 smoke 升级 v3 时需要补充明确结果；v2 自身行为不变。

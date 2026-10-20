@@ -120,7 +120,7 @@ Named commands are not listed in `template.yaml`. They are registered in `comman
 
 Use `spec_version: 3` to opt into the closed machine schema
 [schema/template-v3.schema.json](../schema/template-v3.schema.json). All existing
-sandbox fields retain their meaning. `application` is optional, so an ordinary
+sandbox fields retain their meaning. V3 requires an explicit non-null smoke `expect`; it supports strings, numbers, booleans, objects and arrays with the existing structural comparison. A v2 smoke without an expectation needs an explicit expected result when adopting v3. `application` is optional, so an ordinary
 v3 sandbox template has no application deployment. v2 remains supported; adding
 `application` to v2 is an error. Unknown fields, versions and topology combinations
 fail the checker. Old CLI versions must reject v3 until they support this contract.
