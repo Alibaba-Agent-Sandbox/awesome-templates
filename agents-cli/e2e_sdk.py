@@ -268,11 +268,26 @@ def completed_source(state_dir: str, session: str, ack: str) -> str:
     ''')
 
 
-def selected_env(root: str, state_dir: str, model: str, token: str) -> dict[str, str]:
+def codex_profile_source(home: str, base_url: str) -> str:
+    """An explicit native HTTP Responses provider; no credential is written."""
+    text=('model_provider = "owned_compatible"\n'
+          '[model_providers.owned_compatible]\n'
+          'name = "Owned compatible endpoint"\n'
+          'base_url = '+json.dumps(base_url)+'\n'
+          'env_key = "OPENAI_API_KEY"\n'
+          'wire_api = "responses"\n'
+          'supports_websockets = false\n')
+    return ("from pathlib import Path\nimport os\nroot=Path("+repr(home)+")\n"
+            "root.mkdir(mode=0o700,parents=True,exist_ok=False)\n"
+            "path=root/'config.toml'\npath.write_text("+repr(text)+")\npath.chmod(0o600)\nprint('PROFILE_OK')\n")
+
+
+def selected_env(root: str, state_dir: str, model: str, token: str, *, adapter: str = "qwen-code") -> dict[str, str]:
     env = {name: os.environ[name] for name in ('OPENAI_API_KEY', 'OPENAI_BASE_URL')}
     env.update(PATH="/opt/node/current/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin",
                OPENAI_MODEL=model, ABX_SERVER_TOKEN=token, WORKSPACE=root,
                ABX_SERVER_BASE_DIR=root, ABX_AGENTS_STATE_DIR=state_dir)
+    if adapter == "codex":env["CODEX_HOME"]=state_dir+"/codex-home"
     return env
 
 
@@ -317,7 +332,11 @@ async def run(args, *, factory=None) -> dict:
         token = secrets.token_hex(32)
         # No host/cloud/GitHub credentials, HOME override, or source overlay.
         state_dir = '/tmp/agents-cli-state-' + state['nonce']
-        selected = selected_env(root, state_dir, args.model, token)
+        selected = selected_env(root, state_dir, args.model, token, adapter=adapter)
+        if adapter == "codex":
+            configured=await native(sandbox,codex_profile_source(selected["CODEX_HOME"],selected["OPENAI_BASE_URL"]))
+            require(configured.exit_code==0 and configured.stdout.strip()=="PROFILE_OK", "private native Codex provider configuration")
+            report["checks"].append("private explicit native HTTP Responses provider; websockets disabled; no key file")
         reader = await sandbox.commands.start(
             'agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py '
             '--policy /home/user/app/server-policy.json', env=selected, timeout=1500)

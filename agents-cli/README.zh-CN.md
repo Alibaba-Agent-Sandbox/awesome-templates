@@ -154,6 +154,9 @@ curl --fail-with-body "$ABX_SERVER_URL/v1/agents/sessions/<id>/items?limit=100&o
 当前会话视图可能返回 idle 而不暴露最终 turn 错误；事件被接收或观察到 idle 都不代表
 模型成功。SDK 验证器独立检查结果。HTTP 超时不会自动取消后台任务。
 
+
+使用 `--adapter codex` 时，控制器建立独立私有 CODEX_HOME，显式配置兼容 HTTP Responses 提供方并禁用 websockets。配置只引用 OPENAI_API_KEY，不写入密钥值。明确选择已配置端点，不依赖原生默认提供方；清理销毁整个自有 sandbox 和配置。
+
 ## 命令参考
 
 | 命令 | 参数 | 返回 | 执行 |

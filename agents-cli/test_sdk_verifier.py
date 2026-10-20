@@ -313,3 +313,19 @@ def test_requested_native_adapter_is_selected_in_actual_session_payload(adapter)
 def test_unknown_native_adapter_fails_before_http_or_resource_creation():
     async def run():await module.turn(None,'/tmp/owned','model',timeout=30,adapter='unsupported')
     with pytest.raises(AssertionError,match='unsupported native adapter'):asyncio.run(run())
+
+
+def test_owned_codex_profile_has_explicit_responses_no_websockets_and_no_key(tmp_path,monkeypatch):
+    import tomllib
+    monkeypatch.setenv('OPENAI_API_KEY','synthetic-never-written-secret')
+    monkeypatch.setenv('OPENAI_BASE_URL','https://approved.example.invalid/v1')
+    home=tmp_path/'state'/'codex-home'
+    result=invoke(module.codex_profile_source(str(home),'https://approved.example.invalid/v1'))
+    assert result.returncode==0 and result.stdout.strip()=='PROFILE_OK'
+    config=tomllib.loads((home/'config.toml').read_text());provider=config['model_providers']['owned_compatible']
+    assert config['model_provider']=='owned_compatible' and provider['wire_api']=='responses' and provider['supports_websockets'] is False
+    assert provider['env_key']=='OPENAI_API_KEY' and provider['base_url']=='https://approved.example.invalid/v1'
+    assert 'synthetic-never-written-secret' not in (home/'config.toml').read_text()
+    assert (home/'config.toml').stat().st_mode&0o777==0o600
+    env=module.selected_env('/tmp/project',str(tmp_path/'state'),'model','token',adapter='codex')
+    assert env['CODEX_HOME']==str(home)

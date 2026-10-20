@@ -174,6 +174,9 @@ the final turn's error; accepting an event or observing idle does not prove mode
 success. The SDK verifier independently inspects results. An HTTP timeout does
 not cancel an upstream turn.
 
+
+For `--adapter codex`, the controller creates a fresh private CODEX_HOME with an explicit compatible HTTP Responses provider and websockets disabled. The key is referenced by OPENAI_API_KEY, never written into that config. This selects the approved endpoint deliberately instead of relying on ambient native provider defaults; the entire owned sandbox/profile is removed on cleanup.
+
 ## Command reference
 
 | Command | Parameters | Returns | Execution |
