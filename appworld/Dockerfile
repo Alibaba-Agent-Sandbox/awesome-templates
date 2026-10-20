@@ -10,7 +10,8 @@ RUN DISABLE_SQLALCHEMY_CEXT=1 PIP_NO_BUILD_ISOLATION=false /opt/appworld-venv/bi
     && /opt/appworld-venv/bin/pip check && rm /tmp/appworld-requirements.lock
 COPY upstream.json /opt/appworld-bootstrap/upstream.json
 COPY install_data.py /tmp/appworld-install-data.py
-RUN python3 /tmp/appworld-install-data.py && rm /tmp/appworld-install-data.py
+RUN python3 /tmp/appworld-install-data.py && rm /tmp/appworld-install-data.py \
+    && chmod -R a+rX /opt/appworld-bootstrap /opt/appworld-venv
 COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
         pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \

@@ -43,14 +43,28 @@ def identity():
     return meta,package
 
 
+
+def copy_private_package(original,root):
+    package=root/'appworld'
+    shutil.copytree(original,package,ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
+    # Layer/source modes can be read-only. This owned copy must support the
+    # original installer, without relaxing public-source or private-HOME modes.
+    package.chmod(0o700)
+    for path in package.rglob('*'):
+        if path.is_symlink():
+            raise ValueError('native package source may not contain symlinks')
+        path.chmod(0o700 if path.is_dir() else 0o600)
+    return package
+
+
 def bootstrap():
     global META,STAGE,BOOTSTRAP_ERROR,MISSING_MODULE
     STAGE='upstream'
     meta,original=identity()
     root=Path.cwd()/'private-package'
     root.mkdir(mode=0o700)
-    package=root/'appworld'
-    shutil.copytree(original,package,ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
+    STAGE='private_copy'
+    package=copy_private_package(original,root)
     sys.path.insert(0,str(root))
     world_root=Path(os.environ['APPWORLD_ROOT'])
     world_root.mkdir(mode=0o700)
@@ -58,6 +72,7 @@ def bootstrap():
     # import after protected apps exist, avoiding stale app-discovery caches.
     install_env=dict(os.environ)
     install_env['PYTHONPATH']=str(root)
+    STAGE='installer'
     with tempfile.TemporaryFile() as errors:
         installed=subprocess.run([sys.executable,'-m','appworld.cli','install'],env=install_env,
                    stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=errors,
@@ -73,6 +88,7 @@ def bootstrap():
             raise RuntimeError('original private installer failed; raw diagnostics omitted')
     from appworld.common.constants import PASSWORD,SALT
     from appworld.common.utils import unpack_bundle
+    STAGE='data_unpack'
     unpack_bundle(str(BOOTSTRAP/'data.bundle'),str(world_root),PASSWORD,SALT)
     META=meta
     return world_root

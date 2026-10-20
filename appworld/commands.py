@@ -55,7 +55,7 @@ def _invoke(operation,data,timeout):
                 diagnostic=json.loads(err.strip().splitlines()[-1])
                 kind=diagnostic.get('error_type')
                 stage=diagnostic.get('native_stage')
-                if isinstance(kind,str)and re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]{0,63}',kind)and not any(secret and secret in kind for secret in _CONFIG.values())and stage in ['request','upstream','task','configuration','native_run','summary','artifact','replay']:
+                if isinstance(kind,str)and re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]{0,63}',kind)and not any(secret and secret in kind for secret in _CONFIG.values())and stage in ['request','upstream','private_copy','installer','data_unpack','task','configuration','native_run','summary','artifact','replay']:
                     detail='; '+stage+' ('+kind+')'
                     bootstrap_kind=diagnostic.get('bootstrap_error_type')
                     if bootstrap_kind in ['ModuleNotFoundError','ImportError','PermissionError','FileNotFoundError','TypeError','AttributeError','RuntimeError','ValueError','NativeInstallerNonzero']:

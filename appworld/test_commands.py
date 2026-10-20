@@ -93,3 +93,22 @@ def test_early_native_traceback_exposes_only_class(tmp_path,monkeypatch):
         c._invoke('smoke',{},10)
     text=str(error.value)
     assert 'entrypoint (ImportError)' in text and 'SYNTHETIC_PRIVATE_VALUE' not in text and '/private/owned/path' not in text
+
+
+def test_original_installer_can_write_only_the_owned_copy_of_readonly_source(tmp_path):
+    spec=importlib.util.spec_from_file_location('appworld_private_copy_tests',Path(__file__).with_name('worker.py'))
+    worker=importlib.util.module_from_spec(spec);spec.loader.exec_module(worker)
+    original=tmp_path/'original';original.mkdir()
+    apps=original/'apps';apps.mkdir()
+    source=apps/'public.py';source.write_text('original unchanged')
+    source.chmod(0o444);apps.chmod(0o555);original.chmod(0o555)
+    owned=tmp_path/'owned';owned.mkdir(mode=0o700)
+    try:
+        package=worker.copy_private_package(original,owned)
+        (package/'apps/private_installed.py').write_text('authored private install fixture')
+        assert (package/'apps/public.py').read_text()=='original unchanged'
+        assert package.stat().st_mode&0o777==0o700
+        assert (package/'apps/public.py').stat().st_mode&0o777==0o600
+        assert source.stat().st_mode&0o777==0o444 and not (apps/'private_installed.py').exists()
+    finally:
+        original.chmod(0o700);apps.chmod(0o700);source.chmod(0o600)
