@@ -133,6 +133,8 @@ The service retains at most 200 saved agent configurations; each session allows 
 
 ## Verified
 
+Current template 2.0.0 passed native steps → official READY → actual Python SDK creation → CLI/SDK smoke and **30 PASS / 0 FAIL / 0 SKIP** real model checks on 2026-10-20: [canonical receipt](evidence/express-2026-10-20T175340Z.json), [model/resume/cleanup proof](evidence/native-model-sdk-steps-2026-10-20T175340Z.json). Native Codex 0.162.1 used the approved HTTP Responses provider with `qwen3.8-flash` and explicit supported `CODEX_SANDBOX=bypass` only in the owned model server; the default remains workspace-write. Acceptance repaired existing source, checked the exact report through files/artifact APIs, passed six controller-owned tests with the fresh completion ACK, resumed the exact thread through SSE, verified the second artifact SHA-256/count and reran all six tests. The owned secondary listener/private native home and outer sandbox/template were independently confirmed absent. This is current local native API acceptance, not all OpenAI Agents features or other providers.
+
 | Provider | Executed scope | Evidence |
 | --- | --- | --- |
 | alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
@@ -163,7 +165,10 @@ The real coding checks upload a faulty existing `normalizer.py`, reproduce failu
 
 ## Express source-runtime verification
 
-On 2026-10-16, the patched source passed 30 external HTTP checks on an owned Express base sandbox with pinned Codex 0.162.1 and a real Responses-compatible model. The production `serve --commands` startup loaded the dataclass-containing module. Acceptance repaired an existing broken source file, passed six controller-owned tests, verified a newly generated report, resumed the exact upstream thread, and independently checked the second artifact and report SHA-256. The owned sandbox was destroyed. [JSON evidence](evidence/runtime-express-2026-10-16.json) and [HTTP results](evidence/runtime-express-2026-10-16.log) include source/wheel provenance. This source-runtime result does not establish Dockerfile L1 or new-template deployment L2; `tested_on` remains empty. Reproduce with [the shared runner](../docs/express-source-runtime.md).
+On 2026-10-16, the patched source passed 30 external HTTP checks on an owned Express base sandbox with pinned Codex 0.162.1 and a real Responses-compatible model. The production `serve --commands` startup loaded the dataclass-containing module. Acceptance repaired an existing broken source file, passed six controller-owned tests, verified a newly generated report, resumed the exact upstream thread, and independently checked the second artifact and report SHA-256. The owned sandbox was destroyed. [JSON evidence](evidence/runtime-express-2026-10-16.json) and [HTTP results](evidence/runtime-express-2026-10-16.log) include source/wheel provenance. That historical source-runtime receipt alone does not establish Dockerfile L1 or new-template L2; current canonical qualification is recorded above. Reproduce with [the shared runner](../docs/express-source-runtime.md).
+
+
+The fixed-test reruns also require a fresh controller-only completion ACK emitted after all six tests genuinely complete with no skips/expected failures. Forged `Ran 6 tests`/`OK` text followed by an early exit cannot pass. This checks ordinary test completion; it is not an isolation boundary against hostile same-user code. `E2E_SERVER_TOKEN` supplies the explicit generation2 Bearer credential independently from the legacy E2E_TOKEN gateway header.
 
 ## Secondary development
 
