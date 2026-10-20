@@ -86,6 +86,17 @@ templates:
       e2b: provider-prepared
       opensandbox: provider-prepared
 
+  - name: copilot-cli
+    description: Pinned native GitHub Copilot CLI1.0.100 with explicit OpenAI-compatible BYOK and owned process lifecycle.
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: copilot-cli
+    tags: [copilot, ai-coding, byok]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: supported
+
   - name: codex
     description: "OpenAI Codex CLI (@openai/codex@0.162.1). codex exec, JSON events, sandbox bypass, OpenAI-compatible config.toml."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
