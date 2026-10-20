@@ -390,6 +390,8 @@ templates:
     author: alibaba-agent-sandbox
     capabilities: [shell, files, code, ports]
     status: experimental
+    providers:
+      alicloud-express: supported
 
   - name: polyglot-toolchain
     description: "Pinned Go, Rust and Temurin JDK with real compile-and-run verification."

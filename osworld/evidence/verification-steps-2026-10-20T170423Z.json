@@ -1,0 +1,118 @@
+{
+  "template": "osworld",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T170423Z",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "osworld",
+    "materializer_sha256": "a664256a8967838528c73dca748b8b8f2ef799f2d6c631671c27eaf4f9a1ba73",
+    "source_manifest_contract_sha256": "9b2da164bd6f4e5d57028547c8ca35652b518ec898b3b6ebc693271dbfcadf36",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "59d37c8de6981eaddd5261712ba9a4b233b4d10b",
+    "asset_transport": "oss",
+    "steps_json_bytes": 13049,
+    "inputs_sha256": {
+      "Dockerfile": "633bcf37d2757675d8f46c6993acb8e6512b30d529b533d5a21d935d9f835123",
+      "template.yaml": "4b9fd8e87ef87d5901a3068f3d8abfc98d4381d53b402fd3f28276c059f2dbe5",
+      "requirements.txt": "fd84ae81836222430641fbfb510b5678476cb61ade21c8cd064f8fc185e435eb",
+      "upstream/.gitattributes": "4cfb1277503d26a1eab817f1bb92376ca23e80a0bf4852f5463ed9b09ed8c972",
+      "upstream/LICENSE": "a8d1d88a0f9cce3cdbff73b03a80dc5e5d69e3ba2443946c268815a550c9e0ec",
+      "upstream/getters_misc.py": "573fa6bf7ab627a1f69f7696efe41759c5d06e3109269b0e999bfc703620bb10",
+      "upstream/main.py": "3034c869ca18dd3da5e870c66bdd7d68596501938ff69f7bc3265b79b760d3ba",
+      "upstream/metrics_general.py": "22cafba4a4b49a2c478a6266cfd98c6eb54e1bad4691d243b5113ba8896e41d7",
+      "upstream/pyxcursor.py": "87d09a465bf87c3766ac3b8584f80c3288890e874b45d9a56b811b0a4268e840",
+      "upstream/source.json": "727433e414239a0f6f738f2288e94c65f8b5609e82837611d534037fb35f5475",
+      "commands.py": "22f7814416e0dc52cb0c0b04deae8323467a785db6601d8b36603abcb396a78d",
+      "runtime.py": "a74944f97f6f3ee48057190dccbe2d2aee49305679f50c3a283bdd4ccf03bc55"
+    },
+    "asset_transport_sha256": "83f20ec571a29225637ddac11fce7fd86f29146b24622b43e326c6934f8594e3",
+    "asset_adapter_source_commit": "59d37c8de6981eaddd5261712ba9a4b233b4d10b",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://files.pythonhosted.org/packages/8d/c4/97fdd4fca11d06633bb500849f70e4e6b201bcba3833894732e709be2d60/uv-0.12.3-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "filename": "uv-0.12.3-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "sha256": "1482d1462b1aecd18ee33627363fe1c63d6a194f12d40d37efc446d9e0d800a1",
+          "size": 22346263
+        },
+        {
+          "url": "https://cdn.playwright.dev/chrome-for-testing-public/145.0.7632.6/linux64/chrome-linux64.zip",
+          "sha256": "b5e3195041af345a668d110f5daf5581961fa3608626ea588c97dd0fe81c4e38",
+          "size": 175440843,
+          "playwright_path": "145.0.7632.6/linux64/chrome-linux64.zip",
+          "digest_basis": "controller measured from the official pinned Playwright1.58.0 installer URL; not an upstream-published SHA256"
+        },
+        {
+          "url": "https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-linux.zip",
+          "sha256": "ebc74fc5b94830176a3c2914ae96bd8bc7f6a91f4f33890230f84a172ee61ccc",
+          "size": 2376500,
+          "playwright_path": "builds/ffmpeg/1011/ffmpeg-linux.zip",
+          "digest_basis": "controller measured from the official pinned Playwright1.58.0 installer URL; not an upstream-published SHA256"
+        },
+        {
+          "url": "https://cdn.playwright.dev/chrome-for-testing-public/145.0.7632.6/linux64/chrome-headless-shell-linux64.zip",
+          "sha256": "2536e97d8f410df0394b3e7c4252e88ce9f239f04f3af4e247a26caf45baf49e",
+          "size": 116288461,
+          "playwright_path": "145.0.7632.6/linux64/chrome-headless-shell-linux64.zip",
+          "digest_basis": "controller measured from the official pinned Playwright1.58.0 installer URL; not an upstream-published SHA256"
+        }
+      ]
+    },
+    "asset_cache_architecture": "x86_64",
+    "python_package_transport": "temporary uv0.12.3 installer; original package pins/requirements, retaining --require-hashes where declared; separate original compound-RUN phases; removed before runtime",
+    "generated_manifest_sha256": "8e22a3657d40673b127c227acf1decc2158667f150b80fc3233111aa78e0d302",
+    "test_configuration": {
+      "desktop_lifecycle_required": true,
+      "model_credentials_injected": false
+    }
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 18,
+    "fail_count": 0,
+    "skip_count": 0,
+    "controller_sha256": "07a4fa0615a9329dff948d19c411c0e60e8b916465d725ea5aeff2f2ea3ab2d1"
+  },
+  "cleanup_verified": true,
+  "exit_code": 0,
+  "receipt": "osworld/evidence/express-2026-10-20T170423Z.json",
+  "command_calls": 2,
+  "asset_cache": {
+    "service": "Alibaba Cloud OSS",
+    "private_acl_verified": true,
+    "archives": [
+      {
+        "url": "https://files.pythonhosted.org/packages/8d/c4/97fdd4fca11d06633bb500849f70e4e6b201bcba3833894732e709be2d60/uv-0.12.3-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+        "sha256": "1482d1462b1aecd18ee33627363fe1c63d6a194f12d40d37efc446d9e0d800a1",
+        "size": 22346263
+      },
+      {
+        "url": "https://cdn.playwright.dev/chrome-for-testing-public/145.0.7632.6/linux64/chrome-linux64.zip",
+        "sha256": "b5e3195041af345a668d110f5daf5581961fa3608626ea588c97dd0fe81c4e38",
+        "size": 175440843
+      },
+      {
+        "url": "https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-linux.zip",
+        "sha256": "ebc74fc5b94830176a3c2914ae96bd8bc7f6a91f4f33890230f84a172ee61ccc",
+        "size": 2376500
+      },
+      {
+        "url": "https://cdn.playwright.dev/chrome-for-testing-public/145.0.7632.6/linux64/chrome-headless-shell-linux64.zip",
+        "sha256": "2536e97d8f410df0394b3e7c4252e88ce9f239f04f3af4e247a26caf45baf49e",
+        "size": 116288461
+      }
+    ],
+    "signed_get_ttl_seconds": 3600,
+    "cleanup_verified": true
+  },
+  "duration_s": 299.571
+}

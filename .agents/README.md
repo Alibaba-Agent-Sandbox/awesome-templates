@@ -49,6 +49,7 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 
 
 - [Codex API SDK/post-return completion](notes/proposed/process/2026-10-20-codex-api-sdk-postreturn.md) · [verification](evidence/verify/2026-10-20-codex-api-sdk-postreturn.md)
+- [OSWorld SDK desktop and current gateway final acceptance](evidence/verify/2026-10-20-osworld-sdk-desktop-final.md)
 
 ## Current review
 
