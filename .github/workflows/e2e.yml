@@ -182,6 +182,7 @@ jobs:
       - name: Run process, privacy, and acceptance-harness regressions
         run: |
           python -m pytest -q browser-automation/test_mcp.py browser-automation/test_pdf_runtime.py
+          python -m pytest -q browser-automation/test_mcp.py
           python -m pip install --require-hashes -r scripts/requirements-preview.txt
           python -m pytest -q code-server/test_commands.py code-server/test_browser_local.py scripts/test_preview_proxy.py
           python -m pytest -q polyglot-toolchain/test_commands.py

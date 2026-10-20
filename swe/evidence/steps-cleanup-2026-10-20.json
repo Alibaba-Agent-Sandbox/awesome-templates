@@ -1,0 +1,12 @@
+{
+  "template": "swe",
+  "template_version": "1.1.0",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T091943Z",
+  "result": "FAIL",
+  "reason": "Native build did not complete within1200seconds; no step acceptance or model run",
+  "cleanup_verified": true,
+  "scope": "Separate official owned-resource absence readback after acknowledged known template deletion",
+  "public_attempt": "verification-steps-2026-10-20T091943Z.json"
+}

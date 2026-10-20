@@ -49,7 +49,7 @@ The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](do
 | [document-tools](./document-tools/README.md) | Bounded offline Markdown to DOCX/plain-text conversion using pinned Pandoc. | experimental | [alicloud-express (steps smoke)](./document-tools/evidence/express-2026-10-19.json) |
 | [media-tools](./media-tools/README.md) | Bounded offline CPU MP4, WAV and FLAC conversion with pinned FFmpeg. | experimental | [alicloud-express (steps smoke)](./media-tools/evidence/express-2026-10-19.json) |
 | [aider](./aider/README.md) | Official Aider 0.86.2 with read-only ask and explicit selected-file edits. | experimental | [alicloud-express (1.0.1 image, strict model)](./aider/evidence/express-2026-10-20.json) |
-| [swe](./swe/README.md) | Real mini-swe-agent 2.4.6 and one independently evaluated SWE-bench instance; no official Docker score. | experimental | Revalidation pending (workspace ownership) |
+| [swe](./swe/README.md) | Real mini-swe-agent 2.4.6 and one independently evaluated SWE-bench instance; no official Docker score. | experimental | [alicloud-express (1.1.0 SDK image, strict model14)](./swe/evidence/express-2026-10-20.json) |
 
 OpenSandbox's public sandbox images (code-interpreter, code-interpreter-base, desktop, playwright, vscode) are resolved by the SDK. This catalog does not vendor those Dockerfiles.
 

@@ -164,7 +164,8 @@ def swe_setup_check() -> dict:
     return {'api_key_set': bool(os.environ.get('SWE_API_KEY')),
             'base_url_set': bool(os.environ.get('SWE_BASE_URL')),
             'model_set': bool(os.environ.get('SWE_MODEL')),
-            'runtime_available': Path(MINI).is_file() and ARCHIVE.is_file() and EVAL_ENV.is_dir()}
+            'runtime_available': Path(MINI).is_file() and ARCHIVE.is_file() and EVAL_ENV.is_dir(),
+            'native_tool_calls': os.environ.get('SWE_MODEL_PROTOCOL', 'text') == 'toolcall'}
 
 
 def _valid_baseline(baseline):
@@ -201,6 +202,11 @@ def swe_run_agent(run_id: str, allow_execution: bool = False, max_steps: int = 1
     if type(command_timeout) is not int or not 30 <= command_timeout <= 900:
         raise ValueError('command_timeout must be an integer from 30 to 900')
     key = os.environ.get('SWE_API_KEY', ''); base = os.environ.get('SWE_BASE_URL', ''); model = os.environ.get('SWE_MODEL', '')
+    protocol = os.environ.get('SWE_MODEL_PROTOCOL', 'text')
+    profiles = {'text': ('litellm_textbased', 'default.yaml'), 'toolcall': ('litellm', 'mini.yaml')}
+    if protocol not in profiles:
+        raise ValueError('SWE_MODEL_PROTOCOL must be text or toolcall')
+    model_class, builtin_name = profiles[protocol]
     parsed = urlsplit(base)
     if not key or not model or parsed.scheme not in ('http', 'https') or not parsed.hostname or parsed.username or parsed.password or parsed.query or parsed.fragment:
         raise RuntimeError('required model settings must be configured on this server process')
@@ -211,7 +217,7 @@ def swe_run_agent(run_id: str, allow_execution: bool = False, max_steps: int = 1
             config = {'run': {'task': MANIFEST['problem_statement'] + '\nOnly change src/flask/blueprints.py. Preserve tests. Submit after checking the fix.'},
                 'agent': {'agent_class': 'default', 'step_limit': max_steps, 'cost_limit': 0,
                           'wall_time_limit_seconds': command_timeout, 'output_path': str(trajectory)},
-                'model': {'model_class': 'litellm_textbased', 'model_name': 'openai/' + model,
+                'model': {'model_class': model_class, 'model_name': 'openai/' + model,
                           'cost_tracking': 'ignore_errors', 'model_kwargs': {'api_base': base, 'temperature': 0}},
                 'environment': {'environment_class': 'swe_environment.OwnedLocalEnvironment',
                     'cwd': str(target / 'repo'), 'timeout': 30, 'env': {
@@ -222,7 +228,7 @@ def swe_run_agent(run_id: str, allow_execution: bool = False, max_steps: int = 1
             env = _environment() | {'OPENAI_API_KEY': key, 'MSWEA_GLOBAL_CONFIG_DIR': str(private / 'config'),
                 'MSWEA_CONFIGURED': 'true', 'MSWEA_SILENT_STARTUP': '1', 'LITELLM_LOCAL_MODEL_COST_MAP': 'True',
                 'PYTHONPATH': str(HERE)}
-            builtin = _checked([AGENT_PYTHON, '-c', 'import importlib.util; from pathlib import Path; print(Path(importlib.util.find_spec("minisweagent").origin).parent / "config/default.yaml")'], cwd=HERE, env=env).strip()
+            builtin = _checked([AGENT_PYTHON, '-c', 'import importlib.util, sys; from pathlib import Path; print(Path(importlib.util.find_spec("minisweagent").origin).parent / "config" / sys.argv[1])', builtin_name], cwd=HERE, env=env).strip()
             _checked([MINI, '-c', builtin, '-c', str(config_path), '-o', str(trajectory)],
                      cwd=target / 'repo', timeout=command_timeout, env=env)
             state = json.loads(trajectory.read_text())['info']
