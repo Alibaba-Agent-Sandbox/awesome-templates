@@ -1,0 +1,30 @@
+{
+  "template": "hermes-agent",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T130319Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "hermes-agent",
+    "materializer_sha256": "743cf113087cb19d98ac8e8aae0656138853af84ed8a844b6af4a433382a0581",
+    "template_version": "1.1.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "steps_json_bytes": 9002,
+    "inputs_sha256": {
+      "Dockerfile": "42e3c3987020f5e63d823f35a21a7f57a9ede36042642694f59b207dcf00c23b",
+      "template.yaml": "45fa20dc9c5cc530bc9b4c91d7e5e6d9e3a8de1724abcc85402563228651f97b",
+      "commands.py": "d849006ecdb653c53c474ccd687b592741437034a505b391c5b80cb6be49333c"
+    },
+    "generated_manifest_sha256": "8c2317cace2cadd06bf5c63b9126dd8f76095d5e90ec4c53ce86605410a931c7"
+  },
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "duration_s": 1217.071
+}

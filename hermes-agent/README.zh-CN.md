@@ -138,3 +138,7 @@ python3 scripts/run_local_e2e.py
 ## 许可证
 
 Apache-2.0 template code. Upstream tools retain their own licenses and attribution. See [LICENSE](../LICENSE).
+
+### 当前平台 step 验收
+
+[当前版本真实 step](evidence/express-2026-10-20T151019Z.json)与[完整外部 HTTP 结果](evidence/verification-steps-2026-10-20T151019Z.json)已通过：官方 READY、真实 Python SDK 创建、CLI/SDK smoke，9 PASS / 0 FAIL / 1 model SKIP，耗时 319.815 秒。自有沙箱、模板及私有缓存已独立确认清理。早期失败保留为历史记录；本次未运行模型，不扩大已有镜像／模型验收范围。

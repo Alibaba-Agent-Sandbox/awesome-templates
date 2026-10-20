@@ -25,6 +25,16 @@ provider verification. Express ENV uses alternating key/value arguments: for
 example `{type: ENV, args: [LANG, C.UTF-8]}`. A single `LANG=C.UTF-8` argument was
 rejected in the real 2026-10-19 pilot; that failed attempt remains recorded.
 
+
+For CLI0.4.1, select the existing project surface explicitly before all other root options:
+
+```bash
+export ABX='abx --native'
+python scripts/run_steps_e2e.py python-hello --sandbox-create sdk
+```
+
+The actual installed0.4.1 candidate passed real step READY/SDK creation/CLI+SDK/cleanup. The public entry is owned by [CLI PR90](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/pull/90); its default standard commands remain unchanged.
+
 ## Preparing an actual template
 
 Platform steps do not upload local COPY inputs. Generate a standalone staging
@@ -98,6 +108,10 @@ not an acceptance receipt.
 
 ## Evidence and limitations
 
+OSWorld `--http` requires its non-model desktop tier: both desktop opt-ins are set, `desktop_lifecycle_required` is recorded, and the unchanged external controller must complete18checks without a GUI skip. Basic HTTP plus the separate internal named smoke does not qualify that external tier. The audit rejects skipped/incomplete desktop coverage; model omissions in other profiles remain separate.
+
+Current-source auditing binds the full source manifest (launch/readiness, resources, environment, ports and all other fields); only `tested_on` qualification metadata is excluded. New receipts include `source_manifest_contract_sha256` plus the raw manifest hash. A changed same-version contract cannot inherit a previous pass. Legacy metadata-only updates require exact recorded original bytes from local immutable Git history before normalized comparison. A recorded source revision must match its own bytes; older inline-copy receipts without one use a bounded local history search of that manifest only. Missing/shallow history returns MISSING: fetch the relevant public history and rerun, without rewriting receipts. Explicit `server-sdk.commit` requires its hashed input and matching effective selected pin. This audit makes no network/cloud calls.
+
 `run_steps_e2e.py` retains a sanitized per-attempt outcome under the original
 template's evidence directory, including failures, exact copied-input hashes,
 base image and server-source override. A successful canonical receipt includes
@@ -168,3 +182,36 @@ The SDK timeout is sandbox lifetime, independent of build readiness and request
 timeouts. A lost creation response keeps the private recovery intent and never
 publishes acceptance. Local client close does not delete the cloud sandbox;
 the harness performs owned destruction and independent absence checks afterward.
+
+## Auditing complete current-version step acceptance
+
+Run `python scripts/step_acceptance.py --require-http` for full current-catalog runtime plus external HTTP acceptance. Omit --require-http only to inspect the narrower READY/CLI/SDK smoke scope. It exits nonzero for missing current-version native step receipts. The audit requires unchanged recorded Dockerfile/runtime input hashes, every current CLI/SDK smoke call and independent resource absence; historical versions and image-only successes cannot pass. The strict mode also requires the full current e2e_test.py hash, successful controller exit/counts and independent cleanup for each template; smoke/image results cannot substitute. This audit does not execute cloud requests or certify Docker/model acceptance.
+
+Add `--http` to `scripts/run_steps_e2e.py` to execute the original complete external HTTP controller within the canonical owned sandbox. The receipt separately records controller hash, pass/fail/skip counts and exit status. Model cases remain explicitly off/NOT_RUN; a skipped model is not L3. Missing local controller prerequisites fail before cloud creation.
+
+For Goose, Crush, code-server, Polyglot, Aider, SWE and Hermes, `--asset-transport parallel` enables bounded parallel byte-range transport for their exact official archives. Every response must match its requested Content-Range, all bytes must match the pinned size/budget and SHA256, and the original unchanged installer still checks integrity/version/extraction. The temporary root-only cache and its process-local Python URL adapter are removed before USER user. Hermes uses the documented local-file uv mirror with original Python3.14.6 and uv0.12.3 pins; its generic GNU architecture assets and official metadata source are recorded. Its original compound installation is split into bounded ordered phases. DeepAgents, OSWorld and browser-use use a temporary uv0.12.3 installer for the unchanged hash-locked Python graph and separate original installation phases; that build tool/cache is removed before runtime. Other profiles retain direct transport. No substituted artifact or operator credential is introduced. The materializer receipt records the helper hash and exact asset metadata. A failed/unsupported range or checksum cannot publish acceptance.
+
+```bash
+python scripts/run_steps_e2e.py goose --asset-transport parallel --http \
+  --sandbox-create sdk --timeout 3600 \
+  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
+python scripts/step_acceptance.py
+```
+
+### Temporary private OSS transport
+
+For the complete heavy-archive path, install the optional local controller SDK with `python -m pip install -r scripts/requirements-steps-cache.txt`, then select `--asset-transport oss`. This creates a uniquely owned private bucket in the same Alibaba region/account, checks official archive hashes before upload and after build download, and passes only short-lived GET authorization in the private execution recipe. Public source/provenance and Actions never receive signed URLs or operator secrets. Bucket/object ACLs remain private; no account policy changes. A pass is published only after independent sandbox/template AND exact object/bucket absence. Unknown creation responses retain a private recovery intent and cannot certify cancellation. Cache creation/upload/download/deletion are real cloud operations.
+
+```bash
+python scripts/run_steps_e2e.py goose --asset-transport oss --http \
+  --sandbox-create sdk --timeout 3600 \
+  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
+```
+
+The original direct mode remains the default. OSS mode supports reviewed archives, the exact uv0.12.3 bootstrap and OSWorld's pinned Playwright1.58.0 browser archives. Original installer, hash-lock, version, extraction and runtime-user requirements remain enforced. Temporary browser serving binds loopback only, exposes verified archive paths only, and closes before the build returns. Browser digests are measured from the upstream pinned-client URLs; they are not labelled upstream-published hashes.
+
+Publish the exact adapter source commit before cloud execution. Larger profiles fetch that public immutable helper and verify its SHA256 rather than exceeding the provider wire budget; unsupported/unpublished profiles fail closed. `ABX_STEP_LOCAL_ARCHIVE_DIR` optionally reuses controller-local files named by SHA256; every reused byte still must match the original pinned size/hash before upload. It never reads a caller credential file or changes runtime package requirements.
+
+The [current-source matrix](../.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json) records the latest scoped step checkpoint; rerun the audit after catalog/source changes. The final Hermes path also caches its immutable upstream commit archive with a controller-measured SHA256; OSWorld's OSS profile uses the regional public PyPI mirror while retaining every original version, --require-hashes and --no-build-isolation. Browser-use retains its original Python3.13, hash lock, Chromium --no-shell and8GiB rootfs assertions; its reviewed public PyPI/bootstrap/browser transports are build-only. This changes transport only. Model SKIP remains NOT_RUN, and earlier image/model receipts are not reclassified.
+
+OpenClaw full HTTP acceptance requires its actual authenticated gateway lifecycle. The runner generates a unique owned test token into a private final ENV after every installer RUN, before USER user; the original controller receives only that generated token. No operator/model credential is used, and public proof includes only fixture booleans and hashes. --require-http rejects missing fixture/lifecycle coverage; the model skip remains separate. OpenClaw can reuse the exact Node24.16.0 archives already pinned by its source installer with --asset-transport oss; original Node checksum, extraction and version logic remains.

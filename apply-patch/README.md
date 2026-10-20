@@ -111,3 +111,7 @@ Follow [CONTRIBUTING.md](../CONTRIBUTING.md), [spec](../docs/template-spec.md) a
 ## License
 
 Template and Codex: Apache-2.0. Retain pinned-source [upstream-LICENSE](upstream-LICENSE) and official native npm metadata/notices.
+
+### 2026-10-20 full step checkpoint: template1.0.0
+
+[Real current-version steps](evidence/express-2026-10-20.json) and [complete external HTTP controller](evidence/verification-steps-2026-10-20T154625Z.json): official READY, actual Python SDK creation, all CLI/SDK smoke and 5 PASS/0 FAIL/0 SKIP; independent owned sandbox/template cleanup passed. Model acceptance remains NOT_RUN in this receipt; it does not relabel earlier image/model scope. Reproduction and exact server/controller provenance: [step guide](../docs/platform-steps.md).

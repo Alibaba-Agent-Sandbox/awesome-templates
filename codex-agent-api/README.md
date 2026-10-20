@@ -184,3 +184,7 @@ Run the checker and local regressions before review. Include real L1/L2/L3 resul
 ## License
 
 Apache-2.0. Codex and dependencies retain their respective upstream licenses.
+
+### 2026-10-20 full step checkpoint: template2.0.0
+
+[Real current-version steps](evidence/express-2026-10-20.json) and [complete external HTTP controller](evidence/verification-steps-2026-10-20T154830Z.json): official READY, actual Python SDK creation, all CLI/SDK smoke and 18 PASS/0 FAIL/1 SKIP; independent owned sandbox/template cleanup passed. Model acceptance remains NOT_RUN in this receipt; it does not relabel earlier image/model scope. Reproduction and exact server/controller provenance: [step guide](../docs/platform-steps.md).

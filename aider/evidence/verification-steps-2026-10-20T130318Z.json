@@ -1,0 +1,30 @@
+{
+  "template": "aider",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T130318Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "aider",
+    "materializer_sha256": "743cf113087cb19d98ac8e8aae0656138853af84ed8a844b6af4a433382a0581",
+    "template_version": "1.0.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "ca3118e5123e7ce2ae2e43e2a8a05c88ecf3653d",
+    "steps_json_bytes": 4921,
+    "inputs_sha256": {
+      "Dockerfile": "c04473d7181d397e0a5ed19902e10b6abaf59a6765017f36833fdd98f0b1ea7f",
+      "template.yaml": "3843dae59d3f03e12f42ba23d00d9749345ebcc62aa2632e5a1fd251f163fbb1",
+      "commands.py": "bc11b5eda480d25554ae2ee61ace873eaf978cdaa3bcc67ad808c88749019684"
+    },
+    "generated_manifest_sha256": "bb3a9a16771503803d01ae7e9732745d6b7a9505786e7e6dab11e4b4b5276060"
+  },
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "duration_s": 1228.069
+}

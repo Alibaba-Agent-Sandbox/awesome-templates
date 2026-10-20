@@ -208,3 +208,7 @@ with the `[templates]` prefix. Search existing issues and redact credentials.
 ## License
 
 Apache-2.0 for this template. Claude Code has its own upstream terms.
+
+### 2026-10-20 full step checkpoint: template1.1.1
+
+[Real current-version steps](evidence/express-2026-10-20.json) and [complete external HTTP controller](evidence/verification-steps-2026-10-20T154625Z.json): official READY, actual Python SDK creation, all CLI/SDK smoke and 20 PASS/0 FAIL/1 SKIP; independent owned sandbox/template cleanup passed. Model acceptance remains NOT_RUN in this receipt; it does not relabel earlier image/model scope. Reproduction and exact server/controller provenance: [step guide](../docs/platform-steps.md).

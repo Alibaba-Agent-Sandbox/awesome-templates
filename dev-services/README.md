@@ -130,3 +130,7 @@ Add explicitly bounded database commands and preserve authentication and no-over
 ## License
 
 Wrapper Apache-2.0: [LICENSE](../LICENSE). PostgreSQL uses PostgreSQL License. Redis8 supports an AGPLv3 licensing option; do not describe it as the older BSD Redis release. Installed Debian copyright and source references are retained. Review upstream/transitive notices for redistribution or modifications.
+
+### Additional current-version platform-step acceptance
+
+[Actual native steps](evidence/express-2026-10-20T130648Z.json): official READY, Python SDK creation, current CLI/SDK smoke and independently confirmed owned sandbox/template cleanup. [Full external HTTP](evidence/full-http-steps-2026-10-20T130648Z.json): 6 PASS / 0 FAIL / 0 SKIP.

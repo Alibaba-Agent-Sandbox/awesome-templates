@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
 
@@ -11,6 +12,26 @@ import pytest
 SPEC = importlib.util.spec_from_file_location("opencode_template_commands", Path(__file__).with_name("commands.py"))
 commands = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(commands)
+
+
+def test_native_state_permission_check_is_read_only_and_rejects_unwritable_log(monkeypatch, tmp_path):
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
+    monkeypatch.setattr(commands, "_version_text", lambda: commands.PINNED_VERSION)
+    assert commands.opencode_setup_check() == "ok"
+    assert list(tmp_path.iterdir()) == []
+    directory = tmp_path / "opencode" / "log"
+    directory.mkdir(parents=True)
+    log = directory / "opencode.log"
+    log.write_text("existing native log")
+    assert commands.opencode_setup_check() == "ok"
+    log.chmod(0o400)
+    if os.access(log, os.W_OK):
+        pytest.skip("root can bypass a read-only file mode; the supported runtime is non-root")
+    with pytest.raises(RuntimeError, match="not writable by the runtime user"):
+        commands.opencode_setup_check()
+    assert log.read_text() == "existing native log"
+    assert log.stat().st_mode & 0o777 == 0o400
+    assert list(directory.iterdir()) == [log]
 
 
 def test_run_keeps_option_shaped_prompt_positional(monkeypatch, tmp_path):

@@ -192,3 +192,7 @@ Template code is [Apache-2.0](../LICENSE). Official Goose is Apache-2.0; its
 [unchanged license](upstream-LICENSE) is installed with the unmodified official
 binary. Upstream dependencies keep their own notices. No upstream desktop,
 Vulkan/CUDA asset, proprietary account or model weights are redistributed.
+
+### Additional current-version platform-step acceptance
+
+[Actual steps](evidence/express-2026-10-20T135350Z.json) and [external HTTP attempt](evidence/verification-steps-2026-10-20T135350Z.json): official READY, Python SDK creation, CLI/SDK smoke and 9 HTTP PASS / 0 FAIL / 1 SKIP. Model calls remain NOT_RUN in this receipt. Independent sandbox/template and private same-account asset-cache object/bucket cleanup passed before publication. Earlier image/model receipts retain their own scope.

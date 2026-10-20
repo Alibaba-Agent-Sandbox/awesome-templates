@@ -141,3 +141,7 @@ IDE；前面的 CLI/SDK 示例用于浏览器访问时也需要这个前提。
 ## 许可证
 
 模板：Apache-2.0；code-server：MIT。保留官方发行包中的 LICENSE 和第三方声明，包括随包 VS Code/Node 组件的声明。用户安装的扩展各自遵守许可证。上游：[coder/code-server](https://github.com/coder/code-server/releases/tag/v4.141.0)。
+
+### 当前版本新增平台 step 验收
+
+[真实 step](evidence/express-2026-10-20T135352Z.json) 与 [外部 HTTP 尝试](evidence/verification-steps-2026-10-20T135352Z.json)：官方 READY、Python SDK 创建、CLI/SDK 冒烟，HTTP 5 通过、0 失败、0 跳过。本回执模型调用仍为 NOT_RUN；沙箱/模板及同账户私有资产缓存对象/bucket 都独立确认清理后才发布。既有镜像/模型回执保留其独立范围。

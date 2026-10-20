@@ -140,3 +140,7 @@ Follow [CONTRIBUTING](../CONTRIBUTING.md), [template spec](../docs/template-spec
 ## License
 
 Template wrapper is [Apache-2.0](../LICENSE). DeepAgents and langchain-openai are MIT; preserve their unchanged [DeepAgents license](upstream-LICENSE) and [integration license](langchain-openai-LICENSE). Hash-locked third-party dependencies retain their own notices installed by pip; do not relabel all dependency code as Apache-2.0.
+
+### Current platform-step acceptance
+
+The later [current-version real step receipt](evidence/express-2026-10-20T141151Z.json) and [full external HTTP result](evidence/verification-steps-2026-10-20T141151Z.json) supersede the earlier failed step attempt for current readiness: official READY, actual Python SDK creation, CLI/SDK smoke and 9 HTTP PASS / 0 FAIL / 1 explicit model SKIP passed in 586.639 seconds. Independent owned sandbox/template and temporary private asset-cache cleanup passed. This step receipt is model-free; earlier image/model receipts keep their own scope.

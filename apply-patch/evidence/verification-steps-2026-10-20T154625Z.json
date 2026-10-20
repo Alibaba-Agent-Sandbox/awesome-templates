@@ -1,0 +1,45 @@
+{
+  "template": "apply-patch",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T154625Z",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "apply-patch",
+    "materializer_sha256": "2bb0f49392e4b4dfd4e9e15738fa2539f7ed7014f41b1985bf713852623270d6",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "01528c61cd37b4505dee60524cd6bed12e24d51f",
+    "asset_transport": "direct",
+    "steps_json_bytes": 5374,
+    "inputs_sha256": {
+      "Dockerfile": "b9d8d57b29beffcb0dc5727761a1b2b5af02f837aae416ba76682880fda58c4c",
+      "template.yaml": "823360247842378272c44d0858027cd3bf6f356620a0dfcfd433e7f705a57b00",
+      "package.json": "9529460a112246a71904e58e436960a60f5f806a1a645f1bb2ee84d38ecdd051",
+      "package-lock.json": "a604bcf1808ade4b10e79da46aec9fc868bcc8a3ecdb804de263f2937f9d8d58",
+      "upstream-LICENSE": "d17f227e4df5da1600391338865ce0f3055211760a36688f816941d58232d8dc",
+      "install_alias.py": "f0821f5093e85b08572d0e5b8ec3d17b2e05e907c5d9955c3ab5b7395d470e5c",
+      "commands.py": "86c8827584fe1f85245b2fcf8332ee3ac1d6cac226e5926f2dd490e118d19cb2"
+    },
+    "generated_manifest_sha256": "61ba9d8f902b78ac200818a382a8a9e00df23716d1ae4520e4f101322731b5a9"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 5,
+    "fail_count": 0,
+    "skip_count": 0,
+    "controller_sha256": "345320c89530e7adc250649ba746b6b4c13c65d096537fd368814a301e688a74"
+  },
+  "cleanup_verified": true,
+  "exit_code": 0,
+  "receipt": "apply-patch/evidence/express-2026-10-20.json",
+  "command_calls": 4,
+  "duration_s": 236.657
+}

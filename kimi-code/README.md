@@ -120,3 +120,7 @@ Template issues belong to [awesome-templates](https://github.com/Alibaba-Agent-S
 ## License
 
 Template wrapper: Apache-2.0, see [LICENSE](../LICENSE). Upstream Kimi Code: MIT, distributed through the pinned official npm package with its license retained.
+
+### 2026-10-20 full step checkpoint: template1.0.0
+
+[Real current-version steps](evidence/express-2026-10-20.json) and [complete external HTTP controller](evidence/verification-steps-2026-10-20T155159Z.json): official READY, actual Python SDK creation, all CLI/SDK smoke and 9 PASS/0 FAIL/1 SKIP; independent owned sandbox/template cleanup passed. Model acceptance remains NOT_RUN in this receipt; it does not relabel earlier image/model scope. Reproduction and exact server/controller provenance: [step guide](../docs/platform-steps.md).

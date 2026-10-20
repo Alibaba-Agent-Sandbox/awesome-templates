@@ -148,3 +148,7 @@ python -m venv <new-prefix>后，用<new-prefix>/bin/python -m pip install --req
 封装代码[Apache-2.0](../LICENSE)。Browser-use为MIT，保留[上游原许可](upstream-LICENSE)。保留Playwright发行的未修改Chrome for Testing二进制及捆绑许可/声明；Playwright为Apache-2.0。哈希固定依赖保留各自安装声明，不能把整个镜像统一重标Apache-2.0。不包含模型权重或云服务账号。
 
 原生步骤失败时最多返回20条错误摘要，配置的模型密钥和端点精确脱敏后，每条限制为1024个 UTF-8 字节；SDK 验证器在验收断言前保留失败及清理事实。
+
+### 当前平台 step 验收
+
+[真实1.0.0 step](evidence/express-2026-10-20T153859Z.json)及[原完整 HTTP 控制器](evidence/verification-steps-2026-10-20T153859Z.json)通过：官方 READY、真实 Python SDK 创建、全部 CLI/SDK smoke、原生 CDP 导航／标题／PNG 自测，HTTP11 PASS/0 FAIL/1模型 SKIP，耗时224.94秒。执行器为官网全新安装的 CLI0.4.1（首个根参数 --native），NODE_PATH 已取消，无外部 SDK 模块注入。自有沙箱、模板及精确私有缓存均独立确认清理。保留 Python3.13、版本／哈希锁、固定 Chromium --no-shell、非 root 及8GiB根文件系统断言。早期 step 失败保留；本回执不改变独立镜像／模型结果范围。

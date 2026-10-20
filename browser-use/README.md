@@ -148,3 +148,7 @@ Follow [CONTRIBUTING](../CONTRIBUTING.md), [spec](../docs/template-spec.md), [de
 Wrapper code is [Apache-2.0](../LICENSE). Browser-use is MIT; preserve the [unchanged upstream license](upstream-LICENSE). The unmodified Playwright-distributed Chrome for Testing build retains its bundled license/notices; Playwright is Apache-2.0. Every hash-locked dependency keeps its installed upstream notices; do not relabel the full image as Apache-2.0. No model weights or cloud service account is included.
 
 Failed native steps include at most20 error summaries, each truncated to1024 UTF-8 bytes after exact configured model-key/endpoint redaction. The SDK controller retains safe failure/cleanup facts before asserting acceptance.
+
+### Current platform-step acceptance
+
+[Real1.0.0 steps](evidence/express-2026-10-20T153859Z.json) and [original full HTTP controller](evidence/verification-steps-2026-10-20T153859Z.json): official READY, actual Python SDK creation, every CLI/SDK smoke, native CDP navigation/title/PNG self-test and11 HTTP PASS/0 FAIL/1 model SKIP;224.94s. The executable was the actual freshly website-installed CLI0.4.1 with first-root --native and NODE_PATH unset; no external SDK module injection. Independent sandbox/template and exact private-cache cleanup passed. Python3.13, package/hash locks, pinned Chromium --no-shell, non-root runtime and8GiB rootfs assertions remain unchanged. Earlier failed steps remain historical failures; this receipt does not relabel the separate image/model result.
