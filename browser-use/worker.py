@@ -6,6 +6,17 @@ from pathlib import Path
 ALLOWED={'done','navigate','click','input','scroll','wait','go_back','switch','close','find_text','find_elements','search_page','select_dropdown','dropdown_options','send_keys'}
 ALL_ACTIONS={'click','close','done','dropdown_options','evaluate','extract','find_elements','find_text','go_back','input','navigate','read_file','replace_file','save_as_pdf','screenshot','scroll','search','search_page','select_dropdown','send_keys','switch','upload_file','wait','write_file'}
 
+def error_summary(errors,value):
+    result=[]
+    for error in errors:
+        if not error:continue
+        text=str(error)
+        for key in ['api_key','base_url']:
+            if value.get(key):text=text.replace(value[key],'[REDACTED]')
+        result.append(text.encode('utf-8')[:1024].decode('utf-8','ignore'))
+        if len(result)==20:break
+    return result
+
 async def run(value):
     from browser_use import Agent,Browser,ChatOpenAI
     from browser_use.browser import BrowserProfile
@@ -37,7 +48,7 @@ async def run(value):
         history=await agent.run(max_steps=value['max_steps'])
         data=await browser.take_screenshot(path=value['screenshot_path'],format='png');page=await browser.must_get_current_page();url=(await page.get_target_info()).get('url','')
         if not data.startswith(b'\x89PNG\r\n\x1a\n') or not 1000<len(data)<=16*1024**2:raise RuntimeError('native screenshot size/type guard')
-        return {'result':history.final_result() or '', 'final_url':url,'screenshot_path':value['screenshot_path'],'bytes':len(data),'steps':len(history.history),'done':history.is_done(),'success':history.is_successful() is True}
+        return {'result':history.final_result() or '', 'final_url':url,'screenshot_path':value['screenshot_path'],'bytes':len(data),'steps':len(history.history),'done':history.is_done(),'success':history.is_successful() is True,'error_summary':error_summary(history.errors(),value)}
     finally:
         try:await browser.kill()
         finally:

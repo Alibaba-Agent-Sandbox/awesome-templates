@@ -12,7 +12,7 @@ Exact hash-locked browser-use0.13.11, explicit Chromium1208 installed by pinned 
 
 ## API Design
 
-Read-only version/setup, actual model-free CDP self-test and typed browser_use(task,url,max_steps,command_timeout) structured result/final URL/new PNG/steps/done/success. Private file stdin for model settings, filtered child environment, bounded process identity/group cleanup. Complete bilingual command limits/errors/owned cleanup. SDK model verifier borrows supplied fresh sandbox and independently validates browser effects and cleanup; it never destroys a caller sandbox.
+Read-only version/setup, actual model-free CDP self-test and typed browser_use(task,url,max_steps,command_timeout) structured result/final URL/new PNG/steps/done/success and bounded redacted native error summaries. Private file stdin for model settings, filtered child environment, bounded process identity/group cleanup. Complete bilingual command limits/errors/owned cleanup. SDK model verifier borrows supplied fresh sandbox and independently validates browser effects and cleanup; it never destroys a caller sandbox.
 
 ## Alternatives considered
 

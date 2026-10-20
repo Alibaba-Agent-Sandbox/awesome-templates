@@ -93,3 +93,13 @@ def test_actual_overlapping_browser_operation_fails_busy_and_preserves_active_ca
         blocked['release'].set();thread.join(timeout=40);blocked.clear()
     assert not thread.is_alive() and not errors and len(results)==1 and results[0]['success'] is True
     assert len(clicks)==1;Path(results[0]['screenshot_path']).unlink()
+
+
+def test_native_error_summary_redacts_before_truncation_and_bounds_bytes():
+    spec=importlib.util.spec_from_file_location('browser_error_worker',Path(__file__).with_name('worker.py'))
+    worker=importlib.util.module_from_spec(spec);spec.loader.exec_module(worker)
+    settings={'api_key':'synthetic-private-value','base_url':'https://model.example.invalid/v1'}
+    result=worker.error_summary([settings['api_key']+' '+settings['base_url']+' '+('中文'*1000)]*30,settings)
+    assert len(result)==20 and all(len(x.encode('utf-8'))<=1024 for x in result)
+    assert all(settings['api_key'] not in x and settings['base_url'] not in x for x in result)
+    assert all('[REDACTED]' in x for x in result)

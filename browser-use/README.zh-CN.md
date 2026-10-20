@@ -142,3 +142,5 @@ python -m venv <new-prefix>后，用<new-prefix>/bin/python -m pip install --req
 ## 许可证
 
 封装代码[Apache-2.0](../LICENSE)。Browser-use为MIT，保留[上游原许可](upstream-LICENSE)。保留Playwright发行的未修改Chrome for Testing二进制及捆绑许可/声明；Playwright为Apache-2.0。哈希固定依赖保留各自安装声明，不能把整个镜像统一重标Apache-2.0。不包含模型权重或云服务账号。
+
+原生步骤失败时最多返回20条错误摘要，配置的模型密钥和端点精确脱敏后，每条限制为1024个 UTF-8 字节；SDK 验证器在验收断言前保留失败及清理事实。

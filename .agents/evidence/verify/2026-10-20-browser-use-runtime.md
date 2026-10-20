@@ -5,3 +5,26 @@ Status: PARTIAL. Official PyPI0.13.11 wheel/metadata/SHA256 and installed API/li
 Final scoped L0: **13 PASS** in15.10seconds after actual loopback launch args, before/after native15-action registry assertions and operation locking; actual overlapping native request rejects busy while preserving/completing the active browser call. Complete real local HTTP **11 PASS/0 FAIL/1 explicit model SKIP**: actual package/native CDP/title/PNG and typed/auth-independent guards; no model/provider pass from this run. Public client pin e86cb0be24e0083a27396b260298e7cf27b660d6 source checked for read_bytes(max_bytes), server_at and start_server; executed operator client remains independently recorded d4d93e8cbb986f33a8868f7a4139ed0edb49eaba. Bilingual SDK snippets compile; Markdown/source checks pass using merged PR146 strict lock support. Shared contract lands before consumer.
 
 Initial source9c740a0 image L1/self-test PASS; CI local-e2e failed3 native browser cases before any model request. Upstream chromium_sandbox defaults to not CONFIG.IN_DOCKER, so reviewed FC/container behavior and Ubuntu host behavior differ. The suspected host namespace/sandbox cause is an inference, since the first worker suppressed inner exception details. Make chromium_sandbox=false explicit for this container-only profile and return only a sanitized exception class identifier on native failure (no raw message/keys). This changes current worker bytes; source9c740a0 image/active old-source steps are not promoted to new-source qualification. Fresh L1/SDK/image/model/CI gates required. Bundled Chrome for Testing notices retained without assigning a blanket binary license.
+
+
+## Actual first cloud attempts and bounded diagnostics
+
+The actual SDK-created immutable7a0fafb8bf0d814ddcd8aa8b908698b824291648
+image from run39422237487/artifact12264707272 reached READY. External HTTP:
+11PASS/0FAIL/1 explicit model SKIP; native CDP self-test passed. The separate
+real qwen3.8-flash agent did not return done/success, so the whole acceptance
+remains FAIL. Sandbox/template/private registry cleanup and post-runtime image
+digest readback were independently verified. The image/model failure receipts
+are retained under browser-use/evidence; no provider badge is claimed.
+
+The earlier actual SDK step attempt at9c740a0453267874d7955c76556dd8626a6d567e
+remained in the official building state at1200seconds and failed the bound.
+It never created a sandbox. Deletion and independent known-owned absence passed;
+the original attempt and a separate cleanup receipt are immutable history.
+
+The next worker returns up to20 native error summaries, each at most1024 UTF-8
+bytes after exact configured model key/endpoint redaction. A regression checks
+redaction before truncation. The SDK controller retains safe model-state and
+owned process/file/listener cleanup facts before acceptance assertions, including
+failures.14 actual native/controller cases PASS15.22seconds on the new source.
+Actual new image/model acceptance remains pending; diagnostics do not certify it.

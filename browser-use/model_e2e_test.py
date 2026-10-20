@@ -26,7 +26,7 @@ def validate(result,state,png,expected_url,code):
 def _url(base,path):
     value=urlsplit(base);return urlunsplit((value.scheme,value.netloc,value.path.rstrip('/')+'/'+path.lstrip('/'),value.query,''))
 
-async def verify(sb,settings):
+async def verify(sb,settings,diagnostics=None):
     nonce=secrets.token_hex(16);code='browser-code-'+secrets.token_hex(12);path='/home/user/app/abx-browser-model-fixture-'+nonce+'.py';artifact=None;server=None;owned=[];report={'passed':False,'model_acceptance':'NOT_RUN','checks':{}}
     async def launch(command,env):
         stream=await sb.commands.start(command,env=env,timeout=900);entry={'stream':stream,'pid':None,'exited':False};owned.append(entry);event=asyncio.Event()
@@ -68,6 +68,8 @@ async def verify(sb,settings):
             candidate=result.get('screenshot_path','')
             if not isinstance(candidate,str) or not re.fullmatch(r'/home/user/app/browser-use-artifacts/[0-9a-f]{32}\.png',candidate):raise AssertionError('native screenshot path is outside owned artifact profile')
             artifact=candidate;png=await sb.files.read_bytes(artifact,max_bytes=16*1024**2);state=(await client.get(external)).json()
+            report.update(native_done=result.get('done'),native_success=result.get('success'),native_steps=result.get('steps'),native_error_summary=result.get('error_summary',[]),independent_counter=state.get('count'),submitted_code_matches=state.get('code')==code,final_url_matches=result.get('final_url')==local)
+            if diagnostics is not None:diagnostics.update(report)
             report.update(validate(result,state,png,local,code));report['model_acceptance']='PASS';report['model']=settings['BROWSER_USE_MODEL'];report['passed']=True
     finally:
         cleanup=True
@@ -99,6 +101,7 @@ async def verify(sb,settings):
             artifacts=await sb.files.list('/home/user/app/browser-use-artifacts')
             files_absent=files_absent and all(getattr(item,'path',None)!=artifact and getattr(item,'name',None)!=Path(artifact).name for item in artifacts)
         report['owned_listeners_absent']=absent;report['owned_files_absent']=files_absent
+        if diagnostics is not None:diagnostics.update(report)
         if not cleanup or not absent or not files_absent:raise RuntimeError('owned browser model fixture cleanup not confirmed')
     return report
 
