@@ -102,7 +102,11 @@ Next 使用本地 next dev --webpack --hostname0.0.0.0 --port3000；Vite 使用�
 
 ## 已验证
 
-本模板尚无云端通过回执。本机真实 Next/Vite 页面、编辑生效、进程及监听清理测试通过。镜像及极速版门禁待执行；HMR/WebSocket、生产构建未认证。
+版本1.1.0通过真实SDK创建的极速版已验证镜像注册、原生CLI/SDK自测、完整HTTP6 PASS/0 FAIL/0 SKIP，以及3000/5173独立转发HTTP。两个真实应用都返回SDK写入的新源码标记，再完成自有进程/项目停止及删除。沙箱/模板/镜像仓库清理和运行后摘要独立回查通过。Vite仅允许准确SDK域名。默认FC响应仍把HTML标为附件；浏览器渲染及WebSocket/HMR明确为NOT_RUN，其他提供方也未验证。
+
+| Version | Provider | Evidence |
+| --- | --- | --- |
+| 1.1.0 | alicloud-express | [SDK-created image](evidence/express-2026-10-20.json), [HTTP6](evidence/image-http-2026-10-20T102030Z.json), [independent forwarded source edits](evidence/forwarded-http-2026-10-20T102030Z.json) |
 
 ## 二次开发
 

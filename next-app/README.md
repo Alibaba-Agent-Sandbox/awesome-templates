@@ -106,7 +106,11 @@ Development server environment contains only Node PATH, isolated temporary HOME,
 
 ## Verified
 
-No provider has a passing run recorded for this template. Local actual Next/Vite requests, edit/readback and owned cleanup passed. Image/cloud gates pending; HMR/WebSocket and production builds remain unverified.
+Version1.1.0 passed actual SDK-created Express verified-image registration, native CLI/SDK self-test, full HTTP6 PASS/0 FAIL/0 SKIP and independent forwarded HTTP on3000/5173. Both real apps served SDK-written new source markers, then their owned workers/projects were stopped/deleted. Sandbox/template/registry cleanup and post-runtime digest independently confirmed. Vite uses only the exact SDK hostname. Default FC responses mark HTML as attachments; browser rendering and WebSocket/HMR are explicitly NOT_RUN, as are external providers.
+
+| Version | Provider | Evidence |
+| --- | --- | --- |
+| 1.1.0 | alicloud-express | [SDK-created image](evidence/express-2026-10-20.json), [HTTP6](evidence/image-http-2026-10-20T102030Z.json), [independent forwarded source edits](evidence/forwarded-http-2026-10-20T102030Z.json) |
 
 ## Secondary development
 
