@@ -2,6 +2,10 @@
 
 - [Droid explicit compatible BYOK](notes/proposed/feature/2026-10-20-droid-explicit-byok.md) · [verification](evidence/verify/2026-10-20-droid-explicit-byok.md)
 - [Droid1.2 final native SDK/BYOK/image acceptance](evidence/verify/2026-10-20-droid-native-byok-final.md)
+- [Original Tau2 retail runner](notes/proposed/feature/2026-10-20-tau2-native-retail.md) · [verification](evidence/verify/2026-10-20-tau2-native-retail.md)
+- [Tau2 first native failures and compatibility correction](evidence/verify/2026-10-20-tau2-first-native-failures.md)
+- [Tau2 original task and strict replay progress](evidence/verify/2026-10-20-tau2-native-model-progress.md)
+- [Tau21.0.4 final original-task SDK/model/replay acceptance](evidence/verify/2026-10-20-tau2-native-final.md)
 
 This repository owns template source, specification, catalog and acceptance records.
 Read [CONTRIBUTING.md](../CONTRIBUTING.md) and [the specification](../docs/template-spec.md).
@@ -166,3 +170,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Official Grok Build final native SDK/model acceptance](evidence/verify/2026-10-20-grok-official-native-final.md)
 
 - [Current37native/runtime and required full HTTP receipt snapshot](evidence/verify/2026-10-20-current-native-http37.json)
+
+- [Current38native/runtime and required HTTP receipt snapshot](evidence/verify/2026-10-20-current-native-http38.json)

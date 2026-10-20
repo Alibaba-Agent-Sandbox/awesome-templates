@@ -1,0 +1,7 @@
+{
+  "source_commit": "fc0055dc4e0a316c3f83133267fbd6faaa770992",
+  "size": 92081935,
+  "sha256": "7a227036d07fdeb088dbd0c99fdb40ee9b9e0ebc06aadbc4dec1217b3383e57e",
+  "digest_basis": "controller measured immutable official GitHub commit archive; not an upstream-published checksum",
+  "url": "https://codeload.github.com/sierra-research/tau2-bench/tar.gz/fc0055dc4e0a316c3f83133267fbd6faaa770992"
+}
