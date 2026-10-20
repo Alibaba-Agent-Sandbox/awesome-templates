@@ -143,7 +143,7 @@ v2 继续支持，但 v2 中添加 `application` 会失败。未知字段、版�
 | `deployment.inline` | Serverless Devs v3 mapping，包括 `edition: "3.0.0"`、`name`、`resources`。资源键限 `gateway`、`worker`、`dispatcher`；外部 runtime 三者都必需。每项包含精确 `component: fc3@X.Y.Z`、非空 `props`，可选 `actions`。Adapter 提取 mapping 生成冻结的 `s.yaml`，用户无需再维护一份 YAML。Schema 不验证 FC 属性、组件可用性、IAM 或实际代码。 |
 | `deployment.project` | 高级替代方式：手写且已审查的 Serverless Devs 项目的相对路径。完整引用源码树都属于部署输入。 |
 | `deployment.toolchainLock` | 部署工具版本及完整性锁的相对路径。JSON lock 的格式与验证执行属于 CLI adapter，不属于模板检查器。 |
-| `sandbox` | Provider 名称、`lifetime: per-run`、`workspace: exclusive`、非空 `requiredFeatures`。能力声明不证明 provider 已支持，也不授予运行权限。 |
+| `sandbox` | Provider 名称、`lifetime: per-run`、`workspace: exclusive`、非空 `requiredFeatures`。两种模式都需要 `sandbox.lifecycle`；外部还需 `exec.run`、`files.rw`，sandbox 内还需 `ports.url`。能力声明不证明 provider 已支持，也不授予运行权限。 |
 | `state` | 外部网关需要 `profile: durable`，`bindingRef` 必须指向 `bindings` 的键。客户端直连只能是 `{profile: ephemeral}`。 |
 | `bindings` | 逻辑名称到凭据或服务引用名称的 mapping，不得写密钥、连接串或签名 URL。直连模式允许为空。 |
 | `limits` | 正整数 `maxRunSeconds`、`maxToolSeconds`、`maxConcurrentRuns`、`maxQueuedRuns`、`maxRunsPerMinute`；`maxEventsPerRun >= 2`、`maxOutputBytes >= 1024`。工具预算不能超过任务预算。实际限制由 runtime 执行，检查器不实现准入控制。 |

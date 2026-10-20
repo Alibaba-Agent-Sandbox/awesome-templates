@@ -87,7 +87,9 @@ application:
     lifetime: per-run
     workspace: exclusive
     requiredFeatures:
-    - ports.url
+    - sandbox.lifecycle
+    - exec.run
+    - files.rw
   state:
     profile: durable
     bindingRef: run-store

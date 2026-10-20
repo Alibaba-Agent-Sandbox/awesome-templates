@@ -21,7 +21,7 @@ def local_application() -> dict:
         "runtime": {"placement": "in-sandbox", "driver": "sandbox-local-api", "profile": "server-core-agents"},
         "gateway": {"placement": "client-direct"}, "deployment": {"adapter": "none"},
         "sandbox": {"provider": "alicloud-express", "lifetime": "per-run", "workspace": "exclusive",
-                    "requiredFeatures": ["ports.url"]},
+                    "requiredFeatures": ["sandbox.lifecycle", "ports.url"]},
         "state": {"profile": "ephemeral"}, "bindings": {},
         "limits": {"maxRunSeconds": 900, "maxToolSeconds": 60, "maxConcurrentRuns": 1,
                    "maxQueuedRuns": 8, "maxRunsPerMinute": 10, "maxEventsPerRun": 10000,
@@ -39,6 +39,7 @@ def external_application() -> dict:
         "state": {"profile": "durable", "bindingRef": "run-store"},
         "bindings": {"run-store": "run-database", "model-access": "model-token"},
     })
+    application["sandbox"]["requiredFeatures"] = ["sandbox.lifecycle", "exec.run", "files.rw", "ports.url"]
     return application
 
 
@@ -103,6 +104,15 @@ class ApplicationContractTest(unittest.TestCase):
         self.data["application"] = local_application()
         self.data["application"]["state"] = {"profile": "durable", "bindingRef": "run-store"}
         self.assertTrue(self.check())
+
+    def test_required_provider_feature_baselines(self):
+        for factory, needed in ((local_application, ("sandbox.lifecycle", "ports.url")),
+                                (external_application, ("sandbox.lifecycle", "exec.run", "files.rw"))):
+            for feature in needed:
+                with self.subTest(runtime=factory.__name__,feature=feature):
+                    self.data["application"] = factory()
+                    self.data["application"]["sandbox"]["requiredFeatures"].remove(feature)
+                    self.assertTrue(self.check())
 
     def test_rejects_paths_outside_source_and_missing_files(self):
         for path in ("../outside", "/absolute", "C:/absolute", "a/../../b", "a\\b", "a\x00b", "missing"):

@@ -345,6 +345,9 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 128
+              },
+              "contains": {
+                "const": "sandbox.lifecycle"
               }
             }
           }
@@ -488,6 +491,24 @@
                     }
                   }
                 }
+              },
+              "sandbox": {
+                "properties": {
+                  "requiredFeatures": {
+                    "allOf": [
+                      {
+                        "contains": {
+                          "const": "exec.run"
+                        }
+                      },
+                      {
+                        "contains": {
+                          "const": "files.rw"
+                        }
+                      }
+                    ]
+                  }
+                }
               }
             }
           },
@@ -500,6 +521,15 @@
                 "properties": {
                   "driver": {
                     "const": "sandbox-local-api"
+                  }
+                }
+              },
+              "sandbox": {
+                "properties": {
+                  "requiredFeatures": {
+                    "contains": {
+                      "const": "ports.url"
+                    }
                   }
                 }
               }

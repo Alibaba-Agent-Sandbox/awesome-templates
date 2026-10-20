@@ -52,6 +52,7 @@ application:
     lifetime: per-run
     workspace: exclusive
     requiredFeatures:
+    - sandbox.lifecycle
     - ports.url
   state:
     profile: ephemeral
