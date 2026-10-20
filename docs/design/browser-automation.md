@@ -80,3 +80,5 @@ and artifacts, not a model marker alone. L4 only after an actual additional prov
 run. No provider evidence files until the corresponding complete run passes.
 
 Follow-up real build-network execution exceeded300seconds, so the earlier stream deadline is not a universal per-RUN cap. Stage separation is retained; slow large-asset transport remains unresolved.
+
+Current-version acceptance on 2026-10-20: version 2.0.2 genuine image READY/CLI/SDK and complete Chromium screenshot/PDF/independent artifact HTTP 24 PASS / 0 FAIL / 0 SKIP. Independently verified sandbox/template/registry cleanup. Historical pending statements describe earlier checkpoints; see the current [Verified table](../../browser-automation/README.md#verified).

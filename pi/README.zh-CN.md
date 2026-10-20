@@ -87,7 +87,11 @@ Linux 下每次调用拥有独立进程组，并发排空 stdout/stderr；成功
 
 ## 已验证
 
-版本1.0.1显式修复非root运行用户的工作区目录归属，当前版本的提供方验收尚待重跑。此前回执仅证明原始版本/哈希的已记录范围，保留在下面历史部分。
+版本 1.0.1 已通过真实 CI 镜像登记、官方 READY、CLI/SDK，以及 18 项严格真实模型检查（qwen3.8-flash、OpenAI 兼容协议），含源码修改、新产物、原始测试不变和独立 held-out 完成证明。独立确认 sandbox/template/registry 清理。状态仍为 experimental；其他提供方未验证。
+
+| 提供方 | 范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 精确当前版本、真实镜像和独立清理 | [正式回执](evidence/express-2026-10-20.json)、[HTTP](evidence/image-http-2026-10-20T061437Z.json)、[严格模型](evidence/model-image-2026-10-20T061438Z.json) |
 
 ## 历史验收
 

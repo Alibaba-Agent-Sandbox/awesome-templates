@@ -1,0 +1,19 @@
+{
+  "exit_code": 0,
+  "pass_count": 18,
+  "fail_count": 0,
+  "skip_count": 0,
+  "model": "qwen3.8-flash",
+  "model_protocol": "OpenAI-compatible",
+  "passed": true,
+  "secondary_server_kill_ack": true,
+  "template": "pi",
+  "template_version": "1.0.1",
+  "provider": "alicloud-express",
+  "verification_type": "image-backed-strict-model",
+  "canonical_image_acceptance": true,
+  "cleanup_verified": true,
+  "registry_cleanup_verified": true,
+  "controller_sha256": "f50b4d7596f0f7ff2d8830bedac67ddc7a867e930f293f691a47f3ef73c696f1",
+  "commands_sha256": "f8e3841f94fb87660ebb4d8b17a95c323f433c87dba028dae0375bec697b1c59"
+}

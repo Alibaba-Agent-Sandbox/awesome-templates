@@ -87,7 +87,11 @@ On Linux, the wrapper owns a new process group, drains both output streams and s
 
 ## Verified
 
-Version1.0.1 explicitly repairs non-root workspace-directory ownership. Current-version provider acceptance must be rerun. Earlier receipts establish only their original versions/hashes/scopes and are preserved below.
+Version 1.0.1 passed actual CI-image registration, official READY, CLI/SDK and 18 strict real-model assertions (qwen3.8-flash, OpenAI-compatible), source edit/new artifact/unchanged original tests/independent held-out completion. Independently confirmed sandbox/template/registry cleanup. Status remains experimental; other providers are unverified.
+
+| Provider | Scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | Exact current version, actual image and independently verified cleanup | [canonical receipt](evidence/express-2026-10-20.json), [HTTP](evidence/image-http-2026-10-20T061437Z.json), [strict model](evidence/model-image-2026-10-20T061438Z.json) |
 
 ## Historical verification
 

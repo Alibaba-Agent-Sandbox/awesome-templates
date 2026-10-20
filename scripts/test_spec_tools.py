@@ -51,6 +51,17 @@ class CheckerTest(unittest.TestCase):
             current["cleanup_verified"]=True;dated.write_text(json.dumps(current))
             self.assertTrue(check_template._evidence_passes(dest,"alicloud-express"))
             self.assertEqual(legacy.read_bytes(),original)
+    def test_fc_resource_profile_rejects_actual_ocr_ratio_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp) / "_skeleton"
+            shutil.copytree(SKELETON, dest)
+            for cpu, memory, valid in [(2,1024,False),(1,1024,True),(2,2048,True),(1,4160,False),(1,1025,False)]:
+                with self.subTest(cpu=cpu,memory=memory):
+                    data=check_template.yaml.safe_load((dest/"template.yaml").read_text())
+                    data["resources"]={"cpu":cpu,"memory":memory}
+                    (dest/"template.yaml").write_text(check_template.yaml.safe_dump(data))
+                    errors=[v for v in check_template.check_directory(dest) if v.code=="yaml-resources"]
+                    self.assertEqual(not errors,valid)
 
     def test_provider_preparation_hint_cannot_certify_a_template(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

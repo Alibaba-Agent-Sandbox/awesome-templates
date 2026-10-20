@@ -135,7 +135,14 @@ HTTP 400 为缺少参数或类型错误；401 为服务端认证失败；404 为
 
 ## 已验证
 
-版本2.0.2显式修复非root运行用户的工作区目录归属，当前版本的提供方验收尚待重跑。此前回执仅证明原始版本/哈希的已记录范围，保留在下面历史部分。
+版本 2.0.2 已通过真实 CI 镜像登记、官方 READY、CLI/SDK，以及完整 Chromium 截图/PDF/独立产物 HTTP 检查 24 通过、0 失败、0 跳过。独立确认 sandbox/template/registry 清理。状态仍为 experimental；其他提供方未验证。
+
+| 提供方 | 范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 精确当前版本、真实镜像和独立清理 | [正式回执](evidence/express-2026-10-20.json)、[HTTP](evidence/image-http-2026-10-20T060053Z.json) |
+
+
+另一平台 step 尝试在 1200 秒内未达到 READY，官方最后状态为 building；[失败记录](evidence/full-http-steps-2026-10-20T062809Z.json)保留，不作为 step 通过证据。
 
 ## 历史验收
 

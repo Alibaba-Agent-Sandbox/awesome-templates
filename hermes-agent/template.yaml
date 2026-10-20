@@ -15,7 +15,7 @@ ports: [9000]
 tags: [hermes-agent, ai-coding, ai-agent]
 priority: P0
 wave: 2
-tested_on: []
+tested_on: [alicloud-express]
 capabilities: [shell, files, code, ports]
 env:
   WORKSPACE: "/home/user/app"

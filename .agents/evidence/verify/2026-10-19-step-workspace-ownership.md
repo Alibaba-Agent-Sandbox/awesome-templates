@@ -84,3 +84,5 @@ catalog templates plus skeleton PASS and126 local document links PASS. The
 current source includes both explicit non-root writable WORKDIR and three
 bounded install RUNs. No browser cloud qualification is claimed. Exporting
 new exact-source heavy images uses public CI only, with no cloud/model secrets.
+
+2026-10-20 continuation: see [new immutable heavy-image acceptance](2026-10-20-current-heavy-image-acceptance.md). Browser2.0.2, Pi1.0.1, Hermes1.1.1 and Aider1.0.1 now have independently cleaned exact-version image acceptance; the three coding profiles also passed strict real-model gates. Browser step readiness and SWE model failures remain failures. Overall delivery remains PARTIAL.
