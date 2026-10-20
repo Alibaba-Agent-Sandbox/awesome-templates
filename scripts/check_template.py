@@ -369,7 +369,7 @@ def _pip_hash_lock(line: str, template_dir: Path, docker_lines: list[str]) -> bo
 
 def _check_commands(path: Path, violations: list[Violation]) -> None:
     source = path.read_text(encoding="utf-8")
-    if re.search(r"(sk-|AKIA[0-9A-Z]{8}|ghp_)", source):
+    if re.search(r"((?<![A-Za-z0-9_-])sk-|AKIA[0-9A-Z]{8}|ghp_)", source):
         violations.append(Violation("secrets", f"{path.name}: a string looks like a credential"))
     try:
         tree = ast.parse(source)

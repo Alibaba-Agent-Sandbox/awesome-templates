@@ -37,6 +37,15 @@ def _process_dead(pid: int) -> bool:
 
 
 class CheckerTest(unittest.TestCase):
+    def test_native_no_ask_flag_is_not_a_credential_but_secret_prefix_remains_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/"commands.py"
+            for literal,rejected in [("--no-ask-user",False),("sk-"+"synthetic-example",True),("ghp_"+"synthetic-example",True)]:
+                with self.subTest(literal=literal):
+                    path.write_text("value="+repr(literal)+"\n")
+                    violations=[];check_template._check_commands(path,violations)
+                    self.assertEqual(any(v.code=="secrets" for v in violations),rejected)
+
     def test_same_day_versioned_receipts_are_immutable_and_require_cleanup(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             dest=Path(tmp)/"_skeleton";shutil.copytree(SKELETON,dest)

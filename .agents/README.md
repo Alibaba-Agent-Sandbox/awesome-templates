@@ -36,6 +36,9 @@ Keep per-template provider evidence in its established location and link to it.
 Preserve historical evidence; new runs receive distinct filenames. Do not store
 credentials, private prompts or unsanitized logs. Cross-repository links are absolute.
 
+- [Native Copilot CLI BYOK](notes/proposed/feature/2026-10-20-copilot-cli-byok.md) · [verification](evidence/verify/2026-10-20-copilot-cli-byok.md)
+
+- [Copilot CLI native final acceptance](evidence/verify/2026-10-20-copilot-cli-native-final.md)
 - [Explicit OpenClaw proxy/SDK acceptance](notes/proposed/feature/2026-10-20-openclaw-explicit-proxy-sdk.md) · [verification](evidence/verify/2026-10-20-openclaw-explicit-proxy-sdk.md)
 
 - [OpenClaw native SDK final acceptance](evidence/verify/2026-10-20-openclaw-native-sdk-final.md)
