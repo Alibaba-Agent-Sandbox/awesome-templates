@@ -1,0 +1,13 @@
+{
+  "passed": false,
+  "template": "openclaw",
+  "template_version": "2.1.0",
+  "provider": "alicloud-express",
+  "build_mode": "image",
+  "verification_type": "actual-sdk-owned-native-gateway",
+  "model_acceptance": "NOT_APPLICABLE_GATEWAY_ONLY",
+  "cleanup_verified": false,
+  "registry_cleanup_verified": false,
+  "controller_sha256": "1785e65ae1c0b6028fd866359ea1c60c31bdca14a375c25ba55f376a53e36723",
+  "commands_sha256": "86978657c80885c1d57f8aa000a4f0df3a83d1f5bb283490f6278e376c83050b"
+}

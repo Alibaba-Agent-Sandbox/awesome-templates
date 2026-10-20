@@ -35,7 +35,7 @@
   },
   "cleanup_verified": true,
   "exit_code": 0,
-  "receipt": "openclaw/evidence/express-2026-10-20.json",
+  "receipt": "openclaw/evidence/express-2026-10-20T155238Z.json",
   "command_calls": 2,
   "duration_s": 1155.58
 }
