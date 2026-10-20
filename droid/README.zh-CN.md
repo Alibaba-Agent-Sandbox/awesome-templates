@@ -2,7 +2,7 @@
 
 ## 做什么
 
-模板1.2.0 新增 `droid_byok`：真实固定版本 CLI 使用显式兼容模型接口，无需 Factory 账号；原有 `droid` 账户模式保留。两种模式均使用每次调用独立状态及有界自有进程清理。当前1.2验收待完成，旧回执仅证明历史版本。
+模板1.2.0 新增 `droid_byok`：真实固定版本 CLI 使用显式兼容模型接口，无需 Factory 账号；原有 `droid` 账户模式保留。两种模式均使用每次调用独立状态及有界自有进程清理。当前1.2的原生 SDK/极速版/BYOK 验收已通过，详见下节；旧回执保留历史范围。
 
 在现有项目上无头运行 Factory Droid 0.241.1。具名命令提供有执行时限的编码调用、版本查询与不调用模型的安装检查。
 
@@ -49,27 +49,73 @@ abx run <sandbox-id> droid --arg prompt='Review the existing project' --arg auto
 
 ## 快速开始（Python SDK）
 
-BYOK 示例使用配套 `agent-sandbox-client`，按[源码安装说明](../docs/python-client-installation.md)安装。配置在服务导入时捕获，须检查 setup 标志；预热进程需要[显式环境启动](../docs/runtime-environment.zh-CN.md)。模型密钥不经具名命令参数传递。示例已核对源码，实际验收待完成。
+BYOK 示例使用配套 `agent-sandbox-client`，按[源码安装说明](../docs/python-client-installation.md)安装。配置在服务导入时捕获，须检查 setup 标志；预热进程需要[显式环境启动](../docs/runtime-environment.zh-CN.md)。模型密钥不经具名命令参数传递。示例已通过语法检查，记录中的云验收已通过显式9010服务执行这些 SDK 操作。
 
 ```python
+import asyncio
 import os
+import secrets
+
+import httpx
 from agent_sandbox.api.sandbox import Sandbox
 
-async def byok_example():
-    settings = {name: os.environ[name] for name in (
-        "DROID_MODEL_API_KEY", "DROID_MODEL_BASE_URL", "DROID_MODEL")}
-    sb = await Sandbox.create(template="<owned-template-id>", envs=settings, timeout=900)
+async def example():
+    settings = {name: os.environ[name] for name in ('DROID_MODEL_API_KEY', 'DROID_MODEL_BASE_URL', 'DROID_MODEL')}
+    token = secrets.token_urlsafe(32)
+    settings.update(HOME="/home/user", WORKSPACE='/home/user/app',
+                    ABX_SERVER_BASE_DIR='/home/user/app', ABX_SERVER_TOKEN=token,
+                    PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin")
+    sb = await Sandbox.create(template="<owned-template-id>", timeout=1200)
+    stream = drain = server = None
     try:
-        print(await sb.run("droid_version"))
-        # A prewarmed server requires explicit process startup with settings.
-        print(await sb.run("droid_byok_setup_check"))
+        stream = await sb.commands.start(
+            "agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py",
+            env=settings, timeout=1100)
+        started = asyncio.Event()
+        async def consume():
+            async for chunk in stream:
+                if chunk.pid:
+                    started.set()
+        drain = asyncio.create_task(consume())
+        await asyncio.wait_for(started.wait(), 90)
+        async with httpx.AsyncClient(timeout=10) as client:
+            for _ in range(60):
+                try:
+                    response = await client.get(sb.network.get_url(9010) + "/health",
+                                                headers=sb.network.get_access_headers())
+                    if response.status_code == 200:
+                        break
+                except httpx.HTTPError:
+                    pass
+                await asyncio.sleep(1)
+            else:
+                raise RuntimeError("configured server not healthy")
+        server = sb.server_at(9010, token=token)
+        print(await server.commands.run('droid_version', timeout=90))
+        setup = await server.commands.run('droid_byok_setup_check', timeout=60)
+        if not all(setup.get(k) is True for k in ("api_key_set", "base_url_set", "model_set")):
+            raise RuntimeError("model configuration not present in this server")
         await sb.files.write("/home/user/app/calc.py", "def add(a, b): return a - b\n")
-        result = await sb.run("droid_byok", prompt="Fix calc.py so add returns the sum.",
-                              command_timeout=300, timeout=360)
-        print(result["exit_code"], result["native_version"])
+        result = await server.commands.run("droid_byok", prompt="Fix calc.py so add returns the sum.",
+                                           command_timeout=600, timeout=660)
+        if result["exit_code"] != 0:
+            raise RuntimeError("native Droid did not complete successfully")
         print(await sb.files.read("/home/user/app/calc.py"))
     finally:
-        await sb.kill()
+        try:
+            if server is not None:
+                await server.aclose()
+        finally:
+            try:
+                await sb.kill()
+            finally:
+                if drain is not None:
+                    drain.cancel()
+                    await asyncio.gather(drain, return_exceptions=True)
+                if stream is not None:
+                    await stream.cancel()
+
+asyncio.run(example())
 ```
 
 保留的 Factory 账户模式示例：
@@ -159,7 +205,15 @@ Factory 凭据在 [Factory API 密钥设置](https://app.factory.ai/settings/api
 
 ## 已验证
 
-模板1.2.0 为 experimental，`tested_on: []`。当前实际镜像、SDK 创建的标准极速版步骤、完整 HTTP、真实 BYOK 修改源文件及独立所属资源清理均为 PENDING。下列1.1.1历史回执不能证明已变更运行时通过，也不声明实际 Factory 账户模型通过。
+模板1.2.0 为 experimental，`tested_on: [alicloud-express]`。
+[同源码镜像 L1](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39500551739)、
+[标准原生步骤及 SDK 创建](evidence/express-2026-10-20T212811Z.json)、
+[完整 HTTP/模型记录](evidence/verification-steps-2026-10-20T212811Z.json)通过：HTTP8PASS/0FAIL/0SKIP，
+真实批准模型 BYOK17PASS/0FAIL/0SKIP。传入真实模型密钥前，云端原生合成探测已确认正确模型/Bearer、
+冲突项目配置零请求、六种原生文件工具和测试文件/端口清理。真实编码修复已有失败源文件，原测试字节不变，
+生成新报告及 nonce 产物，返回后以不可预知 ACK 独立通过完整原测试与隐藏用例。所属项目、私有状态、
+监听端口及外层沙箱/模板均独立确认清理，耗时134.596秒。不声明当前 Factory 账户模型或其他提供商通过。
+SDK 示例已核对语法，云记录通过显式9010服务执行同样 SDK 操作；历史回执不改写。
 
 ## 历史验收
 

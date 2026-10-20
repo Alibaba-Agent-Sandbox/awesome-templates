@@ -1,6 +1,7 @@
 # Engineering records: awesome-templates
 
 - [Droid explicit compatible BYOK](notes/proposed/feature/2026-10-20-droid-explicit-byok.md) · [verification](evidence/verify/2026-10-20-droid-explicit-byok.md)
+- [Droid1.2 final native SDK/BYOK/image acceptance](evidence/verify/2026-10-20-droid-native-byok-final.md)
 
 This repository owns template source, specification, catalog and acceptance records.
 Read [CONTRIBUTING.md](../CONTRIBUTING.md) and [the specification](../docs/template-spec.md).

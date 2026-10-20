@@ -2,7 +2,7 @@
 
 ## What it does
 
-Template1.2.0 adds `droid_byok`: the genuine fixed CLI uses an explicit compatible provider without a Factory account. The existing `droid` Factory-account command remains available. Both use private per-call state and bounded owned process cleanup. Current1.2 acceptance remains pending; older receipts certify their historical versions only.
+Template1.2.0 adds `droid_byok`: the genuine fixed CLI uses an explicit compatible provider without a Factory account. The existing `droid` Factory-account command remains available. Both use private per-call state and bounded owned process cleanup. Current1.2 native SDK/Express/BYOK acceptance passed as recorded below; older receipts retain historical scope.
 
 Run Factory Droid 0.241.1 headlessly on an existing project. Named commands expose a bounded coding call, the installed version, and a setup inspection without calling a model.
 
@@ -49,27 +49,73 @@ Use the template ID returned by installation. Inject `FACTORY_API_KEY` through y
 
 ## Quick start (Python SDK)
 
-BYOK example with the paired `agent-sandbox-client`: install using the [source guide](../docs/python-client-installation.md). Settings are captured at server import. Inspect setup flags; a prewarmed process requires [explicit environment startup](../docs/runtime-environment.md). No model key is passed in named-command arguments. Example source checked; actual qualification pending.
+BYOK example with the paired `agent-sandbox-client`: install using the [source guide](../docs/python-client-installation.md). Settings are captured at server import. Inspect setup flags; a prewarmed process requires [explicit environment startup](../docs/runtime-environment.md). No model key is passed in named-command arguments. The example is syntax-checked; recorded cloud acceptance exercised these SDK operations with the explicitly configured9010server.
 
 ```python
+import asyncio
 import os
+import secrets
+
+import httpx
 from agent_sandbox.api.sandbox import Sandbox
 
-async def byok_example():
-    settings = {name: os.environ[name] for name in (
-        "DROID_MODEL_API_KEY", "DROID_MODEL_BASE_URL", "DROID_MODEL")}
-    sb = await Sandbox.create(template="<owned-template-id>", envs=settings, timeout=900)
+async def example():
+    settings = {name: os.environ[name] for name in ('DROID_MODEL_API_KEY', 'DROID_MODEL_BASE_URL', 'DROID_MODEL')}
+    token = secrets.token_urlsafe(32)
+    settings.update(HOME="/home/user", WORKSPACE='/home/user/app',
+                    ABX_SERVER_BASE_DIR='/home/user/app', ABX_SERVER_TOKEN=token,
+                    PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin")
+    sb = await Sandbox.create(template="<owned-template-id>", timeout=1200)
+    stream = drain = server = None
     try:
-        print(await sb.run("droid_version"))
-        # A prewarmed server requires explicit process startup with settings.
-        print(await sb.run("droid_byok_setup_check"))
+        stream = await sb.commands.start(
+            "agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py",
+            env=settings, timeout=1100)
+        started = asyncio.Event()
+        async def consume():
+            async for chunk in stream:
+                if chunk.pid:
+                    started.set()
+        drain = asyncio.create_task(consume())
+        await asyncio.wait_for(started.wait(), 90)
+        async with httpx.AsyncClient(timeout=10) as client:
+            for _ in range(60):
+                try:
+                    response = await client.get(sb.network.get_url(9010) + "/health",
+                                                headers=sb.network.get_access_headers())
+                    if response.status_code == 200:
+                        break
+                except httpx.HTTPError:
+                    pass
+                await asyncio.sleep(1)
+            else:
+                raise RuntimeError("configured server not healthy")
+        server = sb.server_at(9010, token=token)
+        print(await server.commands.run('droid_version', timeout=90))
+        setup = await server.commands.run('droid_byok_setup_check', timeout=60)
+        if not all(setup.get(k) is True for k in ("api_key_set", "base_url_set", "model_set")):
+            raise RuntimeError("model configuration not present in this server")
         await sb.files.write("/home/user/app/calc.py", "def add(a, b): return a - b\n")
-        result = await sb.run("droid_byok", prompt="Fix calc.py so add returns the sum.",
-                              command_timeout=300, timeout=360)
-        print(result["exit_code"], result["native_version"])
+        result = await server.commands.run("droid_byok", prompt="Fix calc.py so add returns the sum.",
+                                           command_timeout=600, timeout=660)
+        if result["exit_code"] != 0:
+            raise RuntimeError("native Droid did not complete successfully")
         print(await sb.files.read("/home/user/app/calc.py"))
     finally:
-        await sb.kill()
+        try:
+            if server is not None:
+                await server.aclose()
+        finally:
+            try:
+                await sb.kill()
+            finally:
+                if drain is not None:
+                    drain.cancel()
+                    await asyncio.gather(drain, return_exceptions=True)
+                if stream is not None:
+                    await stream.cancel()
+
+asyncio.run(example())
 ```
 
 Legacy Factory-account example:
@@ -159,7 +205,20 @@ Default: 2 vCPU, 2048 MB RAM, port 9000. BYOK calls require your configured mode
 
 ## Verified
 
-Template1.2.0 is experimental with `tested_on: []`. Actual current image, SDK-created canonical Express steps, full HTTP, genuine BYOK source editing and independent owned cleanup are PENDING. Historical1.1.1 receipts below do not qualify this changed runtime. No current real Factory-account model pass is claimed.
+Template1.2.0, experimental, `tested_on: [alicloud-express]`. Actual same-source
+[L1 image39500551739](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39500551739),
+[canonical SDK-created native steps](evidence/express-2026-10-20T212811Z.json) and
+[full HTTP/model proof](evidence/verification-steps-2026-10-20T212811Z.json) PASS.
+HTTP8PASS/0FAIL/0SKIP and genuine approved-model BYOK17PASS/0FAIL/0SKIP. A native
+synthetic-key cloud probe first verified exact model/Bearer routing, zero requests
+to conflicting project settings, six permitted file tools and fixture absence
+before any real model key. Real coding fixed the seeded existing source, preserved
+all original tests byte-for-byte, created fresh report/nonce artifacts, and passed
+complete original plus held-out post-return checks with unpredictable ACKs.
+Owned project/private state/listener and outer sandbox/template absence passed.
+Duration134.596s. No current real Factory-account model or other-provider pass
+is claimed. SDK snippets are syntax-checked and recorded cloud acceptance used
+the same explicitly configured9010SDK operations. Historical receipts stay unchanged.
 
 ## Historical verification
 

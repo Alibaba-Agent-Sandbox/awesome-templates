@@ -282,7 +282,7 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: unverified
+      alicloud-express: supported
       alicloud-container: provider-prepared
       cubesandbox: provider-prepared
       e2b: provider-prepared
