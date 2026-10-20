@@ -691,6 +691,17 @@ def check_directory(template_dir: Path) -> list[Violation]:
             if _instruction(line) == "RUN" and "npm install" in line and "@" not in line.split("npm install", 1)[1]:
                 violations.append(Violation("pinned-version", f"unpinned npm install in Dockerfile: {line}"))
 
+    opt_in = template_dir / "server-sdk.commit"
+    if opt_in.exists() or opt_in.is_symlink():
+        try:
+            try:
+                from .server_sdk_pin import server_commit
+            except ImportError:
+                from server_sdk_pin import server_commit
+            server_commit(template_dir)
+        except (ValueError, OSError) as exc:
+            violations.append(Violation("server-sdk-pin", str(exc)))
+
     commands = template_dir / "commands.py"
     if commands.is_file():
         _check_commands(commands, violations)
