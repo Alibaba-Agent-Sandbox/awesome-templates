@@ -123,3 +123,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Document HTML, slides and Writer PDF](notes/proposed/feature/2026-10-20-document-html-pptx-pdf.md) · [verification](evidence/verify/2026-10-20-document-html-pptx-pdf.md)
 - [Native Media argv and exact SDK source](notes/implemented/feature/2026-10-20-native-media-args.md) · [verification](evidence/verify/2026-10-20-native-media-args-final.md).
+
+- [Document1.1final native/SDK/image/step acceptance](evidence/verify/2026-10-20-document-html-pptx-pdf-final.md)

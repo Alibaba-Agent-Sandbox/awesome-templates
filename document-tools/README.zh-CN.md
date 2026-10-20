@@ -146,7 +146,11 @@ Office限制2GiB地址空间及60–61秒CPU；Pandoc保留1GiB地址空间、25
 
 ## 已验证
 
-1.1版的HTML/PPTX/PDF与新版镜像、极速版验收待完成；下方1.0记录保留为历史，不用于认证1.1。
+| 提供方 | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express |1.1.0；真实 SDK 创建的镜像及原生 step；各36项完整 HTTP 检查，0失败/0跳过；独立资源清理 | [镜像](evidence/express-2026-10-20.json) · [step](evidence/full-http-steps-2026-10-20T143722Z.json) |
+
+实际原生 Writer 生成 PDF，并独立读取页数、随机文本与中文；PPTX/DOCX XML、完整文件哈希和原始输入也独立核验。镜像另确认私有仓库删除。下方1.0记录保留为历史，失败尝试未改写。见[最终验收](../.agents/evidence/verify/2026-10-20-document-html-pptx-pdf-final.md)。
 
 ## 1.0历史验证
 
@@ -187,6 +191,9 @@ Office限制2GiB地址空间及60–61秒CPU；Pandoc保留1GiB地址空间、25
 模板：[awesome-templates](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues)。Server/client：[python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues)。部署 CLI：[agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues)。
 
 ## 许可证
+
+LibreOffice 遵循 [MPL-2.0 及所含组件许可](https://www.libreoffice.org/licenses/)。保留[准确 Debian 源码入口](https://packages.debian.org/source/trixie/libreoffice)及安装包中的版权文件；字体的版权与许可文件也保留。
+
 
 模板 Python 代码：[Apache-2.0](../LICENSE)。[Pandoc](https://pandoc.org/) 保留 GPL-2.0-or-later 及 Debian copyright 文件，不改标为 Apache-2.0。精确发行源码见 [Debian pandoc](https://packages.debian.org/source/trixie/pandoc) 和 [pandoc-data](https://packages.debian.org/source/trixie/pandoc-data)。smoke Markdown 为原创生成文本。
 

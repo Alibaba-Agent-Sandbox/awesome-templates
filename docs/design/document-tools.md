@@ -2,11 +2,11 @@
 
 ## Purpose
 
-Implement the first Pandoc text slice of [Issue 55](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/55). An uploaded Markdown document becomes a meaningful DOCX/TXT artifact that callers can independently parse. No model/account or special hardware is needed.
+Deliver the bounded Markdown/HTML office, slide and PDF text conversion from [Issue 55](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/55). An uploaded text document becomes a native DOCX, TXT, PPTX or headless Writer PDF artifact that callers independently parse. No model/account or special hardware is needed.
 
 ## Capabilities
 
-GFM Markdown input; DOCX or plain-text output; buffered named commands; ordinary shared server shell/files/code/ports. Headings, bold, lists and Unicode are tested. Version1.1 adds guarded text HTML input, native Pandoc PPTX and headless LibreOffice Writer PDF. Images, arbitrary argv and GUI conversion remain excluded; actual1.1image/Express acceptance is pending.
+GFM Markdown input; DOCX or plain-text output; buffered named commands; ordinary shared server shell/files/code/ports. Headings, bold, lists and Unicode are tested. Version1.1 adds guarded text HTML input, native Pandoc PPTX and headless LibreOffice Writer PDF. Images, arbitrary argv and GUI conversion remain excluded; current1.1image/Express acceptance passes; see the final record.
 
 ## Exposed API
 
@@ -19,15 +19,15 @@ No public SDK/server API changes are made. The new template narrows the survey's
 
 ## How to build
 
-[Dockerfile](../../document-tools/Dockerfile) uses the Alibaba base, exact `pandoc=3.1.11.1+ds-2` and `pandoc-data=3.1.11.1-3`, preserved distribution notices and standard generation 2 serve/healthcheck. Server source fallback is immutable `e2cb27e24fde0a67112f82b8d44af463445a5d1a`, while an injected wheel wins. Non-root `user` owns `/home/user/app`. Headless writer-nogui/core-nogui/common are pinned to4:25.2.3-2+deb13u8with DejaVu/Noto fonts. Each conversion gets a fresh private profile; only generated validated DOCX reaches Writer. There is no persistent office daemon. Pandoc package identities and actual extracted programs were verified. Writer package availability is checked against official Debian metadata; its required native CI/image/Express execution remains pending.
+[Dockerfile](../../document-tools/Dockerfile) uses the Alibaba base, exact `pandoc=3.1.11.1+ds-2` and `pandoc-data=3.1.11.1-3`, preserved distribution notices and standard generation 2 serve/healthcheck. Server source fallback is immutable `e2cb27e24fde0a67112f82b8d44af463445a5d1a`, while an injected wheel wins. Non-root `user` owns `/home/user/app`. Headless writer-nogui/core-nogui/common are pinned to4:25.2.3-2+deb13u8with DejaVu/Noto fonts. Each conversion gets a fresh private profile; only generated validated DOCX reaches Writer. There is no persistent office daemon. Pandoc package identities and actual extracted programs were verified. Writer package availability is checked against official Debian metadata; its native CI and actual SDK-created image/step execution now pass.
 
 ## Express feasibility
 
-Feasible: yes for the bounded CPU text profile; new image/Express validation pending
+Feasible: yes for the bounded CPU text profile; current1.1image/Express validation passes
 
-Limiting factor: actual pinned native PDF/image/provider acceptance remains required; no display/GPU/KVM is needed.
+Limiting factor: the bounded text profile excludes images, macros and arbitrary native options; no display/GPU/KVM is needed.
 
-The implemented slice runs under 2 vCPU / 4096 MB with no nested Docker, KVM, display or extra capabilities. Native address space is capped at 1 GiB with a 256 MiB Haskell heap and two runtime capabilities, 30/31-second CPU limits and caller-bounded shared wall deadline. Input is at most 1 MiB, output at most 8 MiB, and one conversion is active per server.
+The implemented slice runs under 2 vCPU / 4096 MB with no nested Docker, KVM, display or extra capabilities. Pandoc has 1 GiB address space, a 256 MiB Haskell heap and two runtime capabilities with 30/31-second CPU limits; Writer has 2 GiB address space and 60/61-second CPU limits. Both share the caller-bounded wall deadline. Input is at most 1 MiB, output at most 8 MiB, and one conversion is active per server.
 
 ## Risks
 
@@ -39,7 +39,7 @@ Native children receive no cloud/model credentials, use bounded diagnostics and 
 
 L0: checker; actual pinned Pandoc regression suite; actual authenticated Python SDK; required-engine HTTP E2E. Independent controllers create nonce/Unicode Markdown, upload/download through files APIs, verify full bytes/hashes and parse DOCX XML heading/bold/content plus TXT. Original input remains unchanged. Negative cases include path/URI/argv attempts, symlinks/FIFO/oversized/binary/empty inputs, images/raw/non-web links, no-clobber outputs, invalid limits/formats, concurrent work, bounded diagnostics, secret-environment exclusion, and real native descendant cleanup for success/failure/timeout. Missing source files during smoke failure must not prevent cleanup of other owned artifacts.
 
-L1: actual Docker build must show the exact installed package/version and run non-root `document_version`/`document_smoke`. L2: actual canonical `scripts/express_e2e.py document-tools` must deploy with the real CLI and run both smoke commands externally via CLI/SDK with strict owned resource cleanup. L3: N/A; no model/agent claim. L4: no additional provider verified.
+L1: actual Docker build must show the exact installed package/version and run non-root `document_version`/`document_smoke`. L2: actual canonical `scripts/express_e2e.py document-tools` must deploy with the real CLI and run all declared smoke commands externally via CLI/SDK with strict owned resource cleanup. L3: N/A; no model/agent claim. L4: no additional provider verified.
 
 
 ## Version1.1implementation and independent acceptance
@@ -60,3 +60,5 @@ skip. The external full HTTP controller independently downloads and parses actua
 PDF pages/text/nonce, PPTX slides and DOCX styling, verifies complete hashes and
 original inputs, then deletes only owned files. Old1.0provider receipts never
 qualify1.1. See the new dated engineering record for exact current results.
+
+[Final actual1.1SDK image/step acceptance](../../.agents/evidence/verify/2026-10-20-document-html-pptx-pdf-final.md) independently verifies PDF pages/text, all formats and owned cleanup. The official Writer launcher handles first-start restart81; the initial direct-binary failure remains historical.
