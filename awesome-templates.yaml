@@ -292,7 +292,7 @@ templates:
     status: experimental
 
   - name: media-tools
-    description: Bounded offline CPU MP4, WAV and FLAC conversion with pinned FFmpeg.
+    description: Bounded offline CPU FFmpeg presets and native JSON argv with real process results.
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: media-tools
     tags:

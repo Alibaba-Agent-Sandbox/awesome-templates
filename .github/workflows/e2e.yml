@@ -110,11 +110,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - name: Resolve immutable Media server source
+        run: echo "SERVER_SDK_SHA=$(python3 scripts/server_sdk_pin.py media-tools)" >> "$GITHUB_ENV"
       - name: Checkout the public pinned server SDK
         uses: actions/checkout@v4
         with:
           repository: alibaba-agent-sandbox/python-sdk
-          ref: e2cb27e24fde0a67112f82b8d44af463445a5d1a
+          ref: ${{ env.SERVER_SDK_SHA }}
           path: vendor/python-sdk
           persist-credentials: false
       - name: Install scoped test dependencies
@@ -146,8 +148,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: alibaba-agent-sandbox/python-sdk
-          # Includes the postponed-annotation dataclass command-loader fix.
-          ref: e2cb27e24fde0a67112f82b8d44af463445a5d1a
+          # Local source smoke requires the merged native string-array contract; image pins stay per-template.
+          ref: fd72d3210b85079d93dcf08e19bfded73643162b
           path: vendor/python-sdk
 
       - uses: actions/setup-python@v5
