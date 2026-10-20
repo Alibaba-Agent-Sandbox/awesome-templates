@@ -15,3 +15,16 @@ version under the accepted project standard. Manifest is now1.0.1; provider
 qualification is cleared pending its own genuine run. Prior1.0.0 candidate
 receipts remain unchanged and historical, never relabeled. Fresh exact-source
 image export and current-version cloud acceptance are required before merge.
+
+## 2026-10-20 formal1.0.1 actual acceptance
+
+PASS: current1.0.1 CI artifact12212950308/sourcee8c5e8c actual image on Express,
+official READY, native CLI/SDK smoke and complete external HTTP19 assertions,
+0 failures/0 skips. Independent owned sandbox/template absence and private
+registry tags/repository deletion readback all PASS. Image digest read before
+registration and after runtime matches. Exact source/config/commands/archive
+provenance retained in the new immutable2026-10-20 receipts. No old1.0.0 candidate
+record was overwritten or relabelled. Current qualification now cites only this
+formal version. Actual steps remain a separate build-mode attempt. Updated
+metadata/docs need their own current-head CI and ordinary merge before Issue57
+closure. No model account is needed.

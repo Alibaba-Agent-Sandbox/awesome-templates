@@ -106,7 +106,18 @@ The last two settings support native diagnostics; they are not command parameter
 
 ## Verified
 
-The resource-profile correction is formally versioned1.0.1. The earlier1.0.0 candidate with CPU1/1GB passed19 real checks, but its receipts certify only that original version/hash. A separate1.0.1 run is required; no receipt is relabeled.
+| Provider | Scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | Version1.0.1 actual CI image, official READY, CLI/SDK, full HTTP19 PASS/0 SKIP and independent sandbox/template/registry cleanup | [2026-10-20](evidence/express-2026-10-20.json), [full run](evidence/image-http-2026-10-20T054627Z.json) |
+
+The1vCPU/1024MB resource correction is formally versioned1.0.1 and independently
+verified at that exact contract. The controller checks random-digit pixels,
+original input bytes, downloaded TXT/TSV contents/hashes/confidence/bounds, blank
+negative control and artifact deletion. Earlier1.0.0 candidate passes and failed
+attempts remain in the historical section below; none was relabeled. This run
+uses a verified CI image and real native image registration, not Dockerfile or
+platform-step deployment. The step preparation/attempt records remain separate.
+
 
 ## Historical verification
 
