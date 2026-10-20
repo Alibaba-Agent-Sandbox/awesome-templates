@@ -4,6 +4,9 @@ This repository owns template source, specification, catalog and acceptance reco
 Read [CONTRIBUTING.md](../CONTRIBUTING.md) and [the specification](../docs/template-spec.md).
 New engineering records use English and stay in this repository.
 
+- [Document HTML, slides and Writer PDF](notes/proposed/feature/2026-10-20-document-html-pptx-pdf.md) · [verification](evidence/verify/2026-10-20-document-html-pptx-pdf.md)
+- [Document1.1final native/SDK/image/step acceptance](evidence/verify/2026-10-20-document-html-pptx-pdf-final.md)
+
 - [Kimi Code runtime](notes/proposed/feature/2026-10-19-kimi-code.md)
   · [verification](evidence/verify/2026-10-19-kimi-code.md)
 
