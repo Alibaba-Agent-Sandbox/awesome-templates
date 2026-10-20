@@ -167,7 +167,7 @@ Version2.1.0 passed actual Alibaba Express native steps, Python SDK Sandbox.crea
 | --- | --- | --- |
 | 2.1.0 | alicloud-express | [SDK-created steps](evidence/express-2026-10-20T094547Z.json), [full HTTP29](evidence/full-http-steps-2026-10-20T094547Z.json) |
 
-## Historical verification
+## Historical2.0.2 verification
 
 Version 2.0.2 passed actual CI-image registration, official READY, CLI/SDK and complete Chromium screenshot/PDF/independent artifact HTTP 24 PASS / 0 FAIL / 0 SKIP. Independently confirmed sandbox/template/registry cleanup. Status remains experimental; other providers are unverified.
 

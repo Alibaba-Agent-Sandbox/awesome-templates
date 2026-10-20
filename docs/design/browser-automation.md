@@ -38,7 +38,7 @@ RUN steps execute during build before USER user. Version2.0.2 splits the build t
 isolate installation phases after a stream deadline failure; runtime APIs and
 the full Chromium profile are unchanged.
 The browser path is `/opt/playwright`. The server wheel injected by deploy wins;
-fallback is python-sdk archive `35da216a300f1e2e84254a1cf4b4a7ea98681505`.
+current2.1.0 fallback is python-sdk archive `e2cb27e24fde0a67112f82b8d44af463445a5d1a`.
 Generation 2 uses `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`
 and readiness `agent-sandbox-server healthcheck --port 9000`. No CMD/ENTRYPOINT.
 

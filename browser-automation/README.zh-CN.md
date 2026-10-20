@@ -157,7 +157,7 @@ HTTP 400 为缺少参数或类型错误；401 为服务端认证失败；404 为
 | --- | --- | --- |
 | 2.1.0 | alicloud-express | [SDK-created steps](evidence/express-2026-10-20T094547Z.json), [full HTTP29](evidence/full-http-steps-2026-10-20T094547Z.json) |
 
-## 历史验收
+## 2.0.2 历史验收
 
 版本 2.0.2 已通过真实 CI 镜像登记、官方 READY、CLI/SDK，以及完整 Chromium 截图/PDF/独立产物 HTTP 检查 24 通过、0 失败、0 跳过。独立确认 sandbox/template/registry 清理。状态仍为 experimental；其他提供方未验证。
 
