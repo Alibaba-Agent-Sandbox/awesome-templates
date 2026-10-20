@@ -1,0 +1,3 @@
+# Three native SDK creation verification
+
+Status: PASS actual cloud/native route for Hermes1.1.1/Pi1.0.1/Aider1.0.1. Verified immutable CI images reached official READY; actual Python Sandbox.create, CLI/SDK named smoke and complete model-off HTTP passed, with explicit model SKIPs retained. Independently confirmed sandbox/template/registry cleanup and post-runtime tag digest. Prior exact-version real-model passes retained as separate history; commands/controller SHA256 checked equal to current source, no model rerun claimed. See [aggregate provenance](2026-10-20-three-native-sdk-create.json). Source/docs/current-head CI and merge still required.

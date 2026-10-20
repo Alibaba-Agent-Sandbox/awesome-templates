@@ -1,0 +1,54 @@
+{
+  "date": "2026-10-20",
+  "status": "PASS native SDK image acceptance for3 unchanged runtimes; separate historical real-model proofs",
+  "rows": [
+    {
+      "template": "hermes-agent",
+      "template_version": "1.1.1",
+      "native_sdk_image_receipt": "hermes-agent/evidence/express-2026-10-20T110933Z.json",
+      "model_off_http_receipt": "hermes-agent/evidence/image-http-2026-10-20T110933Z.json",
+      "actual_sdk_create": true,
+      "passed": true,
+      "cleanup_verified": true,
+      "registry_cleanup_verified": true,
+      "tag_digest_verified_after_runtime": true,
+      "commands_sha256": "d849006ecdb653c53c474ccd687b592741437034a505b391c5b80cb6be49333c",
+      "controller_sha256": "2301f0966f4f749a42d551cbe5c5bb5dcef4e423337f88600e5073e60a531626",
+      "prior_exact_runtime_model_receipt": "hermes-agent/evidence/model-image-2026-10-20T062649Z.json",
+      "prior_model_pass_count": 17,
+      "model_rerun": "NOT_RUN; prior successful real Express exact-version/controller model proof retained unchanged"
+    },
+    {
+      "template": "pi",
+      "template_version": "1.0.1",
+      "native_sdk_image_receipt": "pi/evidence/express-2026-10-20T112202Z.json",
+      "model_off_http_receipt": "pi/evidence/image-http-2026-10-20T112202Z.json",
+      "actual_sdk_create": true,
+      "passed": true,
+      "cleanup_verified": true,
+      "registry_cleanup_verified": true,
+      "tag_digest_verified_after_runtime": true,
+      "commands_sha256": "f8e3841f94fb87660ebb4d8b17a95c323f433c87dba028dae0375bec697b1c59",
+      "controller_sha256": "f50b4d7596f0f7ff2d8830bedac67ddc7a867e930f293f691a47f3ef73c696f1",
+      "prior_exact_runtime_model_receipt": "pi/evidence/model-image-2026-10-20T061438Z.json",
+      "prior_model_pass_count": 18,
+      "model_rerun": "NOT_RUN; prior successful real Express exact-version/controller model proof retained unchanged"
+    },
+    {
+      "template": "aider",
+      "template_version": "1.0.1",
+      "native_sdk_image_receipt": "aider/evidence/express-2026-10-20T112118Z.json",
+      "model_off_http_receipt": "aider/evidence/image-http-2026-10-20T112118Z.json",
+      "actual_sdk_create": true,
+      "passed": true,
+      "cleanup_verified": true,
+      "registry_cleanup_verified": true,
+      "tag_digest_verified_after_runtime": true,
+      "commands_sha256": "bc11b5eda480d25554ae2ee61ace873eaf978cdaa3bcc67ad808c88749019684",
+      "controller_sha256": "8184b5ff26871ac62eea9f7870da67d5a04d3a529b749cfc17e1f9d4db5bfc06",
+      "prior_exact_runtime_model_receipt": "aider/evidence/model-image-2026-10-20T064248Z.json",
+      "prior_model_pass_count": 21,
+      "model_rerun": "NOT_RUN; prior successful real Express exact-version/controller model proof retained unchanged"
+    }
+  ]
+}
