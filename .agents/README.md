@@ -16,6 +16,8 @@ New engineering records use English and stay in this repository.
 
 - [Native Crush](notes/proposed/feature/2026-10-20-crush-runtime.md) · [verification](evidence/verify/2026-10-20-crush-runtime.md)
 
+- [Complete platform-step acceptance](notes/proposed/process/2026-10-20-complete-platform-steps.md) · [verification](evidence/verify/2026-10-20-complete-platform-steps.md)
+
 ## Layout and lifecycle
 
 - `notes/proposed/<architecture|feature|process>/YYYY-MM-DD-<slug>.md`: pending decisions.

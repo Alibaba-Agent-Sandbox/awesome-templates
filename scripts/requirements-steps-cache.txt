@@ -1,0 +1,2 @@
+# Optional local transport controller only; never installed in the sandbox image.
+oss2==2.19.1

@@ -105,3 +105,7 @@ CLI: [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issu
 ## 许可证
 
 模板：Apache-2.0。Go：BSD-3-Clause 及附带声明。Rust：MIT OR Apache-2.0 及第三方声明。Temurin/OpenJDK：GPL-2.0 WITH Classpath-exception-2.0 及上游 legal 声明。安装后保留各发行版原始 LICENSE/COPYRIGHT/legal 文件。参阅 [Go](https://go.dev/LICENSE)、[Rust](https://github.com/rust-lang/rust/tree/1.90.0)、[Temurin](https://github.com/adoptium/temurin21-binaries/releases)。
+
+### 当前版本新增平台 step 验收
+
+[真实 step](evidence/express-2026-10-20T135358Z.json) 与 [外部 HTTP 尝试](evidence/verification-steps-2026-10-20T135358Z.json)：官方 READY、Python SDK 创建、CLI/SDK 冒烟，HTTP 1 通过、0 失败、0 跳过。本回执模型调用仍为 NOT_RUN；沙箱/模板及同账户私有资产缓存对象/bucket 都独立确认清理后才发布。既有镜像/模型回执保留其独立范围。

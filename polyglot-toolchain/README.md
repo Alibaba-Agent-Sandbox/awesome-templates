@@ -107,3 +107,7 @@ Report template defects at [awesome-templates Issues](https://github.com/Alibaba
 ## License
 
 Template: Apache-2.0. Go: BSD-3-Clause plus bundled notices. Rust: MIT OR Apache-2.0 and third-party notices. Eclipse Temurin/OpenJDK: GPL-2.0 WITH Classpath-exception-2.0 and upstream legal notices. Original LICENSE/COPYRIGHT/legal files remain in the installed distributions; see [Go](https://go.dev/LICENSE), [Rust](https://github.com/rust-lang/rust/tree/1.90.0), and [Temurin](https://github.com/adoptium/temurin21-binaries/releases).
+
+### Additional current-version platform-step acceptance
+
+[Actual steps](evidence/express-2026-10-20T135358Z.json) and [external HTTP attempt](evidence/verification-steps-2026-10-20T135358Z.json): official READY, Python SDK creation, CLI/SDK smoke and 1 HTTP PASS / 0 FAIL / 0 SKIP. Model calls remain NOT_RUN in this receipt. Independent sandbox/template and private same-account asset-cache object/bucket cleanup passed before publication. Earlier image/model receipts retain their own scope.

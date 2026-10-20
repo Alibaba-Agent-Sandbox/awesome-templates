@@ -7,6 +7,7 @@ COPY inputs are embedded. Unsupported Docker instructions fail closed.
 from __future__ import annotations
 
 import argparse
+import ast
 import base64
 import hashlib
 import json
@@ -23,6 +24,62 @@ ROOT = Path(__file__).resolve().parents[1]
 MATERIALIZER_SHA256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 BASE = "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
 BASE_PATH = "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b"
+
+
+def parallel_assets(source: Path) -> dict:
+    """Only reviewed installers with explicit public archive hashes opt in."""
+    if source.name in {"goose", "crush"}:
+        metadata = json.loads((source / "assets.json").read_text())["assets"]
+        return {arch: [entry] for arch, entry in metadata.items()}
+    if source.name == "code-server":
+        entries = json.loads((source / "assets.json").read_text())["assets"]
+        return {arch: [{"url": entry["browser_download_url"], "size": entry["size"],
+                        "sha256": entry["digest"].removeprefix("sha256:")}]
+                for arch, suffix in [("x86_64", "amd64"), ("aarch64", "arm64")]
+                for entry in entries if entry["name"].endswith("-" + suffix + ".tar.gz")}
+    if source.name == "polyglot-toolchain":
+        metadata = json.loads((source / "toolchains.json").read_text())
+        return {arch: [metadata["go"]["assets"][go], metadata["java"]["assets"][java],
+                       *metadata["rust_components"][arch].values()]
+                for arch, go, java in [("x86_64", "amd64", "x64"), ("aarch64", "arm64", "aarch64")]}
+    if source.name in {"aider", "swe"}:
+        for kind, command in instructions((source / "Dockerfile").read_text()):
+            if kind != "RUN" or "checksums = {" not in command:
+                continue
+            code = command.split("\n", 1)[1].rsplit("\n", 1)[0]
+            tree = ast.parse(code)
+            checksums = next(ast.literal_eval(node.value) for node in tree.body
+                             if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "checksums" for t in node.targets))
+            pattern = re.search(r'name = f"(cpython-[0-9.+]+-\{arch\}-unknown-linux-gnu-install_only_stripped\.tar\.gz)"', code)
+            if not pattern:
+                raise ValueError("unreviewed standalone Python archive profile")
+            release = re.search(r'python-build-standalone/releases/download/([0-9]{8})/', code)
+            if not release:
+                raise ValueError("standalone Python requires an immutable release")
+            result = {arch: [{"url": "https://github.com/astral-sh/python-build-standalone/releases/download/" + release[1] + "/" + pattern[1].format(arch=arch),
+                              "sha256": digest}] for arch, digest in checksums.items()}
+            if source.name == "swe":
+                wheels = json.loads(Path(__file__).with_name("step_uv_bootstrap.json").read_text())["assets"]
+                for arch in result:
+                    result[arch].append(wheels[arch])
+            return result
+        raise ValueError("unreviewed standalone Python installer")
+    if source.name == "hermes-agent":
+        text = (source / "Dockerfile").read_text()
+        metadata = json.loads(Path(__file__).with_name("step_uv_python.json").read_text())
+        if "uv==" + metadata["uv_version"] not in text or "uv python install " + metadata["python_version"] not in text:
+            raise ValueError("uv standalone-Python transport metadata must match the exact source pins")
+        wheels = json.loads(Path(__file__).with_name("step_uv_bootstrap.json").read_text())["assets"]
+        return {arch: [item, wheels[arch]] for arch, item in metadata["assets"].items()}
+    if source.name in {"deepagents", "osworld"}:
+        metadata = json.loads(Path(__file__).with_name("step_uv_bootstrap.json").read_text())
+        if source.name == "deepagents":
+            return {arch: [item] for arch, item in metadata["assets"].items()}
+        browsers = json.loads(Path(__file__).with_name("step_playwright_1_58.json").read_text())
+        if "playwright==1.58.0" not in (source / "requirements.txt").read_text():
+            raise ValueError("unreviewed Playwright browser transport version")
+        return {arch: [metadata["assets"][arch], *items] for arch, items in browsers["assets"].items()}
+    return {}
 
 
 def instructions(text: str) -> list[tuple[str, str]]:
@@ -142,7 +199,11 @@ def compact_run(command: str) -> str:
 
 def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
             server_commit: str | None = None, source_commit: str | None = None,
-            base_path: str | None = None, _inline: bool = True) -> tuple[dict, dict]:
+            base_path: str | None = None, asset_transport: str = "direct",
+            asset_cache: dict | None = None,
+            _inline: bool = True) -> tuple[dict, dict]:
+    if asset_transport not in {"direct", "parallel", "oss"}:
+        raise ValueError("asset transport must be direct, parallel or oss")
     if not re.fullmatch(r"[a-z]+-[a-z]+(?:-\d+)?", region) or not re.fullmatch(r"v\d+\.\d+\.\d+", tag):
         raise ValueError("use an explicit Alibaba region and versioned base tag")
     if server_commit is not None and not re.fullmatch(r"[0-9a-f]{40}", server_commit):
@@ -170,6 +231,57 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
         exports = "".join("export " + shlex.quote(key + "=" + val) + "\n" for key, val in build_env.items())
         directory = shlex.quote(workdir)
         return {"type": "RUN", "args": [exports + "mkdir -p " + directory + " || exit $?\ncd " + directory + " || exit $?\n" + command]}
+    assets = parallel_assets(source) if asset_transport in {"parallel", "oss"} else {}
+    public_assets = assets
+    if assets and asset_transport == "oss":
+        if not asset_cache or asset_cache.get("architecture") not in assets:
+            raise ValueError("private OSS transport requires an owned architecture cache")
+        arch = asset_cache["architecture"]
+        # Short-lived authorization stays in the private execution manifest;
+        # public source/provenance never contains cache URLs or identifiers.
+        assets = {arch: [dict(item, transport_url=asset_cache["urls"][item["url"]])
+                         for item in assets[arch]]}
+    temporary_uv = asset_transport in {"parallel", "oss"} and source.name in {"deepagents", "osworld", "swe"}
+    asset_root = "/tmp/abx-step-assets"
+    uv_root = "/tmp/abx-step-installer"
+    asset_helper = Path(__file__).with_name("step_assets.py")
+    if assets and source.name == "hermes-agent":
+        build_env["UV_PYTHON_INSTALL_MIRROR"] = "file://" + asset_root + "/python-mirror"
+    if temporary_uv:
+        build_env["UV_CACHE_DIR"] = uv_root + "/cache"
+    if assets:
+        files = {"step_assets.py": asset_helper.read_text(), "assets.json": json.dumps(assets)}
+        fetch_helper = False
+        if source_commit:
+            published = subprocess.run(["git", "show", source_commit + ":scripts/step_assets.py"],
+                                       cwd=source, capture_output=True)
+            fetch_helper = published.returncode == 0 and published.stdout == asset_helper.read_bytes()
+        if fetch_helper:
+            del files["step_assets.py"]
+        packed = base64.b64encode(zlib.compress(json.dumps(files).encode(), 9)).decode()
+        bootstrap = ("import base64,json,zlib;from pathlib import Path;"
+                     f"root=Path({asset_root!r});root.mkdir(mode=0o700);"
+                     f"files=json.loads(zlib.decompress(base64.b64decode({packed!r})));"
+                     "[(root/name).write_text(data) for name,data in files.items()]")
+        if fetch_helper:
+            url = "https://raw.githubusercontent.com/Alibaba-Agent-Sandbox/awesome-templates/" + source_commit + "/scripts/step_assets.py"
+            digest = hashlib.sha256(asset_helper.read_bytes()).hexdigest()
+            bootstrap += ("\nimport hashlib,time,urllib.request,urllib.error\n"
+                          "for attempt in range(4):\n"
+                          " try:\n"
+                          f"  with urllib.request.urlopen({url!r},timeout=90) as response:data=response.read(32769)\n"
+                          f"  if len(data)>32768 or hashlib.sha256(data).hexdigest()!={digest!r}:raise RuntimeError('immutable build adapter integrity mismatch')\n"
+                          "  (root/'step_assets.py').write_bytes(data);break\n"
+                          " except (urllib.error.URLError,TimeoutError):\n"
+                          "  if attempt==3:raise RuntimeError('immutable build adapter download failed') from None\n"
+                          "  time.sleep(2**attempt)\n")
+        # Bootstrap/cache operations use only absolute owned paths and the
+        # verified base Python, before any Dockerfile environment/workdir.
+        steps.append({"type": "RUN", "args": ["python3 -c " + shlex.quote(bootstrap)]})
+        for index in range(len(next(iter(assets.values())))):
+            steps.append({"type": "RUN", "args": [f"python3 {asset_root}/step_assets.py fetch {index}"]})
+    if temporary_uv:
+        steps.append({"type": "RUN", "args": [f"python3 {asset_root}/step_assets.py install-uv"]})
     for kind, value in instructions(dockerfile):
         if kind == "FROM":
             if seen_from or value != BASE:
@@ -182,6 +294,36 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
             copied.update(hashes)
             steps.append(run_step(command))
         elif kind == "RUN":
+            if assets:
+                # The adapter exists only in these build Python processes. The
+                # original installer bytes/limits/extraction/version checks stay.
+                value = re.sub(r"(?<![\w/-])python3(?=\s+(?:-\s*<<|/tmp/))",
+                               f"python3 {asset_root}/step_assets.py run", value)
+            if assets and source.name == "hermes-agent" and "uv python install 3.14.6" in value:
+                value = value.replace("uv python install 3.14.6", "uv python install cpython-3.14.6-linux-$(uname -m)-gnu")
+                # The original compound RUN has one literal cd and no shell
+                # exports/functions. Preserve that cwd across bounded phases.
+                directory = "/"
+                for part in re.split(r"\s+&&\s+", value):
+                    if part.startswith("cd "):
+                        directory = shlex.split(part)[1]
+                    else:
+                        if part == "pip install --no-cache-dir uv==0.12.3":
+                            part = f"pip install --no-cache-dir --no-index --no-deps {asset_root}/uv-*.whl"
+                        steps.append(run_step("cd " + shlex.quote(directory) + " && " + part))
+                continue
+            if temporary_uv and ("--require-hashes" in value or source.name == "swe" and re.search(r"/opt/swe-(agent|eval)/bin/pip install", value)):
+                for part in re.split(r"\s+&&\s+", value):
+                    if "--require-hashes" in part or source.name == "swe" and re.match(r"/opt/swe-(agent|eval)/bin/pip install", part):
+                        match = re.fullmatch(r"(/opt/[a-z-]+/bin/)(?:python -m pip|pip) install (.*)", part, re.S)
+                        if not match:
+                            raise ValueError("unreviewed locked Python package installation")
+                        arguments = match[2].replace("--no-cache-dir", "")
+                        part = f"{uv_root}/bin/uv --no-cache pip install --python {match[1]}python {arguments}"
+                    if source.name == "osworld" and "-m playwright install --with-deps chromium" in part:
+                        part = f"python3 {asset_root}/step_assets.py playwright " + part
+                    steps.append(run_step(part))
+                continue
             if "if ls /tmp/*.whl" in value:
                 match = re.fullmatch(r"if ls /tmp/\*\.whl.*?; then\s+.*?else\s+(.*?)\s*;\s*fi(.*)", value, re.S)
                 if not match:
@@ -228,6 +370,9 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
         raise ValueError("the catalog profile must end with USER user")
     if not _inline and source_commit:
         steps.insert(len(steps) - 1, {"type": "RUN", "args": ["rm -f /tmp/abx-step-source-" + source_commit + ".tar.gz"]})
+    cleanup = ([asset_root] if assets else []) + ([uv_root] if temporary_uv else [])
+    if cleanup:
+        steps.insert(len(steps) - 1, {"type": "RUN", "args": ["rm -rf " + " ".join(cleanup)]})
     for step in steps:
         if step["type"] == "RUN":
             step["args"] = [compact_run(step["args"][0])]
@@ -235,8 +380,9 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
     if wire_bytes > 15000:
         if _inline and source_commit:
             return prepare(source, region=region, tag=tag, server_commit=server_commit,
-                           source_commit=source_commit, base_path=base_path, _inline=False)
-        raise ValueError("compressed steps exceed the provider's 16 KiB limit; use an immutable source archive or Dockerfile mode")
+                           source_commit=source_commit, base_path=base_path,
+                           asset_transport=asset_transport, asset_cache=asset_cache, _inline=False)
+        raise ValueError(f"compressed steps ({wire_bytes} bytes) exceed the provider's 16 KiB limit; use an immutable source archive or Dockerfile mode")
     data["base"] = BASE.replace("<region>", region).replace("<tag>", tag)
     data["build"] = {"mode": "steps", "steps": steps}
     provenance = {"schema_version": 1, "template": source.name,
@@ -245,10 +391,21 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
                   "base_image": data["base"], "server_commit_override": server_commit,
                   "verified_base_path": base_path or BASE_PATH,
                   "copy_source_commit": None if _inline else source_commit,
+                  "asset_transport": asset_transport if assets else "parallel" if temporary_uv else "direct",
                   "steps_json_bytes": wire_bytes,
                   "inputs_sha256": {"Dockerfile": hashlib.sha256(dockerfile.encode()).hexdigest(),
                                     "template.yaml": hashlib.sha256((source / "template.yaml").read_bytes()).hexdigest(),
                                     **copied}}
+    if assets:
+        provenance["asset_transport_sha256"] = hashlib.sha256(asset_helper.read_bytes()).hexdigest()
+        provenance["asset_adapter_source_commit"] = source_commit if fetch_helper else None
+        provenance["build_assets"] = public_assets
+        if asset_transport == "oss":
+            provenance["asset_cache_architecture"] = asset_cache["architecture"]
+        if source.name == "hermes-agent":
+            provenance["python_download_profile"] = "uv0.12.3 generic GNU architecture; original Python3.14.6 pin, local verified official-archive mirror and bounded original compound-RUN phases"
+    if temporary_uv:
+        provenance["python_package_transport"] = "temporary uv0.12.3 installer; original package pins/requirements, retaining --require-hashes where declared; separate original compound-RUN phases; removed before runtime"
     manifest = yaml.safe_dump(data, sort_keys=False, allow_unicode=True)
     if len(manifest.encode()) > 8 * 1024 * 1024:
         raise ValueError("generated step manifest exceeds the 8 MiB local safety limit")
@@ -265,10 +422,11 @@ def main() -> int:
     parser.add_argument("--base-path", help="Verified PATH when using a different base-image tag")
     parser.add_argument("--server-commit")
     parser.add_argument("--source-commit", help="Immutable public source; unchanged COPY files are fetched and hash-checked")
+    parser.add_argument("--asset-transport", choices=("direct", "parallel"), default="direct")
     args = parser.parse_args()
     data, provenance = prepare(args.template, region=args.region, tag=args.base_tag,
                                server_commit=args.server_commit, source_commit=args.source_commit,
-                               base_path=args.base_path)
+                               base_path=args.base_path, asset_transport=args.asset_transport)
     args.output.mkdir(parents=True, exist_ok=False)
     (args.output / "template.yaml").write_text(yaml.safe_dump(data, sort_keys=False, allow_unicode=True))
     (args.output / "steps-provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")

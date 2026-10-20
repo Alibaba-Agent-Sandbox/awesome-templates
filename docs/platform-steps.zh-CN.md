@@ -134,3 +134,32 @@ export NODE_PATH="$ABX_NATIVE_DIR/modules/node_modules"
 SDK timeout 表示沙箱生命周期，与构建 READY 等待和请求时限分别配置。创建响应
 丢失时保留私有恢复记录，不能发布验收。关闭本地客户端不删除云沙箱；runner
 随后销毁自有资源并独立确认不存在。
+
+## 审计当前版本的全量 step 验收
+
+运行 `python scripts/step_acceptance.py` 检查当前目录中的每个模板；缺少当前版本的原生 step 回执时退出非零。审计要求记录中的 Dockerfile/运行输入哈希未变、当前每个 CLI/SDK 冒烟调用成功，以及独立确认资源不存在。旧版本和仅镜像成功不能通过。该命令不会创建云资源，也不证明 Docker 或模型验收。
+
+为 `scripts/run_steps_e2e.py` 添加 `--http`，在规范流程拥有的沙箱中运行原有完整外部 HTTP 控制器。回执分别记录控制器哈希、通过/失败/跳过数量和退出码。模型调用保持关闭并标为 NOT_RUN；模型跳过不算 L3。控制器本地依赖缺失时，在创建云资源前拒绝运行。
+
+Goose、Crush、code-server、Polyglot、Aider、SWE、Hermes 可使用 `--asset-transport parallel`，对固定官方归档执行有界并发分段下载。每次响应必须匹配请求的 Content-Range，完整文件必须匹配固定大小/预算及 SHA256，原有未修改安装器继续检查完整性、版本和解包规则。临时 root 专用缓存及进程内 Python URL 适配器在 USER user 前删除。Hermes 使用 uv 官方支持的本地文件镜像，保留 Python3.14.6/uv0.12.3 固定版本，并记录通用 GNU 架构资产和官方元数据来源；原有复合安装按顺序拆分为有界阶段。DeepAgents 和 OSWorld 使用临时 uv0.12.3 安装未改变且带哈希锁的 Python 依赖图，并拆分原有安装阶段；此构建工具及缓存在运行前删除。其他模板继续直接下载。不引入第三方镜像站、替代资产或操作者凭据。转换回执记录助手哈希及精确资产元数据；分段不支持、校验失败或下载失败均不能生成通过证据。
+
+```bash
+python scripts/run_steps_e2e.py goose --asset-transport parallel --http \
+  --sandbox-create sdk --timeout 3600 \
+  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
+python scripts/step_acceptance.py
+```
+
+### 临时私有 OSS 传输
+
+使用 `python -m pip install -r scripts/requirements-steps-cache.txt` 安装可选本地控制器 SDK，再选择 `--asset-transport oss`。它在同一阿里云地域/账户创建唯一拥有的私有 bucket，在上传前和构建下载后验证官方归档哈希；私有执行配方中仅传入短期 GET 授权。公开源码/回执和 Actions 不包含签名 URL 或操作者密钥。bucket/对象保持私有，不修改账户策略。沙箱/模板及精确拥有的对象/bucket 都独立确认不存在后才发布通过证据。创建响应未知时保留私有恢复记录，不能以暂时不存在证明已取消。缓存创建、上传、下载、删除都是真实云操作。
+
+```bash
+python scripts/run_steps_e2e.py goose --asset-transport oss --http \
+  --sandbox-create sdk --timeout 3600 \
+  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
+```
+
+默认仍直接下载。OSS 模式覆盖已审查归档、精确 uv0.12.3 引导 wheel，以及 OSWorld 固定 Playwright1.58.0 浏览器归档。原安装器、哈希锁、版本、解包和非 root 运行要求继续执行。临时浏览器镜像仅绑定回环地址，只提供已校验归档路径，构建结束前关闭。浏览器摘要根据上游固定客户端 URL 实测，不标为上游公布的摘要。
+
+云端执行前必须发布精确适配器源码提交。较大配方下载公开不可变助手并校验 SHA256，从而保留原有 wire 大小门禁；不支持或未发布的配方拒绝运行。可选 `ABX_STEP_LOCAL_ARCHIVE_DIR` 复用按 SHA256 命名的控制器本地归档，上传前仍逐字节校验原固定大小/哈希；不读取调用者凭据文件，也不改变运行时依赖要求。

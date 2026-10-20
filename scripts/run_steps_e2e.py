@@ -7,20 +7,74 @@ Private harness journals/logs remain outside the checkout. This does not run L3.
 from __future__ import annotations
 
 import argparse
+import asyncio
 from contextlib import redirect_stderr, redirect_stdout
 from datetime import datetime, timezone
 import hashlib
 import json
+import os
 from pathlib import Path
 import tempfile
+import sys
 import time
 import uuid
 
 import yaml
 
 import express_e2e
-from prepare_steps import ROOT, prepare
+from prepare_steps import ROOT, parallel_assets, prepare
 from select_image_templates import catalog_names
+
+
+def http_callback(source: Path, stage: Path, result: dict):
+    """Run the unchanged external controller once, inside canonical ownership."""
+    done = False
+
+    async def endpoints(sandbox_id):
+        from agent_sandbox.api.sandbox import Sandbox
+        sandbox = await Sandbox.connect(sandbox_id)
+        try:
+            ports = yaml.safe_load((source / "template.yaml").read_text()).get("ports", [9000])
+            return {port: sandbox.network.get_url(port) for port in ports}
+        finally:
+            await sandbox.close()
+
+    def sdk(sandbox_id, command, arguments):
+        nonlocal done
+        value = express_e2e.default_sdk(sandbox_id, command, arguments)
+        if done:
+            return value
+        done = True
+        urls = asyncio.run(endpoints(sandbox_id))
+        # The controller needs only forwarded sandbox URLs. Cloud credentials
+        # and the operator's model credentials never enter this subprocess.
+        env = {key: val for key, val in os.environ.items()
+               if not any(part in key.upper() for part in
+                          ("TOKEN", "API_KEY", "SECRET", "PASSWORD", "ACCESS_KEY"))}
+        env.update(E2E_BASE_URL=urls[9000], E2E_BASE_DIR="/home/user/app",
+                   E2E_WORKSPACE="/home/user/app", E2E_RUN_LLM="0", E2E_REQUIRE_CLI="1",
+                   E2E_REQUIRE_LLM="0",
+                   E2E_REQUIRE_OCR="1", E2E_REQUIRE_DATABASES="1", E2E_REQUIRE_TOOLCHAIN="1")
+        if source.name == "code-server":
+            env["E2E_CODE_SERVER_URL"] = urls[8443]
+        if source.name == "next-app":
+            env.update(E2E_NEXT_URL=urls[3000], E2E_VITE_URL=urls[5173])
+        script = source / "e2e_test.py"
+        response = express_e2e.run_monitored([sys.executable, str(script)], env=env,
+                                            idle_timeout=600, wall_timeout=600)
+        (stage / "private-http.log").write_text(response.stdout + "\n" + response.stderr)
+        lines = (response.stdout + "\n" + response.stderr).splitlines()
+        checks = {"exit_code": response.returncode,
+                  "pass_count": sum(line.startswith("[PASS]") for line in lines),
+                  "fail_count": sum(line.startswith("[FAIL]") for line in lines),
+                  "skip_count": sum(line.startswith("[SKIP]") for line in lines),
+                  "controller_sha256": hashlib.sha256(script.read_bytes()).hexdigest()}
+        result["http_acceptance"] = checks
+        if response.returncode or checks["fail_count"] or not checks["pass_count"]:
+            raise RuntimeError("external HTTP controller failed; private diagnostics retained")
+        return value
+
+    return sdk
 
 
 def run_one(name: str, args: argparse.Namespace) -> dict:
@@ -31,18 +85,37 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
     stage.chmod(0o700)
     result = {"template": name, "provider": "alicloud-express", "build_mode": "steps",
               "attempt": stamp, "result": "FAIL", "passed": False, "model_acceptance": "NOT_RUN"}
+    cache = None
     try:
+        if args.http:
+            from run_ci_image_e2e import controller_missing_imports
+            missing = controller_missing_imports(source)
+            if missing:
+                result["missing_controller_modules"] = missing
+                raise RuntimeError("missing local HTTP controller prerequisites")
+        cache_config = None
+        if args.asset_transport == "oss" and parallel_assets(source):
+            from step_asset_cache import AssetCache
+            cache = AssetCache(args.region)
+            cache_config = cache.prepare(parallel_assets(source))
         manifest, proof = prepare(source, region=args.region, tag=args.base_tag,
-                                  server_commit=args.server_commit, base_path=args.base_path)
+                                  server_commit=args.server_commit, base_path=args.base_path,
+                                  asset_transport=args.asset_transport, asset_cache=cache_config)
         (stage / "template.yaml").write_text(yaml.safe_dump(manifest, sort_keys=False, allow_unicode=True))
         (stage / "steps-provenance.json").write_text(json.dumps(proof, indent=2) + "\n")
         result["build_provenance"] = proof
         options = express_e2e.build_options([str(stage), "--build", "steps", "--alias",
             f"e2e-steps-{name}-{uuid.uuid4().hex[:8]}", "--timeout", str(args.timeout),
             "--idle-timeout", str(args.timeout), "--wall-timeout", str(args.timeout + 180),
-            "--push-retries", "0", "--sandbox-create", args.sandbox_create])
+            "--push-retries", "0", "--sandbox-create", args.sandbox_create,
+            "--sandbox-timeout", "1200" if args.http else "300"])
+        callback = http_callback(source, stage, result) if args.http else None
+        def verify_owned(intent, runner):
+            observed = express_e2e.owned_resources_absent(intent, runner)
+            result["cleanup_verified"] = observed
+            return observed
         with (stage / "private-harness.log").open("x") as output, redirect_stdout(output), redirect_stderr(output):
-            status = express_e2e.execute(options)
+            status = express_e2e.execute(options, sdk=callback, verify=verify_owned)
         result["exit_code"] = status
         if status == 0:
             receipts = list((stage / "evidence").glob("express-*.json"))
@@ -51,6 +124,10 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
             receipt = json.loads(receipts[0].read_text())
             if receipt.get("cleanup_verified") is not True or receipt.get("build_mode") != "steps":
                 raise RuntimeError("step receipt lacks required cleanup/build-mode evidence")
+            if cache:
+                if not cache.cleanup():
+                    raise RuntimeError("private asset-cache cleanup was not independently verified")
+                receipt["asset_cache"] = cache.public_proof()
             target = source / "evidence" / receipts[0].name
             target.parent.mkdir(exist_ok=True)
             if target.exists():
@@ -66,6 +143,14 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
             result["result"] = "BLOCKED" if status == 2 else "FAIL"
     except Exception as exc:
         result["reason"] = type(exc).__name__ + "; private staging retained"
+    finally:
+        if cache:
+            try:
+                if not cache.cleanup():
+                    result.update(passed=False, result="FAIL", reason="asset-cache cleanup is not independently verified")
+            except Exception:
+                result.update(passed=False, result="FAIL", reason="asset-cache cleanup requires private owned recovery")
+            result["asset_cache"] = cache.public_proof()
     result["duration_s"] = round(time.monotonic() - started, 3)
     evidence = source / "evidence"
     evidence.mkdir(exist_ok=True)
@@ -87,6 +172,9 @@ def main() -> int:
     parser.add_argument("--server-commit", help="Optional immutable source override, recorded separately")
     parser.add_argument("--timeout", type=int, default=900)
     parser.add_argument("--sandbox-create", choices=("cli", "sdk"), default="cli")
+    parser.add_argument("--http", action="store_true", help="Also run the unchanged full external HTTP controller; model cases remain explicitly skipped")
+    parser.add_argument("--asset-transport", choices=("direct", "parallel", "oss"), default="direct",
+                        help="OSS uses a temporary private same-account cache for verified official archives; requires optional local OSS SDK")
     args = parser.parse_args()
     names = catalog_names()
     selected = names if args.all else args.templates

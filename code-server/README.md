@@ -147,3 +147,7 @@ Follow [CONTRIBUTING.md](../CONTRIBUTING.md), [spec](../docs/template-spec.md) a
 ## License
 
 Template: Apache-2.0; code-server: MIT. Preserve official bundled LICENSE/third-party notices, including VS Code/Node components. User-installed extensions retain their own licenses. [Upstream release](https://github.com/coder/code-server/releases/tag/v4.141.0).
+
+### Additional current-version platform-step acceptance
+
+[Actual steps](evidence/express-2026-10-20T135352Z.json) and [external HTTP attempt](evidence/verification-steps-2026-10-20T135352Z.json): official READY, Python SDK creation, CLI/SDK smoke and 5 HTTP PASS / 0 FAIL / 0 SKIP. Model calls remain NOT_RUN in this receipt. Independent sandbox/template and private same-account asset-cache object/bucket cleanup passed before publication. Earlier image/model receipts retain their own scope.

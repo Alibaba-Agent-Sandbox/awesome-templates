@@ -177,3 +177,7 @@ CLI：[agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/iss
 模板采用[Apache-2.0](../LICENSE)。官方Goose为Apache-2.0；[原始许可证](upstream-LICENSE)
 与未改动的官方二进制一并安装。上游依赖保留各自声明。不分发上游桌面、
 Vulkan/CUDA资产、专有账户或模型权重。
+
+### 当前版本新增平台 step 验收
+
+[真实 step](evidence/express-2026-10-20T135350Z.json) 与 [外部 HTTP 尝试](evidence/verification-steps-2026-10-20T135350Z.json)：官方 READY、Python SDK 创建、CLI/SDK 冒烟，HTTP 9 通过、0 失败、1 跳过。本回执模型调用仍为 NOT_RUN；沙箱/模板及同账户私有资产缓存对象/bucket 都独立确认清理后才发布。既有镜像/模型回执保留其独立范围。

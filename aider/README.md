@@ -292,3 +292,7 @@ checks within the disposable sandbox, not an OS security boundary. Earlier real
 model evidence is retained separately; the hardened verifier needs its own run.
 
 For CLI setup, SDK installation, HTTP authentication and resource ownership, see [Using templates](../docs/using-templates.md).
+
+### Additional current-version platform-step acceptance
+
+[Actual steps](evidence/express-2026-10-20T135354Z.json) and [external HTTP attempt](evidence/verification-steps-2026-10-20T135354Z.json): official READY, Python SDK creation, CLI/SDK smoke and 9 HTTP PASS / 0 FAIL / 1 SKIP. Model calls remain NOT_RUN in this receipt. Independent sandbox/template and private same-account asset-cache object/bucket cleanup passed before publication. Earlier image/model receipts retain their own scope.

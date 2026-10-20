@@ -125,3 +125,7 @@ Next 使用本地 next dev --webpack --hostname0.0.0.0 --port3000；Vite 使用�
 仓库源码 Apache-2.0，见 [LICENSE](../LICENSE)。Next、React、Vite 为 MIT，来源固定在 upstream-pins.json，传递依赖许可证随 node_modules 保留。
 
 FC把HTML标为附件时，可在启动自有应用后使用[SDK本地中继](../docs/preview-proxy.zh-CN.md)：python scripts/preview_proxy.py --sandbox-id <owned-sandbox-id> --remote-port 3000（Next）或--remote-port 5173（Vite）。Vite仍传入前述准确allowed_host。中继借用该沙箱；结束时停止中继并显式停止/销毁自有应用资源。Next/Vite此浏览器入口仅完成源码检查，浏览器及HMR未单独认证。
+
+### 当前版本新增平台 step 验收
+
+[真实原生 step](evidence/express-2026-10-20T130712Z.json)：官方 READY、Python SDK 创建、当前 CLI/SDK 冒烟，以及独立确认所拥有沙箱/模板已清理。[完整外部 HTTP](evidence/full-http-steps-2026-10-20T130712Z.json)：6 通过、0 失败、0 跳过。

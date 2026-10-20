@@ -1,0 +1,69 @@
+{
+  "template": "aider",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T135354Z",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "aider",
+    "materializer_sha256": "01283af65ba690502c82c47a8cdf656bc7a9eb9d68af5022959e33dee5bf7c07",
+    "template_version": "1.0.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "ca3118e5123e7ce2ae2e43e2a8a05c88ecf3653d",
+    "asset_transport": "oss",
+    "steps_json_bytes": 9677,
+    "inputs_sha256": {
+      "Dockerfile": "c04473d7181d397e0a5ed19902e10b6abaf59a6765017f36833fdd98f0b1ea7f",
+      "template.yaml": "3843dae59d3f03e12f42ba23d00d9749345ebcc62aa2632e5a1fd251f163fbb1",
+      "commands.py": "bc11b5eda480d25554ae2ee61ace873eaf978cdaa3bcc67ad808c88749019684"
+    },
+    "asset_transport_sha256": "251bb5d203eab97755d94a02561f378b318f71d6e00e4302e43ded97b481daaa",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20260211/cpython-3.12.12+20260211-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
+          "sha256": "1dbaa624a09e15afe7efbdac08d42993135a68db8d34f986ef6977a6d77bdc3c"
+        }
+      ],
+      "aarch64": [
+        {
+          "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20260211/cpython-3.12.12+20260211-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz",
+          "sha256": "85fdc64fe672de7337198a63d89918037bf93bdb03480404d90f8f601abef1dd"
+        }
+      ]
+    },
+    "asset_cache_architecture": "x86_64",
+    "generated_manifest_sha256": "5e8ff5ae5a2901563ca906d9fbe700dc98d65ad6aada89f3d572b777599e71a5"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 9,
+    "fail_count": 0,
+    "skip_count": 1,
+    "controller_sha256": "8184b5ff26871ac62eea9f7870da67d5a04d3a529b749cfc17e1f9d4db5bfc06"
+  },
+  "cleanup_verified": true,
+  "exit_code": 0,
+  "receipt": "aider/evidence/express-2026-10-20T135354Z.json",
+  "command_calls": 2,
+  "asset_cache": {
+    "provider": "alicloud-oss",
+    "private_acl_verified": true,
+    "archives": [
+      {
+        "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20260211/cpython-3.12.12+20260211-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
+        "sha256": "1dbaa624a09e15afe7efbdac08d42993135a68db8d34f986ef6977a6d77bdc3c",
+        "size": 33887801
+      }
+    ],
+    "signed_get_ttl_seconds": 3600,
+    "cleanup_verified": true
+  },
+  "duration_s": 1017.668
+}

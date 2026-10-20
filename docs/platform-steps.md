@@ -168,3 +168,32 @@ The SDK timeout is sandbox lifetime, independent of build readiness and request
 timeouts. A lost creation response keeps the private recovery intent and never
 publishes acceptance. Local client close does not delete the cloud sandbox;
 the harness performs owned destruction and independent absence checks afterward.
+
+## Auditing complete current-version step acceptance
+
+Run `python scripts/step_acceptance.py` to check every current catalog entry. It exits nonzero for missing current-version native step receipts. The audit requires unchanged recorded Dockerfile/runtime input hashes, every current CLI/SDK smoke call and independent resource absence; historical versions and image-only successes cannot pass. This audit does not execute cloud requests or certify Docker/model acceptance.
+
+Add `--http` to `scripts/run_steps_e2e.py` to execute the original complete external HTTP controller within the canonical owned sandbox. The receipt separately records controller hash, pass/fail/skip counts and exit status. Model cases remain explicitly off/NOT_RUN; a skipped model is not L3. Missing local controller prerequisites fail before cloud creation.
+
+For Goose, Crush, code-server, Polyglot, Aider, SWE and Hermes, `--asset-transport parallel` enables bounded parallel byte-range transport for their exact official archives. Every response must match its requested Content-Range, all bytes must match the pinned size/budget and SHA256, and the original unchanged installer still checks integrity/version/extraction. The temporary root-only cache and its process-local Python URL adapter are removed before USER user. Hermes uses the documented local-file uv mirror with original Python3.14.6 and uv0.12.3 pins; its generic GNU architecture assets and official metadata source are recorded. Its original compound installation is split into bounded ordered phases. DeepAgents and OSWorld use a temporary uv0.12.3 installer for the unchanged hash-locked Python graph and separate original installation phases; that build tool/cache is removed before runtime. Other profiles retain direct transport. No third-party mirror, substituted artifact or operator credential is introduced. The materializer receipt records the helper hash and exact asset metadata. A failed/unsupported range or checksum cannot publish acceptance.
+
+```bash
+python scripts/run_steps_e2e.py goose --asset-transport parallel --http \
+  --sandbox-create sdk --timeout 3600 \
+  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
+python scripts/step_acceptance.py
+```
+
+### Temporary private OSS transport
+
+For the complete heavy-archive path, install the optional local controller SDK with `python -m pip install -r scripts/requirements-steps-cache.txt`, then select `--asset-transport oss`. This creates a uniquely owned private bucket in the same Alibaba region/account, checks official archive hashes before upload and after build download, and passes only short-lived GET authorization in the private execution recipe. Public source/provenance and Actions never receive signed URLs or operator secrets. Bucket/object ACLs remain private; no account policy changes. A pass is published only after independent sandbox/template AND exact object/bucket absence. Unknown creation responses retain a private recovery intent and cannot certify cancellation. Cache creation/upload/download/deletion are real cloud operations.
+
+```bash
+python scripts/run_steps_e2e.py goose --asset-transport oss --http \
+  --sandbox-create sdk --timeout 3600 \
+  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
+```
+
+The original direct mode remains the default. OSS mode supports reviewed archives, the exact uv0.12.3 bootstrap and OSWorld's pinned Playwright1.58.0 browser archives. Original installer, hash-lock, version, extraction and runtime-user requirements remain enforced. Temporary browser serving binds loopback only, exposes verified archive paths only, and closes before the build returns. Browser digests are measured from the upstream pinned-client URLs; they are not labelled upstream-published hashes.
+
+Publish the exact adapter source commit before cloud execution. Larger profiles fetch that public immutable helper and verify its SHA256 rather than exceeding the provider wire budget; unsupported/unpublished profiles fail closed. `ABX_STEP_LOCAL_ARCHIVE_DIR` optionally reuses controller-local files named by SHA256; every reused byte still must match the original pinned size/hash before upload. It never reads a caller credential file or changes runtime package requirements.

@@ -126,3 +126,7 @@ From a repository checkout, `python scripts/run_steps_e2e.py pi` builds and veri
 ## License
 
 Apache-2.0 template code; upstream Pi is MIT. Official fd archives retain LICENSE-MIT and LICENSE-APACHE; ripgrep archives retain LICENSE-MIT, UNLICENSE and COPYING (MIT/Unlicense). Complete extracted release directories remain under `/opt/pi-tools/`; npm dependencies retain their license files. [LICENSE](../LICENSE).
+
+### Additional current-version platform-step acceptance
+
+[Actual native steps](evidence/express-2026-10-20T130320Z.json): official READY, Python SDK creation, current CLI/SDK smoke and independently confirmed owned sandbox/template cleanup. This step receipt covers version/tools smoke; its separate image/model receipt retains its original scope.

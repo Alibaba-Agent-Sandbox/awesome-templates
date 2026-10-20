@@ -1,0 +1,84 @@
+{
+  "template": "polyglot-toolchain",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T132854Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "polyglot-toolchain",
+    "materializer_sha256": "9c939e8a5183415bc90e33f18e04d907b73aecc5f5ea099ea86ffb3caa69b574",
+    "template_version": "1.0.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "ca3118e5123e7ce2ae2e43e2a8a05c88ecf3653d",
+    "asset_transport": "parallel",
+    "steps_json_bytes": 11937,
+    "inputs_sha256": {
+      "Dockerfile": "97800a95fde5625bf431f38b486ee1596043507eaff9eb3692cdb76533ccbed6",
+      "template.yaml": "eb366f67f28f144445ed9b0edf40db77ff04a5dfed0ac04f1aeee6d2417a491f",
+      "install_toolchains.py": "78dab45dcf021e72677f1e15d9be9b7a14fac05091ae57b02dc16119f6d5421e",
+      "toolchains.json": "65a4317e40b9e6c59136cebdcd9b16bcd46160f5c7dc2c39f710bc5594b06571",
+      "commands.py": "ca108dc52ebec951710e1ce3694457eb1e3078a4ab1c974216095094da9ce7e9"
+    },
+    "asset_transport_sha256": "522eca8118c17d44341142e752dccd65f37d5e8a0817906b24e1649a8f5d5a8e",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://go.dev/dl/go1.25.14.linux-amd64.tar.gz",
+          "sha256": "a21ae5633a269bcd7e90cf767e48225633795e99d831742cbf3397064fee7712",
+          "size": 59909419
+        },
+        {
+          "url": "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/OpenJDK21U-jdk_x64_linux_hotspot_21.0.12.1_1.tar.gz",
+          "sha256": "ce79869e1307ed8ee1e2baa86a412b1eb5b75d10a01006d788a6f968bcfaee94",
+          "size": 207473347
+        },
+        {
+          "url": "https://static.rust-lang.org/dist/2025-09-18/rustc-1.90.0-x86_64-unknown-linux-gnu.tar.xz",
+          "sha256": "48c2a42de9e92fcae8c24568f5fe40d5734696a6f80e83cc6d46eef1a78f13c9"
+        },
+        {
+          "url": "https://static.rust-lang.org/dist/2025-09-18/rust-std-1.90.0-x86_64-unknown-linux-gnu.tar.xz",
+          "sha256": "663f4ab7945b392d5e5294dec1b050a66820a20e86f084ec37eeb0f2f7ff5569"
+        },
+        {
+          "url": "https://static.rust-lang.org/dist/2025-09-18/cargo-1.90.0-x86_64-unknown-linux-gnu.tar.xz",
+          "sha256": "9853db03d68578a30972e2755c89c66aec035fec641cf8f3a7117c81eec2578d"
+        }
+      ],
+      "aarch64": [
+        {
+          "url": "https://go.dev/dl/go1.25.14.linux-arm64.tar.gz",
+          "sha256": "9bf234ea70ffec9347fdf6b22ce4add51717d3386a38a441e8c8743fceb5eaee",
+          "size": 57360344
+        },
+        {
+          "url": "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/OpenJDK21U-jdk_aarch64_linux_hotspot_21.0.12.1_1.tar.gz",
+          "sha256": "23e37e026f12f3e706f18938ff611db3032d075b09d0879a25d06718c773e223",
+          "size": 205641175
+        },
+        {
+          "url": "https://static.rust-lang.org/dist/2025-09-18/rustc-1.90.0-aarch64-unknown-linux-gnu.tar.xz",
+          "sha256": "4e1a9987a11d7d91f0d5afbf5333feb62f44172e4a31f33ce7246549003217f2"
+        },
+        {
+          "url": "https://static.rust-lang.org/dist/2025-09-18/rust-std-1.90.0-aarch64-unknown-linux-gnu.tar.xz",
+          "sha256": "4952abb7d9d3ed7cea4f7ea44dcb23dc67631fae4ac44a5f059b90a4b5e9223f"
+        },
+        {
+          "url": "https://static.rust-lang.org/dist/2025-09-18/cargo-1.90.0-aarch64-unknown-linux-gnu.tar.xz",
+          "sha256": "bd8d1da6fe88ea7e29338f24277c22156267447adbfc47d690467ad32d02c2a7"
+        }
+      ]
+    },
+    "generated_manifest_sha256": "c6929ac12aca049b8d7a6d0c9e1201daaa60d032eca72ef7cacabefb3cd6e2eb"
+  },
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "duration_s": 697.664
+}

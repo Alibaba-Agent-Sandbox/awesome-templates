@@ -1,0 +1,41 @@
+# Complete platform-step acceptance verification
+
+Result: PARTIAL — cloud continuation and current-head CI/merge pending.
+
+Baseline: ca3118e5123e7ce2ae2e43e2a8a05c88ecf3653d, 32 catalog source templates, 20 with current-version matching native step receipts. This is an independently counted scoped baseline, not the older 16/23 checkpoint. Existing image/model receipts retain their original scopes.
+
+New actual cloud results so far:
+
+- [Dev Services steps](../../../dev-services/evidence/express-2026-10-20T130648Z.json), [full external HTTP](../../../dev-services/evidence/full-http-steps-2026-10-20T130648Z.json): official READY, Python SDK creation, CLI/SDK smoke, 6 PASS / 0 FAIL / 0 SKIP, independent owned sandbox/template absence.
+- [Next App steps](../../../next-app/evidence/express-2026-10-20T130712Z.json), [full external HTTP](../../../next-app/evidence/full-http-steps-2026-10-20T130712Z.json): official READY, Python SDK creation, CLI/SDK smoke, 6 PASS / 0 FAIL / 0 SKIP, independent owned sandbox/template absence.
+- [Pi canonical step receipt](../../../pi/evidence/express-2026-10-20T130320Z.json), [attempt](../../../pi/evidence/verification-steps-2026-10-20T130320Z.json): real step READY, Python SDK creation, CLI/SDK version/tools smoke and independent owned cleanup. This new receipt does not claim a model run or full HTTP controller.
+
+Actual Express asset-transport probe: one 256-KiB Goose official-asset range completed in17.388s; eight exact contiguous ranges (2MiB total) completed in27.376s, all HTTP206 with correct Content-Range. The diagnostic uses a genuine newly step-built Python template and actual SDK process execution, and independently verified sandbox/template cleanup. This is a transport probe, not Goose acceptance. An initial controller invocation used an unsupported SDK keyword and failed after READY; its owned cleanup passed. The corrected probe above uses the actual timeout API. Private provider logs and identifiers remain outside the repository.
+
+Local executed checks: existing materializer/canonical cleanup/SDK creation36 PASS; new acceptance-audit/controller subprocess12 PASS. One earlier pytest invocation named a nonexistent test file and collected nothing; it is not validation. Strict32-template/skeleton and docs checks follow. No fixtures certify provider behavior.
+
+Issues: https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/149 and https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/119. No closure claim.
+
+## Transport regressions and additional actual outcomes
+
+PASS: current-source materializer/image/archive/ownership/SDK/audit/HTTP/asset regression suite83 cases on system CPython3.13.13. The same suite under the initially prepared standalone CPython3.11.15 had82 PASS/1 FAIL because that interpreter lacks os.memfd_create; no RAM-auth gate was weakened or skipped. Expanded archive/locked-graph transport tests14 PASS after adding exact Aider/SWE Python assets, uv0.12.3 official Python3.14.6 metadata and original Hermes/OSWorld/DeepAgents phase splitting. Specification/controller56 PASS; strict32 catalog profiles plus skeleton PASS;150 Markdown documents/0 broken links at this checkpoint. Subsequent source changes still require their affected rerun and current-head CI.
+
+PASS: [Crush genuine steps](../../../crush/evidence/express-2026-10-20T131749Z.json), [attempt with full external HTTP counts](../../../crush/evidence/verification-steps-2026-10-20T131749Z.json). Native official READY, actual Python SDK creation, CLI/SDK smoke and external controller exit0; model remains NOT_RUN. Independent owned sandbox/template cleanup verified by the canonical receipt. The earlier image/model scope remains independent.
+
+Actual failed attempts remain failures: Aider and Hermes direct transport reached a provider per-RUN deadline; DeepAgents and OSWorld compound installation did likewise. The initial parallel Goose and Polyglot attempt hit an individual HTTPS read/connection timeout, and code-server did not pass. The successful eight-range probe did not establish that32 concurrent requests were reliable. The follow-up uses16 workers,1MiB ranges and bounded90-second request retries within the1200-second whole-archive deadline. Original installer budgets, exact sizes/SHA256, version/extraction and canonical cleanup gates remain enforced. New real runs are pending; no failed attempt is relabelled.
+
+The uv local-file mirror mechanism is documented by the upstream [environment reference](https://docs.astral.sh/uv/configuration/environment/). The archived generic Python metadata is sourced from the pinned [uv0.12.3 metadata](https://raw.githubusercontent.com/astral-sh/uv/0.12.3/crates/uv-python/download-metadata.json), without changing the source runtime's Python version.
+
+## Same-account private cache continuation
+
+Actual private OSS probe PASS: private bucket/object ACL, signed-only GET, unsigned403 and independently confirmed object/bucket absence. [Sanitized probe](2026-10-20-private-step-cache-probe.json). Public access/policy was never enabled. This did not send access secrets to the build or to Actions; the build receives only a short-lived read capability for fixed public files in its existing Alibaba account. Resource identifiers and signed URLs remain private and are excluded from provenance/receipts.
+
+New actual OSS-backed native step acceptance: Goose95.334s, code-server151.555s, Polyglot243.475s, Aider1017.668s. Each reached official READY, used actual Python SDK creation, ran current CLI/SDK smoke plus unchanged external HTTP, and independently verified sandbox/template AND private object/bucket absence before publishing. These add current step scope to separate image/model history; model remains NOT_RUN here. The immutable per-template135350Z/135352Z/135354Z/135358Z attempts and matching canonical receipts retain exact source/materializer/asset hashes and functional counts.
+
+Further confirmed failures: DeepAgents' temporary uv bootstrap hit a per-RUN deadline; OSWorld reached its Playwright download phase before that deadline. UV's exact0.12.3 wheel metadata is now pinned from its official PyPI metadata. Playwright1.58.0's actual upstream --dry-run identifies Chromium1208/145.0.7632.6 and FFmpeg1011; official archive SHA256 values are controller-measured, explicitly not claimed as upstream-published checksums. The temporary local mirror serves only those verified archive paths to the unchanged original installer. Cache cleanup and original pinned runtime checks remain required. Publication of the immutable adapter source is needed to keep OSWorld's generated wire profile below the unchanged15,000-byte preflight budget; inline-only oversize failures remain failures.
+
+The asset-cache controller additionally rejects nonofficial origins and invalid regions before credentialed requests. Existing-resource adoption, lost upload responses, unknown create/absence, cache privacy and hash-negative regressions remain explicit. Local prepublication OSWorld generation correctly refused an oversized inline adapter; no cloud template was created and its already prepared owned private cache was independently removed. The public immutable-helper path keeps the same wire gate rather than weakening it.
+
+Actual DeepAgents current-version step acceptance has now passed: [canonical receipt](../../../deepagents/evidence/express-2026-10-20T141151Z.json) and [attempt](../../../deepagents/evidence/verification-steps-2026-10-20T141151Z.json). It retains its actual recorded transport scope; not every requested optional transport necessarily created an archive cache. Aider's actual cached receipt passed9 HTTP checks and explicitly skipped1 model case; Goose likewise9/0/1. Code-server5/0/0 and Polyglot1/0/0 reflect their original complete controller summaries. These counts are not inflated into L3. Current matching runtime receipt count is29/32 before integrating later main changes.
+
+The source cache/HTTP mirror tests also verify that authorization/config paths are never served through the temporary loopback browser mirror. Additional phase work retains the original SWE package pins while using the same temporary uv bootstrap; no hash-lock is invented for a source phase that did not declare one.

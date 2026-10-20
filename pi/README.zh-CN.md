@@ -126,3 +126,7 @@ python3 scripts/run_local_e2e.py
 ## 许可证
 
 模板代码采用 Apache-2.0，Pi 上游采用 MIT；fd 官方归档的 LICENSE-MIT、LICENSE-APACHE，以及 ripgrep 的 LICENSE-MIT、UNLICENSE、COPYING（MIT/Unlicense）随完整解包目录保留在 `/opt/pi-tools/`，npm 依赖也保留各自许可文件。[LICENSE](../LICENSE)。
+
+### 当前版本新增平台 step 验收
+
+[真实原生 step](evidence/express-2026-10-20T130320Z.json)：官方 READY、Python SDK 创建、当前 CLI/SDK 冒烟，以及独立确认所拥有沙箱/模板已清理。本 step 回执覆盖版本/工具冒烟；独立的镜像/模型回执保留其原始范围。
