@@ -159,6 +159,7 @@ abx --provider e2b template launch alibaba-agent-sandbox/awesome-templates//pyth
 
 第三方提供方继续为 Beta。`provider-prepared` 是流程提示，不是原生验收记录。构建前会检查运行时能力，引用转换不会补齐 PTY 或代码执行能力。原生基础镜像、镜像仓库和集群条件由各提供方维护。见[自动准备指南](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/zh/guide/template-launch.md)。已有验收证据仍为准，本次不修改 Verified-on 声明。
 
+Pinned Go/Rust/Java runtime: [polyglot-toolchain](polyglot-toolchain/README.md) (experimental; verification gates recorded separately).
 Model-free file tool: [apply-patch](apply-patch/README.md) (experimental).
 
 ## Provider-managed runtime catalog
