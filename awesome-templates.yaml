@@ -548,7 +548,7 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: unverified
+      alicloud-express: supported
 
 
 # Provider-managed IDs have no source build context; never pass these to image selection.

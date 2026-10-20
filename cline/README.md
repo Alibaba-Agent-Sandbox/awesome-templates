@@ -14,7 +14,7 @@ Make the real Cline coding agent available through named commands without intera
 
 ## Quick start (CLI)
 
-Install the [verified native CLI entry](../docs/platform-steps.md), configure authorized Express access, publish the exact source commit when preparation needs public COPY inputs, and replace unique-run/template/sandbox placeholders with your own values. Named commands use `abx run`; CLI0.4.1 selects this entry as `abx --native run`. Wait for official READY before creation. This recipe has not itself established a provider pass.
+Install the [verified native CLI entry](../docs/platform-steps.md), configure authorized Express access, publish the exact source commit when preparation needs public COPY inputs, and replace unique-run/template/sandbox placeholders with your own values. Named commands use `abx run`; CLI0.4.1 selects this entry as `abx --native run`. Wait for official READY before creation. See the dated Verified section for actual source and acceptance scope.
 
 ```bash
 python scripts/prepare_steps.py cline --output /tmp/cline-steps-<unique-run> \
@@ -101,7 +101,13 @@ Linuxx64 only,2vCPU,4096MB, port9000, about10GiB Express rootfs;8GiB image budge
 
 ## Verified
 
-Current native image/Express/SDK/model qualification is pending. `tested_on: []`, catalog experimental. Local source fixtures and real keyless binary version/help are not a real coding/deployment pass.
+| Provider | Current scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | Template1.0.2; native steps, official READY, actual Python SDK creation, CLI/SDK native version, real coding and independent cleanup | [2026-10-20](evidence/express-2026-10-20.json), [complete native model proof](evidence/verification-steps-2026-10-20T201959Z.json) |
+
+Genuine unmodified Cline3.0.73 native CLI used qwen3.8-flash at the explicitly approved compatible endpoint. Before any real key, an actual native synthetic-key probe independently confirmed one exact owned endpoint/model/Bearer request and removed its fixture/listeners. Actual SDK coding then repaired existing source, preserved original test bytes, downloaded new report/exact fresh nonce artifact and independently passed all original3tests and4held-outs after return with unpredictable ACKs:17PASS/0FAIL/0SKIP. Complete baseline HTTP8PASS/0FAIL/0SKIP is separate. Own project/native processes/HOME/state/secondary listeners/outer sandbox/template were independently confirmed absent. Current-runtime L1 image/non-root native version/SHA256 are separately recorded; no actual-image model deployment, editor extension, hosted service or other provider is claimed. [Final engineering proof](../.agents/evidence/verify/2026-10-20-cline-native-final.md).
+
+Native submit_and_exit wraps a verified summary in the exact prefix `Submission recorded (verified): `. The verifier unwraps only that native prefix and still requires completed/positive iterations, an exact fresh marker summary and every independent file/test predicate. Unverified prefix and marker-only output are insufficient. Earlier configuration-path/stdin-preflight/protocol-fixture/recovery failures or interruptions remain immutable.
 
 ## Secondary development
 
