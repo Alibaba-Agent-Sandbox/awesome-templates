@@ -104,6 +104,10 @@ Version 1.1.1 passed actual CI-image registration, official READY, CLI/SDK and 1
 
 ## Historical verification
 
+Historical1.1.0 image acceptance on2026-10-19: CLI-created sandbox, full image/provenance/HTTP plus17 real compatible-model assertions and independently verified owned sandbox/template/registry cleanup. These receipts retain the original version/controller and do not qualify1.1.1. [image](evidence/express-2026-10-19.json) · [HTTP](evidence/image-http-2026-10-19T175057Z.json) · [model](evidence/model-image-2026-10-19T175057Z.json).
+
+
+
 The current coding controller imports trusted standard-library code under `python3 -I`, compiles the actual calculator and original-test source bytes, and requires exactly all three original tests to succeed without skips, expected failures or unexpected successes. Each test/held-out process must return a fresh completion acknowledgment generated after the model response; it is never included in the model prompt. Premature `SystemExit`, `os._exit(0)`, a static `INDEPENDENT_OK` string and stale bytecode cannot supply that acknowledgment. This protects ordinary acceptance against premature exits; it is not a security boundary against hostile Python with the same OS authority. Historical model runs retain their original controller hashes and do not prove this new gate; record a separate actual model run at the new controller revision on the reviewed image. Canonical deployment/provider qualification remains a separate required gate.
 
 No provider has a passing run recorded for this template.

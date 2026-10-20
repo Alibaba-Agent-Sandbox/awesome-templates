@@ -1,0 +1,32 @@
+{
+  "template": "polyglot-toolchain",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-19T154909Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "polyglot-toolchain",
+    "materializer_sha256": "33ae3dc0658828fb7277ce6e9227400dc3f9860b8f90cde0831660389e331c7a",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "steps_json_bytes": 11548,
+    "inputs_sha256": {
+      "Dockerfile": "5ebdaf820bdbf46157187c49245de71e70c8ed53b2b1e7c7b62ab92ead6c0393",
+      "template.yaml": "846efb6ccf3f271d45e62e576fb20ccd9b180d091b5754d4b883d8e4dca582d3",
+      "install_toolchains.py": "e772fb3a14c72eb693b40a61f0e150f1b45dff719480b7f8f5057783362a6e8b",
+      "toolchains.json": "65a4317e40b9e6c59136cebdcd9b16bcd46160f5c7dc2c39f710bc5594b06571",
+      "commands.py": "c84f3c8cacff9a28514b6741b3aae8aed69c6fd18eff0254fba7b8ff6290abd1"
+    },
+    "generated_manifest_sha256": "809baca321efc4df42e3ce88d947875170a3210f681f5aa243e41b236cae0628"
+  },
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "duration_s": 1225.804
+}
