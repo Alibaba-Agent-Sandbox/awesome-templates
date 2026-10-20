@@ -102,6 +102,23 @@ WORKSPACE 默认 /home/user/app。CODE_SERVER_PASSWORD、ABX_SERVER_TOKEN 都是
 本机浏览器回归明确使用本地文件观察器，不作为云端或 SDK 验收。清理未确认
 时不能返回通过。
 
+### 默认域名的浏览器访问前提
+
+当前默认 FC 域名上的真实最小 HTML 服务返回 HTTP200/text-html，但响应被加入
+`Content-Disposition: attachment`；真实 Chromium 因此开始下载，TLS 校验始终
+开启。[完整独立对照](evidence/preview-header-control-2026-10-20T060339Z.json)
+还确认了测试沙箱列表及单独GET均已不存在。这与[官方默认域名限制](https://www.alibabacloud.com/help/en/functioncompute/web-functions)一致。
+
+交互式浏览器使用前，需要绑定提供方支持的自定义预览域名与有效证书，再让
+SDK 使用提供方返回的域名。只替换主机名字符串不会建立绑定。之后对该 SDK
+URL 重跑浏览器控制器。控制器会提前诊断强制 HTML 下载，并清理自己启动的
+IDE；前面的 CLI/SDK 示例用于浏览器访问时也需要这个前提。
+
+[真实镜像尝试](evidence/image-attempt-2026-10-20T055537Z.json)的完整 HTTP5 项
+通过，但[真实浏览器 UI 未通过](evidence/browser-ui-2026-10-20T055537Z.json)。
+沙箱、模板及镜像仓库均已独立确认清理；因此尚未取得完整浏览器 IDE 提供方
+验收，Issue53 保持未关闭。
+
 ## 二次开发
 
 本地验证可把 install_runtime.py 的 --prefix 指向自己的工具目录；镜像构建显式启用 --check-rootfs，以免把 Docker 宿主机的 statvfs 使用量误当成镜像大小。部署可用[平台 steps](../docs/platform-steps.zh-CN.md)：`python scripts/prepare_steps.py code-server --output /tmp/ide-steps`，真实验收 `python scripts/run_steps_e2e.py code-server`。修改版本时同步资产哈希、实际版本检查与双语文档。WebSocket/终端交互须单独记录，认证页面成功不能推断它们通过。

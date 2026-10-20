@@ -105,6 +105,26 @@ configure the operator trusted store first. No certificate validation bypass is
 used. Local browser regressions explicitly use a filesystem observer and do not
 establish cloud/SDK acceptance. Cleanup failure prevents a passing result.
 
+### Default-domain browser prerequisite
+
+A real minimal HTML service on the currently configured default FC domain returned
+HTTP200/text-html with forced `Content-Disposition: attachment`; actual Chromium
+started a download. TLS verification remained enabled. The independent probe and
+sandbox absence readback are in [the complete control](evidence/preview-header-control-2026-10-20T060339Z.json).
+This matches the [official default-domain restriction](https://www.alibabacloud.com/help/en/functioncompute/web-functions).
+
+Bind a provider-supported custom preview domain with a valid certificate and
+configure the SDK to use the provider-returned domain before browser UI use.
+Changing a hostname string alone does not register a mapping. Run the browser
+controller again against that SDK URL. It now diagnoses forced HTML attachment
+before browser startup and still cleans up its IDE. The existing CLI/SDK examples
+need that access prerequisite for interactive browser use.
+
+The [actual image attempt](evidence/image-attempt-2026-10-20T055537Z.json) passed
+complete HTTP5 checks but [failed real browser UI](evidence/browser-ui-2026-10-20T055537Z.json).
+Owned sandbox/template and registry cleanup were independently confirmed. It is
+not qualified as a complete browser IDE deployment; Issue53 remains open.
+
 ## Secondary development
 
 For local tools use install_runtime.py --prefix in your own directory. Image builds explicitly enable --check-rootfs; Docker host statvfs usage is not image size. Prepare [platform steps](../docs/platform-steps.md): `python scripts/prepare_steps.py code-server --output /tmp/ide-steps`; actual acceptance: `python scripts/run_steps_e2e.py code-server`. Update asset/version assertions and both docs together. WebSocket/terminal interaction needs its own recorded test; authenticated HTML alone does not certify it.

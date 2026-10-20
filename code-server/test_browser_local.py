@@ -91,3 +91,34 @@ def test_browser_teardown_error_still_stops_actual_owned_ide(tmp_path, monkeypat
         asyncio.run(controller.verify_ui(LocalAdapter(), workspace=str(tmp_path)))
     assert commands.code_server_status() == {'running': False}
     assert list(tmp_path.iterdir()) == []
+
+
+def test_forced_attachment_blocks_before_browser_and_stops_owned_ide(monkeypatch):
+    from contextlib import contextmanager
+    import httpx
+    controller = load('attachment_preview_controller', 'browser_e2e_test.py')
+    @contextmanager
+    def environment(): yield {}, 0
+    monkeypatch.setattr(controller, 'browser_environment', environment)
+    monkeypatch.setattr(controller, 'async_playwright', lambda: pytest.fail('blocked HTML must not launch a browser'))
+    original = controller.httpx.AsyncClient
+    def transport(request):
+        return httpx.Response(200, headers={'content-type': 'text/html', 'content-disposition': 'attachment'}, text='<html>test</html>')
+    monkeypatch.setattr(controller.httpx, 'AsyncClient', lambda **kwargs: original(transport=httpx.MockTransport(transport), **kwargs))
+    class Files:
+        async def exists(self, path): return False
+    class Network:
+        def get_url(self, port): return 'https://example.invalid'
+    class Target:
+        files = Files()
+        network = Network()
+        running = False
+        stopped = False
+        async def run(self, name, **kwargs):
+            if name == 'code_server_status': return {'running': self.running}
+            if name == 'code_server_start': self.running = True
+            if name == 'code_server_stop': self.running = False; self.stopped = True
+    target = Target()
+    with pytest.raises(controller.PreviewDomainError, match='forces HTML download'):
+        asyncio.run(controller.verify_ui(target))
+    assert target.stopped and not target.running

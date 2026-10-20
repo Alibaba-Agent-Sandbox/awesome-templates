@@ -29,3 +29,12 @@ Private password config0600, directory0700. Cloud/model credentials are not inhe
 ## Test plan
 
 L0 actual code-server version/login/wrong-password/workbench, external UI route, lifecycle persistence and cleanup, caller settings byte/mode preservation and credential-env exclusion. Real readiness deadline, unrelated-listener protection and ownership-error negative controls. L1 actual non-root image/version/self-test and rootfs budget. L2 actual Express steps/deploy READY, CLI+SDK self-tests, complete external HTTP/forwarded8443 and independently confirmed resource absence. WebSocket/terminal needs explicit separate proof. L3 no model; L4 unrun.
+
+Default-domain access is a concrete current operator blocker: a real minimal
+HTML control independently confirmed forced attachment and Chromium download,
+matching the FC default-domain policy. Full browser IDE acceptance requires a
+provider-supported custom preview domain/certificate and a successful exact-hash
+browser controller run. Backend HTTP5 success alone is insufficient. The first
+control confirmed list absence but used an unavailable extra GET helper; the
+second uses the actual get_info_by_id API and independently confirms both absence
+paths. Both original point-in-time records remain unchanged.

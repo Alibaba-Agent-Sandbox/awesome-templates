@@ -17,7 +17,12 @@ import shutil
 import ssl
 import subprocess
 import tempfile
+import httpx
 from playwright.async_api import async_playwright, TimeoutError as BrowserTimeout
+
+
+class PreviewDomainError(RuntimeError):
+    """The upstream domain prevents HTML rendering."""
 
 
 @contextmanager
@@ -80,6 +85,13 @@ async def verify_ui(sandbox, *, workspace='/home/user/app') -> dict:
             await sandbox.run('code_server_start', password=password, cwd=workspace)
             started = True
             url = sandbox.network.get_url(8443)
+            async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
+                response = await client.get(url + '/?folder=' + workspace)
+            attachment = response.headers.get('content-disposition', '').lower().startswith('attachment')
+            content_type = response.headers.get('content-type', '').split(';')[0].lower()
+            result['upstream_html_attachment'] = attachment and content_type == 'text/html'
+            if result['upstream_html_attachment']:
+                raise PreviewDomainError('preview domain forces HTML download; a supported custom domain is required')
             playwright = await async_playwright().start()
             browser = await playwright.chromium.launch(headless=True, env=browser_env)
             page = await browser.new_page(locale='en-US')
@@ -189,6 +201,8 @@ async def main(sandbox_id):
             result = await verify_ui(sandbox)
         except Exception as exc:
             result = {'passed': False, 'error_type': type(exc).__name__}
+            if isinstance(exc, PreviewDomainError):
+                result['blocked_reason'] = 'The preview domain forces HTML download; configure a supported custom domain.'
         print(json.dumps(result, sort_keys=True))
         return 0 if result['passed'] else 1
     finally:

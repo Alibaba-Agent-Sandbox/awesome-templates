@@ -43,3 +43,27 @@ asset.117 document links PASS. Source/runtime image contract remains1.0.0: the
 new controller is external acceptance tooling. Actual current-controller cloud
 UI and current-head CI/merge remain pending. No historical temporary run is
 converted to a passing provider receipt.
+
+## Genuine current image result and default-domain control
+
+FAIL: actual image-backed Express attempt completed CLI/runtime work and full
+HTTP5 PASS/0 SKIP, but Chromium navigation raised Download-is-starting before
+workbench load. No canonical provider pass was published. Owned sandbox/template
+absence and private registry cleanup independently PASS, image digest readback
+after runtime matches. Failure receipts retain their exact controller hash.
+
+PASS negative control: a new owned base sandbox served fixed HTML from stdlib;
+external HTTP200/text-html/body matched, default-domain forced attachment was
+observed, real Chromium downloaded with TLS on/private already-trusted CA roots,
+and owned sandbox list plus separate SDK get_info_by_id confirmed absence. The
+first control used an unavailable optional GET method (fieldfalse, list absence
+confirmed); a distinct corrected run verified both. Actual control files remain
+unchanged. Official FC web-functions documentation confirms the custom-domain
+requirement; no account domain/security configuration was changed.
+
+The external controller now gives a specific PreviewDomainError before browser
+startup and still stops its owned IDE. Focused mock-HTTP attachment/cleanup
+regression PASS; this controller-control test is not cloud/UI acceptance. Full
+real browser/PTY/editor4-test suite passed before adding the diagnostic. Latest
+CI must exercise the complete updated local suite; custom-domain cloud UI remains
+BLOCKED pending a usable mapped domain. Keep Issue53/PR127 uncompleted.
