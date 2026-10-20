@@ -91,6 +91,17 @@ def test_authenticated_sdk_random_pcm_roundtrip_and_error_types(server):
                         with wave.open(io.BytesIO(data), "rb") as decoded:
                             assert (decoded.getnchannels(), decoded.getsampwidth(), decoded.getframerate(), decoded.getnframes()) == (1, 2, 16000, 16000)
                             assert decoded.readframes(16000) == pcm
+                catalogue = {item.name: item for item in await client.commands.list()}
+                assert catalogue["transcode_args"].args[0].type == "string_array"
+                with pytest.raises(CommandArgumentError):
+                    await client.commands.run("transcode_args", args='["-i","source.wav","x.wav"]')
+                with pytest.raises(CommandArgumentError):
+                    await client.commands.run("transcode_args", args=["-i", 3, "x.wav"])
+                result = await client.commands.run("transcode_args", args=["-i", "source.wav", "-c:a", "flac", "-vn", "args.flac"], max_seconds=1)
+                owned.append(str(root / "args.flac"))
+                assert result["exit_code"] == 0 and isinstance(result["stdout"], str) and isinstance(result["stderr"], str)
+                data = await client.files.download(result["output_path"])
+                assert data.startswith(b"fLaC") and hashlib.sha256(data).hexdigest() == result["sha256"]
                 assert await client.files.download(source) == buffer.getvalue()
             finally:
                 for path in reversed(owned):

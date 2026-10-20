@@ -218,3 +218,51 @@ def test_environment_does_not_forward_tokens(workspace, monkeypatch):
     output = media._process([sys.executable, "-c", "import os;print('ABX_LLM_API_KEY' in os.environ)"],
                             cwd=str(workspace), timeout=2)
     assert output == b"False\n"
+
+
+def test_native_array_preserves_spaced_input_and_returns_real_result(workspace):
+    (workspace / "literal file.mkv").write_bytes((workspace / "input.mkv").read_bytes())
+    result = media.transcode_args(["-i", "literal file.mkv", "-c:a", "flac", "-vn", "-t", "1", "native.flac"])
+    assert result["exit_code"] == 0
+    assert isinstance(result["stdout"], str) and isinstance(result["stderr"], str)
+    path = workspace / "native.flac"
+    actual = json.loads(subprocess.check_output(["/usr/bin/ffprobe", "-v", "error", "-show_streams", "-of", "json", str(path)]))
+    assert actual["streams"][0]["codec_name"] == "flac"
+    assert result["sha256"] == hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def test_native_array_failure_returns_real_exit_without_publishing_partial(workspace):
+    # Valid, bounded options; odd YUV420 dimensions are rejected by native libx264.
+    result = media.transcode_args(["-i", "input.mkv", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-vf", "scale=63:63", "-an", "bad-native.mp4"])
+    assert result["exit_code"] != 0
+    assert "divisible by 2" in result["stderr"]
+    assert not (workspace / "bad-native.mp4").exists()
+
+
+@pytest.mark.parametrize("args", [
+    '["-i","input.mkv","x.wav"]', ["-i", "input.mkv", 1],
+    ["-i", "https://example.com/file.mkv", "x.wav"],
+    ["-i", "../input.mkv", "x.wav"], ["-i", "input.mkv", "../x.wav"],
+    ["-i", "input.mkv", "-y", "x.wav"], ["-i", "input.mkv", "-i", "input.mkv", "x.wav"],
+    ["-i", "input.mkv", "-vf", "movie=/etc/passwd", "x.mp4"],
+    ["-i", "input.mkv", "-t", "nan", "x.wav"],
+    ["-i", "input.mkv", "-t", "31", "x.wav"],
+    ["-i", "input.mkv", "-ac", "8", "x.wav"],
+    ["-i", "input.mkv", "-vf", "scale=9999:9999", "x.mp4"],
+])
+def test_native_array_rejects_unsafe_or_unbounded_options(workspace, args):
+    with pytest.raises(ValueError):
+        media.transcode_args(args)
+    assert not list(workspace.glob("x.*"))
+
+
+def test_native_array_existing_output_unchanged(workspace):
+    (workspace / "existing.flac").write_bytes(b"keep")
+    with pytest.raises(ValueError, match="already exists"):
+        media.transcode_args(["-i", "input.mkv", "-c:a", "flac", "-vn", "existing.flac"])
+    assert (workspace / "existing.flac").read_bytes() == b"keep"
+
+
+def test_native_argv_smoke_compares_all_pcm_samples_and_cleans(workspace):
+    assert media.media_args_smoke() == "FFmpeg native argv audio transcode OK"
+    assert not list(workspace.glob("media-smoke-*"))

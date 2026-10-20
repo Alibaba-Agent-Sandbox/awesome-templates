@@ -19,6 +19,10 @@ from string import Template
 import zlib
 
 import yaml
+try:
+    from .server_sdk_pin import server_commit as pinned_server_commit
+except ImportError:
+    from server_sdk_pin import server_commit as pinned_server_commit
 
 ROOT = Path(__file__).resolve().parents[1]
 MATERIALIZER_SHA256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
@@ -209,6 +213,10 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
     if server_commit is not None and not re.fullmatch(r"[0-9a-f]{40}", server_commit):
         raise ValueError("server source must be an immutable 40-character commit")
     source = source.resolve()
+    opt_in = source / "server-sdk.commit"
+    selected_server = pinned_server_commit(source) if opt_in.exists() or opt_in.is_symlink() else None
+    if selected_server and server_commit is not None and server_commit != selected_server:
+        raise ValueError("step server override differs from the required template SDK commit")
     if source_commit is None and source.parent == ROOT:
         head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=source, capture_output=True, text=True)
         source_commit = head.stdout.strip() if head.returncode == 0 else None
@@ -221,7 +229,7 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
     # Express executes steps as user by default; Docker's build profile installs
     # dependencies as root and explicitly returns to USER user for the runtime.
     steps = [{"type": "USER", "args": ["root"]}]
-    copied = {}
+    copied = {"server-sdk.commit": hashlib.sha256(opt_in.read_bytes()).hexdigest()} if selected_server else {}
     workdir = "/"
     seen_from = False
     dockerfile = (source / "Dockerfile").read_text()
@@ -389,6 +397,7 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
                   "materializer_sha256": MATERIALIZER_SHA256,
                   "template_version": str(data["version"]), "build_mode": "steps",
                   "base_image": data["base"], "server_commit_override": server_commit,
+                  "template_server_commit": selected_server,
                   "verified_base_path": base_path or BASE_PATH,
                   "copy_source_commit": None if _inline else source_commit,
                   "asset_transport": asset_transport if assets else "parallel" if temporary_uv else "direct",

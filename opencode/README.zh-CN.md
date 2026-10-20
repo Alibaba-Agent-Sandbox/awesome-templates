@@ -183,9 +183,9 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/opencode_version"
 
 | Provider | Current version and scope | Evidence |
 | --- | --- | --- |
-| alicloud-express | 2.0.1; steps构建、官方READY、CLI/SDK基础冒烟、独立清理；当前版本真实模型尚未执行 | [2026-10-19](evidence/express-2026-10-19T184023Z.json) |
+| alicloud-express | 2.0.1；实际 SDK 创建的镜像沙箱、CLI/SDK 命令、28 项严格真实模型断言、独立沙箱/模板/仓库清理 | [2026-10-20](evidence/express-2026-10-20.json) · [模型](evidence/model-image-2026-10-20T142001Z.json) |
 
-新版本的目录归属已在真实生成步骤中验证。旧版本回执保持历史范围；基础冒烟不能推断完整模型验收。
+本次使用逐项核验源码和归档哈希的真实 CI 镜像。模型实际修改已有源码、生成新产物，并通过未改动的原始测试、独立断言和准确 session 延续。当前运行时代码另有[真实平台 step 基础验证](evidence/verification-steps-2026-10-19T184023Z.json)，该记录本身不声称模型通过。镜像实际注入的 server 为 e2cb27e；独立 Docker fallback 的旧 pin 是另一条构建路径。完整来源、限制和历史失败见[验收记录](../.agents/evidence/verify/2026-10-20-native-coding-sdk-acceptance.md)。
 
 ## 历史验收
 

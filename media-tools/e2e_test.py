@@ -31,8 +31,12 @@ def main():
         check(health.status_code == 200 and health.json().get("status") == "ok", "server health")
         listed = client.get("/commands")
         names = {item["name"] for item in listed.json().get("commands", [])}
-        check(listed.status_code == 200 and {"media_version", "media_setup_check", "media_probe", "transcode", "media_smoke"} <= names,
+        check(listed.status_code == 200 and {"media_version", "media_setup_check", "media_probe", "transcode", "transcode_args", "media_args_smoke", "media_smoke"} <= names,
               "typed media commands registered")
+        args_metadata = next(item for item in listed.json()["commands"] if item["name"] == "transcode_args")
+        check(args_metadata["args"][0]["type"] == "string_array", "native JSON array metadata")
+        for invalid in ['["-i","x.wav","y.wav"]', ["-i", 1, "y.wav"], None]:
+            check(client.post("/commands/transcode_args", json={"args": invalid}).status_code == 400, "invalid native argv type rejected before invocation")
         response = client.post("/commands/transcode", json={})
         check(response.status_code == 400, "required paths enforced")
         response = client.post("/commands/transcode", json={"input_path": "in.wav", "output_name": "out.wav", "command_timeout": "oops"})
@@ -98,6 +102,13 @@ def main():
                         with wave.open(io.BytesIO(data), "rb") as decoded:
                             check((decoded.getnchannels(), decoded.getsampwidth(), decoded.getframerate(), decoded.getnframes()) == (1, 2, 16000, 16000)
                                   and decoded.readframes(16000) == pcm, "external WAV parser verifies every random PCM sample after FLAC roundtrip")
+                response = client.post("/commands/transcode_args", json={"args": ["-i", name + ".wav", "-c:a", "flac", "-vn", name + "-argv.flac"], "max_seconds": 1})
+                response.raise_for_status()
+                result = response.json()["result"]
+                owned.append(root + "/" + name + "-argv.flac")
+                data = read(owned[-1])
+                check(result["exit_code"] == 0 and isinstance(result["stdout"], str) and isinstance(result["stderr"], str), "native FFmpeg result includes actual stdout/stderr/exit_code")
+                check(data.startswith(b"fLaC") and result["sha256"] == hashlib.sha256(data).hexdigest(), "native argv HTTP artifact independently downloaded and checked")
                 check(read(path) == original, "original upload remains byte-identical after both conversions")
             finally:
                 for path in reversed(owned):
