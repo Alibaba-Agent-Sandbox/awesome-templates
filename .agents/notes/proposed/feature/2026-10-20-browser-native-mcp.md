@@ -12,7 +12,7 @@ Version2.1.0 installs official npm @playwright/mcp0.0.83 with an exact integrity
 
 ## API Design
 
-mcp_start/status/call/stop/self_test. Native standard MCP HTTP is sandbox-loopback8931, not a new public gateway. The SDK's authenticated named transport can call tools/list, tools/call and ping. JSON object64KiB, responses4MiB; native action/navigation10/20 seconds, output10MiB. Negotiate a real MCP session; never fabricate tool results. Private HOME/config/output; filter native environment. Stop reserves the leader identity, captures marked detached workers with pidfds and independently confirms process/listener absence.
+mcp_start/status/call/stop/self_test. Native standard MCP HTTP is sandbox-loopback8931, not a new public gateway. The SDK's authenticated named transport can call tools/list, tools/call and ping. JSON object64KiB, responses4MiB; native action/navigation10/20 seconds, output-file eviction threshold10MiB. Negotiate a real MCP session; never fabricate tool results. Private HOME/config/output; filter native environment. Stop reserves the leader identity, captures marked detached workers with pidfds and independently confirms process/listener absence.
 
 ## Alternatives considered
 

@@ -129,7 +129,7 @@ HTTP 400 为缺少参数或类型错误；401 为服务端认证失败；404 为
 
 执行 `abx run <sandbox-id> mcp_start`，再执行 `abx run <sandbox-id> mcp_call --arg method=tools/list`。同一沙箱内的标准 MCP 客户端访问 `http://127.0.0.1:8931/mcp`，使用原生MCP会话及协议头。8931仅监听沙箱回环，不是带认证的公网网关。外部通过 SDK 的 `await sb.run("mcp_call", method="tools/list")` 使用命令服务配置的 bearer 认证。固定上游的 browser_click 使用新 browser_snapshot 中的 `target`，不是旧版ref参数。
 
-诊断设置 `MCP_NODE_MODULES` 可选择独立安装且版本完全匹配的依赖树；镜像默认 /opt/playwright-mcp/node_modules。MCP HOME、浏览器配置和输出独立，停止后删除，不加载保存的浏览器配置或扩展。原生动作/导航时限10/20秒，HTTP响应4MiB、输出10MiB、浏览器空闲60秒。调用串行；原生沙箱内端点保留MCP流式传输，命名mcp_call缓冲返回。子进程不继承云端、模型、服务密钥及Node注入变量。浏览器仍使用沙箱网络权限，没有额外SSRF策略。请求、页面和返回值可能含隐私，不公开记录。
+诊断设置 `MCP_NODE_MODULES` 可选择独立安装且版本完全匹配的依赖树；镜像默认 /opt/playwright-mcp/node_modules。MCP HOME、浏览器配置和输出独立，停止后删除，不加载保存的浏览器配置或扩展。原生动作/导航时限10/20秒，HTTP响应4MiB、输出文件达到10MiB时触发旧文件淘汰（不是硬磁盘配额）、浏览器空闲60秒。调用串行；原生沙箱内端点保留MCP流式传输，命名mcp_call缓冲返回。子进程不继承云端、模型、服务密钥及Node注入变量。浏览器仍使用沙箱网络权限，没有额外SSRF策略。请求、页面和返回值可能含隐私，不公开记录。
 
 ## 配置
 
