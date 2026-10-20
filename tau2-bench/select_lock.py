@@ -32,7 +32,8 @@ def select():
         selected.append("\n".join(lines))
     if pending:
         raise ValueError("incomplete frozen lock entry")
-    (ROOT / "requirements.lock").write_text("\n".join(selected) + "\n")
+    compatibility = (ROOT / "requirements.compat.lock").read_text()
+    (ROOT / "requirements.lock").write_text("\n".join(selected) + "\n" + compatibility)
 
 
 if __name__ == "__main__":

@@ -50,7 +50,16 @@ def _invoke(operation,data,timeout):
                 source.write(raw);source.seek(0)
                 code,out,err=_PROCESS.run([binary,worker,operation],
                     cwd=private,env=_environment(private),timeout=timeout,input_file=source)
-        if code:raise RuntimeError('native Tau2 operation failed; private diagnostics omitted')
+        if code:
+            detail=''
+            if operation=='version':
+                try:
+                    diagnostic=json.loads(err.strip().splitlines()[-1])
+                    missing=diagnostic.get('missing_module','')
+                    if diagnostic.get('error_type')=='ModuleNotFoundError'and re.fullmatch(r'[A-Za-z_][A-Za-z0-9_.]{0,127}',missing):
+                        if not any(secret and secret in missing for secret in _CONFIG.values()):detail='; missing module '+missing
+                except (ValueError,IndexError,TypeError):pass
+            raise RuntimeError('native Tau2 operation failed; private diagnostics omitted'+detail)
         value=json.loads(out)
         if not isinstance(value,dict):raise RuntimeError('native result must be an object')
         for secret in [_CONFIG['MODEL_API_KEY'],_CONFIG['MODEL_BASE_URL']]:

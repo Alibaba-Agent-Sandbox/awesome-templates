@@ -1,0 +1,73 @@
+{
+  "template": "tau2-bench",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T205252Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "tau2-bench",
+    "materializer_sha256": "05104947a47f48f3c812cf28b8636a3484812be1a68bce34493c6781eb02cd34",
+    "source_manifest_contract_sha256": "86e7829091f6e5f423ba01be300aa0f2118349a42d8d69bfc2c634e6f435344e",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "736af4229f0b88bcddc1d75c91c19387564a2173",
+    "asset_transport": "oss",
+    "steps_json_bytes": 10999,
+    "inputs_sha256": {
+      "Dockerfile": "97a0a3f4f0585ec7fcbd8aa18908aad5eccf0fa7f64eb6b20e9795ca40b37341",
+      "template.yaml": "aa55951804633723604ea0f6b2cfd2ac912bf2546935ac6d5d0bd47ac19ba24a",
+      "upstream.json": "6c3ecbb8bafde46348aaffcd17fb541c3e17bf1fd0bf0a091a4669ff3c134a26",
+      "requirements.lock": "c611436463f33bb21b6553a1d4fd92450aa0d81135879db27d61e6fca428d3cf",
+      "install_source.py": "b019b220db1a6068dc8c39d811dd4f17a1fd532b39c5e4dcf84c3ce3e3c86320",
+      "commands.py": "8e2203cf49e11d459aa3d40c82a3450c786cb19db07b20bb7b3ac90315c98b8a",
+      "worker.py": "dfc175fa28899f8fa862546cbb4f64fa7cee411e815b4d3a8cdd9e2fc3035f68",
+      "process.py": "9d842feeaab9ec6929afa53d3cebf693fbaaf8453fee50870403ac107141568a",
+      "lifecycle.py": "6ca358fb55f42d147e89b0d00ebaa94c94ae7705fec9c8616155915136e12339",
+      "UPSTREAM-LICENSE.md": "e67c5aa0074dfcaefd3c3a1aedb94cb539234aecd15d5a972574e3200e6252fe"
+    },
+    "asset_transport_sha256": "83f20ec571a29225637ddac11fce7fd86f29146b24622b43e326c6934f8594e3",
+    "asset_adapter_source_commit": "736af4229f0b88bcddc1d75c91c19387564a2173",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://codeload.github.com/sierra-research/tau2-bench/tar.gz/fc0055dc4e0a316c3f83133267fbd6faaa770992",
+          "size": 92081935,
+          "sha256": "7a227036d07fdeb088dbd0c99fdb40ee9b9e0ebc06aadbc4dec1217b3383e57e"
+        }
+      ],
+      "aarch64": [
+        {
+          "url": "https://codeload.github.com/sierra-research/tau2-bench/tar.gz/fc0055dc4e0a316c3f83133267fbd6faaa770992",
+          "size": 92081935,
+          "sha256": "7a227036d07fdeb088dbd0c99fdb40ee9b9e0ebc06aadbc4dec1217b3383e57e"
+        }
+      ]
+    },
+    "asset_cache_architecture": "x86_64",
+    "generated_manifest_sha256": "29a0d2d21d12f1793f00e29c8d152f0780f75f300400d7009a0b1c9be2f7f64b"
+  },
+  "cleanup_verified": true,
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "asset_cache": {
+    "service": "Alibaba Cloud OSS",
+    "private_acl_verified": true,
+    "archives": [
+      {
+        "url": "https://codeload.github.com/sierra-research/tau2-bench/tar.gz/fc0055dc4e0a316c3f83133267fbd6faaa770992",
+        "sha256": "7a227036d07fdeb088dbd0c99fdb40ee9b9e0ebc06aadbc4dec1217b3383e57e",
+        "size": 92081935
+      }
+    ],
+    "signed_get_ttl_seconds": 3600,
+    "cleanup_verified": true
+  },
+  "duration_s": 133.543
+}

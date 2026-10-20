@@ -40,6 +40,9 @@ The complete frozen export is retained as `requirements.upstream.lock`;
 inactive entries/active marker syntax without changing pins or hashes. The image
 asserts Python3.13. The strict checker deliberately accepts only this selected
 plain hash lock; its policy is unchanged.
+One explicit compatibility addition, PSF-2.0 audioop-lts0.2.2 with official wheel
+SHA256, restores Python3.13's removed audioop module imported by upstream's text
+dependency path. Complete license retained; upstream versions/source unchanged.
 Modern uv `--locked` export reported upstream lock staleness; it did not pass and
 no dependency update was resolved. Native CLI steps reuse the same installer and
 verified parallel/owned OSS transport; immutable source must be committed first.

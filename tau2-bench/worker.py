@@ -104,5 +104,7 @@ if __name__=='__main__':
             os.environ['OPENAI_BASE_URL']=data['settings']['base'];os.environ['OPENAI_API_BASE']=data['settings']['base']
         print(json.dumps(execute(operation,data),allow_nan=False))
     except Exception as exc:
-        print(json.dumps({'error_type':type(exc).__name__,'native_operation_failed':True}),file=sys.stderr)
+        error={'error_type':type(exc).__name__,'native_operation_failed':True}
+        if operation=='version'and isinstance(exc,ModuleNotFoundError):error['missing_module']=exc.name
+        print(json.dumps(error),file=sys.stderr)
         raise SystemExit(1)

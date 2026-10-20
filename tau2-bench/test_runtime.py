@@ -34,6 +34,19 @@ def test_environment_drops_operator_credentials(configured,tmp_path,monkeypatch)
     assert env['LITELLM_LOCAL_MODEL_COST_MAP']=='True'and env['TAU2_DATA_DIR']=='/opt/tau2/data'
 
 
+@pytest.mark.parametrize('operation,missing,visible',[
+    ('version','audioop',True),('run','audioop',False),
+    ('version','synthetic-key-only',False),('version','https://model.example.invalid/v1',False)])
+def test_keyless_missing_import_diagnostic_cannot_expose_model_settings(configured,monkeypatch,operation,missing,visible):
+    monkeypatch.setattr(c,'_runtime',lambda:('/fixed/python','/fixed/worker'))
+    diagnostic=json.dumps({'error_type':'ModuleNotFoundError','missing_module':missing})
+    monkeypatch.setattr(c._PROCESS,'run',lambda*a,**k:(1,'',diagnostic))
+    with pytest.raises(RuntimeError)as result:c._invoke(operation,{},30)
+    text=str(result.value)
+    assert ('missing module audioop'in text)is visible
+    assert 'synthetic-key-only'not in text and'https://model.example.invalid/v1'not in text
+
+
 @pytest.mark.parametrize('exit_code',[0,23])
 def test_actual_authored_process_private_stdin_no_secret_env_and_cleanup(configured,tmp_path,monkeypatch,exit_code):
     capture=tmp_path/'capture.json';fixture=tmp_path/'authored_worker.py'

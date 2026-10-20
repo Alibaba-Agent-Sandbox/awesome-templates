@@ -18,7 +18,7 @@ RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
     fi
 ENV HOME=/home/user WORKSPACE=/home/user/workspace
 WORKDIR /home/user/app
-COPY --chown=user:user commands.py worker.py process.py lifecycle.py UPSTREAM-LICENSE.md ./
+COPY --chown=user:user commands.py worker.py process.py lifecycle.py UPSTREAM-LICENSE.md AUDIOOP-LICENSE.txt ./
 RUN mkdir -p /home/user/workspace && chown user:user /home/user/app /home/user/workspace     && python3 -c "import subprocess; p=subprocess.run(['du','-sx','--block-size=1','/'],capture_output=True,text=True,timeout=120); assert p.returncode==0; n=int(p.stdout.split()[0]); print('image_rootfs_bytes='+str(n)); assert n<=8*1024**3"
 USER user
 EXPOSE 9000

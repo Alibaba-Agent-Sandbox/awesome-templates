@@ -24,6 +24,9 @@ not an upstream-published checksum. Source execution uses fixed
 The unchanged [frozen export](requirements.upstream.lock) retains platform markers;
 `python tau2-bench/select_lock.py` selects its Linux CPython3.13 entries without
 changing package versions or hashes. The image enforces this Python profile.
+An explicit [compatibility lock](requirements.compat.lock) additionally pins
+PSF-2.0 `audioop-lts==0.2.2`: Python3.13 removed `audioop`, which this original
+upstream imports even for text tasks. Its [license](AUDIOOP-LICENSE.txt) is retained.
 
 ## Problem solved
 
