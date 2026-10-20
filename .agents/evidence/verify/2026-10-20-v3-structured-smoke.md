@@ -1,0 +1,3 @@
+# V3 structural expectation review
+
+PASS:57 spec/application cases,177 subtests; strict full catalog;126 documents/0 failures and whitespace. Initial migration test failed6 subcases: structured result restrictions and omitted expectations. The focused correction preserves declared string/number/boolean/object/array result semantics; commands lacking a declaration need an explicit expected result to adopt strict v3. Separate missing/null tests remain failures as required. The final catalog-shape regression excludes undeclared results rather than weakening required fields. Exact pre-fix observations were reproduced at f84ac41 and66259314; no provider, runtime, deployment-hook or model evidence is inferred.

@@ -76,6 +76,24 @@ class ApplicationContractTest(unittest.TestCase):
         (self.template / "template.yaml").write_text(check_template.yaml.safe_dump(self.data))
         self.assertEqual(check_template.check_directory(self.template), [])
 
+    def test_existing_catalog_expectation_shapes_survive_v3_adoption(self):
+        catalog = check_template.yaml.safe_load((ROOT / "awesome-templates.yaml").read_text())
+        for entry in catalog["templates"]:
+            source = ROOT / entry["path"]
+            data = check_template.yaml.safe_load((source / "template.yaml").read_text())
+            data["spec_version"] = 3
+            data["smoke"] = [item for item in data["smoke"] if "expect" in item]
+            if not data["smoke"]:
+                continue  # V3 explicitly requires expectations; no declared shape to migrate.
+            with self.subTest(template=entry["name"]):
+                self.assertEqual(validate_v3(data, source), [])
+
+    def test_v3_keeps_required_non_null_expectations(self):
+        self.data["smoke"][0].pop("expect")
+        self.assertTrue(self.check())
+        self.data["smoke"][0]["expect"] = None
+        self.assertTrue(self.check())
+
     def test_direct_external_and_managed_local_contracts(self):
         for application in (local_application(), external_application()):
             with self.subTest(application=application["runtime"]):

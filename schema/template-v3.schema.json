@@ -164,7 +164,13 @@
             "type": "object"
           },
           "expect": {
-            "type": "string"
+            "type": [
+              "string",
+              "number",
+              "boolean",
+              "object",
+              "array"
+            ]
           }
         }
       },
