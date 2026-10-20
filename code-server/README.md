@@ -87,6 +87,24 @@ WORKSPACE defaults to /home/user/app. CODE_SERVER_PASSWORD and ABX_SERVER_TOKEN 
 
 No provider has a passing run recorded for this template.
 
+### Actual browser, terminal and editor check
+
+Install Playwright1.58.0, its Chromium browser and `certutil` (Debian/Ubuntu:
+`libnss3-tools`). With an exclusively caller-owned sandbox and no running IDE,
+execute `python code-server/browser_e2e_test.py --sandbox-id <sandbox-id>`.
+It logs in through the SDK-forwarded8443 URL, loads workbench JavaScript, writes
+a nonce through the terminal WebSocket, independently reads it through files SDK,
+edits/saves in the browser and independently reads the changed bytes. It stops
+its IDE and removes its nonce file; the caller must destroy the sandbox.
+
+TLS stays enabled. Chromium uses a private temporary HOME/NSS store containing
+only CA certificates already trusted by Python's default SSL context from the
+operator's configured bundles. It preserves the caller's browser profile and
+filters cloud/model credentials from browser children. For a private network CA,
+configure the operator trusted store first. No certificate validation bypass is
+used. Local browser regressions explicitly use a filesystem observer and do not
+establish cloud/SDK acceptance. Cleanup failure prevents a passing result.
+
 ## Secondary development
 
 For local tools use install_runtime.py --prefix in your own directory. Image builds explicitly enable --check-rootfs; Docker host statvfs usage is not image size. Prepare [platform steps](../docs/platform-steps.md): `python scripts/prepare_steps.py code-server --output /tmp/ide-steps`; actual acceptance: `python scripts/run_steps_e2e.py code-server`. Update asset/version assertions and both docs together. WebSocket/terminal interaction needs its own recorded test; authenticated HTML alone does not certify it.

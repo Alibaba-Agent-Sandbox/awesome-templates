@@ -28,3 +28,11 @@ Real local auth/workbench/port forwarding plus lifecycle/config/env tests; start
 ## Acceptance criteria
 
 Complete bilingual docs/design/license, actual behavior and lifecycle evidence, image/Express and latest-head CI, ordinary verified merge; unrun WebSocket/terminal remains explicit.
+
+Review continuation adds an actual browser controller for terminal WebSocket
+write and editor save, independently observed through files SDK in cloud or an
+explicit local-files adapter in local regressions. Only operator-already-trusted
+CA roots enter temporary private NSS; TLS is verified and browser credentials
+are filtered. Teardown attempts IDE/file cleanup even if browser teardown fails.
+The caller owns sandbox lifecycle and must provide exclusive use during the test.
+Actual cloud qualification needs its own exact controller hash and owned cleanup.

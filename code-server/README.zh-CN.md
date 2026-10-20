@@ -87,6 +87,21 @@ WORKSPACE 默认 /home/user/app。CODE_SERVER_PASSWORD、ABX_SERVER_TOKEN 都是
 
 尚未记录任何通过的提供方测试。
 
+### 真实浏览器、终端与编辑器检查
+
+安装 Playwright1.58.0、其 Chromium 和 `certutil`（Debian/Ubuntu 包名
+`libnss3-tools`）。在调用方独占且没有运行中 IDE 的沙箱上执行
+`python code-server/browser_e2e_test.py --sandbox-id <sandbox-id>`。
+控制器通过 SDK 返回的8443地址登录，加载工作台 JavaScript，经终端 WebSocket
+写随机文件、files SDK 独立读回，再在浏览器编辑器修改、保存并独立读回。
+它停止自己启动的 IDE、删除随机文件；调用方仍需负责销毁沙箱。
+
+全程开启 TLS 校验。Chromium 的临时私有 HOME/NSS 仅导入 Python 默认 SSL
+上下文已经信任的操作端 CA，保留原有浏览器配置，浏览器子进程不继承云端或
+模型凭据。网络使用私有 CA 时，先配置操作端受信证书库，不绕过证书校验。
+本机浏览器回归明确使用本地文件观察器，不作为云端或 SDK 验收。清理未确认
+时不能返回通过。
+
 ## 二次开发
 
 本地验证可把 install_runtime.py 的 --prefix 指向自己的工具目录；镜像构建显式启用 --check-rootfs，以免把 Docker 宿主机的 statvfs 使用量误当成镜像大小。部署可用[平台 steps](../docs/platform-steps.zh-CN.md)：`python scripts/prepare_steps.py code-server --output /tmp/ide-steps`，真实验收 `python scripts/run_steps_e2e.py code-server`。修改版本时同步资产哈希、实际版本检查与双语文档。WebSocket/终端交互须单独记录，认证页面成功不能推断它们通过。

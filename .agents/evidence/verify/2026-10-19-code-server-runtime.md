@@ -22,3 +22,24 @@ CI selector follow-up: preserve the frozen23-template canonical source approval
 boundary while permitting new independently verified catalog entries. The
 authorization regression rejects every unreviewed added name; no credentials
 or cloud workflow authorization are broadened.13 real authorization tests PASS.
+
+## 2026-10-20 browser review continuation
+
+Reconstructed the reviewed browser controller after ephemeral environment reset.
+Earlier temporary outputs that were not published are not treated as durable
+acceptance. Exact Playwright1.58.0/Chromium1208 and official code-server4.141.0
+are installed for genuine local browser/PTY/editor regressions. TLS remains on,
+private NSS imports only roots already trusted by the operator's SSL context,
+cloud/model keys are not forwarded to browser children, and cleanup uncertainty
+fails. Current source local tests and genuine cloud rerun require new records.
+
+PASS:14 actual local lifecycle/browser/environment tests, including real browser
+workbench JavaScript, PTY terminal nonce write, editor save and independent local
+file bytes/cleanup. PASS: dedicated4-test browser suite after adding browser
+teardown-failure injection; the actual IDE is still stopped and its state removed.
+Only that cleanup-control negative mocks the browser; full UI runs real Chromium
+1208. Exact code-server4.141.0 installed bytes718143901 from verified official
+asset.117 document links PASS. Source/runtime image contract remains1.0.0: the
+new controller is external acceptance tooling. Actual current-controller cloud
+UI and current-head CI/merge remain pending. No historical temporary run is
+converted to a passing provider receipt.
