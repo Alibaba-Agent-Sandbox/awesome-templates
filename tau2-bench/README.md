@@ -32,6 +32,8 @@ the retail domain; no replacement instructions are supplied.
 
 ## Problem solved
 
+`tau2_run(domain)` returns `score` and `log_path` as requested; `artifact_path`
+is the same owned sanitized trajectory path, with byte count and SHA256.
 Provides bounded, reproducible access to an original benchmark task and its native
 evaluation, with a separately downloadable trajectory and independent strict
 replay. Both agent and simulated user use the explicitly configured model service.

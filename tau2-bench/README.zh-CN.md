@@ -21,6 +21,8 @@ MIT 许可的[固定原版源码](https://github.com/sierra-research/tau2-bench/
 
 为原版任务提供有界执行、原生评估、可单独下载的轨迹和独立严格重放。智能体与用户模拟器均使用明确配置的模型服务。
 
+`tau2_run(domain)` 按需求返回 `score` 和 `log_path`，`artifact_path` 是同一份所属脱敏轨迹路径，同时提供字节数和 SHA256。
+
 文本通信采用原生默认 `enforce_communication_protocol=False`，完成状态、源码、评分和严格重放验收要求均保留。
 
 ## 快速开始（CLI）

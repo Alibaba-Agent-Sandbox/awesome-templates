@@ -91,7 +91,7 @@ def execute(operation,data):
         path=Path(data['artifact'])
         with path.open('xb')as output:output.write(raw)
         return result|{'native_version':'1.0.1','source_commit':SOURCE,'domain':'retail','task_id':task.id,
-            'artifact_path':str(path),'artifact_bytes':len(raw),'artifact_sha256':hashlib.sha256(raw).hexdigest()}
+            'artifact_path':str(path),'log_path':str(path),'artifact_bytes':len(raw),'artifact_sha256':hashlib.sha256(raw).hexdigest()}
     if operation=='verify':
         raw=Path(data['artifact']).read_bytes()
         if len(raw)>LIMIT:raise ValueError('trajectory exceeds8MiB')

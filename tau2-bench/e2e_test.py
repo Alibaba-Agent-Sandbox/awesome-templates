@@ -35,9 +35,10 @@ def model(client,base,workspace):
     try:
         value=asyncio.run(native(base,'tau2_run',domain='retail',task_id='0',max_steps=40,command_timeout=900))
         path=value.get('artifact_path','');prefix=workspace+'/abx_tau2_result_'
-        valid=path.startswith(prefix)and re.fullmatch(r'[a-f0-9]{32}/trajectory.json',path[len(prefix):])is not None
+        valid=path.startswith(prefix)and re.fullmatch(r'[a-f0-9]{32}/trajectory.json',path[len(prefix):])is not None and value.get('log_path')==path
         record(valid,'actual SDK native runner returns an exact owned trajectory path')
         if not valid:return
+        print('NATIVE_BENCHMARK '+json.dumps({k:value[k]for k in ['native_version','source_commit','domain','task_id','score','termination_reason','message_count','assistant_messages','user_messages','tool_call_count','artifact_bytes','artifact_sha256']},sort_keys=True),flush=True)
         folder=path.rsplit('/',1)[0]
         response=client.get('/files/download-stream',params={'path':path});response.raise_for_status();raw=base64.b64decode(response.json()['content_base64']);artifact=json.loads(raw)
         record(len(raw)==value.get('artifact_bytes')and hashlib.sha256(raw).hexdigest()==value.get('artifact_sha256'),'independent artifact download matches native byte count and SHA256')
