@@ -90,17 +90,24 @@ Task and extraction instructions each cap32768UTF-8 bytes; URL caps8192. Return 
 
 The wrapper uses upstream ClientLLM structured generation, maps text/images and requires complete JSON-schema model replies. Requests cap2MiB, replies1MiB, each inference60seconds; no redirects, retries or provider fallback. Model values are captured at server import. Secrets enter the Node consumer via anonymous stdin memory, never argv, browser environment or credential files. Browser subprocesses inherit only selected runtime/certificate variables and new private HOME/cache/profile. Native Chromium sandbox is explicitly disabled inside the outer disposable sandbox; it is not a tenant/security boundary. Pages can reach networks accessible to that sandbox; authenticate/trust named-command callers accordingly.
 
+
+Pinned compatibility profile: SDK4.3.0 accepts extensionId in its local connect schema but drops it in the factory. [patch_sdk.py](patch_sdk.py) requires pristine SDK SHA25638ec56a2a1af1fb72c3e361a66b256def8e3665cca527e0d337f8a76a8308bd1 and changes one forwarding site. The owned Chrome launcher preloads only the unchanged bundled extension, observes its actual service-worker ID and uses native localBrowser.connect/Stagehand.create/act/extract. Runtime and independent controller require patched SDK SHA256bdf3cd62126c1529e8a889cae17fd098303e24e962e491a4b20786de72c369e0. This is a disclosed patched upstream distribution. Bounded failure diagnostics expose only allowlisted phase/status/call count, never upstream response bodies, private endpoints or key values.
+
 ## Resources
 
 2vCPU,4096MB RAM, port9000, about10GiB Express rootfs. No Docker/KVM/GPU needed inside the sandbox. The image enforces an8GiB rootfs budget. Local browser/extension startup and compatible model structured output are required. Browserbase cloud/cache/services are not required or verified.
 
 ## Verified
 
-Template1.1.1 adds only bounded phase/status/call diagnostics, never upstream bodies, keys or endpoints. Version1.1.0 passed real L1 and native HTTP13PASS/0FAIL/1explicit model skip, but the separate actual model failed with all owned cleanup confirmed, so the template remains unqualified. Independent structured JSON model-wire preflight passed; it does not establish native Stagehand acceptance.
+| Provider | Current scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | Template1.1.1; native steps → official READY → actual Python SDK creation → CLI/SDK native smoke; genuine model act/extract, independent counter/receipt/PNG and owned cleanup | [2026-10-20](evidence/express-2026-10-20.json), [native model and cleanup](evidence/verification-steps-2026-10-20T190109Z.json) |
 
-Template1.1.0 explicitly fixes pinned SDK4.3.0 local connect forwarding: its factory accepts but drops extensionId, then attempts Extensions.loadUnpacked over a debugging port that this Chromium rejects. The owned launcher now preloads the unmodified bundled npm extension, observes its actual service-worker ID and uses native localBrowser.connect/Stagehand.create/act/extract. The [build patch](patch_sdk.py) requires the pristine SDK SHA256 and forwards only the existing public parameter. The worker requires the exact patched source SHA256 `bdf3cd62126c1529e8a889cae17fd098303e24e962e491a4b20786de72c369e0`. This is a disclosed patched upstream distribution, not an unmodified release or substitute browser agent. Previous1.0.0native cloud/L1 failures remain historical and do not qualify1.1.0; fresh actual acceptance is required.
+Actual native SDK4.3.0 with the disclosed patch used qwen3.8-flash at the approved compatible endpoint. Three model calls completed a browser click and native text extraction. Independent HTTP confirmed exactly one click and the fresh receipt; SDK downloaded15192PNG bytes, independently decoded as1024×768 with SHA256 verified. Own model processes/listeners/files/native private state, outer sandbox/template and private OSS objects/bucket were independently confirmed absent. Complete non-model HTTP13PASS/0FAIL/1explicit model skip is separate from the actual SDK native-model PASS; the skip was not relabeled. Real image L1 and image-user native self-test are separately recorded. [Final engineering evidence](../.agents/evidence/verify/2026-10-20-stagehand-native-final.md). No actual-image model deployment, Browserbase hosted services or other provider is claimed.
 
-No current provider or real-model pass is recorded yet. Source/import/fixture checks are not cloud acceptance. Keep `tested_on: []` and catalog experimental until exact current native L1, Express SDK creation/commands/model and independent cleanup receipts pass.
+## Historical verification
+
+Version1.0.0 tried Extensions.loadUnpacked over a debugging port; fixed Chromium returned code-32000 Method not available, and real cloud/L1 self-tests failed. Immutable failures remain. Version1.1.0 fixed extension connection and passed L1/native browser/HTTP, but its first separate actual model failed with unproven model root cause. Version1.1.1 adds safe diagnostics only; schema, native/browser/model oracles and cleanup were not weakened. The later genuine pass does not establish why the earlier model failed. All failed runs independently cleaned their owned resources.
 
 ## Secondary development
 

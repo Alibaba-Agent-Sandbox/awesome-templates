@@ -90,17 +90,24 @@ task／提取指令各最多32768 UTF-8字节，URL最多8192。结果含 `versi
 
 上游 ClientLLM 结构化请求支持文本和图片，必须完整返回 JSON-schema 结果；请求最多2MiB、响应1MiB，每次推理60秒，不自动重定向、重试或切换提供方。配置在服务 import 时读取。模型秘密只经匿名 stdin 内存传入 Node，不写文件、不进 argv／浏览器环境。浏览器只继承选定运行时／证书变量以及全新私有 HOME／cache／profile。明确在外层一次性沙箱中关闭 Chromium 内层 sandbox；这不构成租户安全边界。页面能访问沙箱可达网络，命令调用者需要受信任且认证。
 
+
+固定兼容配置：SDK4.3.0 的 local connect schema 接受 extensionId，但工厂未转发。[patch_sdk.py](patch_sdk.py) 强制校验原始源码 SHA25638ec56a2a1af1fb72c3e361a66b256def8e3665cca527e0d337f8a76a8308bd1，只改一处转发。自有 Chrome 只预加载原 npm 包随附、未修改的扩展，观察真实 service-worker ID，再使用原生 localBrowser.connect／Stagehand.create／act／extract。运行时与独立控制器强制校验补丁后 SDK SHA256bdf3cd62126c1529e8a889cae17fd098303e24e962e491a4b20786de72c369e0。这是明确披露的上游补丁发行配置。失败诊断仅返回允许的阶段／HTTP状态／调用次数，不返回上游响应正文、私有端点或密钥。
+
 ## 资源
 
 2vCPU、4096MB、端口9000、Express约10GiB rootfs。沙箱内不需要 Docker／KVM／GPU，镜像校验8GiB rootfs预算。需要本地浏览器／扩展以及兼容结构化输出的模型。无需、也未验证 Browserbase 云服务／缓存／托管浏览器。
 
 ## 已验证
 
-模板1.1.1 进一步仅公开有界阶段／HTTP状态／请求次数诊断，不返回上游正文、密钥或端点。1.1.0 已通过真实 L1 和原生 HTTP13PASS/0FAIL/1显式模型跳过，但单独真实模型失败、资源独立清理通过，不能据此标记整个模板通过。固定模型端点的独立结构化 JSON 预检实际通过，但不等于 Stagehand 原生模型验收。
+| 提供方 | 当前范围 | 记录 |
+| --- | --- | --- |
+| alicloud-express | 模板1.1.1；原生 steps → 官方 READY → 真实 Python SDK 创建 → CLI/SDK 原生自检；真实模型 act/extract、独立计数／回执／PNG与资源清理 | [2026-10-20](evidence/express-2026-10-20.json)、[模型／清理证明](evidence/verification-steps-2026-10-20T190109Z.json) |
 
-模板1.1.0 显式修复固定 SDK4.3.0 的连接参数转发：原生工厂接收却遗漏 `extensionId`，并通过调试端口执行当前 Chromium 拒绝的 `Extensions.loadUnpacked`。现在只预加载同一 npm 包随附的原始扩展，观察其真实 service-worker ID，再使用原生 localBrowser.connect、Stagehand.create/act/extract。构建时 [补丁](patch_sdk.py)强制校验原始源码 SHA-256，并只转发该现有公开参数；工作进程强制校验补丁后源码 SHA-256 `bdf3cd62126c1529e8a889cae17fd098303e24e962e491a4b20786de72c369e0`。这不是未修改的上游发行包，也不是替代浏览器 agent。浏览器／扩展仍为真实原生实现。原1.0.0的失败云端／L1记录保留，不能证明1.1.0通过。当前需重新执行真实验收。
+实际原生 SDK4.3.0（含下述明确补丁）使用授权兼容端点上的 qwen3.8-flash，3次模型调用完成按钮点击、原生文本提取；独立 HTTP 确认点击计数恰好1、新回执匹配。SDK 下载15192字节 PNG，经独立解码验证1024×768及 SHA-256。模型进程、额外端口、文件、原生私有状态、外层沙箱／模板、私有 OSS 缓存对象／桶均已独立确认清理。基础完整 HTTP13PASS/0FAIL/1显式模型跳过，另行真实 SDK 模型验收 PASS；跳过没有改标为模型通过。真实 L1 镜像构建／镜像用户自检另有记录。详见[最终工程证据](../.agents/evidence/verify/2026-10-20-stagehand-native-final.md)。不代表实际镜像注册后模型部署、Browserbase 托管服务或其他提供方。
 
-当前尚无提供方或真实模型通过记录。源码／import／fixture 检查不代表云端验收。精确版本的原生 L1、Express SDK 创建／命令／模型及独立清理通过之前，保持 `tested_on: []` 和 experimental。
+## 历史验收
+
+1.0.0 的原生工厂尝试通过调试端口调用 Extensions.loadUnpacked，固定 Chromium 返回 code-32000 Method not available；实际云端与 L1 自检失败记录保留。1.1.0 修复扩展连接后通过 L1／浏览器／HTTP，但首次独立真实模型仍失败，具体模型失败根因未认定。1.1.1 仅增加安全诊断，未放宽请求 schema、模型／浏览器断言或清理要求；新一轮真实模型通过不能据此推断旧模型失败原因。全部旧失败轮次均独立清理自有资源。
 
 ## 二次开发
 
