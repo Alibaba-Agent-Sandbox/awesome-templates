@@ -1,0 +1,35 @@
+{
+  "passed": false,
+  "model": "qwen3.8-flash",
+  "verification_type": "image-backed-native-browser-model",
+  "model_protocol": "OpenAI-compatible text-DOM",
+  "model_acceptance": "NOT_RUN",
+  "checks": {
+    "fixture_uploaded_via_sdk": true,
+    "independent_fixture_baseline": true,
+    "configured_server_ready": true
+  },
+  "native_done": true,
+  "native_success": false,
+  "native_steps": 3,
+  "native_error_summary": [
+    "Request timed out."
+  ],
+  "independent_counter": 0,
+  "submitted_code_matches": false,
+  "final_url_matches": true,
+  "owned_process_file_cleanup_ack": true,
+  "owned_listeners_absent": true,
+  "owned_files_absent": true,
+  "model_error_type": "AssertionError",
+  "template": "browser-use",
+  "template_version": "1.0.0",
+  "provider": "alicloud-express",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "cleanup_verified": true,
+  "registry_cleanup_verified": true,
+  "commands_sha256": "167e60a89161d4116c0167f0ccc46979635746fcc9f024a1af8cf46ca304e282",
+  "controller_sha256": "98a8ebace3554d667ce9a30d3aadf3b47161657ab0fc5405f469796ec71fdca4",
+  "fixture_sha256": "5de7b826b7ba48df403ba84445035f27b1c06017210e81cb8613fe87e609123e",
+  "worker_sha256": "b341c7109297db0b658d0bde0240f01f70cadd3e20ff218fa419944851ea7d97"
+}

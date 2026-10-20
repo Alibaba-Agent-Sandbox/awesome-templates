@@ -160,6 +160,13 @@ jobs:
         with:
           node-version: "24.16.0"
 
+      - name: Install hash-locked native browser-use for local tests
+        run: |
+          python -m venv "$RUNNER_TEMP/browser-use-runtime"
+          "$RUNNER_TEMP/browser-use-runtime/bin/python" -m pip install --require-hashes -r browser-use/requirements.lock
+          "$RUNNER_TEMP/browser-use-runtime/bin/python" -m pip check
+          echo "BROWSER_USE_PYTHON=$RUNNER_TEMP/browser-use-runtime/bin/python" >> "$GITHUB_ENV"
+
       - name: Install the in-sandbox server and the test client
         run: |
           export PLAYWRIGHT_BROWSERS_PATH="$RUNNER_TEMP/playwright"
@@ -244,6 +251,7 @@ jobs:
         run: |
           python -m pytest -q next-app/test_commands.py next-app/test_forwarded_controller.py
           python -m pytest -q browser-automation/test_mcp.py browser-automation/test_pdf_runtime.py
+          python -m pytest -q browser-use/test_commands.py browser-use/test_model_controller.py
           python -m pip install --require-hashes -r scripts/requirements-preview.txt
           python -m pytest -q code-server/test_commands.py code-server/test_browser_local.py scripts/test_preview_proxy.py
           python -m pytest -q polyglot-toolchain/test_commands.py
