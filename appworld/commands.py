@@ -55,7 +55,7 @@ def _invoke(operation,data,timeout):
                 diagnostic=json.loads(err.strip().splitlines()[-1])
                 kind=diagnostic.get('error_type')
                 stage=diagnostic.get('native_stage')
-                if kind in ['TypeError','ValueError','AttributeError','RuntimeError','NativeIncomplete','ValidationError','FileNotFoundError','ModuleNotFoundError','KeyError','APIConnectionError','RateLimitError','BadRequestError','AuthenticationError']and stage in ['request','upstream','task','configuration','native_run','summary','artifact','replay']:
+                if isinstance(kind,str)and re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]{0,63}',kind)and not any(secret and secret in kind for secret in _CONFIG.values())and stage in ['request','upstream','task','configuration','native_run','summary','artifact','replay']:
                     detail='; '+stage+' ('+kind+')'
                     bootstrap_kind=diagnostic.get('bootstrap_error_type')
                     if bootstrap_kind in ['ModuleNotFoundError','ImportError','PermissionError','FileNotFoundError','TypeError','AttributeError','RuntimeError','ValueError','NativeInstallerNonzero']:
@@ -67,6 +67,12 @@ def _invoke(operation,data,timeout):
                     if reason in ['max_steps','timeout','too_many_errors','agent_error','user_error','infrastructure_error','context_window_exceeded','unexpected_error']:
                         detail+='; termination='+reason
             except (ValueError,IndexError,TypeError):pass
+            if not detail:
+                classes=re.findall(r'^([A-Za-z_][A-Za-z0-9_]{0,63}(?:Error|Exception)):',err,re.M)
+                if classes and not any(secret and secret in classes[-1]for secret in _CONFIG.values()):
+                    detail='; entrypoint ('+classes[-1]+')'
+                else:detail='; diagnostic_class_unavailable'
+            detail+='; native_exit_code='+str(code)
             if operation=='version':
                 try:
                     diagnostic=json.loads(err.strip().splitlines()[-1])

@@ -70,3 +70,26 @@ def test_real_authored_subprocess_receives_request_only_on_anonymous_stdin(tmp_p
     monkeypatch.setenv('OPENAI_API_KEY','operator-secret')
     result=c._invoke('version',{'settings':{'key':'synthetic-secret'}},10)
     assert result=={'anonymous_input':True,'private_home':True}
+
+
+@pytest.mark.parametrize('kind',['PermissionError','ImportError','Error','JSONDecodeError','InvalidToken'])
+def test_real_worker_error_reports_only_validated_class_without_private_message(tmp_path,monkeypatch,kind):
+    worker=tmp_path/'authored_failure.py'
+    diagnostic={'error_type':kind,'native_stage':'upstream','message':'SYNTHETIC_PRIVATE_VALUE /private/owned/path'}
+    worker.write_text('import sys\nprint('+repr(json.dumps(diagnostic))+',file=sys.stderr)\nraise SystemExit(1)\n')
+    monkeypatch.setattr(c,'_runtime',lambda:(sys.executable,str(worker)))
+    with pytest.raises(RuntimeError) as error:
+        c._invoke('smoke',{},10)
+    text=str(error.value)
+    assert 'upstream ('+kind+')' in text and 'native_exit_code=1' in text
+    assert 'SYNTHETIC_PRIVATE_VALUE' not in text and '/private/owned/path' not in text
+
+
+def test_early_native_traceback_exposes_only_class(tmp_path,monkeypatch):
+    worker=tmp_path/'early_failure.py'
+    worker.write_text('import sys\nprint("ImportError: SYNTHETIC_PRIVATE_VALUE /private/owned/path",file=sys.stderr)\nraise SystemExit(1)\n')
+    monkeypatch.setattr(c,'_runtime',lambda:(sys.executable,str(worker)))
+    with pytest.raises(RuntimeError) as error:
+        c._invoke('smoke',{},10)
+    text=str(error.value)
+    assert 'entrypoint (ImportError)' in text and 'SYNTHETIC_PRIVATE_VALUE' not in text and '/private/owned/path' not in text
