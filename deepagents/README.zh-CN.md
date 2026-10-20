@@ -117,7 +117,7 @@ HTTP200返回{"result":{"stdout":"42","stderr":"","exit_code":0}}，保留非零
 | --- | --- | --- |
 | 1.0.0 | alicloud-express | [SDK创建镜像](evidence/express-2026-10-20.json), [严格模型17](evidence/model-image-2026-10-20T113609Z.json), [关闭模型HTTP](evidence/image-http-2026-10-20T113609Z.json) |
 
-单独关闭模型的HTTP控制器9 PASS/1项显式模型SKIP，不是L3。真实原生step正在单独验证，目前不宣称step通过。其他提供方及其余上游模型/后端未认证。
+单独关闭模型的HTTP控制器9 PASS/1项显式模型SKIP，不是L3。[真实原生step尝试](evidence/verification-steps-2026-10-20T112245Z.json)未在1200秒内独立到达READY，最后官方状态仍为building，未创建沙箱。已删除自有模板，并[独立回查模板/沙箱不存在](evidence/steps-cleanup-2026-10-20.json)。这是失败尝试，不能宣称step通过或推断提供方存在通用RUN时限。其他提供方及其余上游模型/后端未认证。
 
 ## 二次开发
 

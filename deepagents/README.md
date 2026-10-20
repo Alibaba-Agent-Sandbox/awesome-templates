@@ -121,7 +121,7 @@ Version1.0.0 passed actual Alibaba Express verified CI-image registration, offic
 | --- | --- | --- |
 | 1.0.0 | alicloud-express | [SDK-created image](evidence/express-2026-10-20.json), [strict model17](evidence/model-image-2026-10-20T113609Z.json), [model-off HTTP](evidence/image-http-2026-10-20T113609Z.json) |
 
-The separate model-off HTTP controller has9 PASS/1 explicit model SKIP and is not L3. Actual native platform steps are being checked separately; no successful step receipt is claimed here yet. Other providers and every upstream model/backend profile remain unverified.
+The separate model-off HTTP controller has9 PASS/1 explicit model SKIP and is not L3. The [actual native step attempt](evidence/verification-steps-2026-10-20T112245Z.json) did not independently reach READY within1200seconds; last official state remained building. No sandbox was created. Owned template deletion and [independent template/sandbox absence recheck](evidence/steps-cleanup-2026-10-20.json) passed. This is a failed step attempt, not step qualification or proof of a universal provider RUN cap. Other providers and every upstream model/backend profile remain unverified.
 
 ## Secondary development
 

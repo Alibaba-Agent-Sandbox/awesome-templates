@@ -32,4 +32,4 @@ L0 actual0.7.25/native tool discovery0/8, no task, authored actual write_file an
 
 ### Executed qualification
 
-Version1.0.0 actual SDK-created verified image and compatible qwen3.8-flash model17/0/0 passed source edits/report/original tests/fresh held-out calculations and independent owned sandbox/template/registry cleanup. [Canonical receipt](../../deepagents/evidence/express-2026-10-20.json). Platform steps remain a separate pending check.
+Version1.0.0 actual SDK-created verified image and compatible qwen3.8-flash model17/0/0 passed source edits/report/original tests/fresh held-out calculations and independent owned sandbox/template/registry cleanup. [Canonical receipt](../../deepagents/evidence/express-2026-10-20.json). The [separate native step attempt](../../deepagents/evidence/verification-steps-2026-10-20T112245Z.json) failed to reach READY within1200seconds, last official state building; no sandbox created. Owned template deletion and independently rechecked cloud absence passed. No inner cause or universal RUN cap is inferred.
