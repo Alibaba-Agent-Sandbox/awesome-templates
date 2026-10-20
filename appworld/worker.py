@@ -13,6 +13,7 @@ import re
 import secrets
 import shutil
 import stat
+import subprocess
 import sys
 import zipfile
 from pathlib import Path, PurePosixPath
@@ -50,11 +51,15 @@ def bootstrap():
     sys.path.insert(0,str(root))
     world_root=Path(os.environ['APPWORLD_ROOT'])
     world_root.mkdir(mode=0o700)
-    from appworld.install import install_package
+    # Run the original installer in its own interpreter. The engine must first
+    # import after protected apps exist, avoiding stale app-discovery caches.
+    install_env=dict(os.environ)
+    install_env['PYTHONPATH']=str(root)
+    subprocess.run([sys.executable,'-m','appworld.cli','install'],env=install_env,
+                   stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,
+                   timeout=90,check=True)
     from appworld.common.constants import PASSWORD,SALT
     from appworld.common.utils import unpack_bundle
-    # Original upstream install operates only on the copied private package.
-    install_package()
     unpack_bundle(str(BOOTSTRAP/'data.bundle'),str(world_root),PASSWORD,SALT)
     META=meta
     return world_root
