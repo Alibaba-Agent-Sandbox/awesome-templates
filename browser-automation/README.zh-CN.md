@@ -159,7 +159,13 @@ PDF在独立HOME子进程执行，执行时限1–120秒并有有界清理。通
 
 ## 已验证
 
-当前2.2.0 PDF/进程变更待新验收；下面2.1.0回执保留原版本。
+版本2.2.0已通过真实阿里云极速版原生step构建、Python SDK Sandbox.create、CLI/SDK浏览器和MCP冒烟，完整远程HTTP **37 PASS / 0 FAIL / 0 SKIP**。通过独立文件HTTP验证截图PNG、横向及纵向PDF实际字节和页面尺寸；自有产物、进程及沙箱/模板清理均确认。源码构建包含8GiB根文件系统门禁。未运行模型验收，其他提供方及未执行的MCP动作未认证。
+
+| 版本 | 提供方 | 证据 |
+| --- | --- | --- |
+| 2.2.0 | alicloud-express | [SDK创建及step](evidence/express-2026-10-20T103410Z.json), [完整HTTP37](evidence/full-http-steps-2026-10-20T103410Z.json) |
+
+下面2.1.0回执保留原版本。
 
 ## 2.1.0 历史验收
 

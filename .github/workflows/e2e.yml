@@ -97,6 +97,7 @@ jobs:
     timeout-minutes: 30
     env:
       E2E_RUN_LLM: "0"
+      PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/playwright
     steps:
       - uses: actions/checkout@v4
 

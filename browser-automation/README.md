@@ -169,7 +169,13 @@ small `/dev/shm`; concurrent browser requests increase memory usage. Delete old
 
 ## Verified
 
-Current2.2.0 PDF/process changes require fresh acceptance. Prior2.1.0 receipts below retain their original version.
+Version2.2.0 passed actual Alibaba Express native steps and Python SDK Sandbox.create, CLI/SDK browser/MCP smoke and full remote HTTP **37 PASS / 0 FAIL / 0 SKIP**. Independent files HTTP verified screenshot PNG and both portrait/landscape PDF bytes and geometry; owned artifacts/processes and sandbox/template cleanup were confirmed. The source build includes the8GiB rootfs gate. Model acceptance was not run; other providers and unexercised MCP actions remain unverified.
+
+| Version | Provider | Evidence |
+| --- | --- | --- |
+| 2.2.0 | alicloud-express | [SDK-created steps](evidence/express-2026-10-20T103410Z.json), [full HTTP37](evidence/full-http-steps-2026-10-20T103410Z.json) |
+
+Prior2.1.0 receipts below retain their original version.
 
 ## Historical2.1.0 verification
 
@@ -182,18 +188,18 @@ Version2.1.0 passed actual Alibaba Express native steps, Python SDK Sandbox.crea
 
 ## Historical2.0.2 verification
 
-Version 2.0.2 passed actual CI-image registration, official READY, CLI/SDK and complete Chromium screenshot/PDF/independent artifact HTTP 24 PASS / 0 FAIL / 0 SKIP. Independently confirmed sandbox/template/registry cleanup. Status remains experimental; other providers are unverified.
+Version 2.0.2 passed actual CI-image registration, official READY, CLI/SDK and complete Chromium screenshot/independent artifact HTTP 24 PASS / 0 FAIL / 0 SKIP. Independently confirmed sandbox/template/registry cleanup. Status remains experimental; other providers are unverified.
 
 | Provider | Scope | Evidence |
 | --- | --- | --- |
-| alicloud-express | Exact current version, actual image and independently verified cleanup | [canonical receipt](evidence/express-2026-10-20.json), [HTTP](evidence/image-http-2026-10-20T060053Z.json) |
+| alicloud-express | Historical2.0.2, actual image and independently verified cleanup | [canonical receipt](evidence/express-2026-10-20.json), [HTTP](evidence/image-http-2026-10-20T060053Z.json) |
 
 
 The separate platform-step attempt did not reach READY within 1200 seconds; last official state was building. It is a [retained failure](evidence/full-http-steps-2026-10-20T062809Z.json), not step qualification.
 
 ## Historical verification
 
-No provider has a passing run recorded for this template.
+The following text records the original unqualified state; later dated receipts above supersede that status.
 
 Local browser acceptance and static conformance can be run independently. They
 are not cloud-provider acceptance. L1 requires an actual image build; L2 requires

@@ -90,3 +90,7 @@ Official npm0.0.83 and exact lockfile driver1.64.0-alpha-1790635538000 reuse Chr
 ## PDF and owned script processes2.2.0
 
 Add actual A4 PDF with typed landscape/background flags and1–120second owned-child execution deadline plus bounded cleanup,256KiB URL/no NUL, post-render16MiB artifact cap and independent remote PDF MediaBox orientation checks. PDF stdin is private JSON; its HOME/profile are temporary. Generic workspace run uses the same reserved leader/marked-worker cleanup and256KiB per-stream bound, preserving caller HOME while filtering credentials/injection variables. Existing ordinary failed scripts could leave a background child; the regression fails before the fix and passes after. A du-based8GiB image-rootfs build gate records actual byte count; this differs from filesystem free capacity. Exact2.1.0 MCP receipts remain historical and2.2.0 provider qualification is reset.
+
+### Actual2.2.0 acceptance
+
+Actual Express native steps source21a6b301d5468f568d8956ea059144ebe7567696 and Python SDK Sandbox.create passed CLI/SDK smoke and full remote HTTP37/0/0, including independent portrait/landscape PDF downloads/geometry and PNGs, owned process/artifact cleanup and sandbox/template absence. See [dated provider receipt](../../browser-automation/evidence/express-2026-10-20T103410Z.json). Latest-head CI and normal merge remain separate gates.
