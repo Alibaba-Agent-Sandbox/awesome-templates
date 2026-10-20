@@ -187,6 +187,8 @@ analytics-disabled 状态可能保留在该专用沙箱原生 `.aider`，随实�
 | --- | --- | --- |
 | alicloud-express | 精确当前版本、真实镜像和独立清理 | [正式回执](evidence/express-2026-10-20.json)、[HTTP](evidence/image-http-2026-10-20T064247Z.json)、[严格模型](evidence/model-image-2026-10-20T064248Z.json) |
 
+补充原生SDK创建验收2026-10-20：同一1.0.1运行时由已验证CI镜像注册、官方READY、真实Python Sandbox.create创建，完成CLI/SDK冒烟及关闭模型的HTTP控制器。[新的不可变SDK回执](evidence/express-2026-10-20T112118Z.json)、[HTTP及清理](evidence/image-http-2026-10-20T112118Z.json)。沙箱/模板/镜像仓库不存在性和运行后镜像digest均独立确认。本次没有重跑模型；上方同一运行时/控制器的历史真实模型通过仍单独保留。
+
 ## 历史验收
 
 [Express 实际镜像补充验收](evidence/image-runtime-2026-10-16-configured.json)

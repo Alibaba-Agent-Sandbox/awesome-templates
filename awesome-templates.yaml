@@ -474,6 +474,24 @@ templates:
     - ports
     status: experimental
 
+  - name: next-app
+    description: Pinned Next.js16.4.2 and Vite8.3.4 frontend scaffold and owned preview
+      lifecycle.
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: next-app
+    tags:
+    - node
+    - nextjs
+    - vite
+    - preview
+    author: alibaba-agent-sandbox
+    capabilities:
+    - shell
+    - files
+    - code
+    - ports
+    status: experimental
+
 # Provider-managed IDs have no source build context; never pass these to image selection.
 managed_templates:
   - name: base
