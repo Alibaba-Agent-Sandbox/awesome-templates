@@ -94,6 +94,7 @@ class ApplicationContractTest(unittest.TestCase):
             ("state", "bindingRef", "missing"), ("sandbox", "workspace", "shared"),
             ("sandbox", "requiredFeatures", []), ("limits", "maxToolSeconds", 901),
             ("limits", "maxRunSeconds", True), ("limits", "maxEventsPerRun", 1),
+            ("limits", "maxEventsPerRun", 4),
             ("limits", "maxOutputBytes", 10), ("limits", "typo", 3),
         ]
         for section, key, value in cases:

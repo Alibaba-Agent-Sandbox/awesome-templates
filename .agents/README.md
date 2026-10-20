@@ -94,3 +94,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Single-file template application v3](notes/proposed/architecture/2026-10-20-template-application-v3.md) · [verification](evidence/verify/2026-10-20-template-application-v3.md)
 
 - [Application provider baseline review](evidence/verify/2026-10-20-template-application-v3-baseline-review.md)
+
+- [Application event reserve compatibility](evidence/verify/2026-10-20-template-application-v3-event-reserve.md)

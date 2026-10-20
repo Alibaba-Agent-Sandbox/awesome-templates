@@ -150,7 +150,7 @@ executed cloud receipt or an installable catalog entry.
 | `sandbox` | Provider name, `lifetime: per-run`, `workspace: exclusive`, and nonempty `requiredFeatures`. Both modes require `sandbox.lifecycle`; external also requires `exec.run` and `files.rw`, in-sandbox requires `ports.url`. Features are requirements, not proof of provider support or runtime authorization. |
 | `state` | External gateways require `profile: durable` and `bindingRef` naming a `bindings` key. Client-direct uses only `{profile: ephemeral}`. |
 | `bindings` | Mapping from logical names to credential/service reference names. No secret values, connection strings, or signed URLs. Empty is allowed for direct local access. |
-| `limits` | Positive integer `maxRunSeconds`, `maxToolSeconds`, `maxConcurrentRuns`, `maxQueuedRuns`, `maxRunsPerMinute`; `maxEventsPerRun >= 2`, `maxOutputBytes >= 1024`. Tool budget cannot exceed run budget. These declarations require runtime enforcement; the checker does not implement admission control. |
+| `limits` | Positive integer `maxRunSeconds`, `maxToolSeconds`, `maxConcurrentRuns`, `maxQueuedRuns`, `maxRunsPerMinute`; `maxEventsPerRun >= 5`, `maxOutputBytes >= 1024`. Tool budget cannot exceed run budget. These declarations require runtime enforcement; the checker does not implement admission control. |
 | `hooks` | Optional lists named `beforeApply` and `afterReady`, at most eight hooks per phase. Direct local access has no deployment hooks. Other phase names fail. |
 
 Every hook declares a globally unique `id`, `executor: host-command`, argv array,

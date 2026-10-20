@@ -415,7 +415,7 @@
             },
             "maxEventsPerRun": {
               "type": "integer",
-              "minimum": 2
+              "minimum": 5
             },
             "maxOutputBytes": {
               "type": "integer",

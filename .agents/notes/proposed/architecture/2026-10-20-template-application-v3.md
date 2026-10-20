@@ -29,7 +29,9 @@ or existing runtime/image/catalog acceptance claim changes here.
 `schema/template-v3.schema.json` is the machine contract. It closes objects and
 models external/local runtime, gateway, deployment, exclusive per-run sandbox,
 state/binding references, budgets, and beforeApply/afterReady hooks. Both modes
-require lifecycle; external also requires exec/files and local requires port URLs. FC deployment
+require lifecycle; external also requires exec/files and local requires port URLs.
+At least five events per run reserve cancellation, uncertain/resolved finalization
+and terminal reporting capacity. FC deployment
 requires access/toolchain references and exactly one inline/project source.
 Inline external mode requires gateway, worker and dispatcher with pinned fc3
 components. Native FC props/actions remain adapter inputs, not cloud validation.

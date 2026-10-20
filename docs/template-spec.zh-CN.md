@@ -146,7 +146,7 @@ v2 继续支持，但 v2 中添加 `application` 会失败。未知字段、版�
 | `sandbox` | Provider 名称、`lifetime: per-run`、`workspace: exclusive`、非空 `requiredFeatures`。两种模式都需要 `sandbox.lifecycle`；外部还需 `exec.run`、`files.rw`，sandbox 内还需 `ports.url`。能力声明不证明 provider 已支持，也不授予运行权限。 |
 | `state` | 外部网关需要 `profile: durable`，`bindingRef` 必须指向 `bindings` 的键。客户端直连只能是 `{profile: ephemeral}`。 |
 | `bindings` | 逻辑名称到凭据或服务引用名称的 mapping，不得写密钥、连接串或签名 URL。直连模式允许为空。 |
-| `limits` | 正整数 `maxRunSeconds`、`maxToolSeconds`、`maxConcurrentRuns`、`maxQueuedRuns`、`maxRunsPerMinute`；`maxEventsPerRun >= 2`、`maxOutputBytes >= 1024`。工具预算不能超过任务预算。实际限制由 runtime 执行，检查器不实现准入控制。 |
+| `limits` | 正整数 `maxRunSeconds`、`maxToolSeconds`、`maxConcurrentRuns`、`maxQueuedRuns`、`maxRunsPerMinute`；`maxEventsPerRun >= 5`、`maxOutputBytes >= 1024`。工具预算不能超过任务预算。实际限制由 runtime 执行，检查器不实现准入控制。 |
 | `hooks` | 可选 `beforeApply`、`afterReady` 列表，每阶段最多八项。直连本地模式没有部署 hooks，其他阶段名拒绝。 |
 
 每个 hook 包含全局唯一 `id`、`executor: host-command`、argv 数组、相对 `cwd`、
