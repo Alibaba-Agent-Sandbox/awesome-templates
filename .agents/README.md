@@ -14,6 +14,8 @@ New engineering records use English and stay in this repository.
 - [Provider-owned preparation](notes/proposed/process/2026-10-19-provider-preparation.md)
   · [verification](evidence/verify/2026-10-19-provider-preparation.md)
 
+- [Native Crush](notes/proposed/feature/2026-10-20-crush-runtime.md) · [verification](evidence/verify/2026-10-20-crush-runtime.md)
+
 ## Layout and lifecycle
 
 - `notes/proposed/<architecture|feature|process>/YYYY-MM-DD-<slug>.md`: pending decisions.
@@ -116,4 +118,4 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [V3 structural smoke expectations](notes/proposed/process/2026-10-20-v3-structured-smoke.md) · [verification](evidence/verify/2026-10-20-v3-structured-smoke.md)
 
-- [Native Crush](notes/proposed/feature/2026-10-20-crush-runtime.md) · [verification](evidence/verify/2026-10-20-crush-runtime.md)
+- [Three native SDK creation profiles](notes/proposed/process/2026-10-20-three-native-sdk-create.md) · [verification](evidence/verify/2026-10-20-three-native-sdk-create.md)
