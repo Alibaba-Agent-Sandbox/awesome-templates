@@ -1,0 +1,106 @@
+# Structure example only. fc3@0.0.0 is a sentinel, not a verified published version.
+# Replace all deployment inputs and provide the CLI toolchain lock before planning.
+# Adapter extracts inline into generated s.yaml; no second YAML is maintained.
+name: external-agent
+version: 1.0.1
+description: Configuration-only external Agent example; deployment inputs require
+  operator review.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+spec_version: 3
+base: fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
+generation: 2
+start_cmd: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+ready_cmd: agent-sandbox-server healthcheck --port 9000
+resources:
+  cpu: 2
+  memory: 2048
+ports:
+- 9000
+tags:
+- example
+- skeleton
+priority: P2
+wave: other
+tested_on: []
+capabilities:
+- shell
+- files
+- code
+- ports
+env:
+  ABX_SERVER_TOKEN: ''
+smoke:
+- command: hello
+  args:
+    name: Express
+  expect: Hello, Express!
+application:
+  runtime:
+    placement: external
+    driver: python-remote-tools
+  gateway:
+    placement: fc-web
+  deployment:
+    adapter: serverless-devs-fc3
+    toolchainLock: deploy/toolchain.lock.json
+    accessRef: deploy-access
+    inline:
+      edition: 3.0.0
+      name: agent-example
+      resources:
+        gateway:
+          component: fc3@0.0.0
+          props:
+            region: cn-hangzhou
+            functionName: REPLACE-gateway
+            runtime: custom-container
+            timeout: 60
+            role: REPLACE_WITH_REVIEWED_ROLE_ARN
+            customContainerConfig:
+              image: REPLACE_WITH_IMMUTABLE_IMAGE
+              port: 9000
+        worker:
+          component: fc3@0.0.0
+          props:
+            region: cn-hangzhou
+            functionName: REPLACE-worker
+            runtime: custom-container
+            timeout: 960
+            role: REPLACE_WITH_REVIEWED_ROLE_ARN
+            customContainerConfig:
+              image: REPLACE_WITH_IMMUTABLE_IMAGE
+              port: 9000
+        dispatcher:
+          component: fc3@0.0.0
+          props:
+            region: cn-hangzhou
+            functionName: REPLACE-dispatcher
+            runtime: custom-container
+            timeout: 60
+            role: REPLACE_WITH_REVIEWED_ROLE_ARN
+            customContainerConfig:
+              image: REPLACE_WITH_IMMUTABLE_IMAGE
+              port: 9000
+  sandbox:
+    provider: alicloud-express
+    lifetime: per-run
+    workspace: exclusive
+    requiredFeatures:
+    - sandbox.lifecycle
+    - exec.run
+    - files.rw
+  state:
+    profile: durable
+    bindingRef: run-store
+  bindings:
+    run-store: run-database
+    model-access: model-token
+  limits:
+    maxRunSeconds: 900
+    maxToolSeconds: 60
+    maxConcurrentRuns: 1
+    maxQueuedRuns: 8
+    maxRunsPerMinute: 10
+    maxEventsPerRun: 10000
+    maxOutputBytes: 8388608
