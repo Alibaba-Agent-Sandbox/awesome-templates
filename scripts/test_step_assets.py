@@ -162,3 +162,17 @@ def test_loopback_browser_mirror_serves_only_verified_archives(tmp_path, request
     assert result.returncode == exit_code
     if exit_code == 0:
         assert result.stdout.strip() == content.decode()
+
+
+def test_stagehand_native_browser_recipe_fits_wire_and_uses_exact_immutable_copy():
+    manifest, proof = prepare(ROOT / 'stagehand', asset_transport='parallel', server_commit='e2cb27e24fde0a67112f82b8d44af463445a5d1a')
+    assert proof['steps_json_bytes'] <= 15000
+    assert proof['copy_source_commit'] and len(proof['copy_source_commit']) == 40
+    assert proof['inputs_sha256']['commands.py'] == hashlib.sha256((ROOT/'stagehand/commands.py').read_bytes()).hexdigest()
+    assets = proof['build_assets']['x86_64']
+    assert any('145.0.7632.6/linux64/chrome-linux64.zip' in x['url'] and x['size']==175440843 for x in assets)
+    assert all('headless-shell' not in x['url'] for x in assets)
+    commands = [s['args'][0] for s in manifest['build']['steps'] if s['type']=='RUN']
+    assert any('step_assets.py playwright python3 -m playwright install chromium --no-shell' in x for x in commands)
+    assert manifest['build']['steps'][-1] == {'type':'USER','args':['user']}
+    assert '/tmp/abx-step-installer' in manifest['build']['steps'][-2]['args'][0]
