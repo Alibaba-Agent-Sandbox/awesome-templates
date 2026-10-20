@@ -85,3 +85,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Exact-source CI image acceptance](notes/proposed/process/2026-10-19-ci-image-acceptance.md) · [verification](evidence/verify/2026-10-19-ci-image-acceptance.md)
 
 - [Controller prerequisites](notes/proposed/process/2026-10-19-controller-prerequisite-preflight.md) · [verification](evidence/verify/2026-10-19-controller-prerequisite-preflight.md)
+
+- [Goose runtime](notes/proposed/feature/2026-10-20-goose-runtime.md) · [verification](evidence/verify/2026-10-20-goose-runtime.md)

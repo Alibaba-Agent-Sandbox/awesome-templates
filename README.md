@@ -161,6 +161,8 @@ abx --provider e2b template launch alibaba-agent-sandbox/awesome-templates//pyth
 
 Model-free file tool: [apply-patch](apply-patch/README.md) (experimental).
 
+Official terminal agent: [goose](goose/README.md) (experimental; current provider/model acceptance pending).
+
 ## Provider-managed runtime catalog
 
 | ID | Provider | Documentation | Verified scope |

@@ -397,6 +397,24 @@ templates:
     status: experimental
     providers:
       alicloud-express: install-build
+  - name: goose
+    description: Official Goose1.54.0 with private compatible-provider config and explicit
+      developer tools.
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: goose
+    tags:
+    - goose
+    - coding-agent
+    - openai-compatible
+    author: alibaba-agent-sandbox
+    capabilities:
+    - shell
+    - files
+    - code
+    - ports
+    status: experimental
+    providers:
+      alicloud-express: install-build
 
 # Provider-managed IDs have no source build context; never pass these to image selection.
 managed_templates:
