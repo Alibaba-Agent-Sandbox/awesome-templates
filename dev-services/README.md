@@ -109,7 +109,11 @@ Prewarmed command servers need [explicit process configuration](../docs/runtime-
 
 ## Verified
 
-No provider has a passing run recorded for this template. Actual local non-root PostgreSQL17.11/Redis8.0.2 versions, auth, SQL/Redis read/write, stop/restart persistence, owned cleanup and unrelated-listener preservation pass. Image and cloud gates pending; external TCP forwarding unverified.
+Version1.1.0 passed genuine SDK-created Express image registration, CLI/SDK engine/self-test smoke and full required-engine HTTP6 PASS/0 FAIL/0 SKIP. Actual authenticated PostgreSQL/Redis SQL and key reads/writes, stop/restart persistence, nonce-data/process/listener cleanup and independent sandbox/template/registry absence all passed. Image defaults5432/16379 preserve the occupied foreign6379 listener. External raw TCP forwarding and other providers remain unverified.
+
+| Version | Provider | Evidence |
+| --- | --- | --- |
+| 1.1.0 | alicloud-express | [SDK-created image](evidence/express-2026-10-20.json), [full HTTP6](evidence/image-http-2026-10-20T101159Z.json) |
 
 ## Secondary development
 

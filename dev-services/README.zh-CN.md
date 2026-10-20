@@ -105,7 +105,11 @@ psql使用 -X、ON_ERROR_STOP；redis-cli使用 -e 将协议错误作为失败�
 
 ## 已验证
 
-尚无本模板云端通过回执。本机实际非root PostgreSQL17.11/Redis8.0.2鉴权、SQL/Redis读写、停止重启持久化、进程和监听清理、无关监听保留测试通过。镜像/极速版门禁待执行，外部TCP转发未验证。
+版本1.1.0通过真实SDK创建的极速版镜像注册、CLI/SDK引擎及自测冒烟、完整实际引擎HTTP6 PASS/0 FAIL/0 SKIP。真实PostgreSQL/Redis认证、SQL及键读写、停止重启持久化、自有数据/进程/监听清理，以及沙箱/模板/镜像仓库独立不存在性回查均通过。镜像默认5432/16379，保留已占用的无关6379监听。外部原始TCP转发及其他提供方仍未验证。
+
+| Version | Provider | Evidence |
+| --- | --- | --- |
+| 1.1.0 | alicloud-express | [SDK-created image](evidence/express-2026-10-20.json), [full HTTP6](evidence/image-http-2026-10-20T101159Z.json) |
 
 ## 二次开发
 
