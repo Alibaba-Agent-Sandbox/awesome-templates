@@ -90,3 +90,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Current heavy-image acceptance](evidence/verify/2026-10-20-current-heavy-image-acceptance.md)
 - [OCR step acceptance](notes/proposed/process/2026-10-20-ocr-step-acceptance.md) · [verification](evidence/verify/2026-10-20-ocr-step-acceptance.md)
+
+- [Actual SDK creation acceptance](notes/proposed/process/2026-10-20-sdk-created-acceptance.md) · [verification](evidence/verify/2026-10-20-sdk-created-acceptance.md)
