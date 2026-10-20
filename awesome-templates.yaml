@@ -446,6 +446,23 @@ templates:
     providers:
       alicloud-express: install-build
 
+  - name: dev-services
+    description: Pinned non-root PostgreSQL17.11 and Redis8.0.2 with owned lifecycle.
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: dev-services
+    tags:
+    - database
+    - postgresql
+    - redis
+    - development
+    author: alibaba-agent-sandbox
+    capabilities:
+    - shell
+    - files
+    - code
+    - ports
+    status: experimental
+
   - name: next-app
     description: Pinned Next.js16.4.2 and Vite8.3.4 frontend scaffold and owned preview
       lifecycle.

@@ -133,6 +133,12 @@ HTTP 400 为缺少参数或类型错误；401 为服务端认证失败；404 为
 
 诊断设置 `MCP_NODE_MODULES` 可选择独立安装且版本完全匹配的依赖树；镜像默认 /opt/playwright-mcp/node_modules。MCP HOME、浏览器配置和输出独立，停止后删除，不加载保存的浏览器配置或扩展。原生动作/导航时限10/20秒，HTTP响应4MiB、输出文件达到10MiB时触发旧文件淘汰（不是硬磁盘配额）、浏览器空闲60秒。调用串行；原生沙箱内端点保留MCP流式传输，命名mcp_call缓冲返回。子进程不继承云端、模型、服务密钥及Node注入变量。浏览器仍使用沙箱网络权限，没有额外SSRF策略。请求、页面和返回值可能含隐私，不公开记录。
 
+### PDF及有界工作区脚本
+
+`pdf(url:str, landscape:bool=false, print_background:bool=true, timeout_s:int=30) -> {path,bytes,format:"PDF"}` 使用固定真实Chromium输出A4 PDF。URL协议同browse，最大256KiB且无NUL。渲染后文件上限16MiB，不是峰值内存上限。布尔参数有类型检查。通过 SDK `await sb.files.read_bytes(result["path"])` 读取，导出后删除。`abx run <sandbox-id> pdf --arg url='data:text/html,<h1>PDF proof</h1>'` 调用真实渲染器。不覆盖调用者文件名，拒绝符号链接产物目录。
+
+PDF在独立HOME子进程执行，执行时限1–120秒并有有界清理。通用run也保留进程身份，在成功、失败、输出超限或超时后停止自有普通及带标记的脱离进程。stdout/stderr各256KiB，错误不返回原生诊断。run保留调用者HOME，仅转发PATH、语言、浏览器和CA设置，不继承服务/云端/模型密钥及加载器注入。需要显式长期后台或环境设置时使用SDK进程接口。这是进程卫生措施，不是另一层沙箱安全边界。构建以实际du数据执行8GiB根文件系统预算，可用磁盘容量是另一指标。
+
 ## 配置
 
 | 变量 | 默认值 | 用途 |
@@ -152,6 +158,17 @@ HTTP 400 为缺少参数或类型错误；401 为服务端认证失败；404 为
 并发请求增加内存占用，通过文件 API 删除旧 `browser-artifacts/` 释放根文件系统。
 
 ## 已验证
+
+版本2.2.0已通过真实阿里云极速版原生step构建、Python SDK Sandbox.create、CLI/SDK浏览器和MCP冒烟，完整远程HTTP **37 PASS / 0 FAIL / 0 SKIP**。通过独立文件HTTP验证截图PNG、横向及纵向PDF实际字节和页面尺寸；自有产物、进程及沙箱/模板清理均确认。源码构建包含8GiB根文件系统门禁。未运行模型验收，其他提供方及未执行的MCP动作未认证。
+
+| 版本 | 提供方 | 证据 |
+| --- | --- | --- |
+| 2.2.0 | alicloud-express | [SDK创建及step](evidence/express-2026-10-20T103410Z.json), [完整HTTP37](evidence/full-http-steps-2026-10-20T103410Z.json) |
+
+下面2.1.0回执保留原版本。
+
+## 2.1.0 历史验收
+
 
 版本2.1.0通过真实阿里云极速版原生step构建、Python SDK Sandbox.create、CLI/SDK浏览器及原生MCP冒烟，以及完整远程HTTP29 PASS/0 FAIL/0 SKIP。真实MCP工具发现、导航、快照、点击及截图复用Chromium1208，独立计数器与PNG检查通过。自有沙箱/模板删除及独立不存在性回查通过；其他提供方及其余上游工具动作未认证。
 

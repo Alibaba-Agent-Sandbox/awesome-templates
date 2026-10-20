@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 import os
-import subprocess
 import sys
 from contextlib import contextmanager
 from pathlib import Path
@@ -128,16 +127,49 @@ def run(script: str = "main.py", timeout_s: int = 120) -> str:
     path = (workspace / script).resolve()
     if not path.is_relative_to(workspace) or not path.is_file():
         raise ValueError("script must be an existing file inside the workspace")
+    code, stdout, _ = _browser_process.run_owned([sys.executable, str(path)], cwd=workspace, timeout=timeout_s)
+    if code:
+        raise RuntimeError(f"Browser script exited {code}; captured output omitted")
+    return stdout
+
+
+import tempfile as _browser_tempfile
+import importlib.util as _browser_import
+_browser_spec = _browser_import.spec_from_file_location('template_owned_browser_process', Path(__file__).with_name('browser_process.py'))
+_browser_process = _browser_import.module_from_spec(_browser_spec)
+_browser_spec.loader.exec_module(_browser_process)
+
+
+@command("pdf", description="Render an A4 PDF with owned process deadline; return a workspace artifact path and size.")
+def pdf(url: str, landscape: bool = False, print_background: bool = True, timeout_s: int = 30) -> dict:
+    _validate(url, timeout_s)
+    if type(landscape) is not bool or type(print_background) is not bool:
+        raise ValueError("PDF flags must be booleans")
+    if len(url.encode()) > 256*1024 or "\0" in url:
+        raise ValueError("PDF URL must be at most256KiB with no NUL")
+    directory = _workspace() / "browser-artifacts"
+    if directory.is_symlink():
+        raise ValueError("PDF artifact directory must not be a symlink")
+    directory.mkdir(parents=True, exist_ok=True)
+    path = directory / ("pdf-" + uuid4().hex + ".pdf")
+    with path.open("xb"):
+        pass
     try:
-        result = subprocess.run(
-            [sys.executable, str(path)], cwd=workspace, capture_output=True,
-            text=True, timeout=timeout_s,
-        )
-    except subprocess.TimeoutExpired:
-        raise RuntimeError("Browser script exceeded timeout_s; captured output omitted") from None
-    if result.returncode:
-        raise RuntimeError(f"Browser script exited {result.returncode}; captured output omitted")
-    return result.stdout
+        with _browser_tempfile.TemporaryFile() as payload:
+            payload.write(json.dumps({"url":url,"path":str(path),"landscape":landscape,
+                "print_background":print_background,"timeout_s":timeout_s}, ensure_ascii=False).encode())
+            payload.seek(0)
+            code, _, _ = _browser_process.run_owned([sys.executable, str(Path(__file__).with_name("pdf_worker.py"))],
+                cwd=_workspace(), timeout=timeout_s, input_file=payload, private_home=True)
+        if code or not 100 <= path.stat().st_size <= 16*1024**2:
+            raise RuntimeError("PDF renderer failed or artifact exceeded16MiB; diagnostics omitted")
+        with path.open("rb") as stream:
+            if not stream.read(5) == b"%PDF-":
+                raise RuntimeError("PDF renderer did not create a PDF")
+        return {"path":str(path),"bytes":path.stat().st_size,"format":"PDF"}
+    except BaseException:
+        path.unlink(missing_ok=True)
+        raise
 
 
 # Load only the local helper definitions; no listener/browser starts on import.

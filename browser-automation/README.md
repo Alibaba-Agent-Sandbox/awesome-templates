@@ -141,6 +141,12 @@ Run `abx run <sandbox-id> mcp_start`, then `abx run <sandbox-id> mcp_call --arg 
 
 A process-start diagnostic `MCP_NODE_MODULES` may select an independently installed exact lockfile tree; production uses /opt/playwright-mcp/node_modules. MCP HOME/profile/output are private and deleted on stop; no saved browser/profile/extensions are loaded. Default action/navigation limits10/20seconds, HTTP response4MiB, native output-file eviction threshold10MiB (not a hard disk quota) and idle browser60seconds. Calls are serialized; streaming stays on the native in-sandbox MCP endpoint, while mcp_call returns a buffered result. Native child environment excludes operator cloud/model/server keys and Node injection variables. Browser navigation shares the sandbox's egress authority; no SSRF policy is added. Caller requests, page data and results can be private and must not be publicly logged.
 
+### PDF and bounded workspace scripts
+
+`pdf(url:str, landscape:bool=false, print_background:bool=true, timeout_s:int=30) -> {path,bytes,format:"PDF"}` renders A4 using the pinned real Chromium. URL supports the same schemes as browse, up to256KiB/no NUL. The generated workspace PDF is capped at16MiB after rendering; this is not a peak-memory bound. Boolean flags are typed. Read the artifact with SDK `await sb.files.read_bytes(result["path"])` and remove it after export. `abx run <sandbox-id> pdf --arg url='data:text/html,<h1>PDF proof</h1>'` exercises the actual renderer. No caller output filename is overwritten; symlink artifact directories are refused.
+
+PDF execution runs in a private-HOME child with its own1–120second execution deadline and bounded teardown. Generic run now also reserves process identity and stops marked detached/ordinary children on success, failure, overflow or deadline. stdout/stderr are each capped at256KiB; native diagnostics are omitted from errors. run preserves caller HOME but forwards only PATH/locale/browser/CA settings, excluding server/cloud/model keys and injected loaders. Use the SDK process interface for explicit long-lived background work/environment settings. This process hygiene is not a second sandbox security boundary. Build enforces actual du rootfs accounting at8GiB; disk free-space size is a separate quantity.
+
 ## Configuration
 
 | Variable | Default | Purpose |
@@ -163,6 +169,17 @@ small `/dev/shm`; concurrent browser requests increase memory usage. Delete old
 
 ## Verified
 
+Version2.2.0 passed actual Alibaba Express native steps and Python SDK Sandbox.create, CLI/SDK browser/MCP smoke and full remote HTTP **37 PASS / 0 FAIL / 0 SKIP**. Independent files HTTP verified screenshot PNG and both portrait/landscape PDF bytes and geometry; owned artifacts/processes and sandbox/template cleanup were confirmed. The source build includes the8GiB rootfs gate. Model acceptance was not run; other providers and unexercised MCP actions remain unverified.
+
+| Version | Provider | Evidence |
+| --- | --- | --- |
+| 2.2.0 | alicloud-express | [SDK-created steps](evidence/express-2026-10-20T103410Z.json), [full HTTP37](evidence/full-http-steps-2026-10-20T103410Z.json) |
+
+Prior2.1.0 receipts below retain their original version.
+
+## Historical2.1.0 verification
+
+
 Version2.1.0 passed actual Alibaba Express native steps, Python SDK Sandbox.create, CLI/SDK browser and native MCP smoke, and full remoteHTTP29 PASS/0 FAIL/0 SKIP. Native MCP discovery and actual navigation/snapshot/click/screenshot use the existing Chromium1208; the independent counter and PNG checks passed. Owned sandbox/template deletion and independent absence were confirmed. Other providers and all remaining upstream tool actions are not certified.
 
 | Version | Provider | Evidence |
@@ -171,18 +188,18 @@ Version2.1.0 passed actual Alibaba Express native steps, Python SDK Sandbox.crea
 
 ## Historical2.0.2 verification
 
-Version 2.0.2 passed actual CI-image registration, official READY, CLI/SDK and complete Chromium screenshot/PDF/independent artifact HTTP 24 PASS / 0 FAIL / 0 SKIP. Independently confirmed sandbox/template/registry cleanup. Status remains experimental; other providers are unverified.
+Version 2.0.2 passed actual CI-image registration, official READY, CLI/SDK and complete Chromium screenshot/independent artifact HTTP 24 PASS / 0 FAIL / 0 SKIP. Independently confirmed sandbox/template/registry cleanup. Status remains experimental; other providers are unverified.
 
 | Provider | Scope | Evidence |
 | --- | --- | --- |
-| alicloud-express | Exact current version, actual image and independently verified cleanup | [canonical receipt](evidence/express-2026-10-20.json), [HTTP](evidence/image-http-2026-10-20T060053Z.json) |
+| alicloud-express | Historical2.0.2, actual image and independently verified cleanup | [canonical receipt](evidence/express-2026-10-20.json), [HTTP](evidence/image-http-2026-10-20T060053Z.json) |
 
 
 The separate platform-step attempt did not reach READY within 1200 seconds; last official state was building. It is a [retained failure](evidence/full-http-steps-2026-10-20T062809Z.json), not step qualification.
 
 ## Historical verification
 
-No provider has a passing run recorded for this template.
+The following text records the original unqualified state; later dated receipts above supersede that status.
 
 Local browser acceptance and static conformance can be run independently. They
 are not cloud-provider acceptance. L1 requires an actual image build; L2 requires
