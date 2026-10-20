@@ -1,0 +1,46 @@
+{
+  "result": "FAIL",
+  "adapter": "codex",
+  "provider": "alicloud-express",
+  "model": "qwen3.8-flash",
+  "checks": [
+    "exact original baseline: test_seven FAIL, test_zero PASS",
+    "new9010 configured, actual pinned CLIs, original restricted HTTP policy"
+  ],
+  "cleanup": {
+    "sandbox_kill": true,
+    "sandbox_absence_verified": true
+  },
+  "boundary": "real owned-template SDK/session coding acceptance for the selected native adapter; not hosted Agents or a build-mode claim",
+  "runtime_file_sha256": {
+    "commands.py": "58bf1f93f54c53ae1992431b09502e2c5f8a5b820016a993241ab6979bef35bf",
+    "server-policy.json": "4a7f79435940b0d952c5fb0dba6ee049197bdc412a76a201b371efac9290a996"
+  },
+  "failure_category": "TimeoutError",
+  "template": "agents-cli",
+  "template_version": "2.0.1",
+  "build_mode": "steps",
+  "source_commit": "b4c39dcbae47d0b0b0421a9e4d055e2820b4ec6b",
+  "controller_sha256": "4dadf84dff8067a5948228d10347bc6185d644362ac6af592565c9b1af832f18",
+  "model_protocol": "OpenAI-compatible at the explicitly approved base URL",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "agents-cli",
+    "materializer_sha256": "c4eca69e56e6a419a96bf47b01986baed5ed9df1b68af2f7ecb2caf7fd40d65c",
+    "template_version": "2.0.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "steps_json_bytes": 6840,
+    "inputs_sha256": {
+      "Dockerfile": "7e716d080206b9fd2da884992a396b547ad4fa4289d45482577310c3fc70c093",
+      "template.yaml": "b71d75f6d0bb9bbd5121ae376299c79c1d5bc2cb57065d424dce063dbf8f95da",
+      "commands.py": "58bf1f93f54c53ae1992431b09502e2c5f8a5b820016a993241ab6979bef35bf",
+      "server-policy.json": "4a7f79435940b0d952c5fb0dba6ee049197bdc412a76a201b371efac9290a996"
+    },
+    "generated_manifest_sha256": "a328d8a96b9a8e28a14f17ddd27af624e11c35e4978f78e804bde5b109e7a62d"
+  }
+}
