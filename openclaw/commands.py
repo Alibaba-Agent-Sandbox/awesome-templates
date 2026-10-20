@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import atexit
+import ipaddress
 import json
 import os
 from pathlib import Path
@@ -22,6 +23,29 @@ _STATE: tempfile.TemporaryDirectory | None = None
 _ENV: dict[str, str] = {}
 _PORT = 18789
 _BIND = "loopback"
+
+
+def _trusted_proxies() -> list[str]:
+    raw = os.environ.get("OPENCLAW_TRUSTED_PROXIES", "").strip()
+    if not raw:
+        return []
+    if len(raw.encode("utf-8")) > 2048:
+        raise ValueError("OPENCLAW_TRUSTED_PROXIES exceeds its byte limit")
+    values = raw.split(",")
+    if len(values) > 16:
+        raise ValueError("OPENCLAW_TRUSTED_PROXIES supports at most 16 explicit IPs/CIDRs")
+    result = []
+    for value in values:
+        try:
+            network = ipaddress.ip_network(value.strip(), strict=False)
+        except ValueError:
+            raise ValueError("OPENCLAW_TRUSTED_PROXIES requires explicit IPs/CIDRs") from None
+        if network.prefixlen == 0 or network.network_address.is_unspecified or network.is_multicast:
+            raise ValueError("OPENCLAW_TRUSTED_PROXIES refuses unrestricted or non-unicast networks")
+        canonical = str(network)
+        if canonical not in result:
+            result.append(canonical)
+    return result
 
 
 def _validate(port: int, command_timeout: int) -> None:
@@ -198,12 +222,15 @@ def gateway_start(port: int = 18789, bind: str = "loopback", command_timeout: in
             except OSError:
                 raise RuntimeError("gateway port is already occupied; choose another port") from None
         executable = _binary()
+        trusted_proxies = _trusted_proxies()
         _STATE = tempfile.TemporaryDirectory(prefix="abx-openclaw-")
         state = Path(_STATE.name)
         config = {"gateway": {"mode": "local", "port": port, "bind": bind,
                   "auth": {"mode": "token", "token": "${OPENCLAW_GATEWAY_TOKEN}"},
                   "controlUi": {"enabled": False}},
                   "browser": {"enabled": False}}
+        if trusted_proxies:
+            config["gateway"]["trustedProxies"] = trusted_proxies
         (state / "openclaw.json").write_text(json.dumps(config), encoding="utf-8")
         _ENV = os.environ.copy()
         _ENV.update(OPENCLAW_STATE_DIR=str(state), OPENCLAW_CONFIG_PATH=str(state / "openclaw.json"),

@@ -21,17 +21,16 @@ A gateway is a long-lived server. Running `openclaw start` synchronously is neit
 
 Check the installed entry with `abx create --help`. The complete example below uses native CLI syntax. If help lists `--detach`, use the standard Express entry: create with `abx create <template-id> --detach` and clean up with `abx kill <sandbox-id>` without `-y`; named commands through `abx run` are unchanged. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
 
-Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
+Runtime configuration: the SDK examples explicitly configure a new command server. A prewarmed process does not adopt later create-time settings; see [explicit process configuration](../docs/runtime-environment.md).
 
-Use an installed `abx` with your provider configuration. Inject an unpredictable gateway token from the local environment; keep it out of shell history and source files.
+Use an installed `abx` with your provider configuration. The SDK verification controller generates private gateway/server tokens and starts its own configured process; no token is passed in shell arguments.
 
 ```bash
 abx template install ./openclaw --registry-type local
-abx create --template <template-id> --env "OPENCLAW_GATEWAY_TOKEN=$OPENCLAW_GATEWAY_TOKEN"
+abx create --template <template-id>
 abx run <sandbox-id> gateway_status
-abx run <sandbox-id> gateway_start --json-args '{"port":18789,"bind":"loopback","command_timeout":60}'
-abx run <sandbox-id> gateway_health --json-args '{"command_timeout":20}'
-abx run <sandbox-id> gateway_stop --json-args '{"command_timeout":10}'
+python3 openclaw/sdk_e2e_test.py --sandbox-id <sandbox-id>
+abx run <sandbox-id> gateway_status
 abx kill <sandbox-id> -y
 ```
 
@@ -44,21 +43,28 @@ Install `agent-sandbox-client`; the import is `agent_sandbox`. For unpublished v
 ```python
 import asyncio
 import os
+import secrets
 from agent_sandbox.api.sandbox import Sandbox
 
 async def main():
-    sb = await Sandbox.create(
-        template="<template-id>", timeout=300,
-        envs={"OPENCLAW_GATEWAY_TOKEN": os.environ["OPENCLAW_GATEWAY_TOKEN"]},
-    )
+    sb = await Sandbox.create(template="<template-id>", timeout=300)
+    server = None
     try:
-        print(await sb.run("gateway_start", port=18789, bind="loopback", command_timeout=60, timeout=90))
-        print(await sb.run("gateway_health", command_timeout=20, timeout=35))
+        server = await sb.start_server(
+            port=9010, commands="/home/user/app/commands.py", timeout=60,
+            token=secrets.token_urlsafe(32),
+            env={"OPENCLAW_GATEWAY_TOKEN": secrets.token_urlsafe(32),
+                 "OPENCLAW_TRUSTED_PROXIES": os.environ.get("OPENCLAW_TRUSTED_PROXIES", "")})
+        print(await server.commands.run("gateway_start", port=18789, bind="loopback", command_timeout=60, timeout=90))
+        print(await server.commands.run("gateway_health", command_timeout=20, timeout=35))
+        print(await server.commands.run("gateway_stop", command_timeout=10, timeout=25))
     finally:
+        if server:
+            await server.aclose()
         try:
-            await sb.run("gateway_stop", command_timeout=10, timeout=25)
-        finally:
             await sb.kill()
+        finally:
+            await sb.close()
 
 asyncio.run(main())
 ```
@@ -98,6 +104,35 @@ The current server exposes `/health` as a public probe; business routes such as 
 
 Health probes allow a bounded cleanup margin after their execution deadline for group termination, reaping and pipe-reader shutdown; failed startup also cleans its owned gateway. The server owns a single gateway. No systemd/service installation is required. Abrupt server death loses the in-memory handle: this implementation deliberately will not adopt or kill an unknown process after restart. Destroying the sandbox cleans up its processes. State is temporary and removed by stop; configure persistent upstream agents separately rather than assuming this smoke runtime preserves sessions.
 
+### Version2.1 explicit proxies and SDK acceptance
+
+The default loopback gateway needs no proxy configuration. To access the gateway
+through a provider-forwarded port, explicitly choose `bind="lan"` and configure
+`OPENCLAW_TRUSTED_PROXIES` before the named-command server starts. It accepts at
+most16 comma-separated explicit IPs/CIDRs and2048UTF-8 bytes; invalid/empty,
+unrestricted and multicast networks fail. Addresses are canonicalized/deduplicated.
+Use independently verified provider proxy addresses, never values supplied in
+X-Forwarded-For. Empty keeps upstream defaults. No global proxy trust is added;
+gateway token authentication remains mandatory.
+
+Actual2.0.1 authenticated native RPC and forwarded `/healthz` passed, while
+forwarded `/readyz` returned403. The pinned upstream rejects unattributed proxy
+headers. Version2.1 writes only explicit operator settings to the owned temporary
+configuration; it preserves upstream source/auth checks and caller configuration.
+Liveness requires HTTP200 with `ok=true`; readiness requires HTTP200 with
+`ready=true`. Startup503 may be polled within a fixed bound.
+
+From the repository root, the CLI recipe invokes the companion SDK controller.
+It borrows a fresh owned sandbox, observes its own nonce-protected probe's kernel
+peer on9012, explicitly supplies that exact `/32` or `/128` test address to its
+own9010server, starts/authenticates/stops the real gateway and independently
+checks forwarded18789liveness/readiness. It never derives trust from forwarded
+header values, returns tokens/raw proxy addresses or destroys the caller sandbox.
+Own processes/listeners/state are cleaned up; the caller still owns final sandbox
+destruction. No model credential or model/channel claim is involved. The Python
+example explicitly starts9010 so create-time environment is not mistaken for a
+prewarmed9000process configuration.
+
 ## Configuration
 
 On Linux, each short-lived gateway health RPC drains its output and keeps its leader unreaped until owned-group cleanup, including success, error and timeout. This never stops the separate long-running gateway group. A process that deliberately escapes with setsid is outside that group.
@@ -105,6 +140,7 @@ On Linux, each short-lived gateway health RPC drains its output and keeps its le
 | Variable | Default | Meaning |
 |---|---|---|
 | `OPENCLAW_GATEWAY_TOKEN` | empty | Required for gateway start; inject via sandbox environment, never a command parameter. It is passed in the child environment and referenced by name in isolated config, never returned or included in argv. |
+| `OPENCLAW_TRUSTED_PROXIES` | empty | Explicit verified proxy IP/CIDR list for forwarded access; max16/2048bytes, no unrestricted/multicast networks. |
 | `ABX_SERVER_TOKEN` | empty | Optional bearer authentication for port-9000 business routes; `/health` is public. |
 | `ABX_SERVER_PORT` | 9000 | Local `python commands.py` HTTP port; cloud start command explicitly uses 9000. |
 | `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` | empty | Optional upstream model credentials; gateway health does not need them. No model call is implemented or validated by these commands. |
@@ -116,6 +152,11 @@ The gateway uses a private temporary state/config directory, disables browser/co
 2 vCPU, 4096 MB RAM; approximately 10G Express rootfs. No Docker or extra capabilities are required for the gateway itself. Nested Docker-based agent sandboxing is outside this template's verified slice.
 
 ## Verified
+
+Version2.1.0 adds explicit proxy configuration; complete current native step/image/Express acceptance is pending. Earlier2.0.1receipts retain historical scope.
+
+## Historical2.0.1verification
+
 
 | Provider | Current version and scope | Evidence |
 | --- | --- | --- |

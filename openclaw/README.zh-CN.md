@@ -21,17 +21,16 @@
 
 先用 `abx create --help` 确认已安装入口。下面的完整示例使用原生 CLI 语法。若帮助列出 `--detach`，则是标准极速版入口：创建改用 `abx create <template-id> --detach`，清理改用 `abx kill <sandbox-id>`（不加 `-y`）；命名命令 `abx run` 不变。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
 
-运行配置：以下创建时注入密钥的示例，要求命名服务启动时实际获得这些值。预热服务请先检查模板提供的 setup 标志（如有），再按[显式进程配置](../docs/runtime-environment.zh-CN.md)操作；创建沙箱不会重新配置已运行的服务。
+运行配置：SDK 示例显式启动并配置新的命名服务。预热进程不会自动获得后续创建时设置，参见[显式进程配置](../docs/runtime-environment.zh-CN.md)。
 
-先配置 `abx` 和 provider。在本地环境准备不可预测的随机网关 token，避免将秘密写入源码或 shell 历史。
+先配置 `abx` 和 provider。SDK 验收控制器在内存中生成私有网关和服务器令牌，显式启动自有进程，令牌不进入 shell 参数。
 
 ```bash
 abx template install ./openclaw --registry-type local
-abx create --template <template-id> --env "OPENCLAW_GATEWAY_TOKEN=$OPENCLAW_GATEWAY_TOKEN"
+abx create --template <template-id>
 abx run <sandbox-id> gateway_status
-abx run <sandbox-id> gateway_start --json-args '{"port":18789,"bind":"loopback","command_timeout":60}'
-abx run <sandbox-id> gateway_health --json-args '{"command_timeout":20}'
-abx run <sandbox-id> gateway_stop --json-args '{"command_timeout":10}'
+python3 openclaw/sdk_e2e_test.py --sandbox-id <sandbox-id>
+abx run <sandbox-id> gateway_status
 abx kill <sandbox-id> -y
 ```
 
@@ -44,21 +43,28 @@ abx kill <sandbox-id> -y
 ```python
 import asyncio
 import os
+import secrets
 from agent_sandbox.api.sandbox import Sandbox
 
 async def main():
-    sb = await Sandbox.create(
-        template="<template-id>", timeout=300,
-        envs={"OPENCLAW_GATEWAY_TOKEN": os.environ["OPENCLAW_GATEWAY_TOKEN"]},
-    )
+    sb = await Sandbox.create(template="<template-id>", timeout=300)
+    server = None
     try:
-        print(await sb.run("gateway_start", port=18789, bind="loopback", command_timeout=60, timeout=90))
-        print(await sb.run("gateway_health", command_timeout=20, timeout=35))
+        server = await sb.start_server(
+            port=9010, commands="/home/user/app/commands.py", timeout=60,
+            token=secrets.token_urlsafe(32),
+            env={"OPENCLAW_GATEWAY_TOKEN": secrets.token_urlsafe(32),
+                 "OPENCLAW_TRUSTED_PROXIES": os.environ.get("OPENCLAW_TRUSTED_PROXIES", "")})
+        print(await server.commands.run("gateway_start", port=18789, bind="loopback", command_timeout=60, timeout=90))
+        print(await server.commands.run("gateway_health", command_timeout=20, timeout=35))
+        print(await server.commands.run("gateway_stop", command_timeout=10, timeout=25))
     finally:
+        if server:
+            await server.aclose()
         try:
-            await sb.run("gateway_stop", command_timeout=10, timeout=25)
-        finally:
             await sb.kill()
+        finally:
+            await sb.close()
 
 asyncio.run(main())
 ```
@@ -96,6 +102,26 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/gateway_stop" \
 
 健康探针在执行截止后还需要有界的组终止、进程回收及管道读取清理时间；启动失败也会清理自己创建的网关。一个 server 只拥有一个网关。不安装 systemd 服务。server 意外死亡后内存 handle 丢失；重启不会接管或误杀未知进程。销毁沙箱负责清理其进程。stop 删除临时状态；需要持久化会话时应独立设计上游 Agent 配置，不能假定此运行时保存会话。
 
+### 2.1版显式代理与 SDK 验收
+
+普通回环网关仍无需代理配置。若要通过提供方转发的端口访问网关，显式选择 `bind="lan"`，
+并在命名命令服务器启动前设置 `OPENCLAW_TRUSTED_PROXIES`：最多16个逗号分隔的明确IP/CIDR，
+最多2048UTF-8字节。拒绝空条目、无效地址、全网及组播配置；重复地址归一化并去重。
+这些地址应来自已核实的提供方代理配置，不能使用请求的 X-Forwarded-For 内容作为信任依据。
+空值保留上游默认策略；不会自动信任所有代理。令牌认证仍强制启用。
+
+实际2.0.1原生认证健康RPC和转发 `/healthz` 已通过，但 `/readyz` 经提供方代理返回403。
+固定上游版本会拒绝来源不受信任的转发头。因此2.1仅把显式配置写入自有临时网关配置，
+不修改用户全局配置，不绕过上游来源检查。`/healthz` 应为HTTP200且 `ok=true`，
+`/readyz` 应为HTTP200且 `ready=true`；启动阶段可以503，验收保持有界等待。
+
+CLI 示例在仓库根目录运行配套 SDK 控制器。它借用全新自有沙箱，在9012启动短暂的随机路径探针，
+从内核连接地址观察该次已知入口，给自有9010服务器显式传入准确 `/32` 或 `/128` 测试配置，
+再通过真实 SDK 启停认证网关并独立访问18789的存活/就绪接口。不会信任转发头提供的地址，
+不会返回令牌/原始代理地址，不会销毁调用者沙箱；仅清理自己的进程、监听和临时状态目录。
+CLI 调用结束后，仍由调用者执行最终沙箱删除。无需模型密钥，也不声称模型或频道已通过。
+SDK 示例显式启动9010服务器，避免把 create-time 环境误当成预热9000进程的配置。
+
 ## 配置
 
 Linux 下短生命周期健康检查 RPC 会持续读取输出，并在清理自身进程组后才回收 leader，覆盖成功、错误和超时；不会停止独立的长期 gateway 进程组。通过 setsid 主动脱离组的进程不在该组清理范围内。
@@ -103,6 +129,7 @@ Linux 下短生命周期健康检查 RPC 会持续读取输出，并在清理自
 | 变量 | 默认 | 含义 |
 |---|---|---|
 | `OPENCLAW_GATEWAY_TOKEN` | 空 | 启动网关必需，通过沙箱环境注入，不作为命令参数。子进程环境接收值，配置只引用变量名，不返回或加入 argv。 |
+| `OPENCLAW_TRUSTED_PROXIES` | 空 | 端口转发使用的显式已核实代理 IP/CIDR；最多16项/2048字节，拒绝全网和组播。 |
 | `ABX_SERVER_TOKEN` | 空 | 9000端口业务路由的可选 bearer 认证；公开 `/health` 探针除外。 |
 | `ABX_SERVER_PORT` | 9000 | 本地 `python commands.py` 的 server 端口；云端 start_cmd 明确使用9000。 |
 | `OPENAI_API_KEY`、`ANTHROPIC_API_KEY` | 空 | 可选上游模型凭据，网关健康不需要。本命令集不实现或验证模型调用。 |
@@ -114,6 +141,11 @@ Linux 下短生命周期健康检查 RPC 会持续读取输出，并在清理自
 2 vCPU、4096 MB RAM；Express约10G rootfs。网关本身无需 Docker 或额外能力。依赖 Docker 的嵌套 Agent 沙箱不属于已验证范围。
 
 ## 已验证
+
+2.1.0 新增显式代理配置，完整原生 step/镜像/极速版验收待完成。下方2.0.1记录只保留历史范围。
+
+## 2.0.1历史验证
+
 
 | Provider | Current version and scope | Evidence |
 | --- | --- | --- |

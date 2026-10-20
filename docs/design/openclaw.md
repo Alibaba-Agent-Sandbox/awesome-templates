@@ -92,3 +92,9 @@ also attempts bounded atexit cleanup. This is intentionally an ephemeral runtime
 Sources: [official gateway CLI](https://docs.openclaw.ai/cli/gateway), installed
 `openclaw@2026.10.4 --version` and `gateway health --help`, plus npm package engines.
 Work tracks [Issue #20](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/20).
+
+## Version2.1explicit proxy profile
+
+Actual2.0.1 native authenticated gateway start/RPC and externally forwarded healthz pass, but forwarded readyz returns403 under the pinned upstream's proxy-attribution policy. Add only explicit operator OPENCLAW_TRUSTED_PROXIES IPs/CIDRs to the owned private config. Refuse invalid/empty/whole-Internet/multicast entries; cap16addresses/2048bytes and canonicalize duplicates. Never infer trust from X-Forwarded-For or introduce universal trust. Defaults and token authentication remain. Current2.1needs fresh qualification; old2.0.1receipts stay historical.
+
+The borrowed-sandbox SDK controller owns an ephemeral nonce probe on9012, then explicitly configures its own9010server with that observed kernel peer's exact address for testing. Native gateway runs on18789 with token auth; SDK lifecycle, externally forwarded liveness/readiness and independent listener/state cleanup are required. The probe shuts itself down naturally; the caller retains sandbox ownership. No agent/model/channel claim is added. Source/controller tests and actual1:1 image/step proof are separate.
