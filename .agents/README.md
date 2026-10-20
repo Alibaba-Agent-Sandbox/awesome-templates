@@ -89,3 +89,4 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Controller prerequisites](notes/proposed/process/2026-10-19-controller-prerequisite-preflight.md) · [verification](evidence/verify/2026-10-19-controller-prerequisite-preflight.md)
 
 - [Current heavy-image acceptance](evidence/verify/2026-10-20-current-heavy-image-acceptance.md)
+- [OCR step acceptance](notes/proposed/process/2026-10-20-ocr-step-acceptance.md) · [verification](evidence/verify/2026-10-20-ocr-step-acceptance.md)
