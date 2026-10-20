@@ -21,6 +21,9 @@ The official source archive is 92,081,935 bytes with controller-measured SHA256
 The authoritative digest is in `upstream.json`; this is a measured archive digest,
 not an upstream-published checksum. Source execution uses fixed
 `PYTHONPATH=/opt/tau2/src`; it does not assert publication of a PyPI Tau2 package.
+The unchanged [frozen export](requirements.upstream.lock) retains platform markers;
+`python tau2-bench/select_lock.py` selects its Linux CPython3.13 entries without
+changing package versions or hashes. The image enforces this Python profile.
 
 ## Problem solved
 

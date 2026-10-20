@@ -6,6 +6,7 @@ COPY upstream.json /opt/tau2-bootstrap/upstream.json
 COPY requirements.lock /opt/tau2-bootstrap/requirements.lock
 COPY install_source.py /tmp/tau2-install.py
 RUN python3 /tmp/tau2-install.py \
+    && python3 -c "import sys; assert sys.version_info[:2] == (3,13), 'reviewed Python3.13 profile required'" \
     && python3 -m venv /opt/tau2-venv \
     && /opt/tau2-venv/bin/pip install --no-cache-dir --require-hashes -r /opt/tau2-bootstrap/requirements.lock \
     && /opt/tau2-venv/bin/pip check

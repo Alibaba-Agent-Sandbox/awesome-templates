@@ -29,6 +29,15 @@ is not a steps pass. Required image, Express deployment, SDK native benchmark,
 real agent/user models, independent strict replay and cloud cleanup: NOT RUN.
 No Tau2 cloud resources have been created at this preparation checkpoint.
 
+Final authored runtime suite:29PASS in0.84s, including explicit empty-userinfo
+rejection. Initial strict check FAILED because the complete frozen lock contains
+platform markers unsupported by the existing plain-lock policy. Retain that
+export unchanged (SHA256 a5aaa59c3ef31fa055d035553d35a7f87c4e960622bbbcbe31026df4d1cfa351)
+and select the74 active Linux CPython3.13 entries with no version/hash changes
+(selected SHA256 c611436463f33bb21b6553a1d4fd92450aa0d81135879db27d61e6fca428d3cf).
+Add an image Python3.13 guard and reproducible selector. No checker policy weakened.
+The initial full57spec suite consequently had one failure; final rerun pending.
+
 ## Acceptance boundary
 
 `tested_on` is empty, catalog provider unverified and status experimental. A

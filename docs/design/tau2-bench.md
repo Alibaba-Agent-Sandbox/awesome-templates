@@ -35,6 +35,11 @@ fc0055dc4e0a316c3f83133267fbd6faaa770992, measured archive size/digest. Installe
 rejects traversal/links and selects only source, license and retail data.
 [requirements.lock](../../tau2-bench/requirements.lock) is a frozen export of the
 unchanged original uv.lock, enforced by pip `--require-hashes` and `pip check`.
+The complete frozen export is retained as `requirements.upstream.lock`;
+`select_lock.py` evaluates original markers for Linux CPython3.13 and removes only
+inactive entries/active marker syntax without changing pins or hashes. The image
+asserts Python3.13. The strict checker deliberately accepts only this selected
+plain hash lock; its policy is unchanged.
 Modern uv `--locked` export reported upstream lock staleness; it did not pass and
 no dependency update was resolved. Native CLI steps reuse the same installer and
 verified parallel/owned OSS transport; immutable source must be committed first.
