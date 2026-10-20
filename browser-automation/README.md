@@ -161,7 +161,11 @@ small `/dev/shm`; concurrent browser requests increase memory usage. Delete old
 
 ## Verified
 
-Current2.1.0 MCP qualification is pending. All2.0.2 and earlier receipts below retain their original version and do not qualify2.1.0.
+Version2.1.0 passed actual Alibaba Express native steps, Python SDK Sandbox.create, CLI/SDK browser and native MCP smoke, and full remoteHTTP29 PASS/0 FAIL/0 SKIP. Native MCP discovery and actual navigation/snapshot/click/screenshot use the existing Chromium1208; the independent counter and PNG checks passed. Owned sandbox/template deletion and independent absence were confirmed. Other providers and all remaining upstream tool actions are not certified.
+
+| Version | Provider | Evidence |
+| --- | --- | --- |
+| 2.1.0 | alicloud-express | [SDK-created steps](evidence/express-2026-10-20T094547Z.json), [full HTTP29](evidence/full-http-steps-2026-10-20T094547Z.json) |
 
 ## Historical verification
 

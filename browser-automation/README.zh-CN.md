@@ -151,7 +151,11 @@ HTTP 400 为缺少参数或类型错误；401 为服务端认证失败；404 为
 
 ## 已验证
 
-当前2.1.0 MCP版本的提供方验收待完成。下面2.0.2及更早回执只证明原始版本，不用于认定2.1.0通过。
+版本2.1.0通过真实阿里云极速版原生step构建、Python SDK Sandbox.create、CLI/SDK浏览器及原生MCP冒烟，以及完整远程HTTP29 PASS/0 FAIL/0 SKIP。真实MCP工具发现、导航、快照、点击及截图复用Chromium1208，独立计数器与PNG检查通过。自有沙箱/模板删除及独立不存在性回查通过；其他提供方及其余上游工具动作未认证。
+
+| Version | Provider | Evidence |
+| --- | --- | --- |
+| 2.1.0 | alicloud-express | [SDK-created steps](evidence/express-2026-10-20T094547Z.json), [full HTTP29](evidence/full-http-steps-2026-10-20T094547Z.json) |
 
 ## 历史验收
 
