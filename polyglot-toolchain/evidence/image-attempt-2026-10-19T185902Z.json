@@ -1,0 +1,12 @@
+{
+  "template": "polyglot-toolchain",
+  "provider": "alicloud-express",
+  "build_mode": "image",
+  "verification_type": "ci-image-backed-external-http",
+  "passed": false,
+  "registry_cleanup_verified": false,
+  "model_acceptance": "NOT_RUN",
+  "http_acceptance": {},
+  "failure_type": "ValueError",
+  "result": "FAIL"
+}
