@@ -183,3 +183,5 @@ python scripts/run_steps_e2e.py goose --asset-transport oss --http \
 完整验收使用 `python scripts/step_acceptance.py --require-http`：除真实 step READY／CLI／SDK及独立清理，还必须有每个当前模板完整 e2e_test.py 的匹配哈希、成功退出及通过／失败计数。省略 --require-http 仅检查较窄的 smoke 范围；镜像或 smoke 不能替代完整 HTTP。模型跳过继续单独记录，不计为 L3。
 
 OpenClaw 的完整 HTTP 必须运行真实认证网关生命周期。运行器在全部安装 RUN 之后、USER user 之前，将独有随机测试令牌写入私有最终 ENV；原控制器只接收这一生成令牌，不使用操作者／模型凭据。公开回执仅含配置布尔值和哈希。--require-http 拒绝缺少配置／实际网关覆盖的回执；模型跳过继续单列。--asset-transport oss 可复用源码安装器已固定的 Node24.16.0 归档，原 SHA256、解包和版本逻辑不变。
+
+较新的[34模板精确当前快照](../.agents/evidence/verify/2026-10-20-current-native-http34.json)包含已合并 Copilot、必需的 OSWorld 外部桌面和当前 OpenClaw SDK 重跑。它是定时点只读分类，不是34次新部署或模型资格；源码/目录变化后应重跑。
