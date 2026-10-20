@@ -143,7 +143,17 @@ fallback 一致；镜像 CI、归档及运行证明均核对同一 commit。没�
 
 ## 已验证
 
-1.1版镜像、极速版及数组验收待完成。以下凭据保留为1.0历史记录，不用于认证1.1。
+1.1版于2026-10-20通过真实 SDK 创建的极速版镜像和原生 step 构建、CLI/SDK smoke、
+完整 HTTP28项断言，以及独立的 CLI/SDK argv 转码、随机 PCM 逐样本比对和自有产物/云资源清理。
+
+| 提供方 | 范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | SDK创建镜像、CLI/SDK、独立镜像仓库清理核验 | [镜像回执](evidence/express-2026-10-20T133417Z.json)、[完整HTTP](evidence/image-http-2026-10-20T133417Z.json)、[原生argv](evidence/native-argv-image-2026-10-20T133417Z.json) |
+| alicloud-express | 原生step、真实SDK创建、HTTP28项及原生CLI/SDK数组 | [step回执](evidence/express-2026-10-20T131812Z.json)、[完整构建证明](evidence/full-http-steps-2026-10-20T131812Z.json)、[原生argv](evidence/native-argv-steps-2026-10-20T131812Z.json) |
+
+运行源码64de1c909659f880f79f69db42614277bfdf1257，固定服务器
+fd72d3210b85079d93dcf08e19bfded73643162b，SDK[基础PR78](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/78)已合并。
+模板目录仍为experimental；此CPU接口无需模型。
 
 ## 1.0历史验证
 

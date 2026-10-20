@@ -150,7 +150,19 @@ image before using native arrays; an old server can turn `list[str]` into string
 
 ## Verified
 
-Version1.1 image/Express/array acceptance is pending. The receipts below are preserved historical1.0 evidence and do not qualify1.1.
+Version1.1passed actual SDK-created Express image and native step builds on2026-10-20,
+CLI/SDK smoke,28full HTTP assertions, independent native CLI/SDK argv conversion,
+full random PCM equality and owned artifact/process/cloud cleanup.
+
+| Provider | Scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | SDK-created image/CLI/SDK and independently checked registry cleanup | [image receipt](evidence/express-2026-10-20T133417Z.json), [full HTTP](evidence/image-http-2026-10-20T133417Z.json), [native argv](evidence/native-argv-image-2026-10-20T133417Z.json) |
+| alicloud-express | Native steps, actual SDK creation,28HTTP assertions, native CLI/SDK argv | [step receipt](evidence/express-2026-10-20T131812Z.json), [full proof](evidence/full-http-steps-2026-10-20T131812Z.json), [native argv](evidence/native-argv-steps-2026-10-20T131812Z.json) |
+
+These exact1.1results use runtime source64de1c909659f880f79f69db42614277bfdf1257
+and pinned server fd72d3210b85079d93dcf08e19bfded73643162b. The SDK
+[foundation PR78](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/78)
+is merged. The template remains experimental; no model is required by this CPU interface.
 
 ## Historical1.0 verification
 

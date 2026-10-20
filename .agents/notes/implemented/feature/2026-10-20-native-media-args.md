@@ -1,6 +1,6 @@
 # Decision: Add native media argv and exact server-source selection
 
-Status: proposed
+Status: implemented
 
 ## Problem
 
@@ -71,4 +71,4 @@ transfer limits remain; large committed commands use verified immutable archives
 
 ## Evidence
 
-[Verification](../../../evidence/verify/2026-10-20-native-media-args.md).
+[Verification](../../../evidence/verify/2026-10-20-native-media-args-final.md).
