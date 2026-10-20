@@ -76,7 +76,7 @@ HTTP200 返回 `{"result":"STAGEHAND_NATIVE_OK"}`。`POST /commands/stagehand` �
 | stagehand_self_test | 无 | `STAGEHAND_NATIVE_OK`；全新私有离线浏览器／扩展、标题、PNG 和清理；60秒期限 |
 | stagehand | `task`：必填非空字符串；`url`：必填 HTTP(S)，不含用户信息／控制符／空白；`extract_instruction`：可选字符串，默认空；`command_timeout`：整数1..600秒，默认180 | 一次原生动作，可选文本提取、新 PNG；每次私有浏览器 |
 
-task／提取指令各最多32768 UTF-8字节，URL最多8192。结果含 `version`、`title`、`final_url`、`action:{success,message,actionDescription,actions}`、`extracted:null`或`{text}`、`model_calls`（最多8）、`screenshot_path`、`png_bytes`。产物为 WORKSPACE 下 `stagehand-artifacts/<random>.png`，最多8MiB；用 `sb.files.read_bytes` 读取，使用后只删除返回的自有路径，不覆盖原文件。操作串行，并发直接报 busy。stdout／stderr 各限256KiB，省略上游私有错误；非零退出、超时或无法确认清理均失败。
+task／提取指令各最多32768 UTF-8字节，URL最多8192。结果含 `version`、`sdk_sha256`、`title`、`final_url`、`action:{success,message,actionDescription,actions}`、`extracted:null`或`{text}`、`model_calls`（最多8）、`screenshot_path`、`png_bytes`。产物为 WORKSPACE 下 `stagehand-artifacts/<random>.png`，最多8MiB；用 `sb.files.read_bytes` 读取，使用后只删除返回的自有路径，不覆盖原文件。操作串行，并发直接报 busy。stdout／stderr 各限256KiB，省略上游私有错误；非零退出、超时或无法确认清理均失败。
 
 ## 配置
 
