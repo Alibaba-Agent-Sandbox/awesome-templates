@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Owned Express/Qwen coding acceptance; independent of the restricted HTTP API.
+"""Owned Express native-adapter coding acceptance; independent of the restricted HTTP API.
 
 This controller creates and destroys its own disposable sandbox. Provider-native
 commands seed/check files; no general HTTP endpoint is enabled. Never run it in a
@@ -212,13 +212,14 @@ async def cleanup(factory, sandbox, state: dict, journal: Path, report: dict) ->
     save_private(journal, state)
 
 
-async def turn(client: httpx.AsyncClient, root: str, model: str, *, timeout: int) -> str:
+async def turn(client: httpx.AsyncClient, root: str, model: str, *, timeout: int, adapter: str = "qwen-code") -> str:
+    require(adapter in {"qwen-code", "codex"}, "unsupported native adapter")
     response = await client.post('/v1/agents/sessions', json={
-        'adapter': 'qwen-code', 'agent': {'model': model},
+        'adapter': adapter, 'agent': {'model': model},
         'environment': {'type': 'self_hosted', 'workspace_directory': root},
     })
     require(response.status_code == 200 and response.headers.get('X-Agent-Sandbox-Local') == '1',
-            'local Qwen session creation')
+            f'local {adapter} session creation')
     session = response.json().get('id')
     require(isinstance(session, str) and re.fullmatch(r'[A-Za-z0-9_-]{1,128}', session) is not None,
             'invalid session identifier')
@@ -234,20 +235,20 @@ async def turn(client: httpx.AsyncClient, root: str, model: str, *, timeout: int
         'type': 'agent.session.input.message',
         'input': [{'role': 'user', 'content': [{'type': 'input_text', 'text': prompt}]}],
     }]})
-    require(response.status_code == 202, 'Qwen turn submission')
+    require(response.status_code == 202, f'{adapter} turn submission')
     deadline, observed = time.monotonic() + timeout, False
     while time.monotonic() < deadline:
         response = await client.get(f'/v1/agents/sessions/{session}')
-        require(response.status_code == 200, 'Qwen session reconnect')
+        require(response.status_code == 200, f'{adapter} session reconnect')
         state = response.json()
-        require(state.get('error') is None and state.get('status') != 'failed', 'Qwen model turn failed')
+        require(state.get('error') is None and state.get('status') != 'failed', f'{adapter} model turn failed')
         response = await client.get(f'/v1/agents/sessions/{session}/items', params={'limit': 100, 'order': 'asc'})
-        require(response.status_code == 200 and isinstance(response.json().get('data'), list), 'Qwen items polling')
+        require(response.status_code == 200 and isinstance(response.json().get('data'), list), f'{adapter} items polling')
         observed = observed or bool(response.json()['data'])
         if state.get('status') == 'idle' and observed:
             return session
         await asyncio.sleep(1)
-    raise TimeoutError('Qwen turn deadline; destroy the owned sandbox to cancel')
+    raise TimeoutError(adapter+' turn deadline; destroy the owned sandbox to cancel')
 
 
 def completed_source(state_dir: str, session: str, ack: str) -> str:
@@ -269,7 +270,8 @@ def completed_source(state_dir: str, session: str, ack: str) -> str:
 
 def selected_env(root: str, state_dir: str, model: str, token: str) -> dict[str, str]:
     env = {name: os.environ[name] for name in ('OPENAI_API_KEY', 'OPENAI_BASE_URL')}
-    env.update(OPENAI_MODEL=model, ABX_SERVER_TOKEN=token, WORKSPACE=root,
+    env.update(PATH="/opt/node/current/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin",
+               OPENAI_MODEL=model, ABX_SERVER_TOKEN=token, WORKSPACE=root,
                ABX_SERVER_BASE_DIR=root, ABX_AGENTS_STATE_DIR=state_dir)
     return env
 
@@ -278,6 +280,8 @@ async def run(args, *, factory=None) -> dict:
     if factory is None:
         from agent_sandbox.api.sandbox import Sandbox
         factory = Sandbox
+    adapter=getattr(args, 'adapter', 'qwen-code')
+    require(adapter in {'qwen-code','codex'}, 'unsupported native adapter')
     require(args.template and args.model and 30 <= args.turn_timeout <= 600, 'invalid template/model/timeout')
     require(all(os.environ.get(name) for name in ('OPENAI_API_KEY', 'OPENAI_BASE_URL')), 'compatible model configuration missing')
     require(not args.journal.exists(), 'journal exists; resolve its owned resources before a new run')
@@ -288,16 +292,16 @@ async def run(args, *, factory=None) -> dict:
     descriptor = os.open(args.journal, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
     os.close(descriptor)
     save_private(args.journal, state)
-    report = {'result': 'FAIL', 'adapter': 'qwen-code', 'provider': 'alicloud-express',
+    report = {'result': 'FAIL', 'adapter': adapter, 'provider': 'alicloud-express',
               'model': args.model, 'checks': [], 'cleanup': {},
-              'boundary': 'real owned-image SDK/session coding acceptance; not canonical deploy, hosted Agents, or Codex acceptance'}
+              'boundary': 'real owned-template SDK/session coding acceptance for the selected native adapter; not hosted Agents or a build-mode claim'}
     sandbox = reader = drain = None
     attempted = False
     try:
         state['sandbox_create_attempted'] = attempted = True
         save_private(args.journal, state)
         sandbox = await factory.create(args.template, provider='alicloud-express', timeout=1800,
-            request_timeout=120, metadata={'acceptance_run': state['nonce'], 'purpose': 'agents-cli-qwen-l3'})
+            request_timeout=120, metadata={'acceptance_run': state['nonce'], 'purpose': 'agents-cli-'+adapter+'-l3'})
         state['sandbox_id'] = sandbox.id
         save_private(args.journal, state)
         expected = {n: hashlib.sha256((HERE / n).read_bytes()).hexdigest() for n in ('commands.py', 'server-policy.json')}
@@ -352,7 +356,7 @@ async def run(args, *, factory=None) -> dict:
                 response = await client.request(method, path, json={} if method == 'POST' else None)
                 require(response.status_code == 404, 'restricted policy retained')
             report['checks'].append('new9010 configured, actual pinned CLIs, original restricted HTTP policy')
-            session = await turn(client, root, args.model, timeout=args.turn_timeout)
+            session = await turn(client, root, args.model, timeout=args.turn_timeout, adapter=adapter)
         # Persistence follows the final turn event; allow that bounded write to
         # finish before inspecting it through the separate management channel.
         for attempt in range(10):
@@ -363,7 +367,7 @@ async def run(args, *, factory=None) -> dict:
             if attempt == 9:
                 raise AssertionError('original server did not persist a completed model turn')
             await asyncio.sleep(.5)
-        report['checks'].append('actual Qwen HTTP session/events/reconnect/items turn')
+        report['checks'].append('actual '+adapter+' HTTP session/events/reconnect/items turn')
         await verify(sandbox, root, suites=True)
         report['checks'].append('changed existing source, unchanged original tests, exact artifact/report, complete original and generated unittest modules')
         await verify(sandbox, root, suites=False)
@@ -401,6 +405,7 @@ async def run(args, *, factory=None) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--template', required=True, help='private owned agents-cli template ID')
+    parser.add_argument('--adapter', choices=('qwen-code','codex'), default='qwen-code', help='exact native CLI adapter; each run owns a new sandbox')
     parser.add_argument('--model', default=os.environ.get('OPENAI_MODEL', 'qwen3.8-flash'))
     parser.add_argument('--turn-timeout', type=int, default=540)
     parser.add_argument('--journal', type=Path, required=True, help='new private recovery file; retain on failure')
@@ -412,7 +417,7 @@ def main() -> int:
     except BaseException as exc:
         print('[FAIL] SDK verifier (' + type(exc).__name__ + '); private details omitted', flush=True)
         return 1
-    print('[' + report['result'] + '] owned Qwen SDK coding verifier; cleanup recorded', flush=True)
+    print('[' + report['result'] + '] owned '+report['adapter']+' SDK coding verifier; cleanup recorded', flush=True)
     return 0 if report['result'] == 'PASS' else 1
 
 

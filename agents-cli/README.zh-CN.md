@@ -90,8 +90,7 @@ python agents-cli/e2e_sdk.py --template <owned-agents-cli-template-id> \
 控制器自行调用 `Sandbox.create(provider="alicloud-express")`，通过提供方原生命令
 通道创建一次性项目，确认精确的初始失败。随后用镜像内未改动的 commands 和策略启动
 9010 进程，显式传入选定模型配置、独立服务端 token、工作区和私有状态目录。
-保留原 `HOME`，不转发宿主 GitHub/云凭据；实际提交 `qwen-code` 会话和消息，再重连
-轮询 items，不选用模拟 CLI。
+保留原 `HOME`，不转发宿主 GitHub/云凭据；按 `--adapter` 显式选择原生适配器（默认 `qwen-code`，也可 `codex`），实际提交会话/消息并重连轮询 items。每个适配器使用全新的 journal/report；`--adapter codex` 单独验证 Codex，不能继承 Qwen 结果。不选用模拟 CLI。新服务显式采用镜像固定 Node24 的 PATH，不转发操作者 PATH。
 
 独立原生进程要求已有源码实际改变、原测试字节完全不变、JSON 产物数值精确、报告
 非空、原测试及模型新增 unittest 模块完整运行通过，并额外执行六个隐藏用例。

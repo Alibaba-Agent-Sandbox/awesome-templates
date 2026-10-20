@@ -139,3 +139,5 @@ product runtime/build/config files are identical. All8 lifecycle flags and5
 independent post-run absence checks passed. See [image SDK result](../../agents-cli/evidence/qwen-image-sdk-2026-10-16.json)
 and [strict readback](../../agents-cli/evidence/qwen-image-sdk-strict-readback-2026-10-16.json).
 Canonical deploy, Codex and formal metadata are still separate incomplete gates.
+
+The owned SDK verifier now accepts --adapter qwen-code|codex (Qwen default), with a separate fresh sandbox/journal/report for each real native backend. It explicitly uses the image's pinned Node24 PATH, preserving the original restricted policy and independent management-channel source/artifact/original/generated/held-out checks. Historical Qwen results do not qualify current Codex; new real provider receipts remain required.

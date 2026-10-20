@@ -43,6 +43,8 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 
 - [OpenClaw native SDK final acceptance](evidence/verify/2026-10-20-openclaw-native-sdk-final.md)
 
+- [Both native Agents CLI SDK adapters](notes/proposed/process/2026-10-20-agents-cli-both-native-sdk.md) · [verification](evidence/verify/2026-10-20-agents-cli-both-native-sdk.md)
+
 ## Current review
 
 - [Node Web HTTP output protocol](notes/proposed/process/2026-10-16-node-web-http-output.md)

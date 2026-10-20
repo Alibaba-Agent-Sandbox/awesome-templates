@@ -99,8 +99,7 @@ disposable project through provider-native commands, and proves the exact initia
 failure. It starts the unchanged installed commands and policy on port 9010 with
 selected model configuration, its own server token, workspace and private state
 directory. It retains the original `HOME`; host GitHub/cloud credentials are not
-forwarded. It submits a genuine `qwen-code` session/event, reconnects and polls
-items. No synthetic CLI is selected.
+forwarded. It selects the exact native `--adapter` (default `qwen-code`, or `codex`), submits a genuine session/event, reconnects and polls items. Run each adapter with a fresh journal/report: `--adapter codex` exercises Codex independently; it cannot inherit a Qwen result. No synthetic CLI is selected. The new server explicitly selects the installed pinned Node24 PATH; no operator PATH is forwarded.
 
 Independent native processes require changed existing source, byte-identical
 original tests, exact JSON artifact values and a nonempty report, complete

@@ -140,7 +140,8 @@ def test_only_selected_model_environment_is_forwarded(monkeypatch):
     original_home = module.os.environ.get('HOME')
     env = module.selected_env('/tmp/owned-project', '/tmp/owned-state', 'model', 'server-token')
     assert set(env) == {'OPENAI_API_KEY', 'OPENAI_BASE_URL', 'OPENAI_MODEL', 'ABX_SERVER_TOKEN',
-                        'WORKSPACE', 'ABX_SERVER_BASE_DIR', 'ABX_AGENTS_STATE_DIR'}
+                        'WORKSPACE', 'ABX_SERVER_BASE_DIR', 'ABX_AGENTS_STATE_DIR', 'PATH'}
+    assert env['PATH'].startswith('/opt/node/current/bin:')
     assert 'HOME' not in env and module.os.environ.get('HOME') == original_home
     assert 'synthetic-host-token' not in str(env) and 'synthetic-host-cloud-key' not in str(env)
 
@@ -292,3 +293,23 @@ def test_actual_http_suite_keeps_required_model_gate_closed(tmp_path, required):
             assert '[FAIL] HTTP-only smoke cannot establish L3' in p.stdout and 'e2e_sdk.py' in p.stdout
         else:
             assert '[SKIP] model/coding acceptance' in p.stdout
+
+
+@pytest.mark.parametrize('adapter',['qwen-code','codex'])
+def test_requested_native_adapter_is_selected_in_actual_session_payload(adapter):
+    seen=[]
+    def handle(request):
+        if request.method=='POST' and request.url.path.endswith('/sessions'):
+            seen.append(json.loads(request.content));return httpx.Response(200,headers={'X-Agent-Sandbox-Local':'1'},json={'id':'agsess_selected'})
+        if request.method=='POST':return httpx.Response(202)
+        if request.url.path.endswith('/items'):return httpx.Response(200,json={'data':[{'type':'message'}]})
+        return httpx.Response(200,json={'status':'idle','error':None})
+    async def run():
+        async with httpx.AsyncClient(base_url='https://example.invalid',transport=httpx.MockTransport(handle)) as client:
+            assert await module.turn(client,'/tmp/owned','selected-model',timeout=30,adapter=adapter)=='agsess_selected'
+    asyncio.run(run());assert seen[0]['adapter']==adapter and seen[0]['agent']['model']=='selected-model'
+
+
+def test_unknown_native_adapter_fails_before_http_or_resource_creation():
+    async def run():await module.turn(None,'/tmp/owned','model',timeout=30,adapter='unsupported')
+    with pytest.raises(AssertionError,match='unsupported native adapter'):asyncio.run(run())
