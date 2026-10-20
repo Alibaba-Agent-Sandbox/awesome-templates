@@ -1,0 +1,61 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-20",
+  "template": "qwen-code",
+  "template_version": "2.1.1",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "image",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "harness_sha256": "91592778b24797075915b40f31f219f6517526b17cd2b3a75fe777f73fe6afd6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "qwen_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 3.103,
+      "result": "0.23.0"
+    },
+    {
+      "name": "qwen_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 34.371,
+      "result": "0.23.0"
+    }
+  ],
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "qwen-code",
+    "template_version": "2.1.1",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "58e8e79b641766982fe579d3b623900513ea5d30",
+    "checkout_commit": "58e8e79b641766982fe579d3b623900513ea5d30",
+    "workflow_run_id": "39379810795",
+    "artifact_id": "12244961605",
+    "archive_sha256": "3f72780bb6ebfa6587ecf5e69dc84edb7cd24477b854e6c455533f319875e336",
+    "image_config_sha256": "12052161380be17e05b55f87993962a953a988654d1e0cd70adbce0a2331b206",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "a04febb856d4d443cef6350c35b30fdd8b1d2eb4d9e02121f7543b4200f11c1a",
+      "template.yaml:contract": "2b07d8b8e4d592ffaaa197ab92163f2b4bcc469856b9c7633861bbb8a86c1108",
+      "commands.py": "0e78e2130607cb8bafc2eed638a2b10f2f8eb514630d5bd38fd0ab414b9383a0"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:45aee67f547adf65bcdf88605c8a9bfc56027b36dbe9304e926ce55a2876eb20",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "registration_operation": "abx template create",
+  "boundary": "Verified CI Dockerfile image + private registry transfer; no controller Docker build or platform-step build claimed",
+  "registry_cleanup_verified": true
+}

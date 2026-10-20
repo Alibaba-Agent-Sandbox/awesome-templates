@@ -104,6 +104,9 @@ Set server process configuration before startup. A prewarmed command server may 
 
 ## Verified
 
+Additional exact-version real steps passed on2026-10-20 using actual Python `Sandbox.create`, CLI/SDK named smoke and independently confirmed sandbox/template cleanup: [SDK-created step receipt](evidence/express-2026-10-20.json). This separately establishes the creation route; the complete workflow receipts below keep their original scope.
+
+
 | Provider | Executed scope | Evidence |
 | --- | --- | --- |
 | alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |

@@ -135,6 +135,9 @@ not verify this revision's Dockerfile build or newly deployed template.
 
 ## Verified
 
+Additional exact-version real steps passed on2026-10-20 using actual Python `Sandbox.create`, CLI/SDK named smoke and independently confirmed sandbox/template cleanup: [SDK-created step receipt](evidence/express-2026-10-20.json). This separately establishes the creation route; the complete workflow receipts below keep their original scope.
+
+
 | Provider | Current version and scope | Evidence |
 | --- | --- | --- |
 | alicloud-express | 1.1.1; steps build, official READY, CLI/SDK, complete HTTP 21 assertions, independent cleanup | [2026-10-19](evidence/express-2026-10-19T183219Z.json) |
