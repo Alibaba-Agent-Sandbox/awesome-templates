@@ -120,3 +120,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [V3 structural smoke expectations](notes/proposed/process/2026-10-20-v3-structured-smoke.md) · [verification](evidence/verify/2026-10-20-v3-structured-smoke.md)
 
 - [Three native SDK creation profiles](notes/proposed/process/2026-10-20-three-native-sdk-create.md) · [verification](evidence/verify/2026-10-20-three-native-sdk-create.md)
+
+- [Native coding SDK image acceptance](notes/proposed/process/2026-10-20-native-coding-sdk-acceptance.md) · [verification](evidence/verify/2026-10-20-native-coding-sdk-acceptance.md)
