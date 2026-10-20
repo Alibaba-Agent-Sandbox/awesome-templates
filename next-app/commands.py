@@ -53,7 +53,7 @@ def scaffold(kind: str='next',path: str='preview-app') -> dict:
     _kind(kind);project=_project(path);tools=_tools()
     project.mkdir(mode=0o700)
     try:
-        files={'.abx-next-app.json':json.dumps({'kind':kind,'template_version':'1.0.0'}),
+        files={'.abx-next-app.json':json.dumps({'kind':kind,'template_version':'1.1.0'}),
             'package.json':json.dumps({'name':'sandbox-preview','version':'1.0.0','private':True,'type':'module',
                 'dependencies':json.loads((tools/'package.json').read_text())['dependencies']})}
         if kind=='next':
@@ -71,8 +71,10 @@ def scaffold(kind: str='next',path: str='preview-app') -> dict:
 
 
 @command('dev_start',description='Start one owned pinned Next.js/Vite server with filtered environment and explicit readiness deadline.')
-def dev_start(kind: str='next',path: str='preview-app',timeout_s: int=120) -> dict:
+def dev_start(kind: str='next',path: str='preview-app',timeout_s: int=120,allowed_host: str='') -> dict:
     _kind(kind)
+    if not isinstance(allowed_host,str) or (allowed_host and (kind!='vite' or len(allowed_host)>253 or any(not re.fullmatch(r'[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?',label) for label in allowed_host.split('.')))):
+        raise ValueError('allowed_host must be one exact Vite DNS hostname, without scheme, port or wildcard')
     if not 1<=timeout_s<=180:raise ValueError('timeout_s must be1..180')
     project=_project(path).resolve(strict=True)
     metadata=json.loads((project/'.abx-next-app.json').read_text())
@@ -88,6 +90,7 @@ def dev_start(kind: str='next',path: str='preview-app',timeout_s: int=120) -> di
         private=tempfile.TemporaryDirectory(prefix='abx-next-app-');root=Path(private.name);root.chmod(0o700)
         env={'ABX_NEXT_APP_OWNER':secrets.token_hex(16),'HOME':str(root),'PATH':os.environ.get('PATH','/usr/local/bin:/usr/bin:/bin'),
             'LANG':'C.UTF-8','NEXT_TELEMETRY_DISABLED':'1','NODE_ENV':'development'}
+        if allowed_host:env['__VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS']=allowed_host.lower()
         node=shutil.which('node')
         if not node:private.cleanup();raise RuntimeError('Node is unavailable')
         argv=([node,str(tools/'node_modules/next/dist/bin/next'),'dev','--webpack','--hostname','0.0.0.0','--port',str(port)] if kind=='next'

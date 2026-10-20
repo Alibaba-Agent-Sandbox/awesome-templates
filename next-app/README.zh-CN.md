@@ -37,13 +37,15 @@ abx template delete <template-id> -y
 
 ```python
 import asyncio
+from urllib.parse import urlsplit
 from agent_sandbox.api.sandbox import Sandbox
 
 async def main():
     sb = await Sandbox.create(template="<template-id>", timeout=300)
     try:
         await sb.run("scaffold", kind="vite", path="preview-app")
-        await sb.run("dev_start", kind="vite", path="preview-app")
+        await sb.run("dev_start", kind="vite", path="preview-app",
+                     allowed_host=urlsplit(sb.network.get_url(5173)).hostname)
         print(sb.network.get_url(5173))
         # Fetch/edit the preview before stopping it. Preserve desired source files.
         print(await sb.run("dev_logs", tail_bytes=4096))
@@ -74,12 +76,14 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/scaffold" \
 | preview_self_test | none / 无 | NEXT_VITE_PREVIEW_OK; actual Next/Vite pages, owned workers/project cleanup |
 | toolchain_versions | 无 | 实际 next/react/react-dom/vite 版本表 |
 | scaffold | kind: next/vite，默认 next；path: 全新单层工作区目录名，默认 preview-app | {path,kind} |
-| dev_start | kind: next/vite，默认 next；path: 匹配脚手架，默认 preview-app；timeout_s:1..180，默认120 | {port,kind,running:true} |
+| dev_start | kind: next/vite，默认 next；path: 匹配脚手架，默认 preview-app；timeout_s:1..180，默认120；allowed_host:str=""，仅Vite的单个准确DNS主机名 | {port,kind,running:true} |
 | dev_status | 无 | {running:false} 或 {port,kind,path,running:true} |
 | dev_logs | tail_bytes:1..8192，默认4096 | 有界缓冲日志尾部 |
 | dev_stop | 无 | 独立确认进程和监听消失后的 {running:false} |
 
 Next 使用本地 next dev --webpack --hostname0.0.0.0 --port3000；Vite 使用本地 vite --host0.0.0.0 --port5173 --strictPort，参数不经过 shell。拒绝已存在目录、符号链接目录及路径越界。受控 node_modules 链接只指向预装工具链。停止保留源码和构建缓存；需要时由调用方显式删除。日志为缓冲结果，不宣称实时流式。
+
+版本1.1.0为Vite新增准确SDK转发主机名 allowed_host。默认空值保留本机域名权限；传入 urlsplit(sb.network.get_url(5173)).hostname，仅设置固定Vite8.3.4源码及[官方文档](https://vite.dev/config/server-options#server-allowedhosts)支持的 __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS。拒绝通配符、前导点后缀、协议、端口、凭据、逗号及空DNS标签。Next不接受此Vite专用设置。原1.0.0真实转发Vite403仍为失败；1.1.0需要新镜像/提供方验收。不改写Host，也不开全域允许。
 
 ## 配置
 

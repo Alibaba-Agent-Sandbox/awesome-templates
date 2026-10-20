@@ -39,13 +39,15 @@ Client distribution: `agent-sandbox-client`; import `agent_sandbox`. Install the
 
 ```python
 import asyncio
+from urllib.parse import urlsplit
 from agent_sandbox.api.sandbox import Sandbox
 
 async def main():
     sb = await Sandbox.create(template="<template-id>", timeout=300)
     try:
         await sb.run("scaffold", kind="vite", path="preview-app")
-        await sb.run("dev_start", kind="vite", path="preview-app")
+        await sb.run("dev_start", kind="vite", path="preview-app",
+                     allowed_host=urlsplit(sb.network.get_url(5173)).hostname)
         print(sb.network.get_url(5173))
         # Fetch/edit the preview before stopping it. Preserve desired source files.
         print(await sb.run("dev_logs", tail_bytes=4096))
@@ -78,12 +80,14 @@ HTTP200 returns `{"result":{"path":"preview-app","kind":"next"}}`. POST /command
 | preview_self_test | none / 无 | NEXT_VITE_PREVIEW_OK; actual Next/Vite pages, owned workers/project cleanup |
 | toolchain_versions | none | actual installed next/react/react-dom/vite version map |
 | scaffold | kind: next or vite, default next; path: new single workspace directory name, default preview-app | {path,kind} |
-| dev_start | kind: next or vite, default next; path: matching scaffold, default preview-app; timeout_s:1..180, default120 | {port,kind,running:true} |
+| dev_start | kind: next or vite, default next; path: matching scaffold, default preview-app; timeout_s:1..180, default120; allowed_host:str="", one exact DNS hostname for Vite only | {port,kind,running:true} |
 | dev_status | none | {running:false} or {port,kind,path,running:true} |
 | dev_logs | tail_bytes:1..8192, default4096 | bounded buffered log tail |
 | dev_stop | none | {running:false} after owned process/listener absence |
 
 Next uses local next dev --webpack --hostname0.0.0.0 --port3000. Vite uses local vite --host0.0.0.0 --port5173 --strictPort. Literal argv; no shell interpolation. Existing directories and symlink/traversal paths are rejected. The controlled node_modules symlink points to the immutable preinstalled toolchain. Project source/build cache remain after stop; remove them explicitly when no longer needed.
+
+Version1.1.0 adds allowed_host for Vite's exact SDK-forwarded hostname. The default empty value preserves localhost-only host authorization; pass urlsplit(sb.network.get_url(5173)).hostname from the SDK. It sets only the upstream-supported __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS, verified in pinned Vite8.3.4 source and [official server options](https://vite.dev/config/server-options#server-allowedhosts). Wildcards, leading-dot suffixes, schemes, ports, credentials, commas and empty DNS labels are refused. Next does not accept this Vite-only setting. Runtime1.0.0's actual forwarded Vite403 attempt remains a failure;1.1.0 needs a new image/provider run. No Host rewrite or global allow-all mode is used.
 
 ## Configuration
 

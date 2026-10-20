@@ -6,6 +6,7 @@ removed; a pre-existing development server causes refusal.
 """
 import asyncio
 import secrets
+from urllib.parse import urlsplit
 
 import httpx
 
@@ -23,11 +24,11 @@ async def verify_forwarded(sandbox, *, workspace='/home/user/app'):
         try:
             assert await sandbox.run('scaffold', kind=kind, path=name) == {'path': name, 'kind': kind}
             created = True
-            assert await sandbox.run('dev_start', kind=kind, path=name) == {'port': port, 'kind': kind, 'running': True}
+            assert await sandbox.run('dev_start', kind=kind, path=name, **({'allowed_host':urlsplit(sandbox.network.get_url(port)).hostname} if kind=='vite' else {})) == {'port': port, 'kind': kind, 'running': True}
             started = True
             async with httpx.AsyncClient(timeout=120) as client:
                 response = await client.get(sandbox.network.get_url(port) + '/')
-            assert response.status_code == 200 and marker in response.text
+            assert response.status_code == 200 and marker in response.text, kind + ': forwarded HTTP status=' + str(response.status_code)
             assert response.headers.get('content-type', '').split(';')[0].lower() == 'text/html'
             source_path = path + ('/app/page.js' if kind == 'next' else '/index.html')
             original = await sandbox.files.read(source_path)

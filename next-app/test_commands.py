@@ -66,3 +66,19 @@ def test_self_test_preserves_existing_project_and_cleans_all_owned_files(workspa
     assert sorted(p.name for p in workspace.iterdir())==['caller-file']
     assert (workspace/'caller-file').read_bytes()==b'keep'
     assert commands.dev_status()=={'running':False}
+
+
+def test_exact_vite_host_reaches_actual_native_process(workspace):
+    commands.scaffold('vite','hosted')
+    assert commands.dev_start('vite','hosted',allowed_host='Preview.Example.COM')['running']
+    data=Path('/proc',str(commands.life._STATE['process'].pid),'environ').read_bytes()
+    assert b'__VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS=preview.example.com' in data.split(b'\0')
+    assert b'ABX_VITE_PREVIEW' in commands.life._request(5173,'GET','/')[2]
+    commands.dev_stop();assert not commands.life._listener_exists(5173)
+
+
+@pytest.mark.parametrize('host',['*','.example.com','https://preview.example.com','preview.example.com:5173','user@example.com','a..example.com','good.example,evil.example'])
+def test_invalid_preview_host_refused_before_start(workspace,host):
+    with pytest.raises(ValueError,match='allowed_host'):commands.dev_start('vite','absent',allowed_host=host)
+    assert not commands.life._STATE
+    assert list(workspace.iterdir())==[]
