@@ -11,6 +11,8 @@ s.loader.exec_module(c)
 def test_exact_native_terminal_result_required():
     value={'type':'run_result','finishReason':'completed','iterations':2,'text':'fresh marker'}
     assert c.final_text(json.dumps(value))=='fresh marker'
+    assert c.final_text(json.dumps(value|{'text':'Submission recorded (verified): fresh marker'}))=='fresh marker'
+    assert c.final_text(json.dumps(value|{'text':'Submission recorded (unverified): fresh marker'}))!='fresh marker'
     assert c.final_text(json.dumps({'type':'agent_event','event':{'type':'content_end','text':'fresh marker'}}))==''
     assert c.final_text(json.dumps(value)+'\n'+json.dumps({'type':'run_aborted'}))==''
     assert c.final_text(json.dumps(value)+'\n'+json.dumps(value))==''

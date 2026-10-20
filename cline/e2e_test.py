@@ -32,7 +32,9 @@ def final_text(stdout):
         if event.get('type')=='run_result':
             if complete or event.get('finishReason')!='completed' or type(event.get('iterations'))is not int or event['iterations']<1 or not isinstance(event.get('text'),str):return ''
             final=event['text'];complete=True
-    return final if complete else ''
+    if not complete:return ''
+    prefix='Submission recorded (verified): '
+    return final[len(prefix):] if final.startswith(prefix) else final
 
 def native_sdk_command(base,parameters):
     from agent_sandbox.api.server_client import ServerClient
