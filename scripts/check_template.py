@@ -2,12 +2,13 @@
 """Lint one template directory against docs/template-spec.md.
 
 Exit status:
-  0  the directory conforms, or ``--all`` found no spec_version 2 failures
-  1  at least one violation in a directory that claims spec_version 2
+  0  the directory conforms, or ``--all`` found no supported-spec failures
+  1  at least one violation in a directory that claims a supported spec version
      (``--all`` still prints the legacy conformance list)
 
-A directory without ``spec_version: 2`` is legacy. ``--all`` reports it and
-does not fail the process. ``--strict`` fails on every violation.
+A directory without ``spec_version`` is legacy. Versions 2 and 3 are supported.
+An unknown explicit version is a claimed spec failure. ``--all`` ignores only
+legacy violations; ``--strict`` fails on every violation.
 """
 from __future__ import annotations
 
@@ -123,9 +124,27 @@ class Violation:
         return f"{self.code}: {self.message}"
 
 
+class _UniqueKeyLoader(yaml.SafeLoader):
+    """Reject ambiguous maps instead of silently accepting the final key."""
+
+
+def _unique_mapping(loader: yaml.SafeLoader, node: yaml.MappingNode, deep: bool = False) -> dict:
+    loader.flatten_mapping(node)
+    result = {}
+    for key_node, value_node in node.value:
+        key = loader.construct_object(key_node, deep=deep)
+        if key in result:
+            raise ValueError(f"duplicate YAML key {key!r}")
+        result[key] = loader.construct_object(value_node, deep=deep)
+    return result
+
+
+_UniqueKeyLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _unique_mapping)
+
+
 def _load_yaml(path: Path) -> tuple[object, list[Violation]]:
     try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        data = yaml.load(path.read_text(encoding="utf-8"), Loader=_UniqueKeyLoader)
     except Exception as exc:  # noqa: BLE001 - surface the parser error
         return None, [Violation("yaml-parse", f"{path.name}: {exc}")]
     if not isinstance(data, dict):
@@ -462,7 +481,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
     if readme_zh.is_file():
         zh_sections = _check_readme(readme_zh, README_ZH, violations)
 
-    if data.get("spec_version") == 2:
+    if data.get("spec_version") in (2, 3):
         for label, sections, heading in (
             ("README.md", en_sections, "Quick start (HTTP POST)"),
             ("README.zh-CN.md", zh_sections, "快速开始（HTTP POST）"),
@@ -512,8 +531,14 @@ def check_directory(template_dir: Path) -> list[Violation]:
             )
 
     if data:
-        if data.get("spec_version") != 2 and data.get("spec_version") is not None:
-            violations.append(Violation("yaml-field", "spec_version must be 2 when set"))
+        if "spec_version" in data and data["spec_version"] not in (2, 3):
+            violations.append(Violation("yaml-field", "spec_version must be 2 or 3 when set"))
+        if data.get("spec_version") == 3:
+            from template_application import validate_v3
+
+            violations.extend(Violation("yaml-schema", message) for message in validate_v3(data, template_dir))
+        elif "application" in data:
+            violations.append(Violation("yaml-schema", "application requires spec_version: 3"))
         if data.get("generation") != 2:
             violations.append(Violation("yaml-generation", "generation must be the integer 2"))
         start = data.get("start_cmd")
@@ -655,7 +680,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
                 )
             )
 
-    if name and name != SKELETON_NAME and data.get("spec_version") == 2:
+    if name and name != SKELETON_NAME and data.get("spec_version") in (2, 3):
         design = template_dir.parent / "docs" / "design" / f"{name}.md"
         if template_dir.parent.name == "docs":
             design = template_dir.parent / "design" / f"{name}.md"
@@ -676,7 +701,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
                     )
 
     if (template_dir.parent / "awesome-templates.yaml").is_file() and name and name != SKELETON_NAME:
-        if data.get("spec_version") == 2:
+        if data.get("spec_version") in (2, 3):
             entries = _index_entries(template_dir.parent) or []
             match = [item for item in entries if item.get("path") == name or item.get("name") == name]
             if not match:
@@ -703,8 +728,8 @@ def claims_spec(template_dir: Path) -> bool:
         return False
     loaded, errors = _load_yaml(path)
     if errors or not isinstance(loaded, dict):
-        return False
-    return loaded.get("spec_version") == 2
+        return True  # malformed manifests cannot opt out by breaking the version parse
+    return "spec_version" in loaded
 
 
 def iter_templates(root: Path) -> list[Path]:
@@ -764,7 +789,7 @@ def main(argv: list[str] | None = None) -> int:
             print("\n".join(rows))
         else:
             print("  (none)")
-        print(f"spec_version 2 failures: {sum(1 for line in rows if '  spec  ' in line)}")
+        print(f"claimed spec failures: {sum(1 for line in rows if '  spec  ' in line)}")
         if args.strict:
             return 1 if any_failed else 0
         return 1 if claimed_failed else 0

@@ -94,6 +94,15 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Current heavy-image acceptance](evidence/verify/2026-10-20-current-heavy-image-acceptance.md)
 - [OCR step acceptance](notes/proposed/process/2026-10-20-ocr-step-acceptance.md) · [verification](evidence/verify/2026-10-20-ocr-step-acceptance.md)
 
+- [Single-file template application v3](notes/proposed/architecture/2026-10-20-template-application-v3.md) · [verification](evidence/verify/2026-10-20-template-application-v3.md)
+
+- [Application provider baseline review](evidence/verify/2026-10-20-template-application-v3-baseline-review.md)
+
+- [Application event reserve compatibility](evidence/verify/2026-10-20-template-application-v3-event-reserve.md)
 - [Actual SDK creation acceptance](notes/proposed/process/2026-10-20-sdk-created-acceptance.md) · [verification](evidence/verify/2026-10-20-sdk-created-acceptance.md)
 
 - [Four exact-controller image/model reruns](evidence/verify/2026-10-20-four-coding-image-revalidation.json)
+
+- [Application current-main integration](evidence/verify/2026-10-20-template-application-v3-main-integration.md)
+
+- [V3 structural smoke expectations](notes/proposed/process/2026-10-20-v3-structured-smoke.md) · [verification](evidence/verify/2026-10-20-v3-structured-smoke.md)
