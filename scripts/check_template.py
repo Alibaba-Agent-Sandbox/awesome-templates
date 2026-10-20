@@ -16,6 +16,7 @@ import argparse
 import ast
 import json
 import re
+import shlex
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -315,6 +316,55 @@ def _check_readme(path: Path, headings: tuple[str, ...], violations: list[Violat
         if issues_heading in sections and repo not in issues:
             violations.append(Violation("readme-issues", f"{path.name}: Issues must name {repo}"))
     return sections
+
+
+def _pip_hash_lock(line: str, template_dir: Path, docker_lines: list[str]) -> bool:
+    """Recognize a fully pinned SHA256 file installed with pip hash enforcement.
+
+    Limit this form to one plain local COPY mapping and no extra requirements.
+    Other COPY/requirements syntaxes still need an independently supported pin.
+    pip verifies dependency completeness and actual hashes during image build.
+    """
+    match = re.search(r"\bpip install\b([^&|;]*)", line)
+    if not match:
+        return False
+    try:
+        tokens = shlex.split(match[1])
+    except ValueError:
+        return False
+    if tokens.count("-r") != 1 or "--require-hashes" not in tokens:
+        return False
+    index = tokens.index("-r")
+    if index + 1 >= len(tokens):
+        return False
+    target = tokens[index + 1]
+    remaining = tokens[:index] + tokens[index + 2:]
+    if any(token not in {"--require-hashes", "--no-cache-dir", "--no-deps"} for token in remaining):
+        return False
+    sources = []
+    for instruction in docker_lines:
+        copied = re.fullmatch(r"COPY\s+([A-Za-z0-9_.-]+)\s+" + re.escape(target), instruction.strip())
+        if copied:
+            sources.append(copied[1])
+    if len(sources) != 1 or sources[0] in {".", ".."}:
+        return False
+    path = template_dir / sources[0]
+    if path.is_symlink() or not path.is_file() or path.stat().st_size > 2 * 1024**2:
+        return False
+    entries = []
+    pending = ""
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        value = raw.strip()
+        if not value or value.startswith("#"):
+            continue
+        if value.endswith("\\"):
+            pending += value[:-1] + " "
+        else:
+            entries.append(pending + value)
+            pending = ""
+    package = r"[A-Za-z0-9][A-Za-z0-9_.-]*(?:\[[A-Za-z0-9_,.-]+\])?==[A-Za-z0-9.!+_-]+"
+    hashes = r"(?:\s+--hash=sha256:[0-9a-f]{64})+"
+    return bool(entries) and not pending and all(re.fullmatch(package + hashes, item) for item in entries)
 
 
 def _check_commands(path: Path, violations: list[Violation]) -> None:
@@ -634,7 +684,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
                 continue
             if re.search(r"pip install\b[^&|;]*==", line):
                 continue
-            if _server_sdk_pinned(line):
+            if _server_sdk_pinned(line) or _pip_hash_lock(line, template_dir, lines):
                 continue
             violations.append(Violation("pinned-version", f"unpinned pip install in Dockerfile: {line}"))
         for line in lines:

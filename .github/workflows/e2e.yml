@@ -123,6 +123,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libnss3-tools
 
+      - name: Install hash-locked native DeepAgents for real local checks
+        run: |
+          python -m venv "$RUNNER_TEMP/deepagents-runtime"
+          "$RUNNER_TEMP/deepagents-runtime/bin/python" -m pip install --require-hashes -r deepagents/requirements.lock
+          "$RUNNER_TEMP/deepagents-runtime/bin/python" -m pip check
+          echo "DEEPAGENTS_PYTHON=$RUNNER_TEMP/deepagents-runtime/bin/python" >> "$GITHUB_ENV"
+
       - name: Install pinned upstream CLIs for local smoke checks
         run: |
           npm install --global @openai/codex@0.162.1 @anthropic-ai/claude-code@2.0.76 opencode-ai@1.19.0 @factory/cli@0.241.1 @qwen-code/qwen-code@0.23.0 @ampcode/cli@0.0.1792022479-ge66e24 @google/gemini-cli@0.64.0 @qoder-ai/qodercli@1.1.72 openclaw@2026.10.4 @moonshot-ai/kimi-code@2.2.0
@@ -184,6 +191,7 @@ jobs:
           python -m pytest -q code-server/test_commands.py code-server/test_browser_local.py scripts/test_preview_proxy.py
           python -m pytest -q polyglot-toolchain/test_commands.py
           python -m pytest -q apply-patch/test_commands.py
+          python -m pytest -q deepagents/test_commands.py deepagents/test_controller.py
           python -m pytest -q goose/test_commands.py goose/test_controller.py
           python -m pytest -q python-hello/test_command_errors.py
           python -m pytest -q node-web/test_startup.py node-web/test_http_output.py

@@ -150,6 +150,17 @@ templates:
       e2b: provider-prepared
       opensandbox: provider-prepared
 
+  - name: deepagents
+    description: Native DeepAgents0.7.25 local file/shell compatible-provider runtime with no subagents.
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: deepagents
+    tags: [deepagents, coding-agent, openai-compatible]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: install-build
+
   - name: deepseek-harness
     description: "Bounded DeepSeek-compatible coding agent with read, write, list and shell tools."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
