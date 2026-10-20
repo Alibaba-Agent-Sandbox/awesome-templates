@@ -1,0 +1,3 @@
+# Browser PDF and process verification
+
+Status: PARTIAL. Real pre-fix workspace script exited7 and left its ordinary background child alive; the assertion failed. The fixture independently pinned its unique nonce child with pidfd before cleanup. After correction6 actual native cases PASS and full real local HTTP37/0FAIL/0SKIP. PDF body/header/EOF and both MediaBox orientations were read independently through files HTTP; owned artifacts deleted. Parent/deadline/output/privacy tests use actual processes and synthetic secrets. No real-model host execution. Fresh2.2.0 image/Express and latest-head CI remain pending;2.1.0 qualification is preserved only as history.

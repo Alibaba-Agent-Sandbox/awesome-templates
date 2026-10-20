@@ -99,3 +99,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Four exact-controller image/model reruns](evidence/verify/2026-10-20-four-coding-image-revalidation.json)
 
 - [Native browser MCP](notes/proposed/feature/2026-10-20-browser-native-mcp.md) · [verification](evidence/verify/2026-10-20-browser-native-mcp.md)
+
+- [Browser PDF and owned scripts](notes/proposed/feature/2026-10-20-browser-pdf-process.md) · [verification](evidence/verify/2026-10-20-browser-pdf-process.md)

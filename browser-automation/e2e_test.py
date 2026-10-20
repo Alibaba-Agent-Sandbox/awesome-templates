@@ -6,6 +6,7 @@ import base64
 from concurrent.futures import ThreadPoolExecutor
 import json
 import os
+import re
 import sys
 from urllib.parse import quote
 
@@ -42,7 +43,7 @@ def main() -> int:
         check("server health", client.get("/health").status_code == 200)
         listed = client.get("/commands")
         names = {entry["name"] for entry in listed.json().get("commands", [])}
-        check("named commands registered", {"browse", "scrape", "fill_form", "run"} <= names)
+        check("named commands registered", {"browse", "scrape", "fill_form", "run", "pdf"} <= names)
         probe = client.post("/commands/browse", json={"url": URL, "action": "extract"})
         check("required real Chromium navigation and body extraction", probe.status_code == 200
               and probe.json().get("result", {}).get("text", "").startswith("ABX_E2E_OK"))
@@ -112,6 +113,24 @@ def main() -> int:
                   and result.json() == {"result": "SCRIPT_OK\n"})
         finally:
             client.delete("/files", params={"path": script})
+        for landscape in (False, True):
+            response = client.post("/commands/pdf", json={"url":URL,"landscape":landscape,"timeout_s":30})
+            check(f"PDF render landscape={landscape}", response.status_code == 200)
+            artifact = response.json().get("result", {})
+            path = artifact.get("path")
+            if not path:
+                check("PDF artifact path", False)
+                continue
+            try:
+                downloaded = client.get("/files/download-stream", params={"path":path})
+                data = base64.b64decode(downloaded.json().get("content_base64", ""))
+                check("independent remote PDF bytes", downloaded.status_code == 200 and data.startswith(b"%PDF-") and b"%%EOF" in data[-100:] and len(data) == artifact.get("bytes"))
+                match = re.search(rb"/MediaBox\s*\[\s*0\s+0\s+([\d.]+)\s+([\d.]+)", data)
+                check("independent PDF page orientation", match is not None and (float(match[1]) > float(match[2])) == landscape)
+            finally:
+                client.delete("/files", params={"path":path})
+        check("PDF invalid URL rejected", client.post("/commands/pdf", json={"url":"file:///private"}).status_code == 500)
+        check("PDF invalid deadline rejected", client.post("/commands/pdf", json={"url":URL,"timeout_s":0}).status_code == 500)
         def concurrent_browse(index: int) -> bool:
             title = f"isolated-{index}"
             response = httpx.post(BASE_URL + "/commands/browse", timeout=180,

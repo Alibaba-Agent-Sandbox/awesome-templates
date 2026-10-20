@@ -141,6 +141,12 @@ Run `abx run <sandbox-id> mcp_start`, then `abx run <sandbox-id> mcp_call --arg 
 
 A process-start diagnostic `MCP_NODE_MODULES` may select an independently installed exact lockfile tree; production uses /opt/playwright-mcp/node_modules. MCP HOME/profile/output are private and deleted on stop; no saved browser/profile/extensions are loaded. Default action/navigation limits10/20seconds, HTTP response4MiB, native output-file eviction threshold10MiB (not a hard disk quota) and idle browser60seconds. Calls are serialized; streaming stays on the native in-sandbox MCP endpoint, while mcp_call returns a buffered result. Native child environment excludes operator cloud/model/server keys and Node injection variables. Browser navigation shares the sandbox's egress authority; no SSRF policy is added. Caller requests, page data and results can be private and must not be publicly logged.
 
+### PDF and bounded workspace scripts
+
+`pdf(url:str, landscape:bool=false, print_background:bool=true, timeout_s:int=30) -> {path,bytes,format:"PDF"}` renders A4 using the pinned real Chromium. URL supports the same schemes as browse, up to256KiB/no NUL. The generated workspace PDF is capped at16MiB after rendering; this is not a peak-memory bound. Boolean flags are typed. Read the artifact with SDK `await sb.files.read_bytes(result["path"])` and remove it after export. `abx run <sandbox-id> pdf --arg url='data:text/html,<h1>PDF proof</h1>'` exercises the actual renderer. No caller output filename is overwritten; symlink artifact directories are refused.
+
+PDF execution runs in a private-HOME child with its own1–120second execution deadline and bounded teardown. Generic run now also reserves process identity and stops marked detached/ordinary children on success, failure, overflow or deadline. stdout/stderr are each capped at256KiB; native diagnostics are omitted from errors. run preserves caller HOME but forwards only PATH/locale/browser/CA settings, excluding server/cloud/model keys and injected loaders. Use the SDK process interface for explicit long-lived background work/environment settings. This process hygiene is not a second sandbox security boundary. Build enforces actual du rootfs accounting at8GiB; disk free-space size is a separate quantity.
+
 ## Configuration
 
 | Variable | Default | Purpose |
@@ -162,6 +168,11 @@ small `/dev/shm`; concurrent browser requests increase memory usage. Delete old
 `browser-artifacts/` files through the files API to reclaim sandbox rootfs space.
 
 ## Verified
+
+Current2.2.0 PDF/process changes require fresh acceptance. Prior2.1.0 receipts below retain their original version.
+
+## Historical2.1.0 verification
+
 
 Version2.1.0 passed actual Alibaba Express native steps, Python SDK Sandbox.create, CLI/SDK browser and native MCP smoke, and full remoteHTTP29 PASS/0 FAIL/0 SKIP. Native MCP discovery and actual navigation/snapshot/click/screenshot use the existing Chromium1208; the independent counter and PNG checks passed. Owned sandbox/template deletion and independent absence were confirmed. Other providers and all remaining upstream tool actions are not certified.
 
