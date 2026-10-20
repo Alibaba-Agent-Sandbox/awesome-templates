@@ -22,13 +22,14 @@ is recorded.
 
 ## Templates
 
-2026-10-20 accepted37-template Express platform-step checkpoint: **37/37 current native/runtime and required full HTTP PASS**, with official READY, actual CLI/SDK smoke and independent owned cleanup. [Immutable current37matrix](.agents/evidence/verify/2026-10-20-current-native-http37.json) · [operations and scope](docs/platform-steps.md) ([中文](docs/platform-steps.zh-CN.md)). This is not37new deployments, universal model/image acceptance or completion of all64Issues; new entries require their own proof. Historical [35matrix](.agents/evidence/verify/2026-10-20-current-native-http35.json) and [34matrix](.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json) remain unchanged.
+2026-10-20 accepted38-template Express platform-step checkpoint: **38/38 current native/runtime and required full HTTP PASS**, with official READY, actual CLI/SDK smoke and independent owned cleanup. [Immutable current38matrix](.agents/evidence/verify/2026-10-20-current-native-http38.json) · [operations and scope](docs/platform-steps.md) ([中文](docs/platform-steps.zh-CN.md)). This is not38new deployments, universal model/image acceptance or completion of all64Issues; new entries require their own proof. Historical [37matrix](.agents/evidence/verify/2026-10-20-current-native-http37.json), [35matrix](.agents/evidence/verify/2026-10-20-current-native-http35.json) and [34matrix](.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json) remain unchanged.
 
 The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](docs/verification-2026-10-18.zh-CN.md)) records the historical23-template checkpoint and its unresolved gates. Current scoped receipts are linked below.
 
 | Template | Description | Status | Verified on |
 |----------|-------------|--------|-------------|
 | [python-hello](./python-hello/README.md) | A minimal Python hello world template for testing | experimental | [alicloud-express (1.1.1 full HTTP)](./python-hello/evidence/express-2026-10-19T183219Z.json) |
+| [tau2-bench](./tau2-bench/README.md) | Original Tau2 text retail agent/user and native strict replay | experimental | [alicloud-express1.0.4 SDK steps/native model17](./tau2-bench/evidence/express-2026-10-20T212600Z.json) |
 | [stagehand](./stagehand/README.md) | Native Stagehand4.3.0 local Chromium act/extract | experimental | [alicloud-express1.1.1 SDK steps and real native model](./stagehand/evidence/express-2026-10-20.json) |
 | [grok](grok/) | Official xAI Grok Build native coding | experimental | [alicloud-express1.0.1 SDK steps and real coding](grok/evidence/express-2026-10-20.json) |
 | [browser-use](./browser-use/README.md) | Native text-DOM browser agent with private Chromium | experimental | [alicloud-express (1.0.0 SDK image, real model)](./browser-use/evidence/express-2026-10-20.json) |
