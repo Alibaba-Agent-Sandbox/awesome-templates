@@ -241,6 +241,9 @@ jobs:
           npm ci --prefix next-app --ignore-scripts --no-audit --no-fund
           echo "NEXT_APP_TOOLCHAIN=$GITHUB_WORKSPACE/next-app" >> "$GITHUB_ENV"
 
+      - name: Install the pinned native Stagehand SDK for offline protocol regressions
+        run: npm ci --prefix stagehand --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org
+
       - name: Lint templates and unit-test the checker
         run: |
           python3 scripts/test_local_cleanup.py && python3 scripts/test_spec_tools.py
@@ -252,6 +255,8 @@ jobs:
           python -m pytest -q next-app/test_commands.py next-app/test_forwarded_controller.py
           python -m pytest -q browser-automation/test_mcp.py browser-automation/test_pdf_runtime.py
           python -m pytest -q browser-use/test_commands.py browser-use/test_model_controller.py
+          python -m pytest -q stagehand/test_commands.py stagehand/test_model_controller.py stagehand/test_sdk_connect.py
+          node --test stagehand/test_transport.mjs
           python -m pip install --require-hashes -r scripts/requirements-preview.txt
           python -m pytest -q code-server/test_commands.py code-server/test_browser_local.py scripts/test_preview_proxy.py
           python -m pytest -q polyglot-toolchain/test_commands.py
