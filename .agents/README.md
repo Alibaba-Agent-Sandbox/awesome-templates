@@ -123,3 +123,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Native coding SDK image acceptance](notes/proposed/process/2026-10-20-native-coding-sdk-acceptance.md) · [verification](evidence/verify/2026-10-20-native-coding-sdk-acceptance.md)
 - [Native Media argv and exact SDK source](notes/implemented/feature/2026-10-20-native-media-args.md) · [verification](evidence/verify/2026-10-20-native-media-args-final.md).
+
+- [Codex current SDK image acceptance](notes/proposed/process/2026-10-20-codex-sdk-image-acceptance.md) · [verification](evidence/verify/2026-10-20-codex-sdk-image-acceptance.md)

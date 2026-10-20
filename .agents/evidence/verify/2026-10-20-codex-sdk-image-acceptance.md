@@ -1,0 +1,15 @@
+# Verification: current Codex SDK-created image/model
+
+Date:2026-10-20. Result:PASS for actual cloud runtime/model; latest-head source/CI/merge gates remain required. Template2.0.0, native Codex0.162.1. [Issue16](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/16).
+
+[Image/source proof](../../../codex/evidence/image-http-2026-10-20T145436Z.json): exact sourceca3118e5123e7ce2ae2e43e2a8a05c88ecf3653d, [explicit export39430931693](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39430931693), artifact12267977528, archive SHA25640eeceabefb173d8af952c3c28528a54b4118a2783b44d20d6faa9b08303e466. Actual common servere2cb27e24fde0a67112f82b8d44af463445a5d1a; full context/source/archive/non-root and owned private-registry pre/post-runtime digest verified.
+
+[SDK creation/CLI/SDK receipt](../../../codex/evidence/express-2026-10-20.json): actual official READY, Sandbox.create and native command transport. Basic full HTTP13PASS/0FAIL/1expected model-off SKIP stays NOT_RUN for that stage. Independent sandbox/template/registry absence PASS.
+
+[Separate actual strict-model result](../../../codex/evidence/model-image-2026-10-20T145436Z.json):17PASS/0FAIL/0SKIP; genuine qwen3.8-flash via the approved endpoint and native Responses configuration. Real model source modification, new artifact, unchanged original tests and independent held-out assertions all pass. Generated code executes only inside the owned cloud sandbox. Own configured server kill acknowledged; outer sandbox/template/registry absence independently confirmed. Successful pipeline removes the local large image cache after cleanup, retaining source/upstream artifact identity and receipts.
+
+Commands SHA256caebcfb64d80725ad724adbd45f27ca21c3850f118b52444e0f99af5d15c5044; strict controller305cab4505bbabd5a2e25e78fa03132ee320dcc29ea0ad115e09dbcd783a81db. Actual client source is independently installed from the recorded SDK verification revision; the published version number alone is not provenance. Standalone Docker fallback is not relabeled as the injected runtime. Historical native-step/basic and earlier failures remain immutable.
+
+Executed exact-source image runner with explicit sdk creation, genuine OPENAI_API_KEY/BASE_URL, CODEX_MODEL/ABX_LLM_MODEL=qwen3.8-flash and private configured CODEX_HOME. Existing strict e2e_test.py uses E2E_REQUIRE_LLM=1/E2E_RUN_LLM=1 and retains independent behavior assertions. Public reproduction uses the image runner --sandbox-create sdk, documented explicit process configuration and the existing strict model controller. Further source/docs/current-head CI results remain required; no other provider/model/architecture is inferred.
+
+Source checks PASS:11tests plus27subtests in2.33seconds for codex/test_commands.py; scoped strict checker and150Markdown links pass. Active installed native client matches all340Python source files at SDKd4d93e8cbb986f33a8868f7a4139ed0edb49eaba; it was a normal local-source installation, not editable. No runtime change is made.

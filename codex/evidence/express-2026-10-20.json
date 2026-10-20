@@ -1,0 +1,77 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-20",
+  "template": "codex",
+  "template_version": "2.0.0",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "image",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "harness_sha256": "91592778b24797075915b40f31f219f6517526b17cd2b3a75fe777f73fe6afd6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "codex_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 4.505,
+      "result": "0.162.1"
+    },
+    {
+      "name": "codex_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 114.851,
+      "result": "0.162.1"
+    },
+    {
+      "name": "codex_setup_check",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.202,
+      "result": "{'binary_present': True, 'binary': '/usr/local/bin/codex', 'version': '0.162.1', 'pinned_version': '0.162.1', 'version_matches_pin': True, 'linux_sandbox': True, 'sandbox_probe': '/usr/local/bin/codex sandbox --permission-profile :read-only -- true', 'sandbox_error': '', 'bwrap_path': '', 'bwrap_userns': False, 'bwrap_error': '', 'landlock_sysfs': False, 'bypass_flag': '--dangerously-bypass-approvals-and-sandbox', 'use_bypass': False, 'recommended_sandbox': 'workspace-write', 'agents_md': '/home/user/workspace/AGENTS.md', 'workspace': '/home/user/workspace', 'config_path': '/home/user/.codex/config.toml', 'config_present': True, 'api_key_present': {'ABX_LLM_API_KEY': False, 'OPENAI_API_KEY': False, 'CODEX_API_KEY': False}, 'base_url_present': {'ABX_LLM_BASE_URL': False, 'OPENAI_BASE_URL': False}, 'full_auto_supported': False}"
+    },
+    {
+      "name": "codex_setup_check",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 1.182,
+      "result": "{'binary_present': True, 'binary': '/usr/local/bin/codex', 'version': '0.162.1', 'pinned_version': '0.162.1', 'version_matches_pin': True, 'linux_sandbox': True, 'sandbox_probe': '/usr/local/bin/codex sandbox --permission-profile :read-only -- true', 'sandbox_error': '', 'bwrap_path': '', 'bwrap_userns': False, 'bwrap_error': '', 'landlock_sysfs': False, 'bypass_flag': '--dangerously-bypass-approvals-and-sandbox', 'use_bypass': False, 'recommended_sandbox': 'workspace-write', 'agents_md': '/home/user/workspace/AGENTS.md', 'workspace': '/home/user/workspace', 'config_path': '/home/user/.codex/config.toml', 'config_present': True, 'api_key_present': {'ABX_LLM_API_KEY': False, 'OPENAI_API_KEY': False, 'CODEX_API_KEY': False}, 'base_url_present': {'ABX_LLM_BASE_URL': False, 'OPENAI_BASE_URL': False}, 'full_auto_supported': False}"
+    }
+  ],
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "codex",
+    "template_version": "2.0.0",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "ca3118e5123e7ce2ae2e43e2a8a05c88ecf3653d",
+    "checkout_commit": "ca3118e5123e7ce2ae2e43e2a8a05c88ecf3653d",
+    "workflow_run_id": "39430931693",
+    "artifact_id": "12267977528",
+    "archive_sha256": "40eeceabefb173d8af952c3c28528a54b4118a2783b44d20d6faa9b08303e466",
+    "image_config_sha256": "aff9366df34557f3d95c2406118c63bb74700991e09a6dd10c3ac5a9e3941a65",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "925c54f783899e383139876f1cc858c04f79646eca6103259e778b610234a643",
+      ".dockerignore": "cc6b9f6c91733b859252f8750f3e8c5374994529a8fab88387ec29bd945f31a5",
+      "template.yaml:contract": "a6bb8d46f621e718c7a73c9a92bf82cc1db7cb5863087e565cfc9a12da8155c8",
+      "commands.py": "caebcfb64d80725ad724adbd45f27ca21c3850f118b52444e0f99af5d15c5044",
+      "AGENTS.md": "767e4f6ce54424cdc11207656ad10e0c08a28242b484a57259fe72f2abd852de"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:358dad77c3c069990c77390add3a72fca0c045f9db13f904a6316b29ca80a6e8",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "registration_operation": "abx template create",
+  "boundary": "Verified CI Dockerfile image + private registry transfer; no controller Docker build or platform-step build claimed",
+  "registry_cleanup_verified": true
+}
