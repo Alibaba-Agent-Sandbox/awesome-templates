@@ -38,6 +38,8 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 
 - [Explicit OpenClaw proxy/SDK acceptance](notes/proposed/feature/2026-10-20-openclaw-explicit-proxy-sdk.md) · [verification](evidence/verify/2026-10-20-openclaw-explicit-proxy-sdk.md)
 
+- [OpenClaw native SDK final acceptance](evidence/verify/2026-10-20-openclaw-native-sdk-final.md)
+
 ## Current review
 
 - [Node Web HTTP output protocol](notes/proposed/process/2026-10-16-node-web-http-output.md)

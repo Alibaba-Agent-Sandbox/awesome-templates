@@ -153,7 +153,14 @@ The gateway uses a private temporary state/config directory, disables browser/co
 
 ## Verified
 
-Version2.1.0 adds explicit proxy configuration; complete current native step/image/Express acceptance is pending. Earlier2.0.1receipts retain historical scope.
+Version2.1.0 passed actual Alibaba Express SDK-created native steps **and** the exact CI Docker image. In each, the SDK started/authenticated the real gateway, checked that it survives the response, independently verified forwarded healthz (`ok=true`) and readyz (`ready=true`) with HTTP200, then stopped it and confirmed status, own listeners and private state absence. Only an explicitly configured exact observed test-proxy address was trusted; no private address/token is published.
+
+| Provider | Version and executed scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 2.1.0; native steps, SDK lifecycle/probes and independent owned cleanup | [CLI/SDK smoke](evidence/express-2026-10-20T153536Z.json), [full native SDK gateway](evidence/sdk-gateway-steps-2026-10-20T153536Z.json) |
+| alicloud-express | 2.1.0; exact CI image, SDK lifecycle/probes, independent sandbox/template/registry cleanup | [image/source integrity](evidence/image-http-2026-10-20T163034Z.json), [full native SDK gateway](evidence/sdk-gateway-image-2026-10-20T163034Z.json) |
+
+Gateway-only scope needs no model key: model/channel/nested-sandbox acceptance is not claimed. The generic image receipt's empty HTTP suite is not a full HTTP-controller pass; the separately linked SDK gateway controller establishes useful native behavior. Four failed2.0.1 diagnostics and a2.1pre-cloud disk-budget failure remain history. See [final engineering verification](../.agents/evidence/verify/2026-10-20-openclaw-native-sdk-final.md). Earlier2.0.1receipts retain historical scope.
 
 ## Historical2.0.1verification
 
