@@ -88,6 +88,14 @@ def parallel_assets(source: Path) -> dict:
                     result[arch].append(wheels[arch])
             return result
         raise ValueError("unreviewed standalone Python installer")
+    if source.name == "chrome":
+        item = json.loads((source / "browser.json").read_text())
+        if (item["browser_version"] != "145.0.7632.6"
+                or item["url"] != "https://cdn.playwright.dev/chrome-for-testing-public/145.0.7632.6/linux64/chrome-linux64.zip"
+                or item["size"] != 175440843
+                or item["sha256"] != "b5e3195041af345a668d110f5daf5581961fa3608626ea588c97dd0fe81c4e38"):
+            raise ValueError("unreviewed headed Chrome archive transport")
+        return {"x86_64": [{key: item[key] for key in ["url", "size", "sha256"]}]}
     if source.name == "hermes-agent":
         text = (source / "Dockerfile").read_text()
         metadata = json.loads(Path(__file__).with_name("step_uv_python.json").read_text())

@@ -563,6 +563,17 @@ templates:
 
 
 # Provider-managed IDs have no source build context; never pass these to image selection.
+  - name: chrome
+    description: "Pinned headed Chrome145 with native CDP and authenticated visible noVNC desktop"
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: chrome
+    tags: [chrome, browser, cdp, vnc, desktop]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: install-build
+
 managed_templates:
   - name: base
     provider: alicloud-express

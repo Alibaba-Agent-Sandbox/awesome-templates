@@ -1,0 +1,23 @@
+name: chrome
+version: "1.0.0"
+description: "Pinned genuine headed Chrome with native CDP, authenticated noVNC framebuffer and owned non-root desktop lifecycle."
+author: alibaba-agent-sandbox
+license: Apache-2.0
+spec_version: 2
+base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
+generation: 2
+start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
+ready_cmd: "agent-sandbox-server healthcheck --port 9000"
+resources: {cpu: 2, memory: 2048}
+ports: [9000, 9222, 6080]
+tags: [chrome, chromium, browser, cdp, vnc, desktop]
+priority: P1
+wave: 2
+tested_on: []
+capabilities: [shell, files, code, ports]
+env:
+  ABX_SERVER_TOKEN: ""
+  WORKSPACE: "/home/user/workspace"
+smoke:
+  - command: chrome_smoke
+    expect: "native headed Chrome145.0.7632.6 CDP/VNC/PNG and cleanup OK"
