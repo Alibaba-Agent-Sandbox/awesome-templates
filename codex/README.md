@@ -253,3 +253,7 @@ For L3 against a local or remote template server, run `E2E_BASE_URL=http://127.0
 ## License
 
 Apache-2.0, the same license as this repository. See [LICENSE](../LICENSE).
+
+### 2026-10-20 full step checkpoint: template2.0.0
+
+[Real current-version steps](evidence/express-2026-10-20T154825Z.json) and [complete external HTTP controller](evidence/verification-steps-2026-10-20T154825Z.json): official READY, actual Python SDK creation, all CLI/SDK smoke and 13 PASS/0 FAIL/1 SKIP; independent owned sandbox/template cleanup passed. Model acceptance remains NOT_RUN in this receipt; it does not relabel earlier image/model scope. Reproduction and exact server/controller provenance: [step guide](../docs/platform-steps.md).

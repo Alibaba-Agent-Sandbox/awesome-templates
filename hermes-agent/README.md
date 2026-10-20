@@ -139,3 +139,7 @@ From a repository checkout, `python scripts/run_steps_e2e.py hermes-agent` build
 ## License
 
 Apache-2.0 template code. Upstream tools retain their own licenses and attribution. See [LICENSE](../LICENSE).
+
+### Current platform-step acceptance
+
+[Current-version genuine steps](evidence/express-2026-10-20T151019Z.json) and [full external HTTP result](evidence/verification-steps-2026-10-20T151019Z.json): official READY, actual Python SDK creation, CLI/SDK smoke and 9 PASS / 0 FAIL / 1 model SKIP; 319.815 seconds. Independent owned sandbox/template and private asset-cache cleanup passed. Earlier failed step attempts remain historical failures; this receipt is model-free and does not extend prior image/model scope.

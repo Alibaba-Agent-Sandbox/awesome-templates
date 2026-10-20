@@ -38,7 +38,7 @@ Feasible: slice
 
 Limiting factor: Express lacks KVM and therefore cannot provide upstream VM snapshot/reset semantics.
 
-Xvfb, Openbox, DBus and browser input require no nested VM, Docker daemon or additional capabilities. Browser sandbox flags use `--no-sandbox` inside the outer sandbox; the outer sandbox is the isolation boundary. Allocate 2 vCPU / 2048 MB and allow up to 60 seconds for startup. Full task coverage, VM reset, app snapshots, Office and leaderboard scores are not delivered. The original Issue remains open.
+Xvfb, Openbox, DBus and browser input require no nested VM, Docker daemon or additional capabilities. Browser sandbox flags use `--no-sandbox` inside the outer sandbox; the outer sandbox is the isolation boundary. Allocate 2 vCPU / 2048 MB and allow up to 60 seconds for startup. Full task coverage, VM reset, app snapshots, Office and leaderboard scores are not delivered. Issue36tracks delivery of this declared slice.
 
 ## Risks
 
@@ -61,3 +61,5 @@ Canonical L2 follows the template spec and requires the complete `abx template d
 Screen and viewport are independent: the PNG remains 1024×768, while startup waits for a visible nonzero viewport. Read-only numeric `browser_geometry` accompanies startup/setup; smoke records it and uses actual content offset plus DOM rect for native clicks without CDP viewport emulation. Actual interaction/evaluation and Unicode destination gates remain required. See [viewport evidence](../../.agents/evidence/verify/2026-10-16-osworld-viewport.md).
 
 The Dockerfile explicitly assigns `/home/user/app` itself to the runtime user. File-level `COPY --chown` does not grant write access to a root-created WORKDIR. The real non-root smoke must create and remove its file-backed task there.
+
+Current1.0.0 canonical native steps now pass official READY, actual Python SDK creation, CLI/SDK full native desktop smoke and required external GUI18/0/0 with independent owned sandbox/template/private-asset-cache cleanup. Exact current L1 build39462497032 also passes. [Final current-source verification](../../.agents/evidence/verify/2026-10-20-osworld-sdk-desktop-final.md) keeps historical image/smoke/GUI-skipped scopes distinct.

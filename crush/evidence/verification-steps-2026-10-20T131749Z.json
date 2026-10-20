@@ -1,0 +1,62 @@
+{
+  "template": "crush",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T131749Z",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "crush",
+    "materializer_sha256": "7fb912b4ff9c360884cf90b022222ab12c884731c7a0bcc191755bd7315bf738",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "ca3118e5123e7ce2ae2e43e2a8a05c88ecf3653d",
+    "asset_transport": "parallel",
+    "steps_json_bytes": 9754,
+    "inputs_sha256": {
+      "Dockerfile": "cf06522fd0ffa60631f6dbfebe9c5e620525b87dae72db8d89da51e55523de7d",
+      "template.yaml": "f574b74aa8f5d8caa8668ee6030c5cf14ee0a876a57a074eef3ad33dff60c8be",
+      "install_runtime.py": "2ed2608cd4e8516a6786654ebdfabeaa0024ea8746671bd3da9af993442fcdd1",
+      "assets.json": "75f2b7e4bb885a32705e5478c2646aab1afddf542596f35496a7adda7bcfeafd",
+      "upstream-LICENSE.md": "3faa5d4f3a51f07e4963b993f27af4b9344d7c509fa20aa856dd878788ba5f18",
+      "commands.py": "151afe22b54717a3494b3976a3a371c07823bf8455fbcacbb2a1ac2c05100d09",
+      "process.py": "95806ee40c68bbfb97d824933ede83b7e15d8aa5048eb393a3e06e2b4e12fe52",
+      "lifecycle.py": "c8c7f2e6778711769d276d41adc226e56151b07d5ac61e795088057e334cdf36"
+    },
+    "asset_transport_sha256": "7ab681a74474d6fe33be82e45e8116a9dc94801b2ab752fa0a622ebcd1984af7",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://github.com/charmbracelet/crush/releases/download/v0.98.1/crush_0.98.1_Linux_x86_64.tar.gz",
+          "bytes": 26770143,
+          "sha256": "d85d913effef350f0152f594a70bd9749ad455bf15af77bb0d2b731036079885"
+        }
+      ],
+      "aarch64": [
+        {
+          "url": "https://github.com/charmbracelet/crush/releases/download/v0.98.1/crush_0.98.1_Linux_arm64.tar.gz",
+          "bytes": 24701201,
+          "sha256": "098e875c1d9501822d08ef14ab094f24cfc87396385af5402994bf741a673b99"
+        }
+      ]
+    },
+    "generated_manifest_sha256": "5558bf2a643f3849cd534b6092419fb2865e6bdba52dfd98bb2176218ed254dc"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 9,
+    "fail_count": 0,
+    "skip_count": 1,
+    "controller_sha256": "989a583d2836075351cae49fa588702ba773f4f15b07e668b6132a23027d8f12"
+  },
+  "exit_code": 0,
+  "cleanup_verified": true,
+  "receipt": "crush/evidence/express-2026-10-20T131749Z.json",
+  "command_calls": 2,
+  "duration_s": 538.944
+}

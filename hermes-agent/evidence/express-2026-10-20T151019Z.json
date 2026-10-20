@@ -1,0 +1,116 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-20",
+  "template": "hermes-agent",
+  "template_version": "1.1.1",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "steps",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "harness_sha256": "91592778b24797075915b40f31f219f6517526b17cd2b3a75fe777f73fe6afd6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "hermes_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 4.605,
+      "result": "Hermes Agent v0.22.1 (2026.9.24) · upstream 297552a9\nInstall directory: /opt/hermes\nInstall method: unknown\nPython: 3.14.6\nOpenAI SDK: 2.24.0"
+    },
+    {
+      "name": "hermes_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 4.847,
+      "result": "Hermes Agent v0.22.1 (2026.9.24) · upstream 297552a9\nInstall directory: /opt/hermes\nInstall method: unknown\nPython: 3.14.6\nOpenAI SDK: 2.24.0"
+    }
+  ],
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "hermes-agent",
+    "materializer_sha256": "449d1f7ed4291f2475c64b0425052738f5c856d63e78e2c74a13121baabaf640",
+    "template_version": "1.1.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "asset_transport": "oss",
+    "steps_json_bytes": 14411,
+    "inputs_sha256": {
+      "Dockerfile": "42e3c3987020f5e63d823f35a21a7f57a9ede36042642694f59b207dcf00c23b",
+      "template.yaml": "45fa20dc9c5cc530bc9b4c91d7e5e6d9e3a8de1724abcc85402563228651f97b",
+      "commands.py": "d849006ecdb653c53c474ccd687b592741437034a505b391c5b80cb6be49333c"
+    },
+    "asset_transport_sha256": "83f20ec571a29225637ddac11fce7fd86f29146b24622b43e326c6934f8594e3",
+    "asset_adapter_source_commit": "4235d0d0b98b11078b0988b4d3e07a008e77980b",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20260804/cpython-3.14.6%2B20260804-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
+          "sha256": "ba960817e542642021135db330d875f410f4e14c64a62e2ae5faf3697ada08b2",
+          "mirror_path": "20260804/cpython-3.14.6+20260804-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
+        },
+        {
+          "url": "https://files.pythonhosted.org/packages/8d/c4/97fdd4fca11d06633bb500849f70e4e6b201bcba3833894732e709be2d60/uv-0.12.3-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "filename": "uv-0.12.3-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "sha256": "1482d1462b1aecd18ee33627363fe1c63d6a194f12d40d37efc446d9e0d800a1",
+          "size": 22346263
+        },
+        {
+          "url": "https://codeload.github.com/NousResearch/hermes-agent/tar.gz/297552a9d646119871391d202509822cd86330df",
+          "sha256": "fbd55e510b49592635429aa451a7c2b9fb4061cddbbab09f52504226f4338fcf",
+          "size": 83225459,
+          "digest_basis": "controller measured immutable upstream commit archive; not an upstream-published SHA256"
+        }
+      ],
+      "aarch64": [
+        {
+          "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20260804/cpython-3.14.6%2B20260804-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz",
+          "sha256": "8ad1ec529cd1708245e8661a463245fc1479c43cbfd66e58b095456ebf77180a",
+          "mirror_path": "20260804/cpython-3.14.6+20260804-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz"
+        },
+        {
+          "url": "https://files.pythonhosted.org/packages/c4/46/ab0906c8c3b6eeaf2412ab5af6077a38930db90e2c99c1b82e066f240a81/uv-0.12.3-py3-none-manylinux_2_28_aarch64.whl",
+          "filename": "uv-0.12.3-py3-none-manylinux_2_28_aarch64.whl",
+          "sha256": "248b6b282f96f98d79dddecd1b2acd1893efd84667321f26703feffff6433211",
+          "size": 21288225
+        },
+        {
+          "url": "https://codeload.github.com/NousResearch/hermes-agent/tar.gz/297552a9d646119871391d202509822cd86330df",
+          "sha256": "fbd55e510b49592635429aa451a7c2b9fb4061cddbbab09f52504226f4338fcf",
+          "size": 83225459,
+          "digest_basis": "controller measured immutable upstream commit archive; not an upstream-published SHA256"
+        }
+      ]
+    },
+    "asset_cache_architecture": "x86_64",
+    "python_download_profile": "uv0.12.3 generic GNU architecture; original Python3.14.6 pin, local verified official-archive mirror and bounded original compound-RUN phases",
+    "generated_manifest_sha256": "66aac4147bebf3de1153f0abf5fae4d7d80f50215989ada5ab9fb502ed07fe8f"
+  },
+  "asset_cache": {
+    "service": "Alibaba Cloud OSS",
+    "private_acl_verified": true,
+    "archives": [
+      {
+        "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20260804/cpython-3.14.6%2B20260804-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
+        "sha256": "ba960817e542642021135db330d875f410f4e14c64a62e2ae5faf3697ada08b2",
+        "size": 35843409
+      },
+      {
+        "url": "https://files.pythonhosted.org/packages/8d/c4/97fdd4fca11d06633bb500849f70e4e6b201bcba3833894732e709be2d60/uv-0.12.3-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+        "sha256": "1482d1462b1aecd18ee33627363fe1c63d6a194f12d40d37efc446d9e0d800a1",
+        "size": 22346263
+      },
+      {
+        "url": "https://codeload.github.com/NousResearch/hermes-agent/tar.gz/297552a9d646119871391d202509822cd86330df",
+        "sha256": "fbd55e510b49592635429aa451a7c2b9fb4061cddbbab09f52504226f4338fcf",
+        "size": 83225459
+      }
+    ],
+    "signed_get_ttl_seconds": 3600,
+    "cleanup_verified": true
+  }
+}

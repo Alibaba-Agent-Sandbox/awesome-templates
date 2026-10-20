@@ -186,6 +186,14 @@ Set secret values on `abx create --env` or `Sandbox.create(envs=...)`. Do not wr
 
 | Provider | Current version and scope | Evidence |
 | --- | --- | --- |
+| alicloud-express | 2.0.2; actual non-root steps, Python SDK create, CLI/SDK and15 full HTTP checks including serve lifecycle; independent cleanup | [steps](evidence/express-2026-10-20T160725Z.json) · [HTTP](evidence/verification-steps-2026-10-20T160725Z.json) |
+
+The2.0.2 image/model scope is not inferred from historical2.0.1. The changed Dockerfile also passed the real CI image build; no new real-model run is claimed.
+
+## Historical2.0.1 image/model qualification
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
 | alicloud-express | 2.0.1; actual SDK-created image, CLI/SDK commands,28strict real-model assertions and independent sandbox/template/registry cleanup | [2026-10-20](evidence/express-2026-10-20.json) · [model](evidence/model-image-2026-10-20T142001Z.json) |
 
 The exact-source CI image is independently verified before registration. The actual model edits existing source, creates a new artifact and passes unchanged original tests, fresh held-out assertions and exact-session continuation. The matching runtime also has [real platform-step basic acceptance](evidence/verification-steps-2026-10-19T184023Z.json), which does not itself claim model acceptance. The image actually injects server e2cb27e; the older standalone Docker fallback is a separate build path. See [current acceptance](../.agents/evidence/verify/2026-10-20-native-coding-sdk-acceptance.md) for provenance, limits and historical failures.
@@ -254,3 +262,7 @@ cannot stand in for completed checks. This detects incomplete execution; it is
 not an OS isolation boundary against hostile code with the same user authority.
 Historical real-model results predate this guard; the hardened controller needs
 its own actual-image/model run before that new acceptance is claimed.
+
+### Template2.0.2 runtime ownership
+
+A real non-root step run of2.0.1 passed version/setup but failed native serve startup/status/idempotence. A separate owned runtime probe reproduced PermissionDenied opening ~/.local/share/opencode/log/opencode.log. Root installation/version probes ran after the first HOME ownership handoff, while the final handoff covered only the app directory. Version2.0.2 recursively hands the template-owned app/.local/.config state to user after installation; it retains USER user and unchanged OpenCode1.19.0. Read-only setup now detects unwritable native state without reading logs or creating files. [Issue156](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/156) tracks the real regression and repeat. Older2.0.1 image/model receipts are historical and do not qualify2.0.2; new real2.0.2 step/full-HTTP verification passed15/0/0 in100.59s; [receipt](evidence/verification-steps-2026-10-20T160725Z.json).

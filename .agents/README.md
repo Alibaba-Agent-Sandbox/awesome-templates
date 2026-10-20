@@ -19,6 +19,8 @@ New engineering records use English and stay in this repository.
 
 - [Native Crush](notes/proposed/feature/2026-10-20-crush-runtime.md) · [verification](evidence/verify/2026-10-20-crush-runtime.md)
 
+- [Complete platform-step acceptance](notes/proposed/process/2026-10-20-complete-platform-steps.md) · [verification](evidence/verify/2026-10-20-complete-platform-steps.md)
+
 ## Layout and lifecycle
 
 - `notes/proposed/<architecture|feature|process>/YYYY-MM-DD-<slug>.md`: pending decisions.
@@ -42,6 +44,11 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 - [Explicit OpenClaw proxy/SDK acceptance](notes/proposed/feature/2026-10-20-openclaw-explicit-proxy-sdk.md) · [verification](evidence/verify/2026-10-20-openclaw-explicit-proxy-sdk.md)
 
 - [OpenClaw native SDK final acceptance](evidence/verify/2026-10-20-openclaw-native-sdk-final.md)
+- [Step manifest receipt binding](notes/proposed/process/2026-10-20-step-manifest-receipt-binding.md) · [verification](evidence/verify/2026-10-20-step-manifest-receipt-binding.md)
+- [OSWorld required external SDK desktop](notes/proposed/process/2026-10-20-osworld-required-sdk-desktop.md) · [verification](evidence/verify/2026-10-20-osworld-required-sdk-desktop.md)
+
+
+- [OSWorld SDK desktop and current gateway final acceptance](evidence/verify/2026-10-20-osworld-sdk-desktop-final.md)
 
 - [Both native Agents CLI SDK adapters](notes/proposed/process/2026-10-20-agents-cli-both-native-sdk.md) · [verification](evidence/verify/2026-10-20-agents-cli-both-native-sdk.md)
 

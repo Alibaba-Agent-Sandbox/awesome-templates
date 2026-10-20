@@ -2,7 +2,7 @@
 
 ## What it does
 
-A real private Xvfb/Openbox/Chromium desktop with [OSWorld](https://github.com/xlang-ai/OSWorld) screenshots, Linux AT-SPI, native mouse/keyboard actions and private-clipboard Unicode paste and selected task evaluators. This is an independent Alibaba template. Full OSWorld benchmark execution, VM snapshots, Office and a model agent are outside this browser slice; [Issue 36](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/36) remains open.
+A real private Xvfb/Openbox/Chromium desktop with [OSWorld](https://github.com/xlang-ai/OSWorld) screenshots, Linux AT-SPI, native mouse/keyboard actions and private-clipboard Unicode paste and selected task evaluators. This is an independent Alibaba template. Full OSWorld benchmark execution, VM snapshots, Office and a model agent are outside this browser slice; [Issue 36](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/36) tracks delivery of this slice.
 
 ## Stack
 
@@ -117,7 +117,15 @@ Call `run_task_config` then `evaluate` with that file's `task_path`. Setup accep
 
 ## Verified
 
-Canonical deploy L2 has not passed; `tested_on` stays empty and the catalog remains experimental. The exact image from source `9a53b56` passed standalone non-root/network-disabled L1 and supplemental Express verification: SDK/HTTP/CLI each ran the full real GUI task and 4096-character Unicode readback; the external required-GUI suite passed 18 checks with no skips, followed by independent owned-resource absence and registry deletion checks. This used CI build plus official image registration; the complete local `abx template deploy`/canonical L2 runner was not executed. Full benchmark/model acceptance remains unverified. See [final image/cloud evidence](../.agents/evidence/verify/2026-10-16-osworld-changed-image.md); earlier native/image failures remain historical.
+Current1.0.0 passed canonical Alibaba Express native-step deployment with real Python SDK Sandbox.create, official READY and CLI/SDK native desktop smoke. The unchanged external required-desktop controller passed **18PASS/0FAIL/0SKIP**: fresh uploaded HTML/task, score0baseline, independently decoded real1024x768PNG, click/Unicode paste/hotkey/click, actual AT-SPI state, upstream score1 and changed pixels, followed by desktop/task cleanup. Owned sandbox/template and exact temporary private official-asset objects/bucket absence were independently confirmed.
+
+| Version | Provider | Current evidence |
+| --- | --- | --- |
+| 1.0.0 | alicloud-express | [SDK-created canonical steps](evidence/express-2026-10-20T170423Z.json), [external desktop18 and private-cache cleanup](evidence/verification-steps-2026-10-20T170423Z.json) |
+
+Actual native L1 build39462497032 also passed non-root image smoke. The catalogue remains experimental; this is the declared Linux browser slice, without full VM/benchmark/model-agent/VNC support. See [final engineering verification](../.agents/evidence/verify/2026-10-20-osworld-sdk-desktop-final.md).
+
+Historical scope:  The exact image from source `9a53b56` passed standalone non-root/network-disabled L1 and supplemental Express verification: SDK/HTTP/CLI each ran the full real GUI task and 4096-character Unicode readback; the external required-GUI suite passed 18 checks with no skips, followed by independent owned-resource absence and registry deletion checks. This used CI build plus official image registration; the complete local `abx template deploy`/canonical L2 runner was not executed. Full benchmark/model acceptance remains unverified. See [final image/cloud evidence](../.agents/evidence/verify/2026-10-16-osworld-changed-image.md); earlier native/image failures remain historical.
 
 ## Secondary development
 
@@ -148,3 +156,11 @@ Apache-2.0. The original OSWorld files, full [upstream license](upstream/LICENSE
 The 1024×768 PNG/Xvfb screen and the browser page viewport are separate measurements. Browser initialization requires a visible, nonzero viewport; it does not resize/emulate a page to force screen equality. `desktop_start` and `run_task_config` return `browser_geometry` with numeric screen, outer-window, viewport and content-offset fields. The disposable smoke prints only these numeric fields for image diagnostics. Native click coordinates remain screen coordinates. The smoke uses the actual content offset and DOM rectangle, and still requires real input, upstream score 0→1, changed PNG pixels and complete 4096-character destination readback. See the [viewport follow-up](../.agents/evidence/verify/2026-10-16-osworld-viewport.md).
 
 For CLI setup, SDK installation, HTTP authentication and resource ownership, see [Using templates](../docs/using-templates.md).
+
+### Current platform-step acceptance
+
+[Current-version genuine steps](evidence/express-2026-10-20.json) and [basic external HTTP result](evidence/verification-steps-2026-10-20T151021Z.json): official READY, actual Python SDK creation, CLI/SDK smoke and 6 PASS / 0 FAIL / 1 GUI SKIP; 346.984 seconds. Independent owned sandbox/template and private asset-cache cleanup passed. Earlier failed step attempts remain historical failures; this receipt is model-free and does not extend prior image/model scope.
+
+The skipped case was the external desktop tier, not a model case. The internal named desktop smoke passed separately. Full external desktop acceptance requires both desktop opt-ins and all18 checks without skips; the following genuine SDK-created run completes that tier.
+
+[Current required external desktop result](evidence/verification-steps-2026-10-20T171144Z.json) and [canonical CLI/SDK receipt](evidence/express-2026-10-20T171144Z.json):18 PASS/0 FAIL/0 SKIP in274.783seconds, actual SDK-created native steps. The original external controller verified real PNG/input/Unicode/hotkey/AT-SPI/upstream score0→1 and changed pixels, followed by desktop/task cleanup and independent sandbox/template/private-cache absence. Both required desktop flags are recorded. This completes the external browser-slice tier; no full benchmark/model/VM-reset capability is inferred.

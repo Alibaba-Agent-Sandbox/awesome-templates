@@ -1,0 +1,51 @@
+{
+  "template": "goose",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T132852Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "goose",
+    "materializer_sha256": "9c939e8a5183415bc90e33f18e04d907b73aecc5f5ea099ea86ffb3caa69b574",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "ca3118e5123e7ce2ae2e43e2a8a05c88ecf3653d",
+    "asset_transport": "parallel",
+    "steps_json_bytes": 9750,
+    "inputs_sha256": {
+      "Dockerfile": "e86cbe8f187238c7aaad8668475e7ea96f937c7fee42c35509d29103478eba26",
+      "template.yaml": "17477ef73ded2bac8e36cbfa34f1f5bd5676c8eb275c15e1f34364ae23f48b79",
+      "install_runtime.py": "351972f9fd2e848de5d63190c3049a6549e024f8765cf225fec42a37c081ebbc",
+      "assets.json": "4bc24da92969ed4515c050928f9f20415bbbc72d2146364e2e85d7ab5ae27092",
+      "upstream-LICENSE": "44459b86c2e96fdbfd8a6b5c33d30d4b04b5293fcb2ec96fe4dcc4e0f90b8962",
+      "commands.py": "5d8bcd6750916790d79e244b1f7365f5b9decef3d9598cc175ee1a266daf183e"
+    },
+    "asset_transport_sha256": "522eca8118c17d44341142e752dccd65f37d5e8a0817906b24e1649a8f5d5a8e",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://github.com/block/goose/releases/download/v1.54.0/goose-x86_64-unknown-linux-gnu.tar.bz2",
+          "bytes": 80909320,
+          "sha256": "bf01cb6359f7a2b1acb54ca4827e1d059b18aabb3d2b75202e21066cfd3a3396"
+        }
+      ],
+      "aarch64": [
+        {
+          "url": "https://github.com/block/goose/releases/download/v1.54.0/goose-aarch64-unknown-linux-gnu.tar.bz2",
+          "bytes": 81645843,
+          "sha256": "8c7ad233bdaf05f10a52ef36f3ce50f839cb1d2d1df5b31b172af7150c1c288e"
+        }
+      ]
+    },
+    "generated_manifest_sha256": "07d4955048023685cf32c498b5ab95af2e5a93694f60b4cf3f86c2feba44669b"
+  },
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "duration_s": 957.712
+}

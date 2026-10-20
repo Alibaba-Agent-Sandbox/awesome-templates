@@ -115,7 +115,15 @@ JSON body 直接放参数，成功返回 `{"result": ...}`。未设置的认证�
 
 ## 已验证
 
-规范的 deploy L2 尚未通过；`tested_on` 保持空、catalog 仍为 experimental。源码 `9a53b56` 的确切镜像已实际通过非 root、禁网络 L1 和补充 Express 验证：SDK/HTTP/CLI 三端各自执行完整真实 GUI 任务及 4096 Unicode 全文读回；外部 required-GUI 验收为 18 PASS、0 FAIL、0 SKIP，随后独立核实 owned 资源消失及 registry 删除。该路径使用 CI 构建和官方镜像注册，没有执行完整本地 `abx template deploy` 或规范 L2 runner；不宣称完整 benchmark/model 通过。参见[最终镜像/云验证](../.agents/evidence/verify/2026-10-16-osworld-changed-image.md)，先前 native/image 失败记录保留为历史。
+当前1.0.0已通过规范的阿里云极速版原生 steps 部署、真实 Python SDK Sandbox.create、官方 READY 及 CLI/SDK 原生桌面冒烟。未改动的外部 required-desktop 控制器完成 **18通过/0失败/0跳过**：上传新 HTML/任务、基线得分0、独立解码真实1024x768PNG、鼠标/Unicode粘贴/快捷键/点击、真实 AT-SPI 状态、上游评分1和像素变化，随后清理桌面/任务文件。自有 sandbox、模板以及临时私有官方资产对象/桶均独立确认不存在。
+
+| 版本 | 提供方 | 当前证据 |
+| --- | --- | --- |
+| 1.0.0 | alicloud-express | [SDK创建的规范 steps](evidence/express-2026-10-20T170423Z.json)、[外部桌面18及私有缓存清理](evidence/verification-steps-2026-10-20T170423Z.json) |
+
+实际原生 L1 镜像构建39462497032也通过非 root 冒烟。目录保留 experimental，仅为明确的 Linux 浏览器子集，不包括完整 VM、benchmark、模型 Agent 或 VNC。见[最终工程记录](../.agents/evidence/verify/2026-10-20-osworld-sdk-desktop-final.md)。
+
+历史范围：源码 `9a53b56` 的确切镜像已实际通过非 root、禁网络 L1 和补充 Express 验证：SDK/HTTP/CLI 三端各自执行完整真实 GUI 任务及 4096 Unicode 全文读回；外部 required-GUI 验收为 18 PASS、0 FAIL、0 SKIP，随后独立核实 owned 资源消失及 registry 删除。该路径使用 CI 构建和官方镜像注册，没有执行完整本地 `abx template deploy` 或规范 L2 runner；不宣称完整 benchmark/model 通过。参见[最终镜像/云验证](../.agents/evidence/verify/2026-10-16-osworld-changed-image.md)，先前 native/image 失败记录保留为历史。
 
 ## 二次开发
 
@@ -148,3 +156,11 @@ Apache-2.0。保留原 OSWorld 文件、完整[上游许可证](upstream/LICENSE
 镜像显式将 `/home/user/app` 目录归属运行用户，使上传的任务文件和一次性 smoke fixture 可以在非 root 身份下写入；仅给 `COPY` 文件设置 owner 并不会自动修正 WORKDIR 本身。
 
 CLI 安装、SDK 源码安装、HTTP 认证与资源所有权见[模板使用指南](../docs/using-templates.zh-CN.md)。
+
+### 当前平台 step 验收
+
+[当前版本真实 step](evidence/express-2026-10-20.json)与[基础外部 HTTP 结果](evidence/verification-steps-2026-10-20T151021Z.json)已通过：官方 READY、真实 Python SDK 创建、CLI/SDK smoke，6 PASS / 0 FAIL / 1 GUI SKIP，耗时 346.984 秒。自有沙箱、模板及私有缓存已独立确认清理。早期失败保留为历史记录；本次未运行模型，不扩大已有镜像／模型验收范围。
+
+跳过的是外部桌面检查，并非模型检查；内部命名桌面 smoke 已单独通过。完整外部桌面验收必须启用两个桌面开关，18 项全部通过且无跳过，下述真实 SDK 创建复测已完成该层验收。
+
+[当前必选外部桌面结果](evidence/verification-steps-2026-10-20T171144Z.json)与[规范 CLI/SDK 回执](evidence/express-2026-10-20T171144Z.json)：真实 SDK 创建原生 steps，274.783 秒，18 PASS/0 FAIL/0 SKIP。原控制器验证真实 PNG、点击、Unicode 输入、快捷键、AT-SPI、上游评分0→1及像素变化，随后清理桌面和任务文件，并独立确认沙箱、模板、私有缓存均不存在。两个桌面必选开关均已记录；本次完成浏览器切片的外部桌面层，不扩大到完整 benchmark、模型或 VM 重置能力。

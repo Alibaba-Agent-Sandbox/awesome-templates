@@ -126,3 +126,7 @@ psql使用 -X、ON_ERROR_STOP；redis-cli使用 -e 将协议错误作为失败�
 ## 许可证
 
 包装源码Apache-2.0，见[LICENSE](../LICENSE)。PostgreSQL为PostgreSQL License，Redis8可选择AGPLv3许可，不能描述成旧版Redis的BSD协议。保留安装的Debian版权及源码引用；分发或修改时遵循上游及传递依赖条款。
+
+### 当前版本新增平台 step 验收
+
+[真实原生 step](evidence/express-2026-10-20T130648Z.json)：官方 READY、Python SDK 创建、当前 CLI/SDK 冒烟，以及独立确认所拥有沙箱/模板已清理。[完整外部 HTTP](evidence/full-http-steps-2026-10-20T130648Z.json)：6 通过、0 失败、0 跳过。

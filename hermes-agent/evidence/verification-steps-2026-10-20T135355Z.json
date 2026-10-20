@@ -1,0 +1,64 @@
+{
+  "template": "hermes-agent",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T135355Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "hermes-agent",
+    "materializer_sha256": "01283af65ba690502c82c47a8cdf656bc7a9eb9d68af5022959e33dee5bf7c07",
+    "template_version": "1.1.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "ca3118e5123e7ce2ae2e43e2a8a05c88ecf3653d",
+    "asset_transport": "oss",
+    "steps_json_bytes": 11953,
+    "inputs_sha256": {
+      "Dockerfile": "42e3c3987020f5e63d823f35a21a7f57a9ede36042642694f59b207dcf00c23b",
+      "template.yaml": "45fa20dc9c5cc530bc9b4c91d7e5e6d9e3a8de1724abcc85402563228651f97b",
+      "commands.py": "d849006ecdb653c53c474ccd687b592741437034a505b391c5b80cb6be49333c"
+    },
+    "asset_transport_sha256": "251bb5d203eab97755d94a02561f378b318f71d6e00e4302e43ded97b481daaa",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20260804/cpython-3.14.6%2B20260804-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
+          "sha256": "ba960817e542642021135db330d875f410f4e14c64a62e2ae5faf3697ada08b2",
+          "mirror_path": "20260804/cpython-3.14.6+20260804-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
+        }
+      ],
+      "aarch64": [
+        {
+          "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20260804/cpython-3.14.6%2B20260804-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz",
+          "sha256": "8ad1ec529cd1708245e8661a463245fc1479c43cbfd66e58b095456ebf77180a",
+          "mirror_path": "20260804/cpython-3.14.6+20260804-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz"
+        }
+      ]
+    },
+    "asset_cache_architecture": "x86_64",
+    "python_download_profile": "uv0.12.3 generic GNU architecture; original Python3.14.6 pin, local verified official-archive mirror and bounded original compound-RUN phases",
+    "generated_manifest_sha256": "1b8b80c6f222fca851708de50181d8371182f47c534227d014186eb43f8a7822"
+  },
+  "cleanup_verified": true,
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "asset_cache": {
+    "provider": "alicloud-oss",
+    "private_acl_verified": true,
+    "archives": [
+      {
+        "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20260804/cpython-3.14.6%2B20260804-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
+        "sha256": "ba960817e542642021135db330d875f410f4e14c64a62e2ae5faf3697ada08b2",
+        "size": 35843409
+      }
+    ],
+    "signed_get_ttl_seconds": 3600,
+    "cleanup_verified": true
+  },
+  "duration_s": 1880.421
+}

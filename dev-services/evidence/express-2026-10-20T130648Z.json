@@ -1,0 +1,62 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-20",
+  "template": "dev-services",
+  "template_version": "1.1.0",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "steps",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "harness_sha256": "91592778b24797075915b40f31f219f6517526b17cd2b3a75fe777f73fe6afd6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "services_versions",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 2.807,
+      "result": "{'postgres': '17.11', 'redis': '8.0.2'}"
+    },
+    {
+      "name": "services_versions",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 10.848,
+      "result": "{'postgres': '17.11', 'redis': '8.0.2'}"
+    },
+    {
+      "name": "services_self_test",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 2.403,
+      "result": "POSTGRES_REDIS_OK"
+    },
+    {
+      "name": "services_self_test",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 2.036,
+      "result": "POSTGRES_REDIS_OK"
+    }
+  ],
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "dev-services",
+    "materializer_sha256": "743cf113087cb19d98ac8e8aae0656138853af84ed8a844b6af4a433382a0581",
+    "template_version": "1.1.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "ca3118e5123e7ce2ae2e43e2a8a05c88ecf3653d",
+    "steps_json_bytes": 4219,
+    "inputs_sha256": {
+      "Dockerfile": "a89b1fa487e95aed9e3fdadeb3ff964faeea346b497b9dbaecf41e6f600e192d",
+      "template.yaml": "98260950b4e6a596ab552c4bc04c4c28e27e0aaefdfd16790893a4f29d536494",
+      "commands.py": "de4fe2ff4f2c00c05013586bb7025ffc11122f37faa41467f8a1ccb04accb743",
+      "lifecycle.py": "33741ef7d32255925fea985fb1101fd39388594ff20a7300c4724d2374e65eff"
+    },
+    "generated_manifest_sha256": "e2f7f69ddc87d16938f0470f36d7c8f3528bdbee53889d3d87c39a1a0d11f96f"
+  }
+}

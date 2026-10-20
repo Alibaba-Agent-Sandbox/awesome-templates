@@ -1,0 +1,50 @@
+{
+  "template": "code-server",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T133124Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "code-server",
+    "materializer_sha256": "9c939e8a5183415bc90e33f18e04d907b73aecc5f5ea099ea86ffb3caa69b574",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "ca3118e5123e7ce2ae2e43e2a8a05c88ecf3653d",
+    "asset_transport": "parallel",
+    "steps_json_bytes": 9500,
+    "inputs_sha256": {
+      "Dockerfile": "2d9f84c23a81f6c92bbd800f08272fb756935d8dbc1960533391fcbe83098b45",
+      "template.yaml": "4342bf0a6c679e443d0d5b266aa5a0c63d498a9efdf44d71c5ebcd072269f0f9",
+      "install_runtime.py": "a2ce94dd992c2fe20f8d945f279b433eba1e48c152f062f92385c77a2267fe90",
+      "assets.json": "8bf7ed8f384e3a70e2423098a38dedf721ee660782d0b348ade39634593191a2",
+      "commands.py": "2deeabd3a697c3ba6d5f41a4b42c17c298f72bb5441cde5487701ce923d462a0"
+    },
+    "asset_transport_sha256": "522eca8118c17d44341142e752dccd65f37d5e8a0817906b24e1649a8f5d5a8e",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://github.com/coder/code-server/releases/download/v4.141.0/code-server-4.141.0-linux-amd64.tar.gz",
+          "size": 239926515,
+          "sha256": "65bcd20b524d03eb1b5adb7f360244599ef0e5b74089a46a982d32c074b97a29"
+        }
+      ],
+      "aarch64": [
+        {
+          "url": "https://github.com/coder/code-server/releases/download/v4.141.0/code-server-4.141.0-linux-arm64.tar.gz",
+          "size": 234587826,
+          "sha256": "e5cc78da1d631c6cf6162f9b18eeaa8ee9d3239e1a88bb99d0602cdc5fa1852d"
+        }
+      ]
+    },
+    "generated_manifest_sha256": "39d8b7c288e5ff74b710c3a9865477e1dc2355df6f1503cef622a6b82586e89e"
+  },
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "duration_s": 687.507
+}

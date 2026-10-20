@@ -1,0 +1,46 @@
+{
+  "template": "aider",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T133121Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "aider",
+    "materializer_sha256": "9c939e8a5183415bc90e33f18e04d907b73aecc5f5ea099ea86ffb3caa69b574",
+    "template_version": "1.0.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "ca3118e5123e7ce2ae2e43e2a8a05c88ecf3653d",
+    "asset_transport": "parallel",
+    "steps_json_bytes": 9361,
+    "inputs_sha256": {
+      "Dockerfile": "c04473d7181d397e0a5ed19902e10b6abaf59a6765017f36833fdd98f0b1ea7f",
+      "template.yaml": "3843dae59d3f03e12f42ba23d00d9749345ebcc62aa2632e5a1fd251f163fbb1",
+      "commands.py": "bc11b5eda480d25554ae2ee61ace873eaf978cdaa3bcc67ad808c88749019684"
+    },
+    "asset_transport_sha256": "522eca8118c17d44341142e752dccd65f37d5e8a0817906b24e1649a8f5d5a8e",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20260211/cpython-3.12.12+20260211-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
+          "sha256": "1dbaa624a09e15afe7efbdac08d42993135a68db8d34f986ef6977a6d77bdc3c"
+        }
+      ],
+      "aarch64": [
+        {
+          "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20260211/cpython-3.12.12+20260211-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz",
+          "sha256": "85fdc64fe672de7337198a63d89918037bf93bdb03480404d90f8f601abef1dd"
+        }
+      ]
+    },
+    "generated_manifest_sha256": "c2825a82dc96c344888dc484811793ca0dd00e270e0315a13085c26cfdd1ac78"
+  },
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "duration_s": 1218.096
+}

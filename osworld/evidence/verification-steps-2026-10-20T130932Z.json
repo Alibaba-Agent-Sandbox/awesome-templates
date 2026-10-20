@@ -1,0 +1,39 @@
+{
+  "template": "osworld",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T130932Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "osworld",
+    "materializer_sha256": "743cf113087cb19d98ac8e8aae0656138853af84ed8a844b6af4a433382a0581",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "ca3118e5123e7ce2ae2e43e2a8a05c88ecf3653d",
+    "steps_json_bytes": 8607,
+    "inputs_sha256": {
+      "Dockerfile": "633bcf37d2757675d8f46c6993acb8e6512b30d529b533d5a21d935d9f835123",
+      "template.yaml": "4b9fd8e87ef87d5901a3068f3d8abfc98d4381d53b402fd3f28276c059f2dbe5",
+      "requirements.txt": "fd84ae81836222430641fbfb510b5678476cb61ade21c8cd064f8fc185e435eb",
+      "upstream/.gitattributes": "4cfb1277503d26a1eab817f1bb92376ca23e80a0bf4852f5463ed9b09ed8c972",
+      "upstream/LICENSE": "a8d1d88a0f9cce3cdbff73b03a80dc5e5d69e3ba2443946c268815a550c9e0ec",
+      "upstream/getters_misc.py": "573fa6bf7ab627a1f69f7696efe41759c5d06e3109269b0e999bfc703620bb10",
+      "upstream/main.py": "3034c869ca18dd3da5e870c66bdd7d68596501938ff69f7bc3265b79b760d3ba",
+      "upstream/metrics_general.py": "22cafba4a4b49a2c478a6266cfd98c6eb54e1bad4691d243b5113ba8896e41d7",
+      "upstream/pyxcursor.py": "87d09a465bf87c3766ac3b8584f80c3288890e874b45d9a56b811b0a4268e840",
+      "upstream/source.json": "727433e414239a0f6f738f2288e94c65f8b5609e82837611d534037fb35f5475",
+      "commands.py": "22f7814416e0dc52cb0c0b04deae8323467a785db6601d8b36603abcb396a78d",
+      "runtime.py": "a74944f97f6f3ee48057190dccbe2d2aee49305679f50c3a283bdd4ccf03bc55"
+    },
+    "generated_manifest_sha256": "8787ba191630a730e773c68a85f88a179282e5f0566e6048375b1f96c09026b1"
+  },
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "duration_s": 1229.089
+}

@@ -385,11 +385,22 @@ def opencode_version() -> str:
 @command("opencode_setup_check", description="Check the opencode binary and DashScope config.")
 def opencode_setup_check() -> str:
     """Return ``ok`` when the pin and ``opencode.json`` match this template."""
+    _check_state_permissions()
     found = _version_text()
     if found != PINNED_VERSION:
         raise RuntimeError(f"opencode version does not match pin {PINNED_VERSION}")
     _assert_dashscope(_load_config(_config_file()))
     return "ok"
+
+
+def _check_state_permissions() -> None:
+    """Inspect native writable state without creating or reading its contents."""
+    data = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local" / "share") / "opencode"
+    for target in (data / "log", data / "log" / "opencode.log"):
+        while not target.exists():
+            target = target.parent
+        if not os.access(target, os.W_OK):
+            raise RuntimeError("OpenCode data/log state is not writable by the runtime user; rebuild with corrected ownership")
 
 
 @command("opencode_serve_start", description="Start opencode serve and wait until it is healthy.")

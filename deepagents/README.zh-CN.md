@@ -136,3 +136,7 @@ python -m venv <new-prefix>后，用<new-prefix>/bin/python -m pip install --req
 ## 许可证
 
 封装代码为[Apache-2.0](../LICENSE)。DeepAgents及langchain-openai为MIT，保留[DeepAgents原许可](upstream-LICENSE)与[集成库原许可](langchain-openai-LICENSE)。其余哈希固定依赖按各自许可证保留pip安装声明，不能统一重标Apache-2.0。
+
+### 当前平台 step 验收
+
+后续[当前版本真实 step 回执](evidence/express-2026-10-20T141151Z.json)及[完整外部 HTTP 结果](evidence/verification-steps-2026-10-20T141151Z.json)已通过：官方 READY、真实 Python SDK 创建和 CLI/SDK smoke，耗时 586.639 秒；9 HTTP PASS / 0 FAIL / 1 explicit model SKIP。自有沙箱、模板和临时私有缓存已独立确认清理。此前失败记录保留；本次未运行模型，既有镜像／模型回执保持原范围。

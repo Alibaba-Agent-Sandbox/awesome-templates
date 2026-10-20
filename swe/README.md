@@ -166,3 +166,7 @@ Run `python -m pytest -q swe/test_commands.py swe/test_e2e_protocol.py`, `python
 Wrapper Apache-2.0. mini-swe-agent 2.4.6 is MIT; Flask is BSD-3-Clause. SWE-bench Verified metadata/test patch follows the dataset's MIT license. Bundled CPython retains its distribution license files. Provenance and upstream license links are in [NOTICE](./NOTICE.md); upstream source archives retain their own license files.
 
 For CLI setup, SDK installation, HTTP authentication and resource ownership, see [Using templates](../docs/using-templates.md).
+
+### Current platform-step acceptance
+
+The later [current-version real step receipt](evidence/express-2026-10-20T143844Z.json) and [full external HTTP result](evidence/verification-steps-2026-10-20T143844Z.json) supersede the earlier failed step attempt for current readiness: official READY, actual Python SDK creation, CLI/SDK smoke and 5 HTTP PASS / 0 FAIL / 1 explicit model SKIP passed in 1090.426 seconds. Independent owned sandbox/template and temporary private asset-cache cleanup passed. This step receipt is model-free; earlier image/model receipts keep their own scope.

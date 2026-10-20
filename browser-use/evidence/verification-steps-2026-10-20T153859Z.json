@@ -1,0 +1,96 @@
+{
+  "template": "browser-use",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T153859Z",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "browser-use",
+    "materializer_sha256": "2bb0f49392e4b4dfd4e9e15738fa2539f7ed7014f41b1985bf713852623270d6",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "01528c61cd37b4505dee60524cd6bed12e24d51f",
+    "asset_transport": "oss",
+    "steps_json_bytes": 12072,
+    "inputs_sha256": {
+      "Dockerfile": "f68d3abb2aaca77cfc0d8b8e01512dc23b772366daa6b30c6fe499b12cf85f4f",
+      "template.yaml": "39b454d4a152a013af5e241bdb7ad1ed151e70255bc7007dc031c9abeabcf3fa",
+      "requirements.lock": "eab344f68905d35c1e24a2bdda0a908596b0c8a13ecdb9e04cfad8441a736304",
+      "commands.py": "167e60a89161d4116c0167f0ccc46979635746fcc9f024a1af8cf46ca304e282",
+      "worker.py": "084b9fd1f51c64ef533f2afcdf15bd1cf6120d729a2c73695f02b7109f7991f6",
+      "process.py": "41c34a391fb159ecde1d56f80451c684a4ee55a450acbcb6d9fb3762f01d86e5",
+      "lifecycle.py": "9e10da8d450e0c6ec1aa16cc0c07ba81684608bfb6c3a708213bd88d293c81ea"
+    },
+    "asset_transport_sha256": "83f20ec571a29225637ddac11fce7fd86f29146b24622b43e326c6934f8594e3",
+    "asset_adapter_source_commit": "01528c61cd37b4505dee60524cd6bed12e24d51f",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://files.pythonhosted.org/packages/8d/c4/97fdd4fca11d06633bb500849f70e4e6b201bcba3833894732e709be2d60/uv-0.12.3-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "filename": "uv-0.12.3-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "sha256": "1482d1462b1aecd18ee33627363fe1c63d6a194f12d40d37efc446d9e0d800a1",
+          "size": 22346263
+        },
+        {
+          "url": "https://cdn.playwright.dev/chrome-for-testing-public/145.0.7632.6/linux64/chrome-linux64.zip",
+          "sha256": "b5e3195041af345a668d110f5daf5581961fa3608626ea588c97dd0fe81c4e38",
+          "size": 175440843,
+          "playwright_path": "145.0.7632.6/linux64/chrome-linux64.zip",
+          "digest_basis": "controller measured from the official pinned Playwright1.58.0 installer URL; not an upstream-published SHA256"
+        },
+        {
+          "url": "https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-linux.zip",
+          "sha256": "ebc74fc5b94830176a3c2914ae96bd8bc7f6a91f4f33890230f84a172ee61ccc",
+          "size": 2376500,
+          "playwright_path": "builds/ffmpeg/1011/ffmpeg-linux.zip",
+          "digest_basis": "controller measured from the official pinned Playwright1.58.0 installer URL; not an upstream-published SHA256"
+        }
+      ]
+    },
+    "asset_cache_architecture": "x86_64",
+    "python_package_transport": "temporary uv0.12.3 installer; original package pins/requirements, retaining --require-hashes where declared; separate original compound-RUN phases; removed before runtime",
+    "generated_manifest_sha256": "a79404d7f13cdab1a933d7454c09fe104d09f0bbcc76d7aace53f68923b770a0"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 11,
+    "fail_count": 0,
+    "skip_count": 1,
+    "controller_sha256": "ef8fe59f3c1694ae324e4b7bf29da456fa34e8684286f34956848267073e7376"
+  },
+  "cleanup_verified": true,
+  "exit_code": 0,
+  "receipt": "browser-use/evidence/express-2026-10-20T153859Z.json",
+  "command_calls": 4,
+  "asset_cache": {
+    "service": "Alibaba Cloud OSS",
+    "private_acl_verified": true,
+    "archives": [
+      {
+        "url": "https://files.pythonhosted.org/packages/8d/c4/97fdd4fca11d06633bb500849f70e4e6b201bcba3833894732e709be2d60/uv-0.12.3-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+        "sha256": "1482d1462b1aecd18ee33627363fe1c63d6a194f12d40d37efc446d9e0d800a1",
+        "size": 22346263
+      },
+      {
+        "url": "https://cdn.playwright.dev/chrome-for-testing-public/145.0.7632.6/linux64/chrome-linux64.zip",
+        "sha256": "b5e3195041af345a668d110f5daf5581961fa3608626ea588c97dd0fe81c4e38",
+        "size": 175440843
+      },
+      {
+        "url": "https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-linux.zip",
+        "sha256": "ebc74fc5b94830176a3c2914ae96bd8bc7f6a91f4f33890230f84a172ee61ccc",
+        "size": 2376500
+      }
+    ],
+    "signed_get_ttl_seconds": 3600,
+    "cleanup_verified": true
+  },
+  "duration_s": 224.94
+}

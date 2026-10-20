@@ -1,0 +1,41 @@
+{
+  "template": "droid",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T155022Z",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "droid",
+    "materializer_sha256": "2bb0f49392e4b4dfd4e9e15738fa2539f7ed7014f41b1985bf713852623270d6",
+    "template_version": "1.1.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "asset_transport": "direct",
+    "steps_json_bytes": 8970,
+    "inputs_sha256": {
+      "Dockerfile": "064e08d89034d5dba4181812f75b4c2e7f9e660865c6e2a5052432ce80ad40b4",
+      "template.yaml": "195175f856898ddf6a0c1b1f30449865c4852885211c4616d0bfd2365378fb4a",
+      "commands.py": "b67e5b8ba50f1e2be6b3d094f806a112b4900999278e50535fb748aee0b66419"
+    },
+    "generated_manifest_sha256": "a0caded36979bd2264f06d5a5a0af09ed21f9dd30ffac1fdc34476fcb50834b9"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 9,
+    "fail_count": 0,
+    "skip_count": 0,
+    "controller_sha256": "1cf103b08e663b8c43fe42e82fbf30529a581b4854ef2332a1dd5f6337dec4e4"
+  },
+  "cleanup_verified": true,
+  "exit_code": 0,
+  "receipt": "droid/evidence/express-2026-10-20.json",
+  "command_calls": 2,
+  "duration_s": 141.283
+}

@@ -111,3 +111,7 @@ Response envelope: `{"result":{"stdout":"...","stderr":"","exit_code":0}}`.
 ## 许可证
 
 模板与 Codex：Apache-2.0。保留源码固定提交的 [upstream-LICENSE](upstream-LICENSE)，并保留官方 npm 原生包的元数据和通知。
+
+### 2026-10-20完整 step 检查点：模板1.0.0
+
+[真实对应版本 step](evidence/express-2026-10-20.json)及[完整外部 HTTP 控制器](evidence/verification-steps-2026-10-20T154625Z.json)通过：官方 READY、真实 Python SDK 创建、全部 CLI/SDK smoke，5 PASS/0 FAIL/0 SKIP；自有沙箱／模板均独立确认清理。本回执模型验收仍为 NOT_RUN，不改变旧镜像／模型范围。复现及精确服务端／控制器来源见[step 指南](../docs/platform-steps.zh-CN.md)。

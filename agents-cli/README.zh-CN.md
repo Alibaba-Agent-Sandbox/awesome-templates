@@ -263,3 +263,7 @@ CLI 部署：[agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sand
 ## 许可证
 
 Apache-2.0，见 [LICENSE](../LICENSE)。上游 CLI 保留各自许可证。
+
+### 2026-10-20完整 step 检查点：模板2.0.1
+
+[真实对应版本 step](evidence/express-2026-10-20.json)及[完整外部 HTTP 控制器](evidence/verification-steps-2026-10-20T154625Z.json)通过：官方 READY、真实 Python SDK 创建、全部 CLI/SDK smoke，18 PASS/0 FAIL/1 SKIP；自有沙箱／模板均独立确认清理。本回执模型验收仍为 NOT_RUN，不改变旧镜像／模型范围。复现及精确服务端／控制器来源见[step 指南](../docs/platform-steps.zh-CN.md)。

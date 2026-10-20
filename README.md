@@ -22,6 +22,8 @@ is recorded.
 
 ## Templates
 
+2026-10-20 Express platform-step checkpoint: **34/34 step and required full HTTP PASS** with real READY, CLI/SDK smoke and independent cleanup. [Auditable per-template matrix](.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json) · [operations and scope](docs/platform-steps.md) ([中文](docs/platform-steps.zh-CN.md)). Model and image acceptance remain separate.
+
 The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](docs/verification-2026-10-18.zh-CN.md)) records the historical23-template checkpoint and its unresolved gates. Current scoped receipts are linked below.
 
 | Template | Description | Status | Verified on |
@@ -40,12 +42,12 @@ The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](do
 | [kimi-code](./kimi-code/README.md) | Official Kimi Code 2.2.0 with private headless turns and explicit tool permission. | experimental | [alicloud-express (steps + model)](./kimi-code/evidence/express-2026-10-19.json) |
 | [hermes-agent](./hermes-agent/README.md) | NousResearch Hermes 0.22.1 with pinned upstream runtime, local file/terminal tools and bounded headless execution. | experimental | [alicloud-express (1.1.1 image, strict model)](./hermes-agent/evidence/express-2026-10-20.json) |
 | [node-web](./node-web/README.md) | Node.js web service runtime for Express, Fastify and other frameworks | experimental | [alicloud-express (1.1.1 full HTTP)](./node-web/evidence/express-2026-10-19T183324Z.json) |
-| [openclaw](./openclaw/README.md) | OpenClaw 2026.10.4 gateway with authenticated health, owned process lifecycle and Node.js 24.16.0. | experimental | 2.1pending; [2.0.1history](./openclaw/evidence/express-2026-10-19T183726Z.json) |
-| [opencode](./opencode/README.md) | OpenCode coding agent. Headless opencode run and optional opencode serve. Package opencode-ai@1.19.0. | experimental | [alicloud-express (2.0.1 SDK image, strict model28)](./opencode/evidence/express-2026-10-20.json) |
+| [openclaw](./openclaw/README.md) | OpenClaw 2026.10.4 gateway with authenticated health, owned process lifecycle and Node.js 24.16.0. | experimental | [alicloud-express (2.1 SDK image/steps + authenticated full HTTP)](./openclaw/evidence/express-2026-10-20T165241Z.json) |
+| [opencode](./opencode/README.md) | OpenCode coding agent. Headless opencode run and optional opencode serve. Package opencode-ai@1.19.0. | experimental | [alicloud-express (2.0.2 steps, full HTTP15)](./opencode/evidence/express-2026-10-20T160725Z.json) |
 | [amp](./amp/README.md) | Sourcegraph Amp CLI. amp_execute runs amp -x; amp_version and amp_setup_check do not need a key. | experimental | [alicloud-express (steps smoke)](./amp/evidence/express-2026-10-19.json) |
 | [droid](./droid/README.md) | Factory Droid. Command droid exec. Package @factory/cli@0.241.1. | experimental | [alicloud-express (1.1.1 steps smoke)](./droid/evidence/express-2026-10-19T183451Z.json) |
 | [gemini](./gemini/README.md) | Gemini CLI. Command gemini -p. Package @google/gemini-cli@0.64.0. | experimental | [alicloud-express (2.0.1 steps smoke)](./gemini/evidence/express-2026-10-19T183608Z.json) |
-| [osworld](./osworld/README.md) | OSWorld Linux browser slice with real X11 input, screenshots, AT-SPI and selected task evaluators. | experimental | |
+| [osworld](./osworld/README.md) | OSWorld Linux browser slice with real X11 input, screenshots, AT-SPI and selected task evaluators. | experimental |[alicloud-express1.0 SDK steps/desktop18](./osworld/evidence/express-2026-10-20T170423Z.json) |
 | [pi](./pi/README.md) | Official Pi CLI 1.3.0 with ephemeral compatible-model settings and explicit writable tools. | experimental | [alicloud-express (1.0.1 image, strict model)](./pi/evidence/express-2026-10-20.json) |
 | [ocr](./ocr/README.md) | CPU English image OCR with pinned Tesseract 5.5.0 and bounded private TXT/TSV artifacts. | experimental | [alicloud-express (1.0.1 image, full HTTP19)](./ocr/evidence/express-2026-10-20.json) |
 | [document-tools](./document-tools/README.md) | Markdown/HTML, DOCX, TXT, PPTX and headless Writer PDF. | experimental | [alicloud-express (1.1 SDK image/steps, full HTTP36)](./document-tools/evidence/express-2026-10-20.json) |
