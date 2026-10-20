@@ -199,9 +199,9 @@ curl --fail-with-body "$ABX_SERVER_URL/v1/agents/sessions/<id>/items?limit=100&o
 
 | Provider | Current version and scope | Evidence |
 | --- | --- | --- |
-| alicloud-express | 2.0.1; steps构建、官方READY、CLI/SDK基础冒烟、独立清理；当前版本真实模型尚未执行 | [2026-10-19](evidence/express-2026-10-19T183102Z.json) |
+| alicloud-express | 2.0.1；原生 steps → READY → Python SDK 创建；CLI/SDK 冒烟；Qwen Code 与 Codex 分别完成真实编码；独立清理回查 | [2026-10-20](evidence/express-2026-10-20T175429Z.json)、[双模型记录](evidence/two-native-sdk-steps-2026-10-20T175429Z.json) |
 
-新版本的目录归属已在真实生成步骤中验证。旧版本回执保持历史范围；基础冒烟不能推断完整模型验收。
+当前源码 `5343a671` 使用两个全新自有 SDK 沙箱，分别通过 [Qwen Code](evidence/native-sdk-qwen-code-2026-10-20T175150Z.json) 和 [Codex](evidence/native-sdk-codex-2026-10-20T175150Z.json) 原生编码验收：修复已有源码、保持原测试不变、生成精确 JSON 产物与报告，通过原始及生成测试、六个独立用例和执行后随机 ACK。原有 HTTP 限制策略保持生效；两个模型沙箱及外层模板／沙箱均已独立确认不存在。Codex 使用显式私有 HTTP Responses 配置、关闭 websockets，仅引用密钥环境变量，不写入密钥值。首轮 Codex 超时仍保留为失败，未认定其具体根因。模型为授权兼容端点上的 `qwen3.8-flash`；这里只验证本地原生适配器，不代表托管 Agents 服务或其他提供方。
 
 ## 历史验收
 
