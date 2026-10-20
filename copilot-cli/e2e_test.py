@@ -14,6 +14,7 @@ from urllib.parse import urlsplit
 import httpx
 
 RESULTS=[]
+INVALID_REQUESTS=[{'prompt':''},{'prompt':'x','allow_write':'not-a-boolean'},{'prompt':'x','command_timeout':601},{'prompt':'x','cwd':'/outside-workspace'}]
 def record(ok,label):
     RESULTS.append(bool(ok));print(f"[{'PASS' if ok else 'FAIL'}] {label}",flush=True)
 
@@ -90,7 +91,7 @@ def main():
         r=client.post('/commands/copilot_version',json={})
         if r.status_code!=200 and os.environ.get('E2E_REQUIRE_CLI')!='1':print('[SKIP] native CLI absent in source-only local environment',flush=True)
         else:record(r.status_code==200 and r.json().get('result')=={'native_version':'1.0.100'},'actual pinned native version')
-        for args in [{'prompt':''},{'prompt':'x','allow_write':'true'},{'prompt':'x','command_timeout':601},{'prompt':'x','cwd':'/outside-workspace'}]:
+        for args in INVALID_REQUESTS:
             r=client.post('/commands/copilot',json=args);record(r.status_code in [400,500],'invalid request rejected without native model call')
         model_check(client,workspace,base)
     print(f'SUMMARY {sum(RESULTS)} PASS, {len(RESULTS)-sum(RESULTS)} FAIL; model/native omissions stated separately',flush=True)

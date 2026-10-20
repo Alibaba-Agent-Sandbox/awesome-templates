@@ -93,6 +93,8 @@ HTTP200 返回 `{"result":{"stdout":"<native JSONL>","stderr":"","exit_code":0,"
 
 只读工具固定 view/glob/grep；显式写入增加 edit/create/apply_patch。--allow-all-tools 仅批准封闭列表中的工具，不批准全局路径或 URL；上游路径策略继续生效，这不是操作系统文件隔离。禁用自动更新、遥测、内置 MCP、自定义指令、实验/BASH_ENV、提问和远程导出。不支持恢复会话、插件、调用者 HOME、工作区信任选项和任意 CLI 参数。参数通过 argv 传入，prompt 始终是单一字面参数。JSONL 保留上游格式，不承诺稳定事件 schema；调用方必须处理 session.error 和非零退出。
 
+共享服务端布尔标量兼容 true/false/yes/no/1/0 字符串，便于 CLI 调用；非法布尔测试使用白名单以外的值。
+
 ## 配置
 
 | 名称 | 必需/默认 | 含义 |

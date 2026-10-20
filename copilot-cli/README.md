@@ -93,6 +93,8 @@ HTTP200 returns `{"result":{"stdout":"<native JSONL>","stderr":"","exit_code":0,
 
 Read-only tools are exactly view/glob/grep. Explicit editing adds edit/create/apply_patch. `--allow-all-tools` approves only this closed available-tools list; paths/URLs are not globally approved. The native default path policy remains; this is not an OS filesystem jail. Native invocation disables updates, telemetry, builtin MCP, custom instructions, experimental/BASH_ENV features, questions and remote export. No resume, plugins, caller HOME, repo trust opt-in or arbitrary CLI flags are accepted. Arguments use argv, including one literal prompt argument. JSONL is native output, not a promised stable wrapper event schema. Native `session.error` and nonzero exit must be handled by consumers.
 
+The shared server Boolean scalar also accepts true/false/yes/no/1/0 string forms for CLI compatibility; invalid Boolean tests use a value outside that whitelist.
+
 ## Configuration
 
 | Name | Required/default | Meaning |

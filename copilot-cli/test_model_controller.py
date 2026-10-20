@@ -10,3 +10,11 @@ def test_final_response_is_assistant_content_not_tool_or_prompt_echo():
 def test_real_model_controller_refuses_operator_local_target(monkeypatch):
     monkeypatch.setenv('E2E_RUN_LLM','1');monkeypatch.setenv('E2E_REMOTE_SANDBOX','1');c.RESULTS.clear()
     c.model_check(None,'/tmp','http://127.0.0.1:9000');assert c.RESULTS==[False]
+
+
+def test_invalid_wire_boolean_fixture_is_outside_server_supported_scalar_whitelist():
+    import pytest
+    from agent_sandbox.server._coerce import parse_scalar
+    assert parse_scalar("true","boolean") is True
+    invalid=next(body["allow_write"] for body in c.INVALID_REQUESTS if "allow_write" in body)
+    with pytest.raises(ValueError):parse_scalar(invalid,"boolean")
