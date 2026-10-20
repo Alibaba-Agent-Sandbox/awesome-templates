@@ -27,6 +27,7 @@ The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](do
 | Template | Description | Status | Verified on |
 |----------|-------------|--------|-------------|
 | [python-hello](./python-hello/README.md) | A minimal Python hello world template for testing | experimental | [alicloud-express (1.1.1 full HTTP)](./python-hello/evidence/express-2026-10-19T183219Z.json) |
+| [browser-use](./browser-use/README.md) | Native text-DOM browser agent with private Chromium | experimental | [alicloud-express (1.0.0 SDK image, real model)](./browser-use/evidence/express-2026-10-20.json) |
 | [browser-automation](./browser-automation/README.md) | Browser automation sandbox with Playwright + Chromium for web scraping and UI testing | experimental | [alicloud-express (SDK steps, PDF and HTTP37)](./browser-automation/evidence/express-2026-10-20T103410Z.json) |
 | [claude-code](./claude-code/README.md) | Claude Code Agent runtime — Anthropic Claude-powered AI coding assistant | experimental | [alicloud-express (1.1.1 steps smoke)](./claude-code/evidence/express-2026-10-19T183255Z.json) |
 | [codex](./codex/README.md) | OpenAI Codex CLI (@openai/codex@0.162.1). codex exec, JSON events, sandbox bypass, OpenAI-compatible config.toml. | experimental | [alicloud-express (steps smoke)](./codex/evidence/express-2026-10-19.json) |
@@ -39,7 +40,7 @@ The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](do
 | [hermes-agent](./hermes-agent/README.md) | NousResearch Hermes 0.22.1 with pinned upstream runtime, local file/terminal tools and bounded headless execution. | experimental | [alicloud-express (1.1.1 image, strict model)](./hermes-agent/evidence/express-2026-10-20.json) |
 | [node-web](./node-web/README.md) | Node.js web service runtime for Express, Fastify and other frameworks | experimental | [alicloud-express (1.1.1 full HTTP)](./node-web/evidence/express-2026-10-19T183324Z.json) |
 | [openclaw](./openclaw/README.md) | OpenClaw 2026.10.4 gateway with authenticated health, owned process lifecycle and Node.js 24.16.0. | experimental | 2.1pending; [2.0.1history](./openclaw/evidence/express-2026-10-19T183726Z.json) |
-| [opencode](./opencode/README.md) | OpenCode coding agent. Headless opencode run and optional opencode serve. Package opencode-ai@1.19.0. | experimental | [alicloud-express (2.0.1 steps smoke)](./opencode/evidence/express-2026-10-19T184023Z.json) |
+| [opencode](./opencode/README.md) | OpenCode coding agent. Headless opencode run and optional opencode serve. Package opencode-ai@1.19.0. | experimental | [alicloud-express (2.0.1 SDK image, strict model28)](./opencode/evidence/express-2026-10-20.json) |
 | [amp](./amp/README.md) | Sourcegraph Amp CLI. amp_execute runs amp -x; amp_version and amp_setup_check do not need a key. | experimental | [alicloud-express (steps smoke)](./amp/evidence/express-2026-10-19.json) |
 | [droid](./droid/README.md) | Factory Droid. Command droid exec. Package @factory/cli@0.241.1. | experimental | [alicloud-express (1.1.1 steps smoke)](./droid/evidence/express-2026-10-19T183451Z.json) |
 | [gemini](./gemini/README.md) | Gemini CLI. Command gemini -p. Package @google/gemini-cli@0.64.0. | experimental | [alicloud-express (2.0.1 steps smoke)](./gemini/evidence/express-2026-10-19T183608Z.json) |

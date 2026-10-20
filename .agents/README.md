@@ -82,6 +82,7 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Native apply_patch](notes/proposed/feature/2026-10-19-apply-patch-runtime.md) · [verification](evidence/verify/2026-10-19-apply-patch-runtime.md)
 
 - [Managed runtime catalog](notes/proposed/feature/2026-10-19-managed-template-catalog.md) · [verification](evidence/verify/2026-10-19-managed-template-catalog.md)
+- [Native browser-use](notes/proposed/feature/2026-10-20-browser-use-runtime.md) · [verification](evidence/verify/2026-10-20-browser-use-runtime.md)
 - [Bounded browser build](notes/proposed/process/2026-10-19-bounded-browser-build.md) · [verification](evidence/verify/2026-10-19-bounded-browser-build.md)
 
 - [Express steps checkpoint](evidence/verify/2026-10-19-steps-checkpoint-1555.md)
@@ -123,4 +124,6 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Three native SDK creation profiles](notes/proposed/process/2026-10-20-three-native-sdk-create.md) · [verification](evidence/verify/2026-10-20-three-native-sdk-create.md)
 
+- [BrowserUse final SDK/image/model acceptance](evidence/verify/2026-10-20-browser-use-final.md)
+- [Native coding SDK image acceptance](notes/proposed/process/2026-10-20-native-coding-sdk-acceptance.md) · [verification](evidence/verify/2026-10-20-native-coding-sdk-acceptance.md)
 - [Native Media argv and exact SDK source](notes/implemented/feature/2026-10-20-native-media-args.md) · [verification](evidence/verify/2026-10-20-native-media-args-final.md).

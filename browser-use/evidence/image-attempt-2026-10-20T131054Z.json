@@ -1,0 +1,53 @@
+{
+  "template": "browser-use",
+  "provider": "alicloud-express",
+  "build_mode": "image",
+  "verification_type": "ci-image-backed-external-http",
+  "passed": false,
+  "registry_cleanup_verified": true,
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "model_acceptance": "NOT_RUN",
+  "http_acceptance": {
+    "passed": true,
+    "exit_code": 0,
+    "pass_count": 11,
+    "fail_count": 0,
+    "skip_count": 1,
+    "verifier_sha256": "ef8fe59f3c1694ae324e4b7bf29da456fa34e8684286f34956848267073e7376"
+  },
+  "cleanup_verified": true,
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "browser-use",
+    "template_version": "1.0.0",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "d8425df37eddfb4e05bb562ec66de4817ab960f4",
+    "checkout_commit": "d8425df37eddfb4e05bb562ec66de4817ab960f4",
+    "workflow_run_id": "39425424471",
+    "artifact_id": "12266435815",
+    "archive_sha256": "52f6651de9f7969a198b70ee9fff4d273c795954f545ff371f25a5bec9dc6495",
+    "image_config_sha256": "f3b63ceef25daacb0faeb2beca6f62d59d885da83c2f08dd8e0fb3e578c2061c",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "f68d3abb2aaca77cfc0d8b8e01512dc23b772366daa6b30c6fe499b12cf85f4f",
+      "template.yaml:contract": "919095b52c4240f15fe7bc49f3de625b2611b1fd55961310d804bc66c1e8e1cc",
+      "requirements.lock": "eab344f68905d35c1e24a2bdda0a908596b0c8a13ecdb9e04cfad8441a736304",
+      "commands.py": "167e60a89161d4116c0167f0ccc46979635746fcc9f024a1af8cf46ca304e282",
+      "worker.py": "b341c7109297db0b658d0bde0240f01f70cadd3e20ff218fa419944851ea7d97",
+      "process.py": "41c34a391fb159ecde1d56f80451c684a4ee55a450acbcb6d9fb3762f01d86e5",
+      "lifecycle.py": "9e10da8d450e0c6ec1aa16cc0c07ba81684608bfb6c3a708213bd88d293c81ea"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:d9510b3f3daeef9d2bc4621d96f0f2c33903d79e03b373ef053d56c323fbcb5e",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "result": "FAIL"
+}
