@@ -42,7 +42,7 @@ jobs:
       - name: Install scoped test dependencies
         run: |
           python3 -m venv /tmp/document-venv
-          /tmp/document-venv/bin/pip install ./vendor/python-sdk/server-sdk ./vendor/python-sdk/client-sdk httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3
+          /tmp/document-venv/bin/pip install ./vendor/python-sdk/server-sdk ./vendor/python-sdk/client-sdk httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3 jsonschema==4.26.0
       - name: Verify actual document conversion, limits, SDK and external HTTP artifacts
         env:
           E2E_REQUIRE_DOCUMENT: "1"
@@ -78,7 +78,7 @@ jobs:
       - name: Install scoped test dependencies
         run: |
           python3 -m venv /tmp/media-venv
-          /tmp/media-venv/bin/pip install ./vendor/python-sdk/server-sdk ./vendor/python-sdk/client-sdk httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3
+          /tmp/media-venv/bin/pip install ./vendor/python-sdk/server-sdk ./vendor/python-sdk/client-sdk httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3 jsonschema==4.26.0
       - name: Verify real CPU codecs, limits, descendants and HTTP artifact bytes
         env:
           E2E_REQUIRE_MEDIA: "1"
@@ -118,7 +118,7 @@ jobs:
 
       - name: Install the in-sandbox server and the test client
         run: |
-          python -m pip install ./vendor/python-sdk/server-sdk httpx==0.28.1 pyyaml==6.0.3 pytest==9.1.1 playwright==1.58.0 Pillow==11.3.0
+          python -m pip install ./vendor/python-sdk/server-sdk httpx==0.28.1 pyyaml==6.0.3 jsonschema==4.26.0 pytest==9.1.1 playwright==1.58.0 Pillow==11.3.0
           python -m playwright install --with-deps chromium
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libnss3-tools
