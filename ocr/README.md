@@ -109,6 +109,7 @@ The last two settings support native diagnostics; they are not command parameter
 | Provider | Scope | Evidence |
 | --- | --- | --- |
 | alicloud-express | Version1.0.1 actual CI image, official READY, CLI/SDK, full HTTP19 PASS/0 SKIP and independent sandbox/template/registry cleanup | [2026-10-20](evidence/express-2026-10-20.json), [full run](evidence/image-http-2026-10-20T054627Z.json) |
+| alicloud-express | Version 1.0.1 genuine platform steps, official READY, CLI/SDK and full HTTP 19 PASS / 0 FAIL / 0 SKIP; independently confirmed sandbox/template cleanup | [step receipt](evidence/express-2026-10-20T061143Z.json), [full HTTP](evidence/full-http-steps-2026-10-20T061143Z.json) |
 
 The1vCPU/1024MB resource correction is formally versioned1.0.1 and independently
 verified at that exact contract. The controller checks random-digit pixels,
@@ -116,7 +117,7 @@ original input bytes, downloaded TXT/TSV contents/hashes/confidence/bounds, blan
 negative control and artifact deletion. Earlier1.0.0 candidate passes and failed
 attempts remain in the historical section below; none was relabeled. This run
 uses a verified CI image and real native image registration, not Dockerfile or
-platform-step deployment. The step preparation/attempt records remain separate.
+platform-step deployment. The separate passing step receipts above establish actual platform-step execution at the same version; earlier failed attempts remain history.
 
 
 ## Historical verification
@@ -137,7 +138,7 @@ The Linux runner keeps its process leader unreaped with `waitid(WNOWAIT)`, drain
 
 ### Agent Sandbox platform steps
 
-From a repository checkout, `python scripts/run_steps_e2e.py ocr` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+From a repository checkout, `python scripts/run_steps_e2e.py ocr --timeout 1200 --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). The public runner performs CLI/SDK fixture smoke. The separate full-HTTP controller also passed all 19 assertions after READY; see the [executed procedure](../.agents/evidence/verify/2026-10-20-ocr-step-acceptance.md). No model is required for this native OCR task.
 
 ## Contributing
 

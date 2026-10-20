@@ -129,6 +129,8 @@ quiet文本输出和提供方/模型，工具模式仅加载developer builtin。
 设置 `CONTEXT_FILE_NAMES=[]`、`--no-profile`，保留调用者状态。原生子进程仅接收
 PATH/可选CA与私有运行/模型设置，不继承云端、GitHub或命令server凭据。
 
+启动第二个服务时保留镜像 PATH；显式覆盖 PATH 时必须包含 `/opt/goose`。诊断只报告该服务进程实际可见的二进制。
+
 ## 资源
 
 2vCPU/2048MB，命令API9000，可显式另启9010；不依赖浏览器共享内存。安装器

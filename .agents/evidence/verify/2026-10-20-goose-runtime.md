@@ -33,3 +33,9 @@ templates plus skeleton PASS,129 document links PASS and all changed Python
 modules compile. Source HTTP used the same activated venv as the SDK. No runtime
 provider/model receipt exists yet; image and genuine step/model runs follow the
 exact published source. CI receives no cloud/model credentials.
+
+## Actual cloud attempts and controller correction
+
+FAIL: actual step build reached official error in the native asset installer: combined byte/deadline budget protection fired. The response does not distinguish which branch. Known template deletion and independent absence were confirmed; no sandbox/model run or READY is claimed. See the new template-local step attempt and sanitized diagnosis.
+
+FAIL: actual verified-image registration and primary CLI/SDK version smoke succeeded, but the strict-model helper replaced PATH without /opt/goose, so its secondary server could not find the installed CLI. The helper now preserves that directory. Review also found the copied controller expected a string, while the documented native Goose command returns stdout/stderr/exit_code. A real controller-flow synthetic response regression first failed for correct structured success and wrongly accepted a legacy string. The corrected controller requires typed stdout/stderr and exact integer exit0, rejects nonzero/boolean/string results, and retains all independent file/original-test/held-out gates. Four focused regression cases PASS. Runtime/Docker/manifest/assets are unchanged; only a separately recorded controller rerun on the same verified image can establish model acceptance. All owned sandbox/template/registry cleanup for the failed image attempt was independently confirmed. Historical failure receipts remain immutable.

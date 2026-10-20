@@ -144,12 +144,15 @@ def coding(client: httpx.Client, setup: dict | None = None) -> None:
                   "The controller runs independent Python tests after your edits. Perform the file edits, do not just describe them.")
         payload = {"prompt": prompt, "cwd": project, "command_timeout": COMMAND_TIMEOUT, "allow_tools": True}
         response = client.post("/commands/goose", json=payload, timeout=COMMAND_TIMEOUT + 30)
-        ok = response.status_code == 200 and isinstance(response.json().get("result"), str)
+        execution = response.json().get("result")
+        ok = (response.status_code == 200 and isinstance(execution, dict)
+              and type(execution.get("exit_code")) is int and execution["exit_code"] == 0
+              and isinstance(execution.get("stdout"), str) and isinstance(execution.get("stderr"), str))
         error = str(response.json().get("error", "")).lower() if not ok else ""
         failure = ("deadline exceeded" if "timed out" in error else
                    "provider request failed" if "request failed" in error else "execution failed")
         record(ok, "real coding execution completes" + ("" if ok else ": " + failure))
-        if response.status_code != 200:
+        if not ok:
             return
         updated = read(client, project + "/calculator.py")
         record(updated != source, "existing source changed via target files API")

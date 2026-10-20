@@ -138,6 +138,8 @@ naming, `CONTEXT_FILE_NAMES=[]` and `--no-profile` preserve caller state. Native
 children receive only PATH/optional CA settings plus private runtime/model
 settings; cloud, GitHub and command-server credentials are not forwarded.
 
+When starting a secondary server, preserve the image PATH; an explicit replacement must include `/opt/goose`. The diagnostic reports the binary visible to that server process.
+
 ## Resources
 
 2vCPU/2048MB; command API9000, optional explicitly started9010. Shared memory has
