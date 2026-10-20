@@ -1,0 +1,15 @@
+{
+  "template": "goose",
+  "template_version": "1.0.0",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "passed": false,
+  "official_last_state": "error",
+  "phase": "RUN official asset installer",
+  "observed_failure": "official asset exceeded byte/deadline budget",
+  "installer_max_seconds": 240,
+  "installer_max_bytes": 80909320,
+  "distinguishable_limit": false,
+  "cleanup_verified": true,
+  "basis": "Private official readiness response identifies installer budget error; independently read-back cleanup_complete/readback_confirmed are true. Does not identify whether the byte or deadline branch fired. No model run or READY claim."
+}
