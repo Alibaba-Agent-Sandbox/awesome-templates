@@ -115,7 +115,7 @@ curl --fail-with-body --max-time 90 -X POST "$ABX_SERVER_URL/commands/browser_us
 | WORKSPACE | no | /home/user/app | owned root for new browser-use-artifacts PNGs |
 | ABX_SERVER_TOKEN | no | empty | command-server process bearer token |
 
-模型配置只通过私有文件stdin进入，不继承到Chromium。每次独立HOME/XDG/profile/原生文件目录，关闭遥测/云同步/默认扩展/use_cloud，不导入调用者账号或已保存浏览器。CDP启动显式请求回环地址，只公布命令9000。浏览器和模型仍有沙箱用户权限及网络，这不是额外OS隔离。结果和PNG可能含网页私密信息；返回字符串替换模型密钥/地址的完整值。
+模型配置只通过私有文件stdin进入，不继承到Chromium。每次独立HOME/XDG/profile/原生文件目录，关闭遥测/云同步/默认扩展/use_cloud，不导入调用者账号或已保存浏览器。CDP启动显式请求回环地址，只公布命令9000。此容器模板显式设置chromium_sandbox=false，使用自有沙箱提供OS隔离，不依赖Docker自动探测。浏览器和模型仍有沙箱用户权限及网络，这不是额外OS隔离。结果和PNG可能含网页私密信息；返回字符串替换模型密钥/地址的完整值。
 
 ## 资源
 
@@ -141,4 +141,4 @@ python -m venv <new-prefix>后，用<new-prefix>/bin/python -m pip install --req
 
 ## 许可证
 
-封装代码[Apache-2.0](../LICENSE)。Browser-use为MIT，保留[上游原许可](upstream-LICENSE)。Chromium为BSD类及第三方许可，声明随官方Playwright安装器保留；Playwright为Apache-2.0。哈希固定依赖保留各自安装声明，不能把整个镜像统一重标Apache-2.0。不包含模型权重或云服务账号。
+封装代码[Apache-2.0](../LICENSE)。Browser-use为MIT，保留[上游原许可](upstream-LICENSE)。保留Playwright发行的未修改Chrome for Testing二进制及捆绑许可/声明；Playwright为Apache-2.0。哈希固定依赖保留各自安装声明，不能把整个镜像统一重标Apache-2.0。不包含模型权重或云服务账号。

@@ -115,7 +115,7 @@ Exactly15 native actions are enabled: done/navigate/click/input/scroll/wait/go_b
 | WORKSPACE | no | /home/user/app | owned root for new browser-use-artifacts PNGs |
 | ABX_SERVER_TOKEN | no | empty | command-server process bearer token |
 
-Model settings enter private file stdin only; they are not inherited into Chromium. Every call has fresh HOME/XDG/profile/native file-system state. Disable native telemetry/cloud sync/default extensions and use_cloud; no caller profile or saved browser account is imported. CDP launch requests loopback binding and only command9000 is advertised. The browser and model still have sandbox-user authority and network access; these action restrictions are not another OS isolation boundary. Returned result/PNG can contain private webpage information; exact configured model key/base values are redacted from result strings.
+Model settings enter private file stdin only; they are not inherited into Chromium. Every call has fresh HOME/XDG/profile/native file-system state. Disable native telemetry/cloud sync/default extensions and use_cloud; no caller profile or saved browser account is imported. CDP launch requests loopback binding and only command9000 is advertised. This container-only profile explicitly sets chromium_sandbox=false instead of relying on Docker detection; the owned sandbox supplies OS isolation. The browser and model still have sandbox-user authority and network access; these action restrictions are not another OS isolation boundary. Returned result/PNG can contain private webpage information; exact configured model key/base values are redacted from result strings.
 
 ## Resources
 
@@ -141,4 +141,4 @@ Follow [CONTRIBUTING](../CONTRIBUTING.md), [spec](../docs/template-spec.md), [de
 
 ## License
 
-Wrapper code is [Apache-2.0](../LICENSE). Browser-use is MIT; preserve the [unchanged upstream license](upstream-LICENSE). Chromium is BSD-style with third-party notices installed by the official Playwright installer; Playwright is Apache-2.0. Every hash-locked dependency keeps its installed upstream notices; do not relabel the full image as Apache-2.0. No model weights or cloud service account is included.
+Wrapper code is [Apache-2.0](../LICENSE). Browser-use is MIT; preserve the [unchanged upstream license](upstream-LICENSE). The unmodified Playwright-distributed Chrome for Testing build retains its bundled license/notices; Playwright is Apache-2.0. Every hash-locked dependency keeps its installed upstream notices; do not relabel the full image as Apache-2.0. No model weights or cloud service account is included.

@@ -10,7 +10,7 @@ async def run(value):
     from browser_use import Agent,Browser,ChatOpenAI
     from browser_use.browser import BrowserProfile
     from browser_use.tools.service import Tools
-    profile=BrowserProfile(executable_path=value['browser_binary'],headless=True,use_cloud=False,enable_default_extensions=False,keep_alive=True,user_data_dir=str(Path(os.environ['HOME'])/'profile'),args=['--disable-dev-shm-usage','--remote-debugging-address=127.0.0.1'],viewport={'width':960,'height':720})
+    profile=BrowserProfile(executable_path=value['browser_binary'],headless=True,chromium_sandbox=False,use_cloud=False,enable_default_extensions=False,keep_alive=True,user_data_dir=str(Path(os.environ['HOME'])/'profile'),args=['--disable-dev-shm-usage','--remote-debugging-address=127.0.0.1'],viewport={'width':960,'height':720})
     browser=Browser(browser_profile=profile)
     fixture=thread=None
     try:
@@ -53,4 +53,6 @@ def main():
 
 if __name__=='__main__':
     try:raise SystemExit(main())
-    except Exception:raise SystemExit(1) from None
+    except Exception as exc:
+        print(json.dumps({'native_error_type':type(exc).__name__}),flush=True)
+        raise SystemExit(1) from None

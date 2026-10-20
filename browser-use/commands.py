@@ -31,7 +31,11 @@ def _invoke_worker(value,timeout):
         with tempfile.TemporaryFile(dir=root) as source:
             source.write(json.dumps(value,ensure_ascii=False).encode());source.seek(0)
             code,out,_=process.run([_python(),str(Path(__file__).with_name('worker.py'))],cwd=root,env=_environment(root),timeout=timeout,input_file=source)
-    if code:raise RuntimeError('native browser-use execution failed; private diagnostics omitted')
+    if code:
+        try:kind=json.loads(out).get('native_error_type','NativeError')
+        except (ValueError,AttributeError):kind='NativeError'
+        if not isinstance(kind,str) or not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]{0,79}',kind):kind='NativeError'
+        raise RuntimeError('native browser-use execution failed ('+kind+'); private diagnostics omitted')
     try:result=json.loads(out)
     except (ValueError,TypeError):raise RuntimeError('native browser-use returned invalid result') from None
     for key in ['BROWSER_USE_API_KEY','BROWSER_USE_BASE_URL']:
