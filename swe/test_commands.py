@@ -79,7 +79,7 @@ def _assert_process_not_running(pid):
     while True:
         try:
             state=status.read_text().split()[2]
-        except FileNotFoundError:
+        except (FileNotFoundError,ProcessLookupError):
             return
         if state=='Z':return
         if time.monotonic()>=deadline:pytest.fail('owned child is still running')

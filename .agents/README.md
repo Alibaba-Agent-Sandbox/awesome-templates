@@ -4,6 +4,9 @@ This repository owns template source, specification, catalog and acceptance reco
 Read [CONTRIBUTING.md](../CONTRIBUTING.md) and [the specification](../docs/template-spec.md).
 New engineering records use English and stay in this repository.
 
+- [Kimi Code runtime](notes/proposed/feature/2026-10-19-kimi-code.md)
+  · [verification](evidence/verify/2026-10-19-kimi-code.md)
+
 - [Contributor standards and platform steps](notes/proposed/process/2026-10-19-standards-and-platform-steps.md)
   · [verification](evidence/verify/2026-10-19-standards-and-platform-steps.md)
   · [actual platform limits and reruns](evidence/verify/2026-10-19-step-platform-limits.md)
@@ -71,6 +74,13 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Provider-owned template launch](notes/proposed/feature/2026-10-19-provider-template-launch.md) · [verification](evidence/verify/2026-10-19-provider-template-launch.md)
 
+- [Native apply_patch](notes/proposed/feature/2026-10-19-apply-patch-runtime.md) · [verification](evidence/verify/2026-10-19-apply-patch-runtime.md)
+
+- [Managed runtime catalog](notes/proposed/feature/2026-10-19-managed-template-catalog.md) · [verification](evidence/verify/2026-10-19-managed-template-catalog.md)
+
 - [Express steps checkpoint](evidence/verify/2026-10-19-steps-checkpoint-1555.md)
 
 - [Standalone code-server](notes/proposed/feature/2026-10-19-code-server-runtime.md) · [verification](evidence/verify/2026-10-19-code-server-runtime.md)
+- [Exact-source CI image acceptance](notes/proposed/process/2026-10-19-ci-image-acceptance.md) · [verification](evidence/verify/2026-10-19-ci-image-acceptance.md)
+
+- [Controller prerequisites](notes/proposed/process/2026-10-19-controller-prerequisite-preflight.md) · [verification](evidence/verify/2026-10-19-controller-prerequisite-preflight.md)

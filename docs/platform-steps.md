@@ -133,3 +133,17 @@ export NODE_PATH="$ABX_NATIVE_DIR/modules/node_modules"
 ```
 
 Then configure the existing Express account in the process environment and run the pinned-server commands above. ABX/NODE_PATH select this isolated tool directory. Use the native acceptance syntax consistently. Remove only your own tool directory after owned cloud resources and private journals are reconciled.
+
+For heavy assets, the separately recorded [CI image acceptance path](ci-image-acceptance.md)
+uses real Dockerfile CI export and native image registration, with its own provenance.
+
+## Observed large-asset constraint
+
+On2026-10-19 an actual step-build diagnostic retrieved8MiB in385/398seconds
+from the selected code-server/Rust assets, while Go/Hermes source samples took
+less than2seconds. This is measured behavior, not a promised throughput limit.
+A306.777-second RUN stream deadline failure occurred in browser installation;
+it does not establish a universal300-second execution cap. Split build phases,
+bound transfers and preserve errors. A timed-out build is not acceptance.
+Heavy templates still need their own successful current-profile receipt; a
+partial network probe, local install or CI-only build cannot supply it.

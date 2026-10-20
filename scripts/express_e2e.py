@@ -140,6 +140,9 @@ class Options:
     template_name: str = ""
     template_version: str = ""
     build_mode: str = "dockerfile"
+    image_ref: str = ""
+    image_provenance: dict | None = None
+    sandbox_timeout: int = 300
 
 
 @dataclass
@@ -460,8 +463,11 @@ def parse_smoke_json(text: str) -> list[Smoke]:
 def build_options(argv: list[str] | None = None) -> Options:
     parser = argparse.ArgumentParser(description="Express L2 harness for one template.")
     parser.add_argument("template", type=Path)
-    parser.add_argument("--build", choices=("dockerfile", "steps"), default="dockerfile",
+    parser.add_argument("--build", choices=("dockerfile", "steps", "image"), default="dockerfile",
                         help="Explicit image deployment path. Steps needs a materialized manifest.")
+    parser.add_argument("--image-ref", default="", help="Nonce-owned ACR review tag bound to checked digest for --build image")
+    parser.add_argument("--image-proof", type=Path, help="Verified public CI archive/source/registry proof")
+    parser.add_argument("--sandbox-timeout", type=int, default=300, help="Owned sandbox lifetime, separate from build readiness")
     parser.add_argument("--start-cmd", default=None)
     parser.add_argument("--ready-cmd", default=None)
     parser.add_argument("--generation", type=int, default=None)
@@ -501,6 +507,22 @@ def build_options(argv: list[str] | None = None) -> Options:
     if not (template_dir / "template.yaml").is_file():
         raise SystemExit(f"no template.yaml in {template_dir}")
     data = _load_yaml(template_dir)
+    image_provenance = None
+    if args.sandbox_timeout < 1:
+        raise SystemExit("--sandbox-timeout must be positive")
+    if args.build == "image":
+        if not args.image_ref or not args.image_proof:
+            raise SystemExit("--build image requires --image-ref and --image-proof")
+        try:
+            try:
+                from .ci_image import validate_proof
+            except ImportError:
+                from ci_image import validate_proof
+            image_provenance = validate_proof(template_dir, json.loads(args.image_proof.read_text()), args.image_ref)
+        except (ValueError, OSError) as exc:
+            raise SystemExit("invalid image proof: " + str(exc)) from None
+    elif args.image_ref or args.image_proof:
+        raise SystemExit("image options require --build image")
     if args.smoke_json:
         smoke = parse_smoke_json(args.smoke_json)
     elif args.command:
@@ -544,6 +566,9 @@ def build_options(argv: list[str] | None = None) -> Options:
         template_name=str(data.get("name") or template_dir.name),
         template_version=str(data.get("version") or ""),
         build_mode=args.build,
+        image_ref=args.image_ref,
+        image_provenance=image_provenance,
+        sandbox_timeout=args.sandbox_timeout,
     )
 
 
@@ -554,6 +579,8 @@ def plan_document(options: Options) -> dict[str, Any]:
         "version": options.template_version,
         "alias": options.alias,
         "build_mode": options.build_mode,
+        "registration_operation": "abx template create" if options.build_mode == "image" else "abx template deploy",
+        "sandbox_timeout": options.sandbox_timeout,
         "harness_sha256": HARNESS_SHA256,
         "acr_repo": options.alias if options.build_mode == "dockerfile" else None,
         "acr_tag": OWNED_ACR_TAG if options.build_mode == "dockerfile" else None,
@@ -604,7 +631,7 @@ def _retryable_deploy(proc: Proc) -> bool:
 
 
 def _deploy_with_retries(options: Options, deploy_args: list[str], runner: Runner | None) -> Proc:
-    attempts = options.push_retries + 1
+    attempts = 1 if options.build_mode == "image" else options.push_retries + 1
     last = Proc(1, "", "deploy was not attempted")
     for attempt in range(1, attempts + 1):
         print(
@@ -698,6 +725,19 @@ def _sdk_version() -> str:
         return str(getattr(agent_sandbox, "__version__", "unknown"))
     except Exception:
         return "unknown"
+
+
+def image_digest(image_ref: str) -> str:
+    """Read the actual owned registry tag through verified crane and RAM auth."""
+    try:
+        from .ci_image_archive import crane_call
+    except ImportError:
+        from ci_image_archive import crane_call
+    binary=os.environ.get("ABX_IMAGE_CRANE", "")
+    if not binary:
+        raise RuntimeError("verified crane path is required for live image digest readback")
+    return crane_call(binary,["digest",image_ref],os.environ["ABX_IMAGE_REGISTRY_USERNAME"],
+                      os.environ["ABX_IMAGE_REGISTRY_PASSWORD"],90)
 
 
 def default_sdk(sandbox_id: str, command: str, args: dict[str, Any]) -> Any:
@@ -898,6 +938,16 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
             blocked = found
         return found is not None
 
+    if options.build_mode == "image":
+        try:
+            try:
+                from .ci_image import validate_proof
+            except ImportError:
+                from ci_image import validate_proof
+            validate_proof(options.template_dir, options.image_provenance, options.image_ref)
+        except (ValueError, OSError):
+            print("BLOCKED image source/provenance validation failed", flush=True)
+            return 2
     intent_dir = Path(tempfile.mkdtemp(prefix="abx-express-owned-"))
     intent_path = intent_dir / "intent.json"
     intent = {"version": 1, "alias": options.alias,
@@ -931,6 +981,22 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
             str(options.deploy_timeout),
             "--verbose",
         ]
+        if options.build_mode == "image":
+            username = os.environ.get("ABX_IMAGE_REGISTRY_USERNAME", "")
+            password = os.environ.get("ABX_IMAGE_REGISTRY_PASSWORD", "")
+            if not username or not password:
+                print("BLOCKED explicit temporary image registry credentials are missing", flush=True)
+                return 2
+            if image_digest(options.image_ref) != options.image_provenance["pushed_image_digest"]:
+                raise RuntimeError("image tag differs from checked archive digest before registration")
+            config = _load_yaml(options.template_dir)
+            resources = config.get("resources", {})
+            deploy_args = ["--json", "template", "create", options.image_ref,
+                "--name", options.alias, "--generation", str(options.generation),
+                "--start-cmd", options.start_cmd, "--ready-cmd", options.ready_cmd,
+                "--cpu", str(resources.get("cpu", 2)), "--memory", str(resources.get("memory", 2048)),
+                "--no-envd-inject", "--registry-type", "acr",
+                "--registry-username=" + username, "--registry-password=" + password]
         if options.build_mode == "dockerfile":
             deploy_args += ["--acr-repo", intent["acr_repo"], "--tag", intent["acr_tag"]]
         intent["deploy_attempted"] = True
@@ -962,9 +1028,9 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
             print("deploy did not return a template id", flush=True)
             return 1
         status = template_state(payload or {})
-        if options.build_mode == "steps" and status == "submitted":
+        if options.build_mode == "image" or options.build_mode == "steps" and status == "submitted":
             if not wait_for_steps_ready(template_id, options, run, intent_dir / "readiness.json"):
-                print("step build did not independently reach READY", flush=True)
+                print("image registration did not independently reach READY" if options.build_mode == "image" else "step build did not independently reach READY", flush=True)
                 return 1
             status = "ready"
         if status and status not in {"ready", "success", "succeeded"}:
@@ -975,7 +1041,7 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
         intent["create_attempted"] = True
         save_intent(intent_path, intent)
         created = run(
-            ["--json", "create", "--template", template_id, "-y", "--timeout", "300"],
+            ["--json", "create", "--template", template_id, "-y", "--timeout", str(options.sandbox_timeout)],
             420,
         )
         _print_proc("create", created)
@@ -1047,6 +1113,10 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
                     passed = False
 
         if passed and not blocked:
+            if options.build_mode == "image":
+                if image_digest(options.image_ref) != options.image_provenance["pushed_image_digest"]:
+                    raise RuntimeError("image tag changed during runtime acceptance")
+                options.image_provenance["tag_digest_verified_after_runtime"] = True
             return 0
         if blocked:
             print(f"BLOCKED {blocked[0]} {blocked[1]}", flush=True)
@@ -1131,6 +1201,10 @@ def _write_evidence(options: Options, results: list[dict[str, Any]]) -> None:
     provenance = options.template_dir / "steps-provenance.json"
     if options.build_mode == "steps" and provenance.is_file():
         payload["build_provenance"] = json.loads(provenance.read_text())
+    if options.build_mode == "image":
+        payload["image_provenance"] = options.image_provenance
+        payload["registration_operation"] = "abx template create"
+        payload["boundary"] = "Verified CI Dockerfile image + private registry transfer; no controller Docker build or platform-step build claimed"
     # Template ids are ephemeral and must not be stored.
     text = json.dumps(payload, indent=2, ensure_ascii=False) + "\n"
     if classify_blocker(text):
