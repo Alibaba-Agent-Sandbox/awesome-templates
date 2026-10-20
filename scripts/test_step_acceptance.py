@@ -1,5 +1,8 @@
 """Reject stale/misattributed acceptance even when its top-level pass is true."""
 import hashlib
+import subprocess
+
+from manifest_contract import manifest_contract_sha256
 
 import pytest
 
@@ -13,9 +16,9 @@ def example(tmp_path):
     return {"provider": "alicloud-express", "build_mode": "steps", "passed": True,
             "cleanup_verified": True, "template_version": "1.0.0",
             "commands": [{"name": "hello", "via": via, "ok": True} for via in ("cli", "sdk")],
-            "build_provenance": {"inputs_sha256": {
+            "build_provenance": {"source_manifest_contract_sha256": manifest_contract_sha256((tmp_path / "template.yaml").read_bytes()), "inputs_sha256": {
                 name: hashlib.sha256((tmp_path / name).read_bytes()).hexdigest()
-                for name in ["Dockerfile", "commands.py", "requirements.lock"]}}}
+                for name in ["Dockerfile", "commands.py", "requirements.lock", "template.yaml"]}}}
 
 
 @pytest.mark.parametrize("field,value", [("template_version", "0.9.0"), ("build_mode", "image"),
@@ -102,3 +105,75 @@ def test_gateway_lifecycle_skip_cannot_be_full_acceptance(tmp_path):
     assert not inspect_http_receipt(source, receipt)[0]
     receipt["http_acceptance"].update(pass_count=11, skip_count=1)
     assert inspect_http_receipt(source, receipt)[0]
+
+@pytest.mark.parametrize('change',[
+ 'start_cmd: changed-launch\n','ready_cmd: changed-readiness\n','resources: {cpu: 2, memory: 8192}\n',
+ 'env: {SAFE: changed}\n','ports: [9000, 9100]\n','base: changed-base\n','capabilities: [shell]\n',
+])
+def test_same_version_changed_manifest_contract_rejects_old_cloud_success(tmp_path,change):
+    receipt=example(tmp_path)
+    assert inspect_receipt(tmp_path,receipt)[0]
+    path=tmp_path/'template.yaml';path.write_text(path.read_text()+change)
+    assert not inspect_receipt(tmp_path,receipt)[0]
+
+
+def init_history(source):
+    subprocess.run(['git','init','-q',str(source)],check=True)
+    subprocess.run(['git','-C',str(source),'add','template.yaml'],check=True)
+    subprocess.run(['git','-C',str(source),'-c','user.name=Manifest Fixture','-c','user.email=manifest@example.invalid','commit','-qm','fixture manifest'],check=True)
+    return subprocess.check_output(['git','-C',str(source),'rev-parse','HEAD'],text=True).strip()
+
+@pytest.mark.parametrize('recorded_revision',[True,False])
+def test_legacy_metadata_update_requires_exact_original_historical_bytes(tmp_path,recorded_revision):
+    receipt=example(tmp_path);proof=receipt['build_provenance'];proof.pop('source_manifest_contract_sha256')
+    revision=init_history(tmp_path)
+    if recorded_revision:proof['copy_source_commit']=revision
+    path=tmp_path/'template.yaml';path.write_text(path.read_text()+'tested_on: [alicloud-express]\n')
+    assert inspect_receipt(tmp_path,receipt)[0]
+    path.write_text(path.read_text()+'start_cmd: changed-contract\n')
+    assert not inspect_receipt(tmp_path,receipt)[0]
+
+
+def test_legacy_unchanged_exact_manifest_does_not_need_git_history(tmp_path):
+    receipt=example(tmp_path);receipt['build_provenance'].pop('source_manifest_contract_sha256')
+    assert inspect_receipt(tmp_path,receipt)[0]
+
+
+def test_legacy_qualification_change_without_history_is_missing(tmp_path):
+    receipt=example(tmp_path);receipt['build_provenance'].pop('source_manifest_contract_sha256')
+    path=tmp_path/'template.yaml';path.write_text(path.read_text()+'tested_on: [alicloud-express]\n')
+    assert not inspect_receipt(tmp_path,receipt)[0]
+
+@pytest.mark.parametrize('bad',['0'*40,'HEAD','-option',None])
+def test_legacy_mismatched_revision_or_raw_digest_cannot_inherit_pass(tmp_path,bad):
+    receipt=example(tmp_path);proof=receipt['build_provenance'];proof.pop('source_manifest_contract_sha256');init_history(tmp_path)
+    if bad is None:proof['inputs_sha256']['template.yaml']='0'*64
+    else:proof['copy_source_commit']=bad
+    path=tmp_path/'template.yaml';path.write_text(path.read_text()+'tested_on: [alicloud-express]\n')
+    assert not inspect_receipt(tmp_path,receipt)[0]
+
+@pytest.mark.parametrize('missing',[True,False])
+def test_missing_or_changed_manifest_hash_is_rejected(tmp_path,missing):
+    receipt=example(tmp_path)
+    if missing:receipt['build_provenance']['inputs_sha256'].pop('template.yaml')
+    else:receipt['build_provenance']['source_manifest_contract_sha256']='0'*64
+    assert not inspect_receipt(tmp_path,receipt)[0]
+
+
+def test_explicit_current_sdk_pin_requires_matching_hashed_input_and_effective_selection(tmp_path):
+    receipt=example(tmp_path);proof=receipt['build_provenance'];pin='f'*40
+    docker=tmp_path/'Dockerfile';docker.write_text('RUN pip install "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/'+pin+'.tar.gz#subdirectory=server-sdk"\n')
+    proof['inputs_sha256']['Dockerfile']=hashlib.sha256(docker.read_bytes()).hexdigest()
+    (tmp_path/'server-sdk.commit').write_text(pin+'\n')
+    proof['server_commit_override']=pin
+    assert not inspect_receipt(tmp_path,receipt)[0]
+    proof['inputs_sha256']['server-sdk.commit']=hashlib.sha256((tmp_path/'server-sdk.commit').read_bytes()).hexdigest()
+    assert inspect_receipt(tmp_path,receipt)[0]
+    proof['server_commit_override']='e'*40
+    assert not inspect_receipt(tmp_path,receipt)[0]
+
+
+def test_symlinked_or_invalid_sdk_pin_does_not_qualify(tmp_path):
+    receipt=example(tmp_path)
+    (tmp_path/'server-sdk.commit').write_text('not-a-commit\n')
+    assert not inspect_receipt(tmp_path,receipt)[0]

@@ -19,6 +19,11 @@ from string import Template
 import zlib
 
 import yaml
+
+try:
+    from .manifest_contract import manifest_contract_sha256
+except ImportError:
+    from manifest_contract import manifest_contract_sha256
 try:
     from .server_sdk_pin import server_commit as pinned_server_commit
 except ImportError:
@@ -434,6 +439,7 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
     data["build"] = {"mode": "steps", "steps": steps}
     provenance = {"schema_version": 1, "template": source.name,
                   "materializer_sha256": MATERIALIZER_SHA256,
+                  "source_manifest_contract_sha256": manifest_contract_sha256((source / "template.yaml").read_bytes()),
                   "template_version": str(data["version"]), "build_mode": "steps",
                   "base_image": data["base"], "server_commit_override": server_commit,
                   "template_server_commit": selected_server,
