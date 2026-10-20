@@ -138,3 +138,5 @@ SDK/server bugs: [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sd
 ## License
 
 Wrapper source: Apache-2.0, [repository license](../LICENSE). The unmodified native GitHub Copilot CLI is under its own [license](UPSTREAM-LICENSE.md), retained in the image and installed package. Its redistribution conditions require an application/service providing material functionality beyond the CLI and prohibit standalone/primary-product redistribution. The authenticated remote API/file-transfer/sandbox service is independently licensed; this template does not relicense the CLI or grant GitHub service access.
+
+Unified non-model full HTTP acceptance also passed8/0/0 in87.661seconds with actual SDK-created steps, public CLI0.4.1 and independently confirmed sandbox/template cleanup: [current controller result](evidence/verification-steps-2026-10-20T171425Z.json), [canonical CLI/SDK](evidence/express-2026-10-20.json). The17-check native model acceptance above remains separate.

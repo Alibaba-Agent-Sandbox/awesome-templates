@@ -159,4 +159,8 @@ CLI 安装、SDK 源码安装、HTTP 认证与资源所有权见[模板使用指
 
 ### 当前平台 step 验收
 
-[当前版本真实 step](evidence/express-2026-10-20.json)与[完整外部 HTTP 结果](evidence/verification-steps-2026-10-20T151021Z.json)已通过：官方 READY、真实 Python SDK 创建、CLI/SDK smoke，6 PASS / 0 FAIL / 1 model SKIP，耗时 346.984 秒。自有沙箱、模板及私有缓存已独立确认清理。早期失败保留为历史记录；本次未运行模型，不扩大已有镜像／模型验收范围。
+[当前版本真实 step](evidence/express-2026-10-20.json)与[基础外部 HTTP 结果](evidence/verification-steps-2026-10-20T151021Z.json)已通过：官方 READY、真实 Python SDK 创建、CLI/SDK smoke，6 PASS / 0 FAIL / 1 GUI SKIP，耗时 346.984 秒。自有沙箱、模板及私有缓存已独立确认清理。早期失败保留为历史记录；本次未运行模型，不扩大已有镜像／模型验收范围。
+
+跳过的是外部桌面检查，并非模型检查；内部命名桌面 smoke 已单独通过。完整外部桌面验收必须启用两个桌面开关，18 项全部通过且无跳过，下述真实 SDK 创建复测已完成该层验收。
+
+[当前必选外部桌面结果](evidence/verification-steps-2026-10-20T171144Z.json)与[规范 CLI/SDK 回执](evidence/express-2026-10-20T171144Z.json)：真实 SDK 创建原生 steps，274.783 秒，18 PASS/0 FAIL/0 SKIP。原控制器验证真实 PNG、点击、Unicode 输入、快捷键、AT-SPI、上游评分0→1及像素变化，随后清理桌面和任务文件，并独立确认沙箱、模板、私有缓存均不存在。两个桌面必选开关均已记录；本次完成浏览器切片的外部桌面层，不扩大到完整 benchmark、模型或 VM 重置能力。

@@ -159,4 +159,8 @@ For CLI setup, SDK installation, HTTP authentication and resource ownership, see
 
 ### Current platform-step acceptance
 
-[Current-version genuine steps](evidence/express-2026-10-20.json) and [full external HTTP result](evidence/verification-steps-2026-10-20T151021Z.json): official READY, actual Python SDK creation, CLI/SDK smoke and 6 PASS / 0 FAIL / 1 model SKIP; 346.984 seconds. Independent owned sandbox/template and private asset-cache cleanup passed. Earlier failed step attempts remain historical failures; this receipt is model-free and does not extend prior image/model scope.
+[Current-version genuine steps](evidence/express-2026-10-20.json) and [basic external HTTP result](evidence/verification-steps-2026-10-20T151021Z.json): official READY, actual Python SDK creation, CLI/SDK smoke and 6 PASS / 0 FAIL / 1 GUI SKIP; 346.984 seconds. Independent owned sandbox/template and private asset-cache cleanup passed. Earlier failed step attempts remain historical failures; this receipt is model-free and does not extend prior image/model scope.
+
+The skipped case was the external desktop tier, not a model case. The internal named desktop smoke passed separately. Full external desktop acceptance requires both desktop opt-ins and all18 checks without skips; the following genuine SDK-created run completes that tier.
+
+[Current required external desktop result](evidence/verification-steps-2026-10-20T171144Z.json) and [canonical CLI/SDK receipt](evidence/express-2026-10-20T171144Z.json):18 PASS/0 FAIL/0 SKIP in274.783seconds, actual SDK-created native steps. The original external controller verified real PNG/input/Unicode/hotkey/AT-SPI/upstream score0→1 and changed pixels, followed by desktop/task cleanup and independent sandbox/template/private-cache absence. Both required desktop flags are recorded. This completes the external browser-slice tier; no full benchmark/model/VM-reset capability is inferred.

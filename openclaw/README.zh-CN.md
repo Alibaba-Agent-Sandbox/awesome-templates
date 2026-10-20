@@ -198,3 +198,7 @@ Linux 下短生命周期健康检查 RPC 会持续读取输出，并在清理自
 ### 2026-10-20真实认证网关完整 step 检查点
 
 [真实2.0.1 step](evidence/express-2026-10-20T161954Z.json)及[原完整 HTTP 控制器](evidence/verification-steps-2026-10-20T161954Z.json)已通过官方 READY、Python SDK 创建、全部 CLI/SDK smoke，以及11项 HTTP PASS/0 FAIL/1模型 SKIP，耗时703.799秒。独有测试令牌仅在私有配方安装步骤之后注入，实际验证认证就绪／健康、持续运行状态、自有停止及停止后的健康失败。沙箱、模板和精确私有 Node 缓存对象／bucket均独立确认清理；未使用操作者／模型凭据，公开回执无令牌值。早期6/0/2回执仅保留较窄范围，不算网关生命周期通过。[严格审计和复现](../docs/platform-steps.zh-CN.md)。
+
+### 当前2.1.0完整 HTTP step 复测
+
+集成显式代理配置及4GiB资源后，[当前2.1.0 step 回执](evidence/express-2026-10-20T165241Z.json)和[未改变的完整 HTTP 控制器](evidence/verification-steps-2026-10-20T165241Z.json)在525.594秒内通过11/0/1（模型 SKIP）：官方 READY、真实 CLI/Python SDK、认证网关生命周期及沙箱／模板／私有缓存独立清理。当前完整 manifest 绑定的严格审计接受此源码；旧2.0.1完整回执仍为历史。上方当前原生 SDK／转发健康及镜像证明独立保留。

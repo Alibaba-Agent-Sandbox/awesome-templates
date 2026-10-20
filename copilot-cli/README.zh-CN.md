@@ -138,3 +138,5 @@ SDK/server 问题：[python-sdk](https://github.com/Alibaba-Agent-Sandbox/python
 ## 许可证
 
 包装代码为 Apache-2.0，见[仓库许可证](../LICENSE)。未修改的 GitHub Copilot CLI 遵守其独立[许可证](UPSTREAM-LICENSE.md)，镜像和安装包保留完整文本。再分发要求作为具有额外实质功能的应用/服务的一部分，禁止独立或作为主要产品分发。鉴权远程 API、文件传输和 sandbox 服务独立许可，不重新许可 CLI，也不授予 GitHub 服务访问权。
+
+统一非模型完整 HTTP 验收也已通过：真实 SDK 创建 steps，使用公开 CLI0.4.1，87.661 秒，8 PASS/0 FAIL/0 SKIP，沙箱与模板清理已独立确认。见[当前控制器结果](evidence/verification-steps-2026-10-20T171425Z.json)和[规范 CLI/SDK 回执](evidence/express-2026-10-20.json)。上文17项真实模型验收仍单独保留。
