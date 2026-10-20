@@ -25,7 +25,7 @@ abx template deploy ./swe
 # 然后按下方 SDK 示例从模板创建专用沙箱并启动配置好的服务。
 abx run "$SANDBOX_ID" swe_version
 ABX_HTTP_TIMEOUT=240 abx run "$SANDBOX_ID" swe_prepare --server-port 9010
-ABX_HTTP_TIMEOUT=360 abx run "$SANDBOX_ID" swe_run_agent --server-port 9010 --arg run_id="$RUN_ID" --arg allow_execution=true --arg command_timeout=300
+ABX_HTTP_TIMEOUT=660 abx run "$SANDBOX_ID" swe_run_agent --server-port 9010 --arg run_id="$RUN_ID" --arg allow_execution=true --arg max_steps=30 --arg command_timeout=600
 ABX_HTTP_TIMEOUT=240 abx run "$SANDBOX_ID" swe_evaluate --server-port 9010 --arg run_id="$RUN_ID"
 abx run "$SANDBOX_ID" swe_report --server-port 9010 --arg run_id="$RUN_ID"
 abx run "$SANDBOX_ID" swe_cleanup --server-port 9010 --arg run_id="$RUN_ID"
@@ -50,7 +50,7 @@ async def main():
         stream = await sandbox.commands.start(
             'agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py',
             env={key: os.environ[key] for key in ('SWE_API_KEY', 'SWE_BASE_URL', 'SWE_MODEL')}
-                | {'WORKSPACE': '/home/user/app', 'ABX_SERVER_BASE_DIR': '/home/user/app'},
+                | {'WORKSPACE': '/home/user/app', 'ABX_SERVER_BASE_DIR': '/home/user/app', 'SWE_MODEL_PROTOCOL': 'toolcall'},
             timeout=900,
         )
         async def drain():
@@ -68,7 +68,7 @@ async def main():
         prepared = await sandbox.run('swe_prepare', server_port=9010, timeout=240)
         run_id = prepared['run_id']
         await sandbox.run('swe_run_agent', run_id=run_id, allow_execution=True,
-                          command_timeout=300, server_port=9010, timeout=360)
+                          max_steps=30, command_timeout=600, server_port=9010, timeout=660)
         report = await sandbox.run('swe_evaluate', run_id=run_id, server_port=9010, timeout=240)
         patch = await sandbox.files.read(report['patch_path'])
         assert report['resolved_slice'] and report['passed'] == 60 and patch
@@ -90,8 +90,8 @@ asyncio.run(main())
 
 ```bash
 curl -fsS -X POST "$BASE_URL/commands/swe_prepare" -H 'Content-Type: application/json' -d '{}'
-curl -fsS --max-time 360 "$BASE_URL/commands/swe_run_agent" -H 'Content-Type: application/json' \
-  -d '{"run_id":"<prepare run_id>","allow_execution":true,"command_timeout":300}'
+curl -fsS --max-time 660 "$BASE_URL/commands/swe_run_agent" -H 'Content-Type: application/json' \
+  -d '{"run_id":"<prepare run_id>","allow_execution":true,"max_steps":30,"command_timeout":600}'
 curl -fsS --max-time 240 "$BASE_URL/commands/swe_evaluate" -H 'Content-Type: application/json' \
   -d '{"run_id":"<prepare run_id>"}'
 ```
@@ -105,7 +105,7 @@ curl -fsS --max-time 240 "$BASE_URL/commands/swe_evaluate" -H 'Content-Type: app
 | `swe_version` | 无 | 实际 `mini --help` 与已安装 distribution 版本，无需 key |
 | `swe_setup_check` | 无 | 运行时、key、base、model 是否存在的布尔值，不返回秘密值 |
 | `swe_prepare` | `instance_id: str = "pallets__flask-5014"` | `run_id` 及独立重现的基线；拒绝其他题目 |
-| `swe_run_agent` | 必填 `run_id: str`；`allow_execution: bool = false`；`max_steps: int = 12`（1–30）；`command_timeout: int = 300`（30–900） | 实际 `mini -c <已安装 default.yaml> -c <私有 config.yaml> -o <私有 trajectory>`；必须显式允许 shell；返回模型调用次数与 Submitted 状态 |
+| `swe_run_agent` | 必填 `run_id: str`；`allow_execution: bool = false`；`max_steps: int = 12`（1–30）；`command_timeout: int = 300`（30–900） | 实际 `mini -c <已安装 default.yaml 或 mini.yaml> -c <私有 config.yaml> -o <私有 trajectory>`；必须显式允许 shell；返回模型调用次数与 Submitted 状态 |
 | `swe_evaluate` | 必填 `run_id: str` | 全新 base、原始测试和指定源码差异；准确测试状态、计数、`resolved_slice`、`official_benchmark_score: false`、补丁与报告路径 |
 | `swe_report` | 必填 `run_id: str` | 上次评测及产物路径；未评测先拒绝 |
 | `swe_cleanup` | 必填 `run_id: str` | 只删除该任务所属目录，返回 true |
@@ -113,6 +113,9 @@ curl -fsS --max-time 240 "$BASE_URL/commands/swe_evaluate" -H 'Content-Type: app
 类型错误或未知参数返回 HTTP 400。实例/任务无效、缺少显式权限或配置、上游失败、测试缺项及超时返回不含敏感输出的 HTTP 500。测试真正失败会生成 `resolved_slice: false` 报告；收集错误不产生分数。同任务操作使用排他锁，冲突直接拒绝。命令同步运行，HTTP 断开不等于取消；使用命令期限或销毁自有沙箱停止任务。
 
 ## 配置
+
+实测实例工作流显式允许30步和600秒，HTTP时限660秒。公开API默认值仍为12步/300秒；较早尝试中，所用模型未在该保守预算内完成。另一次自有云沙箱诊断在25次调用后提交，并由独立评测器通过原有全部60个测试身份。随后使用该预算的严格重跑仍未提交；诊断成功不能作为模板验收。版本1.1.0新增上游原生 bash 工具调用协议：启动配置服务时设置 `SWE_MODEL_PROTOCOL=toolcall`，选择官方 `mini.yaml` 和 LiteLLM 原生函数调用。默认 `text` 保留原有 `default.yaml` 文本协议；未知取值在运行前拒绝。诊断返回 `native_tool_calls`，严格验收要求其为真。原始测试身份、全新评测器和评分断言保持原样。新构建1.1.0镜像的真实云端/模型验收已通过，见下方回执。
+
 
 YAML 声明空的 `SWE_API_KEY`、`SWE_BASE_URL`、`SWE_MODEL`，必须明确注入服务进程。模型 key 只传给代理进程环境，不进入模型 shell action 的环境。凭据不放 argv、配置 JSON、返回错误或持久报告。私有 trajectory/config 目录由 finally 删除。这是进程卫生措施，不能防止同用户恶意代码读取其他进程。
 
@@ -126,7 +129,11 @@ YAML 声明空的 `SWE_API_KEY`、`SWE_BASE_URL`、`SWE_MODEL`，必须明确注
 
 ## 已验证
 
-版本1.0.1显式修复非root运行用户的工作区目录归属，当前版本的提供方验收尚待重跑。此前回执仅证明原始版本/哈希的已记录范围，保留在下面历史部分。
+版本1.1.0通过真实 SDK 创建的极速版镜像注册、官方 READY、CLI/SDK 版本冒烟及14项严格兼容模型断言。官方 mini2.4.6 以原生 bash 工具调用 qwen3.8-flash 修改源码，保留原始测试，在独立全新评测环境通过全部60个原始测试身份，并取回源码补丁及报告。自有沙箱/模板/镜像仓库清理和运行后摘要均独立回查通过。这是单题可移植性切片，不是官方 SWE-bench 分数；其他提供方及官方完整 harness 未验证。
+
+| Version | Provider | Evidence |
+| --- | --- | --- |
+| 1.1.0 | alicloud-express | [image](evidence/express-2026-10-20.json), [HTTP](evidence/image-http-2026-10-20T091111Z.json), [strict model14](evidence/model-image-2026-10-20T091111Z.json) |
 
 ## 历史验收
 
@@ -139,6 +146,8 @@ L0 可以跳过缺失的上游运行时/模型前置，这不证明代理运行�
 阅读[设计](../docs/design/swe.md)与[规范](../docs/template-spec.md)。新增题目前核对固定源归档、许可证、原始测试补丁、精确 FAIL_TO_PASS/PASS_TO_PASS、兼容的固定依赖及独立失败/通过结果。不要通过 API 暴露任意 shell 测试命令、URL 下载或调用者自带补丁。manifest 故意不包含上游标准答案补丁。
 
 ### Agent Sandbox step 构建
+实际1.1.0 step尝试在1200秒内未独立确认READY，保留为[失败](evidence/verification-steps-2026-10-20T091943Z.json)，并有[单独清理回查](evidence/steps-cleanup-2026-10-20.json)。不认定step构建通过；当前镜像/模型通过回执独立保留。
+
 
 在仓库 checkout 执行 `python scripts/run_steps_e2e.py swe`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
 
