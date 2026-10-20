@@ -25,7 +25,7 @@ abx template deploy ./swe
 # 然后按下方 SDK 示例从模板创建专用沙箱并启动配置好的服务。
 abx run "$SANDBOX_ID" swe_version
 ABX_HTTP_TIMEOUT=240 abx run "$SANDBOX_ID" swe_prepare --server-port 9010
-ABX_HTTP_TIMEOUT=360 abx run "$SANDBOX_ID" swe_run_agent --server-port 9010 --arg run_id="$RUN_ID" --arg allow_execution=true --arg command_timeout=300
+ABX_HTTP_TIMEOUT=660 abx run "$SANDBOX_ID" swe_run_agent --server-port 9010 --arg run_id="$RUN_ID" --arg allow_execution=true --arg max_steps=30 --arg command_timeout=600
 ABX_HTTP_TIMEOUT=240 abx run "$SANDBOX_ID" swe_evaluate --server-port 9010 --arg run_id="$RUN_ID"
 abx run "$SANDBOX_ID" swe_report --server-port 9010 --arg run_id="$RUN_ID"
 abx run "$SANDBOX_ID" swe_cleanup --server-port 9010 --arg run_id="$RUN_ID"
@@ -68,7 +68,7 @@ async def main():
         prepared = await sandbox.run('swe_prepare', server_port=9010, timeout=240)
         run_id = prepared['run_id']
         await sandbox.run('swe_run_agent', run_id=run_id, allow_execution=True,
-                          command_timeout=300, server_port=9010, timeout=360)
+                          max_steps=30, command_timeout=600, server_port=9010, timeout=660)
         report = await sandbox.run('swe_evaluate', run_id=run_id, server_port=9010, timeout=240)
         patch = await sandbox.files.read(report['patch_path'])
         assert report['resolved_slice'] and report['passed'] == 60 and patch
@@ -90,8 +90,8 @@ asyncio.run(main())
 
 ```bash
 curl -fsS -X POST "$BASE_URL/commands/swe_prepare" -H 'Content-Type: application/json' -d '{}'
-curl -fsS --max-time 360 "$BASE_URL/commands/swe_run_agent" -H 'Content-Type: application/json' \
-  -d '{"run_id":"<prepare run_id>","allow_execution":true,"command_timeout":300}'
+curl -fsS --max-time 660 "$BASE_URL/commands/swe_run_agent" -H 'Content-Type: application/json' \
+  -d '{"run_id":"<prepare run_id>","allow_execution":true,"max_steps":30,"command_timeout":600}'
 curl -fsS --max-time 240 "$BASE_URL/commands/swe_evaluate" -H 'Content-Type: application/json' \
   -d '{"run_id":"<prepare run_id>"}'
 ```
@@ -113,6 +113,9 @@ curl -fsS --max-time 240 "$BASE_URL/commands/swe_evaluate" -H 'Content-Type: app
 类型错误或未知参数返回 HTTP 400。实例/任务无效、缺少显式权限或配置、上游失败、测试缺项及超时返回不含敏感输出的 HTTP 500。测试真正失败会生成 `resolved_slice: false` 报告；收集错误不产生分数。同任务操作使用排他锁，冲突直接拒绝。命令同步运行，HTTP 断开不等于取消；使用命令期限或销毁自有沙箱停止任务。
 
 ## 配置
+
+实测实例工作流显式允许30步和600秒，HTTP时限660秒。公开API默认值仍为12步/300秒；较早尝试中，所用模型未在该保守预算内完成。另一次自有云沙箱诊断在25次调用后提交，并由独立评测器通过原有全部60个测试身份。此次只调整验收预算和示例，不修改运行时或评测断言。
+
 
 YAML 声明空的 `SWE_API_KEY`、`SWE_BASE_URL`、`SWE_MODEL`，必须明确注入服务进程。模型 key 只传给代理进程环境，不进入模型 shell action 的环境。凭据不放 argv、配置 JSON、返回错误或持久报告。私有 trajectory/config 目录由 finally 删除。这是进程卫生措施，不能防止同用户恶意代码读取其他进程。
 

@@ -25,7 +25,7 @@ abx template deploy ./swe
 # Create a dedicated sandbox from the resulting template through the SDK below.
 abx run "$SANDBOX_ID" swe_version
 ABX_HTTP_TIMEOUT=240 abx run "$SANDBOX_ID" swe_prepare --server-port 9010
-ABX_HTTP_TIMEOUT=360 abx run "$SANDBOX_ID" swe_run_agent --server-port 9010 --arg run_id="$RUN_ID" --arg allow_execution=true --arg command_timeout=300
+ABX_HTTP_TIMEOUT=660 abx run "$SANDBOX_ID" swe_run_agent --server-port 9010 --arg run_id="$RUN_ID" --arg allow_execution=true --arg max_steps=30 --arg command_timeout=600
 ABX_HTTP_TIMEOUT=240 abx run "$SANDBOX_ID" swe_evaluate --server-port 9010 --arg run_id="$RUN_ID"
 abx run "$SANDBOX_ID" swe_report --server-port 9010 --arg run_id="$RUN_ID"
 abx run "$SANDBOX_ID" swe_cleanup --server-port 9010 --arg run_id="$RUN_ID"
@@ -70,7 +70,7 @@ async def main():
         prepared = await sandbox.run('swe_prepare', server_port=9010, timeout=240)
         run_id = prepared['run_id']
         await sandbox.run('swe_run_agent', run_id=run_id, allow_execution=True,
-                          command_timeout=300, server_port=9010, timeout=360)
+                          max_steps=30, command_timeout=600, server_port=9010, timeout=660)
         report = await sandbox.run('swe_evaluate', run_id=run_id, server_port=9010, timeout=240)
         patch = await sandbox.files.read(report['patch_path'])
         assert report['resolved_slice'] and report['passed'] == 60 and patch
@@ -92,8 +92,8 @@ Use `sandbox.network.get_url(9010)` from the configured SDK recipe as `BASE_URL`
 
 ```bash
 curl -fsS -X POST "$BASE_URL/commands/swe_prepare" -H 'Content-Type: application/json' -d '{}'
-curl -fsS --max-time 360 "$BASE_URL/commands/swe_run_agent" -H 'Content-Type: application/json' \
-  -d '{"run_id":"<prepare run_id>","allow_execution":true,"command_timeout":300}'
+curl -fsS --max-time 660 "$BASE_URL/commands/swe_run_agent" -H 'Content-Type: application/json' \
+  -d '{"run_id":"<prepare run_id>","allow_execution":true,"max_steps":30,"command_timeout":600}'
 curl -fsS --max-time 240 "$BASE_URL/commands/swe_evaluate" -H 'Content-Type: application/json' \
   -d '{"run_id":"<prepare run_id>"}'
 ```
@@ -115,6 +115,9 @@ Protect the named server using the server's documented token configuration if ex
 Malformed types/unknown arguments return HTTP 400. Invalid instance/run ID, missing explicit permission/settings, upstream failure, missing test identities or deadlines return HTTP 500 with sanitized errors. A failed test is a real report with `resolved_slice: false`; collection errors produce no score. Same-run operations use an exclusive lock and refuse conflicts. Operations are synchronous; an HTTP client disconnect is not a cancellation API. Set the command deadline or destroy the owned sandbox to stop work.
 
 ## Configuration
+
+The verified real-instance workflow explicitly permits30 agent steps and600 seconds, with a660-second HTTP deadline. Public API defaults remain12 steps/300 seconds; those conservative defaults did not complete the configured model in earlier attempts. A separate owned-cloud diagnostic submitted after25 calls and independently passed all60 original test identities. This changes the acceptance budget and examples, not the runtime or scoring/assertion gates.
+
 
 Empty `SWE_API_KEY`, `SWE_BASE_URL`, `SWE_MODEL` are declared in YAML and must be injected explicitly into the server process. Model keys go only to the agent process environment; they are excluded from model-action environments. Credentials are absent from argv, config JSON, returned errors and persisted reports. The private trajectory/config directory is removed in `finally`. This is process hygiene, not protection from malicious code running as the same user.
 

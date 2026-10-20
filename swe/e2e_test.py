@@ -6,6 +6,9 @@ from pathlib import Path
 import sys
 import httpx
 FAILED = 0
+MODEL_TIMEOUT = int(os.environ.get('E2E_COMMAND_TIMEOUT', '600'))
+if not 30 <= MODEL_TIMEOUT <= 900:
+    raise ValueError('E2E_COMMAND_TIMEOUT must be from30 to900 seconds')
 
 
 def enabled(name):
@@ -53,7 +56,7 @@ def acceptance(client):
         baseline_ok=valid_baseline(baseline)
         record(baseline_ok,'real exact declared failing/passing baseline reproduced')
         if not baseline_ok:return
-        response=client.post('/commands/swe_run_agent',json={'run_id':run_id,'allow_execution':True,'command_timeout':300},timeout=360)
+        response=client.post('/commands/swe_run_agent',json={'run_id':run_id,'allow_execution':True,'max_steps':30,'command_timeout':MODEL_TIMEOUT},timeout=MODEL_TIMEOUT+60)
         record(response.status_code==200 and response.json().get('result',{}).get('model_calls',0)>0,'genuine mini CLI real model submits')
         if response.status_code!=200:return
         response=client.post('/commands/swe_evaluate',json={'run_id':run_id},timeout=240)
