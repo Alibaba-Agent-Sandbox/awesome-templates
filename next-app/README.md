@@ -87,7 +87,7 @@ HTTP200 returns `{"result":{"path":"preview-app","kind":"next"}}`. POST /command
 
 Next uses local next dev --webpack --hostname0.0.0.0 --port3000. Vite uses local vite --host0.0.0.0 --port5173 --strictPort. Literal argv; no shell interpolation. Existing directories and symlink/traversal paths are rejected. The controlled node_modules symlink points to the immutable preinstalled toolchain. Project source/build cache remain after stop; remove them explicitly when no longer needed.
 
-Version1.1.0 adds allowed_host for Vite's exact SDK-forwarded hostname. The default empty value preserves localhost-only host authorization; pass urlsplit(sb.network.get_url(5173)).hostname from the SDK. It sets only the upstream-supported __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS, verified in pinned Vite8.3.4 source and [official server options](https://vite.dev/config/server-options#server-allowedhosts). Wildcards, leading-dot suffixes, schemes, ports, credentials, commas and empty DNS labels are refused. Next does not accept this Vite-only setting. Runtime1.0.0's actual forwarded Vite403 attempt remains a failure;1.1.0 needs a new image/provider run. No Host rewrite or global allow-all mode is used.
+Version1.1.0 adds allowed_host for Vite's exact SDK-forwarded hostname. The default empty value preserves localhost-only host authorization; pass urlsplit(sb.network.get_url(5173)).hostname from the SDK. It sets only the upstream-supported __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS, verified in pinned Vite8.3.4 source and [official server options](https://vite.dev/config/server-options#server-allowedhosts). Wildcards, leading-dot suffixes, schemes, ports, credentials, commas and empty DNS labels are refused. Next does not accept this Vite-only setting. Runtime1.0.0's actual forwarded Vite403 attempt remains a failure;the completed1.1.0 image/forwarded acceptance is linked below. No Host rewrite or global allow-all mode is used.
 
 ## Configuration
 
@@ -127,3 +127,5 @@ Edit generated source through SDK files. Keep framework packages pinned and rege
 ## License
 
 Repository code Apache-2.0: [LICENSE](../LICENSE). Next, React and Vite are MIT; retained package notices and upstream-pins.json record the installed sources. Transitive license notices remain installed.
+
+For operator browser preview when FC serves HTML as an attachment, use the [SDK local relay](../docs/preview-proxy.md) after starting the owned app: python scripts/preview_proxy.py --sandbox-id <owned-sandbox-id> --remote-port 3000 (Next) or --remote-port 5173 (Vite). Keep the exact Vite allowed_host above. The relay borrows that sandbox; stop the relay and explicitly stop/kill owned app resources. This documented Next/Vite browser route is source checked; its browser/HMR behavior has not been separately qualified.
