@@ -1,0 +1,7 @@
+{
+  "name": "agent-sandbox-apply-patch-runtime",
+  "version": "1.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "dependencies": {"@openai/codex": "0.162.1"}
+}

@@ -85,3 +85,12 @@ def test_failed_registry_cleanup_never_publishes_provider_pass(tmp_path):
     source=tmp_path/'source';source.mkdir()
     with pytest.raises(ValueError):review.publish(source,{'passed':True},{'passed':True,'registry_cleanup_verified':False})
     assert not (source/'evidence').exists()
+
+
+def test_missing_controller_dependency_is_found_before_artifact_or_cloud(tmp_path):
+    source=tmp_path/'source';source.mkdir();(source/'e2e_test.py').write_text('import synthetic_missing_controller_dependency\n')
+    with patch.object(images,'download_verified',side_effect=AssertionError('no artifact operation for an unusable controller')):
+        assert review.run(source,123,'unused-crane')==1
+    report=json.loads(next((source/'evidence').glob('image-attempt-*.json')).read_text())
+    assert report['missing_controller_modules']==['synthetic_missing_controller_dependency']
+    assert report['passed'] is False

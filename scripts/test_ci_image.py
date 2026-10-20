@@ -108,3 +108,20 @@ def test_tag_changed_before_registration_is_rejected_without_mutation(tmp_path,m
         pytest.fail('no cloud mutation before digest match')
     assert h.execute(options,runner=run,sdk=lambda *_:'ok',verify=lambda *_:True)==1
     assert not (source/'evidence').exists()
+
+
+def test_changed_tag_after_runtime_cannot_publish_even_when_cleanup_succeeds(tmp_path,monkeypatch):
+    source,proof,path=fixture(tmp_path)
+    options=h.build_options([str(source),'--build','image','--image-ref',IMAGE,'--image-proof',str(path)])
+    monkeypatch.setenv('ABX_IMAGE_REGISTRY_USERNAME','synthetic-user');monkeypatch.setenv('ABX_IMAGE_REGISTRY_PASSWORD','synthetic-password')
+    digests=iter([proof['pushed_image_digest'],'sha256:'+'0'*64])
+    monkeypatch.setattr(h,'image_digest',lambda ref:next(digests))
+    def run(argv,timeout):
+        if argv[1:3]==['template','info']:return h.Proc(0,'{"status":{"state":"ready"}}','')
+        if '--official-api' in argv:return h.Proc(0,'[]','')
+        if argv[1:3]==['template','create']:return h.Proc(0,'{"TemplateID":"owned-template"}','')
+        if 'create' in argv:return h.Proc(0,'{"ID":"owned-sandbox"}','')
+        if 'run' in argv:return h.Proc(0,'{"result":"ok"}','')
+        return h.Proc(0,'','')
+    assert h.execute(options,runner=run,sdk=lambda *_:'ok',verify=lambda *_:True)==1
+    assert not (source/'evidence').exists()
