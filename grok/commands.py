@@ -125,7 +125,7 @@ def grok(prompt: str,cwd: str='',command_timeout: int=300) -> dict:
     _validate_config()
     args=['--output-format','json','--always-approve','--no-plan','--no-subagents',
         '--disable-web-search','--sandbox','off','--model','abx-approved','--cwd',str(directory),
-        '--max-turns','20','--tools','read_file,write_file,search_replace,grep,list_dir,run_terminal_cmd',
+        '--max-turns','20','--tools','read_file,search_replace,grep,list_dir,run_terminal_cmd',
         '--disallowed-tools','Agent','--prompt-file','/dev/stdin']
     return _run(args,cwd=directory,timeout=command_timeout,model=True,prompt=prompt)
 

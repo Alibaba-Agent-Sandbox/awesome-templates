@@ -69,6 +69,7 @@ def test_actual_authored_process_literal_stdin_redaction_nonzero_and_private_cle
     result=c.grok(prompt);state=json.loads(capture.read_text())
     assert state['stdin']==prompt and prompt not in state['argv']
     assert state['argv'][state['argv'].index('--prompt-file')+1]=='/dev/stdin'
+    assert 'write_file'not in state['argv'][state['argv'].index('--tools')+1].split(',')
     assert '--no-subagents'in state['argv'] and state['argv'][state['argv'].index('--model')+1]=='abx-approved'
     assert not Path(state['home']).exists() and result['exit_code']==23
     assert 'synthetic-only-key'not in result['stdout']+result['stderr'] and '[REDACTED]'in result['stdout']

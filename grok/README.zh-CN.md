@@ -77,7 +77,7 @@ HTTP200 返回 `{"result":{"native_version":"1.0.62"}}`。`POST /commands/grok` 
 | grok_setup_check | 无 | mode=openai-compatible-byok、base_url_set／api_key_set／model_set 布尔值、xai_account_required:false；不联网／返回秘密 |
 | grok | prompt：必填非空字符串，1..32768 UTF-8字节且无 NUL；cwd：可选字符串，默认空，最多4096字节，解析后必须为 WORKSPACE 内现存目录；command_timeout：整数1..600秒，默认300 | `{stdout:string,stderr:string,exit_code:int,native_version:"1.0.62"}`；原生工具执行及工作区文件修改 |
 
-固定参数为 --output-format json、--always-approve、--no-plan、--no-subagents、--disable-web-search、--sandbox off、--model abx-approved、--max-turns20、--prompt-file /dev/stdin。工具白名单为 read_file/write_file/search_replace/grep/list_dir/run_terminal_cmd，禁用 Agent。原生 sandbox off 保留工具在外层沙箱内的 OS 权限；cwd 仅为参数边界。仅用于受信任调用者与全新自有一次性沙箱，无回滚承诺。提示和密钥值均不进入 argv。
+固定参数为 --output-format json、--always-approve、--no-plan、--no-subagents、--disable-web-search、--sandbox off、--model abx-approved、--max-turns20、--prompt-file /dev/stdin。工具白名单为 read_file/search_replace/grep/list_dir/run_terminal_cmd，禁用 Agent。原生 sandbox off 保留工具在外层沙箱内的 OS 权限；cwd 仅为参数边界。仅用于受信任调用者与全新自有一次性沙箱，无回滚承诺。提示和密钥值均不进入 argv。
 
 stdout／stderr 各限256KiB；成功／失败／超时／溢出均清理自有进程组、pidfd 和唯一归属标记后代。调用串行，并发报 busy，不使用原 HOME。返回前脱敏显式模型密钥／端点及其 JSON 转义形式。只保留调用者请求的工作区产物，原生 HOME／配置／缓存／会话／team 状态均在调用后删除。
 

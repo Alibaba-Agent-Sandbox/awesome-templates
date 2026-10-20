@@ -1,5 +1,5 @@
 name: grok
-version: "1.0.0"
+version: "1.0.1"
 description: "Pinned genuine official xAI Grok Build1.0.62 CLI, private OpenAI-compatible configuration and bounded headless coding."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0
