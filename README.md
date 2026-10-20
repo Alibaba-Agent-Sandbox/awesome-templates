@@ -29,7 +29,7 @@ The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](do
 | Template | Description | Status | Verified on |
 |----------|-------------|--------|-------------|
 | [python-hello](./python-hello/README.md) | A minimal Python hello world template for testing | experimental | [alicloud-express (1.1.1 full HTTP)](./python-hello/evidence/express-2026-10-19T183219Z.json) |
-| [tau2-bench](./tau2-bench/README.md) | Original Tau2 text retail agent/user and native strict replay | experimental | Pending image, Express and real-model acceptance |
+| [tau2-bench](./tau2-bench/README.md) | Original Tau2 text retail agent/user and native strict replay | experimental | [alicloud-express1.0.4 SDK steps/native model17](./tau2-bench/evidence/express-2026-10-20T212600Z.json) |
 | [stagehand](./stagehand/README.md) | Native Stagehand4.3.0 local Chromium act/extract | experimental | [alicloud-express1.1.1 SDK steps and real native model](./stagehand/evidence/express-2026-10-20.json) |
 | [grok](grok/) | Official xAI Grok Build native coding | experimental | [alicloud-express1.0.1 SDK steps and real coding](grok/evidence/express-2026-10-20.json) |
 | [browser-use](./browser-use/README.md) | Native text-DOM browser agent with private Chromium | experimental | [alicloud-express (1.0.0 SDK image, real model)](./browser-use/evidence/express-2026-10-20.json) |

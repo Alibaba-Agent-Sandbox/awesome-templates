@@ -34,6 +34,8 @@ python scripts/prepare_steps.py tau2-bench --asset-transport oss --output /tmp/t
 abx --native template deploy /tmp/tau2-steps-<unique-run> --build steps -y
 abx --native create --template <owned-template-id> -y
 abx --native run <owned-sandbox-id> tau2_version
+# Requires the explicitly configured model server; select its port as documented below.
+abx --native run <owned-sandbox-id> tau2_run --server-port 9010
 abx --native kill <owned-sandbox-id> -y
 abx --native template delete <owned-template-id> -y
 ```
@@ -48,24 +50,73 @@ ABX='abx --native' python scripts/run_steps_e2e.py tau2-bench --sandbox-create s
 
 ## 快速开始（Python SDK）
 
-按[固定客户端安装说明](../docs/python-client-installation.md)安装配套 `agent-sandbox-client`。模板占位符必须属于自己。示例目前仅核对源码，云端验收待完成；运行任务前须按下节启动带三个模型配置的服务进程。
+按[固定客户端安装说明](../docs/python-client-installation.md)安装配套 `agent-sandbox-client`。模板占位符必须属于自己。示例已通过语法检查，同样的 SDK/原生操作已在记录中的所属云验收执行；代码显式启动带模型配置的9010服务。
 
 ```python
+import asyncio
+import os
+import secrets
+
+import httpx
 from agent_sandbox.api.sandbox import Sandbox
 
 async def example():
+    settings = {name: os.environ[name] for name in ('TAU2_MODEL_API_KEY', 'TAU2_MODEL_BASE_URL', 'TAU2_MODEL')}
+    token = secrets.token_urlsafe(32)
+    settings.update(HOME="/home/user", WORKSPACE='/home/user/workspace',
+                    ABX_SERVER_BASE_DIR='/home/user/workspace', ABX_SERVER_TOKEN=token,
+                    PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin")
     sb = await Sandbox.create(template="<owned-template-id>", timeout=1200)
+    stream = drain = server = None
     try:
-        print(await sb.run("tau2_version", timeout=90))
-        # 服务已经在明确的模型环境下启动后：
-        # result = await sb.run("tau2_run", domain="retail", task_id="0",
-        #     max_steps=30, command_timeout=600, timeout=660)
-        # trajectory = await sb.files.read_bytes(
-        #     result["artifact_path"], max_bytes=8 * 1024 * 1024)
-        # print(await sb.run("tau2_verify_artifact",
-        #     path=result["artifact_path"], task_id="0", timeout=150))
+        stream = await sb.commands.start(
+            "agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py",
+            env=settings, timeout=1100)
+        started = asyncio.Event()
+        async def consume():
+            async for chunk in stream:
+                if chunk.pid:
+                    started.set()
+        drain = asyncio.create_task(consume())
+        await asyncio.wait_for(started.wait(), 90)
+        async with httpx.AsyncClient(timeout=10) as client:
+            for _ in range(60):
+                try:
+                    response = await client.get(sb.network.get_url(9010) + "/health",
+                                                headers=sb.network.get_access_headers())
+                    if response.status_code == 200:
+                        break
+                except httpx.HTTPError:
+                    pass
+                await asyncio.sleep(1)
+            else:
+                raise RuntimeError("configured server not healthy")
+        server = sb.server_at(9010, token=token)
+        print(await server.commands.run('tau2_version', timeout=90))
+        setup = await server.commands.run('tau2_setup_check', timeout=60)
+        if not all(setup.get(k) is True for k in ("api_key_set", "base_url_set", "model_set")):
+            raise RuntimeError("model configuration not present in this server")
+        result = await server.commands.run("tau2_run", domain="retail", task_id="0",
+                                           max_steps=40, command_timeout=900, timeout=1000)
+        trajectory = await sb.files.read_bytes(result["log_path"], max_bytes=8 * 1024 * 1024)
+        print(result["score"], len(trajectory))
+        print(await server.commands.run("tau2_verify_artifact", path=result["log_path"],
+                                        task_id="0", timeout=150))
     finally:
-        await sb.kill()
+        try:
+            if server is not None:
+                await server.aclose()
+        finally:
+            try:
+                await sb.kill()
+            finally:
+                if drain is not None:
+                    drain.cancel()
+                    await asyncio.gather(drain, return_exceptions=True)
+                if stream is not None:
+                    await stream.cancel()
+
+asyncio.run(example())
 ```
 
 创建时设置环境变量不会重配预热服务，遵循[运行环境说明](../docs/runtime-environment.zh-CN.md)，模型运行前检查 `tau2_setup_check`。
@@ -88,7 +139,7 @@ curl --fail-with-body -X POST "$SERVER_URL/commands/tau2_version" -H "Authorizat
 | --- | --- | --- |
 | `tau2_version` | 无 | 原版源码版本、提交、零售领域及原版任务数；不调用模型。 |
 | `tau2_setup_check` | 无 | 配置是否存在的布尔值及 `native-retail-agent-and-user` 模式；不返回密钥、不调用模型。 |
-| `tau2_run` | `domain: str="retail"`（仅零售）；`task_id: str="0"`（1–3位十进制数字且任务须存在）；`max_steps: int=30`（5–60，拒绝 bool）；`command_timeout: int=600` 秒（30–900，拒绝 bool） | 原生评分、终止原因、消息及工具次数、源码提交、轨迹路径/字节数/SHA256；调用两个模型并写入独占私有结果目录。含非空自然语言断言的任务在模型调用前拒绝。 |
+| `tau2_run` | `domain: str="retail"`（仅零售）；`task_id: str="0"`（1–3位十进制数字且任务须存在）；`max_steps: int=30`（5–60，拒绝 bool）；`command_timeout: int=600` 秒（30–900，拒绝 bool） | 原生 `score`、`log_path`/`artifact_path` 同路径、终止原因、消息及工具次数、源码提交、轨迹字节数/SHA256；调用两个模型并写入独占私有结果目录。含非空自然语言断言的任务在模型调用前拒绝。 |
 | `tau2_verify_artifact` | 必填 `path: str`（最多4096个 UTF-8 字节，工作区内已有常规轨迹文件，1–8MiB）；`task_id: str="0"` | 无模型密钥的原版严格重放、匹配评分和轨迹 SHA256；不修改文件；期限120秒。 |
 
 版本命令期限60秒，输入走匿名 stdin，每条输出流限256KiB。原版进程使用串行化独占进程组、nonce 和 pidfd 清理。超时、非零退出、未完成轨迹、错误源码/任务、评分不一致或畸形输出均失败。
@@ -111,7 +162,14 @@ curl --fail-with-body -X POST "$SERVER_URL/commands/tau2_version" -H "Authorizat
 
 ## 已验证
 
-实验状态，`tested_on: []`。镜像、极速版步骤构建、SDK 原版真实模型执行、独立严格重放及云资源清理均为 **PENDING**。本地合成测试不能证明这些通过。示例仅核对源码；新增提供商声明前须保留失败/跳过，发布精确源码的脱敏记录。
+模板1.0.4 为 experimental，`tested_on: [alicloud-express]`。
+[同验收源码镜像 L1](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39500169930)
+及[SDK 创建的标准原生步骤](evidence/express-2026-10-20T212600Z.json)、
+[完整 HTTP/模型记录](evidence/verification-steps-2026-10-20T212600Z.json)通过：HTTP8PASS/0FAIL/0SKIP，
+真实模型17PASS/0FAIL/0SKIP。原版零售任务0得分1.0，22条消息、11条 assistant、4条 user、7次实际工具调用；
+独立下载核对79,516字节轨迹与哈希，无密钥原版严格重放复现1.0。返回后新鲜确认、所属结果、私有状态、监听端口、
+外层沙箱/模板和私有 OSS 资产均独立确认清理，耗时230.319秒。范围仅为此原版文本零售任务，不推断114个任务或其他提供商。
+历史失败保留。SDK 示例已检查语法；记录中的云验收通过显式9010启动执行同样的 SDK/原生操作。
 
 ## 二次开发
 
@@ -134,3 +192,4 @@ CLI：[agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/iss
 ## 许可证
 
 封装为 [Apache-2.0](../LICENSE)，原版 Tau2 源码与选取的零售数据保留 [MIT 声明](UPSTREAM-LICENSE.md)。分发时保留上游声明。
+Python3.13 兼容依赖保留 [audioop-lts PSF-2.0 许可证](AUDIOOP-LICENSE.txt)。

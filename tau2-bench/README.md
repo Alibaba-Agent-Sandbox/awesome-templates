@@ -52,6 +52,8 @@ python scripts/prepare_steps.py tau2-bench --asset-transport oss --output /tmp/t
 abx --native template deploy /tmp/tau2-steps-<unique-run> --build steps -y
 abx --native create --template <owned-template-id> -y
 abx --native run <owned-sandbox-id> tau2_version
+# Requires the explicitly configured model server; select its port as documented below.
+abx --native run <owned-sandbox-id> tau2_run --server-port 9010
 abx --native kill <owned-sandbox-id> -y
 abx --native template delete <owned-template-id> -y
 ```
@@ -73,25 +75,73 @@ environment described below; do not put keys in CLI arguments.
 
 Install the paired `agent-sandbox-client` using the
 [pinned client guide](../docs/python-client-installation.md). The placeholder
-template must belong to you. These examples are source-checked, pending cloud
-qualification. `tau2_run` requires a server started with the three model settings.
+template must belong to you. These examples are syntax-checked; the same SDK/native operations were exercised in the recorded owned cloud fixture. `tau2_run` requires a server started with the three model settings.
 
 ```python
+import asyncio
+import os
+import secrets
+
+import httpx
 from agent_sandbox.api.sandbox import Sandbox
 
 async def example():
+    settings = {name: os.environ[name] for name in ('TAU2_MODEL_API_KEY', 'TAU2_MODEL_BASE_URL', 'TAU2_MODEL')}
+    token = secrets.token_urlsafe(32)
+    settings.update(HOME="/home/user", WORKSPACE='/home/user/workspace',
+                    ABX_SERVER_BASE_DIR='/home/user/workspace', ABX_SERVER_TOKEN=token,
+                    PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin")
     sb = await Sandbox.create(template="<owned-template-id>", timeout=1200)
+    stream = drain = server = None
     try:
-        print(await sb.run("tau2_version", timeout=90))
-        # After starting the server with the explicit model environment:
-        # result = await sb.run("tau2_run", domain="retail", task_id="0",
-        #     max_steps=30, command_timeout=600, timeout=660)
-        # trajectory = await sb.files.read_bytes(
-        #     result["artifact_path"], max_bytes=8 * 1024 * 1024)
-        # print(await sb.run("tau2_verify_artifact",
-        #     path=result["artifact_path"], task_id="0", timeout=150))
+        stream = await sb.commands.start(
+            "agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py",
+            env=settings, timeout=1100)
+        started = asyncio.Event()
+        async def consume():
+            async for chunk in stream:
+                if chunk.pid:
+                    started.set()
+        drain = asyncio.create_task(consume())
+        await asyncio.wait_for(started.wait(), 90)
+        async with httpx.AsyncClient(timeout=10) as client:
+            for _ in range(60):
+                try:
+                    response = await client.get(sb.network.get_url(9010) + "/health",
+                                                headers=sb.network.get_access_headers())
+                    if response.status_code == 200:
+                        break
+                except httpx.HTTPError:
+                    pass
+                await asyncio.sleep(1)
+            else:
+                raise RuntimeError("configured server not healthy")
+        server = sb.server_at(9010, token=token)
+        print(await server.commands.run('tau2_version', timeout=90))
+        setup = await server.commands.run('tau2_setup_check', timeout=60)
+        if not all(setup.get(k) is True for k in ("api_key_set", "base_url_set", "model_set")):
+            raise RuntimeError("model configuration not present in this server")
+        result = await server.commands.run("tau2_run", domain="retail", task_id="0",
+                                           max_steps=40, command_timeout=900, timeout=1000)
+        trajectory = await sb.files.read_bytes(result["log_path"], max_bytes=8 * 1024 * 1024)
+        print(result["score"], len(trajectory))
+        print(await server.commands.run("tau2_verify_artifact", path=result["log_path"],
+                                        task_id="0", timeout=150))
     finally:
-        await sb.kill()
+        try:
+            if server is not None:
+                await server.aclose()
+        finally:
+            try:
+                await sb.kill()
+            finally:
+                if drain is not None:
+                    drain.cancel()
+                    await asyncio.gather(drain, return_exceptions=True)
+                if stream is not None:
+                    await stream.cancel()
+
+asyncio.run(example())
 ```
 
 A create-time environment does not reconfigure a prewarmed server; follow
@@ -121,7 +171,7 @@ the client does not cancel the server operation.
 | --- | --- | --- |
 | `tau2_version` | None | Native source version/revision, retail domain and original task count; no model call. |
 | `tau2_setup_check` | None | Configuration-presence booleans and `native-retail-agent-and-user` mode; no secret values or model call. |
-| `tau2_run` | `domain: str="retail"` (only retail); `task_id: str="0"` (1–3 decimal digits, must exist); `max_steps: int=30` (5–60, no bool); `command_timeout: int=600` seconds (30–900, no bool) | Native reward, termination/message/tool counts, source revision, artifact path/bytes/SHA256. Calls both models and writes one private owned result directory. Rejects tasks with nonempty NL assertions before model calls. |
+| `tau2_run` | `domain: str="retail"` (only retail); `task_id: str="0"` (1–3 decimal digits, must exist); `max_steps: int=30` (5–60, no bool); `command_timeout: int=600` seconds (30–900, no bool) | Native `score`, `log_path`/`artifact_path` aliases, termination/message/tool counts, source revision, artifact bytes/SHA256. Calls both models and writes one private owned result directory. Rejects tasks with nonempty NL assertions before model calls. |
 | `tau2_verify_artifact` | Required `path: str` (at most 4096 UTF-8 bytes, existing regular trajectory inside workspace, 1–8MiB); `task_id: str="0"` | Keyless native strict replay, matched reward and artifact SHA256; no artifact mutation. Deadline120 seconds. |
 
 Version deadline is60 seconds. Inputs travel through anonymous stdin, output is
@@ -162,11 +212,20 @@ are deleted. Kill and independently confirm absence of your outer cloud resource
 
 ## Verified
 
-Experimental; `tested_on: []`. Image, Express steps, SDK/native model execution,
-independent strict replay and owned cloud cleanup are **PENDING**. Local fixtures
-cannot establish those passes. Examples are source-checked only. New runs must
-preserve failures/skips and publish exact-source sanitized receipts before adding
-provider claims.
+Experimental; `tested_on: [alicloud-express]` for template1.0.4. Actual image
+[L1 run39500169930](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39500169930)
+passed at the same acceptance source3a0d8e91a6246bd276372a6c04a53a7de71cb6ae.
+[SDK-created canonical native steps](evidence/express-2026-10-20T212600Z.json) and
+[full HTTP/model proof](evidence/verification-steps-2026-10-20T212600Z.json):8HTTP
+PASS/0FAIL/0SKIP and17real-model PASS/0FAIL/0SKIP. Original retail task0 scored1.0
+with22messages,11assistant messages,4user messages and7actual native tool calls;
+79,516-byte trajectory downloaded/hash-checked and independently keyless strict
+replayed to1.0. Fresh post-return ACK, owned result/private state/listener,
+outer sandbox/template and private OSS bucket/object absence all passed. Duration
+230.319s. Scope is this original text retail task, not all114tasks or other
+providers. Historical failures are retained. SDK snippets are syntax-checked;
+recorded cloud tests exercised the same SDK/native operations with explicit9010
+startup.
 
 ## Secondary development
 
@@ -200,3 +259,4 @@ CLI: [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issu
 
 Wrapper: [Apache-2.0](../LICENSE). Original Tau2 source and selected retail data:
 retained [MIT notice](UPSTREAM-LICENSE.md). Preserve upstream notices when distributing.
+Python3.13 compatibility dependency: [audioop-lts PSF-2.0](AUDIOOP-LICENSE.txt).
