@@ -92,6 +92,10 @@ async def real_desktop(base,client,headers):
         fresh='POST_RETURN_'+uuid.uuid4().hex
         code='import pathlib,hashlib;p=pathlib.Path('+repr(screenshot)+');assert hashlib.file_digest(p.open("rb"),"sha256").hexdigest()=='+repr(artifact['sha256'])+';print('+repr(fresh)+')'
         record(target_code(client,code)==fresh,'post-return exact target PNG verified with unpredictable ACK')
+        opened=await sdk(base,'chrome_open',url='about:blank')
+        record(opened.get('url')=='about:blank'and opened.get('title')=='','actual SDK valid chrome_open navigates the existing visible native tab')
+        async with Page(cdp,headers=headers)as observed:
+            record(await observed.evaluate('location.href')=='about:blank'and await observed.evaluate('document.title')=='','independent external CDP confirms the named navigation result')
         again=await sdk(base,'chrome_start');record(again.get('reused')is True,'start is idempotent for the same owned active session')
     finally:
         if screenshot:
