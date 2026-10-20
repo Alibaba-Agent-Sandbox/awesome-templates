@@ -74,7 +74,13 @@ def parallel_assets(source: Path) -> dict:
         if "uv==" + metadata["uv_version"] not in text or "uv python install " + metadata["python_version"] not in text:
             raise ValueError("uv standalone-Python transport metadata must match the exact source pins")
         wheels = json.loads(Path(__file__).with_name("step_uv_bootstrap.json").read_text())["assets"]
-        return {arch: [item, wheels[arch]] for arch, item in metadata["assets"].items()}
+        upstream = {
+            "url": "https://codeload.github.com/NousResearch/hermes-agent/tar.gz/297552a9d646119871391d202509822cd86330df",
+            "sha256": "fbd55e510b49592635429aa451a7c2b9fb4061cddbbab09f52504226f4338fcf",
+            "size": 83225459,
+            "digest_basis": "controller measured immutable upstream commit archive; not an upstream-published SHA256",
+        }
+        return {arch: [item, wheels[arch], upstream] for arch, item in metadata["assets"].items()}
     if source.name in {"deepagents", "osworld"}:
         metadata = json.loads(Path(__file__).with_name("step_uv_bootstrap.json").read_text())
         if source.name == "deepagents":
@@ -318,6 +324,10 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
                     else:
                         if part == "pip install --no-cache-dir uv==0.12.3":
                             part = f"pip install --no-cache-dir --no-index --no-deps {asset_root}/uv-*.whl"
+                        if part.startswith("curl -fsSL https://codeload.github.com/NousResearch/hermes-agent/"):
+                            archive = next(item for item in next(iter(assets.values()))
+                                           if item["url"].startswith("https://codeload.github.com/"))
+                            part = f"tar -xz --strip-components=1 -C /opt/hermes -f {asset_root}/" + archive["sha256"]
                         steps.append(run_step("cd " + shlex.quote(directory) + " && " + part))
                 continue
             if temporary_uv and ("--require-hashes" in value or source.name == "swe" and re.search(r"/opt/swe-(agent|eval)/bin/pip install", value)):
@@ -327,6 +337,10 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
                         if not match:
                             raise ValueError("unreviewed locked Python package installation")
                         arguments = match[2].replace("--no-cache-dir", "")
+                        if source.name == "osworld" and asset_transport == "oss":
+                            # Keep every upstream version/hash and build rule;
+                            # use the regional public PyPI mirror for transport.
+                            arguments += " --default-index https://mirrors.aliyun.com/pypi/simple/"
                         part = f"{uv_root}/bin/uv --no-cache pip install --python {match[1]}python {arguments}"
                     if source.name == "osworld" and "-m playwright install --with-deps chromium" in part:
                         part = f"python3 {asset_root}/step_assets.py playwright " + part

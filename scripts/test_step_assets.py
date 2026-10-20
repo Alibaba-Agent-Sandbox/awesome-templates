@@ -78,6 +78,20 @@ def test_installer_consumes_only_exact_verified_cache(tmp_path):
     assert script.read_text().startswith("import urllib.request")
 
 
+def test_osworld_private_transport_keeps_hashes_on_regional_package_mirror():
+    from prepare_steps import parallel_assets
+    import platform
+    assets = parallel_assets(ROOT / "osworld")[platform.machine()]
+    manifest, _ = prepare(ROOT / "osworld", asset_transport="oss", asset_cache={
+        "architecture": platform.machine(),
+        "urls": {item["url"]: "https://private.invalid/object" for item in assets},
+    })
+    command = next(s["args"][0] for s in manifest["build"]["steps"]
+                   if s["type"] == "RUN" and "--require-hashes" in s["args"][0])
+    assert "--no-build-isolation --require-hashes -r /opt/osworld/requirements.txt" in command
+    assert "--default-index https://mirrors.aliyun.com/pypi/simple/" in command
+
+
 @pytest.mark.parametrize("name", ["goose", "crush", "code-server", "polyglot-toolchain", "aider", "swe", "hermes-agent"])
 def test_generated_cache_preserves_original_source_and_is_removed_before_runtime(name):
     manifest, proof = prepare(ROOT / name, asset_transport="parallel", server_commit="e2cb27e24fde0a67112f82b8d44af463445a5d1a")
@@ -90,6 +104,8 @@ def test_generated_cache_preserves_original_source_and_is_removed_before_runtime
     if name == "hermes-agent":
         assert proof["python_download_profile"].startswith("uv0.12.3")
         assert any("uv python install cpython-3.14.6-linux-$(uname -m)-gnu" in step["args"][0] for step in steps if step["type"] == "RUN")
+        assert any("tar -xz --strip-components=1 -C /opt/hermes -f /tmp/abx-step-assets/" in step["args"][0] for step in steps if step["type"] == "RUN")
+        assert not any("curl -fsSL https://codeload.github.com/NousResearch/hermes-agent/" in step["args"][0] for step in steps if step["type"] == "RUN")
     assert steps[-1] == {"type": "USER", "args": ["user"]}
     # compact_run retains short cleanup commands in plaintext.
     assert "rm -rf /tmp/abx-step-assets" in steps[-2]["args"][0]

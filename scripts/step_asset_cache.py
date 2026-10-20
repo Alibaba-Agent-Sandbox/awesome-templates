@@ -66,7 +66,7 @@ class AssetCache:
                        "cleanup_verified": self.cleanup_verified}, stream)
 
     def prepare(self, assets: dict) -> dict:
-        allowed = {"github.com", "static.rust-lang.org", "go.dev", "files.pythonhosted.org", "cdn.playwright.dev", "nodejs.org"}
+        allowed = {"github.com", "codeload.github.com", "static.rust-lang.org", "go.dev", "files.pythonhosted.org", "cdn.playwright.dev", "nodejs.org"}
         for item in assets[self.architecture]:
             url = urlsplit(item["url"])
             if url.scheme != "https" or url.hostname not in allowed or url.username or url.password or url.query or url.fragment:
