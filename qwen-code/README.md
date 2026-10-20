@@ -106,9 +106,13 @@ Diagnostics inspect `~/.qwen/settings.json` and `<workspace>/.qwen/settings.json
 
 | Provider | Current version and scope | Evidence |
 | --- | --- | --- |
-| alicloud-express | 2.1.1; steps build, official READY, CLI/SDK basic smoke, independent cleanup; current-version model acceptance NOT_RUN | [2026-10-19](evidence/express-2026-10-19T184254Z.json) |
+| alicloud-express | 2.1.1; steps build, official READY, CLI/SDK basic smoke, independent cleanup; model phase not run in this step receipt | [2026-10-19](evidence/express-2026-10-19T184254Z.json) |
+| alicloud-express | 2.1.1; actual CI image, official READY, Python Sandbox.create, CLI/SDK and17 strict real-model assertions;0 FAIL/0 SKIP; independent sandbox/template/registry cleanup | [image](evidence/express-2026-10-20.json), [model](evidence/model-image-2026-10-20T073522Z.json) |
 
 The changed workspace profile is verified in real generated steps. Prior receipts retain historical scope; basic smoke does not establish model acceptance.
+
+
+Model: qwen3.8-flash over the explicitly configured OpenAI-compatible endpoint.
 
 ## Historical verification
 

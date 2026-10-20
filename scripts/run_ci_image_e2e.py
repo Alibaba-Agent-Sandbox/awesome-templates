@@ -48,11 +48,14 @@ def publish(source: Path, receipt: dict, report: dict) -> None:
     with (directory/('image-http-'+stamp+'.json')).open('x') as stream:json.dump(report,stream,indent=2);stream.write('\n')
 
 
-def run(source: Path,artifact_id: int,crane: str,*,http: bool=True) -> int:
+def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,sandbox_create: str="cli") -> int:
+    if sandbox_create not in ("cli","sdk"):
+        raise ValueError("sandbox_create must be cli or sdk")
     source=source.resolve();private=Path(tempfile.mkdtemp(prefix='abx-ci-image-'));private.chmod(0o700)
     journal_path=private/'registry-intent.json';status=1;registry_clean=False;checks={};receipt=None
     report={'template':source.name,'provider':'alicloud-express','build_mode':'image',
         'verification_type':'ci-image-backed-external-http','passed':False,'registry_cleanup_verified':False,
+        'sandbox_create':'python-sdk-Sandbox.create' if sandbox_create=='sdk' else 'abx create',
         'model_acceptance':'NOT_RUN','http_acceptance':checks}
     try:
         missing=controller_missing_imports(source) if http else []
@@ -71,7 +74,8 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True) -> int:
         proof_path=private/'image-proof.json';proof_path.write_text(json.dumps(proof))
         options=harness.build_options([str(runtime),'--build','image','--image-ref',image_ref,'--image-proof',str(proof_path),
             '--alias','e2e-image-'+source.name+'-'+uuid.uuid4().hex[:8],'--timeout','900',
-            '--wall-timeout','1200','--idle-timeout','600','--push-retries','0','--sandbox-timeout','1200'])
+            '--wall-timeout','1200','--idle-timeout','600','--push-retries','0','--sandbox-timeout','1200',
+            '--sandbox-create',sandbox_create])
         username,password=images.temporary_registry_credentials()
         prior={key:os.environ.get(key) for key in ['ABX_IMAGE_REGISTRY_USERNAME','ABX_IMAGE_REGISTRY_PASSWORD','ABX_IMAGE_CRANE']}
         os.environ.update(ABX_IMAGE_REGISTRY_USERNAME=username,ABX_IMAGE_REGISTRY_PASSWORD=password,ABX_IMAGE_CRANE=crane)
@@ -151,6 +155,7 @@ def main():
     parser.add_argument('template',type=Path);parser.add_argument('--artifact-id',type=int,required=True)
     parser.add_argument('--crane',required=True,help='Path to verified upstream crane binary')
     parser.add_argument('--smoke-only',action='store_true',help='Explicitly omit full HTTP acceptance')
-    args=parser.parse_args();return run(args.template,args.artifact_id,args.crane,http=not args.smoke_only)
+    parser.add_argument('--sandbox-create',choices=('cli','sdk'),default='cli')
+    args=parser.parse_args();return run(args.template,args.artifact_id,args.crane,http=not args.smoke_only,sandbox_create=args.sandbox_create)
 
 if __name__=='__main__':raise SystemExit(main())

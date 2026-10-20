@@ -133,6 +133,9 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/run_script" \
 
 ## 已验证
 
+2026-10-20 同版本追加真实 step 复验，实际使用 Python `Sandbox.create`，通过 CLI/SDK 命名 smoke，并独立确认 sandbox/template 清理：[SDK 创建 step 回执](evidence/express-2026-10-20.json)。此记录单独证明创建入口；下方完整工作流回执保留原有范围。
+
+
 | Provider | Current version and scope | Evidence |
 | --- | --- | --- |
 | alicloud-express | 1.1.1; steps构建、官方READY、CLI/SDK、完整HTTP21项、独立清理 | [2026-10-19](evidence/express-2026-10-19T183219Z.json) |

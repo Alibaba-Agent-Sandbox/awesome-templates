@@ -1,0 +1,39 @@
+{
+  "status": "PASS",
+  "issue": 98,
+  "scope": "Four current strict controller hashes separately rerun on exact reviewed images; ownership repair belongs to merged PR135, not this verifier change",
+  "model": "qwen3.8-flash",
+  "model_protocol": "OpenAI-compatible",
+  "local_controller_regressions": 209,
+  "profiles": [
+    {
+      "template": "pi",
+      "template_version": "1.0.1",
+      "controller_sha256": "f50b4d7596f0f7ff2d8830bedac67ddc7a867e930f293f691a47f3ef73c696f1",
+      "pass_count": 18,
+      "receipt": "pi/evidence/model-image-2026-10-20T061438Z.json"
+    },
+    {
+      "template": "hermes-agent",
+      "template_version": "1.1.1",
+      "controller_sha256": "2301f0966f4f749a42d551cbe5c5bb5dcef4e423337f88600e5073e60a531626",
+      "pass_count": 17,
+      "receipt": "hermes-agent/evidence/model-image-2026-10-20T062649Z.json"
+    },
+    {
+      "template": "deepseek-harness",
+      "template_version": "1.1.1",
+      "controller_sha256": "4861e80627dd949ac6b822f952fa6ef74d2eda95465c9227d6afa63e7f625247",
+      "pass_count": 17,
+      "receipt": "deepseek-harness/evidence/model-image-2026-10-20T073449Z.json"
+    },
+    {
+      "template": "qwen-code",
+      "template_version": "2.1.1",
+      "controller_sha256": "8240f5bd25a06477489b733cc86fc98c701ec25124dabf3e7118dc8cdedbf5d6",
+      "pass_count": 17,
+      "receipt": "qwen-code/evidence/model-image-2026-10-20T073522Z.json"
+    }
+  ],
+  "no_fixture_promotion": true
+}
