@@ -10,12 +10,12 @@ Inspect uploaded audio/video files and create bounded MP4/H.264, WAV or FLAC art
 
 - Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`, normally `cn-hangzhou` / `v0.0.49`.
 - Debian 13 [FFmpeg `7:7.1.5-0+deb13u1`](https://packages.debian.org/trixie/ffmpeg), including the same exact version of its FFmpeg ABI libraries; other operating-system dependencies resolve from Debian repositories.
-- Injected server wheel or python-sdk source pin `e2cb27e24fde0a67112f82b8d44af463445a5d1a`.
+- Injected server wheel or python-sdk source pin `fd72d3210b85079d93dcf08e19bfded73643162b`.
 - Non-root `user`; writable `/home/user/app`; generation 2 `agent-sandbox-server serve` / `healthcheck`, port 9000.
 
 ## Problem solved
 
-Give media workflows a small, predictable CPU conversion interface with independent artifact checks. This initial slice deliberately exposes three presets rather than accepting arbitrary FFmpeg flags, filters, devices or network URLs. MP4 keeps the first video and optional first audio stream, scales to width 640 with an even proportional height, and produces 24 fps H.264/yuv420p plus stereo 48 kHz AAC. WAV and FLAC keep the first audio stream as mono 16 kHz PCM16 or lossless FLAC.
+Give media workflows a small, predictable CPU conversion interface with independent artifact checks. Version1.1 adds a native JSON argv list alongside the existing three presets. Both interfaces restrict operations to the documented offline CPU subset. MP4 keeps the first video and optional first audio stream, scales to width 640 with an even proportional height, and produces 24 fps H.264/yuv420p plus stereo 48 kHz AAC. WAV and FLAC keep the first audio stream as mono 16 kHz PCM16 or lossless FLAC.
 
 ## Quick start (CLI)
 
@@ -26,6 +26,7 @@ abx template deploy ./media-tools -y --generation 2
 abx create --template <template-id> -y
 abx run <sandbox-id> media_smoke
 abx run <sandbox-id> transcode --arg input_path=uploaded.mkv --arg output_name=preview.mp4
+abx run <sandbox-id> transcode_args --json-args '{"args":["-i","uploaded.mkv","-vn","-c:a","flac","audio.flac"],"max_seconds":5}'
 abx kill <sandbox-id> -y
 abx template delete <template-id> -y
 ```
@@ -76,6 +77,8 @@ Arguments are the direct JSON object. HTTP 200 returns `{"result":{"output_path"
 | `media_setup_check` | none | object | Pin availability; no media input or network. |
 | `media_probe` | required `input_path`: string; `command_timeout`: integer, default 30, range 1–120 | object | Duration, format, streams and input byte count. |
 | `transcode` | required `input_path`, `output_name`: strings; `preset`: `mp4` (default), `wav` or `flac`; `max_seconds`: integer, default 5, range 1–30; `command_timeout`: integer, default 60, range 1–120 | object | Artifact path, size, SHA256, duration, format and streams. |
+| `transcode_args` | required `args`: native list of strings; `max_seconds`: integer5(1–30); `command_timeout`: integer60(1–120) | object | Actual `stdout`, `stderr`, `exit_code`; successful output also includes independent artifact metadata. |
+| `media_args_smoke` | none | string | Actual argv conversion and full PCM equality with owned cleanup. |
 | `media_smoke` | none | string | Owned synthetic WAV → actual FLAC → independent PCM decode and exact sample equality, with cleanup. |
 | `media_video_smoke` | none | string | Owned synthetic MPEG4 → actual H.264 MP4 with independently checked dimensions/duration, then cleanup. |
 
@@ -102,7 +105,54 @@ Set server process configuration before startup. A prewarmed command server may 
 | Port | 9000 |
 | Disk | Platform rootfs; 64 MiB input and per-output limits; remove retained artifacts |
 
+
+### Native argv interface
+
+Use `transcode_args` for the survey's `args: list[str]` API while retaining the
+published `transcode(input_path, output_name, preset, ...)` contract.
+The list starts with `-i`, one relative workspace input, then output options,
+and ends with one plain `.mp4`, `.wav` or `.flac` filename. It contains3–64
+nonempty strings and at most8192 UTF-8 bytes. Strings containing spaces stay
+single arguments. A JSON-encoded string is refused with400 before execution.
+
+Allowed output options are `-an`, `-vn`, `-c:v libx264`, `-c:a aac|pcm_s16le|flac`,
+`-preset ultrafast|superfast|veryfast|faster|fast|medium`, `-pix_fmt yuv420p`,
+`-map 0:v:0|0:v:0?|0:a:0|0:a:0?`, `-movflags +faststart`, `-t` (positive and
+at most `max_seconds`), `-ss` (positive, at most600), `-r` (positive, at most60),
+`-ac` (integer1–2), `-ar` (integer1–48000), and `-vf scale=W:H` (W1–1920;
+H1–1080 or native proportional `-2`). Each paired option requires its own value.
+Unlisted flags, extra inputs, arbitrary filters, protocols and output paths are
+refused. Final thread/duration/size/no-overwrite/metadata limits are enforced
+by the wrapper and cannot be replaced with user flags.
+
+```python
+result = await sb.run("transcode_args", args=["-i", "literal file.wav", "-c:a", "flac", "result.flac"])
+assert result["exit_code"] == 0
+```
+
+```json
+{"args":["-i","uploaded.wav","-c:a","flac","result.flac"],"max_seconds":5}
+```
+
+POST that direct object to `/commands/transcode_args`. Accepted FFmpeg failures
+return200 with its actual nonzero `exit_code`, bounded `stdout` and `stderr`,
+and no published partial artifact. Guard, probe, timeout and output-limit
+failures remain500; invalid argument types/missing args return400. Preset
+conversion keeps its existing failure behavior. Successful argv calls return
+artifact fields alongside actual native process results. Remove outputs after
+download. The model-free native smoke is `media_args_smoke`.
+
+`server-sdk.commit` explicitly opts this template into the immutable string-array
+server source; it must match the Dockerfile fallback. Image CI checks out that
+exact commit, and archive/proof validation checks it again. Existing templates
+without that opt-in retain the historical common injected SDK pin. Rebuild a1.0
+image before using native arrays; an old server can turn `list[str]` into string.
+
 ## Verified
+
+Version1.1 image/Express/array acceptance is pending. The receipts below are preserved historical1.0 evidence and do not qualify1.1.
+
+## Historical1.0 verification
 
 Additional exact-version real steps passed on2026-10-20 using actual Python `Sandbox.create`, CLI/SDK named smoke and independently confirmed sandbox/template cleanup: [SDK-created step receipt](evidence/express-2026-10-20.json). This separately establishes the creation route; the complete workflow receipts below keep their original scope.
 

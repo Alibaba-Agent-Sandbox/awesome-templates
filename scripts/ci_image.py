@@ -9,10 +9,11 @@ import yaml
 
 try:
     from .prepare_steps import instructions
+    from .server_sdk_pin import SERVER_COMMIT,server_commit
 except ImportError:
     from prepare_steps import instructions
+    from server_sdk_pin import SERVER_COMMIT,server_commit
 
-SERVER_COMMIT = 'e2cb27e24fde0a67112f82b8d44af463445a5d1a'
 PUBLIC_PROOF_KEYS = {
     'schema_version','verification_type','template','template_version','github_repository',
     'source_head_commit','checkout_commit','workflow_run_id','artifact_id','archive_sha256',
@@ -34,6 +35,9 @@ def context_sha256(source: Path) -> dict[str,str]:
     source=source.resolve()
     dockerfile=(source/'Dockerfile').read_bytes()
     result={'Dockerfile':hashlib.sha256(dockerfile).hexdigest()}
+    if (source/'server-sdk.commit').exists() or (source/'server-sdk.commit').is_symlink():
+        server_commit(source)
+        result['server-sdk.commit']=hashlib.sha256((source/'server-sdk.commit').read_bytes()).hexdigest()
     if (source/'.dockerignore').exists():
         result['.dockerignore']=hashlib.sha256((source/'.dockerignore').read_bytes()).hexdigest()
     manifest=yaml.safe_load((source/'template.yaml').read_text())
@@ -72,7 +76,7 @@ def validate_proof(source: Path, proof: dict, image_ref: str) -> dict:
     for key in ['archive_sha256','image_config_sha256']:
         if not re.fullmatch(r'[a-f0-9]{64}',str(proof.get(key,''))):raise ValueError('image proof lacks checked bytes')
     if not re.fullmatch(r'sha256:[a-f0-9]{64}',str(proof.get('pushed_image_digest',''))):raise ValueError('image proof lacks a checked registry digest')
-    if proof.get('server_sdk_commit')!=SERVER_COMMIT:raise ValueError('image server source differs from reviewed CI pin')
+    if proof.get('server_sdk_commit')!=server_commit(source):raise ValueError('image server source differs from reviewed CI pin')
     for key in ['artifact_verified','image_context_verified','image_non_root','registry_push_verified','registry_private_repo_verified']:
         if proof.get(key) is not True:raise ValueError('required image proof is not verified: '+key)
     if proof.get('registry_credentials_storage')!='anonymous RAM fd':raise ValueError('image credential storage must remain in RAM')

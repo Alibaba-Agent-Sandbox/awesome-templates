@@ -1,5 +1,5 @@
 name: media-tools
-version: "1.0.0"
+version: "1.1.0"
 description: "Bounded offline CPU MP4, WAV and FLAC conversion with pinned FFmpeg."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0
@@ -15,7 +15,7 @@ ports: [9000]
 tags: [ffmpeg, media, cpu, audio, video]
 priority: P2
 wave: 1
-tested_on: [alicloud-express]
+tested_on: []
 capabilities: [shell, files, code, ports]
 env:
   ABX_SERVER_TOKEN: ""
@@ -29,3 +29,6 @@ smoke:
   - command: media_video_smoke
     args: {}
     expect: "FFmpeg CPU H.264 video transcode OK"
+  - command: media_args_smoke
+    args: {}
+    expect: "FFmpeg native argv audio transcode OK"

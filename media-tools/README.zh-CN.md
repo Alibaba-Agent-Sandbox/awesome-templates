@@ -10,12 +10,12 @@ FFmpeg 离线 CPU 媒体转码。[English](README.md)。
 
 - 阿里云基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，通常替换为 `cn-hangzhou` / `v0.0.49`。
 - Debian 13 [FFmpeg `7:7.1.5-0+deb13u1`](https://packages.debian.org/trixie/ffmpeg)，FFmpeg ABI 库也固定相同版本；其他系统依赖由 Debian 仓库解析。
-- 注入的 server wheel，或 python-sdk 源码 pin `e2cb27e24fde0a67112f82b8d44af463445a5d1a`。
+- 注入的 server wheel，或 python-sdk 源码 pin `fd72d3210b85079d93dcf08e19bfded73643162b`。
 - 非 root 用户 `user`，可写目录 `/home/user/app`，generation 2 标准 serve/healthcheck，端口 9000。
 
 ## 解决的问题
 
-为媒体工作流提供可预测的 CPU 转码和独立产物核验。首版提供三个 preset，不接收任意 FFmpeg 参数、滤镜、设备或网络 URL。MP4 保留第一路视频及可选第一路音频，按比例缩放至宽 640、偶数高度，生成 24 fps H.264/yuv420p 与双声道 48 kHz AAC。WAV/FLAC 保留第一路音频，转换为单声道 16 kHz PCM16/无损 FLAC。
+为媒体工作流提供可预测的 CPU 转码和独立产物核验。1.1版在三个既有 preset 之外增加原生 JSON 参数列表，两种入口都限定为下述离线 CPU 子集。MP4 保留第一路视频及可选第一路音频，按比例缩放至宽 640、偶数高度，生成 24 fps H.264/yuv420p 与双声道 48 kHz AAC。WAV/FLAC 保留第一路音频，转换为单声道 16 kHz PCM16/无损 FLAC。
 
 ## 快速开始（CLI）
 
@@ -26,6 +26,7 @@ abx template deploy ./media-tools -y --generation 2
 abx create --template <template-id> -y
 abx run <sandbox-id> media_smoke
 abx run <sandbox-id> transcode --arg input_path=uploaded.mkv --arg output_name=preview.mp4
+abx run <sandbox-id> transcode_args --json-args '{"args":["-i","uploaded.mkv","-vn","-c:a","flac","audio.flac"],"max_seconds":5}'
 abx kill <sandbox-id> -y
 abx template delete <template-id> -y
 ```
@@ -76,6 +77,8 @@ JSON 对象直接包含参数。HTTP 200 返回 `{"result":{"output_path":"/home
 | `media_setup_check` | 无 | 对象 | 固定工具是否可用；不处理媒体、不联网。 |
 | `media_probe` | 必填字符串 `input_path`；整数 `command_timeout` 默认 30，范围 1–120 | 对象 | 时长、格式、流信息及输入字节数。 |
 | `transcode` | 必填字符串 `input_path`、`output_name`；`preset` 为默认 `mp4`、`wav` 或 `flac`；整数 `max_seconds` 默认 5，范围 1–30；整数 `command_timeout` 默认 60，范围 1–120 | 对象 | 产物路径、字节数、SHA256、时长、格式和流。 |
+| `transcode_args` | 必填 `args`：原生字符串数组；`max_seconds`：整数5（1–30）；`command_timeout`：整数60（1–120） | 对象 | 真实 `stdout`、`stderr`、`exit_code`；成功时增加独立核对的产物元数据。 |
+| `media_args_smoke` | 无 | 字符串 | 原生 argv 转码、完整 PCM 比对及自有文件清理。 |
 | `media_smoke` | 无 | 字符串 | 自有合成 WAV → 真实 FLAC → 独立 PCM 解码逐样本比对，并清理。 |
 | `media_video_smoke` | 无 | 字符串 | 自有合成 MPEG4 → 真实 H.264 MP4，独立检查尺寸/时长后清理。 |
 
@@ -102,7 +105,47 @@ JSON 对象直接包含参数。HTTP 200 返回 `{"result":{"output_path":"/home
 | 端口 | 9000 |
 | 磁盘 | 平台 rootfs，输入及每个产物限 64 MiB；调用方删除保留产物 |
 
+
+### 原生 argv 接口
+
+调研要求的 `args: list[str]` 通过新增 `transcode_args` 提供，保留已发布的
+`transcode(input_path, output_name, preset, ...)` 兼容接口。
+列表以 `-i`、一个相对工作区输入开头，随后为输出选项，以单个普通
+`.mp4`、`.wav` 或 `.flac` 文件名结尾。共3–64个非空字符串、最多8192个 UTF-8
+字节；含空格的元素保留为一个参数。JSON 编码字符串不是数组，执行前返回400。
+
+允许选项：`-an`、`-vn`、`-c:v libx264`、`-c:a aac|pcm_s16le|flac`、
+`-preset ultrafast|superfast|veryfast|faster|fast|medium`、`-pix_fmt yuv420p`、
+`-map 0:v:0|0:v:0?|0:a:0|0:a:0?`、`-movflags +faststart`、`-t`（正数且不超过
+`max_seconds`）、`-ss`（正数≤600）、`-r`（正数≤60）、`-ac`（整数1–2）、
+`-ar`（整数1–48000）、`-vf scale=W:H`（宽1–1920，高1–1080或原生比例值 `-2`）。
+成对选项必须带值。拒绝未列出的参数、多输入、任意滤镜、协议及输出路径；
+最终线程、时长、大小、禁止覆盖与元数据限制由 wrapper 强制追加。
+
+```python
+result = await sb.run("transcode_args", args=["-i", "literal file.wav", "-c:a", "flac", "result.flac"])
+assert result["exit_code"] == 0
+```
+
+```json
+{"args":["-i","uploaded.wav","-c:a","flac","result.flac"],"max_seconds":5}
+```
+
+将此对象直接 POST 到 `/commands/transcode_args`。已接受的 FFmpeg 原生失败返回
+HTTP200和实际非零 `exit_code`、有限的 `stdout`/`stderr`，不发布部分产物。
+路径、探测、时间和输出限制失败仍返回500；错误参数类型和缺少 args 返回400。
+旧 preset 接口保留原有异常行为。成功时同时返回实际进程结果和产物字段，
+下载后由调用者清理产物。无模型自检命令为 `media_args_smoke`。
+
+`server-sdk.commit` 显式选择支持数组的不可变服务器源码，必须与 Dockerfile
+fallback 一致；镜像 CI、归档及运行证明均核对同一 commit。没有该文件的其他
+模板保留历史共同注入 pin。使用数组前重建1.0镜像；旧服务器会将注解转成字符串。
+
 ## 已验证
+
+1.1版镜像、极速版及数组验收待完成。以下凭据保留为1.0历史记录，不用于认证1.1。
+
+## 1.0历史验证
 
 2026-10-20 同版本追加真实 step 复验，实际使用 Python `Sandbox.create`，通过 CLI/SDK 命名 smoke，并独立确认 sandbox/template 清理：[SDK 创建 step 回执](evidence/express-2026-10-20.json)。此记录单独证明创建入口；下方完整工作流回执保留原有范围。
 

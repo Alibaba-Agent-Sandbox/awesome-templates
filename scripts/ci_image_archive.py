@@ -30,9 +30,9 @@ import uuid
 import zipfile
 import yaml
 try:
-    from .ci_image import context_sha256,SERVER_COMMIT,validate_resources
+    from .ci_image import context_sha256,SERVER_COMMIT,server_commit,validate_resources
 except ImportError:
-    from ci_image import context_sha256,SERVER_COMMIT,validate_resources
+    from ci_image import context_sha256,SERVER_COMMIT,server_commit,validate_resources
 
 GITHUB='https://api.github.com/repos/Alibaba-Agent-Sandbox/awesome-templates'
 REGION='cn-hangzhou'
@@ -155,7 +155,7 @@ def download_verified(artifact_id: int, source: Path, output: Path) -> dict:
     with (output/archive_name).open('rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
     if digest!=metadata['archive_sha256'] or digest!=(output/(archive_name+'.sha256')).read_text().split()[0]:raise ValueError('Docker archive SHA256 mismatch')
     if metadata.get('format')!='docker-archive' or metadata.get('template')!=name or metadata.get('repository','').lower()!='alibaba-agent-sandbox/awesome-templates':raise ValueError('image identity mismatch')
-    if metadata.get('server_sdk_commit')!=SERVER_COMMIT:raise ValueError('CI server SDK pin mismatch')
+    if metadata.get('server_sdk_commit')!=server_commit(source):raise ValueError('CI server SDK pin mismatch')
     run=github('/actions/runs/'+str(artifact['workflow_run']['id']))
     if run.get('status')!='completed' or run.get('conclusion')!='success':raise ValueError('image CI workflow is not successful')
     checkout=metadata['checkout_commit'];head=metadata['source_head_commit']
@@ -167,7 +167,7 @@ def download_verified(artifact_id: int, source: Path, output: Path) -> dict:
     proof={'schema_version':1,'verification_type':'ci-docker-archive','template':name,'template_version':str(template['version']),
         'github_repository':'Alibaba-Agent-Sandbox/awesome-templates','source_head_commit':head,'checkout_commit':checkout,
         'workflow_run_id':str(run['id']),'artifact_id':str(artifact_id),'archive_sha256':digest,'image_config_sha256':config_hash,
-        'server_sdk_commit':SERVER_COMMIT,'context_sha256':context,'artifact_verified':True,'image_context_verified':True,'image_non_root':True,
+        'server_sdk_commit':server_commit(source),'context_sha256':context,'artifact_verified':True,'image_context_verified':True,'image_non_root':True,
         'registry_push_verified':False,'registry_private_repo_verified':False,'registry_credentials_storage':'anonymous RAM fd'}
     (output/'validated-image.json').write_text(json.dumps(proof,indent=2)+'\n')
     return proof

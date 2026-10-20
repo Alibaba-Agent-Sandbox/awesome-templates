@@ -47,7 +47,7 @@ The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](do
 | [pi](./pi/README.md) | Official Pi CLI 1.3.0 with ephemeral compatible-model settings and explicit writable tools. | experimental | [alicloud-express (1.0.1 image, strict model)](./pi/evidence/express-2026-10-20.json) |
 | [ocr](./ocr/README.md) | CPU English image OCR with pinned Tesseract 5.5.0 and bounded private TXT/TSV artifacts. | experimental | [alicloud-express (1.0.1 image, full HTTP19)](./ocr/evidence/express-2026-10-20.json) |
 | [document-tools](./document-tools/README.md) | Bounded offline Markdown to DOCX/plain-text conversion using pinned Pandoc. | experimental | [alicloud-express (steps smoke)](./document-tools/evidence/express-2026-10-19.json) |
-| [media-tools](./media-tools/README.md) | Bounded offline CPU MP4, WAV and FLAC conversion with pinned FFmpeg. | experimental | [alicloud-express (steps smoke)](./media-tools/evidence/express-2026-10-19.json) |
+| [media-tools](./media-tools/README.md) | Bounded CPU FFmpeg presets and native JSON argv. | experimental |1.1 pending; [1.0 steps history](./media-tools/evidence/express-2026-10-19.json) |
 | [aider](./aider/README.md) | Official Aider 0.86.2 with read-only ask and explicit selected-file edits. | experimental | [alicloud-express (1.0.1 image, strict model)](./aider/evidence/express-2026-10-20.json) |
 | [swe](./swe/README.md) | Real mini-swe-agent 2.4.6 and one independently evaluated SWE-bench instance; no official Docker score. | experimental | [alicloud-express (1.1.0 SDK image, strict model14)](./swe/evidence/express-2026-10-20.json) |
 
