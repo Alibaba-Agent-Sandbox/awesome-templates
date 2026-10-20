@@ -29,3 +29,9 @@ Official downloads require egress and bounded retries; hashes prevent changing a
 ## Test plan
 
 L0 HTTP health/versions, with explicit skip if local exact compilers are absent. L1 actual non-root image executes toolchain_smoke, checks installed version pins and real compilation. L2 canonical Express steps/deploy READY, CLI and SDK toolchain_smoke, independent owned cleanup. L3 not applicable (no model); L4 unrun. No provider badge until a passing canonical receipt exists.
+
+Review follow-up:1.0.1 gives the non-root runtime explicit ownership of its
+workspace, filters child environment to compiler necessities, drains both pipes
+concurrently and rejects output beyond256KiB per stream while retaining the
+90-second deadline and unreaped group identity. Actual noisy-child and inherited
+credential regressions are required. Old1.0.0 image/export records are historical.

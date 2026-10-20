@@ -38,3 +38,20 @@ def test_real_deadline_stops_owned_process(monkeypatch, tmp_path):
         commands._run([sys.executable,'-c',code])
     time.sleep(.4)
     assert not marker.exists()
+
+
+def test_native_children_exclude_credentials_and_injected_tool_options(monkeypatch):
+    import json
+    for name in ['OPENAI_API_KEY','ALICLOUD_ACCESS_KEY_SECRET','ABX_SERVER_TOKEN','JAVA_TOOL_OPTIONS','LD_PRELOAD']:
+        monkeypatch.setenv(name,'synthetic-do-not-inherit')
+    monkeypatch.setenv('GOTOOLCHAIN','auto')
+    output=commands._run([sys.executable,'-c','import json,os;names=["OPENAI_API_KEY","ALICLOUD_ACCESS_KEY_SECRET","ABX_SERVER_TOKEN","JAVA_TOOL_OPTIONS","LD_PRELOAD","GOTOOLCHAIN"];print(json.dumps({name:os.environ[name] for name in names if name in os.environ}))'])
+    env=json.loads(output.splitlines()[0])
+    assert not any(name in env for name in ['OPENAI_API_KEY','ALICLOUD_ACCESS_KEY_SECRET','ABX_SERVER_TOKEN','JAVA_TOOL_OPTIONS','LD_PRELOAD'])
+    assert env['GOTOOLCHAIN']=='local'
+
+
+def test_actual_output_limit_stops_noisy_native_process():
+    code='import os;data=b"x"*65536\nwhile True:os.write(1,data)'
+    with pytest.raises(RuntimeError,match='output exceeded'):
+        commands._run([sys.executable,'-c',code])

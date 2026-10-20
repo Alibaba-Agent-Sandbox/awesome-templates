@@ -99,3 +99,5 @@ No model key. `ABX_SERVER_TOKEN` is an optional empty manifest placeholder; inje
 2 vCPU, 2048 MB, port 9000. Installer rejects actual used rootfs above 8 GiB. Non-root runtime; no KVM, Docker or additional capabilities. Each tool subprocess deadline is 90 seconds. Temporary source/binary/cache artifacts are deleted before a successful response.
 
 CLI defects: [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues).
+
+Version1.0.1 explicitly owns the runtime workspace. Native children inherit only PATH/HOME/JAVA_HOME/TMPDIR plus fixed locale and GOTOOLCHAIN=local; cloud/model/server credentials and injected compiler/loader options are excluded. Output is drained concurrently with a256KiB limit per stream, a90-second deadline and owned group cleanup. Earlier1.0.0 attempts do not qualify this changed profile.

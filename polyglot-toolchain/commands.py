@@ -6,37 +6,63 @@ import shutil
 import signal
 import subprocess
 import tempfile
+import threading
 import time
 from agent_sandbox.server import command, start
 
 
 def _run(argv: list[str], cwd: Path | None = None) -> str:
-    env = os.environ.copy()
+    env = {name: os.environ[name] for name in ("PATH", "HOME", "JAVA_HOME", "TMPDIR") if name in os.environ}
+    env.update(LANG="C.UTF-8", LC_ALL="C.UTF-8", GOTOOLCHAIN="local")
     if cwd is not None:
-        env.update(GOCACHE=str(cwd / "go-cache"), GOPATH=str(cwd / "go-path"), GOTOOLCHAIN="local")
-    proc = subprocess.Popen(argv, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+        env.update(GOCACHE=str(cwd / "go-cache"), GOPATH=str(cwd / "go-path"))
+    proc = subprocess.Popen(argv, cwd=cwd, env=env, stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+    parts = [[], []]
+    overflow = threading.Event()
+    def drain(stream, output):
+        size = 0
+        try:
+            while chunk := stream.read(65536):
+                size += len(chunk)
+                if size > 256 * 1024:
+                    overflow.set()
+                else:
+                    output.append(chunk)
+        finally:
+            stream.close()
+    readers = [threading.Thread(target=drain, args=(stream, output), daemon=True)
+        for stream, output in zip((proc.stdout, proc.stderr), parts)]
+    for reader in readers:
+        reader.start()
     deadline = time.monotonic() + 90
+    timed_out = False
     try:
         while os.waitid(os.P_PID, proc.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT) is None:
+            if overflow.is_set():
+                break
             if time.monotonic() >= deadline:
-                raise TimeoutError("toolchain command exceeded90 seconds")
+                timed_out = True
+                break
             time.sleep(0.02)
-        # Hold the original leader until its process group has been stopped.
+    finally:
+        # Keep the original leader unreaped until its owned process group is stopped.
         try:
             os.killpg(proc.pid, signal.SIGKILL)
         except ProcessLookupError:
             pass
-        stdout, stderr = proc.communicate(timeout=5)
-        if proc.returncode:
-            raise RuntimeError("toolchain command failed: " + argv[0])
-        return (stdout + stderr).decode(errors="replace").strip()
-    finally:
-        if proc.returncode is None:
-            try:
-                os.killpg(proc.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-            proc.communicate(timeout=5)
+        proc.wait(timeout=5)
+        for reader in readers:
+            reader.join(timeout=2)
+        if any(reader.is_alive() for reader in readers):
+            raise RuntimeError("owned toolchain output pipes did not close")
+    if overflow.is_set():
+        raise RuntimeError("toolchain command output exceeded256 KiB per stream")
+    if timed_out:
+        raise TimeoutError("toolchain command exceeded90 seconds")
+    if proc.returncode:
+        raise RuntimeError("toolchain command failed: " + argv[0])
+    return b"".join(parts[0] + parts[1]).decode(errors="replace").strip()
 
 
 @command("toolchain_versions", description="Inspect actual pinned Go, Rust and Temurin versions and disk usage.")

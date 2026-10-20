@@ -20,3 +20,23 @@ CI selector follow-up: preserve the frozen23-template canonical source approval
 boundary while permitting new independently verified catalog entries. The
 authorization regression rejects every unreviewed added name; no credentials
 or cloud workflow authorization are broadened.13 real authorization tests PASS.
+
+## 2026-10-20 source review
+
+FAIL before correction: native child inherited synthetic cloud/model/server
+credentials and injected compiler/loader options. A real child-process regression
+precedes the fix; only synthetic selected variables are inspected. The runner now
+filters environment and drains both streams concurrently with a256KiB per-stream
+cap, preserving90-second deadline and unreaped owned group cleanup. Source also
+explicitly assigns workspace ownership (shared missing-ownership inference, not
+a claim of an observed polyglot provider write failure). Contract bumped1.0.1.
+Old1.0.0 exports and FAIL attempts do not qualify this profile. Stopped obsolete
+artifact download before registry intent creation, confirmed absence and removed
+only the partial owned archive. New actual image/full Express checks required.
+
+Corrected focused verification:6 actual process regressions PASS, including
+noisy native process output bound, actual synthetic-credential/loader exclusion,
+normal/nonzero descendant cleanup and timeout. The credential regression also
+fails against preserved original HEAD source, without printing real environment
+values. Strict target conformance and117 document links PASS. Current-head image
+and genuine1.0.1 provider acceptance remain pending.
