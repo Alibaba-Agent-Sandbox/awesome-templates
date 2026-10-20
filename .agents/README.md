@@ -82,6 +82,7 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Express steps checkpoint](evidence/verify/2026-10-19-steps-checkpoint-1555.md)
 
+- [Pinned preview runtime](notes/proposed/feature/2026-10-19-next-app-runtime.md) · [verification](evidence/verify/2026-10-19-next-app-runtime.md)
 - [Development databases](notes/proposed/feature/2026-10-19-dev-services-runtime.md) · [verification](evidence/verify/2026-10-19-dev-services-runtime.md)
 - [Standalone code-server](notes/proposed/feature/2026-10-19-code-server-runtime.md) · [verification](evidence/verify/2026-10-19-code-server-runtime.md)
 - [Heavy template image acceptance](notes/proposed/process/2026-10-19-heavy-template-image-acceptance.md) · [verification](evidence/verify/2026-10-19-heavy-template-image-acceptance.md)

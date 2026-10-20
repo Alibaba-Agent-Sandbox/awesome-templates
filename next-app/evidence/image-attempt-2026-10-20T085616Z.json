@@ -1,0 +1,13 @@
+{
+  "template": "next-app",
+  "provider": "alicloud-express",
+  "build_mode": "image",
+  "verification_type": "ci-image-backed-external-http",
+  "passed": false,
+  "registry_cleanup_verified": false,
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "model_acceptance": "NOT_RUN",
+  "http_acceptance": {},
+  "failure_type": "ValueError",
+  "result": "FAIL"
+}
