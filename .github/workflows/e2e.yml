@@ -195,6 +195,11 @@ jobs:
           python goose/install_runtime.py --prefix "$RUNNER_TEMP/goose-runtime"
           echo "$RUNNER_TEMP/goose-runtime" >> "$GITHUB_PATH"
 
+      - name: Install pinned official Crush for real native checks
+        run: |
+          python crush/install_runtime.py --prefix "$RUNNER_TEMP/crush-runtime"
+          echo "$RUNNER_TEMP/crush-runtime" >> "$GITHUB_PATH"
+
       - name: Checkout the pinned upstream Hermes runtime
         uses: actions/checkout@v4
         with:
@@ -235,6 +240,7 @@ jobs:
           python -m pytest -q polyglot-toolchain/test_commands.py
           python -m pytest -q apply-patch/test_commands.py
           python -m pytest -q goose/test_commands.py goose/test_controller.py
+          python -m pytest -q crush/test_commands.py crush/test_controller.py
           python -m pytest -q python-hello/test_command_errors.py
           python -m pytest -q node-web/test_startup.py node-web/test_http_output.py
           python -m pytest -q claude-code/tests

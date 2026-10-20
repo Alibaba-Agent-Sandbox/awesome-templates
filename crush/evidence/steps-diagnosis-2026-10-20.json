@@ -1,0 +1,15 @@
+{
+  "provider": "alicloud-express",
+  "template": "crush",
+  "template_version": "1.0.0",
+  "build_mode": "steps",
+  "passed": false,
+  "cleanup_verified": true,
+  "source_commit": "3cd97153eeff61ee9bded441cb9f961ba886548c",
+  "diagnostic_source": "official GetTemplate readiness payload retained by harness",
+  "official_terminal_state": "error",
+  "failed_step": 4,
+  "instruction": "RUN python3 /tmp/crush-build/install_runtime.py --prefix /opt/crush",
+  "native_error": "RuntimeError: official asset exceeded byte/deadline budget",
+  "scope": "Exact official asset length/SHA256 and240-second download guard retained. This condition does not distinguish oversized asset from deadline expiry in the available sanitized diagnostic. No image/model failure inferred; separate SDK-created image/model17 passed."
+}

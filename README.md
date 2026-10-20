@@ -177,4 +177,5 @@ These provider-managed IDs are listed separately from buildable source templates
 Native interpreter service was HTTP404 in both recorded tests; no native interpreter
 or other-provider certification is claimed.
 
+Official native Crush: [crush](crush/README.md) (experimental; [alicloud-express1.0.0 SDK image and model17](crush/evidence/express-2026-10-20.json)).
 [Development database template](dev-services/README.md) · experimental; [alicloud-express1.1.0 SDK image and HTTP6](dev-services/evidence/express-2026-10-20.json).
