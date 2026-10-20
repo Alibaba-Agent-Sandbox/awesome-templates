@@ -220,7 +220,7 @@ def _evidence_passes(template_dir: Path, provider: str) -> bool:
             prefix = f"{slug}-"
             if path.name.startswith(prefix) and path.suffix == ".json":
                 date = path.name[len(prefix) : -len(".json")]
-                if re.fullmatch(r"\d{4}-\d{2}-\d{2}", date):
+                if re.fullmatch(r"\d{4}-\d{2}-\d{2}(?:T\d{6}Z)?", date):
                     matched = True
                     break
         if not matched:
@@ -231,7 +231,7 @@ def _evidence_passes(template_dir: Path, provider: str) -> bool:
             continue
         if not isinstance(payload, dict):
             continue
-        if payload.get("provider") != provider or payload.get("passed") is not True:
+        if payload.get("provider") != provider or payload.get("passed") is not True or payload.get("cleanup_verified") is not True:
             continue
         if payload.get("template") != metadata.get("name") or str(payload.get("template_version")) != str(metadata.get("version")):
             continue
@@ -537,6 +537,10 @@ def check_directory(template_dir: Path) -> list[Violation]:
                 violations.append(Violation("yaml-resources", "resources.cpu must be a positive integer (vCPU)"))
             if not isinstance(memory, int) or isinstance(memory, bool) or memory < 128:
                 violations.append(Violation("yaml-resources", "resources.memory must be a positive integer (MB)"))
+            valid_cpu = isinstance(cpu, int) and not isinstance(cpu, bool) and cpu >= 1
+            valid_memory = isinstance(memory, int) and not isinstance(memory, bool) and memory >= 128
+            if valid_cpu and valid_memory and (memory % 64 or not 1024 * cpu <= memory <= 4096 * cpu):
+                violations.append(Violation("yaml-resources", "Alibaba FC memory must be a multiple of64MB and1..4GiB per vCPU"))
         ports = data.get("ports")
         if not isinstance(ports, list) or 9000 not in ports:
             violations.append(Violation("yaml-ports", "ports must include 9000"))

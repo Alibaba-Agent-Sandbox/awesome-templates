@@ -97,22 +97,19 @@ Hermes 通过自己的 Python 3.14 shebang 启动。镜像只把 hermes 启动�
 
 ## 已验证
 
-| Provider | Scope | Evidence |
+版本 1.1.1 已通过真实 CI 镜像登记、官方 READY、CLI/SDK，以及 17 项严格真实模型检查（qwen3.8-flash、OpenAI 兼容协议），含源码修改、新产物、原始测试不变和独立 held-out 完成证明。独立确认 sandbox/template/registry 清理。状态仍为 experimental；其他提供方未验证。
+
+| 提供方 | 范围 | 证据 |
 | --- | --- | --- |
-| alicloud-express | CI image + CLI/SDK + strict model | [2026-10-19](evidence/express-2026-10-19.json) |
+| alicloud-express | 精确当前版本、真实镜像和独立清理 | [正式回执](evidence/express-2026-10-20.json)、[HTTP](evidence/image-http-2026-10-20T062649Z.json)、[严格模型](evidence/model-image-2026-10-20T062649Z.json) |
 
-2026-10-19：真实 CI Dockerfile 镜像、极速版官方 READY、CLI/SDK 和外部 HTTP 验收、独立沙箱/模板/镜像仓库清理全部通过。另有严格真实模型17项通过、零跳过（qwen3.8-flash）。注册使用本次独占 review 标签，部署前和运行后均读回相同内容摘要；不宣称平台支持 digest 引用。
+2026-10-19的1.1.0历史镜像验收：CLI创建沙箱，镜像来源、HTTP、17项真实兼容模型断言及自有沙箱/模板/镜像仓库独立清理均通过。这些回执只证明原版本及控制器，不用于认定1.1.1通过。[image](evidence/express-2026-10-19.json) · [HTTP](evidence/image-http-2026-10-19T175057Z.json) · [model](evidence/model-image-2026-10-19T175057Z.json).
 
-[Express receipt](evidence/express-2026-10-19.json) · [HTTP receipt](evidence/image-http-2026-10-19T175057Z.json) · [strict model receipt](evidence/model-image-2026-10-19T175057Z.json).
-
-<details>
-<summary>历史检查点（保留原始范围）</summary>
+## 历史验收
 
 当前编程验收器通过 `python3 -I` 先导入可信标准库，再直接编译计算器与原测试的实际源码字节，要求原有三个测试全部成功，拒绝跳过、预期失败和意外成功。每个原测试/保留输入进程必须返回模型响应结束后才生成的随机完成确认，确认值不会进入模型提示词。提前 `SystemExit`、`os._exit(0)`、固定 `INDEPENDENT_OK` 文本和陈旧字节码都不能提供该确认。这是防止提前退出的验收检查，不是抵抗同一操作系统权限下恶意 Python 的安全边界。历史模型运行保留原验收器哈希，不能证明新门槛；必须单独记录新验收器版本在已审镜像上的真实模型复验。规范要求的完整部署与提供方认证仍是独立门槛。
 
 尚未记录任何通过的提供方测试。
-
-</details>
 
 ## 二次开发
 

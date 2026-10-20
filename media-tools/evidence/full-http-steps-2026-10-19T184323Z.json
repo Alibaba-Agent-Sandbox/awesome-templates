@@ -1,0 +1,56 @@
+{
+  "template": "media-tools",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "verification_type": "image-backed-external-http",
+  "result": "PASS",
+  "passed": true,
+  "cleanup_verified": true,
+  "model_acceptance": "NOT_RUN",
+  "verifier_sha256": "b0e889b27ef6bb18f07dd8347015ac6a1165c4c130c9db87211eacd6296ddcb3",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "media-tools",
+    "materializer_sha256": "743cf113087cb19d98ac8e8aae0656138853af84ed8a844b6af4a433382a0581",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "steps_json_bytes": 12982,
+    "inputs_sha256": {
+      "Dockerfile": "ee58ba235efe6bde19d49b54858abca2fb69f5b874886fed6c68003c550a304e",
+      "template.yaml": "265c10a6ae5ac3bcafdde259f7bcda96a0bd80f78168426903173fcbc414f41d",
+      "commands.py": "3c8bc2f19cf2b966fa02856b55d426864ba95ee3e257f7a3cd994d28490910b3"
+    },
+    "generated_manifest_sha256": "af8035cd9feda80ae059c221cd9d41be7de34398cec52590c27d7d48dc8b3902"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "passed": true,
+    "assertions": [
+      "[PASS] server health",
+      "[PASS] typed media commands registered",
+      "[PASS] required paths enforced",
+      "[PASS] timeout argument type enforced",
+      "[PASS] output traversal rejected",
+      "[PASS] network input rejected",
+      "[PASS] read-only engine inspection",
+      "[PASS] actual pinned FFmpeg and ffprobe",
+      "[PASS] actual lossless conversion and independent PCM decode; owned files cleaned",
+      "[PASS] actual MP4 H.264 video, dimensions and owned cleanup",
+      "[PASS] out-of-band upload preserves controller-generated random PCM",
+      "[PASS] artifact stays in owned workspace",
+      "[PASS] independently downloaded artifact length and complete SHA256",
+      "[PASS] actual FLAC container bytes",
+      "[PASS] artifact stays in owned workspace",
+      "[PASS] independently downloaded artifact length and complete SHA256",
+      "[PASS] external WAV parser verifies every random PCM sample after FLAC roundtrip",
+      "[PASS] original upload remains byte-identical after both conversions",
+      "[PASS] owned controller artifact cleanup",
+      "[PASS] owned controller artifact cleanup",
+      "[PASS] owned controller artifact cleanup"
+    ]
+  }
+}

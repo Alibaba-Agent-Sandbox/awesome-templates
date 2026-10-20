@@ -1,0 +1,46 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-19",
+  "template": "claude-code",
+  "template_version": "1.1.1",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "steps",
+  "harness_sha256": "1832710941a4824714aab40236b0111804a02c81d77a98590530131914d009b6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "claude_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 4.004,
+      "result": "2.0.76 (Claude Code)"
+    },
+    {
+      "name": "claude_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 2.552,
+      "result": "2.0.76 (Claude Code)"
+    }
+  ],
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "claude-code",
+    "materializer_sha256": "743cf113087cb19d98ac8e8aae0656138853af84ed8a844b6af4a433382a0581",
+    "template_version": "1.1.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "steps_json_bytes": 5446,
+    "inputs_sha256": {
+      "Dockerfile": "5337b1910a7fac4f53176b98cf9a51d8d2b4deaabcaed1a546facf5f9a4eee81",
+      "template.yaml": "feec3e3f2490370fd25db897c163d512dec77218527c45e4b7a7be851978ca20",
+      "commands.py": "14675086b5769738ada2976ff58f15c05c6d762dab6af99e9730bd2b5ee3e20a"
+    },
+    "generated_manifest_sha256": "761747fcedd2bfe5844d7405b67216bfb623de4fdcea5bf24fa5a1230c0dfd18"
+  }
+}

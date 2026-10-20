@@ -215,6 +215,10 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
             build_env.update(updates)
             steps.append({"type": kind, "args": pairs})
         elif kind == "USER":
+            if value == "user" and workdir == "/home/user/app":
+                # Native WORKDIR creates a root-owned directory. COPY file
+                # ownership alone does not make that runtime directory writable.
+                steps.append(run_step("chown user:user /home/user/app"))
             steps.append({"type": kind, "args": [value]})
         elif kind == "EXPOSE":
             continue  # Manifest ports and platform commands remain authoritative.

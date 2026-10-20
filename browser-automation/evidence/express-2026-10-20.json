@@ -1,0 +1,68 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-20",
+  "template": "browser-automation",
+  "template_version": "2.0.2",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "image",
+  "harness_sha256": "1832710941a4824714aab40236b0111804a02c81d77a98590530131914d009b6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "browse",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 10.91,
+      "args": {
+        "url": "data:text/html,<title>ABX_E2E_OK</title><h1>ABX_E2E_OK</h1>",
+        "action": "extract"
+      },
+      "result": "{'action': 'extract', 'title': 'ABX_E2E_OK', 'text': 'ABX_E2E_OK'}"
+    },
+    {
+      "name": "browse",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 11.631,
+      "args": {
+        "url": "data:text/html,<title>ABX_E2E_OK</title><h1>ABX_E2E_OK</h1>",
+        "action": "extract"
+      },
+      "result": "{'action': 'extract', 'title': 'ABX_E2E_OK', 'text': 'ABX_E2E_OK'}"
+    }
+  ],
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "browser-automation",
+    "template_version": "2.0.2",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "58e8e79b641766982fe579d3b623900513ea5d30",
+    "checkout_commit": "58e8e79b641766982fe579d3b623900513ea5d30",
+    "workflow_run_id": "39375232415",
+    "artifact_id": "12242588400",
+    "archive_sha256": "c2363b37b31fa777b174dc89c9d8bbc7cb6281fca7e46711fd9bbb2d09aeb949",
+    "image_config_sha256": "487fb009d0cfb510c177e5ae807855fe755fb8cd3ee69c6f40d54b99312f0169",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "38ed583aac8a54bc2d11b9eabebd24abbd19c68097be377aedf78ceff80a47ca",
+      "template.yaml:contract": "aded7507f0470cb48f46f4c6c078559a71e5197234afdd2cc67b1449d10407a4",
+      "commands.py": "a5c01ab42212226f30b0cddfaa58818a1c7e8981638058aa056cac1fe4a6c91f"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:41c3b2c8be141138c174135530548eb03699797c53a984d09336233ff4d76cdc",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "registration_operation": "abx template create",
+  "boundary": "Verified CI Dockerfile image + private registry transfer; no controller Docker build or platform-step build claimed",
+  "registry_cleanup_verified": true
+}

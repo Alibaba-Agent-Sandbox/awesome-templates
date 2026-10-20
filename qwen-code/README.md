@@ -104,6 +104,14 @@ Diagnostics inspect `~/.qwen/settings.json` and `<workspace>/.qwen/settings.json
 
 ## Verified
 
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 2.1.1; steps build, official READY, CLI/SDK basic smoke, independent cleanup; current-version model acceptance NOT_RUN | [2026-10-19](evidence/express-2026-10-19T184254Z.json) |
+
+The changed workspace profile is verified in real generated steps. Prior receipts retain historical scope; basic smoke does not establish model acceptance.
+
+## Historical verification
+
 | Provider | Executed scope | Evidence |
 | --- | --- | --- |
 | alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |

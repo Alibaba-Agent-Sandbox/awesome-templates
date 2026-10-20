@@ -1,0 +1,46 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-19",
+  "template": "deepseek-harness",
+  "template_version": "1.1.1",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "steps",
+  "harness_sha256": "1832710941a4824714aab40236b0111804a02c81d77a98590530131914d009b6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "deepseek_tools",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.302,
+      "result": "list_files,read_file,run_shell,write_file"
+    },
+    {
+      "name": "deepseek_tools",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 1.056,
+      "result": "list_files,read_file,run_shell,write_file"
+    }
+  ],
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "deepseek-harness",
+    "materializer_sha256": "743cf113087cb19d98ac8e8aae0656138853af84ed8a844b6af4a433382a0581",
+    "template_version": "1.1.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "steps_json_bytes": 10917,
+    "inputs_sha256": {
+      "Dockerfile": "8b4c98c3625b537ce4384d96dcb87ac07f9d7f28880eac356fd5e1425a0a67f0",
+      "template.yaml": "439078315fe9933dce6fe6a4ba8136a67d83cfd3c37431c3d9774d306ad2f16c",
+      "commands.py": "006329b669b81b8d1b0c557b5b24cc6820eee38fb04c35e003ebff0e8640356f"
+    },
+    "generated_manifest_sha256": "7c7d66db6cdf69e288324a115809b369b998f5f1e54d136dd4037ebc79e5023f"
+  }
+}

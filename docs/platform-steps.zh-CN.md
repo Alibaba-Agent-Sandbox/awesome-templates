@@ -105,6 +105,9 @@ export NODE_PATH="$ABX_NATIVE_DIR/modules/node_modules"
 
 随后按上文配置进程环境中的极速版账号，并使用固定服务端提交的构建命令。脚本通过 ABX/NODE_PATH 使用该独立工具目录。不要把标准入口的参数与原生验收入口混用。清理本次沙箱、模板和日志后，再删除自己创建的工具目录。
 
+大型资产也可使用独立记录的 [CI 镜像验收路径](ci-image-acceptance.zh-CN.md)，
+通过真实 Dockerfile CI 导出及原生镜像注册运行，保留独立来源信息。
+
 ## 实测的大资产传输限制
 
 2026-10-19 的真实构建步骤诊断下载8MiB时，所选 code-server/Rust 资产分别耗时
@@ -113,3 +116,5 @@ export NODE_PATH="$ABX_NATIVE_DIR/modules/node_modules"
 300秒执行上限。应拆分构建阶段、限制下载并保留错误；超时不是验收通过。
 重型模板仍需自己的当前配置成功回执，部分网络探针、本机安装和单独CI构建
 均不能代替。
+
+运行用户切换前，生成的步骤显式将 /home/user/app 归属设为 user:user。真实完整 Python/Node HTTP 验证发现原生 WORKDIR 的 root 归属导致文件写入失败；仅设置 COPY 文件归属不足。基础版本冒烟不能代替工作区文件往返测试。旧失败与基础冒烟回执保留各自范围。

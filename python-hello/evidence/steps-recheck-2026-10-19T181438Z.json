@@ -1,0 +1,72 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-19",
+  "template": "python-hello",
+  "template_version": "1.1.0",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "steps",
+  "harness_sha256": "1832710941a4824714aab40236b0111804a02c81d77a98590530131914d009b6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "hello",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.502,
+      "args": {
+        "name": "Express"
+      },
+      "result": "Hello, Express!"
+    },
+    {
+      "name": "hello",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 8.13,
+      "args": {
+        "name": "Express"
+      },
+      "result": "Hello, Express!"
+    },
+    {
+      "name": "run_script",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.403,
+      "args": {
+        "code": "print(21 * 2)"
+      },
+      "result": "42\n"
+    },
+    {
+      "name": "run_script",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 2.032,
+      "args": {
+        "code": "print(21 * 2)"
+      },
+      "result": "42\n"
+    }
+  ],
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "python-hello",
+    "materializer_sha256": "743cf113087cb19d98ac8e8aae0656138853af84ed8a844b6af4a433382a0581",
+    "template_version": "1.1.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "steps_json_bytes": 4321,
+    "inputs_sha256": {
+      "Dockerfile": "7ea5968e85cd97accb08b30250590390e226eae7f7b1dedddd495c00af4ed416",
+      "template.yaml": "9dde5639ed06646ac82f33b6d7bdfad4cf6ce4f0bc5e596d5013b828526c6bc0",
+      "commands.py": "819dd5d91a67edc9d681b01dc44caac479c6d693d947f1818d5a1253cc9b9ceb"
+    },
+    "generated_manifest_sha256": "533df2da70b4d0db8eb9a167829f4b051ea8c8f8b6525cb01f1a41a7beb46f07"
+  }
+}

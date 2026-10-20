@@ -128,6 +128,10 @@ Use only trusted tasks/models in a disposable sandbox: mini executes model-gener
 
 ## Verified
 
+Version1.0.1 explicitly repairs non-root workspace-directory ownership. Current-version provider acceptance must be rerun. Earlier receipts establish only their original versions/hashes/scopes and are preserved below.
+
+## Historical verification
+
 No provider has a passing run recorded for this template.
 
 L0 contract checks can skip missing upstream runtime/model prerequisites, and such skips do not prove agent execution. L1/L2/L3 status is recorded in the PR and owner evidence. The initial Python3.13 image reproduced 2PASS/58ERROR because upstream treats deprecated pkgutil.get_loader as an error; its tests/warning filters were preserved. With pinned original Python3.11.10, the actual CI image passed the exact1FAIL59PASS baseline, real mini/Qwen3.8-flash repair, fresh60PASS evaluation and remote patch/report retrieval (14PASS/0FAIL/0SKIP). All10owned cleanup flags and additional strict absence readbacks passed; see [actual image evidence](./evidence/image-runtime-2026-10-16-configured.json) and [strict readback](./evidence/image-runtime-2026-10-16-strict-readback.json). Canonical local abx template deploy remains unrun, so formal provider verification stays empty. Full official Docker harness and other providers remain unverified. Do not publish this report as a benchmark score.
