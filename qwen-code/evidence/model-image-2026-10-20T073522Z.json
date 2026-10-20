@@ -1,0 +1,20 @@
+{
+  "exit_code": 0,
+  "pass_count": 17,
+  "fail_count": 0,
+  "skip_count": 0,
+  "model": "qwen3.8-flash",
+  "model_protocol": "OpenAI-compatible",
+  "passed": true,
+  "secondary_server_kill_ack": true,
+  "template": "qwen-code",
+  "template_version": "2.1.1",
+  "provider": "alicloud-express",
+  "verification_type": "image-backed-strict-model",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "canonical_image_acceptance": true,
+  "cleanup_verified": true,
+  "registry_cleanup_verified": true,
+  "controller_sha256": "8240f5bd25a06477489b733cc86fc98c701ec25124dabf3e7118dc8cdedbf5d6",
+  "commands_sha256": "0e78e2130607cb8bafc2eed638a2b10f2f8eb514630d5bd38fd0ab414b9383a0"
+}

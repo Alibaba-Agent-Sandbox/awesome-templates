@@ -94,9 +94,13 @@ HTTP 400：缺失、类型或范围错误；401：鉴权失败；404：未知命
 
 | Provider | Current version and scope | Evidence |
 | --- | --- | --- |
-| alicloud-express | 1.1.1; steps构建、官方READY、CLI/SDK基础冒烟、独立清理；当前版本真实模型尚未执行 | [2026-10-19](evidence/express-2026-10-19T183349Z.json) |
+| alicloud-express | 1.1.1; steps构建、官方READY、CLI/SDK基础冒烟、独立清理；此 step 回执未执行模型阶段 | [2026-10-19](evidence/express-2026-10-19T183349Z.json) |
+| alicloud-express | 1.1.1；真实 CI 镜像、官方 READY、Python Sandbox.create、CLI/SDK 与17项严格真实模型检查；0失败/0跳过；独立确认 sandbox/template/registry 清理 | [image](evidence/express-2026-10-20.json), [model](evidence/model-image-2026-10-20T073449Z.json) |
 
 新版本的目录归属已在真实生成步骤中验证。旧版本回执保持历史范围；基础冒烟不能推断完整模型验收。
+
+
+模型为显式配置的 OpenAI 兼容接口上的 qwen3.8-flash。
 
 ## 历史验收
 
