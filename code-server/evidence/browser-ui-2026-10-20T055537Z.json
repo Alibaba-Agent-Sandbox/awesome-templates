@@ -1,0 +1,14 @@
+{
+  "passed": false,
+  "browser_error_type": "Error",
+  "template": "code-server",
+  "provider": "alicloud-express",
+  "verification_type": "image-backed-forwarded-browser-ui",
+  "canonical_acceptance": false,
+  "cleanup_verified": true,
+  "registry_cleanup_verified": true,
+  "commands_sha256": "2deeabd3a697c3ba6d5f41a4b42c17c298f72bb5441cde5487701ce923d462a0",
+  "controller_sha256": "94febff5c15db38c00ed4afcbd73f5a883bfd5be9a9cbb89d372152889081a9e",
+  "playwright_version": "1.58.0",
+  "chromium_revision": "1208"
+}
