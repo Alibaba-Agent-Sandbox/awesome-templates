@@ -115,7 +115,7 @@ if __name__=='__main__':
     except Exception as exc:
         text=str(exc)
         stage=re.search(r'private diagnostics omitted; ([a-z_]{1,40}) \(([A-Za-z_][A-Za-z0-9_]{0,63})\)',text)
-        counters={key:int(value)for key,value in re.findall(r'\b(model_steps|bridge_api_calls|native_api_calls|tool_validation_failures|http_status|native_exit_code)=([0-9]{1,6})',text)}
+        counters={key:int(value)for key,value in re.findall(r'\b(model_steps|bridge_api_calls|native_api_calls|tool_validation_failures|empty_model_responses|native_api_errors|http_status|native_exit_code)=([0-9]{1,6})',text)}
         safe=('; native_stage='+stage[1]+'; native_kind='+stage[2])if stage else''
         print('[FAIL] original AppWorld controller aborted ('+type(exc).__name__+')'+safe+'; counters='+json.dumps(counters,sort_keys=True)+'; protected content omitted',flush=True)
         raise SystemExit(1)

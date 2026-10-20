@@ -124,3 +124,35 @@ def test_native_diagnostic_survives_trailing_library_shutdown_stderr(tmp_path,mo
     text=str(error.value)
     assert 'native_completion_check (NativeIncomplete)' in text and 'model_steps=40' in text and 'bridge_api_calls=3' in text
     assert 'SYNTHETIC_PRIVATE_VALUE' not in text and 'private_body' not in text
+
+
+def test_compatible_response_without_transport_id_still_requires_real_choice():
+    from types import SimpleNamespace as NS
+    spec=importlib.util.spec_from_file_location('appworld_response_tests',Path(__file__).with_name('worker.py'))
+    worker=importlib.util.module_from_spec(spec);spec.loader.exec_module(worker)
+    worker.RUN_OBSERVATION={'model_steps':0,'empty_model_responses':0}
+    calls=[]
+    def create(**kwargs):
+        calls.append(kwargs)
+        return NS(id=None,choices=[NS(message=NS(content='fixed synthetic response',tool_calls=[]))])
+    client=NS(chat=NS(completions=NS(create=create)))
+    response=worker.request_completion(client,{'model':'fixture-model'},[],[])
+    assert response.id is None and response.choices[0].message.content=='fixed synthetic response'
+    assert len(calls)==1 and calls[0]['model']=='fixture-model'
+    assert worker.RUN_OBSERVATION=={'model_steps':1,'empty_model_responses':0}
+
+
+def test_empty_native_choices_have_a_strict_total_retry_budget():
+    from types import SimpleNamespace as NS
+    spec=importlib.util.spec_from_file_location('appworld_empty_response_tests',Path(__file__).with_name('worker.py'))
+    worker=importlib.util.module_from_spec(spec);spec.loader.exec_module(worker)
+    worker.RUN_OBSERVATION={'model_steps':0,'empty_model_responses':0}
+    calls=[]
+    def create(**kwargs):
+        calls.append(kwargs)
+        return NS(id='synthetic-id',choices=[])
+    client=NS(chat=NS(completions=NS(create=create)))
+    with pytest.raises(worker.NativeIncomplete):
+        worker.request_completion(client,{'model':'fixture-model'},[],[])
+    assert len(calls)==3
+    assert worker.RUN_OBSERVATION=={'model_steps':3,'empty_model_responses':3}

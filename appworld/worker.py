@@ -134,6 +134,21 @@ def smoke():
             'training_task_count':count,'protected_state_private':True}
 
 
+def request_completion(client,settings,messages,tools):
+    # Compatible response IDs are optional transport metadata. Only usable
+    # choices advance the task; empty responses have a separate bounded budget.
+    for _ in range(3):
+        response=client.chat.completions.create(model=settings['model'],messages=messages,
+            tools=tools,tool_choice='auto',temperature=0,max_tokens=8192)
+        RUN_OBSERVATION['model_steps']+=1
+        if response.choices:
+            return response
+        RUN_OBSERVATION['empty_model_responses']+=1
+        if RUN_OBSERVATION['empty_model_responses']>=3:
+            break
+    raise NativeIncomplete('native model response incomplete')
+
+
 def model_run(request,root):
     global STAGE,RUN_OBSERVATION
     from appworld import AppWorld
@@ -150,7 +165,7 @@ def model_run(request,root):
     messages=[]
     model_steps=0
     bridge_calls=0
-    RUN_OBSERVATION={'model_steps':0,'bridge_api_calls':0,'native_api_calls':0,'tool_validation_failures':0}
+    RUN_OBSERVATION={'model_steps':0,'bridge_api_calls':0,'native_api_calls':0,'tool_validation_failures':0,'empty_model_responses':0,'native_api_errors':0}
     STAGE='world_init'
     try:
         with AppWorld(task_id=task,experiment_name=experiment,max_interactions=160,
@@ -164,12 +179,8 @@ def model_run(request,root):
                 if len(json.dumps(messages,ensure_ascii=False).encode())>1024*1024:
                     raise NativeIncomplete('native model context bound reached')
                 STAGE='model_request'
-                response=client.chat.completions.create(model=settings['model'],messages=messages,
-                    tools=tools,tool_choice='auto',temperature=0,max_tokens=4096)
-                if not response.id or not response.choices:
-                    raise NativeIncomplete('native model response incomplete')
-                model_steps+=1
-                RUN_OBSERVATION['model_steps']=model_steps
+                response=request_completion(client,settings,messages,tools)
+                model_steps=RUN_OBSERVATION['model_steps']
                 message=response.choices[0].message
                 calls=message.tool_calls or []
                 item={'role':'assistant','content':message.content or ''}
@@ -217,6 +228,9 @@ def model_run(request,root):
                             output=world.execute(f'print(apis.{app}.{api}(**{params["arguments"]!r}))')
                             bridge_calls+=1
                             RUN_OBSERVATION['bridge_api_calls']=bridge_calls
+                            RUN_OBSERVATION['native_api_calls']=api_log_count(world)
+                            if output.startswith('Execution failed.'):
+                                RUN_OBSERVATION['native_api_errors']+=1
                         else:
                             raise ValueError('unknown tool')
                     except (ValueError,TypeError,KeyError):

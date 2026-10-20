@@ -79,7 +79,7 @@ def _invoke(operation,data,timeout):
                             detail+='; missing module '+missing
                     counts=diagnostic.get('native_counters')
                     if isinstance(counts,dict):
-                        for key in ['model_steps','bridge_api_calls','native_api_calls','tool_validation_failures']:
+                        for key in ['model_steps','bridge_api_calls','native_api_calls','tool_validation_failures','empty_model_responses','native_api_errors']:
                             number=counts.get(key)
                             if type(number)is int and 0<=number<=1000000:detail+='; '+key+'='+str(number)
                     status=diagnostic.get('http_status')
