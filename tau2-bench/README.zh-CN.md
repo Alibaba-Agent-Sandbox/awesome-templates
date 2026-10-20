@@ -148,7 +148,7 @@ curl --fail-with-body -X POST "$SERVER_URL/commands/tau2_version" -H "Authorizat
 
 | 变量 | 必填/默认 | 含义 |
 | --- | --- | --- |
-| `TAU2_MODEL_API_KEY` | 运行任务必填；空 | 模型密钥，最多8192字节，禁止 CR/LF/NUL。 |
+| `TAU2_MODEL_API_KEY` | 运行任务必填；空 | 模型密钥，最多8192字符，禁止 CR/LF/NUL。 |
 | `TAU2_MODEL_BASE_URL` | 运行任务必填；空 | 显式 HTTPS 兼容接口，最多2048字符；仅本地字面地址允许 HTTP 合成测试；禁止 userinfo、query、fragment。 |
 | `TAU2_MODEL` | 运行任务必填；空 | 明确模型标识，最多200个允许的标识字符。 |
 | `WORKSPACE` | `/home/user/workspace` | 已有且可写的结果根目录。 |

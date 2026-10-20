@@ -183,7 +183,7 @@ invalid source/task, reward mismatch or malformed output fails the command.
 
 | Variable | Required/default | Meaning |
 | --- | --- | --- |
-| `TAU2_MODEL_API_KEY` | Required for run; empty | Model key, at most8192 bytes, no CR/LF/NUL. |
+| `TAU2_MODEL_API_KEY` | Required for run; empty | Model key, at most8192 characters, no CR/LF/NUL. |
 | `TAU2_MODEL_BASE_URL` | Required for run; empty | Explicit HTTPS compatible base URL, at most2048 characters; literal local HTTP permitted for synthetic fixtures. No userinfo, query or fragment. |
 | `TAU2_MODEL` | Required for run; empty | Explicit model identifier, at most200 allowed identifier characters. |
 | `WORKSPACE` | `/home/user/workspace` | Existing writable result root. |
