@@ -1,5 +1,5 @@
 name: deepseek-harness
-version: "1.1.0"
+version: "1.1.1"
 description: "DeepSeek-compatible coding agent with bounded file and terminal tool calls."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0

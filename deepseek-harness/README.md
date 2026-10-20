@@ -91,6 +91,14 @@ Secret declarations in template.yaml are empty; do not copy credentials into ima
 
 ## Verified
 
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.1.1; steps build, official READY, CLI/SDK basic smoke, independent cleanup; current-version model acceptance NOT_RUN | [2026-10-19](evidence/express-2026-10-19T183349Z.json) |
+
+The changed workspace profile is verified in real generated steps. Prior receipts retain historical scope; basic smoke does not establish model acceptance.
+
+## Historical verification
+
 | Provider | Executed scope | Evidence |
 | --- | --- | --- |
 | alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |

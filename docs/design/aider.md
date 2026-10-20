@@ -32,6 +32,8 @@ full-repository agent session is exposed by the named command.
 
 ## How to build
 
+Template1.0.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
+
 [Dockerfile](../../aider/Dockerfile) retains the Alibaba FC base, non-root user,
 port 9000 and generation 2 server commands. Official PyPI metadata for
 [aider-chat 0.86.2](https://pypi.org/project/aider-chat/0.86.2/) requires Python
@@ -143,3 +145,5 @@ exact-template absence check passed. See the separate
 [recheck evidence](../../aider/evidence/image-runtime-hardened-2026-10-16.json).
 This does not rerun or replace historical evidence and does not satisfy canonical
 L2 deployment. Runtime commands, template configuration and HOME were unchanged.
+
+Current-version acceptance on 2026-10-20: version 1.0.1 genuine image READY/CLI/SDK and 21 strict real-model assertions (qwen3.8-flash, OpenAI-compatible), source edit/new artifact/unchanged original tests/independent held-out completion. Independently verified sandbox/template/registry cleanup. Historical pending statements describe earlier checkpoints; see the current [Verified table](../../aider/README.md#verified).

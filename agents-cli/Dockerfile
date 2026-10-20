@@ -49,5 +49,6 @@ RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py server-policy.json ./
+RUN chown user:user /home/user/app
 USER user
 EXPOSE 9000

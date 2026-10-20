@@ -135,6 +135,17 @@ HTTP 400 为缺少参数或类型错误；401 为服务端认证失败；404 为
 
 ## 已验证
 
+版本 2.0.2 已通过真实 CI 镜像登记、官方 READY、CLI/SDK，以及完整 Chromium 截图/PDF/独立产物 HTTP 检查 24 通过、0 失败、0 跳过。独立确认 sandbox/template/registry 清理。状态仍为 experimental；其他提供方未验证。
+
+| 提供方 | 范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 精确当前版本、真实镜像和独立清理 | [正式回执](evidence/express-2026-10-20.json)、[HTTP](evidence/image-http-2026-10-20T060053Z.json) |
+
+
+另一平台 step 尝试在 1200 秒内未达到 READY，官方最后状态为 building；[失败记录](evidence/full-http-steps-2026-10-20T062809Z.json)保留，不作为 step 通过证据。
+
+## 历史验收
+
 尚未记录任何通过的提供方测试。
 
 静态符合性和本地浏览器验收可以独立执行，不代表云端提供方验收。L1 要求真实镜像
@@ -142,6 +153,10 @@ HTTP 400 为缺少参数或类型错误；401 为服务端认证失败；404 为
 浏览器测试不能算作验收。
 
 ## 二次开发
+
+2.0.2 将 Python 包、系统依赖、Chromium 下载拆为三个构建 RUN，避免
+一次真实构建流截止。后续成功诊断超过300秒，不能推断极速版统一单步时限。Playwright 版本及完整 Chromium 不变；旧版本证据保留。
+
 
 在本目录运行 `abx template deploy` 或上述安装命令。部署器替换阿里云 region/tag
 占位符，并可从 `ABX_SERVER_SDK_SOURCE` 注入服务端 wheel；否则使用归档提交钉。
@@ -175,3 +190,5 @@ generation 2 使用 YAML 的 `start_cmd`、`ready_cmd`，以 `user` 运行。
 ## 许可证
 
 Apache-2.0。Playwright 为 Apache-2.0；Chromium 及其依赖保留各自上游许可声明。
+
+后续真实构建网络诊断运行超过300秒，因此早先流截止不代表统一单步执行上限；拆分阶段保留，慢速大资产传输仍待解决。

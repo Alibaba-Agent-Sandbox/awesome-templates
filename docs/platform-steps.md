@@ -147,3 +147,5 @@ it does not establish a universal300-second execution cap. Split build phases,
 bound transfers and preserve errors. A timed-out build is not acceptance.
 Heavy templates still need their own successful current-profile receipt; a
 partial network probe, local install or CI-only build cannot supply it.
+
+Generated steps explicitly assign /home/user/app to user:user before selecting the runtime user. Genuine full Python/Node HTTP workflows exposed root-owned native WORKDIR preventing file writes; COPY file ownership alone was insufficient. Version/basic smoke cannot replace a workspace file roundtrip. Historical failures and basic receipts retain their original scope.

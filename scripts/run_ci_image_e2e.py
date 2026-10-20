@@ -42,7 +42,7 @@ def publish(source: Path, receipt: dict, report: dict) -> None:
     stamp=datetime.now(timezone.utc).strftime('%Y-%m-%dT%H%M%SZ')
     receipt=dict(receipt,registry_cleanup_verified=True)
     canonical=directory/('express-'+stamp[:10]+'.json')
-    if canonical.exists():canonical=directory/('image-express-'+stamp+'.json')
+    if canonical.exists():canonical=directory/('express-'+stamp+'.json')
     # Exclusive creation preserves every earlier attempt/acceptance.
     with canonical.open('x') as stream:json.dump(receipt,stream,indent=2);stream.write('\n')
     with (directory/('image-http-'+stamp+'.json')).open('x') as stream:json.dump(report,stream,indent=2);stream.write('\n')

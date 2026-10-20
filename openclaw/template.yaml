@@ -1,5 +1,5 @@
 name: openclaw
-version: "2.0.0"
+version: "2.0.1"
 description: "Authenticated OpenClaw gateway with an owned background lifecycle."
 author: alibaba-agent-sandbox
 license: Apache-2.0

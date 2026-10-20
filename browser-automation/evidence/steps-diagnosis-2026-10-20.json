@@ -1,0 +1,12 @@
+{
+  "template": "browser-automation",
+  "template_version": "2.0.2",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "passed": false,
+  "last_official_state": "building",
+  "ready_poll_timeout_seconds": 1200,
+  "cleanup_verified": true,
+  "related_receipt": "full-http-steps-2026-10-20T062809Z.json",
+  "scope": "submission acknowledged but official READY never observed; no new current-version per-RUN error or universal step duration inferred"
+}

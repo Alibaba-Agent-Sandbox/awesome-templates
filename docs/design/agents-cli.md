@@ -33,6 +33,8 @@ registration cannot silently leave the default shell/files surface open.
 
 ## How to build
 
+Template2.0.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
+
 [Dockerfile](../../agents-cli/Dockerfile) retains the Alibaba base, generation 2,
 non-root user and no CMD/ENTRYPOINT. Installs pin `@openai/codex@0.162.1`,
 `@qwen-code/qwen-code@0.23.0`, and python-sdk server archive commit
