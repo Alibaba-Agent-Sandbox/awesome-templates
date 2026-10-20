@@ -37,7 +37,7 @@ abx --native template delete <owned-template-id> -y
 
 ## 快速开始（Python SDK）
 
-按[配套源码安装](../docs/python-client-installation.md)安装 `agent-sandbox-client`。示例已做语法检查，真实云端验收仍待完成；任务与 CLI/HTTP 相同。
+按[配套源码安装](../docs/python-client-installation.md)安装 `agent-sandbox-client`。示例已做语法检查；真实验收使用独占离线测试页面，见下方记录；任务与 CLI/HTTP 相同。
 
 ```python
 import asyncio
@@ -101,13 +101,15 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/chrome_open" \
 
 ## 资源
 
-声明2vCPU/2048MB、1024×768、端口9000/9222/6080、内部9223/5901及一个独占 X display。无需 Docker/KVM/GPU。Chrome 在一次性外层沙箱内使用 --no-sandbox 与 --disable-dev-shm-usage，不构成额外 OS 隔离。镜像根目录限制8GiB。实际极速版 cgroup 和 /dev/shm 测量待完成。每个服务一个会话；下载/截图占用调用方工作空间。
+声明2vCPU/2048MB、1024×768、端口9000/9222/6080、内部9223/5901及一个独占 X display。无需 Docker/KVM/GPU。Chrome 在一次性外层沙箱内使用 --no-sandbox 与 --disable-dev-shm-usage，不构成额外 OS 隔离。镜像根目录限制8GiB。极速版 /dev/shm 实测1031241728字节，v2 cgroup 路径不可用；2CPU/2048MB 是模板声明，不是实测峰值或 cgroup2 上限。独立 L1 原生镜像 smoke 实测64MiB共享内存，当时 CPU/内存未限制，根目录实测1689714688字节。这些是分开测量，不代表2GB与64MiB组合压力测试。每个服务一个会话；下载/截图占用调用方工作空间。
 
 ## 已验证
 
-尚未记录任何通过的提供方测试。
+| 提供方 | 日期 | 范围 | 证据 |
+| --- | --- | --- | --- |
+| alicloud-express | 2026-10-20 |1.0.5；原版有界面 Chrome145，SDK 创建的原生 steps，CLI/SDK smoke、完整HTTP30/0/0及独立清理 | [收据](evidence/express-2026-10-20T230349Z.json)、[控制器/来源](evidence/verification-steps-2026-10-20T230349Z.json) |
 
-本地自编命令/协议测试及源码 HTTP7PASS/0FAIL（明确跳过真实 GUI）不能证明桌面已验收。镜像、SDK 创建的极速版 steps、CDP/VNC/真实输入/PNG及独立清理仍待完成。[验证记录](../.agents/evidence/verify/2026-10-20-chrome-visible-cdp.md)。
+准确运行/控制器源码 cd144246bcd3e2ba37865d90e24cba612db8b11b。[L1 原生镜像 smoke](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39512397976) 也通过，独立实测64MiB共享内存。原生 CDP/noVNC/RFB 认证、真实 VNC 指针输入与独立 DOM/画面变化、有效命名导航及外部 CDP 回读、PNG 独立下载/字节/哈希/多区域/返回后随机 ACK，以及本次原生进程/私有目录/display/监听/沙箱/模板/OSS 缺席均通过，耗时156.468秒。不声明模型、基准或其他提供方验收。[最终记录](../.agents/evidence/verify/2026-10-20-chrome-native-final.md)。历史鼠标指针采样失败和仅诊断尝试保持原样；本地/源码检查不能赋予提供方资格。
 
 ## 二次开发
 

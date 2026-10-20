@@ -18,7 +18,7 @@ Shell/files/code/ports; original headed Chrome-for-Testing145.0.7632.6, private 
 
 ## Express feasibility
 
-Feasible: slice. Limiting factor: native desktop resource/process compatibility must be established by actual image and Express runs. Proposed Linuxx64/2CPU/2048MB/noDocker/noKVM/noGPU profile. Actual /dev/shm and cgroup measurements are pending. Ports9000/9222/6080 exposed; native9223/5901 loopback only. Browser --no-sandbox relies on the disposable outer sandbox boundary; --disable-dev-shm-usage accommodates small shared memory.
+Feasible: slice. Limiting factor: workload/resource coverage is bounded by the recorded controlled native desktop task. Actual Linuxx64/declared2CPU/2048MB/noDocker/noKVM/noGPU Express profile passed; /dev/shm1031241728bytes and cgroup2paths unavailable. Separate actual L1 native image smoke measured64MiB shared memory with unrestricted CPU/memory. No combined2GB/64MiB stress-test claim. Ports9000/9222/6080 exposed; native9223/5901 loopback only. Browser --no-sandbox relies on the disposable outer sandbox boundary; --disable-dev-shm-usage accommodates small shared memory.
 
 ## Risks
 
@@ -27,3 +27,5 @@ Private0700 HOME/profile/Xauthority, generated8-character password via stdin to 
 ## Test plan
 
 L0 authored URL/secret exclusion/exclusive PNG/private IPC/process cleanup/RFB3.8-DES/rawframe/pointer/HTTP Bearer regressions and source-only HTTP with native omissions explicit. L1 actual headed native CDP/VNC/PNG smoke and image build. L2 published-source canonical steps, official READY, actual SDK Sandbox.create, CLI/SDK smoke, full external CDP version/WebSocket, noVNC static client, actual authenticated RFB green-frame capture, real VNC button input with independent CDP counter change and blue-frame capture, SDK screenshot independent file/bytes/hash/PNG/pixel checks and fresh post-return ACK. Finally independently verify owned PNG/process/private display/ports plus sandbox/template/OSS absence. No model test applies. All unrun/failed/skipped checks remain distinct from pass.
+
+Current1.0.5 sourcecd144246bcd3e2ba37865d90e24cba612db8b11b passed actual image L1 and SDK-created canonical native Express steps/fullHTTP30/0/0 with independent owned native/private/display/ports/PNG/outer/OSS absence. Native DOM and framebuffer validation uses independent predefined content regions away from the real software pointer. Historical failures remain preserved. [Final evidence](../../.agents/evidence/verify/2026-10-20-chrome-native-final.md).

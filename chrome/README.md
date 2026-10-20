@@ -37,7 +37,7 @@ The canonical validation command is `ABX="abx --native" python scripts/run_steps
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` through the [paired source instructions](../docs/python-client-installation.md). The example is syntax checked; actual cloud acceptance remains pending. It returns the same browser task as CLI/HTTP.
+Install `agent-sandbox-client` through the [paired source instructions](../docs/python-client-installation.md). The example is syntax checked; actual acceptance uses an owned offline fixture as recorded below. It returns the same browser task as CLI/HTTP.
 
 ```python
 import asyncio
@@ -101,13 +101,15 @@ Calls serialize. Startup readiness budget90seconds; navigation/CDP/VNC operation
 
 ## Resources
 
-Declared2vCPU/2048MB,1024×768 desktop, ports9000/9222/6080, internal9223/5901 and one owned X display. No Docker/KVM/GPU is required. Native Chrome uses --no-sandbox inside the disposable outer sandbox and --disable-dev-shm-usage; it is not an additional OS isolation boundary. Image rootfs guard8GiB. Actual Express cgroup and /dev/shm measurements are pending. One session per server; generated downloads/screenshots consume caller workspace storage.
+Declared2vCPU/2048MB,1024×768 desktop, ports9000/9222/6080, internal9223/5901 and one owned X display. No Docker/KVM/GPU is required. Native Chrome uses --no-sandbox inside the disposable outer sandbox and --disable-dev-shm-usage; it is not an additional OS isolation boundary. Image rootfs guard8GiB. Actual Express /dev/shm was1031241728bytes; v2 cgroup memory/cpu paths were unavailable, so2CPU/2048MB is the declared template profile, not a measured peak or cgroup2limit. Separate actual L1 native image smoke measured64MiB shared memory; its CPU/memory were unrestricted. Rootfs measured1689714688bytes. These are distinct measurements, not a combined2GB/64MiB stress test. One session per server; generated downloads/screenshots consume caller workspace storage.
 
 ## Verified
 
-No provider has a passing run recorded for this template.
+| Provider | Date | Scope | Evidence |
+| --- | --- | --- | --- |
+| alicloud-express | 2026-10-20 |1.0.5; original native headed Chrome145, SDK-created canonical steps, CLI/SDK smoke, fullHTTP30/0/0, independent owned cleanup | [Receipt](evidence/express-2026-10-20T230349Z.json), [controller/provenance](evidence/verification-steps-2026-10-20T230349Z.json) |
 
-Local authored command/protocol tests and source-only HTTP7PASS/0FAIL with native GUI explicitly skipped are not real desktop acceptance. Image build and SDK-created Express steps/CDP/VNC/input/PNG/owned-cleanup gates remain pending. [Verification](../.agents/evidence/verify/2026-10-20-chrome-visible-cdp.md).
+Exact runtime/controller source cd144246bcd3e2ba37865d90e24cba612db8b11b; actual [L1 native image smoke](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39512397976) also passed, separately measuring64MiB shared memory. Original native CDP/noVNC/RFB authentication, actual VNC pointer input with independent DOM/redraw, valid named navigation with external CDP readback, independently downloaded PNG/bytes/hash/regions/fresh ACK and owned native/private/display/listener/sandbox/template/OSS absence all passed. Duration156.468seconds. No model/benchmark/other-provider claim. [Final record](../.agents/evidence/verify/2026-10-20-chrome-native-final.md). Historical white-cursor sampling failures and diagnostic-only attempts remain unchanged; local/source-only checks do not grant provider qualification.
 
 ## Secondary development
 
