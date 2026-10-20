@@ -1,0 +1,9 @@
+{
+  "package": "@factory/cli",
+  "version": "0.241.1",
+  "native_package": "@factory/cli-linux-x64",
+  "native_sha256": "1f50e238df053573aec1dae7b90b19c8e5afca83ab13a790a00f53ba4e4b9ab1",
+  "native_npm_integrity": "sha512-aU73WBI0wPntLgfuG8tOSyGTs/VQSs1oswvY5bAqGyU2emwTO2dorRDG/OB11o83wxpMBRjsxw5ym+jh9m7YgA==",
+  "source_publication": "npm official compiled distribution; source repository metadata does not establish public source availability",
+  "license": "UNLICENSED; governed by upstream terms, not wrapper Apache-2.0"
+}

@@ -1,0 +1,8 @@
+{
+  "name": "agent-sandbox-droid-template",
+  "version": "1.2.0",
+  "private": true,
+  "dependencies": {
+    "@factory/cli": "0.241.1"
+  }
+}

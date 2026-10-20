@@ -267,6 +267,7 @@ jobs:
           python -m pytest -q copilot-cli/test_commands.py copilot-cli/test_model_controller.py
           python -m pip install --require-hashes -r chrome/requirements.lock
           python -m pytest -q chrome/test_commands.py chrome/test_protocol.py
+          python -m pytest -q tau2-bench/test_runtime.py
           python -m pytest -q cline/test_commands.py cline/test_model_controller.py
           python -m pytest -q grok/test_commands.py grok/test_model_controller.py
           python -m pytest -q python-hello/test_command_errors.py
@@ -275,7 +276,7 @@ jobs:
           python -m pytest -q codex/test_commands.py
           python -m pytest -q opencode/test_commands.py opencode/test_e2e_protocol.py
           python -m pytest -q amp/test_commands.py amp/test_e2e_protocol.py
-          python -m pytest -q droid/test_commands.py droid/test_e2e_protocol.py
+          python -m pytest -q droid/test_commands.py droid/test_e2e_protocol.py droid/test_byok.py droid/test_model_controller.py
           python -m pytest -q gemini/test_commands.py gemini/test_e2e_protocol.py
           python -m pytest -q openclaw/test_commands.py openclaw/test_sdk_controller.py
           python -m pytest -q kimi-code/test_commands.py

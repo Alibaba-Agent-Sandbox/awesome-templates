@@ -1,0 +1,22 @@
+{
+  "scope": "actual unchanged pinned binary with current wrapper; authored synthetic-only endpoint, no real model/cloud acceptance",
+  "native_version": "0.241.1",
+  "native_sha256": "1f50e238df053573aec1dae7b90b19c8e5afca83ab13a790a00f53ba4e4b9ab1",
+  "exit_code": 0,
+  "native_type": "result",
+  "native_subtype": "success",
+  "native_is_error": false,
+  "num_turns": 1,
+  "fixed_synthetic_reply": true,
+  "requests": [
+    {
+      "path": "/v1/chat/completions",
+      "model": "abx-probe-model",
+      "synthetic_auth": true
+    }
+  ],
+  "factory_credential_absent": true,
+  "only_synthetic_key": true,
+  "private_home_and_process_state_absent": true,
+  "wrapper_sha256": "f9b6b85f2eb663e4d604dfacb7abf865733e3cdc3056b939df155dd0cad996bd"
+}

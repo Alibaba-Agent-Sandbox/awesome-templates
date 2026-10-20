@@ -1,0 +1,56 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-20",
+  "template": "droid",
+  "template_version": "1.2.0",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "steps",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "harness_sha256": "91592778b24797075915b40f31f219f6517526b17cd2b3a75fe777f73fe6afd6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "droid_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 17.114,
+      "result": "0.241.1"
+    },
+    {
+      "name": "droid_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 45.403,
+      "result": "0.241.1"
+    }
+  ],
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "droid",
+    "materializer_sha256": "478acb7d3bb6a9b6b995c0714636d3ed0e01c7ab80fe2dbe6bb84e99304f5548",
+    "source_manifest_contract_sha256": "1a99e0554db1c49fc06ed2095052a4df7f332a927b6c6dfa249ac0077a37c952",
+    "template_version": "1.2.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "4cbd6ddf9587cfad8229a6c5835b4f598d31ce83",
+    "asset_transport": "direct",
+    "steps_json_bytes": 7521,
+    "inputs_sha256": {
+      "Dockerfile": "62496e9c0dcdf0c181206f64b3823fcc4759a7a8694c0758b9cd9d1d5a81e38c",
+      "template.yaml": "d8bfa6b64d2a967c551190934650f74dd82e7c8554aa74f459ae68707cee115c",
+      "package.json": "d292a30310d48d8ccb20791b567fbc03bcbcfc5478e7424c6c80f9158d5596a6",
+      "package-lock.json": "9871fb71fa7638deeeda7bf1d8be058416bf8726cb0fd376a6d40c033b13a576",
+      "commands.py": "e006ae0d9d73b45ad8d0a2b7bb97d2aec0a7fea8ae10fa0502d0df01ff46ea47",
+      "byok.py": "bcfe4dc5a19b2c8b1ab7811626393bf9c5f5ed0e39db6ef320797aa8e940ee26",
+      "process.py": "d56623fa3bdd73ba7d2338fe472b21ea7b4f4a3d8a2e731887df6ea69126fabe",
+      "lifecycle.py": "a547b32d65cd7e4c12aab6412f59fedf3e394b05c3d853318c16e52f37c8b6b1",
+      "UPSTREAM-NOTICE.md": "cc8e6858c8495f0486f926f58bd4a293ff98dddde6f4a8b0376571c8726eafe5"
+    },
+    "generated_manifest_sha256": "2534f6d0513c3bcf1018447ccc4069e32fec2822407164dbb6a2fa2ed7c8a485"
+  }
+}

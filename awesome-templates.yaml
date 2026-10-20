@@ -274,7 +274,7 @@ templates:
       opensandbox: provider-prepared
 
   - name: droid
-    description: "Factory Droid. Command droid exec. Package @factory/cli@0.241.1."
+    description: "Genuine Factory Droid0.241.1, explicit compatible BYOK and isolated bounded coding."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: droid
     tags: [droid, factory, ai-agent, ai-coding]
@@ -282,7 +282,7 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: install-build
+      alicloud-express: supported
       alicloud-container: provider-prepared
       cubesandbox: provider-prepared
       e2b: provider-prepared
@@ -562,7 +562,17 @@ templates:
       alicloud-express: supported
 
 
-# Provider-managed IDs have no source build context; never pass these to image selection.
+  - name: tau2-bench
+    description: "Original Tau2 text retail runner with native agent/user models and strict trajectory replay."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: tau2-bench
+    tags: [tau2, benchmark, tools, retail]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: supported
+
   - name: chrome
     description: "Pinned headed Chrome145 with native CDP and authenticated visible noVNC desktop"
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
@@ -574,6 +584,7 @@ templates:
     providers:
       alicloud-express: install-build
 
+# Provider-managed IDs have no source build context; never pass these to image selection.
 managed_templates:
   - name: base
     provider: alicloud-express

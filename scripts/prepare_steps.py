@@ -96,6 +96,13 @@ def parallel_assets(source: Path) -> dict:
                 or item["sha256"] != "b5e3195041af345a668d110f5daf5581961fa3608626ea588c97dd0fe81c4e38"):
             raise ValueError("unreviewed headed Chrome archive transport")
         return {"x86_64": [{key: item[key] for key in ["url", "size", "sha256"]}]}
+    if source.name == "tau2-bench":
+        item = json.loads((source / "upstream.json").read_text())
+        if (item["source_commit"] != "fc0055dc4e0a316c3f83133267fbd6faaa770992" or item["url"] != "https://codeload.github.com/sierra-research/tau2-bench/tar.gz/" + item["source_commit"]
+                or item["size"] != 92081935 or item["sha256"] != "7a227036d07fdeb088dbd0c99fdb40ee9b9e0ebc06aadbc4dec1217b3383e57e"):
+            raise ValueError("unreviewed Tau2 source transport")
+        return {arch: [{key: item[key] for key in ["url", "size", "sha256"]}]
+                for arch in ["x86_64", "aarch64"]}
     if source.name == "hermes-agent":
         text = (source / "Dockerfile").read_text()
         metadata = json.loads(Path(__file__).with_name("step_uv_python.json").read_text())

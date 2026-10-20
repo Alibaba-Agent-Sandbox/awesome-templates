@@ -1,0 +1,115 @@
+{
+  "template": "tau2-bench",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T212600Z",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "PASS",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "tau2-bench",
+    "materializer_sha256": "05104947a47f48f3c812cf28b8636a3484812be1a68bce34493c6781eb02cd34",
+    "source_manifest_contract_sha256": "1dd404e5364f86208baacf1c6e31ab184423d2c8b8cf17741fe882559ac93b02",
+    "template_version": "1.0.4",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "3a0d8e91a6246bd276372a6c04a53a7de71cb6ae",
+    "asset_transport": "oss",
+    "steps_json_bytes": 11075,
+    "inputs_sha256": {
+      "Dockerfile": "afd24e9b1a92c5ff1864f7b7bb909cee2b63809656886d13f7316ea5897ef326",
+      "template.yaml": "d5a67a3652c72f74eed539a64bb9bf33fe9c1921951aa231cf5bd28ca53c2089",
+      "upstream.json": "6c3ecbb8bafde46348aaffcd17fb541c3e17bf1fd0bf0a091a4669ff3c134a26",
+      "requirements.lock": "a95db46ca744f832ca3b03c7c4cc46bca510f5ca447415cd5e18c26e47972061",
+      "install_source.py": "ba33af9250679236b76e28c3fa945affcc5cdee38a838b6017dfbdf2c2e4a88a",
+      "commands.py": "bc1aa520d538c9092a7ef54d1a9eb82490083ea7cdd09fc35289e28868c4be1b",
+      "worker.py": "29c0de52f200808f73ff31dc6eec13828a81cd6c83a5b9bba414b05deb9b9917",
+      "process.py": "9d842feeaab9ec6929afa53d3cebf693fbaaf8453fee50870403ac107141568a",
+      "lifecycle.py": "6ca358fb55f42d147e89b0d00ebaa94c94ae7705fec9c8616155915136e12339",
+      "UPSTREAM-LICENSE.md": "e67c5aa0074dfcaefd3c3a1aedb94cb539234aecd15d5a972574e3200e6252fe",
+      "AUDIOOP-LICENSE.txt": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf"
+    },
+    "asset_transport_sha256": "83f20ec571a29225637ddac11fce7fd86f29146b24622b43e326c6934f8594e3",
+    "asset_adapter_source_commit": "3a0d8e91a6246bd276372a6c04a53a7de71cb6ae",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://codeload.github.com/sierra-research/tau2-bench/tar.gz/fc0055dc4e0a316c3f83133267fbd6faaa770992",
+          "size": 92081935,
+          "sha256": "7a227036d07fdeb088dbd0c99fdb40ee9b9e0ebc06aadbc4dec1217b3383e57e"
+        }
+      ],
+      "aarch64": [
+        {
+          "url": "https://codeload.github.com/sierra-research/tau2-bench/tar.gz/fc0055dc4e0a316c3f83133267fbd6faaa770992",
+          "size": 92081935,
+          "sha256": "7a227036d07fdeb088dbd0c99fdb40ee9b9e0ebc06aadbc4dec1217b3383e57e"
+        }
+      ]
+    },
+    "asset_cache_architecture": "x86_64",
+    "generated_manifest_sha256": "9a9cc8180b7439588c13181eb1f322ea2cb982de3630cb4cfc136a76d7deea3f"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 8,
+    "fail_count": 0,
+    "skip_count": 0,
+    "controller_sha256": "da68a2b97cb38be18d55ca3f9a7775b9d0473e69fbb745480f492c6c91cec409"
+  },
+  "model_controller_sha256": "da68a2b97cb38be18d55ca3f9a7775b9d0473e69fbb745480f492c6c91cec409",
+  "commands_sha256": "bc1aa520d538c9092a7ef54d1a9eb82490083ea7cdd09fc35289e28868c4be1b",
+  "native_model_acceptance": {
+    "model_acceptance": "PASS",
+    "model": "qwen3.8-flash",
+    "model_protocol": "OpenAI-compatible Chat Completions",
+    "actual_sdk_named_command": true,
+    "native_version": "1.0.1",
+    "domain": "retail",
+    "official_task_id": "0",
+    "sdk_actual_native_version": true,
+    "sdk_explicit_model_configured": true,
+    "native_benchmark": {
+      "artifact_bytes": 79516,
+      "artifact_sha256": "b30a9c8538079f389895d48f7af4f0630be039d1740bc42e01f2023d4315459d",
+      "assistant_messages": 11,
+      "domain": "retail",
+      "message_count": 22,
+      "native_version": "1.0.1",
+      "score": 1.0,
+      "source_commit": "fc0055dc4e0a316c3f83133267fbd6faaa770992",
+      "task_id": "0",
+      "termination_reason": "user_stop",
+      "tool_call_count": 7,
+      "user_messages": 4
+    },
+    "exit_code": 0,
+    "pass_count": 17,
+    "fail_count": 0,
+    "skip_count": 0,
+    "secondary_server_stop_ack": true,
+    "owned_secondary_listener_and_native_state_absent": true
+  },
+  "cleanup_verified": true,
+  "exit_code": 0,
+  "receipt": "tau2-bench/evidence/express-2026-10-20T212600Z.json",
+  "command_calls": 2,
+  "asset_cache": {
+    "service": "Alibaba Cloud OSS",
+    "private_acl_verified": true,
+    "archives": [
+      {
+        "url": "https://codeload.github.com/sierra-research/tau2-bench/tar.gz/fc0055dc4e0a316c3f83133267fbd6faaa770992",
+        "sha256": "7a227036d07fdeb088dbd0c99fdb40ee9b9e0ebc06aadbc4dec1217b3383e57e",
+        "size": 92081935
+      }
+    ],
+    "signed_get_ttl_seconds": 3600,
+    "cleanup_verified": true
+  },
+  "duration_s": 230.319
+}
