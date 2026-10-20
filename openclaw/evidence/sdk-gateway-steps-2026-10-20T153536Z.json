@@ -1,0 +1,50 @@
+{
+  "passed": true,
+  "template": "openclaw",
+  "template_version": "2.1.0",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "verification_type": "actual-sdk-owned-native-gateway",
+  "model_acceptance": "NOT_APPLICABLE_GATEWAY_ONLY",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "openclaw",
+    "materializer_sha256": "c4eca69e56e6a419a96bf47b01986baed5ed9df1b68af2f7ecb2caf7fd40d65c",
+    "template_version": "2.1.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "steps_json_bytes": 11638,
+    "inputs_sha256": {
+      "Dockerfile": "9edf6532247e63bf930be76fba20a67c85409fbc16f402523447a5bfaa70762a",
+      "template.yaml": "21e3b6f55b1960b1ff181a3435345e38d7945c2c940f861974e12406bff21585",
+      "commands.py": "86978657c80885c1d57f8aa000a4f0df3a83d1f5bb283490f6278e376c83050b"
+    },
+    "generated_manifest_sha256": "f802114877261b2789d7216d40385ac4dd2990b2b3802a8487442fa65977dabc"
+  },
+  "observed_forwarded_transport": {
+    "peer_loopback": false,
+    "peer_private": false,
+    "peer_global": true,
+    "peer_version": 4
+  },
+  "initial_owned_status_stopped": true,
+  "sdk_native_authenticated_start": true,
+  "sdk_native_authenticated_rpc": true,
+  "gateway_survives_start_response": true,
+  "external_healthz_last_status": 200,
+  "external_sdk_forwarded_healthz": true,
+  "external_readyz_last_status": 200,
+  "external_sdk_forwarded_readyz": true,
+  "sdk_native_stop": true,
+  "sdk_status_stopped": true,
+  "owned_cleanup_ack": true,
+  "owned_listeners_absent": true,
+  "owned_state_directories_absent": true,
+  "cleanup_verified": true,
+  "controller_sha256": "1785e65ae1c0b6028fd866359ea1c60c31bdca14a375c25ba55f376a53e36723",
+  "commands_sha256": "86978657c80885c1d57f8aa000a4f0df3a83d1f5bb283490f6278e376c83050b"
+}

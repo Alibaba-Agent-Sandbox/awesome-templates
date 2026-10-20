@@ -1,5 +1,5 @@
 name: openclaw
-version: "2.0.1"
+version: "2.1.0"
 description: "Authenticated OpenClaw gateway with an owned background lifecycle."
 author: alibaba-agent-sandbox
 license: Apache-2.0
@@ -20,6 +20,7 @@ capabilities: [shell, files, code, ports]
 env:
   ABX_SERVER_TOKEN: ""
   OPENCLAW_GATEWAY_TOKEN: ""
+  OPENCLAW_TRUSTED_PROXIES: ""
   ANTHROPIC_API_KEY: ""
   OPENAI_API_KEY: ""
 smoke:

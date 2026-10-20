@@ -1,0 +1,32 @@
+{
+  "passed": true,
+  "template": "openclaw",
+  "template_version": "2.1.0",
+  "provider": "alicloud-express",
+  "build_mode": "image",
+  "verification_type": "actual-sdk-owned-native-gateway",
+  "model_acceptance": "NOT_APPLICABLE_GATEWAY_ONLY",
+  "observed_forwarded_transport": {
+    "peer_loopback": false,
+    "peer_private": false,
+    "peer_global": true,
+    "peer_version": 4
+  },
+  "initial_owned_status_stopped": true,
+  "sdk_native_authenticated_start": true,
+  "sdk_native_authenticated_rpc": true,
+  "gateway_survives_start_response": true,
+  "external_healthz_last_status": 200,
+  "external_sdk_forwarded_healthz": true,
+  "external_readyz_last_status": 200,
+  "external_sdk_forwarded_readyz": true,
+  "sdk_native_stop": true,
+  "sdk_status_stopped": true,
+  "owned_cleanup_ack": true,
+  "owned_listeners_absent": true,
+  "owned_state_directories_absent": true,
+  "cleanup_verified": true,
+  "registry_cleanup_verified": true,
+  "controller_sha256": "1785e65ae1c0b6028fd866359ea1c60c31bdca14a375c25ba55f376a53e36723",
+  "commands_sha256": "86978657c80885c1d57f8aa000a4f0df3a83d1f5bb283490f6278e376c83050b"
+}
