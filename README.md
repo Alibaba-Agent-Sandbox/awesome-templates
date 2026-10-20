@@ -22,7 +22,7 @@ is recorded.
 
 ## Templates
 
-2026-10-20 historical 34-template Express platform-step checkpoint (new templates require their own acceptance): **34/34 step and required full HTTP PASS** with real READY, CLI/SDK smoke and independent cleanup. [Auditable per-template matrix](.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json) · [operations and scope](docs/platform-steps.md) ([中文](docs/platform-steps.zh-CN.md)). Model and image acceptance remain separate.
+2026-10-20 accepted35-template Express platform-step checkpoint: **35/35 current native/runtime and required full HTTP PASS**, with official READY, actual CLI/SDK smoke and independent owned cleanup. [Immutable current35matrix](.agents/evidence/verify/2026-10-20-current-native-http35.json) · [operations and scope](docs/platform-steps.md) ([中文](docs/platform-steps.zh-CN.md)). This is not35new deployments, universal model/image acceptance or completion of all64Issues; new catalog entries require their own proof. The [historical34matrix](.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json) remains unchanged.
 
 The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](docs/verification-2026-10-18.zh-CN.md)) records the historical23-template checkpoint and its unresolved gates. Current scoped receipts are linked below.
 
