@@ -89,7 +89,7 @@ smoke:
 |---|---|
 | `name` | 与目录名相同。 |
 | `description`、`version`、`author`、`license` | 非空字符串。 |
-| `spec_version` | 目录已经按本文实现时写 `2`。检查器把没有这个字段的目录当作旧模板：`--all` 会列出它们，但不会因此失败。 |
+| `spec_version` | 现有契约为 `2`；严格 schema 与可选 `application` 使用 `3`。只有未写版本的模板属于旧模板；显式未知版本检查失败。 |
 | `base` | 字符串。占位符 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，或钉死的 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:vX.Y.Z`。不是 mapping。 |
 | `generation` | 整数 `2`。 |
 | `start_cmd` | `agent-sandbox-server serve`，并带上镜像里 `commands.py` 的路径。 |
@@ -115,6 +115,54 @@ agent-sandbox-server healthcheck --port 9000
 这三项仍然要写进文件。镜像里的 `commands.py` 如果不在 `/home/user/app/commands.py`，默认路径是错的。
 
 命名命令不写在 `template.yaml` 里，在 `commands.py` 注册。
+
+## 可选应用部署（规范版本 3）
+
+使用 `spec_version: 3` 启用封闭的机器契约
+[schema/template-v3.schema.json](../schema/template-v3.schema.json)。原有 sandbox
+字段含义保持；`application` 可省略，因此普通 v3 sandbox 模板不产生应用部署。
+v2 继续支持，但 v2 中添加 `application` 会失败。未知字段、版本和非法拓扑组合均失败；
+旧 CLI 在支持新契约前必须拒绝 v3。
+
+`template.yaml` 是唯一用户配置入口，不增加 `agent-app.yaml`。
+应用部署由显式 CLI 操作触发；安装模板、导入模块、构建 sandbox 镜像和
+`Sandbox.create()` 都不执行应用 hooks 或部署 FC 函数。Sandbox provider 与应用
+部署 adapter 保持独立接口。
+
+已做语法检查的[本地示例](examples/application-local/template.yaml)描述现有
+`agents-cli` 本地 API profile，不代表新镜像验收或持久托管服务。
+[外部示例](examples/application-external/template.yaml)演示内嵌 Serverless Devs 项目；
+组件版本、角色、镜像、数据库和身份绑定必须在部署前解析并审查。
+这些文件不是云端通过证据，也不是可安装的目录条目。
+
+| Application 字段 | 契约 |
+| --- | --- |
+| `runtime` | `placement: external` 需要 `driver: python-remote-tools`，不能写本地 profile。`in-sandbox` 需要 `driver: sandbox-local-api`，profile 为 `server-core-agents` 或 `legacy-codex-agent-api`。Profile 不证明全部本地接口已开放。 |
+| `gateway` | `placement: fc-web` 表示外部网关；`client-direct` 仅适用于 sandbox 内 runtime。 |
+| `deployment` | 直连只能是 `{adapter: none}`。FC 需要 `adapter: serverless-devs-fc3`、`accessRef`、`toolchainLock`，以及 `inline`、`project` 二选一。Access 引用是名称，不是凭据。 |
+| `deployment.inline` | Serverless Devs v3 mapping，包括 `edition: "3.0.0"`、`name`、`resources`。资源键限 `gateway`、`worker`、`dispatcher`；外部 runtime 三者都必需。每项包含精确 `component: fc3@X.Y.Z`、非空 `props`，可选 `actions`。Adapter 提取 mapping 生成冻结的 `s.yaml`，用户无需再维护一份 YAML。Schema 不验证 FC 属性、组件可用性、IAM 或实际代码。 |
+| `deployment.project` | 高级替代方式：手写且已审查的 Serverless Devs 项目的相对路径。完整引用源码树都属于部署输入。 |
+| `deployment.toolchainLock` | 部署工具版本及完整性锁的相对路径。JSON lock 的格式与验证执行属于 CLI adapter，不属于模板检查器。 |
+| `sandbox` | Provider 名称、`lifetime: per-run`、`workspace: exclusive`、非空 `requiredFeatures`。两种模式都需要 `sandbox.lifecycle`；外部还需 `exec.run`、`files.rw`，sandbox 内还需 `ports.url`。能力声明不证明 provider 已支持，也不授予运行权限。 |
+| `state` | 外部网关需要 `profile: durable`，`bindingRef` 必须指向 `bindings` 的键。客户端直连只能是 `{profile: ephemeral}`。 |
+| `bindings` | 逻辑名称到凭据或服务引用名称的 mapping，不得写密钥、连接串或签名 URL。直连模式允许为空。 |
+| `limits` | 正整数 `maxRunSeconds`、`maxToolSeconds`、`maxConcurrentRuns`、`maxQueuedRuns`、`maxRunsPerMinute`；`maxEventsPerRun >= 5`、`maxOutputBytes >= 1024`。工具预算不能超过任务预算。实际限制由 runtime 执行，检查器不实现准入控制。 |
+| `hooks` | 可选 `beforeApply`、`afterReady` 列表，每阶段最多八项。直连本地模式没有部署 hooks，其他阶段名拒绝。 |
+
+每个 hook 包含全局唯一 `id`、`executor: host-command`、argv 数组、相对 `cwd`、
+`1..900` 的 `timeoutSeconds` 和环境变量名称 `envAllowlist`。
+部署 adapter 在主机/CI 执行已审查的 argv 并限制输出；检查器只读取配置。
+`beforeApply` 只验证冻结输入，不能重新构建或修改产物；`afterReady` 在发布前验证候选。
+它们不是 sandbox 启动 hooks。Serverless Devs 原生 actions 与表达式也是可执行代码，
+需要审查；构建步骤在部署计划冻结前完成。
+
+路径必须是相对路径，不含反斜杠、控制字符或 `..` 段，解析后必须位于模板目录内。
+引用的 project、lock 文件与 hook 工作目录必须存在；拒绝符号链接越界。
+检查器不将 hook argv 当作 shell 字符串执行。
+
+使用 `python -m pip install -r scripts/requirements-spec.txt` 安装固定检查依赖，
+然后运行检查器与 `scripts/test_spec_tools.py`。下文 runtime、镜像、提供方与模型验收
+仍独立适用；schema 有效不能提升目录状态或 `tested_on`。
 
 ## 阿里云基础镜像
 
@@ -424,9 +472,9 @@ python3 scripts/check_template.py --all
 python3 scripts/check_template.py --all --strict   # 旧模板的违规也导致失败
 ```
 
-`--all` 打印符合性列表。每个 `spec_version: 2` 的目录都通过时退出码为 0。旧目录会带上违规代码列出来，但不让进程失败。CI 运行 `--all`。`scripts/run_local_e2e.py` 也会运行它，spec_version 2 失败时整个脚本失败。
+`--all` 打印符合性列表。每个显式 `spec_version: 2` 或 `3` 的目录都通过时退出码为 0。旧目录会带上违规代码列出来，但不让进程失败。CI 运行 `--all`。`scripts/run_local_e2e.py` 也会运行它，支持的规范版本检查失败时整个脚本失败。
 
-违规代码包括 `required-file`、`readme-section`、`base-image`、`dockerfile-cmd`、`dockerfile-user`、`yaml-field`、`commands-start`、`verified-evidence`、`pinned-version`、`readme-client`、`secrets`。`RUN` 上两种服务端钉都没有时，`pinned-version` 失败。spec_version 2 的 SDK 章节没有写 `agent-sandbox-client`，或 README 让读者 `pip install agent-sandbox` 时，`readme-client` 失败。
+违规代码包括 `required-file`、`readme-section`、`base-image`、`dockerfile-cmd`、`dockerfile-user`、`yaml-field`、`commands-start`、`verified-evidence`、`pinned-version`、`readme-client`、`secrets`。`RUN` 上两种服务端钉都没有时，`pinned-version` 失败。spec_version 2/3 的 SDK 章节没有写 `agent-sandbox-client`，或 README 让读者 `pip install agent-sandbox` 时，`readme-client` 失败。
 
 ## 极速版 harness
 
@@ -469,3 +517,5 @@ harness 用现有标志调用 `abx template deploy`（`--json`、`-y`、`--gener
 `managed_templates` 是附加目录命名空间，与可安装源码 `templates` 分开。字段包含 name/provider/template_id/kind/documentation/evidence/verification_scope/native_interpreter_verified。托管 ID 没有此仓库拥有的 Dockerfile、镜像版本、commands.py 或构建上下文，因此不参与源码模板的镜像选择、steps 生成和部署检查。实测必须写明 SDK 回退、运行时版本及独立清理，不能继承其他提供方或原生解释器验证。参见 [base](managed/base/README.zh-CN.md) 和 [code-interpreter-v1](managed/code-interpreter-v1/README.zh-CN.md)。
 
 同一天验证新版本时，使用独立的 express-YYYY-MM-DDTHHMMSSZ.json 回执，保留旧日期文件。提供方资格必须匹配当前清单版本，且 passed 和 cleanup_verified 都为 true，并含真实 CLI/SDK 成功调用；旧版本不能认证变更后的模板。
+
+V3 的 smoke 必须显式填写非 null 的 `expect`，支持字符串、数值、布尔、对象和数组，沿用现有结构化比较。v2 中没有期望值的 smoke 升级 v3 时需要补充明确结果；v2 自身行为不变。

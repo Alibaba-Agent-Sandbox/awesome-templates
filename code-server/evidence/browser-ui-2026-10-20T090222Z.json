@@ -1,0 +1,17 @@
+{
+  "passed": false,
+  "browser_error_type": "TimeoutError",
+  "template": "code-server",
+  "provider": "alicloud-express",
+  "verification_type": "image-backed-forwarded-browser-ui",
+  "canonical_acceptance": false,
+  "cleanup_verified": true,
+  "registry_cleanup_verified": true,
+  "commands_sha256": "2deeabd3a697c3ba6d5f41a4b42c17c298f72bb5441cde5487701ce923d462a0",
+  "controller_sha256": "7d19d785504424420f307c12bf3d48354959506dcfa87258fe32acd1232b9880",
+  "playwright_version": "1.58.0",
+  "chromium_revision": "1208",
+  "preview_mode": "sdk-local",
+  "relay_sha256": "7f8a2c100c3a438e1914bbfc5d74f7e4f81dbc5ca0e4ff7075c3332b8c88071c",
+  "sandbox_create": "python-sdk-Sandbox.create"
+}

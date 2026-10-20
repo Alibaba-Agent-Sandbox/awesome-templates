@@ -13,7 +13,7 @@
 4. 根据 [设计骨架](docs/design/_TEMPLATE.md) 完成 `docs/design/<name>.md`。
 5. 双语 README 使用规范要求的标题，参数、默认值、错误、CLI/SDK/HTTP 示例和限制一致。
 6. 在 awesome-templates.yaml 添加条目。L0/L1/L2 不完整时保持 experimental；模型功能声明需要 L3。
-7. 安装固定源码 server/client 和测试依赖后，从仓库执行：
+7. 安装固定源码 server/client 和测试依赖（`python -m pip install -r scripts/requirements-spec.txt`）后，从仓库执行：
 
    ```bash
    python scripts/test_spec_tools.py

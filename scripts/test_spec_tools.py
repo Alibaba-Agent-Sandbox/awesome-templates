@@ -17,6 +17,7 @@ from unittest.mock import patch
 import check_template
 import express_e2e
 import image_size_report
+from test_template_application import ApplicationContractTest  # include v3 contract regressions
 from express_e2e import Proc
 
 ROOT = Path(__file__).resolve().parents[1]
