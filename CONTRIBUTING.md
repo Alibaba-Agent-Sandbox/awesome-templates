@@ -25,8 +25,8 @@ already passes `scripts/check_template.py`. It is not a catalog entry.
 6. Add one `awesome-templates.yaml` entry. Use `experimental` until L0, L1,
    and L2 have passed. `official` also needs L3 before the README says the
    upstream agent works.
-7. From this repository, with `agent-sandbox-server`, `httpx`, and `pyyaml`
-   installed:
+7. From this repository, with `agent-sandbox-server`, `httpx`, and the pinned checker dependencies
+   installed (`python3 -m pip install -r scripts/requirements-spec.txt`):
 
    ```bash
    python3 scripts/check_template.py <name>

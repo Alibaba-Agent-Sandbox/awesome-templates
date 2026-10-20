@@ -1,0 +1,66 @@
+# Configuration example only; merge application into the agents-cli source template.
+# This does not supply a new image or provider acceptance.
+name: agents-cli
+version: 2.0.1
+description: Restricted local Agents HTTP API with pinned Codex and Qwen Code CLIs.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+spec_version: 3
+base: fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
+generation: 2
+start_cmd: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+  --policy /home/user/app/server-policy.json
+ready_cmd: agent-sandbox-server healthcheck --port 9000
+resources:
+  cpu: 2
+  memory: 4096
+ports:
+- 9000
+tags:
+- agents-api
+- codex
+- qwen-code
+- self-hosted
+priority: P2
+wave: 2
+tested_on: []
+capabilities:
+- ports
+env:
+  ABX_SERVER_TOKEN: ''
+  OPENAI_API_KEY: ''
+  CODEX_API_KEY: ''
+  OPENAI_BASE_URL: ''
+  OPENAI_MODEL: ''
+  CODEX_HOME: /home/user/.codex
+  ABX_SERVER_POLICY_FILE: /home/user/app/server-policy.json
+  WORKSPACE: /home/user/workspace
+smoke:
+- command: agents_version
+  expect: codex 0.162.1; qwen-code 0.23.0
+application:
+  runtime:
+    placement: in-sandbox
+    driver: sandbox-local-api
+    profile: server-core-agents
+  gateway:
+    placement: client-direct
+  deployment:
+    adapter: none
+  sandbox:
+    provider: alicloud-express
+    lifetime: per-run
+    workspace: exclusive
+    requiredFeatures:
+    - ports.url
+  state:
+    profile: ephemeral
+  bindings: {}
+  limits:
+    maxRunSeconds: 900
+    maxToolSeconds: 60
+    maxConcurrentRuns: 1
+    maxQueuedRuns: 8
+    maxRunsPerMinute: 10
+    maxEventsPerRun: 10000
+    maxOutputBytes: 8388608

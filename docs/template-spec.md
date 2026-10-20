@@ -89,7 +89,7 @@ smoke:
 |---|---|
 | `name` | Same as the directory. |
 | `description`, `version`, `author`, `license` | Non-empty strings. |
-| `spec_version` | `2` once the directory follows this document. The checker treats any other directory as legacy and reports it without failing `--all`. |
+| `spec_version` | `2` for the existing contract; `3` for the strict schema with optional `application`. Only manifests without a version are legacy. Unknown explicit versions fail. |
 | `base` | String. Either the placeholder `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` or a pinned `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:vX.Y.Z`. Not a mapping. |
 | `generation` | Integer `2`. |
 | `start_cmd` | `agent-sandbox-server serve` plus the path of `commands.py` inside the image. |
@@ -115,6 +115,63 @@ agent-sandbox-server healthcheck --port 9000
 Write the three keys anyway. The default path is wrong for an image whose `commands.py` is not at `/home/user/app/commands.py`.
 
 Named commands are not listed in `template.yaml`. They are registered in `commands.py`.
+
+## Optional application deployment (spec version 3)
+
+Use `spec_version: 3` to opt into the closed machine schema
+[schema/template-v3.schema.json](../schema/template-v3.schema.json). All existing
+sandbox fields retain their meaning. `application` is optional, so an ordinary
+v3 sandbox template has no application deployment. v2 remains supported; adding
+`application` to v2 is an error. Unknown fields, versions and topology combinations
+fail the checker. Old CLI versions must reject v3 until they support this contract.
+
+`template.yaml` is the sole user configuration entry. Do not add `agent-app.yaml`.
+Application deployment is an explicit CLI operation; installing a template,
+importing a module, building a sandbox image, or `Sandbox.create()` never executes
+application hooks or deploys FC functions. Sandbox providers and application
+deployment adapters remain separate interfaces.
+
+The syntax-checked [local example](examples/application-local/template.yaml)
+uses the existing `agents-cli` local API profile. It describes configuration,
+not a newly accepted image or a durable hosted service. The
+[external example](examples/application-external/template.yaml) demonstrates an
+inline Serverless Devs project; its component version, role, images, database and
+identity bindings must be resolved and reviewed before deployment. It is not an
+executed cloud receipt or an installable catalog entry.
+
+| Application field | Contract |
+| --- | --- |
+| `runtime` | `placement: external` requires `driver: python-remote-tools` without a local profile. `in-sandbox` requires `driver: sandbox-local-api` and profile `server-core-agents` or `legacy-codex-agent-api`. A profile does not certify that every local endpoint is enabled. |
+| `gateway` | `placement: fc-web` selects an external gateway; `client-direct` is only for the in-sandbox runtime. |
+| `deployment` | Direct access requires exactly `{adapter: none}`. FC requires `adapter: serverless-devs-fc3`, `accessRef`, `toolchainLock`, and exactly one of `inline` or `project`. Access references are names, not credentials. |
+| `deployment.inline` | Serverless Devs v3 mapping with `edition: "3.0.0"`, `name`, and `resources`. Resource keys are `gateway`, `worker`, `dispatcher`; external runtime requires all three. Each resource has exact `component: fc3@X.Y.Z`, nonempty `props`, optional `actions`. The adapter extracts this mapping to a frozen generated `s.yaml`; users do not maintain another YAML. The schema validates topology, not FC properties, component availability, IAM, or deployed code. |
+| `deployment.project` | Optional advanced alternative: relative path to a reviewed hand-written Serverless Devs project. Its complete referenced source tree is deployment input. |
+| `deployment.toolchainLock` | Relative path to the deployment adapter's tool/version/integrity lock. JSON lock format and verified execution belong to the CLI adapter, not the template checker. |
+| `sandbox` | Provider name, `lifetime: per-run`, `workspace: exclusive`, and nonempty `requiredFeatures`. Features are requirements, not proof of provider support or runtime authorization. |
+| `state` | External gateways require `profile: durable` and `bindingRef` naming a `bindings` key. Client-direct uses only `{profile: ephemeral}`. |
+| `bindings` | Mapping from logical names to credential/service reference names. No secret values, connection strings, or signed URLs. Empty is allowed for direct local access. |
+| `limits` | Positive integer `maxRunSeconds`, `maxToolSeconds`, `maxConcurrentRuns`, `maxQueuedRuns`, `maxRunsPerMinute`; `maxEventsPerRun >= 2`, `maxOutputBytes >= 1024`. Tool budget cannot exceed run budget. These declarations require runtime enforcement; the checker does not implement admission control. |
+| `hooks` | Optional lists named `beforeApply` and `afterReady`, at most eight hooks per phase. Direct local access has no deployment hooks. Other phase names fail. |
+
+Every hook declares a globally unique `id`, `executor: host-command`, argv array,
+relative `cwd`, `timeoutSeconds` in `1..900`, and `envAllowlist` of environment
+variable names. The deployment adapter executes reviewed argv on the host/CI and
+bounds output; the checker only reads configuration. `beforeApply` validates
+frozen inputs and cannot rebuild or change artifacts; `afterReady` verifies a
+candidate before release. They are not sandbox startup hooks. Native Serverless
+Devs actions and expressions are also executable code and require review; build
+steps run before the deployment plan is frozen.
+
+Paths must be relative, cannot contain backslashes, control characters or `..`
+segments, and must resolve inside the template directory. Referenced project and
+lock files and hook working directories must exist. Symlink escape is rejected.
+Hook argv is never interpreted as a shell string by the template checker.
+
+Install the pinned checker dependencies with
+`python -m pip install -r scripts/requirements-spec.txt`, then run the checker and
+`scripts/test_spec_tools.py`. Runtime/image/provider/model acceptance tiers below
+still apply independently; schema validity cannot promote catalog status or
+`tested_on`.
 
 ## Alibaba base image
 
@@ -429,9 +486,9 @@ python3 scripts/check_template.py --all
 python3 scripts/check_template.py --all --strict   # fail on legacy templates too
 ```
 
-`--all` prints a conformance list and exits 0 when every `spec_version: 2` directory passes. Legacy directories are listed with their violation codes and do not fail the process. CI runs `--all --strict`. `scripts/run_local_e2e.py` runs it as well and fails the script when a spec_version 2 directory fails.
+`--all` prints a conformance list and exits 0 when every explicit `spec_version: 2` or `3` directory passes. Legacy directories are listed with their violation codes and do not fail the process. CI runs `--all --strict`. `scripts/run_local_e2e.py` runs it as well and fails the script when a supported-spec directory fails.
 
-Violation codes include `required-file`, `readme-section`, `base-image`, `dockerfile-cmd`, `dockerfile-user`, `yaml-field`, `commands-start`, `verified-evidence`, `pinned-version`, `readme-client`, `secrets`. `pinned-version` fails when a `RUN` has neither allowed server pin above. `readme-client` fails when a spec_version 2 SDK section does not name `agent-sandbox-client`, or when a README tells the reader to `pip install agent-sandbox`.
+Violation codes include `required-file`, `readme-section`, `base-image`, `dockerfile-cmd`, `dockerfile-user`, `yaml-field`, `commands-start`, `verified-evidence`, `pinned-version`, `readme-client`, `secrets`. `pinned-version` fails when a `RUN` has neither allowed server pin above. `readme-client` fails when a spec_version 2/3 SDK section does not name `agent-sandbox-client`, or when a README tells the reader to `pip install agent-sandbox`.
 
 ## Express harness
 

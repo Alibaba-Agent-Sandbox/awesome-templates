@@ -33,7 +33,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - run: python -m pip install pyyaml==6.0.3
+      - run: python -m pip install pyyaml==6.0.3 jsonschema==4.26.0
       - id: select
         name: Select changed image contexts or explicit dispatch targets
         env:
@@ -82,7 +82,7 @@ jobs:
       - name: Build the source server wheel
         run: |
           test "$(git -C vendor/python-sdk rev-parse HEAD)" = "$SERVER_SDK_SHA"
-          python -m pip install pyyaml==6.0.3
+          python -m pip install pyyaml==6.0.3 jsonschema==4.26.0
           python -m pip wheel ./vendor/python-sdk/server-sdk --no-deps --wheel-dir "$RUNNER_TEMP/server-wheel"
 
       - name: Prepare the standalone template context

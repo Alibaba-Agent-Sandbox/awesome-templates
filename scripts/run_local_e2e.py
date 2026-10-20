@@ -228,7 +228,7 @@ def _run_one(directory: Path, path_prefix: str) -> tuple[str, str]:
 
 
 def _conformance() -> int:
-    """Lint spec_version 2 templates. Legacy violations are printed and ignored."""
+    """Lint supported spec_version 2/3 templates. Legacy violations are printed and ignored."""
     script = Path(__file__).resolve().parent / "check_template.py"
     print("\n" + "=" * 74, flush=True)
     print("TEMPLATE CONFORMANCE", flush=True)
