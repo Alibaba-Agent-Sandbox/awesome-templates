@@ -16,7 +16,7 @@ An automation can upload a project, ask Droid to edit it, inspect files, and run
 
 ## Quick start (CLI)
 
-The primary path is explicit BYOK. Replace placeholders with this run's unique directory and owned IDs. Publish the immutable source before preparation. Start the server with the three `DROID_MODEL_*` settings before the coding call; do not put secrets in CLI arguments. Native CLI0.4.1 syntax below is source-checked, pending this version's cloud qualification. Require official READY and independently verify owned cleanup.
+The primary path is explicit BYOK. Replace placeholders with this run's unique directory and owned IDs. Publish the immutable source before preparation. Start the server with the three `DROID_MODEL_*` settings before the coding call; do not put secrets in CLI arguments. Native CLI0.4.1 syntax below is source-checked; current SDK/Express acceptance is linked below. Require official READY and independently verify owned cleanup.
 
 ```bash
 python scripts/prepare_steps.py droid --output /tmp/droid-steps-<unique-run> --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a

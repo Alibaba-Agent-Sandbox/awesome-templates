@@ -172,3 +172,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Current37native/runtime and required full HTTP receipt snapshot](evidence/verify/2026-10-20-current-native-http37.json)
 
 - [Current38native/runtime and required HTTP receipt snapshot](evidence/verify/2026-10-20-current-native-http38.json)
+
+- [Current38native/runtime and required HTTP after Droid1.2](evidence/verify/2026-10-20-current-native-http38-droid.json)

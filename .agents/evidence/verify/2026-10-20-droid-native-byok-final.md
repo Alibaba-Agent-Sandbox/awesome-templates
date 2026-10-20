@@ -80,3 +80,5 @@ HTTP7PASS/0FAIL,1explicit missing-native SKIP, model NOT_RUN; not a native/cloud
 pass. Both complete SDK snippets compile from actual English/Chinese Markdown.
 Final publication document/spec/receipt checks and latest-head CI remain delivery
 gates; no metadata update changes tested native runtime behavior.
+
+Publication/integration checks: strict0violations; full57spec regressions PASS in13.059s;175public Markdown documents and4explicit Droid records have0link failures. Integration preserved accepted Tau2 source/receipts and both sets of records/CI tests. Readonly current38/38native/runtime and38/38required HTTP audit passes, including this Droid1.2 context; historical snapshots remain unchanged. Final head CI/review/normal merge remain delivery gates.

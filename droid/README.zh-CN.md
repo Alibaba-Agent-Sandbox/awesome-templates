@@ -16,7 +16,7 @@
 
 ## 快速开始（CLI）
 
-主要路径为显式 BYOK。占位符替换为本次唯一目录和所属资源 ID，准备前先发布固定源码。编码调用前须按三个 `DROID_MODEL_*` 配置启动服务，密钥不要放在 CLI 参数中。以下原生 CLI0.4.1 语法已核对源码，当前版本云验收待完成；要求官方 READY 并独立确认所属资源清理。
+主要路径为显式 BYOK。占位符替换为本次唯一目录和所属资源 ID，准备前先发布固定源码。编码调用前须按三个 `DROID_MODEL_*` 配置启动服务，密钥不要放在 CLI 参数中。以下原生 CLI0.4.1 语法已核对源码，当前版本云验收已通过，CLI 示例仅核对源码；要求官方 READY 并独立确认所属资源清理。
 
 ```bash
 python scripts/prepare_steps.py droid --output /tmp/droid-steps-<unique-run> --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
