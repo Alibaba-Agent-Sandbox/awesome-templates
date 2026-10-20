@@ -148,5 +148,10 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Codex current SDK image acceptance](notes/proposed/process/2026-10-20-codex-sdk-image-acceptance.md) · [verification](evidence/verify/2026-10-20-codex-sdk-image-acceptance.md)
 
+- [Native Stagehand4 local browser](notes/proposed/feature/2026-10-20-stagehand-native-local.md) · [verification](evidence/verify/2026-10-20-stagehand-native-local.md)
 - [Codex API final SDK/model acceptance](evidence/verify/2026-10-20-codex-api-sdk-model-final.md)
 - [Both native Agents CLI adapters: final acceptance](evidence/verify/2026-10-20-agents-cli-both-native-sdk-final.md)
+
+- [Stagehand final native SDK/model acceptance](evidence/verify/2026-10-20-stagehand-native-final.md)
+
+- [Current35native/runtime and required HTTP receipt snapshot](evidence/verify/2026-10-20-current-native-http35.json)

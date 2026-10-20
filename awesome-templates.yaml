@@ -527,6 +527,18 @@ templates:
     providers:
       alicloud-express: install-build
 
+  - name: stagehand
+    description: "Native Stagehand4.3.0 local Chromium act/extract with explicit compatible model transport."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: stagehand
+    tags: [stagehand, browser, automation, nodejs]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: supported
+
+
 # Provider-managed IDs have no source build context; never pass these to image selection.
 managed_templates:
   - name: base
