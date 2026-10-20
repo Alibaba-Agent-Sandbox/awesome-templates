@@ -2,18 +2,20 @@
 from __future__ import annotations
 
 import json
+import importlib.util
+import tempfile
 import os
 from pathlib import Path
 import shutil
-import signal
-import subprocess
-import threading
-import time
 
 from agent_sandbox.server import command, start
 
 PACKAGE = "@factory/cli"
 PINNED_VERSION = "0.241.1"
+
+_BYOK_SPEC = importlib.util.spec_from_file_location("droid_explicit_byok", Path(__file__).with_name("byok.py"))
+_BYOK = importlib.util.module_from_spec(_BYOK_SPEC)
+_BYOK_SPEC.loader.exec_module(_BYOK)
 
 
 def _redact(text: str) -> str:
@@ -37,6 +39,8 @@ def _workspace() -> Path:
 
 
 def _workdir(cwd: str = "") -> Path:
+    if not isinstance(cwd, str) or len(cwd.encode()) > 4096 or "\0" in cwd:
+        raise ValueError("cwd must be a bounded workspace path")
     root = _workspace()
     path = (root / cwd).resolve() if cwd else root
     if not path.is_relative_to(root) or not path.is_dir():
@@ -45,89 +49,36 @@ def _workdir(cwd: str = "") -> Path:
 
 
 def _executable() -> str:
-    executable = shutil.which("droid")
-    if not executable:
-        raise RuntimeError("droid CLI was not found on PATH; install @factory/cli@0.241.1")
-    return executable
+    return _BYOK.binary()
 
 
 def _run_process(argv: list[str], *, cwd: str, timeout: int | float,
                  env: dict | None = None, input_text: str | None = None) -> tuple[int, str, str]:
-    """Keep the Linux session leader unreaped until its owned group is stopped."""
-    process = subprocess.Popen(argv, cwd=cwd, env=env,
-        stdin=subprocess.PIPE if input_text is not None else subprocess.DEVNULL,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
-    stdout_parts: list[bytes] = []
-    stderr_parts: list[bytes] = []
-    def drain(stream, parts):
-        try:
-            while chunk := stream.read(65536):
-                parts.append(chunk)
-        except OSError:
-            pass
-        finally:
-            stream.close()
-    readers = [threading.Thread(target=drain, args=(process.stdout, stdout_parts), daemon=True),
-               threading.Thread(target=drain, args=(process.stderr, stderr_parts), daemon=True)]
-    for reader in readers:
-        reader.start()
-    if input_text is not None:
-        def feed():
-            try:
-                process.stdin.write(input_text.encode())
-                process.stdin.close()
-            except (OSError, ValueError):
-                pass
-            finally:
-                try:
-                    process.stdin.close()
-                except (OSError, ValueError):
-                    pass
-        threading.Thread(target=feed, daemon=True).start()
-    deadline = time.monotonic() + timeout
-    timed_out = False
+    """Bounded identity-pinned process; preserve existing helper signature."""
+    if env is None:
+        env = {"PATH": "/usr/local/bin:/usr/bin:/bin", "HOME": str(cwd), "LANG": "C.UTF-8"}
     try:
-        while os.waitid(os.P_PID, process.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT) is None:
-            if time.monotonic() >= deadline:
-                timed_out = True
-                break
-            time.sleep(0.02)
-    finally:
-        # WNOWAIT pins the original PID/PGID even after leader exit. No poll(),
-        # wait() or communicate() may reap it before group cleanup.
-        if timed_out:
-            try:
-                os.killpg(process.pid, signal.SIGTERM)
-            except ProcessLookupError:
-                pass
-            grace = time.monotonic() + 1
-            while time.monotonic() < grace:
-                if os.waitid(os.P_PID, process.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT) is not None:
-                    break
-                time.sleep(0.02)
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-        try:
-            process.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            raise RuntimeError("owned process cleanup timed out") from None
-        for reader in readers:
-            reader.join(timeout=2)
-    if timed_out:
-        raise RuntimeError(f"droid timed out after {timeout} seconds") from None
-    return (process.returncode, b"".join(stdout_parts).decode("utf-8", "replace"),
-            b"".join(stderr_parts).decode("utf-8", "replace"))
+        if input_text is None:
+            return _BYOK.process.run(argv, cwd=cwd, timeout=timeout, env=env)
+        descriptor = os.memfd_create("droid-input", os.MFD_CLOEXEC)
+        with os.fdopen(descriptor, "w+b") as stream:
+            stream.write(input_text.encode()); stream.seek(0)
+            return _BYOK.process.run(argv, cwd=cwd, timeout=timeout, env=env, input_file=stream)
+    except RuntimeError as exc:
+        if "exceeded timeout_s" in str(exc):
+            raise RuntimeError(f"droid timed out after {timeout} seconds") from None
+        raise
 
 
 def _run(args: list[str], cwd: Path, timeout: int) -> str:
-    env = os.environ.copy()
-    env["FACTORY_DROID_AUTO_UPDATE_ENABLED"] = "false"
     try:
-        code, stdout, stderr = _run_process(
-            [_executable(), *args], cwd=str(cwd), timeout=timeout, env=env,
-        )
+        with tempfile.TemporaryDirectory(prefix="abx-droid-legacy-home-") as value:
+            env = _BYOK.environment(Path(value), model=False)
+            if os.environ.get("FACTORY_API_KEY"):
+                env["FACTORY_API_KEY"] = os.environ["FACTORY_API_KEY"]
+            code, stdout, stderr = _run_process(
+                [_executable(), *args], cwd=str(cwd), timeout=timeout, env=env,
+            )
     except OSError:
         raise RuntimeError("droid could not start; check executable and workspace permissions") from None
     if code != 0:
@@ -143,7 +94,11 @@ def droid_version() -> str:
 
 @command("droid_setup_check", description="Inspect CLI installation and key presence without a model call.")
 def droid_setup_check() -> dict:
-    installed = shutil.which("droid") is not None
+    try:
+        _BYOK.binary()
+        installed = True
+    except RuntimeError:
+        installed = False
     return {
         "installed": installed,
         "package": PACKAGE,
@@ -158,7 +113,7 @@ def droid_setup_check() -> dict:
 @command("droid", description="Run Factory Droid headless inside WORKSPACE with an execution deadline.")
 def droid(prompt: str, auto: str = "low", cwd: str = "", command_timeout: int = 300) -> str:
     """Run argv directly; low autonomy permits project edits without unsafe bypass."""
-    if not prompt.strip():
+    if not isinstance(prompt, str) or not prompt.strip() or "\0" in prompt or len(prompt.encode()) > 32768:
         raise ValueError("prompt must not be empty")
     if auto not in {"", "low", "medium", "high"}:
         raise ValueError("auto must be empty, low, medium, or high")

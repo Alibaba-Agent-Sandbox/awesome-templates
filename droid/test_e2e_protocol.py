@@ -8,7 +8,7 @@ from pathlib import Path
 import httpx
 import pytest
 
-spec = importlib.util.spec_from_file_location("droid_e2e", Path(__file__).with_name("e2e_test.py"))
+spec = importlib.util.spec_from_file_location("droid_e2e", Path(__file__).with_name("factory_e2e.py"))
 e2e = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(e2e)
 

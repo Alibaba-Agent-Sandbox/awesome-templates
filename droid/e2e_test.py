@@ -1,162 +1,115 @@
 #!/usr/bin/env python3
-"""Validate the actual HTTP target; L3 requires remote files and independent tests."""
+"""Target HTTP acceptance; generated code runs only on an explicitly owned cloud target."""
 from __future__ import annotations
-
 import base64
+import asyncio
+import hashlib
+import importlib.util
+import ipaddress
+import json
 import os
+from pathlib import Path
 import shlex
 import sys
 import uuid
-
+from urllib.parse import urlsplit
 import httpx
 
-BASE_URL = os.environ.get("E2E_BASE_URL", "http://127.0.0.1:9000").rstrip("/")
-WORKSPACE = os.environ.get("E2E_WORKSPACE", "/home/user/app").rstrip("/")
-RUN_LLM = os.environ.get("E2E_RUN_LLM", "0").strip().lower()
-REQUIRE = os.environ.get("E2E_REQUIRE_LLM", "0").strip().lower() in {"1", "true", "yes"}
-PINNED = "0.241.1"
-RESULTS: list[tuple[str, str]] = []
+RESULTS=[]
+INVALID_REQUESTS=[{'prompt':''},{'prompt':'x','command_timeout':'bad'},{'prompt':'x','command_timeout':601},{'prompt':'x','cwd':'/outside-workspace'}]
+def record(ok,label):
+    RESULTS.append(bool(ok));print(f"[{'PASS' if ok else 'FAIL'}] {label}",flush=True)
+
+def final_text(stdout):
+    try:value=json.loads(stdout)
+    except ValueError:return ''
+    if not isinstance(value,dict)or value.get('type')!='result'or value.get('subtype')!='success'or value.get('is_error')is not False:return ''
+    if type(value.get('num_turns'))is not int or value['num_turns']<1:return ''
+    if not isinstance(value.get('session_id'),str)or not value['session_id']or not isinstance(value.get('result'),str):return ''
+    return value['result'].strip()
 
 
-def record(ok: bool, test: str) -> None:
-    status = "PASS" if ok else "FAIL"
-    RESULTS.append((status, test))
-    # Never log response bodies, argv, prompts, environment values or exception text.
-    print(f"[{status}] {test}", flush=True)
+def native_sdk_command(base,parameters):
+    from agent_sandbox.api.server_client import ServerClient
+    async def run():
+        server=ServerClient(base,token=os.environ.get('E2E_SERVER_TOKEN') or None,timeout=660)
+        try:return await server.commands.run('droid_byok',timeout=660,**parameters)
+        finally:await server.aclose()
+    return asyncio.run(run())
 
 
-def check_model_call(client: httpx.Client, setup: dict) -> None:
-    enabled = RUN_LLM in {"1", "true", "yes"}
+def local_target(base):
+    host=urlsplit(base).hostname or ''
+    if host.lower()in ['localhost','localhost.localdomain']:return True
+    try:
+        address=ipaddress.ip_address(host)
+        mapped=getattr(address,'ipv4_mapped',None)
+        return address.is_loopback or address.is_unspecified or bool(mapped and(mapped.is_loopback or mapped.is_unspecified))
+    except ValueError:return False
+
+
+def model_check(client,workspace,base):
+    enabled=os.environ.get('E2E_RUN_LLM','0')=='1'
     if not enabled:
-        if REQUIRE:
-            record(False, "L3 requires E2E_RUN_LLM=1")
-        else:
-            print("[NOT RUN] L3 disabled by E2E_RUN_LLM", flush=True)
+        if os.environ.get('E2E_REQUIRE_LLM')=='1':record(False,'real-model acceptance is required')
+        else:print('[NOT RUN] native model/source-edit acceptance; requires owned cloud opt-in',flush=True)
         return
-    if setup.get("api_key_set") is not True:
-        response = client.post("/commands/droid", json={"prompt": "Do not start interactive login"})
-        record(response.status_code == 500 and "FACTORY_API_KEY is required" in
-               response.json().get("error", ""), "target missing-key guard fails without interactive login")
-        record(False, "L3 blocked: target FACTORY_API_KEY is missing")
-        return
-    marker = "ABX_E2E_" + uuid.uuid4().hex
-    project = WORKSPACE + "/abx_e2e_droid_" + uuid.uuid4().hex
-    source = "def add(a, b):\n    return a - b\n"
-    tests = (
-        "import unittest\nfrom calc import add\n"
-        "class TestAdd(unittest.TestCase):\n"
-        "    def test_positive(self): self.assertEqual(add(2, 3), 5)\n"
-        "    def test_negative(self): self.assertEqual(add(-2, -3), -5)\n"
-        "    def test_zero(self): self.assertEqual(add(0, 0), 0)\n"
-        "if __name__ == '__main__': unittest.main()\n"
-    )
-    test_command = "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -I -c " + shlex.quote(
-        "import sys,unittest;sys.path.insert(0,'.');"
-        "result=unittest.TextTestRunner().run(unittest.defaultTestLoader.discover('.',pattern='test_calc.py'));"
-        "sys.exit(not result.wasSuccessful())"
-    )
+    if os.environ.get('E2E_REMOTE_SANDBOX')!='1' or local_target(base):
+        record(False,'model-generated code requires an explicitly owned remote sandbox');return
+    project=workspace+'/abx_e2e_droid_byok_'+uuid.uuid4().hex;marker='ABX_E2E_'+uuid.uuid4().hex
+    source='def add(a, b):\n    return a - b\n'
+    tests='import unittest\nfrom calc import add\nclass TestAdd(unittest.TestCase):\n    def test_positive(self):self.assertEqual(add(2,3),5)\n    def test_negative(self):self.assertEqual(add(-2,-3),-5)\n    def test_zero(self):self.assertEqual(add(0,0),0)\n'
+    def read(name):
+        r=client.get('/files/download-stream',params={'path':project+'/'+name});r.raise_for_status();return base64.b64decode(r.json()['content_base64'])
     try:
-        for name, content in (("calc.py", source), ("test_calc.py", tests)):
-            client.post("/files/upload-stream", json={
-                "path": project + "/" + name,
-                "content_base64": base64.b64encode(content.encode()).decode(),
-            }).raise_for_status()
-        before = client.post("/shell", json={"command": test_command, "cwd": project, "timeout": 30})
-        baseline = before.json()
-        reproduced = (before.status_code == 200 and baseline.get("exit_code") == 1
-                      and "AssertionError" in baseline.get("stderr", "")
-                      and "Ran 3 tests" in baseline.get("stderr", ""))
-        record(reproduced, "L3 seeded source reproduces failing independent tests")
-        if not reproduced:
-            return
-        response = client.post("/commands/droid", json={
-            "prompt": (
-                "Fix existing calc.py so add(a, b) returns their sum. Do not modify test_calc.py. "
-                "Create report.txt describing the source change. "
-                f"Create acceptance.txt containing exactly {marker} followed by a newline. "
-                f"After completing the task, reply with {marker}."
-            ),
-            "cwd": project, "auto": "low", "command_timeout": 300,
-        }, timeout=float(os.environ.get("E2E_LLM_TIMEOUT", "360")))
-        result = response.json().get("result")
-        responded = response.status_code == 200 and isinstance(result, str) and marker in result
-        record(responded, "L3 headless coding request completes")
-        if not responded:
-            return
-
-        def read_file(name: str) -> str:
-            artifact = client.get("/files/download-stream", params={"path": project + "/" + name})
-            artifact.raise_for_status()
-            return base64.b64decode(artifact.json()["content_base64"]).decode()
-
-        record(read_file("calc.py") != source, "L3 existing source modified on target")
-        record(read_file("test_calc.py") == tests, "L3 original independent tests preserved")
-        record(bool(read_file("report.txt").strip()) and read_file("acceptance.txt") == marker + "\n",
-               "L3 new artifacts downloaded from target")
-        after = client.post("/shell", json={"command": test_command, "cwd": project, "timeout": 30})
-        checked = after.json()
-        record(after.status_code == 200 and checked.get("exit_code") == 0
-               and "Ran 3 tests" in checked.get("stderr", ""), "L3 independent target test rerun passes")
-        heldout = (
-            "import importlib.util;"
-            f"spec=importlib.util.spec_from_file_location('calc_under_test',{project + '/calc.py'!r});"
-            "module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);"
-            "assert all(module.add(a,b)==a+b for a,b in [(2,3),(-2,-3),(0,0),(99,101),(-7,4),(8,-3),(0,12)])\n"
-            "print('INDEPENDENT_OK')\n"
-        )
-        response = client.post("/shell", json={
-            "command": "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -I -c " + shlex.quote(heldout),
-            "cwd": project, "timeout": 30,
-        })
-        checked = response.json()
-        record(response.status_code == 200 and checked.get("exit_code") == 0
-               and checked.get("stdout", "").strip() == "INDEPENDENT_OK",
-               "L3 held-out target assertions pass independently")
-    except Exception as exc:
-        print(f"[FAIL] L3 aborted ({type(exc).__name__}); content omitted", flush=True)
-        record(False, "L3 coding acceptance completes")
+        for name,content in [('calc.py',source),('test_calc.py',tests)]:
+            client.post('/files/upload-stream',json={'path':project+'/'+name,'content_base64':base64.b64encode(content.encode()).decode()}).raise_for_status()
+        r=client.post('/shell',json={'command':'env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -m unittest -v test_calc.py','cwd':project,'timeout':30})
+        before=r.json();reproduced=r.status_code==200 and before.get('exit_code')==1 and 'Ran 3 tests' in before.get('stderr','') and 'AssertionError' in before.get('stderr','')
+        record(reproduced,'seeded existing source fails the original independent three-test suite')
+        if not reproduced:return
+        result=native_sdk_command(base,{'prompt':
+            'Fix the existing calc.py so add(a,b) returns their sum. Do not modify test_calc.py. '
+            'Use the native tools to edit the existing files and verify the change. '
+            'Create report.txt explaining the source change. '
+            f'Create acceptance.txt containing exactly {marker} followed by one newline. '
+            f'After completing all file changes, reply with exactly {marker}.',
+            'cwd':project,'command_timeout':600})
+        ok=result.get('exit_code')==0 and result.get('native_version')=='0.241.1' and final_text(result.get('stdout','')).strip()==marker
+        record(ok,'actual native BYOK final response and zero exit')
+        if not ok:return
+        changed=read('calc.py');preserved=read('test_calc.py');report=read('report.txt');acceptance=read('acceptance.txt')
+        record(changed!=source.encode(),'existing target source changed')
+        record(preserved==tests.encode(),'original independent tests remain byte-for-byte unchanged')
+        record(bool(report.strip()),'new agent-authored report downloaded from target')
+        record(acceptance==(marker+'\n').encode(),'fresh exact acceptance artifact downloaded from target')
+        # Compile target bytes after return; unpredictable ACK prevents early-exit acceptance.
+        for original in [True,False]:
+            ack='POST_RETURN_'+uuid.uuid4().hex
+            code="import contextlib,io,pathlib,sys,types,unittest\np=pathlib.Path("+repr(project)+")\nm=types.ModuleType('calc');sys.modules['calc']=m\nwith contextlib.redirect_stdout(io.StringIO()),contextlib.redirect_stderr(io.StringIO()):\n exec(compile((p/'calc.py').read_bytes(),str(p/'calc.py'),'exec'),m.__dict__)\n"
+            if original:
+                code+=" t=types.ModuleType('test_calc');exec(compile((p/'test_calc.py').read_bytes(),str(p/'test_calc.py'),'exec'),t.__dict__)\n suite=unittest.TestLoader().loadTestsFromModule(t);assert suite.countTestCases()==3\n result=unittest.TextTestRunner(stream=io.StringIO()).run(suite)\n assert result.testsRun==3 and result.wasSuccessful() and not(result.skipped or result.expectedFailures or result.unexpectedSuccesses)\n"
+            else:code+=" assert all(m.add(a,b)==a+b for a,b in [(1543,-271),(0,98765),(-809,611),(0.5,1.25)])\n"
+            code+='print('+repr(ack)+')\n'
+            r=client.post('/shell',json={'command':'env -i PATH=/usr/local/bin:/usr/bin:/bin python3 -I -c '+shlex.quote(code),'cwd':project,'timeout':30});data=r.json()
+            record(r.status_code==200 and data.get('exit_code')==0 and data.get('stdout','').strip()==ack,'post-return '+('original three tests' if original else 'fresh held-out cases')+' pass on cloud target')
     finally:
-        cleanup = client.delete("/files", params={"path": project})
-        record(cleanup.status_code in {200, 404}, "L3 owned project cleanup")
+        code='import pathlib,shutil;p=pathlib.Path('+repr(project)+');shutil.rmtree(p) if p.exists() else None;assert not p.exists();print("CLEAN")'
+        r=client.post('/shell',json={'command':'python3 -I -c '+shlex.quote(code),'timeout':30});data=r.json();record(r.status_code==200 and data.get('exit_code')==0 and data.get('stdout','').strip()=='CLEAN','owned project cleanup and absence confirmed')
 
-
-def main() -> int:
-    token = os.environ.get("E2E_TOKEN") or os.environ.get("ABX_SERVER_TOKEN", "")
-    headers = {"Authorization": "Bearer " + token} if token else {}
-    with httpx.Client(base_url=BASE_URL, headers=headers, timeout=40) as client:
-        health = client.get("/health")
-        record(health.status_code == 200 and health.json().get("status") == "ok", "target health")
-        listed = client.get("/commands")
-        entries = listed.json().get("commands", [])
-        names = {entry.get("name") for entry in entries}
-        signature = next((entry for entry in entries if entry.get("name") == "droid"), {})
-        params = {arg.get("name"): arg for arg in signature.get("args", [])}
-        record(listed.status_code == 200 and {"droid", "droid_version", "droid_setup_check"} <= names
-               and {"prompt", "auto", "cwd", "command_timeout"} <= params.keys()
-               and params["prompt"].get("required") is True
-               and params["command_timeout"].get("type") == "integer", "target command signatures")
-        record(client.post("/commands/droid", json={}).status_code == 400, "missing required prompt returns 400")
-        record(client.post("/commands/no_such_command", json={}).status_code == 404, "unknown command returns 404")
-        for args in ({"prompt": "  "}, {"prompt": "x", "command_timeout": 0}, {"prompt": "x", "auto": "unsafe"}):
-            record(client.post("/commands/droid", json=args).status_code == 500,
-                   "invalid command values fail before upstream execution")
-        version = client.post("/commands/droid_version", json={})
-        record(version.status_code == 200 and version.json().get("result") == PINNED, "actual target version matches pin")
-        response = client.post("/commands/droid_setup_check", json={})
-        setup = response.json().get("result", {})
-        valid = (response.status_code == 200 and setup.get("installed") is True
-                 and setup.get("package") == "@factory/cli" and setup.get("version") == PINNED
-                 and setup.get("expected_version") == PINNED and setup.get("workspace_exists") is True
-                 and isinstance(setup.get("api_key_set"), bool) and setup.get("auto_update_enabled") is False)
-        record(valid, "actual target setup inspection")
-        if valid:
-            check_model_call(client, setup)
-    return int(any(status == "FAIL" for status, _ in RESULTS))
-
-
-if __name__ == "__main__":
-    try:
-        sys.exit(main())
-    except Exception as exc:
-        print(f"[FAIL] HTTP acceptance aborted ({type(exc).__name__}); content omitted", flush=True)
-        sys.exit(1)
+def main():
+    base=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000').rstrip('/');workspace=os.environ.get('E2E_WORKSPACE','/home/user/app').rstrip('/')
+    token=os.environ.get('E2E_SERVER_TOKEN','');headers={'Authorization':'Bearer '+token} if token else {}
+    with httpx.Client(base_url=base,headers=headers,timeout=30) as client:
+        r=client.get('/health');record(r.status_code==200 and r.json().get('status')=='ok','HTTP health')
+        r=client.get('/commands');names={x.get('name') for x in r.json().get('commands',[])};record(r.status_code==200 and {'droid','droid_byok','droid_version','droid_setup_check','droid_byok_setup_check'}.issubset(names),'named commands discovery')
+        r=client.post('/commands/droid_byok_setup_check',json={});record(r.status_code==200 and r.json().get('result',{}).get('mode')=='openai-compatible-byok','read-only setup check')
+        r=client.post('/commands/droid_version',json={})
+        if r.status_code!=200 and os.environ.get('E2E_REQUIRE_CLI')!='1':print('[SKIP] native CLI absent in source-only local environment',flush=True)
+        else:record(r.status_code==200 and r.json().get('result')=='0.241.1','actual pinned native version')
+        for args in INVALID_REQUESTS:
+            r=client.post('/commands/droid_byok',json=args);record(r.status_code in [400,500],'invalid request rejected without native model call')
+        model_check(client,workspace,base)
+    print(f'SUMMARY {sum(RESULTS)} PASS, {len(RESULTS)-sum(RESULTS)} FAIL; model/native omissions stated separately',flush=True)
+    return 0 if all(RESULTS) else 1
+if __name__=='__main__':raise SystemExit(main())

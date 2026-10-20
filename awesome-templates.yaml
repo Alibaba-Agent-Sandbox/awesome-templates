@@ -274,7 +274,7 @@ templates:
       opensandbox: provider-prepared
 
   - name: droid
-    description: "Factory Droid. Command droid exec. Package @factory/cli@0.241.1."
+    description: "Genuine Factory Droid0.241.1, explicit compatible BYOK and isolated bounded coding."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: droid
     tags: [droid, factory, ai-agent, ai-coding]
@@ -282,7 +282,7 @@ templates:
     capabilities: [shell, files, code, ports]
     status: experimental
     providers:
-      alicloud-express: install-build
+      alicloud-express: unverified
       alicloud-container: provider-prepared
       cubesandbox: provider-prepared
       e2b: provider-prepared

@@ -1,6 +1,6 @@
 name: droid
-version: "1.1.1"
-description: "Factory Droid headless coding with bounded execution and installation checks."
+version: "1.2.0"
+description: "Genuine Factory Droid0.241.1 with isolated explicit compatible BYOK and bounded headless coding."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0
 spec_version: 2
@@ -11,11 +11,14 @@ ready_cmd: "agent-sandbox-server healthcheck --port 9000"
 tags: [droid, factory, ai-coding, ai-agent]
 priority: P1
 wave: 1
-tested_on: [alicloud-express]
+tested_on: []
 capabilities: [shell, files, code, ports]
 ports: [9000]
 env:
   FACTORY_API_KEY: ""
+  DROID_MODEL_API_KEY: ""
+  DROID_MODEL_BASE_URL: ""
+  DROID_MODEL: ""
   ABX_SERVER_TOKEN: ""
   WORKSPACE: "/home/user/app"
 resources:
