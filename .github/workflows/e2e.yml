@@ -84,7 +84,7 @@ jobs:
       - name: Install scoped test dependencies
         run: |
           python3 -m venv /tmp/document-venv
-          /tmp/document-venv/bin/pip install ./vendor/python-sdk/server-sdk ./vendor/python-sdk/client-sdk httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3
+          /tmp/document-venv/bin/pip install ./vendor/python-sdk/server-sdk ./vendor/python-sdk/client-sdk httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3 jsonschema==4.26.0
       - name: Verify actual document conversion, limits, SDK and external HTTP artifacts
         env:
           E2E_REQUIRE_DOCUMENT: "1"
@@ -120,7 +120,7 @@ jobs:
       - name: Install scoped test dependencies
         run: |
           python3 -m venv /tmp/media-venv
-          /tmp/media-venv/bin/pip install ./vendor/python-sdk/server-sdk ./vendor/python-sdk/client-sdk httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3
+          /tmp/media-venv/bin/pip install ./vendor/python-sdk/server-sdk ./vendor/python-sdk/client-sdk httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3 jsonschema==4.26.0
       - name: Verify real CPU codecs, limits, descendants and HTTP artifact bytes
         env:
           E2E_REQUIRE_MEDIA: "1"
@@ -160,8 +160,10 @@ jobs:
 
       - name: Install the in-sandbox server and the test client
         run: |
-          python -m pip install ./vendor/python-sdk/server-sdk httpx==0.28.1 pyyaml==6.0.3 pytest==9.1.1 playwright==1.58.0 Pillow==11.3.0
+          python -m pip install ./vendor/python-sdk/server-sdk httpx==0.28.1 pyyaml==6.0.3 jsonschema==4.26.0 pytest==9.1.1 playwright==1.58.0 Pillow==11.3.0
           python -m playwright install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libnss3-tools
 
       - name: Install pinned upstream CLIs for local smoke checks
         run: |
@@ -180,6 +182,10 @@ jobs:
           claude --version
           test "$(opencode --version)" = "1.19.0"
 
+      - name: Install the pinned standalone browser IDE for real local checks
+        run: |
+          python code-server/install_runtime.py --prefix "$RUNNER_TEMP/code-server-runtime"
+          echo "$RUNNER_TEMP/code-server-runtime/current/bin" >> "$GITHUB_PATH"
       - name: Install pinned official Goose for real local checks
         run: |
           python goose/install_runtime.py --prefix "$RUNNER_TEMP/goose-runtime"
@@ -213,6 +219,8 @@ jobs:
 
       - name: Run process, privacy, and acceptance-harness regressions
         run: |
+          python -m pip install --require-hashes -r scripts/requirements-preview.txt
+          python -m pytest -q code-server/test_commands.py code-server/test_browser_local.py scripts/test_preview_proxy.py
           python -m pytest -q polyglot-toolchain/test_commands.py
           python -m pytest -q apply-patch/test_commands.py
           python -m pytest -q goose/test_commands.py goose/test_controller.py

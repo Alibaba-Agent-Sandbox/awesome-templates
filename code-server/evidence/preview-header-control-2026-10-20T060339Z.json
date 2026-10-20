@@ -1,0 +1,13 @@
+{
+  "scope": "genuine minimal Express HTML negative control, not code-server acceptance",
+  "passed": true,
+  "cleanup_verified": true,
+  "http_status": 200,
+  "content_type": "text/html",
+  "attachment": true,
+  "body_matches": true,
+  "browser_download": true,
+  "tls_verification_enabled": true,
+  "operator_trusted_cas_imported": 152,
+  "independent_get_absence": true
+}

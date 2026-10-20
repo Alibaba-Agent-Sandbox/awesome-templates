@@ -427,6 +427,25 @@ templates:
     providers:
       alicloud-express: install-build
 
+  - name: code-server
+    description: Pinned authenticated browser IDE with private configuration and owned
+      process lifecycle.
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: code-server
+    tags:
+    - ide
+    - vscode
+    - code-server
+    author: alibaba-agent-sandbox
+    capabilities:
+    - shell
+    - files
+    - code
+    - ports
+    status: experimental
+    providers:
+      alicloud-express: install-build
+
   - name: dev-services
     description: Pinned non-root PostgreSQL17.11 and Redis8.0.2 with owned lifecycle.
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
