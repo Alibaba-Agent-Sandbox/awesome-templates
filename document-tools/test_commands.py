@@ -246,11 +246,16 @@ def test_actual_native_html_and_slides_contain_independent_markers(workspace,inp
 
 
 def test_actual_native_office_pdf_has_random_text_and_removes_private_profile(workspace,monkeypatch):
-    if not Path('/usr/lib/libreoffice/program/soffice.bin').is_file():
+    if not Path('/usr/lib/libreoffice/program/soffice').is_file():
         if os.environ.get('E2E_REQUIRE_DOCUMENT')=='1':pytest.fail('required pinned headless LibreOffice missing')
         pytest.skip('headless LibreOffice not installed on this operator; required native CI remains mandatory')
     from pypdf import PdfReader
     import secrets
+    caller_home = workspace / 'caller-home'
+    caller_home.mkdir()
+    sentinel = caller_home / 'caller-profile-sentinel'
+    sentinel.write_bytes(b'independent caller profile remains unchanged')
+    monkeypatch.setenv('HOME', str(caller_home))
     marker='independent-pdf-'+secrets.token_hex(12)
     (workspace/'source.md').write_text('# '+marker+'\n\nReal headless Writer content 世界.\n')
     assert document.office_version()=='LibreOffice '+document.OFFICE_DEBIAN_VERSION
@@ -259,3 +264,5 @@ def test_actual_native_office_pdf_has_random_text_and_removes_private_profile(wo
     assert len(reader.pages)>=1 and marker in '\n'.join(page.extract_text() for page in reader.pages)
     assert result['sha256']==hashlib.sha256(data).hexdigest()
     assert not list(workspace.glob('.document-*'))
+    assert list(caller_home.iterdir()) == [sentinel]
+    assert sentinel.read_bytes() == b'independent caller profile remains unchanged'

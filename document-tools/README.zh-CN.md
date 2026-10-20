@@ -91,7 +91,7 @@ Pandoc保持3.1.11.1及独立固定的数据包。PDF仅接收经AST校验、无
 由Pandoc生成的DOCX，再交给原生LibreOffice Writer。固定writer-nogui/core-nogui/common
 为 `4:25.2.3-2+deb13u8`、DejaVu2.37-8、Noto CJK1:20240730+repack1-1；其他系统库由Debian解析。
 不接收上传的DOCX或宏。每次文档转换都使用自己的HOME/XDG/临时目录/用户配置，
-直接执行soffice.bin，带 `-env:UserInstallation` 和无头/无默认文档参数，不复用调用者配置。
+执行官方soffice启动器以处理原生首次启动重启，带 `-env:UserInstallation` 和无头/无默认文档参数，不复用调用者配置。
 无需GUI、显示器、常驻服务、GPU或模型。
 
 HTML只接收显式配平的文本标签、标题、列表、表格、强调、代码和web/mail/fragment链接；
@@ -119,7 +119,7 @@ Office限制2GiB地址空间及60–61秒CPU；Pandoc保留1GiB地址空间、25
 
 输入为 `WORKSPACE` 内相对路径的非空 UTF-8 普通文件，最大 1 MiB；拒绝父目录穿越、绝对路径、各层软链接、设备和 FIFO，描述符读取后生成私有快照。输出必须为普通 ASCII 文件名：字母/数字开头，后接最多 119 个字母/数字/下划线/点/连字符，再接所选扩展名；不覆盖现有文件或软链接。
 
-第一阶段以固定 Pandoc `--sandbox` 将 GFM 读取为有界 JSON AST，拒绝 Image/Raw 节点、非 web/mail/fragment 链接、过多节点或嵌套，并清空 metadata。TXT writer 也运行在 sandbox 模式。Debian Pandoc 的数据文件未嵌入二进制，DOCX writer 使用 `--sandbox` 会因内部模板不可读而失败；因此仅把经过校验、无图片/Raw 的 AST 交给固定 DOCX writer，允许它读取已安装的包数据。不接受 filter、include 参数、自定义模板、PDF engine 或任意 argv。这是明确的应用边界，不等于对整个 writer 建立操作系统禁网沙箱。
+第一阶段以固定 Pandoc `--sandbox` 将 GFM 读取为有界 JSON AST，拒绝 Image/Raw 节点、非 web/mail/fragment 链接、过多节点或嵌套，并清空 metadata。TXT writer 也运行在 sandbox 模式。Debian Pandoc 的数据文件未嵌入二进制，DOCX writer 使用 `--sandbox` 会因内部模板不可读而失败；因此仅把经过校验、无图片/Raw 的 AST 交给固定 DOCX writer，允许它读取已安装的包数据。PDF 仅使用固定的隔离 Writer 阶段；不接受 filter、include 参数、自定义模板或任意 argv。这是明确的应用边界，不等于对整个 writer 建立操作系统禁网沙箱。
 
 一次仅运行一个转换。Pandoc 使用 1 GiB 地址空间、256 MiB Haskell heap、两条 runtime capabilities 和 30/31 秒 CPU 软/硬上限；Writer 使用 2 GiB 地址空间及 60/61 秒 CPU 上限。两者保留 8 MiB 单文件上限、禁止 core dump，并共享操作 wall deadline。只转发 HOME/PATH/可选库路径、固定语言/线程/allocator 设置及运维指定的包数据目录；Writer 替换为自有 HOME/XDG/temp 目录。每路诊断/AST 输出最多 1 MiB，错误不回显原始诊断。OOXML 发布前检查 ZIP 条目数、展开总量及必需 XML，再进行无覆盖原子发布。
 

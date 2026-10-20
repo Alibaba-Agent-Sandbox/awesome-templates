@@ -202,7 +202,7 @@ def _office(arguments: list[str], *, cwd: Path, deadline: float) -> bytes:
     remaining = deadline - time.monotonic()
     if remaining <= 0:
         raise RuntimeError("document operation exceeded its wall-clock deadline")
-    binary = Path("/usr/lib/libreoffice/program/soffice.bin")
+    binary = Path("/usr/lib/libreoffice/program/soffice")
     if not binary.is_file() or not os.access(binary, os.X_OK):
         raise RuntimeError("the pinned headless LibreOffice executable is unavailable")
     home, temporary, profile = cwd / "office-home", cwd / "office-tmp", cwd / "office-profile"

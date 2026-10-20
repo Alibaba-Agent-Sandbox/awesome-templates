@@ -99,8 +99,8 @@ DOCX generated from validated, metadata-free, image/raw-free Pandoc AST, then
 actual LibreOffice Writer. Pin writer-nogui/core-nogui/common to
 `4:25.2.3-2+deb13u8`, DejaVu2.37-8and Noto CJK1:20240730+repack1-1;
 Debian resolves unrelated libraries. No uploaded DOCX/macros are accepted.
-Each document conversion uses a fresh private HOME/XDG/temp/profile and direct
-soffice.bin with `-env:UserInstallation`, headless/no-default-document flags.
+Each document conversion uses a fresh private HOME/XDG/temp/profile and the official
+soffice launcher with `-env:UserInstallation`, headless/no-default-document flags.
 The caller's profile is never reused. No GUI/display, daemon, GPU or model is needed.
 
 HTML accepts explicit balanced text tags, headings, lists, tables, emphasis,
