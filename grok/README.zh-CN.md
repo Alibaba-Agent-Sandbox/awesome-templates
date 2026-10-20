@@ -100,9 +100,13 @@ stdout／stderr 各限256KiB；成功／失败／超时／溢出均清理自有�
 
 ## 已验证
 
-当前原生镜像／Express／SDK／模型验收仍待执行。保持 `tested_on: []` 和 experimental。本地 source fixture、真实无凭据 version/help 不代表编码或部署通过。
+| 提供方 | 当前范围 | 记录 |
+| --- | --- | --- |
+| alicloud-express | 模板1.0.1；原生 steps、官方 READY、真实 Python SDK 创建、CLI/SDK 原生版本、真实模型编码与独立清理 | [2026-10-20](evidence/express-2026-10-20.json)、[完整模型证明](evidence/verification-steps-2026-10-20T201501Z.json) |
 
-原生 JSON 的 text 会合并进度与最终回复。验收要求最后非空行恰为本次随机 marker，并同时验证 end_turn、正整数轮数与 session/request ID；源码、产物、原始测试和隐藏用例仍须独立通过。允许前面的进度文本；marker 后还有其他最终文本则失败。
+官方 Grok Build1.0.62／原始 Rust 二进制通过显式已批准兼容端点使用 qwen3.8-flash。真实 SDK 命令修复已有源码，保留原始测试字节，下载新报告和精确随机产物，返回后独立执行完整原始3项测试和4个隐藏用例并匹配新 ACK：17PASS/0FAIL/0SKIP。先使用虚拟密钥独立确认原生请求确实到达自有端点并清理测试服务，然后才注入真实密钥。原生临时 HOME／进程／额外监听端口、测试项目、外层沙箱与模板均独立确认清理。完整基础 HTTP8PASS/0FAIL/0SKIP 与真实模型验收分别记录。当前源码真实 L1 镜像构建／非 root 镜像用户版本和 SHA256 检查也通过；不声称实际镜像注册后的模型部署、xAI 托管模型／订阅或其他提供方。[最终工程证据](../.agents/evidence/verify/2026-10-20-grok-official-native-final.md)。
+
+之前的原生工具名称、结果聚合、测试服务清理和 L1 通用检查失败均保留。后来恢复资源不会把旧失败改为通过。当前独立源码／产物／原始测试／隐藏用例要求均未省略。
 
 ## 二次开发
 

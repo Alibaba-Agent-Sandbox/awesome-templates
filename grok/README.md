@@ -16,7 +16,7 @@ Make the real Grok Build coding agent available through named commands without i
 
 ## Quick start (CLI)
 
-Install the [verified native CLI entry](../docs/platform-steps.md), configure authorized Express access, publish the exact source commit when preparation needs public COPY inputs, and replace unique-run/template/sandbox placeholders with your own values. Named commands use `abx run`; CLI0.4.1 selects this entry as `abx --native run`. Wait for official READY before creation. This recipe has not itself established a provider pass.
+Install the [verified native CLI entry](../docs/platform-steps.md), configure authorized Express access, publish the exact source commit when preparation needs public COPY inputs, and replace unique-run/template/sandbox placeholders with your own values. Named commands use `abx run`; CLI0.4.1 selects this entry as `abx --native run`. Wait for official READY before creation. The dated Verified section records the actual tested source and scope.
 
 ```bash
 python scripts/prepare_steps.py grok --output /tmp/grok-steps-<unique-run> \
@@ -100,9 +100,13 @@ Linuxx64 only,2vCPU,4096MB, port9000, about10GiB Express rootfs;8GiB image budge
 
 ## Verified
 
-Current native image/Express/SDK/model qualification is pending. `tested_on: []`, catalog experimental. Local source fixtures and real keyless binary version/help are not a real coding/deployment pass.
+| Provider | Current scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | Template1.0.1; native steps, official READY, actual Python SDK creation, CLI/SDK native version, real model coding and independent cleanup | [2026-10-20](evidence/express-2026-10-20.json), [full native model proof](evidence/verification-steps-2026-10-20T201501Z.json) |
 
-The native JSON text field includes earlier progress plus the final reply. Acceptance requires the last nonempty line to be the fresh exact marker, with end_turn/positive turns/session and request IDs; source/artifact/original-test/held-out checks still independently prove the work. Earlier progress is allowed, and a marker followed by different final text fails.
+Official Grok Build1.0.62/original Rust binary used qwen3.8-flash through the explicitly approved compatible endpoint. Actual SDK coding repaired existing source, preserved original test bytes, downloaded a new report/exact nonce artifact, then independently passed all original3tests and4held-out cases with fresh post-return ACKs:17PASS/0FAIL/0SKIP. Before any real key, a synthetic-key native probe independently verified the exact owned endpoint/model/auth and own fixture cleanup. Own native HOME/processes/secondary listener, test project, outer sandbox/template were independently confirmed absent. Complete baseline HTTP8PASS/0FAIL/0SKIP is recorded separately. Exact current-source L1 image build/non-root image-user native version/SHA256 also passed. No actual-image registration/model deployment, xAI-hosted model/subscription or other provider is claimed. [Final engineering proof](../.agents/evidence/verify/2026-10-20-grok-official-native-final.md).
+
+Earlier native tool-name/final-text aggregation/fixture cleanup/generic L1 pin failures remain immutable. Later resource recovery does not turn an old failure into a pass. Current independent source/artifact/original-test/held-out requirements were not omitted.
 
 ## Secondary development
 

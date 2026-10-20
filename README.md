@@ -30,7 +30,7 @@ The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](do
 |----------|-------------|--------|-------------|
 | [python-hello](./python-hello/README.md) | A minimal Python hello world template for testing | experimental | [alicloud-express (1.1.1 full HTTP)](./python-hello/evidence/express-2026-10-19T183219Z.json) |
 | [stagehand](./stagehand/README.md) | Native Stagehand4.3.0 local Chromium act/extract | experimental | [alicloud-express1.1.1 SDK steps and real native model](./stagehand/evidence/express-2026-10-20.json) |
-| [grok](grok/) | Official xAI Grok Build native coding | experimental | pending |
+| [grok](grok/) | Official xAI Grok Build native coding | experimental | [alicloud-express1.0.1 SDK steps and real coding](grok/evidence/express-2026-10-20.json) |
 | [browser-use](./browser-use/README.md) | Native text-DOM browser agent with private Chromium | experimental | [alicloud-express (1.0.0 SDK image, real model)](./browser-use/evidence/express-2026-10-20.json) |
 | [browser-automation](./browser-automation/README.md) | Browser automation sandbox with Playwright + Chromium for web scraping and UI testing | experimental | [alicloud-express (SDK steps, PDF and HTTP37)](./browser-automation/evidence/express-2026-10-20T103410Z.json) |
 | [claude-code](./claude-code/README.md) | Claude Code Agent runtime — Anthropic Claude-powered AI coding assistant | experimental | [alicloud-express (1.1.1 steps smoke)](./claude-code/evidence/express-2026-10-19T183255Z.json) |
