@@ -105,6 +105,7 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,sandbox_creat
                 checks.update(passed=result_http.returncode==0,exit_code=result_http.returncode,
                     pass_count=sum(x.startswith('[PASS]') for x in lines),fail_count=sum(x.startswith('[FAIL]') for x in lines),
                     skip_count=sum(x.startswith('[SKIP]') for x in lines),verifier_sha256=hashlib.sha256(script.read_bytes()).hexdigest())
+                if source.name=='chrome' and checks['skip_count']:raise RuntimeError('native Chrome desktop skipped; image HTTP acceptance refused')
                 if result_http.returncode:raise RuntimeError('full external HTTP acceptance failed; private log retained')
             return result
         print(source.name+': actual native template create, READY and CLI/SDK verification',flush=True)

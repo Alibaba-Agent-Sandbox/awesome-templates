@@ -105,6 +105,8 @@ def http_callback(source: Path, stage: Path, result: dict, fixture_env: dict[str
             raise RuntimeError("non-model gateway lifecycle was skipped; full acceptance refused")
         if source.name == "osworld" and (checks["skip_count"] or checks["pass_count"] < 18):
             raise RuntimeError("non-model desktop lifecycle was skipped or incomplete; full acceptance refused")
+        if source.name == "chrome" and checks["skip_count"]:
+            raise RuntimeError("native Chrome desktop was skipped; full acceptance refused")
         if response.returncode or checks["fail_count"] or not checks["pass_count"]:
             raise RuntimeError("external HTTP controller failed; private diagnostics retained")
         return value

@@ -88,10 +88,13 @@ def test_osworld_requires_real_desktop_and_rejects_nonmodel_skip(tmp_path):
     assert report['http_acceptance']['skip_count']==1
 
 
-def test_chrome_controller_receives_all_native_ports_and_requires_gui(tmp_path):
+@pytest.mark.parametrize("skip_native", [False, True])
+def test_chrome_controller_receives_all_native_ports_and_requires_gui(tmp_path, skip_native):
     source=tmp_path/'chrome';source.mkdir()
     (source/'template.yaml').write_text('ports: [9000,9222,6080]\n')
     (source/'e2e_test.py').write_text("import os\nassert os.environ['E2E_CHROME_CDP_URL']=='http://synthetic.invalid/9222'\nassert os.environ['E2E_CHROME_VNC_URL']=='http://synthetic.invalid/6080'\nassert os.environ['E2E_REQUIRE_CHROME']=='1'\nassert os.environ['E2E_WORKSPACE']=='/home/user/workspace'\nprint('[PASS] native controller inputs')\n")
+    if skip_native:
+        with (source/'e2e_test.py').open('a') as out:out.write("print('[SKIP] native GUI')\n")
     class Sandbox:
         network=SimpleNamespace(get_url=lambda port:'http://synthetic.invalid/'+str(port))
         async def close(self):pass
@@ -99,5 +102,8 @@ def test_chrome_controller_receives_all_native_ports_and_requires_gui(tmp_path):
         async def connect(cls,sandbox_id):return cls()
     report={}
     with patch('agent_sandbox.api.sandbox.Sandbox',Sandbox),patch.object(express_e2e,'default_sdk',return_value='smoke'):
-        assert http_callback(source,tmp_path,report)('synthetic','chrome_smoke',{})=='smoke'
+        if skip_native:
+            with pytest.raises(RuntimeError,match='Chrome desktop was skipped'):http_callback(source,tmp_path,report)('synthetic','chrome_smoke',{})
+        else:
+            assert http_callback(source,tmp_path,report)('synthetic','chrome_smoke',{})=='smoke'
     assert report['http_acceptance']['pass_count']==1
