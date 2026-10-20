@@ -148,3 +148,7 @@ Apache-2.0。保留原 OSWorld 文件、完整[上游许可证](upstream/LICENSE
 镜像显式将 `/home/user/app` 目录归属运行用户，使上传的任务文件和一次性 smoke fixture 可以在非 root 身份下写入；仅给 `COPY` 文件设置 owner 并不会自动修正 WORKDIR 本身。
 
 CLI 安装、SDK 源码安装、HTTP 认证与资源所有权见[模板使用指南](../docs/using-templates.zh-CN.md)。
+
+### 当前平台 step 验收
+
+[当前版本真实 step](evidence/express-2026-10-20.json)与[完整外部 HTTP 结果](evidence/verification-steps-2026-10-20T151021Z.json)已通过：官方 READY、真实 Python SDK 创建、CLI/SDK smoke，6 PASS / 0 FAIL / 1 model SKIP，耗时 346.984 秒。自有沙箱、模板及私有缓存已独立确认清理。早期失败保留为历史记录；本次未运行模型，不扩大已有镜像／模型验收范围。

@@ -148,3 +148,7 @@ Apache-2.0. The original OSWorld files, full [upstream license](upstream/LICENSE
 The 1024×768 PNG/Xvfb screen and the browser page viewport are separate measurements. Browser initialization requires a visible, nonzero viewport; it does not resize/emulate a page to force screen equality. `desktop_start` and `run_task_config` return `browser_geometry` with numeric screen, outer-window, viewport and content-offset fields. The disposable smoke prints only these numeric fields for image diagnostics. Native click coordinates remain screen coordinates. The smoke uses the actual content offset and DOM rectangle, and still requires real input, upstream score 0→1, changed PNG pixels and complete 4096-character destination readback. See the [viewport follow-up](../.agents/evidence/verify/2026-10-16-osworld-viewport.md).
 
 For CLI setup, SDK installation, HTTP authentication and resource ownership, see [Using templates](../docs/using-templates.md).
+
+### Current platform-step acceptance
+
+[Current-version genuine steps](evidence/express-2026-10-20.json) and [full external HTTP result](evidence/verification-steps-2026-10-20T151021Z.json): official READY, actual Python SDK creation, CLI/SDK smoke and 6 PASS / 0 FAIL / 1 model SKIP; 346.984 seconds. Independent owned sandbox/template and private asset-cache cleanup passed. Earlier failed step attempts remain historical failures; this receipt is model-free and does not extend prior image/model scope.

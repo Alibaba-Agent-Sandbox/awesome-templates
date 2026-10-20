@@ -1,6 +1,6 @@
 # Complete platform-step acceptance verification
 
-Result: PARTIAL — cloud continuation and current-head CI/merge pending.
+Result: cloud acceptance PASS32/32 — final current-head CI and merge pending.
 
 Baseline: ca3118e5123e7ce2ae2e43e2a8a05c88ecf3653d, 32 catalog source templates, 20 with current-version matching native step receipts. This is an independently counted scoped baseline, not the older 16/23 checkpoint. Existing image/model receipts retain their original scopes.
 
@@ -51,3 +51,7 @@ On published4235d0d and its scoped generated-source regressions:110 PASS across 
 ## First integrated remote CI result
 
 4235d0d local-e2e failed2 HTTP callback regressions with108 PASS because that job installed server-sdk but omitted client-sdk. The new subprocess regressions import the real client module before replacing its network class; no SDK package existed in that server-only environment. The workflow now installs client-sdk from its already reviewed pinned SDK checkout, alongside server-sdk, matching the existing document/media test-client jobs. No test is skipped or gate weakened. The local paired environment already passed all110; latest-head remote CI is still mandatory.
+
+## Complete current-source real-cloud result
+
+[Matrix](2026-10-20-complete-platform-steps-matrix.json):32/32 PASS, complete=true. Final Hermes319.815s: HTTP9 PASS/0 FAIL/1 model SKIP; OSWorld346.984s: HTTP6 PASS/0 FAIL/1 model SKIP. Both reached official READY, actual Python SDK creation, CLI/SDK smoke and independently confirmed sandbox/template plus private object/bucket absence. Hermes source staging and OSWorld regional package transport retain original versions/hash locks; no timeout, wire, integrity, extraction or cleanup gate was relaxed. This completes Issue149's cloud runtime scope; latest-head CI/review and verified normal merge are still required before closing it. Parent Issue119 includes unrelated broader roadmap criteria and is not closed by this matrix.

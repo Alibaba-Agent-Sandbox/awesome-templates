@@ -1,0 +1,267 @@
+{
+  "scope": "current-version Express platform-step runtime acceptance; not model or Docker acceptance",
+  "passed": 32,
+  "total": 32,
+  "complete": true,
+  "templates": [
+    {
+      "template": "agents-cli",
+      "version": "2.0.1",
+      "steps": "PASS",
+      "receipts": [
+        "agents-cli/evidence/express-2026-10-19T183102Z.json"
+      ]
+    },
+    {
+      "template": "aider",
+      "version": "1.0.1",
+      "steps": "PASS",
+      "receipts": [
+        "aider/evidence/express-2026-10-20T135354Z.json"
+      ]
+    },
+    {
+      "template": "amp",
+      "version": "1.2.0",
+      "steps": "PASS",
+      "receipts": [
+        "amp/evidence/express-2026-10-19.json"
+      ]
+    },
+    {
+      "template": "apply-patch",
+      "version": "1.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "apply-patch/evidence/express-2026-10-19.json"
+      ]
+    },
+    {
+      "template": "browser-automation",
+      "version": "2.2.0",
+      "steps": "PASS",
+      "receipts": [
+        "browser-automation/evidence/express-2026-10-20T103410Z.json"
+      ]
+    },
+    {
+      "template": "claude-code",
+      "version": "1.1.1",
+      "steps": "PASS",
+      "receipts": [
+        "claude-code/evidence/express-2026-10-19T183255Z.json"
+      ]
+    },
+    {
+      "template": "code-server",
+      "version": "1.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "code-server/evidence/express-2026-10-20T135352Z.json"
+      ]
+    },
+    {
+      "template": "codex",
+      "version": "2.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "codex/evidence/express-2026-10-19.json"
+      ]
+    },
+    {
+      "template": "codex-agent-api",
+      "version": "2.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "codex-agent-api/evidence/express-2026-10-19.json"
+      ]
+    },
+    {
+      "template": "crush",
+      "version": "1.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "crush/evidence/express-2026-10-20T131749Z.json"
+      ]
+    },
+    {
+      "template": "deepagents",
+      "version": "1.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "deepagents/evidence/express-2026-10-20T141151Z.json"
+      ]
+    },
+    {
+      "template": "deepseek-harness",
+      "version": "1.1.1",
+      "steps": "PASS",
+      "receipts": [
+        "deepseek-harness/evidence/express-2026-10-19T183349Z.json"
+      ]
+    },
+    {
+      "template": "dev-services",
+      "version": "1.1.0",
+      "steps": "PASS",
+      "receipts": [
+        "dev-services/evidence/express-2026-10-20T130648Z.json"
+      ]
+    },
+    {
+      "template": "document-tools",
+      "version": "1.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "document-tools/evidence/express-2026-10-19.json"
+      ]
+    },
+    {
+      "template": "droid",
+      "version": "1.1.1",
+      "steps": "PASS",
+      "receipts": [
+        "droid/evidence/express-2026-10-19T183451Z.json"
+      ]
+    },
+    {
+      "template": "gemini",
+      "version": "2.0.1",
+      "steps": "PASS",
+      "receipts": [
+        "gemini/evidence/express-2026-10-19T183608Z.json"
+      ]
+    },
+    {
+      "template": "goose",
+      "version": "1.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "goose/evidence/express-2026-10-20T135350Z.json"
+      ]
+    },
+    {
+      "template": "hermes-agent",
+      "version": "1.1.1",
+      "steps": "PASS",
+      "receipts": [
+        "hermes-agent/evidence/express-2026-10-20T151019Z.json"
+      ]
+    },
+    {
+      "template": "kimi-code",
+      "version": "1.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "kimi-code/evidence/express-2026-10-19.json"
+      ]
+    },
+    {
+      "template": "media-tools",
+      "version": "1.1.0",
+      "steps": "PASS",
+      "receipts": [
+        "media-tools/evidence/express-2026-10-20T131812Z.json"
+      ]
+    },
+    {
+      "template": "next-app",
+      "version": "1.1.0",
+      "steps": "PASS",
+      "receipts": [
+        "next-app/evidence/express-2026-10-20T130712Z.json"
+      ]
+    },
+    {
+      "template": "node-web",
+      "version": "1.1.1",
+      "steps": "PASS",
+      "receipts": [
+        "node-web/evidence/express-2026-10-19T183324Z.json",
+        "node-web/evidence/express-2026-10-20.json"
+      ]
+    },
+    {
+      "template": "ocr",
+      "version": "1.0.1",
+      "steps": "PASS",
+      "receipts": [
+        "ocr/evidence/express-2026-10-20T061143Z.json"
+      ]
+    },
+    {
+      "template": "openclaw",
+      "version": "2.0.1",
+      "steps": "PASS",
+      "receipts": [
+        "openclaw/evidence/express-2026-10-19T183726Z.json"
+      ]
+    },
+    {
+      "template": "opencode",
+      "version": "2.0.1",
+      "steps": "PASS",
+      "receipts": [
+        "opencode/evidence/express-2026-10-19T184023Z.json"
+      ]
+    },
+    {
+      "template": "osworld",
+      "version": "1.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "osworld/evidence/express-2026-10-20.json"
+      ]
+    },
+    {
+      "template": "pi",
+      "version": "1.0.1",
+      "steps": "PASS",
+      "receipts": [
+        "pi/evidence/express-2026-10-20T130320Z.json"
+      ]
+    },
+    {
+      "template": "polyglot-toolchain",
+      "version": "1.0.1",
+      "steps": "PASS",
+      "receipts": [
+        "polyglot-toolchain/evidence/express-2026-10-20T135358Z.json"
+      ]
+    },
+    {
+      "template": "python-hello",
+      "version": "1.1.1",
+      "steps": "PASS",
+      "receipts": [
+        "python-hello/evidence/express-2026-10-19T183219Z.json",
+        "python-hello/evidence/express-2026-10-20.json",
+        "python-hello/evidence/express-2026-10-20T150421Z.json"
+      ]
+    },
+    {
+      "template": "qoder",
+      "version": "1.1.1",
+      "steps": "PASS",
+      "receipts": [
+        "qoder/evidence/express-2026-10-19T184147Z.json"
+      ]
+    },
+    {
+      "template": "qwen-code",
+      "version": "2.1.1",
+      "steps": "PASS",
+      "receipts": [
+        "qwen-code/evidence/express-2026-10-19T184254Z.json"
+      ]
+    },
+    {
+      "template": "swe",
+      "version": "1.1.0",
+      "steps": "PASS",
+      "receipts": [
+        "swe/evidence/express-2026-10-20T143844Z.json"
+      ]
+    }
+  ]
+}

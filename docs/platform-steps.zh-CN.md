@@ -18,6 +18,16 @@ CLI 的[模式契约](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blo
 `{type: ENV, args: [LANG, C.UTF-8]}`；2026-10-19 真实试验拒绝了单参数
 `LANG=C.UTF-8`，失败记录保留。
 
+
+CLI0.4.1 使用显式原生入口，--native 放在所有其他根参数之前：
+
+```bash
+export ABX='abx --native'
+python scripts/run_steps_e2e.py python-hello --sandbox-create sdk
+```
+
+真实安装的0.4.1候选已通过 step READY、SDK 创建、CLI/SDK 与独立清理；公开入口由 [CLI PR90](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/pull/90)负责，默认标准命令保持原义。
+
 ## 准备真实模板
 
 steps 不自动上传 COPY 源文件。生成独立临时 manifest：
@@ -163,3 +173,5 @@ python scripts/run_steps_e2e.py goose --asset-transport oss --http \
 默认仍直接下载。OSS 模式覆盖已审查归档、精确 uv0.12.3 引导 wheel，以及 OSWorld 固定 Playwright1.58.0 浏览器归档。原安装器、哈希锁、版本、解包和非 root 运行要求继续执行。临时浏览器镜像仅绑定回环地址，只提供已校验归档路径，构建结束前关闭。浏览器摘要根据上游固定客户端 URL 实测，不标为上游公布的摘要。
 
 云端执行前必须发布精确适配器源码提交。较大配方下载公开不可变助手并校验 SHA256，从而保留原有 wire 大小门禁；不支持或未发布的配方拒绝运行。可选 `ABX_STEP_LOCAL_ARCHIVE_DIR` 复用按 SHA256 命名的控制器本地归档，上传前仍逐字节校验原固定大小/哈希；不读取调用者凭据文件，也不改变运行时依赖要求。
+
+[当前源码完整矩阵](../.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json)记录32/32限定范围 step 通过。Hermes 最终路径还缓存其不可变上游提交源码包，SHA256为控制器实测；OSWorld 的 OSS profile 使用区域公共 PyPI 镜像，同时保留原版本、--require-hashes 和 --no-build-isolation，仅改变传输。模型 SKIP 仍是 NOT_RUN，已有镜像／模型回执不改范围。

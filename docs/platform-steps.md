@@ -25,6 +25,16 @@ provider verification. Express ENV uses alternating key/value arguments: for
 example `{type: ENV, args: [LANG, C.UTF-8]}`. A single `LANG=C.UTF-8` argument was
 rejected in the real 2026-10-19 pilot; that failed attempt remains recorded.
 
+
+For CLI0.4.1, select the existing project surface explicitly before all other root options:
+
+```bash
+export ABX='abx --native'
+python scripts/run_steps_e2e.py python-hello --sandbox-create sdk
+```
+
+The actual installed0.4.1 candidate passed real step READY/SDK creation/CLI+SDK/cleanup. The public entry is owned by [CLI PR90](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/pull/90); its default standard commands remain unchanged.
+
 ## Preparing an actual template
 
 Platform steps do not upload local COPY inputs. Generate a standalone staging
@@ -175,7 +185,7 @@ Run `python scripts/step_acceptance.py` to check every current catalog entry. It
 
 Add `--http` to `scripts/run_steps_e2e.py` to execute the original complete external HTTP controller within the canonical owned sandbox. The receipt separately records controller hash, pass/fail/skip counts and exit status. Model cases remain explicitly off/NOT_RUN; a skipped model is not L3. Missing local controller prerequisites fail before cloud creation.
 
-For Goose, Crush, code-server, Polyglot, Aider, SWE and Hermes, `--asset-transport parallel` enables bounded parallel byte-range transport for their exact official archives. Every response must match its requested Content-Range, all bytes must match the pinned size/budget and SHA256, and the original unchanged installer still checks integrity/version/extraction. The temporary root-only cache and its process-local Python URL adapter are removed before USER user. Hermes uses the documented local-file uv mirror with original Python3.14.6 and uv0.12.3 pins; its generic GNU architecture assets and official metadata source are recorded. Its original compound installation is split into bounded ordered phases. DeepAgents and OSWorld use a temporary uv0.12.3 installer for the unchanged hash-locked Python graph and separate original installation phases; that build tool/cache is removed before runtime. Other profiles retain direct transport. No third-party mirror, substituted artifact or operator credential is introduced. The materializer receipt records the helper hash and exact asset metadata. A failed/unsupported range or checksum cannot publish acceptance.
+For Goose, Crush, code-server, Polyglot, Aider, SWE and Hermes, `--asset-transport parallel` enables bounded parallel byte-range transport for their exact official archives. Every response must match its requested Content-Range, all bytes must match the pinned size/budget and SHA256, and the original unchanged installer still checks integrity/version/extraction. The temporary root-only cache and its process-local Python URL adapter are removed before USER user. Hermes uses the documented local-file uv mirror with original Python3.14.6 and uv0.12.3 pins; its generic GNU architecture assets and official metadata source are recorded. Its original compound installation is split into bounded ordered phases. DeepAgents and OSWorld use a temporary uv0.12.3 installer for the unchanged hash-locked Python graph and separate original installation phases; that build tool/cache is removed before runtime. Other profiles retain direct transport. No substituted artifact or operator credential is introduced. The materializer receipt records the helper hash and exact asset metadata. A failed/unsupported range or checksum cannot publish acceptance.
 
 ```bash
 python scripts/run_steps_e2e.py goose --asset-transport parallel --http \
@@ -197,3 +207,5 @@ python scripts/run_steps_e2e.py goose --asset-transport oss --http \
 The original direct mode remains the default. OSS mode supports reviewed archives, the exact uv0.12.3 bootstrap and OSWorld's pinned Playwright1.58.0 browser archives. Original installer, hash-lock, version, extraction and runtime-user requirements remain enforced. Temporary browser serving binds loopback only, exposes verified archive paths only, and closes before the build returns. Browser digests are measured from the upstream pinned-client URLs; they are not labelled upstream-published hashes.
 
 Publish the exact adapter source commit before cloud execution. Larger profiles fetch that public immutable helper and verify its SHA256 rather than exceeding the provider wire budget; unsupported/unpublished profiles fail closed. `ABX_STEP_LOCAL_ARCHIVE_DIR` optionally reuses controller-local files named by SHA256; every reused byte still must match the original pinned size/hash before upload. It never reads a caller credential file or changes runtime package requirements.
+
+The completed [current-source matrix](../.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json) records32/32 scoped step passes. The final Hermes path also caches its immutable upstream commit archive with a controller-measured SHA256; OSWorld's OSS profile uses the regional public PyPI mirror while retaining every original version, --require-hashes and --no-build-isolation. This changes transport only. Model SKIP remains NOT_RUN, and earlier image/model receipts are not reclassified.
