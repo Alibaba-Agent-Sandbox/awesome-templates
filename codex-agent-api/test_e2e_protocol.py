@@ -27,7 +27,7 @@ FIXED_SOURCE = '''def normalize_usernames(values):
 '''
 
 
-@pytest.mark.parametrize("behavior", ["fix", "marker_only", "wrong_report", "wrong_resume"])
+@pytest.mark.parametrize("behavior", ["fix", "marker_only", "wrong_report", "wrong_resume", "forged_test_output"])
 def test_fake_remote_coding_acceptance_rejects_false_success(monkeypatch, tmp_path, behavior):
     monkeypatch.setenv("E2E_REQUIRE_LLM", "1")
     monkeypatch.delenv("E2E_RUN_LLM", raising=False)
@@ -57,7 +57,7 @@ def test_fake_remote_coding_acceptance_rejects_false_success(monkeypatch, tmp_pa
             assert payload["cwd"] == str(task)
             argv = shlex.split(payload["command"])
             assert argv[:5] == ["env", "-i", "PATH=/usr/local/bin:/usr/bin:/bin", "python3", "-I"]
-            assert argv[6] == e2e.FIXED_TESTS  # Same controller-owned bytes for every rerun.
+            assert argv[6].startswith(e2e.FIXED_TESTS)  # Fixed assertions plus a fresh post-return completion ACK.
             assert not list(task.glob("test*"))  # Tests are never exposed as model-editable files.
             result = subprocess.run(argv, cwd=task, capture_output=True, text=True, timeout=10)
             shell_runs.append(result.returncode)
@@ -69,6 +69,8 @@ def test_fake_remote_coding_acceptance_rejects_false_success(monkeypatch, tmp_pa
             assert (task / "normalizer.py").read_text() == e2e.BUGGY_SOURCE
             if behavior != "marker_only":
                 (task / "normalizer.py").write_text(FIXED_SOURCE)
+            if behavior == "forged_test_output":
+                (task / "normalizer.py").write_text("import sys,os\nsys.stderr.write('Ran 6 tests in 0.0s\\n\\nOK\\n');sys.stderr.flush();os._exit(0)\n")
             report = {"input": e2e.REPORT_INPUT, "output": [] if behavior == "wrong_report" else e2e.REPORT_OUTPUT}
             (task / "normalization-report.json").write_text(json.dumps(report))
             return httpx.Response(200, json={"id": "sess_fixture", "status": "in_progress"})
@@ -121,6 +123,8 @@ def test_fake_remote_coding_acceptance_rejects_false_success(monkeypatch, tmp_pa
     elif behavior == "marker_only":
         assert "L3 existing source changed on target" in failed
         assert "L3 controller-owned fixed tests pass on target" in failed
+    elif behavior == "forged_test_output":
+        assert "L3 controller-owned fixed tests pass on target" in failed
     elif behavior == "wrong_report":
         assert "L3 independent new report contents" in failed
     elif behavior == "wrong_resume":
@@ -139,3 +143,11 @@ def test_require_llm_cannot_skip_and_token_aliases(monkeypatch):
     assert e2e._headers() == {"X-Access-Token": "synthetic-fallback-token"}
     monkeypatch.setenv("E2E_TOKEN", "synthetic-preferred-token")
     assert e2e._headers() == {"X-Access-Token": "synthetic-preferred-token"}
+
+
+def test_new_server_bearer_token_is_separate_from_legacy_gateway_header(monkeypatch):
+    monkeypatch.setenv('E2E_SERVER_TOKEN','synthetic-server-token')
+    monkeypatch.delenv('E2E_TOKEN',raising=False);monkeypatch.delenv('ABX_SERVER_TOKEN',raising=False)
+    assert e2e._headers()=={'Authorization':'Bearer synthetic-server-token'}
+    monkeypatch.setenv('E2E_TOKEN','synthetic-gateway-token')
+    assert e2e._headers()=={'Authorization':'Bearer synthetic-server-token','X-Access-Token':'synthetic-gateway-token'}

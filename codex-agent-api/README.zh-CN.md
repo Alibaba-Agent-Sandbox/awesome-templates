@@ -132,6 +132,8 @@ SSE 包括 `agent.session.created`、`agent.session.turn.started`、`agent.sessi
 
 ## 已验证
 
+模板 2.0.0 于 2026-10-20 通过原生 steps → 官方 READY → 真实 Python SDK 创建 → CLI/SDK 冒烟，以及 **30 PASS / 0 FAIL / 0 SKIP** 真实模型检查：[基础回执](evidence/express-2026-10-20T175340Z.json)、[模型／恢复／清理证明](evidence/native-model-sdk-steps-2026-10-20T175340Z.json)。原生 Codex 0.162.1 使用授权 HTTP Responses 端点上的 `qwen3.8-flash`；只对自有模型服务显式设置已支持的 `CODEX_SANDBOX=bypass`，默认仍为 workspace-write。验收修复已有源码，经 files/artifact API 核对精确报告，通过控制端六项测试与新完成 ACK，经 SSE 恢复同一线程，验证第二产物的 SHA-256／数量并重跑六项测试。自有额外端口、原生私有 HOME 和外层沙箱／模板均已独立确认清理。这里只证明当前本地原生 API，不代表全部 OpenAI Agents 功能或其他提供方。
+
 | 提供方 | 已执行范围 | 证据 |
 | --- | --- | --- |
 | alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
@@ -163,6 +165,9 @@ E2E_REQUIRE_LLM=1 E2E_MODEL=your-model E2E_BASE_URL=https://your-sandbox \
 ## Express 源码运行验证
 
 2026-10-16，改动后的源码在自有 Express base 实例中使用固定 Codex 0.162.1 与真实 Responses 兼容模型通过 30 项外部 HTTP 检查。正式 `serve --commands` 入口成功加载含 dataclass 的模块。验收修复已有故障源码，通过控制端持有的六项固定测试，核对新报告，再恢复同一上游线程并独立检查第二产物与报告 SHA-256。自有实例已销毁。[JSON 证据](evidence/runtime-express-2026-10-16.json)与[HTTP 结果](evidence/runtime-express-2026-10-16.log)包含源码、wheel 溯源信息。此结果不等于 Dockerfile L1 或新模板部署 L2，`tested_on` 保持为空；复现步骤见[共享诊断工具](../docs/express-source-runtime.md)。
+
+
+固定测试重跑还要求全部六项真实完成且无跳过/预期失败后，输出本轮控制器独有的随机确认值；伪造 `Ran 6 tests`/`OK` 后提前退出不能通过。这是普通测试完成性检查，不是针对同用户恶意代码的隔离边界。`E2E_SERVER_TOKEN` 单独提供 generation2 Bearer 凭据，不混用旧 E2E_TOKEN 网关头。
 
 ## 二次开发
 
