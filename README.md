@@ -22,13 +22,14 @@ is recorded.
 
 ## Templates
 
-2026-10-20 Express platform-step checkpoint: **34/34 step and required full HTTP PASS** with real READY, CLI/SDK smoke and independent cleanup. [Auditable per-template matrix](.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json) · [operations and scope](docs/platform-steps.md) ([中文](docs/platform-steps.zh-CN.md)). Model and image acceptance remain separate.
+2026-10-20 historical 34-template Express platform-step checkpoint (new templates require their own acceptance): **34/34 step and required full HTTP PASS** with real READY, CLI/SDK smoke and independent cleanup. [Auditable per-template matrix](.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json) · [operations and scope](docs/platform-steps.md) ([中文](docs/platform-steps.zh-CN.md)). Model and image acceptance remain separate.
 
 The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](docs/verification-2026-10-18.zh-CN.md)) records the historical23-template checkpoint and its unresolved gates. Current scoped receipts are linked below.
 
 | Template | Description | Status | Verified on |
 |----------|-------------|--------|-------------|
 | [python-hello](./python-hello/README.md) | A minimal Python hello world template for testing | experimental | [alicloud-express (1.1.1 full HTTP)](./python-hello/evidence/express-2026-10-19T183219Z.json) |
+| [stagehand](./stagehand/README.md) | Native Stagehand4.3.0 local Chromium act/extract | experimental | Current cloud acceptance pending |
 | [browser-use](./browser-use/README.md) | Native text-DOM browser agent with private Chromium | experimental | [alicloud-express (1.0.0 SDK image, real model)](./browser-use/evidence/express-2026-10-20.json) |
 | [browser-automation](./browser-automation/README.md) | Browser automation sandbox with Playwright + Chromium for web scraping and UI testing | experimental | [alicloud-express (SDK steps, PDF and HTTP37)](./browser-automation/evidence/express-2026-10-20T103410Z.json) |
 | [claude-code](./claude-code/README.md) | Claude Code Agent runtime — Anthropic Claude-powered AI coding assistant | experimental | [alicloud-express (1.1.1 steps smoke)](./claude-code/evidence/express-2026-10-19T183255Z.json) |
