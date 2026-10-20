@@ -132,6 +132,8 @@ SSE 包括 `agent.session.created`、`agent.session.turn.started`、`agent.sessi
 
 ## 已验证
 
+模板 2.0.0 于 2026-10-20 通过原生 steps → 官方 READY → 真实 Python SDK 创建 → CLI/SDK 冒烟，以及 **30 PASS / 0 FAIL / 0 SKIP** 真实模型检查：[基础回执](evidence/express-2026-10-20T175340Z.json)、[模型／恢复／清理证明](evidence/native-model-sdk-steps-2026-10-20T175340Z.json)。原生 Codex 0.162.1 使用授权 HTTP Responses 端点上的 `qwen3.8-flash`；只对自有模型服务显式设置已支持的 `CODEX_SANDBOX=bypass`，默认仍为 workspace-write。验收修复已有源码，经 files/artifact API 核对精确报告，通过控制端六项测试与新完成 ACK，经 SSE 恢复同一线程，验证第二产物的 SHA-256／数量并重跑六项测试。自有额外端口、原生私有 HOME 和外层沙箱／模板均已独立确认清理。这里只证明当前本地原生 API，不代表全部 OpenAI Agents 功能或其他提供方。
+
 | 提供方 | 已执行范围 | 证据 |
 | --- | --- | --- |
 | alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
