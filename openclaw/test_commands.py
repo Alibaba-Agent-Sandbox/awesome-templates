@@ -1,8 +1,10 @@
 """Gateway ownership, bounded execution and argument regressions."""
 import importlib.util
+import json
 import os
 from pathlib import Path
 import subprocess
+import socket
 import sys
 import time
 
@@ -18,6 +20,50 @@ def test_missing_token_never_launches(monkeypatch):
     monkeypatch.setattr(commands.subprocess, "Popen", lambda *a, **kw: pytest.fail("unexpected process"))
     with pytest.raises(RuntimeError, match="OPENCLAW_GATEWAY_TOKEN is required"):
         commands.gateway_start()
+
+
+@pytest.mark.parametrize('value', ['0.0.0.0/0', '::/0', '224.0.0.0/4',
+                                 '::ffff:0:0/96', '::fffe:0:0/95',
+                                 'https://proxy.invalid/', '127.0.0.1,,::1',
+                                 ','.join(['127.0.0.1'] * 17), 'x' * 2049])
+def test_invalid_operator_proxy_list_never_launches(value, monkeypatch):
+    monkeypatch.setenv('OPENCLAW_GATEWAY_TOKEN', 'synthetic-unit-test-token')
+    monkeypatch.setenv('OPENCLAW_TRUSTED_PROXIES', value)
+    monkeypatch.setattr(commands, '_binary', lambda: sys.executable)
+    monkeypatch.setattr(commands.subprocess, 'Popen', lambda *a, **kw: pytest.fail('unexpected process'))
+    with socket.socket() as available:
+        available.bind(('127.0.0.1', 0))
+        port = available.getsockname()[1]
+    with pytest.raises(ValueError, match='OPENCLAW_TRUSTED_PROXIES'):
+        commands.gateway_start(port=port, bind='lan')
+    assert commands._STATE is None
+
+
+def test_explicit_proxy_ips_reach_isolated_native_config_and_cleanup(monkeypatch):
+    monkeypatch.setenv('OPENCLAW_GATEWAY_TOKEN', 'synthetic-unit-test-token')
+    monkeypatch.setenv('OPENCLAW_TRUSTED_PROXIES', '192.0.2.8,2001:db8::/64,192.0.2.8/32')
+    monkeypatch.setattr(commands, '_binary', lambda: sys.executable)
+    original_popen = subprocess.Popen
+    captured = {}
+
+    def launch(*args, **kwargs):
+        state = Path(kwargs['cwd'])
+        captured['state'] = state
+        captured['config'] = json.loads((state / 'openclaw.json').read_text())
+        return original_popen([sys.executable, '-c', 'import time;time.sleep(30)'], **kwargs)
+
+    monkeypatch.setattr(commands.subprocess, 'Popen', launch)
+    monkeypatch.setattr(commands, '_probe', lambda timeout: True)
+    with socket.socket() as available:
+        available.bind(('127.0.0.1', 0))
+        port = available.getsockname()[1]
+    try:
+        assert commands.gateway_start(port=port, bind='lan')['healthy'] is True
+        assert captured['config']['gateway']['trustedProxies'] == ['192.0.2.8/32', '2001:db8::/64']
+        assert captured['config']['gateway']['auth']['token'] == '${OPENCLAW_GATEWAY_TOKEN}'
+    finally:
+        commands.gateway_stop(command_timeout=1)
+    assert not captured['state'].exists()
 
 
 @pytest.mark.parametrize("args", [{"port": 80}, {"port": 9000}, {"port": 65536}, {"command_timeout": 0}, {"command_timeout": 121}, {"bind": "public"}])
