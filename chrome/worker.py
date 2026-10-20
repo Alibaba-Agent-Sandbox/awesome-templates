@@ -122,18 +122,22 @@ class Desktop:
         return {'content_base64':base64.b64encode(raw).decode(),'width':width,'height':height}
 
     async def smoke(self):
+        self.stage="smoke_cdp"
         from PIL import Image
         marker='CHROME_NATIVE_'+secrets.token_hex(8)
         html='<html><head><title>'+marker+'</title></head><body style="margin:0;background:rgb(20,30,40)"><button style="position:absolute;left:30px;top:180px;width:160px;height:60px" onclick="document.body.style.background=\'rgb(10,230,20)\';this.textContent=\'native clicked\'">click</button></body></html>'
         async with Page('http://127.0.0.1:9223')as page:
-            await page.navigate('data:text/html,'+quote(html))
+            self.stage='smoke_navigate';await page.navigate('data:text/html,'+quote(html))
+            self.stage='smoke_title'
             if await page.evaluate('document.title')!=marker:raise RuntimeError('native CDP title differs')
-            await page.evaluate('document.querySelector("button").click()')
+            self.stage='smoke_click';await page.evaluate('document.querySelector("button").click()')
+        self.stage='smoke_vnc'
         for _ in range(20):
             raw,width,height=await capture_tcp(5901,self.password)
             image=Image.open(io.BytesIO(raw));pixel=image.getpixel((width//2,height//2))
             if pixel[1]>180 and pixel[0]<60 and pixel[2]<70:return {'native_cdp':True,'authenticated_vnc':True,'native_png':True,'headed':True}
             await asyncio.sleep(.1)
+        self.stage='smoke_frame';self.frame_pixel=list(pixel[:3])
         raise RuntimeError('native VNC framebuffer does not show actual CDP state')
 
     def close(self):
@@ -160,7 +164,9 @@ if __name__=='__main__':
                 elif operation=='smoke':result=asyncio.run(desktop.smoke())
                 else:raise ValueError('unknown native Chrome operation')
                 print(json.dumps({'result':result}),flush=True)
-            except Exception as exc:print(json.dumps({'error':True,'stage':desktop.stage,'error_type':type(exc).__name__}),flush=True)
+            except Exception as exc:
+                reasons={'RFB3.8 required':'rfb_protocol','native VNC authentication failed':'rfb_auth','native VNC password authentication required':'rfb_security','invalid or oversized raw RFB rectangle':'rfb_rectangle','unsupported native RFB server message':'rfb_message','native CDP command failed':'cdp_command','native CDP stream closed':'cdp_closed','native browser evaluation failed':'cdp_evaluate','native browser navigation failed':'cdp_navigation','native browser navigation deadline exceeded':'cdp_navigation_deadline','native VNC framebuffer does not show actual CDP state':'frame_mismatch'}
+                print(json.dumps({'error':True,'stage':desktop.stage,'error_type':type(exc).__name__,'reason':reasons.get(str(exc),'unclassified'),'frame_pixel':getattr(desktop,'frame_pixel',None)}),flush=True)
     except Exception as exc:
         print(json.dumps({'error':True,'stage':getattr(exc,'stage',desktop.stage if desktop else'initialization'),'error_type':getattr(exc,'cause',type(exc).__name__)}),flush=True)
     finally:

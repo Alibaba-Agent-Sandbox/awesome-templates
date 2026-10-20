@@ -83,7 +83,11 @@ def response(timeout):
         if value.get('error'):
             stage=value.get('stage','native');kind=value.get('error_type','RuntimeError')
             if not re.fullmatch(r'[A-Za-z_]{1,40}',str(stage)+str(kind)):stage,kind='native','RuntimeError'
-            raise RuntimeError('native Chrome operation failed: '+stage+' ('+kind+')')
+            reason=value.get('reason','unclassified')
+            if not re.fullmatch(r'[a-z_]{1,40}',str(reason)):reason='unclassified'
+            pixel=value.get('frame_pixel');observation=''
+            if isinstance(pixel,list)and len(pixel)==3 and all(type(x)is int and 0<=x<=255 for x in pixel):observation=' RGB'+str(tuple(pixel))
+            raise RuntimeError('native Chrome operation failed: '+stage+' ('+kind+') '+reason+observation)
         return value['result']
     except BaseException:
         stop_owned();raise
