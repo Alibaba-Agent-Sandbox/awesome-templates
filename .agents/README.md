@@ -38,6 +38,8 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 
 - [Native Copilot CLI BYOK](notes/proposed/feature/2026-10-20-copilot-cli-byok.md) · [verification](evidence/verify/2026-10-20-copilot-cli-byok.md)
 
+- [Copilot CLI native final acceptance](evidence/verify/2026-10-20-copilot-cli-native-final.md)
+
 ## Current review
 
 - [Node Web HTTP output protocol](notes/proposed/process/2026-10-16-node-web-http-output.md)

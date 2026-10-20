@@ -22,7 +22,7 @@ Feasible: slice
 
 Limiting factor: compatible streaming/tool-call model endpoint; only Linux x86_64 native package is installed.
 
-2vCPU/2048MB CPU-only non-root Express needs no Docker daemon/GPU/KVM. Original Issue64's survey prerelease is superseded by verified public stable1.0.100 package metadata and pinned native help. Official [BYOK](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/use-byok-models) requires no GitHub authentication; this template deliberately selects explicit OpenAI-compatible completions/http. Fixed native help confirmed flags and provider wiring. Actual image/Express/model qualification remains pending until receipts exist.
+2vCPU/2048MB CPU-only non-root Express needs no Docker daemon/GPU/KVM. Original Issue64's survey prerelease is superseded by verified public stable1.0.100 package metadata and pinned native help. Official [BYOK](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/use-byok-models) requires no GitHub authentication; this template deliberately selects explicit OpenAI-compatible completions/http. Fixed native help confirmed flags and provider wiring. Actual L1 image builds and current-source SDK-created Express native steps/model17 now pass; [final proof](../../.agents/evidence/verify/2026-10-20-copilot-cli-native-final.md) separates those scopes.
 
 ## Risks
 

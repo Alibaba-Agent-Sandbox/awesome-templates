@@ -113,7 +113,13 @@ HTTP200 返回 `{"result":{"stdout":"<native JSONL>","stderr":"","exit_code":0,"
 
 ## 已验证
 
-1.0.0 暂无提供商/模型资格。本地单元、进程测试和固定版本 help/version 调研均不能代替 L1/L2/L3。保留 tested_on: [] 和 experimental，直到当前源码真实凭证齐全。其他架构、提供商以及交互、ACP、GitHub 服务和会话恢复均未验证。
+1.0.0 已在阿里云极速版通过原生 steps、官方 READY、真实 Python SDK Sandbox.create 及 CLI/SDK 命名命令冒烟。真实原生1.0.100 BYOK 配置使用显式兼容 qwen3.8-flash 模型完成 **17项严格检查，0失败/0跳过**：修改已有源码、生成新报告和精确随机标记文件、保留原测试，并在云端完成返回后的独立原测试与隐藏断言。自有项目、原生临时状态/独立服务端口以及外层 sandbox/模板均独立确认清理。
+
+| 版本 | 提供方 | 证据 |
+| --- | --- | --- |
+| 1.0.0 | alicloud-express | [SDK创建的原生 steps](evidence/express-2026-10-20T165141Z.json)、[严格模型17及清理](evidence/native-model-steps-2026-10-20T165141Z.json) |
+
+实际 L1 镜像构建39459153252/39459156236另行通过，steps 不推断镜像已在云端注册。首轮整体失败保留为[历史](evidence/native-model-steps-2026-10-20T164602Z.json)：16通过/1项控制器错误断言，真实模型、产物及自有清理均通过；修正后的完整重跑才是当前资格。主机未执行生成代码。其他架构、提供商以及交互、ACP、GitHub 服务和会话恢复仍未验证，目录保留 experimental。见[最终工程记录](../.agents/evidence/verify/2026-10-20-copilot-cli-native-final.md)。
 
 ## 二次开发
 

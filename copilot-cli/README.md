@@ -113,7 +113,13 @@ The three model settings are captured at server startup. BYOK type=openai, wire 
 
 ## Verified
 
-No provider/model qualification for1.0.0 yet. Source unit/process checks and fixed native help/version research are separate from actual L1/L2/L3. `tested_on: []` and experimental catalog status remain until matching current-source receipts exist. Other architectures/providers and interactive/ACP/GitHub-service/resume workflows are unverified.
+Version1.0.0 passed actual Alibaba Express native steps, official READY, real Python SDK Sandbox.create and CLI/SDK named smoke. The actual native1.0.100 BYOK profile completed **17 strict checks,0 FAIL/0 SKIP** with the explicit compatible qwen3.8-flash model: existing source changed, fresh report/exact nonce artifact created, original tests unchanged, and independent post-return original/held-out evaluations passed on the cloud target. Own project, native private state/secondary listener and outer sandbox/template absence were independently confirmed.
+
+| Version | Provider | Evidence |
+| --- | --- | --- |
+| 1.0.0 | alicloud-express | [SDK-created native steps](evidence/express-2026-10-20T165141Z.json), [strict model17 and cleanup](evidence/native-model-steps-2026-10-20T165141Z.json) |
+
+Actual native L1 image builds39459153252/39459156236 passed separately; no Docker-image cloud registration is inferred from steps. The first overall failed cloud attempt remains [history](evidence/native-model-steps-2026-10-20T164602Z.json):16PASS/1incorrect controller assertion, with genuine model/artifact tests and owned cleanup passing. The corrected complete rerun is the qualification. No generated source executed on operator. Other architectures/providers and interactive/ACP/GitHub-service/resume workflows remain unverified. The catalog stays experimental. See [final engineering verification](../.agents/evidence/verify/2026-10-20-copilot-cli-native-final.md).
 
 ## Secondary development
 
