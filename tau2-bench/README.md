@@ -35,6 +35,8 @@ the retail domain; no replacement instructions are supplied.
 Provides bounded, reproducible access to an original benchmark task and its native
 evaluation, with a separately downloadable trajectory and independent strict
 replay. Both agent and simulated user use the explicitly configured model service.
+Text communication uses the original native default `enforce_communication_protocol=False`;
+all completion, source, score and strict replay acceptance gates remain required.
 
 ## Quick start (CLI)
 

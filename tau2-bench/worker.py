@@ -9,6 +9,12 @@ LIMIT=8*1024*1024
 STAGE='request'
 
 
+class NativeIncomplete(RuntimeError):
+    def __init__(self,reason):
+        self.reason=reason
+        super().__init__('native simulation ended prematurely')
+
+
 def upstream():
     if (ROOT/'SOURCE_REV').read_text().strip()!=SOURCE:raise RuntimeError('native source revision mismatch')
     if tomllib.loads((ROOT/'pyproject.toml').read_text())['project']['version']!='1.0.1':raise RuntimeError('native source version mismatch')
@@ -43,7 +49,7 @@ def scrub(value,secrets):
 def summary(simulation):
     score=float(simulation.reward_info.reward)
     if not math.isfinite(score)or not 0<=score<=1:raise RuntimeError('invalid native score')
-    if simulation.termination_reason.value not in ['agent_stop','user_stop']:raise RuntimeError('native simulation ended prematurely')
+    if simulation.termination_reason.value not in ['agent_stop','user_stop']:raise NativeIncomplete(simulation.termination_reason.value)
     messages=simulation.model_dump(mode='json').get('messages')or[]
     return {'score':score,'termination_reason':simulation.termination_reason.value,'message_count':len(messages),
         'assistant_messages':sum(item.get('role')=='assistant'for item in messages),
@@ -71,7 +77,7 @@ def execute(operation,data):
         config=TextRunConfig(domain='retail',agent='llm_agent',user='user_simulator',
             llm_agent='openai/'+settings['model'],llm_user='openai/'+settings['model'],
             llm_args_agent=dict(arguments),llm_args_user=dict(arguments),max_steps=data['max_steps'],max_errors=3,
-            enforce_communication_protocol=True,auto_review=False,seed=42)
+            enforce_communication_protocol=False,auto_review=False,seed=42)
         STAGE='native_run'
         simulation=run_single_task(config,task,seed=42,evaluation_type=EvaluationType.ALL,
             save_dir=Path(os.environ['HOME'])/'native-logs',auto_review=False)
@@ -114,6 +120,7 @@ if __name__=='__main__':
         print(json.dumps(execute(operation,data),allow_nan=False))
     except Exception as exc:
         error={'error_type':type(exc).__name__,'native_operation_failed':True,'native_stage':STAGE}
+        if isinstance(exc,NativeIncomplete):error['native_termination']=exc.reason
         if operation=='version'and isinstance(exc,ModuleNotFoundError):error['missing_module']=exc.name
         print(json.dumps(error),file=sys.stderr)
         raise SystemExit(1)

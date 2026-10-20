@@ -56,8 +56,11 @@ def _invoke(operation,data,timeout):
                 diagnostic=json.loads(err.strip().splitlines()[-1])
                 kind=diagnostic.get('error_type')
                 stage=diagnostic.get('native_stage')
-                if kind in ['TypeError','ValueError','AttributeError','RuntimeError','ValidationError','FileNotFoundError','ModuleNotFoundError','KeyError','APIConnectionError','RateLimitError','BadRequestError','AuthenticationError']and stage in ['request','upstream','task','configuration','native_run','summary','artifact','replay']:
+                if kind in ['TypeError','ValueError','AttributeError','RuntimeError','NativeIncomplete','ValidationError','FileNotFoundError','ModuleNotFoundError','KeyError','APIConnectionError','RateLimitError','BadRequestError','AuthenticationError']and stage in ['request','upstream','task','configuration','native_run','summary','artifact','replay']:
                     detail='; '+stage+' ('+kind+')'
+                    reason=diagnostic.get('native_termination')
+                    if reason in ['max_steps','timeout','too_many_errors','agent_error','user_error','infrastructure_error','context_window_exceeded','unexpected_error']:
+                        detail+='; termination='+reason
             except (ValueError,IndexError,TypeError):pass
             if operation=='version':
                 try:

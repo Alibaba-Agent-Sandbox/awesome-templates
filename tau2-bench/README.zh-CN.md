@@ -21,6 +21,8 @@ MIT 许可的[固定原版源码](https://github.com/sierra-research/tau2-bench/
 
 为原版任务提供有界执行、原生评估、可单独下载的轨迹和独立严格重放。智能体与用户模拟器均使用明确配置的模型服务。
 
+文本通信采用原生默认 `enforce_communication_protocol=False`，完成状态、源码、评分和严格重放验收要求均保留。
+
 ## 快速开始（CLI）
 
 依照[步骤构建指南](../docs/platform-steps.zh-CN.md)安装已验证原生 CLI，并配置自己的极速版提供商。以下占位符须替换为本次唯一输出目录和自己创建的资源 ID。先发布源码提交，再准备不可变 COPY 步骤；步骤构建不能证明 Docker 镜像构建通过。
