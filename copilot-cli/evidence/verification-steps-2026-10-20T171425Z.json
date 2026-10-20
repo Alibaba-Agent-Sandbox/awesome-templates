@@ -1,0 +1,47 @@
+{
+  "template": "copilot-cli",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T171425Z",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "copilot-cli",
+    "materializer_sha256": "a664256a8967838528c73dca748b8b8f2ef799f2d6c631671c27eaf4f9a1ba73",
+    "source_manifest_contract_sha256": "4518619ba416d14a6a5b1474855e877e0db273d0b1c0c733b472cf33cfb16cd0",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "56c0ec834965af8d6fbfcd0fd96b9d8fd0f3e60f",
+    "asset_transport": "direct",
+    "steps_json_bytes": 5700,
+    "inputs_sha256": {
+      "Dockerfile": "165d971cdc5260e2e4500ae36cb444be84c5d5743aaa4adbd315985292f9ad4c",
+      "template.yaml": "60572037fa6061b7ef1977e1e98adb8fa5463982875ee5411003f791be15c109",
+      "package.json": "bc460b6f827d34f2d09d3ee1166f1064db9e32701738f6bc55c3e416d1cffb35",
+      "package-lock.json": "14320e1284c987f3946d591d4959d7230c85527998f330beb34bc9e6a8bf1261",
+      "commands.py": "46017ccc1bbb4ffa183b84a7d367bb47c7e73e2137acc1363b63c7bc2248a5fb",
+      "process.py": "41b26e16d1480c351d2c8b5c721bfccd6b3d6d2422f17683c79e85d2ac689669",
+      "lifecycle.py": "7deecbddcd11beb8e15bd32c9cef83781b3e5bc7ca53bdf3a4c30742d67445fd",
+      "UPSTREAM-LICENSE.md": "b9680937e10425bf19862908856c16ed274e6b81a1368bd62be7a757eab21628"
+    },
+    "generated_manifest_sha256": "93dacaee28271787cde8fecc0fbf1b97154644b6a86c660dc9ed94a50bad5d05"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 8,
+    "fail_count": 0,
+    "skip_count": 0,
+    "controller_sha256": "8e9cad1339ba2dcad4494ee60cf757b9b15356b15cda7890bd21e6b20d1af13e"
+  },
+  "cleanup_verified": true,
+  "exit_code": 0,
+  "receipt": "copilot-cli/evidence/express-2026-10-20.json",
+  "command_calls": 4,
+  "duration_s": 87.661
+}

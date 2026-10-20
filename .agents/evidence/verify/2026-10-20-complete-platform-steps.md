@@ -1,6 +1,6 @@
 # Complete platform-step acceptance verification
 
-Result: PARTIAL — new accepted OpenClaw2.1.0 source integration and original full-HTTP repeat pending.
+Result: PASS — current whole-manifest-bound34/34 runtime and34/34 required original full-HTTP acceptance; final exact-head CI and verified normal merge remain delivery gates.
 
 Baseline: ca3118e5123e7ce2ae2e43e2a8a05c88ecf3653d, 32 catalog source templates, 20 with current-version matching native step receipts. This is an independently counted scoped baseline, not the older 16/23 checkpoint. Existing image/model receipts retain their original scopes.
 
@@ -105,3 +105,23 @@ Before merge, accepted main9741a0d added OpenClaw2.1.0 explicit bounded proxy co
 ## Manifest-contract review closure integration
 
 Reviewed and integrated [PR158](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/158) at dd81f0327d3bdf95a58c87da0f9a8267984103f4 after all of that head's current CI checks passed. The source manifest contract now binds every field except tested_on; exact legacy raw manifests or SHA256-verified bounded local Git history are required, and explicit server-sdk.commit input/effective selection must match. The normal merge preserves source ancestry so current exact legacy proof is usable in a complete standalone clone; missing/shallow history remains MISSING. No old receipt is rewritten to invent contract provenance. The integrated60 materializer/classifier regressions pass,153 documents have0 link failures, and the strict bound-manifest audit correctly reports33 runtime/32 original full HTTP while only OpenClaw2.1.0's new original-controller run remains active. The already merged2.1 native SDK/forwarded gateway proof is preserved separately.
+
+## Current2.1 source and complete contract-bound matrix
+
+PASS: the actual new OpenClaw2.1.0 profile completed525.594s with11 original HTTP PASS/0 FAIL/1 model SKIP, official READY, real CLI/SDK and independent sandbox/template/private-cache cleanup. The same original controller was rerun; older2.0.1 proof was not relabelled, and the stronger merged current SDK/forwarded gateway evidence stays separate. After the PR158 review fix and main9741a0d integration, `step_acceptance.py --require-http` again exits0 with33/33runtime,33/33full HTTP andcomplete=true, now additionally binding every manifest field except tested_on and the explicit SDK source selection. The final normal merge must retain ancestry so exact legacy manifest byte/history evidence remains available; no squash/history pruning is used for this parent PR. All source/copy/fixture/wire/private-cache/model-scope controls remain intact.
+
+## Required external desktop correction
+
+PR159 review establishes that OSWorld151021Z had6PASS/0FAIL/1GUI SKIP, not a model skip. Earlier checkpoint prose calling this a model skip or complete external HTTP coverage was incorrect and is superseded here; the immutable original report remains narrower. Its real internal named desktop smoke and canonical CLI/SDK acceptance remain valid, but cannot substitute for the separate external18-check task. Integrated59d37c8 with both required desktop flags, fixture provenance and strict18/no-skip classification;88 current source/process/task/HTTP/audit regressions PASS in7.03seconds. Current required full-HTTP matrix is32/33 and incomplete until the actual SDK-created external desktop run, independent owned cleanup and latest-head delivery pass.
+
+## Current catalog34 integration
+
+Accepted main87b6451 adds Copilot CLI1.0.0 with genuine SDK-created step smoke and separately17/0/0 native BYOK model proof. Integrated normal merge56c0ec8 preserves its original evidence and current-source ancestry. The unified non-model original HTTP controller is being rerun with the same public CLI0.4.1, no NODE_PATH and independent cleanup; no model proof is relabelled. Current catalog scope is34, superseding earlier32/33 checkpoints.
+
+## Final34 required external controller acceptance
+
+[Current matrix](2026-10-20-complete-platform-steps-matrix.json):34/34runtime,34/34required fullHTTP,complete=true. Actual OSWorld SDK-created step run274.783s: [canonical CLI/SDK](../../../osworld/evidence/express-2026-10-20T171144Z.json), [external desktop18PASS/0FAIL/0SKIP](../../../osworld/evidence/verification-steps-2026-10-20T171144Z.json). Both desktop flags and required fixture are recorded, no model credential is injected. The unchanged original controller uploaded a fresh HTML/task, independently decoded1024x768PNG, applied real click/Unicode paste/hotkey/click, observed fresh AT-SPI and upstream score0→1, verified changed pixels, and removed its desktop/task artifacts. Independent sandbox/template and private exact-archive objects/bucket cleanup passed. This supersedes the earlier6/0/1GUI-skipped classification without rewriting its immutable report. Native OSWorld L1 image [39462497032](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39462497032/job/118765387221) passed with unchanged runtime/image source.
+
+Actual Copilot CLI1.0.0 unified run87.661s: [canonical CLI/SDK](../../../copilot-cli/evidence/express-2026-10-20.json), [original HTTP8PASS/0FAIL/0SKIP](../../../copilot-cli/evidence/verification-steps-2026-10-20T171425Z.json), independent sandbox/template cleanup. Existing strict native BYOK17/0/0 model proof remains its separate accepted-main evidence. Both new unified runs use the actual public website CLI0.4.1 first-root--native with NODE_PATH unset.
+
+Final integrated local gates:145 shared tooling/source/cache/privacy/current-manifest/controller regressions PASS in78.95s;88 targeted desktop source/task/process/controller/audit cases PASS in7.03s;57 specification cases PASS in16.433s;34catalog profiles plus skeleton strict0violations;157Markdown documents0local-link failures;24Copilot unit/controller cases PASS in3.47s. Those checks test authored fixtures only where stated; actual cloud qualification comes from the linked receipts. Whole-manifest provenance requires normal ancestry-preserving merge. Latest final-head CI/review and actual remote merge are still required; broader model/provider/roadmap and independent npm registry Issue66 are not silently certified.

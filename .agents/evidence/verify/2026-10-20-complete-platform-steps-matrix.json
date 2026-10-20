@@ -1,10 +1,10 @@
 {
   "scope": "current-version Express platform-step runtime acceptance; not model or Docker acceptance",
-  "passed": 33,
-  "http_passed": 32,
+  "passed": 34,
+  "http_passed": 34,
   "require_http": true,
-  "total": 33,
-  "complete": false,
+  "total": 34,
+  "complete": true,
   "templates": [
     {
       "template": "agents-cli",
@@ -130,6 +130,20 @@
       "http": "PASS",
       "http_receipts": [
         "codex-agent-api/evidence/verification-steps-2026-10-20T154830Z.json"
+      ]
+    },
+    {
+      "template": "copilot-cli",
+      "version": "1.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "copilot-cli/evidence/express-2026-10-20.json",
+        "copilot-cli/evidence/express-2026-10-20T165141Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "copilot-cli/evidence/native-model-steps-2026-10-20T165141Z.json",
+        "copilot-cli/evidence/verification-steps-2026-10-20T171425Z.json"
       ]
     },
     {
@@ -310,10 +324,13 @@
       "version": "2.1.0",
       "steps": "PASS",
       "receipts": [
-        "openclaw/evidence/express-2026-10-20T153536Z.json"
+        "openclaw/evidence/express-2026-10-20T153536Z.json",
+        "openclaw/evidence/express-2026-10-20T165241Z.json"
       ],
-      "http": "MISSING",
-      "http_receipts": []
+      "http": "PASS",
+      "http_receipts": [
+        "openclaw/evidence/verification-steps-2026-10-20T165241Z.json"
+      ]
     },
     {
       "template": "opencode",
@@ -332,11 +349,12 @@
       "version": "1.0.0",
       "steps": "PASS",
       "receipts": [
-        "osworld/evidence/express-2026-10-20.json"
+        "osworld/evidence/express-2026-10-20.json",
+        "osworld/evidence/express-2026-10-20T171144Z.json"
       ],
       "http": "PASS",
       "http_receipts": [
-        "osworld/evidence/verification-steps-2026-10-20T151021Z.json"
+        "osworld/evidence/verification-steps-2026-10-20T171144Z.json"
       ]
     },
     {
