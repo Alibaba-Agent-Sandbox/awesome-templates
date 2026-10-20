@@ -41,6 +41,7 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 - [Explicit OpenClaw proxy/SDK acceptance](notes/proposed/feature/2026-10-20-openclaw-explicit-proxy-sdk.md) · [verification](evidence/verify/2026-10-20-openclaw-explicit-proxy-sdk.md)
 
 - [OpenClaw native SDK final acceptance](evidence/verify/2026-10-20-openclaw-native-sdk-final.md)
+- [Step manifest receipt binding](notes/proposed/process/2026-10-20-step-manifest-receipt-binding.md) · [verification](evidence/verify/2026-10-20-step-manifest-receipt-binding.md)
 
 ## Current review
 

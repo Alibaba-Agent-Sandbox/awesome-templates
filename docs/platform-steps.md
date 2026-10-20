@@ -108,6 +108,8 @@ not an acceptance receipt.
 
 ## Evidence and limitations
 
+Current-source auditing binds the full source manifest (launch/readiness, resources, environment, ports and all other fields); only `tested_on` qualification metadata is excluded. New receipts include `source_manifest_contract_sha256` plus the raw manifest hash. A changed same-version contract cannot inherit a previous pass. Legacy metadata-only updates require exact recorded original bytes from local immutable Git history before normalized comparison. A recorded source revision must match its own bytes; older inline-copy receipts without one use a bounded local history search of that manifest only. Missing/shallow history returns MISSING: fetch the relevant public history and rerun, without rewriting receipts. Explicit `server-sdk.commit` requires its hashed input and matching effective selected pin. This audit makes no network/cloud calls.
+
 `run_steps_e2e.py` retains a sanitized per-attempt outcome under the original
 template's evidence directory, including failures, exact copied-input hashes,
 base image and server-source override. A successful canonical receipt includes
