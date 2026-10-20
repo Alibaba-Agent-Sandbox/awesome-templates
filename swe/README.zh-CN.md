@@ -114,7 +114,7 @@ curl -fsS --max-time 240 "$BASE_URL/commands/swe_evaluate" -H 'Content-Type: app
 
 ## 配置
 
-实测实例工作流显式允许30步和600秒，HTTP时限660秒。公开API默认值仍为12步/300秒；较早尝试中，所用模型未在该保守预算内完成。另一次自有云沙箱诊断在25次调用后提交，并由独立评测器通过原有全部60个测试身份。随后使用该预算的严格重跑仍未提交；诊断成功不能作为模板验收。版本1.1.0新增上游原生 bash 工具调用协议：启动配置服务时设置 `SWE_MODEL_PROTOCOL=toolcall`，选择官方 `mini.yaml` 和 LiteLLM 原生函数调用。默认 `text` 保留原有 `default.yaml` 文本协议；未知取值在运行前拒绝。诊断返回 `native_tool_calls`，严格验收要求其为真。原始测试身份、全新评测器和评分断言保持原样。必须重新构建1.1.0镜像并完成真实云端/模型验收。
+实测实例工作流显式允许30步和600秒，HTTP时限660秒。公开API默认值仍为12步/300秒；较早尝试中，所用模型未在该保守预算内完成。另一次自有云沙箱诊断在25次调用后提交，并由独立评测器通过原有全部60个测试身份。随后使用该预算的严格重跑仍未提交；诊断成功不能作为模板验收。版本1.1.0新增上游原生 bash 工具调用协议：启动配置服务时设置 `SWE_MODEL_PROTOCOL=toolcall`，选择官方 `mini.yaml` 和 LiteLLM 原生函数调用。默认 `text` 保留原有 `default.yaml` 文本协议；未知取值在运行前拒绝。诊断返回 `native_tool_calls`，严格验收要求其为真。原始测试身份、全新评测器和评分断言保持原样。新构建1.1.0镜像的真实云端/模型验收已通过，见下方回执。
 
 
 YAML 声明空的 `SWE_API_KEY`、`SWE_BASE_URL`、`SWE_MODEL`，必须明确注入服务进程。模型 key 只传给代理进程环境，不进入模型 shell action 的环境。凭据不放 argv、配置 JSON、返回错误或持久报告。私有 trajectory/config 目录由 finally 删除。这是进程卫生措施，不能防止同用户恶意代码读取其他进程。
@@ -129,7 +129,11 @@ YAML 声明空的 `SWE_API_KEY`、`SWE_BASE_URL`、`SWE_MODEL`，必须明确注
 
 ## 已验证
 
-版本1.1.0新增可选上游原生 bash 工具调用，并保留1.0.1的非root工作区目录归属修复；当前版本提供方验收仍待完成。此前回执仅证明原始版本/哈希的已记录范围，保留在下面历史部分。
+版本1.1.0通过真实 SDK 创建的极速版镜像注册、官方 READY、CLI/SDK 版本冒烟及14项严格兼容模型断言。官方 mini2.4.6 以原生 bash 工具调用 qwen3.8-flash 修改源码，保留原始测试，在独立全新评测环境通过全部60个原始测试身份，并取回源码补丁及报告。自有沙箱/模板/镜像仓库清理和运行后摘要均独立回查通过。这是单题可移植性切片，不是官方 SWE-bench 分数；其他提供方及官方完整 harness 未验证。
+
+| Version | Provider | Evidence |
+| --- | --- | --- |
+| 1.1.0 | alicloud-express | [image](evidence/express-2026-10-20.json), [HTTP](evidence/image-http-2026-10-20T091111Z.json), [strict model14](evidence/model-image-2026-10-20T091111Z.json) |
 
 ## 历史验收
 

@@ -116,7 +116,7 @@ Malformed types/unknown arguments return HTTP 400. Invalid instance/run ID, miss
 
 ## Configuration
 
-The verified real-instance workflow explicitly permits30 agent steps and600 seconds, with a660-second HTTP deadline. Public API defaults remain12 steps/300 seconds; those conservative defaults did not complete the configured model in earlier attempts. A separate owned-cloud diagnostic submitted after25 calls and independently passed all60 original test identities. The strict repeat with that budget still failed before submission; that diagnostic success does not qualify the current template. Version1.1.0 adds the upstream native bash-tool protocol: set `SWE_MODEL_PROTOCOL=toolcall` when starting the configured command server. It selects official `mini.yaml` and LiteLLM native function calls. Default `text` retains the original `default.yaml` text protocol for existing clients. Unknown values fail before a run. Setup reports `native_tool_calls`; the strict controller requires this flag. Test identities, fresh evaluator and scoring/assertion gates remain unchanged. A fresh1.1.0 image and actual cloud/model acceptance are required.
+The verified real-instance workflow explicitly permits30 agent steps and600 seconds, with a660-second HTTP deadline. Public API defaults remain12 steps/300 seconds; those conservative defaults did not complete the configured model in earlier attempts. A separate owned-cloud diagnostic submitted after25 calls and independently passed all60 original test identities. The strict repeat with that budget still failed before submission; that diagnostic success does not qualify the current template. Version1.1.0 adds the upstream native bash-tool protocol: set `SWE_MODEL_PROTOCOL=toolcall` when starting the configured command server. It selects official `mini.yaml` and LiteLLM native function calls. Default `text` retains the original `default.yaml` text protocol for existing clients. Unknown values fail before a run. Setup reports `native_tool_calls`; the strict controller requires this flag. Test identities, fresh evaluator and scoring/assertion gates remain unchanged. The fresh1.1.0 image and actual cloud/model acceptance passed as recorded below.
 
 
 Empty `SWE_API_KEY`, `SWE_BASE_URL`, `SWE_MODEL` are declared in YAML and must be injected explicitly into the server process. Model keys go only to the agent process environment; they are excluded from model-action environments. Credentials are absent from argv, config JSON, returned errors and persisted reports. The private trajectory/config directory is removed in `finally`. This is process hygiene, not protection from malicious code running as the same user.
@@ -131,7 +131,11 @@ Use only trusted tasks/models in a disposable sandbox: mini executes model-gener
 
 ## Verified
 
-Version1.1.0 adds optional upstream native bash-tool calling and retains the1.0.1 workspace-directory ownership repair. Current-version provider acceptance is pending. Earlier receipts establish only their original versions/hashes/scopes and are preserved below.
+Version1.1.0 passed actual SDK-created Express image registration and official READY, CLI/SDK version smoke and14 strict compatible-model assertions. The actual mini2.4.6 native bash-tool protocol with qwen3.8-flash edited source, preserved all original tests, passed all60 exact test identities in an independent fresh evaluator and retrieved the source patch and report. Sandbox/template/registry cleanup and post-runtime digest were independently confirmed. This is the single-instance portability slice, not an official SWE-bench score. Other providers and full official harness remain unverified.
+
+| Version | Provider | Evidence |
+| --- | --- | --- |
+| 1.1.0 | alicloud-express | [image](evidence/express-2026-10-20.json), [HTTP](evidence/image-http-2026-10-20T091111Z.json), [strict model14](evidence/model-image-2026-10-20T091111Z.json) |
 
 ## Historical verification
 
