@@ -52,6 +52,13 @@ def _invoke(operation,data,timeout):
                     cwd=private,env=_environment(private),timeout=timeout,input_file=source)
         if code:
             detail=''
+            try:
+                diagnostic=json.loads(err.strip().splitlines()[-1])
+                kind=diagnostic.get('error_type')
+                stage=diagnostic.get('native_stage')
+                if kind in ['TypeError','ValueError','AttributeError','RuntimeError','ValidationError','FileNotFoundError','ModuleNotFoundError','KeyError','APIConnectionError','RateLimitError','BadRequestError','AuthenticationError']and stage in ['request','upstream','task','configuration','native_run','summary','artifact','replay']:
+                    detail='; '+stage+' ('+kind+')'
+            except (ValueError,IndexError,TypeError):pass
             if operation=='version':
                 try:
                     diagnostic=json.loads(err.strip().splitlines()[-1])

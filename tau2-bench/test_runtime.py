@@ -47,6 +47,14 @@ def test_keyless_missing_import_diagnostic_cannot_expose_model_settings(configur
     assert 'synthetic-key-only'not in text and'https://model.example.invalid/v1'not in text
 
 
+def test_native_failure_stage_is_allowlisted_and_hides_raw_model_error(configured,monkeypatch):
+    monkeypatch.setattr(c,'_runtime',lambda:('/fixed/python','/fixed/worker'))
+    diagnostic={'error_type':'TypeError','native_stage':'native_run','message':'synthetic-key-only https://model.example.invalid/v1'}
+    monkeypatch.setattr(c._PROCESS,'run',lambda*a,**k:(1,'',json.dumps(diagnostic)))
+    with pytest.raises(RuntimeError,match=r'native_run \(TypeError\)')as result:c._invoke('run',{},30)
+    assert 'synthetic-key-only'not in str(result.value)and'https://model.example.invalid/v1'not in str(result.value)
+
+
 @pytest.mark.parametrize('exit_code',[0,23])
 def test_actual_authored_process_private_stdin_no_secret_env_and_cleanup(configured,tmp_path,monkeypatch,exit_code):
     capture=tmp_path/'capture.json';fixture=tmp_path/'authored_worker.py'

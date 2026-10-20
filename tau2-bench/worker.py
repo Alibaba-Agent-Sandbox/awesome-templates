@@ -6,6 +6,7 @@ from pathlib import Path
 SOURCE='fc0055dc4e0a316c3f83133267fbd6faaa770992'
 ROOT=Path('/opt/tau2')
 LIMIT=8*1024*1024
+STAGE='request'
 
 
 def upstream():
@@ -51,10 +52,13 @@ def summary(simulation):
 
 
 def execute(operation,data):
+    global STAGE
+    STAGE='upstream'
     get_tasks,run_single_task,SimulationRun,TextRunConfig,EvaluationType,evaluate_simulation=upstream()
     if operation=='version':
         tasks=get_tasks('retail')
         return {'native_version':'1.0.1','domain':'retail','task_count':len(tasks)}
+    STAGE='task'
     task=task_for(get_tasks,data['task_id'])
     if operation=='run':
         settings=data['settings'];os.environ['OPENAI_API_KEY']=settings['key']
@@ -63,15 +67,19 @@ def execute(operation,data):
         litellm.telemetry=False;litellm.success_callback=[];litellm.failure_callback=[]
         # Both native participants have an explicit compatible provider/base.
         arguments={'api_base':settings['base'],'timeout':60,'max_tokens':2048,'num_retries':0}
+        STAGE='configuration'
         config=TextRunConfig(domain='retail',agent='llm_agent',user='user_simulator',
             llm_agent='openai/'+settings['model'],llm_user='openai/'+settings['model'],
             llm_args_agent=dict(arguments),llm_args_user=dict(arguments),max_steps=data['max_steps'],max_errors=3,
             enforce_communication_protocol=True,auto_review=False,seed=42)
+        STAGE='native_run'
         simulation=run_single_task(config,task,seed=42,evaluation_type=EvaluationType.ALL,
             save_dir=Path(os.environ['HOME'])/'native-logs',auto_review=False)
+        STAGE='summary'
         result=summary(simulation)
         value={'template':'tau2-bench','source_commit':SOURCE,'domain':'retail','task_id':task.id,
             'simulation':scrub(simulation.model_dump(mode='json'),[settings['key'],settings['base']])}
+        STAGE='artifact'
         raw=(json.dumps(value,ensure_ascii=False,allow_nan=False,indent=2)+'\n').encode()
         if len(raw)>LIMIT:raise RuntimeError('native trajectory exceeds8MiB artifact bound')
         path=Path(data['artifact'])
@@ -86,6 +94,7 @@ def execute(operation,data):
         simulation=SimulationRun.model_validate(value['simulation'])
         if simulation.task_id!=task.id:raise ValueError('inner trajectory task differs')
         result=summary(simulation)
+        STAGE='replay'
         reward=evaluate_simulation(simulation,task,EvaluationType.ALL,solo_mode=False,domain='retail',strict_replay=True)
         if reward.reward!=result['score']:raise RuntimeError('independent native replay score differs')
         return result|{'replayed':True,'artifact_sha256':hashlib.sha256(raw).hexdigest(),'task_id':task.id}
@@ -104,7 +113,7 @@ if __name__=='__main__':
             os.environ['OPENAI_BASE_URL']=data['settings']['base'];os.environ['OPENAI_API_BASE']=data['settings']['base']
         print(json.dumps(execute(operation,data),allow_nan=False))
     except Exception as exc:
-        error={'error_type':type(exc).__name__,'native_operation_failed':True}
+        error={'error_type':type(exc).__name__,'native_operation_failed':True,'native_stage':STAGE}
         if operation=='version'and isinstance(exc,ModuleNotFoundError):error['missing_module']=exc.name
         print(json.dumps(error),file=sys.stderr)
         raise SystemExit(1)
