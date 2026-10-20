@@ -160,6 +160,8 @@ jobs:
 
       - name: Install the in-sandbox server and the test client
         run: |
+          export PLAYWRIGHT_BROWSERS_PATH="$RUNNER_TEMP/playwright"
+          echo "PLAYWRIGHT_BROWSERS_PATH=$PLAYWRIGHT_BROWSERS_PATH" >> "$GITHUB_ENV"
           python -m pip install ./vendor/python-sdk/server-sdk httpx==0.28.1 pyyaml==6.0.3 jsonschema==4.26.0 pytest==9.1.1 playwright==1.58.0 Pillow==11.3.0
           python -m playwright install --with-deps chromium
           sudo apt-get update
@@ -221,6 +223,7 @@ jobs:
 
       - name: Run process, privacy, and acceptance-harness regressions
         run: |
+          python -m pytest -q browser-automation/test_mcp.py browser-automation/test_pdf_runtime.py
           python -m pytest -q browser-automation/test_mcp.py
           python -m pip install --require-hashes -r scripts/requirements-preview.txt
           python -m pytest -q code-server/test_commands.py code-server/test_browser_local.py scripts/test_preview_proxy.py

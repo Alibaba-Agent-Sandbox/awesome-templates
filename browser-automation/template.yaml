@@ -1,5 +1,5 @@
 name: browser-automation
-version: 2.1.0
+version: 2.2.0
 description: Isolated headless Chromium navigation, screenshots, text extraction,
   and form filling.
 author: alibaba-agent-sandbox
