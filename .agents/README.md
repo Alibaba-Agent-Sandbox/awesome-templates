@@ -161,3 +161,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Official Grok Build native coding](notes/proposed/feature/2026-10-20-grok-official-native.md) · [verification](evidence/verify/2026-10-20-grok-official-native.md)
 
 - [Official Grok Build final native SDK/model acceptance](evidence/verify/2026-10-20-grok-official-native-final.md)
+
+- [Current37native/runtime and required full HTTP receipt snapshot](evidence/verify/2026-10-20-current-native-http37.json)
