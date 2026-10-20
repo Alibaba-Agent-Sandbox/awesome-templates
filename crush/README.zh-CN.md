@@ -115,7 +115,7 @@ HTTP200返回{"result":{"stdout":"42","stderr":"","exit_code":0}}，保留非零
 | --- | --- | --- |
 | 1.0.0 | alicloud-express | [SDK创建镜像](evidence/express-2026-10-20.json), [严格模型17](evidence/model-image-2026-10-20T111012Z.json), [关闭模型HTTP](evidence/image-http-2026-10-20T111012Z.json) |
 
-单独关闭模型的HTTP测试9 PASS和1项显式模型SKIP，不能当作模型通过。[真实原生step尝试](evidence/full-http-steps-2026-10-20T110221Z.json)未独立到达READY，在HTTP检查前失败；自有资源清理已确认。现有回执不能证明内部构建失败原因。其他提供方、arm64运行及其他上游模型配置未认证。
+单独关闭模型的HTTP测试9 PASS和1项显式模型SKIP，不能当作模型通过。[真实原生step尝试](evidence/full-http-steps-2026-10-20T110221Z.json)未独立到达READY，在HTTP检查前失败；自有资源清理已确认。随后[官方就绪诊断](evidence/steps-diagnosis-2026-10-20.json)确认第4项RUN在固定产物字节/期限门禁失败；现有信息不能区分产物超长或期限到达。已验证镜像方式可用，不宣称step通过。其他提供方、arm64运行及其他上游模型配置未认证。
 
 ## 二次开发
 

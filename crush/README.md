@@ -115,7 +115,7 @@ Version1.0.0 passed actual Alibaba Express registration of the verified CI image
 | --- | --- | --- |
 | 1.0.0 | alicloud-express | [SDK-created image](evidence/express-2026-10-20.json), [strict model17](evidence/model-image-2026-10-20T111012Z.json), [model-off HTTP](evidence/image-http-2026-10-20T111012Z.json) |
 
-The separate model-off HTTP controller has9 PASS and1 explicit model SKIP; it is not model proof. The [actual native step attempt](evidence/full-http-steps-2026-10-20T110221Z.json) did not independently reach READY and failed before any HTTP assertion; owned cleanup was independently confirmed. The available receipt does not establish the internal build failure cause. Other providers, arm64 execution and other upstream model/provider profiles remain unverified.
+The separate model-off HTTP controller has9 PASS and1 explicit model SKIP; it is not model proof. The [actual native step attempt](evidence/full-http-steps-2026-10-20T110221Z.json) did not independently reach READY and failed before any HTTP assertion; owned cleanup was independently confirmed. A subsequent [official readiness diagnosis](evidence/steps-diagnosis-2026-10-20.json) identifies RUN step4 failing the exact-asset byte/deadline guard; it does not distinguish oversized bytes from deadline expiry. The verified image route is available; do not claim step success. Other providers, arm64 execution and other upstream model/provider profiles remain unverified.
 
 ## Secondary development
 
