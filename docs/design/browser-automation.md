@@ -82,3 +82,7 @@ run. No provider evidence files until the corresponding complete run passes.
 Follow-up real build-network execution exceeded300seconds, so the earlier stream deadline is not a universal per-RUN cap. Stage separation is retained; slow large-asset transport remains unresolved.
 
 Current-version acceptance on 2026-10-20: version 2.0.2 genuine image READY/CLI/SDK and complete Chromium screenshot/PDF/independent artifact HTTP 24 PASS / 0 FAIL / 0 SKIP. Independently verified sandbox/template/registry cleanup. Historical pending statements describe earlier checkpoints; see the current [Verified table](../../browser-automation/README.md#verified).
+
+## Native MCP extension2.1.0
+
+Official npm0.0.83 and exact lockfile driver1.64.0-alpha-1790635538000 reuse Chromium1208; no second browser. New mcp_start/status/call/stop/self_test commands use native session negotiation and tools. Standard in-sandbox HTTP MCP on127.0.0.1:8931; external named transport retains shared-server auth and buffered4MiB limits. Real fixture counter and PNG, private profile/environment, reserved process-group leader plus unique-marker/pidfd detached worker cleanup are required. Old2.0.2 receipts remain historical; new runtime version resets tested_on. Actual pinned native local7 cases passed; new image/Express/full API required before qualification.

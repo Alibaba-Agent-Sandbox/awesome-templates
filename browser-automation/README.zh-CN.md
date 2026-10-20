@@ -115,6 +115,22 @@ HTTP 400 为缺少参数或类型错误；401 为服务端认证失败；404 为
 {"url":"https://example.com/login","fields_json":"[{\"selector\":\"#email\",\"value\":\"sample@example.invalid\"}]"}
 ```
 
+### 原生 Playwright MCP
+
+版本2.1.0加入官方 `@playwright/mcp@0.0.83` 和 lockfile 固定的 JavaScript Playwright1.64.0-alpha-1790635538000，复用现有 Chromium1208，不再安装第二份浏览器或模型凭据。原 Python API 继续使用 Playwright1.58.0；两个驱动组合都要真实验收，npm 版本号不能证明浏览器行为。
+
+| 命令 | 参数 | 结果 |
+| --- | --- | --- |
+| mcp_start | 无 | running、8931端口、mcp_version及协商的protocol_version |
+| mcp_status | 无 | running:false或本进程拥有的MCP状态 |
+| mcp_call | 必填method:str，仅tools/list、tools/call或ping；params_json:str="{}"，最大64KiB的JSON对象 | 真实MCP结果对象；工具失败检查isError |
+| mcp_stop | 无 | 自有进程、浏览器和监听端口清理确认后返回running:false |
+| mcp_self_test | 无 | 真正初始化、列工具、由独立HTTP fixture确认两次浏览器点击、生成真实PNG并完成清理后才返回PLAYWRIGHT_MCP_OK |
+
+执行 `abx run <sandbox-id> mcp_start`，再执行 `abx run <sandbox-id> mcp_call --arg method=tools/list`。同一沙箱内的标准 MCP 客户端访问 `http://127.0.0.1:8931/mcp`，使用原生MCP会话及协议头。8931仅监听沙箱回环，不是带认证的公网网关。外部通过 SDK 的 `await sb.run("mcp_call", method="tools/list")` 使用命令服务配置的 bearer 认证。固定上游的 browser_click 使用新 browser_snapshot 中的 `target`，不是旧版ref参数。
+
+诊断设置 `MCP_NODE_MODULES` 可选择独立安装且版本完全匹配的依赖树；镜像默认 /opt/playwright-mcp/node_modules。MCP HOME、浏览器配置和输出独立，停止后删除，不加载保存的浏览器配置或扩展。原生动作/导航时限10/20秒，HTTP响应4MiB、输出10MiB、浏览器空闲60秒。调用串行；原生沙箱内端点保留MCP流式传输，命名mcp_call缓冲返回。子进程不继承云端、模型、服务密钥及Node注入变量。浏览器仍使用沙箱网络权限，没有额外SSRF策略。请求、页面和返回值可能含隐私，不公开记录。
+
 ## 配置
 
 | 变量 | 默认值 | 用途 |
@@ -134,6 +150,10 @@ HTTP 400 为缺少参数或类型错误；401 为服务端认证失败；404 为
 并发请求增加内存占用，通过文件 API 删除旧 `browser-artifacts/` 释放根文件系统。
 
 ## 已验证
+
+当前2.1.0 MCP版本的提供方验收待完成。下面2.0.2及更早回执只证明原始版本，不用于认定2.1.0通过。
+
+## 历史验收
 
 版本 2.0.2 已通过真实 CI 镜像登记、官方 READY、CLI/SDK，以及完整 Chromium 截图/PDF/独立产物 HTTP 检查 24 通过、0 失败、0 跳过。独立确认 sandbox/template/registry 清理。状态仍为 experimental；其他提供方未验证。
 
