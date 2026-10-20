@@ -125,12 +125,14 @@ class Desktop:
         self.stage="smoke_cdp"
         from PIL import Image
         marker='CHROME_NATIVE_'+secrets.token_hex(8)
-        html='<html><head><title>'+marker+'</title></head><body style="margin:0;background:rgb(20,30,40)"><button style="position:absolute;left:30px;top:180px;width:160px;height:60px" onclick="document.body.style.background=\'rgb(10,230,20)\';this.textContent=\'native clicked\'">click</button></body></html>'
+        html='<!doctype html><html><head><title>'+marker+'</title></head><body style="margin:0;min-height:100vh;background:rgb(20,30,40)"><button style="position:absolute;left:30px;top:180px;width:160px;height:60px" onclick="document.body.style.background=\'rgb(10,230,20)\';this.textContent=\'native clicked\'">click</button></body></html>'
         async with Page('http://127.0.0.1:9223')as page:
             self.stage='smoke_navigate';await page.navigate('data:text/html,'+quote(html))
             self.stage='smoke_title'
             if await page.evaluate('document.title')!=marker:raise RuntimeError('native CDP title differs')
             self.stage='smoke_click';await page.evaluate('document.querySelector("button").click()')
+            state=await page.evaluate('({background:getComputedStyle(document.body).backgroundColor,height:document.body.getBoundingClientRect().height,viewport:innerHeight})')
+            if state.get('background')!='rgb(10, 230, 20)'or state.get('height',0)<state.get('viewport',1):raise RuntimeError('controlled native fixture did not fill visible viewport')
         self.stage='smoke_vnc'
         for _ in range(20):
             raw,width,height=await capture_tcp(5901,self.password)

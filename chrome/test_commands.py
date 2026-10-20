@@ -66,3 +66,32 @@ def test_readonly_setup_does_not_start_native(monkeypatch):
     monkeypatch.setattr(c,'ports_absent',lambda:True)
     monkeypatch.setattr(c.subprocess,'Popen',lambda*a,**k:pytest.fail('inspection started a process'))
     assert c.chrome_setup_check()['mode']=='native-headed-cdp-vnc'
+
+
+def test_failed_display_cleanup_retains_exact_journal_for_safe_retry(monkeypatch):
+    from types import SimpleNamespace
+    process=SimpleNamespace(stdin=None,stdout=None,stderr=None)
+    journal={'number':12345,'pid':6789,'socket_inode':111,'lock_inode':222}
+    monkeypatch.setattr(c,'PROCESS',process);monkeypatch.setattr(c,'PRIVATE',None)
+    monkeypatch.setattr(c,'INFO',{'_owned_display':journal})
+    monkeypatch.setattr(c,'display_record',lambda:None)
+    monkeypatch.setattr(c.LIFE,'_stop',lambda:None)
+    monkeypatch.setattr(c,'ports_absent',lambda:True)
+    monkeypatch.setattr(c.LIFE,'_listener_exists',lambda port:False)
+    observations=[]
+    def remove(value):
+        observations.append(value)
+        return len(observations)>1
+    monkeypatch.setattr(c,'remove_owned_display',remove)
+    with pytest.raises(RuntimeError,match='cleanup not confirmed'):
+        c.stop_owned()
+    assert c.PROCESS is process and c.INFO['_owned_display']==journal
+    c.stop_owned()
+    assert observations==[journal,journal] and c.PROCESS is None and c.INFO=={}
+
+
+def test_readonly_status_treats_reaped_owned_child_as_stopped(monkeypatch):
+    monkeypatch.setattr(c,'PROCESS',object())
+    def reaped(process):raise ChildProcessError('already reaped')
+    monkeypatch.setattr(c.LIFE,'_alive',reaped)
+    assert c.alive() is False

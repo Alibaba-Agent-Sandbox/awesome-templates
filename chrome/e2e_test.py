@@ -45,7 +45,7 @@ async def real_desktop(base,client,headers):
         response=client.get(cdp+'/json/version');version=response.json()
         record(response.status_code==200 and'145.0.7632.6'in version.get('Browser','')and'devtools/browser/'in version.get('webSocketDebuggerUrl',''),'forwarded native DevTools discovery and original version')
         marker='CHROME_E2E_'+uuid.uuid4().hex
-        html='<html><head><title>'+marker+'</title></head><body style="margin:0;background:rgb(230,20,10)"><h1>'+marker+'</h1><button id="action" style="position:absolute;left:30px;top:180px;width:180px;height:70px" onclick="window.n=(window.n||0)+1;document.body.style.background=window.n==1?\'rgb(10,230,20)\':\'rgb(10,20,230)\';this.textContent=String(window.n)">0</button></body></html>'
+        html='<!doctype html><html><head><title>'+marker+'</title></head><body style="margin:0;min-height:100vh;background:rgb(230,20,10)"><h1>'+marker+'</h1><button id="action" style="position:absolute;left:30px;top:180px;width:180px;height:70px" onclick="window.n=(window.n||0)+1;document.body.style.background=window.n==1?\'rgb(10,230,20)\':\'rgb(10,20,230)\';this.textContent=String(window.n)">0</button></body></html>'
         async with Page(cdp,headers=headers)as page:
             state=await page.navigate('data:text/html,'+quote(html))
             record(state['title']==marker and await page.evaluate('document.title')==marker,'external original CDP navigates a fresh native fixture')

@@ -28,7 +28,9 @@ def environment(private):
     return env
 
 
-def alive():return PROCESS is not None and LIFE._alive(PROCESS)
+def alive():
+    try:return PROCESS is not None and LIFE._alive(PROCESS)
+    except ChildProcessError:return False
 
 
 def display_record():
@@ -58,14 +60,19 @@ def remove_owned_display(value):
 
 def stop_owned():
     global PROCESS,PRIVATE,BUFFER,INFO
-    display=display_record()
+    display=display_record()or INFO.get('_owned_display')
     if PROCESS is not None:
         LIFE._stop()
         for stream in [PROCESS.stdin,PROCESS.stdout,PROCESS.stderr]:
             if stream is not None:stream.close()
     elif PRIVATE is not None:PRIVATE.cleanup()
+    display_absent=remove_owned_display(display)
+    deadline=time.monotonic()+3
+    while not ports_absent()and time.monotonic()<deadline:time.sleep(.02)
+    if not display_absent or not ports_absent():
+        remaining=','.join(str(port)for port in [9222,9223,5901,6080]if LIFE._listener_exists(port))
+        raise RuntimeError('owned Chrome cleanup not confirmed: display='+str(display_absent)+'; ports='+remaining)
     PROCESS=None;PRIVATE=None;BUFFER=b'';INFO={}
-    if not remove_owned_display(display)or not ports_absent():raise RuntimeError('owned Chrome display/port cleanup not confirmed')
 
 
 def response(timeout):
