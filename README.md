@@ -163,6 +163,8 @@ abx --provider e2b template launch alibaba-agent-sandbox/awesome-templates//pyth
 Pinned Go/Rust/Java runtime: [polyglot-toolchain](polyglot-toolchain/README.md) (experimental; verification gates recorded separately).
 Model-free file tool: [apply-patch](apply-patch/README.md) (experimental).
 
+Official terminal agent: [goose](goose/README.md) (experimental; [alicloud-express1.0.0 SDK image + model17](goose/evidence/express-2026-10-20.json)).
+
 ## Provider-managed runtime catalog
 
 | ID | Provider | Documentation | Verified scope |
