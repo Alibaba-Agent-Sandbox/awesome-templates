@@ -24,3 +24,8 @@ runtime deployment acceptance. No cloud resources or model calls were created;
 no owned cloud cleanup is necessary. Authenticated remote publication is now
 available to the coordinating contributor, but this record does not assert an
 Issue/PR/CI result or merge. No real FC deployment is certified here.
+
+Publication tracking: owner Issue [#139](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/139)
+is open; cross-repository dependencies are [CLI #80](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues/80)
+and [Python SDK #74](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues/74).
+These references do not assert PR/CI/merge completion.

@@ -52,6 +52,10 @@ are configuration fixtures, not installable or cloud-accepted catalog entries.
 
 ## Dependencies
 
+Owner issue: https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/139 .
+Cross-repository delivery: https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues/80
+and https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues/74 .
+
 The checker pins PyYAML and jsonschema in `scripts/requirements-spec.txt`; CI installs
 these versions. The independent CLI owns app commands, deployment adapter, toolchain
 lock, exact artifact/operation receipts and hook protocol:
