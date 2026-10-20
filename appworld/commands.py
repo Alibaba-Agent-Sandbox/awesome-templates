@@ -55,7 +55,7 @@ def _invoke(operation,data,timeout):
                 diagnostic=json.loads(err.strip().splitlines()[-1])
                 kind=diagnostic.get('error_type')
                 stage=diagnostic.get('native_stage')
-                if isinstance(kind,str)and re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]{0,63}',kind)and not any(secret and secret in kind for secret in _CONFIG.values())and stage in ['request','upstream','private_copy','installer','data_unpack','task','configuration','native_run','summary','artifact','replay']:
+                if isinstance(kind,str)and re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]{0,63}',kind)and not any(secret and secret in kind for secret in _CONFIG.values())and stage in ['request','upstream','private_copy','installer','data_unpack','task','configuration','world_init','model_request','tool_validation','native_api','native_completion_check','native_run','summary','artifact','replay']:
                     detail='; '+stage+' ('+kind+')'
                     bootstrap_kind=diagnostic.get('bootstrap_error_type')
                     if bootstrap_kind in ['ModuleNotFoundError','ImportError','PermissionError','FileNotFoundError','TypeError','AttributeError','RuntimeError','ValueError','NativeInstallerNonzero']:
@@ -63,6 +63,13 @@ def _invoke(operation,data,timeout):
                         missing=diagnostic.get('missing_module')
                         if isinstance(missing,str)and re.fullmatch(r'[A-Za-z_][A-Za-z0-9_.]{0,127}',missing)and not any(secret and secret in missing for secret in _CONFIG.values()):
                             detail+='; missing module '+missing
+                    counts=diagnostic.get('native_counters')
+                    if isinstance(counts,dict):
+                        for key in ['model_steps','bridge_api_calls','native_api_calls','tool_validation_failures']:
+                            number=counts.get(key)
+                            if type(number)is int and 0<=number<=1000000:detail+='; '+key+'='+str(number)
+                    status=diagnostic.get('http_status')
+                    if type(status)is int and 100<=status<=599:detail+='; http_status='+str(status)
                     reason=diagnostic.get('native_termination')
                     if reason in ['max_steps','timeout','too_many_errors','agent_error','user_error','infrastructure_error','context_window_exceeded','unexpected_error']:
                         detail+='; termination='+reason

@@ -24,6 +24,7 @@ STAGE='request'
 META=None
 BOOTSTRAP_ERROR=None
 MISSING_MODULE=None
+RUN_OBSERVATION={}
 
 
 class NativeIncomplete(RuntimeError):
@@ -133,7 +134,7 @@ def smoke():
 
 
 def model_run(request,root):
-    global STAGE
+    global STAGE,RUN_OBSERVATION
     from appworld import AppWorld
     from appworld.common.constants import PASSWORD,SALT
     from appworld.common.utils import pack_bundle
@@ -148,7 +149,8 @@ def model_run(request,root):
     messages=[]
     model_steps=0
     bridge_calls=0
-    STAGE='native_run'
+    RUN_OBSERVATION={'model_steps':0,'bridge_api_calls':0,'native_api_calls':0,'tool_validation_failures':0}
+    STAGE='world_init'
     try:
         with AppWorld(task_id=task,experiment_name=experiment,max_interactions=160,
                       max_api_calls_per_interaction=50,timeout_seconds=30) as world:
@@ -160,11 +162,13 @@ def model_run(request,root):
             for _ in range(request['max_steps']):
                 if len(json.dumps(messages,ensure_ascii=False).encode())>1024*1024:
                     raise NativeIncomplete('native model context bound reached')
+                STAGE='model_request'
                 response=client.chat.completions.create(model=settings['model'],messages=messages,
                     tools=tools,tool_choice='auto',temperature=0,max_tokens=4096)
                 if not response.id or not response.choices:
                     raise NativeIncomplete('native model response incomplete')
                 model_steps+=1
+                RUN_OBSERVATION['model_steps']=model_steps
                 message=response.choices[0].message
                 calls=message.tool_calls or []
                 item={'role':'assistant','content':message.content or ''}
@@ -180,6 +184,7 @@ def model_run(request,root):
                     if call.type!='function' or len(call.function.arguments.encode())>32768:
                         raise NativeIncomplete('invalid bounded model tool call')
                     try:
+                        STAGE='tool_validation'
                         params=json.loads(call.function.arguments)
                         if not isinstance(params,dict):
                             raise ValueError('tool parameters must be an object')
@@ -207,18 +212,24 @@ def model_run(request,root):
                             if app not in allowed or api not in allowed[app]:
                                 raise ValueError('API outside original task scope')
                             # JSON arguments become Python literals, never executable model code.
+                            STAGE='native_api'
                             output=world.execute(f'print(apis.{app}.{api}(**{params["arguments"]!r}))')
                             bridge_calls+=1
+                            RUN_OBSERVATION['bridge_api_calls']=bridge_calls
                         else:
                             raise ValueError('unknown tool')
                     except (ValueError,TypeError,KeyError):
+                        RUN_OBSERVATION['tool_validation_failures']+=1
                         output='Invalid tool parameters or API scope; inspect the original documentation and retry.'
                     messages.append({'role':'tool','tool_call_id':call.id,'content':output[:32768]})
+                    STAGE='native_completion_check'
                     if world.task_completed():
                         complete=True
                         break
                 if complete:
                     break
+            STAGE='native_completion_check'
+            RUN_OBSERVATION['native_api_calls']=api_log_count(world)
             if not complete or model_steps<=0 or bridge_calls<=0:
                 raise NativeIncomplete('original task did not complete')
             native_calls=api_log_count(world)
@@ -313,5 +324,5 @@ if __name__=='__main__':
         result=main()
         print(json.dumps(result,ensure_ascii=False))
     except Exception as exc:
-        print(json.dumps({'error_type':type(exc).__name__,'native_stage':STAGE,'bootstrap_error_type':BOOTSTRAP_ERROR,'missing_module':MISSING_MODULE}),file=sys.stderr)
+        print(json.dumps({'error_type':type(exc).__name__,'native_stage':STAGE,'bootstrap_error_type':BOOTSTRAP_ERROR,'missing_module':MISSING_MODULE,'native_counters':RUN_OBSERVATION,'http_status':getattr(exc,'status_code',None)}),file=sys.stderr)
         raise SystemExit(1)
