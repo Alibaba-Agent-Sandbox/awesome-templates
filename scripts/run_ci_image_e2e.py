@@ -97,6 +97,7 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,sandbox_creat
                 env.update(E2E_BASE_URL=base,E2E_BASE_DIR='/home/user/app',E2E_WORKSPACE='/home/user/app',E2E_RUN_LLM='0',E2E_REQUIRE_CLI='1')
                 if source.name=='code-server':env['E2E_CODE_SERVER_URL']=urls[8443]
                 if source.name=='next-app':env.update(E2E_NEXT_URL=urls[3000],E2E_VITE_URL=urls[5173])
+                if source.name=='chrome':env.update(E2E_CHROME_CDP_URL=urls[9222],E2E_CHROME_VNC_URL=urls[6080],E2E_WORKSPACE='/home/user/workspace',E2E_REQUIRE_CHROME='1')
                 result_http=harness.run_monitored([sys.executable,str(script)],env=env,idle_timeout=600,wall_timeout=600)
                 (private/'http.log').write_text(result_http.stdout+'\n'+result_http.stderr)
                 lines=(result_http.stdout+'\n'+result_http.stderr).splitlines()
@@ -104,6 +105,7 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,sandbox_creat
                 checks.update(passed=result_http.returncode==0,exit_code=result_http.returncode,
                     pass_count=sum(x.startswith('[PASS]') for x in lines),fail_count=sum(x.startswith('[FAIL]') for x in lines),
                     skip_count=sum(x.startswith('[SKIP]') for x in lines),verifier_sha256=hashlib.sha256(script.read_bytes()).hexdigest())
+                if source.name=='chrome' and checks['skip_count']:raise RuntimeError('native Chrome desktop skipped; image HTTP acceptance refused')
                 if result_http.returncode:raise RuntimeError('full external HTTP acceptance failed; private log retained')
             return result
         print(source.name+': actual native template create, READY and CLI/SDK verification',flush=True)

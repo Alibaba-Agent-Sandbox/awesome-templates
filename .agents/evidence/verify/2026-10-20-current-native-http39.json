@@ -1,0 +1,506 @@
+{
+  "scope": "current-version Express platform-step runtime acceptance; not model or Docker acceptance",
+  "passed": 39,
+  "http_passed": 39,
+  "require_http": true,
+  "total": 39,
+  "complete": true,
+  "templates": [
+    {
+      "template": "agents-cli",
+      "version": "2.0.1",
+      "steps": "PASS",
+      "receipts": [
+        "agents-cli/evidence/express-2026-10-19T183102Z.json",
+        "agents-cli/evidence/express-2026-10-20.json",
+        "agents-cli/evidence/express-2026-10-20T175429Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "agents-cli/evidence/verification-steps-2026-10-20T154625Z.json"
+      ]
+    },
+    {
+      "template": "aider",
+      "version": "1.0.1",
+      "steps": "PASS",
+      "receipts": [
+        "aider/evidence/express-2026-10-20T135354Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "aider/evidence/verification-steps-2026-10-20T135354Z.json"
+      ]
+    },
+    {
+      "template": "amp",
+      "version": "1.2.0",
+      "steps": "PASS",
+      "receipts": [
+        "amp/evidence/express-2026-10-19.json",
+        "amp/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "amp/evidence/verification-steps-2026-10-20T154625Z.json"
+      ]
+    },
+    {
+      "template": "apply-patch",
+      "version": "1.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "apply-patch/evidence/express-2026-10-19.json",
+        "apply-patch/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "apply-patch/evidence/verification-steps-2026-10-20T154625Z.json"
+      ]
+    },
+    {
+      "template": "browser-automation",
+      "version": "2.2.0",
+      "steps": "PASS",
+      "receipts": [
+        "browser-automation/evidence/express-2026-10-20T103410Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "browser-automation/evidence/full-http-steps-2026-10-20T103410Z.json"
+      ]
+    },
+    {
+      "template": "browser-use",
+      "version": "1.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "browser-use/evidence/express-2026-10-20T153859Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "browser-use/evidence/verification-steps-2026-10-20T153859Z.json"
+      ]
+    },
+    {
+      "template": "chrome",
+      "version": "1.0.5",
+      "steps": "PASS",
+      "receipts": [
+        "chrome/evidence/express-2026-10-20T230349Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "chrome/evidence/verification-steps-2026-10-20T230349Z.json"
+      ]
+    },
+    {
+      "template": "claude-code",
+      "version": "1.1.1",
+      "steps": "PASS",
+      "receipts": [
+        "claude-code/evidence/express-2026-10-19T183255Z.json",
+        "claude-code/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "claude-code/evidence/verification-steps-2026-10-20T154625Z.json"
+      ]
+    },
+    {
+      "template": "cline",
+      "version": "1.0.2",
+      "steps": "PASS",
+      "receipts": [
+        "cline/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "cline/evidence/verification-steps-2026-10-20T201959Z.json"
+      ]
+    },
+    {
+      "template": "code-server",
+      "version": "1.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "code-server/evidence/express-2026-10-20T135352Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "code-server/evidence/verification-steps-2026-10-20T135352Z.json"
+      ]
+    },
+    {
+      "template": "codex",
+      "version": "2.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "codex/evidence/express-2026-10-19.json",
+        "codex/evidence/express-2026-10-20T154825Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "codex/evidence/verification-steps-2026-10-20T154825Z.json"
+      ]
+    },
+    {
+      "template": "codex-agent-api",
+      "version": "2.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "codex-agent-api/evidence/express-2026-10-19.json",
+        "codex-agent-api/evidence/express-2026-10-20.json",
+        "codex-agent-api/evidence/express-2026-10-20T175340Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "codex-agent-api/evidence/native-model-sdk-steps-2026-10-20T175340Z.json"
+      ]
+    },
+    {
+      "template": "copilot-cli",
+      "version": "1.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "copilot-cli/evidence/express-2026-10-20.json",
+        "copilot-cli/evidence/express-2026-10-20T165141Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "copilot-cli/evidence/native-model-steps-2026-10-20T165141Z.json",
+        "copilot-cli/evidence/verification-steps-2026-10-20T171425Z.json"
+      ]
+    },
+    {
+      "template": "crush",
+      "version": "1.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "crush/evidence/express-2026-10-20T131749Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "crush/evidence/verification-steps-2026-10-20T131749Z.json"
+      ]
+    },
+    {
+      "template": "deepagents",
+      "version": "1.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "deepagents/evidence/express-2026-10-20T141151Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "deepagents/evidence/verification-steps-2026-10-20T141151Z.json"
+      ]
+    },
+    {
+      "template": "deepseek-harness",
+      "version": "1.1.1",
+      "steps": "PASS",
+      "receipts": [
+        "deepseek-harness/evidence/express-2026-10-19T183349Z.json",
+        "deepseek-harness/evidence/express-2026-10-20T154957Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "deepseek-harness/evidence/verification-steps-2026-10-20T154957Z.json"
+      ]
+    },
+    {
+      "template": "dev-services",
+      "version": "1.1.0",
+      "steps": "PASS",
+      "receipts": [
+        "dev-services/evidence/express-2026-10-20T130648Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "dev-services/evidence/full-http-steps-2026-10-20T130648Z.json"
+      ]
+    },
+    {
+      "template": "document-tools",
+      "version": "1.1.0",
+      "steps": "PASS",
+      "receipts": [
+        "document-tools/evidence/express-2026-10-20T143722Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "document-tools/evidence/full-http-steps-2026-10-20T143722Z.json"
+      ]
+    },
+    {
+      "template": "droid",
+      "version": "1.2.0",
+      "steps": "PASS",
+      "receipts": [
+        "droid/evidence/express-2026-10-20T212811Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "droid/evidence/verification-steps-2026-10-20T212811Z.json"
+      ]
+    },
+    {
+      "template": "gemini",
+      "version": "2.0.1",
+      "steps": "PASS",
+      "receipts": [
+        "gemini/evidence/express-2026-10-19T183608Z.json",
+        "gemini/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "gemini/evidence/verification-steps-2026-10-20T155048Z.json"
+      ]
+    },
+    {
+      "template": "goose",
+      "version": "1.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "goose/evidence/express-2026-10-20T135350Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "goose/evidence/verification-steps-2026-10-20T135350Z.json"
+      ]
+    },
+    {
+      "template": "grok",
+      "version": "1.0.1",
+      "steps": "PASS",
+      "receipts": [
+        "grok/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "grok/evidence/verification-steps-2026-10-20T201501Z.json"
+      ]
+    },
+    {
+      "template": "hermes-agent",
+      "version": "1.1.1",
+      "steps": "PASS",
+      "receipts": [
+        "hermes-agent/evidence/express-2026-10-20T151019Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "hermes-agent/evidence/verification-steps-2026-10-20T151019Z.json"
+      ]
+    },
+    {
+      "template": "kimi-code",
+      "version": "1.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "kimi-code/evidence/express-2026-10-19.json",
+        "kimi-code/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "kimi-code/evidence/verification-steps-2026-10-20T155159Z.json"
+      ]
+    },
+    {
+      "template": "media-tools",
+      "version": "1.1.0",
+      "steps": "PASS",
+      "receipts": [
+        "media-tools/evidence/express-2026-10-20T131812Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "media-tools/evidence/full-http-steps-2026-10-20T131812Z.json"
+      ]
+    },
+    {
+      "template": "next-app",
+      "version": "1.1.0",
+      "steps": "PASS",
+      "receipts": [
+        "next-app/evidence/express-2026-10-20T130712Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "next-app/evidence/full-http-steps-2026-10-20T130712Z.json"
+      ]
+    },
+    {
+      "template": "node-web",
+      "version": "1.1.1",
+      "steps": "PASS",
+      "receipts": [
+        "node-web/evidence/express-2026-10-19T183324Z.json",
+        "node-web/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "node-web/evidence/full-http-steps-2026-10-19T183324Z.json"
+      ]
+    },
+    {
+      "template": "ocr",
+      "version": "1.0.1",
+      "steps": "PASS",
+      "receipts": [
+        "ocr/evidence/express-2026-10-20T061143Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "ocr/evidence/full-http-steps-2026-10-20T061143Z.json"
+      ]
+    },
+    {
+      "template": "openclaw",
+      "version": "2.1.0",
+      "steps": "PASS",
+      "receipts": [
+        "openclaw/evidence/express-2026-10-20T153536Z.json",
+        "openclaw/evidence/express-2026-10-20T165241Z.json",
+        "openclaw/evidence/express-2026-10-20T170739Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "openclaw/evidence/verification-steps-2026-10-20T165241Z.json",
+        "openclaw/evidence/verification-steps-2026-10-20T170739Z.json"
+      ]
+    },
+    {
+      "template": "opencode",
+      "version": "2.0.2",
+      "steps": "PASS",
+      "receipts": [
+        "opencode/evidence/express-2026-10-20T160725Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "opencode/evidence/verification-steps-2026-10-20T160725Z.json"
+      ]
+    },
+    {
+      "template": "osworld",
+      "version": "1.0.0",
+      "steps": "PASS",
+      "receipts": [
+        "osworld/evidence/express-2026-10-20.json",
+        "osworld/evidence/express-2026-10-20T170423Z.json",
+        "osworld/evidence/express-2026-10-20T171144Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "osworld/evidence/verification-steps-2026-10-20T170423Z.json",
+        "osworld/evidence/verification-steps-2026-10-20T171144Z.json"
+      ]
+    },
+    {
+      "template": "pi",
+      "version": "1.0.1",
+      "steps": "PASS",
+      "receipts": [
+        "pi/evidence/express-2026-10-20T130320Z.json",
+        "pi/evidence/express-2026-10-20T155246Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "pi/evidence/verification-steps-2026-10-20T155246Z.json"
+      ]
+    },
+    {
+      "template": "polyglot-toolchain",
+      "version": "1.0.1",
+      "steps": "PASS",
+      "receipts": [
+        "polyglot-toolchain/evidence/express-2026-10-20T135358Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "polyglot-toolchain/evidence/verification-steps-2026-10-20T135358Z.json"
+      ]
+    },
+    {
+      "template": "python-hello",
+      "version": "1.1.1",
+      "steps": "PASS",
+      "receipts": [
+        "python-hello/evidence/express-2026-10-19T183219Z.json",
+        "python-hello/evidence/express-2026-10-20.json",
+        "python-hello/evidence/express-2026-10-20T150421Z.json",
+        "python-hello/evidence/express-2026-10-20T152235Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "python-hello/evidence/full-http-steps-2026-10-19T183219Z.json"
+      ]
+    },
+    {
+      "template": "qoder",
+      "version": "1.1.1",
+      "steps": "PASS",
+      "receipts": [
+        "qoder/evidence/express-2026-10-19T184147Z.json",
+        "qoder/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "qoder/evidence/verification-steps-2026-10-20T155408Z.json"
+      ]
+    },
+    {
+      "template": "qwen-code",
+      "version": "2.1.1",
+      "steps": "PASS",
+      "receipts": [
+        "qwen-code/evidence/express-2026-10-19T184254Z.json",
+        "qwen-code/evidence/express-2026-10-20T155502Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "qwen-code/evidence/verification-steps-2026-10-20T155502Z.json"
+      ]
+    },
+    {
+      "template": "stagehand",
+      "version": "1.1.1",
+      "steps": "PASS",
+      "receipts": [
+        "stagehand/evidence/express-2026-10-20.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "stagehand/evidence/verification-steps-2026-10-20T190109Z.json"
+      ]
+    },
+    {
+      "template": "swe",
+      "version": "1.1.0",
+      "steps": "PASS",
+      "receipts": [
+        "swe/evidence/express-2026-10-20T143844Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "swe/evidence/verification-steps-2026-10-20T143844Z.json"
+      ]
+    },
+    {
+      "template": "tau2-bench",
+      "version": "1.0.4",
+      "steps": "PASS",
+      "receipts": [
+        "tau2-bench/evidence/express-2026-10-20T212600Z.json"
+      ],
+      "http": "PASS",
+      "http_receipts": [
+        "tau2-bench/evidence/verification-steps-2026-10-20T212600Z.json"
+      ]
+    }
+  ],
+  "snapshot_input_commit": "a715f10fea527979591d23092222b8c6c29b1087",
+  "snapshot_utc": "2026-10-20T23:12:39.599455+00:00"
+}

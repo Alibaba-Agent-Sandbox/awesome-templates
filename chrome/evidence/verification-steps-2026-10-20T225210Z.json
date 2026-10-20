@@ -1,0 +1,78 @@
+{
+  "template": "chrome",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-20T225210Z",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "chrome",
+    "materializer_sha256": "40172506e26ec25b2232c970340aeaffad96810b44df377f55d1d5ec89a8bcbc",
+    "source_manifest_contract_sha256": "fb15ac8dda94dde235db1d6974f10e010e7d5adb3194d6a13bb14b1b375f5693",
+    "template_version": "1.0.4",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "bd74ae029a1b8bac3a6002edb12159974f562029",
+    "asset_transport": "oss",
+    "steps_json_bytes": 11708,
+    "inputs_sha256": {
+      "Dockerfile": "d53574df33b8665be85259764b4be89dc658724eed18e86b2b3a283f36e1fc66",
+      "template.yaml": "26fdb40b211cbb2d897781a2433f6f7e8f95a6f11c86e851e23dfbdaa3a03103",
+      "requirements.lock": "1e6cfdbf5c1490be8e367beb8e922d137622ea860bc0b614d0623f6b801b9f66",
+      "browser.json": "ae5fef644f04f2edbcd55f11bca0e2503fb909c95bb351d5846fdf70bf118bed",
+      "install_browser.py": "32f5e45edb6dcb87fb29dd355835ed2f08b77b280100d0ce984e2142edf1baa6",
+      "commands.py": "d2b67e9f50da2257f4e52f88849d45f70f5c479306e179a9332c7e5c4b1ff6db",
+      "worker.py": "a05e2256276e701b1e73ee87acf6164daba99cae9861368b2907c58117ed01ed",
+      "native.py": "8193deb6d66d2454f450e5991d03e8d4ea481d8091cb11797540573ace6aa91d",
+      "cdp.py": "8c39c5b59fa79522cce153ed5089f60471c90d5404fed60c46609c3c97584bdb",
+      "rfb.py": "6d645be5e03437014a2447f4997fda33e4c7abe4c6cd92e53c1e98bc3881ba2c",
+      "relay.py": "8bdd70b6df729756ac406261af2cf5fcee430c98621e06e8f8a9568449ab9844",
+      "process.py": "cb3a18a3b9e44409d638d23af391f86a47c89dd2e35f22ae1c2e53aab66f662b",
+      "lifecycle.py": "87839cfc365824229f9929a2e16e1537715b06e94b907363210784f20a298de0",
+      "UPSTREAM-NOTICE.md": "21c15b32b29d2ca1dd8132a0fc5df00b00b1a816f67c0964f16b595b6b20fbc3"
+    },
+    "asset_transport_sha256": "83f20ec571a29225637ddac11fce7fd86f29146b24622b43e326c6934f8594e3",
+    "asset_adapter_source_commit": "bd74ae029a1b8bac3a6002edb12159974f562029",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://cdn.playwright.dev/chrome-for-testing-public/145.0.7632.6/linux64/chrome-linux64.zip",
+          "size": 175440843,
+          "sha256": "b5e3195041af345a668d110f5daf5581961fa3608626ea588c97dd0fe81c4e38"
+        }
+      ]
+    },
+    "asset_cache_architecture": "x86_64",
+    "generated_manifest_sha256": "68cae7e33dd8f9d5877e0fe90e28e8932a57f7ab6897b51828d938c7c78103ef"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 28,
+    "fail_count": 0,
+    "skip_count": 0,
+    "controller_sha256": "b2dcd451691d4cc04cc7967500298e478a6388c891151114db80a158db80914a"
+  },
+  "cleanup_verified": true,
+  "exit_code": 0,
+  "receipt": "chrome/evidence/express-2026-10-20.json",
+  "command_calls": 2,
+  "asset_cache": {
+    "service": "Alibaba Cloud OSS",
+    "private_acl_verified": true,
+    "archives": [
+      {
+        "url": "https://cdn.playwright.dev/chrome-for-testing-public/145.0.7632.6/linux64/chrome-linux64.zip",
+        "sha256": "b5e3195041af345a668d110f5daf5581961fa3608626ea588c97dd0fe81c4e38",
+        "size": 175440843
+      }
+    ],
+    "signed_get_ttl_seconds": 3600,
+    "cleanup_verified": true
+  },
+  "duration_s": 153.229
+}

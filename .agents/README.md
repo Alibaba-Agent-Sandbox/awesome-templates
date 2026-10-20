@@ -171,8 +171,12 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Current37native/runtime and required full HTTP receipt snapshot](evidence/verify/2026-10-20-current-native-http37.json)
 
+- [Visible native Chrome CDP/noVNC](notes/proposed/feature/2026-10-20-chrome-visible-cdp.md) · [verification](evidence/verify/2026-10-20-chrome-visible-cdp.md)
 - [Current38native/runtime and required HTTP receipt snapshot](evidence/verify/2026-10-20-current-native-http38.json)
 
 - [Current38native/runtime and required HTTP after Droid1.2](evidence/verify/2026-10-20-current-native-http38-droid.json)
 
 - [Original stable Prime Agent](notes/proposed/feature/2026-10-20-prime-agent-native.md) · [research](evidence/verify/2026-10-20-prime-agent-native-research.md)
+- [Headed Chrome final native SDK/image acceptance](evidence/verify/2026-10-20-chrome-native-final.md)
+
+- [Current39native/runtime and required full HTTP snapshot](evidence/verify/2026-10-20-current-native-http39.json)
