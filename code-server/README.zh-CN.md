@@ -88,7 +88,11 @@ WORKSPACE 默认 /home/user/app。CODE_SERVER_PASSWORD、ABX_SERVER_TOKEN 都是
 
 ## 已验证
 
-尚未记录任何通过的提供方测试。
+| 版本 | 提供方 | 模式及范围 | 证据 |
+| --- | --- | --- | --- |
+| 1.0.0 | alicloud-express | SDK创建的已验证镜像；完整HTTP5；sdk-local预览中的真实浏览器/终端/编辑器 | [镜像](evidence/express-2026-10-20.json)、[HTTP](evidence/image-http-2026-10-20T091440Z.json)、[浏览器](evidence/browser-ui-2026-10-20T091440Z.json) |
+
+真实Chromium加载原生JavaScript工作台，通过终端WebSocket写入随机文件，再用Monaco编辑/保存，由SDK独立确认文件内容。上游HTTPS证书及主机名校验始终开启；本机浏览器使用HTTP回环。代理先交换本地入口认证，再进行真实IDE密码登录。浏览器/代理/IDE/随机文件清理和自有沙箱/模板/镜像仓库不存在性均独立确认。使用[SDK本机预览操作](../docs/preview-proxy.zh-CN.md)；默认FC域名直接模式仍强制HTML附件，旧失败保留为历史。这不证明直接域名渲染或其他提供方通过。
 
 ### 真实浏览器、终端与编辑器检查
 

@@ -168,7 +168,7 @@ jobs:
       - name: Lint templates and unit-test the checker
         run: |
           python3 scripts/test_local_cleanup.py && python3 scripts/test_spec_tools.py
-          python -m pytest -q scripts/test_prepare_steps.py scripts/test_ci_image.py scripts/test_ci_image_archive.py scripts/test_express_cleanup.py
+          python -m pytest -q scripts/test_prepare_steps.py scripts/test_ci_image.py scripts/test_ci_image_archive.py scripts/test_express_cleanup.py scripts/test_sdk_creation.py
           python3 scripts/check_template.py --all --strict
 
       - name: Run process, privacy, and acceptance-harness regressions

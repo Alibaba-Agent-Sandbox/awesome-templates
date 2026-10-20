@@ -1,0 +1,49 @@
+{
+  "template": "deepseek-harness",
+  "provider": "alicloud-express",
+  "build_mode": "image",
+  "verification_type": "ci-image-backed-external-http",
+  "passed": true,
+  "registry_cleanup_verified": true,
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "model_acceptance": "NOT_RUN",
+  "http_acceptance": {
+    "passed": true,
+    "exit_code": 0,
+    "pass_count": 9,
+    "fail_count": 0,
+    "skip_count": 1,
+    "verifier_sha256": "4861e80627dd949ac6b822f952fa6ef74d2eda95465c9227d6afa63e7f625247"
+  },
+  "cleanup_verified": true,
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "deepseek-harness",
+    "template_version": "1.1.1",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "58e8e79b641766982fe579d3b623900513ea5d30",
+    "checkout_commit": "58e8e79b641766982fe579d3b623900513ea5d30",
+    "workflow_run_id": "39379810795",
+    "artifact_id": "12245535186",
+    "archive_sha256": "583840dad9033042e58ac07180fae82c0bca094efb78d473b7404461f6b25798",
+    "image_config_sha256": "01942c1ddaea2a8881aa48ccf6cf4c2155d3a260a44e7b744743ec5b5c2e73ee",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "8b4c98c3625b537ce4384d96dcb87ac07f9d7f28880eac356fd5e1425a0a67f0",
+      "template.yaml:contract": "3040dd14e8f16c8e51ffc8e7bee217c5c7946415e17128fcbf8c3babcfa3f2df",
+      "commands.py": "006329b669b81b8d1b0c557b5b24cc6820eee38fb04c35e003ebff0e8640356f"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:c5fca5d2be9437b97fb07bac4e59f6cbbe04f15553adc761a193beb7735e3c00",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "result": "PASS"
+}

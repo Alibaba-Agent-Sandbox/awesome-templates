@@ -58,3 +58,19 @@ HTTP 验收，不代表整个产品通过。
 2026-10-19 真实 digest 形式注册被平台按 latest 拉取而失败，因此该路径使用本次独占标签并在前后读回摘要；不宣称平台支持 digest 引用或仓库标签不可变。
 
 执行器在产物或云端操作前检查外部控制器导入依赖。先安装所需模块（OCR需要Pillow），缺少控制器不代表提供方通过。测试失败与独立观测到的云资源清理分别记录；code-server/Next/Vite 的次要端口地址来自 SDK。
+
+### 选择真实 Python SDK 创建
+
+验收要求实际执行 `agent_sandbox.api.sandbox.Sandbox.create` 时，为 step 或已验证
+镜像 runner 添加 `--sandbox-create sdk`。默认 `cli` 保留已有 `abx create` 行为。
+两种入口均先等待自有模板 READY，再通过 CLI 与 SDK 执行命名 smoke，最后执行
+同样的 sandbox/template 清理和独立不存在检查。
+
+例如 `python scripts/run_steps_e2e.py python-hello --sandbox-create sdk` 真实构建
+平台 step，并通过 Python 创建其沙箱。已核验镜像路径则在
+`scripts/run_ci_image_e2e.py` 已有的 artifact ID、已验证 crane 参数外添加
+`--sandbox-create sdk`。回执 `sandbox_create` 明确记录
+`python-sdk-Sandbox.create` 或 `abx create`；较早回执不能证明未记录的 SDK 创建。
+SDK timeout 表示沙箱生命周期，与构建 READY 等待和请求时限分别配置。创建响应
+丢失时保留私有恢复记录，不能发布验收。关闭本地客户端不删除云沙箱；runner
+随后销毁自有资源并独立确认不存在。

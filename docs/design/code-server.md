@@ -38,3 +38,5 @@ browser controller run. Backend HTTP5 success alone is insufficient. The first
 control confirmed list absence but used an unavailable extra GET helper; the
 second uses the actual get_info_by_id API and independently confirms both absence
 paths. Both original point-in-time records remain unchanged.
+
+Current1.0.0 actual SDK-created image and full HTTP5 plus genuine browser/terminal/editor acceptance passed through the documented sdk-local operator relay. It retains upstream TLS, native password authentication and independent SDK file readback; local browser transport is loopback HTTP. Default FC direct HTML attachment remains a failed mode. All owned cleanup independently confirmed. See the [exact browser receipt](../../code-server/evidence/browser-ui-2026-10-20T091440Z.json).

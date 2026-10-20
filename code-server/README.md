@@ -88,7 +88,11 @@ WORKSPACE defaults to /home/user/app. CODE_SERVER_PASSWORD and ABX_SERVER_TOKEN 
 
 ## Verified
 
-No provider has a passing run recorded for this template.
+| Version | Provider | Mode and scope | Evidence |
+| --- | --- | --- | --- |
+| 1.0.0 | alicloud-express | SDK-created verified image; full HTTP5; actual browser/terminal/editor through sdk-local preview | [image](evidence/express-2026-10-20.json), [HTTP](evidence/image-http-2026-10-20T091440Z.json), [browser](evidence/browser-ui-2026-10-20T091440Z.json) |
+
+Actual Chromium loaded the native JavaScript workbench, wrote a nonce through the terminal WebSocket, edited/saved it with Monaco and independently confirmed bytes through the SDK. Upstream HTTPS certificate/hostname verification stayed enabled; the local browser used HTTP loopback. The relay exchanged its capability before real IDE password login. Browser/proxy/IDE/nonce cleanup and sandbox/template/registry absence were independently confirmed. Use the [SDK local preview operation](../docs/preview-proxy.md); default FC direct mode still forces HTML attachment and its earlier failures remain historical. This does not certify direct-domain browser rendering or other providers.
 
 ### Actual browser, terminal and editor check
 

@@ -118,3 +118,19 @@ export NODE_PATH="$ABX_NATIVE_DIR/modules/node_modules"
 均不能代替。
 
 运行用户切换前，生成的步骤显式将 /home/user/app 归属设为 user:user。真实完整 Python/Node HTTP 验证发现原生 WORKDIR 的 root 归属导致文件写入失败；仅设置 COPY 文件归属不足。基础版本冒烟不能代替工作区文件往返测试。旧失败与基础冒烟回执保留各自范围。
+
+### 选择真实 Python SDK 创建
+
+验收要求实际执行 `agent_sandbox.api.sandbox.Sandbox.create` 时，为 step 或已验证
+镜像 runner 添加 `--sandbox-create sdk`。默认 `cli` 保留已有 `abx create` 行为。
+两种入口均先等待自有模板 READY，再通过 CLI 与 SDK 执行命名 smoke，最后执行
+同样的 sandbox/template 清理和独立不存在检查。
+
+例如 `python scripts/run_steps_e2e.py python-hello --sandbox-create sdk` 真实构建
+平台 step，并通过 Python 创建其沙箱。已核验镜像路径则在
+`scripts/run_ci_image_e2e.py` 已有的 artifact ID、已验证 crane 参数外添加
+`--sandbox-create sdk`。回执 `sandbox_create` 明确记录
+`python-sdk-Sandbox.create` 或 `abx create`；较早回执不能证明未记录的 SDK 创建。
+SDK timeout 表示沙箱生命周期，与构建 READY 等待和请求时限分别配置。创建响应
+丢失时保留私有恢复记录，不能发布验收。关闭本地客户端不删除云沙箱；runner
+随后销毁自有资源并独立确认不存在。

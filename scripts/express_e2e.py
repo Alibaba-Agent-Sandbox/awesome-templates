@@ -143,6 +143,7 @@ class Options:
     image_ref: str = ""
     image_provenance: dict | None = None
     sandbox_timeout: int = 300
+    sandbox_create: str = "cli"
 
 
 @dataclass
@@ -468,6 +469,8 @@ def build_options(argv: list[str] | None = None) -> Options:
     parser.add_argument("--image-ref", default="", help="Nonce-owned ACR review tag bound to checked digest for --build image")
     parser.add_argument("--image-proof", type=Path, help="Verified public CI archive/source/registry proof")
     parser.add_argument("--sandbox-timeout", type=int, default=300, help="Owned sandbox lifetime, separate from build readiness")
+    parser.add_argument("--sandbox-create", choices=("cli", "sdk"), default="cli",
+                        help="Select actual CLI or Python SDK sandbox creation; both keep CLI/SDK smoke and owned cleanup")
     parser.add_argument("--start-cmd", default=None)
     parser.add_argument("--ready-cmd", default=None)
     parser.add_argument("--generation", type=int, default=None)
@@ -569,6 +572,7 @@ def build_options(argv: list[str] | None = None) -> Options:
         image_ref=args.image_ref,
         image_provenance=image_provenance,
         sandbox_timeout=args.sandbox_timeout,
+        sandbox_create=args.sandbox_create,
     )
 
 
@@ -581,6 +585,7 @@ def plan_document(options: Options) -> dict[str, Any]:
         "build_mode": options.build_mode,
         "registration_operation": "abx template create" if options.build_mode == "image" else "abx template deploy",
         "sandbox_timeout": options.sandbox_timeout,
+        "sandbox_create": "python-sdk-Sandbox.create" if options.sandbox_create == "sdk" else "abx create",
         "harness_sha256": HARNESS_SHA256,
         "acr_repo": options.alias if options.build_mode == "dockerfile" else None,
         "acr_tag": OWNED_ACR_TAG if options.build_mode == "dockerfile" else None,
@@ -738,6 +743,24 @@ def image_digest(image_ref: str) -> str:
         raise RuntimeError("verified crane path is required for live image digest readback")
     return crane_call(binary,["digest",image_ref],os.environ["ABX_IMAGE_REGISTRY_USERNAME"],
                       os.environ["ABX_IMAGE_REGISTRY_PASSWORD"],90)
+
+
+def default_sdk_create(template_id: str, timeout: int) -> str:
+    """Create through the native Python API, returning the known ID for journaling."""
+    import asyncio
+    from agent_sandbox.api.sandbox import Sandbox
+
+    async def create() -> str:
+        sandbox = await Sandbox.create(template=template_id, timeout=timeout)
+        sandbox_id = sandbox.id
+        try:
+            await sandbox.close()
+        except Exception:
+            # Local client shutdown must not hide an already-created owned ID.
+            pass
+        return sandbox_id
+
+    return asyncio.run(create())
 
 
 def default_sdk(sandbox_id: str, command: str, args: dict[str, Any]) -> Any:
@@ -1040,10 +1063,19 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
 
         intent["create_attempted"] = True
         save_intent(intent_path, intent)
-        created = run(
-            ["--json", "create", "--template", template_id, "-y", "--timeout", str(options.sandbox_timeout)],
-            420,
-        )
+        if options.sandbox_create == "sdk":
+            try:
+                known_id = default_sdk_create(template_id, options.sandbox_timeout)
+                created = Proc(0, json.dumps({"ID": known_id}), "")
+            except Exception as exc:
+                # A failed request can have created a sandbox; keep the existing
+                # unknown-create reconciliation and never publish its details.
+                created = Proc(1, "", type(exc).__name__ + "; SDK creation response unavailable")
+        else:
+            created = run(
+                ["--json", "create", "--template", template_id, "-y", "--timeout", str(options.sandbox_timeout)],
+                420,
+            )
         _print_proc("create", created)
         created_payload = _last_json(created)
         if isinstance(created_payload, dict):
@@ -1193,6 +1225,7 @@ def _write_evidence(options: Options, results: list[dict[str, Any]]) -> None:
         "sdk_version": _sdk_version(),
         "cli": "abx",
         "build_mode": options.build_mode,
+        "sandbox_create": "python-sdk-Sandbox.create" if options.sandbox_create == "sdk" else "abx create",
         "harness_sha256": HARNESS_SHA256,
         "passed": True,
         "cleanup_verified": True,
