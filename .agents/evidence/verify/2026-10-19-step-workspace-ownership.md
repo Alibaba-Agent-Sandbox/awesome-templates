@@ -53,3 +53,13 @@ CI is required after this evidence commit. The source/Dockerfile-unchanged
 statements above describe the initial materializer-only checkpoint, before the
 subsequent source repair documented here. Overall batch remains PARTIAL until
 changed heavy profiles and strict model gates pass.
+
+## 2026-10-20 review continuation
+
+The prior exact-head evidence commit conflicted with the newly merged controller
+prerequisite record, leaving zero current-head CI checks. Integrated main using
+a normal merge and retained both independent engineering-record links. Preserved
+all source versions, receipts, failures, model NOT_RUN labels and pending heavy
+profile qualification. This merge is not new cloud acceptance. Runtime reset
+removed temporary uncommitted artifacts; only durable receipts and actual remote
+states remain authoritative. Current-head checks must be rerun after this merge.
