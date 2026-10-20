@@ -446,6 +446,23 @@ templates:
     providers:
       alicloud-express: install-build
 
+  - name: dev-services
+    description: Pinned non-root PostgreSQL17.11 and Redis8.0.2 with owned lifecycle.
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: dev-services
+    tags:
+    - database
+    - postgresql
+    - redis
+    - development
+    author: alibaba-agent-sandbox
+    capabilities:
+    - shell
+    - files
+    - code
+    - ports
+    status: experimental
+
   - name: crush
     description: Official Crush0.98.1 with private compatible-provider turns and explicit tools.
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
