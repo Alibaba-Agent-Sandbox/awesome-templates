@@ -148,6 +148,8 @@ L0 contract checks can skip missing upstream runtime/model prerequisites, and su
 Read [design](../docs/design/swe.md) and [spec](../docs/template-spec.md). Add another instance only after verifying its pinned source archive, license, original test patch, precise FAIL_TO_PASS/PASS_TO_PASS lists, compatible locked dependencies and independent failing/passing tests. Do not expose arbitrary shell test commands, URL downloads or caller-supplied patches through this API. The manifest deliberately excludes the upstream gold solution patch.
 
 ### Agent Sandbox platform steps
+The actual1.1.0 step attempt did not reach independently confirmed READY within1200seconds. It is a [failed attempt](evidence/verification-steps-2026-10-20T091943Z.json), with [separate confirmed cleanup](evidence/steps-cleanup-2026-10-20.json); it does not qualify step builds. The passing current image/model receipt remains separate.
+
 
 From a repository checkout, `python scripts/run_steps_e2e.py swe` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
 

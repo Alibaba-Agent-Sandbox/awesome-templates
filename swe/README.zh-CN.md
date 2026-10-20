@@ -146,6 +146,8 @@ L0 可以跳过缺失的上游运行时/模型前置，这不证明代理运行�
 阅读[设计](../docs/design/swe.md)与[规范](../docs/template-spec.md)。新增题目前核对固定源归档、许可证、原始测试补丁、精确 FAIL_TO_PASS/PASS_TO_PASS、兼容的固定依赖及独立失败/通过结果。不要通过 API 暴露任意 shell 测试命令、URL 下载或调用者自带补丁。manifest 故意不包含上游标准答案补丁。
 
 ### Agent Sandbox step 构建
+实际1.1.0 step尝试在1200秒内未独立确认READY，保留为[失败](evidence/verification-steps-2026-10-20T091943Z.json)，并有[单独清理回查](evidence/steps-cleanup-2026-10-20.json)。不认定step构建通过；当前镜像/模型通过回执独立保留。
+
 
 在仓库 checkout 执行 `python scripts/run_steps_e2e.py swe`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
 
