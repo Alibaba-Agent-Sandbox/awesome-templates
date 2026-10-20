@@ -111,7 +111,13 @@ HTTP200返回{"result":{"stdout":"42","stderr":"","exit_code":0}}，保留非零
 
 ## 已验证
 
-新1.0.0尚无提供方通过证据。本地实际安装库、协议和人工工具夹具通过不等于真实模型或云端验收。待镜像/最新CI、真实SDK创建极速版及真实模型改源码、报告、原测试、独立隐藏输入检查。
+版本1.0.0已通过真实阿里云极速版校验CI镜像注册、官方READY、原生Python Sandbox.create、CLI/SDK冒烟及 **17项严格真实模型检查，0 FAIL/0 SKIP**。显式兼容模型qwen3.8-flash驱动真实原生Agent改源码、生成报告及精确产物、保留全部原测试，并通过返回后的独立原测试/隐藏计算。沙箱/模板/镜像仓库清理及运行后镜像digest均独立确认。
+
+| 版本 | 提供方 | 证据 |
+| --- | --- | --- |
+| 1.0.0 | alicloud-express | [SDK创建镜像](evidence/express-2026-10-20.json), [严格模型17](evidence/model-image-2026-10-20T113609Z.json), [关闭模型HTTP](evidence/image-http-2026-10-20T113609Z.json) |
+
+单独关闭模型的HTTP控制器9 PASS/1项显式模型SKIP，不是L3。真实原生step正在单独验证，目前不宣称step通过。其他提供方及其余上游模型/后端未认证。
 
 ## 二次开发
 

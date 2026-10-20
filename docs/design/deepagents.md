@@ -29,3 +29,7 @@ Private HOME/config/data/stdin, filtered runtime env and independently filtered 
 ## Test plan
 
 L0 actual0.7.25/native tool discovery0/8, no task, authored actual write_file and independent file bytes, readonly version/setup, caller home preservation, key/path/types/limits, process descendants/output/deadline and structured controller regressions. L1 hash/version/image/rootfs. L2 true SDK-created Express READY/CLI/SDK/full HTTP and independent cleanup. L3 real model source edit/report/unchanged original tests/fresh held-out checks; L4 only when another provider actually executed. Native steps receipts separate from preparation.
+
+### Executed qualification
+
+Version1.0.0 actual SDK-created verified image and compatible qwen3.8-flash model17/0/0 passed source edits/report/original tests/fresh held-out calculations and independent owned sandbox/template/registry cleanup. [Canonical receipt](../../deepagents/evidence/express-2026-10-20.json). Platform steps remain a separate pending check.

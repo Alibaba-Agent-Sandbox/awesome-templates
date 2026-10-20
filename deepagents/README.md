@@ -115,7 +115,13 @@ The selected model settings remain in private stdin only, never inherited as env
 
 ## Verified
 
-No provider has passing evidence for this new1.0.0 profile yet. Actual installed library/protocol/tool fixtures pass locally but do not establish real-model or cloud acceptance. Image/latest-head CI, genuine SDK-created Express and strict real-model source-edit/report/original-tests/independent-held-out checks remain pending.
+Version1.0.0 passed actual Alibaba Express verified CI-image registration, official READY, native Python Sandbox.create, CLI/SDK smoke and **17 strict real-model checks,0 FAIL/0 SKIP** with the explicit compatible qwen3.8-flash model. The real native agent changed source, produced a report and exact artifact, preserved all original tests and passed independent post-return original/held-out evaluations. Owned sandbox/template/registry cleanup and post-runtime image digest were independently verified.
+
+| Version | Provider | Evidence |
+| --- | --- | --- |
+| 1.0.0 | alicloud-express | [SDK-created image](evidence/express-2026-10-20.json), [strict model17](evidence/model-image-2026-10-20T113609Z.json), [model-off HTTP](evidence/image-http-2026-10-20T113609Z.json) |
+
+The separate model-off HTTP controller has9 PASS/1 explicit model SKIP and is not L3. Actual native platform steps are being checked separately; no successful step receipt is claimed here yet. Other providers and every upstream model/backend profile remain unverified.
 
 ## Secondary development
 

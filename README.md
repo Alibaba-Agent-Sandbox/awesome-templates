@@ -163,7 +163,7 @@ Browser IDE: [code-server](code-server/README.md) (experimental; [alicloud-expre
 Pinned Go/Rust/Java runtime: [polyglot-toolchain](polyglot-toolchain/README.md) (experimental; verification gates recorded separately).
 Model-free file tool: [apply-patch](apply-patch/README.md) (experimental).
 
-Native local DeepAgents: [deepagents](deepagents/README.md) (experimental; actual provider acceptance pending).
+Native local DeepAgents: [deepagents](deepagents/README.md) (experimental; [alicloud-express1.0.0 SDK image and model17](deepagents/evidence/express-2026-10-20.json)).
 
 Official terminal agent: [goose](goose/README.md) (experimental; [alicloud-express1.0.0 SDK image + model17](goose/evidence/express-2026-10-20.json)).
 
