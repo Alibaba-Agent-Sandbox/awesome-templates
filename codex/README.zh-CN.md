@@ -193,6 +193,15 @@ HTTP 检查全部 16 项通过，本次沙箱已删除。源码和运行包的�
 
 ## 已验证
 
+| 提供方 | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express |2.0.0；真实 SDK 创建的非 root 镜像，CLI/SDK 命令，17项严格真实模型断言，独立沙箱/模板/镜像仓库清理 | [镜像](evidence/express-2026-10-20.json) · [模型](evidence/model-image-2026-10-20T145436Z.json) |
+
+原生 Codex 使用模板实际配置的 Responses 协议访问兼容服务。模型修改已有源码、生成新产物，并通过未改动的原始测试和独立断言。基础 HTTP13PASS/1SKIP属于明确关闭模型的阶段；单独真实模型17PASS/0FAIL/0SKIP。实际镜像注入固定的 e2cb27e server，独立 Docker fallback 是另一条构建路径。版本号0.3.0本身不能区分这些源码。详见[当前验收](../.agents/evidence/verify/2026-10-20-codex-sdk-image-acceptance.md)。
+
+## 历史 step 验证
+
+
 | 提供方 | 已执行范围 | 证据 |
 | --- | --- | --- |
 | alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
