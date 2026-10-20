@@ -81,7 +81,7 @@ The named diagnostic returns a buffered string. Use the HTTP session routes belo
 for turns. The named server's HTTP files/process APIs return 404 under this policy;
 the separate provider-native SDK management channel remains available.
 
-### Independent Qwen coding acceptance
+### Independent native coding acceptance
 
 From a checkout with the paired SDK installed, export `OPENAI_API_KEY` and
 `OPENAI_BASE_URL` for an OpenAI-compatible, tool-capable endpoint. Set
@@ -99,8 +99,7 @@ disposable project through provider-native commands, and proves the exact initia
 failure. It starts the unchanged installed commands and policy on port 9010 with
 selected model configuration, its own server token, workspace and private state
 directory. It retains the original `HOME`; host GitHub/cloud credentials are not
-forwarded. It submits a genuine `qwen-code` session/event, reconnects and polls
-items. No synthetic CLI is selected.
+forwarded. It selects the exact native `--adapter` (default `qwen-code`, or `codex`), submits a genuine session/event, reconnects and polls items. Run each adapter with a fresh journal/report: `--adapter codex` exercises Codex independently; it cannot inherit a Qwen result. No synthetic CLI is selected. The new server explicitly selects the installed pinned Node24 PATH; no operator PATH is forwarded.
 
 Independent native processes require changed existing source, byte-identical
 original tests, exact JSON artifact values and a nonempty report, complete
@@ -175,6 +174,9 @@ the final turn's error; accepting an event or observing idle does not prove mode
 success. The SDK verifier independently inspects results. An HTTP timeout does
 not cancel an upstream turn.
 
+
+For `--adapter codex`, the controller creates a fresh private CODEX_HOME with an explicit compatible HTTP Responses provider and websockets disabled. The key is referenced by OPENAI_API_KEY, never written into that config. This selects the approved endpoint deliberately instead of relying on ambient native provider defaults; the entire owned sandbox/profile is removed on cleanup.
+
 ## Command reference
 
 | Command | Parameters | Returns | Execution |
@@ -219,9 +221,9 @@ memory and latency have not been measured; no image-size acceptance is claimed.
 
 | Provider | Current version and scope | Evidence |
 | --- | --- | --- |
-| alicloud-express | 2.0.1; steps build, official READY, CLI/SDK basic smoke, independent cleanup; current-version model acceptance NOT_RUN | [2026-10-19](evidence/express-2026-10-19T183102Z.json) |
+| alicloud-express | 2.0.1; native steps → READY → Python SDK creation; CLI/SDK smoke; separate real Qwen Code and Codex coding runs; independent owned cleanup | [2026-10-20](evidence/express-2026-10-20T175429Z.json), [both models](evidence/two-native-sdk-steps-2026-10-20T175429Z.json) |
 
-The changed workspace profile is verified in real generated steps. Prior receipts retain historical scope; basic smoke does not establish model acceptance.
+Current source `5343a671` passed each native backend in a separate fresh owned SDK sandbox: [Qwen Code](evidence/native-sdk-qwen-code-2026-10-20T175150Z.json) and [Codex](evidence/native-sdk-codex-2026-10-20T175150Z.json). Both repaired existing source, preserved original tests, created the exact JSON artifact/report, and passed original/generated suites plus six independent held-out cases and a fresh post-return ACK. The original restricted HTTP policy remained enforced. The outer canonical sandbox/template and both model sandboxes were independently confirmed absent. Codex used an explicit private HTTP Responses provider with websockets disabled and an environment key reference; no key value was written. The earlier Codex timeout remains a failed receipt; its exact cause was not established. This verifies local native adapters, with `qwen3.8-flash` at the approved compatible endpoint; it does not certify a hosted Agents service or other providers.
 
 ## Historical verification
 
