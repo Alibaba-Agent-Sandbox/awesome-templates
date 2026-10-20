@@ -40,6 +40,8 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 
 - [Step manifest receipt binding](notes/proposed/process/2026-10-20-step-manifest-receipt-binding.md) · [verification](evidence/verify/2026-10-20-step-manifest-receipt-binding.md)
 
+- [OSWorld required external SDK desktop](notes/proposed/process/2026-10-20-osworld-required-sdk-desktop.md) · [verification](evidence/verify/2026-10-20-osworld-required-sdk-desktop.md)
+
 ## Current review
 
 - [Node Web HTTP output protocol](notes/proposed/process/2026-10-16-node-web-http-output.md)

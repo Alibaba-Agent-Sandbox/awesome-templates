@@ -29,6 +29,9 @@ from select_image_templates import catalog_names
 
 def configure_http_fixture(source: Path, manifest: dict, proof: dict) -> dict[str, str]:
     """Configure an owned non-model gateway after installer RUNs, never in Git."""
+    if source.name == "osworld":
+        proof["test_configuration"] = {"desktop_lifecycle_required": True, "model_credentials_injected": False}
+        return {}
     if source.name != "openclaw":
         return {}
     token = secrets.token_urlsafe(32)
@@ -77,6 +80,8 @@ def http_callback(source: Path, stage: Path, result: dict, fixture_env: dict[str
                    E2E_WORKSPACE="/home/user/app", E2E_RUN_LLM="0", E2E_REQUIRE_CLI="1",
                    E2E_REQUIRE_LLM="0",
                    E2E_REQUIRE_OCR="1", E2E_REQUIRE_DATABASES="1", E2E_REQUIRE_TOOLCHAIN="1")
+        if source.name == "osworld":
+            env.update(E2E_RUN_DESKTOP="1", E2E_REQUIRE_DESKTOP="1")
         env.update(fixture_env or {})
         if source.name == "code-server":
             env["E2E_CODE_SERVER_URL"] = urls[8443]
@@ -95,6 +100,8 @@ def http_callback(source: Path, stage: Path, result: dict, fixture_env: dict[str
         result["http_acceptance"] = checks
         if source.name == "openclaw" and (not fixture_env or any(line.startswith("[SKIP] real gateway lifecycle") for line in lines)):
             raise RuntimeError("non-model gateway lifecycle was skipped; full acceptance refused")
+        if source.name == "osworld" and (checks["skip_count"] or checks["pass_count"] < 18):
+            raise RuntimeError("non-model desktop lifecycle was skipped or incomplete; full acceptance refused")
         if response.returncode or checks["fail_count"] or not checks["pass_count"]:
             raise RuntimeError("external HTTP controller failed; private diagnostics retained")
         return value

@@ -68,3 +68,21 @@ def test_gateway_fixture_is_generated_after_installers_and_absent_from_public_pr
 def test_controller_fixture_cannot_forward_an_operator_credential(tmp_path):
     with pytest.raises(ValueError, match="only the generated owned gateway fixture"):
         http_callback(tmp_path, tmp_path, {}, {"OPENAI_API_KEY": "synthetic-operator-secret"})
+
+
+def test_osworld_requires_real_desktop_and_rejects_nonmodel_skip(tmp_path):
+    source=tmp_path/'osworld';source.mkdir();(source/'template.yaml').write_text('ports: [9000]\n')
+    (source/'e2e_test.py').write_text("import os\nassert os.environ['E2E_REQUIRE_DESKTOP']=='1'\nassert os.environ['E2E_RUN_DESKTOP']=='1'\nprint('[PASS] basic HTTP')\nprint('[SKIP] GUI task')\n")
+    proof={};manifest={'build':{'steps':[]}}
+    assert configure_http_fixture(source,manifest,proof)=={}
+    assert proof['test_configuration']['desktop_lifecycle_required'] is True
+    class Sandbox:
+        network=SimpleNamespace(get_url=lambda port:'http://synthetic.invalid')
+        async def close(self):pass
+        @classmethod
+        async def connect(cls,sandbox_id):return cls()
+    report={}
+    with patch('agent_sandbox.api.sandbox.Sandbox',Sandbox),patch.object(express_e2e,'default_sdk',return_value='smoke'):
+        callback=http_callback(source,tmp_path,report)
+        with pytest.raises(RuntimeError,match='desktop lifecycle'):callback('synthetic','desktop',{})
+    assert report['http_acceptance']['skip_count']==1

@@ -146,6 +146,11 @@ def inspect_http_receipt(source: Path, receipt: dict) -> tuple[bool, str]:
         return False, "full HTTP controller did not pass"
     if source.name == "openclaw" and (counts["pass_count"] < 11 or counts.get("skip_count", 0) > 1):
         return False, "non-model gateway lifecycle was not fully covered"
+    if source.name == "osworld":
+        fixture=(receipt.get("build_provenance") or {}).get("test_configuration", {})
+        if (fixture.get("desktop_lifecycle_required") is not True
+                or counts["pass_count"] < 18 or counts.get("skip_count", 0) != 0):
+            return False, "required non-model desktop controller was skipped or incomplete"
     controller = source / "e2e_test.py"
     if not controller.is_file() or counts.get("controller_sha256") != hashlib.sha256(controller.read_bytes()).hexdigest():
         return False, "HTTP controller changed or lacks provenance"
