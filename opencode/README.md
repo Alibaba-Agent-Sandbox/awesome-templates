@@ -186,9 +186,9 @@ Set secret values on `abx create --env` or `Sandbox.create(envs=...)`. Do not wr
 
 | Provider | Current version and scope | Evidence |
 | --- | --- | --- |
-| alicloud-express | 2.0.1; steps build, official READY, CLI/SDK basic smoke, independent cleanup; current-version model acceptance NOT_RUN | [2026-10-19](evidence/express-2026-10-19T184023Z.json) |
+| alicloud-express | 2.0.1; actual SDK-created image, CLI/SDK commands,28strict real-model assertions and independent sandbox/template/registry cleanup | [2026-10-20](evidence/express-2026-10-20.json) · [model](evidence/model-image-2026-10-20T142001Z.json) |
 
-The changed workspace profile is verified in real generated steps. Prior receipts retain historical scope; basic smoke does not establish model acceptance.
+The exact-source CI image is independently verified before registration. The actual model edits existing source, creates a new artifact and passes unchanged original tests, fresh held-out assertions and exact-session continuation. The matching runtime also has [real platform-step basic acceptance](evidence/verification-steps-2026-10-19T184023Z.json), which does not itself claim model acceptance. The image actually injects server e2cb27e; the older standalone Docker fallback is a separate build path. See [current acceptance](../.agents/evidence/verify/2026-10-20-native-coding-sdk-acceptance.md) for provenance, limits and historical failures.
 
 ## Historical verification
 
