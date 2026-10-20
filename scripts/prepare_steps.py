@@ -81,14 +81,17 @@ def parallel_assets(source: Path) -> dict:
             "digest_basis": "controller measured immutable upstream commit archive; not an upstream-published SHA256",
         }
         return {arch: [item, wheels[arch], upstream] for arch, item in metadata["assets"].items()}
-    if source.name in {"deepagents", "osworld"}:
+    if source.name in {"deepagents", "osworld", "browser-use"}:
         metadata = json.loads(Path(__file__).with_name("step_uv_bootstrap.json").read_text())
         if source.name == "deepagents":
             return {arch: [item] for arch, item in metadata["assets"].items()}
         browsers = json.loads(Path(__file__).with_name("step_playwright_1_58.json").read_text())
-        if "playwright==1.58.0" not in (source / "requirements.txt").read_text():
+        browser_source = (source / ("Dockerfile" if source.name == "browser-use" else "requirements.txt")).read_text()
+        if "playwright==1.58.0" not in browser_source:
             raise ValueError("unreviewed Playwright browser transport version")
-        return {arch: [metadata["assets"][arch], *items] for arch, items in browsers["assets"].items()}
+        return {arch: [metadata["assets"][arch], *[item for item in items
+                       if source.name != "browser-use" or "headless-shell" not in item["url"]]]
+                for arch, items in browsers["assets"].items()}
     return {}
 
 
@@ -255,7 +258,7 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
         # public source/provenance never contains cache URLs or identifiers.
         assets = {arch: [dict(item, transport_url=asset_cache["urls"][item["url"]])
                          for item in assets[arch]]}
-    temporary_uv = asset_transport in {"parallel", "oss"} and source.name in {"deepagents", "osworld", "swe"}
+    temporary_uv = asset_transport in {"parallel", "oss"} and source.name in {"deepagents", "osworld", "swe", "browser-use"}
     asset_root = "/tmp/abx-step-assets"
     uv_root = "/tmp/abx-step-installer"
     asset_helper = Path(__file__).with_name("step_assets.py")
@@ -308,6 +311,13 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
             copied.update(hashes)
             steps.append(run_step(command))
         elif kind == "RUN":
+            if temporary_uv and source.name == "browser-use":
+                if value == 'pip install --no-cache-dir "playwright==1.58.0"':
+                    steps.append(run_step(f"{uv_root}/bin/uv --no-cache pip install --system --python python3 --default-index https://mirrors.aliyun.com/pypi/simple/ playwright==1.58.0"))
+                    continue
+                if value == "python3 -m playwright install chromium --no-shell":
+                    steps.append(run_step(f"python3 {asset_root}/step_assets.py playwright " + value))
+                    continue
             if assets:
                 # The adapter exists only in these build Python processes. The
                 # original installer bytes/limits/extraction/version checks stay.
@@ -337,7 +347,7 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
                         if not match:
                             raise ValueError("unreviewed locked Python package installation")
                         arguments = match[2].replace("--no-cache-dir", "")
-                        if source.name == "osworld" and asset_transport == "oss":
+                        if source.name in {"osworld", "browser-use"} and asset_transport == "oss":
                             # Keep every upstream version/hash and build rule;
                             # use the regional public PyPI mirror for transport.
                             arguments += " --default-index https://mirrors.aliyun.com/pypi/simple/"

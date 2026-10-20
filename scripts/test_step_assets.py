@@ -111,16 +111,21 @@ def test_generated_cache_preserves_original_source_and_is_removed_before_runtime
     assert "rm -rf /tmp/abx-step-assets" in steps[-2]["args"][0]
 
 
-@pytest.mark.parametrize("name", ["deepagents", "osworld"])
+@pytest.mark.parametrize("name", ["deepagents", "osworld", "browser-use"])
 def test_parallel_locked_installer_retains_hashes_and_removes_build_tool(name):
     manifest, proof = prepare(ROOT / name, asset_transport="parallel", server_commit="e2cb27e24fde0a67112f82b8d44af463445a5d1a")
     commands = [step["args"][0] for step in manifest["build"]["steps"] if step["type"] == "RUN"]
-    locked = [command for command in commands if "uv --no-cache pip install" in command]
+    locked = [command for command in commands if "uv --no-cache pip install" in command and "--require-hashes" in command]
     assert len(locked) == 1 and "--require-hashes" in locked[0]
     assert "uv0.12.3" in proof["python_package_transport"]
     assert manifest["build"]["steps"][-2]["args"][0].startswith("rm -rf ")
     assert "/tmp/abx-step-installer" in manifest["build"]["steps"][-2]["args"][0]
     assert proof["steps_json_bytes"] <= 15000
+    if name == "browser-use":
+        assert any("step_assets.py playwright python3 -m playwright install chromium --no-shell" in command for command in commands)
+        assert any("assert sys.version_info[:2] == (3,13)" in command for command in commands)
+        assert any("rootfs exceeds8GiB" in command for command in commands)
+        assert all("headless-shell" not in item["url"] for item in proof["build_assets"]["x86_64"])
 
 
 @pytest.mark.parametrize("requested,exit_code", [("/fixed/browser.zip", 0), ("/assets.json", 1)])

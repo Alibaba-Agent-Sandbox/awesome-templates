@@ -1,8 +1,8 @@
 {
   "scope": "current-version Express platform-step runtime acceptance; not model or Docker acceptance",
   "passed": 32,
-  "total": 32,
-  "complete": true,
+  "total": 33,
+  "complete": false,
   "templates": [
     {
       "template": "agents-cli",
@@ -43,6 +43,12 @@
       "receipts": [
         "browser-automation/evidence/express-2026-10-20T103410Z.json"
       ]
+    },
+    {
+      "template": "browser-use",
+      "version": "1.0.0",
+      "steps": "MISSING",
+      "receipts": []
     },
     {
       "template": "claude-code",
@@ -110,10 +116,10 @@
     },
     {
       "template": "document-tools",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "steps": "PASS",
       "receipts": [
-        "document-tools/evidence/express-2026-10-19.json"
+        "document-tools/evidence/express-2026-10-20T143722Z.json"
       ]
     },
     {

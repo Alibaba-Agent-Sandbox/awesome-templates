@@ -151,7 +151,7 @@ SDK timeout 表示沙箱生命周期，与构建 READY 等待和请求时限分�
 
 为 `scripts/run_steps_e2e.py` 添加 `--http`，在规范流程拥有的沙箱中运行原有完整外部 HTTP 控制器。回执分别记录控制器哈希、通过/失败/跳过数量和退出码。模型调用保持关闭并标为 NOT_RUN；模型跳过不算 L3。控制器本地依赖缺失时，在创建云资源前拒绝运行。
 
-Goose、Crush、code-server、Polyglot、Aider、SWE、Hermes 可使用 `--asset-transport parallel`，对固定官方归档执行有界并发分段下载。每次响应必须匹配请求的 Content-Range，完整文件必须匹配固定大小/预算及 SHA256，原有未修改安装器继续检查完整性、版本和解包规则。临时 root 专用缓存及进程内 Python URL 适配器在 USER user 前删除。Hermes 使用 uv 官方支持的本地文件镜像，保留 Python3.14.6/uv0.12.3 固定版本，并记录通用 GNU 架构资产和官方元数据来源；原有复合安装按顺序拆分为有界阶段。DeepAgents 和 OSWorld 使用临时 uv0.12.3 安装未改变且带哈希锁的 Python 依赖图，并拆分原有安装阶段；此构建工具及缓存在运行前删除。其他模板继续直接下载。不引入第三方镜像站、替代资产或操作者凭据。转换回执记录助手哈希及精确资产元数据；分段不支持、校验失败或下载失败均不能生成通过证据。
+Goose、Crush、code-server、Polyglot、Aider、SWE、Hermes 可使用 `--asset-transport parallel`，对固定官方归档执行有界并发分段下载。每次响应必须匹配请求的 Content-Range，完整文件必须匹配固定大小/预算及 SHA256，原有未修改安装器继续检查完整性、版本和解包规则。临时 root 专用缓存及进程内 Python URL 适配器在 USER user 前删除。Hermes 使用 uv 官方支持的本地文件镜像，保留 Python3.14.6/uv0.12.3 固定版本，并记录通用 GNU 架构资产和官方元数据来源；原有复合安装按顺序拆分为有界阶段。DeepAgents、OSWorld 和 browser-use 使用临时 uv0.12.3 安装未改变且带哈希锁的 Python 依赖图，并拆分原有安装阶段；此构建工具及缓存在运行前删除。其他模板继续直接下载。公开区域 PyPI 传输保留原有版本和哈希校验，不引入替代资产或操作者凭据。转换回执记录助手哈希及精确资产元数据；分段不支持、校验失败或下载失败均不能生成通过证据。
 
 ```bash
 python scripts/run_steps_e2e.py goose --asset-transport parallel --http \
@@ -174,4 +174,4 @@ python scripts/run_steps_e2e.py goose --asset-transport oss --http \
 
 云端执行前必须发布精确适配器源码提交。较大配方下载公开不可变助手并校验 SHA256，从而保留原有 wire 大小门禁；不支持或未发布的配方拒绝运行。可选 `ABX_STEP_LOCAL_ARCHIVE_DIR` 复用按 SHA256 命名的控制器本地归档，上传前仍逐字节校验原固定大小/哈希；不读取调用者凭据文件，也不改变运行时依赖要求。
 
-[当前源码完整矩阵](../.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json)记录32/32限定范围 step 通过。Hermes 最终路径还缓存其不可变上游提交源码包，SHA256为控制器实测；OSWorld 的 OSS profile 使用区域公共 PyPI 镜像，同时保留原版本、--require-hashes 和 --no-build-isolation，仅改变传输。模型 SKIP 仍是 NOT_RUN，已有镜像／模型回执不改范围。
+[当前源码完整矩阵](../.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json)记录最新限定范围 step 检查点；目录或源码变化后须重新运行审计。Hermes 最终路径还缓存其不可变上游提交源码包，SHA256为控制器实测；OSWorld 的 OSS profile 使用区域公共 PyPI 镜像，同时保留原版本、--require-hashes 和 --no-build-isolation，browser-use 保留原 Python3.13、哈希锁、Chromium --no-shell 及8GiB根文件系统断言，公开 PyPI／引导／浏览器传输仅用于构建；仅改变传输。模型 SKIP 仍是 NOT_RUN，已有镜像／模型回执不改范围。

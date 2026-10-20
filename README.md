@@ -22,7 +22,7 @@ is recorded.
 
 ## Templates
 
-Current-source Express platform steps: **32/32 PASS** with real READY, CLI/SDK smoke and independent cleanup. [Auditable per-template matrix](.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json) · [operations and scope](docs/platform-steps.md) ([中文](docs/platform-steps.zh-CN.md)). Model and image acceptance remain separate.
+2026-10-20 Express platform-step checkpoint: **32/33 PASS** (new browser-use profile pending) with real READY, CLI/SDK smoke and independent cleanup. [Auditable per-template matrix](.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json) · [operations and scope](docs/platform-steps.md) ([中文](docs/platform-steps.zh-CN.md)). Model and image acceptance remain separate.
 
 The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](docs/verification-2026-10-18.zh-CN.md)) records the historical23-template checkpoint and its unresolved gates. Current scoped receipts are linked below.
 
