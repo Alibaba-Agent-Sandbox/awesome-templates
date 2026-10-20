@@ -1,7 +1,8 @@
-"""Bounded Markdown conversion using Debian's pinned official Pandoc tool."""
+"""Bounded text document conversion using pinned Pandoc and headless LibreOffice."""
 from __future__ import annotations
 
 import hashlib
+from html.parser import HTMLParser
 import io
 import json
 import os
@@ -21,6 +22,7 @@ from xml.etree import ElementTree
 from agent_sandbox.server import command, start
 
 VERSION = "3.1.11.1"
+OFFICE_DEBIAN_VERSION = "4:25.2.3-2+deb13u8"
 MAX_FILE = 1024 * 1024
 MAX_DIAGNOSTICS = 1024 * 1024
 _LOCK = threading.Lock()
@@ -32,11 +34,13 @@ _LIMIT_EXEC = ("import os,resource,sys;resource.setrlimit(resource.RLIMIT_CORE,(
                "os.execve(sys.argv[1],sys.argv[1:],os.environ)")
 
 
-def _process(argv: list[str], *, cwd: str, timeout: float) -> bytes:
+def _process(argv: list[str], *, cwd: str, timeout: float, owned_env: dict | None = None) -> bytes:
     """Drain bounded output and kill the owned group before reaping its leader."""
     env = {key: os.environ[key] for key in ("HOME", "PATH", "LD_LIBRARY_PATH") if key in os.environ}
     env.update(LANG="C.UTF-8", LC_ALL="C.UTF-8", OMP_NUM_THREADS="2", OPENBLAS_NUM_THREADS="2", MALLOC_ARENA_MAX="2")
     env["pandoc_datadir"] = os.environ.get("DOCUMENT_PANDOC_DATA_DIR", "/usr/share/pandoc")
+    if owned_env:
+        env.update(owned_env)
     process = subprocess.Popen(argv, cwd=cwd, env=env, stdin=subprocess.DEVNULL,
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
     parts: list[list[bytes]] = [[], []]
@@ -151,6 +155,78 @@ def _pandoc(arguments: list[str], *, cwd: Path, deadline: float) -> bytes:
                      "+RTS", "-N2", "-M256M", "-RTS"], cwd=str(cwd), timeout=remaining)
 
 
+def _guard_html(text: str) -> None:
+    """Reject resource-bearing HTML before even the sandboxed native reader."""
+    class TextHTML(HTMLParser):
+        allowed = set("html head title body h1 h2 h3 h4 h5 h6 p strong em b i ul ol li blockquote code pre hr br a table thead tbody tr th td span div s del sub sup dl dt dd".split())
+        void = {"hr", "br"}
+        def __init__(self):
+            super().__init__(convert_charrefs=True)
+            self.stack = []
+            self.nodes = 0
+        def handle_starttag(self, tag, attrs):
+            self.nodes += 1
+            if tag not in self.allowed or self.nodes > 20000:
+                raise ValueError("HTML must contain only bounded text markup; resources/scripts are unsupported")
+            for key, value in attrs:
+                if key not in {"lang", "title", "id", "class", "href", "colspan", "rowspan", "start"}:
+                    raise ValueError("HTML resource/style/event attributes are unsupported")
+                if key == "href" and (not value or not value.startswith(("https://", "http://", "mailto:", "#"))):
+                    raise ValueError("HTML links must be web, mail or fragment references")
+                if key in {"colspan", "rowspan", "start"} and (not value or not value.isdecimal() or not 1 <= int(value) <= 100):
+                    raise ValueError("HTML numeric attributes must be integers1..100")
+            if tag not in self.void:
+                self.stack.append(tag)
+                if len(self.stack) > 100:
+                    raise ValueError("HTML nesting exceeds100")
+        def handle_startendtag(self, tag, attrs):
+            self.handle_starttag(tag, attrs)
+            if tag not in self.void:
+                self.stack.pop()
+        def handle_endtag(self, tag):
+            if tag in self.void:
+                return
+            if not self.stack or self.stack.pop() != tag:
+                raise ValueError("HTML text markup must use balanced explicit tags")
+        def handle_decl(self, decl):
+            if decl.strip().lower() != "doctype html":
+                raise ValueError("only a plain HTML doctype is accepted")
+    parser = TextHTML()
+    parser.feed(text)
+    parser.close()
+    if parser.stack:
+        raise ValueError("HTML text markup must use balanced explicit tags")
+
+
+def _office(arguments: list[str], *, cwd: Path, deadline: float) -> bytes:
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise RuntimeError("document operation exceeded its wall-clock deadline")
+    binary = Path("/usr/lib/libreoffice/program/soffice.bin")
+    if not binary.is_file() or not os.access(binary, os.X_OK):
+        raise RuntimeError("the pinned headless LibreOffice executable is unavailable")
+    home, temporary, profile = cwd / "office-home", cwd / "office-tmp", cwd / "office-profile"
+    for path in (home, temporary, profile):
+        path.mkdir(mode=0o700, exist_ok=True)
+    limit = _LIMIT_EXEC.replace("1073741824", "2147483648").replace("(30,31)", "(60,61)")
+    return _process([sys.executable, "-I", "-c", limit, str(binary),
+                     "-env:UserInstallation=" + profile.as_uri(), "--headless", "--nologo",
+                     "--nodefault", "--nofirststartwizard", *arguments], cwd=str(cwd), timeout=remaining,
+                    owned_env={"HOME": str(home), "TMPDIR": str(temporary),
+                               "XDG_CONFIG_HOME": str(home / "config"), "XDG_CACHE_HOME": str(home / "cache")})
+
+
+def _assert_office(job: Path, deadline: float) -> str:
+    package = _process(["/usr/bin/dpkg-query", "-W", "-f=${Version}", "libreoffice-writer-nogui"],
+                       cwd=str(job), timeout=max(.1, deadline - time.monotonic())).decode().strip()
+    if package != OFFICE_DEBIAN_VERSION:
+        raise RuntimeError("installed LibreOffice does not match the pinned Debian package")
+    actual = _office(["--version"], cwd=job, deadline=deadline).decode("utf-8", "replace")
+    if not actual.startswith("LibreOffice 25.2.3."):
+        raise RuntimeError("actual LibreOffice executable differs from the pinned release")
+    return "LibreOffice " + OFFICE_DEBIAN_VERSION
+
+
 def _validated_ast(raw: bytes) -> dict:
     """Keep the DOCX writer away from images, includes, raw content and unsafe links."""
     try:
@@ -186,6 +262,9 @@ def _output_bytes(path: Path, output_format: str) -> bytes:
         raise RuntimeError("document output exceeded the byte limit")
     if output_format == "txt":
         data.decode("utf-8")
+    elif output_format == "pdf":
+        if not data.startswith(b"%PDF-") or b"%%EOF" not in data[-1024:]:
+            raise RuntimeError("LibreOffice did not produce a bounded PDF")
     else:
         try:
             with zipfile.ZipFile(io.BytesIO(data)) as archive:
@@ -197,8 +276,16 @@ def _output_bytes(path: Path, output_format: str) -> bytes:
                 for item in entries:
                     if item.filename.startswith("/") or ".." in Path(item.filename).parts:
                         raise ValueError
-                xml = archive.read("word/document.xml")
-                ElementTree.fromstring(xml)
+                if output_format == "pptx":
+                    ElementTree.fromstring(archive.read("ppt/presentation.xml"))
+                    slides = [name for name in archive.namelist() if re.fullmatch(r"ppt/slides/slide[0-9]+\.xml", name)]
+                    if not 1 <= len(slides) <= 100:
+                        raise ValueError
+                    for name in slides:
+                        ElementTree.fromstring(archive.read(name))
+                else:
+                    xml = archive.read("word/document.xml")
+                    ElementTree.fromstring(xml)
         except (ValueError, KeyError, zipfile.BadZipFile, ElementTree.ParseError):
             raise RuntimeError("Pandoc did not produce a valid bounded DOCX document") from None
     return data
@@ -224,11 +311,13 @@ def document_setup_check() -> dict:
         return {"available": False, "pinned_version": VERSION}
 
 
-@command("convert", description="Convert one workspace UTF-8 Markdown file to DOCX or plain text with bounded fixed Pandoc argv.")
-def convert(input_path: str, output_name: str, output_format: str = "docx", command_timeout: int = 30) -> dict:
+@command("convert", description="Convert bounded Markdown/HTML to DOCX, TXT, PPTX or native headless Writer PDF.")
+def convert(input_path: str, output_name: str, output_format: str = "docx", command_timeout: int = 30, input_format: str = "markdown") -> dict:
     deadline = _timeout(command_timeout)
-    if output_format not in {"docx", "txt"}:
-        raise ValueError("output_format must be docx or txt")
+    if input_format not in {"markdown", "html"}:
+        raise ValueError("input_format must be markdown or html")
+    if output_format not in {"docx", "txt", "pdf", "pptx"}:
+        raise ValueError("output_format must be docx, txt, pdf or pptx")
     if not isinstance(output_name, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,119}\." + output_format, output_name):
         raise ValueError("output_name must be a plain filename with the output_format extension")
     if not _LOCK.acquire(blocking=False):
@@ -246,21 +335,35 @@ def convert(input_path: str, output_name: str, output_format: str = "docx", comm
                         raise ValueError
                 except (UnicodeError, ValueError):
                     raise ValueError("input must be nonempty UTF-8 Markdown without NUL bytes") from None
+                if input_format == "html":
+                    _guard_html(text)
                 source.write_text(text, encoding="utf-8")
                 _assert_version(deadline)
-                raw = _pandoc(["--sandbox", "--fail-if-warnings", "--from=gfm-raw_html", "--to=json", str(source)], cwd=job, deadline=deadline)
+                raw = _pandoc(["--sandbox", "--fail-if-warnings", "--from=" + ("html" if input_format == "html" else "gfm-raw_html"), "--to=json", str(source)], cwd=job, deadline=deadline)
                 document = _validated_ast(raw)
                 if not document["blocks"]:
                     raise ValueError("input must contain visible document content")
                 validated.write_text(json.dumps(document), encoding="utf-8")
                 # Debian's non-embedded-data binary cannot write DOCX in --sandbox.
                 # Only the validated, metadata-free, image/raw-free AST reaches
-                # that fixed writer. No filter, include or PDF engine is invoked.
-                arguments = ["--from=json", "--to=" + ("plain" if output_format == "txt" else "docx"),
-                             "--fail-if-warnings", "--output", str(output), str(validated)]
+                # that fixed writer. PDF uses only this generated, validated DOCX.
+                writer = {"txt": "plain", "docx": "docx", "pptx": "pptx", "pdf": "docx"}[output_format]
+                intermediate = job / "render.docx" if output_format == "pdf" else output
+                arguments = ["--from=json", "--to=" + writer,
+                             "--fail-if-warnings", "--output", str(intermediate), str(validated)]
+                if output_format == "pptx":
+                    arguments.insert(0, "--slide-level=2")
                 if output_format == "txt":
                     arguments.insert(0, "--sandbox")
                 _pandoc(arguments, cwd=job, deadline=deadline)
+                if output_format == "pdf":
+                    _output_bytes(intermediate, "docx")
+                    _assert_office(job, deadline)
+                    _office(["--convert-to", "pdf:writer_pdf_Export", "--outdir", str(job), str(intermediate)], cwd=job, deadline=deadline)
+                    produced = job / "render.pdf"
+                    if not produced.is_file() or produced.is_symlink():
+                        raise RuntimeError("native LibreOffice did not create its expected PDF")
+                    produced.rename(output)
                 data = _output_bytes(output, output_format)
                 try:
                     os.link(output, output_name, dst_dir_fd=descriptor, follow_symlinks=False)
@@ -272,6 +375,12 @@ def convert(input_path: str, output_name: str, output_format: str = "docx", comm
             os.close(descriptor)
     finally:
         _LOCK.release()
+
+
+@command("office_version", description="Verify the exact Debian headless LibreOffice Writer package and actual binary.")
+def office_version() -> str:
+    with tempfile.TemporaryDirectory(prefix="abx-office-version-") as directory:
+        return _assert_office(Path(directory), _timeout(15))
 
 
 @command("document_smoke", description="Convert owned original Markdown to DOCX/TXT, inspect document XML/text, and clean up.")
@@ -312,6 +421,47 @@ def document_smoke() -> str:
             os.close(descriptor)
         if cleanup_failed:
             raise RuntimeError("owned document smoke artifact cleanup failed")
+
+
+@command("document_extended_smoke", description="Generate owned HTML/DOCX, native PPTX and headless Writer PDF, validate containers and clean up.")
+def document_extended_smoke() -> str:
+    root, descriptor = _root()
+    name = "document-extended-" + uuid.uuid4().hex
+    marker = "Extended document " + name
+    owned = []
+    try:
+        inputs = {name + ".html": "<h1>" + marker + "</h1><p><strong>Native HTML</strong> 世界.</p>",
+                  name + ".md": "# " + marker + "\n\n## Slide One\n\nFirst marker\n\n## Slide Two\n\nSecond marker\n"}
+        for filename, text in inputs.items():
+            with (root / filename).open("x", encoding="utf-8") as stream:
+                owned.append(filename)
+                stream.write(text)
+        for input_format, output_format in [("html", "docx"), ("markdown", "pptx"), ("markdown", "pdf")]:
+            filename = name + "-" + input_format + "." + output_format
+            convert(name + (".html" if input_format == "html" else ".md"), filename,
+                    output_format=output_format, input_format=input_format, command_timeout=60)
+            owned.append(filename)
+            data = _output_bytes(root / filename, output_format)
+            if output_format in {"docx", "pptx"}:
+                with zipfile.ZipFile(io.BytesIO(data)) as archive:
+                    paths = (["word/document.xml"] if output_format == "docx" else
+                             [n for n in archive.namelist() if re.fullmatch(r"ppt/slides/slide[0-9]+\.xml", n)])
+                    text = " ".join("".join(ElementTree.fromstring(archive.read(n)).itertext()) for n in paths)
+                if marker not in text:
+                    raise RuntimeError("native document text self-test failed")
+        return "Pandoc HTML/PPTX and LibreOffice PDF artifacts OK"
+    finally:
+        failed = False
+        for filename in reversed(owned):
+            try:
+                os.unlink(filename, dir_fd=descriptor)
+            except FileNotFoundError:
+                pass
+            except OSError:
+                failed = True
+        os.close(descriptor)
+        if failed:
+            raise RuntimeError("owned extended document cleanup failed")
 
 
 if __name__ == "__main__":

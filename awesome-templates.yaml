@@ -283,7 +283,7 @@ templates:
 
   # === Community Templates ===
   - name: document-tools
-    description: "Bounded offline Markdown to DOCX/plain-text conversion using pinned Pandoc."
+    description: "Bounded Markdown/HTML to DOCX, TXT, PPTX and headless LibreOffice PDF."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: document-tools
     tags: [pandoc, documents, markdown, docx, cpu]

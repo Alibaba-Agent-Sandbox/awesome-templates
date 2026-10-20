@@ -1,21 +1,22 @@
 # Document tools
 
-Offline Markdown conversion with Pandoc. [中文说明](README.zh-CN.md).
+Offline text conversion with Pandoc and headless Writer. [中文说明](README.zh-CN.md).
 
 ## What it does
 
-Convert a UTF-8 Markdown workspace file to a real DOCX or plain-text artifact. The server returns the path, byte count and SHA256; callers download the file using the files API. No model, external account, display, GPU or privileged daemon is required.
+Convert UTF-8 Markdown or bounded text HTML workspace files to actual DOCX, TXT, PPTX or native headless Writer PDF artifacts. The server returns the path, byte count and SHA256; callers download the file using the files API. No model, external account, display, GPU or privileged daemon is required.
 
 ## Stack
 
 - Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`, normally `cn-hangzhou` / `v0.0.49`.
 - Exact Debian 13 `pandoc=3.1.11.1+ds-2`, `pandoc-data=3.1.11.1-3`; their different version strings are intentional. Other OS libraries resolve from Debian repositories.
+- Headless LibreOffice writer/core/common`4:25.2.3-2+deb13u8`, DejaVu`2.37-8` and Noto CJK`1:20240730+repack1-1`.
 - Injected server wheel or immutable python-sdk source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`.
 - Non-root `user`, writable `/home/user/app`, generation 2 standard serve/healthcheck, port 9000.
 
 ## Problem solved
 
-Deliver the text-first Pandoc slice of [Issue 55](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/55): headings, emphasis, lists and Unicode text become independently verifiable documents. The interface accepts GFM Markdown and outputs DOCX/TXT. HTML input, images, PDF, slides and LibreOffice are future work and are not implied by this template name.
+Deliver the bounded text conversion requested by [Issue55](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/55): Markdown/HTML headings, emphasis, lists and Unicode become independently verifiable office documents, slides and PDF. Version1.1implements HTML/PPTX/Writer PDF alongside the original DOCX/TXT API; images, arbitrary native options and interactive GUI work remain outside this profile.
 
 ## Quick start (CLI)
 
@@ -70,20 +71,71 @@ curl --fail-with-body --max-time 90 --request POST "$ABX_SERVER_URL/commands/con
 
 Arguments are direct JSON parameters. HTTP 200 returns `{"result":{"output_path":"/home/user/app/report.docx","output_format":"docx","bytes":12345,"sha256":"<64 hex characters>"}}`, with size/hash depending on content. Missing/mistyped arguments return 400; failed authentication 401; unknown commands 404; invalid paths, document content, limits or execution errors 500 with `error` and `type`. Results are buffered. A client timeout or disconnection does not guarantee cancellation.
 
+### Version1.1text-document profile
+
+The existing `convert` command keeps its required paths and default Markdown/DOCX
+behavior. Add `input_format="html"` for balanced text HTML and choose
+`output_format="docx"|"txt"|"pptx"|"pdf"`. The extra parameter is optional;
+existing callers remain compatible. A plain output filename must match its format.
+
+```bash
+abx run <sandbox-id> convert --arg input_path=uploaded.html --arg input_format=html --arg output_name=document.pdf --arg output_format=pdf --arg command_timeout=60
+abx run <sandbox-id> convert --arg input_path=uploaded.md --arg output_name=slides.pptx --arg output_format=pptx
+```
+
+```python
+result = await sb.run("convert", input_path="uploaded.html", input_format="html", output_name="document.pdf", output_format="pdf", command_timeout=60, timeout=90)
+```
+
+The direct HTTP body is `{"input_path":"uploaded.html","input_format":"html","output_name":"document.pdf","output_format":"pdf","command_timeout":60}`.
+Successful calls return the existing output path/format/bytes/SHA256 fields.
+`office_version` verifies actual headless Writer and its exact Debian package;
+`document_extended_smoke` creates HTML/DOCX, native PPTX and Writer PDF and removes
+its own files. Its PDF signature is supplemented by independent external pypdf
+page/text/nonce verification in the full HTTP controller.
+
+Pandoc remains3.1.11.1with its distinct pinned Debian data package. PDF uses only
+DOCX generated from validated, metadata-free, image/raw-free Pandoc AST, then
+actual LibreOffice Writer. Pin writer-nogui/core-nogui/common to
+`4:25.2.3-2+deb13u8`, DejaVu2.37-8and Noto CJK1:20240730+repack1-1;
+Debian resolves unrelated libraries. No uploaded DOCX/macros are accepted.
+Each document conversion uses a fresh private HOME/XDG/temp/profile and direct
+soffice.bin with `-env:UserInstallation`, headless/no-default-document flags.
+The caller's profile is never reused. No GUI/display, daemon, GPU or model is needed.
+
+HTML accepts explicit balanced text tags, headings, lists, tables, emphasis,
+code and web/mail/fragment links. Reject resource/script/style/event attributes,
+images/iframes/objects and arbitrary tags before the sandboxed reader. At most
+20000tags/depth100; AST bounds still apply. PPTX uses native Pandoc slide-level2
+and validates1–100slide XML entries. PDF and all artifacts remain at most8MiB;
+inputs remain1MiB/UTF-8. Shared deadlines and no-clobber publication remain.
+Office has2GiB address-space/60–61second CPU guards; Pandoc keeps1GiB address
+space/256MiB Haskell heap and30–31second CPU guards. The sandbox profile is now
+2vCPU/4GiB. A deliberately detached child or abrupt server loss still requires
+final sandbox destruction.
+
+For independent PDF verification, install the public controller dependency
+`pypdf==6.21.1`; the image does not require that Python library. Native LibreOffice,
+font and Pandoc licenses remain in installed Debian copyright files; template
+code retains Apache-2.0. See[LibreOffice package](https://packages.debian.org/trixie/libreoffice-writer-nogui)
+and[official profile/headless/conversion parameters](https://help.libreoffice.org/latest/en-US/text/shared/guide/start_parameters.html).
+
 ## Command reference
 
 | Command | Parameters | Returns | Description |
 |---|---|---|---|
 | `document_version` | none | string | Actual pinned `pandoc 3.1.11.1`. |
 | `document_setup_check` | none | object | Pinned executable availability; no document processing. |
-| `convert` | required strings `input_path`, `output_name`; `output_format`: `docx` (default) or `txt`; integer `command_timeout`: default 30, range 1–60 | object | Path, format, bytes and SHA256 of a new artifact. |
+| `convert` | required strings `input_path`, `output_name`; `output_format`: `docx` (default), `txt`, `pptx` or `pdf`; `input_format`: `markdown` (default) or `html`; integer `command_timeout`: default30, range1–60 | object | Path, format, bytes and SHA256 of a new artifact. |
 | `document_smoke` | none | string | Actual owned Markdown → DOCX/TXT, independent content inspection and cleanup. |
+| `office_version` | none | string | Verify the exact Debian Writer package and actual native version. |
+| `document_extended_smoke` | none | string | Actual HTML/DOCX, PPTX and headless PDF creation, container checks and owned cleanup. |
 
 Input is one nonempty UTF-8 file, at most 1 MiB, identified by a relative path inside `WORKSPACE`. No parent traversal, absolute paths, symlink components, devices or FIFOs are allowed. A descriptor-based read creates a private snapshot. Output uses a plain ASCII filename beginning with a letter/digit, followed by at most 119 letters/digits/underscores/dots/hyphens, and the selected extension; existing files or symlinks are never overwritten.
 
-The first fixed Pandoc stage reads GFM with `--sandbox` into a bounded JSON AST. Validation rejects Image/Raw nodes, non-web/non-mail/non-fragment links, excessive complexity/depth, and removes metadata. The fixed TXT writer runs sandboxed. Debian's non-embedded-data Pandoc cannot produce DOCX with `--sandbox` because its internal templates live on disk; only the validated image/raw-free AST reaches the fixed DOCX writer, which may read the installed package data. No filter, include flag, custom template, PDF engine or caller-provided argv is accepted. This is an explicit application boundary, not an operating-system network sandbox for the whole writer.
+The first fixed Pandoc stage reads GFM with `--sandbox` into a bounded JSON AST. Validation rejects Image/Raw nodes, non-web/non-mail/non-fragment links, excessive complexity/depth, and removes metadata. The fixed TXT writer runs sandboxed. Debian's non-embedded-data Pandoc cannot produce DOCX with `--sandbox` because its internal templates live on disk; only the validated image/raw-free AST reaches the fixed DOCX writer, which may read the installed package data. PDF uses the sole fixed, isolated Writer stage. Conversion options are the documented formats and deadline; arbitrary filters/includes/templates/argv are excluded. This is an explicit application boundary, not an operating-system network sandbox for the whole writer.
 
-One conversion runs at a time. Each native process has 1 GiB address space, 256 MiB Haskell heap, two runtime capabilities, 30/31-second CPU soft/hard limits, 8 MiB per-file limit, no core dumps, and a shared operation wall deadline. Only HOME/PATH/optional library path, fixed locale/thread/allocator settings and the operator-selected package data path are forwarded. Each diagnostic/AST output stream is capped at 1 MiB; native diagnostics are omitted from errors. DOCX ZIP entry counts, total expanded size and document XML are checked before no-clobber publication.
+One conversion runs at a time. Pandoc has 1 GiB address space, a 256 MiB Haskell heap, two runtime capabilities and 30/31-second CPU soft/hard limits. Writer has 2 GiB address space and 60/61-second CPU limits. Both retain the 8 MiB per-file limit, disabled core dumps and shared operation wall deadline. Only HOME/PATH/optional library path, fixed locale/thread/allocator settings and the operator-selected package data path are forwarded; Writer substitutes its owned HOME/XDG/temp directories. Each diagnostic/AST output stream is capped at 1 MiB; native diagnostics are omitted from errors. OOXML entry counts, expanded size and required XML are checked before no-clobber publication.
 
 ## Configuration
 
@@ -102,11 +154,16 @@ Prewarmed servers read their process-start configuration before subsequent shell
 | Resource | Value |
 |---|---|
 | CPU | 2 vCPU; two Haskell runtime capabilities |
-| Memory | 2048 MB sandbox, 1 GiB native address-space limit, 256 MiB heap |
+| Memory |4096MB sandbox; Pandoc1GiB address space/256MiB heap; Office2GiB address space |
 | Port | 9000 |
 | Disk | Platform rootfs; 1 MiB input, 8 MiB output; callers remove retained artifacts |
 
 ## Verified
+
+Version1.1HTML/PPTX/PDF, image and Express verification is pending. Historical1.0receipts below do not qualify1.1.
+
+## Historical1.0verification
+
 
 | Provider | Executed scope | Evidence |
 | --- | --- | --- |

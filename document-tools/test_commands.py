@@ -154,7 +154,7 @@ def test_existing_file_and_symlink_never_overwritten(workspace):
     assert (workspace / "existing.docx").read_bytes() == b"original"
 
 
-@pytest.mark.parametrize("arguments", [{"command_timeout": 0}, {"command_timeout": 61}, {"command_timeout": True}, {"output_format": "pdf"}])
+@pytest.mark.parametrize("arguments", [{"command_timeout": 0}, {"command_timeout": 61}, {"command_timeout": True}, {"output_format": "exe"}])
 def test_limits_and_unimplemented_formats_fail_explicitly(workspace, arguments):
     with pytest.raises(ValueError):
         document.convert("source.md", "result.docx", **arguments)
@@ -203,3 +203,59 @@ def test_native_diagnostic_overflow_and_secret_environment(workspace, monkeypatc
         document._process([sys.executable, "-c", "print('X'*3000000)"], cwd=str(workspace), timeout=2)
     monkeypatch.setenv("ABX_LLM_API_KEY", "synthetic-secret")
     assert document._process([sys.executable, "-c", "import os;print('ABX_LLM_API_KEY' in os.environ)"], cwd=str(workspace), timeout=2) == b"False\n"
+
+
+@pytest.mark.parametrize("html", [
+    '<img src="https://example.invalid/private">', '<iframe src="file:///etc/passwd"></iframe>',
+    '<script>fetch("https://example.invalid")</script>', '<p style="background:url(file:///x)">x</p>',
+    '<a href="file:///etc/passwd">private</a>', '<p onclick="danger()">x</p>',
+    '<!DOCTYPE html SYSTEM "file:///etc/passwd"><p>x</p>', '<p><b>unbalanced</p>',
+])
+def test_html_guard_refuses_external_resources_before_any_native_reader(workspace,monkeypatch,html):
+    (workspace / 'unsafe.html').write_text(html)
+    def never(*args,**kwargs):
+        raise AssertionError('native reader must not see rejected HTML')
+    monkeypatch.setattr(document,'_pandoc',never)
+    with pytest.raises(ValueError):
+        document.convert('unsafe.html','safe.docx',input_format='html')
+    assert not (workspace/'safe.docx').exists()
+
+
+def test_html_guard_accepts_balanced_text_and_safe_web_links():
+    document._guard_html('<!doctype html><html><head><title>Title</title></head><body><h1>世界</h1><p><strong>Text</strong> <a href="https://example.invalid/">web link</a></p><ul><li>One</li></ul></body></html>')
+
+
+@pytest.mark.parametrize('input_format,output_format', [('html','docx'),('html','txt'),('html','pptx'),('markdown','pptx')])
+def test_actual_native_html_and_slides_contain_independent_markers(workspace,input_format,output_format):
+    if input_format=='html':
+        (workspace/'source.html').write_text('<h1>Independent HTML 世界</h1><h2>Slide One</h2><p><strong>Bounded strong text</strong></p><h2>Slide Two</h2><ul><li>Second marker</li></ul>')
+        filename='source.html';markers=['Independent HTML','Slide One','Slide Two','Second marker','世界']
+    else:
+        (workspace/'source.md').write_text('# Independent slides 世界\n\n## Slide One\n\nFirst marker\n\n## Slide Two\n\nSecond marker\n')
+        filename='source.md';markers=['Independent slides','Slide One','Slide Two','Second marker','世界']
+    result=document.convert(filename,'new.'+output_format,output_format=output_format,input_format=input_format)
+    data=(workspace/('new.'+output_format)).read_bytes()
+    assert result['sha256']==hashlib.sha256(data).hexdigest()
+    if output_format=='txt':text=data.decode()
+    else:
+        with zipfile.ZipFile(io.BytesIO(data)) as archive:
+            paths=[p for p in archive.namelist() if (p=='word/document.xml' if output_format=='docx' else p.startswith('ppt/slides/slide') and p.endswith('.xml'))]
+            text=' '.join(''.join(ElementTree.fromstring(archive.read(p)).itertext()) for p in paths)
+            if output_format=='pptx':assert len(paths)>=2
+    assert all(marker in text for marker in markers)
+
+
+def test_actual_native_office_pdf_has_random_text_and_removes_private_profile(workspace,monkeypatch):
+    if not Path('/usr/lib/libreoffice/program/soffice.bin').is_file():
+        if os.environ.get('E2E_REQUIRE_DOCUMENT')=='1':pytest.fail('required pinned headless LibreOffice missing')
+        pytest.skip('headless LibreOffice not installed on this operator; required native CI remains mandatory')
+    from pypdf import PdfReader
+    import secrets
+    marker='independent-pdf-'+secrets.token_hex(12)
+    (workspace/'source.md').write_text('# '+marker+'\n\nReal headless Writer content 世界.\n')
+    assert document.office_version()=='LibreOffice '+document.OFFICE_DEBIAN_VERSION
+    result=document.convert('source.md','real.pdf',output_format='pdf',command_timeout=60)
+    data=(workspace/'real.pdf').read_bytes();reader=PdfReader(io.BytesIO(data))
+    assert len(reader.pages)>=1 and marker in '\n'.join(page.extract_text() for page in reader.pages)
+    assert result['sha256']==hashlib.sha256(data).hexdigest()
+    assert not list(workspace.glob('.document-*'))
