@@ -50,7 +50,7 @@ async def main():
         stream = await sandbox.commands.start(
             'agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py',
             env={key: os.environ[key] for key in ('SWE_API_KEY', 'SWE_BASE_URL', 'SWE_MODEL')}
-                | {'WORKSPACE': '/home/user/app', 'ABX_SERVER_BASE_DIR': '/home/user/app'},
+                | {'WORKSPACE': '/home/user/app', 'ABX_SERVER_BASE_DIR': '/home/user/app', 'SWE_MODEL_PROTOCOL': 'toolcall'},
             timeout=900,
         )
         async def drain():
@@ -105,7 +105,7 @@ curl -fsS --max-time 240 "$BASE_URL/commands/swe_evaluate" -H 'Content-Type: app
 | `swe_version` | 无 | 实际 `mini --help` 与已安装 distribution 版本，无需 key |
 | `swe_setup_check` | 无 | 运行时、key、base、model 是否存在的布尔值，不返回秘密值 |
 | `swe_prepare` | `instance_id: str = "pallets__flask-5014"` | `run_id` 及独立重现的基线；拒绝其他题目 |
-| `swe_run_agent` | 必填 `run_id: str`；`allow_execution: bool = false`；`max_steps: int = 12`（1–30）；`command_timeout: int = 300`（30–900） | 实际 `mini -c <已安装 default.yaml> -c <私有 config.yaml> -o <私有 trajectory>`；必须显式允许 shell；返回模型调用次数与 Submitted 状态 |
+| `swe_run_agent` | 必填 `run_id: str`；`allow_execution: bool = false`；`max_steps: int = 12`（1–30）；`command_timeout: int = 300`（30–900） | 实际 `mini -c <已安装 default.yaml 或 mini.yaml> -c <私有 config.yaml> -o <私有 trajectory>`；必须显式允许 shell；返回模型调用次数与 Submitted 状态 |
 | `swe_evaluate` | 必填 `run_id: str` | 全新 base、原始测试和指定源码差异；准确测试状态、计数、`resolved_slice`、`official_benchmark_score: false`、补丁与报告路径 |
 | `swe_report` | 必填 `run_id: str` | 上次评测及产物路径；未评测先拒绝 |
 | `swe_cleanup` | 必填 `run_id: str` | 只删除该任务所属目录，返回 true |
@@ -114,7 +114,7 @@ curl -fsS --max-time 240 "$BASE_URL/commands/swe_evaluate" -H 'Content-Type: app
 
 ## 配置
 
-实测实例工作流显式允许30步和600秒，HTTP时限660秒。公开API默认值仍为12步/300秒；较早尝试中，所用模型未在该保守预算内完成。另一次自有云沙箱诊断在25次调用后提交，并由独立评测器通过原有全部60个测试身份。此次只调整验收预算和示例，不修改运行时或评测断言。
+实测实例工作流显式允许30步和600秒，HTTP时限660秒。公开API默认值仍为12步/300秒；较早尝试中，所用模型未在该保守预算内完成。另一次自有云沙箱诊断在25次调用后提交，并由独立评测器通过原有全部60个测试身份。随后使用该预算的严格重跑仍未提交；诊断成功不能作为模板验收。版本1.1.0新增上游原生 bash 工具调用协议：启动配置服务时设置 `SWE_MODEL_PROTOCOL=toolcall`，选择官方 `mini.yaml` 和 LiteLLM 原生函数调用。默认 `text` 保留原有 `default.yaml` 文本协议；未知取值在运行前拒绝。诊断返回 `native_tool_calls`，严格验收要求其为真。原始测试身份、全新评测器和评分断言保持原样。必须重新构建1.1.0镜像并完成真实云端/模型验收。
 
 
 YAML 声明空的 `SWE_API_KEY`、`SWE_BASE_URL`、`SWE_MODEL`，必须明确注入服务进程。模型 key 只传给代理进程环境，不进入模型 shell action 的环境。凭据不放 argv、配置 JSON、返回错误或持久报告。私有 trajectory/config 目录由 finally 删除。这是进程卫生措施，不能防止同用户恶意代码读取其他进程。
@@ -129,7 +129,7 @@ YAML 声明空的 `SWE_API_KEY`、`SWE_BASE_URL`、`SWE_MODEL`，必须明确注
 
 ## 已验证
 
-版本1.0.1显式修复非root运行用户的工作区目录归属，当前版本的提供方验收尚待重跑。此前回执仅证明原始版本/哈希的已记录范围，保留在下面历史部分。
+版本1.1.0新增可选上游原生 bash 工具调用，并保留1.0.1的非root工作区目录归属修复；当前版本提供方验收仍待完成。此前回执仅证明原始版本/哈希的已记录范围，保留在下面历史部分。
 
 ## 历史验收
 

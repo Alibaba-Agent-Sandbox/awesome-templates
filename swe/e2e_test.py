@@ -42,7 +42,7 @@ def acceptance(client):
     setup=value.json().get('result',{}) if value.status_code==200 else {}
     wanted=enabled('E2E_RUN_LLM') or enabled('E2E_REQUIRE_LLM')
     if os.environ.get('E2E_RUN_LLM')=='0':wanted=False
-    available=all(setup.get(k) is True for k in ('api_key_set','base_url_set','model_set','runtime_available'))
+    available=all(setup.get(k) is True for k in ('api_key_set','base_url_set','model_set','runtime_available','native_tool_calls'))
     if not wanted or not available:
         if enabled('E2E_REQUIRE_LLM'):record(False,'required real mini run cannot skip missing target settings/runtime')
         else:print('[SKIP] real mini coding; no model/image acceptance claimed',flush=True)

@@ -52,7 +52,7 @@ async def main():
         stream = await sandbox.commands.start(
             'agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py',
             env={key: os.environ[key] for key in ('SWE_API_KEY', 'SWE_BASE_URL', 'SWE_MODEL')}
-                | {'WORKSPACE': '/home/user/app', 'ABX_SERVER_BASE_DIR': '/home/user/app'},
+                | {'WORKSPACE': '/home/user/app', 'ABX_SERVER_BASE_DIR': '/home/user/app', 'SWE_MODEL_PROTOCOL': 'toolcall'},
             timeout=900,
         )
         async def drain():
@@ -107,7 +107,7 @@ Protect the named server using the server's documented token configuration if ex
 | `swe_version` | none | Actual `mini --help` and installed distribution version; no key |
 | `swe_setup_check` | none | Boolean runtime/key/base/model availability, no secret values |
 | `swe_prepare` | `instance_id: str = "pallets__flask-5014"` | Opaque `run_id`, independently reproduced baseline; other instances rejected |
-| `swe_run_agent` | `run_id: str` required; `allow_execution: bool = false`; `max_steps: int = 12` (1–30); `command_timeout: int = 300` (30–900) | Actual `mini -c <installed default.yaml> -c <private config.yaml> -o <private trajectory>`; requires explicit shell permission; returns model-call count and Submitted status |
+| `swe_run_agent` | `run_id: str` required; `allow_execution: bool = false`; `max_steps: int = 12` (1–30); `command_timeout: int = 300` (30–900) | Actual `mini -c <installed default.yaml or mini.yaml> -c <private config.yaml> -o <private trajectory>`; requires explicit shell permission; returns model-call count and Submitted status |
 | `swe_evaluate` | `run_id: str` required | Fresh base + original tests + supported source diff; exact test states, counts, `resolved_slice`, `official_benchmark_score: false`, patch/report artifact paths |
 | `swe_report` | `run_id: str` required | Last evaluation and artifact paths; refuses before evaluation |
 | `swe_cleanup` | `run_id: str` required | Deletes only that owned run; returns true |
@@ -116,7 +116,7 @@ Malformed types/unknown arguments return HTTP 400. Invalid instance/run ID, miss
 
 ## Configuration
 
-The verified real-instance workflow explicitly permits30 agent steps and600 seconds, with a660-second HTTP deadline. Public API defaults remain12 steps/300 seconds; those conservative defaults did not complete the configured model in earlier attempts. A separate owned-cloud diagnostic submitted after25 calls and independently passed all60 original test identities. This changes the acceptance budget and examples, not the runtime or scoring/assertion gates.
+The verified real-instance workflow explicitly permits30 agent steps and600 seconds, with a660-second HTTP deadline. Public API defaults remain12 steps/300 seconds; those conservative defaults did not complete the configured model in earlier attempts. A separate owned-cloud diagnostic submitted after25 calls and independently passed all60 original test identities. The strict repeat with that budget still failed before submission; that diagnostic success does not qualify the current template. Version1.1.0 adds the upstream native bash-tool protocol: set `SWE_MODEL_PROTOCOL=toolcall` when starting the configured command server. It selects official `mini.yaml` and LiteLLM native function calls. Default `text` retains the original `default.yaml` text protocol for existing clients. Unknown values fail before a run. Setup reports `native_tool_calls`; the strict controller requires this flag. Test identities, fresh evaluator and scoring/assertion gates remain unchanged. A fresh1.1.0 image and actual cloud/model acceptance are required.
 
 
 Empty `SWE_API_KEY`, `SWE_BASE_URL`, `SWE_MODEL` are declared in YAML and must be injected explicitly into the server process. Model keys go only to the agent process environment; they are excluded from model-action environments. Credentials are absent from argv, config JSON, returned errors and persisted reports. The private trajectory/config directory is removed in `finally`. This is process hygiene, not protection from malicious code running as the same user.
@@ -131,7 +131,7 @@ Use only trusted tasks/models in a disposable sandbox: mini executes model-gener
 
 ## Verified
 
-Version1.0.1 explicitly repairs non-root workspace-directory ownership. Current-version provider acceptance must be rerun. Earlier receipts establish only their original versions/hashes/scopes and are preserved below.
+Version1.1.0 adds optional upstream native bash-tool calling and retains the1.0.1 workspace-directory ownership repair. Current-version provider acceptance is pending. Earlier receipts establish only their original versions/hashes/scopes and are preserved below.
 
 ## Historical verification
 

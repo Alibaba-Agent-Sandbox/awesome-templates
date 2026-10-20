@@ -7,8 +7,37 @@ import json
 import os
 from pathlib import Path
 import tempfile
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from unittest.mock import patch
 import commands as c
 from swe_process import run
+
+
+def native_protocol_check(root):
+    """Actual installed mini and deterministic native HTTP; not model acceptance."""
+    seen=[]
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self,*args):pass
+        def do_POST(self):
+            body=json.loads(self.rfile.read(int(self.headers['Content-Length'])))
+            native=any(tool.get('function',{}).get('name')=='bash' for tool in body.get('tools',[]));seen.append(native)
+            message={'role':'assistant','content':'This deterministic endpoint requires native bash tool calls.'}
+            if native:
+                message={'role':'assistant','content':None,'tool_calls':[{'id':'owned-fixture-call','type':'function','function':{'name':'bash','arguments':json.dumps({'command':'echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT'})}}]}
+            response={'id':'owned-fixture','object':'chat.completion','created':0,'model':'fixture','choices':[{'index':0,'message':message,'finish_reason':'tool_calls' if native else 'stop'}],'usage':{'prompt_tokens':1,'completion_tokens':1,'total_tokens':2}}
+            payload=json.dumps(response).encode();self.send_response(200);self.send_header('Content-Type','application/json');self.send_header('Content-Length',str(len(payload)));self.end_headers();self.wfile.write(payload)
+    server=ThreadingHTTPServer(('127.0.0.1',0),Handler);thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
+    workspace=root/'native-workspace';workspace.mkdir();run_id='a'*32;target=workspace/'.swe-runs'/run_id;(target/'repo').mkdir(parents=True)
+    try:
+        with patch.dict(os.environ,{'WORKSPACE':str(workspace),'SWE_MODEL_PROTOCOL':'toolcall','SWE_API_KEY':'synthetic-native-protocol-key','SWE_BASE_URL':'http://127.0.0.1:'+str(server.server_port)+'/v1','SWE_MODEL':'fixture'}):
+            try:
+                result=c.swe_run_agent(run_id,allow_execution=True,max_steps=3,command_timeout=30)
+                assert result['exit_status']=='Submitted' and result['model_calls']==1 and seen==[True]
+            finally:c.swe_cleanup(run_id)
+    finally:
+        server.shutdown();server.server_close();thread.join(timeout=5);assert not thread.is_alive()
+    print('PASS actual official mini CLI advertises native bash tool schema, executes deterministic action and submits in one call',flush=True)
 
 
 def message(command):
@@ -30,6 +59,7 @@ def invoke(root, name, outputs, timeout=1):
 def main():
     with tempfile.TemporaryDirectory(prefix='swe-official-guards-') as temporary:
         root=Path(temporary)
+        native_protocol_check(root)
         code,state=invoke(root,'observation',["printf 'héllo\\n'; printf 'stderr\\n' >&2; exit 7",'echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT'])
         assert code==0 and state['info']['exit_status']=='Submitted'
         observations=[m.get('content','') for m in state['messages'] if m.get('role')=='user']
