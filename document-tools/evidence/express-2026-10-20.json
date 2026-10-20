@@ -1,0 +1,103 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-20",
+  "template": "document-tools",
+  "template_version": "1.1.0",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "image",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "harness_sha256": "91592778b24797075915b40f31f219f6517526b17cd2b3a75fe777f73fe6afd6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "document_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 3.606,
+      "result": "pandoc 3.1.11.1"
+    },
+    {
+      "name": "document_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 18.098,
+      "result": "pandoc 3.1.11.1"
+    },
+    {
+      "name": "document_smoke",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.502,
+      "result": "Pandoc Markdown DOCX/TXT artifacts OK"
+    },
+    {
+      "name": "document_smoke",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 1.352,
+      "result": "Pandoc Markdown DOCX/TXT artifacts OK"
+    },
+    {
+      "name": "office_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.402,
+      "result": "LibreOffice 4:25.2.3-2+deb13u8"
+    },
+    {
+      "name": "office_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 1.277,
+      "result": "LibreOffice 4:25.2.3-2+deb13u8"
+    },
+    {
+      "name": "document_extended_smoke",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 2.203,
+      "result": "Pandoc HTML/PPTX and LibreOffice PDF artifacts OK"
+    },
+    {
+      "name": "document_extended_smoke",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 2.133,
+      "result": "Pandoc HTML/PPTX and LibreOffice PDF artifacts OK"
+    }
+  ],
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "document-tools",
+    "template_version": "1.1.0",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "b887bb1d8feb80cc47444c17ba1d7f466285bfd8",
+    "checkout_commit": "b887bb1d8feb80cc47444c17ba1d7f466285bfd8",
+    "workflow_run_id": "39440349307",
+    "artifact_id": "12275216256",
+    "archive_sha256": "91f8aa4bdef345dda13c5d81c839bbf043acadd3f84c2ae873f577551e9871a0",
+    "image_config_sha256": "ea97dc47bb29e78af2f921d884f7a253c2126527bacb0bb965e0546a89cded70",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "4945033de4ed5be38c5343c9287d181cef8cf9d0283c785363623ed32b82a17a",
+      "template.yaml:contract": "10bfd222ead09ffadafe045eb1b414c240869f6810a0f8a728f7b8f3fdd24250",
+      "commands.py": "7b959fed8bc731e3fdeeaef073d0f0338f285b3607ceb47ff3692a6530015915"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:cd9b67660eb04c3a2b79b1d5f3379673bad8e163c866396b61c05689ec468c3d",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "registration_operation": "abx template create",
+  "boundary": "Verified CI Dockerfile image + private registry transfer; no controller Docker build or platform-step build claimed",
+  "registry_cleanup_verified": true
+}

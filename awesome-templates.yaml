@@ -45,6 +45,17 @@ templates:
       e2b: provider-prepared
       opensandbox: provider-prepared
 
+  - name: browser-use
+    description: Native browser-use0.13.11 with private local pinned Chromium and explicit model.
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: browser-use
+    tags: [browser-use, browser, ai-agent]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: install-build
+
   - name: browser-automation
     description: "Browser automation sandbox with Playwright + Chromium for web scraping and UI testing"
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
@@ -283,7 +294,7 @@ templates:
 
   # === Community Templates ===
   - name: document-tools
-    description: "Bounded offline Markdown to DOCX/plain-text conversion using pinned Pandoc."
+    description: "Bounded Markdown/HTML to DOCX, TXT, PPTX and headless LibreOffice PDF."
     repo: https://github.com/alibaba-agent-sandbox/awesome-templates
     path: document-tools
     tags: [pandoc, documents, markdown, docx, cpu]

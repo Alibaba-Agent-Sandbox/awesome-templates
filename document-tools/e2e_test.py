@@ -11,6 +11,7 @@ import zipfile
 from xml.etree import ElementTree
 
 import httpx
+from pypdf import PdfReader
 
 
 def check(condition, label):
@@ -43,7 +44,7 @@ def main():
             check(client.get("/health").status_code == 200, "server health")
             response = client.get("/commands")
             names = {item["name"] for item in response.json().get("commands", [])}
-            check(response.status_code == 200 and {"document_version", "document_setup_check", "convert", "document_smoke"} <= names,
+            check(response.status_code == 200 and {"document_version", "document_setup_check", "convert", "document_smoke", "office_version", "document_extended_smoke"} <= names,
                   "typed document commands registered")
             check(client.post("/commands/convert", json={}).status_code == 400, "required path arguments enforced")
             check(client.post("/commands/convert", json={"input_path": "in.md", "output_name": "out.docx", "command_timeout": "oops"}).status_code == 400,
@@ -59,6 +60,8 @@ def main():
                 return 0
             check(call("document_version") == "pandoc 3.1.11.1", "actual pinned Pandoc version")
             check(call("document_smoke") == "Pandoc Markdown DOCX/TXT artifacts OK", "actual native DOCX/TXT self-test and cleanup")
+            check(call("office_version") == "LibreOffice 4:25.2.3-2+deb13u8", "exact native headless Writer package and binary")
+            check(call("document_extended_smoke") == "Pandoc HTML/PPTX and LibreOffice PDF artifacts OK", "native HTML, slides, PDF and owned cleanup")
             name = "document-controller-" + uuid.uuid4().hex
             nonce = secrets.token_hex(12)
             source = f"# Independent {nonce}\n\nOriginal **strong content** 世界.\n\n- Alpha\n- Beta\n".encode()
@@ -67,7 +70,7 @@ def main():
             response.raise_for_status()
             owned.append(input_path)
             check(download(input_path) == source, "out-of-band unique Markdown upload verified")
-            for output_format in ("docx", "txt"):
+            for output_format in ("docx", "txt", "pptx", "pdf"):
                 filename = name + "." + output_format
                 result = call("convert", input_path=name + ".md", output_name=filename, output_format=output_format)
                 path = root + "/" + filename
@@ -82,9 +85,32 @@ def main():
                         ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
                         check(tree.find(".//w:b", ns) is not None and tree.find(".//w:pStyle[@w:val='Heading1']", ns) is not None,
                               "independent DOCX XML heading and bold structure")
+                elif output_format == "pptx":
+                    with zipfile.ZipFile(io.BytesIO(data)) as archive:
+                        slides = [n for n in archive.namelist() if n.startswith("ppt/slides/slide") and n.endswith(".xml")]
+                        check(bool(slides), "independent native PPTX slide XML exists")
+                        text = " ".join("".join(ElementTree.fromstring(archive.read(n)).itertext()) for n in slides)
+                elif output_format == "pdf":
+                    reader = PdfReader(io.BytesIO(data))
+                    check(len(reader.pages) >= 1, "independent PDF parser reads native Writer pages")
+                    text = "\n".join(page.extract_text() for page in reader.pages)
                 else:
                     text = data.decode("utf-8")
                 check(all(marker in text for marker in (nonce, "strong content", "世界", "Alpha", "Beta")), "independent document content and fresh nonce preserved")
+            html_name = name + ".html"
+            html_path = root + "/" + html_name
+            html = f"<h1>HTML {nonce}</h1><h2>First slide</h2><p><strong>HTML strong content</strong> 世界.</p><h2>Second slide</h2><ul><li>Alpha</li><li>Beta</li></ul>".encode()
+            response = client.post("/files/upload-stream", json={"path": html_path, "content_base64": base64.b64encode(html).decode()})
+            response.raise_for_status()
+            owned.append(html_path)
+            result = call("convert", input_path=html_name, output_name=name + "-html.docx", input_format="html", output_format="docx")
+            html_output = root + "/" + name + "-html.docx"
+            owned.append(html_output)
+            data = download(html_output)
+            with zipfile.ZipFile(io.BytesIO(data)) as archive:
+                text = "".join(ElementTree.fromstring(archive.read("word/document.xml")).itertext())
+            check(nonce in text and "HTML strong content" in text and hashlib.sha256(data).hexdigest() == result["sha256"], "independent HTML DOCX content and complete bytes")
+            check(download(html_path) == html, "original HTML remains byte-identical")
             check(download(input_path) == source, "original input remains byte-identical")
         finally:
             for path in reversed(owned):

@@ -1,0 +1,37 @@
+{
+  "passed": true,
+  "model": "qwen3.8-flash",
+  "verification_type": "image-backed-native-browser-model",
+  "model_protocol": "OpenAI-compatible text-DOM",
+  "model_acceptance": "PASS",
+  "checks": {
+    "fixture_uploaded_via_sdk": true,
+    "independent_fixture_baseline": true,
+    "configured_server_ready": true
+  },
+  "native_done": true,
+  "native_success": true,
+  "native_steps": 8,
+  "native_error_summary": [
+    "1 validation error for AgentOutput\n  Invalid JSON: EOF while parsing a value at line 1 column 539 [type=json_invalid, input_value='{\"evaluation_previous_go...l, \"plan_update\": null,', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/json_invalid"
+  ],
+  "independent_counter": 3,
+  "submitted_code_matches": true,
+  "final_url_matches": true,
+  "png_sha256": "c4d755546cca2d8cf6bdbcead87c24cc707c6471b475fc8527b9dd0a84ffdba2",
+  "png_bytes": 17249,
+  "counter": 3,
+  "owned_process_file_cleanup_ack": true,
+  "owned_listeners_absent": true,
+  "owned_files_absent": true,
+  "template": "browser-use",
+  "template_version": "1.0.0",
+  "provider": "alicloud-express",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "cleanup_verified": true,
+  "registry_cleanup_verified": true,
+  "commands_sha256": "167e60a89161d4116c0167f0ccc46979635746fcc9f024a1af8cf46ca304e282",
+  "controller_sha256": "01e89530831ec536e2c232493464c04489b5dc57a520c02b316a117828f3106a",
+  "fixture_sha256": "5de7b826b7ba48df403ba84445035f27b1c06017210e81cb8613fe87e609123e",
+  "worker_sha256": "084b9fd1f51c64ef533f2afcdf15bd1cf6120d729a2c73695f02b7109f7991f6"
+}

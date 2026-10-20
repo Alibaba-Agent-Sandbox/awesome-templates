@@ -1,0 +1,11 @@
+{
+  "provider": "alicloud-express",
+  "template": "browser-use",
+  "template_version": "1.0.0",
+  "build_mode": "steps",
+  "passed": false,
+  "cleanup_verified": true,
+  "verification_date": "2026-10-20T12:32:37Z",
+  "last_official_state": "building",
+  "scope": "Actual native step attempt did not independently reach READY within1200seconds; sandbox was not created. Known owned template deletion acknowledged and independent official template/sandbox absence rechecked after failure. This is not a successful step receipt; Image/model qualification is separate and remains pending for current source."
+}
