@@ -9,6 +9,13 @@ RESULTS=[]
 def record(ok,label):RESULTS.append(bool(ok));print(f"[{'PASS'if ok else'FAIL'}] {label}",flush=True)
 
 
+def visible_fixture_matches(image,expected):
+    # Independent observation regions, excluding the initial center cursor and
+    # the button reached through actual VNC input.
+    positions=[(image.width-100,image.height-100),(image.width-50,image.height//2),(image.width//2,image.height-50)]
+    return all(all(abs(value-target)<=4 for value,target in zip(image.getpixel(point)[:3],expected))for point in positions)
+
+
 async def sdk(base,name,**parameters):
     from agent_sandbox.api.server_client import ServerClient
     client=ServerClient(base,token=os.environ.get('E2E_SERVER_TOKEN')or None,timeout=150)
@@ -55,12 +62,12 @@ async def real_desktop(base,client,headers):
             async def frame(pointer=None):
                 raw,width,height=await capture_websocket(ws,password,headers=headers,pointer=pointer)
                 image=Image.open(io.BytesIO(raw));image.load()
-                return raw,width,height,image.getpixel((width//2,height//2))
+                return raw,width,height,image
             for _ in range(20):
-                raw,width,height,pixel=await frame()
-                if pixel[1]>180 and pixel[0]<60 and pixel[2]<70:break
+                raw,width,height,image=await frame()
+                if visible_fixture_matches(image,(10,230,20)):break
                 await asyncio.sleep(.1)
-            record((width,height)==(1024,768)and pixel[1]>180 and pixel[0]<60 and pixel[2]<70,'authenticated external noVNC WebSocket RFB shows the same visible CDP state')
+            record((width,height)==(1024,768)and visible_fixture_matches(image,(10,230,20)),'authenticated external noVNC WebSocket RFB shows the same visible CDP state')
             position=await page.evaluate('(()=>{let r=document.querySelector("#action").getBoundingClientRect();return {x:Math.round(screenX+r.x+r.width/2),y:Math.round(screenY+outerHeight-innerHeight+r.y+r.height/2)}})()')
             await frame((position['x'],position['y']))
             for _ in range(30):
@@ -68,10 +75,10 @@ async def real_desktop(base,client,headers):
                 await asyncio.sleep(.1)
             record(await page.evaluate('window.n')==2,'actual external VNC pointer input reaches the same native browser DOM')
             for _ in range(20):
-                raw,width,height,pixel=await frame()
-                if pixel[2]>180 and pixel[0]<60 and pixel[1]<70:break
+                raw,width,height,image=await frame()
+                if visible_fixture_matches(image,(10,20,230)):break
                 await asyncio.sleep(.1)
-            record(pixel[2]>180 and pixel[0]<60 and pixel[1]<70,'native desktop redraw after VNC input is visible through VNC')
+            record(visible_fixture_matches(image,(10,20,230)),'native desktop redraw after VNC input is visible through VNC')
         artifact=await sdk(base,'chrome_screenshot');candidate=artifact['path']
         workspace=os.environ.get('E2E_WORKSPACE','/home/user/workspace').rstrip('/')
         valid=re.fullmatch(re.escape(workspace)+r'/abx_chrome_capture_[a-f0-9]{32}\.png',candidate)is not None
@@ -81,7 +88,7 @@ async def real_desktop(base,client,headers):
         response=client.get('/files/download-stream',params={'path':screenshot});response.raise_for_status();data=base64.b64decode(response.json()['content_base64'])
         image=Image.open(io.BytesIO(data));image.load();pixel=image.getpixel((image.width//2,image.height//2))
         record(len(data)==artifact['bytes']and hashlib.sha256(data).hexdigest()==artifact['sha256'],'independent downloaded native VNC PNG matches bytes/SHA256')
-        record(image.format=='PNG'and image.size==(1024,768)and pixel[2]>180 and pixel[0]<60 and pixel[1]<70,'independently decoded native PNG shows the visible browser result')
+        record(image.format=='PNG'and image.size==(1024,768)and visible_fixture_matches(image,(10,20,230)),'independently decoded native PNG shows the visible browser result')
         fresh='POST_RETURN_'+uuid.uuid4().hex
         code='import pathlib,hashlib;p=pathlib.Path('+repr(screenshot)+');assert hashlib.file_digest(p.open("rb"),"sha256").hexdigest()=='+repr(artifact['sha256'])+';print('+repr(fresh)+')'
         record(target_code(client,code)==fresh,'post-return exact target PNG verified with unpredictable ACK')

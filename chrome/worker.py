@@ -19,6 +19,15 @@ def available(port):
     except OSError:return False
 
 
+def fixture_frame_matches(image,expected):
+    # The real VNC framebuffer includes the software pointer. Its initial white
+    # cursor is centered on Xvfb; verify three controlled content regions away
+    # from the pointer and fixture button rather than sampling that pixel.
+    width,height=image.size
+    positions=[(width*3//4,height//2),(width*3//4,height*3//4),(width//2,height*3//4)]
+    return all(all(abs(actual-target)<=4 for actual,target in zip(image.getpixel(point)[:3],expected))for point in positions)
+
+
 class Desktop:
     def __init__(self,root):
         self.root=root;self.children=[];self.stage='initialization';self.display_info=None
@@ -137,7 +146,7 @@ class Desktop:
         for _ in range(20):
             raw,width,height=await capture_tcp(5901,self.password)
             image=Image.open(io.BytesIO(raw));pixel=image.getpixel((width//2,height//2))
-            if pixel[1]>180 and pixel[0]<60 and pixel[2]<70:return {'native_cdp':True,'authenticated_vnc':True,'native_png':True,'headed':True}
+            if fixture_frame_matches(image,(10,230,20)):return {'native_cdp':True,'authenticated_vnc':True,'native_png':True,'headed':True}
             await asyncio.sleep(.1)
         self.stage='smoke_frame';self.frame_pixel=list(pixel[:3])
         raise RuntimeError('native VNC framebuffer does not show actual CDP state')

@@ -86,3 +86,15 @@ def test_real_cdp_client_activates_selected_page_before_observing_visibility():
             assert calls==['Page.bringToFront','Page.enable']
         finally:await runner.cleanup()
     asyncio.run(run())
+
+
+def test_visible_native_fixture_validation_ignores_center_pointer_but_requires_all_content_regions(monkeypatch):
+    from PIL import Image
+    monkeypatch.syspath_prepend(str(Path(__file__).parent))
+    worker=load('chrome_native_fixture_color_tests','worker.py')
+    screenshot=Image.new('RGB',(1024,768),(10,230,20))
+    screenshot.putpixel((512,384),(255,255,255))
+    assert worker.fixture_frame_matches(screenshot,(10,230,20)) is True
+    screenshot.putpixel((768,576),(255,255,255))
+    assert worker.fixture_frame_matches(screenshot,(10,230,20)) is False
+    assert worker.fixture_frame_matches(Image.new('RGB',(1024,768),'white'),(10,230,20)) is False
