@@ -27,7 +27,8 @@ def final_text(stdout):
     if type(value.get('num_turns'))is not int or value['num_turns']<1:return ''
     if not isinstance(value.get('sessionId'),str)or not value['sessionId']or not isinstance(value.get('requestId'),str)or not value['requestId']:return ''
     if value.get('error')or value.get('is_error'):return ''
-    return value['text']
+    # Native JSON aggregates progress and the final reply in this one field.
+    return value['text'].rstrip().rsplit('\n',1)[-1].strip()
 
 
 def native_sdk_command(base,parameters):

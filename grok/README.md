@@ -102,6 +102,8 @@ Linuxx64 only,2vCPU,4096MB, port9000, about10GiB Express rootfs;8GiB image budge
 
 Current native image/Express/SDK/model qualification is pending. `tested_on: []`, catalog experimental. Local source fixtures and real keyless binary version/help are not a real coding/deployment pass.
 
+The native JSON text field includes earlier progress plus the final reply. Acceptance requires the last nonempty line to be the fresh exact marker, with end_turn/positive turns/session and request IDs; source/artifact/original-test/held-out checks still independently prove the work. Earlier progress is allowed, and a marker followed by different final text fails.
+
 ## Secondary development
 
 ```bash

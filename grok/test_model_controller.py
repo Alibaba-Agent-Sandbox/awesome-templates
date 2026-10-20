@@ -11,6 +11,8 @@ s.loader.exec_module(c)
 def test_exact_native_terminal_result_required():
     value={'stopReason':'end_turn','num_turns':2,'text':'fresh marker','sessionId':'session','requestId':'request'}
     assert c.final_text(json.dumps(value))=='fresh marker'
+    assert c.final_text(json.dumps(value|{'text':'native progress\n\nfresh marker'}))=='fresh marker'
+    assert c.final_text(json.dumps(value|{'text':'fresh marker\nnot final'}))!='fresh marker'
     for change in [{'stopReason':'max_tokens'},{'num_turns':0},{'num_turns':True},{'sessionId':''},{'requestId':''},{'error':'failure'},{'is_error':True}]:
         assert c.final_text(json.dumps(value|change))==''
     assert c.final_text('fresh marker')==''

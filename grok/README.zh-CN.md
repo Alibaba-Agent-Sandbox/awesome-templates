@@ -102,6 +102,8 @@ stdout／stderr 各限256KiB；成功／失败／超时／溢出均清理自有�
 
 当前原生镜像／Express／SDK／模型验收仍待执行。保持 `tested_on: []` 和 experimental。本地 source fixture、真实无凭据 version/help 不代表编码或部署通过。
 
+原生 JSON 的 text 会合并进度与最终回复。验收要求最后非空行恰为本次随机 marker，并同时验证 end_turn、正整数轮数与 session/request ID；源码、产物、原始测试和隐藏用例仍须独立通过。允许前面的进度文本；marker 后还有其他最终文本则失败。
+
 ## 二次开发
 
 ```bash
