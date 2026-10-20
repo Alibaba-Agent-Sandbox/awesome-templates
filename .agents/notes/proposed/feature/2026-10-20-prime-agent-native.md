@@ -12,7 +12,7 @@ Implement the unchanged official native0.10.0 binary and complete original relea
 
 ## API Design
 
-Planned scalar version/setup and prime_agent(prompt,cwd,command_timeout) with fixed native path/hash, private0700 HOME/settings, anonymous stdin, explicit model/key/base validation,256KiB per-stream bounds and exact owned cleanup. Final parameters/native terminal JSON checks must be documented and independently tested. No vendor subscription, daemon service, recursive-agent/research benchmark or other-provider acceptance is claimed.
+Scalar prime_agent_version/prime_agent_kernel_check/prime_agent_setup_check and prime_agent(prompt,cwd,command_timeout) with fixed native path/hash, private0700 HOME/settings, anonymous stdin, explicit model/key/base validation,256KiB per-stream bounds and exact owned cleanup. Native settled NDJSON remains unchanged under transparent bounded filtering; production completion requires final native stop/turn/agent events, coding acceptance also requires successful original ipython toolResult and independent tests. Selected original print mode has no child host and uses original NoRlmChildren; no delegated child is created. No vendor subscription, daemon service, recursive-agent/research benchmark or other-provider acceptance is claimed.
 
 ## Alternatives considered
 

@@ -226,3 +226,25 @@ def test_chrome_steps_preserve_native_archive_and_immutable_wire_budget():
     assert proof['build_assets']['x86_64'][0]['size']==175440843
     assert manifest['build']['steps'][-1]=={'type':'USER','args':['user']}
     assert 'rm -rf /tmp/abx-step-assets' in manifest['build']['steps'][-2]['args'][0]
+
+
+def test_prime_asset_profile_rejects_changed_official_identity(tmp_path):
+    from prepare_steps import parallel_assets
+    source=tmp_path/'prime-agent';source.mkdir()
+    data=json.loads((ROOT/'prime-agent/upstream.json').read_text())
+    (source/'upstream.json').write_text(json.dumps(data))
+    assert parallel_assets(source)=={'x86_64':[{key:data[key]for key in ['url','size','sha256']}]}
+    for key,value in [('version','0.0.0'),('source_commit','0'*40),('url','https://other.invalid/native.tar.gz'),('size',1),('sha256','0'*64),('binary_size',1),('binary_sha256','0'*64)]:
+        changed=dict(data);changed[key]=value
+        (source/'upstream.json').write_text(json.dumps(changed))
+        with pytest.raises(ValueError,match='unreviewed original Prime Agent'):parallel_assets(source)
+
+
+def test_prime_steps_preserve_original_kernel_and_immutable_wire_budget():
+    manifest,proof=prepare(ROOT/'prime-agent',asset_transport='parallel',server_commit='e2cb27e24fde0a67112f82b8d44af463445a5d1a')
+    assert proof['steps_json_bytes']<=15000
+    assert len(proof['copy_source_commit'])==40
+    assert proof['inputs_sha256']['kernel-python']==hashlib.sha256((ROOT/'prime-agent/kernel-python').read_bytes()).hexdigest()
+    assert set(proof['build_assets'])=={'x86_64'}
+    assert proof['build_assets']['x86_64'][0]['size']==21556959
+    assert manifest['build']['steps'][-1]=={'type':'USER','args':['user']}
