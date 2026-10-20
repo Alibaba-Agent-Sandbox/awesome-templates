@@ -5,8 +5,9 @@ ENV LANG=C.UTF-8
 ENV PLAYWRIGHT_BROWSERS_PATH=/opt/playwright
 
 # Playwright pins its Chromium revision; install system libraries during image build.
-RUN pip install --no-cache-dir "playwright==1.58.0" \
-    && python3 -m playwright install --with-deps chromium
+RUN pip install --no-cache-dir "playwright==1.58.0"
+RUN python3 -m playwright install-deps chromium
+RUN python3 -m playwright install chromium
 
 COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \

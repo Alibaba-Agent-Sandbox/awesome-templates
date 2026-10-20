@@ -145,7 +145,7 @@ small `/dev/shm`; concurrent browser requests increase memory usage. Delete old
 
 ## Verified
 
-Version2.0.1 explicitly repairs non-root workspace-directory ownership. Current-version provider acceptance must be rerun. Earlier receipts establish only their original versions/hashes/scopes and are preserved below.
+Version2.0.2 explicitly repairs non-root workspace-directory ownership. Current-version provider acceptance must be rerun. Earlier receipts establish only their original versions/hashes/scopes and are preserved below.
 
 ## Historical verification
 
@@ -157,6 +157,12 @@ a READY sandbox and external CLI and SDK calls. Missing Chromium fails L0;
 a skipped browser suite cannot count as acceptance.
 
 ## Secondary development
+
+Version2.0.2 separates Python package installation, system dependencies and
+Chromium download into three RUN steps after an observed RUN stream deadline.
+A later successful build diagnostic exceeded300 seconds; there is no verified universal per-RUN cap. Playwright and the full Chromium profile are unchanged;
+older version receipts remain history.
+
 
 Build from this directory using `abx template deploy` or the install command
 above. The deployer replaces Alibaba region/tag placeholders and can inject a
@@ -195,3 +201,5 @@ SDK commit, expected and actual results. Search existing issues first.
 
 Apache-2.0. Playwright is Apache-2.0; Chromium and bundled dependencies retain
 their upstream notices.
+
+Follow-up real build-network execution exceeded300seconds, so the earlier stream deadline is not a universal per-RUN cap. Stage separation is retained; slow large-asset transport remains unresolved.

@@ -63,3 +63,18 @@ all source versions, receipts, failures, model NOT_RUN labels and pending heavy
 profile qualification. This merge is not new cloud acceptance. Runtime reset
 removed temporary uncommitted artifacts; only durable receipts and actual remote
 states remain authoritative. Current-head checks must be rerun after this merge.
+
+Browser integration preserves PR126's actual build-stage separation together
+with this branch's actual non-root workspace repair. Both independently proposed
+2.0.1; the combined contract is2.0.2, explicitly unqualified until a genuine new
+image/runtime run. The original source-version-change JSON remains the immutable
+initial patch list; this dated follow-up describes the combined version. Normal
+Git merge retains PR126 ancestry and both engineering records. No old2.0.0 or
+2.0.1 receipt is relabelled as2.0.2.
+
+Integration verification before combining browser:38 spec tests PASS,19 step
+materializer tests PASS, strict25 catalog templates plus skeleton PASS,126
+document links PASS. The provisional unresolved merge HEAD could not authenticate
+new apply-patch source COPY and correctly hit the16KiB fallback guard; after
+recording the normal merge commit, the complete19-test generation suite passed.
+No limit/validation was weakened. Combined browser source checks follow below.
