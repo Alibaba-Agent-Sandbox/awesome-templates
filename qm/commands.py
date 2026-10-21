@@ -134,7 +134,7 @@ def qm(prompt: str,cwd: str='',command_timeout: int=300) -> dict:
     if not isinstance(prompt,str)or not prompt.strip()or len(prompt.encode())>32768 or '\0'in prompt:raise ValueError('prompt must contain1..32768UTF8 bytes without NUL')
     if type(command_timeout)is not int or not 1<=command_timeout<=600:raise ValueError('command_timeout must be1..600seconds')
     root=workspace(cwd);settings=model_settings()
-    result=invoke('run',{'prompt':prompt,'deadline':command_timeout,'root':root,'settings':settings,**sdk_settings()},command_timeout+40)
+    result=invoke('run',{'prompt':prompt,'deadline':command_timeout,'root':root,'settings':settings,**sdk_settings()},command_timeout+90)
     return {**result,'exit_code':0}
 
 

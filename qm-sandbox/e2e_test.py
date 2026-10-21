@@ -43,6 +43,16 @@ def backend(client,base,workspace):
         record(response.status_code==200 and value.get('exit_code')==0 and value.get('stdout','').strip()=='OWNED_QM_BACKEND_ABSENT','owned backend project independently absent')
 
 
+def safe_diagnostic(text):
+    import re
+    value={}
+    for key in ['stage','native_code','missing_module']:
+        match=re.search(r'\b'+key+r'=([A-Za-z0-9_@./-]{1,128})',text)
+        if match:value[key]=match[1]
+    for key,number in re.findall(r'\b(model_requests|native_tool_calls|native_tool_results|sdk_shell|sdk_upload|sdk_download)=([0-9]{1,6})',text):value[key]=int(number)
+    return value
+
+
 def main():
     base=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000').rstrip('/');workspace=os.environ.get('E2E_WORKSPACE','/home/user/app').rstrip('/')
     token=os.environ.get('E2E_SERVER_TOKEN','');headers={'Authorization':'Bearer '+token}if token else{}
@@ -70,5 +80,5 @@ def main():
 if __name__=='__main__':
     try:raise SystemExit(main())
     except Exception as exc:
-        print('[FAIL] original QM backend controller aborted ('+type(exc).__name__+'); private output omitted',flush=True)
+        print('[FAIL] original QM backend controller aborted ('+type(exc).__name__+'); diagnostics='+json.dumps(safe_diagnostic(str(exc)),sort_keys=True)+'; private output omitted',flush=True)
         raise SystemExit(1)

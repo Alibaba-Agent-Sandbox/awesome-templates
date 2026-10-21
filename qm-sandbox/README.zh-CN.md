@@ -66,7 +66,7 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/qm_sandbox_sdk_sm
   --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
   --header "Content-Type: application/json" --data '{}'
 ```
-HTTP200返回 `{"result":"Original QM tools and actual Agent Sandbox SDK round trip/owned cleanup OK"}`。参数为直接JSON对象，不包args。缺失/未知/类型错误400，鉴权401，未知命令404，语义/原生异常500及 `{error,type}`。执行结果分别保留真实code和timedOut；命令自己exit124不会自动算超时。断开HTTP请求不取消有界原生操作。
+HTTP200返回 `{"result":"Original QM tools and actual Agent Sandbox SDK round trip/owned cleanup OK"}`。参数为直接JSON对象，不包args。缺失/未知/类型错误400，鉴权401，未知命令404，语义/原生异常500及 `{error,type}`。执行结果分别保留真实code和timedOut；命令自己exit124不会自动算超时。断开HTTP请求不取消有界原生操作。后端关闭前等待已发出的SDK请求结束；模型工具执行上限为30秒与turn期限的较小值，中止结果不报告成功。
 
 ## 命令参考
 
@@ -79,7 +79,7 @@ HTTP200返回 `{"result":"Original QM tools and actual Agent Sandbox SDK round t
 | qm_sandbox_exec | command: required nonempty string1..32768UTF8 bytes/no NUL; cwd: optional string default empty, max4096bytes, existing contained directory; command_timeout: integer1..120seconds default60, booleans rejected | Original QM `{stdout,stderr,code,timedOut}`, completed sdk_calls and original_qm_tools:true; actual bounded native execution |
 | qm_sandbox_file | action: required read/write/list/remove; path: string default empty, max4096UTF8 bytes, contained resolved target; text: string default empty, max32768UTF8 bytes; cwd: existing contained string default empty/max4096bytes | `{result,sdk_calls,original_qm_tools:true}`. read returns original `{content:string|null,sourceScopeId}`; write/remove returntrue; list returns names. write/remove cannot target project root. Public read32KiB; write persists caller bytes; remove deletes only selected contained target |
 
-调用串行化，重叠报忙。原生stdout/stderr各256KiB，匿名请求256KiB。每次SDK工具命令显式使用Bash、最小环境、私有HOME，返回流各64KiB，执行1..120秒，并用进程组/nonce/pidfd清理后代。后端exec另有最多50秒启动/清理，模型封装40秒；客户端至少多给80秒。库层文件最大1MiB；公开命名文本写入/读取32KiB；目录最多1024名称且JSON不超过32KiB。超限报错，不静默截断。解析后的文件路径须在选定项目内；SDK助手再次拒绝路径/符号链接越界及删除根目录。shell具有外层用户OS权限，cwd并非额外OS隔离。
+调用串行化，重叠报忙。原生stdout/stderr各256KiB，匿名请求256KiB。每次SDK工具命令显式使用Bash、最小环境、私有HOME，返回流各64KiB，执行1..120秒，并用进程组/nonce/pidfd清理后代。后端exec另有最多50秒启动/清理，模型封装90秒；后端exec客户端至少多给80秒，qm至少多给130秒。库层文件最大1MiB；公开命名文本写入/读取32KiB；目录最多1024名称且JSON不超过32KiB。超限报错，不静默截断。解析后的文件路径须在选定项目内；SDK助手再次拒绝路径/符号链接越界及删除根目录。shell具有外层用户OS权限，cwd并非额外OS隔离。
 
 ## 配置
 

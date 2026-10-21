@@ -7,7 +7,8 @@ import test from 'node:test';
 import { createAgentSandboxBackend } from './adapter.mjs';
 const sdk = process.env.ABX_QM_TEST_SDK_ENTRY ? await import(pathToFileURL(process.env.ABX_QM_TEST_SDK_ENTRY)) : null;
 
-async function fixture() {
+async function fixture(delayRun = 0) {
+  let arrived; const runArrived = new Promise(resolve => { arrived = resolve; }); let delivered = false;
   const seen = []; const files = new Map(); const root = '/home/user/workspace/fixed-fixture';
   const server = createServer(async (request, response) => {
     let text = ''; for await (const block of request) text += block;
@@ -15,7 +16,7 @@ async function fixture() {
     seen.push({ path: request.url, method: request.method, body, auth: request.headers.authorization });
     let value;
     if (request.url === '/shell') {
-      if (body.command.includes('sdk_exec.py')) value = { exit_code: 0, stdout: JSON.stringify({ result: { stdout: 'fixed synthetic output', stderr: '', code: 124, timedOut: false } }), stderr: '' };
+      if (body.command.includes('sdk_exec.py')) { arrived(); if (delayRun) await new Promise(resolve => setTimeout(resolve, delayRun)); delivered = true; value = { exit_code: 0, stdout: JSON.stringify({ result: { stdout: 'fixed synthetic output', stderr: '', code: 124, timedOut: false } }), stderr: '' }; }
       else {
         const action = body.command.includes("'provision'") ? 'provision' : body.command.includes("'write'") ? 'write' : body.command.includes("'read'") ? 'read' : 'list';
         value = { exit_code: 0, stdout: JSON.stringify({ result: action === 'provision' ? root : action === 'list' ? ['hello.txt'] : root + '/hello.txt' }), stderr: '' };
@@ -28,7 +29,7 @@ async function fixture() {
     response.writeHead(200, { 'Content-Type': 'application/json' }); response.end(JSON.stringify(value));
   });
   server.listen(0, '127.0.0.1'); await once(server, 'listening');
-  return { root, seen, files, baseUrl: 'http://127.0.0.1:' + server.address().port, close: async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); } };
+  return { root, seen, files, runArrived, delivered: () => delivered, baseUrl: 'http://127.0.0.1:' + server.address().port, close: async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); } };
 }
 
 test('actual original SDK HTTP round trips preserve files, Bearer and actual command exit', { skip: !sdk }, async () => {
@@ -67,3 +68,15 @@ for (const baseUrl of ['https://example.invalid', 'http://localhost:9000', 'http
     assert.throws(() => createAgentSandboxBackend({ ServerClient: MustNotConstruct, baseUrl, rootDir: '/home/user/workspace/project' }));
   });
 }
+
+
+test('aborted original SDK execution drains its issued request before close', { skip: !sdk }, async () => {
+  const f = await fixture(100); const backend = createAgentSandboxBackend({ ServerClient: sdk.ServerClient, baseUrl: f.baseUrl, rootDir: f.root });
+  try {
+    const handle = await backend.provision(); const controller = new AbortController();
+    const pending = backend.run(handle, 'fixed authored non-executable fixture', { signal: controller.signal, timeoutMs: 1000 });
+    const rejected = assert.rejects(pending, { name: 'AbortError' });
+    await f.runArrived; controller.abort(); await backend.close();
+    assert.equal(f.delivered(), true); await rejected;
+  } finally { await backend.close(); await f.close(); }
+});

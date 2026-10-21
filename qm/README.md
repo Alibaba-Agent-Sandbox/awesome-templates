@@ -53,7 +53,7 @@ async def main():
 
 asyncio.run(main())
 ```
-For actual coding, configure QM_MODEL_API_KEY/QM_MODEL_BASE_URL/QM_MODEL before command-server startup and check qm_setup_check. Then `await sb.run("qm", prompt="Fix existing source and preserve its tests", cwd="project", command_timeout=300, timeout=380)`. Returns the structured object directly with buffered final reply/metadata; no streamed chunks or raw reasoning. Native completion plus independent files/tests are required for a coding claim.
+For actual coding, configure QM_MODEL_API_KEY/QM_MODEL_BASE_URL/QM_MODEL before command-server startup and check qm_setup_check. Then `await sb.run("qm", prompt="Fix existing source and preserve its tests", cwd="project", command_timeout=300, timeout=430)`. Returns the structured object directly with buffered final reply/metadata; no streamed chunks or raw reasoning. Native completion plus independent files/tests are required for a coding claim.
 
 [Prewarmed server configuration](../docs/runtime-environment.md): later create-time environment does not reconfigure an existing9000process. A separately started9010server must explicitly set QM_SANDBOX_BASE_URL=http://127.0.0.1:9010 and the matching SDK Bearer. Use sb.server_at(port,token=...) for named calls, close that client, stop/drain/cancel its owned server stream and finally kill the outer sandbox. Never place key/token values in argv.
 
@@ -66,7 +66,7 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/qm_sdk_smoke" \
   --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
   --header "Content-Type: application/json" --data '{}'
 ```
-HTTP200 returns `{"result":"Original QM tools and actual Agent Sandbox SDK round trip/owned cleanup OK"}`. Named commands accept direct JSON argument objects, without an args wrapper. Missing/unknown/type-invalid arguments400, auth401, unknown command404, semantic/native exceptions500 with `{error,type}`. Exec results preserve actual command code and timedOut separately; an authored command exiting124 is not automatically a timeout. A request disconnect does not cancel the native bounded operation.
+HTTP200 returns `{"result":"Original QM tools and actual Agent Sandbox SDK round trip/owned cleanup OK"}`. Named commands accept direct JSON argument objects, without an args wrapper. Missing/unknown/type-invalid arguments400, auth401, unknown command404, semantic/native exceptions500 with `{error,type}`. Exec results preserve actual command code and timedOut separately; an authored command exiting124 is not automatically a timeout. A request disconnect does not cancel the native bounded operation. Backend close drains already issued SDK requests before closing transport; model-tool deadlines are capped to min(30seconds, the turn deadline), and an aborted run is not reported as successful.
 
 ## Command reference
 
@@ -78,7 +78,7 @@ HTTP200 returns `{"result":"Original QM tools and actual Agent Sandbox SDK round
 | qm_sdk_smoke | none | Exact string after original QM tool context/actual SDK file+execution+listing+removal round trip and owned fixture absence; no model; private transient files |
 | qm | prompt: required nonempty string1..32768UTF8 bytes/no NUL; cwd: optional string default empty, max4096bytes, existing directory resolved inside WORKSPACE; command_timeout: integer1..600seconds default300, booleans rejected | Original final reply as stdout, actual source/qm/node/sdk identities, native_completed, original model_calls/native_tool_calls/native_tool_results, completed sdk_calls, stopped/pending_approvals and exit_code0; native tool file changes persist |
 
-Requests serialize; overlap fails busy. Native process stdout/stderr256KiB each and anonymous request256KiB. Per SDK tool command: explicit Bash, minimal environment/private HOME,64KiB per returned stream, deadline1..120seconds and identity-pinned process-group/nonce/pidfd descendant cleanup. Backend exec allows up to50seconds startup/cleanup allowance; model wrapper up to40seconds. Give the client at least80seconds extra. File library bytes max1MiB, public named text/read32KiB, directory names max1024and32KiBJSON. Larger values fail; no silent truncation. Resolved file paths stay inside the selected project; SDK helpers independently reject traversal/symlink escapes and root removal. Shell tools have the outer user's OS authority; cwd is not a separate OS security boundary.
+Requests serialize; overlap fails busy. Native process stdout/stderr256KiB each and anonymous request256KiB. Per SDK tool command: explicit Bash, minimal environment/private HOME,64KiB per returned stream, deadline1..120seconds and identity-pinned process-group/nonce/pidfd descendant cleanup. Backend exec allows up to50seconds startup/cleanup allowance; model wrapper up to90seconds. Give the client at least80seconds extra for backend exec and130seconds for qm. File library bytes max1MiB, public named text/read32KiB, directory names max1024and32KiBJSON. Larger values fail; no silent truncation. Resolved file paths stay inside the selected project; SDK helpers independently reject traversal/symlink escapes and root removal. Shell tools have the outer user's OS authority; cwd is not a separate OS security boundary.
 
 ## Configuration
 

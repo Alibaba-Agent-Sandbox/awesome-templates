@@ -15,7 +15,9 @@ export function createAgentSandboxBackend({ ServerClient, baseUrl, token = '', r
   if (/[\r\n]/.test(token)) throw new TypeError('invalid SDK token');
   bounded(rootDir, 4096, 'root');
   if (!posix.isAbsolute(rootDir) || rootDir === '/') throw new TypeError('existing absolute project root required');
-  const client = new ServerClient(baseUrl, { token, timeout: 150 });
+  const client = new ServerClient(baseUrl, { token, timeout: 40 });
+  const inflight = new Set();
+  const track = promise => { inflight.add(promise); promise.then(() => inflight.delete(promise), () => inflight.delete(promise)); return promise; };
   const id = 'abx-qm-' + randomUUID();
   let root = posix.resolve(rootDir);
   let closed = false;
@@ -33,7 +35,7 @@ export function createAgentSandboxBackend({ ServerClient, baseUrl, token = '', r
   }
   async function guard(action, path = '') {
     const command = ['python3', '-I', '/home/user/app/sdk_path.py', action, root, relative(path)].map(quote).join(' ');
-    const result = await client.process.shell(command, { timeout: 30 });
+    const result = await track(client.process.shell(command, { timeout: 30 }));
     completed.shell++;
     const value = JSON.parse(result.stdout);
     if (result.exitCode !== 0) { const error = new Error('SDK backend path operation rejected'); if (value.error_type === 'FileNotFoundError') error.name = 'FileNotFoundError'; throw error; }
@@ -57,8 +59,9 @@ export function createAgentSandboxBackend({ ServerClient, baseUrl, token = '', r
       if (options.signal?.aborted) throw new Error('backend operation aborted before execution');
       const body = JSON.stringify({ root, command, deadline: timeout });
       const commandLine = 'python3 -I /home/user/app/sdk_exec.py ' + quote(body);
-      const response = await client.process.shell(commandLine, { timeout: timeout + 30 });
+      const response = await track(client.process.shell(commandLine, { timeout: timeout + 30 }));
       completed.shell++;
+      if (options.signal?.aborted) { const error = new Error('backend operation aborted after bounded SDK drain'); error.name = 'AbortError'; throw error; }
       const value = JSON.parse(response.stdout);
       if (response.exitCode !== 0 || !value.result || !Number.isInteger(value.result.code) || typeof value.result.timedOut !== 'boolean') throw new Error('owned native tool execution failed');
       if (typeof value.result.stdout !== 'string' || typeof value.result.stderr !== 'string' || Buffer.byteLength(value.result.stdout) > 64 * 1024 || Buffer.byteLength(value.result.stderr) > 64 * 1024) throw new Error('backend output exceeds64KiB per stream');
@@ -68,7 +71,7 @@ export function createAgentSandboxBackend({ ServerClient, baseUrl, token = '', r
       active(handle);
       if (!(data instanceof Uint8Array) || data.byteLength > 1024 * 1024) throw new TypeError('backend write requires at most1MiB bytes');
       const target = await guard('write', path);
-      await client.files.upload(target, data); completed.upload++;
+      active(handle); await track(client.files.upload(target, data)); completed.upload++;
     },
     async writeFile(handle, path, text) {
       bounded(text, 1024 * 1024, 'text');
@@ -78,7 +81,7 @@ export function createAgentSandboxBackend({ ServerClient, baseUrl, token = '', r
       active(handle);
       let target;
       try { target = await guard('read', path); } catch (error) { if (error.name === 'FileNotFoundError') return null; throw error; }
-      const data = await client.files.download(target); completed.download++;
+      active(handle); const data = await track(client.files.download(target)); completed.download++;
       if (data.byteLength > 1024 * 1024) throw new Error('backend file exceeds1MiB');
       return data;
     },
@@ -90,7 +93,7 @@ export function createAgentSandboxBackend({ ServerClient, baseUrl, token = '', r
       if (options.destroy) throw new Error('outer sandbox/caller project deletion belongs to its controller');
       provisioned = false;
     },
-    async close() { closed = true; provisioned = false; await client.close(); },
+    async close() { closed = true; provisioned = false; await Promise.allSettled([...inflight]); await client.close(); },
     completedSdkCalls() { return { ...completed }; },
   };
   return backend;

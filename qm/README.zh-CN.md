@@ -53,7 +53,7 @@ async def main():
 
 asyncio.run(main())
 ```
-真实编码前在命令服务启动时配置QM_MODEL_API_KEY/QM_MODEL_BASE_URL/QM_MODEL，检查qm_setup_check后调用 `await sb.run("qm", prompt="Fix existing source and preserve its tests", cwd="project", command_timeout=300, timeout=380)`。直接返回结构化缓冲结果、最终回复与计数，不流式输出或导出推理。原生终态以及独立文件/测试检查同时通过，才接受编码结论。
+真实编码前在命令服务启动时配置QM_MODEL_API_KEY/QM_MODEL_BASE_URL/QM_MODEL，检查qm_setup_check后调用 `await sb.run("qm", prompt="Fix existing source and preserve its tests", cwd="project", command_timeout=300, timeout=430)`。直接返回结构化缓冲结果、最终回复与计数，不流式输出或导出推理。原生终态以及独立文件/测试检查同时通过，才接受编码结论。
 
 [预热服务配置](../docs/runtime-environment.zh-CN.md)：后续create环境变量不会重配已有9000进程。单独启动9010服务时显式配置QM_SANDBOX_BASE_URL=http://127.0.0.1:9010及匹配SDK Bearer。通过sb.server_at(port,token=...)调用并关闭客户端；停止、排空/取消本次服务流，最后销毁外层沙箱。禁止把密钥/token值放入argv。
 
@@ -66,7 +66,7 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/qm_sdk_smoke" \
   --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
   --header "Content-Type: application/json" --data '{}'
 ```
-HTTP200返回 `{"result":"Original QM tools and actual Agent Sandbox SDK round trip/owned cleanup OK"}`。参数为直接JSON对象，不包args。缺失/未知/类型错误400，鉴权401，未知命令404，语义/原生异常500及 `{error,type}`。执行结果分别保留真实code和timedOut；命令自己exit124不会自动算超时。断开HTTP请求不取消有界原生操作。
+HTTP200返回 `{"result":"Original QM tools and actual Agent Sandbox SDK round trip/owned cleanup OK"}`。参数为直接JSON对象，不包args。缺失/未知/类型错误400，鉴权401，未知命令404，语义/原生异常500及 `{error,type}`。执行结果分别保留真实code和timedOut；命令自己exit124不会自动算超时。断开HTTP请求不取消有界原生操作。后端关闭前等待已发出的SDK请求结束；模型工具执行上限为30秒与turn期限的较小值，中止结果不报告成功。
 
 ## 命令参考
 
@@ -78,7 +78,7 @@ HTTP200返回 `{"result":"Original QM tools and actual Agent Sandbox SDK round t
 | qm_sdk_smoke | none | Exact string after original QM tool context/actual SDK file+execution+listing+removal round trip and owned fixture absence; no model; private transient files |
 | qm | prompt: required nonempty string1..32768UTF8 bytes/no NUL; cwd: optional string default empty, max4096bytes, existing directory resolved inside WORKSPACE; command_timeout: integer1..600seconds default300, booleans rejected | Original final reply as stdout, actual source/qm/node/sdk identities, native_completed, original model_calls/native_tool_calls/native_tool_results, completed sdk_calls, stopped/pending_approvals and exit_code0; native tool file changes persist |
 
-调用串行化，重叠报忙。原生stdout/stderr各256KiB，匿名请求256KiB。每次SDK工具命令显式使用Bash、最小环境、私有HOME，返回流各64KiB，执行1..120秒，并用进程组/nonce/pidfd清理后代。后端exec另有最多50秒启动/清理，模型封装40秒；客户端至少多给80秒。库层文件最大1MiB；公开命名文本写入/读取32KiB；目录最多1024名称且JSON不超过32KiB。超限报错，不静默截断。解析后的文件路径须在选定项目内；SDK助手再次拒绝路径/符号链接越界及删除根目录。shell具有外层用户OS权限，cwd并非额外OS隔离。
+调用串行化，重叠报忙。原生stdout/stderr各256KiB，匿名请求256KiB。每次SDK工具命令显式使用Bash、最小环境、私有HOME，返回流各64KiB，执行1..120秒，并用进程组/nonce/pidfd清理后代。后端exec另有最多50秒启动/清理，模型封装90秒；后端exec客户端至少多给80秒，qm至少多给130秒。库层文件最大1MiB；公开命名文本写入/读取32KiB；目录最多1024名称且JSON不超过32KiB。超限报错，不静默截断。解析后的文件路径须在选定项目内；SDK助手再次拒绝路径/符号链接越界及删除根目录。shell具有外层用户OS权限，cwd并非额外OS隔离。
 
 ## 配置
 

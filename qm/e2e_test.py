@@ -33,8 +33,8 @@ def final_text(value):
 def native_sdk_command(base,parameters):
     from agent_sandbox.api.server_client import ServerClient
     async def run():
-        server=ServerClient(base,token=os.environ.get('E2E_SERVER_TOKEN') or None,timeout=660)
-        try:return await server.commands.run('qm',timeout=660,**parameters)
+        server=ServerClient(base,token=os.environ.get('E2E_SERVER_TOKEN') or None,timeout=760)
+        try:return await server.commands.run('qm',timeout=760,**parameters)
         finally:await server.aclose()
     return asyncio.run(run())
 
@@ -98,6 +98,16 @@ def model_check(client,workspace,base):
         code='import pathlib,shutil;p=pathlib.Path('+repr(project)+');shutil.rmtree(p) if p.exists() else None;assert not p.exists();print("CLEAN")'
         r=client.post('/shell',json={'command':'python3 -I -c '+shlex.quote(code),'timeout':30});data=r.json();record(r.status_code==200 and data.get('exit_code')==0 and data.get('stdout','').strip()=='CLEAN','owned project cleanup and absence confirmed')
 
+def safe_diagnostic(text):
+    import re
+    value={}
+    for key in ['stage','native_code','missing_module']:
+        match=re.search(r'\b'+key+r'=([A-Za-z0-9_@./-]{1,128})',text)
+        if match:value[key]=match[1]
+    for key,number in re.findall(r'\b(model_requests|native_tool_calls|native_tool_results|sdk_shell|sdk_upload|sdk_download)=([0-9]{1,6})',text):value[key]=int(number)
+    return value
+
+
 def main():
     base=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000').rstrip('/');workspace=os.environ.get('E2E_WORKSPACE','/home/user/app').rstrip('/')
     token=os.environ.get('E2E_SERVER_TOKEN','');headers={'Authorization':'Bearer '+token} if token else {}
@@ -112,6 +122,7 @@ def main():
             native=client.post('/commands/qm_native_check',json={})
             record(native.status_code==200 and native.json().get('result')=={'original_qm_harness':True,'original_tool_context':True,'actual_sdk_client':True},'actual unchanged original harness/tool context and original SDK import')
             native=client.post('/commands/qm_sdk_smoke',json={})
+            if native.status_code!=200:print('NATIVE_QM_DIAGNOSTIC '+json.dumps(safe_diagnostic(str(native.json().get('error',''))),sort_keys=True),flush=True)
             record(native.status_code==200 and native.json().get('result')=='Original QM tools and actual Agent Sandbox SDK round trip/owned cleanup OK','original native QM tool context performs actual SDK file/execution round trip and owned absence')
         for args in INVALID_REQUESTS:
             r=client.post('/commands/qm',json=args);record(r.status_code in [400,500],'invalid request rejected without native model call')
@@ -121,5 +132,5 @@ def main():
 if __name__=='__main__':
     try:raise SystemExit(main())
     except Exception as exc:
-        print('[FAIL] original QM controller aborted ('+type(exc).__name__+'); private output omitted',flush=True)
+        print('[FAIL] original QM controller aborted ('+type(exc).__name__+'); diagnostics='+json.dumps(safe_diagnostic(str(exc)),sort_keys=True)+'; private output omitted',flush=True)
         raise SystemExit(1)

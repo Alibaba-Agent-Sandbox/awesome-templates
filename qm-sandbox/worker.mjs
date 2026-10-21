@@ -37,7 +37,7 @@ function identity() {
   return { qm_version: qm.version, node_version: process.versions.node, sdk_version: sdk.version };
 }
 
-function context(backend, handle, scope) {
+function context(backend, handle, scope, toolLimit) {
   const unsupported = () => { throw new Error('deployment and external delivery are unavailable in this slice'); };
   return createToolContext({
     sandbox: backend, provision: async () => handle,
@@ -45,7 +45,7 @@ function context(backend, handle, scope) {
     commandPolicy: () => ({ mode: 'denylist', rules: [] }), authorizeCommand: () => true,
     grantedHandles: [], workspace: createLocalWorkspaceStore(path.join(process.env.HOME, 'qm-workspace-state')),
     deploy: new Proxy({}, { get: () => unsupported }), acl: createAclStore(),
-    createdBy: 'abx-owner', execTimeoutMs: 30000, execTimeoutCeilingMs: 120000,
+    createdBy: 'abx-owner', execTimeoutMs: toolLimit * 1000, execTimeoutCeilingMs: toolLimit * 1000,
     humanTurn: true, attach: async () => ({ ok: false, message: 'external delivery unavailable' }),
   });
 }
@@ -57,7 +57,7 @@ async function useBackend(request, action) {
     const scope = 'personal:abx-' + crypto.randomUUID();
     STAGE = 'sdk_provision';
     handle = await backend.provision([{ scopeId: scope, mountPath: '', mode: 'rw' }]);
-    return await action(backend, handle, context(backend, handle, scope), scope);
+    return await action(backend, handle, context(backend, handle, scope, request.tool_limit ?? 120), scope);
   } finally {
     const calls = backend.completedSdkCalls(); OBS.sdk_shell = calls.shell; OBS.sdk_upload = calls.upload; OBS.sdk_download = calls.download;
     if (handle) await backend.teardown(handle);
@@ -97,13 +97,14 @@ async function modelRun(request) {
     models: [{ id: settings.model, name: 'Approved model', reasoning: false, contextWindow: 65536, maxTokens: 8192 }] };
   STAGE = 'provider_configuration';
   validateCustomProviderSpec(spec); setCustomProviders([spec]);
-  return useBackend(request, async (backend, handle, tools, scope) => {
+  const toolLimit = Math.max(1, Math.min(30, request.deadline));
+  return useBackend({ ...request, tool_limit: toolLimit }, async (backend, handle, tools, scope) => {
     STAGE = 'harness_setup';
     const harness = createPiHarness({ modelId: 'custom/abx-approved/' + settings.model,
       resolveProviderKeys: async () => ({ 'abx-approved': settings.key }), captureRequests: false,
       tempDirPrefix: 'abx-qm', scratchExec: false, ownerAuthExec: false, reachExec: false,
       controlTools: false, sandboxResources: false, turnWallClockMs: request.deadline * 1000,
-      execTimeoutMs: 30000, execTimeoutCeilingMs: 120000 });
+      execTimeoutMs: toolLimit * 1000, execTimeoutCeilingMs: toolLimit * 1000 });
     let sequence = 0; let toolCalls = 0; let toolResults = 0; let modelRecords = 0;
     try {
       STAGE = 'harness_run';
