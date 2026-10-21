@@ -102,7 +102,13 @@ Declared2vCPU4096MB/Linuxx64/port9000/8GiBrootfs budget; no KVM/nested Docker/GP
 
 ## Verified
 
-Current2.1.4 provider/native/model/image qualification PENDING. Local81fixed/legacy protocol/process/controller testsPASS1SKIP9.40seconds; skipped actual pinned CLI is not installed on operator. Original package integrity/source inspection and local fixtures are not native/provider/model acceptance. Earlier2.0.1 receipts remain immutable history and cannot qualify changed2.1.0.
+Template2.1.4 / original CLI0.64.0, tested2026-10-21 at source393c5cc.
+
+| Provider | Executed scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | Immutable native steps; actual SDK create and CLI/SDK smoke; full HTTP10/10; original native two-turn read_file API fixture; actual approved compatible model source-edit19/19; independent owned cleanup | [receipt](evidence/express-2026-10-21T085925Z.json), [full proof](evidence/verification-steps-2026-10-21T085924Z-real-model.json) |
+
+The synthetic API fixture makes2completed requests with1original tool result and0failed responses; it is separate from the real model run. The real model is qwen3.8-flash through the explicit authored text/tool adapter. Original3test bytes, report, exact fresh nonce,3original and4held-out assertions and fresh post-return ACK pass. Google-hosted model/account/OAuth authentication remains NOT_RUN. Current source393c5cc image-build CI passed; final documentation-head CI/review/merge are separate gates. Local93testsPASS1SKIP9.49seconds; missing operator-native CLI is the skip. Historical2.0.1 receipts do not qualify2.1.4.
 
 ## Secondary development
 
