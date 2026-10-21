@@ -1,6 +1,8 @@
 # Build templates with Agent Sandbox platform steps
 
-2026-10-21 current accepted checkpoint: [43/43 native/runtime and required fullHTTP PASS](../.agents/evidence/verify/2026-10-21-current-native-http43.json), including original QM/Pi coding and actual SDK-backed QM Sandbox. Exact sources, prior failures and independent cleanup are retained in the [QM record](../.agents/evidence/verify/2026-10-21-qm-native-final.md). This checkpoint does not certify every model/image/provider or close all64Issues.
+2026-10-21 latest accepted checkpoint: [44/44native/runtime and requiredHTTP](../.agents/evidence/verify/2026-10-21-current-native-http44.json), adding original Meta Muse Code/miniswe with actual SDK steps/compatible Responses coding/artifacts and independent cleanup. [Muse proof and failures](../.agents/evidence/verify/2026-10-21-muse-native-final.md). Historical43snapshot remains unchanged; no universal model/image/provider/all64Issue claim.
+
+2026-10-21 earlier accepted checkpoint: [43/43 native/runtime and required fullHTTP PASS](../.agents/evidence/verify/2026-10-21-current-native-http43.json), including original QM/Pi coding and actual SDK-backed QM Sandbox. Exact sources, prior failures and independent cleanup are retained in the [QM record](../.agents/evidence/verify/2026-10-21-qm-native-final.md). This checkpoint does not certify every model/image/provider or close all64Issues.
 
 Agent Sandbox's `abx template deploy --build steps` sends the base image and an
 ordered step list to Alibaba Express. It needs no local Docker daemon or ACR

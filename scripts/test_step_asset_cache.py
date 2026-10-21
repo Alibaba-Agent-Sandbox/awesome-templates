@@ -162,3 +162,19 @@ def test_exact_official_appworld_bundle_retains_integrity_and_private_cleanup(mo
     with patch('step_asset_cache.urllib.request.urlopen',return_value=io.BytesIO(content)):
         cache.prepare(assets)
     assert cache.cleanup() and not bucket.exists and not bucket.objects
+
+
+def test_compressed_original_stream_revalidates_size_hash_and_rejects_expansion(tmp_path):
+    import gzip,hashlib
+    import pytest
+    from step_asset_cache import verify_compressed_input
+    data=b"fixed public original bytes; no native/model execution"
+    path=tmp_path/'public.gz';path.write_bytes(gzip.compress(data,mtime=0))
+    item={'size':len(data),'sha256':hashlib.sha256(data).hexdigest()}
+    value=verify_compressed_input(path,item)
+    assert value['size']==len(data)and value['md5']
+    for changed in [dict(item,sha256='0'*64),dict(item,size=len(data)+1)]:
+        with pytest.raises(RuntimeError,match='size/SHA256'):verify_compressed_input(path,changed)
+    with pytest.raises(RuntimeError,match='bounded'):verify_compressed_input(path,dict(item,size=len(data)-1))
+    linked=tmp_path/'linked.gz';linked.symlink_to(path)
+    with pytest.raises(ValueError):verify_compressed_input(linked,item)

@@ -9,6 +9,7 @@ from __future__ import annotations
 import base64
 from contextlib import contextmanager
 import fcntl
+import gzip
 import hashlib
 import json
 import os
@@ -22,6 +23,12 @@ import urllib.request
 from urllib.parse import urlsplit
 
 
+try:
+    from .step_assets import reviewed_muse_native, reviewed_asset_limit
+except ImportError:
+    from step_assets import reviewed_muse_native, reviewed_asset_limit
+
+
 @contextmanager
 def upload_slot():
     """Bound controller disk use across independent uniquely owned cloud runs."""
@@ -31,6 +38,26 @@ def upload_slot():
             yield
         finally:
             fcntl.flock(lock, fcntl.LOCK_UN)
+
+
+def verify_compressed_input(path: Path, item: dict) -> dict:
+    """Rehash unchanged original bytes without allocating a full raw disk copy."""
+    if path.is_symlink() or not path.is_file() or path.stat().st_size > reviewed_asset_limit(item):
+        raise ValueError("invalid bounded local compressed public input")
+    digest = hashlib.sha256()
+    md5 = hashlib.md5(usedforsecurity=False)
+    size = 0
+    deadline = time.monotonic() + 900
+    with gzip.open(path, "rb") as source:
+        while block := source.read(1024 * 1024):
+            size += len(block)
+            if size > item["size"] or size > reviewed_asset_limit(item) or time.monotonic() > deadline:
+                raise RuntimeError("bounded compressed original input exceeded")
+            digest.update(block)
+            md5.update(block)
+    if size != item["size"] or digest.hexdigest() != item["sha256"]:
+        raise RuntimeError("compressed original input size/SHA256 mismatch")
+    return {"size": size, "md5": base64.b64encode(md5.digest()).decode()}
 
 
 class AssetCache:
@@ -69,8 +96,9 @@ class AssetCache:
         allowed = {"github.com", "codeload.github.com", "static.rust-lang.org", "go.dev", "files.pythonhosted.org", "cdn.playwright.dev", "nodejs.org"}
         for item in assets[self.architecture]:
             url = urlsplit(item["url"])
-            official_origin = url.hostname in allowed or item["url"] == "https://s3.us-west-2.amazonaws.com/appworld.dev/data-0.1.0.bundle"
-            if url.scheme != "https" or not official_origin or url.username or url.password or url.query or url.fragment:
+            muse_native = reviewed_muse_native(item)
+            official_origin = muse_native or url.hostname in allowed or item["url"] == "https://s3.us-west-2.amazonaws.com/appworld.dev/data-0.1.0.bundle"
+            if url.scheme != "https" or not official_origin or url.username or url.password or (url.query and not muse_native) or url.fragment:
                 raise ValueError("only fixed official public archive origins may enter the private cache")
             if not re.fullmatch(r"[0-9a-f]{64}", item["sha256"]):
                 raise ValueError("an exact archive SHA256 is required")
@@ -91,6 +119,28 @@ class AssetCache:
         self.private_acl_verified = True
         for item in assets[self.architecture]:
             with upload_slot():
+                compressed_directory = os.environ.get("ABX_STEP_LOCAL_GZIP_DIR")
+                compressed = Path(compressed_directory) / (item["sha256"] + ".gz") if compressed_directory else None
+                if reviewed_muse_native(item) and compressed is not None and compressed.is_file():
+                    observed = verify_compressed_input(compressed, item)
+                    key = "owned/" + item["sha256"]
+                    self.keys.append(key)
+                    self.save()
+                    # OSS verifies Content-MD5 against the complete decoded byte stream;
+                    # the original installer rechecks its published SHA256 at the target.
+                    with gzip.open(compressed, "rb") as decoded:
+                        self.bucket.put_object(key, self.sdk.SizedFileAdapter(decoded, observed["size"]), headers={
+                            "x-oss-object-acl": "private", "x-oss-meta-sha256": item["sha256"],
+                            "Content-MD5": observed["md5"]})
+                    head = self.bucket.head_object(key)
+                    if head.content_length != observed["size"] or head.headers.get("x-oss-meta-sha256") != item["sha256"]:
+                        raise RuntimeError("uploaded compressed-source original metadata mismatch")
+                    if self.bucket.get_object_acl(key).acl != "private":
+                        raise RuntimeError("uploaded original is not private")
+                    self.urls[item["url"]] = self.bucket.sign_url("GET", key, 3600)
+                    self.archives.append({"url": item["url"], "sha256": item["sha256"], "size": observed["size"],
+                                          "controller_input": "streamed verified gzip of unchanged original bytes; OSS Content-MD5 enforced"})
+                    continue
                 archive = self.directory / "archive"
                 sha256 = hashlib.sha256()
                 md5 = hashlib.md5(usedforsecurity=False)
@@ -103,7 +153,7 @@ class AssetCache:
                     with stream as response, archive.open("xb") as output:
                         while block := response.read(1024 * 1024):
                             size += len(block)
-                            if size > 300 * 1024 * 1024 or time.monotonic() > deadline:
+                            if size > reviewed_asset_limit(item) or time.monotonic() > deadline:
                                 raise RuntimeError("official cache input exceeds archive budget")
                             sha256.update(block)
                             md5.update(block)

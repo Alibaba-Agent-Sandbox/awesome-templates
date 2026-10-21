@@ -1,0 +1,28 @@
+name: muse
+version: "1.0.1"
+description: "Original native Meta Muse Code with explicit compatible Responses model and owned catalogue/credential relay."
+author: alibaba-agent-sandbox
+license: Apache-2.0
+spec_version: 2
+base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
+generation: 2
+start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
+ready_cmd: "agent-sandbox-server healthcheck --port 9000"
+resources: {cpu: 2, memory: 2048}
+ports: [9000]
+tags: [muse, meta, coding-agent]
+priority: P2
+wave: 2
+tested_on: [alicloud-express]
+capabilities: [shell, files, code, ports]
+env:
+  MUSE_MODEL_API_KEY: ""
+  MUSE_MODEL_BASE_URL: ""
+  MUSE_MODEL: ""
+  ABX_SERVER_TOKEN: ""
+  WORKSPACE: "/home/user/app"
+smoke:
+  - command: muse_version
+    expect: "Muse Code 1.4.11 (1.4.11-R6667.1)"
+  - command: muse_native_check
+    expect: {original_native: true, headless_json: true, anonymous_api_key_stdin: true, no_session_log: true}

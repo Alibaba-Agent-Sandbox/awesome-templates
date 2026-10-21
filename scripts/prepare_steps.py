@@ -100,6 +100,12 @@ def parallel_assets(source: Path) -> dict:
 
 
 
+    if source.name == "muse":
+        from step_assets import reviewed_muse_native
+        item = json.loads((source / "upstream.json").read_text())
+        if item.get("version") != "1.4.11-R6667.1" or not reviewed_muse_native(item):
+            raise ValueError("unreviewed original Muse native artifact transport")
+        return {"x86_64": [{key: item[key] for key in ["url", "size", "sha256"]}]}
     if source.name in {"qm", "qm-sandbox"}:
         metadata = json.loads((source / "upstream.json").read_text())
         expected = {

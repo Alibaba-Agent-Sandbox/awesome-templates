@@ -1,0 +1,68 @@
+{
+  "template": "muse",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-21T030139Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "muse",
+    "materializer_sha256": "35207b082e8dc30f8c4cddccf593d0ebb24dcc66fe3ea36417c6ff4bdfd01a17",
+    "source_manifest_contract_sha256": "72a1e1c7d78a06db825cc01ee33154c8b59af57d9e86d2cbbcd0ea9d035e8afc",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "34e7e011c5569f77b7f605e65313be7498f6cf02",
+    "template_server_commit": "34e7e011c5569f77b7f605e65313be7498f6cf02",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "9391903bf10259b34031f821ac69dab330f3cf13",
+    "asset_transport": "oss",
+    "steps_json_bytes": 7926,
+    "inputs_sha256": {
+      "Dockerfile": "4f6721c7978c6fde78917ddb6e866d2f564be933c1dfba152e3e99cf9360c970",
+      "template.yaml": "47214c9501f0ad661f53d9d887dbf3b0c9a0a22512bfe1379758b88ba8fd5aea",
+      "server-sdk.commit": "57134d659449d0f55301272a5abc2ac907c86b8380a36f2b3e86e09c9b6dc6cf",
+      "upstream.json": "0984024f39b88eaf5cac4a57f46a62c24e2190ce88a75a46d4125ca3e033fb2d",
+      "install_runtime.py": "1e35269e26b728af82546281da7ebde24062056cf9cc17a6c9c641d1ac99f293",
+      "commands.py": "c8050eff110fab230ae30a80c492386f03ff20e09840df21010c1051509b7329",
+      "relay.py": "1ff52f975fb253a18cac099772f5d60bcaaaf23d1eb15a098455cde6b3e79cf7",
+      "filter_native.py": "0d4cc98606498052401c5bd9ea98a471ed89b3b475cf7c756379bc21ff7263c5",
+      "process.py": "23eb57a3d78a4da333e191d0e8105696374f216b1adb9d90dbc0ee25fd877a25",
+      "lifecycle.py": "470207c6e64634dfce8b0592416e8b8f7ae280134d5e6a4e09a33a4a537a02f2",
+      "UPSTREAM-NOTICE.md": "3baeec3deeef637b6b65174522844e332064ff1a11097596ccd07b759b4798e0"
+    },
+    "asset_transport_sha256": "f91f282a362cbf18ef4cf93b78fa544de9a2a26ffea3e5b418bbc02f8ce367e8",
+    "asset_adapter_source_commit": "9391903bf10259b34031f821ac69dab330f3cf13",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://lookaside.facebook.com/lookaside/muse/download/?channel=muse&version=1.4.11-R6667.1&file=muse-x86-linux",
+          "size": 384809176,
+          "sha256": "6fda12a6a4f236528dafa707384cf6395fe859b1438ef77c7be26ed9d7976839"
+        }
+      ]
+    },
+    "asset_cache_architecture": "x86_64",
+    "generated_manifest_sha256": "fe98e572bb308919a26b3808335822f549af3c363518e761638764018d39f391"
+  },
+  "cleanup_verified": true,
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "asset_cache": {
+    "service": "Alibaba Cloud OSS",
+    "private_acl_verified": true,
+    "archives": [
+      {
+        "url": "https://lookaside.facebook.com/lookaside/muse/download/?channel=muse&version=1.4.11-R6667.1&file=muse-x86-linux",
+        "sha256": "6fda12a6a4f236528dafa707384cf6395fe859b1438ef77c7be26ed9d7976839",
+        "size": 384809176,
+        "controller_input": "streamed verified gzip of unchanged original bytes; OSS Content-MD5 enforced"
+      }
+    ],
+    "signed_get_ttl_seconds": 3600,
+    "cleanup_verified": true
+  },
+  "duration_s": 222.425
+}

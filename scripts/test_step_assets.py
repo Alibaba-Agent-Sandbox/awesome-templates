@@ -296,3 +296,33 @@ def test_qm_native_steps_keep_exact_original_inputs_and_wire_budget(name):
         assert proof['inputs_sha256'][filename]==hashlib.sha256((ROOT/name/filename).read_bytes()).hexdigest()
     assert len(proof['build_assets']['x86_64'])==3
     assert manifest['build']['steps'][-1]=={'type':'USER','args':['user']}
+
+
+def test_muse_only_exact_published_native_asset_has_larger_reviewed_bound(tmp_path):
+    from step_assets import reviewed_asset_limit,reviewed_muse_native,MAX_BYTES
+    from prepare_steps import parallel_assets
+    item=json.loads((ROOT/'muse/upstream.json').read_text());asset={k:item[k]for k in['url','size','sha256']}
+    assert reviewed_muse_native(asset)and reviewed_asset_limit(asset)==384809176
+    source=tmp_path/'muse';source.mkdir();(source/'upstream.json').write_text(json.dumps(item))
+    assert parallel_assets(source)=={'x86_64':[asset]}
+    for key,value in [('url',asset['url']+'&other=unreviewed'),('size',384809177),('sha256','0'*64)]:
+        changed=dict(item);changed[key]=value;(source/'upstream.json').write_text(json.dumps(changed))
+        assert not reviewed_muse_native(changed)and reviewed_asset_limit(changed)==MAX_BYTES
+        with pytest.raises(ValueError,match='unreviewed original Muse'):parallel_assets(source)
+
+
+def test_muse_native_steps_preserve_immutable_original_and_wire_budget():
+    from server_sdk_pin import server_commit
+    manifest,proof=prepare(ROOT/'muse',asset_transport='parallel',server_commit=server_commit(ROOT/'muse'))
+    assert proof['steps_json_bytes']<=15000 and len(proof['copy_source_commit'])==40
+    assert proof['build_assets']['x86_64'][0]['size']==384809176
+    for filename in ['commands.py','relay.py','filter_native.py','install_runtime.py','server-sdk.commit']:
+        assert proof['inputs_sha256'][filename]==hashlib.sha256((ROOT/'muse'/filename).read_bytes()).hexdigest()
+    assert manifest['build']['steps'][-1]=={'type':'USER','args':['user']}
+
+
+def test_muse_installer_runs_through_verified_native_asset_adapter():
+    from server_sdk_pin import server_commit
+    manifest,_=prepare(ROOT/'muse',asset_transport='parallel',server_commit=server_commit(ROOT/'muse'))
+    commands=[v['args'][0]for v in manifest['build']['steps']if v['type']=='RUN']
+    assert any('python3 /tmp/abx-step-assets/step_assets.py run /tmp/muse-original-installer/install_runtime.py'in value for value in commands)
