@@ -1,0 +1,6 @@
+#!/bin/sh
+# Original kernel source/interpreter are fixed; native model key stays out of
+# the kernel's inherited environment. This is not an OS credential boundary.
+unset ABX_PRIME_MODEL_KEY
+export PYTHONPATH=/opt/prime-agent/prime-agent-runtime/src
+exec /opt/prime-kernel/bin/python "$@"
