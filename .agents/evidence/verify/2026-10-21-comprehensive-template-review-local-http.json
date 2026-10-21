@@ -1,0 +1,428 @@
+{
+  "scope": "source-only HTTP; model credentials stripped; original binaries may be absent",
+  "templates": [
+    {
+      "template": "_skeleton",
+      "result": "PASS",
+      "pass_checks": 4,
+      "failures": [],
+      "skips": []
+    },
+    {
+      "template": "agents-cli",
+      "result": "FAIL",
+      "pass_checks": 2,
+      "failures": [
+        "[FAIL] both actual installed CLI versions match pins",
+        "[FAIL] HTTP smoke aborted (AssertionError); response omitted"
+      ],
+      "skips": []
+    },
+    {
+      "template": "aider",
+      "result": "PASS",
+      "pass_checks": 9,
+      "failures": [],
+      "skips": [
+        "[SKIP] real CLI version; no image/runtime acceptance claimed",
+        "[SKIP] L3 real coding; no acceptance claimed"
+      ]
+    },
+    {
+      "template": "amp",
+      "result": "PASS",
+      "pass_checks": 7,
+      "failures": [],
+      "skips": [
+        "[SKIP] POST /commands/amp_execute \u2014 E2E_RUN_LLM disables all execute calls"
+      ]
+    },
+    {
+      "template": "apply-patch",
+      "result": "FAIL",
+      "pass_checks": 0,
+      "failures": [],
+      "skips": []
+    },
+    {
+      "template": "appworld",
+      "result": "PASS",
+      "pass_checks": 7,
+      "failures": [],
+      "skips": [
+        "[SKIP] native AppWorld environment absent in source-only local check",
+        "[NOT RUN] original AppWorld real-model task; owned cloud opt-in required"
+      ]
+    },
+    {
+      "template": "browser-automation",
+      "result": "FAIL",
+      "pass_checks": 2,
+      "failures": [
+        "[FAIL] required real Chromium navigation and body extraction",
+        "[FAIL] Chromium is required; install pinned Playwright and its browser. No browser checks are skipped."
+      ],
+      "skips": []
+    },
+    {
+      "template": "browser-use",
+      "result": "PASS",
+      "pass_checks": 9,
+      "failures": [],
+      "skips": [
+        "[SKIP] native runtime; no image/provider acceptance claimed",
+        "[SKIP] real browser model; separate SDK controller required, no L3 claim"
+      ]
+    },
+    {
+      "template": "chrome",
+      "result": "PASS",
+      "pass_checks": 7,
+      "failures": [],
+      "skips": [
+        "[SKIP] native headed Chrome/CDP/VNC absent in source-only check"
+      ]
+    },
+    {
+      "template": "claude-code",
+      "result": "PASS",
+      "pass_checks": 20,
+      "failures": [],
+      "skips": [
+        "[SKIP] POST /commands/claude \u2014 E2E_RUN_LLM='0' \u2014 forced skip"
+      ]
+    },
+    {
+      "template": "cline",
+      "result": "PASS",
+      "pass_checks": 7,
+      "failures": [],
+      "skips": [
+        "[SKIP] native CLI absent in source-only local environment",
+        "[NOT RUN] native model/source-edit acceptance; requires owned cloud opt-in"
+      ]
+    },
+    {
+      "template": "code-server",
+      "result": "FAIL",
+      "pass_checks": 0,
+      "failures": [],
+      "skips": []
+    },
+    {
+      "template": "codex",
+      "result": "PASS",
+      "pass_checks": 14,
+      "failures": [],
+      "skips": [
+        "[SKIP] codex_exec real coding task"
+      ]
+    },
+    {
+      "template": "codex-agent-api",
+      "result": "PASS",
+      "pass_checks": 18,
+      "failures": [],
+      "skips": [
+        "[SKIP] L3 real coding task: set E2E_RUN_LLM=1 or E2E_REQUIRE_LLM=1"
+      ]
+    },
+    {
+      "template": "copilot-cli",
+      "result": "PASS",
+      "pass_checks": 7,
+      "failures": [],
+      "skips": [
+        "[SKIP] native CLI absent in source-only local environment",
+        "[NOT RUN] native model/source-edit acceptance; requires owned cloud opt-in"
+      ]
+    },
+    {
+      "template": "crush",
+      "result": "PASS",
+      "pass_checks": 9,
+      "failures": [],
+      "skips": [
+        "[SKIP] real CLI version; no image/runtime acceptance claimed",
+        "[SKIP] L3 real coding; no acceptance claimed"
+      ]
+    },
+    {
+      "template": "deepagents",
+      "result": "PASS",
+      "pass_checks": 9,
+      "failures": [],
+      "skips": [
+        "[SKIP] real CLI version; no image/runtime acceptance claimed",
+        "[SKIP] L3 real coding; no acceptance claimed"
+      ]
+    },
+    {
+      "template": "deepseek-harness",
+      "result": "PASS",
+      "pass_checks": 9,
+      "failures": [],
+      "skips": [
+        "[SKIP] L3 real coding; no acceptance claimed"
+      ]
+    },
+    {
+      "template": "dev-services",
+      "result": "PASS",
+      "pass_checks": 1,
+      "failures": [],
+      "skips": [
+        "[SKIP] actual database runtime unavailable; contract checks do not establish engine/provider acceptance"
+      ]
+    },
+    {
+      "template": "document-tools",
+      "result": "FAIL",
+      "pass_checks": 0,
+      "failures": [],
+      "skips": []
+    },
+    {
+      "template": "droid",
+      "result": "PASS",
+      "pass_checks": 7,
+      "failures": [],
+      "skips": [
+        "[SKIP] native CLI absent in source-only local environment",
+        "[NOT RUN] native model/source-edit acceptance; requires owned cloud opt-in"
+      ]
+    },
+    {
+      "template": "gemini",
+      "result": "PASS",
+      "pass_checks": 9,
+      "failures": [],
+      "skips": [
+        "[SKIP] real CLI version; no image/runtime acceptance claimed",
+        "[SKIP] L3 real coding; no acceptance claimed"
+      ]
+    },
+    {
+      "template": "goose",
+      "result": "PASS",
+      "pass_checks": 9,
+      "failures": [],
+      "skips": [
+        "[SKIP] real CLI version; no image/runtime acceptance claimed",
+        "[SKIP] L3 real coding; no acceptance claimed"
+      ]
+    },
+    {
+      "template": "grok",
+      "result": "PASS",
+      "pass_checks": 7,
+      "failures": [],
+      "skips": [
+        "[SKIP] native CLI absent in source-only local environment",
+        "[NOT RUN] native model/source-edit acceptance; requires owned cloud opt-in"
+      ]
+    },
+    {
+      "template": "hermes-agent",
+      "result": "PASS",
+      "pass_checks": 9,
+      "failures": [],
+      "skips": [
+        "[SKIP] real CLI version; no image/runtime acceptance claimed",
+        "[SKIP] L3 real coding; no acceptance claimed"
+      ]
+    },
+    {
+      "template": "kimi-code",
+      "result": "PASS",
+      "pass_checks": 9,
+      "failures": [],
+      "skips": [
+        "[SKIP] real CLI version; no image/runtime acceptance claimed",
+        "[SKIP] L3 real coding; no acceptance claimed"
+      ]
+    },
+    {
+      "template": "media-tools",
+      "result": "PASS",
+      "pass_checks": 28,
+      "failures": [],
+      "skips": []
+    },
+    {
+      "template": "muse",
+      "result": "PASS",
+      "pass_checks": 8,
+      "failures": [],
+      "skips": [
+        "[SKIP] native CLI absent in source-only local environment",
+        "[NOT RUN] native model/source-edit acceptance; requires owned cloud opt-in"
+      ]
+    },
+    {
+      "template": "next-app",
+      "result": "FAIL",
+      "pass_checks": 0,
+      "failures": [],
+      "skips": []
+    },
+    {
+      "template": "node-web",
+      "result": "PASS",
+      "pass_checks": 60,
+      "failures": [],
+      "skips": []
+    },
+    {
+      "template": "ocr",
+      "result": "FAIL",
+      "pass_checks": 6,
+      "failures": [
+        "[FAIL] invalid encoded image rejected without private path"
+      ],
+      "skips": [
+        "[SKIP] pinned OCR runtime unavailable; HTTP contract is not real image/cloud acceptance"
+      ]
+    },
+    {
+      "template": "openclaw",
+      "result": "PASS",
+      "pass_checks": 6,
+      "failures": [],
+      "skips": [
+        "[SKIP] real gateway lifecycle: no OPENCLAW_GATEWAY_TOKEN; not model acceptance",
+        "[SKIP] model/coding acceptance: lifecycle suite does not call a model"
+      ]
+    },
+    {
+      "template": "opencode",
+      "result": "FAIL",
+      "pass_checks": 10,
+      "failures": [
+        "[FAIL] required target CLI version matches pin",
+        "[FAIL] required target setup check",
+        "[FAIL] target serve startup and target-side authenticated health/version",
+        "[FAIL] target serve status",
+        "[FAIL] target serve start is idempotent"
+      ],
+      "skips": [
+        "[NOT RUN] L3 model/artifact acceptance; use E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1"
+      ]
+    },
+    {
+      "template": "osworld",
+      "result": "PASS",
+      "pass_checks": 6,
+      "failures": [],
+      "skips": [
+        "[SKIP] GUI task not requested; this HTTP check is not desktop/image/cloud acceptance"
+      ]
+    },
+    {
+      "template": "pi",
+      "result": "PASS",
+      "pass_checks": 9,
+      "failures": [],
+      "skips": [
+        "[SKIP] real CLI version; no image/runtime acceptance claimed",
+        "[SKIP] L3 real coding; no acceptance claimed"
+      ]
+    },
+    {
+      "template": "polyglot-toolchain",
+      "result": "PASS",
+      "pass_checks": 0,
+      "failures": [],
+      "skips": [
+        "[SKIP] actual compiler smoke: local exact toolchains absent"
+      ]
+    },
+    {
+      "template": "prime-agent",
+      "result": "PASS",
+      "pass_checks": 7,
+      "failures": [],
+      "skips": [
+        "[SKIP] native CLI absent in source-only local environment",
+        "[NOT RUN] native model/source-edit acceptance; requires owned cloud opt-in"
+      ]
+    },
+    {
+      "template": "python-hello",
+      "result": "PASS",
+      "pass_checks": 21,
+      "failures": [],
+      "skips": []
+    },
+    {
+      "template": "qm",
+      "result": "PASS",
+      "pass_checks": 7,
+      "failures": [],
+      "skips": [
+        "[SKIP] native CLI absent in source-only local environment",
+        "[NOT RUN] native model/source-edit acceptance; requires owned cloud opt-in"
+      ]
+    },
+    {
+      "template": "qm-sandbox",
+      "result": "PASS",
+      "pass_checks": 7,
+      "failures": [],
+      "skips": [
+        "[SKIP] original QM/SDK environment absent in source-only local check"
+      ]
+    },
+    {
+      "template": "qoder",
+      "result": "FAIL",
+      "pass_checks": 8,
+      "failures": [
+        "[FAIL] real CLI version equals pin"
+      ],
+      "skips": [
+        "[SKIP] L3 real coding; no acceptance claimed"
+      ]
+    },
+    {
+      "template": "qwen-code",
+      "result": "FAIL",
+      "pass_checks": 8,
+      "failures": [
+        "[FAIL] real CLI version equals pin"
+      ],
+      "skips": [
+        "[SKIP] L3 real coding; no acceptance claimed"
+      ]
+    },
+    {
+      "template": "stagehand",
+      "result": "PASS",
+      "pass_checks": 11,
+      "failures": [],
+      "skips": [
+        "[SKIP] native runtime absent; no cloud/native acceptance inferred",
+        "[SKIP] real model; separate owned SDK controller required"
+      ]
+    },
+    {
+      "template": "swe",
+      "result": "PASS",
+      "pass_checks": 5,
+      "failures": [],
+      "skips": [
+        "[SKIP] real mini coding; no model/image acceptance claimed"
+      ]
+    },
+    {
+      "template": "tau2-bench",
+      "result": "PASS",
+      "pass_checks": 7,
+      "failures": [],
+      "skips": [
+        "[SKIP] native Tau2 environment absent in source-only local check",
+        "[NOT RUN] actual native agent/user benchmark; owned cloud opt-in required"
+      ]
+    }
+  ]
+}
