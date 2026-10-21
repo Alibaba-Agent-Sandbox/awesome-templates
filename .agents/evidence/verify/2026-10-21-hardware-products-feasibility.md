@@ -9,3 +9,7 @@ Status: PARTIAL for product execution; PASS for the explicit feasibility/decisio
 Documentation/link/syntax/diff checks and final CI/merge are recorded after execution below. Historical runtime receipts are untouched. This change does not alter any installable template or its qualification.
 
 Executed local document checksPASS:203public Markdown and3owner documents,0link failures. Guest probe and bilingual Python examples AST syntaxPASS; git diff whitespace checksPASS. No further cloud execution was needed for prose.
+
+Review also found stale backlog statements contradicting implemented Grok/QM/OSWorld/Pi/Aider sources and the new Omarchy/TCG findings. Replaced them with bilingual current-source pointers and scoped deferred-product decisions; historical evidence remains unchanged.
+
+After the bilingual backlog correction,204public Markdown and3owner documents0link failuresPASS.
