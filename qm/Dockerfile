@@ -7,10 +7,10 @@ COPY upstream.json /opt/qm-bootstrap/upstream.json
 COPY install_runtime.py /tmp/qm-original-install.py
 RUN python3 /tmp/qm-original-install.py && rm /tmp/qm-original-install.py
 ENV PATH="/opt/node/current/bin:${PATH}"
-COPY package.json package-lock.json /opt/qm/
-COPY sdk-package.json /opt/agent-sandbox-node-sdk/package.json
-COPY sdk-package-lock.json /opt/agent-sandbox-node-sdk/package-lock.json
-RUN NODE_OPTIONS=--use-system-ca npm ci --prefix /opt/agent-sandbox-node-sdk --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org \
+COPY package.json package-lock.json sdk-package.json sdk-package-lock.json /tmp/qm-review-locks/
+RUN python3 -c "from pathlib import Path; mapping={'package.json':'/opt/qm/package.json','package-lock.json':'/opt/qm/package-lock.json','sdk-package.json':'/opt/agent-sandbox-node-sdk/package.json','sdk-package-lock.json':'/opt/agent-sandbox-node-sdk/package-lock.json'}; assert all((Path('/tmp/qm-review-locks')/name).read_bytes()==Path(target).read_bytes() for name,target in mapping.items()), 'original source and reviewed locks differ'" \
+    && rm -rf /tmp/qm-review-locks \
+    && NODE_OPTIONS=--use-system-ca npm ci --prefix /opt/agent-sandbox-node-sdk --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org \
     && npm run build --prefix /opt/agent-sandbox-node-sdk \
     && NODE_OPTIONS=--use-system-ca npm ci --prefix /opt/qm --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org \
     && npm cache clean --force \
