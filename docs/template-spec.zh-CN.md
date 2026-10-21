@@ -514,11 +514,11 @@ harness 用现有标志调用 `abx template deploy`（`--json`、`-y`、`--gener
 
 ## 提供方托管条目
 
-`managed_templates` 是附加目录命名空间，与可安装源码 `templates` 分开。字段包含 name/provider/template_id/kind/documentation/evidence/verification_scope/native_interpreter_verified。托管 ID 没有此仓库拥有的 Dockerfile、镜像版本、commands.py 或构建上下文，因此不参与源码模板的镜像选择、steps 生成和部署检查。实测必须写明 SDK 回退、运行时版本及独立清理，不能继承其他提供方或原生解释器验证。参见 [base](managed/base/README.zh-CN.md) 和 [code-interpreter-v1](managed/code-interpreter-v1/README.zh-CN.md)。
+`managed_templates` 是附加目录命名空间，与可安装源码 `templates` 分开。字段包含 name/provider/template_id/kind/documentation/evidence/verification_scope/native_interpreter_verified。托管 ID 没有此仓库拥有的 Dockerfile、镜像版本、commands.py 或构建上下文，因此不参与源码模板的镜像选择、steps 生成和部署检查。实测必须写明 SDK 回退、运行时版本及独立清理。通用 shell／SDK 回退结果不能认证另一提供方或原生解释器；原生解释器声明需要真实原版解释器执行，以及所声明的持久／隔离上下文行为，并单独记录来源／镜像身份与独立清理。参见 [base](managed/base/README.zh-CN.md) 和 [code-interpreter-v1](managed/code-interpreter-v1/README.zh-CN.md)。
 
 同一天验证新版本时，使用独立的 express-YYYY-MM-DDTHHMMSSZ.json 回执，保留旧日期文件。提供方资格必须匹配当前清单版本，且 passed 和 cleanup_verified 都为 true，并含真实 CLI/SDK 成功调用；旧版本不能认证变更后的模板。
 
 V3 的 smoke 必须显式填写非 null 的 `expect`，支持字符串、数值、布尔、对象和数组，沿用现有结构化比较。v2 中没有期望值的 smoke 升级 v3 时需要补充明确结果；v2 自身行为不变。
 
 
-托管目录通过`python scripts/check_managed_catalog.py`检查准确字段、与源目录不重名、双语14个有序README章节、本地证据身份、原生解释器声明及运行时检查／清理。外部未验证条目使用`verification_scope: catalog-only-unverified`及证据`status: NOT_VERIFIED`、`passed: false`、`native_interpreter_verified: false`；这是合法目录元数据，不是提供商／运行时通过。运行时资格需要真实检查和独立清理。托管ID仍排除在源镜像选择／steps之外。[Desktop](managed/desktop/README.zh-CN.md)和[OpenSandbox解释器](managed/opensandbox-code-interpreter/README.zh-CN.md)分别说明真实后端条件和未运行的产品门槛。
+托管目录通过`python scripts/check_managed_catalog.py`检查准确字段、与源目录不重名、双语14个有序README章节、本地证据身份、原生解释器声明及运行时检查／清理。外部未验证条目使用`verification_scope: catalog-only-unverified`及证据`status: NOT_VERIFIED`、`passed: false`、`native_interpreter_verified: false`；这是合法目录元数据，不是提供商／运行时通过。运行时资格需要真实检查和独立清理。托管ID仍排除在源镜像选择／steps之外。[Desktop](managed/desktop/README.zh-CN.md)和[OpenSandbox解释器](managed/opensandbox-code-interpreter/README.zh-CN.md)分别说明真实后端条件、当前实际验证范围及仍未运行的产品门槛。

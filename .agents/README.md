@@ -62,6 +62,8 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 
 ## Current review
 
+- [Final verification overview](notes/proposed/process/2026-10-21-final-acceptance-overview.md) · [verification](evidence/verify/2026-10-21-final-acceptance-overview.md)
+
 - [Node Web HTTP output protocol](notes/proposed/process/2026-10-16-node-web-http-output.md)
 - [Node Web protocol verification](evidence/verify/2026-10-16-node-web-http-output.md)
 - [Catalog completion decision](notes/proposed/feature/2026-10-16-catalog-completion-review.md)
