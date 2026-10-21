@@ -180,3 +180,6 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Headed Chrome final native SDK/image acceptance](evidence/verify/2026-10-20-chrome-native-final.md)
 
 - [Current39native/runtime and required full HTTP snapshot](evidence/verify/2026-10-20-current-native-http39.json)
+
+- [Prime Agent final native SDK/image/coding acceptance](evidence/verify/2026-10-21-prime-agent-native-final.md)
+- [Current40native/runtime and required fullHTTP snapshot](evidence/verify/2026-10-21-current-native-http40.json)

@@ -90,9 +90,13 @@ HTTP200返回 `{"result":{"native_version":"0.10.0"}}`。`POST /commands/prime_a
 
 ## 已验证
 
-尚未记录任何通过的提供方测试。
+| Provider | 范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 模板1.0.0；原生steps、官方READY、实际SDK创建、CLI/SDK原生命令、真实编码及独立清理 | [Express](evidence/express-2026-10-21.json)、[完整记录](evidence/verification-steps-2026-10-21T000126Z.json) |
 
-原生version/help及本地自编测试仅是部分证据。当前镜像、Express、原生内核、真实模型和独立清理门禁待完成。[带日期研究](../.agents/evidence/verify/2026-10-20-prime-agent-native-research.md)。
+未经修改的Prime Agent0.10.0使用显式批准的qwen3.8-flash兼容模型完成真实编码，原版ipython工具修改预置源文件、保持原始3项测试字节不变，生成报告和精确随机nonce产物；返回后独立运行原始3项及4项隐藏用例并执行新ACK：18PASS/0FAIL/0SKIP。完整非模型HTTP9PASS/0FAIL/0SKIP。转发真实key前，原生合成SSE探针确认1次请求只访问指定端点/模型/Bearer，冲突项目配置收到0次请求，fixture和监听已清除。原生进程/内核、私有目录、项目、9010监听、外层沙箱/模板及私有OSS均独立确认不存在。总耗时232.382秒。
+
+实际镜像L1构建及非root版本/原版CPython协议3/12项导入smoke通过，rootfs1129394176字节。该镜像没有注册部署；Express证据属于steps。未验证订阅模型、daemon、递归代理、研究基准、其他提供方或峰值内存。[最终工程证据](../.agents/evidence/verify/2026-10-21-prime-agent-native-final.md)。
 
 ## 二次开发
 
