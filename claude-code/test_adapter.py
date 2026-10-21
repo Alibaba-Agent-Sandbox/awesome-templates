@@ -57,7 +57,7 @@ def test_real_http_owned_auth_translation_and_listener_cleanup():
    with pytest.raises(urllib.error.HTTPError):post(path,token,data)
   assert seen==[]
   with post('/v1/messages?beta=true',relay.token,native())as response:
-   raw=response.read().decode();assert 'message_stop'in raw and 'input_json_delta'in raw and 'upstream-only-key'not in raw
+   raw=response.read().decode();assert int(response.headers['Content-Length'])==len(raw.encode());assert raw.count('event: message_stop\n')==1;assert 'message_stop'in raw and 'input_json_delta'in raw and 'upstream-only-key'not in raw
   relay.wait_for_idle();assert len(seen)==1 and seen[0][0]=='/v1/chat/completions'and seen[0][1]=='Bearer upstream-only-key'
   assert seen[0][2]['messages'][3]['role']=='tool'and relay.snapshot()=={'model_requests':1,'completed_responses':1,'failed_responses':0,'native_tool_calls':1,'native_tool_results':1,'failure_counts':{},'last_upstream_status':200}
  finally:relay.close();upstream.shutdown();upstream.server_close();thread.join(3)

@@ -159,9 +159,12 @@ class Relay:
                     raw=response.read(MAX_RESPONSE+1)
                     if len(raw)>MAX_RESPONSE or owner.closed or time.monotonic()>=owner.deadline:raise ValueError('bounded upstream reply exceeded')
                     stage='reply_shape';message=reply(json.loads(raw),owner.model);stage='native_stream'
-                    self.send_response(200);self.send_header('Content-Type','text/event-stream');self.end_headers()
-                    for kind,value in events(message):self.wfile.write(('event: '+kind+'\ndata: '+json.dumps(value)+'\n\n').encode())
-                    self.wfile.flush()
+                    # Upstream Chat is already buffered. Frame and send its complete
+                    # native SSE body together, so native stream termination cannot
+                    # race individual writes of the terminal event pair.
+                    wire=b''.join(('event: '+kind+'\ndata: '+json.dumps(value)+'\n\n').encode()for kind,value in events(message))
+                    self.send_response(200);self.send_header('Content-Type','text/event-stream');self.send_header('Content-Length',str(len(wire)));self.end_headers()
+                    self.wfile.write(wire);self.wfile.flush()
                     with owner.lock:
                         owner.stats['completed_responses']+=1
                         owner.stats['native_tool_calls']+=sum(b['type']=='tool_use'for b in message['content'])
