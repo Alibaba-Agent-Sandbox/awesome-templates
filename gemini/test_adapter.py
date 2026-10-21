@@ -77,3 +77,18 @@ def test_actual_http_original_google_route_auth_and_owned_cleanup():
 def test_explicit_native_disabled_thinking_preserves_text_tool_profile():
     value=native();value['generationConfig']['thinkingConfig']={'includeThoughts':False,'thinkingBudget':0}
     result=r.request(value,'owned-model');assert result['model']=='owned-model'and result['tools'][0]['function']['name']=='read_file'
+
+
+def test_native_unsigned_tool_placeholder_preserves_round_trip():
+    value=native()
+    value['contents'][1]['parts'][0]['thoughtSignature']='skip_thought_signature_validator'
+    converted=r.request(value,'owned-model')
+    assert converted==r.request(native(),'owned-model')
+    assert converted['messages'][2]['tool_calls'][0]['id']==converted['messages'][3]['tool_call_id']=='call-owned'
+
+
+@pytest.mark.parametrize('signature',['opaque-signed-thought','',None,True,{},[]])
+def test_other_tool_signatures_are_refused(signature):
+    value=native()
+    value['contents'][1]['parts'][0]['thoughtSignature']=signature
+    with pytest.raises(ValueError):r.request(value,'owned-model')

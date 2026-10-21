@@ -22,3 +22,5 @@ Fixed metadata protocol and authored subprocess fixtures only locally; preserve 
 
 ## Acceptance criteria
 Current original source/native SDK Express/fullHTTP/actual model/independent cleanup/image pass, bilingual docs/contracts/records agree, immutable historical failures retained, latest-head checks/review and normal pinned merge. Until then current2.1.0 stays unqualified and Issue30open.
+
+Fresh review2.1.4: accept only the observed fixed unsigned native function-call sentinel; all actual thought signatures remain unsupported. See the indexed verification record for before/after regression and current cloud limitations.

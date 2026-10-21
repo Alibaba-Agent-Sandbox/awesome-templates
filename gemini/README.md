@@ -102,7 +102,7 @@ Declared2vCPU4096MB/Linuxx64/port9000/8GiBrootfs budget; no KVM/nested Docker/GP
 
 ## Verified
 
-Current2.1.3 provider/native/model/image qualification PENDING. Local81fixed/legacy protocol/process/controller testsPASS1SKIP9.40seconds; skipped actual pinned CLI is not installed on operator. Original package integrity/source inspection and local fixtures are not native/provider/model acceptance. Earlier2.0.1 receipts remain immutable history and cannot qualify changed2.1.0.
+Current2.1.4 provider/native/model/image qualification PENDING. Local81fixed/legacy protocol/process/controller testsPASS1SKIP9.40seconds; skipped actual pinned CLI is not installed on operator. Original package integrity/source inspection and local fixtures are not native/provider/model acceptance. Earlier2.0.1 receipts remain immutable history and cannot qualify changed2.1.0.
 
 ## Secondary development
 
@@ -126,3 +126,5 @@ Read [CONTRIBUTING](../CONTRIBUTING.md), [project standards](../docs/project-sta
 ## License
 
 Authored template/adapter and original Gemini CLI are Apache-2.0 under their respective original [licenses/notices](UPSTREAM-NOTICE.md); retain bundled third-party terms. [Repository license](../LICENSE). No Google endorsement or hosted model access claim.
+
+The text/tool adapter accepts only the original CLI fixed `skip_thought_signature_validator` placeholder on function calls and removes that metadata during translation. Other thought signatures and thinking content remain unsupported and rejected.

@@ -51,7 +51,10 @@ def request(data,model):
         texts=[];calls=[];results=[]
         for index,p in enumerate(parts):
             if set(p)=={'text'}:texts.append(text([p]))
-            elif set(p)=={'functionCall'}and role=='assistant':
+            elif role=='assistant' and (set(p)=={'functionCall'} or (
+                set(p)=={'functionCall','thoughtSignature'} and
+                p['thoughtSignature']=='skip_thought_signature_validator'
+            )):
                 f=p['functionCall'];name=f.get('name');arguments=f.get('args');identifier=f.get('id')or'call_'+str(turn)+'_'+str(index)
                 if name not in TOOLS or not isinstance(arguments,dict)or not isinstance(identifier,str):raise ValueError('unsupported native function')
                 calls.append({'id':identifier,'type':'function','function':{'name':name,'arguments':json.dumps(arguments)}});pending.setdefault(name,[]).append(identifier)
