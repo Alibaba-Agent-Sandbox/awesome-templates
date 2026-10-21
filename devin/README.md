@@ -144,7 +144,11 @@ Linuxx86_64 only, nonroot user,2vCPU/4096MB/port9000; build enforces rootfs<=8Gi
 
 ## Verified
 
-Current1.0.0 qualification PENDING; tested_on empty. Separate owned Express research ran original3000.11.92 version/help and observed native no-account refusal under UID1000, with independent cleanup; research does not qualify this new template. Local fixed-worker tests prove only wrapper/controller behavior. Native published-source SDK/steps/fullHTTP/image/cleanup/latest-head CI/review/merge remain required. Genuine account/model/coding success is NOT_RUN. [Research and execution](../.agents/evidence/verify/2026-10-21-devin-native.md).
+| Provider | Runtime verification | Scope |
+| --- | --- | --- |
+| alicloud-express | [PASS receipt](evidence/express-2026-10-21.json) · [steps/full HTTP](evidence/verification-steps-2026-10-21T113906Z.json) | Actual original version/help, SDK create, original no-account print refusal through HTTP and SDK, fixture preservation and independently confirmed sandbox/template/private-cache cleanup |
+
+Current1.0.0 published-source native step acceptance completed143.465seconds, with16HTTP checksPASS0FAIL0SKIP and7397wire bytes. The original no-account authentication error is a program/API error-path pass, never a vendor account/model success. Genuine account/model/coding is NOT_RUN without an authorized credential; the catalog remains experimental. Local fixed workers, separate hosted actual-image checks and real provider steps have distinct scope. [Full executed verification](../.agents/evidence/verify/2026-10-21-devin-native.md).
 
 ## Secondary development
 

@@ -1,0 +1,79 @@
+{
+  "template": "devin",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-21T113906Z",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "devin",
+    "materializer_sha256": "6d20b9ed2b64d891caa7a345ead6c084cc7d1cce489e1fb8526c19ff103ddc45",
+    "source_manifest_contract_sha256": "8fde7119b21ee21cb2d2ad3961c6bef4822afc8237a6005cabcd8dc320683900",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": null,
+    "template_server_commit": "34e7e011c5569f77b7f605e65313be7498f6cf02",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "cdf5bcac1bc0f5fb66a2136616003f29b4c79d8e",
+    "asset_transport": "oss",
+    "steps_json_bytes": 7397,
+    "inputs_sha256": {
+      "Dockerfile": "0cc7f1a0ae23c8297c23dd08f5d4ff9474befce09b1da78ed6d114ecb83e3874",
+      "template.yaml": "b441e276b51c8976b0cd5ecd4edc7ab209b4ce047ebe2818bd4bd0eb50f741c1",
+      "server-sdk.commit": "57134d659449d0f55301272a5abc2ac907c86b8380a36f2b3e86e09c9b6dc6cf",
+      "upstream.json": "a02f01031fa54417d1f1192d7a95031bce7e8dd75a8d518a6ce5e85ead6327ad",
+      "install_runtime.py": "d87eabd0c2c3f01218ac829e48491b70db40283e1c7ccaa3444ed52907dfd951",
+      "commands.py": "63137ca6f7203b1768d507fec2cc1e4d0afce77ecc491c3f3c0a24748f3cc354",
+      "runtime.py": "6e1f7554d980d9a2f4220a7bc462a65a89a97a082b4f23b434cce7916b524950",
+      "process.py": "a20c1d029ad02e8595d0cd77730f914c64b4a618ad9b92808b6eb3b736119260",
+      "lifecycle.py": "09e03610370987f67d2c9c018d9d34565655295125c41114113eeb1baf3557d3",
+      "UPSTREAM-NOTICE.md": "577fe49fb511af1a3a509a202f1f780d573cad4b7ac4a73e6f07cf1285f4bda3"
+    },
+    "asset_transport_sha256": "e9039f9afe9dc7f74c7237f10edc73e7d3c82ca6fd50724e4c20480e4e58b02d",
+    "asset_adapter_source_commit": "cdf5bcac1bc0f5fb66a2136616003f29b4c79d8e",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://static.devin.ai/cli/3000.11.92/devin-3000.11.92-x86_64-unknown-linux.tar.gz",
+          "size": 67245544,
+          "sha256": "2d829139682e038cf122510f1170eee3d7060bcc7ebf92445cbc5d28c9fbcfa0"
+        }
+      ]
+    },
+    "asset_cache_architecture": "x86_64",
+    "generated_manifest_sha256": "617ba7dc1efdaca13fd5e664997e4c3790b0676e476828671250a9103c078ce6",
+    "test_configuration": {
+      "native_authentication_error_path_required": true,
+      "credential_absence_required": true,
+      "model_credentials_injected": false
+    }
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 16,
+    "fail_count": 0,
+    "skip_count": 0,
+    "controller_sha256": "d8c101ac53e2e176e11a661cdd5a78cedca116ac91559fea31aa069a28c040e6"
+  },
+  "cleanup_verified": true,
+  "exit_code": 0,
+  "receipt": "devin/evidence/express-2026-10-21.json",
+  "command_calls": 4,
+  "asset_cache": {
+    "service": "Alibaba Cloud OSS",
+    "private_acl_verified": true,
+    "archives": [
+      {
+        "url": "https://static.devin.ai/cli/3000.11.92/devin-3000.11.92-x86_64-unknown-linux.tar.gz",
+        "sha256": "2d829139682e038cf122510f1170eee3d7060bcc7ebf92445cbc5d28c9fbcfa0",
+        "size": 67245544
+      }
+    ],
+    "signed_get_ttl_seconds": 3600,
+    "cleanup_verified": true
+  },
+  "duration_s": 143.465
+}

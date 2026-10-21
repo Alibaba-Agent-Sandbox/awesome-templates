@@ -142,7 +142,11 @@ stdout和stderr各限256KiB；命令1..600秒，加最多90秒自有后代清理
 
 ## 已验证
 
-当前1.0.0资格待执行，tested_on为空。独立自有Express研究已证明UID1000运行原版3000.11.92版本／帮助并明确拒绝无账号调用，独立清理通过；研究不认证新模板。本地固定工作进程仅验证包装／控制器。正式已发布源SDK／steps／完整HTTP／镜像／清理／最终CI／review／合并待完成。真实账号／模型／编码NOT_RUN。[研究及实际执行](../.agents/evidence/verify/2026-10-21-devin-native.md)。
+| 提供商 | 运行时验证 | 范围 |
+| --- | --- | --- |
+| alicloud-express | [通过回执](evidence/express-2026-10-21.json) · [steps／完整HTTP](evidence/verification-steps-2026-10-21T113906Z.json) | 原版版本／帮助、SDK创建、原版无账号print的HTTP和SDK认证拒绝、文件保留及独立确认沙箱／模板／私有缓存清理 |
+
+当前1.0.0已发布源的原生steps验收143.465秒，16项HTTP通过、0失败、0跳过，线传7397字节。原版无账号认证错误属于程序／API错误路径通过，不是厂商账号／模型成功。无授权凭证时真实账号／模型／编码NOT_RUN，目录保持experimental。本地固定工作进程、托管实际镜像及真实提供商steps分别记录。[完整实际验证](../.agents/evidence/verify/2026-10-21-devin-native.md)。
 
 ## 二次开发
 
