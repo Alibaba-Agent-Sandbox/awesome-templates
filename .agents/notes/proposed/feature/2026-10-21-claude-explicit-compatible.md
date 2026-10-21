@@ -22,3 +22,5 @@ Fixed metadata protocol and authored subprocess fixtures locally; original nativ
 
 ## Acceptance criteria
 Current original source/image/SDK native Express HTTP/model and cleanup pass without skip, bilingual contracts/design/records agree, immutable failures retained, latest reviewed head CI passes and normal pinned merge/Issue criteria read back. Until then current1.2.0 stays unqualified.
+
+1.3.1 narrowly distinguishes independently proven original optional Bash file-path analysis peer cancellation from failed required delivery. Its fixed system hash is pinned to the unchanged original CLI; no unknown/prefix/main/upstream failure exemption. Cancelled responses are never completed model calls; strict positive required delivery and independent artifacts remain required. Research and before/after real-socket regressions are recorded.

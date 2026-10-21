@@ -1,13 +1,16 @@
 """Bounded authored Anthropic Messages / OpenAI Chat text/tool transport adapter.
 Original Claude Code owns planning and tool execution. No hosted account claim.
 """
-import contextlib,json,secrets,threading,time,urllib.error,urllib.request
+import contextlib,hashlib,json,secrets,threading,time,urllib.error,urllib.request
 from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 from urllib.parse import urlsplit
 
 MAX_REQUEST=2*1024*1024
 MAX_RESPONSE=4*1024*1024
 TOOLS={'Read','Edit','Write','Bash'}
+OPTIONAL_SYSTEM_PREFIX='Extract any file paths that this command reads or modifies.'
+OPTIONAL_SYSTEM_BYTES=1040
+OPTIONAL_SYSTEM_SHA256='bd79f021fc19b2fedc75e21af90c9e653fc827fe1c4272f6b34b95053f66ef13'
 
 
 def settings(base,key,model):
@@ -28,6 +31,19 @@ def text(blocks):
     if not isinstance(blocks,list):raise ValueError('text blocks required')
     if any(not isinstance(b,dict)or b.get('type')!='text'or not isinstance(b.get('text'),str)for b in blocks):raise ValueError('only text content is supported')
     return '\n'.join(b['text']for b in blocks)
+
+
+def optional_file_path_request(data):
+    """Only the pinned original non-awaited Bash file-path analysis, never a tool turn."""
+    if data.get('tools'):return False
+    history=data.get('messages',[])
+    if len(history)!=1 or history[0].get('role')!='user':return False
+    content=text(history[0].get('content',''))
+    if not content.startswith('Command: ')or '\nOutput: 'not in content:return False
+    system=text(data.get('system',[])).encode()
+    start=system.find(OPTIONAL_SYSTEM_PREFIX.encode())
+    if start<0:return False
+    return hashlib.sha256(system[start:start+OPTIONAL_SYSTEM_BYTES]).hexdigest()==OPTIONAL_SYSTEM_SHA256
 
 
 def request(data,model):
@@ -118,7 +134,7 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 class Relay:
     def __init__(self,base,key,model,timeout):
         self.base,self.key,self.model=settings(base,key,model);self.token=secrets.token_urlsafe(32);self.deadline=time.monotonic()+timeout
-        self.stats={'model_requests':0,'completed_responses':0,'failed_responses':0,'native_tool_calls':0,'native_tool_results':0}
+        self.stats={'model_requests':0,'completed_responses':0,'completed_required_responses':0,'cancelled_auxiliary_responses':0,'failed_responses':0,'native_tool_calls':0,'native_tool_results':0}
         self.lock=threading.Lock();self.handlers=set();self.responses=set();self.closed=False;self.failure_counts={};self.last_upstream_status=0
         self.opener=urllib.request.build_opener(urllib.request.ProxyHandler({}),NoRedirect());owner=self
         class Server(ThreadingHTTPServer):
@@ -144,7 +160,7 @@ class Relay:
                 try:
                     size=int(self.headers.get('Content-Length','0'))
                     if not 0<size<=MAX_REQUEST or self.headers.get('Transfer-Encoding'):raise ValueError('bounded request required')
-                    data=json.loads(self.rfile.read(size));payload=request(data,owner.model)
+                    data=json.loads(self.rfile.read(size));payload=request(data,owner.model);optional=optional_file_path_request(data)
                 except (ValueError,TypeError,KeyError,AttributeError):self.refuse(400);return
                 try:
                     with owner.lock:
@@ -167,14 +183,19 @@ class Relay:
                     self.wfile.write(wire);self.wfile.flush()
                     with owner.lock:
                         owner.stats['completed_responses']+=1
+                        if not optional:owner.stats['completed_required_responses']+=1
                         owner.stats['native_tool_calls']+=sum(b['type']=='tool_use'for b in message['content'])
                 except (OSError,ValueError,TypeError,KeyError,AttributeError)as exc:
+                    cancelled=optional and stage=='native_stream'and isinstance(exc,(BrokenPipeError,ConnectionResetError))
                     with owner.lock:
-                        owner.stats['failed_responses']+=1
-                        label=stage+('_http_'+str(exc.code)if isinstance(exc,urllib.error.HTTPError)else'_'+type(exc).__name__)
-                        owner.failure_counts[label]=owner.failure_counts.get(label,0)+1
-                        if isinstance(exc,urllib.error.HTTPError):owner.last_upstream_status=exc.code
-                    with contextlib.suppress(OSError):self.refuse(502)
+                        if cancelled:owner.stats['cancelled_auxiliary_responses']+=1
+                        else:
+                            owner.stats['failed_responses']+=1
+                            label=stage+('_http_'+str(exc.code)if isinstance(exc,urllib.error.HTTPError)else'_'+type(exc).__name__)
+                            owner.failure_counts[label]=owner.failure_counts.get(label,0)+1
+                            if isinstance(exc,urllib.error.HTTPError):owner.last_upstream_status=exc.code
+                    if not cancelled:
+                        with contextlib.suppress(OSError):self.refuse(502)
                 finally:
                     if response is not None:
                         response.close()

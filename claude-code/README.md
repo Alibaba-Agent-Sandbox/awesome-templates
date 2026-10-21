@@ -102,7 +102,7 @@ Declared2vCPU2048MB, Linuxx64, port9000,8GiB image rootfs budget; no KVM/Docker/
 
 ## Verified
 
-Current1.3.0 provider/native/model acceptance is PENDING. Earlier1.1.1 receipts remain immutable historical evidence and do not qualify this changed profile. Local38fixed transport/privacy/process controls PASS; this is not a cloud/model pass. Final actual Express, image, original CLI and model evidence must be recorded before qualification or Issue closure.
+Current1.3.1 provider/native/model acceptance is PENDING. Earlier1.1.1 receipts remain immutable historical evidence and do not qualify this changed profile. Local38fixed transport/privacy/process controls PASS; this is not a cloud/model pass. Final actual Express, image, original CLI and model evidence must be recorded before qualification or Issue closure.
 
 ## Secondary development
 
@@ -126,3 +126,5 @@ Read [CONTRIBUTING](../CONTRIBUTING.md), [project standards](../docs/project-sta
 ## License
 
 Authored template/adapter: [Apache-2.0](../LICENSE). Original Anthropic package remains all rights reserved under its [original terms/notices](UPSTREAM-NOTICE.md); no relicensing or vendor endorsement.
+
+Template1.3.1 records cancelled_auxiliary_responses separately only for peer disconnect after a complete upstream reply to the pinned original asynchronous Bash file-path request (no tools, one user command/output, SHA256-bound fixed system text). The original CLI explicitly ignores its aborted request. Main/unknown requests, upstream timeouts/errors and all other failures still reject completion; completed_required_responses must be positive. A cancelled optional request is not counted as delivered or as a passing model call. Independent coding/artifact/post-return tests remain mandatory. Current source requires fresh acceptance.

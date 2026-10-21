@@ -29,6 +29,8 @@ def final_text(value):
     if any(type(value.get(key))is not int or value[key]<=0 for key in ['model_calls','native_tool_results']):return ''
     calls=value.get('relay_calls')
     if not isinstance(calls,dict)or type(calls.get('completed_responses'))is not int or calls['completed_responses']<value['model_calls']or type(calls.get('failed_responses'))is not int or calls['failed_responses']!=0:return ''
+    if type(calls.get('completed_required_responses'))is not int or calls['completed_required_responses']<1:return ''
+    if type(calls.get('cancelled_auxiliary_responses'))is not int or not 0<=calls['cancelled_auxiliary_responses']<=32:return ''
     return value.get('stdout','').strip()if isinstance(value.get('stdout'),str)else ''
 
 
@@ -79,6 +81,7 @@ def model_check(client,workspace,base):
             f'After completing all file changes, reply with exactly {marker}.',
             'cwd':project,'command_timeout':600,'allow_unsafe_tools':True})
         ok=final_text(result)==marker
+        if ok:print('[NATIVE_TRANSPORT] '+json.dumps(result['relay_calls'],sort_keys=True),flush=True)
         record(ok,'actual native BYOK final response and zero exit')
         if not ok:return
         changed=read('calc.py');preserved=read('test_calc.py');report=read('report.txt');acceptance=read('acceptance.txt')
