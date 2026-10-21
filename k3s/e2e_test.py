@@ -26,6 +26,8 @@ def safe_diagnostic(error):
     for key in ['native_stdout_bytes','native_stderr_bytes','native_was_running','native_config_created','native_elapsed_ms','native_exit_before_cleanup','native_oom_kills']:
         match=re.search(r'\b'+key+r'=(-?[0-9]{1,7})(?=;|$)',text)
         if match:result[key]=int(match[1])
+    words=re.search(r'\bstartup_words=([a-z _-]{0,600});',text)
+    if words:result['startup_words']=words[1]
     number=re.search(r'\[Errno ([0-9]{1,3})\]',text)
     if number:result['errno']=int(number[1])
     checks={'node_state_identity':'native node-state ownership differs','node_state_changed':'native node-state changed','node_directory_identity':'native node directory ownership differs','preexisting_node_state':'pre-existing native node state','runtime_root':'runtime must be non-root','outer_deadline':'K3s execution exceeded timeout_s'}

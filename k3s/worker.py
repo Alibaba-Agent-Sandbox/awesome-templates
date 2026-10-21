@@ -1,5 +1,5 @@
 """Private fixed worker; original server and kubectl operate only on its fresh state."""
-import ipaddress,json,os,signal,socket,subprocess,sys,threading,time,uuid
+import ipaddress,json,os,re,signal,socket,subprocess,sys,threading,time,uuid
 from pathlib import Path
 import process_rpc
 import lifecycle
@@ -9,6 +9,17 @@ LOGS=[bytearray(),bytearray()]
 def oom_kills():
     try:return int(dict(line.split()for line in Path('/sys/fs/cgroup/memory.events').read_text().splitlines()).get('oom_kill',0))
     except (OSError,ValueError):return None
+
+def startup_words(logs):
+    """Startup-only vocabulary; strip credentials, addresses, paths and opaque values."""
+    lines=[]
+    for line in b'\n'.join(logs).decode('utf-8','replace').splitlines()[-6:]:
+        if re.search(r'token|password|secret|certificate|private.key',line,re.I):continue
+        line=re.sub(r'https?://\S+|/[\w./:+@%=-]+',' redacted ',line)
+        line=re.sub(r'\b[\w-]*[0-9][\w.-]*\b',' redacted ',line)
+        line=re.sub(r'[^a-zA-Z _-]+',' ',line)
+        lines.append(' '.join(line.lower().split()))
+    return ' '.join(lines)[-600:]
 
 def alive(process):return os.waitid(os.P_PID,process.pid,os.WEXITED|os.WNOHANG|os.WNOWAIT)is None
 
@@ -118,5 +129,5 @@ if __name__=='__main__':
     except Exception as exc:
         text=b'\n'.join(LOGS).lower()
         markers={name:word in text for name,word in [('permission',b'permission denied'),('namespace',b'operation not permitted'),('root',b'root'),('ip_forward',b'ip_forward'),('cgroup',b'cgroup'),('advertise',b'advertise'),('unknown_flag',b'flag provided but not defined'),('panic',b'panic:'),('bind',b'address already in use')]}
-        print(json.dumps({'error_type':type(exc).__name__,'stage':REPORT.get('operation_stage',REPORT['stage']),'native_log_markers':markers,'native_metrics':{key:value for key,value in REPORT.items()if key.startswith('native_')and type(value)is int}}),flush=True)
+        print(json.dumps({'error_type':type(exc).__name__,'stage':REPORT.get('operation_stage',REPORT['stage']),'native_log_markers':markers,'startup_words':startup_words(LOGS)if REPORT.get('native_config_created')==0 else'','native_metrics':{key:value for key,value in REPORT.items()if key.startswith('native_')and type(value)is int}}),flush=True)
         raise SystemExit(1)

@@ -86,6 +86,9 @@ def validate(manifest_yaml,command_timeout=180):
                     metrics=diagnostic.get('native_metrics',{})
                     allowed=['native_stdout_bytes','native_stderr_bytes','native_was_running','native_config_created','native_elapsed_ms','native_exit_before_cleanup','native_oom_kills']
                     suffix=''.join('; '+key+'='+str(metrics[key])for key in allowed if isinstance(metrics,dict)and type(metrics.get(key))is int and -128<=metrics[key]<=8388608)
+                    words=diagnostic.get('startup_words','')
+                    if not isinstance(words,str)or len(words)>600 or not re.fullmatch('[a-z _-]*',words):words=''
+                    suffix+='; startup_words='+words
                     raise RuntimeError('original agentless K3s failed; diagnostic_stage='+stage+'; diagnostic_type='+kind+'; native_markers='+flags+suffix+';')
                 try:result=json.loads(out)
                 except ValueError:raise RuntimeError('original K3s worker result is invalid; output omitted')from None
