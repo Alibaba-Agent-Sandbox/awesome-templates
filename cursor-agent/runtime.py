@@ -42,7 +42,7 @@ def environment(private,key=''):
 def diagnostic(arguments):
     with tempfile.TemporaryDirectory(prefix='abx-cursor-check-')as name:
         private=Path(name);private.chmod(0o700)
-        code,out,err=PROCESS.run([executable(),*arguments],cwd=private,env=environment(private),timeout=40)
+        code,out,err=PROCESS.run([executable(),'--disable-auto-update','--disable-project-configs',*arguments],cwd=private,env=environment(private),timeout=40)
     if code:raise RuntimeError('original Cursor diagnostic failed; raw output omitted')
     return out.strip()
 
