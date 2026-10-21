@@ -2,7 +2,7 @@
 import importlib.util
 from pathlib import Path
 import pytest
-spec=importlib.util.spec_from_file_location('claude_external_controller_controls',Path(__file__).with_name('e2e_test.py'));module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+spec=importlib.util.spec_from_file_location('claude_external_controller_controls',Path(__file__).with_name('byok_e2e_test.py'));module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
 
 
 def result():return {'exit_code':0,'native_completed':True,'native_version':'2.0.76','cli_sha256':'45b889599096a2fd6911fdd6ac41d59987b58d04de32e61ea5ec01b28fcc6269','protocol':'authored-messages-chat-text-tools','model_calls':1,'native_tool_results':1,'relay_calls':{'completed_responses':1,'failed_responses':0},'stdout':'FIXED_NON_EXECUTABLE_FINAL'}
@@ -26,3 +26,21 @@ def test_failure_stage_counters_are_bounded_metadata_only():
 
 def test_actual_typed_failure_stage_names_remain_visible():
     assert module.safe_diagnostic('failure_counts={"reply_shape_ValueError": 1, "native_stream_BrokenPipeError": 1}')['failure_counts']=={'reply_shape_ValueError':1,'native_stream_BrokenPipeError':1}
+
+
+@pytest.mark.parametrize('required',[False,True])
+def test_optional_source_profile_skip_does_not_relax_required_native_gate(monkeypatch,required):
+    import httpx
+    original=httpx.Client
+    names={'claude','claude_byok','claude_version','claude_setup_check','claude_native_check'}
+    def handle(request):
+        path=request.url.path
+        if path=='/health':return httpx.Response(200,json={'status':'ok'})
+        if path=='/commands':return httpx.Response(200,json={'commands':[{'name':n}for n in names]})
+        if path=='/commands/claude_setup_check':return httpx.Response(200,json={'result':{'mode':'original-claude-explicit-chat-adapter'}})
+        if path=='/commands/claude_version':return httpx.Response(200,json={'result':'2.0.76 (Claude Code)'})
+        if path=='/commands/claude_native_check':return httpx.Response(500,json={'error':'exact installed native profile absent'})
+        return httpx.Response(400,json={'error':'invalid request'})
+    monkeypatch.setattr(module.httpx,'Client',lambda **kwargs:original(transport=httpx.MockTransport(handle),**kwargs))
+    monkeypatch.setenv('E2E_REQUIRE_CLI','1'if required else'0');monkeypatch.setenv('E2E_RUN_LLM','0');monkeypatch.setenv('E2E_REQUIRE_LLM','0');module.RESULTS.clear()
+    assert module.main()==int(required)
