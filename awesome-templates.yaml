@@ -595,6 +595,17 @@ templates:
     providers:
       alicloud-express: supported
 
+  - name: appworld
+    description: "Original AppWorld engine/evaluator with private encrypted bundles and an explicit compatible-model API bridge"
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: appworld
+    tags: [appworld, benchmark, function-calling, evaluation]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: supported
+
 # Provider-managed IDs have no source build context; never pass these to image selection.
 managed_templates:
   - name: base

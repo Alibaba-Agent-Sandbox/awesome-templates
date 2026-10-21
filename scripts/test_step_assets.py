@@ -205,6 +205,27 @@ def test_stagehand_native_browser_recipe_fits_wire_and_uses_exact_immutable_copy
     assert '/tmp/abx-step-installer' in manifest['build']['steps'][-2]['args'][0]
 
 
+def test_appworld_original_data_profile_rejects_unreviewed_identity(tmp_path):
+    from prepare_steps import parallel_assets
+    source=tmp_path/'appworld';source.mkdir()
+    item=json.loads((ROOT/'appworld/upstream.json').read_text())
+    (source/'upstream.json').write_text(json.dumps(item))
+    assert parallel_assets(source)=={'x86_64':[{key:item['data'][key] for key in ['url','size','sha256']}]}
+    for key,value in [('url','https://s3.us-west-2.amazonaws.com/other/data.bundle'),('size',1),('sha256','0'*64)]:
+        changed=json.loads(json.dumps(item));changed['data'][key]=value
+        (source/'upstream.json').write_text(json.dumps(changed))
+        with pytest.raises(ValueError,match='unreviewed original encrypted AppWorld'):
+            parallel_assets(source)
+
+
+def test_appworld_encrypted_data_steps_preserve_exact_source_and_wire_limit():
+    manifest,proof=prepare(ROOT/'appworld',asset_transport='parallel',server_commit='e2cb27e24fde0a67112f82b8d44af463445a5d1a')
+    assert proof['steps_json_bytes']<=15000 and len(proof['copy_source_commit'])==40
+    assert proof['inputs_sha256']['worker.py']==hashlib.sha256((ROOT/'appworld/worker.py').read_bytes()).hexdigest()
+    assert proof['build_assets']['x86_64'][0]['size']==34280074
+    assert manifest['build']['steps'][-1]=={'type':'USER','args':['user']}
+
+
 def test_chrome_asset_profile_rejects_changed_official_identity(tmp_path):
     from prepare_steps import parallel_assets
     source=tmp_path/'chrome';source.mkdir()

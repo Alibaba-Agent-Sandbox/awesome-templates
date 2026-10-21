@@ -88,6 +88,18 @@ def parallel_assets(source: Path) -> dict:
                     result[arch].append(wheels[arch])
             return result
         raise ValueError("unreviewed standalone Python installer")
+    if source.name == "appworld":
+        item = json.loads((source / "upstream.json").read_text())
+        data = item["data"]
+        if (item["version"] != "0.1.3.post1" or item["source_commit"] != "66ad8099e12188ece0d3fe45e661dbc01880813b"
+                or data["url"] != "https://s3.us-west-2.amazonaws.com/appworld.dev/data-0.1.0.bundle"
+                or data["size"] != 34280074 or data["sha256"] != "fd9f9608c2ec71ed0ac25c3633a738b9129a318a129e31230425b9188e508250"):
+            raise ValueError("unreviewed original encrypted AppWorld data transport")
+        return {"x86_64": [{key: data[key] for key in ["url", "size", "sha256"]}]}
+
+
+
+
     if source.name == "prime-agent":
         item = json.loads((source / "upstream.json").read_text())
         if (item["version"] != "0.10.0"

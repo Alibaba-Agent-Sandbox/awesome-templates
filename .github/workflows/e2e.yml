@@ -268,6 +268,7 @@ jobs:
           python -m pip install --require-hashes -r chrome/requirements.lock
           python -m pytest -q chrome/test_commands.py chrome/test_protocol.py
           python -m pytest -q tau2-bench/test_runtime.py
+          python -m pytest -q appworld/test_commands.py
           python -m pytest -q cline/test_commands.py cline/test_model_controller.py
           python -m pytest -q grok/test_commands.py grok/test_model_controller.py
           python -m pytest -q prime-agent/test_commands.py prime-agent/test_terminal.py
