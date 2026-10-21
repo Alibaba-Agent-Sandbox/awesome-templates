@@ -79,9 +79,12 @@ def _invoke(operation,data,timeout):
                             detail+='; missing module '+missing
                     counts=diagnostic.get('native_counters')
                     if isinstance(counts,dict):
-                        for key in ['model_steps','bridge_api_calls','native_api_calls','tool_validation_failures','empty_model_responses','native_api_errors']:
+                        for key in ['model_steps','bridge_api_calls','native_api_calls','tool_validation_failures','empty_model_responses','native_api_errors','deferred_tool_batches']:
                             number=counts.get(key)
                             if type(number)is int and 0<=number<=1000000:detail+='; '+key+'='+str(number)
+                    reason=diagnostic.get('native_reason')
+                    if reason in ['context_bound','empty_choices','tool_batch_bound','tool_argument_bound','task_incomplete','native_api_log_empty','unclassified']:
+                        detail+='; native_reason='+reason
                     status=diagnostic.get('http_status')
                     if type(status)is int and 100<=status<=599:detail+='; http_status='+str(status)
                     reason=diagnostic.get('native_termination')

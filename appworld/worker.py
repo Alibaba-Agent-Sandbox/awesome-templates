@@ -32,6 +32,30 @@ class NativeIncomplete(RuntimeError):
     pass
 
 
+def failure_reason(exc):
+    return {
+        'native model context bound reached':'context_bound',
+        'native model response incomplete':'empty_choices',
+        'model tool call bound exceeded':'tool_batch_bound',
+        'invalid bounded model tool call':'tool_argument_bound',
+        'original task did not complete':'task_incomplete',
+        'original native API calls absent':'native_api_log_empty',
+    }.get(str(exc),'unclassified')
+
+
+def defer_tool_batch(calls,messages):
+    if len(calls)>64:
+        raise NativeIncomplete('model tool call bound exceeded')
+    if len(calls)<=16:
+        return False
+    # Complete every pending protocol tool ID without executing an oversized
+    # batch, so the model can make a smaller request within the turn budget.
+    for call in calls:
+        messages.append({'role':'tool','tool_call_id':call.id,'content':'Batch rejected without API execution: request at most8tool calls per response.'})
+    RUN_OBSERVATION['deferred_tool_batches']+=1
+    return True
+
+
 def identity():
     from install_data import verify_package
     meta=json.loads((BOOTSTRAP/'upstream.json').read_text())
@@ -165,12 +189,12 @@ def model_run(request,root):
     messages=[]
     model_steps=0
     bridge_calls=0
-    RUN_OBSERVATION={'model_steps':0,'bridge_api_calls':0,'native_api_calls':0,'tool_validation_failures':0,'empty_model_responses':0,'native_api_errors':0}
+    RUN_OBSERVATION={'model_steps':0,'bridge_api_calls':0,'native_api_calls':0,'tool_validation_failures':0,'empty_model_responses':0,'native_api_errors':0,'deferred_tool_batches':0}
     STAGE='world_init'
     try:
         with AppWorld(task_id=task,experiment_name=experiment,max_interactions=160,
                       max_api_calls_per_interaction=50,timeout_seconds=30) as world:
-            messages=[{'role':'system','content':'Complete the original AppWorld training task using only inspect_api and call_api. Read actual API parameter documentation before calling. Use supervisor APIs to obtain simulated account information. Finish through supervisor.complete_task, with answer when required. No ground-truth solutions are supplied. Never invent IDs, credentials, API names or results.'},
+            messages=[{'role':'system','content':'Complete the original AppWorld training task using only inspect_api and call_api. Read actual API parameter documentation before calling. Request at most8tool calls per response. Use supervisor APIs to obtain simulated account information. Finish through supervisor.complete_task, with answer when required. No ground-truth solutions are supplied. Never invent IDs, credentials, API names or results.'},
                       {'role':'user','content':json.dumps({'instruction':world.task.instruction,
                           'supervisor':dict(world.task.supervisor),'apps':world.task.app_descriptions},ensure_ascii=False)}]
             allowed=world.task.api_docs
@@ -187,8 +211,8 @@ def model_run(request,root):
                 if calls:
                     item['tool_calls']=[{'id':call.id,'type':call.type,'function':{'name':call.function.name,'arguments':call.function.arguments}} for call in calls]
                 messages.append(item)
-                if len(calls)>16:
-                    raise NativeIncomplete('model tool call bound exceeded')
+                if defer_tool_batch(calls,messages):
+                    continue
                 if not calls:
                     messages.append({'role':'user','content':'Use the actual APIs and finish the task with supervisor.complete_task.'})
                     continue
@@ -339,5 +363,5 @@ if __name__=='__main__':
         result=main()
         print(json.dumps(result,ensure_ascii=False))
     except Exception as exc:
-        print('\nABX_APPWORLD_FAILURE '+json.dumps({'error_type':type(exc).__name__,'native_stage':STAGE,'bootstrap_error_type':BOOTSTRAP_ERROR,'missing_module':MISSING_MODULE,'native_counters':RUN_OBSERVATION,'http_status':getattr(exc,'status_code',None)}),file=FAILURE_STREAM,flush=True)
+        print('\nABX_APPWORLD_FAILURE '+json.dumps({'error_type':type(exc).__name__,'native_stage':STAGE,'bootstrap_error_type':BOOTSTRAP_ERROR,'missing_module':MISSING_MODULE,'native_counters':RUN_OBSERVATION,'native_reason':failure_reason(exc),'http_status':getattr(exc,'status_code',None)}),file=FAILURE_STREAM,flush=True)
         raise SystemExit(1)

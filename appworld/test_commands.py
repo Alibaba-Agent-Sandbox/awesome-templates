@@ -156,3 +156,17 @@ def test_empty_native_choices_have_a_strict_total_retry_budget():
         worker.request_completion(client,{'model':'fixture-model'},[],[])
     assert len(calls)==3
     assert worker.RUN_OBSERVATION=={'model_steps':3,'empty_model_responses':3}
+
+
+def test_oversized_tool_batch_completes_protocol_without_executing_apis():
+    from types import SimpleNamespace as NS
+    spec=importlib.util.spec_from_file_location('appworld_batch_tests',Path(__file__).with_name('worker.py'))
+    worker=importlib.util.module_from_spec(spec);spec.loader.exec_module(worker)
+    worker.RUN_OBSERVATION={'deferred_tool_batches':0}
+    messages=[]
+    assert worker.defer_tool_batch([NS(id=str(i))for i in range(17)],messages)is True
+    assert len(messages)==17 and all(x['role']=='tool'for x in messages)
+    assert [x['tool_call_id']for x in messages]==[str(i)for i in range(17)]
+    assert worker.RUN_OBSERVATION['deferred_tool_batches']==1
+    assert worker.defer_tool_batch([NS(id='small')],messages)is False
+    with pytest.raises(worker.NativeIncomplete):worker.defer_tool_batch([NS(id='x')]*65,messages)
