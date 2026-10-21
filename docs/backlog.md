@@ -88,3 +88,7 @@ Omarchy 是一套 Arch Linux 桌面配置（Hyprland 会话），安装对象是
 - Kimi CLI：命令 `kimi -p "<prompt>"`（包 `@moonshot-ai/kimi-code`）。`-p` 不进 TUI，脚本场景再用 `kimi --print -p "<prompt>"` 自动批准工具调用。
 - OpenHands：命令 `openhands --headless -t "<task>"`。headless 必带 `-t` 或 `-f`，并且会自动批准动作，适合收成一个带任务文本的命名命令。
 - Goose：命令 `goose run -t "<text>"`（长选项 `--text`）。`goose run` 执行完这段文本就退出，和命名命令「入参是一段任务、返回进程输出」的形态一致。
+
+## Hardware-dependent product decisions
+
+The dated [WAA, phone sandbox, AndroidWorld and Omarchy review](feasibility/README.md) ([中文](feasibility/README.zh-CN.md)) records actual Express guest/prerequisite checks and remote integration designs. These are explicit feasibility outcomes, not verified installable templates.

@@ -1,0 +1,46 @@
+{
+  "scope": "owned Express managed base read-only hardware/OS feasibility; not a source-template qualification",
+  "provider": "alicloud-express",
+  "passed": true,
+  "cleanup_verified": true,
+  "guest": {
+    "uid": 1000,
+    "system": "Linux",
+    "machine": "x86_64",
+    "os_release": {
+      "VERSION_ID": "13",
+      "ID": "debian"
+    },
+    "devices": {
+      "/dev/kvm": false,
+      "/dev/dri": false,
+      "/dev/net/tun": false,
+      "/var/run/docker.sock": false
+    },
+    "programs": {
+      "docker": false,
+      "podman": false,
+      "qemu-system-x86_64": false,
+      "emulator": false,
+      "adb": false,
+      "hyprctl": false,
+      "pacman": false,
+      "systemctl": false,
+      "unshare": true
+    },
+    "memory_mib": 2093,
+    "kvm_open": {
+      "errno": 2,
+      "kind": "ENOENT"
+    },
+    "user_namespace": {
+      "exit_code": 0
+    },
+    "mount_namespace": {
+      "exit_code": 1
+    }
+  },
+  "duration_s": 2.924,
+  "guest_probe_sha256": "c8a21f7b6e1a195fbfef3931e6da8852cf25e40451dadaef1c214c064d743afc",
+  "client_server_sdk_commit": "34e7e011c5569f77b7f605e65313be7498f6cf02"
+}

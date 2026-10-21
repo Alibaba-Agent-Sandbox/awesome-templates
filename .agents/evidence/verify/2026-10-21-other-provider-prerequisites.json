@@ -1,0 +1,64 @@
+{
+  "alicloud-container": {
+    "explicit_settings_present": {
+      "ABX_ALICLOUD_CONTAINER_DOMAIN": false,
+      "ABX_ALICLOUD_CONTAINER_BASE_URL": false,
+      "ABX_ALICLOUD_CONTAINER_API_KEY": false
+    }
+  },
+  "opensandbox": {
+    "explicit_settings_present": {
+      "ABX_OPENSANDBOX_BASE_URL": false,
+      "ABX_OPENSANDBOX_DOMAIN": false,
+      "ABX_OPENSANDBOX_API_KEY": false,
+      "OPEN_SANDBOX_API_KEY": false
+    },
+    "default_local_port_accepts_tcp": true,
+    "read_only_default_origin_probes": [
+      {
+        "route": "/openapi.json",
+        "error_type": "RemoteProtocolError"
+      },
+      {
+        "route": "/sandboxes",
+        "error_type": "RemoteProtocolError"
+      },
+      {
+        "route": "/health",
+        "error_type": "RemoteProtocolError"
+      }
+    ]
+  },
+  "cubesandbox": {
+    "explicit_settings_present": {
+      "ABX_CUBESANDBOX_BASE_URL": false,
+      "ABX_CUBESANDBOX_API_KEY": false
+    },
+    "default_local_port_accepts_tcp": true,
+    "read_only_default_origin_probes": [
+      {
+        "route": "/openapi.json",
+        "error_type": "RemoteProtocolError"
+      },
+      {
+        "route": "/sandboxes",
+        "error_type": "RemoteProtocolError"
+      },
+      {
+        "route": "/health",
+        "error_type": "RemoteProtocolError"
+      }
+    ]
+  },
+  "e2b": {
+    "explicit_settings_present": {
+      "ABX_E2B_API_KEY": false,
+      "ABX_E2B_BASE_URL": false,
+      "ABX_E2B_DOMAIN": false
+    }
+  },
+  "credential_isolation": {
+    "generic_e2b_key_is_express_alias": true,
+    "generic_e2b_key_not_forwarded": true
+  }
+}
