@@ -101,3 +101,9 @@ def test_original_credential_string_never_leaks_in_returned_native_text(worker,m
     original=worker.parent/'credentials.toml';original.write_text('token="fixed-authored-secret"');original.chmod(0o600)
     monkeypatch.setattr(r,'CREDENTIALS_FILE',str(original));result=r.run('leak',allow_unsafe_tools=True)
     assert 'fixed-authored-secret'not in json.dumps(result)and '[REDACTED]'in result['stdout']
+
+
+def test_timeout_diagnostic_identifies_devin_without_another_vendor_label(worker):
+    with pytest.raises(RuntimeError,match='Devin execution exceeded timeout_s')as error:
+        r.run('wait',command_timeout=1,allow_unsafe_tools=True)
+    assert 'Cursor'not in str(error.value)

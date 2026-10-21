@@ -10,7 +10,7 @@ import time
 
 
 def run(argv,*,cwd,timeout,env,input_file=None):
-    spec=importlib.util.spec_from_file_location('owned_Cursor_process_'+secrets.token_hex(8),Path(__file__).with_name('lifecycle.py'))
+    spec=importlib.util.spec_from_file_location('owned_Devin_process_'+secrets.token_hex(8),Path(__file__).with_name('lifecycle.py'))
     life=importlib.util.module_from_spec(spec);spec.loader.exec_module(life)
     private=tempfile.TemporaryDirectory(prefix='abx-devin-call-');root=Path(private.name);root.chmod(0o700)
     env=dict(env)
@@ -38,7 +38,7 @@ def run(argv,*,cwd,timeout,env,input_file=None):
     finally:
         life._stop()
         for thread in readers:thread.join(timeout=2)
-        if any(thread.is_alive() for thread in readers):raise RuntimeError('owned Cursor pipe cleanup not confirmed')
-    if overflow.is_set():raise RuntimeError('Cursor output exceeded256KiB per stream; output omitted')
-    if timed_out:raise RuntimeError('Cursor execution exceeded timeout_s; output omitted')
+        if any(thread.is_alive() for thread in readers):raise RuntimeError('owned Devin pipe cleanup not confirmed')
+    if overflow.is_set():raise RuntimeError('Devin output exceeded256KiB per stream; output omitted')
+    if timed_out:raise RuntimeError('Devin execution exceeded timeout_s; output omitted')
     return p.returncode,b''.join(out).decode('utf-8','replace'),b''.join(err).decode('utf-8','replace')
