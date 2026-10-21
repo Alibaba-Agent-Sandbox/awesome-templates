@@ -182,3 +182,7 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Headed Chrome final native SDK/image acceptance](evidence/verify/2026-10-20-chrome-native-final.md)
 
 - [Current39native/runtime and required full HTTP snapshot](evidence/verify/2026-10-20-current-native-http39.json)
+
+- [AppWorld final original-task SDK/image/evaluator acceptance](evidence/verify/2026-10-21-appworld-native-final.md)
+
+- [Current40native/runtime and requiredHTTP with AppWorld](evidence/verify/2026-10-21-current-native-http40-appworld.json)

@@ -36,7 +36,7 @@ abx --native template delete <owned-template-id> -y
 
 ## 快速开始（Python SDK）
 
-按[配套源码安装](../docs/python-client-installation.md)安装 `agent-sandbox-client`。示例完成同一个无需模型的 CLI/HTTP 任务，并清理本次沙箱；已做语法检查，云端验收仍待完成。
+按[配套源码安装](../docs/python-client-installation.md)安装 `agent-sandbox-client`。示例完成同一个无需模型的 CLI/HTTP 任务，并清理本次沙箱；已做语法检查，实际云端与模型证据见下文。
 
 ```python
 import asyncio
@@ -89,17 +89,21 @@ HTTP200 返回 `{"result":"original AppWorld0.1.3.post1 native API and private c
 | WORKSPACE | /home/user/workspace | 已存在结果根目录，服务启动读取 |
 | ABX_SERVER_TOKEN | 可选；空 | 独立命令服务 Bearer |
 
-密钥最长8192字符，不含 CR/LF/NUL。原生子进程不继承操作者云/GitHub/模型令牌；配置由匿名 stdin 传入。保留 AppWorld 原版安全默认值。连接层校验原版 app/API 范围，将 JSON 参数转为 Python 字面量，不接受可执行模型 Python。每模型回复最多16工具调用，最多160原生交互，每交互50API调用，原生执行30秒，模型 HTTP60秒且 SDK 不重试，工具输出有界、模型上下文最大1MiB。
+密钥最长8192字符，不含 CR/LF/NUL。原生子进程不继承操作者云/GitHub/模型令牌；配置由匿名 stdin 传入。保留 AppWorld 原版安全默认值。连接层校验原版 app/API 范围，将 JSON 参数转为 Python 字面量，不接受可执行模型 Python。每回复最多执行16工具调用；17..64项批次逐项反馈拒绝且不执行API，更多则失败。每任务空choices最多3次，回复8192token，最多160原生交互，每交互50API调用，原生执行30秒，模型 HTTP60秒且 SDK 不重试，工具输出有界、模型上下文最大1MiB。
 
 ## 资源
 
-声明2vCPU/2048MB、Linuxx64、9000端口，镜像根目录限制8GiB；无需 Docker/KVM/GPU。每次调用在私有环境复制并解密原版受保护内容，可分发镜像不包含解密的受保护 app/数据。实际依赖、极速版内存和任务可行性仍待验证。模型需要已授权的兼容 Chat Completions/工具调用和网络访问；不声明其他提供方或全任务通过。
+声明2vCPU/2048MB、Linuxx64、9000端口，镜像根目录限制8GiB；无需 Docker/KVM/GPU。每次调用在私有环境复制并解密原版受保护内容，可分发镜像不包含解密的受保护 app/数据。实际依赖及一个原版极速版任务已通过，任务峰值内存尚未测量。模型需要已授权的兼容 Chat Completions/工具调用和网络访问；不声明其他提供方或全任务通过。
 
 ## 已验证
 
-尚未记录任何通过的提供方测试。
+| Provider | 范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 模板1.0.6；原生steps、官方READY、实际SDK创建、CLI/SDK原生API、真实任务与原版评分重验、独立清理 | [Express](evidence/express-2026-10-21.json)、[完整记录](evidence/verification-steps-2026-10-21T000253Z.json) |
 
-本地自编边界/缓存检查和源码 HTTP7PASS/0FAIL/原生运行 SKIP 不代表真实基准、提供方或模型验收。镜像、原版 API、SDK 创建的极速版 steps、真实任务评分、无密钥重载评分及独立清理均待完成。[研究/验证记录](../.agents/evidence/verify/2026-10-20-appworld-native-research.md)。
+原版AppWorld0.1.3.post1使用自编兼容模型API连接层及显式批准的qwen3.8-flash，完成原始训练任务82e2fac_1：16轮模型响应、62次原生API调用、原版评测2/2通过、score1.0。17PASS/0FAIL/0SKIP，完整非模型HTTP9PASS/0FAIL/0SKIP。下载的原版加密产物13792字节，SHA256与原生返回一致；独立无模型密钥工作进程重新加载保存数据库，用原版评测器复现全部分数/测试计数，返回后新ACK再次检查产物。自有结果目录、私有解密状态/原生进程、次级监听、外层沙箱/模板、私有OSS均独立确认不存在；总耗时321.702秒。
+
+准确源码3eff99e2af7eae6760f717e27c44efb9283e0ff2的真实镜像L1及非root原生API smoke通过。Express证据使用steps，不是镜像部署。失败历史全部保留。本结果只覆盖一个训练任务、原版引擎/评测器和自编模型连接层，不代表论文baseline、排行榜、全任务或其他提供方。[最终工程证据](../.agents/evidence/verify/2026-10-21-appworld-native-final.md)。
 
 ## 二次开发
 

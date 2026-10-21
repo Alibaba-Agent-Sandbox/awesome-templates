@@ -10,11 +10,11 @@ Issue70 requests original AppWorld0.1.3.post1 execution, a real task/model score
 
 Implement the original published appworld0.1.3.post1 engine/evaluator in an isolated Linux Python3.13 runtime. Use an explicitly described authored compatible-model bridge around original AppWorld.execute, not a claim that the historical paper baseline was reproduced. Preserve original environment safety defaults. No model-generated code executes on the operator.
 
-Keep protected upstream app/data bundles encrypted in distributable images. Unpack only into a per-call private disposable cloud runtime; never export decrypted protected code/data or raw task contents as public evidence. Current runtime/model/provider feasibility remains unverified.
+Keep protected upstream app/data bundles encrypted in distributable images. Unpack only into a per-call private disposable cloud runtime; never export decrypted protected code/data or raw task contents as public evidence. Actual current runtime/model/provider acceptance is recorded in the dated final evidence; scope remains one original training task.
 
 ## API Design
 
-Planned scalar version/setup/train-task inspection, appworld_run(task, bounded max_steps/command_timeout) returning native score and owned artifacts, and keyless independent artifact re-evaluation using the original evaluator. Exact schemas will be frozen with implementation and bilingual docs. Credentials require an explicit approved base URL; no default vendor fallback.
+Scalar appworld_version/appworld_setup_check/appworld_native_smoke, appworld_run(task,max_steps,command_timeout) returning original native score and owned encrypted artifacts, and appworld_verify_artifact(path,task) independently re-evaluating saved native databases without model settings. Complete bounds/results are documented in both README languages. Credentials require an explicit approved base URL; no default vendor fallback.
 
 ## Alternatives considered
 

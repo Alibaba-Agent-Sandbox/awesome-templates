@@ -1,0 +1,31 @@
+# AppWorld1.0.6 original task and evaluator acceptance
+
+Status: PASS for one original training task/native engine/evaluator with authored compatible-model API bridge. Issue https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/70; PR https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/169. Runtime/controller source3eff99e2af7eae6760f717e27c44efb9283e0ff2; controller SHA2562d59d985533aa3a75e9af1c24801f0ccd0069ea8922310e4210d545b079bd3a5. Actual CLI0.4.1 native entry, installed SDK0.3.0/source d4d93e8cbb986f33a8868f7a4139ed0edb49eaba; native server e2cb27e24fde0a67112f82b8d44af463445a5d1a.
+
+## Original identity, compatibility and protected distribution
+
+AppWorld0.1.3.post1/original source66ad8099e12188ece0d3fe45e661dbc01880813b; original wheel and original encrypted data/bundles verified by exact [provenance](../../../appworld/upstream.json). Full86-package hash lock with original SQLAlchemy1.4.54 pure-Python supported DISABLE_SQLALCHEMY_CEXT; separately hash-locked setuptools80.9.0/wheel0.45.1. No SQLAlchemy2 substitution. Original installer runs in a fresh interpreter on a private writable package copy before engine import. Public image keeps protected code/data encrypted; decrypted package/data remain only in per-call private state and are removed. Public AppWorld source Apache2.0; protected portions require encrypted public redistribution. No operator-installed benchmark or plaintext protected source/task/trajectory is exported. Original encrypted result format is not a confidentiality guarantee.
+
+## Actual native Express and model
+
+[Canonical native receipt](../../../appworld/evidence/express-2026-10-21.json) and [complete steps/model receipt](../../../appworld/evidence/verification-steps-2026-10-21T000253Z.json). Actual SDK Sandbox.create after officialREADY; original native API smoke through CLI and SDK; current fullHTTP9PASS0FAIL0SKIP. Native steps12923wire bytes within unchanged15000budget, immutable COPY/runtime/asset provenance and private OSS cleanup recorded.
+
+Explicit approved qwen3.8-flash with authored inspect_api/call_api bridge completes first original training task82e2fac_1 through original AppWorld execution guards/APIs:16model responses,62actual native API calls, task_completed=True. Original evaluator success=True,score1.0,num_tests2,pass_count2. [Sanitized original result metadata](2026-10-21-appworld-native-model-summary.json), without task text/API arguments/model thoughts/databases. This is original engine/evaluator, not the historical paper agent baseline.
+
+Actual SDK model controller17PASS0FAIL0SKIP: owned encrypted artifact path/provenance/native completion/all-tests score; independent encrypted download13792bytes/SHA256542f246649c798f5110d5d6b23968bbeee9a83dec58f7d3643633b112e6de34a; a separate keyless worker reloads saved original databases and runs original evaluate_task, matching score/success/task/num_tests/pass_count with no model settings/credentials; fresh post-return ACK verifies retained encrypted artifact; own result directory removal independently verified. No native protected plaintext is published.
+
+## Actual image
+
+[Exact-source native L1 run39518848534/job118957542754](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39518848534/job/118957542754) PASS, original native smoke as non-root image user. This image is not registered/deployed; Express acceptance uses native steps. Declared2vCPU2048MB is not peak-memory measurement.
+
+## Cleanup, retained failures and limits
+
+Original native/private decrypted package/data/cache state and secondary9010listener independently absent; owned result directory removed. Independent outer sandbox/template and exact private OSS objects/bucket absence PASS,321.702seconds. Failed/interrupted/permission/parser/model attempts remain unchanged and linked from [research](2026-10-20-appworld-native-research.md). An old recovery or subsequent success never relabels a failed run or proves an earlier root cause.
+
+Version1.0.6 remained the unmerged manifest version during compatible-response and batch revisions; exact source/context hashes distinguish attempts. Compatible response IDs are metadata only; usable choices and original task/evaluator/replay gates remain required. Empty choices have a separate total3failure bound; response tokens8192. At most16native calls execute per model batch;17..64pending tool IDs receive complete rejection feedback without API execution; larger batches fail. Context1MiB/native interaction160/perinteraction API50/native execution30seconds/model HTTP60seconds, overall bounded operation. No caller/host cloud/GitHub/model environment inherited; model settings only anonymous stdin/private worker memory.
+
+Single original training task only; no paper-baseline/leaderboard/all-task/other-provider/image-deployment acceptance. Historical source-onlyHTTP7PASS/nativeSKIP/modelNOTRUN is preliminary only. Latest-head CI/review and actual normal merge/Issue closure remain required. Final local/doc/current-matrix checks are appended before delivery.
+
+Actual L1 rootfs983359488bytes. Local bounded diagnostics/compatible-metadata/batch regressions33PASS0.33seconds; integrated original-AppWorld/Chrome asset/preparation regressions83PASS89.71seconds. Public Markdown183documents plus final/research records0local-link failures; strict AppWorld conformancePASS. Full strict/spec and final current-catalog audit follow before merge.
+
+Final qualification:57spec-tool tests PASS13.395seconds; strict all-template0violations; all183public Markdown documents and final/research records0local-link failures; both actual SDK README examples compile. [Immutable current40AppWorld matrix](2026-10-21-current-native-http40-appworld.json) reports40native/runtime and40requiredHTTP passes,complete=True; it reuses source-bound receipts and is not40new deployments or universal model/image proof. Prior snapshots remain unchanged.

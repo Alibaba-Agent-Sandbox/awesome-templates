@@ -36,7 +36,7 @@ Complete canonical validation: `ABX="abx --native" python scripts/run_steps_e2e.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` with the [paired source instructions](../docs/python-client-installation.md). This model-free example performs the same task as CLI/HTTP and owns cleanup; snippets are syntax checked, cloud acceptance remains pending.
+Install `agent-sandbox-client` with the [paired source instructions](../docs/python-client-installation.md). This model-free example performs the same task as CLI/HTTP and owns cleanup; snippets are syntax checked; actual native cloud/model evidence is linked below.
 
 ```python
 import asyncio
@@ -89,17 +89,21 @@ Native operations serialize and reject overlap. Requests at most32KiB; native st
 | WORKSPACE | /home/user/workspace | Existing result root, captured at module startup |
 | ABX_SERVER_TOKEN | optional; empty | Independent named-server Bearer token |
 
-Configuration is captured at command-server startup. Key max8192characters/noCRLF/NUL. Worker environment excludes operator cloud/GitHub/model tokens; model settings travel via anonymous stdin into private memory. Original model execution guards remain enabled. Bridge validates allowed original app/API identifiers and renders JSON arguments as Python literals; it does not accept executable model Python. At most16tool calls/model response,160native interactions,50API calls/interaction,30seconds/native execution,60seconds/model HTTP without SDK retries. Native inspect/API tool output is bounded; model context at most1MiB.
+Configuration is captured at command-server startup. Key max8192characters/noCRLF/NUL. Worker environment excludes operator cloud/GitHub/model tokens; model settings travel via anonymous stdin into private memory. Original model execution guards remain enabled. Bridge validates allowed original app/API identifiers and renders JSON arguments as Python literals; it does not accept executable model Python. At most16tool calls execute per response;17..64calls receive complete rejection feedback without API execution and larger batches fail. At most3empty-choice responses across a task,8192response tokens,160native interactions,50API calls/interaction,30seconds/native execution,60seconds/model HTTP without SDK retries. Native inspect/API tool output is bounded; model context at most1MiB.
 
 ## Resources
 
-Declared2vCPU/2048MB/Linuxx64, port9000 and enforced image rootfs8GiB budget. No Docker/KVM/GPU. Private runtime copies and unpacks original protected code/data per call; no plaintext protected app/data is exported in the distributable image. Actual image/native dependency and Express memory/task feasibility remain pending. Model calling requires authorized compatible Chat Completions/tool calling and network egress; no other provider or all-task qualification.
+Declared2vCPU/2048MB/Linuxx64, port9000 and enforced image rootfs8GiB budget. No Docker/KVM/GPU. Private runtime copies and unpacks original protected code/data per call; no plaintext protected app/data is exported in the distributable image. Actual image/native dependencies and one original Express task pass below; workload peak memory remains unmeasured. Model calling requires authorized compatible Chat Completions/tool calling and network egress; no other provider or all-task qualification.
 
 ## Verified
 
-No provider has a passing run recorded for this template.
+| Provider | Scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | Template1.0.6; native steps, officialREADY, actual SDK creation, CLI/SDK native API, real task/original score replay and independent cleanup | [Express](evidence/express-2026-10-21.json), [full receipt](evidence/verification-steps-2026-10-21T000253Z.json) |
 
-Authored local boundary/cache tests and source-only HTTP7PASS/0FAIL/native SKIP do not establish a native benchmark/provider/model pass. Image, original native API, SDK-created Express steps, real task/score/keyless saved-state evaluation and independent cleanup remain pending. [Research/verification](../.agents/evidence/verify/2026-10-20-appworld-native-research.md).
+Original AppWorld0.1.3.post1 with the authored compatible-model API bridge and explicitly approved qwen3.8-flash completes original training task82e2fac_1:16model responses,62actual native API calls, original evaluator2/2tests PASS/score1.0.17PASS0FAIL0SKIP; complete non-modelHTTP9PASS0FAIL0SKIP. Independently downloaded original encrypted artifact13792bytes matches native SHA256. A separate keyless worker reloads saved databases with the original evaluator and reproduces every score/test count; fresh post-return ACK rechecks the artifact. Own result/private decrypted state/native processes/secondary listener, outer sandbox/template and private OSS independently absent;321.702seconds.
+
+Actual exact-source3eff99e2af7eae6760f717e27c44efb9283e0ff2 L1 image and non-root original native API smoke PASS. Express proof is steps, not image deployment. Prior failures remain intact. This is one original training task using original engine/evaluator and an authored model bridge, not the paper baseline, leaderboard, full benchmark or another provider. [Final engineering evidence](../.agents/evidence/verify/2026-10-21-appworld-native-final.md).
 
 ## Secondary development
 

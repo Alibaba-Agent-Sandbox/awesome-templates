@@ -1,0 +1,91 @@
+{
+  "template": "appworld",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-21T000253Z",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "PASS",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "appworld",
+    "materializer_sha256": "ac295bad4ce177b5f3230c1306588ddd5a86e5ca20bf2f581c74ec919cdf1b8f",
+    "source_manifest_contract_sha256": "8ed3c828b5c35f67be85119cc1b52c29757762c31ce004319a993576e121449b",
+    "template_version": "1.0.6",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "3eff99e2af7eae6760f717e27c44efb9283e0ff2",
+    "asset_transport": "oss",
+    "steps_json_bytes": 12923,
+    "inputs_sha256": {
+      "Dockerfile": "a55322f3bfdaafa20fc41df373703b5be0123b1dd06f2a9bcba55883428c38b6",
+      "template.yaml": "372650fd0886b78daba39065e66e6c093f52ff4e339d063ae6c4e84c60740fae",
+      "requirements-build.lock": "53615811dc1d1f22b94617262702e9d02d56d5d8a0a180227344c700fcddae60",
+      "requirements.lock": "4c3a2a379b5cef53282dcc1ae115aae5a1dc221f923694e5c2d7601f823b1c65",
+      "upstream.json": "e79ff84717f4192d639be7879d5eedf16929544a8a4e8da30be59a440fb6486b",
+      "install_data.py": "62400075fa1a1cb89e50a2aa696aca39d0f509a34723b267c5c512e5c9c4ee8b",
+      "commands.py": "d6761cb23b9c16d8cb188ed0476c4aabcc6c5da883a86fa74fd218f3e20ccdff",
+      "worker.py": "cbd024cea1425afb1c89470f2d8f010c7ac6ea3418c7f7c2087e9a602bca4acf",
+      "process.py": "64017ad17eb43927173ca56bb01bd5f2c6e0cf9f79e5d042c529ffa0cd139121",
+      "lifecycle.py": "eb2054cea22ad6dbfd10bc6d90cf920693f50e057d87bb7d82ccb8a1d38306f1",
+      "UPSTREAM-NOTICE.md": "64c8cedc4524edc07db2d7434911828254d5c6e829e2d93182915c7505962a66"
+    },
+    "asset_transport_sha256": "83f20ec571a29225637ddac11fce7fd86f29146b24622b43e326c6934f8594e3",
+    "asset_adapter_source_commit": "3eff99e2af7eae6760f717e27c44efb9283e0ff2",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://s3.us-west-2.amazonaws.com/appworld.dev/data-0.1.0.bundle",
+          "size": 34280074,
+          "sha256": "fd9f9608c2ec71ed0ac25c3633a738b9129a318a129e31230425b9188e508250"
+        }
+      ]
+    },
+    "asset_cache_architecture": "x86_64",
+    "generated_manifest_sha256": "7dcba81ea8f3e15d7e0513fe04bc922a405e68a0b44088bb6b2b753240a3e073"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 9,
+    "fail_count": 0,
+    "skip_count": 0,
+    "controller_sha256": "2d59d985533aa3a75e9af1c24801f0ccd0069ea8922310e4210d545b079bd3a5"
+  },
+  "model_controller_sha256": "2d59d985533aa3a75e9af1c24801f0ccd0069ea8922310e4210d545b079bd3a5",
+  "native_model_acceptance": {
+    "model_acceptance": "PASS",
+    "model": "qwen3.8-flash",
+    "original_engine_and_evaluator": true,
+    "authored_compatible_api_bridge": true,
+    "protected_artifact_scope": "original encrypted bundle; no operator benchmark execution",
+    "sdk_original_version": true,
+    "sdk_explicit_model_configured": true,
+    "exit_code": 0,
+    "pass_count": 17,
+    "fail_count": 0,
+    "skip_count": 0,
+    "secondary_server_stop_ack": true,
+    "owned_secondary_listener_and_native_state_absent": true
+  },
+  "cleanup_verified": true,
+  "exit_code": 0,
+  "receipt": "appworld/evidence/express-2026-10-21.json",
+  "command_calls": 2,
+  "asset_cache": {
+    "service": "Alibaba Cloud OSS",
+    "private_acl_verified": true,
+    "archives": [
+      {
+        "url": "https://s3.us-west-2.amazonaws.com/appworld.dev/data-0.1.0.bundle",
+        "sha256": "fd9f9608c2ec71ed0ac25c3633a738b9129a318a129e31230425b9188e508250",
+        "size": 34280074
+      }
+    ],
+    "signed_get_ttl_seconds": 3600,
+    "cleanup_verified": true
+  },
+  "duration_s": 321.702
+}
