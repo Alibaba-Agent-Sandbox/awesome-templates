@@ -161,7 +161,10 @@ def main() -> int:
     from pathlib import Path
     spec=importlib.util.spec_from_file_location('gemini_strict_byok_controller',Path(__file__).with_name('byok_e2e_test.py'))
     module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
-    return module.main()
+    try:return module.main()
+    except Exception as exc:
+        print('[FAIL] original Gemini controller aborted ('+type(exc).__name__+'); diagnostics='+json.dumps(module.safe_diagnostic(str(exc)),sort_keys=True)+'; private output omitted',flush=True)
+        return 1
 
 
 if __name__ == "__main__":

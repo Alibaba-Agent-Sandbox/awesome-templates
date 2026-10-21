@@ -5,7 +5,7 @@ ROOT=Path(os.environ.get('WORKSPACE','/home/user/app')).resolve()
 MODEL={k:os.environ.get('GEMINI_BYOK_'+suffix,'').strip()for k,suffix in [('MODEL_API_KEY','API_KEY'),('MODEL_BASE_URL','BASE_URL'),('MODEL','MODEL')]}
 LOCK=threading.Lock();IDENTITY=None
 PROFILE=Path('/opt/gemini/profile.json')
-PROFILE_SHA256='e80be3d30c3a28b39e316cb401d8303ec39bd4d96977f2d1ae158436e182c4da'
+PROFILE_SHA256='3cbdf52203844a5265ebfd94262c5df78a7e255166ee17a99f24bc811fd78246'
 EXPECTED=json.loads(Path(__file__).with_name('upstream.json').read_text())
 def load(name):
     spec=importlib.util.spec_from_file_location('owned_gemini_'+name,Path(__file__).with_name(name+'.py'));m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);return m

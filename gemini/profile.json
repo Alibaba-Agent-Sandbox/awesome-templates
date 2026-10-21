@@ -45,5 +45,22 @@
   },
   "skills": {
     "enabled": false
+  },
+  "modelConfigs": {
+    "overrides": [
+      {
+        "match": {
+          "overrideScope": "core"
+        },
+        "modelConfig": {
+          "generateContentConfig": {
+            "thinkingConfig": {
+              "includeThoughts": false,
+              "thinkingBudget": 0
+            }
+          }
+        }
+      }
+    ]
   }
 }

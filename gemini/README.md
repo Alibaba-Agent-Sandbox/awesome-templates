@@ -73,7 +73,7 @@ HTTP200 returns {"result":"0.64.0"}. POST/commands/gemini_byok accepts direct {p
 | --- | --- | --- |
 | gemini_version | none | Original CLI0.64.0; no model |
 | gemini_native_check | none | Exact original449file identity plus actual help flags original_native/headless_json/explicit_approval/owned_project_include |
-| gemini_byok_setup_check | none | mode/model_key_set/model_base_set/model_set, vendor_account_verified:false/provider_default_fallback:false; no values/network |
+| gemini_byok_setup_check | none | mode/model_key_set/model_base_set/model_set, vendor_account_verified:false/provider_default_fallback:false/requires_unsafe_optin:true; no values/network |
 | gemini_byok | prompt required nonempty1..32768UTF8bytes/noNUL; cwd default empty string/max4096bytes/existing resolved directory within WORKSPACE; command_timeout integer1..600seconds/default300/no bool | stdout/exit_code0/native_completed/native_version/archive_sha256/model/protocol/model_calls/native_tool_results/relay_calls; native tools modify caller project; no raw transcript |
 | gemini_setup_check | none | Legacy installed/version/pinned_version/key/model presence/workspace/settings path/existence/JSON-validity inspection; no changes/authentication |
 | gemini | prompt required nonempty string; model default empty string then GEMINI_MODEL then gemini-3.1-flash-lite; cwd default empty/contained existing directory; command_timeout integer600/range1..1800seconds; yolo booleanFalse | Legacy original buffered JSON string. yoloFalse selects plan, True explicitly permits tool execution. Requires GEMINI_API_KEY, no implicit OpenAI-key/OAuth fallback. New BYOK isolation guarantees do not certify legacy mode |
@@ -102,7 +102,7 @@ Declared2vCPU4096MB/Linuxx64/port9000/8GiBrootfs budget; no KVM/nested Docker/GP
 
 ## Verified
 
-Current2.1.2 provider/native/model/image qualification PENDING. Local81fixed/legacy protocol/process/controller testsPASS1SKIP9.40seconds; skipped actual pinned CLI is not installed on operator. Original package integrity/source inspection and local fixtures are not native/provider/model acceptance. Earlier2.0.1 receipts remain immutable history and cannot qualify changed2.1.0.
+Current2.1.3 provider/native/model/image qualification PENDING. Local81fixed/legacy protocol/process/controller testsPASS1SKIP9.40seconds; skipped actual pinned CLI is not installed on operator. Original package integrity/source inspection and local fixtures are not native/provider/model acceptance. Earlier2.0.1 receipts remain immutable history and cannot qualify changed2.1.0.
 
 ## Secondary development
 

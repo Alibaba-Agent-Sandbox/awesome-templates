@@ -72,3 +72,8 @@ def test_actual_http_original_google_route_auth_and_owned_cleanup():
   relay.wait_for_idle();assert seen[0][0]=='/v1/chat/completions'and seen[0][1]=='Bearer root-only'and seen[0][2]['model']=='owned-model'
   assert relay.snapshot()['completed_responses']==1 and relay.snapshot()['failed_responses']==0 and relay.snapshot()['native_tool_calls']==1
  finally:relay.close();up.shutdown();up.server_close();t.join(3)
+
+
+def test_explicit_native_disabled_thinking_preserves_text_tool_profile():
+    value=native();value['generationConfig']['thinkingConfig']={'includeThoughts':False,'thinkingBudget':0}
+    result=r.request(value,'owned-model');assert result['model']=='owned-model'and result['tools'][0]['function']['name']=='read_file'
