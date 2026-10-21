@@ -219,3 +219,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Hardware products and Omarchy decision](notes/proposed/feature/2026-10-21-hardware-products-feasibility.md) · [verification](evidence/verify/2026-10-21-hardware-products-feasibility.md)
 - [Current45 native/runtime and complete HTTP with Cursor](evidence/verify/2026-10-21-current-native-http45-cursor.json)
+
+- [External managed catalog and client contracts](notes/proposed/feature/2026-10-21-external-managed-catalog.md) · [verification](evidence/verify/2026-10-21-external-managed-catalog.md)

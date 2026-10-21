@@ -1,0 +1,70 @@
+{
+  "scope": "pinned original source inspection and offline client/protocol contracts; no vendor runtime qualification",
+  "provider_commit": "9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d",
+  "desktop_source_commit": "9fe5f55fabe3bd9f0277661a830e1d228b463b44",
+  "opensandbox_source_commit": "30348cbdfe4b9cfd49e0963617aed357a8f1ac4c",
+  "agent_sandbox_sdk_commit": "34e7e011c5569f77b7f605e65313be7498f6cf02",
+  "tests": {
+    "published_opensandbox_provider": {
+      "pass": 51,
+      "fail": 0,
+      "skip": 0
+    },
+    "published_e2b_provider_with_actual_e2b_sdk_2_55_0": {
+      "pass": 14,
+      "fail": 0,
+      "skip": 0
+    },
+    "actual_agent_sandbox_sdk_negative_paths": {
+      "pass": 2,
+      "fail": 0,
+      "skip": 0
+    }
+  },
+  "e2b_sdk_npm_lock_sha256": "0e4f75f1b4f5d48de24e8ca0dd3d578abf1012a8069ef766b980473ca8cf0bb6",
+  "upstream_source_files": [
+    {
+      "file": "OpenSandbox-managed-docs_examples_code-interpreter.md",
+      "sha256": "ce01fa6730393a68547f6363027d8c8c8bcefa869eaa7db4c7c722b38e579faf",
+      "bytes": 9032
+    },
+    {
+      "file": "OpenSandbox-managed-examples_code-interpreter_main.py",
+      "sha256": "ab041767620a6d3652793f6f101ea60779fda912b9e87bc70dd6816f77f6574d",
+      "bytes": 4091
+    },
+    {
+      "file": "awesome-providers-managed-e2b_docs_README.md",
+      "sha256": "ca3a425b42d7a5e4096db82023f53816399ccd28c0bf8f49da22dea1637fb4f8",
+      "bytes": 13441
+    },
+    {
+      "file": "awesome-providers-managed-opensandbox_README.md",
+      "sha256": "30f04e1543bcb049dfcef11ad8b65e6a6387c34b3ea613199fb03d5c5ec3d716",
+      "bytes": 10090
+    },
+    {
+      "file": "desktop-managed-README.md",
+      "sha256": "edb4293cb510888cdc2d5c9d1135a0500272aae96366710744d5b74b5289c462",
+      "bytes": 12006
+    },
+    {
+      "file": "desktop-managed-template_README.md",
+      "sha256": "a5062a3426e8fd7a724841b2f040be9347fe359387cb2d63df83e62376b6952a",
+      "bytes": 1694
+    },
+    {
+      "file": "desktop-managed-template_build_prod.py",
+      "sha256": "01be5eff960464521f1dc9f254e4704475ef5a5e3a40a77890fe681e7e3fcb6f",
+      "bytes": 292
+    },
+    {
+      "file": "desktop-managed-template_template.py",
+      "sha256": "a4380817ce0f65c8081b5d1184b84760efac48d4d481940803faab42464d1aaa",
+      "bytes": 4233
+    }
+  ],
+  "live_e2b_desktop": "NOT_RUN",
+  "live_opensandbox_interpreter": "NOT_RUN",
+  "cloud_resources_created": false
+}
