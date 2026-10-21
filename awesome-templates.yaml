@@ -584,6 +584,17 @@ templates:
     providers:
       alicloud-express: supported
 
+  - name: prime-agent
+    description: "Original stable Prime Agent0.10.0 native CLI and fixed CPython REPL with explicit compatible provider."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: prime-agent
+    tags: [prime-agent, coding-agent, rlm, python]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: supported
+
 # Provider-managed IDs have no source build context; never pass these to image selection.
 managed_templates:
   - name: base
