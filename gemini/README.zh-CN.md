@@ -1,149 +1,128 @@
 # gemini
 
-实验状态的 Gemini CLI 模板。[English](README.md)。
-
 ## 做什么
 
-通过具名命令 `gemini` 无头运行固定版本 Gemini CLI。`gemini_version` 和 `gemini_setup_check` 检查安装与配置。模型调用需要真实 Gemini 密钥；OpenAI 兼容密钥不能代替。
+运行官方未修改的 Google Gemini CLI0.64.0规划和文本/文件/shell工具。保留原gemini/setup/version接口；新增gemini_byok通过本项目编写的GenerateContent到Chat文本工具适配器使用显式兼容上游。原CLI和工具引擎不变，不代表Google模型、OAuth、订阅或完整功能兼容。见[官方配置](https://geminicli.com/docs/reference/configuration/)。
 
 ## 技术栈
 
-Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`（部署时解析区域与版本）、Node.js >=20、`@google/gemini-cli@0.64.0`。server 固定 python-sdk 提交 `35da216a300f1e2e84254a1cf4b4a7ea98681505`，部署注入 wheel 时优先使用 wheel。以 `user` 身份在 `/home/user/app` 运行；generation 2 的启动与健康检查见 [template.yaml](template.yaml)，镜像无 CMD/ENTRYPOINT。
+阿里云generation2基础镜像v0.0.49/Linuxx64/Python3.13/Node20；官方npm0.64.0以SHA512锁文件校验，[upstream.json](upstream.json)固定原449文件/98597935字节各自SHA256。原压缩包20841287字节/SHA256891a794e55c8319b6b78f6f8f13d6b8b2782a4709dfd2fcabf3a1f63ae8365e6。npm ci --omit=optional --ignore-scripts排除可选交互PTY/密钥链组件和安装脚本；保留上游代码和声明。服务端34e7e011c5569f77b7f605e65313be7498f6cf02，适配器/进程管理仅标准库。[Dockerfile](Dockerfile)、[设计](../docs/design/gemini.md)、[声明](UPSTREAM-NOTICE.md)。
 
 ## 解决的问题
 
-提供有类型的缓冲结果调用、缺密钥保护、只读配置诊断、显式工具权限与进程组截止时间。默认使用上游 `plan` 只读模式；只有 `yolo=true` 才批准编辑与 shell 工具。沙箱运行时负责隔离；cwd 校验仅限制起始目录。
+让明确授权的Chat网关驱动原始Gemini文本工具规划，密钥不会发往默认Google地址。适配器转换原始函数schema、参数及关联结果，不执行工具、不替代规划器。原生API环境只指向自有本地适配器并使用临时token，工具环境不含真实上游密钥。
 
 ## 快速开始（CLI）
 
-先用 `abx create --help` 确认已安装入口。下面的完整示例使用原生 CLI 语法。若帮助列出 `--detach`，则是标准极速版入口：创建改用 `abx create <template-id> --detach`，清理改用 `abx kill <sandbox-id>`（不加 `-y`）；命名命令 `abx run` 不变。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
-
-运行配置：以下创建时注入密钥的示例，要求命名服务启动时实际获得这些值。预热服务请先检查模板提供的 setup 标志（如有），再按[显式进程配置](../docs/runtime-environment.zh-CN.md)操作；创建沙箱不会重新配置已运行的服务。
-
-在仓库目录内使用已有 provider 配置：
+`abx run`的native入口为`abx --native run`。使用已验证CLI0.4.1和现有授权Express配置。替换占位符，先发布精确源码再生成不可变COPY，使用唯一任务名称，等待官方READY并保存资源ID清理。
 
 ```bash
-abx template deploy ./gemini -y
-abx create --template <template-id> -y --env GEMINI_API_KEY="$GEMINI_API_KEY"
-abx run <sandbox-id> gemini_version
-abx run <sandbox-id> gemini_setup_check
-abx run <sandbox-id> gemini --json-args '{"prompt":"Describe the project files","command_timeout":120,"yolo":false}'
+python scripts/prepare_steps.py gemini --output /tmp/gemini-steps-<unique-run> \
+  --server-commit 34e7e011c5569f77b7f605e65313be7498f6cf02
+python - <<'CONFIG'
+from pathlib import Path
+import yaml
+p=Path('/tmp/gemini-steps-<unique-run>/template.yaml')
+v=yaml.safe_load(p.read_text());v['name']='gemini-<unique-run>'
+p.write_text(yaml.safe_dump(v,sort_keys=False))
+CONFIG
+abx --native template deploy /tmp/gemini-steps-<unique-run> --build steps -y
+abx --native create --template <owned-template-id> -y
+abx --native run <owned-sandbox-id> gemini_version
+abx --native run <owned-sandbox-id> gemini_native_check
+abx --native kill <owned-sandbox-id> -y
+abx --native template delete <owned-template-id> -y
 ```
 
-授权编码时显式传 `"yolo":true`，`cwd` 应为 `WORKSPACE` 内已存在的项目目录。替换 generation-1 模板时使用新别名，不直接附带 generation-2 启动参数更新旧模板。结束后用 `abx kill <sandbox-id> -y` 和 `abx template delete <template-id> -y` 清理本次资源。
+规范资源流程：`ABX='abx --native' python scripts/run_steps_e2e.py gemini --sandbox-create sdk --http`。无需本地Docker；steps不等于镜像云端部署。已配置模型进程使用`abx --native run <owned-sandbox-id> gemini_byok --json-args '{"prompt":"Repair existing calc.py and preserve tests","cwd":"project","command_timeout":300}'`。
 
 ## 快速开始（Python SDK）
 
-客户端包是 `agent-sandbox-client`，导入名为 `agent_sandbox`。先核实版本是否发布，或使用[配套源码安装](../docs/python-client-installation.md)。
+发行名agent-sandbox-client，遵循[固定配套源码安装](../docs/python-client-installation.md)。
 
 ```python
 import asyncio
-import os
 from agent_sandbox.api.sandbox import Sandbox
-
 async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300,
-                              envs={"GEMINI_API_KEY": os.environ["GEMINI_API_KEY"]})
+    sb=await Sandbox.create(template='<owned-template-id>',timeout=900)
     try:
-        print(await sb.run("gemini", prompt="Describe the project files",
-                           command_timeout=120, yolo=False, timeout=150))
-        print(sb.network.get_url(9000))
+        print(await sb.run('gemini_version',timeout=60))
+        print(await sb.run('gemini_native_check',timeout=60))
     finally:
         await sb.kill()
-
 asyncio.run(main())
 ```
 
-`sb.run` 调具名命令；`sb.commands.run` 执行 shell。`command_timeout` 控制服务端 CLI 进程组执行时限，`timeout` 控制客户端 HTTP 等待；客户端超时不保证取消。后台任务和取消请使用进程 API。
+命令进程启动前设置全部GEMINI_BYOK_*变量，检查gemini_byok_setup_check，再调用`await server.commands.run('gemini_byok',prompt='Repair existing calc.py; preserve tests',cwd='project',command_timeout=300,timeout=420)`。项目需预先创建。独立服务用sb.server_at(port,token=...)，关闭借用客户端。预热9000不会获得后续create环境，遵循[显式进程配置](../docs/runtime-environment.md)；独立9010进程使用匹配的独立Bearer。结果是缓冲后的直接对象。
 
 ## 快速开始（HTTP POST）
 
-`ABX_SERVER_URL` 使用 `sb.network.get_url(9000)` 的地址，本地为 `http://127.0.0.1:9000`：
+ABX_SERVER_URL来自对应进程sb.network.get_url(port)，服务Bearer与平台/模型密钥独立。
 
 ```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/gemini" \
-  --header "Content-Type: application/json" \
+curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/gemini_version" \
   --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --data '{"prompt":"Describe the project files","command_timeout":120,"yolo":false}'
+  --header 'Content-Type: application/json' --data '{}'
 ```
 
-参数直接置于 JSON 顶层，无 `args` 包装。HTTP 200 返回 `{"result":"<缓冲的 Gemini JSON 输出>"}`。服务端未设置 `ABX_SERVER_TOKEN` 时省略 Authorization。Provider 网关鉴权独立存在，还需添加所选 provider 要求的访问头；服务端 token 不自动等于网关 token。
-
-缺参数或类型错误为 400，鉴权失败 401，未知命令 404；参数范围/目录非法、空提示词、缺密钥、CLI 缺失、执行超时与上游失败为 500，错误格式 `{"error":"...","type":"..."}`。服务端先转换参数类型；请传 JSON 数字与布尔值。CLI 成功和失败输出均替换秘密环境变量的值。
+HTTP200返回{"result":"0.64.0"}。POST/commands/gemini_byok接收直接{prompt,cwd,command_timeout}JSON。缺失/未知/类型参数400、认证401、未知命令404；执行/语义错误500并脱敏。断连不取消已发上游任务，仍执行有界自有清理。
 
 ## 命令参考
 
-| 命令 | 参数 | 返回 |
-|---|---|---|
-| `gemini` | `prompt`：必填非空字符串；`model`：字符串，默认 `""` → `GEMINI_MODEL` → `gemini-3.1-flash-lite`；`cwd`：字符串，默认 `""` → `WORKSPACE`；`command_timeout`：整数 1–1800 秒，默认 600；`yolo`：布尔值，默认 false | 上游缓冲 JSON 字符串 |
-| `gemini_version` | 无 | CLI 版本字符串，预期 `0.64.0` |
-| `gemini_setup_check` | 无 | 安装/版本/pin、密钥存在布尔值、模型配置布尔值/工作目录及配置文件元信息；不返回密钥或配置值 |
+| 命令 | 参数 | 结果及副作用 |
+| --- | --- | --- |
+| gemini_version | 无 | 原CLI0.64.0，无模型 |
+| gemini_native_check | 无 | 原449文件身份及实际帮助参数original_native/headless_json/explicit_approval/owned_project_include |
+| gemini_byok_setup_check | 无 | mode及model_key_set/model_base_set/model_set、vendor_account_verified:false/provider_default_fallback:false；不返回值，不发网络请求 |
+| gemini_byok | prompt必需，非空1..32768UTF8字节/无NUL；cwd默认空字符串、最多4096字节、解析后位于WORKSPACE内的已有目录；command_timeout整数默认300、1..600秒、拒绝布尔值 | stdout/exit_code0/native_completed/native_version/archive_sha256/model/protocol/model_calls/native_tool_results/relay_calls；原生工具修改项目，不返回完整轨迹 |
+| gemini_setup_check | 无 | 旧installed/version/pinned_version/密钥模型存在标志/workspace/设置路径、存在和JSON有效性；不修改配置、不认证 |
+| gemini | prompt必需非空字符串；model默认空，再GEMINI_MODEL，再gemini-3.1-flash-lite；cwd默认空、已有且位于工作区内；command_timeout整数默认600、1..1800秒；yolo布尔默认False | 旧原生缓冲JSON字符串。False选择plan，True显式允许运行工具。必须GEMINI_API_KEY，不隐式复用OpenAI密钥/OAuth。新增隔离保证不覆盖旧模式 |
 
-`cwd` 必须存在且真实路径位于 `WORKSPACE` 内；相对路径以其为根，拒绝穿越与符号链接逃逸。argv 为 `gemini -p <prompt> --model <model> --output-format json --approval-mode plan`，显式授权后才改为 `yolo`。标准输入关闭；不臆造上游不存在的 turn-limit 参数。诊断不改写用户或项目的 `.gemini/settings.json`；JSON 对象检查不等于上游 schema 校验。
+新增固定参数--prompt/--model/--output-format json/--approval-mode yolo/--include-directories <项目>。启动cwd为新建私有目录，提示明确项目绝对路径；私有/系统设置固定gemini-api-key认证、16模型会话轮，禁用hooks/skills/子Agent/更新/遥测，无配置MCP或已安装扩展。原生核心工具仅read_file/write_file/replace/run_shell_command/list_directory/glob/grep_search，不提供委派工具。原始及生成代码仅在自有可丢弃沙箱执行，项目指令仍是不可信输入。
+
+仅转换文本与原生函数声明/结果；保留ID，原生缺失ID时按同一历史中名称顺序关联。明确转换Google schema类型大小写/nullable。拒绝图像/thinking/未知内容工具/错误结果关联/截断回复/错误模型路径token/重定向。Chat缓冲后输出原GenerateContent SSE，实际用量来自上游。最多32请求、请求2MiB、响应4MiB、原生16轮、stdout/stderr各256KiB；截止时间后最多额外90秒自有清理，客户端至少command_timeout+120，并发返回忙。成功要求原始非空成功回复、正数完成请求且无失败；编码另需原生工具结果和独立产物测试。
 
 ## 配置
 
-该子进程生命周期实现要求 Linux。命令在成功、错误及执行截止时都会清理自己创建的进程组。读取输出期间保留未回收的 leader，组清理完成后才回收，避免重定向输出的后台后代在命令结束后继续运行。
+| 名称 | 默认及要求 | 含义 |
+| --- | --- | --- |
+| GEMINI_BYOK_API_KEY | 空，BYOK必需 | 显式兼容上游密钥，仅父适配器持有 |
+| GEMINI_BYOK_BASE_URL | 空，BYOK必需 | HTTPS Chat基址，最多2048字符，无userinfo/query/fragment；固定测试允许字面环回HTTP |
+| GEMINI_BYOK_MODEL | 空，BYOK必需 | 真实选定模型，1..200允许标识字符 |
+| GEMINI_API_KEY | 空，仅旧模式 | 原Google/原生兼容密钥，BYOK不隐式复用 |
+| GEMINI_MODEL | gemini-3.1-flash-lite，仅旧模式 | 原有默认值，与显式BYOK模型分离 |
+| WORKSPACE | /home/user/app | 已有项目根目录 |
+| ABX_SERVER_TOKEN | 空，可选 | 独立命令服务Bearer |
 
-| 名称 | 默认值 | 用途 |
-|---|---|---|
-| `GEMINI_API_KEY` | 空 | 模型调用必需；空白同样在启动 CLI 前失败，防止交互式 OAuth 登录 |
-| `GEMINI_MODEL` | `gemini-3.1-flash-lite` | 默认模型；须为密钥可用模型 |
-| `WORKSPACE` | `/home/user/app` | 已存在的执行根目录 |
-| `ABX_SERVER_TOKEN` | 空 | 可选服务端 bearer 鉴权，创建时注入 |
-| `ABX_SERVER_PORT` | `9000` | 本地独立服务端口 |
-
-现有上游鉴权配置由用户管理；wrapper 不改写 OAuth/Vertex profile，若与 API-key 模式冲突应检查现有配置。禁止在模板、镜像、报告或提交的环境文件中写入秘密值。
+BYOK模块导入时捕获设置，密钥最多8192字符且无控制字符。原生环境仅临时本地token、最小PATH、私有HOME/config/cache；真实密钥只发往精确授权Chat来源。同用户OS访问仍存在，cwd与环境过滤不是另一个租户边界。旧配置行为单独保留。结果与错误不包含私有地址、密钥或完整轨迹。
 
 ## 资源
 
-2 vCPU、4096 MB 内存、9000 端口；Express 根文件系统约 10G。不需要嵌套 Docker、KVM 或额外 capabilities。
+声明2vCPU4096MB/Linuxx64/9000端口/8GiBrootfs预算，不需KVM/嵌套Docker/GPU/显示器。原包98.6MB，基础镜像已有Node20；排除可选交互组件。需授权模型出网。未认证峰值内存、镜像云端部署、其他提供商、Google OAuth/订阅及完整交互/恢复/PTY/图像/thinking/MCP/插件/委派产品。
 
 ## 已验证
 
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 2.0.1; steps构建、官方READY、CLI/SDK基础冒烟、独立清理；当前版本真实模型尚未执行 | [2026-10-19](evidence/express-2026-10-19T183608Z.json) |
-
-新版本的目录归属已在真实生成步骤中验证。旧版本回执保持历史范围；基础冒烟不能推断完整模型验收。
-
-## 历史验收
-
-| 提供方 | 已执行范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
-
-该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
-
-<details>
-<summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
-
-尚无 provider 验收记录。本地诊断与 mock 回归不代表镜像、云端或模型通过；`tested_on` 为空，目录状态保持 experimental。见[验证记录](../.agents/evidence/verify/2026-10-16-gemini-runtime.md)。
-
-</details>
+当前2.1.0提供商、原生、模型和镜像资格待执行。本地81项固定及旧协议/进程/controller测试通过、1项跳过，9.40秒；跳过的是操作端未安装的真实CLI。原包校验、源码检查和固定测试不是原生/云端/模型验收。此前2.0.1回执保留为不可变历史，不能认证本次变更。
 
 ## 二次开发
 
-阅读[设计](../docs/design/gemini.md)，保留固定 npm/server 版本、Alibaba base、非 root 与 generation-2 启动。运行 `python3 scripts/check_template.py gemini`、`python3 -m pytest gemini/test_commands.py gemini/test_e2e_protocol.py -q`、`python3 scripts/run_local_e2e.py`。本地套件需要 server/client 依赖；`E2E_RUN_LLM=0` 跳过模型且不发编码请求。
+```bash
+python -m pytest -q gemini/test_byok.py gemini/test_adapter.py gemini/test_controller.py gemini/test_commands.py gemini/test_e2e_protocol.py
+python scripts/check_template.py gemini --strict
+python scripts/check_docs.py
+ABX='abx --native' python scripts/run_steps_e2e.py gemini --sandbox-create sdk --http
+```
 
-L1 必须真实构建；L2 必须部署并从外部调用 CLI/SDK。L3 在目标服务注入 `GEMINI_API_KEY`，控制端设置 `E2E_BASE_URL` 与目标 `WORKSPACE` 内的 `E2E_BASE_DIR`，运行 `E2E_REQUIRE_LLM=1 E2E_RUN_LLM=1 python3 gemini/e2e_test.py`。仅目标需要密钥。测试经远端 files API 创建失败源码和测试，显式 yolo 要求修复和新增产物，核对测试未改写，独立远端运行原测试与保留计算，最后删除唯一项目。仅返回标记不能通过。
-
-### Agent Sandbox step 构建
-
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py gemini`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+保留原始文件清单/锁/声明、真实密钥隔离、严格来源和内容拒绝、自有进程/RPC/私有目录/监听器清理。本地仅不执行代码的固定回复，原生及模型生成代码只在新建自有云目标执行。主e2e分发到当前严格BYOK controller，旧辅助和回归保留；记录分发与byok_e2e_test.py两者哈希。要求源码变化、原3测试字节不变、报告/精确nonce/原3加4隐藏测试/返回后新ACK和独立自有资源缺席确认。
 
 ## 贡献
 
-遵守[贡献规则](../CONTRIBUTING.md)、[模板规范](../docs/template-spec.zh-CN.md)及工程记录。复用 [Issue #30](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/30)。失败、跳过和阻塞分别记录；缺真实密钥是必需 L3 的阻塞，不是通过。
+遵循[CONTRIBUTING](../CONTRIBUTING.md)、[项目规范](../docs/project-standards.zh-CN.md)、[文档规范](../docs/documentation-standards.zh-CN.md)、[模板规范](../docs/template-spec.zh-CN.md)，包含所属记录/证据、双语契约、最新提交检查review和正常合并。
 
 ## 问题反馈
 
-模板：[awesome-templates](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues)。server/client：[python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues)。CLI：[agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues)。SDK/CLI 报告使用 `[templates]` 前缀。
+[Issue30](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/30)、[模板](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues)、[Python SDK](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues)、[CLI](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues)。原始上游行为使用上游渠道，不附加密钥或私有轨迹。
 
 ## 许可证
 
-Apache-2.0，见 [LICENSE](../LICENSE)。
-
-### 2026-10-20完整 step 检查点：模板2.0.1
-
-[真实对应版本 step](evidence/express-2026-10-20.json)及[完整外部 HTTP 控制器](evidence/verification-steps-2026-10-20T155048Z.json)通过：官方 READY、真实 Python SDK 创建、全部 CLI/SDK smoke，9 PASS/0 FAIL/1 SKIP；自有沙箱／模板均独立确认清理。本回执模型验收仍为 NOT_RUN，不改变旧镜像／模型范围。复现及精确服务端／控制器来源见[step 指南](../docs/platform-steps.zh-CN.md)。
+本模板/适配器及原Gemini CLI分别遵循各自Apache-2.0及[原始声明](UPSTREAM-NOTICE.md)，保留打包的第三方条款。[仓库许可](../LICENSE)。不代表Google背书或托管模型访问权。

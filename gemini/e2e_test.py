@@ -122,7 +122,7 @@ def coding(client: httpx.Client, setup: dict | None = None) -> None:
         record(result.status_code in {200, 404}, "owned coding project cleanup")
 
 
-def main() -> int:
+def legacy_main() -> int:
     headers = {"X-Access-Token": TOKEN} if TOKEN else {}
     if SERVER_TOKEN:
         headers["Authorization"] = "Bearer " + SERVER_TOKEN
@@ -152,6 +152,16 @@ def main() -> int:
         coding(client, state)
     print(f"{FAILED} failed", flush=True)
     return int(bool(FAILED))
+
+
+def main() -> int:
+    # Preserve legacy controller helpers/regressions; current1.0 compatible profile
+    # has its own strict original-native identity/artifact/post-return controller.
+    import importlib.util
+    from pathlib import Path
+    spec=importlib.util.spec_from_file_location('gemini_strict_byok_controller',Path(__file__).with_name('byok_e2e_test.py'))
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    return module.main()
 
 
 if __name__ == "__main__":

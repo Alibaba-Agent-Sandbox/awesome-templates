@@ -11,6 +11,9 @@ import threading
 import time
 
 from agent_sandbox.server import command, start
+import importlib.util
+_spec=importlib.util.spec_from_file_location("owned_gemini_byok",Path(__file__).with_name("byok.py"))
+_BYOK=importlib.util.module_from_spec(_spec);_spec.loader.exec_module(_BYOK)
 
 PINNED_VERSION = "0.64.0"
 DEFAULT_MODEL = "gemini-3.1-flash-lite"
@@ -163,6 +166,22 @@ def gemini(prompt: str, model: str = "", cwd: str = "",
     # Read-only plan is the default. Headless execution never waits for stdin approval.
     argv.extend(["--approval-mode", "yolo" if yolo else "plan"])
     return _run(argv, command_timeout=command_timeout, cwd=cwd)
+
+
+@command("gemini_byok_setup_check", description="Read-only explicit compatible-model settings presence, no values/network.")
+def gemini_byok_setup_check() -> dict:
+    return _BYOK.setup()
+
+
+@command("gemini_native_check", description="Original package hashes and actual headless flags; no model.")
+def gemini_native_check() -> dict:
+    text=_BYOK.diagnostic(["--help"])
+    return {"original_native":True,"headless_json":"--output-format"in text,"explicit_approval":"--approval-mode"in text,"owned_project_include":"--include-directories"in text}
+
+
+@command("gemini_byok", description="Original Gemini CLI through an explicit authored GenerateContent-to-Chat text/tool adapter with bounded owned state.")
+def gemini_byok(prompt: str, cwd: str="", command_timeout: int=300) -> dict:
+    return _BYOK.run(prompt,cwd,command_timeout)
 
 
 if __name__ == "__main__":
