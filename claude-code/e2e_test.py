@@ -109,7 +109,7 @@ def safe_diagnostic(text):
     if match:
         try:
             counts=json.loads(match[1])
-            if isinstance(counts,dict)and all(re.fullmatch(r'[a-z_0-9]{1,64}',k)and type(v)is int and 0<=v<=32 for k,v in counts.items()):value['failure_counts']=counts
+            if isinstance(counts,dict)and all(re.fullmatch(r'[A-Za-z_0-9]{1,64}',k)and type(v)is int and 0<=v<=32 for k,v in counts.items()):value['failure_counts']=counts
         except (ValueError,TypeError):pass
     return value
 
