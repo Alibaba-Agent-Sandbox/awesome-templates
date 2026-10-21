@@ -1,0 +1,54 @@
+# QM and SDK backend research
+
+Status: PARTIAL. Date2026-10-21. Original source deef9b8b1e2b85bd4166dd833604bb31bcb8e255, Git tree2703entries/truncated=False. Read-only pinned original README/package/default Docker backend/original Sandbox interface/E2B client/router/exec base/native harness/tool context/custom provider wiring inspected. Core buildApp lacks a sandbox override; exported createPiHarness and createToolContext remain potential native embedding seams. PostgreSQL is optional for in-memory sessions; full durable multiplayer services are not being inferred.
+
+Original selected harness supports delegateWork=False and disables optional control/scratch/owner-auth/reach tools; no sub-agent dispatch is authorized. Original custom provider registry explicitly supports openai→openai-completions with private keys resolved separately. Actual Node SDK public ServerClient.files.upload/download and process.shell can back execution/file methods; do not invent cloud Sandbox.create in this HTTP-only Node SDK. Outer creation remains actual Python SDK Sandbox.create. No implementation/native/kernel/model/cloud acceptance yet.
+
+Original Node SDK0.1.0 npm metadata returned404; exact public source90b5187dca84fca78d75d3045896482540641c72 can be built through its own npm lock and build script. No unpublished package success claim. Original immutable archive provenance below; controller-measured hashes, not upstream-published digests.
+
+```json
+{
+  "qm": {
+    "url": "https://codeload.github.com/yc-software/qm/tar.gz/deef9b8b1e2b85bd4166dd833604bb31bcb8e255",
+    "source_commit": "deef9b8b1e2b85bd4166dd833604bb31bcb8e255",
+    "size": 10625243,
+    "sha256": "40fb0d69319753a1cfab2dc8a1e8574d206e92589d26b264e768e94fa9109b4e",
+    "digest_basis": "controller measured original immutable public source archive; not upstream-published checksum"
+  },
+  "agent-sandbox-node-sdk": {
+    "url": "https://codeload.github.com/Alibaba-Agent-Sandbox/nodejs-sdk/tar.gz/90b5187dca84fca78d75d3045896482540641c72",
+    "source_commit": "90b5187dca84fca78d75d3045896482540641c72",
+    "size": 27746,
+    "sha256": "6b51e849090656de448812dbc5b08bb0a7ac0a981241739e116597cd8383cfd6",
+    "digest_basis": "controller measured original immutable public source archive; not upstream-published checksum"
+  }
+}
+```
+
+Public archives retained only while this integration is active. No cloud resource or model call created by this research; no model-generated code executed on operator. Full native/image/Express/SDK/model and independent cleanup gates remain NOT RUN.
+
+Authored SDK backend prepared (not a completed template): real original compiled Node SDK ServerClient, literal-loopback/independent-Bearer guard, original-QM-compatible execution/files/provision/teardown, bounded path helper and per-tool nonce/pidfd-owned minimal-environment process runner.7actual SDK-over-authored-local-HTTP transport/boundary tests PASS,7authored filesystem/real fixed subprocess/timeout tests PASS1.10seconds. These are local fixtures, not native QM or Express/model acceptance. Compile checks pass. Read-file absence maps to null and actual exit124 is not falsely classified as a timeout. Returned tool streams64KiB each; file limit1MiB. More original interface/runtime coverage remains necessary.
+
+Original SDK trusted build on operator Node22.22.2 (SDK minimum20; native QM requires24.15+ and was not run here): npm ci under default global npmmirror failedTLS; explicit official registry alone also failedTLS. Local Node help verifies --use-system-ca; retry with that system trust store and unchanged official source/lock, official registry and full TLS verification succeeds, then original npm run build succeeds. No certificate validation bypass, model call or QM-generated code execution.
+
+Original Node24.16.0 Linuxx64 archive57023429bytes verified against official archiveSHA2562faf6a387e9b62b888e21c54f01249fb27537ffecf1842f29f4c919d0a59a0ff; original executable123438592bytes/controller-measured SHA256b2959781cc5a74c357ffa02367efa8a0330cbb1c9cb347732fdfaaaca381cbcd. QM source archive2704members/30042365expanded bytes includes four safe internal original symlinks; installer preserves bounded original links without allowing escape. Prepared source installer checks exact archive/source/native identities and keeps original notices. No install/image/cloud/native-model claim yet.
+
+Installer traversal/symlink/hardlink rejection and safe internal notice-link preservation regressions now11PASS1.12seconds; actual original SDK HTTP unit controls7PASS after idempotent teardown refinement. Native worker adapter prepared to use unchanged original createPiHarness/createToolContext/createLocalWorkspaceStore/createAclStore/custom-provider registry. It is not executed on operator and remains unqualified pending native image/Express runs. Original sessionTools is False without sessionSyscalls; delegateWork=False, control/scratch/owner-auth/reach/sandbox-resources disabled, only execute/files read/write approval identities allowed. No sub-agent or external delivery started. Native worker stdout only returns final reply/fixed metadata; model transcripts are not emitted.
+
+Completed source preparation: both standalone experimental templates now include full bilingual14section READMEs,7section designs, pinned original QM/SDK locks and notices, scalar APIs, source-bound three-archive steps profile and CI regressions. Native worker uses original noTools=builtin/customTools from unchanged createPiHarness; SessionEntry/session IDs preserve original API contract. Actual original SDK self data plane defaults9000 and WORKSPACE/home/user/app consistently with canonical harness; separately configured9010must use its matching SDK base/Bearer. Public file text/read32KiB, library files1MiB, directory1024names/32KiBJSON; per-tool64KiBstreams/deadline120seconds, separate native worker256KiBstreams/request. Archive installer supports exact original safe internal links and rejects escape/hardlinks. Safe native failure phases/classes/codes/module identifiers/numeric counts are exposed without raw stderr/task/key content.
+
+Executed preparation checks:37wrapper/path/process/archive/anonymous-request/privacy controls PASS1.27seconds;14original-native completion-metadata controls PASS0.06seconds;7actual original SDK-over-authored-HTTP controls PASS145.534ms/0SKIP. Both source-only HTTP controllers7PASS0FAIL/nativeSKIP; qm model NOT_RUN.57spec-tool tests PASS13.700seconds; strict all-template0violations;195public Markdown documents0local-link failures, four actual SDK snippets compile. These are local/source controls only. Native image/SDK-created Express/fullHTTP/genuine original model/owned cloud cleanup NOT RUN. No benchmark/model-generated code ran on operator. Immutable preparation/wire regressions follow after committing exact COPY inputs.
+
+First immutable-source steps/wire suite atdcfab391ed934297113546b42cc1449149f303a1:65controls PASS,2new QM wire checks FAIL129.30seconds; each prepared native recipe15199bytes exceeds unchanged15000guard. No cloud operation performed. Revised Docker profile combines the four reviewed package/lock files in one COPY, compares each byte-for-byte against its unchanged verified original source archive counterpart before npm ci, then removes only the owned review-lock staging directory. Original archive/native/package/source hashes and strict wire guard remain unchanged; revalidation required.
+
+Corrected exact-source16740877676e635902cc3c9e169ea27d86988756 native recipes:qm-sandbox22steps/12555wire bytes,qm22steps/12543bytes, unchanged15000guard. All4new exact-source/asset-tamper/wire regressions PASS10.34seconds. Original compiled SDK package.json and package-lock.json remain byte-identical after official ci/build. Full earlier suite65unaffected controls PASS; its2wire failures remain explicitly retained. Actual native/image/cloud/model gates are still NOT RUN.
+
+Initial actual L1 builds at a38890cb6f1a1dd6560fce092a9dab965507b636 passed for both templates: dispatch run39527200404/jobs118984596106(qm)/118984596108(qm-sandbox), and PR run39527200589/jobs118984602773/118984602641. These are native source/version/import/image checks, not SDK data-plane or real-model/Express acceptance.
+
+Review found that closing the Node SDK transport could abort an issued HTTP request while its bounded server operation remained in flight. New authored actual-SDK HTTP regression on pre-fix sourcea38890c fails1/1 as expected; corrected request-draining implementation passes all8HTTP controls (243.527ms/0SKIP). Close now waits for issued requests, blocks additional file side effects after closure, and only then closes transport. Original QM model tools are capped to min(30seconds,turn deadline); model native wrapper allows90seconds bounded drain/start/cleanup, client guidance130seconds extra. Backend exec remains1..120seconds with50seconds startup/cleanup.37wrapper/process/archive controls PASS1.28seconds after the change. No instant server cancellation is claimed. Full current-image/Express/model checks still required.
+
+Actual SDK-created immutable32d3e379a4fa6c9c837f96cc0f0e5fe8de0e2e58 Express attempts now retained: QM full HTTP10PASS and original-harness/qwen3.8-flash coding19PASS/0FAIL/0SKIP, exact downloaded source/report/nonce/original three tests/fresh four held-outs and post-return ACK. Its synthetic original native Chat Completions route completes before actual key forwarding; all owned native/listener/project/outer/OSS absence independently passes,381.623seconds. This is a bounded exported native component slice, not the full multiplayer core.
+
+QM Sandbox first actual same-source native steps are12867wire bytes,17HTTP checks PASS/1FAIL. JSON true for integer command_timeout was converted into1 by the shared server before template validation. Real original QM tool context and actual Node SDK upload/download/exec/removal plus fresh external absence checks pass, but the complete attempt remains FAIL; outer and OSS absence independently pass,276.626seconds. Read-only observations also record UID1000/no CAP_SYS_ADMIN/no KVM/no DRI/non-writable cgroup delegation/user namespaces available; these are not product acceptance for K3s/Omarchy/Android.
+
+The shared defect is owned by [SDK Issue80](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues/80) / [SDK PR82](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/82), with actual Express122PASS/8explicitSKIP/1knownXFAIL and complete Python3.10/3.11/3.12 runtime matrix10PASS. Template1.0.1 now opts into exact reviewed published SDK source34e7e011c5569f77b7f605e65313be7498f6cf02 using server-sdk.commit and matching Docker fallback. Re-run both complete templates against that fixed server without relaxing boolean rejection. The SDK PR must merge normally before this consumer PR can merge; no early closure or provider qualification.

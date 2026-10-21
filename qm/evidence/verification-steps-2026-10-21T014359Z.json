@@ -1,0 +1,149 @@
+{
+  "template": "qm",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-21T014359Z",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "PASS",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "qm",
+    "materializer_sha256": "f29a8cde1a186384823090ce9387d006009855b7e6789ccb6419ddc2ab8b2728",
+    "source_manifest_contract_sha256": "ddd0c986e0c9c09b4ba9b2a7abf3efd6d9e18f3b5bec862783fbe90993564286",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "32d3e379a4fa6c9c837f96cc0f0e5fe8de0e2e58",
+    "asset_transport": "oss",
+    "steps_json_bytes": 12843,
+    "inputs_sha256": {
+      "Dockerfile": "45850b77e276d1fb70e314f4916263fcf67d4256941542df27170e9c5a82516f",
+      "template.yaml": "0ce5eb096a549ff557e46f73d7f1e8d6eb3957a6949904b6d98974c7552b5e66",
+      "upstream.json": "dce0166c7f76c3f57ac643273b3c335e0cb8923bc2532746a6e50fecfe617dec",
+      "install_runtime.py": "7c30ff93552b8c49d2e06bee490b4e9728257323806cfa63b352e4b660109299",
+      "package.json": "8057d73aebf1e9cd6c6b86a0e0961f0e1104741b1206d2a56be0c4ec70f51f03",
+      "package-lock.json": "8866bbf2879fa5219970188aa632190c66148e2bc031c6dd4590d6807f06e454",
+      "sdk-package.json": "daa89f8d72229bf72a1227030b2e1ffd907eed5041bd766b3accf6353340d49b",
+      "sdk-package-lock.json": "deb3039932292903aad4a15351dcfc118fd349c16822f55b9d2be9c9b7fc66a4",
+      "commands.py": "866e5d28cef8ea844aa4e17b78e409d28492d32ac798531080f5a515fe455cf7",
+      "worker.mjs": "488a8cd61de890b52cf74422d18af702d157ba819e530de8889b722f691640a7",
+      "adapter.mjs": "0dfa1efd82b59be00cf3783033a944340f65832b8e44fe9d2981bdb81b0ae8a9",
+      "sdk_path.py": "8e3958dc517dcef45218636b748c4ad6bd0d090ecd3237e483fd141cc5d4f419",
+      "sdk_exec.py": "da0b47dd9a18a6c4b5707d6a3f7392516da7ce2f708a251ce45f0624564bdcc1",
+      "process.py": "0ed29df96e4baf19237464ab0b39957d7d085c45d509d0aadf5dc7f0fc61e94a",
+      "tool_process.py": "6e6f2d6a22cee621c6c974774b800eecfcdb5efa50315e6dc62dcc28d024d5e1",
+      "lifecycle.py": "93da0bbfd48b838b6721d127a740ee345a2a040418a553a4ecf00230380f9d58",
+      "UPSTREAM-NOTICE.md": "5d6639554020aac4dad1c3ecb735e738341e8ada94601120485206807fa96834"
+    },
+    "asset_transport_sha256": "83f20ec571a29225637ddac11fce7fd86f29146b24622b43e326c6934f8594e3",
+    "asset_adapter_source_commit": "32d3e379a4fa6c9c837f96cc0f0e5fe8de0e2e58",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://nodejs.org/dist/v24.16.0/node-v24.16.0-linux-x64.tar.gz",
+          "size": 57023429,
+          "sha256": "2faf6a387e9b62b888e21c54f01249fb27537ffecf1842f29f4c919d0a59a0ff"
+        },
+        {
+          "url": "https://codeload.github.com/yc-software/qm/tar.gz/deef9b8b1e2b85bd4166dd833604bb31bcb8e255",
+          "size": 10625243,
+          "sha256": "40fb0d69319753a1cfab2dc8a1e8574d206e92589d26b264e768e94fa9109b4e"
+        },
+        {
+          "url": "https://codeload.github.com/Alibaba-Agent-Sandbox/nodejs-sdk/tar.gz/90b5187dca84fca78d75d3045896482540641c72",
+          "size": 27746,
+          "sha256": "6b51e849090656de448812dbc5b08bb0a7ac0a981241739e116597cd8383cfd6"
+        }
+      ]
+    },
+    "asset_cache_architecture": "x86_64",
+    "generated_manifest_sha256": "1e0450270dcec4043cf6c737efd09a67612544e5eea6710cf578a0f0af79ae5a"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 10,
+    "fail_count": 0,
+    "skip_count": 0,
+    "controller_sha256": "b6cdba2fa45cb5184dc4e8c55058b9bfe758c9e43d7fd9baf25c0079b11f54fa"
+  },
+  "model_controller_sha256": "b6cdba2fa45cb5184dc4e8c55058b9bfe758c9e43d7fd9baf25c0079b11f54fa",
+  "commands_sha256": "866e5d28cef8ea844aa4e17b78e409d28492d32ac798531080f5a515fe455cf7",
+  "native_model_acceptance": {
+    "model_acceptance": "PASS",
+    "model": "qwen3.8-flash",
+    "model_protocol": "OpenAI-compatible Chat Completions",
+    "actual_sdk_named_command": true,
+    "native_version": "0.1.0",
+    "source_commit": "deef9b8b1e2b85bd4166dd833604bb31bcb8e255",
+    "synthetic_probe_sha256": "28539390e0ec8de13bb8723de21bcde6358ce0b9b509732712dc2d4cb89216f6",
+    "synthetic_native_wire": {
+      "synthetic_only": true,
+      "real_model_key_forwarded": false,
+      "native_exit_code": 0,
+      "native_completed": true,
+      "model_calls": 1,
+      "exact_final": true,
+      "owned_primary_requests": 1,
+      "conflicting_project_requests": 0,
+      "exact_model_path_bearer": true,
+      "native_tool_names": [
+        "apps",
+        "attach",
+        "background",
+        "context",
+        "execute",
+        "files",
+        "finish_silently",
+        "goal",
+        "history",
+        "memory",
+        "runtime",
+        "sandbox",
+        "skills"
+      ],
+      "wrapper_sha256": "866e5d28cef8ea844aa4e17b78e409d28492d32ac798531080f5a515fe455cf7",
+      "owned_fixture_absent": true
+    },
+    "synthetic_fixture_files_and_listeners_absent_before_real_key": true,
+    "sdk_actual_native_version": true,
+    "sdk_explicit_byok_configured": true,
+    "exit_code": 0,
+    "pass_count": 19,
+    "fail_count": 0,
+    "skip_count": 0,
+    "secondary_server_stop_ack": true,
+    "owned_secondary_listener_and_native_state_absent": true
+  },
+  "cleanup_verified": true,
+  "exit_code": 0,
+  "receipt": "qm/evidence/express-2026-10-21.json",
+  "command_calls": 4,
+  "asset_cache": {
+    "service": "Alibaba Cloud OSS",
+    "private_acl_verified": true,
+    "archives": [
+      {
+        "url": "https://nodejs.org/dist/v24.16.0/node-v24.16.0-linux-x64.tar.gz",
+        "sha256": "2faf6a387e9b62b888e21c54f01249fb27537ffecf1842f29f4c919d0a59a0ff",
+        "size": 57023429
+      },
+      {
+        "url": "https://codeload.github.com/yc-software/qm/tar.gz/deef9b8b1e2b85bd4166dd833604bb31bcb8e255",
+        "sha256": "40fb0d69319753a1cfab2dc8a1e8574d206e92589d26b264e768e94fa9109b4e",
+        "size": 10625243
+      },
+      {
+        "url": "https://codeload.github.com/Alibaba-Agent-Sandbox/nodejs-sdk/tar.gz/90b5187dca84fca78d75d3045896482540641c72",
+        "sha256": "6b51e849090656de448812dbc5b08bb0a7ac0a981241739e116597cd8383cfd6",
+        "size": 27746
+      }
+    ],
+    "signed_get_ttl_seconds": 3600,
+    "cleanup_verified": true
+  },
+  "duration_s": 381.623
+}

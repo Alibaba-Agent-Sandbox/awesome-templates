@@ -1,5 +1,7 @@
 # 使用 Agent Sandbox step 构建模板
 
+2026-10-21当前验收：[43/43原生运行与完整HTTP通过](../.agents/evidence/verify/2026-10-21-current-native-http43.json)，包含原版QM/Pi编码和实际SDK支持的QM Sandbox。[QM记录](../.agents/evidence/verify/2026-10-21-qm-native-final.md)保留精确源码、先前失败及独立清理；此检查点不代表所有模型/镜像/提供方或全部64个Issue完成。
+
 `abx template deploy --build steps` 向阿里云极速版发送基础镜像和有序步骤，
 不需要本地 Docker 或 ACR 上传。[English](platform-steps.md)。
 

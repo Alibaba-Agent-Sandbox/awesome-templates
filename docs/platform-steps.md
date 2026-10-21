@@ -1,5 +1,7 @@
 # Build templates with Agent Sandbox platform steps
 
+2026-10-21 current accepted checkpoint: [43/43 native/runtime and required fullHTTP PASS](../.agents/evidence/verify/2026-10-21-current-native-http43.json), including original QM/Pi coding and actual SDK-backed QM Sandbox. Exact sources, prior failures and independent cleanup are retained in the [QM record](../.agents/evidence/verify/2026-10-21-qm-native-final.md). This checkpoint does not certify every model/image/provider or close all64Issues.
+
 Agent Sandbox's `abx template deploy --build steps` sends the base image and an
 ordered step list to Alibaba Express. It needs no local Docker daemon or ACR
 push. [中文](platform-steps.zh-CN.md).

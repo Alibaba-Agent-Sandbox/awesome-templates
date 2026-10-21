@@ -269,3 +269,30 @@ def test_prime_steps_preserve_original_kernel_and_immutable_wire_budget():
     assert set(proof['build_assets'])=={'x86_64'}
     assert proof['build_assets']['x86_64'][0]['size']==21556959
     assert manifest['build']['steps'][-1]=={'type':'USER','args':['user']}
+
+
+@pytest.mark.parametrize('name',['qm','qm-sandbox'])
+def test_qm_exact_source_profile_rejects_unreviewed_assets(tmp_path,name):
+    from prepare_steps import parallel_assets
+    source=tmp_path/name;source.mkdir()
+    original=json.loads((ROOT/name/'upstream.json').read_text())
+    (source/'upstream.json').write_text(json.dumps(original))
+    assert len(parallel_assets(source)['x86_64'])==3
+    for asset in ['node','qm','agent-sandbox-node-sdk']:
+        for key,value in [('url','https://other.invalid/source.tar.gz'),('size',1),('sha256','0'*64)]:
+            changed=json.loads(json.dumps(original));changed[asset][key]=value
+            (source/'upstream.json').write_text(json.dumps(changed))
+            with pytest.raises(ValueError,match='unreviewed original QM/SDK/Node'):parallel_assets(source)
+
+
+@pytest.mark.parametrize('name',['qm','qm-sandbox'])
+def test_qm_native_steps_keep_exact_original_inputs_and_wire_budget(name):
+    from server_sdk_pin import server_commit
+    selected=server_commit(ROOT/name)
+    manifest,proof=prepare(ROOT/name,asset_transport='parallel',server_commit=selected)
+    assert proof['template_server_commit']==selected and selected=='34e7e011c5569f77b7f605e65313be7498f6cf02'
+    assert proof['steps_json_bytes']<=15000 and len(proof['copy_source_commit'])==40
+    for filename in ['worker.mjs','adapter.mjs','tool_process.py','sdk_exec.py']:
+        assert proof['inputs_sha256'][filename]==hashlib.sha256((ROOT/name/filename).read_bytes()).hexdigest()
+    assert len(proof['build_assets']['x86_64'])==3
+    assert manifest['build']['steps'][-1]=={'type':'USER','args':['user']}

@@ -1,0 +1,44 @@
+{
+  "qm": {
+    "url": "https://codeload.github.com/yc-software/qm/tar.gz/deef9b8b1e2b85bd4166dd833604bb31bcb8e255",
+    "source_commit": "deef9b8b1e2b85bd4166dd833604bb31bcb8e255",
+    "size": 10625243,
+    "sha256": "40fb0d69319753a1cfab2dc8a1e8574d206e92589d26b264e768e94fa9109b4e",
+    "digest_basis": "controller measured original immutable public source archive; not upstream-published checksum",
+    "version": "0.1.0",
+    "identity_files": {
+      "package.json": "8057d73aebf1e9cd6c6b86a0e0961f0e1104741b1206d2a56be0c4ec70f51f03",
+      "package-lock.json": "8866bbf2879fa5219970188aa632190c66148e2bc031c6dd4590d6807f06e454",
+      "src/harness/pi-harness.ts": "49a1b519bacb3e54e014d6af079569583c94e3e61b6e8c6fa55a38005977ea79",
+      "src/harness/agent-tools.ts": "b2ffbd9148740175a9d225bc8cce03ac9ecf8992165657e933202d7e1fb916ad",
+      "src/tools/primitives.ts": "b93a908c081c57bd2303fe41da6c1a97e6dd5475766c84d9746f8e70f2d20753",
+      "src/sandbox/sandbox.ts": "c21d5decabb08053501737a1297d4354170a06d8d48395d3f57ae7624f597609",
+      "LICENSE": "586fe8965302b57c7a490a42911f847f0dba54e60d95df53f3ad53ed9eed6b83"
+    }
+  },
+  "agent-sandbox-node-sdk": {
+    "url": "https://codeload.github.com/Alibaba-Agent-Sandbox/nodejs-sdk/tar.gz/90b5187dca84fca78d75d3045896482540641c72",
+    "source_commit": "90b5187dca84fca78d75d3045896482540641c72",
+    "size": 27746,
+    "sha256": "6b51e849090656de448812dbc5b08bb0a7ac0a981241739e116597cd8383cfd6",
+    "digest_basis": "controller measured original immutable public source archive; not upstream-published checksum",
+    "version": "0.1.0",
+    "identity_files": {
+      "package.json": "daa89f8d72229bf72a1227030b2e1ffd907eed5041bd766b3accf6353340d49b",
+      "package-lock.json": "deb3039932292903aad4a15351dcfc118fd349c16822f55b9d2be9c9b7fc66a4",
+      "src/server-client.ts": "a3489ce27c457b40873908b4c9d43f652417cb737e95f8d2ad633a7dee045441",
+      "src/index.ts": "c2dfc5122bd7ea0a6c1a870d318691f748ee64cb1976a06a227830d915a9ceec",
+      "LICENSE": "99e25d9b65728b3dd8246d17feefc9e0b8aea24ab651ee6e4f5735a240de59ac",
+      "NOTICE": "7e6949ac5a233f4e1acde91d9f85219045a0bad23434d6bf2e93e7743151e860"
+    }
+  },
+  "node": {
+    "version": "24.16.0",
+    "url": "https://nodejs.org/dist/v24.16.0/node-v24.16.0-linux-x64.tar.gz",
+    "size": 57023429,
+    "sha256": "2faf6a387e9b62b888e21c54f01249fb27537ffecf1842f29f4c919d0a59a0ff",
+    "binary_size": 123438592,
+    "binary_sha256": "b2959781cc5a74c357ffa02367efa8a0330cbb1c9cb347732fdfaaaca381cbcd",
+    "digest_basis": "official published archive SHA256; native binary SHA256 measured from that verified original archive"
+  }
+}

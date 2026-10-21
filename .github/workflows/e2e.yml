@@ -272,6 +272,10 @@ jobs:
           python -m pytest -q cline/test_commands.py cline/test_model_controller.py
           python -m pytest -q grok/test_commands.py grok/test_model_controller.py
           python -m pytest -q prime-agent/test_commands.py prime-agent/test_terminal.py
+          python -m pytest -q qm-sandbox/test_runtime.py qm-sandbox/test_commands.py
+          python -m pytest -q qm/test_terminal.py
+          python qm-sandbox/prepare_sdk_tests.py "$RUNNER_TEMP/qm-original-sdk-tests"
+          ABX_QM_TEST_SDK_ENTRY="$RUNNER_TEMP/qm-original-sdk-tests/dist/index.js" node --test qm-sandbox/test_adapter.mjs
           python -m pytest -q python-hello/test_command_errors.py
           python -m pytest -q node-web/test_startup.py node-web/test_http_output.py
           python -m pytest -q claude-code/tests

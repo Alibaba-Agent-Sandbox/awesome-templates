@@ -1,0 +1,67 @@
+{
+  "head": "fff24f25dbe37b1ccc2110b81879e467645e5095",
+  "result": "PASS",
+  "checks": [
+    {
+      "name": "canonical",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39531500854/job/118998293872"
+    },
+    {
+      "name": "image-build (qm-sandbox)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39531501100/job/118998273940"
+    },
+    {
+      "name": "image-build (qm)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39531501100/job/118998273928"
+    },
+    {
+      "name": "plan",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39531501100/job/118998207887"
+    },
+    {
+      "name": "documentation",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39531500915/job/118998207856"
+    },
+    {
+      "name": "local-e2e",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39531500915/job/118998207826"
+    },
+    {
+      "name": "dev-services-offline",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39531500915/job/118998207774"
+    },
+    {
+      "name": "document-tools-offline",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39531500915/job/118998207772"
+    },
+    {
+      "name": "media-tools-offline",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39531500915/job/118998207581"
+    },
+    {
+      "name": "authorization",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39531500854/job/118998207023"
+    }
+  ],
+  "scope": "complete unrelaxed L0/spec/docs/media/dev-services/local E2E and real native images; not cloud/model by inference"
+}

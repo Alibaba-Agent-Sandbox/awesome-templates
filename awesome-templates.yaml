@@ -606,6 +606,28 @@ templates:
     providers:
       alicloud-express: supported
 
+  - name: qm-sandbox
+    description: "Original QM tool context backed by the actual Agent Sandbox Node HTTP SDK."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: qm-sandbox
+    tags: [qm, sandbox, sdk]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: supported
+
+  - name: qm
+    description: "Original QM Pi harness and tools with an actual SDK backend and explicit compatible model."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: qm
+    tags: [qm, sandbox, sdk, coding-agent]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: supported
+
 # Provider-managed IDs have no source build context; never pass these to image selection.
 managed_templates:
   - name: base
