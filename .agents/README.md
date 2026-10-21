@@ -209,3 +209,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Current44 native/runtime and full HTTP including Gemini2.1.4](evidence/verify/2026-10-21-current-native-http44-gemini.json)
 
 - [Fresh comprehensive template review](evidence/verify/2026-10-21-comprehensive-template-review.md) · [decision](notes/proposed/process/2026-10-21-comprehensive-template-review.md)
+
+- [Current44 native/runtime and full HTTP with Gemini2.2.0](evidence/verify/2026-10-21-current-native-http44-gemini220.json)
