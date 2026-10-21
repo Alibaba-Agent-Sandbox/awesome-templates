@@ -1,5 +1,5 @@
 """Private fixed worker; original server and kubectl operate only on its fresh state."""
-import ipaddress,json,os,re,signal,socket,subprocess,sys,threading,time,uuid
+import fcntl,ipaddress,json,os,re,signal,socket,struct,subprocess,sys,threading,time,uuid
 from pathlib import Path
 import process_rpc
 import lifecycle
@@ -28,12 +28,15 @@ def startup_words(logs):
 def alive(process):return os.waitid(os.P_PID,process.pid,os.WEXITED|os.WNOHANG|os.WNOWAIT)is None
 
 def address():
-    # Route selection only: UDP connect sends no application packet.
+    # UDP getsockname can be intercepted; query actual Linux interface assignment.
     with socket.socket(socket.AF_INET,socket.SOCK_DGRAM)as probe:
-        probe.connect(('192.0.2.1',9));value=probe.getsockname()[0]
-    ip=ipaddress.ip_address(value)
-    if ip.is_loopback or ip.is_unspecified:raise RuntimeError('non-loopback owned guest address unavailable')
-    return value
+        for _,name in sorted(socket.if_nameindex()):
+            try:
+                raw=fcntl.ioctl(probe.fileno(),0x8915,struct.pack('256s',name.encode()[:15]))
+                value=socket.inet_ntoa(raw[20:24]);ip=ipaddress.ip_address(value)
+            except OSError:continue
+            if not(ip.is_loopback or ip.is_link_local or ip.is_unspecified or ip.is_multicast):return value
+    raise RuntimeError('owned guest has no assigned non-link-local IPv4 address')
 
 def run(request):
     private=Path(request['private']);binary=request['binary'];manifest=Path(request['manifest']);config=private/'kubeconfig.yaml'

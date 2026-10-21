@@ -1,0 +1,20 @@
+{
+  "ipv4": [
+    {
+      "interface": "lo",
+      "loopback": true,
+      "link_local": false,
+      "private": true,
+      "usable_advertisement": false
+    },
+    {
+      "interface": "eth0",
+      "loopback": false,
+      "link_local": false,
+      "private": false,
+      "usable_advertisement": true
+    }
+  ],
+  "ipv6_present": true,
+  "cleanup_verified": true
+}

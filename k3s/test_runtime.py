@@ -59,6 +59,20 @@ elif 'apply'in args:
  print(json.dumps(data))
 else:raise SystemExit(9)
 ''');binary.chmod(0o755)
+    # Fixed-worker lifecycle tests supply their authored guest interface fixture.
+    # The actual original controller never uses this driver or patched network view.
+    actual=Path(__file__).with_name('worker.py').resolve()
+    driver=tmp_path/'authored-network-worker.py'
+    driver.write_text("import fcntl,runpy,socket,sys\n"+
+        "socket.if_nameindex=lambda:[(1,'eth0')]\n"+
+        "fcntl.ioctl=lambda *args:b'\\0'*20+socket.inet_aton('198.18.0.2')+b'\\0'*8\n"+
+        "sys.path.insert(0,"+repr(str(actual.parent))+")\n"+
+        "runpy.run_path("+repr(str(actual))+",run_name='__main__')\n")
+    real_run=r.PROCESS.run
+    def fixed_run(argv,**kwargs):
+        if len(argv)>1 and Path(argv[1])==actual:argv=[argv[0],str(driver),*argv[2:]]
+        return real_run(argv,**kwargs)
+    monkeypatch.setattr(r.PROCESS,'run',fixed_run)
     monkeypatch.setattr(r,'NODE_DIR',node);monkeypatch.setattr(r,'executable',lambda:str(binary));return node,binary
 
 def namespace(**extra):return json.dumps({'apiVersion':'v1','kind':'Namespace','metadata':{'name':'authored-example'},**extra})
