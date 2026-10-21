@@ -80,9 +80,9 @@ async def exercise(work,image_uri,image_id):
         check(all(context.id not in [first.id,second.id]for context in remaining),'native context deletion readback')
         RESULT['native_interpreter_verified']=True
     finally:
-        for resource in [interpreter,native]:
-            if resource:
-                try:await resource.close()
+        for close in [interpreter.aclose if interpreter else None,native.close if native else None]:
+            if close:
+                try:await close()
                 except Exception as exc:cleanup_error=type(exc).__name__
         # An uncertain create can be reconciled only through the exact authored metadata.
         if sb is None:
