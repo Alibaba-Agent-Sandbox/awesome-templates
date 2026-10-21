@@ -1,0 +1,55 @@
+{
+  "template": "qoder",
+  "version": "1.1.1",
+  "result": "PASS",
+  "real_model_acceptance": "NOT_RUN",
+  "operator_native_execution": false,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "qoder",
+    "materializer_sha256": "35207b082e8dc30f8c4cddccf593d0ebb24dcc66fe3ea36417c6ff4bdfd01a17",
+    "source_manifest_contract_sha256": "b91c1a82182f3a4409f0b27e605364d15a4afa93122b7c8d019c1bdfc1fc93f4",
+    "template_version": "1.1.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": null,
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "asset_transport": "direct",
+    "steps_json_bytes": 7452,
+    "inputs_sha256": {
+      "Dockerfile": "d0719110e990a002d20506ed30a359f05fa3bac31df9004c479560f9d75f498d",
+      "template.yaml": "31bef54e42672c288b91eff2b4daccca08421cfa1fcf70c758cc585eb49732c4",
+      "commands.py": "67f4ecdd8ca63cb20cd401345fdd9359982ea708086907b51ef05112c5c40a90"
+    },
+    "generated_manifest_sha256": "fc86caeb45d851afa2863d24a10bffc3dbfc01102934504a04eb4769197682fb"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 9,
+    "fail_count": 0,
+    "skip_count": 1,
+    "controller_sha256": "7b6ce5e25a0ccee0ee9260a0a6fd17848e0d24713ba713e8156b6806ba126213"
+  },
+  "native_error_type": "CommandExecutionError",
+  "native_api_fixture": {
+    "result": "PASS",
+    "scope": "actual native Qoder1.1.72 through SDK named API with an explicitly invalid synthetic PAT",
+    "category": "explicit-native-auth-refusal",
+    "real_credentials_used": false,
+    "real_model_acceptance": "NOT_RUN",
+    "vendor_success_claimed": false
+  },
+  "native_fixture_cleanup_verified": true,
+  "cleanup_verified": true,
+  "exit_code": 0,
+  "duration_s": 140.071,
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "passed": true,
+  "attempt": "2026-10-21T093940Z",
+  "model_acceptance": "NOT_RUN",
+  "receipt": "qoder/evidence/express-2026-10-21T093940Z.json",
+  "command_calls": 2
+}
