@@ -100,6 +100,12 @@ def parallel_assets(source: Path) -> dict:
 
 
 
+    if source.name == "cursor-agent":
+        from step_assets import reviewed_cursor_native
+        metadata=json.loads((source/'upstream.json').read_text());item=metadata.get('archive',{})
+        if metadata.get('version')!='2026.10.19-6bbf2c4'or metadata.get('architecture')!='x86_64'or not reviewed_cursor_native(item):
+            raise ValueError('unreviewed original Cursor artifact transport')
+        return {'x86_64':[{key:item[key]for key in ['url','size','sha256']}]}
     if source.name == "muse":
         from step_assets import reviewed_muse_native
         item = json.loads((source / "upstream.json").read_text())
