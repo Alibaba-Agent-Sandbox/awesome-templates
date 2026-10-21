@@ -29,6 +29,17 @@ from select_image_templates import catalog_names
 
 def configure_http_fixture(source: Path, manifest: dict, proof: dict) -> dict[str, str]:
     """Configure an owned non-model gateway after installer RUNs, never in Git."""
+    if source.name == 'cursor-agent':
+        steps=manifest['build']['steps']
+        if steps[-1]!={'type':'USER','args':['user']}:raise ValueError('Cursor native fixture requires the reviewed non-root profile')
+        steps.insert(len(steps)-1,{'type':'ENV','args':['CURSOR_API_KEY','key_'+'a'*64]})
+        manifest.setdefault('env',{})['CURSOR_API_KEY']='key_'+'a'*64
+        size=len(json.dumps(steps,ensure_ascii=False).encode())
+        if size>15000:raise ValueError('Cursor native fixture exceeds unchanged wire budget')
+        proof['steps_json_bytes']=size
+        proof['generated_manifest_sha256']=hashlib.sha256(yaml.safe_dump(manifest,sort_keys=False,allow_unicode=True).encode()).hexdigest()
+        proof['test_configuration']={'native_authentication_error_path_required':True,'synthetic_invalid_vendor_credential':True,'model_credentials_injected':False}
+        return {}
     if source.name == "osworld":
         proof["test_configuration"] = {"desktop_lifecycle_required": True, "model_credentials_injected": False}
         return {}
@@ -82,6 +93,8 @@ def http_callback(source: Path, stage: Path, result: dict, fixture_env: dict[str
                    E2E_REQUIRE_OCR="1", E2E_REQUIRE_DATABASES="1", E2E_REQUIRE_TOOLCHAIN="1")
         if source.name == "osworld":
             env.update(E2E_RUN_DESKTOP="1", E2E_REQUIRE_DESKTOP="1")
+        if source.name == 'cursor-agent':
+            env.update(E2E_CURSOR_INVALID_KEY_FIXTURE='1',E2E_REMOTE_SANDBOX='1')
         env.update(fixture_env or {})
         if source.name == "code-server":
             env["E2E_CODE_SERVER_URL"] = urls[8443]
@@ -101,6 +114,8 @@ def http_callback(source: Path, stage: Path, result: dict, fixture_env: dict[str
                   "skip_count": sum(line.startswith("[SKIP]") for line in lines),
                   "controller_sha256": hashlib.sha256(script.read_bytes()).hexdigest()}
         result["http_acceptance"] = checks
+        if source.name=='cursor-agent'and(checks['skip_count']or checks['pass_count']<16):
+            raise RuntimeError('original Cursor native HTTP/SDK auth-refusal fixture was skipped or incomplete')
         if source.name == "openclaw" and (not fixture_env or any(line.startswith("[SKIP] real gateway lifecycle") for line in lines)):
             raise RuntimeError("non-model gateway lifecycle was skipped; full acceptance refused")
         if source.name == "osworld" and (checks["skip_count"] or checks["pass_count"] < 18):

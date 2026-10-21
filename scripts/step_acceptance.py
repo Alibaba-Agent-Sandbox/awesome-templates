@@ -151,6 +151,12 @@ def inspect_http_receipt(source: Path, receipt: dict) -> tuple[bool, str]:
         if (fixture.get("desktop_lifecycle_required") is not True
                 or counts["pass_count"] < 18 or counts.get("skip_count", 0) != 0):
             return False, "required non-model desktop controller was skipped or incomplete"
+    if source.name=='cursor-agent':
+        fixture=(receipt.get('build_provenance')or{}).get('test_configuration',{})
+        if fixture.get('native_authentication_error_path_required')is not True or fixture.get('synthetic_invalid_vendor_credential')is not True or fixture.get('model_credentials_injected')is not False:
+            return False,'missing required original Cursor native authentication fixture'
+        if counts['pass_count']<16 or counts.get('skip_count',0)!=0:
+            return False,'original Cursor native HTTP/SDK authentication fixture was skipped or incomplete'
     controller = source / "e2e_test.py"
     if not controller.is_file() or counts.get("controller_sha256") != hashlib.sha256(controller.read_bytes()).hexdigest():
         return False, "HTTP controller changed or lacks provenance"

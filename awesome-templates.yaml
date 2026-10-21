@@ -639,6 +639,18 @@ templates:
     providers:
       alicloud-express: supported
 
+  - name: cursor-agent
+    description: "Pinned original Cursor Agent CLI with explicit owned-sandbox native tools."
+    repo: https://github.com/Alibaba-Agent-Sandbox/awesome-templates
+    path: cursor-agent
+    tags: [cursor, coding-agent, cli]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: install-build
+
+
 # Provider-managed IDs have no source build context; never pass these to image selection.
 managed_templates:
   - name: base

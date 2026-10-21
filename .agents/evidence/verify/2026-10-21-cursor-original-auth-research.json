@@ -1,0 +1,47 @@
+{
+  "scope": "original Cursor keyless Express research with unchanged privately cached archive; not template qualification",
+  "passed": true,
+  "cleanup_verified": true,
+  "programs": [
+    {
+      "program": "cursor",
+      "scope": "research only; not a template/provider qualification",
+      "archive_sha256": "cf80cc18d8b33bf33e762353977ca1868cfc45290c92c0ffdcef83bb8b37b44f",
+      "archive_bytes": 183733394,
+      "runtime_uid": 1000,
+      "version": "2026.10.19-6bbf2c4",
+      "help_flags": {
+        "--print": true,
+        "--output-format": true,
+        "--force": true,
+        "--config": false,
+        "--permission-mode": false,
+        "--workspace": true,
+        "--trust": true,
+        "--respect-workspace-trust": false
+      },
+      "headless_exit_code": 1,
+      "error_markers": [],
+      "auth_error_path_observed": true,
+      "synthetic_error_excerpt": "\n\u001b[33m\u26a0 Warning: The provided API key is invalid.\u001b[0m\nThe API key was loaded from the CURSOR_API_KEY environment variable.\nPlease check you have the right key, create a new one, or authenticate without it.\n",
+      "stdout_bytes": 0,
+      "stderr_bytes": 207,
+      "program_version_help": "PASS"
+    }
+  ],
+  "owned_fixture_cleanup": true,
+  "duration_s": 15.697,
+  "private_archive_cache": {
+    "service": "Alibaba Cloud OSS",
+    "private_acl_verified": true,
+    "archives": [
+      {
+        "url": "https://downloads.cursor.com/lab/2026.10.19-6bbf2c4/linux/x64/agent-cli-package.tar.gz",
+        "sha256": "cf80cc18d8b33bf33e762353977ca1868cfc45290c92c0ffdcef83bb8b37b44f",
+        "size": 183733394
+      }
+    ],
+    "signed_get_ttl_seconds": 3600,
+    "cleanup_verified": true
+  }
+}
