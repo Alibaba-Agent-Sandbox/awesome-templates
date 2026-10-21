@@ -32,7 +32,7 @@
 
 ## K3s
 
-[Issue42](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/42)仍需实现。完整工作节点／容器运行时集群所需权限和网络未在已测Express环境取得资格。无agent控制面校验切片也必须真实证明原版API就绪、服务端校验与清理后才能进入目录，不能从API启动推断Pod／节点执行成功。
+[Issue42](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/42)按其明确允许的证据决策路径处理。[七轮真实原生尝试及当前profile决定](feasibility/README.zh-CN.md#k3s)保留就绪／校验失败与自有资源独立清理；当前不发布可安装K3s模板或已验证工作集群。原版产品能在合适profile实际通过验收后再恢复实现。
 
 ## 其他研究
 

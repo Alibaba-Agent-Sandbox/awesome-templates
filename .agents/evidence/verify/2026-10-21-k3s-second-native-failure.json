@@ -1,0 +1,22 @@
+{
+  "template": "k3s",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-21T163040Z",
+  "result": "FAIL",
+  "passed": false,
+  "http_acceptance": {
+    "exit_code": 1,
+    "pass_count": 14,
+    "fail_count": 1,
+    "skip_count": 0,
+    "controller_sha256": "49ce22435e95d004cefdac7f37799474e0c5ca23bf0e48a4dd252ba29c113aea"
+  },
+  "cleanup_verified": true,
+  "duration_s": 158.971,
+  "source_commit": "cca499c217ea8cd5cc4bb1a9cc1843380352d7a0",
+  "diagnostic_stage": "readiness",
+  "diagnostic_type": "RuntimeError",
+  "native_markers": [],
+  "native_interpreter_verified": false
+}

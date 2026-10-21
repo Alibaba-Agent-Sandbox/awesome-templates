@@ -1,0 +1,16 @@
+{
+  "attempt": "2026-10-21T171746Z",
+  "source_commit": "0e28a5021473e11ed549fad6b08e5ccd796f9b07",
+  "result": "FAIL",
+  "http": {
+    "exit_code": 1,
+    "pass_count": 14,
+    "fail_count": 1,
+    "skip_count": 0,
+    "controller_sha256": "3aa57fb6297798b37da53c501d245c26832abfa7f5cc9eefea4f300eb3e6bec8"
+  },
+  "duration_s": 100.112,
+  "cleanup_verified": true,
+  "qualification": "NOT_VERIFIED",
+  "classification": "native worker could not establish an assigned non-link-local IPv4; API readiness not reached"
+}

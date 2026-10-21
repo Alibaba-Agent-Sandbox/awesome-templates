@@ -1,0 +1,115 @@
+{
+  "decision": "No qualified installable K3s template for the evaluated profile",
+  "issue": 42,
+  "scope": "alicloud-express generation2; pinned Alibaba base v0.0.49; original v1.37.1+k3s1; non-root agentless API experiment",
+  "source_version": "v1.37.1+k3s1",
+  "source_sha": "356c025475bbefaa09cf0d7e48e8e2adbbde57db",
+  "binary_sha256": "92b94582eb7b34a8cf532e6006842b9ed215a6783cf56a3dd6271fd35243b2c0",
+  "binary_size": 81543330,
+  "qualified_runtime_pass": false,
+  "full_worker_cluster_verified": false,
+  "agentless_validation_verified": false,
+  "attempts": [
+    {
+      "attempt": "2026-10-21T125302Z",
+      "source_commit": "b7fa36195e61f7bc4c70abb3786719fbab7ca5f7",
+      "result": "FAIL",
+      "http": {
+        "exit_code": 1,
+        "pass_count": 14,
+        "fail_count": 1,
+        "skip_count": 0,
+        "controller_sha256": "a45b5c232cd7685fac4010848d5eed9ed335b7b814a0db64171a5496d53381ac"
+      },
+      "duration_s": 208.2,
+      "cleanup_verified": true
+    },
+    {
+      "attempt": "2026-10-21T163040Z",
+      "source_commit": "cca499c217ea8cd5cc4bb1a9cc1843380352d7a0",
+      "result": "FAIL",
+      "http": {
+        "exit_code": 1,
+        "pass_count": 14,
+        "fail_count": 1,
+        "skip_count": 0,
+        "controller_sha256": "49ce22435e95d004cefdac7f37799474e0c5ca23bf0e48a4dd252ba29c113aea"
+      },
+      "duration_s": 158.971,
+      "cleanup_verified": true
+    },
+    {
+      "attempt": "2026-10-21T164304Z",
+      "source_commit": "7598c733e90224ae47c274507894edb14c9d7679",
+      "result": "FAIL",
+      "http": {
+        "exit_code": 1,
+        "pass_count": 14,
+        "fail_count": 1,
+        "skip_count": 0,
+        "controller_sha256": "475feca28ba9f1eacb047f2dfc5cd930770ddee6f14e85a694010447adf234cf"
+      },
+      "duration_s": 146.231,
+      "cleanup_verified": true
+    },
+    {
+      "attempt": "2026-10-21T165019Z",
+      "source_commit": "acf7b9990f7e27da5daa91ffbb1bda2aebdb8de4",
+      "result": "FAIL",
+      "http": {
+        "exit_code": 1,
+        "pass_count": 14,
+        "fail_count": 1,
+        "skip_count": 0,
+        "controller_sha256": "3aa57fb6297798b37da53c501d245c26832abfa7f5cc9eefea4f300eb3e6bec8"
+      },
+      "duration_s": 118.063,
+      "cleanup_verified": true
+    },
+    {
+      "attempt": "2026-10-21T165525Z",
+      "source_commit": "bf5c0fe50074c514cfc540f8952e50637f736eb0",
+      "result": "FAIL",
+      "http": {
+        "exit_code": 1,
+        "pass_count": 14,
+        "fail_count": 1,
+        "skip_count": 0,
+        "controller_sha256": "3aa57fb6297798b37da53c501d245c26832abfa7f5cc9eefea4f300eb3e6bec8"
+      },
+      "duration_s": 125.665,
+      "cleanup_verified": true
+    },
+    {
+      "attempt": "2026-10-21T170433Z",
+      "source_commit": "bbcdfb48796e10d3f10ec0b2720f144ca15debe8",
+      "result": "FAIL",
+      "http": {
+        "exit_code": 1,
+        "pass_count": 14,
+        "fail_count": 1,
+        "skip_count": 0,
+        "controller_sha256": "3aa57fb6297798b37da53c501d245c26832abfa7f5cc9eefea4f300eb3e6bec8"
+      },
+      "duration_s": 127.032,
+      "cleanup_verified": true
+    },
+    {
+      "attempt": "2026-10-21T171746Z",
+      "source_commit": "0e28a5021473e11ed549fad6b08e5ccd796f9b07",
+      "result": "FAIL",
+      "http": {
+        "exit_code": 1,
+        "pass_count": 14,
+        "fail_count": 1,
+        "skip_count": 0,
+        "controller_sha256": "3aa57fb6297798b37da53c501d245c26832abfa7f5cc9eefea4f300eb3e6bec8"
+      },
+      "duration_s": 100.112,
+      "cleanup_verified": true
+    }
+  ],
+  "all_owned_cleanup_verified": true,
+  "managed_base_probe_scope": "A separate public base guest exposed a usable address. This does not certify the custom generation2 worker network.",
+  "other_provider_scope": "No K3s was executed successfully on another provider. Standard OpenSandbox Docker interpreter testing is a separate product test."
+}

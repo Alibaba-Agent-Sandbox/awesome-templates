@@ -1,0 +1,26 @@
+{
+  "template": "k3s",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-21T165525Z",
+  "result": "FAIL",
+  "passed": false,
+  "http_acceptance": {
+    "exit_code": 1,
+    "pass_count": 14,
+    "fail_count": 1,
+    "skip_count": 0,
+    "controller_sha256": "3aa57fb6297798b37da53c501d245c26832abfa7f5cc9eefea4f300eb3e6bec8"
+  },
+  "cleanup_verified": true,
+  "duration_s": 125.665,
+  "source_commit": "bf5c0fe",
+  "diagnostic": {
+    "native_exit_before_cleanup": 0,
+    "native_stderr_bytes": 24612,
+    "native_elapsed_ms": 4984,
+    "native_config_created": 1,
+    "failure_classification": "native server terminated before readiness after successful node IP selection"
+  },
+  "qualification": "NOT_VERIFIED"
+}
