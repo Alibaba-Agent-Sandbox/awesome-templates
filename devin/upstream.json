@@ -1,0 +1,1416 @@
+{
+  "version": "3000.11.92",
+  "architecture": "x86_64",
+  "archive": {
+    "url": "https://static.devin.ai/cli/3000.11.92/devin-3000.11.92-x86_64-unknown-linux.tar.gz",
+    "size": 67245544,
+    "sha256": "2d829139682e038cf122510f1170eee3d7060bcc7ebf92445cbc5d28c9fbcfa0"
+  },
+  "checksum_source": "https://static.devin.ai/cli/current/manifest.json observed2026-10-21; exact version/platform digest retained",
+  "files": [
+    {
+      "path": "bin/devin",
+      "size": 200366312,
+      "sha256": "ae9085df72f8ab840db77e2aef96aca522bfd18e1ee2b98b82d4597434c98727",
+      "executable": true
+    },
+    {
+      "path": "share/devin/docs/adaptive.mdx",
+      "size": 787,
+      "sha256": "268d36e8fa70d11682e7ba44b963146e52fcfb8242ce14b6d2a2181defea95bc",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/cloud.mdx",
+      "size": 3480,
+      "sha256": "7d4ad0d8a1627d35696201a1bc6f3528ad3c953bffdfb45c7657a0894dd7c66b",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/essential-commands.mdx",
+      "size": 10327,
+      "sha256": "5e753aaf12cb01ac9fb1a7fd0c55c6f9dc8714377481ffefda65799001944981",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/fusion.mdx",
+      "size": 665,
+      "sha256": "9b705976c2c5ca473f7679e2f2965537772c7b720a72f53beb7b274ecf2887a7",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/handoff.mdx",
+      "size": 3261,
+      "sha256": "85df19c76d2ed43690ce39461148456ddd085472870d5978e275459762be544f",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/index.mdx",
+      "size": 2597,
+      "sha256": "7f7847ac48a7970905ef46939b8c000a080fd02e6a5b180ac83041a3abff2c7a",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/introducing-devin-cli.mdx",
+      "size": 778,
+      "sha256": "860e477ed92d9aaf8e328382a669d31ebb0b2420d2852153b9212e5477cfd633",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/models.mdx",
+      "size": 3260,
+      "sha256": "5a5bbe548c7bdd32d3d46e16fe2e693c402489feddbd96d3a142156402c44bfb",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/sandbox.mdx",
+      "size": 9679,
+      "sha256": "74c9b7746c9d9a5d698ec68877efb50ed3d6c242d09be4a55506ab8b5bae32c9",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/shell-integration.mdx",
+      "size": 427,
+      "sha256": "6ed558cfb18ee2fdc3944a5573829609df7cc5ac536ffa1b93e4ce24edb7b4f5",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/ssh.mdx",
+      "size": 1881,
+      "sha256": "7ecae6dc3a71ab7c5d528e93a4c4b0fe5203c21e000c2db4fe54e2c0bdf16398",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/subagents.mdx",
+      "size": 18013,
+      "sha256": "edc4f7a638ccd390469604bdd3070f1bd726bec06f3daed2d7bc8be9ace0c720",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/troubleshooting.mdx",
+      "size": 11800,
+      "sha256": "e7331d38457029df1d577d2be1507097ddbc175a6cd5955bd4357b493c1a869d",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/acp/jetbrains.mdx",
+      "size": 6294,
+      "sha256": "c7c021dc829e6d646778a3d321156c41f75f888581967de99644742d6412c807",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/acp/xcode.mdx",
+      "size": 6663,
+      "sha256": "5cc8706977c5f990d5e8a8344973ce1c35082d68b38af32a37658f8f7886e199",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/acp/zed.mdx",
+      "size": 3179,
+      "sha256": "f9431d69af2e5357f5cbd8b92b17c77a5b13a4b5709102ea6ec90d10e25a639e",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/changelog/stable.mdx",
+      "size": 95087,
+      "sha256": "cf5a2b432a83f83667350fb05810eaeeb3fea65030e19180e1511e6d2d186008",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/enterprise/controls.mdx",
+      "size": 1092,
+      "sha256": "8f1c4d88f3ca73b123139eecbb993e94462d23e17d4869ea8d164ec0cd119017",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/enterprise/devin-auth.mdx",
+      "size": 4215,
+      "sha256": "7a3c29d8c582f9a4683b961b894fcc834ee2ab70fd90436348da6d0d6c037a48",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/enterprise/system-config.mdx",
+      "size": 7738,
+      "sha256": "02f66dbb889a15a97532929f30169bf8e05158c86bf1280d1870669b36d40036",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/enterprise/team-settings.mdx",
+      "size": 8293,
+      "sha256": "992174a09a79181af3b12a80ca43f66899e9f55e1153687e5e3a1a38b8174083",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/enterprise/windsurf-auth.mdx",
+      "size": 4337,
+      "sha256": "241822a0839ff8fbdea3b28c0b8f3161bf6cab98da9c84721b031157ab7fda8c",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/extensibility/configuration.mdx",
+      "size": 5952,
+      "sha256": "0b20c4ffe48d0ff60aa4df6522c210953842e46c4137ea83ad487c9a7d33ff63",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/extensibility/index.mdx",
+      "size": 4762,
+      "sha256": "ebe6e1972ced19a3bdd25c6c7a793bd0bba42dc4c62ad94416f33a23b86ceba3",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/extensibility/rules.mdx",
+      "size": 9077,
+      "sha256": "46d0f620033071254ae49929b20713f45769126b28b76dbf29786aa5637af23c",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/extensibility/hooks/lifecycle-hooks.mdx",
+      "size": 9458,
+      "sha256": "970cb20b3ab8e9a7c50c6455db94e613c4b0cd6cbfc74de39eecc0cc3ec3bc29",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/extensibility/hooks/overview.mdx",
+      "size": 8286,
+      "sha256": "88a5fdea3f25ed28948c9847e106bd2c33743856f6abee2019c712499867006f",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/extensibility/mcp/configuration.mdx",
+      "size": 18532,
+      "sha256": "923fd0c02c081ddfa5744a6ac293c50f31654e56858af464f89b4046e1a8ee74",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/extensibility/mcp/overview.mdx",
+      "size": 5572,
+      "sha256": "035d8d896765a65fea1082b0a9f889d5d1893bc188795511a5b1d681e34e053d",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/extensibility/plugins/overview.mdx",
+      "size": 17276,
+      "sha256": "ddf16b02bdcb67fa747d1e98fa184bc32f0d8de4cbff191cf790f48dacf3f49d",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/extensibility/plugins/quickstart.mdx",
+      "size": 4589,
+      "sha256": "6528f5ae613a8d7ea1c2b1bbc67145f7a0071502530d72adc508cacd5cf7f623",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/extensibility/skills/creating-skills.mdx",
+      "size": 13657,
+      "sha256": "f1bea9ad05d6d15cb382653625c426fc8fbd709c75486a817598ff329635d024",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/extensibility/skills/overview.mdx",
+      "size": 5513,
+      "sha256": "194e413e7a4478cb7b59980200865614a8d33694db3ae572dfc5d81270310948",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/reference/commands.mdx",
+      "size": 27607,
+      "sha256": "654bd0a899953855d4c3e0312b14d8da60f06ff8697b83a72a02b243854692a9",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/reference/keyboard-shortcuts.mdx",
+      "size": 7708,
+      "sha256": "e8287dd55aa0b5a9726c3cd20c95d0c4c545a2c94a764c6838b7314da0f1e561",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/reference/otel.mdx",
+      "size": 13174,
+      "sha256": "1aa7994f9c72e9a67925b286f80a5b1960b5b3db66270e0aa1528bbb8cf8fa7f",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/reference/partner-builds.mdx",
+      "size": 8003,
+      "sha256": "6c48917d062d104bdd5afce620d0133cbb627f68c238c14d6efc94a0f9ec2e58",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/reference/permissions.mdx",
+      "size": 17162,
+      "sha256": "870436148860e2b775c9ee3c63a3381c5f1e6ab9fd3f280a3939b41299facb80",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/reference/terminal-compatibility.mdx",
+      "size": 5810,
+      "sha256": "97c2aa9fe3b98ef699e57a08ad4ecf4d18e9b95f5862841c745166419bd4cdc7",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/reference/configuration/config-file.mdx",
+      "size": 21671,
+      "sha256": "e9aa78a13c35945ccbe77e31ef6128238ed2f54f27710511613093064bf46acd",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/reference/configuration/global-vs-local.mdx",
+      "size": 7096,
+      "sha256": "8fc899cd33ea4185525efb120c8c13736419622ea3cf4b6cae9608b2d2daf1e1",
+      "executable": false
+    },
+    {
+      "path": "share/devin/docs/reference/configuration/read-config-from.mdx",
+      "size": 5582,
+      "sha256": "3d0827e33c6b0dda176dea8cd28387468cddc9a0654f5b54bae8b6df03043c35",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-acp.1",
+      "size": 2419,
+      "sha256": "54ba04cb921e00e62f41c769c402e8a0c4ed291558ed753042681ba7f6c821b9",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-auth-help-help.1",
+      "size": 281,
+      "sha256": "f1e3af114aa3bdaea9209c530d0b368cf13534e6b5718ca9b27e2d33cb75beba",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-auth-help-login.1",
+      "size": 201,
+      "sha256": "9ac8b35ad3b868b6301c0a5d06421873ec6b32d1788181f5fbd7743c85cdf4fc",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-auth-help-logout.1",
+      "size": 249,
+      "sha256": "59b02340d3c3d53adcea2885a4b2d33c36aea21aa5f681b4b4831e6ec7d95838",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-auth-help-status.1",
+      "size": 229,
+      "sha256": "f36d802d5b5c2feda86e504f85c1f02cc02ff34f6e85e9d26665890abec7f853",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-auth-help.1",
+      "size": 569,
+      "sha256": "ab15fc61ec18b75f15c9b2a073569827b9f896652b0a618998295e2e568331a4",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-auth-login.1",
+      "size": 512,
+      "sha256": "5b7ced9c2ed4da8d7ba1424838792fca1ccbcfabc9d02f9f5a8cc935dc3fe7dc",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-auth-logout.1",
+      "size": 313,
+      "sha256": "fcb0df1ed008d775efd767c0af300833bd4786aeb9d9c9ce1205e6b49ebcb19b",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-auth-status.1",
+      "size": 293,
+      "sha256": "ad71491b333f5df9d4f3a22b4b691f22cc5e14e54363e5c84539a233365381bd",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-auth.1",
+      "size": 557,
+      "sha256": "f1d932200438807df95a39176effae66ff5cde9b171980d716f3ca6060323693",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-blueprint-create.1",
+      "size": 776,
+      "sha256": "02771dfb695cebf36c710f92c906bf97f8079aab05a0ee26b5f9e3c3e325288f",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-blueprint-list.1",
+      "size": 393,
+      "sha256": "9ab0fc4a164cb92b64d2d50a623b2d1780cd60ab066f107e7a2dd33537ccb529",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-blueprint-write.1",
+      "size": 683,
+      "sha256": "1bb9e38f4b19ea49472258563e0ffb97758a2f8965cd6f0912aab0b12f7b6ef7",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-build-logs.1",
+      "size": 596,
+      "sha256": "e57e4b1914b9ceccfe07c862284fac03bc5cd9e4fd78963cd7bef8384d5e6df4",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-build-start.1",
+      "size": 489,
+      "sha256": "4063a9962675a2c44dc038ff1abff66682708f46c3b97bea5d3b503448be1d16",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-build-wait.1",
+      "size": 480,
+      "sha256": "77ac5358f7d1131cbd20fed2d1382ca257642ba78d24eff30aa8535e0c2630d1",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-build.1",
+      "size": 512,
+      "sha256": "7f5d63190a13382d0c66e423350fbb2a92aa508a008a89951920a0cf758aa162",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-help-blueprint-create.1",
+      "size": 301,
+      "sha256": "cae512749e8c1ad2c20f16aa83ca5130882af0a8b758dd5b697e7d32c2ab9d8e",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-help-blueprint-list.1",
+      "size": 329,
+      "sha256": "5c3e654be83fc1adcdfb1579edf9ff9f48efb5b02ed02fac7150c7ddfad10dbd",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-help-blueprint-write.1",
+      "size": 309,
+      "sha256": "ae16c995753eecd98ed35442db0ded0ef0e5ebc17b293a6e2f2bec1b8d2b3493",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-help-build-logs.1",
+      "size": 281,
+      "sha256": "80656515c16198558030a03d849be5341f8ab26cd60849f132ff7aa7a565ae91",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-help-build-start.1",
+      "size": 301,
+      "sha256": "4a813a415908ed28eb94b3be0f22ee1913949a13fb0aa109e648e2fa8e561050",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-help-build-wait.1",
+      "size": 299,
+      "sha256": "905b6c9c5e6be291f177bb3d2896baa5a22258c3b9a732f36e9b952a5cbe2d77",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-help-build.1",
+      "size": 295,
+      "sha256": "4dd187e4d5d83ce0b81ea7d2361c39d5ba4762d267da70d8e7a79613e4774c2f",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-help-help.1",
+      "size": 297,
+      "sha256": "a5838e9dc0097f1d76311aa92d3bcb847f5caf78512c108738e4efacc5b5671e",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-help-run.1",
+      "size": 267,
+      "sha256": "8212160902e514bcaf9d746f413a7ab63096307eaf57d2191d968eaf2e046c58",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-help-sandbox-create.1",
+      "size": 331,
+      "sha256": "835e43687fd3f5e7411425fcc1f966c8e770df9081673d576b05734bf6d4617e",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-help-secret-create.1",
+      "size": 289,
+      "sha256": "7500fc7ced07ef30e78aebf7353208c62e4b60bbb0f746334873f275919dd437",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-help-whoami.1",
+      "size": 327,
+      "sha256": "2e5a42c16c1b87f73fe3da359d3392f1421c1d43f3e9e9f59559ac2a664d956d",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-help.1",
+      "size": 1414,
+      "sha256": "d69e64f68c6c7492d01a86062e1082764ae70ebb0e794728631d68f3bf36104b",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-run.1",
+      "size": 768,
+      "sha256": "486cfca67cd7e317aaba94a9e59bf92217d4148ec7b5143311caa58bab96186c",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-sandbox-create.1",
+      "size": 936,
+      "sha256": "aec730447abc3551533782024e491ccc18c589c095f21b5d036a45014a8f3713",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-secret-create.1",
+      "size": 1646,
+      "sha256": "b0681b73207f45471a576ec293d487513b0f391cb8792069694c6a90d0672427",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs-whoami.1",
+      "size": 391,
+      "sha256": "ca2b23ef62389131fac9e9fb90c092e4972bc56bda42ec0dbc4ba1c85dc1fd4b",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-drs.1",
+      "size": 1459,
+      "sha256": "83cc9c508c079105184af46152cd1a888966074852917139f3b71150825f7373",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-help-drs-blueprint-create.1",
+      "size": 301,
+      "sha256": "a4f9bfcc5bbcb285fc91d739cd645b61e6990eff8a77f36ec47b254985e385de",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-help-drs-blueprint-list.1",
+      "size": 329,
+      "sha256": "e2d2bfd2ce26906bec2a5495b3dfa56303e57be9c4a924918a629470d23b6448",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-help-drs-blueprint-write.1",
+      "size": 309,
+      "sha256": "4aaa6490d2c498f2e3dd9871c75f165f28212193fc4aaf1494fda579e2e4db66",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-help-drs-build-logs.1",
+      "size": 281,
+      "sha256": "b125a624102c11996302df4b2897a0f0d8ba50a94fa7fc0efb28da67625dfb04",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-help-drs-build-start.1",
+      "size": 301,
+      "sha256": "da45e08386f29076ab785b44f8ed5e511d132a492ebfa58dbd91c0bb8d25ee37",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-help-drs-build-wait.1",
+      "size": 299,
+      "sha256": "5cd60825697a78efac4ec7169028d78d3c1f467b9c576578d3d9abf258adbe1b",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-help-drs-build.1",
+      "size": 295,
+      "sha256": "db81d4badc75aab49af295f02821c14d1e7c1c3545af5388c798e632535b0e96",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-help-drs-run.1",
+      "size": 267,
+      "sha256": "4266b1f7cd84504508fa63c600035500eef47813f679a5c945a5385873e3f867",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-help-drs-sandbox-create.1",
+      "size": 331,
+      "sha256": "f87f0e77cbea8b0539c7f1d5fa6ea5e1ce6b2de10df9b484b28910b03c8ddf51",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-help-drs-secret-create.1",
+      "size": 289,
+      "sha256": "97a357b2d3792fe9af1ab3460fd113a639c716b1eb25a23dbabdabef851cf8b8",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-help-drs-whoami.1",
+      "size": 327,
+      "sha256": "24a0c7ea9b5abc01b3cdac18710fee0ebcffb41fd0986378436db0dfe559f0f0",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-help-drs.1",
+      "size": 1372,
+      "sha256": "296806b98053594c339d1cf67796f034c63ddc019555fbc304afd4222da26976",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-help-help.1",
+      "size": 284,
+      "sha256": "00c0cc0f6a1d9e3a9c55c4ab804f0f4ca0189e6b4d5dd52823b665de1b1f2761",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud-help.1",
+      "size": 509,
+      "sha256": "1873a03668b0492fb61641420c110e13885c3bdaf284562267105e3570b3aac9",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-cloud.1",
+      "size": 808,
+      "sha256": "c283d356132c2e0fc1e791cb5681458691cf728942d93a86a041b0500ec5097d",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-desktop.1",
+      "size": 569,
+      "sha256": "ecfad14b03ee13a72658e5260e1f123e0fe9b7ee81839b2d86988fcbe3a7d36b",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-doctor.1",
+      "size": 389,
+      "sha256": "63ec944b4f3466dcfa6d70791a9b948b28dd31e724e9d85c4ec3e2a7780bb289",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-forward.1",
+      "size": 857,
+      "sha256": "d6f9c32d14bce274e47d71e39461e10f25f24d88e6f61d0063eb3ea44d56cf35",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-acp.1",
+      "size": 257,
+      "sha256": "bc5090310d97341f132cdc77376358d41bb2e980b448b810665d2a04072974a7",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-auth-login.1",
+      "size": 201,
+      "sha256": "7fd1046043662d575df87e84637a203453e37c756ff254b932f8068ad20f8cfd",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-auth-logout.1",
+      "size": 249,
+      "sha256": "898c9c0e0a4956799804a402812644b8048c31560950cf1e81ac18fb23927b71",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-auth-status.1",
+      "size": 229,
+      "sha256": "9b17c46fc4171b3e16858fd0395227d2b417bdc99975f604f0b3777c9da6e981",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-auth.1",
+      "size": 428,
+      "sha256": "cedb8b3fb39e13177a349266364c503ea882d6e3771b5b128127aae781bd9c88",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-cloud-drs-blueprint-create.1",
+      "size": 301,
+      "sha256": "a8f5f66819b927521502a874e2b838262a50c87f14584f5f59bb865bcf836376",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-cloud-drs-blueprint-list.1",
+      "size": 329,
+      "sha256": "724e7c87888d8e44f05776ba603ab8e24aedae889203c6bc3afb45abaf9801a2",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-cloud-drs-blueprint-write.1",
+      "size": 309,
+      "sha256": "c45f45d8f85bcc38272e0d500fa16561af54bea2670b024fcd331d54f58cef92",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-cloud-drs-build-logs.1",
+      "size": 281,
+      "sha256": "cdef041771aa4de02ec8cf2badedda30b5d7748d4b8e3155680eb07d32dc10f9",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-cloud-drs-build-start.1",
+      "size": 301,
+      "sha256": "cf20fec40deff5d289f522933f6e499e261ff03c7ae3a19735f83eef5bcdd79e",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-cloud-drs-build-wait.1",
+      "size": 299,
+      "sha256": "3617add976411cba997d0e881ff960139ce31ac6bc4acc9c8b45c42eb44bf0cc",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-cloud-drs-build.1",
+      "size": 295,
+      "sha256": "37930b4fd46e5ce5ff2b256a651e525e59867a35f9548306ff193ad3146c160e",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-cloud-drs-run.1",
+      "size": 267,
+      "sha256": "1fda38282380a67bd21feee167fe45bcbe302f401019fe5de1ee78043d299946",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-cloud-drs-sandbox-create.1",
+      "size": 331,
+      "sha256": "96b0ce59962fe3dc267cbfacb44d5a04a862a0f53fc0e6a6aacb6a79627a6d2a",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-cloud-drs-secret-create.1",
+      "size": 289,
+      "sha256": "7eea722c153a5f789bbe51d0bce069d212cb398e5c1040950647eecd8737b1fa",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-cloud-drs-whoami.1",
+      "size": 327,
+      "sha256": "e8cee0b8b2352449f34188f85dd3ed36a09ecd445b7ea850320a0e8b9854c1f9",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-cloud-drs.1",
+      "size": 1372,
+      "sha256": "63ebbc785101e97da2dce5f3edb0b20804f4332b05cc1d35bfcbecb0c8dd6fc7",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-cloud.1",
+      "size": 452,
+      "sha256": "d82f17a87cf07d4e621bb423446b204fb6258e173bf5e1d06b7d89e4d9301d6f",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-desktop.1",
+      "size": 199,
+      "sha256": "84096cd035c9d688b7dd11202b914e73f19a96bb15a3b83589bb3df307dae5d3",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-doctor.1",
+      "size": 235,
+      "sha256": "da8481c4733a9f5a53007e2e86712518922dc0b162e4d1d1e312f03160958ec7",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-forward.1",
+      "size": 289,
+      "sha256": "952022a6a47f2f62bcb1fe280ad1398d6fc55dbf8c2ccacb7d8556fadecab68f",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-help.1",
+      "size": 265,
+      "sha256": "d9dd0185f8b9fddc43b38fb77d89dfcf9253800f85a00f29a09545a72d00093c",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-list.1",
+      "size": 227,
+      "sha256": "70517324ce52a73e52aa472e829ef6e0053dd8d159e0ec07b4465b3d5d3afa31",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-mcp-add.1",
+      "size": 200,
+      "sha256": "fcac7cf8d0c9aea44037cc7c2ee94682fa3a882554184e84d406c1c7782d2b8f",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-mcp-disable.1",
+      "size": 258,
+      "sha256": "c9b99dbd959b5194d764aa2b24559f42c61d9c79a78070b3cdc924b19508cd53",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-mcp-enable.1",
+      "size": 228,
+      "sha256": "8110d105efc3e7a8f97b92323d49fc1edbbcaa58c3f90ee63bd1bb42a45ebd16",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-mcp-get.1",
+      "size": 234,
+      "sha256": "eedc53321ece04b824785a962aa276dcbda251850dd3e8d17dcac63c362c8585",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-mcp-list.1",
+      "size": 226,
+      "sha256": "07a4d547ad85ffb85a0612a1fe06e98de82f0d58df16ac3a0e5f8ffafae10682",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-mcp-login.1",
+      "size": 250,
+      "sha256": "1767bd3c288ead92200830ef93dd15a8def21d0ebe27c4464677414841c066bd",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-mcp-logout.1",
+      "size": 270,
+      "sha256": "a8a8370666aa271a6c713025b9dbb86fa405d0c2948e30afdbdd0fde8f86c540",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-mcp-remove.1",
+      "size": 212,
+      "sha256": "eb0750577c19c11fdb57b5462dc47f14828d14ffa38a1336e5a8e441ae1d1f3b",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-mcp.1",
+      "size": 809,
+      "sha256": "8b012f698e0c02df4873e01e04aa5821cefd38163a03287c3387fe530f5150e6",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-migrate-hooks.1",
+      "size": 346,
+      "sha256": "a1043f576be267c73e15f8c8627958181cda5b8be779d07f53fb2b212f513502",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-migrate-workflows.1",
+      "size": 314,
+      "sha256": "0d3e715656d988fd2f712ac1a375a5e8ea557c7f4b8fa9275a08dea0d0756ef3",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-migrate.1",
+      "size": 492,
+      "sha256": "f4823923c6fe71011638c13b2dd03f4d1180b99723259e8ee50ba3d55e243f37",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-models-list.1",
+      "size": 269,
+      "sha256": "abc9a07d75668190598a32b567f0d0822c945ec526bf931e4f82454e5eee2729",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-models.1",
+      "size": 358,
+      "sha256": "f6767bea4db8f4c031466b7040209305ec7ebbdf1be2c43face15c947165552a",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-plugins-info.1",
+      "size": 342,
+      "sha256": "e1051083e0e0d12868b78589e4d8860eeac765c84eff4f9b8998b371b0ae0c96",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-plugins-install.1",
+      "size": 324,
+      "sha256": "20d4222976cd1827f1bf2c243a6aee17f95979a27b7f5edff148a792ba2dcf65",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-plugins-list.1",
+      "size": 296,
+      "sha256": "9e6f4a59f1bf19353e5e35f5170a1956f4e713f75004a83f7f0a357d030d059e",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-plugins-prune.1",
+      "size": 452,
+      "sha256": "503dcf4d136135372e5854d4a72013c540eab9b18b617cd6ad382f4945c40206",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-plugins-remove.1",
+      "size": 328,
+      "sha256": "95ce4fccba095a9760b719e28ff296f5ab51a87af391709d9409b76dd111c1a9",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-plugins-update.1",
+      "size": 324,
+      "sha256": "e216b67d29c45b33fc2c2cf622672c003b540b3816f316da23c921cc47817571",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-plugins.1",
+      "size": 1009,
+      "sha256": "d607dc081a06d5ca951a4bf715f47024cc44420a23c3322049cf6aa2b1d63999",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-rm.1",
+      "size": 203,
+      "sha256": "89aa771dca788f191cd0f32dfb59130951f857defe657d023c8f0718f990aab0",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-rules-list.1",
+      "size": 218,
+      "sha256": "01e2ba402512064a3668c02bc5f410a7b1f7775980b7fe6c91ee942682ea920e",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-rules-paths.1",
+      "size": 232,
+      "sha256": "e40e788bb5e8c2ae8f27a240182e8b677e91087a435ea3d177247b74ba2e70e8",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-rules-show.1",
+      "size": 234,
+      "sha256": "c6d93afb3d80da36b09e4fc7b7c97875694185e4de1f8f1657d95fc35d3778c9",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-rules.1",
+      "size": 465,
+      "sha256": "72ccc84eb28d478c09d3cb08b35b71c8e85f93b6677ee339e302d5ff05b6293c",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-sandbox-setup.1",
+      "size": 330,
+      "sha256": "4e12c8674dbcd4be8a4d3bb3d23298f3a4cb2beacb9cdb982b93db39a90653cb",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-sandbox.1",
+      "size": 419,
+      "sha256": "de7b757b599e430971d473905d45863379ec5ca24cb6c140ffcc9d8e087239ec",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-setup.1",
+      "size": 203,
+      "sha256": "dad53d4d353f048b6fa6f852d99db505aa48836541dc20da8bfd49a5fe8d0bee",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-skills-list.1",
+      "size": 223,
+      "sha256": "6e9c70cb30e965d4661a9c76c63a97edf8983e5279762855372d0b713bc814ab",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-skills-paths.1",
+      "size": 237,
+      "sha256": "2d6e205677b1c998ad1e85de0387f4374574eaf4792ebae2f38acfe19140c429",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-skills-show.1",
+      "size": 239,
+      "sha256": "1d2c175e76677c565511216168cd39b6ab27d6366848ea2d95389d34e6a79058",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-skills.1",
+      "size": 527,
+      "sha256": "838110503e35bc68824b017f9c10d31067d3108ff1d53978ad99e7c0ffb3cca3",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-ssh.1",
+      "size": 227,
+      "sha256": "9625a6781392e22b520232dafa4a6d1b2769508e44313ee8dc5ff7e4cff1994c",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-uninstall.1",
+      "size": 221,
+      "sha256": "4e18b5b7389172967f2d7539acc98fa7a2cec595abf5166fbf9d69b1ff3ce6fc",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-update.1",
+      "size": 249,
+      "sha256": "c5f2ea492d6d2cc140fd1bbe7dbb685c21ac4dc4b3acff1be372f92e21d8a863",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help-version.1",
+      "size": 213,
+      "sha256": "8015eab09b7598eaeff5c94c1e7bcdb39548a300d64347611457ecbbe21d143e",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-help.1",
+      "size": 1775,
+      "sha256": "467a8cb2f6553e988ddadddd2edeea8855e645a8fdcb0b865440f158ea0a6747",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-list.1",
+      "size": 578,
+      "sha256": "1536ac50b7b63574d606e5ffb235e28a1a3416fc0834601c5a1d5050fabd6522",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-mcp-add.1",
+      "size": 3071,
+      "sha256": "9f738c8316e477acba26729cbf0432de507e7f106aa61db30eb083271f64d388",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-mcp-disable.1",
+      "size": 774,
+      "sha256": "ceee63bd7b99f909c00608228add071b79292a451d8332bb5a2b1dd264407c31",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-mcp-enable.1",
+      "size": 744,
+      "sha256": "cfba7d3366defac3c7079cab42fd0cda4500d0f527628d79a7718613a7791883",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-mcp-get.1",
+      "size": 340,
+      "sha256": "7855f426fe81700c23fee8dca35f7f75ed5a7d196e5adf55bf7408053b904cb2",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-mcp-help-add.1",
+      "size": 200,
+      "sha256": "8f08dbc2d79dad58f91faf9ef1fa4a0ad9ece9feb04032f425c2d24f7f472099",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-mcp-help-disable.1",
+      "size": 258,
+      "sha256": "eaedf810d5686ddfea8bc0d0785c06789465b532e289d0d856cb4d421ec248c0",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-mcp-help-enable.1",
+      "size": 228,
+      "sha256": "394836ac1a2f2c3838204909472a5608bc340ad8c28f26cf8832a1637153c0fa",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-mcp-help-get.1",
+      "size": 234,
+      "sha256": "6c7f6bd9e94b2c3c0eb2026cfcd2cfcc029dd86cf5e72315a368a7932f992987",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-mcp-help-help.1",
+      "size": 278,
+      "sha256": "a34584a346603fe4c3f66d3999bec52f683850437c72a1cc89e1ae1ae1616fc0",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-mcp-help-list.1",
+      "size": 226,
+      "sha256": "84e0253713e46440c15a91bcf5fe744ed20626e35debcad7285d08ab1d2478ff",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-mcp-help-login.1",
+      "size": 250,
+      "sha256": "17a3ab14c7b4b2f9caf0f4b372d10f391fa9c70111fadcc777994be418a44ba4",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-mcp-help-logout.1",
+      "size": 270,
+      "sha256": "65ff9ddfa95155910f651e2dec2900ef311c5f29619628c030f5f8560b4ec377",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-mcp-help-remove.1",
+      "size": 212,
+      "sha256": "ba9fc4930ad218ff45e2cc2f116b06c900b831f3d018562f879407323399b678",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-mcp-help.1",
+      "size": 908,
+      "sha256": "d9c92e309c6f4ee43697132b49d26f4f47470e4633532d4493e10ed9ec35b51d",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-mcp-list.1",
+      "size": 290,
+      "sha256": "d15b422590f7d5761fdd2e305a4b513ee42cd514be8cdf82d7c6c497db1e07f5",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-mcp-login.1",
+      "size": 1061,
+      "sha256": "e91ba9b30d3b06c1ff82e7a094d8e3197a86e9008de372322fc653bd6e1898a7",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-mcp-logout.1",
+      "size": 391,
+      "sha256": "ca644b7ef858345bc6a5702cbbc643175e0743b63f83696e5630332460841710",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-mcp-remove.1",
+      "size": 728,
+      "sha256": "596833617cac4a4822d22982dc2bd850f5c5cebd98c5dbce23e56ce6954e39ee",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-mcp.1",
+      "size": 907,
+      "sha256": "9de3df6f67eef6385aafd71cedc038a621ee4de42f4214c6e060f90abe1953b2",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-migrate-help-help.1",
+      "size": 290,
+      "sha256": "0df87cf3ae274264c65633df06a83a004072591c39e7db3687c6b6686b2c975b",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-migrate-help-hooks.1",
+      "size": 346,
+      "sha256": "4b065a39cb2c2e0e3b50b1b9a8121b43711658f3cd0d7fa7f554e88505142151",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-migrate-help-workflows.1",
+      "size": 314,
+      "sha256": "3e424f826ed6608200e4c79bfe97c98f5e2bc40c7164b7e70e6adb538ef75c3a",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-migrate-help.1",
+      "size": 619,
+      "sha256": "98c91a3265413fe08e16b345c01d5cdb477a2f294ef89c532c2a2fa99aa635c1",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-migrate-hooks.1",
+      "size": 410,
+      "sha256": "4e622498b878c739a3f395ba8ed069de2770e6df29a904de118e361e65c0dc4d",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-migrate-workflows.1",
+      "size": 775,
+      "sha256": "f8d78b1927220f74b19ebc9c5748a1e6a3823b8b1fd878f67a253b25f703c620",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-migrate.1",
+      "size": 630,
+      "sha256": "775d83d1a84227666fb63d39ae49d8104596a58a9b478dc1b88c1c38e5d28c19",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-models-help-help.1",
+      "size": 287,
+      "sha256": "6ff0b61b0e2c023cfb688c27166402ac3155837682a2fd97e67913ab2d187971",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-models-help-list.1",
+      "size": 269,
+      "sha256": "a6650b0c45a29e4910deafb03b62a1e0a4465caa64b543bbd7b4f8a838fb8251",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-models-help.1",
+      "size": 479,
+      "sha256": "290da1e86fca49f59f43d419378004f9353ee36cd36ff8b0c3529cb343f572eb",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-models-list.1",
+      "size": 610,
+      "sha256": "37da8c321834550628cb6749d69f4c747d8b88b9bf1ef74fe7d915c7907d8af2",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-models.1",
+      "size": 501,
+      "sha256": "3b0404abf0fa090f064e7b130f93ca664d6daf488357379801e9ad63e6ec269a",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-plugins-help-help.1",
+      "size": 290,
+      "sha256": "6df48cade3551b132836fb92deab46c7bf06e29f3b9ae250bbd78403975626f7",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-plugins-help-info.1",
+      "size": 342,
+      "sha256": "e55f3382a1758a795fa76e83c851f12058a723a4ea8cc2d26eb6063bd8e24bfa",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-plugins-help-install.1",
+      "size": 324,
+      "sha256": "6d1c867831df3c6c1ad5acfc31635639e5ee48d2470ebaeba174790dd9390c98",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-plugins-help-list.1",
+      "size": 296,
+      "sha256": "856e46ef75d7bf3fd1701be587f874c8729160dbda7a91e3c79f5951136da241",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-plugins-help-prune.1",
+      "size": 452,
+      "sha256": "7b23938d20416812c6e2108a48895e48a3ac646471c8bc91b5a3266524fbbf9e",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-plugins-help-remove.1",
+      "size": 328,
+      "sha256": "f5f18ad2a7d4405df9fc9c884cc95084f68bee02a7270ff3895a376926b00957",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-plugins-help-update.1",
+      "size": 324,
+      "sha256": "fa8914ace02bb2a837fb73f2f20f088a6fa13738bc42f7274a928264553bb45d",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-plugins-help.1",
+      "size": 1108,
+      "sha256": "16225b9581e05efa95af27e15cdd7b1b8b4a3bd65492697fc769b410df607a26",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-plugins-info.1",
+      "size": 553,
+      "sha256": "be81870fd34665ba0a917f323433d06b627ad72b7d2249a91b60d1c802e192b2",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-plugins-install.1",
+      "size": 1054,
+      "sha256": "b0608207062a64aaa600430996a837f1b1c6e91d4323a1094a109279db2cbde7",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-plugins-list.1",
+      "size": 360,
+      "sha256": "f467bb9a410ddbc07f9e5c62627a73fcb058103139769ad99b390c368a11fd7a",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-plugins-prune.1",
+      "size": 516,
+      "sha256": "f8cd7648b48a1ab69e9090dcc53b348ff4f7df48dd505d957b6eab926809e7af",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-plugins-remove.1",
+      "size": 972,
+      "sha256": "5628ede976bd31f30a3b59684658435774e6e4865ff326c809fc4de08bfc1757",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-plugins-update.1",
+      "size": 477,
+      "sha256": "300ffa08c464d292f965cdf9e3e04afcc6926078d8dec25a4daaf1c02c091b64",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-plugins.1",
+      "size": 1123,
+      "sha256": "1fdef73801b6ac5b16215fd705a49c665309446daa19dfd369226f40a20bea23",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-rm.1",
+      "size": 416,
+      "sha256": "f74afbcb7a014edcb5cb5fb43ee1dc57bdcc1fbc2b3ca03582a5524de74b4bab",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-rules-help-help.1",
+      "size": 284,
+      "sha256": "7e99da4cb071b31f2ad51ac6fccd8e58eecb7c774debe4c80dcb3593cbefdbef",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-rules-help-list.1",
+      "size": 218,
+      "sha256": "2d44636f9ff85014679a305b11379ae14d20c9bbf37915d7cc9ff26c9b50135d",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-rules-help-paths.1",
+      "size": 232,
+      "sha256": "157b59647b3114fb64d153ec9d68b54a7336ec86bb10c39b99eeb2f299411c4b",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-rules-help-show.1",
+      "size": 234,
+      "sha256": "df08c649cfbab485dcc0ddb0b22513eb663c82b058da7caad6f653bbeb8b52a8",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-rules-help.1",
+      "size": 578,
+      "sha256": "247adc327c6e67ed801dfc9f0fe5e5dc97987090ec080d43a30719e0acd4844d",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-rules-list.1",
+      "size": 544,
+      "sha256": "c9f3ea240be6489ccd56b361e32e7771ea3ee02f3e2552b6aae1136572c0db8c",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-rules-paths.1",
+      "size": 296,
+      "sha256": "9b31b57f9cd08c2a44a6a82f10c8de818e96d0d101378f06578687e9b8af5018",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-rules-show.1",
+      "size": 344,
+      "sha256": "963aeebf4d1bb35f2a27e439275ffd777152dfe4f865cecee0ea4765bea6f8df",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-rules.1",
+      "size": 595,
+      "sha256": "a925c9bb64edbd77ecf35e4ada1c9bcabe757bb796f4e4334aebefcf82614779",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-sandbox-help-help.1",
+      "size": 290,
+      "sha256": "8e80bf7f00bc23310b7a872606a4a728552fd83b1efbe0a20c6aa8da64472495",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-sandbox-help-setup.1",
+      "size": 330,
+      "sha256": "aa1bd1f8231d4d80f20eba57fb9fdf7c57646e8f66fe485d56bcdc522e65d072",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-sandbox-help.1",
+      "size": 512,
+      "sha256": "3b8ed8122cdea0dab9e9af1bf614a0d451d1bbfe5a092244e1c21da7c1b2956e",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-sandbox-setup.1",
+      "size": 614,
+      "sha256": "b39b7ad5c390f423a956404cb4158586fa6b0f749e03088790b34aff9e7aaf81",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-sandbox.1",
+      "size": 563,
+      "sha256": "110eeef92c0e356e37895b79645f2878c746189e0afdbed889f7097721387c41",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-setup.1",
+      "size": 575,
+      "sha256": "43a46d58aa17c4a77f2b4a53badc7f9158d096c6c313897f67020887eb78b07a",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-skills-help-help.1",
+      "size": 287,
+      "sha256": "bf1718a2d7a0ad699a2c1fbf0dc4a7c4b940ad4e021b0e968f37b99251e91849",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-skills-help-list.1",
+      "size": 223,
+      "sha256": "b276f6a59806d7787c28b0f3c335957e7dbe288e876398325bb4dca7c4fbe415",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-skills-help-paths.1",
+      "size": 237,
+      "sha256": "39866d8df3bbf4df4751080ea05eb7f2515f9cac867995add4e32ea9f4b3e7c9",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-skills-help-show.1",
+      "size": 239,
+      "sha256": "1c1d3b723b3757502f29a9aaa06282c4575d0babbb958d846dc5a3d96d50111e",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-skills-help.1",
+      "size": 588,
+      "sha256": "bb0fb086787c482ef7fd749ff40fde740df969e27fcdd6d8caefe8260624c5fa",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-skills-list.1",
+      "size": 596,
+      "sha256": "e236aa930d9cb508d7cfd0177fc047ee424e82eabfccc16d53743e045733b0f3",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-skills-paths.1",
+      "size": 301,
+      "sha256": "4d422909817d20c02f61e88d1e63777071e821c471ca7651af1976a80eb5a0aa",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-skills-show.1",
+      "size": 344,
+      "sha256": "bd664ddb59c742436b081b8ee93c93162b970597e4e1f22ebad5e9f681493f46",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-skills.1",
+      "size": 658,
+      "sha256": "75ab8f2fb1b4844cc8d11c3e3997e0df13fa462a1f407d59edffcd2096c71efe",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-ssh.1",
+      "size": 796,
+      "sha256": "c7365c3cb5b8f3aa1475e3f4a91d891beaa390184edcab4b213617f605423fcb",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-uninstall.1",
+      "size": 493,
+      "sha256": "5a17fd964d322a1493daa2113768b96ad2fb3cc683fbdc60f1e58700c0220d9c",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-update.1",
+      "size": 407,
+      "sha256": "6f1bb96ece623863e9bec227de1b5398ea3f48ffe64b2c7d160e19a335ce3dd2",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin-version.1",
+      "size": 277,
+      "sha256": "19b998f97cc2d919ae8cd78270431e4c1d1eef1da69b1db9c28793ada86537ac",
+      "executable": false
+    },
+    {
+      "path": "share/man/man1/devin.1",
+      "size": 4866,
+      "sha256": "fffd1a1c7c4e891c12c10ce38b86437741c0f93ff1f280d628a87eecbde0e4ae",
+      "executable": false
+    }
+  ]
+}

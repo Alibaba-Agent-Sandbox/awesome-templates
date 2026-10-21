@@ -651,6 +651,17 @@ templates:
       alicloud-express: supported
 
 
+  - name: devin
+    description: "Pinned original Devin CLI with private original account-file integration and explicit tools."
+    repo: https://github.com/Alibaba-Agent-Sandbox/awesome-templates
+    path: devin
+    tags: [devin, coding-agent, cli]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: supported
+
 # Provider-managed IDs have no source build context; never pass these to image selection.
 managed_templates:
   - name: base

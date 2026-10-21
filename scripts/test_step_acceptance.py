@@ -199,3 +199,14 @@ def test_cursor_installation_and_version_only_cannot_certify_native_api(tmp_path
     assert not inspect_http_receipt(source,receipt)[0]
     receipt['http_acceptance']['pass_count']=16;assert inspect_http_receipt(source,receipt)[0]
     receipt['http_acceptance']['skip_count']=1;assert not inspect_http_receipt(source,receipt)[0]
+
+
+def test_devin_installation_and_version_only_cannot_certify_native_api(tmp_path):
+    source=tmp_path/'devin';source.mkdir();receipt=example(source)
+    (source/'e2e_test.py').write_text('original Devin native HTTP and SDK auth-refusal controller')
+    receipt['http_acceptance']={'exit_code':0,'pass_count':10,'fail_count':0,'skip_count':0,'controller_sha256':hashlib.sha256((source/'e2e_test.py').read_bytes()).hexdigest()}
+    assert not inspect_http_receipt(source,receipt)[0]
+    receipt['build_provenance']['test_configuration']={'native_authentication_error_path_required':True,'credential_absence_required':True,'model_credentials_injected':False}
+    assert not inspect_http_receipt(source,receipt)[0]
+    receipt['http_acceptance']['pass_count']=16;assert inspect_http_receipt(source,receipt)[0]
+    receipt['http_acceptance']['skip_count']=1;assert not inspect_http_receipt(source,receipt)[0]

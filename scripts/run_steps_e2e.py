@@ -29,6 +29,10 @@ from select_image_templates import catalog_names
 
 def configure_http_fixture(source: Path, manifest: dict, proof: dict) -> dict[str, str]:
     """Configure an owned non-model gateway after installer RUNs, never in Git."""
+    if source.name == 'devin':
+        if manifest.get('env',{}).get('DEVIN_CREDENTIALS_FILE')not in ['',None]:raise ValueError('native no-account fixture cannot configure credentials')
+        proof['test_configuration']={'native_authentication_error_path_required':True,'credential_absence_required':True,'model_credentials_injected':False}
+        return {}
     if source.name == 'cursor-agent':
         steps=manifest['build']['steps']
         if steps[-1]!={'type':'USER','args':['user']}:raise ValueError('Cursor native fixture requires the reviewed non-root profile')
@@ -93,6 +97,8 @@ def http_callback(source: Path, stage: Path, result: dict, fixture_env: dict[str
                    E2E_REQUIRE_OCR="1", E2E_REQUIRE_DATABASES="1", E2E_REQUIRE_TOOLCHAIN="1")
         if source.name == "osworld":
             env.update(E2E_RUN_DESKTOP="1", E2E_REQUIRE_DESKTOP="1")
+        if source.name == 'devin':
+            env.update(E2E_DEVIN_NO_ACCOUNT_FIXTURE='1',E2E_REMOTE_SANDBOX='1')
         if source.name == 'cursor-agent':
             env.update(E2E_CURSOR_INVALID_KEY_FIXTURE='1',E2E_REMOTE_SANDBOX='1')
         env.update(fixture_env or {})
@@ -114,6 +120,8 @@ def http_callback(source: Path, stage: Path, result: dict, fixture_env: dict[str
                   "skip_count": sum(line.startswith("[SKIP]") for line in lines),
                   "controller_sha256": hashlib.sha256(script.read_bytes()).hexdigest()}
         result["http_acceptance"] = checks
+        if source.name=='devin'and(checks['skip_count']or checks['pass_count']<16):
+            raise RuntimeError('original Devin native HTTP/SDK no-account fixture was skipped or incomplete')
         if source.name=='cursor-agent'and(checks['skip_count']or checks['pass_count']<16):
             raise RuntimeError('original Cursor native HTTP/SDK auth-refusal fixture was skipped or incomplete')
         if source.name == "openclaw" and (not fixture_env or any(line.startswith("[SKIP] real gateway lifecycle") for line in lines)):

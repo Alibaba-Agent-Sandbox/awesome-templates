@@ -144,6 +144,11 @@ def inspect_http_receipt(source: Path, receipt: dict) -> tuple[bool, str]:
             or type(counts.get("pass_count")) is not int or counts["pass_count"] <= 0
             or type(counts.get("fail_count")) is not int or counts["fail_count"] != 0):
         return False, "full HTTP controller did not pass"
+    if source.name=='devin':
+        fixture=(receipt.get('build_provenance')or{}).get('test_configuration',{})
+        if fixture.get('native_authentication_error_path_required')is not True or fixture.get('credential_absence_required')is not True or fixture.get('model_credentials_injected')is not False:
+            return False,'missing required original Devin no-account fixture'
+        if counts.get('skip_count',0)!=0 or counts.get('pass_count',0)<16:return False,'original Devin native auth-refusal HTTP/SDK checks incomplete'
     if source.name == "openclaw" and (counts["pass_count"] < 11 or counts.get("skip_count", 0) > 1):
         return False, "non-model gateway lifecycle was not fully covered"
     if source.name == "osworld":
