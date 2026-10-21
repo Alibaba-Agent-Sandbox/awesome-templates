@@ -94,13 +94,15 @@ commands.py加载时捕获配置；存在性不证明连通。SDK token最长819
 
 ## 资源
 
-声明2vCPU/2048MB/Linuxx64、9000端口、强制8GiB rootfs预算；无需Docker/KVM/GPU/额外root能力。实际依赖、任务可行性和峰值内存等待带日期验收，声明内存不是负载测量。需下载包/源码及访问SDK服务；编码另需授权模型工具调用和出口。不声明其他提供方或完整多人持久化。
+声明2vCPU/2048MB/Linuxx64、9000端口、强制8GiB rootfs预算；无需Docker/KVM/GPU/额外root能力。实际依赖与有界Express流程通过下方验收；未测量峰值内存，声明内存不是负载测量。需下载包/源码及访问SDK服务；编码另需授权模型工具调用和出口。不声明其他提供方或完整多人持久化。
 
 ## 已验证
 
-尚未记录任何通过的提供方测试。
+| 提供方 | 版本 / 日期 | 通过范围与记录 |
+| --- | --- | --- |
+| alicloud-express | 1.0.1 / 2026-10-21 | 原版源码/Node/SDK、SDK创建steps、CLI+SDK smoke、完整HTTP18PASS/0FAIL/0SKIP及独立自建资源清理；[回执](evidence/express-2026-10-21.json)、[源码绑定验证](evidence/verification-steps-2026-10-21T021037Z.json) |
 
-自编SDK/HTTP/路径/进程/终态fixture仅是前置检查，不是原版QM、极速版或模型通过。当前镜像、原生SDK往返、SDK创建Express、完整HTTP及独立清理待完成；qm另需真实原生编码。[带日期研究](../.agents/evidence/verify/2026-10-21-qm-native-research.md)。
+本后端模板无需模型，本表不认证模型链路。真实非root L1镜像构建、源码/哈希/导入/工作目录检查通过；rootfs2018549760字节，小于8GiB。原生steps为12871字节，保留15000字节门禁。[固定server源码](server-sdk.commit)的整数拒绝修复由[SDK PR82](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/82)交付。QM Sandbox早期17PASS/1FAIL布尔转换尝试及准备阶段失败保留在[最终工程记录](../.agents/evidence/verify/2026-10-21-qm-native-final.md)。不据此声明Docker镜像云端部署、其他提供方、完整多人服务或峰值内存通过。
 
 ## 二次开发
 

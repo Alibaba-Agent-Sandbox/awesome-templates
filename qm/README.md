@@ -96,13 +96,15 @@ Captured when commands.py loads; read-only setup flags do not prove connectivity
 
 ## Resources
 
-Declared2vCPU/2048MB/Linuxx64, port9000, enforced8GiB image rootfs budget. No Docker/KVM/GPU/root capabilities. Actual native dependencies, Express task feasibility and peak memory remain unverified until the dated acceptance gates; declared memory is not a workload estimate. Package/source download and SDK endpoint access are needed; coding additionally requires approved model tool calling/egress. No other provider or full multiplayer durability is claimed.
+Declared2vCPU/2048MB/Linuxx64, port9000, enforced8GiB image rootfs budget. No Docker/KVM/GPU/root capabilities. Actual native dependencies and the bounded Express profile pass below; peak memory was not measured and declared memory is not a workload estimate. Package/source download and SDK endpoint access are needed; coding additionally requires approved model tool calling/egress. No other provider or full multiplayer durability is claimed.
 
 ## Verified
 
-No provider has a passing run recorded for this template.
+| Provider | Version / date | Passed scope and records |
+| --- | --- | --- |
+| alicloud-express | 1.0.1 / 2026-10-21 | Original native source/Node/SDK, canonical SDK-created steps, CLI+SDK smoke, fullHTTP10PASS/0FAIL/0SKIP and independently confirmed owned cleanup; [receipt](evidence/express-2026-10-21T021039Z.json), [source-bound verification](evidence/verification-steps-2026-10-21T021039Z.json) |
 
-Authored local SDK/HTTP/path/process/terminal fixtures are preliminary, not original native QM/Express/model acceptance. Current image/native SDK round trip/SDK-created Express/fullHTTP/owned cleanup remain pending; real native coding additionally remains pending for qm. [Dated research](../.agents/evidence/verify/2026-10-21-qm-native-research.md).
+Genuine original native QM/Pi coding with qwen3.8-flash:19PASS/0FAIL/0SKIP; source changed, original3tests byte-preserved, report/exact nonce downloaded, original3and4held-out cases with fresh post-return ACK. Actual non-root L1 image build/source/hash/import/workspace checks PASS; image rootfs2018516992bytes, below8GiB. The 12859-byte native step recipe retains the15000-byte guard. SDK integer rejection uses fixed immutable [server source](server-sdk.commit), delivered by [SDK PR82](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/82). The earlier QM Sandbox17PASS/1FAIL boolean-coercion attempt and all earlier preparation failures remain in the [final engineering record](../.agents/evidence/verify/2026-10-21-qm-native-final.md). No Docker image cloud deployment, other provider, full multiplayer services or peak-memory claim.
 
 ## Secondary development
 

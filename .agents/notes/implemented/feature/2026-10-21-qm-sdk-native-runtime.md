@@ -1,6 +1,6 @@
 # Decision: original QM headless harness and Agent Sandbox backend
 
-Status: proposed. Refs https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/44 and https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/45.
+Status: implemented. Refs https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/44 and https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/45.
 
 ## Problem
 
@@ -8,11 +8,11 @@ The QM Issues request its genuine agent loop on Express and a real SDK-backed QM
 
 ## Decision
 
-Investigate a bounded unchanged original QM Pi harness/tool loop with an authored backend implementing the original Sandbox interface through the actual Agent Sandbox Node.js HTTP SDK. Both run inside one newly owned Express sandbox, without cloud credentials forwarded to model tools. Explicit approved compatible provider, private per-call state, no delegated agents or Slack/email messages. Qualify only the exact slice actually run; full multiplayer web/Slack/Postgres services are separate.
+Run a bounded unchanged original QM Pi harness/tool loop with an authored backend implementing the original Sandbox interface through the actual Agent Sandbox Node.js HTTP SDK. Both run inside one newly owned Express sandbox, without cloud credentials forwarded to model tools. Explicit approved compatible provider, private per-call state, no delegated agents or Slack/email messages. Qualify only the exact slice actually run; full multiplayer web/Slack/Postgres services are separate.
 
 ## API Design
 
-Proposed qm-sandbox backend operations provision/run/read/write/list/remove/teardown through actual SDK server APIs, with bounded paths/content/deadlines and exact owned state cleanup. Proposed qm original native harness command must use unchanged createPiHarness and original createToolContext, explicit original custom-provider registry and the same SDK adapter. Scalar public commands, exact native terminal/transcript evidence, API scopes and resource limits must be frozen and tested before cloud acceptance.
+qm-sandbox backend operations provision/run/read/write/list/remove/teardown through actual SDK server APIs, with bounded paths/content/deadlines and exact owned state cleanup. qm original native harness command must use unchanged createPiHarness and original createToolContext, explicit original custom-provider registry and the same SDK adapter. Scalar public commands, exact native terminal/transcript evidence, API scopes and resource limits must be frozen and tested before cloud acceptance.
 
 ## Alternatives considered
 
@@ -32,3 +32,6 @@ Authored path/content/route/credential/ownership/deadline regressions and origin
 - Genuine original QM loop/tool calls use the actual SDK backend; complete required Express/image/HTTP/native model/independent artifact checks pass.
 - Both templates have complete bilingual docs/design/catalog/spec/records, exact limits and truthful qualification.
 - Every mandatory current-head check/review passes before normal verified merge; Issues close only after delivered acceptance.
+
+## Evidence
+[Final acceptance](../../../evidence/verify/2026-10-21-qm-native-final.md), [current43matrix](../../../evidence/verify/2026-10-21-current-native-http43.json), and source-bound template receipts. Runtime fff24f25dbe37b1ccc2110b81879e467645e5095 passes both actual L1 builds and complete remote CI; final record-only revision requires its own current-head checks before normal merge.

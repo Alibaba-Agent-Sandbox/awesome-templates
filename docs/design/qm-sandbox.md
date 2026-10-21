@@ -22,7 +22,7 @@ Feasible: slice
 
 Limiting factor: one existing owned computer and foreground original QM tools; full default Docker/multiplayer/durable services not selected.
 
-Declared2vCPU2048MB/non-root/no KVM/Docker/GPU/extra capabilities. Actual native/image/SDK/Express/model profile remains unverified until matching receipts; no peak-memory claim.
+Declared2vCPU2048MB/non-root/no KVM/Docker/GPU/extra capabilities. Actual native image/SDK/Express profile passes in the [final acceptance record](../../.agents/evidence/verify/2026-10-21-qm-native-final.md); qm additionally passes real original native coding. Peak memory was not measured.
 
 ## Risks
 

@@ -13,7 +13,7 @@ ports: [9000]
 tags: [qm, sandbox, sdk, coding-agent]
 priority: P2
 wave: 2
-tested_on: []
+tested_on: [alicloud-express]
 capabilities: [shell, files, code, ports]
 env:
   ABX_SERVER_TOKEN: ""
