@@ -18,6 +18,15 @@ def test_minimal_child_environment_omits_real_keys(tmp_path,monkeypatch):
  monkeypatch.setenv('OPENAI_API_KEY','not-forwarded');monkeypatch.setenv('ABX_SERVER_TOKEN','not-forwarded');env=b.environment(tmp_path)
  assert not any(x in env for x in ['OPENAI_API_KEY','ABX_SERVER_TOKEN','GEMINI_BYOK_API_KEY','GITHUB_TOKEN'])
  assert env['GEMINI_TELEMETRY_ENABLED']=='false'and env['GEMINI_CLI_NO_RELAUNCH']=='1'and env['GEMINI_CLI_HOME']==str(tmp_path)
+
+@pytest.mark.parametrize('permission',[False,None,0,1,'true',{},[]])
+def test_tool_permission_requires_explicit_boolean_before_configuration_or_native(monkeypatch,permission):
+ def refused():raise AssertionError('native must not start')
+ monkeypatch.setattr(b,'binary',refused)
+ with pytest.raises(ValueError,match='allow_unsafe_tools=True'):b.run('owned task',allow_unsafe_tools=permission)
+
+def test_default_tool_permission_refused():
+ with pytest.raises(ValueError,match='allow_unsafe_tools=True'):b.run('owned task')
 def test_setup_no_values_or_vendor_claim(monkeypatch):
  monkeypatch.setattr(b,'MODEL',dict(MODEL_API_KEY='root-secret',MODEL_BASE_URL='https://private.test/v1',MODEL='model'))
  assert b.setup()['model_key_set']and b.setup()['vendor_account_verified']is False

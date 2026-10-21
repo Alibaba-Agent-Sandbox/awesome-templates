@@ -5,11 +5,11 @@ import pytest
 spec=importlib.util.spec_from_file_location('gemini_external_controller_controls',Path(__file__).with_name('byok_e2e_test.py'));module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
 
 
-def result():return {'exit_code':0,'native_completed':True,'native_version':'0.64.0','archive_sha256':'891a794e55c8319b6b78f6f8f13d6b8b2782a4709dfd2fcabf3a1f63ae8365e6','protocol':'authored-generatecontent-chat-text-tools','model_calls':1,'native_tool_results':1,'relay_calls':{'completed_responses':1,'failed_responses':0},'stdout':'FIXED_NON_EXECUTABLE_FINAL'}
+def result():return {'exit_code':0,'native_completed':True,'permission_profile':'explicit-owned-sandbox-bypass','native_version':'0.64.0','archive_sha256':'891a794e55c8319b6b78f6f8f13d6b8b2782a4709dfd2fcabf3a1f63ae8365e6','protocol':'authored-generatecontent-chat-text-tools','model_calls':1,'native_tool_results':1,'relay_calls':{'completed_responses':1,'failed_responses':0},'stdout':'FIXED_NON_EXECUTABLE_FINAL'}
 
 def test_valid_native_metadata():assert module.final_text(result())=='FIXED_NON_EXECUTABLE_FINAL'
 
-@pytest.mark.parametrize('key,value',[('exit_code',True),('exit_code',1),('native_completed',False),('native_version','other'),('archive_sha256','0'*64),('protocol','chat'),('model_calls',True),('model_calls',0),('native_tool_results',0),('native_tool_results',True),('relay_calls',{'completed_responses':0,'failed_responses':0}),('relay_calls',{'completed_responses':1,'failed_responses':1}),('relay_calls',{'completed_responses':True,'failed_responses':False})])
+@pytest.mark.parametrize('key,value',[('exit_code',True),('exit_code',1),('native_completed',False),('native_version','other'),('archive_sha256','0'*64),('protocol','chat'),('permission_profile','implicit'),('model_calls',True),('model_calls',0),('native_tool_results',0),('native_tool_results',True),('relay_calls',{'completed_responses':0,'failed_responses':0}),('relay_calls',{'completed_responses':1,'failed_responses':1}),('relay_calls',{'completed_responses':True,'failed_responses':False})])
 def test_marker_cannot_replace_original_native_tool_and_delivery_acceptance(key,value):
     data=result();data[key]=value;assert module.final_text(data)==''
 

@@ -34,7 +34,7 @@ abx --native kill <owned-sandbox-id> -y
 abx --native template delete <owned-template-id> -y
 ```
 
-Canonical ownership: `ABX='abx --native' python scripts/run_steps_e2e.py gemini --sandbox-create sdk --http`. Native steps require no local Docker daemon and do not certify Docker image cloud deployment. On a configured process, call `abx --native run <owned-sandbox-id> gemini_byok --json-args '{"prompt":"Repair existing calc.py and preserve tests","cwd":"project","command_timeout":300}'`.
+Canonical ownership: `ABX='abx --native' python scripts/run_steps_e2e.py gemini --sandbox-create sdk --http`. Native steps require no local Docker daemon and do not certify Docker image cloud deployment. On a configured process, call `abx --native run <owned-sandbox-id> gemini_byok --json-args '{"prompt":"Repair existing calc.py and preserve tests","cwd":"project","command_timeout":300,"allow_unsafe_tools":true}'`.
 
 ## Quick start (Python SDK)
 
@@ -53,7 +53,7 @@ async def main():
 asyncio.run(main())
 ```
 
-Set all GEMINI_BYOK_* variables before the named-command server starts; inspect gemini_byok_setup_check, then `await server.commands.run('gemini_byok',prompt='Repair existing calc.py; preserve tests',cwd='project',command_timeout=300,timeout=420)`. Create the project first. For an independent process use sb.server_at(port,token=...) and close the borrowed client. A prewarmed9000process does not acquire later create-time env; follow [explicit process configuration](../docs/runtime-environment.md). A separately configured9010server uses its matching independent token. Results are buffered direct objects.
+Set all GEMINI_BYOK_* variables before the named-command server starts; inspect gemini_byok_setup_check, then `await server.commands.run('gemini_byok',prompt='Repair existing calc.py; preserve tests',cwd='project',command_timeout=300,allow_unsafe_tools=True,timeout=420)`. Create the project first. For an independent process use sb.server_at(port,token=...) and close the borrowed client. A prewarmed9000process does not acquire later create-time env; follow [explicit process configuration](../docs/runtime-environment.md). A separately configured9010server uses its matching independent token. Results are buffered direct objects.
 
 ## Quick start (HTTP POST)
 
@@ -65,7 +65,7 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/gemini_version" \
   --header 'Content-Type: application/json' --data '{}'
 ```
 
-HTTP200 returns {"result":"0.64.0"}. POST/commands/gemini_byok accepts direct {prompt,cwd,command_timeout} JSON. Missing/unknown/type arguments400, authentication401, unknown command404; native/semantic errors500 with sanitized diagnostics. Disconnect does not cancel a provider job; bounded owned cleanup still runs.
+HTTP200 returns {"result":"0.64.0"}. POST/commands/gemini_byok accepts direct {prompt,cwd,command_timeout,allow_unsafe_tools} JSON. Missing/unknown/type arguments400, authentication401, unknown command404; native/semantic errors500 with sanitized diagnostics. Disconnect does not cancel a provider job; bounded owned cleanup still runs.
 
 ## Command reference
 
@@ -74,7 +74,7 @@ HTTP200 returns {"result":"0.64.0"}. POST/commands/gemini_byok accepts direct {p
 | gemini_version | none | Original CLI0.64.0; no model |
 | gemini_native_check | none | Exact original449file identity plus actual help flags original_native/headless_json/explicit_approval/owned_project_include |
 | gemini_byok_setup_check | none | mode/model_key_set/model_base_set/model_set, vendor_account_verified:false/provider_default_fallback:false/requires_unsafe_optin:true; no values/network |
-| gemini_byok | prompt required nonempty1..32768UTF8bytes/noNUL; cwd default empty string/max4096bytes/existing resolved directory within WORKSPACE; command_timeout integer1..600seconds/default300/no bool | stdout/exit_code0/native_completed/native_version/archive_sha256/model/protocol/model_calls/native_tool_results/relay_calls; native tools modify caller project; no raw transcript |
+| gemini_byok | prompt required nonempty1..32768UTF8bytes/noNUL; cwd default empty string/max4096bytes/existing resolved directory within WORKSPACE; command_timeout integer1..600seconds/default300/no bool; allow_unsafe_tools booleanFalse, must explicitly be True on an owned disposable sandbox | stdout/exit_code0/native_completed/permission_profile:explicit-owned-sandbox-bypass/native_version/archive_sha256/model/protocol/model_calls/native_tool_results/relay_calls; native tools modify caller project; no raw transcript |
 | gemini_setup_check | none | Legacy installed/version/pinned_version/key/model presence/workspace/settings path/existence/JSON-validity inspection; no changes/authentication |
 | gemini | prompt required nonempty string; model default empty string then GEMINI_MODEL then gemini-3.1-flash-lite; cwd default empty/contained existing directory; command_timeout integer600/range1..1800seconds; yolo booleanFalse | Legacy original buffered JSON string. yoloFalse selects plan, True explicitly permits tool execution. Requires GEMINI_API_KEY, no implicit OpenAI-key/OAuth fallback. New BYOK isolation guarantees do not certify legacy mode |
 
@@ -102,13 +102,7 @@ Declared2vCPU4096MB/Linuxx64/port9000/8GiBrootfs budget; no KVM/nested Docker/GP
 
 ## Verified
 
-Template2.1.4 / original CLI0.64.0, tested2026-10-21 at source393c5cc.
-
-| Provider | Executed scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | Immutable native steps; actual SDK create and CLI/SDK smoke; full HTTP10/10; original native two-turn read_file API fixture; actual approved compatible model source-edit19/19; independent owned cleanup | [receipt](evidence/express-2026-10-21T085925Z.json), [full proof](evidence/verification-steps-2026-10-21T085924Z-real-model.json) |
-
-The synthetic API fixture makes2completed requests with1original tool result and0failed responses; it is separate from the real model run. The real model is qwen3.8-flash through the explicit authored text/tool adapter. Original3test bytes, report, exact fresh nonce,3original and4held-out assertions and fresh post-return ACK pass. Google-hosted model/account/OAuth authentication remains NOT_RUN. Current source393c5cc image-build CI passed; final documentation-head CI/review/merge are separate gates. Local93testsPASS1SKIP9.49seconds; missing operator-native CLI is the skip. Historical2.0.1 receipts do not qualify2.1.4.
+Current2.2.0 provider/native/model/image qualification PENDING; tested_on is empty. Prior2.1.4 native/API/model success remains historical.
 
 ## Secondary development
 
@@ -134,3 +128,5 @@ Read [CONTRIBUTING](../CONTRIBUTING.md), [project standards](../docs/project-sta
 Authored template/adapter and original Gemini CLI are Apache-2.0 under their respective original [licenses/notices](UPSTREAM-NOTICE.md); retain bundled third-party terms. [Repository license](../LICENSE). No Google endorsement or hosted model access claim.
 
 The text/tool adapter accepts only the original CLI fixed `skip_thought_signature_validator` placeholder on function calls and removes that metadata during translation. Other thought signatures and thinking content remain unsupported and rejected.
+
+Current2.2.0 requires explicit `allow_unsafe_tools=True` (`true` in JSON) before configuration/native/model execution; missing/false/nonboolean values are refused. This matches setup_check.requires_unsafe_optin. Earlier2.1.4 actual native/API/model/image passes are historical for the changed permission profile; current2.2.0 acceptance is PENDING.

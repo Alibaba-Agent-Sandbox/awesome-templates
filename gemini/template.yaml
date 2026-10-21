@@ -1,5 +1,5 @@
 name: gemini
-version: "2.1.4"
+version: "2.2.0"
 description: "Pinned Gemini CLI with typed headless commands and explicit tool approval."
 author: alibaba-agent-sandbox
 license: Apache-2.0
@@ -15,7 +15,7 @@ ports: [9000]
 tags: [gemini, ai-coding, ai-agent]
 priority: P0
 wave: 1
-tested_on: [alicloud-express]
+tested_on: []
 capabilities: [shell, files, code, ports]
 env:
   ABX_SERVER_TOKEN: ""

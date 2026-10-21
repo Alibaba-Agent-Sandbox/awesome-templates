@@ -34,7 +34,7 @@ abx --native kill <owned-sandbox-id> -y
 abx --native template delete <owned-template-id> -y
 ```
 
-规范资源流程：`ABX='abx --native' python scripts/run_steps_e2e.py gemini --sandbox-create sdk --http`。无需本地Docker；steps不等于镜像云端部署。已配置模型进程使用`abx --native run <owned-sandbox-id> gemini_byok --json-args '{"prompt":"Repair existing calc.py and preserve tests","cwd":"project","command_timeout":300}'`。
+规范资源流程：`ABX='abx --native' python scripts/run_steps_e2e.py gemini --sandbox-create sdk --http`。无需本地Docker；steps不等于镜像云端部署。已配置模型进程使用`abx --native run <owned-sandbox-id> gemini_byok --json-args '{"prompt":"Repair existing calc.py and preserve tests","cwd":"project","command_timeout":300,"allow_unsafe_tools":true}'`。
 
 ## 快速开始（Python SDK）
 
@@ -53,7 +53,7 @@ async def main():
 asyncio.run(main())
 ```
 
-命令进程启动前设置全部GEMINI_BYOK_*变量，检查gemini_byok_setup_check，再调用`await server.commands.run('gemini_byok',prompt='Repair existing calc.py; preserve tests',cwd='project',command_timeout=300,timeout=420)`。项目需预先创建。独立服务用sb.server_at(port,token=...)，关闭借用客户端。预热9000不会获得后续create环境，遵循[显式进程配置](../docs/runtime-environment.md)；独立9010进程使用匹配的独立Bearer。结果是缓冲后的直接对象。
+命令进程启动前设置全部GEMINI_BYOK_*变量，检查gemini_byok_setup_check，再调用`await server.commands.run('gemini_byok',prompt='Repair existing calc.py; preserve tests',cwd='project',command_timeout=300,allow_unsafe_tools=True,timeout=420)`。项目需预先创建。独立服务用sb.server_at(port,token=...)，关闭借用客户端。预热9000不会获得后续create环境，遵循[显式进程配置](../docs/runtime-environment.md)；独立9010进程使用匹配的独立Bearer。结果是缓冲后的直接对象。
 
 ## 快速开始（HTTP POST）
 
@@ -65,7 +65,7 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/gemini_version" \
   --header 'Content-Type: application/json' --data '{}'
 ```
 
-HTTP200返回{"result":"0.64.0"}。POST/commands/gemini_byok接收直接{prompt,cwd,command_timeout}JSON。缺失/未知/类型参数400、认证401、未知命令404；执行/语义错误500并脱敏。断连不取消已发上游任务，仍执行有界自有清理。
+HTTP200返回{"result":"0.64.0"}。POST/commands/gemini_byok接收直接{prompt,cwd,command_timeout,allow_unsafe_tools}JSON。缺失/未知/类型参数400、认证401、未知命令404；执行/语义错误500并脱敏。断连不取消已发上游任务，仍执行有界自有清理。
 
 ## 命令参考
 
@@ -74,7 +74,7 @@ HTTP200返回{"result":"0.64.0"}。POST/commands/gemini_byok接收直接{prompt,
 | gemini_version | 无 | 原CLI0.64.0，无模型 |
 | gemini_native_check | 无 | 原449文件身份及实际帮助参数original_native/headless_json/explicit_approval/owned_project_include |
 | gemini_byok_setup_check | 无 | mode及model_key_set/model_base_set/model_set、vendor_account_verified:false/provider_default_fallback:false；不返回值，不发网络请求 |
-| gemini_byok | prompt必需，非空1..32768UTF8字节/无NUL；cwd默认空字符串、最多4096字节、解析后位于WORKSPACE内的已有目录；command_timeout整数默认300、1..600秒、拒绝布尔值 | stdout/exit_code0/native_completed/native_version/archive_sha256/model/protocol/model_calls/native_tool_results/relay_calls；原生工具修改项目，不返回完整轨迹 |
+| gemini_byok | prompt必需，非空1..32768UTF8字节/无NUL；cwd默认空字符串、最多4096字节、解析后位于WORKSPACE内的已有目录；command_timeout整数默认300、1..600秒、拒绝布尔值 | stdout/exit_code0/native_completed/permission_profile:explicit-owned-sandbox-bypass/native_version/archive_sha256/model/protocol/model_calls/native_tool_results/relay_calls；原生工具修改项目，不返回完整轨迹 |
 | gemini_setup_check | 无 | 旧installed/version/pinned_version/密钥模型存在标志/workspace/设置路径、存在和JSON有效性；不修改配置、不认证 |
 | gemini | prompt必需非空字符串；model默认空，再GEMINI_MODEL，再gemini-3.1-flash-lite；cwd默认空、已有且位于工作区内；command_timeout整数默认600、1..1800秒；yolo布尔默认False | 旧原生缓冲JSON字符串。False选择plan，True显式允许运行工具。必须GEMINI_API_KEY，不隐式复用OpenAI密钥/OAuth。新增隔离保证不覆盖旧模式 |
 
@@ -102,13 +102,7 @@ BYOK模块导入时捕获设置，密钥最多8192字符且无控制字符。原
 
 ## 已验证
 
-模板2.1.4／原生CLI0.64.0，2026-10-21在源提交393c5cc执行。
-
-| 提供商 | 实际执行范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 不可变源码原生steps；真实SDK创建与CLI/SDK smoke；完整HTTP10/10；原生read_file两轮API固定响应测试；真实兼容模型源码编辑19/19；独立确认资源清理 | [回执](evidence/express-2026-10-21T085925Z.json)、[完整证明](evidence/verification-steps-2026-10-21T085924Z-real-model.json) |
-
-固定API响应测试完成2次请求、1次原生工具结果回传，无失败响应；它与真实模型测试分别记录。真实模型为qwen3.8-flash，通过显式自编写文本／工具协议适配层调用。原始3项测试字节保持不变，报告、精确随机标记、原始3项及独立4项保留断言、返回后新生成ACK均通过。Google自有模型／账号／OAuth认证仍未执行。源393c5cc镜像构建CI通过；最终文档提交的CI、review与合并单独检查。本地93项测试通过、1项跳过，9.49秒；跳过的是操作端缺少原生CLI。历史2.0.1回执不认证2.1.4。
+当前2.2.0提供商／原生／模型／镜像资格待验证，tested_on为空。此前2.1.4成功回执保留为历史。
 
 ## 二次开发
 
@@ -134,3 +128,5 @@ ABX='abx --native' python scripts/run_steps_e2e.py gemini --sandbox-create sdk -
 本模板/适配器及原Gemini CLI分别遵循各自Apache-2.0及[原始声明](UPSTREAM-NOTICE.md)，保留打包的第三方条款。[仓库许可](../LICENSE)。不代表Google背书或托管模型访问权。
 
 文本/工具适配层仅接受原生 CLI 在函数调用上添加的固定 `skip_thought_signature_validator` 占位标记，转换时删除该元数据。其他思考签名和思考内容仍不支持，并会拒绝。
+
+当前2.2.0必须显式传入 `allow_unsafe_tools=True`（JSON为 `true`），方可继续配置／原生／模型调用；缺省、false和非布尔值均拒绝。这与setup_check.requires_unsafe_optin一致。此前2.1.4真实原生／API／模型／镜像通过结果属于历史，不认证当前权限接口；2.2.0验收待执行。

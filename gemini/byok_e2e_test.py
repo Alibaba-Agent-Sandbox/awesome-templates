@@ -16,14 +16,14 @@ from urllib.parse import urlsplit
 import httpx
 
 RESULTS=[]
-INVALID_REQUESTS=[{'prompt':''},{'prompt':'x','command_timeout':'bad'},{'prompt':'x','command_timeout':601},{'prompt':'x','cwd':'/outside-workspace'},{'prompt':'x','command_timeout':True}]
+INVALID_REQUESTS=[{'prompt':''},{'prompt':'x','command_timeout':'bad'},{'prompt':'x','command_timeout':601},{'prompt':'x','cwd':'/outside-workspace','allow_unsafe_tools':True},{'prompt':'x','command_timeout':True}]
 def record(ok,label):
     RESULTS.append(bool(ok));print(f"[{'PASS' if ok else 'FAIL'}] {label}",flush=True)
 
 def final_text(value):
     if not isinstance(value,dict)or type(value.get('exit_code'))is not int or value['exit_code']!=0 or value.get('native_completed')is not True:return ''
     if value.get('native_version')!='0.64.0'or value.get('archive_sha256')!='891a794e55c8319b6b78f6f8f13d6b8b2782a4709dfd2fcabf3a1f63ae8365e6':return ''
-    if value.get('protocol')!='authored-generatecontent-chat-text-tools':return ''
+    if value.get('protocol')!='authored-generatecontent-chat-text-tools'or value.get('permission_profile')!='explicit-owned-sandbox-bypass':return ''
     if any(type(value.get(key))is not int or value[key]<=0 for key in ['model_calls','native_tool_results']):return ''
     calls=value.get('relay_calls')
     if not isinstance(calls,dict)or type(calls.get('completed_responses'))is not int or calls['completed_responses']<value['model_calls']or type(calls.get('failed_responses'))is not int or calls['failed_responses']!=0:return ''
@@ -75,7 +75,7 @@ def model_check(client,workspace,base):
             'Create report.txt explaining the source change. '
             f'Create acceptance.txt containing exactly {marker} followed by one newline. '
             f'After completing all file changes, reply with exactly {marker}.',
-            'cwd':project,'command_timeout':600})
+            'cwd':project,'command_timeout':600,'allow_unsafe_tools':True})
         ok=final_text(result)==marker
         record(ok,'actual native BYOK final response and zero exit')
         if not ok:return

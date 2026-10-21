@@ -48,16 +48,17 @@ def diagnostic(args):
     if code:raise RuntimeError('original Gemini diagnostic failed; raw output omitted')
     return out.strip()
 def setup():
-    return {'mode':'original-gemini-explicit-chat-adapter','model_key_set':bool(MODEL['MODEL_API_KEY']),'model_base_set':bool(MODEL['MODEL_BASE_URL']),'model_set':bool(MODEL['MODEL']),'vendor_account_verified':False,'provider_default_fallback':False}
+    return {'mode':'original-gemini-explicit-chat-adapter','model_key_set':bool(MODEL['MODEL_API_KEY']),'model_base_set':bool(MODEL['MODEL_BASE_URL']),'model_set':bool(MODEL['MODEL']),'vendor_account_verified':False,'provider_default_fallback':False,'requires_unsafe_optin':True}
 def redact(value,relay):
     for secret in [MODEL['MODEL_API_KEY'],MODEL['MODEL_BASE_URL'],os.environ.get('ABX_SERVER_TOKEN',''),relay.token,relay.url]:
         if secret:
             for form in {secret,json.dumps(secret)[1:-1],json.dumps(secret,ensure_ascii=False)[1:-1]}:value=value.replace(form,'[REDACTED]')
     return value
 
-def run(prompt,cwd='',command_timeout=300):
+def run(prompt,cwd='',command_timeout=300,allow_unsafe_tools=False):
     if not isinstance(prompt,str)or not prompt.strip()or len(prompt.encode())>32768 or '\0'in prompt:raise ValueError('prompt must contain1..32768UTF8 bytes without NUL')
     if type(command_timeout)is not int or not 1<=command_timeout<=600:raise ValueError('command_timeout must be1..600seconds')
+    if type(allow_unsafe_tools)is not bool or not allow_unsafe_tools:raise ValueError('allow_unsafe_tools=True is required for the explicit disposable-sandbox native tool profile')
     project=workspace(cwd);base,key,model=RELAY.settings(MODEL['MODEL_BASE_URL'],MODEL['MODEL_API_KEY'],MODEL['MODEL'])
     if not LOCK.acquire(blocking=False):raise RuntimeError('another original Gemini BYOK operation active')
     relay=None
@@ -74,7 +75,7 @@ def run(prompt,cwd='',command_timeout=300):
             if code or not isinstance(value,dict)or value.get('error')or not isinstance(value.get('response'),str)or not value['response'].strip()or not stats['completed_responses']or stats['failed_responses']:
                 raise RuntimeError('original Gemini completion incomplete; native_code='+str(code)+'; model_requests='+str(stats['model_requests'])+'; native_tool_calls='+str(stats['native_tool_calls'])+'; native_tool_results='+str(stats['native_tool_results'])+'; completed_responses='+str(stats['completed_responses'])+'; failed_responses='+str(stats['failed_responses'])+'; failure_counts='+json.dumps(stats['failure_counts'],sort_keys=True)+'; upstream_status='+str(stats['last_upstream_status'])+'; raw diagnostics omitted')
             return {'stdout':redact(value['response'],relay),'exit_code':0,'native_completed':True,'native_version':'0.64.0','archive_sha256':EXPECTED['archive_sha256'],
-                    'protocol':'authored-generatecontent-chat-text-tools','model':model,'model_calls':stats['completed_responses'],'native_tool_results':stats['native_tool_results'],'relay_calls':stats}
+                    'permission_profile':'explicit-owned-sandbox-bypass','protocol':'authored-generatecontent-chat-text-tools','model':model,'model_calls':stats['completed_responses'],'native_tool_results':stats['native_tool_results'],'relay_calls':stats}
 
     finally:
         try:

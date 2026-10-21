@@ -180,9 +180,9 @@ def gemini_native_check() -> dict:
     return {"original_native":True,"headless_json":"--output-format"in text,"explicit_approval":"--approval-mode"in text,"owned_project_include":"--include-directories"in text}
 
 
-@command("gemini_byok", description="Original Gemini CLI through an explicit authored GenerateContent-to-Chat text/tool adapter with bounded owned state.")
-def gemini_byok(prompt: str, cwd: str="", command_timeout: int=300) -> dict:
-    return _BYOK.run(prompt,cwd,command_timeout)
+@command("gemini_byok", description="Original Gemini CLI with explicit disposable-sandbox tool permission opt-in and authored GenerateContent-to-Chat adapter.")
+def gemini_byok(prompt: str, cwd: str="", command_timeout: int=300, allow_unsafe_tools: bool=False) -> dict:
+    return _BYOK.run(prompt,cwd,command_timeout,allow_unsafe_tools)
 
 
 if __name__ == "__main__":
