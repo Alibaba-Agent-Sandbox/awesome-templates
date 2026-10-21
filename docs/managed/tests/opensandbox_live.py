@@ -4,7 +4,7 @@ Server and client sources, provider and CLI are checked out at fixed revisions b
 This is native OpenSandbox acceptance, separate from Express source-template steps.
 """
 from __future__ import annotations
-import argparse,asyncio,contextlib,hashlib,importlib.metadata,json,logging,os,re,shlex,shutil,signal,subprocess,sys,time,traceback,urllib.request,uuid
+import argparse,asyncio,contextlib,hashlib,importlib.metadata,json,logging,os,re,shlex,shutil,signal,subprocess,sys,threading,time,traceback,urllib.request,uuid
 from datetime import timedelta
 from pathlib import Path
 
@@ -13,7 +13,7 @@ RESULT={'provider':'opensandbox','template':'opensandbox-code-interpreter','temp
 
 def check(value,label):
     if not value:
-        RESULT['failed_check']=label
+        RESULT.setdefault('failed_check',label)
         raise AssertionError(label)
     RESULT['checks'].append(label)
 
@@ -110,6 +110,7 @@ async def exercise(work,image_uri,image_id):
             await asyncio.sleep(.5)
         # The job starts only this server; a new remaining container is uncertain cleanup.
         no_new_containers=not(docker_ids()-baseline)
+        RESULT['cleanup_observations']={'sdk_not_found':absence,'known_docker_absence':docker_absence,'no_new_containers':no_new_containers,'cleanup_error':cleanup_error}
         RESULT['cleanup_verified']=absence and docker_absence and no_new_containers and cleanup_error is None
         check(RESULT['cleanup_verified'],'independent SDK NotFound and Docker container absence')
         if (work/'owned-intent.json').exists()and RESULT['cleanup_verified']:(work/'owned-intent.json').unlink()
@@ -148,8 +149,18 @@ def main():
             failure=type(exc).__name__;traceback.print_exc();RESULT['error_type']=failure;RESULT['error_message']=safe_error(exc)
         finally:
             try:
+                # The SDK spawned the engine as this Python process's child. Reap it
+                # concurrently so CLI stop does not mistake our zombie for a live engine.
+                record=home/'.abx/engine.json';waiter=None
+                if record.exists():
+                    pid=int(json.loads(record.read_text())['pid'])
+                    def reap():
+                        try:os.waitpid(pid,0)
+                        except ChildProcessError:pass
+                    waiter=threading.Thread(target=reap,daemon=True);waiter.start()
                 stopped=subprocess.run(shlex.split(os.environ['ABX_BIN'])+['provider','engine','stop'],stdout=log,stderr=log,timeout=15)
-                check(stopped.returncode==0,'owned local provider engine stopped')
+                if waiter:waiter.join(timeout=5)
+                check(stopped.returncode==0 and(not waiter or not waiter.is_alive()),'owned local provider engine stopped and child reaped')
             except Exception as exc:failure=failure or type(exc).__name__
             if server:
                 try:os.killpg(server.pid,signal.SIGTERM)
@@ -160,6 +171,9 @@ def main():
     RESULT['duration_s']=round(time.monotonic()-started,3);RESULT['passed']=failure is None and RESULT['native_interpreter_verified']and RESULT['cleanup_verified']and bool(RESULT['checks'])and 'failed_check'not in RESULT
     RESULT['controller_sha256']=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
     args.output.parent.mkdir(parents=True,exist_ok=True);args.output.write_text(json.dumps(RESULT,indent=2)+'\n')
+    if os.environ.get('GITHUB_ACTIONS')=='true':
+        notice=json.dumps(RESULT,separators=(',',':')).replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+        print('::notice title=Sanitized native OpenSandbox receipt::'+notice,flush=True)
     print(json.dumps({'passed':RESULT['passed'],'checks':len(RESULT['checks']),'cleanup_verified':RESULT['cleanup_verified'],'error_type':failure}),flush=True)
     return 0 if RESULT['passed']else 1
 
