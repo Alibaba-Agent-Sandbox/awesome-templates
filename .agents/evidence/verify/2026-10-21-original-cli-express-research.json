@@ -1,0 +1,55 @@
+{
+  "scope": "original Cursor and Devin keyless Express research; not template qualification",
+  "passed": true,
+  "cleanup_verified": true,
+  "programs": [
+    {
+      "program": "cursor",
+      "scope": "research only; not a template/provider qualification",
+      "archive_sha256": "cf80cc18d8b33bf33e762353977ca1868cfc45290c92c0ffdcef83bb8b37b44f",
+      "archive_bytes": 183733394,
+      "runtime_uid": 1000,
+      "version": "2026.10.19-6bbf2c4",
+      "help_flags": {
+        "--print": true,
+        "--output-format": true,
+        "--force": true,
+        "--config": false,
+        "--permission-mode": false,
+        "--workspace": true,
+        "--trust": true,
+        "--respect-workspace-trust": false
+      },
+      "headless_exit_code": 1,
+      "error_markers": [],
+      "auth_error_path_observed": false,
+      "program_version_help": "PASS"
+    },
+    {
+      "program": "devin",
+      "scope": "research only; not a template/provider qualification",
+      "archive_sha256": "2d829139682e038cf122510f1170eee3d7060bcc7ebf92445cbc5d28c9fbcfa0",
+      "archive_bytes": 67245544,
+      "runtime_uid": 1000,
+      "version": "devin 3000.11.92 (7f4e64980e22)",
+      "help_flags": {
+        "--print": true,
+        "--output-format": false,
+        "--force": false,
+        "--config": true,
+        "--permission-mode": true,
+        "--workspace": false,
+        "--trust": false,
+        "--respect-workspace-trust": true
+      },
+      "headless_exit_code": 1,
+      "error_markers": [
+        "login"
+      ],
+      "auth_error_path_observed": true,
+      "program_version_help": "PASS"
+    }
+  ],
+  "owned_fixture_cleanup": true,
+  "duration_s": 326.604
+}

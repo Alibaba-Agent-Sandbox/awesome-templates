@@ -30,6 +30,15 @@ MAX_BYTES = 300 * 1024 * 1024
 # One explicitly reviewed original native ELF exceeds the generic300MiB archive
 # ceiling. Only its exact official URL/size/published digest receives this bound.
 MUSE_NATIVE = {'url': 'https://lookaside.facebook.com/lookaside/muse/download/?channel=muse&version=1.4.11-R6667.1&file=muse-x86-linux', 'size': 384809176, 'sha256': '6fda12a6a4f236528dafa707384cf6395fe859b1438ef77c7be26ed9d7976839'}
+CURSOR_NATIVE = {'url':'https://downloads.cursor.com/lab/2026.10.19-6bbf2c4/linux/x64/agent-cli-package.tar.gz','size':183733394,'sha256':'cf80cc18d8b33bf33e762353977ca1868cfc45290c92c0ffdcef83bb8b37b44f'}
+
+def reviewed_cursor_native(asset: dict) -> bool:
+    return all(asset.get(key)==value for key,value in CURSOR_NATIVE.items())
+
+def reviewed_download_headers(asset: dict) -> dict:
+    # The official installer uses curl. Its ordinary public client succeeds
+    # where the default Python client receives403; this carries no credentials.
+    return {'User-Agent':'curl/8.0','Accept':'*/*'} if reviewed_cursor_native(asset) else {}
 
 def reviewed_muse_native(asset: dict) -> bool:
     return all(asset.get(key)==value for key,value in MUSE_NATIVE.items())
@@ -49,7 +58,7 @@ def download(asset: dict, target: Path, *, workers: int = 16, seconds: int = 120
         raise FileExistsError("asset cache destination already exists")
     deadline = time.monotonic() + seconds
     url = asset.get("transport_url", asset["url"])
-    request = urllib.request.Request(url, headers={"Range": "bytes=0-0", "Accept-Encoding": "identity"})
+    request = urllib.request.Request(url, headers={**reviewed_download_headers(asset),"Range": "bytes=0-0", "Accept-Encoding": "identity"})
     with urllib.request.urlopen(request, timeout=min(90, seconds)) as response:
         match = re.fullmatch(r"bytes 0-0/([0-9]+)", response.headers.get("Content-Range", ""))
         if response.status != 206 or not match or len(response.read(2)) != 1:
@@ -74,7 +83,7 @@ def download(asset: dict, target: Path, *, workers: int = 16, seconds: int = 120
                 if remaining <= 0:
                     raise TimeoutError("parallel archive deadline exceeded")
                 request = urllib.request.Request(resolved_url, headers={
-                    "Range": f"bytes={start}-{stop}", "Accept-Encoding": "identity"})
+                    **reviewed_download_headers(asset),"Range": f"bytes={start}-{stop}", "Accept-Encoding": "identity"})
                 try:
                     with urllib.request.urlopen(request, timeout=min(90, remaining)) as response:
                         if response.status != 206 or response.headers.get("Content-Range") != f"bytes {start}-{stop}/{size}":

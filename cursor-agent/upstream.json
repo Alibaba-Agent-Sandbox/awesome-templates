@@ -1,0 +1,2791 @@
+{
+  "name": "Cursor Agent CLI",
+  "version": "2026.10.19-6bbf2c4",
+  "architecture": "x86_64",
+  "archive": {
+    "url": "https://downloads.cursor.com/lab/2026.10.19-6bbf2c4/linux/x64/agent-cli-package.tar.gz",
+    "sha256": "cf80cc18d8b33bf33e762353977ca1868cfc45290c92c0ffdcef83bb8b37b44f",
+    "size": 183733394,
+    "digest_basis": "controller measured unchanged official immutable-version archive; not an upstream-published checksum"
+  },
+  "entrypoint": "cursor-agent",
+  "files": [
+    {
+      "path": ".npmrc",
+      "size": 20,
+      "sha256": "b962362ebe7560b534e834c2ede51186c2e3fceb94e12cc434a11180f22391f2",
+      "executable": false
+    },
+    {
+      "path": "1326.index.js",
+      "size": 39927,
+      "sha256": "05bf5b0b8f425382e5e57e00a457e41dd16c4b15ef9845ae9f02fff87c850287",
+      "executable": false
+    },
+    {
+      "path": "1429.index.js",
+      "size": 43897,
+      "sha256": "019381c94fb4a2cb14e397acbfed6f7deeb5c71d0e498d268d54f86173c9a2bc",
+      "executable": false
+    },
+    {
+      "path": "1499.index.js",
+      "size": 12429,
+      "sha256": "ffb7ffdeefc545cd526ee8030e747e5ea4dff6d8575a8cd5dbd1a46e0e9370cb",
+      "executable": false
+    },
+    {
+      "path": "1538.index.js",
+      "size": 5940,
+      "sha256": "62f61c0b6ccba0f43e79eaf947e33aa33640969050f6459aeec17360aefa1b60",
+      "executable": false
+    },
+    {
+      "path": "1623.index.js",
+      "size": 116434,
+      "sha256": "e03605381badf05419e10855953c9169a1607d8cfc621945af229ce9cf080f9e",
+      "executable": false
+    },
+    {
+      "path": "2240.index.js",
+      "size": 239721,
+      "sha256": "8b612b26a3df039b2e8064c247b31829e5e672663f01640ae21eb75776b0d638",
+      "executable": false
+    },
+    {
+      "path": "2290.index.js",
+      "size": 35299,
+      "sha256": "9f23f7dcfb33f41666f03a4235acfa63a9dbade1889946eca92c31aea3f6096a",
+      "executable": false
+    },
+    {
+      "path": "2422.index.js",
+      "size": 1970,
+      "sha256": "0f842b2fdf6f86b3dba3264ad54d7ed151976e6a836d025cc354e4f2a1e7d699",
+      "executable": false
+    },
+    {
+      "path": "2576.index.js",
+      "size": 2224,
+      "sha256": "e73fc1ae6529a431ccd5278b39e4cb6bb86fbe0eed6a76684950a2b3611e3717",
+      "executable": false
+    },
+    {
+      "path": "2601.index.js",
+      "size": 2092,
+      "sha256": "940cf290cbc68384a242e18efec0f2713c9d0bf93a495bdb213a35c6dca7aaac",
+      "executable": false
+    },
+    {
+      "path": "2652.index.js",
+      "size": 368,
+      "sha256": "bfad3b19814bf48f63dd9480380d459df3da3eb8b72d7e8b4f0143d8d2b85991",
+      "executable": false
+    },
+    {
+      "path": "272.index.js",
+      "size": 6881,
+      "sha256": "3f19e4eb441ee5d1f55d3e92f30fcf2e2d4d31bf946b3fef853a473605f718d1",
+      "executable": false
+    },
+    {
+      "path": "2721.index.js",
+      "size": 96070,
+      "sha256": "58faf8fc702a4999c0f32447f2cc22ccb1524dfbcc80c7f47120a910b8c91974",
+      "executable": false
+    },
+    {
+      "path": "2761.index.js",
+      "size": 5825,
+      "sha256": "d3bb797ae5229578f33adbe6413e151ba4ee50c022c054eb6f68a93f47f683d8",
+      "executable": false
+    },
+    {
+      "path": "2911.index.js",
+      "size": 6282,
+      "sha256": "863ea507c6237d077c41a5feb5561acca0b95a6d13e3d80e0644ebe9d0ff773c",
+      "executable": false
+    },
+    {
+      "path": "3144.index.js",
+      "size": 793,
+      "sha256": "a66c828d56fdb0aee05e2d3023a8a66fe0e058a48b201f03b31d056b8e0cc591",
+      "executable": false
+    },
+    {
+      "path": "3190.index.js",
+      "size": 1804,
+      "sha256": "2218e4e30e6f8d2d90c0e99558c57036bd10da4588226a7104384055f2669525",
+      "executable": false
+    },
+    {
+      "path": "3198.index.js",
+      "size": 33740,
+      "sha256": "29e9443d447c11bd8825c9efa0718acb362c5996786cd2c689b3ca8653d4885f",
+      "executable": false
+    },
+    {
+      "path": "3244.index.js",
+      "size": 903,
+      "sha256": "20c0293194cd9e4f7e58d682955c3c45de861b4e35bd38c016d3d81ebfd465fa",
+      "executable": false
+    },
+    {
+      "path": "3284.index.js",
+      "size": 577,
+      "sha256": "193cb7c71a570289aa6d6253cd99f749c00566985e53823e225e70012f1aee04",
+      "executable": false
+    },
+    {
+      "path": "3464.index.js",
+      "size": 2438,
+      "sha256": "030e649c6f5550ce08bfd657a9f07802ceecae568603e558e7fdac723cf86188",
+      "executable": false
+    },
+    {
+      "path": "3541.index.js",
+      "size": 4469,
+      "sha256": "57b1e8de43deb2e3cb8da14522189a21964ff83f915582b20c4073eb03969dc4",
+      "executable": false
+    },
+    {
+      "path": "3550.index.js",
+      "size": 4849,
+      "sha256": "e7636cd64f760f486773640de92cdd11350597e323f1981ce4ac8f401fc00111",
+      "executable": false
+    },
+    {
+      "path": "3575.index.js",
+      "size": 1367,
+      "sha256": "f186bd52d2250741a4bd078f298a0acbd494ce1248c08672aaa1357d64a49260",
+      "executable": false
+    },
+    {
+      "path": "3659.index.js",
+      "size": 17001,
+      "sha256": "0da47bb21773d7ee8b54a8bbf303d1f58edc10b111be79800a127bcae335f802",
+      "executable": false
+    },
+    {
+      "path": "3857.index.js",
+      "size": 6885,
+      "sha256": "c31c43c793176648b4cce4d25306f8003cda61a121aa3dbe879d7a934685ddfc",
+      "executable": false
+    },
+    {
+      "path": "4074.index.js",
+      "size": 826,
+      "sha256": "1f4762d162c8935d4e9d436cf3c7799faac9113812755c1ebeb10b29ae6ca787",
+      "executable": false
+    },
+    {
+      "path": "4097.index.js",
+      "size": 120514,
+      "sha256": "78ee66abdbcf9ea86f085020e988907005b4f12c413400304f894e2c2268db08",
+      "executable": false
+    },
+    {
+      "path": "4114.index.js",
+      "size": 5699,
+      "sha256": "43386ebdc3a4af020c5398fd020083d8103ef7fbf286970d2d71d3ef9dade9df",
+      "executable": false
+    },
+    {
+      "path": "4155.index.js",
+      "size": 9134,
+      "sha256": "1180c477779e5c338b4264b0d671c8c458d4e444188d1e3bd74b5b482f6b5c75",
+      "executable": false
+    },
+    {
+      "path": "4161.index.js",
+      "size": 5594,
+      "sha256": "ca87a9a4321343ed19cd6db0276ea9439fed645a590e1509c69198ca4cbd2508",
+      "executable": false
+    },
+    {
+      "path": "4343.index.js",
+      "size": 665,
+      "sha256": "b02e2b0971ed8ea980a1d311fa4b2d314c365daee468944c85328cc126e1298a",
+      "executable": false
+    },
+    {
+      "path": "4632.index.js",
+      "size": 21998,
+      "sha256": "87562b160d9bc8838b2a305abef0975beb6c08ad26679e992ab680363a68f48d",
+      "executable": false
+    },
+    {
+      "path": "4760.index.js",
+      "size": 2099,
+      "sha256": "a08b490045a975d5e86dd849e8b7c3c7c8c2773e27a2e9e4580b68dc425e0485",
+      "executable": false
+    },
+    {
+      "path": "478.index.js",
+      "size": 14521,
+      "sha256": "be1aa183e988bb15c903f7dbfdf23e4b1e16be597fd1eebf5a2c4fe9b074d407",
+      "executable": false
+    },
+    {
+      "path": "4945.index.js",
+      "size": 5987,
+      "sha256": "e6b1a2a2d0a7974dd9ad5920483cecbcc1c3c76a9dc1978d11a081cab62e2df6",
+      "executable": false
+    },
+    {
+      "path": "5092.index.js",
+      "size": 3637,
+      "sha256": "eb6df2d763d8f293cbd8e467108e8bfda39ccfca206ec8986495c7aa4eecd29f",
+      "executable": false
+    },
+    {
+      "path": "5336.index.js",
+      "size": 29932,
+      "sha256": "705c1acfa7e57e8adf8bed338a7d0c2727a1d72b8906c9084b59be55dbf3ae40",
+      "executable": false
+    },
+    {
+      "path": "5380.index.js",
+      "size": 62998,
+      "sha256": "9710c2bb7e0da5e24c743df564fc14c4087cf0f2365c994340c30ce3e18d9415",
+      "executable": false
+    },
+    {
+      "path": "5434.index.js",
+      "size": 1085,
+      "sha256": "94b9bd7a100ac91499c1aaf7af4ec705ab1171ccec5144ace7bd824cb4ba902e",
+      "executable": false
+    },
+    {
+      "path": "5469.index.js",
+      "size": 336,
+      "sha256": "bccf3d9433cce7eb2a314835ffd68260158c86d1b5a85ccda7b28661f8c13039",
+      "executable": false
+    },
+    {
+      "path": "5531.index.js",
+      "size": 899,
+      "sha256": "3b97993589db91c120031cbb838fb8b32f4b53f611dbb9e954e01b212e2888f3",
+      "executable": false
+    },
+    {
+      "path": "5688.index.js",
+      "size": 512823,
+      "sha256": "9b92cc6b2023da7be6fd67135c8ef20ac68c63e8c67640b76a2ae92c1f211480",
+      "executable": false
+    },
+    {
+      "path": "5720.index.js",
+      "size": 2615,
+      "sha256": "41b95b25db3c81303ee6da68c2b20361059ee6bb5e8cac5d546f0a8f01dbfcbc",
+      "executable": false
+    },
+    {
+      "path": "5740.index.js",
+      "size": 5824,
+      "sha256": "73f4a39444751d74607a5f93bb7996aa59ff88e110cad54e6f32ffbea03f7e3f",
+      "executable": false
+    },
+    {
+      "path": "5818.index.js",
+      "size": 826,
+      "sha256": "bba09ab371f08925b3ba1b39a5d56cd281b9acbc75d171adb945c77ca2c2d17b",
+      "executable": false
+    },
+    {
+      "path": "5993.index.js",
+      "size": 1706,
+      "sha256": "25502e95a9b84c20dbf1e4d12daefad5cd162ae9f0fec6c59be8533524dc538f",
+      "executable": false
+    },
+    {
+      "path": "6040.index.js",
+      "size": 493656,
+      "sha256": "3568e51905668e47ed2108d307d65a8a85d9d0e7072b90cda0854b624358d237",
+      "executable": false
+    },
+    {
+      "path": "6134.index.js",
+      "size": 7910,
+      "sha256": "356de23c9365c444bffe8e3f65982e49f6f3b181ffbfb38938e4aa3d77d1b261",
+      "executable": false
+    },
+    {
+      "path": "6136.index.js",
+      "size": 101023,
+      "sha256": "dc44b42cada8341448edf3e4ca64c0a0f17ebf0afd1e428464340cf9e6decd41",
+      "executable": false
+    },
+    {
+      "path": "6174.index.js",
+      "size": 15863,
+      "sha256": "741d44895b0e417902fd249ff8e8feaa0a5c6929ae536956b63ba1a43ff7e652",
+      "executable": false
+    },
+    {
+      "path": "6436.index.js",
+      "size": 11976,
+      "sha256": "592623afe824b6db6b315e0d6a62b0279b75d8d3a4e4b297c3b28a81f08f2f54",
+      "executable": false
+    },
+    {
+      "path": "6536.index.js",
+      "size": 35725,
+      "sha256": "af5d909f73a9fd189e5c5542e391c91f6437f85287ce33c572f3e8e09713b995",
+      "executable": false
+    },
+    {
+      "path": "6643.index.js",
+      "size": 1499,
+      "sha256": "306e37d11aa2eb87620fd607bbcff39c80ce90c71b928d436ef3707b5924ef15",
+      "executable": false
+    },
+    {
+      "path": "6870.index.js",
+      "size": 234,
+      "sha256": "8cd41ad250670e7162ce25daeb4b52a04356bd4a609ebf23eda719968e3ce18c",
+      "executable": false
+    },
+    {
+      "path": "6918.index.js",
+      "size": 3586,
+      "sha256": "83313e02e2ef71dae76da149598a7f3e5cc35a25c834e8882a3e0be91a5f4d66",
+      "executable": false
+    },
+    {
+      "path": "7000.index.js",
+      "size": 975986,
+      "sha256": "3525b56d09c8339ead81f4876bee7d36024fa68be68d946062fae643d5981f04",
+      "executable": false
+    },
+    {
+      "path": "7351.index.js",
+      "size": 1972,
+      "sha256": "86745bbc5f2c74890e3cd5358ab4b02b0995db7558c9717abebe66a0beace206",
+      "executable": false
+    },
+    {
+      "path": "7373.index.js",
+      "size": 3349,
+      "sha256": "1aae29269ab6538e21c046fa286db78c214bfdfde479db37d43bccc1df5a403d",
+      "executable": false
+    },
+    {
+      "path": "7450.index.js",
+      "size": 1341,
+      "sha256": "703707729125fa35af87c15c640285d9b90b4a4cd099cfecff0e28c79c8f5f56",
+      "executable": false
+    },
+    {
+      "path": "7627.index.js",
+      "size": 4893,
+      "sha256": "5042ac284976f632a8a696e655f87b9945f73b8ef30d4041176002139d83be10",
+      "executable": false
+    },
+    {
+      "path": "7923.index.js",
+      "size": 18506,
+      "sha256": "d0d7b5048278ddddddd8d226483163069cc98e2aa51262c80b76152f35e89181",
+      "executable": false
+    },
+    {
+      "path": "8044.index.js",
+      "size": 388276,
+      "sha256": "3efec929888be80372a109043c7a5b77517f3bdddd7111692478ab10ca14f4bc",
+      "executable": false
+    },
+    {
+      "path": "8096.index.js",
+      "size": 6341185,
+      "sha256": "611a046095627811728b0b307a9a1505484da8ca6636811866fa4fb7dcdb1240",
+      "executable": false
+    },
+    {
+      "path": "8096.index.js.LICENSE.txt",
+      "size": 3472,
+      "sha256": "4fceffc191f5d8b5e03d1320274c7afca94b7632a2a2ad004df281c01ac15d4f",
+      "executable": false
+    },
+    {
+      "path": "8192.index.js",
+      "size": 58081,
+      "sha256": "59d8e50c66a14ab9e2fc45d283988adadefb181d0a29f1745187578cee3909c2",
+      "executable": false
+    },
+    {
+      "path": "8391.index.js",
+      "size": 3435,
+      "sha256": "bb1f809662186fa081a1e365ce57202797bf44db1f31c071af9edbe56c9ef49a",
+      "executable": false
+    },
+    {
+      "path": "8644.index.js",
+      "size": 7271,
+      "sha256": "ec890f0f3073142cba2a6b14541e17f5966b68733a198b6a40be7f60f437fa02",
+      "executable": false
+    },
+    {
+      "path": "8891.index.js",
+      "size": 3241578,
+      "sha256": "b9d93a11a3e4bdad0ddab4e7e5a88d2aba678a0ef42f2bbb5c4a37ff1fa871bc",
+      "executable": false
+    },
+    {
+      "path": "8914.index.js",
+      "size": 671,
+      "sha256": "0e48ce732c3866c95e3956c52cad892a74a8e7aca9d65090edc6227aad604902",
+      "executable": false
+    },
+    {
+      "path": "8991.index.js",
+      "size": 5435,
+      "sha256": "d9645dfed24e004fe9f0d4e81df707832f2e9f0d3e4c74d7fabfc5f58cc25f3c",
+      "executable": false
+    },
+    {
+      "path": "903.index.js",
+      "size": 576,
+      "sha256": "3b059a34c0d3236a031fdfbc5f464995b25db2464e1201d2a1aa32b7630b4d20",
+      "executable": false
+    },
+    {
+      "path": "9063.index.js",
+      "size": 9728,
+      "sha256": "38a05af02d87629a4e75772ecffe0f8ad4bbc881324103209f8b1949a4a09ae6",
+      "executable": false
+    },
+    {
+      "path": "9147.index.js",
+      "size": 340,
+      "sha256": "5fbf0cb6086f7556bf969d015bd6d3c5c209d63edf3256811145bad65716d858",
+      "executable": false
+    },
+    {
+      "path": "9227.index.js",
+      "size": 19393,
+      "sha256": "cd387e33da9b3583928be4cfa42b024576ceea46a439764d869875ebe9eddee9",
+      "executable": false
+    },
+    {
+      "path": "9322.index.js",
+      "size": 8866,
+      "sha256": "ef4157396957372c84013c508e89bed33c20b020185b63ab307cd3929fca9766",
+      "executable": false
+    },
+    {
+      "path": "9494.index.js",
+      "size": 47079,
+      "sha256": "445a84154def76072ccdc7d5607f5c2a5fb10a344bb6678ea4ef3bdece96db3b",
+      "executable": false
+    },
+    {
+      "path": "9725.index.js",
+      "size": 6062,
+      "sha256": "2d2c791377dfe432b3ff1f3173e5218efad7deee76e35a1fc632a577f7fe4440",
+      "executable": false
+    },
+    {
+      "path": "97f64a4d8eca9a2e35bb.mp4",
+      "size": 63178,
+      "sha256": "938365cd23989da3afc4a4613565b88a609de46a282b5c3ef101b7e092738bb9",
+      "executable": false
+    },
+    {
+      "path": "better_sqlite3.node",
+      "size": 2488944,
+      "sha256": "d374b13b39a3a29d6dd65e7ce337ce9d931410037be2fb8d01bd7652b45cc0c3",
+      "executable": true
+    },
+    {
+      "path": "crepectl",
+      "size": 23486184,
+      "sha256": "0cb5399567d744ab71bf04c36fea9a912d89a4d56c546f9c776141daff377d25",
+      "executable": true
+    },
+    {
+      "path": "cursor-agent",
+      "size": 1096,
+      "sha256": "2ccc9a8e167797641448b5e5c936f006ba137a2555f117f38c5eb76a5238a233",
+      "executable": true
+    },
+    {
+      "path": "cursor-agent-sea",
+      "size": 136580288,
+      "sha256": "1ab0e5b43e0b8a87a0c5d328fb6150058bef7be4b4c082d0821d614ae8f346d5",
+      "executable": true
+    },
+    {
+      "path": "cursor-agent-worker-sea",
+      "size": 146214080,
+      "sha256": "9a5162fe0ba4c1a691bd18cc2acfdeeaa74f272fb2022c5a59a1a0e433d3af54",
+      "executable": true
+    },
+    {
+      "path": "cursor-askpass",
+      "size": 175,
+      "sha256": "123948eb5c8af59377b4addec6c5b0e8c55e4ef64ac71b44025621aa56013d73",
+      "executable": true
+    },
+    {
+      "path": "cursor-askpass.js",
+      "size": 5653,
+      "sha256": "ffb6b47c511bdbe2cab68e52ef6e3d37b5bf0ac1e632c78725e30ddb2dbde590",
+      "executable": false
+    },
+    {
+      "path": "cursorsandbox",
+      "size": 4613768,
+      "sha256": "a8113f25d181f91e846999340c4082f16dc36446d4d10181a083bcb063f15b6d",
+      "executable": true
+    },
+    {
+      "path": "diff-patch-worker.js",
+      "size": 6646,
+      "sha256": "8de87d1ba7886c6135522679c5d29756afcefb0fe91bdec2023cd42c911a4d0d",
+      "executable": false
+    },
+    {
+      "path": "diff-worker.js",
+      "size": 7908,
+      "sha256": "624cb315566513efef8c4058a7281368a6d33e13177de1276b9650fc321bafb3",
+      "executable": false
+    },
+    {
+      "path": "e409e1320929d0ff5b80.js",
+      "size": 2924,
+      "sha256": "8145b1c069a612adf1c54e1dc361b85a9d0dee8c381a3a26f9a6e7d798d63ef6",
+      "executable": false
+    },
+    {
+      "path": "file_service.linux-x64-gnu.node",
+      "size": 46787688,
+      "sha256": "455e6064a4cfcb0b0d67e5a65862b83466cbc931b4db93307e347b0280a4b93b",
+      "executable": true
+    },
+    {
+      "path": "index.js",
+      "size": 7447629,
+      "sha256": "39af0910c68c127ca534f7df096652219a08cf756394f18dc5654ae3c47d63ba",
+      "executable": false
+    },
+    {
+      "path": "index.js.LICENSE.txt",
+      "size": 1561,
+      "sha256": "290ff96c85dd59de821ec8433d8515675e5bee6cfcbcf9bf3d98055b8f4f03cc",
+      "executable": false
+    },
+    {
+      "path": "mac-webp-runtime.cjs",
+      "size": 309,
+      "sha256": "4a6041caf835ff53c58caf36e679f65fe6c04722661f315de036ceddd107a770",
+      "executable": false
+    },
+    {
+      "path": "merkle-tree-napi.linux-x64-gnu.node",
+      "size": 4301944,
+      "sha256": "8e89464024f97fe2f55c80eec8f69fd1f1ebe1b26a95d4bbdf7668a7710b5130",
+      "executable": true
+    },
+    {
+      "path": "node",
+      "size": 129074464,
+      "sha256": "e0e46d3a1c0667117303412647cafcbcefb1be7612493015ec8fd6b7440162a4",
+      "executable": true
+    },
+    {
+      "path": "node_modules/@jsquash/webp/CHANGELOG.md",
+      "size": 1051,
+      "sha256": "56e1c97329da273049b017db53b6bcdbdbdc2bb8f816cd105b9062dc724503ee",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/LICENSE",
+      "size": 11343,
+      "sha256": "8c3690b09c168f196446cf5904332023bbc15eb92b6a7cee470ac829e6a65d20",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/README.md",
+      "size": 3447,
+      "sha256": "c6bdd9809b66516d368bfadc72cef305d7537f5171a62036dd36811dff081c94",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/codec/LICENSE.codec.md",
+      "size": 1495,
+      "sha256": "e293d1dddc9785200b1f58a4f5293543cf8566d9e0b8a3c02fad955035b19f42",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/codec/Makefile.animated.backup",
+      "size": 2954,
+      "sha256": "b994b4ff1840a2b66087ed2ef3baf03965a3ba8e6642d8c4f6b7771dc92bf0af",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/codec/README.md",
+      "size": 91,
+      "sha256": "5fd916cc2780b93a45df1492c4d47ced1865957024cc257f2d800f08c4a9a71b",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/codec/dec/README.md",
+      "size": 380,
+      "sha256": "9931517f3e43af8ba96e8c56510516839e359a3caa1d6c9dd596a03e87434fff",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/codec/dec/webp_dec.d.ts",
+      "size": 211,
+      "sha256": "43771959601d9a0a45e4f68d5f730c2ad0a09441da0a99cb3b40668368880663",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/codec/dec/webp_dec.js",
+      "size": 34823,
+      "sha256": "c57971611f4d9ec04e4636ce7bb4a35c031b24cbdb013518f0a017d9f6014370",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/codec/dec/webp_dec.wasm",
+      "size": 137960,
+      "sha256": "30fb52fa2a80166d25ba7debf902218904ba1f05ccce9f959f722beff9e2f344",
+      "executable": true
+    },
+    {
+      "path": "node_modules/@jsquash/webp/codec/enc/README.md",
+      "size": 405,
+      "sha256": "941d798965835919d8911c053dec9abca5aca6c142c5bda9c6481cae5cd82ba6",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/codec/enc/webp_enc.d.ts",
+      "size": 962,
+      "sha256": "ca06b07b4a41f7e53e57f5bea598600cb962e275ca76686a78c3f61d8a5cd458",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/codec/enc/webp_enc.js",
+      "size": 38665,
+      "sha256": "5fd62301662e37785aec38e38807926f72933d4c8b919018a43faf1b1ca760f6",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/codec/enc/webp_enc.wasm",
+      "size": 281261,
+      "sha256": "b6085bb6702f144e9dc6016d58d230b34a84976bf0d080b7390b4b4b137d6ab7",
+      "executable": true
+    },
+    {
+      "path": "node_modules/@jsquash/webp/codec/enc/webp_enc_simd.d.ts",
+      "size": 41,
+      "sha256": "8fcd1a5abfa1db0de15a39581c23c712d9f904eec2bf22b241d9e98f489e6e23",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/codec/enc/webp_enc_simd.js",
+      "size": 38646,
+      "sha256": "3038e60ebba6252baba08c691e31d1efe5036a185435daa7b4afaef3cc9273f9",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/codec/enc/webp_enc_simd.wasm",
+      "size": 345584,
+      "sha256": "39c279269ec1163b987b6d69749458e3d5b03b9585f58b6ca5455b76b504a305",
+      "executable": true
+    },
+    {
+      "path": "node_modules/@jsquash/webp/codec/pre.js",
+      "size": 847,
+      "sha256": "b4d7da800804a2390eefa7805bb5f4e20cf349681334eb9a1715d2c58a1822b2",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/decode.d.ts",
+      "size": 822,
+      "sha256": "b33d320ed293db1b3e0f75ca13656bd4a35a0fd9d60103d319a6de317cc4cc29",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/decode.js",
+      "size": 1432,
+      "sha256": "b15d9abe76ad4b07214739fe81a99a47f25d01a1e0b0a329a3bec706509cd9e2",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/emscripten-types.d.ts",
+      "size": 4086,
+      "sha256": "acc5de7ea6c944da8709c50a8ea0d7bb0a2c2a62db61c6f1dc1f248e876b1b40",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/encode.d.ts",
+      "size": 1236,
+      "sha256": "ace69a337c24a8ebb276e75d2ee853506cea579eb10486c403e826a98d4efcc9",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/encode.js",
+      "size": 1946,
+      "sha256": "edcd883d10e955655946b8fe733bb139faa8b7036092827b1849a4b34d727d6b",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/index.d.ts",
+      "size": 133,
+      "sha256": "3878cfb0f7c5dcfd6e6bce4d37719ed11318a359d362acfd4305d0082250f98b",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/index.js",
+      "size": 98,
+      "sha256": "281f1d048db337aaa2412503423b2ca99eeb8ec104b471618ee3845930a27688",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/meta.d.ts",
+      "size": 906,
+      "sha256": "8c037aedcc35f69c0319b1b19c5cf490a94b154ff7c0b810a97d568b950bf5b6",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/meta.js",
+      "size": 749,
+      "sha256": "3d70163a00e6264fc5a8fa7c8f3b1fa21a50a00d910f4d2de3ef1bbd2fdc98ab",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/package.json",
+      "size": 978,
+      "sha256": "bfd9f9b7ec0d51421623e92185b3b994d6430068de323dacaa1a29b8a1c9c83c",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/utils.d.ts",
+      "size": 987,
+      "sha256": "8babb431007e8a980ad7719adaf6ae76979cae50ca1014c925f87e7bcb16012e",
+      "executable": false
+    },
+    {
+      "path": "node_modules/@jsquash/webp/utils.js",
+      "size": 1272,
+      "sha256": "e71535eeee820d68b68ece7c8af761c39f3ddec93d3d957d2f83b19191339e0d",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/LICENSE",
+      "size": 1078,
+      "sha256": "09856b52897c91ab67e7456ef43067019f31dfd3b87fda72e655736b1ebdee55",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/README.md",
+      "size": 5666,
+      "sha256": "647a90bd246a10fdd1d827f6ca7aa391f142e3322068470be07220941d953386",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/binding.gyp",
+      "size": 942,
+      "sha256": "2a48a110d17a692e769e4747dfea3b4471842ba86501db7cdcda33f8dfcb2921",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Makefile",
+      "size": 14770,
+      "sha256": "18d100dcf39b532a3ee9eaab90c41422bad2c2ab5308fcac23cca7229eb26a7a",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/.deps/Release/better_sqlite3.node.d",
+      "size": 247,
+      "sha256": "2b3da0ae6cf35891dc8e00d9e65909fa20acf01729d161c6098d493c814bdda6",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/.deps/Release/obj.target/better_sqlite3.node.d",
+      "size": 379,
+      "sha256": "95e4b0528d4683cf05ed0778aa9e497fed309d20374810ae85abe13bd83143a8",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/.deps/Release/obj.target/better_sqlite3/src/better_sqlite3.o.d",
+      "size": 9981,
+      "sha256": "136552889d254bba1c1a984005becd5f625db15abe1d22958a12f414301d93dc",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/.deps/Release/obj.target/deps/locate_sqlite3.stamp.d",
+      "size": 103,
+      "sha256": "3c31bf15e6e2dba21c83cb353ef20054dc3dafcaa267c9a58d87953b692f1bfb",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/.deps/Release/obj.target/sqlite3/gen/sqlite3/sqlite3.o.d",
+      "size": 2055,
+      "sha256": "d3025c8d2f37a083117571470e5581008774cfe9df4c7ba05a2aa0bad6b95563",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/.deps/Release/obj.target/test_extension.node.d",
+      "size": 342,
+      "sha256": "7bc4da556a8c30641cdc2492e393531f110bc6ea3b726c7971e03758365d5669",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/.deps/Release/obj.target/test_extension/deps/test_extension.o.d",
+      "size": 1272,
+      "sha256": "70734e1fafe8a9d5b42d6db41b42170c6fbdc1dcca3fff9860ef09c74a8735ec",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/.deps/Release/sqlite3.a.d",
+      "size": 197,
+      "sha256": "ecc8684ccf433acc726d108123e56b6dae2704d549c3953d52555131d9993155",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/.deps/Release/test_extension.node.d",
+      "size": 247,
+      "sha256": "580e8e1ca4fcdfd3cf3af95172570d0a11392291e0ee43b90d87904374e17344",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/.deps/ba23eeee118cd63e16015df367567cb043fed872.intermediate.d",
+      "size": 584,
+      "sha256": "93e4b59e4c7d205ea19d188206b830ebc5679300e692ec9788b190bf52da9549",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/better_sqlite3.node",
+      "size": 2488944,
+      "sha256": "d374b13b39a3a29d6dd65e7ce337ce9d931410037be2fb8d01bd7652b45cc0c3",
+      "executable": true
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/obj.target/better_sqlite3.node",
+      "size": 2488944,
+      "sha256": "d374b13b39a3a29d6dd65e7ce337ce9d931410037be2fb8d01bd7652b45cc0c3",
+      "executable": true
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/obj.target/better_sqlite3/src/better_sqlite3.o",
+      "size": 177288,
+      "sha256": "a224b072f227c5433791751689decdfee16212ecd371eee6dd449a9594017d58",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/obj.target/deps/locate_sqlite3.stamp",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/obj.target/deps/sqlite3.a",
+      "size": 2591556,
+      "sha256": "39759f468a6825fb3bee646066e863c4bc1fbc88ef64100adf13d356d1b34895",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/obj.target/deps/sqlite3.a.ar-file-list",
+      "size": 49,
+      "sha256": "8b6fdca61e6ff41ec191ba25d63615e5f21581b1cf2c2a8d7ec2e9b8b020e175",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/obj.target/sqlite3/gen/sqlite3/sqlite3.o",
+      "size": 2584544,
+      "sha256": "74d03ef7ec8a6181b35fdc47041ff1ace3d3ed8ba0e5adb09bf1374cb22926a0",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/obj.target/test_extension.node",
+      "size": 15752,
+      "sha256": "cb4c0286a519ed5d8c2832a443145e9d1716606e111603f26093947360e2bd9b",
+      "executable": true
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/obj.target/test_extension/deps/test_extension.o",
+      "size": 1808,
+      "sha256": "da9ef180c83e60bacae1a3829ba12e81abfe2191ea8a7444cf9c3ea47ce835a9",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/obj/gen/sqlite3/sqlite3.c",
+      "size": 9507980,
+      "sha256": "60d2f39a3726cd6b9021da6f4e868608d66fbb6528a9f513dc8ffcc640493422",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/obj/gen/sqlite3/sqlite3.h",
+      "size": 690725,
+      "sha256": "9e69a1353a4288450b0d5239ede11fc7f1f4c8e5eb07491fc8317eacb5b7de7e",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/obj/gen/sqlite3/sqlite3ext.h",
+      "size": 39175,
+      "sha256": "ac9645e5c9ff0cf176efdd6e75cb5e98f46295d38e02db5c4d208826a39ab4be",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/sqlite3.a",
+      "size": 2591556,
+      "sha256": "39759f468a6825fb3bee646066e863c4bc1fbc88ef64100adf13d356d1b34895",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/Release/test_extension.node",
+      "size": 15752,
+      "sha256": "cb4c0286a519ed5d8c2832a443145e9d1716606e111603f26093947360e2bd9b",
+      "executable": true
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/better_sqlite3.target.mk",
+      "size": 4553,
+      "sha256": "338a1b39982ee0baf770ae0eb5af6b711062578494d8790bcffee00ef1adc213",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/binding.Makefile",
+      "size": 137,
+      "sha256": "2ce8a85448ce33cf6d39f7a1c0ed14afc7d7c6d96edfaeeff9af67dd01500653",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/config.gypi",
+      "size": 18582,
+      "sha256": "e657626c81ccdefb957e93244137b97c9852d4c64f47f9b90024bbcd632311f0",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/deps/locate_sqlite3.target.mk",
+      "size": 2133,
+      "sha256": "b42232e0368a147bf326170a990aeb493e1e5cf00d9a7d6c39cb0dd8626d6120",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/deps/sqlite3.Makefile",
+      "size": 141,
+      "sha256": "8ebec52c501f3799f4af8913fdf67e35857075d836f51906f96dc9d7a36b3063",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/deps/sqlite3.target.mk",
+      "size": 6419,
+      "sha256": "164caed679b192a1d87dcacc558f8adec59ab27581c7a7d6ff7f1d35afcaf32e",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/build/test_extension.target.mk",
+      "size": 4457,
+      "sha256": "6cec068137922c385ecf874135c64e73b35859d4c12fe776e6e665cf87b1acec",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/deps/common.gypi",
+      "size": 1584,
+      "sha256": "e71a565cd7733e05efc3a2792b54e260126f03f490325aa2a201202acbbdb315",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/deps/copy.js",
+      "size": 897,
+      "sha256": "05a2bd41dbd96e33e2fc6cf4bcbc722b4bc8c529813b882f92113d7dbbbece67",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/deps/defines.gypi",
+      "size": 1160,
+      "sha256": "029426d3d6528d56ea75682a67a49e48747ccb7439faa75107601d4e2cafabc3",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/deps/download.sh",
+      "size": 3913,
+      "sha256": "cc2c1539a4c906bd0ec38104264f9bc1d45120e79de8cc595c29a2319d5c4628",
+      "executable": true
+    },
+    {
+      "path": "node_modules/better-sqlite3/deps/patches/1208.patch",
+      "size": 597,
+      "sha256": "5d1f22d69fee3551b70a7b7b9b14be43fcfd04dbc8683233667abfa75905011a",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/deps/sqlite3.gyp",
+      "size": 2542,
+      "sha256": "a009b8f80cf0a944eacaf71a84e590504f353fbd8f8b341138d0c3094e372d18",
+      "executable": true
+    },
+    {
+      "path": "node_modules/better-sqlite3/deps/sqlite3/sqlite3.c",
+      "size": 9507980,
+      "sha256": "60d2f39a3726cd6b9021da6f4e868608d66fbb6528a9f513dc8ffcc640493422",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/deps/sqlite3/sqlite3.h",
+      "size": 690725,
+      "sha256": "9e69a1353a4288450b0d5239ede11fc7f1f4c8e5eb07491fc8317eacb5b7de7e",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/deps/sqlite3/sqlite3ext.h",
+      "size": 39175,
+      "sha256": "ac9645e5c9ff0cf176efdd6e75cb5e98f46295d38e02db5c4d208826a39ab4be",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/deps/test_extension.c",
+      "size": 587,
+      "sha256": "948af88dbf356835f5496c1a3d047fdbcc58f3717aa9bc94d0943d7de2b7cf5b",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/lib/database.js",
+      "size": 4149,
+      "sha256": "02ea23bdd23d7ac5de0675a2f32fc686e76d5c6a32bd3e3891f360e72e07f61f",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/lib/index.js",
+      "size": 110,
+      "sha256": "82db11c4ee43a41d859988c5db42c3771dff565371f94bacbd1e4d8d6ceb47cd",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/lib/methods/aggregate.js",
+      "size": 1932,
+      "sha256": "e9f74eb919ec93fe089c95ddf25a98f1f631c80418fa34fb2346ca1bc29f1b82",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/lib/methods/backup.js",
+      "size": 2380,
+      "sha256": "ea29d34992bb02e006d0fdeda9675ac5d2bb227aaf57468decd997e9fc9c7dbf",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/lib/methods/function.js",
+      "size": 1396,
+      "sha256": "f431d49303b8bbdc044b1f1b455bdad21fc9b74b007de0acb22f08f25b4febd3",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/lib/methods/inspect.js",
+      "size": 174,
+      "sha256": "4975a78daee850adee62ba98719d0f223819a0ec135a07c0e302994bd8dbff61",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/lib/methods/pragma.js",
+      "size": 536,
+      "sha256": "8b1c54475bd4340b15e25c50d53d06308be65f8f919ecbe4aa9d285ca859ad5a",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/lib/methods/serialize.js",
+      "size": 625,
+      "sha256": "7a10ee5c2735384b7f0c361811bc6d017db29f62b203fd3c68a35f667e2c2605",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/lib/methods/table.js",
+      "size": 7144,
+      "sha256": "97c42d9ded1aa96c7d916b5b92f96b4e59581d50eaf629cd2c7afb78ff26a9ea",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/lib/methods/transaction.js",
+      "size": 2792,
+      "sha256": "bc8624a3ef689d8f78e5669020ad121e17acbc93b1d5ee5afe26860b1084c66c",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/lib/methods/wrappers.js",
+      "size": 1145,
+      "sha256": "a150a6271d23f4e5f8953b129f370ff096c7cdc4b812afbf080a6cf4ab741bcf",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/lib/sqlite-error.js",
+      "size": 717,
+      "sha256": "2582d61c27680dead168543f392eb102be621dfbef282a4ca4c7c21aa5e7c75d",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/lib/util.js",
+      "size": 331,
+      "sha256": "92b2e39e2151b43a2252e10b6d6de876ecaf0008336a4fa1dfe1317b20f1916f",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/package.json",
+      "size": 1436,
+      "sha256": "4665126292eff5dffe6c0ffabf98c4de18e479aa0b53edd775028eb567b3ecc1",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/addon.cpp",
+      "size": 1283,
+      "sha256": "20f19f480ce060900521cf9510922e5ca1c8e76936f07ac2916f316e549a0190",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/better_sqlite3.cpp",
+      "size": 2851,
+      "sha256": "01b2333517538a24919cc0b916c5a436561d7f712bac7befb6850e9f4b042dc5",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/objects/backup.cpp",
+      "size": 4146,
+      "sha256": "16a67102c49c9312eb1deecd08c27064325840df51d6957fe134b871f5d8798c",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/objects/backup.hpp",
+      "size": 705,
+      "sha256": "02d57e03a1a03b3f8bb2fc503fc1704d4143b76d939fe37230fbb3b44177c44a",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/objects/database.cpp",
+      "size": 14198,
+      "sha256": "081c514fb0a472a0e0962f0619149c187b6cf424e09baa7f39cc5246c17f75aa",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/objects/database.hpp",
+      "size": 3129,
+      "sha256": "f47ab5d6bb775cadd0b2b73c4fcb6faf5cb2ae783a049ff4691fafc5d29a0bca",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/objects/statement-iterator.cpp",
+      "size": 3339,
+      "sha256": "6ac791fbb786fc498450e843f2a043eddeb03093eb6b31012a04ae7b84a8d7ab",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/objects/statement-iterator.hpp",
+      "size": 1391,
+      "sha256": "c064f10ad6bca99154d4f5325e187978d4c6d6cc6fedaa047a4d2f3b4b4f9655",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/objects/statement.cpp",
+      "size": 13173,
+      "sha256": "4875a4d1942b89b1dc715b50f3f01e0899530a0772d0fef6f26c358d7e3d12a3",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/objects/statement.hpp",
+      "size": 1373,
+      "sha256": "3dca186418c62d81f4b9170904fdc02e624c3d76a0c0c61e6aa95486799808e9",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/util/bind-map.cpp",
+      "size": 1587,
+      "sha256": "7026e107a7f662b6460fbd05e91d9594f5114ffa69de7a8ddb082911f6e90876",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/util/binder.cpp",
+      "size": 6060,
+      "sha256": "64e2ebe910f2efc1d7a847672565745da2c4f5656d951033d99567e7593409d8",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/util/constants.cpp",
+      "size": 9068,
+      "sha256": "bbf4a3f983631f01f723627ee0e897f92b12cd6ca3e8b8b965318931bba0f2b4",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/util/custom-aggregate.cpp",
+      "size": 3952,
+      "sha256": "742d03187a7b8483c9f42bb7b77ed29d0f6877450584fba2662164d2b8dd11b6",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/util/custom-function.cpp",
+      "size": 1550,
+      "sha256": "6a1f826df2cc2c402d8a3dd747a57dbcedb52fe9220a2bbda6a5e01f038b13d1",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/util/custom-table.cpp",
+      "size": 14960,
+      "sha256": "7549b38f24b7e69e78d407534a5cde8814a8a08628a421b122644a43940e0aaf",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/util/data-converter.cpp",
+      "size": 460,
+      "sha256": "3cb73d0911e92893abf840752e9cfd6baded604d49b39ec4000599eec7c8c594",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/util/data.cpp",
+      "size": 9639,
+      "sha256": "74de42f9a0fa68277d8ea9cbaf8ee5f455bbd99cc41297696546c0ec8408c882",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/util/helpers.cpp",
+      "size": 4439,
+      "sha256": "7b763d2caa40f70bf6726c0f70ea50c1db69c7fa453b3bc2ec19577e99800984",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/util/macros.cpp",
+      "size": 4574,
+      "sha256": "09d5605bb65c8d43c0e235f878cbbffc98d79b1e35ee05b7c33766ce114a13a4",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/util/query-macros.cpp",
+      "size": 4138,
+      "sha256": "0dcf68c3ff527398ebe0a6b874b38aa23b3fb87f285b9701636c3b19282dde8c",
+      "executable": false
+    },
+    {
+      "path": "node_modules/better-sqlite3/src/util/row-builder.cpp",
+      "size": 1017,
+      "sha256": "d5b352ac4959a07db22a825019286e085910310d6363c61fbdf037e3f32d56fc",
+      "executable": false
+    },
+    {
+      "path": "node_modules/bindings/LICENSE.md",
+      "size": 1108,
+      "sha256": "85fde19744c84cfacb04aed732c0392ba221231b26090d3271d2ed865bfc0792",
+      "executable": false
+    },
+    {
+      "path": "node_modules/bindings/README.md",
+      "size": 3476,
+      "sha256": "a5552f138725ba2768610c9362f5c7387c8ac80c61fc68477a4f97b7412bba86",
+      "executable": false
+    },
+    {
+      "path": "node_modules/bindings/bindings.js",
+      "size": 5986,
+      "sha256": "8e32a0d37f20bd6f7d5bdbf99d041aa27be47cbbe5172ac13ebf7380a10b3bf6",
+      "executable": false
+    },
+    {
+      "path": "node_modules/bindings/package.json",
+      "size": 660,
+      "sha256": "a87721fe406e1f1798fef44d697b46ea1efe346fda118010334713346ee4207c",
+      "executable": false
+    },
+    {
+      "path": "node_modules/file-uri-to-path/.npmignore",
+      "size": 14,
+      "sha256": "bfb16fc2dc3b7f24e20981aa586e31d66293c81eb7c2e5d0a9bbb252b13c6271",
+      "executable": false
+    },
+    {
+      "path": "node_modules/file-uri-to-path/.travis.yml",
+      "size": 472,
+      "sha256": "14cfedcd0d39a797fb56787bc06b46d09aa2786084bb0dec49467b9720fb2979",
+      "executable": false
+    },
+    {
+      "path": "node_modules/file-uri-to-path/History.md",
+      "size": 433,
+      "sha256": "0b06e981a4318af1daef8b6ef0c6ff794e9b18a0a3e0738a65c9063988016d2e",
+      "executable": false
+    },
+    {
+      "path": "node_modules/file-uri-to-path/LICENSE",
+      "size": 1083,
+      "sha256": "75070206e4ee2a749be52444cecc05101ca8d314c9d6d335ff914046cbf086a0",
+      "executable": false
+    },
+    {
+      "path": "node_modules/file-uri-to-path/README.md",
+      "size": 2073,
+      "sha256": "a801a028d69327433eb397e69fd0aea3f58b80a76222ffbae129d8808913251a",
+      "executable": false
+    },
+    {
+      "path": "node_modules/file-uri-to-path/index.d.ts",
+      "size": 77,
+      "sha256": "46eb38b4f992126135e00159041a6e69e46402e56613bdc891d7b0d28fc31e37",
+      "executable": false
+    },
+    {
+      "path": "node_modules/file-uri-to-path/index.js",
+      "size": 1723,
+      "sha256": "e62293e871bdd5a7449ff3c7956c9536ec1d2ea7369461de77322b5256bb93e7",
+      "executable": false
+    },
+    {
+      "path": "node_modules/file-uri-to-path/package.json",
+      "size": 717,
+      "sha256": "71eb1e24bb9694f89c613fa0aa307f977dd43f41d11794c7b48fabf6c55f66b0",
+      "executable": false
+    },
+    {
+      "path": "node_modules/file-uri-to-path/test/test.js",
+      "size": 666,
+      "sha256": "223c25dba6fefbb7cb491b026a32f070b1425475d3cd2d04627be5d71a07fd38",
+      "executable": false
+    },
+    {
+      "path": "node_modules/file-uri-to-path/test/tests.json",
+      "size": 810,
+      "sha256": "b48c50c1328ab8522fc0bf91923ea42fb59e63e847b967dac88123cb5e5b185d",
+      "executable": false
+    },
+    {
+      "path": "node_modules/node-gyp-build/LICENSE",
+      "size": 1079,
+      "sha256": "7b3638496004b2daed183a91c4ba45d3ef6331db6c9d0eb1dd882a505630c172",
+      "executable": false
+    },
+    {
+      "path": "node_modules/node-gyp-build/README.md",
+      "size": 2485,
+      "sha256": "7e029ae991bdedf8de9d3af211cbca405ed0829b0d0b6887ecde5c4931841b21",
+      "executable": false
+    },
+    {
+      "path": "node_modules/node-gyp-build/SECURITY.md",
+      "size": 193,
+      "sha256": "994ea9cf579d2164b7736a6728ba48773ae78b0ae8f20290bee63fc62bb7362e",
+      "executable": false
+    },
+    {
+      "path": "node_modules/node-gyp-build/bin.js",
+      "size": 2094,
+      "sha256": "dc022adc093b9b79e1a0ef4b6bc3e6a52e3d627102113dad4afacbbe81f13a26",
+      "executable": true
+    },
+    {
+      "path": "node_modules/node-gyp-build/build-test.js",
+      "size": 398,
+      "sha256": "34c19ff8b6675d6d27c63a7df44d77a442805eeea8756d1c89e0264f4a3028f6",
+      "executable": true
+    },
+    {
+      "path": "node_modules/node-gyp-build/index.js",
+      "size": 390,
+      "sha256": "a7ed0d5ae218a19bdbdf15a590d0893790ddf536313b66a787554693cfaae078",
+      "executable": false
+    },
+    {
+      "path": "node_modules/node-gyp-build/node-gyp-build.js",
+      "size": 6078,
+      "sha256": "134f0585f7c665db89f332a379158c6f113274422e42aaf54e0aa9d5ac37f577",
+      "executable": false
+    },
+    {
+      "path": "node_modules/node-gyp-build/optional.js",
+      "size": 143,
+      "sha256": "e0b3a3a04166e6ecf1020cb31c0c4a54432c16d6d88714bd4de2214cf67dec81",
+      "executable": true
+    },
+    {
+      "path": "node_modules/node-gyp-build/package.json",
+      "size": 1004,
+      "sha256": "9e8def3fbf123e28aa1ca4b6aa557fba4e66eecf6e86d170b61ec1c7ed51305d",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/.taprc",
+      "size": 298,
+      "sha256": "4fba8ac572baeb549e835e6bc9c9dd10f1eb3bcdef5ea75cb775994927b28eae",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/CHANGELOG.md",
+      "size": 6735,
+      "sha256": "d9023773b524b76d16f47b4bbd95e2c8364cb3ddc709948eb77e916a991d8e63",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/CODE_OF_CONDUCT.md",
+      "size": 5268,
+      "sha256": "6834d92658d25666d1b0a5615048eb32cf0792ff6b7d1b479ec48dce9dc1a2d6",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/CONTRIBUTING.md",
+      "size": 2817,
+      "sha256": "908ba47152d653fbe6f61c173ac9a60050a20fbec45ed682e640e2a90d7c26aa",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/LICENSE",
+      "size": 1209,
+      "sha256": "e6a61e886dfadfcc9769012705835b2ff7b9fa1c629fd27a4a32d0757a723d7c",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/README.md",
+      "size": 39331,
+      "sha256": "e14d785ddae064d79e69c60b75770dfa9fe112a2e08fe106a2c170d9eaad1718",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/SECURITY.md",
+      "size": 3086,
+      "sha256": "f2d7342389a075f262329bfcbc8e2ed261079df957e6798439b8cc3a989f1f78",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/benchmark/fixtures/add.js",
+      "size": 52,
+      "sha256": "48c3b9da5c294a707f11cfd562fe1092c68d50d52c124ac0f5305d81f874d726",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/benchmark/piscina-queue-comparison.js",
+      "size": 1093,
+      "sha256": "621d25cf2645f11be9df950199e43ab7b46a0f78cc8730f54a6484be8c6298d8",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/benchmark/queue-comparison.js",
+      "size": 758,
+      "sha256": "0f2a3d44e1f3c64b2cd7223c484b49bafb98a5c8dfd1fe34c6d327ebebc14910",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/benchmark/simple-benchmark-fixed-queue.js",
+      "size": 801,
+      "sha256": "66ab8b3ee623b26d77460a3aa954890605e3407944654891bf1919d22582ce1a",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/benchmark/simple-benchmark.js",
+      "size": 743,
+      "sha256": "10ec3fdba4616419d0d6ca8984c3d16db2d65543f19fe539eff08655e3fcc50c",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/abort.d.ts",
+      "size": 812,
+      "sha256": "0b28da8f239e8d2c85d97c8c64b8991b54d0c46d5cedcca99adc7c059fd2990f",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/abort.js",
+      "size": 690,
+      "sha256": "96bda77290b59f3f05f054fc67f8dd3c911c5b41615c767653f9c5be1100f181",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/common.d.ts",
+      "size": 1173,
+      "sha256": "e284ccdcec64398bf56c12e232d100074ba62e9d6fef7b001e799a67aa77863a",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/common.js",
+      "size": 3449,
+      "sha256": "983d6ffda26eb4ce6e8c33d51cf98759e44933a35e9cb828421080a87d994538",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/errors.d.ts",
+      "size": 213,
+      "sha256": "565d28ff66b982b0710a4b02d30b3bc2708d55bd86448449796d787cb0e55ead",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/errors.js",
+      "size": 551,
+      "sha256": "8a1ba396c508b3981573e61d9d7c46c311a50f1a94891e3951b4a8a1e58d488d",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/esm-wrapper.mjs",
+      "size": 496,
+      "sha256": "7422394f0ceee72f99fb608dfbd024a8bc8d35f12c4cf0fd5acf26d70c1e6791",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/index.d.ts",
+      "size": 3620,
+      "sha256": "4ed188b1d7051a0e91d479d3a67bd047cff001b8ac95c91da4dbdc4e364e9ef2",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/index.js",
+      "size": 33634,
+      "sha256": "9cd4d866b73a6e97f91e56a300074ca1d5c6758c3f23b2846c4d54b52b62b30f",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/main.d.ts",
+      "size": 49,
+      "sha256": "0c9b5e6457e42cf0f32916d032a8b7f539d275c44238b7cfd860bb2b23b7cd5a",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/main.js",
+      "size": 272,
+      "sha256": "66553ddfb435a0093214eacb1c44971dc862e896f222ce9251cc6a9a15212bb6",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/symbols.d.ts",
+      "size": 321,
+      "sha256": "74810526b57fd0214b27d58de40daa60caf1122c1839c404900481766612064a",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/symbols.js",
+      "size": 686,
+      "sha256": "d0e30b1d318751183ffab01979895bc0fc45f1db6c6db36f83d58f2329f0011a",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/task_queue/array_queue.d.ts",
+      "size": 230,
+      "sha256": "9d0d4d5b44e62831ce1f83c83068f7f81622ad85f97ec78b56a2c37d3b9d91f8",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/task_queue/array_queue.js",
+      "size": 862,
+      "sha256": "29fe6991e3eab05119782880776adac3813e693b6c82ed8cbeab68296dca3921",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/task_queue/common.d.ts",
+      "size": 415,
+      "sha256": "3267b84a7d1145bab153882b3b357fa22d8a62fd6270d4ecdafac1137b57b497",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/task_queue/common.js",
+      "size": 113,
+      "sha256": "efa0b2439294e1510ac01e9e254e9fbd509834ed9c4fdc73559c6b62f69a8264",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/task_queue/fixed_queue.d.ts",
+      "size": 667,
+      "sha256": "80a49370716347cbf246a073ee9a9940f016d42a85f99949f26cfb05ce861d15",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/task_queue/fixed_queue.js",
+      "size": 6594,
+      "sha256": "626b1062fcfccd7568a349cd3ca2c0cb224dde65ddd98099d5b618d594c9eb10",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/task_queue/index.d.ts",
+      "size": 1569,
+      "sha256": "1161d58cd3644f0b122b0edc3655af9868e40fc94b89a7ecd02bedf80514ac14",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/task_queue/index.js",
+      "size": 3723,
+      "sha256": "e0bab14fc4f6e3e84adc1ed9d9190de1cda03af0894c21e7d8697382dd8741df",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/types.d.ts",
+      "size": 1441,
+      "sha256": "8e902b158a4030fca35ab0e77e303b6b859d6858c88eec5258a5fabae9b41371",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/types.js",
+      "size": 220,
+      "sha256": "d6a24e27e1b415e8b9a6861d070c599c2fc71a86513c3a1b7d22c96798c9e14f",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/worker.d.ts",
+      "size": 11,
+      "sha256": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/worker.js",
+      "size": 8248,
+      "sha256": "081e85839bad17b8d895bae9e39ebb890933148185a9a547eb11cf4f3b410ceb",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/worker_pool/index.d.ts",
+      "size": 1614,
+      "sha256": "8431abb363afb0be0d2db5ece7bd7642b19d1938288970d4453a64610db7cd0b",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/dist/worker_pool/index.js",
+      "size": 6654,
+      "sha256": "b784db251a8f114d3ca0410468d25d05b1889050fbd266425bafc8d59664a867",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/docs/docs/Introduction.md",
+      "size": 1767,
+      "sha256": "5764806a971d0dbbe90b23718ca2a73d111ea1e467fa67e773b6c2232a5c3bd6",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/docs/docs/api-reference/api-overview.md",
+      "size": 9251,
+      "sha256": "3c19abb869c15c83e1aa3905f2792ee350a2af531cd3b6963b082e279400c373",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/docs/docs/api-reference/class.md",
+      "size": 7126,
+      "sha256": "e098572856b93f153958ce1fa1c8a475f18bd4bda5b5f4bf5445494da115b208",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/docs/docs/api-reference/event.md",
+      "size": 884,
+      "sha256": "bd9b2f17722e59cf8c441237e41b8c63f08228e9e0b3531ab2ffdb74d4558be3",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/docs/docs/api-reference/interface.md",
+      "size": 1283,
+      "sha256": "94791325f8f488f305caf8e6567f077ff36e8df7148c8aef9f2e81677de22d32",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/docs/docs/api-reference/method.md",
+      "size": 3299,
+      "sha256": "ca1a8e31af3bf3047cf21d93270574e515ca068ccfacb769c72979ddbdaf039c",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/docs/docs/api-reference/property.md",
+      "size": 3835,
+      "sha256": "34d9a6fe35dec26516901760c02454beaccc90e2632ed5677d2adff10af2cc53",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/docs/docs/api-reference/static-property.md",
+      "size": 1178,
+      "sha256": "0e7ef3ba333be1a3f80f2e4e64e8519d3e62c7da40c437a5c89c955278232e66",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/docs/docs/examples/typescript.md",
+      "size": 2286,
+      "sha256": "614ff152a7aec9f97cf3a9b39894cdbcebb2f5e9fdd55eb9bc607b129687db18",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/docs/docs/update-log/changelog.md",
+      "size": 109,
+      "sha256": "e9fe1b4fa710dc64cb6e68b6154ca071aa1d68813a74dea04487f519d1a5887a",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/docs/docs/update-log/release-notes.md",
+      "size": 2770,
+      "sha256": "fecacd3961a3ecd7bcc38da2e3823385f48169709f0cdc98ecf3fe2ce3401a70",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/package.json",
+      "size": 2842,
+      "sha256": "9180bb0be5c9594a059ee5a07dd16e41dde1889804e8142f44ee2c0a77982f49",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/test/fixtures/esm-async.mjs",
+      "size": 241,
+      "sha256": "5ae42106655d38e6e424acdde743790c2dda23ff7af86764eab772cf9f126c2a",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/test/fixtures/esm-export.mjs",
+      "size": 91,
+      "sha256": "65b088a0c72871da5fa0e4b3600508650607f461d952a9d2c90f55a21421dbf9",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/test/fixtures/eval-async.js",
+      "size": 267,
+      "sha256": "01ff257a8f50fd0ae46531a7240dead492be9dae82c5cc0dd8537120c8a91cc8",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/test/fixtures/eval.js",
+      "size": 93,
+      "sha256": "ad103ef0038cda945182d95f2e8a610b44a1e46ef07771ced2e61b498567331a",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/test/fixtures/multiple.js",
+      "size": 116,
+      "sha256": "60c74291d42de9f7310de63c25a21d667ccf6b1dfe46adb87af80b70f4e7fabb",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/test/fixtures/notify-then-sleep-or.js",
+      "size": 347,
+      "sha256": "1e3baabedf56a7af1cd2d1411334d9fe361bae91b0a87e64ffeb7704415e04bd",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/test/fixtures/resource-limits.js",
+      "size": 109,
+      "sha256": "7dfd8f172c3328b7626399e2041a3d2c67a95bd5046a7a781628fa8a8342d7cf",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/test/fixtures/send-buffer-then-get-length.js",
+      "size": 313,
+      "sha256": "b6646486752c157f6822ad178dea9bbf16c98611404afcaa773afc6ab61410f5",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/test/fixtures/send-transferrable-then-get-length.js",
+      "size": 642,
+      "sha256": "fa8a63779d65ee6d41f329a948f9e75acb663c1956e0c0e84f1c11caf4985628",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/test/fixtures/sleep.js",
+      "size": 277,
+      "sha256": "53133a2a5ef9bd1ece0d0a3ea276cdf598d7cfcb6c295bcec2152819787fedf0",
+      "executable": false
+    },
+    {
+      "path": "node_modules/piscina/test/fixtures/vm.js",
+      "size": 164,
+      "sha256": "e1682e3cb237dbc16d19f28c0950d8978858d5b5d8b385997a8c5e963ac2e974",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/LICENSE",
+      "size": 1080,
+      "sha256": "49bf33cf78ef5897e4e161ce1517df7de1ae5042a65b6bcfd44401e0fc606559",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/README.md",
+      "size": 1485,
+      "sha256": "744e95f0420c071690071eb93cdd5bff1ed5de4dd36ce50cf5f09cab1dda4134",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/binding.gyp",
+      "size": 410,
+      "sha256": "5c8a80d1044474b65aa508a859140b3ea58658601ba4cc2e1cc6654abaad5dd9",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/bindings/node/binding.cc",
+      "size": 575,
+      "sha256": "35c26d3c9876b6a726cd4451dc9d91d8e032cd0d66f3f13d24eddeb7fba3912f",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/bindings/node/index.d.ts",
+      "size": 452,
+      "sha256": "5f593f781f7cb12a3dcdcab2f9c063a77b9965f537bb01c5c05958947f5ff8fd",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/bindings/node/index.js",
+      "size": 201,
+      "sha256": "609bdf22b8fd183025b3c24e8587f6211d50358e8f2e4c526b9217349ed9dbc0",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/build/Makefile",
+      "size": 15525,
+      "sha256": "15cdb95ec187a5160bcad671e7c586085ea01220d25a64f248f5f5fa3952c0ec",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/build/Release/.deps/Release/obj.target/tree_sitter_bash_binding.node.d",
+      "size": 465,
+      "sha256": "1715932a999949fbcf54e292eb433a5d37498c01ddf1d763f53e2f14617fefe3",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/build/Release/.deps/Release/obj.target/tree_sitter_bash_binding/bindings/node/binding.o.d",
+      "size": 2214,
+      "sha256": "b5fde937f89434c0e4c28fbc3d4e6ad6e32c66a2fd5c34970bc0bf0c1ac9b9a2",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/build/Release/.deps/Release/obj.target/tree_sitter_bash_binding/src/parser.o.d",
+      "size": 1230,
+      "sha256": "f3ff4ccb175174fa50359a5fc8a4bf714463116df1e6f88d47946e57541a7667",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/build/Release/.deps/Release/obj.target/tree_sitter_bash_binding/src/scanner.o.d",
+      "size": 1354,
+      "sha256": "88ed7b590f79a7b456059f3f5f24ede94f9a3dd2accf3d4ccc2d761b3104428a",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/build/Release/.deps/Release/tree_sitter_bash_binding.node.d",
+      "size": 307,
+      "sha256": "9e0411b02806b43d5a5591e38cbc0ec2952e5e233729e7dc1dffec34189d85d5",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/build/Release/obj.target/tree_sitter_bash_binding.node",
+      "size": 1706128,
+      "sha256": "27a6ff2eab4030ecc0b260ccc5b6c4f11206b83d9653f65cc1d4de369ca720da",
+      "executable": true
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/build/Release/obj.target/tree_sitter_bash_binding/bindings/node/binding.o",
+      "size": 48432,
+      "sha256": "a64cca482fe55540b969c7538ff2beb38d48e70a9a157c7bbe976f7c7ed1a985",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/build/Release/obj.target/tree_sitter_bash_binding/src/parser.o",
+      "size": 1364560,
+      "sha256": "fee6d8d031c9db1b36b8a2df26591953b213acb8e2a70c2373af68acfa2be0b4",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/build/Release/obj.target/tree_sitter_bash_binding/src/scanner.o",
+      "size": 17880,
+      "sha256": "0f7a61b1ca1917b4e05f75ebb9d0aeed621b17a0a29cacd8ba4f9d404c860606",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/build/Release/tree_sitter_bash_binding.node",
+      "size": 1706128,
+      "sha256": "27a6ff2eab4030ecc0b260ccc5b6c4f11206b83d9653f65cc1d4de369ca720da",
+      "executable": true
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/build/binding.Makefile",
+      "size": 132,
+      "sha256": "3385ecb956d07dc4862fb3e3aabbf4d11b6f579d4b7191cc5d8ae19ced425f81",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/build/config.gypi",
+      "size": 18582,
+      "sha256": "e657626c81ccdefb957e93244137b97c9852d4c64f47f9b90024bbcd632311f0",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/build/tree_sitter_bash_binding.target.mk",
+      "size": 5018,
+      "sha256": "6acd071e3dd0f1dee2353d51076a06773c02b0b5d063965174cdbb679ab1756c",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/grammar.js",
+      "size": 30081,
+      "sha256": "e1e7ed6840a2a692a1bd5f352ff85b38d065cdca200f95b1288230fb621ff2d7",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/package.json",
+      "size": 1616,
+      "sha256": "ee9d6515031266905123792f891fc9c3db75f55c5d9c1e027a315a60a09557c4",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/prebuilds/darwin-arm64/tree-sitter-bash.node",
+      "size": 1491344,
+      "sha256": "90f07fa27a6139735465ea7b44ce6fc804c12cb6b64662492f9716fb8cb053fb",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/prebuilds/darwin-x64/tree-sitter-bash.node",
+      "size": 1398560,
+      "sha256": "24ec5ccd163fecb99bde4e7132653c01d50a2210bb958d1c8de8e008de82e983",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/prebuilds/linux-x64/tree-sitter-bash.node",
+      "size": 1383184,
+      "sha256": "5b313fbec62ec84f0202a75fa3b09319d802cad661753a2522975d1f2f852b7f",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/prebuilds/win32-x64/tree-sitter-bash.node",
+      "size": 1556480,
+      "sha256": "759818839d14f9e03fc7c58632160569e40a73093e6e77573f9cbbe36ea7010e",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/queries/highlights.scm",
+      "size": 577,
+      "sha256": "b74220d954f485b7626d2b2b61f37b522e12eb1830803e388e57dd797dc99f11",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/src/grammar.json",
+      "size": 179302,
+      "sha256": "899dc858b05efefb478dcefc5491b5653e2df5d2aca16292d6def5c0746ac820",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/src/node-types.json",
+      "size": 49267,
+      "sha256": "39763582e682b132eb5349af6e1d7be78aed98decf808ffa6bcf92cfed4ac5dc",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/src/parser.c",
+      "size": 10241220,
+      "sha256": "e1b91f6033b57d72653dee72250bf48bd30d554cd5eb229ef5ae652b02e72e17",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/src/scanner.c",
+      "size": 45453,
+      "sha256": "01464473cdb193e936b021b13d7ff133ead1a8182d8b088301fe0535c572a3ce",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/src/tree_sitter/alloc.h",
+      "size": 958,
+      "sha256": "253b44a7b4313a7afd0c505c2fc6e7ce4b8e78955ebf4be3ea000532ec060673",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/src/tree_sitter/array.h",
+      "size": 10361,
+      "sha256": "ee1aa6ccfa7fb8aeb5d56ac63f47bf835d071b05f767134634fafbc34109c967",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter-bash/src/tree_sitter/parser.h",
+      "size": 5534,
+      "sha256": "8e819abdeba5866bf1aaf6e7b97522241c903d94a18395c6a75ed02984270ee8",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/.github/workflows/build.yml",
+      "size": 1713,
+      "sha256": "0dcf60390d581bc136f86caba56424aa4da8403f5096032d700cc6b18d33e69f",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/.gitignore",
+      "size": 129,
+      "sha256": "cbf0bfdff8c183e6e652e61a5949a0b79a2459d2bf245cd17ff063a946ec81ae",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/.npmignore",
+      "size": 159,
+      "sha256": "9523eacb2577f58f7c5e3de98e719e4be992853cb60d875574f9b4dfdf0e6dbf",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/LICENSE",
+      "size": 1078,
+      "sha256": "d39420a108609f487bece31800015cccabdb531fee4d543d66595459b3812d9a",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/README.md",
+      "size": 2385,
+      "sha256": "ba6e41f4fe81f0dd416651b6e3514eecbce1637e248fe67465408448aa2f58c2",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/binding.gyp",
+      "size": 1947,
+      "sha256": "8f7eb83b314277458e41d0096c03d58849c2921ee8705b14376b712e1eb647d4",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Makefile",
+      "size": 16015,
+      "sha256": "7c5a84ee8eeaf6bfde6f7bb47e833a696d68cbca4dfcb7da236535cd2e309dbf",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/.deps/Release/obj.target/tree_sitter/vendor/tree-sitter/lib/src/lib.o.d",
+      "size": 6235,
+      "sha256": "0d5b0c2d647f7e0de46f8fc4022026a4e7b6b705754785e0d621052c833d705c",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/.deps/Release/obj.target/tree_sitter_runtime_binding.node.d",
+      "size": 943,
+      "sha256": "af0e418d97795cf38ced2daf2bdcf26ec202accc45695fbfced385312f8c134b",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/.deps/Release/obj.target/tree_sitter_runtime_binding/src/binding.o.d",
+      "size": 9628,
+      "sha256": "3bc7036ba92c6b894bad420e4ffe790843f768b75392688278acd4f188cb1742",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/.deps/Release/obj.target/tree_sitter_runtime_binding/src/conversions.o.d",
+      "size": 2650,
+      "sha256": "8c48f9f7628933989e7681b5a9997ef2f7dff913d2f4a1e44cb3b76c4ae54610",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/.deps/Release/obj.target/tree_sitter_runtime_binding/src/language.o.d",
+      "size": 9148,
+      "sha256": "70f80ff5367944b2c463fe05692ec6eeb81596a959833e8bd06852c0d6884337",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/.deps/Release/obj.target/tree_sitter_runtime_binding/src/logger.o.d",
+      "size": 2508,
+      "sha256": "cb62dd1f1d8e05a2fa01772806e3998a378f312b5311d8f4f49805e9537fd776",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/.deps/Release/obj.target/tree_sitter_runtime_binding/src/lookaheaditerator.o.d",
+      "size": 9375,
+      "sha256": "a7769122482875c0b44c781d4efe60a2daf1a8c8b9557543d0df64bb259524eb",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/.deps/Release/obj.target/tree_sitter_runtime_binding/src/node.o.d",
+      "size": 9381,
+      "sha256": "d8ac0e6f94c66ee5b04928ff02f11dbf7f728d516daca4708833d6004c765918",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/.deps/Release/obj.target/tree_sitter_runtime_binding/src/parser.o.d",
+      "size": 9343,
+      "sha256": "f9b70722991edb203065827dd24a75ce61cb13b609c741493bc77572a7b97ce6",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/.deps/Release/obj.target/tree_sitter_runtime_binding/src/query.o.d",
+      "size": 9337,
+      "sha256": "db2a75195cc79f0290ef75e957f38061c3dea9fe3fcdb2604efab06783ba9b9d",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/.deps/Release/obj.target/tree_sitter_runtime_binding/src/tree.o.d",
+      "size": 9326,
+      "sha256": "3bb200681772b10a47f0df79806497785f0b06bc6b1b41f00aac902a329da25c",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/.deps/Release/obj.target/tree_sitter_runtime_binding/src/tree_cursor.o.d",
+      "size": 9433,
+      "sha256": "04c5878f5d4a3016fe1d5330dd1fdb6a37d0b8430cd1d622802327b1da59fca5",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/.deps/Release/tree_sitter.a.d",
+      "size": 211,
+      "sha256": "2794bb717a36ea309318ebc9e4da72d27c94f29a63717fd449341655358f5b71",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/.deps/Release/tree_sitter_runtime_binding.node.d",
+      "size": 325,
+      "sha256": "4fa692e2b28644c8c2cd8305ee26609001b67bcf5e504675cfb77fa1b8f8e0d3",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/obj.target/tree_sitter.a",
+      "size": 262596,
+      "sha256": "1e2d81069ff3d6208977d6d51d517e0b0cf9d4dc88688af37919d394b93eeb97",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/obj.target/tree_sitter.a.ar-file-list",
+      "size": 64,
+      "sha256": "68cc778e72a64b3f2594036795e81ac21122c3f8d254dd97992cfa953069fa8e",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/obj.target/tree_sitter/vendor/tree-sitter/lib/src/lib.o",
+      "size": 255424,
+      "sha256": "d5081178a87f61f5cf7c9692d6e20e9414cc2e066c0c0a38330eba637bcd4f4c",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/obj.target/tree_sitter_runtime_binding.node",
+      "size": 926656,
+      "sha256": "6d0a37963db99f31fdb2dbe8d56f88c8dc343882ba3c2d44ff8d95a8a25e79aa",
+      "executable": true
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/obj.target/tree_sitter_runtime_binding/src/binding.o",
+      "size": 48056,
+      "sha256": "c72f45bc3bf46bddc9c12a99ebe28180ec8d4dfa838c22a94761f41822f06697",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/obj.target/tree_sitter_runtime_binding/src/conversions.o",
+      "size": 84368,
+      "sha256": "5a0eebbec762484214fb79d20e2da1bc4d94f9269609bdaaee895c1b15ff19c5",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/obj.target/tree_sitter_runtime_binding/src/language.o",
+      "size": 80160,
+      "sha256": "fc7844f0d8a57cf37fb3ed125c13d8e6dbae4069b55aa927d5d70ab4ac4f96e5",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/obj.target/tree_sitter_runtime_binding/src/logger.o",
+      "size": 63824,
+      "sha256": "01a7a2b943a8c790608c1d2b76bd2b8d32712ea5eff5d4ea2d9060d0ab4f7686",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/obj.target/tree_sitter_runtime_binding/src/lookaheaditerator.o",
+      "size": 115760,
+      "sha256": "7e80d6582ac34f3c2b3200dc37af56fa23316c2bd09dcdba14e0ee8344f8f25d",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/obj.target/tree_sitter_runtime_binding/src/node.o",
+      "size": 168944,
+      "sha256": "c3ee9f897f8303b2c9e0fa5622808a903e31730dd1f61a3d11c590643bb318d4",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/obj.target/tree_sitter_runtime_binding/src/parser.o",
+      "size": 129704,
+      "sha256": "e407c63e093f308407885000db90928ef8b2aa026d91d359afa875451db86a4f",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/obj.target/tree_sitter_runtime_binding/src/query.o",
+      "size": 148816,
+      "sha256": "0ca14f629b98e038e2d8a674381137372827ae3e17ff32cee82dc098ef069234",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/obj.target/tree_sitter_runtime_binding/src/tree.o",
+      "size": 140896,
+      "sha256": "a0c0c14145ff3922156b95181faa6ce81433f965220c53883dd5d429da2e577f",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/obj.target/tree_sitter_runtime_binding/src/tree_cursor.o",
+      "size": 121936,
+      "sha256": "75757cf8d681fee82e3a5c794563401f040fd372762d6eb3da8397de30757141",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/tree_sitter.a",
+      "size": 262596,
+      "sha256": "1e2d81069ff3d6208977d6d51d517e0b0cf9d4dc88688af37919d394b93eeb97",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/Release/tree_sitter_runtime_binding.node",
+      "size": 926656,
+      "sha256": "6d0a37963db99f31fdb2dbe8d56f88c8dc343882ba3c2d44ff8d95a8a25e79aa",
+      "executable": true
+    },
+    {
+      "path": "node_modules/tree-sitter/build/binding.Makefile",
+      "size": 147,
+      "sha256": "c60eee1d744dae21de110817f38ddf024817cdfc81551145f79188ff76e434d1",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/config.gypi",
+      "size": 18582,
+      "sha256": "e657626c81ccdefb957e93244137b97c9852d4c64f47f9b90024bbcd632311f0",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/tree_sitter.target.mk",
+      "size": 4232,
+      "sha256": "18f3d3b19d1be75720ab3582ff718a65ac3526eff6ba5b61373991c8d18b2aeb",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/build/tree_sitter_runtime_binding.target.mk",
+      "size": 5323,
+      "sha256": "38767cc11f950b097ee2fdce756ecc2c29aa47d17f9c20516c4570995cb6cff1",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/index.js",
+      "size": 25716,
+      "sha256": "ba5e8461e5068f2b58ea860aea331ed0c6d8a25f21142d75a6145a1544fc9ffe",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/jest-tests/constants.js",
+      "size": 657,
+      "sha256": "da2f35a1728f8c6e376b87a66c9a1fc9f5c466f3103c38c01f43075f6081f138",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/jest-tests/parse_input.js",
+      "size": 243,
+      "sha256": "c822a080455cc0991ed04918a58a57b8ff736c62382155f3d868f27db489e800",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/jest-tests/runit.js",
+      "size": 298,
+      "sha256": "61eabd4d64149552ff42b4f2dfe1827fef16aa104e33e5d18678e2af8852d494",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/jest-tests/test.test.js",
+      "size": 5985,
+      "sha256": "9fb07c9ff5d3cc31298fd561f4f2f8828e713e0b75cb2208cbe204726c940716",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/jest-tests/test2.test.js",
+      "size": 614,
+      "sha256": "ce68dd4056372dafa9617b7472098a3a50a9bbd61bc4792f35642263cc42f528",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/jest-tests/test3.test.js",
+      "size": 624,
+      "sha256": "dd89cb5d72894e26dd0535e326fbfc83582a5161a4b6970b8fa6bc17d117b3f3",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/package.json",
+      "size": 1757,
+      "sha256": "8cca5044dd3381dbf958dea36ef6d9f81f379886d32ef845919cf07679c6e42c",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/addon_data.h",
+      "size": 1033,
+      "sha256": "67a2465d512a66a14b8ded3d2d507398ceae5c5c852ba31b40a5572f11c34741",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/binding.cc",
+      "size": 798,
+      "sha256": "06f8b481f25f41812e85f5f080b4bffedd0296785464dddc4180ccd8d6e49e0d",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/conversions.cc",
+      "size": 4271,
+      "sha256": "f35d7c43ce9bb2783990a3789e43ef830423ea64fe60b4b78efc948982f91bba",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/conversions.h",
+      "size": 707,
+      "sha256": "56b7b8f552c492a365692d1761b723004253a8d54bb67222f89957094e50e9b1",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/language.cc",
+      "size": 2927,
+      "sha256": "addd196cfcd97f4da89834398d09355b92c03157917d2be1153cf842deffe3b1",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/language.h",
+      "size": 381,
+      "sha256": "2913cecec9e1862d98041fdb34d35528177819148f5cd57019976eb604b478b7",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/logger.cc",
+      "size": 1821,
+      "sha256": "f37c7cae27bbba14f93a3443fe823e8e0d154d2b010c088df0106b7ebfe04ff4",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/logger.h",
+      "size": 386,
+      "sha256": "1f5b10cca5008e11a1fec991b63da5503312b9bf4fb754f27c1a712c5d44dbba",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/lookaheaditerator.cc",
+      "size": 4452,
+      "sha256": "e73de59431fe44d42985e48efb1212b514d19aedcb05f9da2b7766d6e953134d",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/lookaheaditerator.h",
+      "size": 995,
+      "sha256": "138ea2aabf407c460ed5d15dd7918565f4af0e3d1c36788f83921d8624eeb210",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/node.cc",
+      "size": 31279,
+      "sha256": "f996d548c58a26019f704724be0cdae6bda985d92b4f58af71b76e9e7fb392ec",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/node.h",
+      "size": 956,
+      "sha256": "f1a5671dd3f26c4dd2b9ec7c85dd5092369daa1f877d80dac17d9451cb74b326",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/parser.cc",
+      "size": 9171,
+      "sha256": "7a65b8fd382d3e2a5291762fb1c299a31ec601a7c0fc4f696606a8503cbf320e",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/parser.h",
+      "size": 1051,
+      "sha256": "80f86171e8ce950428d08f9294053f50b78753495a8d92bb7e385423b277f20d",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/query.cc",
+      "size": 13190,
+      "sha256": "52d0e7d1b963eed5c407b1e949b43af06d31c1069312c5dafd3ec633939e34e4",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/query.h",
+      "size": 1239,
+      "sha256": "d583d30d3a44c014c02a70ab68305c18d814deac33612065b838af0591624b77",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/tree.cc",
+      "size": 9119,
+      "sha256": "f347411632827fdfbae2f42e8ba87ad7f586bc6dd63efb10f8725c968beb84e3",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/tree.h",
+      "size": 1340,
+      "sha256": "14fc7afe1e857fdc7bc305fe4886364ee6325b08ebf9610f97efd365471fb477",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/tree_cursor.cc",
+      "size": 8804,
+      "sha256": "dda96509c7932a1a603f2e0068691aed56cedeb8330ffda6184b847339003fa6",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/src/tree_cursor.h",
+      "size": 1969,
+      "sha256": "5b6e5f15228347a5cf4e4a80c4f987b0db0af22ef0c57e42bcabb18415673862",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/test/lookahead_iterable_test.js",
+      "size": 1434,
+      "sha256": "7091be46ce22a6e76f322742e9b92d792e6916117ee1969fd39f80666db58083",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/test/node_test.js",
+      "size": 36780,
+      "sha256": "7dbf4cf445d47731fb5c7e283e74695ceb1221d5af0db465b7dabd52baf811d4",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/test/parser_test.js",
+      "size": 24623,
+      "sha256": "6e9529e6d2213caf55bf8b8f4ad5293e376aad4759b836b96bcb4a20ad0def9c",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/test/query_test.js",
+      "size": 36549,
+      "sha256": "407aed8a46d381128803ae22ce4e61441373f9a4bc0b4c9c9d61dc0fbb72f851",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/test/tree_test.js",
+      "size": 19983,
+      "sha256": "ba487df54014f31dbf5e027bca465d4f891b7bc09943d55dbf686926ea79f838",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/tree-sitter.d.ts",
+      "size": 6732,
+      "sha256": "ff1dafbaa4db69408d8278fb9ad008c5d72aed339454b394345ff1b982023e8b",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/LICENSE",
+      "size": 1085,
+      "sha256": "5f9cf9fb6acb1972b35ae29119ce563bb60ec097656bc4b69b9bac2d04c7a147",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/README.md",
+      "size": 1146,
+      "sha256": "f88d466368c6213d0f6fe7ae22e74e77be4693aa8f51d0933502a1ccf4d56cf8",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/README.md",
+      "size": 324,
+      "sha256": "d242416514949a60f411aed912360e4bb68e526eb6c3bb3b024d8a3927585b91",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/include/tree_sitter/api.h",
+      "size": 39793,
+      "sha256": "4fdb80dc0aeb9c43664dc8a32d3771d19fa8ffed004ba4487a439ec95bb844e7",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/alloc.c",
+      "size": 1542,
+      "sha256": "c7d15b9015568f439af4adf28ead9e2bd14901221819276727c11227a29576da",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/alloc.h",
+      "size": 892,
+      "sha256": "c69f97ef0949199ba66157d523bac994c3aa7cab3de8d0e25ef29d74aa502e94",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/array.h",
+      "size": 10420,
+      "sha256": "4ff743903dc46f5db6aa54f31c6b4d160a8a9779e5b2ab1ee59ae7ebcd850ea1",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/atomic.h",
+      "size": 1384,
+      "sha256": "bbc630cb913ac64274ce4412bc9d504174220323993f306ded74abe502867e74",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/clock.h",
+      "size": 3551,
+      "sha256": "dde356a85cc83914ed7820d01b9a80761d2239b16a8f556153fda17463afa237",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/error_costs.h",
+      "size": 294,
+      "sha256": "0e8d1a21e0d60981e762989108231df6610d95591892f631c6c78a9ef831a2ab",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/get_changed_ranges.c",
+      "size": 15514,
+      "sha256": "318d00cc7a75f698348ed2c8c53f4f9d96dc529af41ceebfccc5dedf6d4adc7e",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/get_changed_ranges.h",
+      "size": 836,
+      "sha256": "f394bd0b6fce006be460fd16cbea3cc96e248c810a4d97e8830463c29c85e4a5",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/host.h",
+      "size": 520,
+      "sha256": "e1982b9795b9c52b5ab564d8b9876189d65a97ca02f78351e1740b0985992fd2",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/language.c",
+      "size": 6400,
+      "sha256": "eece0a833b132d581e2ff746d4dfc1b5036526466aefeb8ef789d35097b883a0",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/language.h",
+      "size": 8368,
+      "sha256": "cb80864a4aa82561cd7dd85b31aa9e9d4152b965e5c76753768ef577de652c9a",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/length.h",
+      "size": 1242,
+      "sha256": "0848a66cd473e101f4c83e13b5b790f7a9481d477a4bc457b1d92b44442614b8",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/lexer.c",
+      "size": 13091,
+      "sha256": "c565ae736283b19471c7a6011b3bd5d9861b6ee6363daecf3d2d47e26b4eef1f",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/lexer.h",
+      "size": 1151,
+      "sha256": "65b82d3a652b78d7407338cdc2e88b1a0c89516eed7afba07187639612d5e317",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/lib.c",
+      "size": 313,
+      "sha256": "73e83dc2052f10f251c1519cb316fc3d13a079fe0c5e2e99a0f98dbf73a532e0",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/node.c",
+      "size": 21883,
+      "sha256": "8577b412dabb02fe9adaa3567841170a0bd5d1e30ca3d47d2f913339a9564348",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/parser.c",
+      "size": 73561,
+      "sha256": "f300d2a4cbfb4ab93a36a2cdeb6666aa8db185642823a80e69d09c5d44c5275b",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/parser.h",
+      "size": 5534,
+      "sha256": "8e819abdeba5866bf1aaf6e7b97522241c903d94a18395c6a75ed02984270ee8",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/point.h",
+      "size": 1594,
+      "sha256": "5f00e2119ad67531626b7ef03a9ea555f723d1c3b970024f73aef5570e78b894",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/query.c",
+      "size": 141258,
+      "sha256": "c980d48a2c6b846a1dbf74e04abac5f027b599107e2047d77d94fae4aa1110b4",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/reduce_action.h",
+      "size": 772,
+      "sha256": "8f40396e431d7ff558694ca248eed1332b6cf6f7e6255f06cddfde78020bd308",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/reusable_node.h",
+      "size": 2747,
+      "sha256": "10be747ea4c733ca181dc43d55d155ac8e5b8caa247079621cca0ce633347bfb",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/stack.c",
+      "size": 28201,
+      "sha256": "ae403a34e28b059886c31431e2d205a524b17507311ae33c087ebcc156c54ea6",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/stack.h",
+      "size": 4474,
+      "sha256": "05ade9eeac10d8e997dd34a8d0c9be22052d666d3c964b3448666266a4ae2541",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/subtree.c",
+      "size": 35490,
+      "sha256": "fdd2ca78c36befaa40d90c9da13fd5575756d62153f8fffdd82d337a4a9097c3",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/subtree.h",
+      "size": 12013,
+      "sha256": "c96f92fa4101883e0376bf70e50e9f2e5287a3ebd8b73c35cc678512db85701f",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/tree.c",
+      "size": 5137,
+      "sha256": "692ab18daa00947db4fb5ed192d3f099539737c53ed0075dbf252201e5eebf04",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/tree.h",
+      "size": 601,
+      "sha256": "edc059204e59d97c7d59c281133a869fbe4f76c3ec04dbda72f3c418cd384410",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/tree_cursor.c",
+      "size": 22905,
+      "sha256": "bf3947948e45f84fc1f29558beda28ff867216278116b9378415a665c86d1164",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/tree_cursor.h",
+      "size": 1142,
+      "sha256": "0f1093a2539213b0d32e58483e97e4cd60eaecb4e4d962c8ca613a65e01c6cdd",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/unicode.h",
+      "size": 964,
+      "sha256": "76e5597cb66bda7d97685cc1d9b449d6d834bf71054c8be6a31678dc7bf9d3fc",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/unicode/ICU_SHA",
+      "size": 41,
+      "sha256": "2879b4cf5a2c625c6509c26e341b9c8b0c50fde284113b449e00567bdf4e593c",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/unicode/LICENSE",
+      "size": 21001,
+      "sha256": "6a18c5fac70d7860b57f5b72b4e2c9a1ba6b3d2741eef7ff9767c5379364f10d",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/unicode/README.md",
+      "size": 1270,
+      "sha256": "73bbccbcf2e6648385d188d914b16ae56b4553a0f1efb033e6b6d6242e41df1d",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/unicode/ptypes.h",
+      "size": 72,
+      "sha256": "a87e9710c9cad7b08a945f4fb8b9d4629189897cc535f8ac927640c210a94b69",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/unicode/umachine.h",
+      "size": 14865,
+      "sha256": "2d79c0903d9e73e247b948bc0a12b6a785257ca0273bddab56fb59561f8d7391",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/unicode/urename.h",
+      "size": 72,
+      "sha256": "a87e9710c9cad7b08a945f4fb8b9d4629189897cc535f8ac927640c210a94b69",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/unicode/utf.h",
+      "size": 72,
+      "sha256": "a87e9710c9cad7b08a945f4fb8b9d4629189897cc535f8ac927640c210a94b69",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/unicode/utf16.h",
+      "size": 23878,
+      "sha256": "c370d9069f37fad2b53981c06dc648bbc21923db1655517a31bb237df4fba041",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/unicode/utf8.h",
+      "size": 31698,
+      "sha256": "39651224b2ca2452359c7f3339f3cc0a841fe7db64f8a00c9c5ec19c0389645c",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/wasm/stdlib-symbols.txt",
+      "size": 253,
+      "sha256": "1162b06514d583b0e94fe9b59ddcc36257f587047cacf7944e87b01722109294",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/wasm/stdlib.c",
+      "size": 2830,
+      "sha256": "cd24752001684b6b2770caf6e389ecfdf63064ae5a515325ec2f254ab84de6ad",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/wasm/wasm-stdlib.h",
+      "size": 95558,
+      "sha256": "a81fab838047abe84e30dccdec3994d48336d81154262c8a7a2ba60306af9251",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/wasm_store.c",
+      "size": 58793,
+      "sha256": "fba6a16deb56e8747901db0c11fb5b91e6379f20f7065ca5e5c0a96165328a95",
+      "executable": false
+    },
+    {
+      "path": "node_modules/tree-sitter/vendor/tree-sitter/lib/src/wasm_store.h",
+      "size": 973,
+      "sha256": "fcf93fa2b450f9a77cf28807ca9c21bdd18315f81e66c877939578993f3b7d9d",
+      "executable": false
+    },
+    {
+      "path": "node_sqlite3.node",
+      "size": 1969216,
+      "sha256": "44ff16e0f0d0ed50e01f605c6bebe02a2963fbe66f6b34f5e5bc41859b438964",
+      "executable": true
+    },
+    {
+      "path": "package.json",
+      "size": 327,
+      "sha256": "332fb765c02e98088e55626cdb185b0fd289723d191e5be77087305a9e613dc3",
+      "executable": false
+    },
+    {
+      "path": "pdf-worker.js",
+      "size": 480099,
+      "sha256": "34cc2e8b9c321799f7d55997c42c8ccc6abc9ea902fd7c7845da5accb136a948",
+      "executable": false
+    },
+    {
+      "path": "pdf-worker.js.LICENSE.txt",
+      "size": 795,
+      "sha256": "b5e8c493d516d9b156045ec3b83cc3e26785363af56db22bd52382942b394242",
+      "executable": false
+    },
+    {
+      "path": "pty.node",
+      "size": 72664,
+      "sha256": "ff8c140f142c13030d84193e5ba2ac556d320cf29d8efecc391174bfb8861cb0",
+      "executable": true
+    },
+    {
+      "path": "rg",
+      "size": 5396392,
+      "sha256": "d42ae51b08e3a368ff9504ea713dc05934a6315f759531eb1f714147dd9989a5",
+      "executable": true
+    },
+    {
+      "path": "test_extension.node",
+      "size": 15752,
+      "sha256": "cb4c0286a519ed5d8c2832a443145e9d1716606e111603f26093947360e2bd9b",
+      "executable": true
+    },
+    {
+      "path": "tree_sitter_bash_binding.node",
+      "size": 1706128,
+      "sha256": "27a6ff2eab4030ecc0b260ccc5b6c4f11206b83d9653f65cc1d4de369ca720da",
+      "executable": true
+    },
+    {
+      "path": "tree_sitter_runtime_binding.node",
+      "size": 926656,
+      "sha256": "6d0a37963db99f31fdb2dbe8d56f88c8dc343882ba3c2d44ff8d95a8a25e79aa",
+      "executable": true
+    }
+  ],
+  "symlinks": [],
+  "notices": [
+    "8096.index.js.LICENSE.txt",
+    "index.js.LICENSE.txt",
+    "node_modules/node-gyp-build/LICENSE",
+    "node_modules/tree-sitter/vendor/tree-sitter/lib/src/unicode/LICENSE",
+    "node_modules/tree-sitter/vendor/tree-sitter/LICENSE",
+    "node_modules/tree-sitter/LICENSE",
+    "node_modules/tree-sitter-bash/LICENSE",
+    "node_modules/bindings/LICENSE.md",
+    "node_modules/file-uri-to-path/LICENSE",
+    "node_modules/better-sqlite3/LICENSE",
+    "node_modules/piscina/LICENSE",
+    "node_modules/@jsquash/webp/codec/LICENSE.codec.md",
+    "node_modules/@jsquash/webp/LICENSE",
+    "pdf-worker.js.LICENSE.txt"
+  ]
+}
