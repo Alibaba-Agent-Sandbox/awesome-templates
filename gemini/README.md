@@ -102,7 +102,7 @@ Declared2vCPU4096MB/Linuxx64/port9000/8GiBrootfs budget; no KVM/nested Docker/GP
 
 ## Verified
 
-Current2.1.1 provider/native/model/image qualification PENDING. Local81fixed/legacy protocol/process/controller testsPASS1SKIP9.40seconds; skipped actual pinned CLI is not installed on operator. Original package integrity/source inspection and local fixtures are not native/provider/model acceptance. Earlier2.0.1 receipts remain immutable history and cannot qualify changed2.1.0.
+Current2.1.2 provider/native/model/image qualification PENDING. Local81fixed/legacy protocol/process/controller testsPASS1SKIP9.40seconds; skipped actual pinned CLI is not installed on operator. Original package integrity/source inspection and local fixtures are not native/provider/model acceptance. Earlier2.0.1 receipts remain immutable history and cannot qualify changed2.1.0.
 
 ## Secondary development
 

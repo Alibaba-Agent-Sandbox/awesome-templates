@@ -8,6 +8,7 @@ RUN cd /opt/gemini && npm ci --omit=optional --ignore-scripts --no-audit --no-fu
     && gemini --version && npm cache clean --force
 
 COPY profile.json /opt/gemini/profile.json
+RUN chmod 0644 /opt/gemini/profile.json
 
 COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \

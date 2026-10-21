@@ -175,6 +175,7 @@ def gemini_byok_setup_check() -> dict:
 
 @command("gemini_native_check", description="Original package hashes and actual headless flags; no model.")
 def gemini_native_check() -> dict:
+    _BYOK.profile()
     text=_BYOK.diagnostic(["--help"])
     return {"original_native":True,"headless_json":"--output-format"in text,"explicit_approval":"--approval-mode"in text,"owned_project_include":"--include-directories"in text}
 

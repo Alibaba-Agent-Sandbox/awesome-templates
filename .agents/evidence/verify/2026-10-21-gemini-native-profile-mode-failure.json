@@ -1,0 +1,63 @@
+{
+  "template": "gemini",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-21T042932Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "gemini",
+    "materializer_sha256": "35207b082e8dc30f8c4cddccf593d0ebb24dcc66fe3ea36417c6ff4bdfd01a17",
+    "source_manifest_contract_sha256": "0d1fc5c3e981a7f7c51c63008021eefdc922723b02be1ed4a60779b2a8f99750",
+    "template_version": "2.1.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "34e7e011c5569f77b7f605e65313be7498f6cf02",
+    "template_server_commit": "34e7e011c5569f77b7f605e65313be7498f6cf02",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "83509ac2f6ae099f10554f2fe9fa4442b4a4e101",
+    "asset_transport": "direct",
+    "steps_json_bytes": 6998,
+    "inputs_sha256": {
+      "Dockerfile": "b68efd54f3675a304a3c6a153160e21827e2305133c9ecda13d9f68b35848587",
+      "template.yaml": "b9ea1e9705e990984a54097b6a3f1c6a5e329f9687c6d9fa45e31ebcd8738a6a",
+      "server-sdk.commit": "57134d659449d0f55301272a5abc2ac907c86b8380a36f2b3e86e09c9b6dc6cf",
+      "package.json": "ce8fb57d609ad44e26c6220973ae4a5729848737434a6a700215c319caf10d6f",
+      "package-lock.json": "ab1b42c49a0b3bc39806bc13eb5302773cebd0b974080c49b537bf3704016ac9",
+      "profile.json": "e80be3d30c3a28b39e316cb401d8303ec39bd4d96977f2d1ae158436e182c4da",
+      "commands.py": "fc9efb5b449c088fa64b088ba7ab0b119bb963151f4a9645d67f82392c95044a",
+      "byok.py": "f95fea0396ec6b915bbd3bbd81b418e7f390c79a1536f7f35245bbe9340fba97",
+      "relay.py": "0796ef3f3f0c31cdfe2c1841dcfae2c66ca67d951d0d63919d638709bd930bdd",
+      "process.py": "b0ae8d0a9f0bd0c8ef916cb62b289b9d76797981f82490e07069cdefb290091d",
+      "lifecycle.py": "336e92dc34fe3ef550f094fcf06d93c0bb8568dec69180fb9f24bb040eb25687",
+      "upstream.json": "7b17a320dc548d609eac4891d64e4f6f9e0caca5538bca54a551107b35c1165c"
+    },
+    "generated_manifest_sha256": "697d0aceca3351f71a69ab7cd0a58a77144e597fab240d94dc3d536130b9f7ab"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 10,
+    "fail_count": 0,
+    "skip_count": 0,
+    "controller_sha256": "57a4b0f664ce53c9d5ea187957c22fcf83af559004047c90f114c5cc40c1a5ae"
+  },
+  "model_controller_sha256": "57a4b0f664ce53c9d5ea187957c22fcf83af559004047c90f114c5cc40c1a5ae",
+  "strict_byok_controller_sha256": "e90c975dc7a01cb0f094caa1c35d09904a190332b933bcc7b2cb144ffe571144",
+  "commands_sha256": "fc9efb5b449c088fa64b088ba7ab0b119bb963151f4a9645d67f82392c95044a",
+  "native_model_acceptance": {
+    "model_acceptance": "FAIL",
+    "model": "qwen3.8-flash",
+    "model_protocol": "Original Gemini tools with authored GenerateContent-to-Chat text/tool adapter",
+    "actual_sdk_named_command": true,
+    "native_version": "0.64.0",
+    "archive_sha256": "891a794e55c8319b6b78f6f8f13d6b8b2782a4709dfd2fcabf3a1f63ae8365e6",
+    "synthetic_probe_sha256": "1e2fb7ff887e2f0e187e4737dec5d964468ea0b47674a2b988785e2493b7a9ee",
+    "owned_secondary_listener_and_native_state_absent": true
+  },
+  "cleanup_verified": true,
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "duration_s": 112.762
+}
