@@ -119,3 +119,13 @@ def test_chrome_controller_receives_all_native_ports_and_requires_gui(tmp_path, 
         else:
             assert http_callback(source,tmp_path,report)('synthetic','chrome_smoke',{})=='smoke'
     assert report['http_acceptance']['pass_count']==1
+
+
+def test_devin_no_account_fixture_never_forwards_credentials(monkeypatch):
+    monkeypatch.setenv('DEVIN_CREDENTIALS_FILE','/private/operator-auth.toml')
+    manifest={'env':{'DEVIN_CREDENTIALS_FILE':''},'build':{'steps':[{'type':'USER','args':['user']}]}};proof={}
+    assert configure_http_fixture(ROOT/'devin',manifest,proof)=={}
+    assert '/private/operator-auth.toml'not in json.dumps(manifest)
+    assert proof['test_configuration']=={'native_authentication_error_path_required':True,'credential_absence_required':True,'model_credentials_injected':False}
+    manifest['env']['DEVIN_CREDENTIALS_FILE']='/unreviewed/auth.toml'
+    with pytest.raises(ValueError,match='cannot configure credentials'):configure_http_fixture(ROOT/'devin',manifest,{})

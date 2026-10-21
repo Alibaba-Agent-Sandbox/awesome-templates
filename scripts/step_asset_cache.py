@@ -24,9 +24,9 @@ from urllib.parse import urlsplit
 
 
 try:
-    from .step_assets import reviewed_muse_native, reviewed_asset_limit, reviewed_cursor_native, reviewed_download_headers
+    from .step_assets import reviewed_muse_native, reviewed_asset_limit, reviewed_cursor_native, reviewed_devin_native, reviewed_download_headers
 except ImportError:
-    from step_assets import reviewed_muse_native, reviewed_asset_limit, reviewed_cursor_native, reviewed_download_headers
+    from step_assets import reviewed_muse_native, reviewed_asset_limit, reviewed_cursor_native, reviewed_devin_native, reviewed_download_headers
 
 
 @contextmanager
@@ -97,7 +97,7 @@ class AssetCache:
         for item in assets[self.architecture]:
             url = urlsplit(item["url"])
             muse_native = reviewed_muse_native(item)
-            official_origin = muse_native or reviewed_cursor_native(item) or url.hostname in allowed or item["url"] == "https://s3.us-west-2.amazonaws.com/appworld.dev/data-0.1.0.bundle"
+            official_origin = muse_native or reviewed_cursor_native(item) or reviewed_devin_native(item) or url.hostname in allowed or item["url"] == "https://s3.us-west-2.amazonaws.com/appworld.dev/data-0.1.0.bundle"
             if url.scheme != "https" or not official_origin or url.username or url.password or (url.query and not muse_native) or url.fragment:
                 raise ValueError("only fixed official public archive origins may enter the private cache")
             if not re.fullmatch(r"[0-9a-f]{64}", item["sha256"]):

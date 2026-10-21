@@ -1,0 +1,29 @@
+name: devin
+version: "1.0.0"
+description: "Pinned original Devin CLI with bounded headless named commands and explicit tool permission."
+author: alibaba-agent-sandbox
+license: Apache-2.0
+spec_version: 2
+base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
+generation: 2
+start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
+ready_cmd: "agent-sandbox-server healthcheck --port 9000"
+resources:
+  cpu: 2
+  memory: 4096
+ports: [9000]
+tags: [devin, coding-agent, cli]
+priority: P2
+wave: 2
+tested_on: [alicloud-express]
+capabilities: [shell, files, code, ports]
+env:
+  ABX_SERVER_TOKEN: ""
+  DEVIN_CREDENTIALS_FILE: ""
+  WORKSPACE: /home/user/app
+smoke:
+  - command: devin_version
+    args: {}
+    expect: "devin 3000.11.92 (7f4e64980e22)"
+  - command: devin_native_check
+    args: {}
