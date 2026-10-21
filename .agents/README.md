@@ -193,3 +193,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Prime Agent final native SDK/image/coding acceptance](evidence/verify/2026-10-21-prime-agent-native-final.md)
 - [Current40native/runtime and required fullHTTP snapshot](evidence/verify/2026-10-21-current-native-http40.json)
+
+- [Current41native/runtime and required fullHTTP with Prime Agent and AppWorld](evidence/verify/2026-10-21-current-native-http41.json)
