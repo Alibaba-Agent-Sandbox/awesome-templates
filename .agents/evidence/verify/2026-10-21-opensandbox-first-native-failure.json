@@ -1,0 +1,19 @@
+{
+  "result": "FAIL",
+  "passed": false,
+  "source_commit": "22e020e",
+  "workflow_run": 39640424045,
+  "job": 119362160326,
+  "server_and_sdk_frozen_install": "PASS",
+  "pinned_cli_build": "PASS",
+  "original_image_pulls": "PASS",
+  "controller_summary": {
+    "passed": false,
+    "checks": 22,
+    "cleanup_verified": false,
+    "error_type": "AssertionError"
+  },
+  "artifact_download": "BLOCKED: remote signed artifact storage returned HTTP503 egress-account-limit; normal job-log read succeeded",
+  "native_interpreter_success": "NOT_CONFIRMED from available summary",
+  "note": "Managed metadata remains NOT_VERIFIED; no issue closure or native pass."
+}

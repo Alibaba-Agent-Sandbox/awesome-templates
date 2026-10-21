@@ -1,0 +1,77 @@
+name: Native managed OpenSandbox interpreter
+on:
+  pull_request:
+    paths:
+      - .github/workflows/managed-opensandbox.yml
+      - docs/managed/tests/opensandbox_live.py
+      - docs/managed/tests/test_opensandbox_live.py
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/managed-opensandbox.yml
+      - docs/managed/tests/opensandbox_live.py
+      - docs/managed/tests/test_opensandbox_live.py
+permissions:
+  contents: read
+jobs:
+  native-opensandbox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.9.5'
+      - uses: actions/checkout@v4
+        with:
+          repository: opensandbox-group/OpenSandbox
+          ref: 30348cbdfe4b9cfd49e0963617aed357a8f1ac4c
+          fetch-depth: 0
+          path: .native-fixtures/upstream
+      - uses: actions/checkout@v4
+        with:
+          repository: Alibaba-Agent-Sandbox/awesome-providers
+          ref: 9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d
+          path: .native-fixtures/providers
+      - uses: actions/checkout@v4
+        with:
+          repository: Alibaba-Agent-Sandbox/agent-sandbox
+          ref: c8e8ad784323b8903505442cbc77d433a0d0367a
+          path: .native-fixtures/cli
+      - uses: actions/checkout@v4
+        with:
+          repository: Alibaba-Agent-Sandbox/python-sdk
+          ref: 33f857f5a79fd10326652e9d03f15f3621d6b848
+          path: .native-fixtures/sdk
+      - name: Install original frozen server and interpreter SDK
+        run: |
+          uv sync --project .native-fixtures/upstream/server --frozen --no-dev --python 3.12
+          uv sync --project .native-fixtures/upstream/sdks/code-interpreter/python --frozen --no-dev --python 3.12
+          uv pip install --python .native-fixtures/upstream/sdks/code-interpreter/python/.venv/bin/python ./.native-fixtures/sdk/server-sdk ./.native-fixtures/sdk/client-sdk
+          uv pip check --python .native-fixtures/upstream/sdks/code-interpreter/python/.venv/bin/python
+      - name: Build pinned CLI with its lockfile
+        working-directory: .native-fixtures/cli
+        run: |
+          npm ci
+          npm run build
+      - name: Pull original runtime images and capture immutable digests
+        run: |
+          docker pull opensandbox/execd:v1.1.0
+          docker pull opensandbox/code-interpreter:v1.1.0
+      - name: Actual SDK shell files native interpreter sessions and independent cleanup
+        run: |
+          .native-fixtures/upstream/sdks/code-interpreter/python/.venv/bin/python docs/managed/tests/opensandbox_live.py --fixtures .native-fixtures --work "$RUNNER_TEMP/managed-opensandbox-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --output "$RUNNER_TEMP/opensandbox-native-receipt.json"
+      - name: Preserve only sanitized native acceptance receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: opensandbox-native-receipt
+          path: ${{ runner.temp }}/opensandbox-native-receipt.json
+          if-no-files-found: ignore
+          retention-days: 14

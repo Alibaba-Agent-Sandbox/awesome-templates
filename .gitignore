@@ -22,3 +22,6 @@ Thumbs.db
 *.swp
 .idea/
 .vscode/
+
+# Pinned CI-only native backend fixture checkouts
+.native-fixtures/
