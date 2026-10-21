@@ -7,7 +7,7 @@ def run(root,command,deadline):
     root=Path(root).resolve(strict=True)
     if not root.is_dir()or root==Path('/') or not isinstance(command,str)or not command.strip()or len(command.encode())>32768 or '\0'in command:raise ValueError('invalid bounded native tool request')
     if type(deadline)is not int or not 1<=deadline<=120:raise ValueError('tool deadline must be1..120seconds')
-    spec=importlib.util.spec_from_file_location('qm_sdk_owned_process',Path(__file__).with_name('process.py'))
+    spec=importlib.util.spec_from_file_location('qm_sdk_owned_process',Path(__file__).with_name('tool_process.py'))
     process=importlib.util.module_from_spec(spec);spec.loader.exec_module(process)
     with tempfile.TemporaryDirectory(prefix='abx-qm-tool-home-')as home:
         env={'PATH':'/opt/node/current/bin:/usr/local/bin:/usr/bin:/bin','HOME':home,'TMPDIR':home,'XDG_CACHE_HOME':home+'/cache','LANG':'C.UTF-8','GIT_CONFIG_GLOBAL':'/dev/null','GIT_CONFIG_NOSYSTEM':'1'}

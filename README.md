@@ -24,6 +24,8 @@ is recorded.
 
 2026-10-21 accepted41-template Express platform-step checkpoint: **41/41 current native/runtime and required full HTTP PASS**, with official READY, actual CLI/SDK smoke and independent owned cleanup. [Immutable current41matrix](.agents/evidence/verify/2026-10-21-current-native-http41.json) · [operations and scope](docs/platform-steps.md) ([中文](docs/platform-steps.zh-CN.md)). This is not41new deployments, universal model/image acceptance or completion of all64Issues; new entries require their own proof. Historical [Prime40matrix](.agents/evidence/verify/2026-10-21-current-native-http40.json), [AppWorld40matrix](.agents/evidence/verify/2026-10-21-current-native-http40-appworld.json), [Chrome39matrix](.agents/evidence/verify/2026-10-20-current-native-http39.json), [Droid38matrix](.agents/evidence/verify/2026-10-20-current-native-http38-droid.json), [earlier38matrix](.agents/evidence/verify/2026-10-20-current-native-http38.json), [37matrix](.agents/evidence/verify/2026-10-20-current-native-http37.json), [35matrix](.agents/evidence/verify/2026-10-20-current-native-http35.json) and [34matrix](.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json) remain unchanged.
 
+The new QM and QM Sandbox entries remain unverified until their own native/image/Express/model and cleanup gates pass.
+
 The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](docs/verification-2026-10-18.zh-CN.md)) records the historical23-template checkpoint and its unresolved gates. Current scoped receipts are linked below.
 
 | Template | Description | Status | Verified on |
@@ -37,6 +39,8 @@ The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](do
 | [browser-automation](./browser-automation/README.md) | Browser automation sandbox with Playwright + Chromium for web scraping and UI testing | experimental | [alicloud-express (SDK steps, PDF and HTTP37)](./browser-automation/evidence/express-2026-10-20T103410Z.json) |
 | [claude-code](./claude-code/README.md) | Claude Code Agent runtime — Anthropic Claude-powered AI coding assistant | experimental | [alicloud-express (1.1.1 steps smoke)](./claude-code/evidence/express-2026-10-19T183255Z.json) |
 | [cline](./cline/README.md) | Native Cline3.0.73 headless coding with private compatible provider | experimental | [alicloud-express1.0.2 SDK steps and real coding](./cline/evidence/express-2026-10-20.json) |
+| [qm](qm/) | Original QM Pi harness/tool loop and SDK backend | experimental | |
+| [qm-sandbox](qm-sandbox/) | Original QM tools backed by actual Agent Sandbox Node SDK | experimental | |
 | [appworld](appworld/) | Original AppWorld task engine/evaluator and encrypted result replay | experimental | [alicloud-express1.0.6 SDK steps/native task17](appworld/evidence/express-2026-10-21.json) |
 | [chrome](chrome/) | Headed native Chrome145 CDP and authenticated noVNC | experimental | [alicloud-express1.0.5 SDK steps/native GUI30](chrome/evidence/express-2026-10-20T230349Z.json) |
 | [copilot-cli](./copilot-cli/README.md) | Native GitHub Copilot CLI1.0.100, explicit BYOK and bounded file-edit profile | experimental | [alicloud-express1.0 SDK steps/model17](./copilot-cli/evidence/express-2026-10-20T165141Z.json) |

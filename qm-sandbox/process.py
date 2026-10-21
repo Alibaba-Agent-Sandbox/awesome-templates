@@ -23,7 +23,7 @@ def run(argv,*,cwd,timeout,env,input_file=None):
         try:
             while chunk:=stream.read(65536):
                 size+=len(chunk)
-                if size>64*1024:overflow.set()
+                if size>256*1024:overflow.set()
                 else:parts.append(chunk)
         finally:stream.close()
     readers=[threading.Thread(target=drain,args=(p.stdout,out),daemon=True),threading.Thread(target=drain,args=(p.stderr,err),daemon=True)]
@@ -39,6 +39,6 @@ def run(argv,*,cwd,timeout,env,input_file=None):
         life._stop()
         for thread in readers:thread.join(timeout=2)
         if any(thread.is_alive() for thread in readers):raise RuntimeError('owned QM pipe cleanup not confirmed')
-    if overflow.is_set():raise RuntimeError('QM output exceeded64KiB per stream; output omitted')
+    if overflow.is_set():raise RuntimeError('QM output exceeded256KiB per stream; output omitted')
     if timed_out:raise RuntimeError('QM execution exceeded timeout_s; output omitted')
     return p.returncode,b''.join(out).decode('utf-8','replace'),b''.join(err).decode('utf-8','replace')

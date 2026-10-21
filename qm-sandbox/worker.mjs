@@ -2,15 +2,21 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { ServerClient } from '/opt/agent-sandbox-node-sdk/dist/index.js';
-import { createToolContext } from '/opt/qm/src/tools/primitives.ts';
-import { createPiHarness } from '/opt/qm/src/harness/pi-harness.ts';
-import { createLocalWorkspaceStore } from '/opt/qm/src/workspace/workspace-store.ts';
-import { createAclStore } from '/opt/qm/src/acl/acl-store.ts';
-import { setCustomProviders, validateCustomProviderSpec } from '/opt/qm/src/model/custom-providers.ts';
 import { createAgentSandboxBackend } from './adapter.mjs';
 
-const metadata = JSON.parse(fs.readFileSync('/opt/qm-bootstrap/upstream.json', 'utf8'));
+let metadata, ServerClient, createToolContext, createPiHarness, createLocalWorkspaceStore, createAclStore, setCustomProviders, validateCustomProviderSpec;
+let STAGE = 'request';
+const OBS = { model_requests: 0, native_tool_calls: 0, native_tool_results: 0, sdk_shell: 0, sdk_upload: 0, sdk_download: 0 };
+async function originalModules() {
+  STAGE = 'metadata'; metadata = JSON.parse(fs.readFileSync('/opt/qm-bootstrap/upstream.json', 'utf8'));
+  STAGE = 'sdk_import'; ({ ServerClient } = await import('/opt/agent-sandbox-node-sdk/dist/index.js'));
+  STAGE = 'qm_tools_import'; ({ createToolContext } = await import('/opt/qm/src/tools/primitives.ts'));
+  STAGE = 'qm_harness_import'; ({ createPiHarness } = await import('/opt/qm/src/harness/pi-harness.ts'));
+  STAGE = 'qm_workspace_import'; ({ createLocalWorkspaceStore } = await import('/opt/qm/src/workspace/workspace-store.ts'));
+  STAGE = 'qm_acl_import'; ({ createAclStore } = await import('/opt/qm/src/acl/acl-store.ts'));
+  STAGE = 'qm_provider_import'; ({ setCustomProviders, validateCustomProviderSpec } = await import('/opt/qm/src/model/custom-providers.ts'));
+  STAGE = 'identity';
+}
 function identity() {
   if (process.version !== 'v24.16.0') throw new Error('original Node version differs');
   const binary = '/opt/node/current/bin/node';
@@ -49,9 +55,11 @@ async function useBackend(request, action) {
   let handle;
   try {
     const scope = 'personal:abx-' + crypto.randomUUID();
+    STAGE = 'sdk_provision';
     handle = await backend.provision([{ scopeId: scope, mountPath: '', mode: 'rw' }]);
     return await action(backend, handle, context(backend, handle, scope), scope);
   } finally {
+    const calls = backend.completedSdkCalls(); OBS.sdk_shell = calls.shell; OBS.sdk_upload = calls.upload; OBS.sdk_download = calls.download;
     if (handle) await backend.teardown(handle);
     await backend.close();
   }
@@ -62,6 +70,7 @@ async function sdkSmoke(request) {
   fs.mkdirSync(folder, { mode: 0o700 });
   try {
     return await useBackend({ ...request, root: folder }, async (backend, handle, tools) => {
+      STAGE = 'sdk_roundtrip';
       const marker = 'ORIGINAL_QM_SDK_' + crypto.randomBytes(16).toString('hex');
       await tools.write('marker.txt', marker);
       const observed = await tools.read('marker.txt');
@@ -86,8 +95,10 @@ async function modelRun(request) {
   const settings = request.settings;
   const spec = { id: 'abx-approved', name: 'Approved compatible model', protocol: 'openai', baseUrl: settings.base,
     models: [{ id: settings.model, name: 'Approved model', reasoning: false, contextWindow: 65536, maxTokens: 8192 }] };
+  STAGE = 'provider_configuration';
   validateCustomProviderSpec(spec); setCustomProviders([spec]);
   return useBackend(request, async (backend, handle, tools, scope) => {
+    STAGE = 'harness_setup';
     const harness = createPiHarness({ modelId: 'custom/abx-approved/' + settings.model,
       resolveProviderKeys: async () => ({ 'abx-approved': settings.key }), captureRequests: false,
       tempDirPrefix: 'abx-qm', scratchExec: false, ownerAuthExec: false, reachExec: false,
@@ -95,15 +106,17 @@ async function modelRun(request) {
       execTimeoutMs: 30000, execTimeoutCeilingMs: 120000 });
     let sequence = 0; let toolCalls = 0; let toolResults = 0; let modelRecords = 0;
     try {
+      STAGE = 'harness_run';
+      const sessionId = crypto.randomUUID();
       const result = await harness.turns.runTurn({
-        session: { id: crypto.randomUUID(), type: 'dm', scopeId: scope, threadRef: 'owned-native', createdAt: Date.now() },
+        session: { id: sessionId, type: 'dm', scopeId: scope, threadRef: 'owned-native', createdAt: Date.now() },
         input: request.prompt, history: [], scopeLabel: scope, orgScopeId: 'org:abx',
         systemPrompt: 'You are the original QM coding harness on an owned disposable computer. Use only execute and files read/write to inspect and repair the existing project. Preserve original tests. No delegation, subagents, external deliveries, provider changes or network services. The selected computer root is ' + JSON.stringify(handle.rootDir) + '.',
         tools, runtime: { harnessId: 'pi', modelId: 'custom/abx-approved/' + settings.model, effortLevel: 'off' },
         delegateWork: false, surfaceTools: false, turnWallClockMs: request.deadline * 1000,
         toolApprovalGate: name => ['execute', 'files:read', 'files:write'].includes(name),
-        emit: async entry => { if (entry.type === 'tool_call') toolCalls++; if (entry.type === 'tool_result') toolResults++; return { ...entry, sessionId: 'owned-native', seq: ++sequence, parentSeq: null, createdAt: Date.now() }; },
-        recordModelCall: () => { modelRecords++; },
+        emit: async entry => { if (entry.type === 'tool_call') { toolCalls++; OBS.native_tool_calls++; } if (entry.type === 'tool_result') { toolResults++; OBS.native_tool_results++; } return { ...entry, sessionId, seq: ++sequence, parentSeq: entry.parentSeq ?? null, createdAt: Date.now() }; },
+        recordModelCall: () => { modelRecords++; OBS.model_requests++; },
       });
       const complete = typeof result.reply === 'string' && Boolean(result.reply.trim()) && result.modelCalls > 0 && !result.stopped && !result.stoppedByUser && !result.pausedOnApproval && !result.pendingApprovals?.length && !result.runtimeHandoff && !result.silent;
       return { ...identity(), source_commit: metadata.qm.source_commit, stdout: result.reply,
@@ -116,8 +129,9 @@ async function modelRun(request) {
 
 async function main() {
   const raw = fs.readFileSync(0, 'utf8');
-  if (Buffer.byteLength(raw) > 131072) throw new Error('native request exceeds128KiB');
+  if (Buffer.byteLength(raw) > 262144) throw new Error('native request exceeds256KiB');
   const request = JSON.parse(raw); const operation = process.argv[2];
+  await originalModules();
   const version = identity();
   if (operation === 'version') return version;
   if (operation === 'native_check') {
@@ -129,7 +143,7 @@ async function main() {
   if (operation === 'exec') return useBackend(request, async (backend, handle, tools) => ({ ...await tools.execute(request.command, { timeoutSeconds: request.deadline }), sdk_calls: backend.completedSdkCalls(), original_qm_tools: true }));
   if (operation === 'file') return useBackend(request, async (backend, handle, tools) => {
     let result;
-    if (request.action === 'read') result = await tools.read(request.path);
+    if (request.action === 'read') { result = await tools.read(request.path); if (typeof result.content === 'string' && Buffer.byteLength(result.content) > 32768) throw new Error('named file response exceeds32KiB'); }
     else if (request.action === 'write') { await tools.write(request.path, request.text); result = true; }
     else if (request.action === 'list') result = await backend.listDir(handle, request.path);
     else if (request.action === 'remove') { await backend.removeDir(handle, request.path); result = true; }
@@ -144,5 +158,7 @@ try {
   process.stdout.write(JSON.stringify(result) + '\n', () => process.exit(0));
 } catch (error) {
   const kind = /^[A-Za-z_][A-Za-z0-9_]{0,63}$/.test(error?.name ?? '') ? error.name : 'NativeFailure';
-  process.stdout.write(JSON.stringify({ error_type: kind }) + '\n', () => process.exit(1));
+  const code = /^[A-Z][A-Z0-9_]{0,79}$/.test(error?.code ?? '') ? error.code : null;
+  const match = /^Cannot find package '([@A-Za-z0-9_.\/-]{1,128})'/.exec(error?.message ?? '');
+  process.stdout.write(JSON.stringify({ error_type: kind, native_stage: STAGE, error_code: code, missing_module: match?.[1] ?? null, native_counters: OBS }) + '\n', () => process.exit(1));
 }

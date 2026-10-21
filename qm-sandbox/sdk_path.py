@@ -26,7 +26,9 @@ def operate(action,root,path):
         for item in candidate.iterdir():
             names.append(item.name)
             if len(names)>1024:raise ValueError('backend directory exceeds1024entries')
-        return sorted(names)
+        names=sorted(names)
+        if len(json.dumps(names,ensure_ascii=False).encode())>32768:raise ValueError('backend directory response exceeds32KiB')
+        return names
     elif action=='remove':
         if candidate==root:raise ValueError('cannot remove caller backend root')
         if candidate.is_symlink():raise ValueError('cannot remove symlink target')
