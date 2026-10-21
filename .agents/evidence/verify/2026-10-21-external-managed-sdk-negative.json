@@ -1,0 +1,16 @@
+{
+  "client_source_commit": "34e7e011c5569f77b7f605e65313be7498f6cf02",
+  "provider_source_commit": "9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d",
+  "scope": "actual SDK configuration/capability rejection; no live vendor or model call",
+  "checks": [
+    {
+      "name": "actual Sandbox.create E2B missing-specific-key rejects before engine/network despite ambient generic key",
+      "passed": true
+    },
+    {
+      "name": "actual SDK OpenSandbox native interpreter is unsupported before transport",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

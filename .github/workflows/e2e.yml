@@ -249,6 +249,22 @@ jobs:
           python3 scripts/test_local_cleanup.py && python3 scripts/test_spec_tools.py
           python -m pytest -q scripts/test_prepare_steps.py scripts/test_ci_image.py scripts/test_ci_image_archive.py scripts/test_express_cleanup.py scripts/test_sdk_creation.py scripts/test_step_acceptance.py scripts/test_steps_http.py scripts/test_step_assets.py scripts/test_step_asset_cache.py scripts/test_cursor_assets.py scripts/test_devin_assets.py scripts/test_k3s_assets.py
           python3 scripts/check_template.py --all --strict
+          python scripts/check_managed_catalog.py
+          python -m pytest -q scripts/test_managed_catalog.py
+
+      - name: Checkout the exact published external-provider contracts
+        uses: actions/checkout@v4
+        with:
+          repository: Alibaba-Agent-Sandbox/awesome-providers
+          ref: 9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d
+          path: .provider-fixtures
+          persist-credentials: false
+      - name: Test external managed client contracts without vendor credentials
+        run: |
+          E2E_PROVIDER_SOURCE="$GITHUB_WORKSPACE/.provider-fixtures" python -m pytest -q docs/managed/tests/test_external_provider_contract.py
+          node .provider-fixtures/opensandbox/tests/run.mjs
+          npm ci --prefix scripts/managed-contract-sdk --ignore-scripts --no-audit --no-fund
+          E2B_TEMPLATE_SDK_MODULE="file://$GITHUB_WORKSPACE/scripts/managed-contract-sdk/node_modules/e2b/dist/index.mjs" node .provider-fixtures/e2b/tests/run.mjs
 
       - name: Run process, privacy, and acceptance-harness regressions
         run: |

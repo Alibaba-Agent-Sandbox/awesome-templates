@@ -191,10 +191,12 @@ Official terminal agent: [goose](goose/README.md) (experimental; [alicloud-expre
 | --- | --- | --- | --- |
 | base | alicloud-express | [English](docs/managed/base/README.md) · [中文](docs/managed/base/README.zh-CN.md) | shell, files, SDK shell-fallback code, CLI exec; owned cleanup |
 | code-interpreter-v1 | alicloud-express | [English](docs/managed/code-interpreter-v1/README.md) · [中文](docs/managed/code-interpreter-v1/README.zh-CN.md) | shell, files, SDK shell-fallback code, CLI exec; owned cleanup |
+| desktop | e2b | [English](docs/managed/desktop/README.md) · [中文](docs/managed/desktop/README.zh-CN.md) | NOT_VERIFIED; no independent account key; actual SDK/protocol tests only |
+| opensandbox-code-interpreter | opensandbox | [English](docs/managed/opensandbox-code-interpreter/README.md) · [中文](docs/managed/opensandbox-code-interpreter/README.zh-CN.md) | NOT_VERIFIED; no usable server; native code.interpret unsupported in current provider |
 
 These provider-managed IDs are listed separately from buildable source templates.
-Native interpreter service was HTTP404 in both recorded tests; no native interpreter
-or other-provider certification is claimed.
+For the two Express entries, native interpreter service was HTTP404 in their recorded tests.
+The two external entries remain NOT_VERIFIED; no native interpreter or other-provider certification is claimed.
 
 Official native Crush: [crush](crush/README.md) (experimental; [alicloud-express1.0.0 SDK image and model17](crush/evidence/express-2026-10-20.json)).
 [Development database template](dev-services/README.md) · experimental; [alicloud-express1.1.0 SDK image and HTTP6](dev-services/evidence/express-2026-10-20.json).
