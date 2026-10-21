@@ -102,7 +102,11 @@ Declared2vCPU2048MB, Linuxx64, port9000,8GiB image rootfs budget; no KVM/Docker/
 
 ## Verified
 
-Current1.3.1 provider/native/model acceptance is PENDING. Earlier1.1.1 receipts remain immutable historical evidence and do not qualify this changed profile. Local38fixed transport/privacy/process controls PASS; this is not a cloud/model pass. Final actual Express, image, original CLI and model evidence must be recorded before qualification or Issue closure.
+| Provider | Executed current scope | Evidence |
+| --- | --- | --- |
+| alicloud-express |1.3.1/original CLI2.0.76, published runtime9644342; immutable native steps, actual SDK create/CLI+SDK smoke/fullHTTP10; original read_file-equivalent Read API and controlled native Bash background cancellation; actual compatible-model19PASS0FAIL0SKIP; independently owned cleanup | [receipt](evidence/express-2026-10-21T094126Z.json), [read API](evidence/verification-steps-2026-10-21T094124Z.json), [cancellation API](evidence/verification-steps-2026-10-21T094125Z.json), [model proof](evidence/verification-steps-2026-10-21T094126Z.json) |
+
+Original Read fixture25.726seconds:2requests/2completed-required/1tool-result/0failures. Controlled original Bash fixture27.384seconds:4requests/3completed-required/1SHA256-identified asynchronous file-path cancellation/0failed; cancelled reply is never counted completed. Actual qwen3.8-flash source-edit77.552seconds:19PASS0FAIL0SKIP,11completed responses/9required/7original tool calls/28historical tool results/0failures/0cancellations. Original3test bytes/report/exact nonce/3original+4held-out assertions/fresh post-returnACK verified. All three independent secondary process/listener/owned fixture and outer template/sandbox cleanup checks PASS. Native API fixtures use only synthetic local replies; real model is separate and only its explicitly configured approved origin receives its key. Anthropic-hosted model/account authentication remains NOT_RUN; non-Claude routing is not supported/endorsed by Anthropic. Local78tests/9subtestsPASS3.10seconds; final-head CI/image/review/merge are separate gates. Historical1.2.1 pass and later failures remain unchanged.
 
 ## Secondary development
 
