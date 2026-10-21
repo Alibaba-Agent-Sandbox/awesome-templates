@@ -97,13 +97,17 @@ Captured at commands.py import; presence flags do not prove authentication. Key 
 
 ## Resources
 
-Declared2vCPU/2048MB/Linuxx64, port9000,8GiB image rootfs budget, no KVM/Docker/GPU or extra privileges. Original artifact downloads384.8MB; model requests need approved egress. Actual image/step/fullHTTP/model gates and peak memory are not inferred from these declarations. Other providers, interactive sessions, retained resume, voice/local weights, MCP/plugin services and Meta-hosted subscriptions are outside this profile.
+Declared2vCPU/2048MB/Linuxx64, port9000,8GiB image rootfs budget, no KVM/Docker/GPU or extra privileges. Original artifact downloads384.8MB; model requests need approved egress. The bounded actual image/step/fullHTTP/model slice passes below; peak memory was not measured. Other providers, interactive sessions, retained resume, voice/local weights, MCP/plugin services and Meta-hosted subscriptions are outside this profile.
 
 ## Verified
 
-No provider has a passing run recorded for this template.
+| Provider | Version / date | Passed scope and records |
+| --- | --- | --- |
+| alicloud-express | 1.0.1 / 2026-10-21 | Exact original native ELF/version/headless flags; SDK-created native steps/CLI+SDK smoke/fullHTTP10PASS and actual native coding19PASS/0FAIL/0SKIP; [receipt](evidence/express-2026-10-21T031347Z.json), [source-bound proof](evidence/verification-steps-2026-10-21T031347Z.json) |
 
-Original native installation/synthetic routing and compatible coding **research** passed on an independently cleaned Express target, but this template's current source/image/steps/fullHTTP/independent SDK artifact gates remain pending. [Research and prior failures](../.agents/evidence/verify/2026-10-21-muse-native-research.md). No model-generated code runs on operator.
+Original Muse exec/miniswe with qwen3.8-flash through the unchanged Responses relay repairs existing source; independent SDK-controller downloads verify the changed source, unchanged original3tests, new report/exact nonce, original3plus4held-out post-return checks and fresh ACK. The current native synthetic fixture verifies one exact path/model/synthetic Bearer/final reply, zero conflicting project requests and fixture/listener absence before real key use. Actual native/private/project/secondary listener/outer sandbox/template/private OSS cleanup independently PASS; total185.96seconds.16steps/7999wire bytes retain the15000guard.
+
+Actual non-root L1 [image run39537371000](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39537371000), job119017078085 PASS: unchanged original binary/hash/version/headless-help, server/workspace/rootfs1070862336bytes below8GiB. [Final record and previous failure](../.agents/evidence/verify/2026-10-21-muse-native-final.md). No image cloud deployment, Meta-hosted model/account/subscription, other provider or peak-memory claim.
 
 ## Secondary development
 

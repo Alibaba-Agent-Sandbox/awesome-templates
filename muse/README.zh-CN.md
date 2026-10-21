@@ -97,13 +97,17 @@ commands.py导入时捕获配置；存在标志不证明账号有效。key最长
 
 ## 资源
 
-声明2vCPU/2048MB/Linuxx64、9000端口、8GiB镜像rootfs预算，无KVM/Docker/GPU/额外权限。原版下载384.8MB；模型需授权出口。声明值不代表真实镜像/steps/完整HTTP/模型通过或峰值内存测量。其他提供方、交互/保留会话恢复、voice/本地权重、MCP/plugin服务与Meta托管订阅不在本流程内。
+声明2vCPU/2048MB/Linuxx64、9000端口、8GiB镜像rootfs预算，无KVM/Docker/GPU/额外权限。原版下载384.8MB；模型需授权出口。下方有界镜像/steps/完整HTTP/模型流程实际通过，未测量峰值内存。其他提供方、交互/保留会话恢复、voice/本地权重、MCP/plugin服务与Meta托管订阅不在本流程内。
 
 ## 已验证
 
-尚未记录任何通过的提供方测试。
+| 提供方 | 版本 / 日期 | 通过范围与记录 |
+| --- | --- | --- |
+| alicloud-express | 1.0.1 / 2026-10-21 | 精确原版ELF/版本/无头flags，SDK创建原生steps/CLI+SDK smoke/完整HTTP10PASS，真实原版编码19PASS/0FAIL/0SKIP；[回执](evidence/express-2026-10-21T031347Z.json)、[源码绑定证明](evidence/verification-steps-2026-10-21T031347Z.json) |
 
-原版安装、固定回复路由及兼容模型编码**研究**在独立清理的Express中通过；当前模板源码、镜像、steps、完整HTTP及独立SDK产物验收仍待完成。[研究与之前的失败](../.agents/evidence/verify/2026-10-21-muse-native-research.md)。不在操作端运行模型生成代码。
+原版Muse exec/miniswe经原样Responses代理使用qwen3.8-flash修改已有源码；独立SDK控制器下载验证源码改变、原3项测试字节不变、新报告/精确nonce、返回后原3项及4项新增用例和新ACK。当前原生固定回复fixture检查精确path/model/合成Bearer/最终回复、冲突项目请求为0，并在真实密钥进入前确认fixture/监听释放。原生私有状态、项目、次级监听、外层沙箱/模板及私有OSS清理独立通过；整轮185.96秒。16步/7999字节保留15000门禁。
+
+真实非root L1[镜像run39537371000](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39537371000)/job119017078085通过：原版二进制/哈希/版本/无头帮助、server/工作目录/rootfs1070862336字节小于8GiB。[最终记录与先前失败](../.agents/evidence/verify/2026-10-21-muse-native-final.md)。不声明镜像云端部署、Meta托管模型/账号/订阅、其他提供方或峰值内存通过。
 
 ## 二次开发
 

@@ -1,0 +1,98 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-21",
+  "template": "muse",
+  "template_version": "1.0.1",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "steps",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "harness_sha256": "91592778b24797075915b40f31f219f6517526b17cd2b3a75fe777f73fe6afd6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "muse_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 10.409,
+      "result": "Muse Code 1.4.11 (1.4.11-R6667.1)"
+    },
+    {
+      "name": "muse_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 49.726,
+      "result": "Muse Code 1.4.11 (1.4.11-R6667.1)"
+    },
+    {
+      "name": "muse_native_check",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.325,
+      "result": "{'original_native': True, 'headless_json': True, 'anonymous_api_key_stdin': True, 'no_session_log': True}"
+    },
+    {
+      "name": "muse_native_check",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 1.631,
+      "result": "{'original_native': True, 'headless_json': True, 'anonymous_api_key_stdin': True, 'no_session_log': True}"
+    }
+  ],
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "muse",
+    "materializer_sha256": "35207b082e8dc30f8c4cddccf593d0ebb24dcc66fe3ea36417c6ff4bdfd01a17",
+    "source_manifest_contract_sha256": "fee7fc8877ef0ecc3cd5445fe7727c823b5471bb3cc183a069cd775d7c1eed58",
+    "template_version": "1.0.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "34e7e011c5569f77b7f605e65313be7498f6cf02",
+    "template_server_commit": "34e7e011c5569f77b7f605e65313be7498f6cf02",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "45eef21a4e871fa39fca9a4a4812fd650805790c",
+    "asset_transport": "oss",
+    "steps_json_bytes": 7999,
+    "inputs_sha256": {
+      "Dockerfile": "0f2b725cb7642ba8b2317f694a20962cdd97ac1193c5d1a8d3fb9406a9fdf6d1",
+      "template.yaml": "162f632e917642cc4630f3666bcec445cb9188ed449f6e8d03d9e2504947e3c5",
+      "server-sdk.commit": "57134d659449d0f55301272a5abc2ac907c86b8380a36f2b3e86e09c9b6dc6cf",
+      "upstream.json": "0984024f39b88eaf5cac4a57f46a62c24e2190ce88a75a46d4125ca3e033fb2d",
+      "install_runtime.py": "1e35269e26b728af82546281da7ebde24062056cf9cc17a6c9c641d1ac99f293",
+      "commands.py": "c8050eff110fab230ae30a80c492386f03ff20e09840df21010c1051509b7329",
+      "relay.py": "1ff52f975fb253a18cac099772f5d60bcaaaf23d1eb15a098455cde6b3e79cf7",
+      "filter_native.py": "0d4cc98606498052401c5bd9ea98a471ed89b3b475cf7c756379bc21ff7263c5",
+      "process.py": "23eb57a3d78a4da333e191d0e8105696374f216b1adb9d90dbc0ee25fd877a25",
+      "lifecycle.py": "470207c6e64634dfce8b0592416e8b8f7ae280134d5e6a4e09a33a4a537a02f2",
+      "UPSTREAM-NOTICE.md": "3baeec3deeef637b6b65174522844e332064ff1a11097596ccd07b759b4798e0"
+    },
+    "asset_transport_sha256": "f91f282a362cbf18ef4cf93b78fa544de9a2a26ffea3e5b418bbc02f8ce367e8",
+    "asset_adapter_source_commit": "45eef21a4e871fa39fca9a4a4812fd650805790c",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://lookaside.facebook.com/lookaside/muse/download/?channel=muse&version=1.4.11-R6667.1&file=muse-x86-linux",
+          "size": 384809176,
+          "sha256": "6fda12a6a4f236528dafa707384cf6395fe859b1438ef77c7be26ed9d7976839"
+        }
+      ]
+    },
+    "asset_cache_architecture": "x86_64",
+    "generated_manifest_sha256": "53a16ede13c9f2119e44d5642894b21275d047e40f9a2f486f73b5e5440094ef"
+  },
+  "asset_cache": {
+    "service": "Alibaba Cloud OSS",
+    "private_acl_verified": true,
+    "archives": [
+      {
+        "url": "https://lookaside.facebook.com/lookaside/muse/download/?channel=muse&version=1.4.11-R6667.1&file=muse-x86-linux",
+        "sha256": "6fda12a6a4f236528dafa707384cf6395fe859b1438ef77c7be26ed9d7976839",
+        "size": 384809176,
+        "controller_input": "streamed verified gzip of unchanged original bytes; OSS Content-MD5 enforced"
+      }
+    ],
+    "signed_get_ttl_seconds": 3600,
+    "cleanup_verified": true
+  }
+}

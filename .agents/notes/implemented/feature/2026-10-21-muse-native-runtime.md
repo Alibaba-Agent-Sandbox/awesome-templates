@@ -1,6 +1,6 @@
 # Decision: Original native Muse Code with an explicit compatible endpoint
 
-Status: proposed
+Status: implemented
 
 ## Problem
 [Issue71](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/71) requests actual Meta Muse Code. Earlier survey lacked an immutable installer; current official channel/release manifests now expose version1.4.11-R6667.1, Linuxx64 size384809176and upstream SHA256. A substitute same-named agent or install-only smoke would not meet the task.
@@ -28,3 +28,6 @@ Full bilingual docs/design/catalog/spec, source/artifact license provenance, act
 
 ## Evidence
 [Research](../../../evidence/verify/2026-10-21-muse-native-research.md).
+
+## Evidence
+[Final native/image/SDK/model acceptance](../../../evidence/verify/2026-10-21-muse-native-final.md), [current44matrix](../../../evidence/verify/2026-10-21-current-native-http44.json). Final current-head CI/review and normal merge/readback remain mandatory; no early Issue closure.

@@ -200,4 +200,6 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [QM1.0.1 final original native SDK/backend/model acceptance](evidence/verify/2026-10-21-qm-native-final.md) · [current43native/runtime and required fullHTTP](evidence/verify/2026-10-21-current-native-http43.json)
 
-- [Original Muse native runtime](notes/proposed/feature/2026-10-21-muse-native-runtime.md) · [research](evidence/verify/2026-10-21-muse-native-research.md)
+- [Original Muse native runtime](notes/implemented/feature/2026-10-21-muse-native-runtime.md) · [research](evidence/verify/2026-10-21-muse-native-research.md)
+
+- [Muse1.0.1 final original native acceptance](evidence/verify/2026-10-21-muse-native-final.md) · [current44native/runtime and fullHTTP](evidence/verify/2026-10-21-current-native-http44.json)
