@@ -88,6 +88,29 @@ def parallel_assets(source: Path) -> dict:
                     result[arch].append(wheels[arch])
             return result
         raise ValueError("unreviewed standalone Python installer")
+    if source.name == "appworld":
+        item = json.loads((source / "upstream.json").read_text())
+        data = item["data"]
+        if (item["version"] != "0.1.3.post1" or item["source_commit"] != "66ad8099e12188ece0d3fe45e661dbc01880813b"
+                or data["url"] != "https://s3.us-west-2.amazonaws.com/appworld.dev/data-0.1.0.bundle"
+                or data["size"] != 34280074 or data["sha256"] != "fd9f9608c2ec71ed0ac25c3633a738b9129a318a129e31230425b9188e508250"):
+            raise ValueError("unreviewed original encrypted AppWorld data transport")
+        return {"x86_64": [{key: data[key] for key in ["url", "size", "sha256"]}]}
+
+
+
+
+    if source.name == "prime-agent":
+        item = json.loads((source / "upstream.json").read_text())
+        if (item["version"] != "0.10.0"
+                or item["source_commit"] != "763094e1b6a7c17450ee8399b06cda1853847ca5"
+                or item["url"] != "https://github.com/PrimeIntellect-ai/prime-agent/releases/download/v0.10.0/prime-agent-0.10.0-linux-x64.tar.gz"
+                or item["size"] != 21556959
+                or item["sha256"] != "c16bd2af5e77b53f49b914a44742c4cf6a67c5ed5000041430b78dbd4c3bcbec"
+                or item["binary_size"] != 61057216
+                or item["binary_sha256"] != "546e71921bb0fa278c9d50dd8c61a27b835413552cb08a9359d0e320848e39d6"):
+            raise ValueError("unreviewed original Prime Agent archive transport")
+        return {"x86_64": [{key: item[key] for key in ["url", "size", "sha256"]}]}
     if source.name == "chrome":
         item = json.loads((source / "browser.json").read_text())
         if (item["browser_version"] != "145.0.7632.6"

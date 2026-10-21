@@ -176,8 +176,24 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Current38native/runtime and required HTTP after Droid1.2](evidence/verify/2026-10-20-current-native-http38-droid.json)
 
+- [Original AppWorld private runtime](notes/proposed/feature/2026-10-20-appworld-native-runner.md) · [upstream research](evidence/verify/2026-10-20-appworld-native-research.md)
+
+
+
+
+- [Original stable Prime Agent](notes/proposed/feature/2026-10-20-prime-agent-native.md) · [research](evidence/verify/2026-10-20-prime-agent-native-research.md)
 - [Headed Chrome final native SDK/image acceptance](evidence/verify/2026-10-20-chrome-native-final.md)
 
 - [Current39native/runtime and required full HTTP snapshot](evidence/verify/2026-10-20-current-native-http39.json)
 
 - [Original QM harness and SDK backend](notes/proposed/feature/2026-10-21-qm-sdk-native-runtime.md) · [research](evidence/verify/2026-10-21-qm-native-research.md)
+
+- [AppWorld final original-task SDK/image/evaluator acceptance](evidence/verify/2026-10-21-appworld-native-final.md)
+
+- [Current40native/runtime and requiredHTTP with AppWorld](evidence/verify/2026-10-21-current-native-http40-appworld.json)
+
+
+- [Prime Agent final native SDK/image/coding acceptance](evidence/verify/2026-10-21-prime-agent-native-final.md)
+- [Current40native/runtime and required fullHTTP snapshot](evidence/verify/2026-10-21-current-native-http40.json)
+
+- [Current41native/runtime and required fullHTTP with Prime Agent and AppWorld](evidence/verify/2026-10-21-current-native-http41.json)

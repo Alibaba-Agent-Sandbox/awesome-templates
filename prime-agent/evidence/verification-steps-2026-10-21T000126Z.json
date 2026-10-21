@@ -1,0 +1,110 @@
+{
+  "template": "prime-agent",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-21T000126Z",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "PASS",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "prime-agent",
+    "materializer_sha256": "d3efa2c52b74a813fb3f74d1d3915ffca9eb59d7560d3fa12426f0b594d44893",
+    "source_manifest_contract_sha256": "63d0cf77467435bc40acafcf833f531408b12959c1a1d53307d42def782883fd",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "template_server_commit": null,
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "aebcccb1f03d0abb9fac3df8aee576c1d568a927",
+    "asset_transport": "oss",
+    "steps_json_bytes": 13303,
+    "inputs_sha256": {
+      "Dockerfile": "0633ff3bae71a4bd04d154e0ffcfd2fcda565136fde3650b860a2fa22376e743",
+      "template.yaml": "15c8e34b58faab8a9006c2c259c117d6991f3d053b34169ddd9d69a6720c9971",
+      "requirements.lock": "6174df63688f30be9e6c522e0e2c0ce3d352cce87d76a044cb13a914824301d0",
+      "upstream.json": "193db771cf95966b3fb59776f3ba75c884ce7f6edfd4986edc35917a29c566fa",
+      "install_native.py": "09e5ad8790b95495a7c1a4f6fdc964f7915ca15c1877c774f2f86ccefefe7838",
+      "kernel-python": "b4f6920a6ee21f595a71dcf84497e6fadc1960e97afb0a949d1e9608579b08a7",
+      "commands.py": "b5a2128e9a7de316781cd0fbe4f5ae5b295a38972f16ca8e4c4a1300655fe9be",
+      "filter_native.py": "25bd18629892968895bc75d458558c561849de0460bf4bae5f0d5dc56a599410",
+      "process.py": "db2f81ee4c9a2b0537eab00a690dcbc7d1b67555d2ac131635c3b2ca9698d126",
+      "lifecycle.py": "1ba7328cc89ad53bf7f179c8f12a9f48e534d3c8d19d13d27fae8fb2b877833a",
+      "UPSTREAM-NOTICE.md": "7b93fbca6f0f51a516c07ff20f66b95a1cf09593847abb19653d9056063ecea8"
+    },
+    "asset_transport_sha256": "83f20ec571a29225637ddac11fce7fd86f29146b24622b43e326c6934f8594e3",
+    "asset_adapter_source_commit": "aebcccb1f03d0abb9fac3df8aee576c1d568a927",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://github.com/PrimeIntellect-ai/prime-agent/releases/download/v0.10.0/prime-agent-0.10.0-linux-x64.tar.gz",
+          "size": 21556959,
+          "sha256": "c16bd2af5e77b53f49b914a44742c4cf6a67c5ed5000041430b78dbd4c3bcbec"
+        }
+      ]
+    },
+    "asset_cache_architecture": "x86_64",
+    "generated_manifest_sha256": "0275877f0fd8cc4f0dd4f1dfd90c28672cceec6343cef2a032ca9732bd52cb3c"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 9,
+    "fail_count": 0,
+    "skip_count": 0,
+    "controller_sha256": "c558fffc74814fd28fa31469784081d9ec971012ad77a7931db74749a4b3dbea"
+  },
+  "model_controller_sha256": "c558fffc74814fd28fa31469784081d9ec971012ad77a7931db74749a4b3dbea",
+  "commands_sha256": "b5a2128e9a7de316781cd0fbe4f5ae5b295a38972f16ca8e4c4a1300655fe9be",
+  "native_model_acceptance": {
+    "model_acceptance": "PASS",
+    "model": "qwen3.8-flash",
+    "model_protocol": "OpenAI-compatible Chat Completions",
+    "actual_sdk_named_command": true,
+    "native_version": "0.10.0",
+    "synthetic_probe_sha256": "9ddd91240adcb7f1c0d6791272bc69973ebc71589c13a6171428270607b5b54e",
+    "synthetic_native_wire": {
+      "synthetic_only": true,
+      "real_model_key_forwarded": false,
+      "native_exit_code": 0,
+      "native_completed": true,
+      "native_stop_reason": "stop",
+      "exact_final": true,
+      "owned_primary_requests": 1,
+      "conflicting_project_requests": 0,
+      "exact_model_path_bearer": true,
+      "native_tool_names": [
+        "ipython"
+      ],
+      "wrapper_sha256": "b5a2128e9a7de316781cd0fbe4f5ae5b295a38972f16ca8e4c4a1300655fe9be",
+      "owned_fixture_absent": true
+    },
+    "synthetic_fixture_files_and_listeners_absent_before_real_key": true,
+    "sdk_actual_native_version": true,
+    "sdk_explicit_byok_configured": true,
+    "exit_code": 0,
+    "pass_count": 18,
+    "fail_count": 0,
+    "skip_count": 0,
+    "secondary_server_stop_ack": true,
+    "owned_secondary_listener_and_native_state_absent": true
+  },
+  "cleanup_verified": true,
+  "exit_code": 0,
+  "receipt": "prime-agent/evidence/express-2026-10-21.json",
+  "command_calls": 4,
+  "asset_cache": {
+    "service": "Alibaba Cloud OSS",
+    "private_acl_verified": true,
+    "archives": [
+      {
+        "url": "https://github.com/PrimeIntellect-ai/prime-agent/releases/download/v0.10.0/prime-agent-0.10.0-linux-x64.tar.gz",
+        "sha256": "c16bd2af5e77b53f49b914a44742c4cf6a67c5ed5000041430b78dbd4c3bcbec",
+        "size": 21556959
+      }
+    ],
+    "signed_get_ttl_seconds": 3600,
+    "cleanup_verified": true
+  },
+  "duration_s": 232.382
+}
