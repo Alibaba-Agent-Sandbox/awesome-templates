@@ -129,11 +129,3 @@ def test_devin_no_account_fixture_never_forwards_credentials(monkeypatch):
     assert proof['test_configuration']=={'native_authentication_error_path_required':True,'credential_absence_required':True,'model_credentials_injected':False}
     manifest['env']['DEVIN_CREDENTIALS_FILE']='/unreviewed/auth.toml'
     with pytest.raises(ValueError,match='cannot configure credentials'):configure_http_fixture(ROOT/'devin',manifest,{})
-
-
-def test_k3s_fixture_requires_original_agentless_validation_without_cluster_credentials(monkeypatch):
-    monkeypatch.setenv('K3S_TOKEN','synthetic-operator-token');monkeypatch.setenv('KUBECONFIG','/private/operator-cluster')
-    manifest={'build':{'steps':[{'type':'USER','args':['user']}]}};proof={}
-    assert configure_http_fixture(ROOT/'k3s',manifest,proof)=={}
-    assert proof['test_configuration']=={'agentless_validation_required':True,'worker_nodes_claimed':False,'model_credentials_injected':False}
-    assert 'synthetic-operator-token'not in json.dumps(manifest)and '/private/operator-cluster'not in json.dumps(manifest)

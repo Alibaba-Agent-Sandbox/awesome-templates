@@ -34,7 +34,7 @@ The review contains actual owned Express SDK guest checks, independent cleanup, 
 
 ## K3s
 
-Issue [42](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/42) remains implementation work. A full worker-node/container-runtime cluster needs privileges/networking that have not been qualified in the tested Express profile. An agentless control-plane-only manifest-validation slice must prove actual original API readiness, server-side validation and cleanup before it can become a template; node/pod execution must not be inferred from an API server.
+Issue [42](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/42) is handled through its explicit evidence-backed decision alternative. [Seven actual native attempts and the current profile decision](feasibility/README.md#k3s) record failed readiness/validation and independent owned cleanup. No installable K3s template or verified worker cluster is advertised. Reopen implementation only on a profile where the original product actually passes its acceptance gate.
 
 ## Other research
 

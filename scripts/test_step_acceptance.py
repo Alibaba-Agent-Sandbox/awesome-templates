@@ -210,15 +210,3 @@ def test_devin_installation_and_version_only_cannot_certify_native_api(tmp_path)
     assert not inspect_http_receipt(source,receipt)[0]
     receipt['http_acceptance']['pass_count']=16;assert inspect_http_receipt(source,receipt)[0]
     receipt['http_acceptance']['skip_count']=1;assert not inspect_http_receipt(source,receipt)[0]
-
-
-def test_k3s_version_only_or_skipped_original_validation_cannot_qualify(tmp_path):
-    source=tmp_path/'k3s';source.mkdir();receipt=example(source)
-    (source/'e2e_test.py').write_text('original agentless server validation controller')
-    receipt['http_acceptance']={'exit_code':0,'pass_count':13,'fail_count':0,'skip_count':0,'controller_sha256':hashlib.sha256((source/'e2e_test.py').read_bytes()).hexdigest()}
-    assert not inspect_http_receipt(source,receipt)[0]
-    receipt['build_provenance']['test_configuration']={'agentless_validation_required':True,'worker_nodes_claimed':False,'model_credentials_injected':False}
-    assert not inspect_http_receipt(source,receipt)[0]
-    receipt['http_acceptance']['pass_count']=25;assert inspect_http_receipt(source,receipt)[0]
-    receipt['http_acceptance']['skip_count']=1;assert not inspect_http_receipt(source,receipt)[0]
-    receipt['http_acceptance']['skip_count']=0;receipt['build_provenance']['test_configuration']['worker_nodes_claimed']=True;assert not inspect_http_receipt(source,receipt)[0]

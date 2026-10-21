@@ -225,8 +225,10 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Current46 native/runtime and complete HTTP with Devin](evidence/verify/2026-10-21-current-native-http46-devin.json)
 
-- [Original agentless K3s validation](notes/proposed/feature/2026-10-21-k3s-agentless-validation.md) · [verification](evidence/verify/2026-10-21-k3s-agentless-validation.md)
+- [Original agentless K3s validation](notes/rejected/2026-10-21-k3s-agentless-validation.md) · [verification](evidence/verify/2026-10-21-k3s-agentless-validation.md)
 
 - [Devin diagnostic-origin correction](notes/proposed/process/2026-10-21-devin-diagnostic-origin.md) · [verification](evidence/verify/2026-10-21-devin-diagnostic-origin.md)
 
 - [Current46 native/runtime and complete HTTP with corrected Devin1.0.1](evidence/verify/2026-10-21-current-native-http46-devin101.json)
+
+- [K3s evaluated feasibility decision](notes/proposed/process/2026-10-21-k3s-feasibility-decision.md) · [seven original native attempts](evidence/verify/2026-10-21-k3s-final-feasibility.json)

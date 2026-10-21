@@ -106,11 +106,6 @@ def parallel_assets(source: Path) -> dict:
         if metadata.get('version')!='3000.11.92'or metadata.get('architecture')!='x86_64'or not reviewed_devin_native(item):
             raise ValueError('unreviewed original Devin artifact transport')
         return {'x86_64':[{key:item[key]for key in ['url','size','sha256']}]}
-    if source.name=='k3s':
-        item=json.loads((source/'upstream.json').read_text())
-        expected={'version':'v1.37.1+k3s1','architecture':'x86_64','url':'https://github.com/k3s-io/k3s/releases/download/v1.37.1%2Bk3s1/k3s','size':81543330,'sha256':'92b94582eb7b34a8cf532e6006842b9ed215a6783cf56a3dd6271fd35243b2c0'}
-        if any(item.get(key)!=value for key,value in expected.items()):raise ValueError('unreviewed original K3s artifact transport')
-        return {'x86_64':[{key:item[key]for key in ['url','size','sha256']}]}
     if source.name == "cursor-agent":
         from step_assets import reviewed_cursor_native
         metadata=json.loads((source/'upstream.json').read_text());item=metadata.get('archive',{})

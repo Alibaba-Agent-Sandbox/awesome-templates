@@ -1,9 +1,0 @@
-{
-  "version": "v1.37.1+k3s1",
-  "architecture": "x86_64",
-  "url": "https://github.com/k3s-io/k3s/releases/download/v1.37.1%2Bk3s1/k3s",
-  "size": 81543330,
-  "sha256": "92b94582eb7b34a8cf532e6006842b9ed215a6783cf56a3dd6271fd35243b2c0",
-  "checksum_source": "official release asset SHA256 and sha256sum-amd64.txt",
-  "source_commit": "356c025475bbefaa09cf0d7e48e8e2adbbde57db"
-}

@@ -1,12 +1,13 @@
-# Windows、Android 和 Omarchy 可行性
+# 平台与产品可行性
 
-[English](README.md)。审查日期2026-10-21。Issue [37](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/37)、[38](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/38)、[39](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/39)、[43](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/43)明确允许有证据的决策／集成设计；这里交付该结果，并不宣称产品模板通过验证。
+[English](README.md)。审查日期2026-10-21。Issue [37](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/37)、[38](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/38)、[39](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/39)、[42](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/42)、[43](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/43)明确允许有证据的决策／集成设计；这里交付该结果，并不宣称产品模板通过验证。
 
 | 产品 | 当前决定 | 继续实现所需 |
 | --- | --- | --- |
 | Windows Agent Arena | 暂不打包完整Windows虚拟机；不以Linux版本查询替代产品 | 自有且有授权的Windows11 WAA快照／原版Windows服务，或合适虚拟机宿主 |
 | Phone sandbox | 暂不实现Android设备分配；未建立可用设备池 | 真正可授权分配的Android设备／模拟器及控制通道 |
 | AndroidWorld | 暂不执行完整原版评测 | API33／Pixel6兼容模拟器、原版应用、ADB和模拟器gRPC可访问性服务 |
+| K3s | 本次非root／generation2环境无合格模板，保留七轮真实失败记录 | 实际支持原版API的profile；完整集群另需特权容器／工作节点网络 |
 | Omarchy | 不把Arch系统维护脚本包装为Debian应用 | 独立配置的Arch／Omarchy桌面或虚拟机及明确维护任务 |
 
 ## 实测环境与证据
@@ -44,3 +45,14 @@ Express的SDK环境探测和独立清理通过，四种产品本体验收NOT_RUN
 ## 复现与继续条件
 
 使用[配套Python客户端](../python-client-installation.md)和自己的提供商配置，按[英文可执行SDK示例](README.md#reproduce-the-guest-observation)将scripts/guest_runtime_features.py写入自有沙箱、通过commands.run执行，kill后独立get_info_by_id确认不存在。已记录运行还通过唯一metadata在私有日志中核对不确定的创建结果。该过程只是特征探测，不是四个产品的运行。未提供已认证产品的deploy／steps配方，不应执行虚构命令。完整原版环境、真实任务、回归、SDK／HTTP、清理与镜像通过后才能增加可安装条目及提供商资格；新运行保留独立日期证据。
+## K3s
+
+[Issue42](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/42)明确预期Express可能不支持，并允许依据证据作决定。当前不发布K3s可安装条目。完整工作节点／容器运行时嵌套尚未建立；较小的原版无agent控制面校验实验也未通过真实API就绪与服务端校验验收。
+
+七轮真实极速版验收使用原版v1.37.1+k3s1、上游提交356c025475bbefaa09cf0d7e48e8e2adbbde57db、81543330字节原始二进制及SHA25692b94582eb7b34a8cf532e6006842b9ed215a6783cf56a3dd6271fd35243b2c0，实际经历steps准备、READY、SDK创建、原版CLI／HTTP版本与帮助及API启动尝试。完整原生验收七轮均失败，各轮自有沙箱／模板／缓存均独立确认清理。[准确记录](../../.agents/evidence/verify/2026-10-21-k3s-final-feasibility.json)。
+
+实际故障包括原版默认路由选址、API拒绝链路本地广播地址；显式节点IP修复第一项，查询已分配网卡仍未在本次自定义worker建立合格非链路本地地址。独立托管base客体存在可用网卡，不能据此证明另一注册镜像／profile成功；这些结果也不能证明所有Express部署均不可能。不使用虚构广播地址、修改上游二进制或跳过就绪门禁。
+
+[未取得资格的审查实验](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/tree/0e28a5021473e11ed549fad6b08e5ccd796f9b07/k3s)与[拒绝原型的工程决定](../../.agents/notes/rejected/2026-10-21-k3s-agentless-validation.md)保留来源与限制，仅作研究历史。当前目录不提供`abx template launch ...//k3s`或deploy／steps安装操作。
+
+以后实现需实际可访问的适合提供商／profile、准确原版固定来源及许可证、真实就绪、SDK触发的合法／非法清单服务端校验与独立清理。完整Kubernetes声明还需真实工作节点、容器运行时、Pod调度／执行及网络／存储结果；无agent切片不能代替。托管OpenSandbox解释器验证属于另一产品，不证明特权K3s支持。其他提供商表记录最初操作者环境；后续托管解释器结果见[独立指南](../managed/opensandbox-code-interpreter/README.zh-CN.md)。

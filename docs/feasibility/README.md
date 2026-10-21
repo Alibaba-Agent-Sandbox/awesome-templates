@@ -1,12 +1,13 @@
-# Windows, Android and Omarchy feasibility
+# Platform and product feasibility
 
-[中文](README.zh-CN.md). Review date:2026-10-21. Issues [37](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/37), [38](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/38), [39](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/39) and [43](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/43) explicitly allow an evidence-backed decision/integration design. This delivers that outcome; these products are not installable verified templates.
+[中文](README.zh-CN.md). Review date:2026-10-21. Issues [37](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/37), [38](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/38), [39](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/39), [42](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/42) and [43](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/43) explicitly allow an evidence-backed decision/integration design. This delivers that outcome; these products are not installable verified templates.
 
 | Product | Decision for the tested Express profile | Integration prerequisite |
 | --- | --- | --- |
 | Windows Agent Arena | Defer the complete Windows VM; do not replace it with a Linux version wrapper | An owned Windows11 WAA snapshot/VM with the original Windows server and licensed image, or a suitable VM/container host |
 | Phone sandbox | Defer Android device provisioning; no usable device pool was established | A provider exposing a real authorized Android device/emulator and required control channels |
 | AndroidWorld | Defer the original evaluation until a compatible device is supplied | API33/Pixel6-compatible emulator, original apps, ADB and emulator gRPC accessibility connection |
+| K3s | No qualified template for the evaluated non-root generation2 profile; retain seven actual failed native attempts | A profile that actually supports the selected original server/API and, for a full cluster, privileged container/worker networking |
 | Omarchy | Do not package the Arch desktop's maintenance helpers as a Debian application | An independently provisioned compatible Arch/Omarchy desktop/VM; remote maintenance is a separate product |
 
 ## Executed checks
@@ -16,6 +17,8 @@ An actual SDK-created, uniquely owned Express managed `base` ran [the read-only 
 [Sanitized SDK/cleanup evidence](../../.agents/evidence/verify/2026-10-21-express-guest-features.json), [upstream pins/hash inventory](../../.agents/evidence/verify/2026-10-21-hardware-products-upstream.json), [other-provider prerequisite probes](../../.agents/evidence/verify/2026-10-21-other-provider-prerequisites.json).
 
 These are managed-base observations. Missing preinstalled tools can be installed; missing KVM alone does not prove that software emulation is impossible. No emulator boot, Windows desktop action, AndroidWorld task/reset/evaluator or Omarchy system update passed in this review. These decisions certify no Express L2 product or model result, and add no misleading `tested_on` or installable catalog entry.
+
+The provider prerequisite table below records the initial operator environment. Later hosted OpenSandbox interpreter verification is tracked separately in its [managed guide](../managed/opensandbox-code-interpreter/README.md); it is not a test of these hardware/cluster products.
 
 ## Provider scope
 
@@ -53,6 +56,18 @@ Original [repository at087f73d8](https://github.com/omacom/omarchy/tree/087f73d8
 
 Defer a source template: maintaining a separate Arch desktop VM through its real CLI may be useful, but this review has no such system and no demonstrated benefit from copying system-update scripts into Debian. No destructive OS installer/update was run. Reopen implementation when an owned compatible VM and a concrete remote-maintenance task are supplied; then test original package/version checks, a bounded task with observable state and cleanup. Existing generic shell templates already provide a terminal; renaming one Omarchy would misrepresent the product.
 
+## K3s
+
+[Issue42](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/42) explicitly says “Express expected: no” and permits a decision based on evidence. No installable K3s entry is published for the evaluated profile. Full worker/container-runtime nesting was not established; a narrower original agentless control-plane validation prototype also did not meet its real readiness/server-side validation gate.
+
+Seven canonical Alibaba Express attempts used originalv1.37.1+k3s1, source356c025475bbefaa09cf0d7e48e8e2adbbde57db and original81543330byte binary SHA25692b94582eb7b34a8cf532e6006842b9ed215a6783cf56a3dd6271fd35243b2c0. They exercised step preparation, READY, actual SDK creation, original CLI/HTTP version/help and attempted original API startup. All seven failed full native acceptance and independently confirmed owned VM/template/cache cleanup. [Exact run inventory](../../.agents/evidence/verify/2026-10-21-k3s-final-feasibility.json).
+
+Observed failures included upstream default-route selection and rejection of a link-local advertised IP. Supplying node IP removed the first failure; querying assigned interfaces still did not establish an accepted non-link-local address in the evaluated custom worker. A separate managed-base guest exposed a usable interface, which cannot be transferred as proof for a different registered image/profile. Do not infer all Express deployments are impossible from these specific failures. No synthetic advertised address, patched original binary or skipped readiness gate was used.
+
+[Unqualified reviewed experiment](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/tree/0e28a5021473e11ed549fad6b08e5ccd796f9b07/k3s) and [rejected prototype decision](../../.agents/notes/rejected/2026-10-21-k3s-agentless-validation.md) preserve the exact implementation and limitations for future work. It is research history, not an installation recommendation. There is no current `abx template launch ...//k3s` or deploy/steps recipe advertised by this catalog.
+
+A future implementation requires an actually accessible suitable provider/profile, exact original pins and license, actual readiness, SDK-triggered server-side valid/invalid manifest tests and independent cleanup. A full Kubernetes claim additionally needs a real worker, container runtime, pod scheduling/execution and observed network/storage behavior; the agentless slice cannot stand in for them. Standard hosted OpenSandbox interpreter verification is separate and does not establish privileged K3s support.
+
 ## Reproduce the guest observation
 
 Install the [paired Python client](../python-client-installation.md), configure your own provider and run the same source through the SDK in an owned sandbox:
@@ -87,4 +102,4 @@ async def main():
 asyncio.run(main())
 ```
 
-This reproduces a feature probe, not any of the four products. The recorded run additionally reconciled ambiguous creation by its unique metadata in a private owner journal. Never publish IDs, credentials or raw provider logs. Installation/build commands for a qualified product remain unavailable until a real source profile exists; there is no `abx template deploy` or steps recipe for these decisions.
+This reproduces a feature probe, not any of the evaluated products. The recorded run additionally reconciled ambiguous creation by its unique metadata in a private owner journal. Never publish IDs, credentials or raw provider logs. Installation/build commands for a qualified product remain unavailable until a real source profile exists; there is no `abx template deploy` or steps recipe for these decisions.
