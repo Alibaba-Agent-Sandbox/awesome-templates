@@ -30,6 +30,7 @@ if args==['--version']:print('k3s version v1.37.1+k3s1 (fixed-authored-worker)')
 if '--help'in args:print('--config --data-dir --write-kubeconfig --https-listen-port');raise SystemExit(0)
 if args[0]=='server':
  assert '--disable-agent'in args
+ assert '--node-ip'in args and value('--node-ip')==value('--advertise-address')
  private=pathlib.Path(value('--data-dir')).parent;req=json.loads((private/'request.json').read_text());node=pathlib.Path(req['node_dir'])
  assert pathlib.Path(value('--config')).read_text()=='{}\\n'
  (node/'password').write_text('a'*32+'\\n');(node/'password').chmod(0o600)

@@ -39,7 +39,8 @@ def run(request):
     with socket.socket()as reservation:reservation.bind(('127.0.0.1',0));port=reservation.getsockname()[1]
     native_config=private/'server-config.yaml';native_config.write_text('{}\n');native_config.chmod(0o600)
     REPORT['stage']='server_start'
-    argv=[binary,'server','--config',str(native_config),'--disable-agent','--data-dir',str(private/'data'),'--write-kubeconfig',str(config),'--https-listen-port',str(port),'--bind-address','0.0.0.0','--advertise-address',address()]
+    node_ip=address()
+    argv=[binary,'server','--config',str(native_config),'--disable-agent','--data-dir',str(private/'data'),'--write-kubeconfig',str(config),'--https-listen-port',str(port),'--bind-address','0.0.0.0','--advertise-address',node_ip,'--node-ip',node_ip]
     for name in ['coredns','traefik','servicelb','metrics-server','local-storage']:argv+=['--disable',name]
     server=subprocess.Popen(argv,cwd=private,env=env,stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.PIPE,start_new_session=True)
     overflow=threading.Event();readers=[]
