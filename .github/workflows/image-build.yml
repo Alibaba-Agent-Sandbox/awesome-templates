@@ -155,7 +155,6 @@ jobs:
               "openclaw": [("node --version", "v24.16.0"), ("openclaw --version", "2026.10.4")],
               "opencode": [("opencode --version", "1.19.0")],
               "qoder": [("qodercli --version", "1.1.72")],
-              "prime-agent": [("prime-agent --version", "0.10.0")],
               "goose": [("goose --version", "1.54.0")],
               "kimi-code": [("node --version", "v24.16.0"), ("kimi --version", "2.2.0")],
               "qwen-code": [("qwen --version", "0.23.0")],
