@@ -95,6 +95,8 @@ Secret declarations in template.yaml are empty; do not copy credentials into ima
 
 The changed workspace profile is verified in real generated steps. Prior receipts retain historical scope; basic smoke does not establish model acceptance.
 
+Fresh2026-10-21 program/API review at unchanged template1.1.1: immutable native steps/official READY/actual SDK create/CLI+SDK version smoke/full HTTP9PASS1credential-dependentSKIP. An independently configured authenticated command server then calls the actual original Qoder1.1.72 through SDK qoder using a fixed explicitly invalid synthetic PAT: native authentication is correctly refused. This is an expected error-path test, not a successful vendor/model call. No real vendor credentials were used; current authenticated coding/model acceptance remains NOT_RUN. Both secondary server/listener and outer sandbox/template absence independently confirmed;140.071seconds. [Current receipt](evidence/express-2026-10-21T093940Z.json), [program/API proof](evidence/verification-steps-2026-10-21T093940Z.json).
+
 ## Historical verification
 
 | Provider | Executed scope | Evidence |

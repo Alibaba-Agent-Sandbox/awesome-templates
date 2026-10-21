@@ -1,0 +1,58 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-21",
+  "template": "claude-code",
+  "template_version": "1.2.1",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "steps",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "harness_sha256": "91592778b24797075915b40f31f219f6517526b17cd2b3a75fe777f73fe6afd6",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "claude_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 4.605,
+      "result": "2.0.76 (Claude Code)"
+    },
+    {
+      "name": "claude_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 103.279,
+      "result": "2.0.76 (Claude Code)"
+    }
+  ],
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "claude-code",
+    "materializer_sha256": "35207b082e8dc30f8c4cddccf593d0ebb24dcc66fe3ea36417c6ff4bdfd01a17",
+    "source_manifest_contract_sha256": "5f31ae9beccf9b60c0e4a343feef3568e1cc7e4778f75fb3042ad2c23cfc4e1d",
+    "template_version": "1.2.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": "34e7e011c5569f77b7f605e65313be7498f6cf02",
+    "template_server_commit": "34e7e011c5569f77b7f605e65313be7498f6cf02",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "68462193e19543bb558cafe15857f450f8e8b2f0",
+    "asset_transport": "direct",
+    "steps_json_bytes": 5518,
+    "inputs_sha256": {
+      "Dockerfile": "d58c3495826f94e1af5791d0a650ca298dc99fd222509a69a309d9d3f3b9738d",
+      "template.yaml": "38b3215d59d8720c5a4b4905735c027690b5ee121bff425d56008a7257914709",
+      "server-sdk.commit": "57134d659449d0f55301272a5abc2ac907c86b8380a36f2b3e86e09c9b6dc6cf",
+      "package.json": "19b88d8194ebdfa13c341f4af7edf271c419cf70b7b6ef4d15632564413579eb",
+      "package-lock.json": "ad6f89967f973580e07be967fe3ac17b50b4896849d170e414fba45c13a77b3f",
+      "commands.py": "8ff7f77c08fd822cf4b612e2ff98ebb1463844674f02cda2bfd4bd45b4365486",
+      "byok.py": "a9ebc312474fb3efb6981c41f137a446c393a9651e5e16097a6f30c28aa7b66b",
+      "relay.py": "ea459c7439fc4c78ce0e5029356db1a6678cfcac04856bdc4afdda5fe3444103",
+      "process.py": "2105455cab5d7fdfd9188d1894b6d5b6097c3ff9b11383d866bcc0bfb284b3f2",
+      "lifecycle.py": "8e18aa3f5e85ee9a69ffe2b7d38f3ddf8300d7634d2211d614a8033744e4f269",
+      "upstream.json": "3dd32d6a13438f7a0c89856f6dd0a82353261c0521d39adbb7d4f0e03ae86ca6"
+    },
+    "generated_manifest_sha256": "62a1b6626a00727599936c677494f539170c84e120e27f2f0d19cf753f7ba5b7"
+  }
+}

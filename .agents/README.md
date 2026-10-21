@@ -204,6 +204,7 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Muse1.0.1 final original native acceptance](evidence/verify/2026-10-21-muse-native-final.md) · [current44native/runtime and fullHTTP](evidence/verify/2026-10-21-current-native-http44.json)
 
+- [Original Claude explicit compatible transport](notes/proposed/feature/2026-10-21-claude-explicit-compatible.md) · [verification](evidence/verify/2026-10-21-claude-explicit-compatible.md)
 - [Original Gemini explicit compatible transport](notes/proposed/feature/2026-10-21-gemini-explicit-compatible.md) · [verification](evidence/verify/2026-10-21-gemini-explicit-compatible.md)
 
 - [Current44 native/runtime and full HTTP including Gemini2.1.4](evidence/verify/2026-10-21-current-native-http44-gemini.json)
@@ -213,3 +214,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Current44 native/runtime and full HTTP with Gemini2.2.0](evidence/verify/2026-10-21-current-native-http44-gemini220.json)
 
 - [Original Cursor native template](notes/proposed/feature/2026-10-21-cursor-native-runtime.md) · [research](evidence/verify/2026-10-21-cursor-native-research.md)
+- [Qoder native program/API review](evidence/verify/2026-10-21-qoder-program-api-review.md) · [decision](notes/proposed/process/2026-10-21-qoder-program-api-review.md)
+- [Current44 native/runtime and full HTTP with Claude1.3.1/Gemini2.2.0](evidence/verify/2026-10-21-current-native-http44-claude131.json)

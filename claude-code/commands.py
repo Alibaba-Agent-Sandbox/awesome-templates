@@ -8,6 +8,9 @@ from pathlib import Path
 import subprocess
 
 from agent_sandbox.server import command, start
+import importlib.util
+_spec=importlib.util.spec_from_file_location("owned_claude_byok",Path(__file__).with_name("byok.py"))
+_BYOK=importlib.util.module_from_spec(_spec);_spec.loader.exec_module(_BYOK)
 
 
 CLAUDE_VERSION = "2.0.76"
@@ -83,6 +86,22 @@ def claude(
     if not isinstance(parsed, dict) or parsed.get("is_error") is True:
         raise RuntimeError("Claude Code reported an unsuccessful result")
     return json.dumps(_redact_result(parsed), ensure_ascii=False)
+
+
+@command("claude_setup_check", description="Read-only explicit compatible-model configuration presence; no values or authentication.")
+def claude_setup_check() -> dict:
+    return _BYOK.setup()
+
+
+@command("claude_native_check", description="Original hash-pinned Claude CLI headless flags without a model call.")
+def claude_native_check() -> dict:
+    text=_BYOK.diagnostic(["--help"])
+    return {"original_native":True,"isolated_settings":"--setting-sources"in text,"no_session_persistence":"--no-session-persistence"in text,"strict_mcp":"--strict-mcp-config"in text}
+
+
+@command("claude_byok", description="Original Claude Code using explicit authored Messages-to-Chat text/tool adapter and bounded owned per-call state.")
+def claude_byok(prompt: str, cwd: str="", command_timeout: int=300, allow_unsafe_tools: bool=False) -> dict:
+    return _BYOK.run(prompt,cwd,command_timeout,allow_unsafe_tools)
 
 
 if __name__ == "__main__":
