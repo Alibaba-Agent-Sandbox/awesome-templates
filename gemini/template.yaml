@@ -1,5 +1,5 @@
 name: gemini
-version: "2.1.0"
+version: "2.1.1"
 description: "Pinned Gemini CLI with typed headless commands and explicit tool approval."
 author: alibaba-agent-sandbox
 license: Apache-2.0

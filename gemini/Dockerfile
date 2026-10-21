@@ -7,6 +7,8 @@ RUN cd /opt/gemini && npm ci --omit=optional --ignore-scripts --no-audit --no-fu
     && ln -s /opt/gemini/node_modules/.bin/gemini /usr/local/bin/gemini \
     && gemini --version && npm cache clean --force
 
+COPY profile.json /opt/gemini/profile.json
+
 COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
         pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \

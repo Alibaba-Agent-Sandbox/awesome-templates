@@ -4,10 +4,19 @@ from pathlib import Path
 ROOT=Path(os.environ.get('WORKSPACE','/home/user/app')).resolve()
 MODEL={k:os.environ.get('GEMINI_BYOK_'+suffix,'').strip()for k,suffix in [('MODEL_API_KEY','API_KEY'),('MODEL_BASE_URL','BASE_URL'),('MODEL','MODEL')]}
 LOCK=threading.Lock();IDENTITY=None
+PROFILE=Path('/opt/gemini/profile.json')
+PROFILE_SHA256='e80be3d30c3a28b39e316cb401d8303ec39bd4d96977f2d1ae158436e182c4da'
 EXPECTED=json.loads(Path(__file__).with_name('upstream.json').read_text())
 def load(name):
     spec=importlib.util.spec_from_file_location('owned_gemini_'+name,Path(__file__).with_name(name+'.py'));m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);return m
 PROCESS=load('process');RELAY=load('relay')
+def profile():
+    try:st=PROFILE.stat(follow_symlinks=False)
+    except OSError:raise RuntimeError('trusted root-owned Gemini profile unavailable')from None
+    if PROFILE.is_symlink()or st.st_uid!=0 or st.st_mode&0o022 or st.st_size>4096:raise RuntimeError('trusted root-owned Gemini profile identity differs')
+    if hashlib.sha256(PROFILE.read_bytes()).hexdigest()!=PROFILE_SHA256:raise RuntimeError('trusted Gemini profile SHA256 differs')
+    return str(PROFILE)
+
 def binary():
     global IDENTITY
     root=Path('/opt/gemini/node_modules/@google/gemini-cli');current=[]
@@ -57,13 +66,7 @@ def run(prompt,cwd='',command_timeout=300):
         with tempfile.TemporaryDirectory(prefix='abx-gemini-home-')as name:
             private=Path(name);private.chmod(0o700);relay=RELAY.Relay(base,key,model,command_timeout);env=environment(private)
             env.update(GOOGLE_GEMINI_BASE_URL=relay.url,GOOGLE_GENAI_API_VERSION='v1beta',GEMINI_API_KEY=relay.token,GEMINI_API_KEY_AUTH_MECHANISM='bearer')
-            settings={'security':{'auth':{'selectedType':'gemini-api-key','enforcedType':'gemini-api-key'},'folderTrust':{'enabled':False}},
-                      'general':{'enableAutoUpdate':False,'enableAutoUpdateNotification':False,'sessionRetention':{'enabled':False}},
-                      'model':{'name':model,'maxSessionTurns':16},'telemetry':{'enabled':False},'privacy':{'usageStatisticsEnabled':False},
-                      'tools':{'core':sorted(RELAY.TOOLS)},'hooksConfig':{'enabled':False},'hooks':{},'mcpServers':{},
-                      'experimental':{'enableAgents':False},'skills':{'enabled':False}}
-            folder=private/'.gemini';folder.mkdir(mode=0o700);config=folder/'settings.json';config.write_text(json.dumps(settings));config.chmod(0o600)
-            env['GEMINI_CLI_SYSTEM_SETTINGS_PATH']=str(config)
+            env['GEMINI_CLI_SYSTEM_SETTINGS_PATH']=profile()
             argv+=['--prompt',prompt+'\nThe existing target project is '+str(project)+'. Use absolute paths for all project reads/edits/artifacts.','--model',model,'--output-format','json','--approval-mode','yolo','--include-directories',str(project)]
             code,out,err=PROCESS.run(argv,cwd=private,env=env,timeout=command_timeout);relay.wait_for_idle();stats=relay.snapshot()
             try:value=json.loads(out)

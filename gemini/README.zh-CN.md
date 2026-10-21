@@ -78,7 +78,7 @@ HTTP200返回{"result":"0.64.0"}。POST/commands/gemini_byok接收直接{prompt,
 | gemini_setup_check | 无 | 旧installed/version/pinned_version/密钥模型存在标志/workspace/设置路径、存在和JSON有效性；不修改配置、不认证 |
 | gemini | prompt必需非空字符串；model默认空，再GEMINI_MODEL，再gemini-3.1-flash-lite；cwd默认空、已有且位于工作区内；command_timeout整数默认600、1..1800秒；yolo布尔默认False | 旧原生缓冲JSON字符串。False选择plan，True显式允许运行工具。必须GEMINI_API_KEY，不隐式复用OpenAI密钥/OAuth。新增隔离保证不覆盖旧模式 |
 
-新增固定参数--prompt/--model/--output-format json/--approval-mode yolo/--include-directories <项目>。启动cwd为新建私有目录，提示明确项目绝对路径；私有/系统设置固定gemini-api-key认证、16模型会话轮，禁用hooks/skills/子Agent/更新/遥测，无配置MCP或已安装扩展。原生核心工具仅read_file/write_file/replace/run_shell_command/list_directory/glob/grep_search，不提供委派工具。原始及生成代码仅在自有可丢弃沙箱执行，项目指令仍是不可信输入。
+新增固定参数--prompt/--model/--output-format json/--approval-mode yolo/--include-directories <项目>。启动cwd为新建私有目录，提示明确项目绝对路径；固定SHA256且root持有的/opt/gemini/profile.json系统设置固定gemini-api-key认证、16模型会话轮，禁用hooks/skills/子Agent/更新/遥测，无配置MCP或已安装扩展。原生核心工具仅read_file/write_file/replace/run_shell_command/list_directory/glob/grep_search，不提供委派工具。原始及生成代码仅在自有可丢弃沙箱执行，项目指令仍是不可信输入。
 
 仅转换文本与原生函数声明/结果；保留ID，原生缺失ID时按同一历史中名称顺序关联。明确转换Google schema类型大小写/nullable。拒绝图像/thinking/未知内容工具/错误结果关联/截断回复/错误模型路径token/重定向。Chat缓冲后输出原GenerateContent SSE，实际用量来自上游。最多32请求、请求2MiB、响应4MiB、原生16轮、stdout/stderr各256KiB；截止时间后最多额外90秒自有清理，客户端至少command_timeout+120，并发返回忙。成功要求原始非空成功回复、正数完成请求且无失败；编码另需原生工具结果和独立产物测试。
 
@@ -102,7 +102,7 @@ BYOK模块导入时捕获设置，密钥最多8192字符且无控制字符。原
 
 ## 已验证
 
-当前2.1.0提供商、原生、模型和镜像资格待执行。本地81项固定及旧协议/进程/controller测试通过、1项跳过，9.40秒；跳过的是操作端未安装的真实CLI。原包校验、源码检查和固定测试不是原生/云端/模型验收。此前2.0.1回执保留为不可变历史，不能认证本次变更。
+当前2.1.1提供商、原生、模型和镜像资格待执行。本地81项固定及旧协议/进程/controller测试通过、1项跳过，9.40秒；跳过的是操作端未安装的真实CLI。原包校验、源码检查和固定测试不是原生/云端/模型验收。此前2.0.1回执保留为不可变历史，不能认证本次变更。
 
 ## 二次开发
 

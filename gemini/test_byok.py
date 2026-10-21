@@ -33,3 +33,21 @@ def test_owned_process_descendant_cleanup_and_output_bound(tmp_path):
  finally:outsider.terminate();outsider.wait(timeout=5)
 def test_authored_process_timeout(tmp_path):
  with pytest.raises(RuntimeError,match='exceeded timeout'):b.PROCESS.run([sys.executable,'-c','import time;time.sleep(20)'],cwd=tmp_path,env={'PATH':os.environ['PATH']},timeout=.05)
+
+
+def test_user_owned_system_profile_is_refused_before_native_call(tmp_path,monkeypatch):
+    path=tmp_path/'profile.json';path.write_text('{}');monkeypatch.setattr(b,'PROFILE',path)
+    with pytest.raises(RuntimeError,match='root-owned'):b.profile()
+
+
+def test_trusted_profile_content_hash_is_enforced(tmp_path,monkeypatch):
+    from types import SimpleNamespace
+    path=tmp_path/'profile.json';path.write_text('{}');monkeypatch.setattr(b,'PROFILE',path)
+    original=Path.stat
+    def stat(p,*args,**kwargs):
+        if p==path:return SimpleNamespace(st_uid=0,st_mode=0o100644,st_size=2)
+        return original(p,*args,**kwargs)
+    monkeypatch.setattr(Path,'stat',stat)
+    with pytest.raises(RuntimeError,match='SHA256'):b.profile()
+    import hashlib
+    monkeypatch.setattr(b,'PROFILE_SHA256',hashlib.sha256(b'{}').hexdigest());assert b.profile()==str(path)
