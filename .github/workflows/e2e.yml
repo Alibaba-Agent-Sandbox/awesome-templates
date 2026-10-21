@@ -247,7 +247,7 @@ jobs:
       - name: Lint templates and unit-test the checker
         run: |
           python3 scripts/test_local_cleanup.py && python3 scripts/test_spec_tools.py
-          python -m pytest -q scripts/test_prepare_steps.py scripts/test_ci_image.py scripts/test_ci_image_archive.py scripts/test_express_cleanup.py scripts/test_sdk_creation.py scripts/test_step_acceptance.py scripts/test_steps_http.py scripts/test_step_assets.py scripts/test_step_asset_cache.py scripts/test_cursor_assets.py
+          python -m pytest -q scripts/test_prepare_steps.py scripts/test_ci_image.py scripts/test_ci_image_archive.py scripts/test_express_cleanup.py scripts/test_sdk_creation.py scripts/test_step_acceptance.py scripts/test_steps_http.py scripts/test_step_assets.py scripts/test_step_asset_cache.py scripts/test_cursor_assets.py scripts/test_devin_assets.py
           python3 scripts/check_template.py --all --strict
 
       - name: Run process, privacy, and acceptance-harness regressions
@@ -285,6 +285,7 @@ jobs:
           python -m pytest -q opencode/test_commands.py opencode/test_e2e_protocol.py
           python -m pytest -q amp/test_commands.py amp/test_e2e_protocol.py
           python -m pytest -q droid/test_commands.py droid/test_e2e_protocol.py droid/test_byok.py droid/test_model_controller.py
+          python -m pytest -q devin/test_commands.py devin/test_controller.py devin/test_install.py
           python -m pytest -q cursor-agent/test_commands.py cursor-agent/test_controller.py cursor-agent/test_install.py
           python -m pytest -q gemini/test_commands.py gemini/test_e2e_protocol.py gemini/test_byok.py gemini/test_adapter.py gemini/test_controller.py
           python -m pytest -q openclaw/test_commands.py openclaw/test_sdk_controller.py

@@ -100,6 +100,12 @@ def parallel_assets(source: Path) -> dict:
 
 
 
+    if source.name == 'devin':
+        from step_assets import reviewed_devin_native
+        metadata=json.loads((source/'upstream.json').read_text());item=metadata.get('archive',{})
+        if metadata.get('version')!='3000.11.92'or metadata.get('architecture')!='x86_64'or not reviewed_devin_native(item):
+            raise ValueError('unreviewed original Devin artifact transport')
+        return {'x86_64':[{key:item[key]for key in ['url','size','sha256']}]}
     if source.name == "cursor-agent":
         from step_assets import reviewed_cursor_native
         metadata=json.loads((source/'upstream.json').read_text());item=metadata.get('archive',{})

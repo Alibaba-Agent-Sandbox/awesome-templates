@@ -218,3 +218,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Current44 native/runtime and full HTTP with Claude1.3.1/Gemini2.2.0](evidence/verify/2026-10-21-current-native-http44-claude131.json)
 
 - [Current45 native/runtime and complete HTTP with Cursor](evidence/verify/2026-10-21-current-native-http45-cursor.json)
+
+- [Original Devin native runtime](notes/proposed/feature/2026-10-21-devin-native-runtime.md) · [verification](evidence/verify/2026-10-21-devin-native.md)

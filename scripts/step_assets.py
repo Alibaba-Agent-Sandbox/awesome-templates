@@ -32,6 +32,11 @@ MAX_BYTES = 300 * 1024 * 1024
 MUSE_NATIVE = {'url': 'https://lookaside.facebook.com/lookaside/muse/download/?channel=muse&version=1.4.11-R6667.1&file=muse-x86-linux', 'size': 384809176, 'sha256': '6fda12a6a4f236528dafa707384cf6395fe859b1438ef77c7be26ed9d7976839'}
 CURSOR_NATIVE = {'url':'https://downloads.cursor.com/lab/2026.10.19-6bbf2c4/linux/x64/agent-cli-package.tar.gz','size':183733394,'sha256':'cf80cc18d8b33bf33e762353977ca1868cfc45290c92c0ffdcef83bb8b37b44f'}
 
+DEVIN_NATIVE = {'url':'https://static.devin.ai/cli/3000.11.92/devin-3000.11.92-x86_64-unknown-linux.tar.gz','size':67245544,'sha256':'2d829139682e038cf122510f1170eee3d7060bcc7ebf92445cbc5d28c9fbcfa0'}
+
+def reviewed_devin_native(asset: dict) -> bool:
+    return all(asset.get(key)==value for key,value in DEVIN_NATIVE.items())
+
 def reviewed_cursor_native(asset: dict) -> bool:
     return all(asset.get(key)==value for key,value in CURSOR_NATIVE.items())
 
