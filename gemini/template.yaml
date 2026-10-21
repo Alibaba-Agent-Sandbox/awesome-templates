@@ -1,5 +1,5 @@
 name: gemini
-version: "2.0.1"
+version: "2.2.0"
 description: "Pinned Gemini CLI with typed headless commands and explicit tool approval."
 author: alibaba-agent-sandbox
 license: Apache-2.0
@@ -20,6 +20,9 @@ capabilities: [shell, files, code, ports]
 env:
   ABX_SERVER_TOKEN: ""
   GEMINI_API_KEY: ""
+  GEMINI_BYOK_API_KEY: ""
+  GEMINI_BYOK_BASE_URL: ""
+  GEMINI_BYOK_MODEL: ""
   GEMINI_MODEL: gemini-3.1-flash-lite
   WORKSPACE: /home/user/app
 smoke:

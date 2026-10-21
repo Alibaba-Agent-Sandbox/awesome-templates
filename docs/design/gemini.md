@@ -1,41 +1,28 @@
 # gemini
 
 ## Purpose
-
-Expose Gemini CLI for project inspection and explicitly authorized coding through the named-command HTTP contract. Refs [Issue #30](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/30).
+Run original Gemini CLI0.64.0 with original text/file/shell tools through SDK/HTTP. Preserve legacy APIs; new gemini_byok uses explicitly approved compatible Chat via authored native GenerateContent text/tool translation. [Issue30](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/30).
 
 ## Capabilities
-
-Headless CLI calls, read-only installation/setup diagnostics, files and process APIs on port 9000. The command defaults to upstream plan mode; tool edits/shell need explicit `yolo=true`. Starting directories must resolve inside WORKSPACE. The runtime provides isolation; this is not a tool filesystem sandbox.
+Original tool/planning engine; bounded private per-call state and original function/result identity. Explicit custom model only, no Google OAuth/default key fallback. Not full interactive/image/thinking/PTY/MCP/plugin/delegation compatibility. [Complete bilingual contract](../../gemini/README.md).
 
 ## Exposed API
-
-`gemini(prompt: str, model: str="", cwd: str="", command_timeout: int=600, yolo: bool=False) -> str`. Prompt is required/nonempty; timeout is 1–1800 seconds. Model resolves argument, GEMINI_MODEL, then gemini-3.1-flash-lite. cwd resolves inside WORKSPACE. argv is `gemini -p <prompt> --model <model> --output-format json --approval-mode plan|yolo`. No shell interpolation; stdin DEVNULL; process-group deadline kills descendants. Both success/failure output redact secret environment values.
-
-`gemini_version() -> str` runs `gemini --version`, deadline 30 seconds. `gemini_setup_check() -> dict` reports installation, pin/version, key-presence boolean, model-presence/workspace and settings metadata. It never creates or rewrites config or returns configuration contents. Existing OAuth/Vertex settings remain user-owned. HTTP arguments are typed from signatures; execution errors are HTTP 500.
+Legacy gemini/version/setup unchanged. New gemini_byok(prompt,cwd='',command_timeout300,allow_unsafe_tools=False) -> buffered original final/identity/actual transport and tool counts; nonempty32768UTF8byte prompt/contained existing project/integer1..600/no bool. Native hash/help and BYOK presence-only setup checks. Only original seven text/file/shell tool schemas are exposed.
 
 ## How to build
-
-Template2.0.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
-
-[Dockerfile](../../gemini/Dockerfile) uses Alibaba runtime base (default v0.0.49 region cn-hangzhou, resolved by deploy), exact `@google/gemini-cli@0.64.0`, and server archive pin `35da216a300f1e2e84254a1cf4b4a7ea98681505` or an injected build wheel. Actual package metadata says Node >=20; local actual binary/help verified version and supported flags. Uses base Node instead of another unpinned Node installer. Workdir /home/user/app, user user, generation 2, start `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`, readiness `agent-sandbox-server healthcheck --port 9000`. No CMD/ENTRYPOINT. npm cache is removed in the install layer.
+Alibaba generation2basev0.0.49/non-root, baseNode20/upstreamrequires>=20; original npm0.64.0 exact SHA512 lock/no optional interactive addons/no lifecycle scripts. Root-owned449files/98597935bytes SHA256 checked before native diagnostics/exec; preserve original Apache/bundled notices. Explicit server34e7e011c5569f77b7f605e65313be7498f6cf02 opt-in/fallback. Runtime code independent of sibling templates.
 
 ## Express feasibility
-
 Feasible: yes
 
-Limiting factor: real Gemini API key and model availability for L3; no image/cloud acceptance in the current runtime without Docker.
+Limiting factor: new original-native/compatible transport acceptance pending
 
-The whole headless CLI fits the stated 2 vCPU/4096 MB non-root runtime without KVM, Docker or privileged capabilities. That feasibility analysis does not establish a provider pass.
+Headless text/tools need no KVM/extra privileges/display. Original native Google wire is not Chat: authored bounded function/text conversion is required for existing approved gateway. Source/doc checks are not actual provider/model proof. Declared2CPU4096MB not measured peak memory.
 
 ## Risks
-
-Owned subprocess groups are cleaned after success/nonzero completion as well as timeout. Linux waitid(WNOWAIT) keeps the leader PID reserved through final group KILL; concurrent pipe readers prevent output deadlock, and only then is the leader reaped. Background descendants with redirected stdio cannot survive normal completion.
-
-Prompts and tools make external model/network calls. yolo approves edits and shell inside the sandbox and must be explicit. No missing-key OAuth fallback. Model availability varies by key. Settings are inspected without mutation; malformed JSON is reported, not repaired. Existing upstream settings/extensions remain relevant. Logs and public records must never contain credentials. The wrapper redacts credential-valued environment variables, including JSON-escaped values, and strips timeout exception chains that would include prompt argv. Client HTTP timeout is independent from process deadline.
+Private launch cwd/HOME/cache and hash-pinned root-owned system profile, contained extra project, disabled hooks/skills/subagents/update/telemetry, no configured MCP/extensions. Parent alone holds actual root key; child only local token. Reject redirects/wrong path/model/auth/unsupported content/truncated replies and preserve function/result IDs. Minimal environment is not a same-user tenant boundary. Bound32requests/2MiB/4MiB/16turns/256KiBstreams/deadline and own subprocess/RPC/listener/private cleanup. Legacy profile behavior remains separate.
 
 ## Test plan
+Original npm metadata/archive integrity/source flags and449file inventory. Local fixed native text/function/schema/usage/SSE/identity/refusal/auth/origin tests, authored process bounds/descendant cleanup and strict controller marker/local-target guards; preserve old tests. Published-source native steps/officialREADY/actual SDK create and original CLI/version/hash/help/fullHTTP, original native synthetic before key, real coding changed source/original3tests/newreport/exactnonce/3+4postreturn/freshACK, independent owned absence; non-root image and strict/spec/docs/records/latestCI/review/normal pinned merge before current qualification.
 
-L0: checker, behavior regressions, actual local server HTTP contract via run_local_e2e with model forced off. Regressions cover argv/permission flags, missing-key no spawn, setup preserving config/mode, cwd symlinks/traversal, output redaction, timeout descendant cleanup, target-key detection, zero forced-off coding requests and rejected false L3 passes.
-
-L1: real Docker build and visible 0.64.0 version, unavailable when Docker is missing. L2: deploy with unique task alias, external CLI and SDK smoke gemini_version==0.64.0; remove owned resources. L3: target setup must report Gemini key; controller keys are irrelevant. Through remote files/process APIs, seed a failing calculator, require fixing existing source, preserving tests and creating REPORT.md plus exact randomized ABX_E2E_OK artifact, rerun tests independently and held-out arithmetic, clean unique project. Marker-only answers fail. E2E_REQUIRE_LLM makes missing key or forced-off model execution fail. No L4 provider is claimed.
+Current2.2.0 requires explicit true before native/model execution. The presence-only setup reports requires_unsafe_optin:true; successful native metadata identifies explicit-owned-sandbox-bypass. Legacy gemini API is unchanged.
