@@ -1,0 +1,348 @@
+{
+  "template": "claude-code",
+  "version": "1.3.0",
+  "result": "FAIL",
+  "real_model_acceptance": {
+    "exit_code": 1,
+    "pass_count": 12,
+    "fail_count": 1,
+    "skip_count": 0,
+    "controller_sha256": "ca2372ee958661686524ecef94e0d3d7f6f286853a6f458142ab0856676247e4",
+    "model": "qwen3.8-flash",
+    "origin": "explicit approved configured origin; omitted"
+  },
+  "operator_native_execution": false,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "claude-code",
+    "materializer_sha256": "35207b082e8dc30f8c4cddccf593d0ebb24dcc66fe3ea36417c6ff4bdfd01a17",
+    "source_manifest_contract_sha256": "0afd65788d46677f1b575a18b472ea4a5217ac2d9421eb18f9da0bedaf5bfd63",
+    "template_version": "1.3.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": null,
+    "template_server_commit": "34e7e011c5569f77b7f605e65313be7498f6cf02",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "23225900c0402399c2095ce4f470f601d0979f6e",
+    "asset_transport": "direct",
+    "steps_json_bytes": 5522,
+    "inputs_sha256": {
+      "Dockerfile": "d58c3495826f94e1af5791d0a650ca298dc99fd222509a69a309d9d3f3b9738d",
+      "template.yaml": "bd30ebdf7318e27566d83c3c85fc112f6cd2c84ceb75ca38e51fde72f51315e9",
+      "server-sdk.commit": "57134d659449d0f55301272a5abc2ac907c86b8380a36f2b3e86e09c9b6dc6cf",
+      "package.json": "19b88d8194ebdfa13c341f4af7edf271c419cf70b7b6ef4d15632564413579eb",
+      "package-lock.json": "ad6f89967f973580e07be967fe3ac17b50b4896849d170e414fba45c13a77b3f",
+      "commands.py": "094610662d59e19748530de3f2f3de51b1a117dc7acfe994c7b7437567784228",
+      "byok.py": "d2691806fd66246868fd1db661209332f6fe80daae076974a711675fbc454be2",
+      "relay.py": "10a0fbe8b9d8bd1be023f46839a9863642cd91024b0a347e3aefd8fee67d2b0a",
+      "process.py": "2105455cab5d7fdfd9188d1894b6d5b6097c3ff9b11383d866bcc0bfb284b3f2",
+      "lifecycle.py": "8e18aa3f5e85ee9a69ffe2b7d38f3ddf8300d7634d2211d614a8033744e4f269",
+      "upstream.json": "3dd32d6a13438f7a0c89856f6dd0a82353261c0521d39adbb7d4f0e03ae86ca6"
+    },
+    "generated_manifest_sha256": "dc0ef39f54e51e146fde377fb42f6cb8b0773a36b6f5d98ff438aa56f05fb31d"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 10,
+    "fail_count": 0,
+    "skip_count": 0,
+    "controller_sha256": "34add208515c20e6ed4a405c114bce99bad2a4c6700bcce1e6f1092a01653b7c"
+  },
+  "research_transport_structure": {
+    "instrumented_research_only": true,
+    "requests": [
+      {
+        "auxiliary_kind": "unknown",
+        "index": 0,
+        "native_max_tokens": 32000,
+        "tool_count": 4,
+        "message_count": 1,
+        "roles": [
+          "user"
+        ],
+        "translated_tool_results": 0
+      },
+      {
+        "auxiliary_kind": "bash_file_paths",
+        "index": 1,
+        "native_max_tokens": 32000,
+        "tool_count": 0,
+        "message_count": 1,
+        "roles": [
+          "user"
+        ],
+        "translated_tool_results": 0
+      },
+      {
+        "auxiliary_kind": "unknown",
+        "index": 2,
+        "native_max_tokens": 32000,
+        "tool_count": 4,
+        "message_count": 3,
+        "roles": [
+          "user",
+          "assistant",
+          "user"
+        ],
+        "translated_tool_results": 1
+      },
+      {
+        "auxiliary_kind": "unknown",
+        "index": 3,
+        "native_max_tokens": 32000,
+        "tool_count": 4,
+        "message_count": 5,
+        "roles": [
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user"
+        ],
+        "translated_tool_results": 2
+      },
+      {
+        "auxiliary_kind": "unknown",
+        "index": 4,
+        "native_max_tokens": 32000,
+        "tool_count": 4,
+        "message_count": 7,
+        "roles": [
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user"
+        ],
+        "translated_tool_results": 3
+      },
+      {
+        "auxiliary_kind": "unknown",
+        "index": 5,
+        "native_max_tokens": 32000,
+        "tool_count": 4,
+        "message_count": 9,
+        "roles": [
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user"
+        ],
+        "translated_tool_results": 4
+      },
+      {
+        "auxiliary_kind": "bash_prefix",
+        "index": 6,
+        "native_max_tokens": 32000,
+        "tool_count": 0,
+        "message_count": 1,
+        "roles": [
+          "user"
+        ],
+        "translated_tool_results": 0
+      },
+      {
+        "auxiliary_kind": "bash_file_paths",
+        "index": 7,
+        "native_max_tokens": 32000,
+        "tool_count": 0,
+        "message_count": 1,
+        "roles": [
+          "user"
+        ],
+        "translated_tool_results": 0
+      },
+      {
+        "auxiliary_kind": "unknown",
+        "index": 8,
+        "native_max_tokens": 32000,
+        "tool_count": 4,
+        "message_count": 11,
+        "roles": [
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user"
+        ],
+        "translated_tool_results": 5
+      },
+      {
+        "auxiliary_kind": "unknown",
+        "index": 9,
+        "native_max_tokens": 32000,
+        "tool_count": 4,
+        "message_count": 13,
+        "roles": [
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user"
+        ],
+        "translated_tool_results": 6
+      },
+      {
+        "auxiliary_kind": "unknown",
+        "index": 10,
+        "native_max_tokens": 32000,
+        "tool_count": 4,
+        "message_count": 15,
+        "roles": [
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user"
+        ],
+        "translated_tool_results": 7
+      },
+      {
+        "auxiliary_kind": "bash_prefix",
+        "index": 11,
+        "native_max_tokens": 32000,
+        "tool_count": 0,
+        "message_count": 1,
+        "roles": [
+          "user"
+        ],
+        "translated_tool_results": 0
+      },
+      {
+        "auxiliary_kind": "bash_prefix",
+        "index": 12,
+        "native_max_tokens": 32000,
+        "tool_count": 0,
+        "message_count": 1,
+        "roles": [
+          "user"
+        ],
+        "translated_tool_results": 0
+      },
+      {
+        "auxiliary_kind": "bash_prefix",
+        "index": 13,
+        "native_max_tokens": 32000,
+        "tool_count": 0,
+        "message_count": 1,
+        "roles": [
+          "user"
+        ],
+        "translated_tool_results": 0
+      },
+      {
+        "auxiliary_kind": "unknown",
+        "index": 14,
+        "native_max_tokens": 32000,
+        "tool_count": 4,
+        "message_count": 17,
+        "roles": [
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user"
+        ],
+        "translated_tool_results": 8
+      },
+      {
+        "auxiliary_kind": "bash_file_paths",
+        "index": 15,
+        "native_max_tokens": 32000,
+        "tool_count": 0,
+        "message_count": 1,
+        "roles": [
+          "user"
+        ],
+        "translated_tool_results": 0,
+        "broken_pipe": true,
+        "write_bytes": 155,
+        "http_headers": true
+      },
+      {
+        "auxiliary_kind": "unknown",
+        "index": 16,
+        "native_max_tokens": 32000,
+        "tool_count": 4,
+        "message_count": 19,
+        "roles": [
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user",
+          "assistant",
+          "user"
+        ],
+        "translated_tool_results": 9
+      }
+    ],
+    "native_results": [
+      {
+        "type": "result",
+        "subtype": "success",
+        "is_error": false,
+        "num_turns": 10
+      }
+    ]
+  },
+  "native_fixture_cleanup_verified": true,
+  "cleanup_verified": true,
+  "exit_code": 1,
+  "duration_s": 177.747
+}

@@ -274,6 +274,7 @@ jobs:
           python -m pytest -q prime-agent/test_commands.py prime-agent/test_terminal.py
           python -m pytest -q qm-sandbox/test_runtime.py qm-sandbox/test_commands.py
           python -m pytest -q qm/test_terminal.py
+          python -m pytest -q claude-code/test_byok.py claude-code/test_adapter.py claude-code/test_controller.py claude-code/test_auxiliary_disconnect.py
           python -m pytest -q muse/test_commands.py muse/test_relay.py muse/test_terminal.py muse/test_controller.py
           python qm-sandbox/prepare_sdk_tests.py "$RUNNER_TEMP/qm-original-sdk-tests"
           ABX_QM_TEST_SDK_ENTRY="$RUNNER_TEMP/qm-original-sdk-tests/dist/index.js" node --test qm-sandbox/test_adapter.mjs

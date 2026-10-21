@@ -1,0 +1,5 @@
+# Upstream notice
+
+Original `@anthropic-ai/claude-code`2.0.76 is copyright Anthropic PBC, all rights reserved. Its original LICENSE.md, README.md and bundled ripgrep notices remain in the installed npm package. Use is subject to [Anthropic legal agreements](https://code.claude.com/docs/en/legal-and-compliance). Do not describe that original CLI as Apache-licensed open source. Authored template/transport code retains the repository Apache-2.0 license.
+
+The compatible text/tool adapter is an authored experimental profile. [Anthropic gateway documentation](https://code.claude.com/docs/en/llm-gateway) does not support routing Claude Code to non-Claude models. This profile does not establish vendor endorsement, Claude model access, a subscription or general feature compatibility. Original planning/tool execution remains in the unchanged official CLI; only bounded Messages/Chat text/tool transport is translated. No image, thinking, computer-use, delegation, MCP, plugin or retained-session compatibility claim.

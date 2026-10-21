@@ -1,0 +1,80 @@
+{
+  "template": "claude-code",
+  "version": "1.3.1",
+  "result": "PASS",
+  "real_model_acceptance": {
+    "exit_code": 0,
+    "pass_count": 19,
+    "fail_count": 0,
+    "skip_count": 0,
+    "controller_sha256": "4e90c4f739587b5206d190aff2f22ecdc79e005c0187d1f90db672c14571bedd",
+    "model": "qwen3.8-flash",
+    "origin": "explicit approved configured origin; omitted",
+    "native_transport": [
+      {
+        "cancelled_auxiliary_responses": 0,
+        "completed_required_responses": 9,
+        "completed_responses": 11,
+        "failed_responses": 0,
+        "failure_counts": {},
+        "last_upstream_status": 200,
+        "model_requests": 11,
+        "native_tool_calls": 7,
+        "native_tool_results": 28
+      }
+    ]
+  },
+  "operator_native_execution": false,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "claude-code",
+    "materializer_sha256": "35207b082e8dc30f8c4cddccf593d0ebb24dcc66fe3ea36417c6ff4bdfd01a17",
+    "source_manifest_contract_sha256": "a76fb931730d91b7481ccb5429235b8935e261f3247ead105af0033a63b6ac7d",
+    "template_version": "1.3.1",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": null,
+    "template_server_commit": "34e7e011c5569f77b7f605e65313be7498f6cf02",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "9644342b29210e08f730cccede8458ce7030bdbb",
+    "asset_transport": "direct",
+    "steps_json_bytes": 5518,
+    "inputs_sha256": {
+      "Dockerfile": "d58c3495826f94e1af5791d0a650ca298dc99fd222509a69a309d9d3f3b9738d",
+      "template.yaml": "46ca7aa59c269b35dac4c4a524047192fa0d10cebc5cf55269b243a3826f148a",
+      "server-sdk.commit": "57134d659449d0f55301272a5abc2ac907c86b8380a36f2b3e86e09c9b6dc6cf",
+      "package.json": "19b88d8194ebdfa13c341f4af7edf271c419cf70b7b6ef4d15632564413579eb",
+      "package-lock.json": "ad6f89967f973580e07be967fe3ac17b50b4896849d170e414fba45c13a77b3f",
+      "commands.py": "094610662d59e19748530de3f2f3de51b1a117dc7acfe994c7b7437567784228",
+      "byok.py": "93a76367a72cc1d5af137fbb1ed27840464abbb2002ec6e8c200293b628ab267",
+      "relay.py": "4ccd14b6a86b42b23c9394b31023f4b90afc26f74ee3ad13d1044fff6f9ce8b9",
+      "process.py": "2105455cab5d7fdfd9188d1894b6d5b6097c3ff9b11383d866bcc0bfb284b3f2",
+      "lifecycle.py": "8e18aa3f5e85ee9a69ffe2b7d38f3ddf8300d7634d2211d614a8033744e4f269",
+      "upstream.json": "3dd32d6a13438f7a0c89856f6dd0a82353261c0521d39adbb7d4f0e03ae86ca6"
+    },
+    "generated_manifest_sha256": "fac54f1011c75409e4a57b0d1e2280364b3627b4a2c5118ea535f97a2f19c7de"
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 10,
+    "fail_count": 0,
+    "skip_count": 0,
+    "controller_sha256": "34add208515c20e6ed4a405c114bce99bad2a4c6700bcce1e6f1092a01653b7c"
+  },
+  "native_api_fixture": {
+    "result": "PASS",
+    "scope": "actual original CLI source-edit/original tests/report/nonce/independent held-outs/post-return ACK",
+    "synthetic_upstream": false
+  },
+  "native_fixture_cleanup_verified": true,
+  "cleanup_verified": true,
+  "exit_code": 0,
+  "duration_s": 77.552,
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "passed": true,
+  "attempt": "2026-10-21T094126Z",
+  "model_acceptance": "PASS",
+  "receipt": "claude-code/evidence/express-2026-10-21T094126Z.json",
+  "command_calls": 2
+}
