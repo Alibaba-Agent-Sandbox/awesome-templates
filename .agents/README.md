@@ -223,3 +223,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Original Devin native runtime](notes/proposed/feature/2026-10-21-devin-native-runtime.md) · [verification](evidence/verify/2026-10-21-devin-native.md)
 
 - [Current46 native/runtime and complete HTTP with Devin](evidence/verify/2026-10-21-current-native-http46-devin.json)
+
+- [Original agentless K3s validation](notes/proposed/feature/2026-10-21-k3s-agentless-validation.md) · [verification](evidence/verify/2026-10-21-k3s-agentless-validation.md)

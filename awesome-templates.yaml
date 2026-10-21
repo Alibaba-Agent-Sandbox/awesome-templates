@@ -662,6 +662,17 @@ templates:
     providers:
       alicloud-express: supported
 
+  - name: k3s
+    description: "Original agentless K3s control-plane slice for strict ephemeral server-side manifest validation."
+    repo: https://github.com/Alibaba-Agent-Sandbox/awesome-templates
+    path: k3s
+    tags: [k3s, kubernetes, validation]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: install-build
+
 # Provider-managed IDs have no source build context; never pass these to image selection.
 managed_templates:
   - name: base

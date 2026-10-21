@@ -1,0 +1,13 @@
+# Original K3s agentless validation verification
+
+Status: PARTIAL; implementation/local verification in progress, no current template/provider qualification.
+
+Official releasev1.37.1+k3s1 confirms original ELF81543330bytes/SHA25692b94582eb7b34a8cf532e6006842b9ed215a6783cf56a3dd6271fd35243b2c0; independently downloaded and rehashed as data on operator, never executed there. Source356c025475bbefaa09cf0d7e48e8e2adbbde57db, original LICENSE preserved. Official [agentless documentation](https://docs.k3s.io/advanced#running-agentless-servers-experimental), [server flags](https://docs.k3s.io/cli/server) and [requirements](https://docs.k3s.io/installation/requirements) inspected. Original node-password path confirmed from pinned source; private empty native config prevents global configuration inheritance. SDKIssue83 user=root defect avoided through root build preparation. Historical unpublished source/proofs lost under temporary runtime reset are not reused as acceptance.
+
+Initial authored fixed-worker suite21PASS5FAIL6.72seconds: local TCP connect accepted even after all9owned fixture workers were independently absent; cleanup logic correctly refused that ambiguous transport-level observation. Replaced TCPaccept cleanup checks with authoritative /proc kernel listener absence plus existing identity-pinned process cleanup, without weakening the owned cleanup gate. Original K3s code was not executed by these tests. Current local rerun/current native image/steps/API/cleanup/latestCI/review/merge remain recorded after execution below.
+
+After authoritative kernel-listener checks:26runtime testsPASS6.37seconds; combined runtime/controller/installer33PASS6.86seconds. All9earlier authored fixture workers independently absent, with no live process leak. Remote original server/manifest validation has not yet run for this new template.
+
+Pinned upstream pkg/cli/cmds/server.go confirms --disable-agent Hidden:true. Corrected diagnostics to report actual agentless_flag_in_help:false rather than falsely requiring hidden help output; actual original execution must establish the mode. Combined runtime/controller/installer/asset/receipt/HTTP92PASS8.62seconds;3owner links and bilingual Python examples ASTPASS.
+
+Final pre-publication local verification:92targetedtestsPASS8.74seconds; source-only liveHTTP11PASS0FAIL1explicit-native-absenceSKIP/no original cluster on operator;57specPASS20.174seconds;47installable strict0violations;216public/3owner Markdown0link failures; bilingual Python examples syntax and diff checksPASS. Native provider/image qualification remains pending; no prior-version/unpublished receipt reused.

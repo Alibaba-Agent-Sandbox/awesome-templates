@@ -144,6 +144,10 @@ def inspect_http_receipt(source: Path, receipt: dict) -> tuple[bool, str]:
             or type(counts.get("pass_count")) is not int or counts["pass_count"] <= 0
             or type(counts.get("fail_count")) is not int or counts["fail_count"] != 0):
         return False, "full HTTP controller did not pass"
+    if source.name=='k3s':
+        fixture=(receipt.get('build_provenance')or{}).get('test_configuration',{})
+        if fixture.get('agentless_validation_required')is not True or fixture.get('worker_nodes_claimed')is not False or fixture.get('model_credentials_injected')is not False:return False,'missing required original K3s agentless validation configuration'
+        if counts['pass_count']<25 or counts.get('skip_count',0)!=0:return False,'original K3s agentless API checks skipped or incomplete'
     if source.name=='devin':
         fixture=(receipt.get('build_provenance')or{}).get('test_configuration',{})
         if fixture.get('native_authentication_error_path_required')is not True or fixture.get('credential_absence_required')is not True or fixture.get('model_credentials_injected')is not False:

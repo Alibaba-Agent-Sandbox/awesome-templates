@@ -200,3 +200,5 @@ Official native Crush: [crush](crush/README.md) (experimental; [alicloud-express
 [Development database template](dev-services/README.md) · experimental; [alicloud-express1.1.0 SDK image and HTTP6](dev-services/evidence/express-2026-10-20.json).
 
 [Devin original native CLI](devin/README.md): experimental; native Express SDK/full HTTP passed; authenticated model NOT_RUN.
+
+[K3s original agentless validation](k3s/README.md): experimental; current native control-plane acceptance pending; worker/Pod execution unsupported.
