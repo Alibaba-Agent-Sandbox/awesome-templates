@@ -33,3 +33,9 @@ def test_owned_process_descendant_cleanup_and_output_bound(tmp_path):
  finally:outsider.terminate();outsider.wait(timeout=5)
 def test_authored_process_timeout(tmp_path):
  with pytest.raises(RuntimeError,match='exceeded timeout'):b.PROCESS.run([sys.executable,'-c','import time;time.sleep(20)'],cwd=tmp_path,env={'PATH':os.environ['PATH']},timeout=.05)
+
+
+@pytest.mark.parametrize('optin',[False,None,1,'true'])
+def test_tool_permission_bypass_requires_explicit_boolean_optin(tmp_path,monkeypatch,optin):
+    monkeypatch.setattr(b,'ROOT',tmp_path);monkeypatch.setattr(b,'binary',lambda:pytest.fail('must not start native without explicit opt-in'))
+    with pytest.raises(ValueError,match='allow_unsafe_tools'):b.run('fixed request',allow_unsafe_tools=optin)

@@ -35,16 +35,17 @@ def diagnostic(args):
     if code:raise RuntimeError('original Claude diagnostic failed; raw output omitted')
     return out.strip()
 def setup():
-    return {'mode':'original-claude-explicit-chat-adapter','model_key_set':bool(MODEL['MODEL_API_KEY']),'model_base_set':bool(MODEL['MODEL_BASE_URL']),'model_set':bool(MODEL['MODEL']),'vendor_account_verified':False,'provider_default_fallback':False}
+    return {'mode':'original-claude-explicit-chat-adapter','model_key_set':bool(MODEL['MODEL_API_KEY']),'model_base_set':bool(MODEL['MODEL_BASE_URL']),'model_set':bool(MODEL['MODEL']),'vendor_account_verified':False,'provider_default_fallback':False,'requires_unsafe_optin':True}
 def redact(value,relay):
     for secret in [MODEL['MODEL_API_KEY'],MODEL['MODEL_BASE_URL'],os.environ.get('ABX_SERVER_TOKEN',''),relay.token,relay.url]:
         if secret:
             for form in {secret,json.dumps(secret)[1:-1],json.dumps(secret,ensure_ascii=False)[1:-1]}:value=value.replace(form,'[REDACTED]')
     return value
 
-def run(prompt,cwd='',command_timeout=300):
+def run(prompt,cwd='',command_timeout=300,allow_unsafe_tools=False):
     if not isinstance(prompt,str)or not prompt.strip()or len(prompt.encode())>32768 or '\0'in prompt:raise ValueError('prompt must contain1..32768UTF8 bytes without NUL')
     if type(command_timeout)is not int or not 1<=command_timeout<=600:raise ValueError('command_timeout must be1..600seconds')
+    if type(allow_unsafe_tools)is not bool or not allow_unsafe_tools:raise ValueError('allow_unsafe_tools=True is required for the explicit disposable-sandbox native tool profile')
     project=workspace(cwd);base,key,model=RELAY.settings(MODEL['MODEL_BASE_URL'],MODEL['MODEL_API_KEY'],MODEL['MODEL'])
     if not LOCK.acquire(blocking=False):raise RuntimeError('another original Claude BYOK operation active')
     relay=None
@@ -53,8 +54,8 @@ def run(prompt,cwd='',command_timeout=300):
         with tempfile.TemporaryDirectory(prefix='abx-claude-home-')as name:
             private=Path(name);private.chmod(0o700);relay=RELAY.Relay(base,key,model,command_timeout);env=environment(private)
             env.update(ANTHROPIC_BASE_URL=relay.url,ANTHROPIC_AUTH_TOKEN=relay.token,ANTHROPIC_MODEL=model,ANTHROPIC_DEFAULT_HAIKU_MODEL=model,ANTHROPIC_DEFAULT_SONNET_MODEL=model,ANTHROPIC_DEFAULT_OPUS_MODEL=model)
-            settings={'disableAllHooks':True,'permissions':{'defaultMode':'dontAsk'},'enableAllProjectMcpServers':False}
-            argv+=['-p',prompt,'--model',model,'--output-format','json','--permission-mode','dontAsk','--tools','Read,Edit,Write,Bash','--allowedTools','Read,Edit,Write,Bash',
+            settings={'disableAllHooks':True,'permissions':{'defaultMode':'bypassPermissions'},'enableAllProjectMcpServers':False}
+            argv+=['-p',prompt,'--model',model,'--output-format','json','--dangerously-skip-permissions','--tools','Read,Edit,Write,Bash','--allowedTools','Read,Edit,Write,Bash',
                    '--settings',json.dumps(settings),'--setting-sources','','--no-session-persistence','--strict-mcp-config','--mcp-config','{"mcpServers":{}}','--disable-slash-commands','--no-chrome','--max-turns','16']
             code,out,err=PROCESS.run(argv,cwd=project,env=env,timeout=command_timeout);relay.wait_for_idle();stats=relay.snapshot()
             try:value=json.loads(out)
@@ -64,7 +65,7 @@ def run(prompt,cwd='',command_timeout=300):
                 safe=subtype if subtype in ['success','error_max_turns','error_during_execution','error_max_budget_usd']else'other'
                 raise RuntimeError('original Claude completion incomplete; native_code='+str(code)+'; native_subtype='+safe+'; model_requests='+str(stats['model_requests'])+'; native_tool_calls='+str(stats['native_tool_calls'])+'; native_tool_results='+str(stats['native_tool_results'])+'; completed_responses='+str(stats['completed_responses'])+'; failed_responses='+str(stats['failed_responses'])+'; failure_counts='+json.dumps(stats['failure_counts'],sort_keys=True)+'; upstream_status='+str(stats['last_upstream_status'])+'; raw diagnostics omitted')
             return {'stdout':redact(value['result'],relay),'exit_code':0,'native_completed':True,'native_version':'2.0.76','cli_sha256':EXPECTED['cli_sha256'],
-                    'protocol':'authored-messages-chat-text-tools','model':model,'model_calls':stats['completed_responses'],'native_tool_results':stats['native_tool_results'],'relay_calls':stats}
+                    'permission_profile':'explicit-owned-sandbox-bypass','protocol':'authored-messages-chat-text-tools','model':model,'model_calls':stats['completed_responses'],'native_tool_results':stats['native_tool_results'],'relay_calls':stats}
     finally:
         try:
             if relay is not None:relay.close()

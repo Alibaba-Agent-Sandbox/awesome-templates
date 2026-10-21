@@ -34,7 +34,7 @@ abx --native kill <owned-sandbox-id> -y
 abx --native template delete <owned-template-id> -y
 ```
 
-Canonical owned steps: `ABX='abx --native' python scripts/run_steps_e2e.py claude-code --sandbox-create sdk --http`. Steps do not certify Docker image cloud deployment. For configured coding, `abx --native run <owned-sandbox-id> claude_byok --json-args '{"prompt":"Repair existing calc.py and preserve its tests","cwd":"project","command_timeout":300}'`.
+Canonical owned steps: `ABX='abx --native' python scripts/run_steps_e2e.py claude-code --sandbox-create sdk --http`. Steps do not certify Docker image cloud deployment. For configured coding, `abx --native run <owned-sandbox-id> claude_byok --json-args '{"prompt":"Repair existing calc.py and preserve its tests","cwd":"project","command_timeout":300,"allow_unsafe_tools":true}'`.
 
 ## Quick start (Python SDK)
 
@@ -53,7 +53,7 @@ async def main():
 asyncio.run(main())
 ```
 
-Set all three CLAUDE_MODEL_* variables before the named-command process starts, check `claude_setup_check`, and invoke `await server.commands.run('claude_byok',prompt='Repair existing calc.py; preserve its tests',cwd='project',command_timeout=300,timeout=540)`. Create the project first. Use `sb.server_at(port,token=...)` and close that borrowed client after use. A prewarmed9000process does not acquire later create-time env; follow [explicit process configuration](../docs/runtime-environment.md). An independently configured9010server needs a separate matching Bearer token. Results are buffered direct objects.
+Set all three CLAUDE_MODEL_* variables before the named-command process starts, check `claude_setup_check`, and invoke `await server.commands.run('claude_byok',prompt='Repair existing calc.py; preserve its tests',cwd='project',command_timeout=300,allow_unsafe_tools=True,timeout=540)`. Create the project first. Use `sb.server_at(port,token=...)` and close that borrowed client after use. A prewarmed9000process does not acquire later create-time env; follow [explicit process configuration](../docs/runtime-environment.md). An independently configured9010server needs a separate matching Bearer token. Results are buffered direct objects.
 
 ## Quick start (HTTP POST)
 
@@ -65,7 +65,7 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/claude_version" \
   --header 'Content-Type: application/json' --data '{}'
 ```
 
-HTTP200 returns `{"result":"2.0.76 (Claude Code)"}`. `POST /commands/claude_byok` takes direct `{prompt,cwd,command_timeout}` JSON. Missing/unknown/type arguments400, auth401, unknown command404; semantic/native errors500 with sanitized diagnostics. Disconnect does not cancel an issued provider job; bounded owned process/adapter cleanup still runs.
+HTTP200 returns `{"result":"2.0.76 (Claude Code)"}`. `POST /commands/claude_byok` takes direct `{prompt,cwd,command_timeout,allow_unsafe_tools}` JSON. Missing/unknown/type arguments400, auth401, unknown command404; semantic/native errors500 with sanitized diagnostics. Disconnect does not cancel an issued provider job; bounded owned process/adapter cleanup still runs.
 
 ## Command reference
 
@@ -73,11 +73,13 @@ HTTP200 returns `{"result":"2.0.76 (Claude Code)"}`. `POST /commands/claude_byok
 | --- | --- | --- |
 | claude_version | none | Original CLI `2.0.76 (Claude Code)`; no model |
 | claude_native_check | none | Original cli.js hash and help flags: original_native/isolated_settings/no_session_persistence/strict_mcp booleans |
-| claude_setup_check | none | Mode and model_key_set/model_base_set/model_set presence, vendor_account_verified:false/provider_default_fallback:false; no values/network |
-| claude_byok | prompt: required string1..32768UTF8bytes/nonempty/noNUL; cwd: default empty string, max4096bytes, existing resolved directory within WORKSPACE; command_timeout: integer1..600seconds default300, booleans rejected | stdout/exit_code0/native_completed/native_version/cli_sha256/model/protocol/model_calls/native_tool_results/relay_calls. Original tools edit project; no raw transcript |
+| claude_setup_check | none | Mode and model_key_set/model_base_set/model_set presence, vendor_account_verified:false/provider_default_fallback:false/requires_unsafe_optin:true; no values/network |
+| claude_byok | prompt: required string1..32768UTF8bytes/nonempty/noNUL; cwd: default empty string, max4096bytes, existing resolved directory within WORKSPACE; command_timeout: integer1..600seconds default300, booleans rejected; allow_unsafe_tools: booleanFalse default, must explicitly be True for this disposable-sandbox bypass profile | stdout/exit_code0/native_completed/native_version/cli_sha256/model/permission_profile/protocol/model_calls/native_tool_results/relay_calls. Original tools edit project; no raw transcript |
 | claude | prompt: required nonempty string; model: string default sonnet; cwd: string default empty/contained existing directory; allowed_tools: string default Read,Edit,Write; resume: string default empty; command_timeout: integer300/range1..900seconds | Legacy original JSON encoded as a string, sanitized for environment secrets. Uses existing Anthropic credential/settings behavior; bounded isolated BYOK guarantees do not certify this legacy mode |
 
-New fixed profile: `-p --model <selected> --output-format json --permission-mode dontAsk --tools Read,Edit,Write,Bash --allowedTools Read,Edit,Write,Bash --settings <owned> --setting-sources '' --no-session-persistence --strict-mcp-config --mcp-config '{"mcpServers":{}}' --disable-slash-commands --no-chrome --max-turns16`. Hooks disabled, thinking tokens0; no Task tool, subagents, MCP, plugin or project/local settings loading. Project instructions remain untrusted input; use only an owned disposable target.
+New BYOK requires explicit allow_unsafe_tools=True; False/missing fails before a model call. It selects the outer owned disposable sandbox as the execution boundary and the original CLI permission bypass option for only its four visible tools. Legacy claude remains dontAsk. Original-native success/zero failed responses/artifact and cleanup gates remain mandatory; no cause of earlier disconnected native requests is presumed.
+
+New fixed profile: `-p --model <selected> --output-format json --dangerously-skip-permissions --tools Read,Edit,Write,Bash --allowedTools Read,Edit,Write,Bash --settings <owned> --setting-sources '' --no-session-persistence --strict-mcp-config --mcp-config '{"mcpServers":{}}' --disable-slash-commands --no-chrome --max-turns16`. Hooks disabled, thinking tokens0; no Task tool, subagents, MCP, plugin or project/local settings loading. Project instructions remain untrusted input; use only an owned disposable target.
 
 Text and original tool schemas/results are translated; unsupported image/thinking/content/tool types, truncated replies, wrong model/token/path and redirects fail closed. Upstream Chat is buffered then emitted as native Messages SSE.32requests/2MiBrequest/4MiBresponse maximum,16native turns,256KiB each native stdout/stderr. Actual native successful result and positive completed transport counts are required. Coding qualification additionally requires positive native tool results and independently downloaded files/tests. Own process/private state and issued RPCs drain before return; cleanup may add up to210seconds, client timeout at least command_timeout+240. Concurrent BYOK calls fail busy.
 
@@ -100,7 +102,7 @@ Declared2vCPU2048MB, Linuxx64, port9000,8GiB image rootfs budget; no KVM/Docker/
 
 ## Verified
 
-Current1.2.3 provider/native/model acceptance is PENDING. Earlier1.1.1 receipts remain immutable historical evidence and do not qualify this changed profile. Local38fixed transport/privacy/process controls PASS; this is not a cloud/model pass. Final actual Express, image, original CLI and model evidence must be recorded before qualification or Issue closure.
+Current1.3.0 provider/native/model acceptance is PENDING. Earlier1.1.1 receipts remain immutable historical evidence and do not qualify this changed profile. Local38fixed transport/privacy/process controls PASS; this is not a cloud/model pass. Final actual Express, image, original CLI and model evidence must be recorded before qualification or Issue closure.
 
 ## Secondary development
 

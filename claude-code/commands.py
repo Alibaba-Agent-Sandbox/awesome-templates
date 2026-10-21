@@ -100,8 +100,8 @@ def claude_native_check() -> dict:
 
 
 @command("claude_byok", description="Original Claude Code using explicit authored Messages-to-Chat text/tool adapter and bounded owned per-call state.")
-def claude_byok(prompt: str, cwd: str="", command_timeout: int=300) -> dict:
-    return _BYOK.run(prompt,cwd,command_timeout)
+def claude_byok(prompt: str, cwd: str="", command_timeout: int=300, allow_unsafe_tools: bool=False) -> dict:
+    return _BYOK.run(prompt,cwd,command_timeout,allow_unsafe_tools)
 
 
 if __name__ == "__main__":

@@ -34,7 +34,7 @@ abx --native kill <owned-sandbox-id> -y
 abx --native template delete <owned-template-id> -y
 ```
 
-规范自有资源流程：`ABX='abx --native' python scripts/run_steps_e2e.py claude-code --sandbox-create sdk --http`。steps 不能证明镜像在云端部署。模型服务已配置时使用 `abx --native run <owned-sandbox-id> claude_byok --json-args '{"prompt":"Repair existing calc.py and preserve its tests","cwd":"project","command_timeout":300}'`。
+规范自有资源流程：`ABX='abx --native' python scripts/run_steps_e2e.py claude-code --sandbox-create sdk --http`。steps 不能证明镜像在云端部署。模型服务已配置时使用 `abx --native run <owned-sandbox-id> claude_byok --json-args '{"prompt":"Repair existing calc.py and preserve its tests","cwd":"project","command_timeout":300,"allow_unsafe_tools":true}'`。
 
 ## 快速开始（Python SDK）
 
@@ -53,7 +53,7 @@ async def main():
 asyncio.run(main())
 ```
 
-命令服务启动前设置全部三个 CLAUDE_MODEL_* 变量，检查 `claude_setup_check`，然后调用 `await server.commands.run('claude_byok',prompt='Repair existing calc.py; preserve its tests',cwd='project',command_timeout=300,timeout=540)`。项目需预先创建。独立服务使用 `sb.server_at(port,token=...)`，使用后关闭借用客户端。预热9000进程不会读取后续创建参数；遵循[显式进程配置](../docs/runtime-environment.md)，独立9010进程使用对应独立 Bearer。结果为缓冲后的直接对象。
+命令服务启动前设置全部三个 CLAUDE_MODEL_* 变量，检查 `claude_setup_check`，然后调用 `await server.commands.run('claude_byok',prompt='Repair existing calc.py; preserve its tests',cwd='project',command_timeout=300,allow_unsafe_tools=True,timeout=540)`。项目需预先创建。独立服务使用 `sb.server_at(port,token=...)`，使用后关闭借用客户端。预热9000进程不会读取后续创建参数；遵循[显式进程配置](../docs/runtime-environment.md)，独立9010进程使用对应独立 Bearer。结果为缓冲后的直接对象。
 
 ## 快速开始（HTTP POST）
 
@@ -65,7 +65,7 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/claude_version" \
   --header 'Content-Type: application/json' --data '{}'
 ```
 
-HTTP200返回 `{"result":"2.0.76 (Claude Code)"}`。`POST /commands/claude_byok` 接受直接 `{prompt,cwd,command_timeout}` JSON。缺失、未知或类型参数400，认证401，未知命令404；语义或原生执行错误500并脱敏。HTTP断连不撤销已发出的模型任务；有界进程及适配器清理仍执行。
+HTTP200返回 `{"result":"2.0.76 (Claude Code)"}`。`POST /commands/claude_byok` 接受直接 `{prompt,cwd,command_timeout,allow_unsafe_tools}` JSON。缺失、未知或类型参数400，认证401，未知命令404；语义或原生执行错误500并脱敏。HTTP断连不撤销已发出的模型任务；有界进程及适配器清理仍执行。
 
 ## 命令参考
 
@@ -73,11 +73,13 @@ HTTP200返回 `{"result":"2.0.76 (Claude Code)"}`。`POST /commands/claude_byok`
 | --- | --- | --- |
 | claude_version | 无 | 原 CLI `2.0.76 (Claude Code)`；无模型调用 |
 | claude_native_check | 无 | 原 cli.js 哈希与帮助参数：original_native/isolated_settings/no_session_persistence/strict_mcp 布尔值 |
-| claude_setup_check | 无 | mode及model_key_set/model_base_set/model_set存在标志、vendor_account_verified:false/provider_default_fallback:false；不返回值、不发网络请求 |
-| claude_byok | prompt必需字符串，非空、1..32768UTF8字节、无NUL；cwd默认空字符串、最多4096字节、解析后位于WORKSPACE内的已有目录；command_timeout整数1..600秒，默认300，拒绝布尔值 | stdout/exit_code0/native_completed/native_version/cli_sha256/model/protocol/model_calls/native_tool_results/relay_calls；原始工具修改项目，不返回完整轨迹 |
+| claude_setup_check | 无 | mode及model_key_set/model_base_set/model_set存在标志、vendor_account_verified:false/provider_default_fallback:false/requires_unsafe_optin:true；不返回值、不发网络请求 |
+| claude_byok | prompt必需字符串，非空、1..32768UTF8字节、无NUL；cwd默认空字符串、最多4096字节、解析后位于WORKSPACE内的已有目录；command_timeout整数1..600秒，默认300，拒绝布尔值；allow_unsafe_tools布尔默认False，需显式True才能使用该可丢弃沙箱权限模式 | stdout/exit_code0/native_completed/native_version/cli_sha256/model/permission_profile/protocol/model_calls/native_tool_results/relay_calls；原始工具修改项目，不返回完整轨迹 |
 | claude | prompt必需非空字符串；model字符串默认sonnet；cwd默认空字符串、已有且位于工作区内；allowed_tools默认Read,Edit,Write；resume默认空字符串；command_timeout整数默认300、范围1..900秒 | 旧接口将原生JSON编码为字符串并脱敏环境密钥；保留原Anthropic凭据和设置行为，新增隔离模式的保证不覆盖旧接口 |
 
-新增固定参数：`-p --model <selected> --output-format json --permission-mode dontAsk --tools Read,Edit,Write,Bash --allowedTools Read,Edit,Write,Bash --settings <owned> --setting-sources '' --no-session-persistence --strict-mcp-config --mcp-config '{"mcpServers":{}}' --disable-slash-commands --no-chrome --max-turns16`。禁用钩子，思考token为0；不提供Task、子Agent、MCP、插件或项目/本地设置加载。项目指令仍是不可信输入，仅在自有可丢弃目标运行。
+新增BYOK必须显式allow_unsafe_tools=True，默认False或缺失会在模型调用前失败。以自有可丢弃外层沙箱作为执行边界，并为仅四种可见工具显式选择原CLI权限旁路；旧claude仍为dontAsk。仍要求原生成功、失败响应为零、独立产物和清理，不预设先前断流的根因。
+
+新增固定参数：`-p --model <selected> --output-format json --dangerously-skip-permissions --tools Read,Edit,Write,Bash --allowedTools Read,Edit,Write,Bash --settings <owned> --setting-sources '' --no-session-persistence --strict-mcp-config --mcp-config '{"mcpServers":{}}' --disable-slash-commands --no-chrome --max-turns16`。禁用钩子，思考token为0；不提供Task、子Agent、MCP、插件或项目/本地设置加载。项目指令仍是不可信输入，仅在自有可丢弃目标运行。
 
 转换文本及原始工具schema和结果；拒绝图像、thinking、不支持的内容或工具、截断回复、错误模型、token、路径及重定向。上游Chat缓冲后输出原生Messages SSE。最多32请求，每请求2MiB、响应4MiB、原生16轮、stdout/stderr各256KiB。成功要求原CLI成功结果和正数传输完成次数；编码验收另要求原生工具结果、独立下载产物及测试。返回前回收自有进程、私有状态、已发RPC；清理最多额外210秒，客户端超时至少command_timeout+240；并发BYOK返回忙。
 
@@ -100,7 +102,7 @@ HTTP200返回 `{"result":"2.0.76 (Claude Code)"}`。`POST /commands/claude_byok`
 
 ## 已验证
 
-当前1.2.3的提供商、原生及模型验收待执行。此前1.1.1回执保留为不可变历史，不能证明本次变更通过。本地38项固定协议、隐私和进程测试通过，不属于云端或模型通过；必须完成实际Express、镜像、原CLI及模型证据后才能声明当前验证并关闭Issue。
+当前1.3.0的提供商、原生及模型验收待执行。此前1.1.1回执保留为不可变历史，不能证明本次变更通过。本地38项固定协议、隐私和进程测试通过，不属于云端或模型通过；必须完成实际Express、镜像、原CLI及模型证据后才能声明当前验证并关闭Issue。
 
 ## 二次开发
 
