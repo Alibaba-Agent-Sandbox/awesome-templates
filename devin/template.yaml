@@ -1,5 +1,5 @@
 name: devin
-version: "1.0.0"
+version: "1.0.1"
 description: "Pinned original Devin CLI with bounded headless named commands and explicit tool permission."
 author: alibaba-agent-sandbox
 license: Apache-2.0
