@@ -11,3 +11,12 @@ Actual existing approved origin POST/messages with one fixed non-executable requ
 Current source/native Express steps/SDK/fullHTTP/actualmodel/image/strict/docs/latest remote review and merge are PENDING. Historical1.1.1 receipts remain unchanged and do not qualify changed1.2.0. No native/local fixture result is described as cloud acceptance.
 
 Expanded controller identity/local-target/marker controls plus protocol/process suite:53PASS1.30seconds.57spec-tool tests PASS (separate log); all-template strict0violations;200public Markdown0link failures. Final latest-head and real cloud checks remain pending.
+
+## First actual immutable-source failure
+Current initial source d9ba443b4521c876b03677f06962b67bf29a9bbc, template1.2.0:13steps/5514wire bytes, officialREADY/actual SDK create/CLI+SDK smoke and fullHTTP10PASS0FAIL0SKIP. Actual original synthetic call1PASS/exact selected path/Bearer/model/four original tools/zero conflicting project requests/fixture absence before key. Actual coding controller12PASS1FAIL, native_code0/model_requests22 but completion contract rejected; source/artifact/held-out acceptance was not reached. Entire run268.301seconds, owned project/private/listener/sandbox/template cleanup independentlyPASS. [Immutable failed proof](2026-10-21-claude-initial-steps-model-failure.json). No passing provider receipt published.
+
+Code review identified a concrete Chat message-order defect: an Anthropic user content block can combine tool results and reminder text; Chat requires pending tool messages immediately after assistant tool calls. New regression must fail on initial conversion and pass after result-first correction. This is a verified protocol defect, not yet proven the cause of the entire failed run. Additional safe native subtype/count/stage/status diagnostics distinguish the next actual outcome without exposing raw prompts/transcripts. Required native/HTTP/model/cleanup checks remain unchanged.
+
+Before-fix check on immutable d9ba443 original relay reproduces invalid assistant/user/tool ordering; required assistant/tool/user assertion fails. Corrected regression plus full53prior controls pending updated54run. Changed runtime1.2.1 requires a complete new published-source native SDK/HTTP/model repeat.
+
+Corrected full54protocol/process/controller tests PASS1.30seconds; strict template conformant. Published fix is required before the full new cloud repeat.

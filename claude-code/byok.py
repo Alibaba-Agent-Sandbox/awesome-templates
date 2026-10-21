@@ -60,7 +60,9 @@ def run(prompt,cwd='',command_timeout=300):
             try:value=json.loads(out)
             except ValueError:raise RuntimeError('original Claude output protocol invalid; native_code='+str(code)+'; model_requests='+str(stats['model_requests'])+'; raw diagnostics omitted')from None
             if code or not isinstance(value,dict)or value.get('type')!='result'or value.get('subtype')!='success'or value.get('is_error')is not False or not isinstance(value.get('result'),str)or not value['result'].strip()or not stats['completed_responses']or stats['failed_responses']:
-                raise RuntimeError('original Claude completion incomplete; native_code='+str(code)+'; model_requests='+str(stats['model_requests'])+'; raw diagnostics omitted')
+                subtype=value.get('subtype')if isinstance(value,dict)else'not-object'
+                safe=subtype if subtype in ['success','error_max_turns','error_during_execution','error_max_budget_usd']else'other'
+                raise RuntimeError('original Claude completion incomplete; native_code='+str(code)+'; native_subtype='+safe+'; model_requests='+str(stats['model_requests'])+'; native_tool_calls='+str(stats['native_tool_calls'])+'; native_tool_results='+str(stats['native_tool_results'])+'; completed_responses='+str(stats['completed_responses'])+'; failed_responses='+str(stats['failed_responses'])+'; failure_counts='+json.dumps(stats['failure_counts'],sort_keys=True)+'; upstream_status='+str(stats['last_upstream_status'])+'; raw diagnostics omitted')
             return {'stdout':redact(value['result'],relay),'exit_code':0,'native_completed':True,'native_version':'2.0.76','cli_sha256':EXPECTED['cli_sha256'],
                     'protocol':'authored-messages-chat-text-tools','model':model,'model_calls':stats['completed_responses'],'native_tool_results':stats['native_tool_results'],'relay_calls':stats}
     finally:

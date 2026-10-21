@@ -100,7 +100,7 @@ Declared2vCPU2048MB, Linuxx64, port9000,8GiB image rootfs budget; no KVM/Docker/
 
 ## Verified
 
-Current1.2.0 provider/native/model acceptance is PENDING. Earlier1.1.1 receipts remain immutable historical evidence and do not qualify this changed profile. Local38fixed transport/privacy/process controls PASS; this is not a cloud/model pass. Final actual Express, image, original CLI and model evidence must be recorded before qualification or Issue closure.
+Current1.2.1 provider/native/model acceptance is PENDING. Earlier1.1.1 receipts remain immutable historical evidence and do not qualify this changed profile. Local38fixed transport/privacy/process controls PASS; this is not a cloud/model pass. Final actual Express, image, original CLI and model evidence must be recorded before qualification or Issue closure.
 
 ## Secondary development
 

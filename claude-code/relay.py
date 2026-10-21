@@ -57,6 +57,10 @@ def request(data,model):
         if parts or calls:
             item={'role':role,'content':'\n'.join(parts)}
             if calls:item['tool_calls']=calls
+            # Native user blocks can combine tool_result and a system-reminder text.
+            # Chat requires all pending tool outputs immediately after assistant calls.
+            if role=='user':
+                messages.extend(results);results=[]
             messages.append(item)
         messages.extend(results)
     tools=[]
@@ -115,7 +119,7 @@ class Relay:
     def __init__(self,base,key,model,timeout):
         self.base,self.key,self.model=settings(base,key,model);self.token=secrets.token_urlsafe(32);self.deadline=time.monotonic()+timeout
         self.stats={'model_requests':0,'completed_responses':0,'failed_responses':0,'native_tool_calls':0,'native_tool_results':0}
-        self.lock=threading.Lock();self.handlers=set();self.responses=set();self.closed=False
+        self.lock=threading.Lock();self.handlers=set();self.responses=set();self.closed=False;self.failure_counts={};self.last_upstream_status=0
         self.opener=urllib.request.build_opener(urllib.request.ProxyHandler({}),NoRedirect());owner=self
         class Server(ThreadingHTTPServer):
             daemon_threads=True
@@ -148,19 +152,25 @@ class Relay:
                         owner.stats['model_requests']+=1
                         owner.stats['native_tool_results']+=sum(m['role']=='tool'for m in payload['messages'])
                     req=urllib.request.Request(owner.base+'/chat/completions',data=json.dumps(payload).encode(),headers={'Authorization':'Bearer '+owner.key,'Content-Type':'application/json'},method='POST')
+                    stage='upstream_open'
                     response=owner.opener.open(req,timeout=max(1,min(60,owner.deadline-time.monotonic())))
+                    owner.last_upstream_status=response.status;stage='upstream_read'
                     with owner.lock:owner.responses.add(response)
                     raw=response.read(MAX_RESPONSE+1)
                     if len(raw)>MAX_RESPONSE or owner.closed or time.monotonic()>=owner.deadline:raise ValueError('bounded upstream reply exceeded')
-                    message=reply(json.loads(raw),owner.model)
+                    stage='reply_shape';message=reply(json.loads(raw),owner.model);stage='native_stream'
                     self.send_response(200);self.send_header('Content-Type','text/event-stream');self.end_headers()
                     for kind,value in events(message):self.wfile.write(('event: '+kind+'\ndata: '+json.dumps(value)+'\n\n').encode())
                     self.wfile.flush()
                     with owner.lock:
                         owner.stats['completed_responses']+=1
                         owner.stats['native_tool_calls']+=sum(b['type']=='tool_use'for b in message['content'])
-                except (OSError,ValueError,TypeError,KeyError,AttributeError):
-                    with owner.lock:owner.stats['failed_responses']+=1
+                except (OSError,ValueError,TypeError,KeyError,AttributeError)as exc:
+                    with owner.lock:
+                        owner.stats['failed_responses']+=1
+                        label=stage+('_http_'+str(exc.code)if isinstance(exc,urllib.error.HTTPError)else'_'+type(exc).__name__)
+                        owner.failure_counts[label]=owner.failure_counts.get(label,0)+1
+                        if isinstance(exc,urllib.error.HTTPError):owner.last_upstream_status=exc.code
                     with contextlib.suppress(OSError):self.refuse(502)
                 finally:
                     if response is not None:
@@ -170,7 +180,7 @@ class Relay:
     @property
     def url(self):return 'http://127.0.0.1:'+str(self.port)
     def snapshot(self):
-        with self.lock:return dict(self.stats)
+        with self.lock:return {**self.stats,'failure_counts':dict(self.failure_counts),'last_upstream_status':self.last_upstream_status}
     def wait_for_idle(self,timeout=65):
         deadline=time.monotonic()+timeout
         while time.monotonic()<deadline:

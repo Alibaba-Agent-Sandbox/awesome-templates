@@ -59,7 +59,7 @@ def test_real_http_owned_auth_translation_and_listener_cleanup():
   with post('/v1/messages?beta=true',relay.token,native())as response:
    raw=response.read().decode();assert 'message_stop'in raw and 'input_json_delta'in raw and 'upstream-only-key'not in raw
   relay.wait_for_idle();assert len(seen)==1 and seen[0][0]=='/v1/chat/completions'and seen[0][1]=='Bearer upstream-only-key'
-  assert seen[0][2]['messages'][3]['role']=='tool'and relay.snapshot()=={'model_requests':1,'completed_responses':1,'failed_responses':0,'native_tool_calls':1,'native_tool_results':1}
+  assert seen[0][2]['messages'][3]['role']=='tool'and relay.snapshot()=={'model_requests':1,'completed_responses':1,'failed_responses':0,'native_tool_calls':1,'native_tool_results':1,'failure_counts':{},'last_upstream_status':200}
  finally:relay.close();upstream.shutdown();upstream.server_close();thread.join(3)
 
 
@@ -75,3 +75,10 @@ def test_redirect_never_forwards_root_key():
   with pytest.raises(urllib.error.HTTPError)as exc:urllib.request.urlopen(req,timeout=5)
   assert exc.value.code==502;relay.wait_for_idle();assert contacted==['/chat/completions']and relay.snapshot()['failed_responses']==1
  finally:relay.close();up.shutdown();up.server_close();t.join(3)
+
+
+def test_tool_result_precedes_user_reminder_for_chat_contract():
+ data=native();data['messages'][-1]['content'].append({'type':'text','text':'<system-reminder>independent reminder</system-reminder>'})
+ value=r.request(data,'owned-model');roles=[x['role']for x in value['messages']]
+ assert roles==['system','user','assistant','tool','user']
+ assert value['messages'][3]['tool_call_id']==value['messages'][2]['tool_calls'][0]['id']

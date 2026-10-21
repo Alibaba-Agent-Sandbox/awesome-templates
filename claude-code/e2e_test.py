@@ -101,10 +101,10 @@ def model_check(client,workspace,base):
 def safe_diagnostic(text):
     import re
     value={}
-    for key in ['stage','native_code','missing_module']:
+    for key in ['stage','native_code','native_subtype','missing_module']:
         match=re.search(r'\b'+key+r'=([A-Za-z0-9_@./-]{1,128})',text)
         if match:value[key]=match[1]
-    for key,number in re.findall(r'\b(model_requests|native_tool_calls|native_tool_results|sdk_shell|sdk_upload|sdk_download)=([0-9]{1,6})',text):value[key]=int(number)
+    for key,number in re.findall(r'\b(model_requests|native_tool_calls|native_tool_results|sdk_shell|sdk_upload|sdk_download|completed_responses|failed_responses|upstream_status)=([0-9]{1,6})',text):value[key]=int(number)
     return value
 
 
