@@ -1,0 +1,79 @@
+{
+  "template": "cursor-agent",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-21T110917Z",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "cursor-agent",
+    "materializer_sha256": "2efd27ffcd010d17b130d40f8c40efb75bfd3ec0b8c3d9fc701a0bbe387a5e19",
+    "source_manifest_contract_sha256": "6d6d10e92fda3fd7b7a9ecbc39c513d101079beb1dd9014d69a60c71fd3482c6",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": null,
+    "template_server_commit": "34e7e011c5569f77b7f605e65313be7498f6cf02",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "dfca00e211157a94b55fe413dc03e73a89427bdc",
+    "asset_transport": "oss",
+    "steps_json_bytes": 7554,
+    "inputs_sha256": {
+      "Dockerfile": "65f084d4745958beb4794715b7eafd2c30a3f9ba13ba70680895c710539a6b37",
+      "template.yaml": "6cc72c316f5ce327804a13cf1fbd922bda4795f36f1fec19d662463925daea56",
+      "server-sdk.commit": "57134d659449d0f55301272a5abc2ac907c86b8380a36f2b3e86e09c9b6dc6cf",
+      "upstream.json": "1a9e1f4f5d55792e06f861a1ac7540aa42b855ffa014a0f3dae0c3e96edbd04e",
+      "install_runtime.py": "61f1e865d63fd072d466ae624709088e43a66b401958722f4e9b9dacbfaec58f",
+      "commands.py": "048641f6f59fac44040139cde7fe45e09b79a15c5a6889eaf4891d9e06262406",
+      "runtime.py": "e8c3cfe9573e58dae5618a7f31468dab809f61c650bb990e6dc7fee663e08c95",
+      "process.py": "2b0ac1c9a597181e6b73fc91f94841cbe98d7f1743330dbead7925c376e69b05",
+      "lifecycle.py": "f62d38804b1d968414f65bf65b8fdd6e3c97d1353522d20f44379e4522929ed4",
+      "UPSTREAM-NOTICE.md": "902c5803c26d000241612618be3995c210c5189ef8a1e4a29172ae031c9052d5"
+    },
+    "asset_transport_sha256": "e9cb8cb877e5d1b4b98843e3ea50d1f08b3c060799dcff36163c95f3574d67a6",
+    "asset_adapter_source_commit": "dfca00e211157a94b55fe413dc03e73a89427bdc",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://downloads.cursor.com/lab/2026.10.19-6bbf2c4/linux/x64/agent-cli-package.tar.gz",
+          "size": 183733394,
+          "sha256": "cf80cc18d8b33bf33e762353977ca1868cfc45290c92c0ffdcef83bb8b37b44f"
+        }
+      ]
+    },
+    "asset_cache_architecture": "x86_64",
+    "generated_manifest_sha256": "5b5b75466cdb42cb61d20defd1b10291f594f084aec242c39e1055a1208791d1",
+    "test_configuration": {
+      "native_authentication_error_path_required": true,
+      "synthetic_invalid_vendor_credential": true,
+      "model_credentials_injected": false
+    }
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 16,
+    "fail_count": 0,
+    "skip_count": 0,
+    "controller_sha256": "7a7a853eec67dfcab96f157932cbe3ac0bf7277f3e8e6bc1759752a0d3bceaee"
+  },
+  "cleanup_verified": true,
+  "exit_code": 0,
+  "receipt": "cursor-agent/evidence/express-2026-10-21.json",
+  "command_calls": 4,
+  "asset_cache": {
+    "service": "Alibaba Cloud OSS",
+    "private_acl_verified": true,
+    "archives": [
+      {
+        "url": "https://downloads.cursor.com/lab/2026.10.19-6bbf2c4/linux/x64/agent-cli-package.tar.gz",
+        "sha256": "cf80cc18d8b33bf33e762353977ca1868cfc45290c92c0ffdcef83bb8b37b44f",
+        "size": 183733394
+      }
+    ],
+    "signed_get_ttl_seconds": 3600,
+    "cleanup_verified": true
+  },
+  "duration_s": 170.608
+}

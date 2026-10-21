@@ -213,7 +213,9 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Current44 native/runtime and full HTTP with Gemini2.2.0](evidence/verify/2026-10-21-current-native-http44-gemini220.json)
 
+- [Original Cursor native template](notes/proposed/feature/2026-10-21-cursor-native-runtime.md) · [research](evidence/verify/2026-10-21-cursor-native-research.md)
 - [Qoder native program/API review](evidence/verify/2026-10-21-qoder-program-api-review.md) · [decision](notes/proposed/process/2026-10-21-qoder-program-api-review.md)
 - [Current44 native/runtime and full HTTP with Claude1.3.1/Gemini2.2.0](evidence/verify/2026-10-21-current-native-http44-claude131.json)
 
 - [Hardware products and Omarchy decision](notes/proposed/feature/2026-10-21-hardware-products-feasibility.md) · [verification](evidence/verify/2026-10-21-hardware-products-feasibility.md)
+- [Current45 native/runtime and complete HTTP with Cursor](evidence/verify/2026-10-21-current-native-http45-cursor.json)

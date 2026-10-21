@@ -70,6 +70,18 @@ def test_controller_fixture_cannot_forward_an_operator_credential(tmp_path):
         http_callback(tmp_path, tmp_path, {}, {"OPENAI_API_KEY": "synthetic-operator-secret"})
 
 
+def test_cursor_native_fixture_never_uses_operator_vendor_or_model_key(monkeypatch):
+    monkeypatch.setenv('CURSOR_API_KEY','synthetic-operator-vendor-secret')
+    monkeypatch.setenv('OPENAI_API_KEY','synthetic-operator-model-secret')
+    manifest={'build':{'steps':[{'type':'USER','args':['user']}]}};proof={}
+    env=configure_http_fixture(ROOT/'cursor-agent',manifest,proof)
+    assert env=={}and manifest['build']['steps'][-1]=={'type':'USER','args':['user']}
+    value=manifest['build']['steps'][-2]['args'][1]
+    assert value.startswith('key_')and value!='synthetic-operator-vendor-secret'
+    assert 'synthetic-operator-'not in json.dumps(manifest)and value not in json.dumps(proof)
+    assert proof['test_configuration']=={'native_authentication_error_path_required':True,'synthetic_invalid_vendor_credential':True,'model_credentials_injected':False}
+
+
 def test_osworld_requires_real_desktop_and_rejects_nonmodel_skip(tmp_path):
     source=tmp_path/'osworld';source.mkdir();(source/'template.yaml').write_text('ports: [9000]\n')
     (source/'e2e_test.py').write_text("import os\nassert os.environ['E2E_REQUIRE_DESKTOP']=='1'\nassert os.environ['E2E_RUN_DESKTOP']=='1'\nprint('[PASS] basic HTTP')\nprint('[SKIP] GUI task')\n")
