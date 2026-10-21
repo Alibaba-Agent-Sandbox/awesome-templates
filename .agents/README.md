@@ -199,3 +199,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Current41native/runtime and required fullHTTP with Prime Agent and AppWorld](evidence/verify/2026-10-21-current-native-http41.json)
 
 - [QM1.0.1 final original native SDK/backend/model acceptance](evidence/verify/2026-10-21-qm-native-final.md) · [current43native/runtime and required fullHTTP](evidence/verify/2026-10-21-current-native-http43.json)
+
+- [Original Muse native runtime](notes/proposed/feature/2026-10-21-muse-native-runtime.md) · [research](evidence/verify/2026-10-21-muse-native-research.md)

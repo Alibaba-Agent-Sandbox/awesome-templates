@@ -1,0 +1,16 @@
+{
+  "version": "1.4.11-R6667.1",
+  "display_version": "Muse Code 1.4.11 (1.4.11-R6667.1)",
+  "platform": "x86_linux",
+  "url": "https://lookaside.facebook.com/lookaside/muse/download/?channel=muse&version=1.4.11-R6667.1&file=muse-x86-linux",
+  "size": 384809176,
+  "sha256": "6fda12a6a4f236528dafa707384cf6395fe859b1438ef77c7be26ed9d7976839",
+  "digest_basis": "upstream-published release manifest SHA256; original full bytes independently matched on operator and owned Express",
+  "channel_manifest_url": "https://api.meta.ai/muse-code/channels/muse-stable",
+  "channel_manifest_sha256": "3b9b8891787ea1f450f2b4a6fe383c43200723b617908ac6d4c21b40943f53a9",
+  "release_manifest_url": "https://lookaside.facebook.com/lookaside/muse/download/?channel=muse&version=1.4.11-R6667.1&file=manifest.json",
+  "release_manifest_sha256": "fa105cfa877b8fb8f985eb3ceebb1eb3b088ac037cdb42e882a7ff3cca683207",
+  "documentation": "https://dev.meta.ai/docs/muse-code",
+  "installer_sha256": "5196d820127a241211c96cf38f0b2e30cff8506a82e9da9508cd5f826632a0ca",
+  "launcher_sha256": "c6db294799a190ca380da274beb3b9c0e160e0da9681a3d364ce8b0e5fa3a4bc"
+}

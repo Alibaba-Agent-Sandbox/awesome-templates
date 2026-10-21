@@ -628,6 +628,17 @@ templates:
     providers:
       alicloud-express: supported
 
+  - name: muse
+    description: "Original native Meta Muse Code with explicit compatible Responses and an owned catalogue/credential relay."
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: muse
+    tags: [muse, meta, coding-agent]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: install-build
+
 # Provider-managed IDs have no source build context; never pass these to image selection.
 managed_templates:
   - name: base

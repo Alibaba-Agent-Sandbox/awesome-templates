@@ -1,0 +1,18 @@
+{
+  "scope": "independent authored operator HTTP server; no SDK, relay, Muse or model involved",
+  "observations": [
+    {
+      "declared_body_bytes": 0,
+      "status": 501,
+      "owned_response_marker": false,
+      "handler_invocations_so_far": 0
+    },
+    {
+      "declared_body_bytes": 2097153,
+      "status": "operator_socket_timeout",
+      "handler_invocations_so_far": 0
+    }
+  ],
+  "assertions_relaxed": false,
+  "cleanup": "owned listener/server stopped"
+}

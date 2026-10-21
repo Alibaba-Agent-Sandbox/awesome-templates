@@ -39,6 +39,7 @@ The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](do
 | [browser-automation](./browser-automation/README.md) | Browser automation sandbox with Playwright + Chromium for web scraping and UI testing | experimental | [alicloud-express (SDK steps, PDF and HTTP37)](./browser-automation/evidence/express-2026-10-20T103410Z.json) |
 | [claude-code](./claude-code/README.md) | Claude Code Agent runtime — Anthropic Claude-powered AI coding assistant | experimental | [alicloud-express (1.1.1 steps smoke)](./claude-code/evidence/express-2026-10-19T183255Z.json) |
 | [cline](./cline/README.md) | Native Cline3.0.73 headless coding with private compatible provider | experimental | [alicloud-express1.0.2 SDK steps and real coding](./cline/evidence/express-2026-10-20.json) |
+| [muse](muse/) | Original native Meta Muse Code with explicit compatible Responses | experimental | |
 | [qm](qm/) | Original QM Pi harness/tool loop and SDK backend | experimental | [alicloud-express1.0.1 SDK steps/native coding19](qm/evidence/express-2026-10-21T021039Z.json) |
 | [qm-sandbox](qm-sandbox/) | Original QM tools backed by actual Agent Sandbox Node SDK | experimental | [alicloud-express1.0.1 SDK steps/fullHTTP18](qm-sandbox/evidence/express-2026-10-21.json) |
 | [appworld](appworld/) | Original AppWorld task engine/evaluator and encrypted result replay | experimental | [alicloud-express1.0.6 SDK steps/native task17](appworld/evidence/express-2026-10-21.json) |

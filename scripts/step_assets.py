@@ -27,6 +27,17 @@ CHUNK = 1024 * 1024
 MAX_BYTES = 300 * 1024 * 1024
 
 
+# One explicitly reviewed original native ELF exceeds the generic300MiB archive
+# ceiling. Only its exact official URL/size/published digest receives this bound.
+MUSE_NATIVE = {'url': 'https://lookaside.facebook.com/lookaside/muse/download/?channel=muse&version=1.4.11-R6667.1&file=muse-x86-linux', 'size': 384809176, 'sha256': '6fda12a6a4f236528dafa707384cf6395fe859b1438ef77c7be26ed9d7976839'}
+
+def reviewed_muse_native(asset: dict) -> bool:
+    return all(asset.get(key)==value for key,value in MUSE_NATIVE.items())
+
+def reviewed_asset_limit(asset: dict) -> int:
+    return MUSE_NATIVE['size'] if reviewed_muse_native(asset) else MAX_BYTES
+
+
 def download(asset: dict, target: Path, *, workers: int = 16, seconds: int = 1200) -> None:
     """Require exact ranges/size and final SHA256 before atomic publication."""
     if not 1 <= workers <= 32 or not 1 <= seconds <= 1200:
@@ -49,7 +60,7 @@ def download(asset: dict, target: Path, *, workers: int = 16, seconds: int = 120
         # CDN URLs never enter provenance, files or successful output.
         resolved_url = response.geturl()
     pinned_size = asset.get("size", asset.get("bytes"))
-    if not 0 < size <= MAX_BYTES or pinned_size is not None and size != pinned_size:
+    if not 0 < size <= reviewed_asset_limit(asset) or pinned_size is not None and size != pinned_size:
         raise RuntimeError("official archive size differs from the bounded reviewed asset")
     target.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="parts-", dir=target.parent) as private:
