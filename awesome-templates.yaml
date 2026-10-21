@@ -573,6 +573,16 @@ templates:
     providers:
       alicloud-express: supported
 
+  - name: chrome
+    description: "Pinned headed Chrome145 with native CDP and authenticated visible noVNC desktop"
+    repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+    path: chrome
+    tags: [chrome, browser, cdp, vnc, desktop]
+    author: alibaba-agent-sandbox
+    capabilities: [shell, files, code, ports]
+    status: experimental
+    providers:
+      alicloud-express: supported
 
   - name: appworld
     description: "Original AppWorld engine/evaluator with private encrypted bundles and an explicit compatible-model API bridge"

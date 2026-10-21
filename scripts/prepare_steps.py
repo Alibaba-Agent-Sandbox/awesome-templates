@@ -96,6 +96,16 @@ def parallel_assets(source: Path) -> dict:
                 or data["size"] != 34280074 or data["sha256"] != "fd9f9608c2ec71ed0ac25c3633a738b9129a318a129e31230425b9188e508250"):
             raise ValueError("unreviewed original encrypted AppWorld data transport")
         return {"x86_64": [{key: data[key] for key in ["url", "size", "sha256"]}]}
+
+
+    if source.name == "chrome":
+        item = json.loads((source / "browser.json").read_text())
+        if (item["browser_version"] != "145.0.7632.6"
+                or item["url"] != "https://cdn.playwright.dev/chrome-for-testing-public/145.0.7632.6/linux64/chrome-linux64.zip"
+                or item["size"] != 175440843
+                or item["sha256"] != "b5e3195041af345a668d110f5daf5581961fa3608626ea588c97dd0fe81c4e38"):
+            raise ValueError("unreviewed headed Chrome archive transport")
+        return {"x86_64": [{key: item[key] for key in ["url", "size", "sha256"]}]}
     if source.name == "tau2-bench":
         item = json.loads((source / "upstream.json").read_text())
         if (item["source_commit"] != "fc0055dc4e0a316c3f83133267fbd6faaa770992" or item["url"] != "https://codeload.github.com/sierra-research/tau2-bench/tar.gz/" + item["source_commit"]

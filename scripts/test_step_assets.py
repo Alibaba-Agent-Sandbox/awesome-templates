@@ -224,3 +224,26 @@ def test_appworld_encrypted_data_steps_preserve_exact_source_and_wire_limit():
     assert proof['inputs_sha256']['worker.py']==hashlib.sha256((ROOT/'appworld/worker.py').read_bytes()).hexdigest()
     assert proof['build_assets']['x86_64'][0]['size']==34280074
     assert manifest['build']['steps'][-1]=={'type':'USER','args':['user']}
+
+
+def test_chrome_asset_profile_rejects_changed_official_identity(tmp_path):
+    from prepare_steps import parallel_assets
+    source=tmp_path/'chrome';source.mkdir()
+    data=json.loads((ROOT/'chrome/browser.json').read_text())
+    (source/'browser.json').write_text(json.dumps(data))
+    assert parallel_assets(source)=={'x86_64':[{key:data[key]for key in ['url','size','sha256']}]}
+    for key,value in [('browser_version','145.0.0.0'),('url','https://other.invalid/browser.zip'),('size',1),('sha256','0'*64)]:
+        changed=dict(data);changed[key]=value
+        (source/'browser.json').write_text(json.dumps(changed))
+        with pytest.raises(ValueError,match='unreviewed headed Chrome'):parallel_assets(source)
+
+
+def test_chrome_steps_preserve_native_archive_and_immutable_wire_budget():
+    manifest,proof=prepare(ROOT/'chrome',asset_transport='parallel',server_commit='e2cb27e24fde0a67112f82b8d44af463445a5d1a')
+    assert proof['steps_json_bytes']<=15000
+    assert len(proof['copy_source_commit'])==40
+    assert proof['inputs_sha256']['worker.py']==hashlib.sha256((ROOT/'chrome/worker.py').read_bytes()).hexdigest()
+    assert len(proof['build_assets']['x86_64'])==1
+    assert proof['build_assets']['x86_64'][0]['size']==175440843
+    assert manifest['build']['steps'][-1]=={'type':'USER','args':['user']}
+    assert 'rm -rf /tmp/abx-step-assets' in manifest['build']['steps'][-2]['args'][0]
