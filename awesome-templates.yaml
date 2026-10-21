@@ -80,7 +80,7 @@ templates:
     capabilities: [shell, files, code, terminal, ports]
     status: experimental
     providers:
-      alicloud-express: supported
+      alicloud-express: provider-prepared
       alicloud-container: provider-prepared
       cubesandbox: unsupported-needs-pty
       e2b: provider-prepared

@@ -1,214 +1,126 @@
 # claude-code
 
-[中文](README.zh-CN.md)
-
 ## What it does
 
-Runs the pinned Anthropic Claude Code CLI through the named `claude` command.
-The agent can edit a project and produce files in its workspace. A completed
-text response alone does not prove that a coding task succeeded; download the
-files and run project tests independently.
+Run unchanged official Claude Code2.0.76 headless planning and Read/Edit/Write/Bash tools. Existing `claude` retains its Anthropic-oriented API; new `claude_byok` explicitly uses an authored Messages-to-OpenAI-Chat text/tool adapter. Compatible-model use is experimental and [not supported by Anthropic](https://code.claude.com/docs/en/llm-gateway); no Claude-model/subscription/vendor endorsement claim.
 
 ## Stack
 
-Alibaba runtime base (Python 3.13 and Node 20), Claude Code **2.0.76**, and
-`agent-sandbox-server` pinned to python-sdk commit
-`35da216a300f1e2e84254a1cf4b4a7ea98681505` unless the deploy CLI injects a wheel.
-Claude Code 2.0.76 supports Node >=18. No extra Node installation is needed.
-`commands.py` is copied after the install layers so edits can reuse those layers.
+Alibaba generation2 basev0.0.49/Linuxx64/Python3.13/Node20; original npm package2.0.76 from its SHA512 integrity lock; exact original cli.js SHA256 in [upstream.json](upstream.json). `npm ci --omit=optional --ignore-scripts` excludes optional image codecs and package hooks. Original CLI, embedded tool code and bundled notices remain unchanged. Server source34e7e011c5569f77b7f605e65313be7498f6cf02, authored stdlib adapter/process ownership. [Dockerfile](Dockerfile), [license notice](UPSTREAM-NOTICE.md), [design](../docs/design/claude-code.md).
 
 ## Problem solved
 
-Provides a reproducible headless coding environment with one command contract
-across the CLI, Python SDK, and HTTP. Generated artifacts remain accessible via
-the files API, while process and terminal routes are provided by the server.
+Expose original native tool execution through SDK/HTTP, with a new explicitly selected compatible text/tool profile when the approved gateway only provides Chat. The adapter translates protocol messages, preserves original tool names/arguments/results and leaves tool execution to the original CLI. It does not implement another planner or forward credentials to a default vendor.
 
 ## Quick start (CLI)
 
-Check the installed entry with `abx create --help`. The complete example below uses native CLI syntax. If help lists `--detach`, use the standard Express entry: create with `abx create <template-id> --detach` and clean up with `abx kill <sandbox-id>` without `-y`; named commands through `abx run` are unchanged. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
-
-Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
+The `abx run` native entry is `abx --native run`. Use verified CLI0.4.1 native entry, existing authorized Express settings and a unique owned run. Publish the exact source before immutable COPY preparation. Replace all placeholders; wait for official READY and retain all owned IDs for cleanup.
 
 ```bash
-abx template install alibaba-agent-sandbox/awesome-templates//claude-code
-# Use the template id returned by installation. Inject the existing key at creation.
-abx create --template <template-id> --env ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY"
-abx run <sandbox-id> claude_version
-abx run <sandbox-id> claude --arg prompt='Create hello.py that prints hello'
-abx run <sandbox-id> claude --json-args '{"prompt":"Fix calculator.py and run its tests","cwd":"project","allowed_tools":"Read,Edit,Write,Bash(python3:*)","command_timeout":300}'
+python scripts/prepare_steps.py claude-code --output /tmp/claude-steps-<unique-run> \
+  --server-commit 34e7e011c5569f77b7f605e65313be7498f6cf02
+python - <<'CONFIG'
+from pathlib import Path
+import yaml
+p=Path('/tmp/claude-steps-<unique-run>/template.yaml')
+v=yaml.safe_load(p.read_text());v['name']='claude-<unique-run>'
+p.write_text(yaml.safe_dump(v,sort_keys=False))
+CONFIG
+abx --native template deploy /tmp/claude-steps-<unique-run> --build steps -y
+abx --native create --template <owned-template-id> -y
+abx --native run <owned-sandbox-id> claude_version
+abx --native run <owned-sandbox-id> claude_native_check
+abx --native kill <owned-sandbox-id> -y
+abx --native template delete <owned-template-id> -y
 ```
 
-Create `project` first with the files or shell API. Keep shell tracing disabled
-when injecting credentials. Use the environment's secret injection mechanism
-where available; command-line arguments may be visible to local processes.
+Canonical owned steps: `ABX='abx --native' python scripts/run_steps_e2e.py claude-code --sandbox-create sdk --http`. Steps do not certify Docker image cloud deployment. For configured coding, `abx --native run <owned-sandbox-id> claude_byok --json-args '{"prompt":"Repair existing calc.py and preserve its tests","cwd":"project","command_timeout":300}'`.
 
 ## Quick start (Python SDK)
 
-The client distribution is `agent-sandbox-client` (import `agent_sandbox`). Until the matching release is available, use the [paired, pinned source installation](../docs/python-client-installation.md).
+Install distribution `agent-sandbox-client` using the [paired pinned source instructions](../docs/python-client-installation.md).
 
 ```python
 import asyncio
-import json
-import os
 from agent_sandbox.api.sandbox import Sandbox
-
 async def main():
-    sb = await Sandbox.create(
-        template="<template-id>", timeout=600,
-        envs={"ANTHROPIC_API_KEY": os.environ["ANTHROPIC_API_KEY"]},
-    )
+    sb=await Sandbox.create(template='<owned-template-id>',timeout=900)
     try:
-        result = await sb.run("claude", prompt="Create hello.py that prints hello", timeout=420)
-        print(json.loads(result)["result"])
-        print(await sb.files.read("/home/user/app/hello.py"))
+        print(await sb.run('claude_version',timeout=60))
+        print(await sb.run('claude_native_check',timeout=60))
     finally:
         await sb.kill()
-
 asyncio.run(main())
 ```
 
-`sb.run` returns the command's result value, a JSON **string** for `claude`.
-`sb.run(timeout=...)` controls the HTTP timeout; `command_timeout` controls the CLI deadline. It is a buffered response; use the process streaming API for live CLI stdout.
+Set all three CLAUDE_MODEL_* variables before the named-command process starts, check `claude_setup_check`, and invoke `await server.commands.run('claude_byok',prompt='Repair existing calc.py; preserve its tests',cwd='project',command_timeout=300,timeout=420)`. Create the project first. Use `sb.server_at(port,token=...)` and close that borrowed client after use. A prewarmed9000process does not acquire later create-time env; follow [explicit process configuration](../docs/runtime-environment.md). An independently configured9010server needs a separate matching Bearer token. Results are buffered direct objects.
 
 ## Quick start (HTTP POST)
 
+ABX_SERVER_URL is `sb.network.get_url(port)` for the configured process; its Bearer token is independent of model/platform credentials.
+
 ```bash
-curl --request POST "$SANDBOX_SERVER_URL/commands/claude" \
-  --header 'Content-Type: application/json' \
+curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/claude_version" \
   --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --max-time 420 \
-  --data '{"prompt":"Create hello.py that prints hello","command_timeout":300}'
+  --header 'Content-Type: application/json' --data '{}'
 ```
 
-Set `SANDBOX_SERVER_URL` to the sandbox's port 9000 URL. Omit the Authorization
-header when server authentication is unset. HTTP 200 is `{"result":"<upstream JSON>"}`;
-400 means invalid arguments, 401 authentication failed, and 500 command failure.
-The 300-second CLI deadline is independent of the 420-second HTTP deadline.
-A client timeout does not prove that the upstream process stopped.
+HTTP200 returns `{"result":"2.0.76 (Claude Code)"}`. `POST /commands/claude_byok` takes direct `{prompt,cwd,command_timeout}` JSON. Missing/unknown/type arguments400, auth401, unknown command404; semantic/native errors500 with sanitized diagnostics. Disconnect does not cancel an issued provider job; bounded owned process/adapter cleanup still runs.
 
 ## Command reference
 
-| Command/parameter | Type/default | Behavior |
-|---|---|---|
-| `claude_version()` | no arguments | Installed CLI version; no key or model call. |
-| `claude.prompt` | required string | Prompt passed as a separate argv element. |
-| `claude.model` | string, `sonnet` | Upstream model name or alias. |
-| `claude.cwd` | string, empty | Existing directory inside `WORKSPACE`; relative or absolute. Symlink escapes rejected. |
-| `claude.allowed_tools` | string, `Read,Edit,Write` | Claude tool permission rules; shell commands require explicit permission. |
-| `claude.resume` | string, empty | Optional upstream session id. |
-| `claude.command_timeout` | integer, `300` | 1–900 seconds; set the client request timeout higher. |
+| Command | Parameters | Result / effects |
+| --- | --- | --- |
+| claude_version | none | Original CLI `2.0.76 (Claude Code)`; no model |
+| claude_native_check | none | Original cli.js hash and help flags: original_native/isolated_settings/no_session_persistence/strict_mcp booleans |
+| claude_setup_check | none | Mode and model_key_set/model_base_set/model_set presence, vendor_account_verified:false/provider_default_fallback:false; no values/network |
+| claude_byok | prompt: required string1..32768UTF8bytes/nonempty/noNUL; cwd: default empty string, max4096bytes, existing resolved directory within WORKSPACE; command_timeout: integer1..600seconds default300, booleans rejected | stdout/exit_code0/native_completed/native_version/cli_sha256/model/protocol/model_calls/native_tool_results/relay_calls. Original tools edit project; no raw transcript |
+| claude | prompt: required nonempty string; model: string default sonnet; cwd: string default empty/contained existing directory; allowed_tools: string default Read,Edit,Write; resume: string default empty; command_timeout: integer300/range1..900seconds | Legacy original JSON encoded as a string, sanitized for environment secrets. Uses existing Anthropic credential/settings behavior; bounded isolated BYOK guarantees do not certify this legacy mode |
 
-Equivalent raw HTTP request to the sandbox's port 9000 URL:
+New fixed profile: `-p --model <selected> --output-format json --permission-mode dontAsk --tools Read,Edit,Write,Bash --allowedTools Read,Edit,Write,Bash --settings <owned> --setting-sources '' --no-session-persistence --strict-mcp-config --mcp-config '{"mcpServers":{}}' --disable-slash-commands --no-chrome --max-turns16`. Hooks disabled, thinking tokens0; no Task tool, subagents, MCP, plugin or project/local settings loading. Project instructions remain untrusted input; use only an owned disposable target.
 
-```http
-POST /commands/claude
-Content-Type: application/json
-
-{"prompt":"Create hello.py that prints hello","model":"sonnet","cwd":"","allowed_tools":"Read,Edit,Write","command_timeout":300}
-```
-
-HTTP 200 wraps the string as `{"result":"<upstream JSON>"}`. Missing or mistyped
-parameters return HTTP 400. Non-zero CLI exit, timeout, invalid JSON, and an
-upstream `is_error` result return HTTP 500 with sanitized diagnostics. The
-command never returns a non-zero exit as success. `GET /commands` describes the
-live parameter schema. This endpoint is buffered, not SSE.
+Text and original tool schemas/results are translated; unsupported image/thinking/content/tool types, truncated replies, wrong model/token/path and redirects fail closed. Upstream Chat is buffered then emitted as native Messages SSE.32requests/2MiBrequest/4MiBresponse maximum,16native turns,256KiB each native stdout/stderr. Actual native successful result and positive completed transport counts are required. Coding qualification additionally requires positive native tool results and independently downloaded files/tests. Own process/private state and issued RPCs drain before return; cleanup may add up to90seconds, client timeout at least command_timeout+120. Concurrent BYOK calls fail busy.
 
 ## Configuration
 
-| Environment name | Purpose |
-|---|---|
-| `ANTHROPIC_API_KEY` | Required inside the sandbox for model calls; inject at creation. |
-| `WORKSPACE` | Command working directory root; default `/home/user/app`. |
-| `ABX_SERVER_TOKEN` | Optional named-command server authentication, injected at creation. |
-| `E2E_RUN_LLM` | `0` skips the real agent case; `1` requires its host-side key check. |
-| `E2E_REQUIRE_LLM` | `1` fails on missing key or a forced skip. |
-| `E2E_MODEL` | Optional model override for acceptance. |
+| Name | Default / requirement | Meaning |
+| --- | --- | --- |
+| CLAUDE_MODEL_API_KEY | empty; required for BYOK | Explicit approved compatible upstream key; parent adapter only |
+| CLAUDE_MODEL_BASE_URL | empty; required for BYOK | HTTPS Chat base/no userinfo/query/fragment/max2048chars; literal-loopback HTTP for fixed fixtures |
+| CLAUDE_MODEL | empty; required for BYOK | Selected model1..200identifier characters |
+| ANTHROPIC_API_KEY | empty; legacy mode only | Existing Anthropic-compatible legacy configuration; not silently reused by BYOK |
+| WORKSPACE | /home/user/app | Existing project root |
+| ABX_SERVER_TOKEN | empty; optional | Separate command-server credential |
 
-`--permission-mode dontAsk` denies tools requiring approval unless permitted by
-`allowed_tools` or upstream settings. The wrapper never enables blanket
-permission bypass. These rules and `cwd` validation are not OS isolation: the
-agent runs as sandbox `user`, and allowed Bash can access that user's files,
-network and injected credentials. Use disposable sandboxes and only necessary
-credentials; do not mount host secrets or run untrusted prompts alongside them.
-Do not log model output indiscriminately: it can contain workspace data. The
-wrapper suppresses upstream stderr and exception payloads, and redacts known
-secret environment values from successful JSON output.
-
-With `ABX_SERVER_TOKEN`, raw HTTP needs `Authorization: Bearer <token>` or
-`X-Access-Token: <token>`. For the SDK use
-`await sb.server_at(9000, token=os.environ["ABX_SERVER_TOKEN"]).commands.run("claude", prompt="...", timeout=420)`.
-The sandbox gateway token and this server token are separate credentials.
+New settings captured at module import. Key max8192/no control characters; no default provider/model/key fallback. Native/tool environment gets only an ephemeral local adapter token and minimal private HOME/config/cache; real upstream key remains in the parent and is sent only to exact configured Chat origin. Original command results and error messages omit credentials/private endpoints/transcripts. Same-user OS access remains; environment filtering/cwd containment is not another tenant boundary. Legacy resume/settings behavior is retained and outside BYOK isolation claims.
 
 ## Resources
 
-2 vCPU, 2048 MB; no GPU, Docker, KVM, or privileged capabilities. Model calls
-require outbound access to Anthropic and consume the account's model budget.
-See [upstream CLI reference](https://code.claude.com/docs/en/cli-reference)
-and [headless usage](https://code.claude.com/docs/en/headless) for tool rules.
+Declared2vCPU2048MB, Linuxx64, port9000,8GiB image rootfs budget; no KVM/Docker/GPU/display requirement. Official npm archive26.4MB/original package70.9MB, Node20 already in base. Approved model egress required; optional image codecs omitted. Peak memory not measured. Full Claude service, OAuth/subscription, interactive/resumed sessions, images/thinking/MCP/plugins/delegation remain unverified.
 
 ## Verified
 
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 1.1.1; steps build, official READY, CLI/SDK basic smoke, independent cleanup; current-version model acceptance NOT_RUN | [2026-10-19](evidence/express-2026-10-19T183255Z.json) |
-
-The changed workspace profile is verified in real generated steps. Prior receipts retain historical scope; basic smoke does not establish model acceptance.
-
-## Historical verification
-
-| Provider | Executed scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
-
-This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
-
-<details>
-<summary>Earlier checkpoint text (historical; current steps result is above)</summary>
-
-No provider has a passing run recorded for this template.
-
-</details>
+Current1.2.0 provider/native/model acceptance is PENDING. Earlier1.1.1 receipts remain immutable historical evidence and do not qualify this changed profile. Local38fixed transport/privacy/process controls PASS; this is not a cloud/model pass. Final actual Express, image, original CLI and model evidence must be recorded before qualification or Issue closure.
 
 ## Secondary development
 
-Change `commands.py` and keep prompts as argv. Change the exact npm version in
-both the Dockerfile and smoke expectation when upgrading. Do not bake secrets
-into layers. Local checks from the repository root:
-
 ```bash
-python3 scripts/check_template.py claude-code
-python3 -m unittest discover -s claude-code/tests -v
-python3 scripts/run_local_e2e.py
+python -m pytest -q claude-code/test_byok.py claude-code/test_adapter.py
+python scripts/check_template.py claude-code --strict
+python scripts/check_docs.py
+ABX='abx --native' python scripts/run_steps_e2e.py claude-code --sandbox-create sdk --http
 ```
 
-L0 skips model calls. L1 requires an actual image build; L2 requires deployment
-and external CLI/SDK smoke calls. For L3, run `e2e_test.py` against the created
-sandbox with `E2E_REQUIRE_LLM=1`, `E2E_RUN_LLM=1`, and its URL/token plus the
-host-side key configured without printing it. The suite seeds a broken project,
-requires a real agent edit and new artifact/report files, preserves test sources,
-and independently runs two unit tests. It cleans up only its own unique files,
-processes and PTY sessions. Missing credentials are a failure in required mode.
-Only record provider evidence after the corresponding real run passes.
-
-### Agent Sandbox platform steps
-
-From a repository checkout, `python scripts/run_steps_e2e.py claude-code` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+Keep original package and notices, lockfile/integrity/hash, explicit approved origin, no real child key, unsupported-feature refusal and owned descendants/listener/private cleanup. Fixed non-executable protocol replies may run locally. Original native/generated-code verification runs only on a fresh owned cloud target; preserve original tests and independently assert artifacts and post-return held-outs.
 
 ## Contributing
 
-Follow [CONTRIBUTING](../CONTRIBUTING.md) and the [template spec](../docs/template-spec.md).
+Read [CONTRIBUTING](../CONTRIBUTING.md), [project standards](../docs/project-standards.md), [documentation standards](../docs/documentation-standards.md) and [template spec](../docs/template-spec.md). Include bilingual docs, owner note/evidence and current-head review/checks.
 
 ## Issues
 
-Report template problems to [awesome-templates](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues).
-SDK/server problems go to [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues)
-and CLI problems to [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues),
-with the `[templates]` prefix. Search existing issues and redact credentials.
+[Issue15](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/15), [template defects](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues), [Python SDK](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues), [CLI](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues). Original upstream behavior uses its support channels. Never attach credentials or private transcripts.
 
 ## License
 
-Apache-2.0 for this template. Claude Code has its own upstream terms.
-
-### 2026-10-20 full step checkpoint: template1.1.1
-
-[Real current-version steps](evidence/express-2026-10-20.json) and [complete external HTTP controller](evidence/verification-steps-2026-10-20T154625Z.json): official READY, actual Python SDK creation, all CLI/SDK smoke and 20 PASS/0 FAIL/1 SKIP; independent owned sandbox/template cleanup passed. Model acceptance remains NOT_RUN in this receipt; it does not relabel earlier image/model scope. Reproduction and exact server/controller provenance: [step guide](../docs/platform-steps.md).
+Authored template/adapter: [Apache-2.0](../LICENSE). Original Anthropic package remains all rights reserved under its [original terms/notices](UPSTREAM-NOTICE.md); no relicensing or vendor endorsement.

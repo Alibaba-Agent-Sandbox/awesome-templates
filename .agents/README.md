@@ -203,3 +203,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Original Muse native runtime](notes/implemented/feature/2026-10-21-muse-native-runtime.md) · [research](evidence/verify/2026-10-21-muse-native-research.md)
 
 - [Muse1.0.1 final original native acceptance](evidence/verify/2026-10-21-muse-native-final.md) · [current44native/runtime and fullHTTP](evidence/verify/2026-10-21-current-native-http44.json)
+
+- [Original Claude explicit compatible transport](notes/proposed/feature/2026-10-21-claude-explicit-compatible.md) · [verification](evidence/verify/2026-10-21-claude-explicit-compatible.md)

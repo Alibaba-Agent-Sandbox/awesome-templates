@@ -1,194 +1,126 @@
 # claude-code
 
-[English](README.md)
-
 ## 做什么
 
-通过命名命令 `claude` 调用钉死版本的 Anthropic Claude Code CLI，修改项目并生成工作区文件。
-文本回复成功不代表编程任务完成；应下载产物并独立运行项目测试。
+运行官方未修改的 Claude Code2.0.76无交互规划及 Read/Edit/Write/Bash 工具。原 `claude` 保留面向 Anthropic 的接口；新增 `claude_byok` 显式使用本项目编写的 Messages 到 OpenAI Chat 文本和工具协议适配器。兼容模型模式属于实验功能，[Anthropic 不支持将其用于非 Claude 模型](https://code.claude.com/docs/en/llm-gateway)，不代表获得 Claude 模型、订阅或官方背书。
 
 ## 技术栈
 
-阿里云运行时基础镜像（Python 3.13、Node 20），Claude Code **2.0.76**，以及钉在
-python-sdk 提交 `35da216a300f1e2e84254a1cf4b4a7ea98681505` 的服务端。
-部署 CLI 注入 wheel 时优先安装 wheel。Claude Code 2.0.76 支持 Node >=18，无需另装 Node。
-安装层在前、`commands.py` 复制在后，便于复用镜像层。
+阿里云 generation2基础镜像v0.0.49/Linuxx64/Python3.13/Node20；官方npm包2.0.76以锁文件 SHA512 校验，[upstream.json](upstream.json) 固定原始 cli.js SHA256。`npm ci --omit=optional --ignore-scripts` 排除可选图像编解码器和安装钩子，原 CLI、内置工具代码和许可声明保持原样。服务端固定34e7e011c5569f77b7f605e65313be7498f6cf02；适配器与进程管理仅依赖标准库。见 [Dockerfile](Dockerfile)、[上游声明](UPSTREAM-NOTICE.md)、[设计](../docs/design/claude-code.md)。
 
 ## 解决的问题
 
-在 CLI、Python SDK 和 HTTP 上提供一致的无头编程命令。使用 files API 获取生成产物，
-使用服务端提供的 process 和 terminal API 管理进程与终端。
+通过 SDK/HTTP 调用原始工具。在授权网关只提供 Chat 时，新增显式选择的文本工具兼容模式。适配器转换消息协议、保留原始工具名称、参数和结果，工具执行仍由原始 CLI 完成；不会实现替代规划器或将密钥发往默认厂商。
 
 ## 快速开始（CLI）
 
-先用 `abx create --help` 确认已安装入口。下面的完整示例使用原生 CLI 语法。若帮助列出 `--detach`，则是标准极速版入口：创建改用 `abx create <template-id> --detach`，清理改用 `abx kill <sandbox-id>`（不加 `-y`）；命名命令 `abx run` 不变。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
-
-运行配置：以下创建时注入密钥的示例，要求命名服务启动时实际获得这些值。预热服务请先检查模板提供的 setup 标志（如有），再按[显式进程配置](../docs/runtime-environment.zh-CN.md)操作；创建沙箱不会重新配置已运行的服务。
+`abx run` 的 native 入口为 `abx --native run`。使用已验证 CLI0.4.1的 native 入口、现有授权 Express 配置和唯一任务名称。先发布精确源码再生成不可变 COPY；替换全部占位符，等待官方 READY 并保存自建资源ID用于清理。
 
 ```bash
-abx template install alibaba-agent-sandbox/awesome-templates//claude-code
-# 使用安装返回的模板 id，创建时注入已有密钥。
-abx create --template <template-id> --env ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY"
-abx run <sandbox-id> claude_version
-abx run <sandbox-id> claude --arg prompt='创建 hello.py，输出 hello'
-abx run <sandbox-id> claude --json-args '{"prompt":"修复 calculator.py 并运行测试","cwd":"project","allowed_tools":"Read,Edit,Write,Bash(python3:*)","command_timeout":300}'
+python scripts/prepare_steps.py claude-code --output /tmp/claude-steps-<unique-run> \
+  --server-commit 34e7e011c5569f77b7f605e65313be7498f6cf02
+python - <<'CONFIG'
+from pathlib import Path
+import yaml
+p=Path('/tmp/claude-steps-<unique-run>/template.yaml')
+v=yaml.safe_load(p.read_text());v['name']='claude-<unique-run>'
+p.write_text(yaml.safe_dump(v,sort_keys=False))
+CONFIG
+abx --native template deploy /tmp/claude-steps-<unique-run> --build steps -y
+abx --native create --template <owned-template-id> -y
+abx --native run <owned-sandbox-id> claude_version
+abx --native run <owned-sandbox-id> claude_native_check
+abx --native kill <owned-sandbox-id> -y
+abx --native template delete <owned-template-id> -y
 ```
 
-先用 files 或 shell API 创建 `project`。注入凭据时关闭 shell tracing；有平台秘密注入功能时优先使用，
-命令行参数可能被本机其他进程看到。
+规范自有资源流程：`ABX='abx --native' python scripts/run_steps_e2e.py claude-code --sandbox-create sdk --http`。steps 不能证明镜像在云端部署。模型服务已配置时使用 `abx --native run <owned-sandbox-id> claude_byok --json-args '{"prompt":"Repair existing calc.py and preserve its tests","cwd":"project","command_timeout":300}'`。
 
 ## 快速开始（Python SDK）
 
-客户端发行名为 `agent-sandbox-client`，导入名为 `agent_sandbox`。配套版本发布前，请按[固定提交的双包安装说明](../docs/python-client-installation.md)安装。
+客户端发行名 `agent-sandbox-client`，使用[固定配套源码安装说明](../docs/python-client-installation.md)。
 
 ```python
 import asyncio
-import json
-import os
 from agent_sandbox.api.sandbox import Sandbox
-
 async def main():
-    sb = await Sandbox.create(
-        template="<template-id>", timeout=600,
-        envs={"ANTHROPIC_API_KEY": os.environ["ANTHROPIC_API_KEY"]},
-    )
+    sb=await Sandbox.create(template='<owned-template-id>',timeout=900)
     try:
-        result = await sb.run("claude", prompt="创建 hello.py，输出 hello", timeout=420)
-        print(json.loads(result)["result"])
-        print(await sb.files.read("/home/user/app/hello.py"))
+        print(await sb.run('claude_version',timeout=60))
+        print(await sb.run('claude_native_check',timeout=60))
     finally:
         await sb.kill()
-
 asyncio.run(main())
 ```
 
-`sb.run` 返回命令结果，`claude` 的结果是 JSON **字符串**。`sb.run(timeout=...)` 控制 HTTP 超时，`command_timeout` 控制 CLI 执行上限。响应完整缓冲；实时 stdout 使用进程流 API。
+命令服务启动前设置全部三个 CLAUDE_MODEL_* 变量，检查 `claude_setup_check`，然后调用 `await server.commands.run('claude_byok',prompt='Repair existing calc.py; preserve its tests',cwd='project',command_timeout=300,timeout=420)`。项目需预先创建。独立服务使用 `sb.server_at(port,token=...)`，使用后关闭借用客户端。预热9000进程不会读取后续创建参数；遵循[显式进程配置](../docs/runtime-environment.md)，独立9010进程使用对应独立 Bearer。结果为缓冲后的直接对象。
 
 ## 快速开始（HTTP POST）
 
+ABX_SERVER_URL 来自已配置服务的 `sb.network.get_url(port)`；服务 Bearer 与平台和模型密钥独立。
+
 ```bash
-curl --request POST "$SANDBOX_SERVER_URL/commands/claude" \
-  --header 'Content-Type: application/json' \
+curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/claude_version" \
   --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --max-time 420 \
-  --data '{"prompt":"创建 hello.py，输出 hello","command_timeout":300}'
+  --header 'Content-Type: application/json' --data '{}'
 ```
 
-`SANDBOX_SERVER_URL` 为沙箱端口 9000 URL。未配置服务认证时省略 Authorization 头。
-HTTP 200 为 `{"result":"<上游 JSON>"}`，400 表示参数错误，401 表示认证失败，500 表示命令失败。
-CLI 的 300 秒执行上限与 HTTP 的 420 秒请求超时独立。客户端超时不代表上游进程已停止。
+HTTP200返回 `{"result":"2.0.76 (Claude Code)"}`。`POST /commands/claude_byok` 接受直接 `{prompt,cwd,command_timeout}` JSON。缺失、未知或类型参数400，认证401，未知命令404；语义或原生执行错误500并脱敏。HTTP断连不撤销已发出的模型任务；有界进程及适配器清理仍执行。
 
 ## 命令参考
 
-| 命令或参数 | 类型/默认值 | 行为 |
-|---|---|---|
-| `claude_version()` | 无参数 | 查看已安装 CLI 版本，不访问模型。 |
-| `claude.prompt` | 必填字符串 | 作为独立 argv 参数传入，不拼接 shell。 |
-| `claude.model` | 字符串，`sonnet` | 上游模型名或别名。 |
-| `claude.cwd` | 字符串，空 | `WORKSPACE` 内已存在的相对或绝对目录；拒绝符号链接逃逸。 |
-| `claude.allowed_tools` | 字符串，`Read,Edit,Write` | Claude 工具许可规则，shell 需显式许可。 |
-| `claude.resume` | 字符串，空 | 可选的上游会话 id。 |
-| `claude.command_timeout` | 整数，`300` | 1–900 秒；客户端超时应更长。 |
+| 命令 | 参数 | 结果与副作用 |
+| --- | --- | --- |
+| claude_version | 无 | 原 CLI `2.0.76 (Claude Code)`；无模型调用 |
+| claude_native_check | 无 | 原 cli.js 哈希与帮助参数：original_native/isolated_settings/no_session_persistence/strict_mcp 布尔值 |
+| claude_setup_check | 无 | mode及model_key_set/model_base_set/model_set存在标志、vendor_account_verified:false/provider_default_fallback:false；不返回值、不发网络请求 |
+| claude_byok | prompt必需字符串，非空、1..32768UTF8字节、无NUL；cwd默认空字符串、最多4096字节、解析后位于WORKSPACE内的已有目录；command_timeout整数1..600秒，默认300，拒绝布尔值 | stdout/exit_code0/native_completed/native_version/cli_sha256/model/protocol/model_calls/native_tool_results/relay_calls；原始工具修改项目，不返回完整轨迹 |
+| claude | prompt必需非空字符串；model字符串默认sonnet；cwd默认空字符串、已有且位于工作区内；allowed_tools默认Read,Edit,Write；resume默认空字符串；command_timeout整数默认300、范围1..900秒 | 旧接口将原生JSON编码为字符串并脱敏环境密钥；保留原Anthropic凭据和设置行为，新增隔离模式的保证不覆盖旧接口 |
 
-向沙箱端口 9000 URL 发出等价 HTTP 请求：
+新增固定参数：`-p --model <selected> --output-format json --permission-mode dontAsk --tools Read,Edit,Write,Bash --allowedTools Read,Edit,Write,Bash --settings <owned> --setting-sources '' --no-session-persistence --strict-mcp-config --mcp-config '{"mcpServers":{}}' --disable-slash-commands --no-chrome --max-turns16`。禁用钩子，思考token为0；不提供Task、子Agent、MCP、插件或项目/本地设置加载。项目指令仍是不可信输入，仅在自有可丢弃目标运行。
 
-```http
-POST /commands/claude
-Content-Type: application/json
-
-{"prompt":"创建 hello.py，输出 hello","model":"sonnet","cwd":"","allowed_tools":"Read,Edit,Write","command_timeout":300}
-```
-
-HTTP 200 包装为 `{"result":"<上游 JSON>"}`。缺参或类型错误返回 HTTP 400；CLI 非零退出、
-超时、无效 JSON、上游 `is_error` 返回 HTTP 500，错误中不含上游诊断原文。
-`GET /commands` 提供当前参数 schema。这是一次完整响应，不是 SSE。
+转换文本及原始工具schema和结果；拒绝图像、thinking、不支持的内容或工具、截断回复、错误模型、token、路径及重定向。上游Chat缓冲后输出原生Messages SSE。最多32请求，每请求2MiB、响应4MiB、原生16轮、stdout/stderr各256KiB。成功要求原CLI成功结果和正数传输完成次数；编码验收另要求原生工具结果、独立下载产物及测试。返回前回收自有进程、私有状态、已发RPC；清理最多额外90秒，客户端超时至少command_timeout+120；并发BYOK返回忙。
 
 ## 配置
 
-| 环境变量 | 用途 |
-|---|---|
-| `ANTHROPIC_API_KEY` | 模型调用要求沙箱内已注入。 |
-| `WORKSPACE` | 工作区根目录，默认 `/home/user/app`。 |
-| `ABX_SERVER_TOKEN` | 可选的命名命令服务认证，创建时注入。 |
-| `E2E_RUN_LLM` | `0` 跳过真实 Agent；`1` 要求运行端已有密钥。 |
-| `E2E_REQUIRE_LLM` | `1` 时缺密钥或强制跳过都失败。 |
-| `E2E_MODEL` | 验收使用的可选模型覆盖。 |
+| 名称 | 默认与要求 | 含义 |
+| --- | --- | --- |
+| CLAUDE_MODEL_API_KEY | 空，BYOK必需 | 明确授权的兼容上游密钥，仅父适配器持有 |
+| CLAUDE_MODEL_BASE_URL | 空，BYOK必需 | HTTPS Chat基址，无userinfo/query/fragment、最多2048字符；固定测试允许字面环回HTTP |
+| CLAUDE_MODEL | 空，BYOK必需 | 选定模型，1..200允许的标识字符 |
+| ANTHROPIC_API_KEY | 空，仅旧模式 | 旧Anthropic兼容配置；新增入口不会隐式复用 |
+| WORKSPACE | /home/user/app | 已有项目根目录 |
+| ABX_SERVER_TOKEN | 空，可选 | 独立命令服务凭据 |
 
-使用 `--permission-mode dontAsk`，需要许可的工具必须由 `allowed_tools` 或上游设置允许。
-封装不打开全局权限绕过。工具规则和 cwd 检查不构成操作系统隔离：Agent 以沙箱 `user` 身份运行，
-允许 Bash 后能访问该用户的文件、网络和注入凭据。使用一次性沙箱及最少凭据，避免宿主机秘密挂载，
-避免把不可信提示词与秘密放在一起。模型输出可能含工作区数据，不应直接记录全部输出。
-封装不回传 stderr 和异常载荷原文，并从成功 JSON 中涂掉已知秘密环境变量的值。
-
-启用 `ABX_SERVER_TOKEN` 后，HTTP 带 `Authorization: Bearer <token>` 或
-`X-Access-Token: <token>`。SDK 使用
-`await sb.server_at(9000, token=os.environ["ABX_SERVER_TOKEN"]).commands.run("claude", prompt="...", timeout=420)`。
-沙箱网关 token 和该服务 token 是不同的凭据。
+新增配置在模块导入时捕获。密钥最多8192字符且无控制字符；不默认回退厂商、模型或密钥。原CLI和工具仅获得临时本地适配器token、最小环境以及私有HOME/config/cache；真实密钥仅父进程持有并只发往明确指定的Chat来源。结果与错误不含凭据、私有地址或完整轨迹。同用户OS访问仍存在；环境过滤和cwd约束不构成另一个租户边界。旧接口resume与设置行为保留，不纳入BYOK隔离承诺。
 
 ## 资源
 
-2 vCPU、2048 MB，无 GPU、Docker、KVM 或额外权限。模型调用需要访问 Anthropic 外网并消耗账户额度。
-工具规则见[上游 CLI 参考](https://code.claude.com/docs/en/cli-reference)和[无头调用](https://code.claude.com/docs/en/headless)。
+声明2vCPU2048MB、Linuxx64、9000端口、8GiB镜像rootfs预算；无需KVM/Docker/GPU/显示器。官方npm压缩包26.4MB、展开70.9MB，基础镜像已含Node20。需授权模型出网，排除可选图像编解码器。未测峰值内存。完整Claude服务、OAuth/订阅、交互/恢复会话、图像/thinking/MCP/插件/委派未验证。
 
 ## 已验证
 
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 1.1.1; steps构建、官方READY、CLI/SDK基础冒烟、独立清理；当前版本真实模型尚未执行 | [2026-10-19](evidence/express-2026-10-19T183255Z.json) |
-
-新版本的目录归属已在真实生成步骤中验证。旧版本回执保持历史范围；基础冒烟不能推断完整模型验收。
-
-## 历史验收
-
-| 提供方 | 已执行范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
-
-该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
-
-<details>
-<summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
-
-尚未记录任何通过的提供方测试。
-
-</details>
+当前1.2.0的提供商、原生及模型验收待执行。此前1.1.1回执保留为不可变历史，不能证明本次变更通过。本地38项固定协议、隐私和进程测试通过，不属于云端或模型通过；必须完成实际Express、镜像、原CLI及模型证据后才能声明当前验证并关闭Issue。
 
 ## 二次开发
 
-修改 `commands.py` 时保留 argv 方式。升级时同时修改 Dockerfile 精确 npm 版本及 smoke 期望。
-不要把秘密放入镜像层。从仓库根目录运行：
-
 ```bash
-python3 scripts/check_template.py claude-code
-python3 -m unittest discover -s claude-code/tests -v
-python3 scripts/run_local_e2e.py
+python -m pytest -q claude-code/test_byok.py claude-code/test_adapter.py
+python scripts/check_template.py claude-code --strict
+python scripts/check_docs.py
+ABX='abx --native' python scripts/run_steps_e2e.py claude-code --sandbox-create sdk --http
 ```
 
-L0 跳过模型。L1 要真实构建；L2 要部署和外部 CLI/SDK smoke。L3 对创建好的沙箱运行
-`e2e_test.py`，设置 URL/token、运行端已有密钥、`E2E_REQUIRE_LLM=1` 和 `E2E_RUN_LLM=1`，
-不打印秘密。套件先复现项目失败，要求真实 Agent 修改代码、新建产物与报告，保持测试文件不变，
-再独立运行两项测试。只清理本次唯一目录、进程与 PTY 会话。必需模式缺密钥会失败。
-提供方记录必须等真实运行通过后填写。
-
-### Agent Sandbox step 构建
-
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py claude-code`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+保留原包与声明、锁文件与完整性/哈希、显式授权来源、工具环境无真实密钥、拒绝不支持内容、自有后代进程/监听器/私有目录清理。本地仅使用不执行代码的固定协议回复。原生/模型生成代码仅在新建自有云目标运行；原测试字节不变，并独立核对产物和返回后的隐藏测试。
 
 ## 贡献
 
-遵循[贡献指南](../CONTRIBUTING.md)和[模板规范](../docs/template-spec.zh-CN.md)。
+遵循 [CONTRIBUTING](../CONTRIBUTING.md)、[项目规范](../docs/project-standards.zh-CN.md)、[文档规范](../docs/documentation-standards.zh-CN.md) 和[模板规范](../docs/template-spec.zh-CN.md)。包含双语文档、所属仓库记录、当前提交review及检查。
 
 ## 问题反馈
 
-模板问题提交到 [awesome-templates](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues)。
-SDK/服务端问题提交到 [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues)，
-CLI 问题提交到 [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues)，标题加 `[templates]`。
-先搜索已有 issue，附复现步骤并去掉凭据。
+[Issue15](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/15)、[模板缺陷](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues)、[Python SDK](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues)、[CLI](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues)。原始上游问题遵循其支持渠道。不得附加密钥或私有轨迹。
 
 ## 许可证
 
-本模板 Apache-2.0。Claude Code 适用上游自己的条款。
-
-### 2026-10-20完整 step 检查点：模板1.1.1
-
-[真实对应版本 step](evidence/express-2026-10-20.json)及[完整外部 HTTP 控制器](evidence/verification-steps-2026-10-20T154625Z.json)通过：官方 READY、真实 Python SDK 创建、全部 CLI/SDK smoke，20 PASS/0 FAIL/1 SKIP；自有沙箱／模板均独立确认清理。本回执模型验收仍为 NOT_RUN，不改变旧镜像／模型范围。复现及精确服务端／控制器来源见[step 指南](../docs/platform-steps.zh-CN.md)。
+本项目模板和适配器：[Apache-2.0](../LICENSE)。原Anthropic包保留全部权利并遵循[上游条款和声明](UPSTREAM-NOTICE.md)，不重新授权或暗示官方背书。
