@@ -319,3 +319,10 @@ def test_muse_native_steps_preserve_immutable_original_and_wire_budget():
     for filename in ['commands.py','relay.py','filter_native.py','install_runtime.py','server-sdk.commit']:
         assert proof['inputs_sha256'][filename]==hashlib.sha256((ROOT/'muse'/filename).read_bytes()).hexdigest()
     assert manifest['build']['steps'][-1]=={'type':'USER','args':['user']}
+
+
+def test_muse_installer_runs_through_verified_native_asset_adapter():
+    from server_sdk_pin import server_commit
+    manifest,_=prepare(ROOT/'muse',asset_transport='parallel',server_commit=server_commit(ROOT/'muse'))
+    commands=[v['args'][0]for v in manifest['build']['steps']if v['type']=='RUN']
+    assert any('python3 /tmp/abx-step-assets/step_assets.py run /tmp/muse-original-installer/install_runtime.py'in value for value in commands)

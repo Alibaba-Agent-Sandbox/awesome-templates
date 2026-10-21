@@ -3,9 +3,10 @@ ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8
 RUN python3 -c "import platform,sys; assert platform.machine()=='x86_64' and sys.version_info[:2]==(3,13), 'reviewed Linuxx64/Python3.13 required'" \
     && apt-get update && apt-get install -y --no-install-recommends ca-certificates git ripgrep \
     && rm -rf /var/lib/apt/lists/*
-COPY upstream.json install_runtime.py /opt/muse-bootstrap/
-RUN python3 /opt/muse-bootstrap/install_runtime.py \
-    && chmod -R a+rX /opt/muse /opt/muse-bootstrap
+COPY upstream.json install_runtime.py /tmp/muse-original-installer/
+RUN python3 /tmp/muse-original-installer/install_runtime.py \
+    && rm -rf /tmp/muse-original-installer \
+    && chmod -R a+rX /opt/muse
 COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
         pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
