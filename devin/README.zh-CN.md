@@ -142,9 +142,11 @@ stdout和stderr各限256KiB；命令1..600秒，加最多90秒自有后代清理
 
 ## 已验证
 
-尚未记录任何通过的提供方测试。
+| 提供商 | 运行时验证 | 范围 |
+| --- | --- | --- |
+| alicloud-express | [当前1.0.1通过回执](evidence/express-2026-10-21T124114Z.json) · [steps／完整HTTP](evidence/verification-steps-2026-10-21T124114Z.json) | 原版版本／帮助、SDK创建、实际HTTP和SDK无账号拒绝、文件保留及独立确认沙箱／模板／私有缓存不存在 |
 
-当前1.0.1将进程错误来源从Cursor修正为Devin；参数、固定原版程序、权限及成功契约不变。新的准确源码steps／SDK／HTTP／镜像验收待执行，1.0.0回执保留为历史。真实厂商账号／模型／编码仍NOT_RUN。[补充验证](../.agents/evidence/verify/2026-10-21-devin-diagnostic-origin.md)。
+错误来源修正已在公开源码8fa9bb821316b56c8f708945deb06b41321edccb重新验收：174.416秒，16项HTTP通过、0失败、0跳过。只验证原版预期的无账号错误路径，真实厂商账号／模型／编码仍NOT_RUN；1.0.0回执保留为历史。[补充验证](../.agents/evidence/verify/2026-10-21-devin-diagnostic-origin.md)。
 
 ## 二次开发
 

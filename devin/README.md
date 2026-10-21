@@ -144,9 +144,11 @@ Linuxx86_64 only, nonroot user,2vCPU/4096MB/port9000; build enforces rootfs<=8Gi
 
 ## Verified
 
-No provider has a passing run recorded for this template.
+| Provider | Runtime verification | Scope |
+| --- | --- | --- |
+| alicloud-express | [Current1.0.1PASS receipt](evidence/express-2026-10-21T124114Z.json) · [steps/fullHTTP](evidence/verification-steps-2026-10-21T124114Z.json) | Original native version/help, SDKcreate, actual HTTP+SDK no-account refusal, fixture preservation and independent owned sandbox/template/private-cache absence |
 
-Current1.0.1 corrects the process diagnostic origin from Cursor to Devin; arguments, pinned original program, permissions and success contract are unchanged. New current-source native steps/SDK/HTTP/image acceptance is pending. Existing1.0.0 receipts remain historical. Genuine vendor account/model/coding stays NOT_RUN. [Follow-up record](../.agents/evidence/verify/2026-10-21-devin-diagnostic-origin.md).
+The diagnostic-origin correction was requalified at published source8fa9bb821316b56c8f708945deb06b41321edccb:174.416seconds,16HTTPchecksPASS0FAIL0SKIP. Only the original expected no-account error path is passed; genuine vendor account/model/coding remainsNOT_RUN. Template1.0.0 receipts remain historical. [Follow-up verification](../.agents/evidence/verify/2026-10-21-devin-diagnostic-origin.md).
 
 ## Secondary development
 

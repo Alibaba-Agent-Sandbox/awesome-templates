@@ -226,3 +226,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Current46 native/runtime and complete HTTP with Devin](evidence/verify/2026-10-21-current-native-http46-devin.json)
 
 - [Devin diagnostic-origin correction](notes/proposed/process/2026-10-21-devin-diagnostic-origin.md) · [verification](evidence/verify/2026-10-21-devin-diagnostic-origin.md)
+
+- [Current46 native/runtime and complete HTTP with corrected Devin1.0.1](evidence/verify/2026-10-21-current-native-http46-devin101.json)
