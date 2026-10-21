@@ -102,7 +102,11 @@ BYOK模块导入时捕获设置，密钥最多8192字符且无控制字符。原
 
 ## 已验证
 
-当前2.2.0提供商／原生／模型／镜像资格待验证，tested_on为空。此前2.1.4成功回执保留为历史。
+| 提供商 | 当前实际执行范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express |2.2.0／原生CLI0.64.0，已发布源bdd01dd；不可变原生steps，真实SDK创建与CLI/SDK smoke，HTTP10项通过；原生read_file API2次完成、0失败、1次工具结果；独立真实模型19项通过、无失败或跳过；独立确认资源清理 | [回执](evidence/express-2026-10-21T091644Z.json)、[API证明](evidence/verification-steps-2026-10-21T091643Z.json)、[模型证明](evidence/verification-steps-2026-10-21T091644Z.json) |
+
+原生规划器与工具未替换，调用者在自有一次性沙箱中显式传入allow_unsafe_tools=True。真实qwen3.8-flash仅通过自编写文本／工具适配层访问已配置且获准的服务。源码修复、原始3项测试字节不变、报告、新随机标记、原始3项与独立4项断言、返回后新ACK均通过。Google自有账号／模型／OAuth认证仍未执行。本地102项通过、1项跳过，9.39秒；8项权限回归在旧源上按预期失败。原生API149.602秒、真实模型70.158秒，两次沙箱／模板及次级进程清理均通过。2.1.4回执属于历史；最终提交镜像／CI／review／合并单独检查。
 
 ## 二次开发
 
@@ -129,4 +133,4 @@ ABX='abx --native' python scripts/run_steps_e2e.py gemini --sandbox-create sdk -
 
 文本/工具适配层仅接受原生 CLI 在函数调用上添加的固定 `skip_thought_signature_validator` 占位标记，转换时删除该元数据。其他思考签名和思考内容仍不支持，并会拒绝。
 
-当前2.2.0必须显式传入 `allow_unsafe_tools=True`（JSON为 `true`），方可继续配置／原生／模型调用；缺省、false和非布尔值均拒绝。这与setup_check.requires_unsafe_optin一致。此前2.1.4真实原生／API／模型／镜像通过结果属于历史，不认证当前权限接口；2.2.0验收待执行。
+当前2.2.0必须显式传入 `allow_unsafe_tools=True`（JSON为 `true`），方可继续配置／原生／模型调用；缺省、false和非布尔值均拒绝。这与setup_check.requires_unsafe_optin一致。此前2.1.4真实原生／API／模型／镜像通过结果属于历史，不认证当前权限接口；2.2.0实际原生／API／模型验收见上表。

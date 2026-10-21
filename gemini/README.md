@@ -102,7 +102,11 @@ Declared2vCPU4096MB/Linuxx64/port9000/8GiBrootfs budget; no KVM/nested Docker/GP
 
 ## Verified
 
-Current2.2.0 provider/native/model/image qualification PENDING; tested_on is empty. Prior2.1.4 native/API/model success remains historical.
+| Provider | Executed current scope | Evidence |
+| --- | --- | --- |
+| alicloud-express |2.2.0 / original CLI0.64.0, published runtimebdd01dd, immutable native steps, actual SDK creation/CLI+SDK smoke,HTTP10PASS; original read_file API2completed/0failed/1tool-result; separate real-model19PASS0FAIL0SKIP; independently owned cleanup | [receipt](evidence/express-2026-10-21T091644Z.json), [API proof](evidence/verification-steps-2026-10-21T091643Z.json), [model proof](evidence/verification-steps-2026-10-21T091644Z.json) |
+
+The original planner/tools remain unchanged; permission is explicitly allow_unsafe_tools=True on owned disposable sandboxes. Actual qwen3.8-flash uses the approved configured origin through the authored text/tool adapter. Source edit, unchanged original3tests, report, fresh nonce,3original+4held-out assertions and fresh post-returnACK pass. Google-hosted account/model/OAuth authentication remains NOT_RUN. Local102PASS1SKIP9.39seconds;8permission regressions fail against the previous source as expected. Native/API149.602seconds and actual model70.158seconds, both independent outer and secondary cleanupPASS. Earlier2.1.4receipts are historical. Latest-head image/CI/review/normal merge remain separate gates.
 
 ## Secondary development
 
@@ -129,4 +133,4 @@ Authored template/adapter and original Gemini CLI are Apache-2.0 under their res
 
 The text/tool adapter accepts only the original CLI fixed `skip_thought_signature_validator` placeholder on function calls and removes that metadata during translation. Other thought signatures and thinking content remain unsupported and rejected.
 
-Current2.2.0 requires explicit `allow_unsafe_tools=True` (`true` in JSON) before configuration/native/model execution; missing/false/nonboolean values are refused. This matches setup_check.requires_unsafe_optin. Earlier2.1.4 actual native/API/model/image passes are historical for the changed permission profile; current2.2.0 acceptance is PENDING.
+Current2.2.0 requires explicit `allow_unsafe_tools=True` (`true` in JSON) before configuration/native/model execution; missing/false/nonboolean values are refused. This matches setup_check.requires_unsafe_optin. Earlier2.1.4 actual native/API/model/image passes are historical for the changed permission profile; current2.2.0 actual native/API/model acceptance is recorded above.
