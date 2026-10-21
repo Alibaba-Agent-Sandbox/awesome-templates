@@ -287,7 +287,10 @@ def test_qm_exact_source_profile_rejects_unreviewed_assets(tmp_path,name):
 
 @pytest.mark.parametrize('name',['qm','qm-sandbox'])
 def test_qm_native_steps_keep_exact_original_inputs_and_wire_budget(name):
-    manifest,proof=prepare(ROOT/name,asset_transport='parallel',server_commit='e2cb27e24fde0a67112f82b8d44af463445a5d1a')
+    from server_sdk_pin import server_commit
+    selected=server_commit(ROOT/name)
+    manifest,proof=prepare(ROOT/name,asset_transport='parallel',server_commit=selected)
+    assert proof['template_server_commit']==selected and selected=='34e7e011c5569f77b7f605e65313be7498f6cf02'
     assert proof['steps_json_bytes']<=15000 and len(proof['copy_source_commit'])==40
     for filename in ['worker.mjs','adapter.mjs','tool_process.py','sdk_exec.py']:
         assert proof['inputs_sha256'][filename]==hashlib.sha256((ROOT/name/filename).read_bytes()).hexdigest()

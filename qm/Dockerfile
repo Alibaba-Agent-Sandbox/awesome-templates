@@ -19,7 +19,7 @@ COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
         pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
     else \
-        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/e2cb27e24fde0a67112f82b8d44af463445a5d1a.tar.gz#subdirectory=server-sdk"; \
+        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/34e7e011c5569f77b7f605e65313be7498f6cf02.tar.gz#subdirectory=server-sdk"; \
     fi
 ENV HOME=/home/user WORKSPACE=/home/user/app QM_SANDBOX_BASE_URL=http://127.0.0.1:9000
 WORKDIR /home/user/app

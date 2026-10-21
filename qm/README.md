@@ -6,7 +6,7 @@ Run unchanged original QM0.1.0 exported Pi harness and original tool context on 
 
 ## Stack
 
-Alibaba generation2 basev0.0.49/Linuxx64/Python3.13. SHA256-pinned original Node24.16.0 archive/executable, full original QM source0.1.0/immutable commit and original npm integrity lock. Original Node SDK0.1.0 source90b5187dca84fca78d75d3045896482540641c72 built with its original lock/build script; npm0.1.0 returned404 on2026-10-21, so no npm release is assumed. Servere2cb27e24fde0a67112f82b8d44af463445a5d1a. [Dockerfile](Dockerfile), [provenance](upstream.json), [QM lock](package-lock.json), [SDK lock](sdk-package-lock.json), [design](../docs/design/qm.md).
+Alibaba generation2 basev0.0.49/Linuxx64/Python3.13. SHA256-pinned original Node24.16.0 archive/executable, full original QM source0.1.0/immutable commit and original npm integrity lock. Original Node SDK0.1.0 source90b5187dca84fca78d75d3045896482540641c72 built with its original lock/build script; npm0.1.0 returned404 on2026-10-21, so no npm release is assumed. Server34e7e011c5569f77b7f605e65313be7498f6cf02. [Dockerfile](Dockerfile), [provenance](upstream.json), [QM lock](package-lock.json), [SDK lock](sdk-package-lock.json), [design](../docs/design/qm.md).
 
 ## Problem solved
 
@@ -18,7 +18,7 @@ Install the [verified CLI native entry](../docs/platform-steps.md), configure au
 
 ```bash
 python scripts/prepare_steps.py qm --output /tmp/qm-steps-<unique-run> \
-  --asset-transport parallel --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
+  --asset-transport parallel --server-commit 34e7e011c5569f77b7f605e65313be7498f6cf02
 python - <<'CONFIG'
 from pathlib import Path
 import yaml
