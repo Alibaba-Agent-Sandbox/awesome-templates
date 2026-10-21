@@ -1,0 +1,8 @@
+{
+  "package": "@anthropic-ai/claude-code",
+  "version": "2.0.76",
+  "cli_sha256": "45b889599096a2fd6911fdd6ac41d59987b58d04de32e61ea5ec01b28fcc6269",
+  "cli_bytes": 11023681,
+  "archive_sha256": "fca39936ff8e9310c8e4c6833d6455341b92acd92317785f0f773ee74391b9d9",
+  "archive_bytes": 26367430
+}

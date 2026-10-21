@@ -625,7 +625,7 @@ def summary() -> int:
     return 1 if failed else 0
 
 
-def main() -> int:
+def legacy_main() -> int:
     print(f"{TEMPLATE} end-to-end suite", flush=True)
     print(f"  base_url : {BASE_URL}", flush=True)
     print(f"  base_dir : {BASE_DIR}", flush=True)
@@ -650,6 +650,19 @@ def main() -> int:
         finally:
             cleanup(client)
     return summary()
+
+
+def main() -> int:
+    # Keep existing Anthropic controller helpers and their ownership regressions.
+    # Current qualification uses the separate strict original-native BYOK controller.
+    import importlib.util
+    from pathlib import Path
+    spec=importlib.util.spec_from_file_location('claude_strict_byok_controller',Path(__file__).with_name('byok_e2e_test.py'))
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    try:return module.main()
+    except Exception as exc:
+        print('[FAIL] original Claude controller aborted ('+type(exc).__name__+'); diagnostics='+json.dumps(module.safe_diagnostic(str(exc)),sort_keys=True)+'; private output omitted',flush=True)
+        return 1
 
 
 if __name__ == "__main__":
