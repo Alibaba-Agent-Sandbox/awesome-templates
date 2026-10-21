@@ -1,0 +1,65 @@
+{
+  "provider": "opensandbox",
+  "template": "opensandbox-code-interpreter",
+  "template_id": "opensandbox/code-interpreter:v1.1.0",
+  "build_mode": "external-docker-image",
+  "passed": false,
+  "cleanup_verified": false,
+  "native_interpreter_verified": true,
+  "pins": {
+    "upstream": "30348cbdfe4b9cfd49e0963617aed357a8f1ac4c",
+    "provider": "9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d",
+    "cli": "c8e8ad784323b8903505442cbc77d433a0d0367a",
+    "sdk": "33f857f5a79fd10326652e9d03f15f3621d6b848"
+  },
+  "checks": [
+    "fixed source upstream",
+    "fixed source provider",
+    "fixed source cli",
+    "fixed source sdk",
+    "fixed-source original OpenSandbox Docker server health",
+    "actual Agent Sandbox SDK create",
+    "independent Docker container observation",
+    "Docker identity matches the original interpreter digest",
+    "owned metadata readback",
+    "SDK real shell Python program",
+    "SDK file write/read",
+    "SDK file removal readback",
+    "generic native interpreter remains explicitly unsupported",
+    "original SDK connects to the same Agent Sandbox-created ID",
+    "original execd and Jupyter runtime health",
+    "two original interpreter contexts",
+    "native Python execution",
+    "native persistent context second call",
+    "native context isolation",
+    "native program exception is preserved",
+    "native context deletion readback",
+    "owned local provider engine stopped and child reaped",
+    "owned local original server process stopped"
+  ],
+  "images": {
+    "interpreter": {
+      "requested": "opensandbox/code-interpreter:v1.1.0",
+      "digest": "opensandbox/code-interpreter@sha256:133a3c1720dd52291a019740c2987e7164ea6de79e23d8198798e58950ae2e6e",
+      "image_id": "sha256:e11f9eb1dfca494bf6be559985c315a7cb9afea96eb170d4156317694229f128",
+      "architecture": "amd64"
+    },
+    "execd": {
+      "requested": "opensandbox/execd:v1.1.0",
+      "digest": "opensandbox/execd@sha256:6cf7dba2f21f0b536e100563d841ac58a9f31c2b0a081b7ac76796a24d6f47e2",
+      "image_id": "sha256:e12d3de4b28e820bc966fe875484b35a5fad9322c4ef8a5b6751873da03bd214",
+      "architecture": "amd64"
+    }
+  },
+  "cleanup_observations": {
+    "sdk_not_found": true,
+    "known_docker_absence": true,
+    "no_new_containers": true,
+    "cleanup_error": "AttributeError"
+  },
+  "failed_check": "independent SDK NotFound and Docker container absence",
+  "error_type": "AssertionError",
+  "error_message": "independent SDK NotFound and Docker container absence",
+  "duration_s": 15.428,
+  "controller_sha256": "0e18b2206db562fcbdd489d6e74600dfc1f014b19e155cfc94db56ac44714845"
+}

@@ -693,6 +693,6 @@ managed_templates:
     template_id: opensandbox/code-interpreter:v1.1.0
     kind: provider-managed
     documentation: docs/managed/opensandbox-code-interpreter/README.md
-    evidence: docs/managed/evidence/verification-opensandbox-code-interpreter-2026-10-21.json
-    verification_scope: catalog-only-unverified
-    native_interpreter_verified: false
+    evidence: docs/managed/evidence/verification-opensandbox-code-interpreter-2026-10-21-native-docker.json
+    verification_scope: native-opensandbox-docker-sdk-and-interpreter
+    native_interpreter_verified: true
