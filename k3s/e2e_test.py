@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Actual original control-plane checks require an explicitly owned remote target."""
-import asyncio,ipaddress,json,os,uuid
+import asyncio,ipaddress,json,os,re,uuid
 from urllib.parse import urlsplit
 import httpx
 RESULTS=[]
@@ -15,6 +15,19 @@ def local_target(base):
         address=ipaddress.ip_address(host);mapped=getattr(address,'ipv4_mapped',None)
         return address.is_loopback or address.is_unspecified or bool(mapped and(mapped.is_loopback or mapped.is_unspecified))
     except ValueError:return False
+
+def safe_diagnostic(error):
+    text=str(error);result={}
+    for key,pattern in [('diagnostic_stage','[a-z_]{1,48}'),('diagnostic_type','[A-Za-z][A-Za-z0-9_]{0,63}')]:
+        match=re.search(r'\b'+key+'=('+pattern+')',text)
+        if match:result[key]=match[1]
+    match=re.search(r'\bnative_markers=([a-z_,]{0,200})',text)
+    if match:result['native_markers']=[key for key in match[1].split(',')if key in ['permission','namespace','root','ip_forward','cgroup','advertise','unknown_flag','panic','bind']]
+    number=re.search(r'\[Errno ([0-9]{1,3})\]',text)
+    if number:result['errno']=int(number[1])
+    checks={'node_state_identity':'native node-state ownership differs','node_state_changed':'native node-state changed','node_directory_identity':'native node directory ownership differs','preexisting_node_state':'pre-existing native node state','runtime_root':'runtime must be non-root','outer_deadline':'K3s execution exceeded timeout_s'}
+    result.update({key:True for key,value in checks.items()if value in text})
+    return result
 
 def identity(value):
     return isinstance(value,dict)and value.get('mode')=='original-k3s-agentless-validation'and value.get('native_version')=='v1.37.1+k3s1'and value.get('native_sha256')==SHA and type(value.get('valid'))is bool
@@ -68,4 +81,7 @@ def main():
     print(f'SUMMARY {sum(RESULTS)} PASS,{len(RESULTS)-sum(RESULTS)} FAIL',flush=True);return int(not all(RESULTS))
 if __name__=='__main__':
     try:raise SystemExit(main())
-    except Exception as exc:print('[FAIL] original K3s controller aborted ('+type(exc).__name__+'); private output omitted',flush=True);raise SystemExit(1)
+    except Exception as exc:
+        print('[DIAGNOSTIC] '+json.dumps(safe_diagnostic(exc)),flush=True)
+        print('[FAIL] original K3s controller aborted ('+type(exc).__name__+'); private output omitted',flush=True)
+        raise SystemExit(1)

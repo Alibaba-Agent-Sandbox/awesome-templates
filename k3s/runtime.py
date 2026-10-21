@@ -74,11 +74,16 @@ def validate(manifest_yaml,command_timeout=180):
                 if code:
                     try:diagnostic=json.loads(out)
                     except ValueError:diagnostic={}
+                    if not diagnostic:
+                        match=re.search(r'\b(ModuleNotFoundError|ImportError|PermissionError|FileNotFoundError|SyntaxError|RuntimeError)\b',err)
+                        diagnostic={'stage':'worker_bootstrap','error_type':match[1]if match else'unknown'}
                     stage=diagnostic.get('stage','unknown')
                     if not isinstance(stage,str)or not re.fullmatch('[a-z_]{1,48}',stage):stage='unknown'
+                    kind=diagnostic.get('error_type','unknown')
+                    if not isinstance(kind,str)or not re.fullmatch('[A-Za-z][A-Za-z0-9_]{0,63}',kind):kind='unknown'
                     markers=diagnostic.get('native_log_markers',{})
                     flags=','.join(key for key,value in markers.items()if value is True and re.fullmatch('[a-z_]{1,32}',key))if isinstance(markers,dict)else''
-                    raise RuntimeError('original agentless K3s failed; diagnostic_stage='+stage+'; native_markers='+flags)
+                    raise RuntimeError('original agentless K3s failed; diagnostic_stage='+stage+'; diagnostic_type='+kind+'; native_markers='+flags)
                 try:result=json.loads(out)
                 except ValueError:raise RuntimeError('original K3s worker result is invalid; output omitted')from None
                 required=['api_ready','post_api_ready','probe_not_persisted','api_server_stopped']

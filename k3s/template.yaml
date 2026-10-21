@@ -22,6 +22,6 @@ env:
 smoke:
   - command: k3s_version
     args: {}
-    expect: "v1.37.1+k3s1"
+    expect: "k3s version v1.37.1+k3s1 (356c0254)\ngo version go1.26.8"
   - command: k3s_native_check
     args: {}

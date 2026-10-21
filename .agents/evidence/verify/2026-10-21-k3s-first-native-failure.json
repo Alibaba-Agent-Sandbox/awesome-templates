@@ -1,0 +1,81 @@
+{
+  "template": "k3s",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-21T125302Z",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "k3s",
+    "materializer_sha256": "a9208a6818a99fc9c3e424d2ff93fd6b0043364e66b6e284749ae18a31f734cc",
+    "source_manifest_contract_sha256": "a766171a28608964368b6eb199f375581c4a8ed39c462f1c737c4a773a70b65c",
+    "template_version": "1.0.0",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "server_commit_override": null,
+    "template_server_commit": "34e7e011c5569f77b7f605e65313be7498f6cf02",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "b7fa36195e61f7bc4c70abb3786719fbab7ca5f7",
+    "asset_transport": "oss",
+    "steps_json_bytes": 7642,
+    "inputs_sha256": {
+      "Dockerfile": "d52fce7c4a101a433c2ada85aec66aa15919af6831844c81242ca266f8fc730f",
+      "template.yaml": "ffab1b408e2cfbc6a56014f475b278205e01faea8728a32dda04b4674cdff06a",
+      "server-sdk.commit": "57134d659449d0f55301272a5abc2ac907c86b8380a36f2b3e86e09c9b6dc6cf",
+      "upstream.json": "488b4e3c83e68cba504ee62eae2a44412634d6e87bc1d106d85a03182edf033f",
+      "install_runtime.py": "768e9c60190bbb09d740b475704c4ced389141ab7a98d0e3a63eca28035cd408",
+      "UPSTREAM-LICENSE.md": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+      "commands.py": "56754e426dc94c4bd454f70587f571fa01dd9d4c84907b8ebfc95ca621547910",
+      "runtime.py": "244772d742484eb6fe4d69782691fda246bd5082b951aa0ce30417fd3f330135",
+      "worker.py": "57413c88e9e0425d72c668e8024cca564bac97cdc885ce0832110d75b6bc4785",
+      "process.py": "0d8064eb29bef068af72d6f40caea3b7143de33bfb30a7c01c86b6387bbe930e",
+      "lifecycle.py": "adc524fc87e7a8ea90c4238454a0062e7b4874568260c7b2a198951e7d510583",
+      "process_rpc.py": "8e92ad8e8e176bbe21aa24f7beb10cb7cd150e9339e0852b9430fbe5b2c40aca",
+      "lifecycle_rpc.py": "d011fca6c2df8b94713b543ef7c24314a07a15c0ff4cd48cfde8c2da44475deb"
+    },
+    "asset_transport_sha256": "e9039f9afe9dc7f74c7237f10edc73e7d3c82ca6fd50724e4c20480e4e58b02d",
+    "asset_adapter_source_commit": "b7fa36195e61f7bc4c70abb3786719fbab7ca5f7",
+    "build_assets": {
+      "x86_64": [
+        {
+          "url": "https://github.com/k3s-io/k3s/releases/download/v1.37.1%2Bk3s1/k3s",
+          "size": 81543330,
+          "sha256": "92b94582eb7b34a8cf532e6006842b9ed215a6783cf56a3dd6271fd35243b2c0"
+        }
+      ]
+    },
+    "asset_cache_architecture": "x86_64",
+    "generated_manifest_sha256": "72ccad45a3592cdb012696452726098d856579d7aa0063139c0d797835140c94",
+    "test_configuration": {
+      "agentless_validation_required": true,
+      "worker_nodes_claimed": false,
+      "model_credentials_injected": false
+    }
+  },
+  "http_acceptance": {
+    "exit_code": 1,
+    "pass_count": 14,
+    "fail_count": 1,
+    "skip_count": 0,
+    "controller_sha256": "a45b5c232cd7685fac4010848d5eed9ed335b7b814a0db64171a5496d53381ac"
+  },
+  "cleanup_verified": true,
+  "exit_code": 1,
+  "reason": "canonical step harness failed; private diagnostics/journal retained",
+  "asset_cache": {
+    "service": "Alibaba Cloud OSS",
+    "private_acl_verified": true,
+    "archives": [
+      {
+        "url": "https://github.com/k3s-io/k3s/releases/download/v1.37.1%2Bk3s1/k3s",
+        "sha256": "92b94582eb7b34a8cf532e6006842b9ed215a6783cf56a3dd6271fd35243b2c0",
+        "size": 81543330
+      }
+    ],
+    "signed_get_ttl_seconds": 3600,
+    "cleanup_verified": true
+  },
+  "duration_s": 208.2
+}

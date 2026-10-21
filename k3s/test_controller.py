@@ -12,3 +12,12 @@ def test_version_or_valid_marker_without_exact_original_identity_is_not_completi
     assert not c.identity({'valid':True,'native_version':'v1.37.1+k3s1'})
     assert not c.identity({'valid':'true','mode':'original-k3s-agentless-validation','native_version':'v1.37.1+k3s1','native_sha256':c.SHA})
     assert not c.cleaned({'api_server_stopped':True})
+
+
+def test_safe_failure_diagnostics_never_forward_private_urls_or_arbitrary_values():
+    value=c.safe_diagnostic(RuntimeError('private https://secret.invalid/resource?token=private-token diagnostic_stage=readiness; diagnostic_type=RuntimeError; native_markers=root,permission,private_token'))
+    assert value=={'diagnostic_stage':'readiness','diagnostic_type':'RuntimeError','native_markers':['root','permission']}
+    assert 'secret.invalid'not in str(value)and 'private-token'not in str(value)
+
+def test_safe_failure_diagnostics_identify_only_known_ownership_errors():
+    assert c.safe_diagnostic(RuntimeError('native node-state ownership differs; preserved'))=={'node_state_identity':True}
