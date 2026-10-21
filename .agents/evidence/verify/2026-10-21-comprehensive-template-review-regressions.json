@@ -1,0 +1,577 @@
+{
+  "scope": "existing template regression suites; no model/cloud credentials forwarded",
+  "revision": "d758184ad67ebaa0b3c7169efb3f254534c1a5cb",
+  "templates": [
+    {
+      "template": "agents-cli",
+      "tests": [
+        "agents-cli/test_protocol.py",
+        "agents-cli/test_sdk_verifier.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "45 passed in 6.47s"
+      ],
+      "duration_s": 6.859
+    },
+    {
+      "template": "aider",
+      "tests": [
+        "aider/test_commands.py",
+        "aider/test_e2e_protocol.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "72 passed in 10.53s"
+      ],
+      "duration_s": 10.882
+    },
+    {
+      "template": "amp",
+      "tests": [
+        "amp/test_commands.py",
+        "amp/test_e2e_protocol.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "27 passed in 8.70s"
+      ],
+      "duration_s": 9.099
+    },
+    {
+      "template": "apply-patch",
+      "tests": [
+        "apply-patch/test_commands.py"
+      ],
+      "result": "FAIL",
+      "exit_code": 1,
+      "summary": [
+        "2 failed, 8 passed in 1.09s"
+      ],
+      "duration_s": 1.448
+    },
+    {
+      "template": "appworld",
+      "tests": [
+        "appworld/test_commands.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "33 passed in 0.37s"
+      ],
+      "duration_s": 0.738
+    },
+    {
+      "template": "browser-automation",
+      "tests": [
+        "browser-automation/test_mcp.py",
+        "browser-automation/test_pdf_runtime.py"
+      ],
+      "result": "FAIL",
+      "exit_code": 1,
+      "summary": [
+        "5 failed, 8 passed in 1.93s"
+      ],
+      "duration_s": 2.288
+    },
+    {
+      "template": "browser-use",
+      "tests": [
+        "browser-use/test_commands.py",
+        "browser-use/test_model_controller.py"
+      ],
+      "result": "FAIL",
+      "exit_code": 1,
+      "summary": [
+        "5 failed, 9 passed in 22.87s"
+      ],
+      "duration_s": 23.246
+    },
+    {
+      "template": "chrome",
+      "tests": [
+        "chrome/test_commands.py",
+        "chrome/test_protocol.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "22 passed in 0.38s"
+      ],
+      "duration_s": 0.781
+    },
+    {
+      "template": "claude-code",
+      "tests": [
+        "claude-code/tests/test_contract.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "10 passed, 9 subtests passed in 0.29s"
+      ],
+      "duration_s": 0.66
+    },
+    {
+      "template": "cline",
+      "tests": [
+        "cline/test_commands.py",
+        "cline/test_model_controller.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "30 passed in 0.83s"
+      ],
+      "duration_s": 1.217
+    },
+    {
+      "template": "code-server",
+      "tests": [
+        "code-server/test_browser_local.py",
+        "code-server/test_commands.py"
+      ],
+      "result": "FAIL",
+      "exit_code": 1,
+      "summary": [
+        "7 failed, 9 passed in 2.77s"
+      ],
+      "duration_s": 3.153
+    },
+    {
+      "template": "codex",
+      "tests": [
+        "codex/test_commands.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "11 passed, 27 subtests passed in 2.35s"
+      ],
+      "duration_s": 2.711
+    },
+    {
+      "template": "codex-agent-api",
+      "tests": [
+        "codex-agent-api/test_commands.py",
+        "codex-agent-api/test_e2e_protocol.py",
+        "codex-agent-api/test_http_runtime.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "27 passed in 3.06s"
+      ],
+      "duration_s": 3.422
+    },
+    {
+      "template": "copilot-cli",
+      "tests": [
+        "copilot-cli/test_commands.py",
+        "copilot-cli/test_model_controller.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "24 passed in 1.22s"
+      ],
+      "duration_s": 1.576
+    },
+    {
+      "template": "crush",
+      "tests": [
+        "crush/test_commands.py",
+        "crush/test_controller.py"
+      ],
+      "result": "FAIL",
+      "exit_code": 1,
+      "summary": [
+        "3 failed, 11 passed in 5.79s"
+      ],
+      "duration_s": 6.151
+    },
+    {
+      "template": "deepagents",
+      "tests": [
+        "deepagents/test_commands.py",
+        "deepagents/test_controller.py"
+      ],
+      "result": "FAIL",
+      "exit_code": 1,
+      "summary": [
+        "4 failed, 7 passed in 4.29s"
+      ],
+      "duration_s": 4.656
+    },
+    {
+      "template": "deepseek-harness",
+      "tests": [
+        "deepseek-harness/test_commands.py",
+        "deepseek-harness/test_e2e_protocol.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "72 passed in 19.34s"
+      ],
+      "duration_s": 19.7
+    },
+    {
+      "template": "dev-services",
+      "tests": [
+        "dev-services/test_commands.py"
+      ],
+      "result": "FAIL",
+      "exit_code": 1,
+      "summary": [
+        "5 failed, 7 passed in 0.20s"
+      ],
+      "duration_s": 0.559
+    },
+    {
+      "template": "document-tools",
+      "tests": [
+        "document-tools/test_commands.py",
+        "document-tools/test_http.py"
+      ],
+      "result": "FAIL",
+      "exit_code": 1,
+      "summary": [
+        "14 failed, 47 passed, 1 skipped in 1.89s"
+      ],
+      "duration_s": 2.33
+    },
+    {
+      "template": "droid",
+      "tests": [
+        "droid/test_byok.py",
+        "droid/test_commands.py",
+        "droid/test_e2e_protocol.py",
+        "droid/test_model_controller.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "59 passed in 9.46s"
+      ],
+      "duration_s": 9.842
+    },
+    {
+      "template": "gemini",
+      "tests": [
+        "gemini/test_commands.py",
+        "gemini/test_e2e_protocol.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "27 passed, 1 skipped in 8.70s"
+      ],
+      "duration_s": 9.073
+    },
+    {
+      "template": "goose",
+      "tests": [
+        "goose/test_commands.py",
+        "goose/test_controller.py"
+      ],
+      "result": "FAIL",
+      "exit_code": 1,
+      "summary": [
+        "3 failed, 10 passed in 2.67s"
+      ],
+      "duration_s": 3.036
+    },
+    {
+      "template": "grok",
+      "tests": [
+        "grok/test_commands.py",
+        "grok/test_model_controller.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "26 passed in 0.84s"
+      ],
+      "duration_s": 1.264
+    },
+    {
+      "template": "hermes-agent",
+      "tests": [
+        "hermes-agent/test_commands.py",
+        "hermes-agent/test_e2e_protocol.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "65 passed in 13.06s"
+      ],
+      "duration_s": 13.416
+    },
+    {
+      "template": "kimi-code",
+      "tests": [
+        "kimi-code/test_commands.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "10 passed in 1.08s"
+      ],
+      "duration_s": 1.431
+    },
+    {
+      "template": "media-tools",
+      "tests": [
+        "media-tools/test_commands.py",
+        "media-tools/test_http.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "59 passed in 9.92s"
+      ],
+      "duration_s": 10.31
+    },
+    {
+      "template": "muse",
+      "tests": [
+        "muse/test_commands.py",
+        "muse/test_controller.py",
+        "muse/test_relay.py",
+        "muse/test_terminal.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "57 passed in 2.98s"
+      ],
+      "duration_s": 3.352
+    },
+    {
+      "template": "next-app",
+      "tests": [
+        "next-app/test_commands.py",
+        "next-app/test_forwarded_controller.py"
+      ],
+      "result": "FAIL",
+      "exit_code": 1,
+      "summary": [
+        "4 failed, 13 passed in 0.48s"
+      ],
+      "duration_s": 0.837
+    },
+    {
+      "template": "node-web",
+      "tests": [
+        "node-web/test_http_output.py",
+        "node-web/test_startup.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "5 passed in 4.83s"
+      ],
+      "duration_s": 5.194
+    },
+    {
+      "template": "ocr",
+      "tests": [
+        "ocr/test_commands.py",
+        "ocr/test_http.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "26 passed, 1 skipped in 2.40s"
+      ],
+      "duration_s": 2.778
+    },
+    {
+      "template": "openclaw",
+      "tests": [
+        "openclaw/test_commands.py",
+        "openclaw/test_sdk_controller.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "43 passed in 16.82s"
+      ],
+      "duration_s": 17.184
+    },
+    {
+      "template": "opencode",
+      "tests": [
+        "opencode/test_commands.py",
+        "opencode/test_e2e_protocol.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "57 passed in 7.42s"
+      ],
+      "duration_s": 7.783
+    },
+    {
+      "template": "osworld",
+      "tests": [
+        "osworld/test_commands.py",
+        "osworld/test_http.py",
+        "osworld/test_tasks.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "43 passed in 2.96s"
+      ],
+      "duration_s": 3.326
+    },
+    {
+      "template": "pi",
+      "tests": [
+        "pi/test_cli_protocol.py",
+        "pi/test_commands.py",
+        "pi/test_e2e_protocol.py",
+        "pi/test_install_tools.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "77 passed, 5 skipped in 14.75s"
+      ],
+      "duration_s": 15.112
+    },
+    {
+      "template": "polyglot-toolchain",
+      "tests": [
+        "polyglot-toolchain/test_commands.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "6 passed in 1.41s"
+      ],
+      "duration_s": 1.792
+    },
+    {
+      "template": "prime-agent",
+      "tests": [
+        "prime-agent/test_commands.py",
+        "prime-agent/test_terminal.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "35 passed in 0.19s"
+      ],
+      "duration_s": 0.556
+    },
+    {
+      "template": "python-hello",
+      "tests": [
+        "python-hello/test_command_errors.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "4 passed in 0.22s"
+      ],
+      "duration_s": 0.583
+    },
+    {
+      "template": "qm",
+      "tests": [
+        "qm/test_terminal.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "14 passed in 0.06s"
+      ],
+      "duration_s": 0.403
+    },
+    {
+      "template": "qm-sandbox",
+      "tests": [
+        "qm-sandbox/test_commands.py",
+        "qm-sandbox/test_runtime.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "37 passed in 1.31s"
+      ],
+      "duration_s": 1.662
+    },
+    {
+      "template": "qoder",
+      "tests": [
+        "qoder/test_commands.py",
+        "qoder/test_e2e_protocol.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "33 passed in 9.80s"
+      ],
+      "duration_s": 10.192
+    },
+    {
+      "template": "qwen-code",
+      "tests": [
+        "qwen-code/test_commands.py",
+        "qwen-code/test_e2e_protocol.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "70 passed in 10.84s"
+      ],
+      "duration_s": 11.213
+    },
+    {
+      "template": "stagehand",
+      "tests": [
+        "stagehand/test_commands.py",
+        "stagehand/test_model_controller.py",
+        "stagehand/test_sdk_connect.py"
+      ],
+      "result": "FAIL",
+      "exit_code": 1,
+      "summary": [
+        "3 failed, 21 passed in 1.47s"
+      ],
+      "duration_s": 1.831
+    },
+    {
+      "template": "swe",
+      "tests": [
+        "swe/test_commands.py",
+        "swe/test_e2e_protocol.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "36 passed in 1.45s"
+      ],
+      "duration_s": 1.802
+    },
+    {
+      "template": "tau2-bench",
+      "tests": [
+        "tau2-bench/test_runtime.py"
+      ],
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": [
+        "35 passed in 0.87s"
+      ],
+      "duration_s": 1.247
+    }
+  ]
+}
