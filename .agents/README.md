@@ -179,3 +179,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [Headed Chrome final native SDK/image acceptance](evidence/verify/2026-10-20-chrome-native-final.md)
 
 - [Current39native/runtime and required full HTTP snapshot](evidence/verify/2026-10-20-current-native-http39.json)
+
+- [Original QM harness and SDK backend](notes/proposed/feature/2026-10-21-qm-sdk-native-runtime.md) · [research](evidence/verify/2026-10-21-qm-native-research.md)

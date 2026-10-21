@@ -1,0 +1,52 @@
+{
+  "name": "@agent-sandbox/sdk",
+  "version": "0.1.0",
+  "description": "Agent Sandbox Node.js SDK — in-sandbox HTTP client and configuration env names",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "README.zh-CN.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && cp src/config-keys.json dist/config-keys.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test test/config-keys.test.mjs test/server-client.test.mjs test/agent-loop.test.mjs",
+    "example": "node examples/agent-loop.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alibaba-agent-sandbox/nodejs-sdk.git"
+  },
+  "homepage": "https://github.com/alibaba-agent-sandbox/nodejs-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/alibaba-agent-sandbox/nodejs-sdk/issues"
+  },
+  "keywords": [
+    "sandbox",
+    "agent-sandbox",
+    "sdk",
+    "agents"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "^5.9.3"
+  }
+}
