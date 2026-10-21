@@ -519,3 +519,6 @@ harness 用现有标志调用 `abx template deploy`（`--json`、`-y`、`--gener
 同一天验证新版本时，使用独立的 express-YYYY-MM-DDTHHMMSSZ.json 回执，保留旧日期文件。提供方资格必须匹配当前清单版本，且 passed 和 cleanup_verified 都为 true，并含真实 CLI/SDK 成功调用；旧版本不能认证变更后的模板。
 
 V3 的 smoke 必须显式填写非 null 的 `expect`，支持字符串、数值、布尔、对象和数组，沿用现有结构化比较。v2 中没有期望值的 smoke 升级 v3 时需要补充明确结果；v2 自身行为不变。
+
+
+托管目录通过`python scripts/check_managed_catalog.py`检查准确字段、与源目录不重名、双语14个有序README章节、本地证据身份、原生解释器声明及运行时检查／清理。外部未验证条目使用`verification_scope: catalog-only-unverified`及证据`status: NOT_VERIFIED`、`passed: false`、`native_interpreter_verified: false`；这是合法目录元数据，不是提供商／运行时通过。运行时资格需要真实检查和独立清理。托管ID仍排除在源镜像选择／steps之外。[Desktop](managed/desktop/README.zh-CN.md)和[OpenSandbox解释器](managed/opensandbox-code-interpreter/README.zh-CN.md)分别说明真实后端条件和未运行的产品门槛。

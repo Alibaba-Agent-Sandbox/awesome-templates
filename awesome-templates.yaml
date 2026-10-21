@@ -680,3 +680,19 @@ managed_templates:
     evidence: docs/managed/evidence/code-interpreter-v1-2026-10-19T154153Z.json
     verification_scope: shell-files-code-fallback
     native_interpreter_verified: false
+  - name: desktop
+    provider: e2b
+    template_id: desktop
+    kind: provider-managed
+    documentation: docs/managed/desktop/README.md
+    evidence: docs/managed/evidence/verification-desktop-2026-10-21.json
+    verification_scope: catalog-only-unverified
+    native_interpreter_verified: false
+  - name: opensandbox-code-interpreter
+    provider: opensandbox
+    template_id: opensandbox/code-interpreter:v1.1.0
+    kind: provider-managed
+    documentation: docs/managed/opensandbox-code-interpreter/README.md
+    evidence: docs/managed/evidence/verification-opensandbox-code-interpreter-2026-10-21.json
+    verification_scope: catalog-only-unverified
+    native_interpreter_verified: false

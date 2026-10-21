@@ -1,0 +1,22 @@
+{
+  "template": "desktop",
+  "provider": "e2b",
+  "template_id": "desktop",
+  "date": "2026-10-21",
+  "status": "NOT_VERIFIED",
+  "passed": false,
+  "cleanup_verified": false,
+  "native_interpreter_verified": false,
+  "verification_type": "catalog-only-prerequisite-and-client-protocol-review",
+  "vendor_backend_run": "NOT_RUN",
+  "source_provider_commit": "9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d",
+  "offline_provider_tests": {
+    "passed": 14,
+    "failed": 0,
+    "skipped": 0,
+    "backend": "local authored HTTP/SDK contracts; not a real provider"
+  },
+  "actual_agent_sandbox_sdk_negative_check": "missing-specific-key rejection before engine/network",
+  "prerequisite": "independent E2B account credential unavailable",
+  "owned_cloud_resources_created": false
+}
