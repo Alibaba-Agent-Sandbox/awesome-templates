@@ -21,3 +21,8 @@ def test_safe_failure_diagnostics_never_forward_private_urls_or_arbitrary_values
 
 def test_safe_failure_diagnostics_identify_only_known_ownership_errors():
     assert c.safe_diagnostic(RuntimeError('native node-state ownership differs; preserved'))=={'node_state_identity':True}
+
+def test_native_failure_metrics_preserve_signed_exit_without_native_text():
+    value=c.safe_diagnostic(RuntimeError('private text; native_exit_before_cleanup=-9; native_stdout_bytes=125; native_oom_kills=1; native_elapsed_ms=600; native_config_created=0; native_stdout_bytes=private-token'))
+    assert value=={'native_exit_before_cleanup':-9,'native_stdout_bytes':125,'native_oom_kills':1,'native_elapsed_ms':600,'native_config_created':0}
+    assert c.safe_diagnostic(RuntimeError('native_stdout_bytes=999999999999; native_exit_before_cleanup=https://private.invalid'))=={}

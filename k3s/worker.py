@@ -6,6 +6,10 @@ import lifecycle
 REPORT={'stage':'initialization'}
 LOGS=[bytearray(),bytearray()]
 
+def oom_kills():
+    try:return int(dict(line.split()for line in Path('/sys/fs/cgroup/memory.events').read_text().splitlines()).get('oom_kill',0))
+    except (OSError,ValueError):return None
+
 def alive(process):return os.waitid(os.P_PID,process.pid,os.WEXITED|os.WNOHANG|os.WNOWAIT)is None
 
 def address():
@@ -18,7 +22,8 @@ def address():
 
 def run(request):
     private=Path(request['private']);binary=request['binary'];manifest=Path(request['manifest']);config=private/'kubeconfig.yaml'
-    deadline=time.monotonic()+request['command_timeout']-12
+    began=time.monotonic();oom_before=oom_kills()
+    deadline=began+request['command_timeout']-12
     env=dict(os.environ)
     with socket.socket()as reservation:reservation.bind(('127.0.0.1',0));port=reservation.getsockname()[1]
     native_config=private/'server-config.yaml';native_config.write_text('{}\n');native_config.chmod(0o600)
@@ -27,16 +32,16 @@ def run(request):
     for name in ['coredns','traefik','servicelb','metrics-server','local-storage']:argv+=['--disable',name]
     server=subprocess.Popen(argv,cwd=private,env=env,stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.PIPE,start_new_session=True)
     overflow=threading.Event();readers=[]
-    def drain(stream,buffer):
+    def drain(stream,buffer,key):
         total=0
         try:
             while chunk:=stream.read(8192):
-                total+=len(chunk);buffer.extend(chunk)
+                total+=len(chunk);REPORT[key]=total;buffer.extend(chunk)
                 if len(buffer)>65536:del buffer[:-65536]
                 if total>2*1024**2:overflow.set()
         finally:stream.close()
-    for stream,buffer in zip([server.stdout,server.stderr],LOGS):
-        thread=threading.Thread(target=drain,args=(stream,buffer),daemon=True);thread.start();readers.append(thread)
+    for stream,buffer,key in zip([server.stdout,server.stderr],LOGS,['native_stdout_bytes','native_stderr_bytes']):
+        thread=threading.Thread(target=drain,args=(stream,buffer,key),daemon=True);thread.start();readers.append(thread)
     def rpc(arguments,seconds=10):
         remaining=deadline-time.monotonic()
         if remaining<=0 or overflow.is_set()or not alive(server):raise RuntimeError('owned original server unavailable or deadline/log bound exceeded')
@@ -87,6 +92,13 @@ def run(request):
         absent(probe);result.update(post_api_ready=True,probe_not_persisted=True)
     finally:
         REPORT['operation_stage']=REPORT['stage'];REPORT['stage']='server_cleanup'
+        REPORT['native_was_running']=int(alive(server));REPORT['native_config_created']=int(config.exists())
+        REPORT['native_elapsed_ms']=int((time.monotonic()-began)*1000)
+        if not REPORT['native_was_running']:
+            status=os.waitid(os.P_PID,server.pid,os.WEXITED|os.WNOHANG|os.WNOWAIT)
+            REPORT['native_exit_before_cleanup']=status.si_status if status.si_code==os.CLD_EXITED else -status.si_status
+        oom_after=oom_kills()
+        if oom_before is not None and oom_after is not None:REPORT['native_oom_kills']=max(0,oom_after-oom_before)
         try:os.killpg(server.pid,signal.SIGTERM)
         except ProcessLookupError:pass
         limit=time.monotonic()+2
@@ -106,5 +118,5 @@ if __name__=='__main__':
     except Exception as exc:
         text=b'\n'.join(LOGS).lower()
         markers={name:word in text for name,word in [('permission',b'permission denied'),('namespace',b'operation not permitted'),('root',b'root'),('ip_forward',b'ip_forward'),('cgroup',b'cgroup'),('advertise',b'advertise'),('unknown_flag',b'flag provided but not defined'),('panic',b'panic:'),('bind',b'address already in use')]}
-        print(json.dumps({'error_type':type(exc).__name__,'stage':REPORT.get('operation_stage',REPORT['stage']),'native_log_markers':markers}),flush=True)
+        print(json.dumps({'error_type':type(exc).__name__,'stage':REPORT.get('operation_stage',REPORT['stage']),'native_log_markers':markers,'native_metrics':{key:value for key,value in REPORT.items()if key.startswith('native_')and type(value)is int}}),flush=True)
         raise SystemExit(1)

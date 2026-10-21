@@ -83,7 +83,10 @@ def validate(manifest_yaml,command_timeout=180):
                     if not isinstance(kind,str)or not re.fullmatch('[A-Za-z][A-Za-z0-9_]{0,63}',kind):kind='unknown'
                     markers=diagnostic.get('native_log_markers',{})
                     flags=','.join(key for key,value in markers.items()if value is True and re.fullmatch('[a-z_]{1,32}',key))if isinstance(markers,dict)else''
-                    raise RuntimeError('original agentless K3s failed; diagnostic_stage='+stage+'; diagnostic_type='+kind+'; native_markers='+flags)
+                    metrics=diagnostic.get('native_metrics',{})
+                    allowed=['native_stdout_bytes','native_stderr_bytes','native_was_running','native_config_created','native_elapsed_ms','native_exit_before_cleanup','native_oom_kills']
+                    suffix=''.join('; '+key+'='+str(metrics[key])for key in allowed if isinstance(metrics,dict)and type(metrics.get(key))is int and -128<=metrics[key]<=8388608)
+                    raise RuntimeError('original agentless K3s failed; diagnostic_stage='+stage+'; diagnostic_type='+kind+'; native_markers='+flags+suffix+';')
                 try:result=json.loads(out)
                 except ValueError:raise RuntimeError('original K3s worker result is invalid; output omitted')from None
                 required=['api_ready','post_api_ready','probe_not_persisted','api_server_stopped']

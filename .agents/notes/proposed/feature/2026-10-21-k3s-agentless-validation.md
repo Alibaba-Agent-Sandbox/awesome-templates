@@ -22,3 +22,5 @@ Authored fixed workers locally cover argument/config isolation, native-shape dry
 
 ## Acceptance criteria
 Complete standalone source/bilingual14section docs/design/catalog, local regressions/spec/strict/docs, actual image and canonical current-source steps/SDK/fullHTTP/cleanup, exact-headCI/review/normalmerge. Preserve failures/skips as history. No full cluster/model/other-provider success from this slice.
+
+Second canonical original Express run at source `cca499c217ea8cd5cc4bb1a9cc1843380352d7a0` failed after158.971seconds: fullHTTP14PASS1FAIL0SKIP. Version smoke now matches the original banner; server readiness still fails with RuntimeError and no whitelisted native-log marker. Independent owned VM/template/cache cleanupPASS. [Second failure](../../../evidence/verify/2026-10-21-k3s-second-native-failure.json) is retained separately. Added bounded numeric startup/exit/config/log-byte/OOM counters, with no native log text, to distinguish startup failure, process termination and deadline. Local runtime/controller/installer/asset tests42PASS7.27seconds. The25check native acceptance gate is unchanged; Issue42 remains open and tested_on stays empty.
