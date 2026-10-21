@@ -1,0 +1,70 @@
+{
+  "microsoft/WindowsAgentArena": {
+    "commit": "6d39ed88c545a0d40a7a02e39b928e278df7332b",
+    "license": "MIT",
+    "paths": [
+      {
+        "path": "README.md",
+        "sha256": "e481abd422a4cc8b819ad84b32684e4af641e18a7c0d277dd608cfd5d3c5e6ad",
+        "url": "https://github.com/microsoft/WindowsAgentArena/blob/6d39ed88c545a0d40a7a02e39b928e278df7332b/README.md"
+      },
+      {
+        "path": "scripts/run-local.sh",
+        "sha256": "8597994bce22d4f931d56288137e4b44ef00b7d784238b16f6815ef47ec6812c",
+        "url": "https://github.com/microsoft/WindowsAgentArena/blob/6d39ed88c545a0d40a7a02e39b928e278df7332b/scripts/run-local.sh"
+      },
+      {
+        "path": "scripts/run.sh",
+        "sha256": "b64890c30971d5be63878b68f409520bcb85af6c797546e6c11286c0d5f82602",
+        "url": "https://github.com/microsoft/WindowsAgentArena/blob/6d39ed88c545a0d40a7a02e39b928e278df7332b/scripts/run.sh"
+      }
+    ]
+  },
+  "google-research/android_world": {
+    "commit": "f8e78c0ab0bb8b5daa681afd0296ed0193a98f1f",
+    "license": "Apache-2.0",
+    "paths": [
+      {
+        "path": "Dockerfile",
+        "sha256": "ecdc92bda044dab9054928694ad913466b998f328694fadf6ff9ce52e97c51bc",
+        "url": "https://github.com/google-research/android_world/blob/f8e78c0ab0bb8b5daa681afd0296ed0193a98f1f/Dockerfile"
+      },
+      {
+        "path": "README.md",
+        "sha256": "93201de5e21f2b12283a75b1e2c357781b2e6cc27eab20cc7dd7aa0f5919d839",
+        "url": "https://github.com/google-research/android_world/blob/f8e78c0ab0bb8b5daa681afd0296ed0193a98f1f/README.md"
+      },
+      {
+        "path": "android_world/env/env_launcher.py",
+        "sha256": "87a51268a4bcecb3960f6d559d4c6c583bc7b6dfc8894134d2ed5e96481ce695",
+        "url": "https://github.com/google-research/android_world/blob/f8e78c0ab0bb8b5daa681afd0296ed0193a98f1f/android_world/env/env_launcher.py"
+      }
+    ]
+  },
+  "omacom/omarchy": {
+    "commit": "087f73d899b456ce5275ebf27294d379585fbdb1",
+    "license": "MIT",
+    "paths": [
+      {
+        "path": "README.md",
+        "sha256": "5bf8370906b45cca994fba5b617fffe804ce2ec6fa46353ab8fdeaa4b061bd98",
+        "url": "https://github.com/omacom/omarchy/blob/087f73d899b456ce5275ebf27294d379585fbdb1/README.md"
+      },
+      {
+        "path": "bin/omarchy-security-functions",
+        "sha256": "f942a5865f63b612f2ff427570af349874e06d55e4a0549d9d6c499fb2632b84",
+        "url": "https://github.com/omacom/omarchy/blob/087f73d899b456ce5275ebf27294d379585fbdb1/bin/omarchy-security-functions"
+      },
+      {
+        "path": "bin/omarchy-update",
+        "sha256": "931e6271024412e9df0942c7750ea48c9a47c8389dc9783587932c9e38bdd638",
+        "url": "https://github.com/omacom/omarchy/blob/087f73d899b456ce5275ebf27294d379585fbdb1/bin/omarchy-update"
+      },
+      {
+        "path": "bin/omarchy-version",
+        "sha256": "beea763bfa1e1a9be5147314027fa6672772c657a470c2325ddfb359acb2d678",
+        "url": "https://github.com/omacom/omarchy/blob/087f73d899b456ce5275ebf27294d379585fbdb1/bin/omarchy-version"
+      }
+    ]
+  }
+}
