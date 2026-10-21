@@ -105,6 +105,12 @@ def safe_diagnostic(text):
         match=re.search(r'\b'+key+r'=([A-Za-z0-9_@./-]{1,128})',text)
         if match:value[key]=match[1]
     for key,number in re.findall(r'\b(model_requests|native_tool_calls|native_tool_results|sdk_shell|sdk_upload|sdk_download|completed_responses|failed_responses|upstream_status)=([0-9]{1,6})',text):value[key]=int(number)
+    match=re.search(r'failure_counts=(\{[^;\n]{0,2048}\})',text)
+    if match:
+        try:
+            counts=json.loads(match[1])
+            if isinstance(counts,dict)and all(re.fullmatch(r'[a-z_0-9]{1,64}',k)and type(v)is int and 0<=v<=32 for k,v in counts.items()):value['failure_counts']=counts
+        except (ValueError,TypeError):pass
     return value
 
 

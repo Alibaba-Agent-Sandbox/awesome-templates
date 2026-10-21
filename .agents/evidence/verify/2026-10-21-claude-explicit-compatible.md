@@ -20,3 +20,6 @@ Code review identified a concrete Chat message-order defect: an Anthropic user c
 Before-fix check on immutable d9ba443 original relay reproduces invalid assistant/user/tool ordering; required assistant/tool/user assertion fails. Corrected regression plus full53prior controls pending updated54run. Changed runtime1.2.1 requires a complete new published-source native SDK/HTTP/model repeat.
 
 Corrected full54protocol/process/controller tests PASS1.30seconds; strict template conformant. Published fix is required before the full new cloud repeat.
+
+## Second actual immutable-source failure
+Published source55b54828929753811c0353c33ccff2e162239c77/template1.2.1 repeats fullHTTP10PASS, original synthetic1PASS/zero conflicting project settings and independently confirmed fixture/native/private/project/server/cloud cleanup. Actual original CLI returns native_code0/subtype success, completed_responses15/native_tool_calls8/native_tool_results36, but2failed responses out of17 keep the required completion contract FAIL. Controller12PASS1FAIL/0SKIP,185.102seconds. [Immutable failed proof](2026-10-21-claude-reminder-fix-model-failure.json). This does not prove final source/artifact/held-out qualification. Next controller-only change exposes existing bounded fixed stage counters, not raw diagnostics, so the transport cause can be distinguished without relaxing any gate.

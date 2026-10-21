@@ -17,3 +17,8 @@ def test_model_code_never_runs_on_operator_even_with_remote_flag(monkeypatch):
     monkeypatch.setenv('E2E_RUN_LLM','1');monkeypatch.setenv('E2E_REMOTE_SANDBOX','1');module.RESULTS.clear()
     module.model_check(object(),'/tmp/does-not-exist','http://127.0.0.1:9000')
     assert module.RESULTS==[False]
+
+
+def test_failure_stage_counters_are_bounded_metadata_only():
+    assert module.safe_diagnostic('native_subtype=success; failure_counts={"upstream_open_http_400": 2}; upstream_status=200')=={'native_subtype':'success','upstream_status':200,'failure_counts':{'upstream_open_http_400':2}}
+    assert 'failure_counts'not in module.safe_diagnostic('failure_counts={"PRIVATE/URL": 2}')
