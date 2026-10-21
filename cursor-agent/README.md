@@ -132,7 +132,11 @@ Linux x86_64 only;2vCPU/4096MB/port9000, non-root user, WORKSPACE=/home/user/app
 
 ## Verified
 
-Current1.0.0 template qualification PENDING; tested_on is empty. Owned Express research proves original version/help and invalid-key refusal under UID1000, with unchanged archive hashes and independently confirmed sandbox/fixture/private-cache cleanup. This does not certify the new template source or an authenticated vendor/model session. Local authored fixture/process tests are separate; native SDK template/HTTP/image/cleanup/latest CI/review/merge remain required. [Research](../.agents/evidence/verify/2026-10-21-cursor-native-research.md).
+| Provider | Runtime verification | Scope |
+| --- | --- | --- |
+| alicloud-express | [PASS receipt](evidence/express-2026-10-21.json) · [steps/full HTTP](evidence/verification-steps-2026-10-21T110917Z.json) | Original native version/help, actual SDK create, HTTP and SDK invalid-key refusal, independently confirmed owned sandbox/template/private-cache cleanup |
+
+The current1.0.0 published-source native step run completed in170.608seconds, with16HTTP checksPASS,0FAIL,0SKIP and7554wire bytes. A fixed explicitly invalid synthetic credential exercises the original program's authentication error; it is never counted as an authenticated model session. Genuine Cursor account/model/coding acceptance is NOT_RUN because no vendor credential is available. The catalog remains experimental. Local authored tests, hosted Docker-image checks and provider step acceptance are separate. [Research and executed checks](../.agents/evidence/verify/2026-10-21-cursor-native-research.md).
 
 ## Secondary development
 

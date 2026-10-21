@@ -132,7 +132,11 @@ prompt为1..32768UTF8字节，非空且无NUL。cwd最长4096UTF8字节、无NUL
 
 ## 已验证
 
-当前1.0.0模板资格待执行，tested_on为空。自有Express研究已证明UID1000运行原版版本／帮助并拒绝无效密钥，原包哈希不变，沙箱／文件／私有缓存独立确认清理。这不是新模板源或厂商账号／模型验收。本地固定测试与云端区分；真实模板SDK／HTTP／镜像／清理／最终CI／review／合并仍待执行。[研究](../.agents/evidence/verify/2026-10-21-cursor-native-research.md)。
+| 提供商 | 运行时验证 | 范围 |
+| --- | --- | --- |
+| alicloud-express | [通过回执](evidence/express-2026-10-21.json) · [steps／完整HTTP](evidence/verification-steps-2026-10-21T110917Z.json) | 原版版本／帮助、真实SDK创建、HTTP和SDK无效密钥拒绝、独立确认沙箱／模板／私有缓存清理 |
+
+当前1.0.0已发布源的原生steps验收用时170.608秒，16项HTTP检查通过、0失败、0跳过，线传7554字节。固定且明确无效的合成凭证用于验证原版程序认证错误，不能算厂商模型会话成功。由于没有厂商凭证，真实Cursor账号／模型／编码验收为NOT_RUN；目录保持experimental。本地固定测试、托管Docker镜像检查和提供商steps验收分别记录。[研究及实际检查](../.agents/evidence/verify/2026-10-21-cursor-native-research.md)。
 
 ## 二次开发
 
