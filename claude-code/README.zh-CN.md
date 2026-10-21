@@ -53,7 +53,7 @@ async def main():
 asyncio.run(main())
 ```
 
-命令服务启动前设置全部三个 CLAUDE_MODEL_* 变量，检查 `claude_setup_check`，然后调用 `await server.commands.run('claude_byok',prompt='Repair existing calc.py; preserve its tests',cwd='project',command_timeout=300,timeout=420)`。项目需预先创建。独立服务使用 `sb.server_at(port,token=...)`，使用后关闭借用客户端。预热9000进程不会读取后续创建参数；遵循[显式进程配置](../docs/runtime-environment.md)，独立9010进程使用对应独立 Bearer。结果为缓冲后的直接对象。
+命令服务启动前设置全部三个 CLAUDE_MODEL_* 变量，检查 `claude_setup_check`，然后调用 `await server.commands.run('claude_byok',prompt='Repair existing calc.py; preserve its tests',cwd='project',command_timeout=300,timeout=540)`。项目需预先创建。独立服务使用 `sb.server_at(port,token=...)`，使用后关闭借用客户端。预热9000进程不会读取后续创建参数；遵循[显式进程配置](../docs/runtime-environment.md)，独立9010进程使用对应独立 Bearer。结果为缓冲后的直接对象。
 
 ## 快速开始（HTTP POST）
 
@@ -79,7 +79,7 @@ HTTP200返回 `{"result":"2.0.76 (Claude Code)"}`。`POST /commands/claude_byok`
 
 新增固定参数：`-p --model <selected> --output-format json --permission-mode dontAsk --tools Read,Edit,Write,Bash --allowedTools Read,Edit,Write,Bash --settings <owned> --setting-sources '' --no-session-persistence --strict-mcp-config --mcp-config '{"mcpServers":{}}' --disable-slash-commands --no-chrome --max-turns16`。禁用钩子，思考token为0；不提供Task、子Agent、MCP、插件或项目/本地设置加载。项目指令仍是不可信输入，仅在自有可丢弃目标运行。
 
-转换文本及原始工具schema和结果；拒绝图像、thinking、不支持的内容或工具、截断回复、错误模型、token、路径及重定向。上游Chat缓冲后输出原生Messages SSE。最多32请求，每请求2MiB、响应4MiB、原生16轮、stdout/stderr各256KiB。成功要求原CLI成功结果和正数传输完成次数；编码验收另要求原生工具结果、独立下载产物及测试。返回前回收自有进程、私有状态、已发RPC；清理最多额外90秒，客户端超时至少command_timeout+120；并发BYOK返回忙。
+转换文本及原始工具schema和结果；拒绝图像、thinking、不支持的内容或工具、截断回复、错误模型、token、路径及重定向。上游Chat缓冲后输出原生Messages SSE。最多32请求，每请求2MiB、响应4MiB、原生16轮、stdout/stderr各256KiB。成功要求原CLI成功结果和正数传输完成次数；编码验收另要求原生工具结果、独立下载产物及测试。返回前回收自有进程、私有状态、已发RPC；清理最多额外210秒，客户端超时至少command_timeout+240；并发BYOK返回忙。
 
 ## 配置
 
@@ -100,7 +100,7 @@ HTTP200返回 `{"result":"2.0.76 (Claude Code)"}`。`POST /commands/claude_byok`
 
 ## 已验证
 
-当前1.2.1的提供商、原生及模型验收待执行。此前1.1.1回执保留为不可变历史，不能证明本次变更通过。本地38项固定协议、隐私和进程测试通过，不属于云端或模型通过；必须完成实际Express、镜像、原CLI及模型证据后才能声明当前验证并关闭Issue。
+当前1.2.2的提供商、原生及模型验收待执行。此前1.1.1回执保留为不可变历史，不能证明本次变更通过。本地38项固定协议、隐私和进程测试通过，不属于云端或模型通过；必须完成实际Express、镜像、原CLI及模型证据后才能声明当前验证并关闭Issue。
 
 ## 二次开发
 

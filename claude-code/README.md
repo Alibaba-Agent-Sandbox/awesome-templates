@@ -53,7 +53,7 @@ async def main():
 asyncio.run(main())
 ```
 
-Set all three CLAUDE_MODEL_* variables before the named-command process starts, check `claude_setup_check`, and invoke `await server.commands.run('claude_byok',prompt='Repair existing calc.py; preserve its tests',cwd='project',command_timeout=300,timeout=420)`. Create the project first. Use `sb.server_at(port,token=...)` and close that borrowed client after use. A prewarmed9000process does not acquire later create-time env; follow [explicit process configuration](../docs/runtime-environment.md). An independently configured9010server needs a separate matching Bearer token. Results are buffered direct objects.
+Set all three CLAUDE_MODEL_* variables before the named-command process starts, check `claude_setup_check`, and invoke `await server.commands.run('claude_byok',prompt='Repair existing calc.py; preserve its tests',cwd='project',command_timeout=300,timeout=540)`. Create the project first. Use `sb.server_at(port,token=...)` and close that borrowed client after use. A prewarmed9000process does not acquire later create-time env; follow [explicit process configuration](../docs/runtime-environment.md). An independently configured9010server needs a separate matching Bearer token. Results are buffered direct objects.
 
 ## Quick start (HTTP POST)
 
@@ -79,7 +79,7 @@ HTTP200 returns `{"result":"2.0.76 (Claude Code)"}`. `POST /commands/claude_byok
 
 New fixed profile: `-p --model <selected> --output-format json --permission-mode dontAsk --tools Read,Edit,Write,Bash --allowedTools Read,Edit,Write,Bash --settings <owned> --setting-sources '' --no-session-persistence --strict-mcp-config --mcp-config '{"mcpServers":{}}' --disable-slash-commands --no-chrome --max-turns16`. Hooks disabled, thinking tokens0; no Task tool, subagents, MCP, plugin or project/local settings loading. Project instructions remain untrusted input; use only an owned disposable target.
 
-Text and original tool schemas/results are translated; unsupported image/thinking/content/tool types, truncated replies, wrong model/token/path and redirects fail closed. Upstream Chat is buffered then emitted as native Messages SSE.32requests/2MiBrequest/4MiBresponse maximum,16native turns,256KiB each native stdout/stderr. Actual native successful result and positive completed transport counts are required. Coding qualification additionally requires positive native tool results and independently downloaded files/tests. Own process/private state and issued RPCs drain before return; cleanup may add up to90seconds, client timeout at least command_timeout+120. Concurrent BYOK calls fail busy.
+Text and original tool schemas/results are translated; unsupported image/thinking/content/tool types, truncated replies, wrong model/token/path and redirects fail closed. Upstream Chat is buffered then emitted as native Messages SSE.32requests/2MiBrequest/4MiBresponse maximum,16native turns,256KiB each native stdout/stderr. Actual native successful result and positive completed transport counts are required. Coding qualification additionally requires positive native tool results and independently downloaded files/tests. Own process/private state and issued RPCs drain before return; cleanup may add up to210seconds, client timeout at least command_timeout+240. Concurrent BYOK calls fail busy.
 
 ## Configuration
 
@@ -100,7 +100,7 @@ Declared2vCPU2048MB, Linuxx64, port9000,8GiB image rootfs budget; no KVM/Docker/
 
 ## Verified
 
-Current1.2.1 provider/native/model acceptance is PENDING. Earlier1.1.1 receipts remain immutable historical evidence and do not qualify this changed profile. Local38fixed transport/privacy/process controls PASS; this is not a cloud/model pass. Final actual Express, image, original CLI and model evidence must be recorded before qualification or Issue closure.
+Current1.2.2 provider/native/model acceptance is PENDING. Earlier1.1.1 receipts remain immutable historical evidence and do not qualify this changed profile. Local38fixed transport/privacy/process controls PASS; this is not a cloud/model pass. Final actual Express, image, original CLI and model evidence must be recorded before qualification or Issue closure.
 
 ## Secondary development
 

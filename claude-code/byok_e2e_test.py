@@ -33,8 +33,8 @@ def final_text(value):
 def native_sdk_command(base,parameters):
     from agent_sandbox.api.server_client import ServerClient
     async def run():
-        server=ServerClient(base,token=os.environ.get('E2E_SERVER_TOKEN') or None,timeout=760)
-        try:return await server.commands.run('claude_byok',timeout=760,**parameters)
+        server=ServerClient(base,token=os.environ.get('E2E_SERVER_TOKEN') or None,timeout=900)
+        try:return await server.commands.run('claude_byok',timeout=900,**parameters)
         finally:await server.aclose()
     return asyncio.run(run())
 

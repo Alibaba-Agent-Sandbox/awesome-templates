@@ -153,7 +153,7 @@ class Relay:
                         owner.stats['native_tool_results']+=sum(m['role']=='tool'for m in payload['messages'])
                     req=urllib.request.Request(owner.base+'/chat/completions',data=json.dumps(payload).encode(),headers={'Authorization':'Bearer '+owner.key,'Content-Type':'application/json'},method='POST')
                     stage='upstream_open'
-                    response=owner.opener.open(req,timeout=max(1,min(60,owner.deadline-time.monotonic())))
+                    response=owner.opener.open(req,timeout=max(1,min(180,owner.deadline-time.monotonic())))
                     owner.last_upstream_status=response.status;stage='upstream_read'
                     with owner.lock:owner.responses.add(response)
                     raw=response.read(MAX_RESPONSE+1)
@@ -181,7 +181,7 @@ class Relay:
     def url(self):return 'http://127.0.0.1:'+str(self.port)
     def snapshot(self):
         with self.lock:return {**self.stats,'failure_counts':dict(self.failure_counts),'last_upstream_status':self.last_upstream_status}
-    def wait_for_idle(self,timeout=65):
+    def wait_for_idle(self,timeout=185):
         deadline=time.monotonic()+timeout
         while time.monotonic()<deadline:
             with self.lock:busy=bool(self.handlers)
@@ -194,7 +194,7 @@ class Relay:
         with self.lock:responses=list(self.responses);handlers=list(self.handlers)
         for response in responses:
             with contextlib.suppress(OSError):response.close()
-        deadline=time.monotonic()+65
+        deadline=time.monotonic()+185
         for handler in handlers:handler.join(timeout=max(0,deadline-time.monotonic()))
         if self.thread.is_alive()or any(h.is_alive()for h in handlers):raise RuntimeError('owned Claude adapter cleanup unconfirmed')
         import socket
