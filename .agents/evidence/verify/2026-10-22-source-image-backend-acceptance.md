@@ -22,3 +22,13 @@ and controller. No template runtime source has changed at this stage.
 - `python scripts/test_spec_tools.py`: PASS57.
 - `python scripts/check_template.py --all --strict`: PASS46 sources plus skeleton, zero claimed spec failures.
 - Workflow YAML and both new controllers compile: PASS. New bilingual documentation/record link checks are run before publication.
+
+## First original OpenSandbox pilot
+
+Actual native run39749792427 failed on both python-hello and node-web at the
+explicit-user UID probe; SDK/container/process cleanup passed for both.
+The unchanged images already select USER user. The next pilot tests the actual
+image-default identity and still requires a numeric UID greater than zero;
+explicit same-user switching on the legacy execd is not qualified. Preserve
+manifest environment defaults instead of replacing published non-secret
+settings with empty values. See the dated initial-pilot-failures JSON.

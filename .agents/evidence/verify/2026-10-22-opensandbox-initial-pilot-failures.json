@@ -1,0 +1,123 @@
+{
+  "workflow_run": 39749792427,
+  "passed": false,
+  "receipts": [
+    {
+      "provider": "opensandbox",
+      "template": "python-hello",
+      "template_version": "1.1.1",
+      "verification_type": "source-image-native-opensandbox-docker-http",
+      "build_mode": "image",
+      "passed": false,
+      "cleanup_verified": true,
+      "model_acceptance": "NOT_RUN",
+      "checks": [
+        "fixed source upstream",
+        "fixed source provider",
+        "fixed source cli",
+        "fixed source sdk",
+        "actual image architecture and non-root workspace configuration",
+        "original OpenSandbox server health",
+        "actual SDK create",
+        "independent Docker identity matches exact built image",
+        "actual guest bridge endpoint",
+        "owned metadata readback",
+        "actual runtime command bytes match source",
+        "independent SDK and Docker absence",
+        "owned provider engine stopped and reaped",
+        "owned original server process stopped"
+      ],
+      "pins": {
+        "upstream": "30348cbdfe4b9cfd49e0963617aed357a8f1ac4c",
+        "provider": "9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d",
+        "cli": "c8e8ad784323b8903505442cbc77d433a0d0367a",
+        "sdk": "33f857f5a79fd10326652e9d03f15f3621d6b848"
+      },
+      "source_commit": "d8179fd06a514b7ca0c6a3641da24ff84ccd626e",
+      "context_sha256": {
+        "Dockerfile": "1a6204a898596328e72a4d2b3acfab129b5aef8b366112303ad24e0509941738",
+        "template.yaml:contract": "a760e8010322d76209eef77708deb03c8da2cc19521b1133252655b0e11e37c6",
+        "commands.py": "819dd5d91a67edc9d681b01dc44caac479c6d693d947f1818d5a1253cc9b9ceb"
+      },
+      "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+      "generic_code_interpretation": "UNSUPPORTED; template named APIs tested separately",
+      "images": {
+        "template_image_id": "sha256:b15ee142fd6eb607348afaa12a15fb8fd0eed6572f05e08ccc76303f4d7a9fe2",
+        "execd_digest": "opensandbox/execd@sha256:6cf7dba2f21f0b536e100563d841ac58a9f31c2b0a081b7ac76796a24d6f47e2",
+        "execd_image_id": "sha256:e12d3de4b28e820bc966fe875484b35a5fad9322c4ef8a5b6751873da03bd214"
+      },
+      "test_configuration": {
+        "model_credentials_injected": false
+      },
+      "failed_check": "SDK command as non-root template user",
+      "cleanup_observations": {
+        "sdk_not_found": true,
+        "owned_docker_containers_absent": true,
+        "errors": []
+      },
+      "error_type": "AssertionError",
+      "error_message": "SDK command as non-root template user",
+      "duration_s": 8.954,
+      "controller_sha256": "fd3a8e2d844f806e053f39acec2abce250fabd3751470f36cae963947ef17eff"
+    },
+    {
+      "provider": "opensandbox",
+      "template": "node-web",
+      "template_version": "1.1.1",
+      "verification_type": "source-image-native-opensandbox-docker-http",
+      "build_mode": "image",
+      "passed": false,
+      "cleanup_verified": true,
+      "model_acceptance": "NOT_RUN",
+      "checks": [
+        "fixed source upstream",
+        "fixed source provider",
+        "fixed source cli",
+        "fixed source sdk",
+        "actual image architecture and non-root workspace configuration",
+        "original OpenSandbox server health",
+        "actual SDK create",
+        "independent Docker identity matches exact built image",
+        "actual guest bridge endpoint",
+        "owned metadata readback",
+        "actual runtime command bytes match source",
+        "independent SDK and Docker absence",
+        "owned provider engine stopped and reaped",
+        "owned original server process stopped"
+      ],
+      "pins": {
+        "upstream": "30348cbdfe4b9cfd49e0963617aed357a8f1ac4c",
+        "provider": "9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d",
+        "cli": "c8e8ad784323b8903505442cbc77d433a0d0367a",
+        "sdk": "33f857f5a79fd10326652e9d03f15f3621d6b848"
+      },
+      "source_commit": "d8179fd06a514b7ca0c6a3641da24ff84ccd626e",
+      "context_sha256": {
+        "Dockerfile": "c37033037841c36f038dfd5ef42cfb800e197f6250ffb24c26d929dd8b7aeacc",
+        "template.yaml:contract": "c62bdb7acaa5a1f5c032ecf5374d150b1888c1d2ee0e7318c57f05e7e705e3cb",
+        "index.js": "4b161d1c09cf94809c48ef88ab1cb79247d76da02a746e17cf0f4b4e76ca966b",
+        "commands.py": "a29b05240e330c1c1ab05c215c976338fe19b0f08abbfae6457c2fa14d7cc244"
+      },
+      "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+      "generic_code_interpretation": "UNSUPPORTED; template named APIs tested separately",
+      "images": {
+        "template_image_id": "sha256:37b8b9707ad75eb13623953b1fe44e7c8955fd5ba4c90788a1b9eef544fae8de",
+        "execd_digest": "opensandbox/execd@sha256:6cf7dba2f21f0b536e100563d841ac58a9f31c2b0a081b7ac76796a24d6f47e2",
+        "execd_image_id": "sha256:e12d3de4b28e820bc966fe875484b35a5fad9322c4ef8a5b6751873da03bd214"
+      },
+      "test_configuration": {
+        "model_credentials_injected": false
+      },
+      "failed_check": "SDK command as non-root template user",
+      "cleanup_observations": {
+        "sdk_not_found": true,
+        "owned_docker_containers_absent": true,
+        "errors": []
+      },
+      "error_type": "AssertionError",
+      "error_message": "SDK command as non-root template user",
+      "duration_s": 8.099,
+      "controller_sha256": "fd3a8e2d844f806e053f39acec2abce250fabd3751470f36cae963947ef17eff"
+    }
+  ]
+}

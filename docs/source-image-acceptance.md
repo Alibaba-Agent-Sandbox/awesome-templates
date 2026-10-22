@@ -54,3 +54,7 @@ Bind every pass to current source/build inputs, controller hash, SDK and image
 identity. Preserve earlier records. Delete only resources owned by the run;
 unresolved cleanup prevents a pass. The acceptance work remains incomplete until
 all46 current sources have both requested backend receipts and complete HTTP.
+
+The legacy execd pilot failed when explicitly repeating the image user through
+SDK user switching. The source profile instead preserves image USER and verifies
+its actual numeric UID is nonzero. Explicit user switching is not qualified.

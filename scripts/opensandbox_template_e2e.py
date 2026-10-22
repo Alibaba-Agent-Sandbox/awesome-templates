@@ -80,7 +80,7 @@ async def exercise(source, work, image_ref, image_id, report):
         resources = manifest.get("resources", {})
         sandbox = await Sandbox.create(provider="opensandbox", template=image_ref, timeout=1200,
             cpu=resources.get("cpu", 2), memory=resources.get("memory", 2048),
-            envs={**{key: "" for key in manifest.get("env", {})}, **server_env},
+            envs={**{key: str(value) for key, value in manifest.get("env", {}).items()}, **server_env},
             metadata={"verification": nonce})
         sid = sandbox.id
         owned = docker_ids() - baseline
@@ -99,10 +99,16 @@ async def exercise(source, work, image_ref, image_id, report):
         require(report, info.metadata.get("verification") == nonce, "owned metadata readback")
         observed = await sandbox.files.read("/home/user/app/commands.py")
         require(report, observed.encode() == (source / "commands.py").read_bytes(), "actual runtime command bytes match source")
-        result = await sandbox.commands.run("id -u", user="user", timeout=30)
+        # Preserve the actual image USER. Legacy execd cannot always repeat a
+        # same-identity uid/gid switch without CAP_SETGID; that option is not
+        # needed to run the already non-root profile and is not qualified here.
+        result = await sandbox.commands.run("id -u", timeout=30)
+        report["execution_identity"] = {"selection": "image default; explicit user switching not qualified",
+            "probe_exit_code": result.exit_code,
+            "uid": int(result.stdout.strip()) if result.stdout.strip().isdigit() else None}
         require(report, result.exit_code == 0 and result.stdout.strip().isdigit()
-                and int(result.stdout.strip()) > 0, "SDK command as non-root template user")
-        result = await sandbox.commands.run("python3 -c 'print(6*7)'", user="user", timeout=30)
+                and int(result.stdout.strip()) > 0, "SDK observes actual non-root image user")
+        result = await sandbox.commands.run("python3 -c 'print(6*7)'", timeout=30)
         require(report, result.exit_code == 0 and result.stdout.strip() == "42", "SDK real shell Python program")
         path = "/tmp/" + nonce + ".txt"
         await sandbox.files.write(path, "owned-file\n")
@@ -118,10 +124,10 @@ async def exercise(source, work, image_ref, image_id, report):
             raise AssertionError("unexpected unqualified code.interpret")
         startup = manifest["start_cmd"]
         command = "nohup /bin/sh -c " + shlex.quote(startup) + " >/tmp/abx-source-service.log 2>&1 </dev/null &"
-        result = await sandbox.commands.run(command, user="user", cwd="/home/user/app", timeout=30)
+        result = await sandbox.commands.run(command, cwd="/home/user/app", timeout=30)
         require(report, result.exit_code == 0, "SDK starts original template service as user")
         for _ in range(120):
-            result = await sandbox.commands.run(manifest["ready_cmd"], user="user", timeout=5)
+            result = await sandbox.commands.run(manifest["ready_cmd"], timeout=5)
             if result.exit_code == 0:
                 break
             await asyncio.sleep(.5)
