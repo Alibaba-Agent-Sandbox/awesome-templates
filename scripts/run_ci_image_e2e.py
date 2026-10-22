@@ -26,11 +26,28 @@ from template_http_acceptance import fixture_environment, run_controller
 
 
 def controller_missing_imports(source: Path) -> list[str]:
-    tree=ast.parse((source/'e2e_test.py').read_text());names=set()
-    for node in ast.walk(tree):
-        if isinstance(node,ast.Import):names.update(alias.name.split('.')[0] for alias in node.names)
-        elif isinstance(node,ast.ImportFrom) and not node.level and node.module:names.add(node.module.split('.')[0])
-    return sorted(name for name in names if not (source/(name+'.py')).exists() and importlib.util.find_spec(name) is None)
+    pending=[source/'e2e_test.py'];seen=set();missing=set()
+    while pending:
+        path=pending.pop()
+        if path in seen:continue
+        seen.add(path);tree=ast.parse(path.read_text());names=set()
+        for node in ast.walk(tree):
+            if isinstance(node,ast.Import):names.update(alias.name.split('.')[0] for alias in node.names)
+            elif isinstance(node,ast.ImportFrom) and not node.level and node.module:names.add(node.module.split('.')[0])
+        for name in names:
+            peer=source/(name+'.py')
+            if peer.is_file():pending.append(peer)
+            elif importlib.util.find_spec(name) is None:missing.add(name)
+    return sorted(missing)
+
+
+def check_image_cli() -> None:
+    """Reject a missing/renamed CLI surface before archive transfer or cloud writes."""
+    result=harness.default_runner(['template','from-image','--help'],30)
+    required=['--generation','--start-cmd','--ready-cmd','--cpu','--memory',
+              '--no-envd-inject','--registry-type','--registry-username','--registry-password']
+    if result.returncode or any(flag not in result.stdout for flag in required):
+        raise RuntimeError('CLI lacks the native template from-image contract; update ABX before image acceptance')
 
 
 def publish(source: Path, receipt: dict, report: dict) -> None:
@@ -49,16 +66,24 @@ def publish(source: Path, receipt: dict, report: dict) -> None:
     with (directory/('image-http-'+stamp+'.json')).open('x') as stream:json.dump(report,stream,indent=2);stream.write('\n')
 
 
-def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,sandbox_create: str="cli") -> int:
+def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,sandbox_create: str="cli",private_root: Path | None=None) -> int:
     if sandbox_create not in ("cli","sdk"):
         raise ValueError("sandbox_create must be cli or sdk")
-    source=source.resolve();private=Path(tempfile.mkdtemp(prefix='abx-ci-image-'));private.chmod(0o700)
+    source=source.resolve()
+    if private_root is not None:
+        private_root=private_root.resolve()
+        if private_root.is_relative_to(source.parent):raise ValueError('private staging must stay outside the source checkout')
+        private_root.mkdir(parents=True,exist_ok=True,mode=0o700)
+    # Keep archive/recovery staging configurable without changing the POSIX
+    # temporary directory used for the RAM-only registry-auth fd symlink.
+    private=Path(tempfile.mkdtemp(prefix='abx-ci-image-',dir=private_root));private.chmod(0o700)
     journal_path=private/'registry-intent.json';status=1;registry_clean=False;checks={};receipt=None
     report={'template':source.name,'provider':'alicloud-express','build_mode':'image',
         'verification_type':'ci-image-backed-external-http','passed':False,'registry_cleanup_verified':False,
         'sandbox_create':'python-sdk-Sandbox.create' if sandbox_create=='sdk' else 'abx create',
-        'model_acceptance':'NOT_RUN','http_acceptance':checks}
+        'model_acceptance':'NOT_RUN','http_acceptance':checks,'runtime_attempted':False}
     try:
+        check_image_cli()
         missing=controller_missing_imports(source) if http else []
         if missing:
             report['missing_controller_modules']=missing
@@ -107,6 +132,7 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,sandbox_creat
                 checks.update(run_controller(source,urls,private,controller_env))
                 if not checks['passed']:raise RuntimeError('full external HTTP acceptance failed; private log retained')
             return result
+        report['runtime_attempted']=True
         print(source.name+': actual native template create, READY and CLI/SDK verification',flush=True)
         try:
             with (private/'harness.log').open('w') as output,contextlib.redirect_stdout(output),contextlib.redirect_stderr(output):
@@ -158,6 +184,7 @@ def main():
     parser.add_argument('--crane',required=True,help='Path to verified upstream crane binary')
     parser.add_argument('--smoke-only',action='store_true',help='Explicitly omit full HTTP acceptance')
     parser.add_argument('--sandbox-create',choices=('cli','sdk'),default='cli')
-    args=parser.parse_args();return run(args.template,args.artifact_id,args.crane,http=not args.smoke_only,sandbox_create=args.sandbox_create)
+    parser.add_argument('--private-root',type=Path,help='Private archive/recovery staging outside the source checkout; RAM auth remains in the native temporary filesystem')
+    args=parser.parse_args();return run(args.template,args.artifact_id,args.crane,http=not args.smoke_only,sandbox_create=args.sandbox_create,private_root=args.private_root)
 
 if __name__=='__main__':raise SystemExit(main())

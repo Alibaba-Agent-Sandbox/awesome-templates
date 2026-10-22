@@ -1,0 +1,28 @@
+{
+  "result": "PASS",
+  "scope": "Post-failure resource reconciliation only; not template acceptance",
+  "rows": [
+    {
+      "template": "agents-cli",
+      "native_parser_rejected_before_callback": true,
+      "sandbox_create_attempted": false,
+      "known_template_ids": 0,
+      "known_sandbox_ids": 0,
+      "official_exact_alias_absent": true,
+      "sdk_owned_absence": true,
+      "cleanup_verified": true,
+      "original_attempt_remains_failed": true
+    },
+    {
+      "template": "python-hello",
+      "native_parser_rejected_before_callback": true,
+      "sandbox_create_attempted": false,
+      "known_template_ids": 0,
+      "known_sandbox_ids": 0,
+      "official_exact_alias_absent": true,
+      "sdk_owned_absence": true,
+      "cleanup_verified": true,
+      "original_attempt_remains_failed": true
+    }
+  ]
+}

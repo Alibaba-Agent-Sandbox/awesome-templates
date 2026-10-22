@@ -54,7 +54,7 @@ def test_real_image_entry_polls_ready_and_keeps_cli_smoke_cleanup(tmp_path,monke
         calls.append(argv)
         if argv[1:3]==['template','info']:return h.Proc(0,'{"status":{"state":"ready"}}','')
         if '--official-api' in argv:return h.Proc(0,'[]','')
-        if argv[1:3]==['template','create']:
+        if argv[1:3]==['template','from-image']:
             assert '--no-envd-inject' in argv and '--cpu' in argv and '--memory' in argv
             assert IMAGE in argv and '--registry-password=synthetic-private-password' in argv
             assert 'deploy' not in argv and '--build' not in argv
@@ -68,7 +68,7 @@ def test_real_image_entry_polls_ready_and_keeps_cli_smoke_cleanup(tmp_path,monke
     with patch.object(h,'acr_push_lock',side_effect=AssertionError('no controller Docker push')):
         assert h.execute(options,runner=run,sdk=lambda *_:'ok',verify=lambda *_:True)==0
     report=json.loads(next((source/'evidence').glob('express-*.json')).read_text())
-    assert report['build_mode']=='image' and report['registration_operation']=='abx template create'
+    assert report['build_mode']=='image' and report['registration_operation']=='abx template from-image'
     assert report['image_provenance']['tag_digest_verified_after_runtime'] is True and report['cleanup_verified'] is True
     assert any(a[1:3]==['template','info'] for a in calls) and any('kill' in a for a in calls)
     assert 'synthetic-private-password' not in json.dumps(report)
@@ -81,7 +81,7 @@ def test_failed_image_readiness_never_creates_sandbox_or_receipt(tmp_path,monkey
     monkeypatch.setattr(h,'image_digest',lambda ref:proof['pushed_image_digest'])
     def run(argv,timeout):
         if '--official-api' in argv:return h.Proc(0,'[]','')
-        if argv[1:3]==['template','create']:return h.Proc(0,'{"TemplateID":"owned-image-template"}','')
+        if argv[1:3]==['template','from-image']:return h.Proc(0,'{"TemplateID":"owned-image-template"}','')
         if 'create' in argv:pytest.fail('sandbox cannot precede image READY')
         return h.Proc(0,'','')
     with patch.object(h,'wait_for_steps_ready',return_value=False):assert h.execute(options,runner=run,sdk=lambda *_:'ok',verify=lambda *_:True)==1
@@ -119,7 +119,7 @@ def test_changed_tag_after_runtime_cannot_publish_even_when_cleanup_succeeds(tmp
     def run(argv,timeout):
         if argv[1:3]==['template','info']:return h.Proc(0,'{"status":{"state":"ready"}}','')
         if '--official-api' in argv:return h.Proc(0,'[]','')
-        if argv[1:3]==['template','create']:return h.Proc(0,'{"TemplateID":"owned-template"}','')
+        if argv[1:3]==['template','from-image']:return h.Proc(0,'{"TemplateID":"owned-template"}','')
         if 'create' in argv:return h.Proc(0,'{"ID":"owned-sandbox"}','')
         if 'run' in argv:return h.Proc(0,'{"result":"ok"}','')
         return h.Proc(0,'','')
@@ -169,3 +169,62 @@ def test_template_server_opt_in_refuses_mutable_or_ambiguous_values(tmp_path,val
     (source/'server-sdk.commit').write_text(value)
     with pytest.raises(ValueError,match='immutable'):
         ci_image.server_commit(source)
+
+
+def test_private_archive_staging_keeps_registry_auth_on_native_temp_filesystem(tmp_path, monkeypatch):
+    import os
+    import subprocess
+    import tempfile
+    import ci_image_archive as images
+    import run_ci_image_e2e as runner
+    repo = tmp_path / 'repo'
+    repo.mkdir()
+    source, _, _ = fixture(repo)
+    private = tmp_path / 'private-archives'
+    native_temp = Path(tempfile.gettempdir()).resolve()
+
+    def download(artifact_id, current_source, stage):
+        assert stage.parent.parent == private
+        with images.ram_registry_auth('synthetic-user', 'synthetic-password') as (env, fds):
+            auth = Path(env['DOCKER_CONFIG'])
+            assert auth.parent == native_temp and not auth.is_relative_to(private)
+            result = subprocess.run([sys.executable, '-c',
+                "import os,json,pathlib;p=pathlib.Path(os.environ['DOCKER_CONFIG'])/'config.json';assert p.is_symlink();assert json.loads(p.read_text())['auths']"],
+                env=env, pass_fds=fds, capture_output=True, text=True)
+            assert result.returncode == 0
+        assert not auth.exists()
+        raise ValueError('synthetic archive refusal before any cloud operation')
+
+    monkeypatch.setattr(images, 'download_verified', download)
+    monkeypatch.setattr(runner, 'check_image_cli', lambda: None)
+    assert runner.run(source, 123, '/unused/crane', http=False, private_root=private) == 1
+    assert Path(tempfile.gettempdir()).resolve() == native_temp
+    receipt = json.loads(next((source / 'evidence').glob('image-attempt-*.json')).read_text())
+    assert receipt['passed'] is False and receipt['runtime_attempted'] is False
+
+
+def test_archive_staging_inside_checkout_is_rejected_before_any_cloud_call(tmp_path):
+    import run_ci_image_e2e as runner
+    source, _, _ = fixture(tmp_path)
+    with pytest.raises(ValueError, match='outside the source checkout'):
+        runner.run(source, 123, '/unused/crane', http=False, private_root=source)
+
+
+def test_controller_preflight_checks_nested_local_protocol_helpers(tmp_path):
+    import run_ci_image_e2e as runner
+    (tmp_path / 'e2e_test.py').write_text('from peer_client import Client\n')
+    (tmp_path / 'peer_client.py').write_text('import abx_missing_controller_dependency\nclass Client: pass\n')
+    assert runner.controller_missing_imports(tmp_path) == ['abx_missing_controller_dependency']
+
+
+def test_missing_image_cli_contract_blocks_before_archive_or_registry_calls(tmp_path, monkeypatch):
+    import ci_image_archive as images
+    import run_ci_image_e2e as runner
+    repo = tmp_path / 'repo'
+    repo.mkdir()
+    source, _, _ = fixture(repo)
+    monkeypatch.setattr(h, 'default_runner', lambda *args: h.Proc(2, '', 'No such command'))
+    monkeypatch.setattr(images, 'download_verified', lambda *args: pytest.fail('CLI preflight must precede downloads/cloud operations'))
+    assert runner.run(source, 123, '/unused/crane', http=False, private_root=tmp_path / 'private') == 1
+    receipt = json.loads(next((source / 'evidence').glob('image-attempt-*.json')).read_text())
+    assert receipt['runtime_attempted'] is False and receipt['passed'] is False

@@ -69,7 +69,9 @@ def inspect_opensandbox(source, receipt, root):
             and receipt.get("template") == source.name and receipt.get("template_version") == str(manifest["version"])
             and receipt.get("verification_type") == "source-image-native-opensandbox-docker-http"
             and receipt.get("passed") is True and receipt.get("cleanup_verified") is True
+            and receipt.get("workflow_job_conclusion") == "success"
             and receipt.get("pins") == PINS
+            and (receipt.get("test_configuration") or {}).get("model_credentials_injected") is False
             and re.fullmatch(r"[0-9a-f]{40}", str(receipt.get("source_commit", "")))
             and str(receipt.get("workflow_run_id", "")).isdigit()
             and receipt.get("context_sha256") == context_sha256(source)

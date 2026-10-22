@@ -15,7 +15,7 @@ Use **Template images (L1)** workflow dispatch with the desired catalog names an
 with the verified native CLI, paired SDK and account credentials in the operator
 environment. Credentials are never copied into Actions. The existing controller
 checks the archive/source/SDK/digest, transfers to a nonce-owned private ACR
-repository, registers the real image, waits for READY, executes CLI and SDK smoke,
+repository, registers the real image with `abx template from-image`, waits for READY, executes CLI and SDK smoke,
 runs the unchanged complete HTTP controller and independently checks owned
 sandbox/template/registry absence. It publishes receipts only after cleanup.
 
@@ -27,7 +27,7 @@ does not qualify them. Missing vendor/model accounts remain explicit L3 limits.
 
 ## Original OpenSandbox Docker
 
-Dispatch the same workflow with selected catalog names,
+Dispatch the same workflow with explicit comma-separated catalog names,
 `test_opensandbox=true` and `export_images=false`. The selected image is built
 from the normal template Dockerfile with its pinned server SDK wheel. A separate
 fixed-source original OpenSandbox server, provider and CLI then run on the

@@ -1,0 +1,92 @@
+{
+  "provider": "opensandbox",
+  "template": "droid",
+  "template_version": "1.2.0",
+  "verification_type": "source-image-native-opensandbox-docker-http",
+  "build_mode": "image",
+  "passed": true,
+  "cleanup_verified": true,
+  "model_acceptance": "NOT_RUN",
+  "checks": [
+    "fixed source upstream",
+    "fixed source provider",
+    "fixed source cli",
+    "fixed source sdk",
+    "actual image architecture and non-root workspace configuration",
+    "original OpenSandbox server health",
+    "actual SDK create",
+    "independent Docker identity matches exact built image",
+    "actual guest bridge endpoint",
+    "owned metadata readback",
+    "actual runtime command bytes match source",
+    "SDK observes actual non-root image user",
+    "SDK real shell Python program",
+    "SDK file write/read",
+    "SDK file removal readback",
+    "generic native interpreter explicitly unsupported",
+    "SDK starts original template service as user",
+    "original template readiness command",
+    "SDK named smoke droid_version",
+    "complete current external HTTP controller",
+    "independent SDK and Docker absence",
+    "owned provider engine stopped and reaped",
+    "owned original server process stopped"
+  ],
+  "pins": {
+    "upstream": "30348cbdfe4b9cfd49e0963617aed357a8f1ac4c",
+    "provider": "9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d",
+    "cli": "c8e8ad784323b8903505442cbc77d433a0d0367a",
+    "sdk": "33f857f5a79fd10326652e9d03f15f3621d6b848"
+  },
+  "source_commit": "8c0c783e19eba9409a1c3c925039509c67e62b67",
+  "context_sha256": {
+    "Dockerfile": "62496e9c0dcdf0c181206f64b3823fcc4759a7a8694c0758b9cd9d1d5a81e38c",
+    "template.yaml:contract": "1a99e0554db1c49fc06ed2095052a4df7f332a927b6c6dfa249ac0077a37c952",
+    "package.json": "d292a30310d48d8ccb20791b567fbc03bcbcfc5478e7424c6c80f9158d5596a6",
+    "package-lock.json": "9871fb71fa7638deeeda7bf1d8be058416bf8726cb0fd376a6d40c033b13a576",
+    "commands.py": "e006ae0d9d73b45ad8d0a2b7bb97d2aec0a7fea8ae10fa0502d0df01ff46ea47",
+    "byok.py": "bcfe4dc5a19b2c8b1ab7811626393bf9c5f5ed0e39db6ef320797aa8e940ee26",
+    "process.py": "d56623fa3bdd73ba7d2338fe472b21ea7b4f4a3d8a2e731887df6ea69126fabe",
+    "lifecycle.py": "a547b32d65cd7e4c12aab6412f59fedf3e394b05c3d853318c16e52f37c8b6b1",
+    "UPSTREAM-NOTICE.md": "cc8e6858c8495f0486f926f58bd4a293ff98dddde6f4a8b0376571c8726eafe5"
+  },
+  "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+  "workflow_run_id": 39751400293,
+  "generic_code_interpretation": "UNSUPPORTED; template named APIs tested separately",
+  "images": {
+    "template_image_id": "sha256:682330b136b2aea07631958aa966729d5f2bd31211487b826e9e0f36f9333fe4",
+    "execd_digest": "opensandbox/execd@sha256:6cf7dba2f21f0b536e100563d841ac58a9f31c2b0a081b7ac76796a24d6f47e2",
+    "execd_image_id": "sha256:e12d3de4b28e820bc966fe875484b35a5fad9322c4ef8a5b6751873da03bd214"
+  },
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "execution_identity": {
+    "selection": "image default; explicit user switching not qualified",
+    "probe_exit_code": 0,
+    "uid": 1000
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 8,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "23d8d01ad4e12f8ecf35a2ddd48a1338be926a73eded59bab953500eec886a56",
+    "passed": true
+  },
+  "cleanup_observations": {
+    "sdk_not_found": true,
+    "owned_docker_containers_absent": true,
+    "errors": []
+  },
+  "versions": {
+    "agent-sandbox-client": "0.3.0",
+    "agent-sandbox-server": "0.3.0",
+    "opensandbox-server": "1.2.0rc2.dev222+g30348cbd"
+  },
+  "duration_s": 12.743,
+  "controller_sha256": "fd490021bb70a434a40ee2c361744b1870ba293baa5cdde2ad29d8714e62f0e3",
+  "workflow_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39751400293",
+  "workflow_job_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39751400293/job/119732689976",
+  "workflow_job_conclusion": "success"
+}

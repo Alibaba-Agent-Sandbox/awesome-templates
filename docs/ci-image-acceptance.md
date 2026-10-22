@@ -2,7 +2,7 @@
 
 [中文](ci-image-acceptance.zh-CN.md). Large assets may transfer slowly during
 [platform steps](platform-steps.md). The explicit image path uses the repository's
-existing keyless Dockerfile CI export and the native CLI's `template create`.
+existing keyless Dockerfile CI export and the native CLI's `template from-image`.
 It records `build_mode: image`; it does not establish a step build or a local
 controller Docker build. Each template still needs genuine runtime acceptance.
 
@@ -48,7 +48,7 @@ long-term cloud keys. It first uploads an empty public-content ownership guard,
 requires the new repository to be PRIVATE, then transfers the reviewed image
 and reads back its content digest. Existing account policy is never changed.
 
-Actual `abx template create` registers the nonce-owned review tag; live digest readback before registration and after runtime requires an unchanged content digest. Official API polling requires
+Actual `abx template from-image` registers the nonce-owned review tag; live digest readback before registration and after runtime requires an unchanged content digest. Official API polling requires
 READY, and real CLI/SDK smoke precedes external HTTP acceptance. Model acceptance
 is explicitly NOT_RUN by this controller; use a separate strict image-backed
 model verifier when the owner Issue requires it. `--smoke-only` explicitly omits
@@ -91,3 +91,8 @@ The SDK timeout is sandbox lifetime, independent of build readiness and request
 timeouts. A lost creation response keeps the private recovery intent and never
 publishes acceptance. Local client close does not delete the cloud sandbox;
 the harness performs owned destruction and independent absence checks afterward.
+
+The runner verifies the actual native `template from-image --help` contract before
+archive or cloud writes. `--private-root` can place large archive/recovery files
+on private storage without moving the RAM-auth fd symlink off the native
+temporary filesystem. Auth values remain only in anonymous RAM.

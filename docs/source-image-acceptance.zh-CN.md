@@ -13,7 +13,7 @@ steps 记录单独计算；工作流、镜像构建或托管解释器通过，�
 配套 SDK 及账号凭据，运行
 `scripts/run_ci_image_e2e.py TEMPLATE --artifact-id ID --crane PATH --sandbox-create sdk`。
 凭据不会复制到 Actions。控制器验证归档、源码、SDK 和摘要，推送至本次独占的
-私有 ACR 仓库，登记真实镜像并等待 READY，通过 CLI 和 SDK 调用，再运行原模板
+私有 ACR 仓库，通过 `abx template from-image` 登记真实镜像并等待 READY，通过 CLI 和 SDK 调用，再运行原模板
 完整 HTTP 测试。独立确认沙箱、模板和镜像仓库删除后，才发布通过记录。
 
 OpenClaw 使用生成的测试令牌，Cursor 使用明确无效的合成密钥。预热服务不会继承

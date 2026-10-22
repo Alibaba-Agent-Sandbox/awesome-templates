@@ -1,0 +1,97 @@
+{
+  "provider": "opensandbox",
+  "template": "chrome",
+  "template_version": "1.0.5",
+  "verification_type": "source-image-native-opensandbox-docker-http",
+  "build_mode": "image",
+  "passed": false,
+  "cleanup_verified": true,
+  "model_acceptance": "NOT_RUN",
+  "checks": [
+    "fixed source upstream",
+    "fixed source provider",
+    "fixed source cli",
+    "fixed source sdk",
+    "actual image architecture and non-root workspace configuration",
+    "original OpenSandbox server health",
+    "actual SDK create",
+    "independent Docker identity matches exact built image",
+    "actual guest bridge endpoint",
+    "owned metadata readback",
+    "actual runtime command bytes match source",
+    "SDK observes actual non-root image user",
+    "SDK real shell Python program",
+    "SDK file write/read",
+    "SDK file removal readback",
+    "generic native interpreter explicitly unsupported",
+    "SDK starts original template service as user",
+    "original template readiness command",
+    "SDK named smoke chrome_smoke",
+    "independent SDK and Docker absence",
+    "owned provider engine stopped and reaped",
+    "owned original server process stopped"
+  ],
+  "pins": {
+    "upstream": "30348cbdfe4b9cfd49e0963617aed357a8f1ac4c",
+    "provider": "9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d",
+    "cli": "c8e8ad784323b8903505442cbc77d433a0d0367a",
+    "sdk": "33f857f5a79fd10326652e9d03f15f3621d6b848"
+  },
+  "source_commit": "8c0c783e19eba9409a1c3c925039509c67e62b67",
+  "context_sha256": {
+    "Dockerfile": "d53574df33b8665be85259764b4be89dc658724eed18e86b2b3a283f36e1fc66",
+    "template.yaml:contract": "f68a6049311a9e6acf0b76475d971fcfa30b3a819bad4ac63bb34c07b66f9bdf",
+    "requirements.lock": "1e6cfdbf5c1490be8e367beb8e922d137622ea860bc0b614d0623f6b801b9f66",
+    "browser.json": "ae5fef644f04f2edbcd55f11bca0e2503fb909c95bb351d5846fdf70bf118bed",
+    "install_browser.py": "32f5e45edb6dcb87fb29dd355835ed2f08b77b280100d0ce984e2142edf1baa6",
+    "commands.py": "6748ed5d8cc7bc5acdda631da4c7f636361b2ff728ed7c2313e5f533ab9f6ae1",
+    "worker.py": "a05e2256276e701b1e73ee87acf6164daba99cae9861368b2907c58117ed01ed",
+    "native.py": "8193deb6d66d2454f450e5991d03e8d4ea481d8091cb11797540573ace6aa91d",
+    "cdp.py": "8c39c5b59fa79522cce153ed5089f60471c90d5404fed60c46609c3c97584bdb",
+    "rfb.py": "6d645be5e03437014a2447f4997fda33e4c7abe4c6cd92e53c1e98bc3881ba2c",
+    "relay.py": "8bdd70b6df729756ac406261af2cf5fcee430c98621e06e8f8a9568449ab9844",
+    "process.py": "cb3a18a3b9e44409d638d23af391f86a47c89dd2e35f22ae1c2e53aab66f662b",
+    "lifecycle.py": "87839cfc365824229f9929a2e16e1537715b06e94b907363210784f20a298de0",
+    "UPSTREAM-NOTICE.md": "21c15b32b29d2ca1dd8132a0fc5df00b00b1a816f67c0964f16b595b6b20fbc3"
+  },
+  "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+  "workflow_run_id": 39751400293,
+  "generic_code_interpretation": "UNSUPPORTED; template named APIs tested separately",
+  "images": {
+    "template_image_id": "sha256:8c9981afc60c397fab7970ff2f8bf100e9703ab42ac6e4bc842b3039b6997bb8",
+    "execd_digest": "opensandbox/execd@sha256:6cf7dba2f21f0b536e100563d841ac58a9f31c2b0a081b7ac76796a24d6f47e2",
+    "execd_image_id": "sha256:e12d3de4b28e820bc966fe875484b35a5fad9322c4ef8a5b6751873da03bd214"
+  },
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "execution_identity": {
+    "selection": "image default; explicit user switching not qualified",
+    "probe_exit_code": 0,
+    "uid": 1000
+  },
+  "http_acceptance": {
+    "exit_code": 1,
+    "pass_count": 8,
+    "fail_count": 1,
+    "skip_count": 0,
+    "verifier_sha256": "5753cbf423f077d45c549c3fb5686b8d3071bfcd7ee3078903277096a3fab2ae",
+    "passed": false
+  },
+  "http_diagnostics": [
+    "[FAIL] native Chrome controller aborted (ModuleNotFoundError); private content omitted"
+  ],
+  "failed_check": "complete current external HTTP controller",
+  "cleanup_observations": {
+    "sdk_not_found": true,
+    "owned_docker_containers_absent": true,
+    "errors": []
+  },
+  "error_type": "AssertionError",
+  "error_message": "complete current external HTTP controller",
+  "duration_s": 14.934,
+  "controller_sha256": "fd490021bb70a434a40ee2c361744b1870ba293baa5cdde2ad29d8714e62f0e3",
+  "workflow_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39751400293",
+  "workflow_job_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39751400293/job/119732687204",
+  "workflow_job_conclusion": "failure"
+}

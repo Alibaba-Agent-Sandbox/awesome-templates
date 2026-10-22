@@ -44,3 +44,40 @@ failed receipts and rerun the native matrix. No runtime success is published
 as an overall pass from this failed workflow.
 
 Shared fixture/image/steps-controller regressions: PASS45.
+
+## Express transfer and command-surface regressions
+
+All29 missing-current-image-HTTP source images exported successfully in
+run39747846635. First two transfers failed before native runtime: the task driver
+had relocated all temporary directories to the object-backed workspace, which
+cannot create the registry-auth fd symlink (actual errno22). Add an explicit
+private archive root without moving RAM-only auth away from the native temporary
+filesystem. Keep actual auth bytes in anonymous RAM. Deleted2,110,424,490bytes of
+resolved first-transfer archives; retain small failure/ownership records.
+
+The next two attempts uploaded verified private images but the existing harness
+called removed `template create`. Actual published CLI0.4.1 and sourceCLI0.4.5
+both expose `template from-image`. Both requests were rejected by the parser
+before a registration callback; no known template/sandbox IDs and no sandbox
+create attempt. Independent official exact-alias and SDK absence checks passed;
+registry cleanup also passed. The original attempts remain FAIL. Correct the
+canonical image route and receipt operation; preflight the actual CLI help before
+archive/cloud operations. The existing image lifecycle regression failed before
+that correction. A new local-protocol-helper regression also failed before adding
+transitive dependency preflight.
+
+Verified publisher assets independently match the actual local tools:
+CLI0.4.1 SHA256766b0b10c3e4c633632dad503ae7750183a8be41974a9d048f060836f8cb0c44;
+crane0.22.1 SHA2568e75c326adb43b053cfd78b9b987663f8f4fe4557f4d3915905643f25c730992.
+Express controller SDK source:34e7e011c5569f77b7f605e65313be7498f6cf02.
+
+## Native source matrix and Chrome controller dependency failure
+
+Native run39751400293 produced real individual source API/HTTP and independent
+cleanup passes; its full matrix is still in progress. Chrome's real native image
+and shell/named smoke passed, but external HTTP failed8PASS/1FAIL because the
+controller's local CDP/RFB helpers need aiohttp and Crypto. Keep this as FAIL and
+add the existing complete hash-locked chrome/requirements.lock to the native
+controller environment. The local transitive-helper preflight failed before
+correction and passes afterward; no template source or native runtime gate was
+weakened. Native cleanup passed for the failed Chrome attempt.
