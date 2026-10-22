@@ -87,6 +87,16 @@ def inspect_opensandbox(source, receipt, root):
             and type(identity.get("uid")) is int and identity["uid"] > 0):
         return False
     checks = set(receipt.get("checks") or [])
+    commands = receipt.get('commands') or []
+    for index, smoke in enumerate(manifest.get('smoke') or []):
+        args_hash = hashlib.sha256(json.dumps(smoke.get('args', {}), sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+        for via in ['cli', 'sdk']:
+            if not any(item.get('index') == index and item.get('name') == smoke['command']
+                       and item.get('via') == via and item.get('ok') is True
+                       and item.get('args_sha256') == args_hash for item in commands if isinstance(item, dict)):
+                return False
+    if not manifest.get('smoke'):
+        return False
     required = {"independent Docker identity matches exact built image", "actual runtime command bytes match source",
                 "SDK real shell Python program", "SDK file write/read", "SDK file removal readback",
                 "complete current external HTTP controller", "independent SDK and Docker absence",

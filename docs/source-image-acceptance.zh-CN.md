@@ -21,6 +21,19 @@ OpenClaw 使用生成的测试令牌，Cursor 使用明确无效的合成密钥�
 OSWorld／Chrome 桌面操作、Cursor／Devin 原生认证拒绝路径均为必测，不能仅靠
 版本输出或跳过操作通过。缺少供应商或模型账号的 L3 测试仍明确列出。
 
+批量验收使用已成功导出的工作流运行 ID：
+
+```bash
+python scripts/run_image_e2e_batch.py --workflow-run EXPORTED_RUN_ID \
+  --crane /path/to/verified/crane --private-root /private/template-acceptance \
+  --workers 4 --output /private/template-acceptance/progress.json
+```
+
+批量控制器会跳过已匹配当前镜像输入和完整 HTTP 控制器的通过记录。
+`--templates` 指定逗号分隔的模板，`--rerun` 明确要求重跑已通过模板。
+每个工作进程独立，最多四个；清理状态不明确时停止新操作，已启动的自有测试继续清理。
+原始控制台及恢复记录留在仓库外的私有目录，仅发布脱敏进度和各模板记录。
+
 ## 原始 OpenSandbox Docker 后端
 
 手动运行同一工作流，选择模板并设置 `test_opensandbox=true`、

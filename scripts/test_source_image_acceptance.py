@@ -11,7 +11,7 @@ import source_image_acceptance as audit
 def native_fixture(tmp_path):
     source = tmp_path / "native-example"
     source.mkdir()
-    (source / "template.yaml").write_text("name: native-example\nversion: '1.0.0'\nresources: {cpu: 2, memory: 2048}\n")
+    (source / "template.yaml").write_text("name: native-example\nversion: '1.0.0'\nresources: {cpu: 2, memory: 2048}\nsmoke: [{command: hello, expect: ok}]\n")
     (source / "Dockerfile").write_text("FROM python:3.13-slim\nCOPY commands.py /home/user/app/commands.py\n")
     (source / "commands.py").write_text("# public runtime\n")
     (source / "e2e_test.py").write_text("print('[PASS] actual API')\n")
@@ -23,6 +23,8 @@ def native_fixture(tmp_path):
         "passed": True, "cleanup_verified": True, "pins": copy.deepcopy(audit.PINS),
         "workflow_job_conclusion": "success", "test_configuration": {"model_credentials_injected": False},
         "workflow_run_id": 123, "source_commit": "a" * 40,
+        "commands": [{"index": 0, "name": "hello", "via": via, "ok": True,
+                      "args_sha256": hashlib.sha256(b'{}').hexdigest()} for via in ['cli', 'sdk']],
         "context_sha256": audit.context_sha256(source), "server_sdk_commit": audit.server_commit(source),
         "controller_sha256": hashlib.sha256(controller.read_bytes()).hexdigest(),
         "images": {"template_image_id": "sha256:" + "b" * 64},
@@ -55,6 +57,7 @@ def native_fixture(tmp_path):
     ("source_commit", "main"),
     ("server_sdk_commit", "0" * 40),
     ("images.template_image_id", "mutable:tag"),
+    ("commands", [{"index": 0, "name": "hello", "via": "sdk", "ok": True}]),
 ])
 def test_native_pass_cannot_survive_missing_prerequisites(tmp_path, field, value):
     source, receipt = native_fixture(tmp_path)

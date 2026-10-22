@@ -108,3 +108,22 @@ PyPI release metadata. Hash-enforced install and pip check now PASS. Targeted
 controller/image/qualification/steps regressions PASS69; verified HTTPS includes
 a real self-signed TLS/HTTP fixture over Unix socket and an external transport
 preflight, with certificate verification enabled throughout.
+
+## API completion and additional provider publication gate
+
+Original native run39751400293 supplied45 passing source SDK/full-HTTP receipts;
+Chrome rerun39761201042 supplied its30 passing HTTP checks and independent
+cleanup. These46 API/HTTP results are preserved as historical evidence. They do
+not yet qualify `tested_on`: the template specification also requires genuine
+CLI and SDK command records. Add actual pinned-provider CLI `exec` into the
+owned guest to call every manifest named HTTP smoke, independently repeat
+through ServerClient, and rerun the native matrix with both command records.
+Do not substitute a generic `abx run` capability or weaken the specification.
+
+The portable Express batch now uses at most four isolated worker processes,
+skips current qualified inputs, and stops new operations after uncertain cleanup.
+Its regressions and current qualification/controller/prerequisite checks passed:
+`pytest -q scripts/test_source_image_acceptance.py scripts/test_template_http_acceptance.py scripts/test_image_e2e_batch.py scripts/test_ci_image_archive.py`: PASS46.
+The prerequisite ordering also preserves the existing missing-controller-module
+diagnostic before CLI availability checks. Actual image receipts remain separate
+from native OpenSandbox source acceptance and model account acceptance.

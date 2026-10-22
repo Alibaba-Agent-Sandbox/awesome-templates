@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import base64
 import contextlib
 import hashlib
 import importlib.metadata
@@ -60,6 +61,26 @@ def safe_label(value, secrets=()):
     value = re.sub(r"https?://\S+|/[A-Za-z0-9_.@%/+-]+", "[LOCATION]", value)
     value = re.sub(r"\b[0-9a-fA-F-]{16,}\b", "[ID]", value)
     return value[:300]
+
+
+def cli_named_smoke(sid, smoke, work):
+    """Use the real provider CLI exec path to call the owned template HTTP API.
+
+    This does not pretend generic `abx run` or native code.interpret is supported.
+    The CLI executes a bounded stdlib HTTP client in the actual guest; the SDK
+    and complete external HTTP controller independently exercise the same API.
+    """
+    payload = base64.b64encode(json.dumps(smoke.get('args', {})).encode()).decode()
+    code = "import base64,json,urllib.request;body=base64.b64decode(" + repr(payload) + ");request=urllib.request.Request(" + repr('http://127.0.0.1:9000/commands/' + smoke['command']) + ",data=body,headers={'Content-Type':'application/json'});response=json.load(urllib.request.urlopen(request,timeout=180));print('ABX_NATIVE_NAMED_RESULT:'+base64.b64encode(json.dumps(response['result'],ensure_ascii=False).encode()).decode())"
+    result = subprocess.run(shlex.split(os.environ['ABX_BIN']) + ['--provider', 'opensandbox', '--json',
+        'exec', sid, '--timeout', '240', '--', 'python3', '-c', code],
+        capture_output=True, text=True, timeout=270)
+    with (work / 'private-cli-named.log').open('a') as output:
+        output.write(result.stdout + '\n' + result.stderr)
+    matches = re.findall(r'ABX_NATIVE_NAMED_RESULT:([A-Za-z0-9+/=]+)', result.stdout)
+    if result.returncode or len(matches) != 1:
+        raise RuntimeError('actual provider CLI named API smoke failed; private diagnostics retained')
+    return json.loads(base64.b64decode(matches[0], validate=True))
 
 
 async def exercise(source, work, image_ref, image_id, report):
@@ -137,7 +158,15 @@ async def exercise(source, work, image_ref, image_id, report):
         base = f"http://{host}:9000"
         client = ServerClient(base, token=None, timeout=180)
         try:
-            for smoke in manifest["smoke"]:
+            for index, smoke in enumerate(manifest["smoke"]):
+                cli_value = cli_named_smoke(sid, smoke, work)
+                expected = smoke.get("expect")
+                equal = cli_value.strip() == expected.strip() if isinstance(cli_value, str) and isinstance(expected, str) else cli_value == expected
+                require(report, equal if expected is not None else cli_value is not None,
+                        "external provider CLI named smoke " + smoke["command"])
+                inputs = hashlib.sha256(json.dumps(smoke.get('args', {}), sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+                report['commands'].append({'index': index, 'name': smoke['command'], 'via': 'cli', 'ok': True,
+                    'args_sha256': inputs, 'operation': 'abx --provider opensandbox exec -> owned template HTTP named API'})
                 value = await client.commands.run(smoke["command"], timeout=180, **smoke.get("args", {}))
                 expected = smoke.get("expect")
                 if expected is not None:
@@ -145,6 +174,8 @@ async def exercise(source, work, image_ref, image_id, report):
                     require(report, equal, "SDK named smoke " + smoke["command"])
                 else:
                     require(report, value is not None, "SDK named smoke " + smoke["command"])
+                report['commands'].append({'index': index, 'name': smoke['command'], 'via': 'sdk', 'ok': True,
+                    'args_sha256': inputs, 'operation': 'ServerClient.commands.run against independently observed guest'})
         finally:
             await client.aclose()
         urls = {port: f"http://{host}:{port}" for port in manifest.get("ports", [9000])}
@@ -209,7 +240,8 @@ def main():
     manifest = yaml.safe_load((source / "template.yaml").read_text())
     report = {"provider": "opensandbox", "template": source.name, "template_version": str(manifest["version"]),
               "verification_type": "source-image-native-opensandbox-docker-http", "build_mode": "image",
-              "passed": False, "cleanup_verified": False, "model_acceptance": "NOT_RUN", "checks": [], "pins": PINS,
+              "passed": False, "cleanup_verified": False, "model_acceptance": "NOT_RUN", "checks": [], "commands": [], "pins": PINS,
+              "date": time.strftime('%Y-%m-%d', time.gmtime()),
               "source_commit": subprocess.check_output(["git", "-C", str(source), "rev-parse", "HEAD"], text=True).strip(),
               "context_sha256": context_sha256(source), "server_sdk_commit": server_commit(source),
               "workflow_run_id": os.environ.get("GITHUB_RUN_ID"),
@@ -256,6 +288,7 @@ def main():
             subprocess.run([sys.executable, "-m", "agent_sandbox.providers", "install", str(fixtures / "providers/opensandbox"), "--yes"], stdout=log, stderr=log, check=True)
             asyncio.run(exercise(source, work, args.image, image["Id"], report))
             report["versions"] = {name: importlib.metadata.version(name) for name in ["agent-sandbox-client", "agent-sandbox-server", "opensandbox-server"]}
+            report['sdk_version'] = report['versions']['agent-sandbox-client']
         except Exception as exc:
             failed = True
             report["error_type"] = type(exc).__name__

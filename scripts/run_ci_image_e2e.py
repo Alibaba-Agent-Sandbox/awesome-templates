@@ -83,12 +83,12 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,sandbox_creat
         'sandbox_create':'python-sdk-Sandbox.create' if sandbox_create=='sdk' else 'abx create',
         'model_acceptance':'NOT_RUN','http_acceptance':checks,'runtime_attempted':False}
     try:
-        check_image_cli()
         missing=controller_missing_imports(source) if http else []
         if missing:
             report['missing_controller_modules']=missing
             print('BLOCKED local HTTP controller prerequisites: '+', '.join(missing),flush=True)
             raise RuntimeError('controller prerequisites missing before artifact or cloud operation')
+        check_image_cli()
         print(source.name+': verifying exact-source CI image archive',flush=True)
         stage=private/'archive';images.download_verified(artifact_id,source,stage)
         print(source.name+': verified archive; transferring to owned private registry',flush=True)

@@ -25,6 +25,21 @@ not inherit create-time environment. OSWorld/Chrome desktop checks and native
 Cursor/Devin authentication refusal are required; version-only/skip-only success
 does not qualify them. Missing vendor/model accounts remain explicit L3 limits.
 
+For a bounded operator batch, use the successful export run ID:
+
+```bash
+python scripts/run_image_e2e_batch.py --workflow-run EXPORTED_RUN_ID \
+  --crane /path/to/verified/crane --private-root /private/template-acceptance \
+  --workers 4 --output /private/template-acceptance/progress.json
+```
+
+The runner skips sources already qualified against current image inputs and the
+complete HTTP controller. `--templates` selects explicit comma-separated names;
+`--rerun` explicitly includes already qualified sources. Workers are isolated
+processes, at most four. Unknown cleanup stops new operations while existing
+owned runs finish. Private consoles/recovery journals stay outside the checkout;
+only sanitized progress and template-local receipts are public evidence.
+
 ## Original OpenSandbox Docker
 
 Dispatch the same workflow with explicit comma-separated catalog names,
@@ -36,7 +51,8 @@ isolated Docker runner. No cloud/model account is needed.
 `scripts/opensandbox_template_e2e.py` verifies image identity and source bytes,
 creates through the Agent Sandbox SDK, observes the actual Docker container,
 checks SDK shell/files, starts the template service as the non-root user, calls
-named commands through the real SDK and runs its unchanged complete HTTP test
+every manifest smoke through the real provider CLI (`abx exec` calling the
+guest named HTTP API) and SDK, then runs its unchanged complete HTTP test
 against the real guest bridge address. It verifies SDK NotFound, Docker absence,
 engine reaping and original-server shutdown. Each selected template emits its own
 sanitized receipt; private IDs, endpoints, journals and raw logs are not uploaded.
