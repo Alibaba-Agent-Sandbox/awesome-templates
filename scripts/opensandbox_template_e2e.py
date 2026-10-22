@@ -212,6 +212,7 @@ def main():
               "passed": False, "cleanup_verified": False, "model_acceptance": "NOT_RUN", "checks": [], "pins": PINS,
               "source_commit": subprocess.check_output(["git", "-C", str(source), "rev-parse", "HEAD"], text=True).strip(),
               "context_sha256": context_sha256(source), "server_sdk_commit": server_commit(source),
+              "workflow_run_id": os.environ.get("GITHUB_RUN_ID"),
               "generic_code_interpretation": "UNSUPPORTED; template named APIs tested separately"}
     os.environ["HOME"] = str(home)
     os.environ["ABX_BIN"] = shlex.join(["node", str(fixtures / "cli/dist/bin/abx.js")])
@@ -254,7 +255,7 @@ def main():
             require(report, True, "original OpenSandbox server health")
             subprocess.run([sys.executable, "-m", "agent_sandbox.providers", "install", str(fixtures / "providers/opensandbox"), "--yes"], stdout=log, stderr=log, check=True)
             asyncio.run(exercise(source, work, args.image, image["Id"], report))
-            report["versions"] = {name: importlib.metadata.version(name) for name in ["agent-sandbox-client", "agent-sandbox-server", "opensandbox"]}
+            report["versions"] = {name: importlib.metadata.version(name) for name in ["agent-sandbox-client", "agent-sandbox-server", "opensandbox-server"]}
         except Exception as exc:
             failed = True
             report["error_type"] = type(exc).__name__

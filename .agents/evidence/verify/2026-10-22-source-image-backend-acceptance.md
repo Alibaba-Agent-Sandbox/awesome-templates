@@ -32,3 +32,15 @@ image-default identity and still requires a numeric UID greater than zero;
 explicit same-user switching on the legacy execd is not qualified. Preserve
 manifest environment defaults instead of replacing published non-secret
 settings with empty values. See the dated initial-pilot-failures JSON.
+
+## Second original OpenSandbox pilot
+
+Run39750661983 observed UID1000 and complete actual native HTTP checks21
+(python-hello) and60 (node-web); SDK/container/engine/server cleanup passed.
+The overall run correctly remains FAIL because the controller queried unused
+`opensandbox` client metadata; this fixture installs the original
+`opensandbox-server` distribution. Fix the distribution lookup, retain both
+failed receipts and rerun the native matrix. No runtime success is published
+as an overall pass from this failed workflow.
+
+Shared fixture/image/steps-controller regressions: PASS45.
