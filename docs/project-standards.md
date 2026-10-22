@@ -98,7 +98,7 @@ before the fix and passes after it. Mocks prove the controller behavior only.
 | Change | Required verification |
 | --- | --- |
 | Documentation | Local links, examples, translations, engineering record and diff checks |
-| Specification/checker/catalog | `python scripts/test_spec_tools.py` and `python scripts/check_template.py --all --strict` plus targeted regressions |
+| Specification/checker/catalog | `python scripts/test_spec_tools.py` and `python scripts/check_template.py --all` plus targeted regressions |
 | Runtime or dependency | Relevant unit/process tests and L0; image build/pin checks for image changes |
 | Provider claim | Real deployment, external CLI/SDK smoke and independent owned cleanup at the exact revision |
 | Coding/model claim | Strict real-model source edit, new artifact, unchanged original tests and independent held-out assertions |

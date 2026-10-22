@@ -139,7 +139,7 @@ def test_submitted_requires_official_ready_readback(tmp_path: Path):
     with patch.object(harness.time, "sleep"):
         assert harness.wait_for_steps_ready("synthetic", options, run)
     assert len(calls) == 2
-    assert all("--official-api" in args and "info" in args for args in calls)
+    assert all(args[:3] == ["--json", "template", "info"] and args[-1] == "synthetic" for args in calls)
 
 
 @pytest.mark.parametrize("status", ["error", "unknown", "submitted-with-no-poll", ["ready"]])

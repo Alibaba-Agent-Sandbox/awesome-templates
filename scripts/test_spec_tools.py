@@ -189,9 +189,15 @@ class CheckerTest(unittest.TestCase):
             codes = {item.code for item in check_template.check_directory(dest)}
             self.assertIn("dockerfile-cmd", codes)
 
-    def test_all_legacy_does_not_fail(self) -> None:
-        code = check_template.main(["--all", "--root", str(ROOT)])
-        self.assertEqual(code, 0)
+    def test_all_rejects_missing_spec_version(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp) / "_skeleton"
+            shutil.copytree(SKELETON, dest)
+            metadata = dest / "template.yaml"
+            data = check_template.yaml.safe_load(metadata.read_text(encoding="utf-8"))
+            data.pop("spec_version", None)
+            metadata.write_text(check_template.yaml.safe_dump(data), encoding="utf-8")
+            self.assertEqual(check_template.main(["--all", "--root", tmp]), 1)
 
     def test_git_archive_pin_is_enough(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -307,7 +313,7 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(args)
-                if "--official-api" in args:
+                if args[:3] == ["--json", "template", "list"]:
                     return Proc(0, "[]", "")
                 if "deploy" in args:
                     return Proc(1, "", "BuildModeError: base must be a mapping")
@@ -332,7 +338,7 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(list(args))
-                if "--official-api" in args:
+                if args[:3] == ["--json", "template", "list"]:
                     return Proc(0, "[]", "")
                 if "deploy" in args:
                     return Proc(0, json.dumps({"TemplateID": "tmpl-spec", "Status": "ready"}), "")
@@ -379,7 +385,7 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(list(args))
-                if "--official-api" in args:
+                if args[:3] == ["--json", "template", "list"]:
                     return Proc(0, "[]", "")
                 if "deploy" in args:
                     return Proc(0, json.dumps({"TemplateID": "tmpl-spec", "Status": "ready"}), "")
@@ -412,7 +418,7 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(list(args))
-                if "--official-api" in args:
+                if args[:3] == ["--json", "template", "list"]:
                     return Proc(0, "[]", "")
                 if "deploy" in args:
                     attempt = sum(1 for item in calls if "deploy" in item)
@@ -445,7 +451,7 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(list(args))
-                if "--official-api" in args:
+                if args[:3] == ["--json", "template", "list"]:
                     return Proc(0, "[]", "")
                 return Proc(1, "", "Docker build failed (exit 1)")
 

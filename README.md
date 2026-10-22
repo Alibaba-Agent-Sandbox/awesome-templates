@@ -204,3 +204,8 @@ Official native Crush: [crush](crush/README.md) (experimental; [alicloud-express
 [Development database template](dev-services/README.md) · experimental; [alicloud-express1.1.0 SDK image and HTTP6](dev-services/evidence/express-2026-10-20.json).
 
 [Devin original native CLI](devin/README.md): experimental1.0.1; native Express SDK/full HTTP passed; authenticated model NOT_RUN.
+
+## Current API / 当前接口
+
+Development changes remove retired project compatibility paths. Provider project preparation uses `templates.build`; the shared feature list no longer advertises the standalone image factory.
+开发变更直接删除旧项目兼容路径。提供方项目准备使用 `templates.build`，共享能力表移除独立镜像工厂。

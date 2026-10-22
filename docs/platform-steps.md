@@ -22,7 +22,7 @@ Alibaba SDK modules to be available; a verified source build supplies them.
 
 `auto` selects a Dockerfile when present. Explicit `--build steps` selects the
 manifest's steps even if a Dockerfile exists. Never combine it with
-`--acr-namespace` or `--legacy-api`. Sandbox creation does not select a build mode.
+`--acr-namespace`. Sandbox creation does not select a build mode.
 The CLI owner's [build-mode contract](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/design/template-build-modes.md)
 describes the wire expansion; actual provider instruction arguments still need
 provider verification. Express ENV uses alternating key/value arguments: for
