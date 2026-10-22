@@ -22,6 +22,7 @@ import tempfile
 import uuid
 import ci_image_archive as images
 import express_e2e as harness
+from template_http_acceptance import fixture_environment, run_controller
 
 
 def controller_missing_imports(source: Path) -> list[str]:
@@ -80,33 +81,31 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,sandbox_creat
         prior={key:os.environ.get(key) for key in ['ABX_IMAGE_REGISTRY_USERNAME','ABX_IMAGE_REGISTRY_PASSWORD','ABX_IMAGE_CRANE']}
         os.environ.update(ABX_IMAGE_REGISTRY_USERNAME=username,ABX_IMAGE_REGISTRY_PASSWORD=password,ABX_IMAGE_CRANE=crane)
         done=False
+        server_env,controller_env,fixture_proof=fixture_environment(source.name)
+        report['test_configuration']=fixture_proof
         async def endpoint(sid):
             from agent_sandbox.api.sandbox import Sandbox
             sandbox=await Sandbox.connect(sid)
             try:
                 import yaml
                 ports=yaml.safe_load((source/'template.yaml').read_text()).get('ports',[9000])
-                return {port:sandbox.network.get_url(port) for port in ports}
+                urls={port:sandbox.network.get_url(port) for port in ports}
+                if server_env:
+                    # A prewarmed image service does not inherit create-time env.
+                    # Start an owned sibling server; never alter the built image.
+                    server=await sandbox.start_server(port=9010,commands='/home/user/app/commands.py',
+                        env={**server_env,'ABX_PTY_PORT':'9011'})
+                    await server.aclose()
+                    urls[9000]=sandbox.network.get_url(9010)
+                return urls
             finally:await sandbox.close()
         def sdk(sid,command,args):
             nonlocal done
             result=harness.default_sdk(sid,command,args)
             if http and not done:
-                done=True;urls=asyncio.run(endpoint(sid));base=urls[9000];script=source/'e2e_test.py'
-                env={k:v for k,v in os.environ.items() if not any(x in k.upper() for x in ['TOKEN','API_KEY','SECRET','PASSWORD','ACCESS_KEY'])}
-                env.update(E2E_BASE_URL=base,E2E_BASE_DIR='/home/user/app',E2E_WORKSPACE='/home/user/app',E2E_RUN_LLM='0',E2E_REQUIRE_CLI='1')
-                if source.name=='code-server':env['E2E_CODE_SERVER_URL']=urls[8443]
-                if source.name=='next-app':env.update(E2E_NEXT_URL=urls[3000],E2E_VITE_URL=urls[5173])
-                if source.name=='chrome':env.update(E2E_CHROME_CDP_URL=urls[9222],E2E_CHROME_VNC_URL=urls[6080],E2E_WORKSPACE='/home/user/workspace',E2E_REQUIRE_CHROME='1')
-                result_http=harness.run_monitored([sys.executable,str(script)],env=env,idle_timeout=600,wall_timeout=600)
-                (private/'http.log').write_text(result_http.stdout+'\n'+result_http.stderr)
-                lines=(result_http.stdout+'\n'+result_http.stderr).splitlines()
-                # Only count outcomes: assertion text may contain private URLs.
-                checks.update(passed=result_http.returncode==0,exit_code=result_http.returncode,
-                    pass_count=sum(x.startswith('[PASS]') for x in lines),fail_count=sum(x.startswith('[FAIL]') for x in lines),
-                    skip_count=sum(x.startswith('[SKIP]') for x in lines),verifier_sha256=hashlib.sha256(script.read_bytes()).hexdigest())
-                if source.name=='chrome' and checks['skip_count']:raise RuntimeError('native Chrome desktop skipped; image HTTP acceptance refused')
-                if result_http.returncode:raise RuntimeError('full external HTTP acceptance failed; private log retained')
+                done=True;urls=asyncio.run(endpoint(sid))
+                checks.update(run_controller(source,urls,private,controller_env))
+                if not checks['passed']:raise RuntimeError('full external HTTP acceptance failed; private log retained')
             return result
         print(source.name+': actual native template create, READY and CLI/SDK verification',flush=True)
         try:
@@ -128,6 +127,7 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,sandbox_creat
         if status==0:
             receipt=json.loads(next((runtime/'evidence').glob('express-*.json')).read_text())
             receipt['image_provenance']=proof
+            receipt['test_configuration']=fixture_proof
     except Exception as exc:
         # Upstream exceptions can embed temporary signed locations or credentials.
         report['failure_type']=type(exc).__name__;status=1

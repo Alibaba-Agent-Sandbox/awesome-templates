@@ -15,6 +15,10 @@ on:
         description: "Export selected successful images for a separate local transfer"
         default: false
         type: boolean
+      test_opensandbox:
+        description: "Run native original OpenSandbox Docker SDK and complete template HTTP acceptance on each selected image"
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -209,6 +213,65 @@ jobs:
           subprocess.run(["docker", "run", "--rm", "--network", "none", "--entrypoint", "python3",
                           "abx-l1:" + template, "-c", code, json.dumps(payload)], check=True, timeout=240)
           PY
+
+      - uses: actions/setup-node@v4
+        if: github.event_name == 'workflow_dispatch' && inputs.test_opensandbox
+        with:
+          node-version: '22'
+      - uses: astral-sh/setup-uv@v6
+        if: github.event_name == 'workflow_dispatch' && inputs.test_opensandbox
+        with:
+          version: '0.9.5'
+      - uses: actions/checkout@v4
+        if: github.event_name == 'workflow_dispatch' && inputs.test_opensandbox
+        with:
+          repository: opensandbox-group/OpenSandbox
+          ref: 30348cbdfe4b9cfd49e0963617aed357a8f1ac4c
+          fetch-depth: 0
+          persist-credentials: false
+          path: .native-fixtures/upstream
+      - uses: actions/checkout@v4
+        if: github.event_name == 'workflow_dispatch' && inputs.test_opensandbox
+        with:
+          repository: Alibaba-Agent-Sandbox/awesome-providers
+          ref: 9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d
+          persist-credentials: false
+          path: .native-fixtures/providers
+      - uses: actions/checkout@v4
+        if: github.event_name == 'workflow_dispatch' && inputs.test_opensandbox
+        with:
+          repository: Alibaba-Agent-Sandbox/agent-sandbox
+          ref: c8e8ad784323b8903505442cbc77d433a0d0367a
+          persist-credentials: false
+          path: .native-fixtures/cli
+      - uses: actions/checkout@v4
+        if: github.event_name == 'workflow_dispatch' && inputs.test_opensandbox
+        with:
+          repository: Alibaba-Agent-Sandbox/python-sdk
+          ref: 33f857f5a79fd10326652e9d03f15f3621d6b848
+          persist-credentials: false
+          path: .native-fixtures/sdk
+      - name: Install pinned native backend and SDK controller dependencies
+        if: github.event_name == 'workflow_dispatch' && inputs.test_opensandbox
+        run: |
+          uv sync --project .native-fixtures/upstream/server --frozen --no-dev --python 3.12
+          uv pip install --python .native-fixtures/upstream/server/.venv/bin/python ./.native-fixtures/sdk/server-sdk ./.native-fixtures/sdk/client-sdk PyYAML==6.0.3 Pillow==11.3.0 pypdf==6.21.1
+          uv pip check --python .native-fixtures/upstream/server/.venv/bin/python
+          npm ci --prefix .native-fixtures/cli
+          npm run build --prefix .native-fixtures/cli
+          docker pull opensandbox/execd:v1.1.0
+      - name: Native OpenSandbox source image lifecycle SDK and complete HTTP acceptance
+        if: github.event_name == 'workflow_dispatch' && inputs.test_opensandbox
+        run: |
+          .native-fixtures/upstream/server/.venv/bin/python scripts/opensandbox_template_e2e.py "$TEMPLATE" --image "abx-l1:$TEMPLATE" --fixtures .native-fixtures --work "$RUNNER_TEMP/source-opensandbox-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --output "$RUNNER_TEMP/$TEMPLATE-opensandbox-native.json"
+      - name: Preserve sanitized native source acceptance receipt
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.test_opensandbox
+        uses: actions/upload-artifact@v4
+        with:
+          name: opensandbox-native-${{ matrix.template }}-${{ github.sha }}
+          path: ${{ runner.temp }}/${{ matrix.template }}-opensandbox-native.json
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Export selected images for a separate local registry transfer
         if: success() && ((github.event_name == 'workflow_dispatch' && inputs.export_images) || (github.event_name != 'workflow_dispatch' && (needs.plan.outputs.export_all_selected == 'true' || matrix.template == 'python-hello' || matrix.template == 'pi')))
