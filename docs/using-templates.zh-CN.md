@@ -13,7 +13,7 @@ Python 客户端和服务端须按[固定提交的双包说明](python-client-in
 
 ```bash
 git clone https://github.com/Alibaba-Agent-Sandbox/agent-sandbox.git agent-sandbox-cli
-git -C agent-sandbox-cli checkout 2eca074ae8ccf59ad3ce2ffd1382b97993eb3dc6
+git -C agent-sandbox-cli checkout 850a9bb780c44857630ac7928c2361c7be270921
 npm --prefix agent-sandbox-cli ci
 npm --prefix agent-sandbox-cli run build
 ABX_CLI_ENTRY="$(pwd)/agent-sandbox-cli/dist/bin/abx.js"
@@ -37,7 +37,7 @@ abx --version
 
 ```bash
 abx template deploy ./python-hello -y
-abx create --template <template-id> -y
+abx create <template-id> --detach
 abx sandbox command list <sandbox-id>
 abx run <sandbox-id> hello --arg name=Ada
 ```
@@ -80,7 +80,7 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/hello"   --header
 进程和清理约定查模板 README。结束后删除本次沙箱及自己拥有的模板：
 
 ```bash
-abx kill <sandbox-id> -y
+abx kill <sandbox-id>
 abx template delete <template-id> -y
 ```
 
@@ -132,16 +132,12 @@ README，并完成该厂商实际测试，再增加已验证标记。
 标准 `Sandbox` / `AsyncSandbox` 与解释器导入属于另一个契约，见
 [SDK47](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/47)。
 
-CLI 构建可能具有不同入口；不能仅凭同一个包版本号判断。运行
-`abx create --help`：若列出 `--detach`，使用下表标准语法；否则使用原生语法。
+当前极速版使用位置模板参数；本页及模板 README 的示例与上述 CLI 源码提交一致。旧版原生 CLI 的参数不同，应使用对应版本的帮助。
 
-| 操作 | 标准极速版入口 | 原生 CLI 构建 |
-| --- | --- | --- |
-| 脚本创建 | `abx create <template-id> --detach` | `abx create --template <template-id> -y` |
-| Shell | `abx exec --cwd /tmp <sandbox-id> sh -c 'echo hello'` | `abx exec <sandbox-id> --cwd /tmp -- sh -c 'echo hello'` |
-| 清理本任务沙箱 | `abx kill <sandbox-id>` | `abx kill <sandbox-id> -y` |
+| 操作 | 当前极速版入口 |
+| --- | --- |
+| 脚本创建 | `abx create <template-id> --detach` |
+| Shell | `abx exec --cwd /tmp <sandbox-id> sh -c 'echo hello'` |
+| 清理本任务沙箱 | `abx kill <sandbox-id>` |
 
-`template deploy`、命名命令 `abx run`、上传/下载仍为项目扩展。
-标准 exec 没有本地 `--stream`/`--timeout` 参数；输出默认流式传输。
-标准 create 不带 `--detach` 会打开 PTY，并在默认生命周期下退出后缩短租约。
-不要在已有原生安装上直接套用标准语法。模板源代码和对应厂商验收等级未改变。
+`template deploy`、命名命令 `abx run`、上传/下载仍为项目扩展。标准 create 不带 `--detach` 会打开 PTY。模板源代码和厂商验收等级不因示例更新而改变。

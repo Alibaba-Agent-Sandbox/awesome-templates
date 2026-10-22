@@ -16,7 +16,7 @@ Provides a reproducible headless CLI rather than requiring browser OAuth or conf
 
 ## Quick start (CLI)
 
-Check the installed entry with `abx create --help`. The complete example below uses native CLI syntax. If help lists `--detach`, use the standard Express entry: create with `abx create <template-id> --detach` and clean up with `abx kill <sandbox-id>` without `-y`; named commands through `abx run` are unchanged. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
+The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
 
 Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
 
@@ -24,7 +24,7 @@ Build/register with Express credentials and an available Docker daemon:
 
 ```bash
 abx template install ./qwen-code --registry-type local
-abx create --template <template-id> --env OPENAI_API_KEY="$OPENAI_API_KEY"
+abx create <template-id> --detach --env OPENAI_API_KEY="$OPENAI_API_KEY"
 abx run <sandbox-id> qwen_version
 abx run <sandbox-id> qwen_setup_check
 abx run <sandbox-id> qwen --json-args '{"prompt":"Fix the existing calculator.py and write REPORT.md explaining the fix; run its tests","max_turns":20,"yolo":true,"command_timeout":300}'

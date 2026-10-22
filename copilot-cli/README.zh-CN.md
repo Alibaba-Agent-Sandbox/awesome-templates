@@ -18,10 +18,10 @@
 
 ```bash
 abx template deploy ./copilot-cli -y
-abx create --template <template-id> --timeout 900 -y
+abx create <template-id> --detach --timeout 900
 abx run <sandbox-id> copilot_version
 abx run <sandbox-id> copilot_setup_check
-abx kill <sandbox-id> -y
+abx kill <sandbox-id>
 abx template delete <template-id> -y
 ```
 

@@ -283,7 +283,7 @@ When the variable is unset, anonymous calls are allowed. On Express the gateway 
 
 ## Calling a command
 
-CLI, after `abx create --template <id>`:
+CLI, after `abx create <id> --detach`:
 
 ```bash
 abx run <sandbox-id> hello --arg name=Ada
@@ -508,6 +508,8 @@ python3 scripts/express_e2e.py python-hello
 ```
 
 The current spec_version 2 `python-hello` declares its smoke and startup commands in `template.yaml`; the harness reads them directly. Preserve the caller’s native HOME.
+
+The existing native acceptance harness below targets its pinned native CLI. Its recorded cleanup flags are not current Express copy-and-paste usage; see [current CLI examples](using-templates.md#client-entry-compatibility).
 
 The remote name is a unique `e2e-<name>-<hex>` alias, not the catalog name, so a pre-existing generation-1 template is left alone. The `finally` block runs `abx kill <id> -y` and `abx template delete <id> -y` for ids this process created. It also kills the deploy process group and any `docker push` whose command line contains that alias. A wall-clock kill of only the `abx` process used to leave the push running (the push is not in the same process group unless the harness starts one).
 

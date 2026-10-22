@@ -18,14 +18,14 @@ Install the source-aware CLI and paired `agent-sandbox-client`/server as describ
 
 ```bash
 abx template deploy ./kimi-code -y
-abx create --template <template-id> -y
+abx create <template-id> --detach
 abx run <sandbox-id> kimi_version
 abx run <sandbox-id> kimi --json-args '{"prompt":"Summarize the files in the current directory.","command_timeout":120,"allow_tools":true}'
-abx kill <sandbox-id> -y
+abx kill <sandbox-id>
 abx template delete <template-id> -y
 ```
 
-Replace IDs with results from the preceding commands. These examples use the native CLI; when installed help lists `--detach`, use `abx create <template-id> --detach` and `abx kill <sandbox-id>`. Named-command invocation stays `abx run`.
+Replace IDs with results from the preceding commands. These examples use the current Express CLI. Named-command invocation uses `abx run`.
 
 ## Quick start (Python SDK)
 

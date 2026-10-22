@@ -22,11 +22,11 @@
 abx template deploy ./dev-services -y --generation 2 \
   --start-cmd 'agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py' \
   --ready-cmd 'agent-sandbox-server healthcheck --port 9000'
-abx create --template <template-id> -y
+abx create <template-id> --detach
 abx run <sandbox-id> services_self_test
 abx run <sandbox-id> services_status
 abx run <sandbox-id> services_stop
-abx kill <sandbox-id> -y
+abx kill <sandbox-id>
 abx template delete <template-id> -y
 ```
 

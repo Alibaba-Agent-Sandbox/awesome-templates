@@ -274,7 +274,7 @@ if __name__ == "__main__":
 
 ## 客户端如何调用
 
-CLI，在 `abx create --template <id>` 之后：
+CLI，在 `abx create <id> --detach` 之后：
 
 ```bash
 abx run <sandbox-id> hello --arg name=Ada
@@ -494,6 +494,8 @@ python3 scripts/express_e2e.py python-hello
 ```
 
 当前 spec_version 2 的 `python-hello` 已在 `template.yaml` 中声明 smoke 和启动命令，harness 直接读取。保留调用者原有的 HOME。
+
+下述既有原生验收脚本对应其固定原生 CLI；保留的清理参数不是当前极速版的复制用法，参见[当前 CLI 示例](using-templates.zh-CN.md#客户端入口兼容性)。
 
 远端名字是唯一的 `e2e-<name>-<hex>` 别名，不是目录里的名字，因此已有的 generation 1 模板会被留下。`finally` 对本进程创建的 id 执行 `abx kill <id> -y` 和 `abx template delete <id> -y`。它还会杀掉部署进程组，以及命令行里包含该别名的 `docker push`。以前只按墙钟杀掉 `abx` 时，推送不在同一个进程组里，会继续占着仓库连接。
 

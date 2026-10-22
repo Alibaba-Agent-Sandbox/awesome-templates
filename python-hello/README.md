@@ -19,7 +19,7 @@ Use this template to learn the named-command contract or to upload a Python prog
 
 ## Quick start (CLI)
 
-Check the installed entry with `abx create --help`. The complete example below uses native CLI syntax. If help lists `--detach`, use the standard Express entry: create with `abx create <template-id> --detach` and clean up with `abx kill <sandbox-id>` without `-y`; named commands through `abx run` are unchanged. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
+The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
 
 Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
 
@@ -27,7 +27,7 @@ Run from this repository with an already configured Express provider:
 
 ```bash
 abx template deploy ./python-hello -y
-abx create --template <template-id> -y
+abx create <template-id> --detach
 abx run <sandbox-id> hello --arg name=Ada
 abx run <sandbox-id> run_script --json-args '{"code":"print(21 * 2)"}'
 abx upload <sandbox-id> ./main.py /home/user/app/main.py
@@ -39,7 +39,7 @@ abx run <sandbox-id> test --arg path=test_main.py
 The deploy result supplies `<template-id>`; create supplies `<sandbox-id>`. `hello` returns `Hello, Ada!`; `run_script` returns `42\n`. The source and test files are your own files. `abx run` invokes a named command; use `abx exec` for shell commands. Clean up resources when finished:
 
 ```bash
-abx kill <sandbox-id> -y
+abx kill <sandbox-id>
 abx template delete <template-id> -y
 ```
 

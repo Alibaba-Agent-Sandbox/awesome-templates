@@ -16,7 +16,7 @@ Alibaba FC generation 2 基础镜像、平台 Python、基础镜像未提供 Nod
 
 ## 快速开始（CLI）
 
-先用 `abx create --help` 确认已安装入口。下面的完整示例使用原生 CLI 语法。若帮助列出 `--detach`，则是标准极速版入口：创建改用 `abx create <template-id> --detach`，清理改用 `abx kill <sandbox-id>`（不加 `-y`）；命名命令 `abx run` 不变。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
+示例使用当前极速版 CLI：`abx create <template-id> --detach` 输出沙箱 ID，`abx kill <sandbox-id>` 清理沙箱；命名命令使用 `abx run`。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
 
 运行配置：以下创建时注入密钥的示例，要求命名服务启动时实际获得这些值。预热服务请先检查模板提供的 setup 标志（如有），再按[显式进程配置](../docs/runtime-environment.zh-CN.md)操作；创建沙箱不会重新配置已运行的服务。
 
@@ -24,7 +24,7 @@ Alibaba FC generation 2 基础镜像、平台 Python、基础镜像未提供 Nod
 
 ```bash
 abx template install ./qwen-code --registry-type local
-abx create --template <template-id> --env OPENAI_API_KEY="$OPENAI_API_KEY"
+abx create <template-id> --detach --env OPENAI_API_KEY="$OPENAI_API_KEY"
 abx run <sandbox-id> qwen_version
 abx run <sandbox-id> qwen_setup_check
 abx run <sandbox-id> qwen --json-args '{"prompt":"修复现有 calculator.py，在 REPORT.md 解释修复并运行测试","max_turns":20,"yolo":true,"command_timeout":300}'

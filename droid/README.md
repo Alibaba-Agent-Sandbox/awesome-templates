@@ -31,7 +31,7 @@ abx --native template delete <owned-template-id> -y
 
 The following retained example uses the separate Factory-account command.
 
-Check the installed entry with `abx create --help`. The complete example below uses native CLI syntax. If help lists `--detach`, use the standard Express entry: create with `abx create <template-id> --detach` and clean up with `abx kill <sandbox-id>` without `-y`; named commands through `abx run` are unchanged. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
+The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
 
 Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
 
@@ -39,13 +39,13 @@ Install the CLI following the [official installation instructions](https://githu
 
 ```bash
 abx template install alibaba-agent-sandbox/awesome-templates//droid
-abx create --template <template-id>
+abx create <template-id> --detach
 abx run <sandbox-id> droid_version
 abx run <sandbox-id> droid_setup_check
 abx run <sandbox-id> droid --arg prompt='Review the existing project' --arg auto=''
 ```
 
-Use the template ID returned by installation. Inject `FACTORY_API_KEY` through your private environment configuration at sandbox creation; provider credentials and the Factory product key are separate. The final command requires the Factory key. Upload a project with the SDK files API before a coding task. Remove the sandbox with `abx kill <sandbox-id> -y` when done.
+Use the template ID returned by installation. Inject `FACTORY_API_KEY` through your private environment configuration at sandbox creation; provider credentials and the Factory product key are separate. The final command requires the Factory key. Upload a project with the SDK files API before a coding task. Remove the sandbox with `abx kill <sandbox-id>` when done.
 
 ## Quick start (Python SDK)
 

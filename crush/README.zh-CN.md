@@ -18,10 +18,10 @@
 
 ```bash
 abx template deploy ./crush -y
-abx create --template <template-id> --timeout 900 -y
+abx create <template-id> --detach --timeout 900
 abx run <sandbox-id> crush_version
 abx run <sandbox-id> crush_setup_check
-abx kill <sandbox-id> -y
+abx kill <sandbox-id>
 abx template delete <template-id> -y
 ```
 

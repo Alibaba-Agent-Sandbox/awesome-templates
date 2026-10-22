@@ -18,13 +18,13 @@ Native CLI syntax; see [entry compatibility](../docs/using-templates.md#client-e
 
 ```bash
 abx template deploy ./apply-patch -y
-abx create --template <template-id> --timeout 300 -y
+abx create <template-id> --detach --timeout 300
 abx run <sandbox-id> apply_patch_smoke
 abx run <sandbox-id> apply_patch --arg 'patch_text=*** Begin Patch
 *** Add File: hello.txt
 +hello
 *** End Patch'
-abx kill <sandbox-id> -y
+abx kill <sandbox-id>
 abx template delete <template-id> -y
 ```
 

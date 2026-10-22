@@ -19,7 +19,7 @@
 
 ## 快速开始（CLI）
 
-先用 `abx create --help` 确认已安装入口。下面的完整示例使用原生 CLI 语法。若帮助列出 `--detach`，则是标准极速版入口：创建改用 `abx create <template-id> --detach`，清理改用 `abx kill <sandbox-id>`（不加 `-y`）；命名命令 `abx run` 不变。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
+示例使用当前极速版 CLI：`abx create <template-id> --detach` 输出沙箱 ID，`abx kill <sandbox-id>` 清理沙箱；命名命令使用 `abx run`。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
 
 运行配置：SDK 示例显式启动并配置新的命名服务。预热进程不会自动获得后续创建时设置，参见[显式进程配置](../docs/runtime-environment.zh-CN.md)。
 
@@ -27,11 +27,11 @@
 
 ```bash
 abx template install ./openclaw --registry-type local
-abx create --template <template-id>
+abx create <template-id> --detach
 abx run <sandbox-id> gateway_status
 python3 openclaw/sdk_e2e_test.py --sandbox-id <sandbox-id>
 abx run <sandbox-id> gateway_status
-abx kill <sandbox-id> -y
+abx kill <sandbox-id>
 ```
 
 默认只监听 `loopback`。确需沙箱端口转发时才使用 `bind=lan`。返回的 URL 是沙箱内部地址；外部访问使用 provider 的端口 URL 并携带网关 token。它与保护 9000 端口的 `ABX_SERVER_TOKEN` 是两个独立凭据。

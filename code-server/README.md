@@ -18,13 +18,13 @@ Native CLI syntax; see [entry compatibility](../docs/using-templates.md#client-e
 
 ```bash
 abx template deploy ./code-server -y
-abx create --template <template-id> --timeout 300 -y
+abx create <template-id> --detach --timeout 300
 abx run <sandbox-id> code_server_version
 abx run <sandbox-id> code_server_self_test
 abx run <sandbox-id> code_server_start --arg 'password=<your-private-12-byte-or-longer-password>'
 abx run <sandbox-id> code_server_status
 abx run <sandbox-id> code_server_stop
-abx kill <sandbox-id> -y
+abx kill <sandbox-id>
 abx template delete <template-id> -y
 ```
 
