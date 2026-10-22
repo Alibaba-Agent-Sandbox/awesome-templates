@@ -237,4 +237,6 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Original managed OpenSandbox native acceptance](notes/proposed/feature/2026-10-21-opensandbox-native-acceptance.md) · [verification](evidence/verify/2026-10-21-opensandbox-native-acceptance.md)
 
-- [Remove retired project compatibility](notes/proposed/architecture/2026-10-22-remove-legacy-compatibility.md) · [verification](evidence/verify/2026-10-22-remove-legacy-compatibility.md)
+- [Remove retired project compatibility](notes/implemented/architecture/2026-10-22-remove-legacy-compatibility.md) · [verification](evidence/verify/2026-10-22-remove-legacy-compatibility.md)
+
+- [Compatibility cleanup remote acceptance](evidence/verify/2026-10-22-remove-legacy-acceptance.md)
