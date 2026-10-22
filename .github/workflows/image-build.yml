@@ -256,7 +256,7 @@ jobs:
         run: |
           uv sync --project .native-fixtures/upstream/server --frozen --no-dev --python 3.12
           uv pip install --python .native-fixtures/upstream/server/.venv/bin/python ./.native-fixtures/sdk/server-sdk ./.native-fixtures/sdk/client-sdk PyYAML==6.0.3 Pillow==11.3.0 pypdf==6.21.1
-          uv pip install --python .native-fixtures/upstream/server/.venv/bin/python --require-hashes -r chrome/requirements.lock
+          uv pip install --python .native-fixtures/upstream/server/.venv/bin/python --require-hashes -r scripts/requirements-native-http.txt
           uv pip check --python .native-fixtures/upstream/server/.venv/bin/python
           npm ci --prefix .native-fixtures/cli
           npm run build --prefix .native-fixtures/cli

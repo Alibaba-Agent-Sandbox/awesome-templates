@@ -39,7 +39,8 @@ def fixture_environment(name: str) -> tuple[dict[str, str], dict[str, str], dict
 def controller_environment(source: Path, urls: dict[int, str], fixture: dict[str, str]) -> dict[str, str]:
     # An allowlist prevents unrelated operator keys/config from reaching tests.
     env = {key: value for key, value in os.environ.items()
-           if key in {"PATH", "LANG", "LC_ALL", "SYSTEMROOT", "TMPDIR", "PYTHONPATH"}}
+           if key in {"PATH", "LANG", "LC_ALL", "SYSTEMROOT", "TMPDIR", "PYTHONPATH",
+                      "SSL_CERT_FILE", "SSL_CERT_DIR"}}
     env.update(E2E_BASE_URL=urls[9000], E2E_BASE_DIR="/home/user/app",
                E2E_WORKSPACE="/home/user/app", E2E_RUN_LLM="0", E2E_REQUIRE_LLM="0",
                E2E_REQUIRE_CLI="1", E2E_REQUIRE_OCR="1", E2E_REQUIRE_DATABASES="1",

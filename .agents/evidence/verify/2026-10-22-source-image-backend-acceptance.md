@@ -81,3 +81,21 @@ add the existing complete hash-locked chrome/requirements.lock to the native
 controller environment. The local transitive-helper preflight failed before
 correction and passes afterward; no template source or native runtime gate was
 weakened. Native cleanup passed for the failed Chrome attempt.
+
+## Transport and conditional dependency corrections
+
+Actual Express image registration, SDK creation and CLI/native SDK smoke now
+work through public `template from-image`. The full HTTP child lost the
+operator-configured SSL_CERT_FILE, causing real certificate verification errors.
+Preserve only non-secret SSL_CERT_FILE/SSL_CERT_DIR alongside the existing
+controller allowlist; never disable certificate verification. A real TLS/HTTP
+subprocess fixture using a Unix socket passes after correction. The TCP fixture
+was affected by transparent loopback TLS interception; explicit Content-Length
+avoids TLS EOF ambiguity in the Unix-socket fixture. Public external HTTPS
+verification with the configured CA also passed without an API credential.
+
+Chrome rerun39756780475 stopped before native runtime installation: strict hash
+mode needs Python3.12's conditional typing-extensions dependency, absent from
+the browser lock generated for Python3.13. Add a supplemental lock using the
+exact version and both hashes from original upstream server/uv.lock at30348cbd.
+Keep strict hash verification and uv pip check; no dependency gate was bypassed.

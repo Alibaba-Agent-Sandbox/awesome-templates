@@ -1,0 +1,8 @@
+# Native HTTP controller dependencies; the browser lock targets Python3.13.
+# Python3.12 additionally requires aiosignal typing-extensions. This exact pin
+# and hashes come from original OpenSandbox server/uv.lock at30348cbdfe4b9cfd49e0963617aed357a8f1ac4c.
+-r ../chrome/requirements.lock
+
+typing-extensions==4.15.0 \
+    --hash=sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466 \
+    --hash=sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548

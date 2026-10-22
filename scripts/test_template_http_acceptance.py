@@ -49,3 +49,46 @@ def test_unrelated_secret_cannot_be_forwarded_as_a_fixture(tmp_path):
     with pytest.raises(ValueError, match="only owned"):
         controller_environment(tmp_path, {9000: "http://synthetic.invalid"},
                                {"OPENAI_API_KEY": "synthetic-secret"})
+
+
+def test_actual_https_controller_retains_verification_with_configured_ca(tmp_path, monkeypatch):
+    import http.server
+    import socketserver
+    import ssl
+    import subprocess
+    import threading
+    cert, key = tmp_path / 'fixture-cert.pem', tmp_path / 'fixture-key.pem'
+    subprocess.run(['openssl', 'req', '-x509', '-newkey', 'rsa:2048', '-nodes',
+        '-keyout', str(key), '-out', str(cert), '-days', '1', '-subj', '/CN=localhost',
+        '-addext', 'subjectAltName=DNS:localhost,IP:127.0.0.1'],
+        check=True, capture_output=True)
+    key.chmod(0o600)
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200)
+            self.send_header('Content-Length', str(len(b'owned TLS health')))
+            self.end_headers()
+            self.wfile.write(b'owned TLS health')
+
+        def log_message(self, *args):
+            pass
+
+    # A Unix socket keeps this real TLS fixture independent of transparent
+    # network proxies that replace certificates on loopback TCP connections.
+    socket_path = tmp_path / 'tls.sock'
+    server = socketserver.UnixStreamServer(str(socket_path), Handler)
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context.load_cert_chain(cert, key)
+    server.socket = context.wrap_socket(server.socket, server_side=True)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        monkeypatch.setenv('SSL_CERT_FILE', str(cert))
+        source = controller(tmp_path, 'tls-example', "import os,httpx\ntransport=httpx.HTTPTransport(uds=" + repr(str(socket_path)) + ")\nwith httpx.Client(transport=transport) as client:\n r=client.get(os.environ['E2E_BASE_URL']+'/health');assert r.status_code==200 and r.content==b'owned TLS health'\nprint('[PASS] verified actual HTTPS health')\n")
+        proof = run_controller(source, {9000: 'https://localhost'}, tmp_path, {})
+        assert proof['passed'] and proof['pass_count'] == 1
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
