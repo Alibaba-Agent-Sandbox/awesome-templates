@@ -807,7 +807,7 @@ def save_intent(path: Path, intent: dict[str, Any]) -> None:
 
 def official_templates(run: Runner, alias: str) -> list[str]:
     """Use the existing official CLI list API and exact unique-name matching."""
-    proc = run(["--json", "template", "list", "--official-api"], 120)
+    proc = run(["--json", "template", "list"], 120)
     if proc.returncode:
         raise RuntimeError("official template reconciliation failed")
     data = json.loads(proc.stdout)
@@ -892,7 +892,7 @@ def wait_for_steps_ready(template_id: str, options: Options, run: Runner,
     """submitted is not acceptance: independently poll official GetTemplate."""
     deadline = time.monotonic() + options.deploy_timeout
     while time.monotonic() < deadline:
-        proc = run(["--json", "template", "info", template_id, "--official-api"],
+        proc = run(["--json", "template", "info", template_id],
                    min(120, max(1, deadline - time.monotonic())))
         payload = _last_json(proc)
         if diagnostic_path is not None:

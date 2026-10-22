@@ -13,7 +13,7 @@ def test_sdk_creation_uses_owned_ready_template_and_keeps_cli_smoke_cleanup():
         events=[]
         def runner(args,timeout):
             events.append(args)
-            if '--official-api' in args:return h.Proc(0,'[]','')
+            if args[:3] == ['--json','template','list']:return h.Proc(0,'[]','')
             if 'deploy' in args:return h.Proc(0,'{"TemplateID":"owned-template","Status":"ready"}','')
             if args[:2]==['--json','create']:raise AssertionError('CLI creation selected despite explicit SDK route')
             if 'run' in args:return h.Proc(0,'{"result":"ok"}','')
@@ -37,7 +37,7 @@ def test_sdk_create_failure_stays_ambiguous_without_acceptance():
     with case() as (project, options, intents):
         options=h.build_options([str(project),'--alias','e2e-cleanup-regression','--sandbox-create','sdk'])
         def runner(args,timeout):
-            if '--official-api' in args:return h.Proc(0,'[]','')
+            if args[:3] == ['--json','template','list']:return h.Proc(0,'[]','')
             if 'deploy' in args:return h.Proc(0,'{"TemplateID":"owned-template","Status":"ready"}','')
             raise AssertionError('unknown creation must reconcile before mutation')
         with patch.object(h,'default_sdk_create',side_effect=TimeoutError('private upstream details')),patch.object(h,'recover_owned',return_value=False):

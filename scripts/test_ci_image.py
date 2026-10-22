@@ -53,7 +53,7 @@ def test_real_image_entry_polls_ready_and_keeps_cli_smoke_cleanup(tmp_path,monke
     def run(argv,timeout):
         calls.append(argv)
         if argv[1:3]==['template','info']:return h.Proc(0,'{"status":{"state":"ready"}}','')
-        if '--official-api' in argv:return h.Proc(0,'[]','')
+        if argv[:3] == ['--json','template','list']:return h.Proc(0,'[]','')
         if argv[1:3]==['template','create']:
             assert '--no-envd-inject' in argv and '--cpu' in argv and '--memory' in argv
             assert IMAGE in argv and '--registry-password=synthetic-private-password' in argv
@@ -80,7 +80,7 @@ def test_failed_image_readiness_never_creates_sandbox_or_receipt(tmp_path,monkey
     monkeypatch.setenv('ABX_IMAGE_REGISTRY_USERNAME','synthetic-user');monkeypatch.setenv('ABX_IMAGE_REGISTRY_PASSWORD','synthetic-private-password')
     monkeypatch.setattr(h,'image_digest',lambda ref:proof['pushed_image_digest'])
     def run(argv,timeout):
-        if '--official-api' in argv:return h.Proc(0,'[]','')
+        if argv[:3] == ['--json','template','list']:return h.Proc(0,'[]','')
         if argv[1:3]==['template','create']:return h.Proc(0,'{"TemplateID":"owned-image-template"}','')
         if 'create' in argv:pytest.fail('sandbox cannot precede image READY')
         return h.Proc(0,'','')
@@ -104,7 +104,7 @@ def test_tag_changed_before_registration_is_rejected_without_mutation(tmp_path,m
     monkeypatch.setenv('ABX_IMAGE_REGISTRY_USERNAME','synthetic-user');monkeypatch.setenv('ABX_IMAGE_REGISTRY_PASSWORD','synthetic-password')
     monkeypatch.setattr(h,'image_digest',lambda ref:'sha256:'+'0'*64)
     def run(argv,timeout):
-        if '--official-api' in argv:return h.Proc(0,'[]','')
+        if argv[:3] == ['--json','template','list']:return h.Proc(0,'[]','')
         pytest.fail('no cloud mutation before digest match')
     assert h.execute(options,runner=run,sdk=lambda *_:'ok',verify=lambda *_:True)==1
     assert not (source/'evidence').exists()
@@ -118,7 +118,7 @@ def test_changed_tag_after_runtime_cannot_publish_even_when_cleanup_succeeds(tmp
     monkeypatch.setattr(h,'image_digest',lambda ref:next(digests))
     def run(argv,timeout):
         if argv[1:3]==['template','info']:return h.Proc(0,'{"status":{"state":"ready"}}','')
-        if '--official-api' in argv:return h.Proc(0,'[]','')
+        if argv[:3] == ['--json','template','list']:return h.Proc(0,'[]','')
         if argv[1:3]==['template','create']:return h.Proc(0,'{"TemplateID":"owned-template"}','')
         if 'create' in argv:return h.Proc(0,'{"ID":"owned-sandbox"}','')
         if 'run' in argv:return h.Proc(0,'{"result":"ok"}','')

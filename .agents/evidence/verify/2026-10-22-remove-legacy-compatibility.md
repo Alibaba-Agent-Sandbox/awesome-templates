@@ -25,3 +25,7 @@ Required remote CI, review and merge are not established by local results. Initi
 ## Cleanup
 
 Local fixtures use owned temporary resources. The Python cloud fixture tracks and cleans its own sandbox resources. No raw credentials or sensitive logs are included. Native checks that did not execute are not passes.
+
+## Remote CI correction
+
+The first local-e2e workflow still invoked the removed `--strict` selector and failed at checker invocation. The workflow now invokes `--all` directly. The current Express harness and its fixtures use plain official template list/info commands without removed API selector flags. Their unit tests are rerun before the follow-up commit. Immutable, explicitly authorized historical review pins remain unchanged.

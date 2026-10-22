@@ -313,7 +313,7 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(args)
-                if "--official-api" in args:
+                if args[:3] == ["--json", "template", "list"]:
                     return Proc(0, "[]", "")
                 if "deploy" in args:
                     return Proc(1, "", "BuildModeError: base must be a mapping")
@@ -338,7 +338,7 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(list(args))
-                if "--official-api" in args:
+                if args[:3] == ["--json", "template", "list"]:
                     return Proc(0, "[]", "")
                 if "deploy" in args:
                     return Proc(0, json.dumps({"TemplateID": "tmpl-spec", "Status": "ready"}), "")
@@ -385,7 +385,7 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(list(args))
-                if "--official-api" in args:
+                if args[:3] == ["--json", "template", "list"]:
                     return Proc(0, "[]", "")
                 if "deploy" in args:
                     return Proc(0, json.dumps({"TemplateID": "tmpl-spec", "Status": "ready"}), "")
@@ -418,7 +418,7 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(list(args))
-                if "--official-api" in args:
+                if args[:3] == ["--json", "template", "list"]:
                     return Proc(0, "[]", "")
                 if "deploy" in args:
                     attempt = sum(1 for item in calls if "deploy" in item)
@@ -451,7 +451,7 @@ class HarnessTest(unittest.TestCase):
             def runner(args: list[str], timeout: float) -> Proc:
                 del timeout
                 calls.append(list(args))
-                if "--official-api" in args:
+                if args[:3] == ["--json", "template", "list"]:
                     return Proc(0, "[]", "")
                 return Proc(1, "", "Docker build failed (exit 1)")
 
