@@ -18,10 +18,10 @@ Use the native CLI syntax (`abx create --help` lists `--template`):
 
 ```bash
 abx template deploy ./polyglot-toolchain -y
-abx create --template <template-id> --timeout 300 -y
+abx create <template-id> --detach --timeout 300
 abx run <sandbox-id> toolchain_versions
 abx run <sandbox-id> toolchain_smoke
-abx kill <sandbox-id> -y
+abx kill <sandbox-id>
 abx template delete <template-id> -y
 ```
 

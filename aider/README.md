@@ -25,12 +25,12 @@ selected-file workflow, not a general replacement for interactive Aider.
 
 ## Quick start (CLI)
 
-Check the installed entry with `abx create --help`. The complete example below uses native CLI syntax. If help lists `--detach`, use the standard Express entry: create with `abx create <template-id> --detach` and clean up with `abx kill <sandbox-id>` without `-y`; named commands through `abx run` are unchanged. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
+The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
 
 ```bash
 abx template install alibaba-agent-sandbox/awesome-templates//aider
 abx template deploy ./aider -y
-abx create --template <template-id>
+abx create <template-id> --detach
 abx exec <sandbox-id> --background --env AIDER_API_KEY=REPLACE_ME \
   --env AIDER_BASE_URL=https://example.invalid/v1 --env AIDER_MODEL=your-model \
   -- agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py

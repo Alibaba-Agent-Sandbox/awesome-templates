@@ -16,7 +16,7 @@ For a reproducible CLI source build with Node 20 or 22:
 
 ```bash
 git clone https://github.com/Alibaba-Agent-Sandbox/agent-sandbox.git agent-sandbox-cli
-git -C agent-sandbox-cli checkout 2eca074ae8ccf59ad3ce2ffd1382b97993eb3dc6
+git -C agent-sandbox-cli checkout 850a9bb780c44857630ac7928c2361c7be270921
 npm --prefix agent-sandbox-cli ci
 npm --prefix agent-sandbox-cli run build
 ABX_CLI_ENTRY="$(pwd)/agent-sandbox-cli/dist/bin/abx.js"
@@ -42,7 +42,7 @@ folder. For `python-hello`:
 
 ```bash
 abx template deploy ./python-hello -y
-abx create --template <template-id> -y
+abx create <template-id> --detach
 abx sandbox command list <sandbox-id>
 abx run <sandbox-id> hello --arg name=Ada
 ```
@@ -90,7 +90,7 @@ timeouts, processes and cleanup. Delete the created sandbox and only the templat
 you own when finished:
 
 ```bash
-abx kill <sandbox-id> -y
+abx kill <sandbox-id>
 abx template delete <template-id> -y
 ```
 
@@ -148,18 +148,12 @@ accepted main and the standard-client candidate, avoiding await on the synchrono
 root Sandbox. Standard Sandbox/AsyncSandbox and interpreter imports have a separate
 contract: [SDK47](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/47).
 
-CLI builds may expose different entries even with the same package version. Run
-`abx create --help`: if it lists `--detach`, use the standard column; otherwise use
-the native column.
+The current Express entry takes a positional template. This guide and template README examples target the CLI source revision above. Older native builds have different flags; consult the help shipped with that revision.
 
-| Operation | Standard Express entry | Native CLI build |
-| --- | --- | --- |
-| Scripted create | `abx create <template-id> --detach` | `abx create --template <template-id> -y` |
-| Shell | `abx exec --cwd /tmp <sandbox-id> sh -c 'echo hello'` | `abx exec <sandbox-id> --cwd /tmp -- sh -c 'echo hello'` |
-| Owned cleanup | `abx kill <sandbox-id>` | `abx kill <sandbox-id> -y` |
+| Operation | Current Express entry |
+| --- | --- |
+| Scripted create | `abx create <template-id> --detach` |
+| Shell | `abx exec --cwd /tmp <sandbox-id> sh -c 'echo hello'` |
+| Owned cleanup | `abx kill <sandbox-id>` |
 
-Template deploy, named commands through abx run, upload and download remain project
-extensions. Standard exec streams by default and has no local --stream/--timeout
-option. Standard create without --detach opens a PTY and shortens its default lease
-after exit. Keep native syntax on existing native installations. Template sources
-and provider acceptance tiers do not change with this documentation update.
+Template deploy, named commands through `abx run`, upload and download remain project extensions. Standard create without `--detach` opens a PTY. These documentation corrections do not change template sources or provider acceptance tiers.

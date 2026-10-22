@@ -29,9 +29,9 @@
 Native CLI0.3 syntax (check `abx create --help`):
 
 ```bash
-abx create --template base --timeout 180 -y
+abx create base --detach --timeout 180
 abx exec <sandbox-id> -- python3 -c 'print(6*7)'
-abx kill <sandbox-id> -y
+abx kill <sandbox-id>
 ```
 
 标准入口差异见[兼容性](../../using-templates.md#client-entry-compatibility)。不删除提供方托管模板定义。

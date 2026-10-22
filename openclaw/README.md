@@ -19,7 +19,7 @@ A gateway is a long-lived server. Running `openclaw start` synchronously is neit
 
 ## Quick start (CLI)
 
-Check the installed entry with `abx create --help`. The complete example below uses native CLI syntax. If help lists `--detach`, use the standard Express entry: create with `abx create <template-id> --detach` and clean up with `abx kill <sandbox-id>` without `-y`; named commands through `abx run` are unchanged. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
+The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
 
 Runtime configuration: the SDK examples explicitly configure a new command server. A prewarmed process does not adopt later create-time settings; see [explicit process configuration](../docs/runtime-environment.md).
 
@@ -27,11 +27,11 @@ Use an installed `abx` with your provider configuration. The SDK verification co
 
 ```bash
 abx template install ./openclaw --registry-type local
-abx create --template <template-id>
+abx create <template-id> --detach
 abx run <sandbox-id> gateway_status
 python3 openclaw/sdk_e2e_test.py --sandbox-id <sandbox-id>
 abx run <sandbox-id> gateway_status
-abx kill <sandbox-id> -y
+abx kill <sandbox-id>
 ```
 
 `loopback` is the default. Use `bind=lan` only when you need sandbox port forwarding. Returned URLs are inside the sandbox; use the provider's port URL for external access and authenticate using the gateway token. Do not confuse it with `ABX_SERVER_TOKEN` for port 9000.

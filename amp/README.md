@@ -36,7 +36,7 @@ A generation-2 sandbox can run a pinned Amp CLI without a TUI, inspect the versi
 
 ## Quick start (CLI)
 
-Check the installed entry with `abx create --help`. The complete example below uses native CLI syntax. If help lists `--detach`, use the standard Express entry: create with `abx create <template-id> --detach` and clean up with `abx kill <sandbox-id>` without `-y`; named commands through `abx run` are unchanged. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
+The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
 
 Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
 
@@ -46,7 +46,7 @@ From a checkout of this repository, with Express credentials in the environment:
 abx template deploy ./amp -y --generation 2 \
   --start-cmd 'agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py' \
   --ready-cmd 'agent-sandbox-server healthcheck --port 9000'
-abx create --template <template-id> -y
+abx create <template-id> --detach
 abx run <sandbox-id> amp_version
 abx run <sandbox-id> amp_setup_check
 ```
@@ -54,7 +54,7 @@ abx run <sandbox-id> amp_setup_check
 `template.yaml` already stores `generation`, `start_cmd`, and `ready_cmd`. A live turn needs an Amp access token. Pass it at create time. Do not bake it into the image:
 
 ```bash
-abx create --template <template-id> -y --env AMP_API_KEY=<amp-access-token>
+abx create <template-id> --detach --env AMP_API_KEY=<amp-access-token>
 abx run <sandbox-id> amp_execute --arg prompt='Reply with exactly: ABX_E2E_OK'
 ```
 
@@ -67,7 +67,7 @@ abx run <sandbox-id> amp_execute --json-args '{"prompt":"Reply with exactly: ABX
 Remove the sandbox and the template when you are done:
 
 ```bash
-abx kill <sandbox-id> -y
+abx kill <sandbox-id>
 abx template delete <template-id> -y
 ```
 

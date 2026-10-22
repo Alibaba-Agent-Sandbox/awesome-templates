@@ -18,14 +18,14 @@
 
 ```bash
 abx template deploy ./kimi-code -y
-abx create --template <template-id> -y
+abx create <template-id> --detach
 abx run <sandbox-id> kimi_version
 abx run <sandbox-id> kimi --json-args '{"prompt":"Summarize the files in the current directory.","command_timeout":120,"allow_tools":true}'
-abx kill <sandbox-id> -y
+abx kill <sandbox-id>
 abx template delete <template-id> -y
 ```
 
-替换上一命令返回的 ID。这是原生 CLI；若帮助显示 detach，使用 `abx create <template-id> --detach` 和不带 -y 的 kill。命名命令仍使用 abx run。
+替换上一命令返回的 ID。示例使用当前极速版 CLI，命名命令使用 `abx run`。
 
 ## 快速开始（Python SDK）
 

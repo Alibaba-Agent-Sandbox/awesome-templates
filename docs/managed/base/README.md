@@ -29,9 +29,9 @@ Use shell, files and SDK code execution without building a user image.
 Native CLI0.3 syntax (check `abx create --help`):
 
 ```bash
-abx create --template base --timeout 180 -y
+abx create base --detach --timeout 180
 abx exec <sandbox-id> -- python3 -c 'print(6*7)'
-abx kill <sandbox-id> -y
+abx kill <sandbox-id>
 ```
 
 See [client entry compatibility](../../using-templates.md#client-entry-compatibility) for the standard CLI. Delete only your sandbox; do not delete the provider-managed template definition.

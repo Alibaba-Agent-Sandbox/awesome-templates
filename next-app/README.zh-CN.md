@@ -22,12 +22,12 @@
 abx template deploy ./next-app -y --generation 2 \
   --start-cmd 'agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py' \
   --ready-cmd 'agent-sandbox-server healthcheck --port 9000'
-abx create --template <template-id> -y
+abx create <template-id> --detach
 abx run <sandbox-id> scaffold --arg kind=next --arg path=preview-app
 abx run <sandbox-id> dev_start --arg kind=next --arg path=preview-app
 abx run <sandbox-id> dev_logs
 abx run <sandbox-id> dev_stop
-abx kill <sandbox-id> -y
+abx kill <sandbox-id>
 abx template delete <template-id> -y
 ```
 

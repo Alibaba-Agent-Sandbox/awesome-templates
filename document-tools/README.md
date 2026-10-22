@@ -20,14 +20,14 @@ Deliver the bounded text conversion requested by [Issue 55](https://github.com/A
 
 ## Quick start (CLI)
 
-Check the installed entry with `abx create --help`. The complete example below uses native CLI syntax. If help lists `--detach`, use the standard Express entry: create with `abx create <template-id> --detach` and clean up with `abx kill <sandbox-id>` without `-y`; named commands through `abx run` are unchanged. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
+The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
 
 ```bash
 abx template deploy ./document-tools -y --generation 2
-abx create --template <template-id> -y
+abx create <template-id> --detach
 abx run <sandbox-id> document_smoke
 abx run <sandbox-id> convert --arg input_path=report.md --arg output_name=report.docx
-abx kill <sandbox-id> -y
+abx kill <sandbox-id>
 abx template delete <template-id> -y
 ```
 

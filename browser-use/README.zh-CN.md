@@ -18,11 +18,11 @@ FC v0.0.49、generation2、非root user、Linux x86_64、Python3.13。[requireme
 
 ```bash
 abx template deploy ./browser-use -y
-abx create --template <template-id> --timeout 900 -y
+abx create <template-id> --detach --timeout 900
 abx run <sandbox-id> browser_use_version
 abx run <sandbox-id> browser_use_setup_check
 abx run <sandbox-id> browser_use_self_test
-abx kill <sandbox-id> -y
+abx kill <sandbox-id>
 abx template delete <template-id> -y
 ```
 
