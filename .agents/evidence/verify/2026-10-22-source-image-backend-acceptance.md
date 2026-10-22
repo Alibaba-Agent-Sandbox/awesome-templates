@@ -96,6 +96,15 @@ verification with the configured CA also passed without an API credential.
 
 Chrome rerun39756780475 stopped before native runtime installation: strict hash
 mode needs Python3.12's conditional typing-extensions dependency, absent from
-the browser lock generated for Python3.13. Add a supplemental lock using the
-exact version and both hashes from original upstream server/uv.lock at30348cbd.
+the browser lock generated for Python3.13. Add a supplemental lock for the paired SDK-compatible conditional dependency,
+using publisher release hashes.
 Keep strict hash verification and uv pip check; no dependency gate was bypassed.
+
+The initial supplemental upstream-server typing4.15.0 pin conflicts with the
+paired SDK's Pydantic2.14/anyio dependencies requiring>=4.16.0. Local dependency
+validation caught it; cancelled the superseded native dispatch before backend
+creation. The corrected4.16.0 pin and both file hashes come from the publisher's
+PyPI release metadata. Hash-enforced install and pip check now PASS. Targeted
+controller/image/qualification/steps regressions PASS69; verified HTTPS includes
+a real self-signed TLS/HTTP fixture over Unix socket and an external transport
+preflight, with certificate verification enabled throughout.

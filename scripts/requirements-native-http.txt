@@ -1,8 +1,8 @@
-# Native HTTP controller dependencies; the browser lock targets Python3.13.
-# Python3.12 additionally requires aiosignal typing-extensions. This exact pin
-# and hashes come from original OpenSandbox server/uv.lock at30348cbdfe4b9cfd49e0963617aed357a8f1ac4c.
+# Native HTTP controller dependencies; browser lock targets Python3.13.
+# Python3.12 needs conditional typing-extensions; paired SDK Pydantic2.14
+# and anyio require >=4.16.0. Hashes are publisher PyPI4.16.0 release files.
 -r ../chrome/requirements.lock
 
-typing-extensions==4.15.0 \
-    --hash=sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466 \
-    --hash=sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548
+typing-extensions==4.16.0 \
+    --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8 \
+    --hash=sha256:dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5
