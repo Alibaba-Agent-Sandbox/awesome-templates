@@ -1,0 +1,53 @@
+{
+  "template": "qoder",
+  "provider": "alicloud-express",
+  "build_mode": "image",
+  "verification_type": "ci-image-backed-external-http",
+  "passed": true,
+  "registry_cleanup_verified": true,
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "model_acceptance": "NOT_RUN",
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 9,
+    "fail_count": 0,
+    "skip_count": 1,
+    "verifier_sha256": "7b6ce5e25a0ccee0ee9260a0a6fd17848e0d24713ba713e8156b6806ba126213",
+    "passed": true
+  },
+  "runtime_attempted": true,
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "cleanup_verified": true,
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "qoder",
+    "template_version": "1.1.1",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "checkout_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "workflow_run_id": "39747846635",
+    "artifact_id": "12413387291",
+    "archive_sha256": "a0fe5eb4bab15490066d5c3d79f4758f941fda64590f8df91a5f9b27387176ee",
+    "image_config_sha256": "0af1656df82d9d0ca7f1ab78f5f1208d363d7a653e470657b688a99ca0740133",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "d0719110e990a002d20506ed30a359f05fa3bac31df9004c479560f9d75f498d",
+      "template.yaml:contract": "b91c1a82182f3a4409f0b27e605364d15a4afa93122b7c8d019c1bdfc1fc93f4",
+      "commands.py": "67f4ecdd8ca63cb20cd401345fdd9359982ea708086907b51ef05112c5c40a90"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:dab99938703ae7bdad4bc2385bae270afa950c507d321517e92619149223113a",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "result": "PASS"
+}

@@ -1,0 +1,117 @@
+{
+  "provider": "opensandbox",
+  "template": "tau2-bench",
+  "template_version": "1.0.4",
+  "verification_type": "source-image-native-opensandbox-docker-http",
+  "build_mode": "image",
+  "passed": true,
+  "cleanup_verified": true,
+  "model_acceptance": "NOT_RUN",
+  "checks": [
+    "fixed source upstream",
+    "fixed source provider",
+    "fixed source cli",
+    "fixed source sdk",
+    "actual image architecture and non-root workspace configuration",
+    "original OpenSandbox server health",
+    "actual SDK create",
+    "independent Docker identity matches exact built image",
+    "actual guest bridge endpoint",
+    "owned metadata readback",
+    "actual runtime command bytes match source",
+    "SDK observes actual non-root image user",
+    "SDK real shell Python program",
+    "SDK file write/read",
+    "SDK file removal readback",
+    "generic native interpreter explicitly unsupported",
+    "SDK starts original template service as user",
+    "original template readiness command",
+    "external provider CLI named smoke tau2_version",
+    "SDK named smoke tau2_version",
+    "complete current external HTTP controller",
+    "independent SDK and Docker absence",
+    "owned provider engine stopped and reaped",
+    "owned original server process stopped"
+  ],
+  "commands": [
+    {
+      "index": 0,
+      "name": "tau2_version",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "operation": "abx --provider opensandbox exec -> owned template HTTP named API"
+    },
+    {
+      "index": 0,
+      "name": "tau2_version",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "operation": "ServerClient.commands.run against independently observed guest"
+    }
+  ],
+  "pins": {
+    "upstream": "30348cbdfe4b9cfd49e0963617aed357a8f1ac4c",
+    "provider": "9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d",
+    "cli": "c8e8ad784323b8903505442cbc77d433a0d0367a",
+    "sdk": "33f857f5a79fd10326652e9d03f15f3621d6b848"
+  },
+  "date": "2026-10-22",
+  "source_commit": "fef1c788103da5b8509cfa5fce71d40ce4109e6b",
+  "context_sha256": {
+    "Dockerfile": "afd24e9b1a92c5ff1864f7b7bb909cee2b63809656886d13f7316ea5897ef326",
+    "template.yaml:contract": "1dd404e5364f86208baacf1c6e31ab184423d2c8b8cf17741fe882559ac93b02",
+    "upstream.json": "6c3ecbb8bafde46348aaffcd17fb541c3e17bf1fd0bf0a091a4669ff3c134a26",
+    "requirements.lock": "a95db46ca744f832ca3b03c7c4cc46bca510f5ca447415cd5e18c26e47972061",
+    "install_source.py": "ba33af9250679236b76e28c3fa945affcc5cdee38a838b6017dfbdf2c2e4a88a",
+    "commands.py": "bc1aa520d538c9092a7ef54d1a9eb82490083ea7cdd09fc35289e28868c4be1b",
+    "worker.py": "29c0de52f200808f73ff31dc6eec13828a81cd6c83a5b9bba414b05deb9b9917",
+    "process.py": "9d842feeaab9ec6929afa53d3cebf693fbaaf8453fee50870403ac107141568a",
+    "lifecycle.py": "6ca358fb55f42d147e89b0d00ebaa94c94ae7705fec9c8616155915136e12339",
+    "UPSTREAM-LICENSE.md": "e67c5aa0074dfcaefd3c3a1aedb94cb539234aecd15d5a972574e3200e6252fe",
+    "AUDIOOP-LICENSE.txt": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf"
+  },
+  "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+  "workflow_run_id": 39766754883,
+  "generic_code_interpretation": "UNSUPPORTED; template named APIs tested separately",
+  "images": {
+    "template_image_id": "sha256:f79674bade1b09d5cb31f390b12ab197a58c7ab238985b97f9da3e7f9960eb75",
+    "execd_digest": "opensandbox/execd@sha256:6cf7dba2f21f0b536e100563d841ac58a9f31c2b0a081b7ac76796a24d6f47e2",
+    "execd_image_id": "sha256:e12d3de4b28e820bc966fe875484b35a5fad9322c4ef8a5b6751873da03bd214"
+  },
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "execution_identity": {
+    "selection": "image default; explicit user switching not qualified",
+    "probe_exit_code": 0,
+    "uid": 1000
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 8,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "da68a2b97cb38be18d55ca3f9a7775b9d0473e69fbb745480f492c6c91cec409",
+    "passed": true
+  },
+  "cleanup_observations": {
+    "sdk_not_found": true,
+    "owned_docker_containers_absent": true,
+    "errors": []
+  },
+  "versions": {
+    "agent-sandbox-client": "0.3.0",
+    "agent-sandbox-server": "0.3.0",
+    "opensandbox-server": "1.2.0rc2.dev222+g30348cbd"
+  },
+  "sdk_version": "0.3.0",
+  "duration_s": 23.069,
+  "controller_sha256": "9abec330f7aad1ea6ff2b5cb60ab24b63406f40d774f0448c1e5bf1af3d8ab9e",
+  "receipt_artifact_id": 12421404839,
+  "receipt_artifact_digest": "sha256:7f54d41a3593ae2190d5442c577ba396ca4a173a85a86a979b12c24bd917f4d8",
+  "workflow_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39766754883",
+  "workflow_job_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39766754883/job/119784087788",
+  "workflow_job_conclusion": "success"
+}

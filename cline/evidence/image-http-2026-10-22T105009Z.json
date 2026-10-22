@@ -1,0 +1,58 @@
+{
+  "template": "cline",
+  "provider": "alicloud-express",
+  "build_mode": "image",
+  "verification_type": "ci-image-backed-external-http",
+  "passed": true,
+  "registry_cleanup_verified": true,
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "model_acceptance": "NOT_RUN",
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 8,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "4f9831ecb270f2759a4c4deedda35d9af2085ef1dc46634069693823cfb7ca53",
+    "passed": true
+  },
+  "runtime_attempted": true,
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "cleanup_verified": true,
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "cline",
+    "template_version": "1.0.2",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "checkout_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "workflow_run_id": "39747846635",
+    "artifact_id": "12412317574",
+    "archive_sha256": "faee69370aaf7f31e6f237e871829dc403ac583a1dd9782372e06167840b01fa",
+    "image_config_sha256": "847b550b7d8cae72ad2718466b39007db5c03f2712bf86f6bf65a3dcd0995e10",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "80f369fdb8c3835fe07ee0666e89eefa1599c9549f2277a18933d1bb6a172203",
+      "template.yaml:contract": "d3172290d500f68f77b773f3b7be0d242fe33afa62fa4ae4f72aeae8c34c86da",
+      "package.json": "5d52107325cc988652f9cb6321d5767dcd9925404d07741f1cb12b168c6e3f99",
+      "package-lock.json": "5320a9b15ac7126b61c171b951567a745570ad18ebcae913bad0ae13072cc121",
+      "commands.py": "aa1cb4a71d5e3e90b4802679d61124006261c299661587173a9354f00e19d5f3",
+      "process.py": "6e62f3e52e0f0f75356e2fb92b21d59444c2240d0d03e990c7133375de51e1f4",
+      "lifecycle.py": "9b13690cab589d79f0f9940f33ab5f36eb3d0f5524317600ba1a69acb34847b0",
+      "UPSTREAM-LICENSE.md": "f704446a5f1271608805598b557e4288cf8580477ea038c9c3d8b361f693f6b8"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:4e48263e0c5a83273cd6735232368a2ade835a5166c03736ae05f403ef4262cb",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "result": "PASS"
+}

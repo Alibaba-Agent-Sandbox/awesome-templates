@@ -1,0 +1,58 @@
+{
+  "template": "copilot-cli",
+  "provider": "alicloud-express",
+  "build_mode": "image",
+  "verification_type": "ci-image-backed-external-http",
+  "passed": true,
+  "registry_cleanup_verified": true,
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "model_acceptance": "NOT_RUN",
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 8,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "8e9cad1339ba2dcad4494ee60cf757b9b15356b15cda7890bd21e6b20d1af13e",
+    "passed": true
+  },
+  "runtime_attempted": true,
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "cleanup_verified": true,
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "copilot-cli",
+    "template_version": "1.0.0",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "checkout_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "workflow_run_id": "39747846635",
+    "artifact_id": "12411818814",
+    "archive_sha256": "9c0fb81e23027b8f3a7e1f4541ce01ee425841726a60bdd5755d7e9fa43d8ec4",
+    "image_config_sha256": "b7e0d53fd9aedf656c43cb02149a3df9999e97d776d0d3e40c9ca3b5e87f0e79",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "165d971cdc5260e2e4500ae36cb444be84c5d5743aaa4adbd315985292f9ad4c",
+      "template.yaml:contract": "4518619ba416d14a6a5b1474855e877e0db273d0b1c0c733b472cf33cfb16cd0",
+      "package.json": "bc460b6f827d34f2d09d3ee1166f1064db9e32701738f6bc55c3e416d1cffb35",
+      "package-lock.json": "14320e1284c987f3946d591d4959d7230c85527998f330beb34bc9e6a8bf1261",
+      "commands.py": "46017ccc1bbb4ffa183b84a7d367bb47c7e73e2137acc1363b63c7bc2248a5fb",
+      "process.py": "41b26e16d1480c351d2c8b5c721bfccd6b3d6d2422f17683c79e85d2ac689669",
+      "lifecycle.py": "7deecbddcd11beb8e15bd32c9cef83781b3e5bc7ca53bdf3a4c30742d67445fd",
+      "UPSTREAM-LICENSE.md": "b9680937e10425bf19862908856c16ed274e6b81a1368bd62be7a757eab21628"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:5a6644db130581a14dbbc9030813ab41ceb8a51bd7fb397507a4a66caa109928",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "result": "PASS"
+}

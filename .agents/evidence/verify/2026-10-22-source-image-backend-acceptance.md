@@ -127,3 +127,41 @@ Its regressions and current qualification/controller/prerequisite checks passed:
 The prerequisite ordering also preserves the existing missing-controller-module
 diagnostic before CLI availability checks. Actual image receipts remain separate
 from native OpenSandbox source acceptance and model account acceptance.
+
+## Scoped review checkpoint
+
+Reviewed the source/digest and current-controller guards, native CLI operation,
+credential isolation, failure classification and owned cleanup paths. Only
+`tested_on` qualification metadata is excluded from the manifest runtime contract;
+changed runtime/controller inputs invalidate qualification. Native CLI evidence
+uses real `exec` into the owned guest named API and never asserts generic native
+interpreter or `template launch` support. Both provider controllers require
+independent absence readback; Express also requires the owned private-registry
+delete/readback. Uncertain cleanup stops new batch operations. Only sanitized
+receipts are exported; raw consoles and ownership journals remain private.
+
+Local targeted groups passed46 +177 tests, plus18 subtests. Current source-head
+fef1c788103da5b8509cfa5fce71d40ce4109e6b's [five e2e jobs](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39766701264)
+all passed: documentation, local-e2e, native database, document conversion and
+media checks. The final publication head still requires its own required CI and
+review after the current-source backend matrix and bilingual metadata finish.
+
+Periodic cleanup removed147,205,474bytes of this task's unused duplicate tool
+cache. Active image archives, public evidence and private recovery journals were
+preserved. Successfully qualified Express attempts remove their own large stages.
+
+## Complete native CLI, SDK and HTTP matrix
+
+[Original OpenSandbox run39766754883](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39766754883)
+finished SUCCESS with all46 individual source images passing genuine CLI and SDK
+manifest smoke, unchanged complete HTTP controllers and independent SDK/Docker/
+engine/server cleanup. Public date-conforming `opensandbox-2026-10-22T*.json`
+receipts are stored in each template's evidence directory. Full sanitized Actions
+receipt artifacts were downloaded because GitHub truncates long check annotations;
+artifact digests are checked when supplied. Prior SDK/HTTP-only receipts remain
+historical checkpoints and do not substitute for the new required CLI evidence.
+
+Native runtime acceptance is complete. Express's final two selected source images
+are still in progress at this checkpoint. PR188 meanwhile merged independent
+explicit-schema rules; integrate that main revision after the active image workers
+finish and use the updated checker without its retired `--strict` flag.

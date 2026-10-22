@@ -43,7 +43,8 @@ python scripts/run_image_e2e_batch.py --workflow-run EXPORTED_RUN_ID \
 
 `scripts/opensandbox_template_e2e.py` 验证镜像身份及源码字节，通过 Agent Sandbox SDK
 创建沙箱，独立观察实际 Docker 容器，测试 SDK 命令与文件 API，以非 root 用户
-启动模板服务，通过真实 SDK 调用命名命令，再对实际容器桥接地址运行原模板的
+启动模板服务，通过真实提供方 CLI（`abx exec` 调用容器内命名 HTTP API）及 SDK
+分别验证每一项 manifest smoke，再对实际容器桥接地址运行原模板的
 完整 HTTP 测试。清理后独立验证 SDK NotFound、容器不存在、提供方进程已回收及
 原始服务已停止。每个模板输出独立的脱敏记录，不上传原始日志、私有地址或资源 ID。
 
