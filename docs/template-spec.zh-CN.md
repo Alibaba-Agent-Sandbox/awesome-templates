@@ -42,7 +42,7 @@ docs/design/<name>.md         # 每个产品模板都要有
 | `README.md` | 英文章节，见下表。 |
 | `README.zh-CN.md` | 同样的章节，中文。 |
 | `docs/design/<name>.md` | 事前分析。从 [docs/design/_TEMPLATE.md](./design/_TEMPLATE.md) 复制。 |
-| `evidence/*.json` | 机器可读的通过记录。失败的运行不提交。 |
+| `evidence/*.json` | 脱敏机器记录。提供方／日期资格文件必须运行及独立清理通过；失败尝试使用单独的 attempt 文件名保存，不作为提供方通过。 |
 
 SDK 已经能解析的 OpenSandbox 镜像（`code-interpreter`、`code-interpreter-base`、`desktop`、`playwright`、`vscode`）不要再拷进本仓库。
 
@@ -89,7 +89,7 @@ smoke:
 |---|---|
 | `name` | 与目录名相同。 |
 | `description`、`version`、`author`、`license` | 非空字符串。 |
-| `spec_version` | 现有契约为 `2`；严格 schema 与可选 `application` 使用 `3`。只有未写版本的模板属于旧模板；显式未知版本检查失败。 |
+| `spec_version` | 必须显式填写现有契约版本 `2`，或采用严格 schema 与可选 `application` 的版本 `3`。缺失、格式错误及未知版本均检查失败。 |
 | `base` | 字符串。占位符 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，或钉死的 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:vX.Y.Z`。不是 mapping。 |
 | `generation` | 整数 `2`。 |
 | `start_cmd` | `agent-sandbox-server serve`，并带上镜像里 `commands.py` 的路径。 |
@@ -380,7 +380,7 @@ Verified 表里出现 `alicloud-express` 时，检查器要求存在上述形状
 
 ### Verified on
 
-根 README 的目录表有 Verified on 列。单元格里的提供方，必须在该模板的 evidence 目录里有通过文件。空单元格表示没有通过记录。失败的运行不写入这一列，也不作为证据提交。
+根 README 的目录表有 Verified on 列。单元格里的提供方，必须在该模板的 evidence 目录里有通过文件。空单元格表示没有通过记录。失败尝试不得写入该列或作为提供方资格；脱敏结果可用单独的 attempt 文件名保留，提供方／日期通过文件必须运行及独立清理成功。
 
 模板 README 的 `## Verified` 要么是句子 `No provider has a passing run recorded for this template.`，要么是第一列为提供方 id 的表。中文文件用 `尚未记录任何通过的提供方测试。`，或同一组提供方 id。`tested_on` 列出同一组 id。
 
@@ -469,10 +469,9 @@ Express feasibility 写 `yes`、`slice` 或 `no`，并写出唯一的限制因�
 ```bash
 python3 scripts/check_template.py _skeleton
 python3 scripts/check_template.py --all
-python3 scripts/check_template.py --all   # 旧模板的违规也导致失败
 ```
 
-`--all` 打印符合性列表。每个显式 `spec_version: 2` 或 `3` 的目录都通过时退出码为 0。旧目录会带上违规代码列出来，但不让进程失败。CI 运行 `--all`。`scripts/run_local_e2e.py` 也会运行它，支持的规范版本检查失败时整个脚本失败。
+`--all` 检查根目录下所有包含 `template.yaml` 的目录，包括 skeleton。每份清单必须显式填写受支持的 `spec_version`，缺失、格式错误及未知版本均失败。目录索引必须声明 `schema_version: 1`。CI 和 `scripts/run_local_e2e.py` 使用同一项完整检查，任一违规都会导致失败。
 
 违规代码包括 `required-file`、`readme-section`、`base-image`、`dockerfile-cmd`、`dockerfile-user`、`yaml-field`、`commands-start`、`verified-evidence`、`pinned-version`、`readme-client`、`secrets`。`RUN` 上两种服务端钉都没有时，`pinned-version` 失败。spec_version 2/3 的 SDK 章节没有写 `agent-sandbox-client`，或 README 让读者 `pip install agent-sandbox` 时，`readme-client` 失败。
 

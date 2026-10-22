@@ -106,11 +106,26 @@ Development server environment contains only Node PATH, isolated temporary HOME,
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.1.0; regular image, actual CLI/SDK, complete HTTP 6 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-20T102030Z.json) |
+| opensandbox | 1.1.0; original Docker backend, every CLI/SDK named smoke, complete HTTP 6 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T112003Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 Version1.1.0 passed actual SDK-created Express verified-image registration, native CLI/SDK self-test, full HTTP6 PASS/0 FAIL/0 SKIP and independent forwarded HTTP on3000/5173. Both real apps served SDK-written new source markers, then their owned workers/projects were stopped/deleted. Sandbox/template/registry cleanup and post-runtime digest independently confirmed. Vite uses only the exact SDK hostname. Default FC responses mark HTML as attachments; browser rendering and WebSocket/HMR are explicitly NOT_RUN, as are external providers.
 
 | Version | Provider | Evidence |
 | --- | --- | --- |
 | 1.1.0 | alicloud-express | [SDK-created image](evidence/express-2026-10-20.json), [HTTP6](evidence/image-http-2026-10-20T102030Z.json), [independent forwarded source edits](evidence/forwarded-http-2026-10-20T102030Z.json) |
+
+</details>
 
 ## Secondary development
 

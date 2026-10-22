@@ -1,0 +1,54 @@
+{
+  "template": "kimi-code",
+  "provider": "alicloud-express",
+  "build_mode": "image",
+  "verification_type": "ci-image-backed-external-http",
+  "passed": true,
+  "registry_cleanup_verified": true,
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "model_acceptance": "NOT_RUN",
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 9,
+    "fail_count": 0,
+    "skip_count": 1,
+    "verifier_sha256": "16d0420416e33835c122c00cf4dd4e70f5884f49b5701a57afc6a584a680a070",
+    "passed": true
+  },
+  "runtime_attempted": true,
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "cleanup_verified": true,
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "kimi-code",
+    "template_version": "1.0.0",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "checkout_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "workflow_run_id": "39747846635",
+    "artifact_id": "12412987322",
+    "archive_sha256": "b108a573bc8673691695e32660923100cdc593432dfa55afa4c4afe2fe28d073",
+    "image_config_sha256": "0d99a091fb1e828209dfbe347ffe29d1905a3bf0be66dde5ff1ee0e39be1f410",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "9843a5a7c0af94f4430ec2c577388577859302919fc15dd9e970cc8b0b3beaa9",
+      ".dockerignore": "cc6b9f6c91733b859252f8750f3e8c5374994529a8fab88387ec29bd945f31a5",
+      "template.yaml:contract": "a0152278da06f566cc26d680c4c86455a021f227480ba1ebe595d9ebba3fa08a",
+      "commands.py": "3bf4902d64c7d23dab353dd119a02787721924dc3e3e2690a07d0d60de7d92f9"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:32408b18edbbded33a947a90c9e7eb78191b9b5b5cdcce79ed73e03b73d9bce1",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "result": "PASS"
+}

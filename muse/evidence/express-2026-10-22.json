@@ -1,0 +1,86 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-22",
+  "template": "muse",
+  "template_version": "1.0.1",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "image",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "harness_sha256": "668ff01efbc9ebb733737ad4d4c51cfd5eb50184b0ac87c182e9fd5ef98aeb0d",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "muse_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 13.035,
+      "result": "Muse Code 1.4.11 (1.4.11-R6667.1)"
+    },
+    {
+      "name": "muse_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 3.761,
+      "result": "Muse Code 1.4.11 (1.4.11-R6667.1)"
+    },
+    {
+      "name": "muse_native_check",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 1.431,
+      "result": "{'original_native': True, 'headless_json': True, 'anonymous_api_key_stdin': True, 'no_session_log': True}"
+    },
+    {
+      "name": "muse_native_check",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 0.771,
+      "result": "{'original_native': True, 'headless_json': True, 'anonymous_api_key_stdin': True, 'no_session_log': True}"
+    }
+  ],
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "muse",
+    "template_version": "1.0.1",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "checkout_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "workflow_run_id": "39747846635",
+    "artifact_id": "12413450439",
+    "archive_sha256": "3f341583c8205ca5422da73069d3316e2a9ed994f93062beae908e0862c33f49",
+    "image_config_sha256": "cc945d04fc816732625f2f803426c959b540828a146c2e4abc796c7136276150",
+    "server_sdk_commit": "34e7e011c5569f77b7f605e65313be7498f6cf02",
+    "context_sha256": {
+      "Dockerfile": "0f2b725cb7642ba8b2317f694a20962cdd97ac1193c5d1a8d3fb9406a9fdf6d1",
+      "server-sdk.commit": "57134d659449d0f55301272a5abc2ac907c86b8380a36f2b3e86e09c9b6dc6cf",
+      "template.yaml:contract": "fee7fc8877ef0ecc3cd5445fe7727c823b5471bb3cc183a069cd775d7c1eed58",
+      "upstream.json": "0984024f39b88eaf5cac4a57f46a62c24e2190ce88a75a46d4125ca3e033fb2d",
+      "install_runtime.py": "1e35269e26b728af82546281da7ebde24062056cf9cc17a6c9c641d1ac99f293",
+      "commands.py": "c8050eff110fab230ae30a80c492386f03ff20e09840df21010c1051509b7329",
+      "relay.py": "1ff52f975fb253a18cac099772f5d60bcaaaf23d1eb15a098455cde6b3e79cf7",
+      "filter_native.py": "0d4cc98606498052401c5bd9ea98a471ed89b3b475cf7c756379bc21ff7263c5",
+      "process.py": "23eb57a3d78a4da333e191d0e8105696374f216b1adb9d90dbc0ee25fd877a25",
+      "lifecycle.py": "470207c6e64634dfce8b0592416e8b8f7ae280134d5e6a4e09a33a4a537a02f2",
+      "UPSTREAM-NOTICE.md": "3baeec3deeef637b6b65174522844e332064ff1a11097596ccd07b759b4798e0"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:d5638239889d234f046df07cdbbceb1e011835c39782bc7d12195287a5f0dbd9",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "registration_operation": "abx template from-image",
+  "boundary": "Verified CI Dockerfile image + private registry transfer; no controller Docker build or platform-step build claimed",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "registry_cleanup_verified": true
+}

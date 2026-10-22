@@ -193,11 +193,26 @@ HTTP 检查全部 16 项通过，本次沙箱已删除。源码和运行包的�
 
 ## 已验证
 
+
+### 当前镜像验收 — 2026-10-22
+
+| 提供方 | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 2.0.0；常规镜像、真实 CLI/SDK、完整 HTTP 13 PASS / 0 FAIL / 1 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-20T145436Z.json) |
+| opensandbox | 2.0.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 14 PASS / 0 FAIL / 1 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T110946Z.json) |
+
+CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
+
+<details>
+<summary>此前验收记录（保留原有时间与范围）</summary>
+
 | 提供方 | 当前版本与范围 | 证据 |
 | --- | --- | --- |
 | alicloud-express |2.0.0；真实 SDK 创建的非 root 镜像，CLI/SDK 命令，17项严格真实模型断言，独立沙箱/模板/镜像仓库清理 | [镜像](evidence/express-2026-10-20.json) · [模型](evidence/model-image-2026-10-20T145436Z.json) |
 
 原生 Codex 使用模板实际配置的 Responses 协议访问兼容服务。模型修改已有源码、生成新产物，并通过未改动的原始测试和独立断言。基础 HTTP13PASS/1SKIP属于明确关闭模型的阶段；单独真实模型17PASS/0FAIL/0SKIP。实际镜像注入固定的 e2cb27e server，独立 Docker fallback 是另一条构建路径。版本号0.3.0本身不能区分这些源码。详见[当前验收](../.agents/evidence/verify/2026-10-20-codex-sdk-image-acceptance.md)。
+
+</details>
 
 ## 历史 step 验证
 

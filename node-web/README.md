@@ -115,6 +115,19 @@ No model/cloud key is needed by these commands. Keep secret values out of source
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.1.1; regular image, actual CLI/SDK, complete HTTP 60 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T111340Z.json) |
+| opensandbox | 1.1.1; original Docker backend, every CLI/SDK named smoke, complete HTTP 60 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T112111Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 Additional exact-version real steps passed on2026-10-20 using actual Python `Sandbox.create`, CLI/SDK named smoke and independently confirmed sandbox/template cleanup: [SDK-created step receipt](evidence/express-2026-10-20.json). This separately establishes the creation route; the complete workflow receipts below keep their original scope.
 
 
@@ -123,6 +136,8 @@ Additional exact-version real steps passed on2026-10-20 using actual Python `San
 | alicloud-express | 1.1.1; steps build, official READY, CLI/SDK, complete HTTP 60 assertions + independent SDK-forwarded3000, independent cleanup | [2026-10-19](evidence/express-2026-10-19T183324Z.json) |
 
 The changed workspace profile is verified in real generated steps. Prior receipts retain historical scope; basic smoke does not establish model acceptance.
+
+</details>
 
 ## Historical verification
 

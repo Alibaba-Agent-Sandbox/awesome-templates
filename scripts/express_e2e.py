@@ -583,7 +583,7 @@ def plan_document(options: Options) -> dict[str, Any]:
         "version": options.template_version,
         "alias": options.alias,
         "build_mode": options.build_mode,
-        "registration_operation": "abx template create" if options.build_mode == "image" else "abx template deploy",
+        "registration_operation": "abx template from-image" if options.build_mode == "image" else "abx template deploy",
         "sandbox_timeout": options.sandbox_timeout,
         "sandbox_create": "python-sdk-Sandbox.create" if options.sandbox_create == "sdk" else "abx create",
         "harness_sha256": HARNESS_SHA256,
@@ -1014,7 +1014,7 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
                 raise RuntimeError("image tag differs from checked archive digest before registration")
             config = _load_yaml(options.template_dir)
             resources = config.get("resources", {})
-            deploy_args = ["--json", "template", "create", options.image_ref,
+            deploy_args = ["--json", "template", "from-image", options.image_ref,
                 "--name", options.alias, "--generation", str(options.generation),
                 "--start-cmd", options.start_cmd, "--ready-cmd", options.ready_cmd,
                 "--cpu", str(resources.get("cpu", 2)), "--memory", str(resources.get("memory", 2048)),
@@ -1236,7 +1236,7 @@ def _write_evidence(options: Options, results: list[dict[str, Any]]) -> None:
         payload["build_provenance"] = json.loads(provenance.read_text())
     if options.build_mode == "image":
         payload["image_provenance"] = options.image_provenance
-        payload["registration_operation"] = "abx template create"
+        payload["registration_operation"] = "abx template from-image"
         payload["boundary"] = "Verified CI Dockerfile image + private registry transfer; no controller Docker build or platform-step build claimed"
     # Template ids are ephemeral and must not be stored.
     text = json.dumps(payload, indent=2, ensure_ascii=False) + "\n"

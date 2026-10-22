@@ -113,6 +113,19 @@ HTTP200 返回 `{"result":{"stdout":"<native JSONL>","stderr":"","exit_code":0,"
 
 ## 已验证
 
+
+### 当前镜像验收 — 2026-10-22
+
+| 提供方 | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 1.0.0；常规镜像、真实 CLI/SDK、完整 HTTP 8 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T105025Z.json) |
+| opensandbox | 1.0.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 8 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T110834Z.json) |
+
+CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
+
+<details>
+<summary>此前验收记录（保留原有时间与范围）</summary>
+
 1.0.0 已在阿里云极速版通过原生 steps、官方 READY、真实 Python SDK Sandbox.create 及 CLI/SDK 命名命令冒烟。真实原生1.0.100 BYOK 配置使用显式兼容 qwen3.8-flash 模型完成 **17项严格检查，0失败/0跳过**：修改已有源码、生成新报告和精确随机标记文件、保留原测试，并在云端完成返回后的独立原测试与隐藏断言。自有项目、原生临时状态/独立服务端口以及外层 sandbox/模板均独立确认清理。
 
 | 版本 | 提供方 | 证据 |
@@ -120,6 +133,8 @@ HTTP200 返回 `{"result":{"stdout":"<native JSONL>","stderr":"","exit_code":0,"
 | 1.0.0 | alicloud-express | [SDK创建的原生 steps](evidence/express-2026-10-20T165141Z.json)、[严格模型17及清理](evidence/native-model-steps-2026-10-20T165141Z.json) |
 
 实际 L1 镜像构建39459153252/39459156236另行通过，steps 不推断镜像已在云端注册。首轮整体失败保留为[历史](evidence/native-model-steps-2026-10-20T164602Z.json)：16通过/1项控制器错误断言，真实模型、产物及自有清理均通过；修正后的完整重跑才是当前资格。主机未执行生成代码。其他架构、提供商以及交互、ACP、GitHub 服务和会话恢复仍未验证，目录保留 experimental。见[最终工程记录](../.agents/evidence/verify/2026-10-20-copilot-cli-native-final.md)。
+
+</details>
 
 ## 二次开发
 

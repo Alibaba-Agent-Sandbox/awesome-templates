@@ -90,6 +90,19 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/kimi"   --header 
 
 ## 已验证
 
+
+### 当前镜像验收 — 2026-10-22
+
+| 提供方 | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 1.0.0；常规镜像、真实 CLI/SDK、完整 HTTP 9 PASS / 0 FAIL / 1 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T111230Z.json) |
+| opensandbox | 1.0.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 9 PASS / 0 FAIL / 1 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T111821Z.json) |
+
+CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
+
+<details>
+<summary>此前验收记录（保留原有时间与范围）</summary>
+
 | 提供方 | 已执行范围 | 证据 |
 | --- | --- | --- |
 | alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
@@ -102,6 +115,8 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/kimi"   --header 
 <summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
 
 尚未记录任何通过的提供方测试。
+
+</details>
 
 </details>
 

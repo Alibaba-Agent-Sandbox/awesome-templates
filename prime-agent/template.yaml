@@ -13,7 +13,7 @@ ports: [9000]
 tags: [prime-agent, coding-agent, rlm, python]
 priority: P2
 wave: 2
-tested_on: [alicloud-express]
+tested_on: [alicloud-express, opensandbox]
 capabilities: [shell, files, code, ports]
 env:
   ABX_SERVER_TOKEN: ""

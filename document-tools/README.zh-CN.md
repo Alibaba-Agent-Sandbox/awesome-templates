@@ -146,11 +146,26 @@ Office限制2GiB地址空间及60–61秒CPU；Pandoc保留1GiB地址空间、25
 
 ## 已验证
 
+
+### 当前镜像验收 — 2026-10-22
+
+| 提供方 | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 1.1.0；常规镜像、真实 CLI/SDK、完整 HTTP 36 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-20T150549Z.json) |
+| opensandbox | 1.1.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 36 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T112219Z.json) |
+
+CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
+
+<details>
+<summary>此前验收记录（保留原有时间与范围）</summary>
+
 | 提供方 | 当前版本与范围 | 证据 |
 | --- | --- | --- |
 | alicloud-express |1.1.0；真实 SDK 创建的镜像及原生 step；各36项完整 HTTP 检查，0失败/0跳过；独立资源清理 | [镜像](evidence/express-2026-10-20.json) · [step](evidence/full-http-steps-2026-10-20T143722Z.json) |
 
 实际原生 Writer 生成 PDF，并独立读取页数、随机文本与中文；PPTX/DOCX XML、完整文件哈希和原始输入也独立核验。镜像另确认私有仓库删除。下方1.0记录保留为历史，失败尝试未改写。见[最终验收](../.agents/evidence/verify/2026-10-20-document-html-pptx-pdf-final.md)。
+
+</details>
 
 ## 1.0历史验证
 

@@ -123,11 +123,26 @@ curl --fail-with-body --max-time 90 -X POST "$ABX_SERVER_URL/commands/browser_us
 
 ## 已验证
 
+
+### 当前镜像验收 — 2026-10-22
+
+| 提供方 | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 1.0.0；常规镜像、真实 CLI/SDK、完整 HTTP 11 PASS / 0 FAIL / 1 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-20T144122Z.json) |
+| opensandbox | 1.0.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 11 PASS / 0 FAIL / 1 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T110655Z.json) |
+
+CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
+
+<details>
+<summary>此前验收记录（保留原有时间与范围）</summary>
+
 | 提供方 | 版本与实际范围 | 证据 |
 | --- | --- | --- |
 | alicloud-express |1.0.0；真实 SDK 创建的非 root 镜像；CLI/SDK/CDP；真实模型点击3次、提交随机验证码、独立读取PNG；独立资源清理 | [镜像](evidence/express-2026-10-20.json) · [模型](evidence/model-image-2026-10-20T144123Z.json) |
 
 模型在8个原生步骤内完成任务；一次原生 JSON 格式错误及后续恢复保留在回执中。完整 HTTP 的11PASS/1SKIP属于明确关闭模型的基础阶段；单独模型控制器实际通过。沙箱、模板、镜像仓库，以及控制器自有进程、文件和9010/9011监听均独立确认清理。平台 step 构建在1200秒时仍为building，因此该次失败、不声称step通过；已确认删除其自有模板。其他提供方及架构未验证。见[完整记录](../.agents/evidence/verify/2026-10-20-browser-use-final.md)。
+
+</details>
 
 ## 二次开发
 

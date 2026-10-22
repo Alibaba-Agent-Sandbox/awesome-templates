@@ -42,7 +42,7 @@ docs/design/<name>.md         # required for every product template
 | `README.md` | English sections below. |
 | `README.zh-CN.md` | The same sections in Chinese. |
 | `docs/design/<name>.md` | Pre-analysis. Copy [docs/design/_TEMPLATE.md](./design/_TEMPLATE.md). |
-| `evidence/*.json` | Machine-readable pass. Do not commit a failed run. |
+| `evidence/*.json` | Sanitized machine-readable results. Provider/date qualification files require a passing run and independent cleanup; retain failed attempts under distinct attempt filenames without claiming provider acceptance. |
 
 OpenSandbox images that the SDK already resolves (`code-interpreter`, `code-interpreter-base`, `desktop`, `playwright`, `vscode`) stay out of this repository. Do not copy those Dockerfiles in.
 
@@ -89,7 +89,7 @@ smoke:
 |---|---|
 | `name` | Same as the directory. |
 | `description`, `version`, `author`, `license` | Non-empty strings. |
-| `spec_version` | `2` for the existing contract; `3` for the strict schema with optional `application`. Only manifests without a version are legacy. Unknown explicit versions fail. |
+| `spec_version` | Explicit `2` for the existing contract or `3` for the strict schema with optional `application`. Missing, malformed and unknown versions fail. |
 | `base` | String. Either the placeholder `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` or a pinned `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:vX.Y.Z`. Not a mapping. |
 | `generation` | Integer `2`. |
 | `start_cmd` | `agent-sandbox-server serve` plus the path of `commands.py` inside the image. |
@@ -394,7 +394,7 @@ The checker accepts `alicloud-express` in the Verified table only when a file of
 
 ### Verified on
 
-The catalog table in the root README has a Verified on column. A cell lists a provider only when that template's evidence directory contains a passing file for it. An empty cell means no passing run is recorded. A failed run is not written into the cell and is not committed as evidence.
+The catalog table in the root README has a Verified on column. A cell lists a provider only when that template's evidence directory contains a passing file for it. An empty cell means no passing run is recorded. Failed attempts never populate this column or qualify a provider. Preserve their sanitized results under distinct attempt filenames; provider/date pass files require successful execution and independent cleanup.
 
 Inside the template README, `## Verified` is either the sentence `No provider has a passing run recorded for this template.` or a table whose first column is the provider id. The Chinese file uses `尚未记录任何通过的提供方测试。` or the same provider ids. `tested_on` lists the same ids.
 
@@ -483,10 +483,9 @@ The Express feasibility section says `yes`, `slice`, or `no`, and names the sing
 ```bash
 python3 scripts/check_template.py _skeleton
 python3 scripts/check_template.py --all
-python3 scripts/check_template.py --all   # fail on legacy templates too
 ```
 
-`--all` prints a conformance list and exits 0 when every explicit `spec_version: 2` or `3` directory passes. Legacy directories are listed with their violation codes and do not fail the process. CI runs `--all`. `scripts/run_local_e2e.py` runs it as well and fails the script when a supported-spec directory fails.
+`--all` checks every root directory containing `template.yaml`, including the skeleton. Every manifest requires an explicit supported `spec_version`; missing, malformed or unknown versions fail. The catalog requires `schema_version: 1`. CI and `scripts/run_local_e2e.py` use the same complete check and fail on any violation.
 
 Violation codes include `required-file`, `readme-section`, `base-image`, `dockerfile-cmd`, `dockerfile-user`, `yaml-field`, `commands-start`, `verified-evidence`, `pinned-version`, `readme-client`, `secrets`. `pinned-version` fails when a `RUN` has neither allowed server pin above. `readme-client` fails when a spec_version 2/3 SDK section does not name `agent-sandbox-client`, or when a README tells the reader to `pip install agent-sandbox`.
 

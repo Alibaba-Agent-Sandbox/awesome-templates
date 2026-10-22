@@ -115,6 +115,19 @@ The selected model settings remain in private stdin only, never inherited as env
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.0.0; regular image, actual CLI/SDK, complete HTTP 9 PASS / 0 FAIL / 1 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T110056Z.json) |
+| opensandbox | 1.0.0; original Docker backend, every CLI/SDK named smoke, complete HTTP 9 PASS / 0 FAIL / 1 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T111055Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 Version1.0.0 passed actual Alibaba Express verified CI-image registration, official READY, native Python Sandbox.create, CLI/SDK smoke and **17 strict real-model checks,0 FAIL/0 SKIP** with the explicit compatible qwen3.8-flash model. The real native agent changed source, produced a report and exact artifact, preserved all original tests and passed independent post-return original/held-out evaluations. Owned sandbox/template/registry cleanup and post-runtime image digest were independently verified.
 
 | Version | Provider | Evidence |
@@ -122,6 +135,8 @@ Version1.0.0 passed actual Alibaba Express verified CI-image registration, offic
 | 1.0.0 | alicloud-express | [SDK-created image](evidence/express-2026-10-20.json), [strict model17](evidence/model-image-2026-10-20T113609Z.json), [model-off HTTP](evidence/image-http-2026-10-20T113609Z.json) |
 
 The separate model-off HTTP controller has9 PASS/1 explicit model SKIP and is not L3. The [actual native step attempt](evidence/verification-steps-2026-10-20T112245Z.json) did not independently reach READY within1200seconds; last official state remained building. No sandbox was created. Owned template deletion and [independent template/sandbox absence recheck](evidence/steps-cleanup-2026-10-20.json) passed. This is a failed step attempt, not step qualification or proof of a universal provider RUN cap. Other providers and every upstream model/backend profile remain unverified.
+
+</details>
 
 ## Secondary development
 

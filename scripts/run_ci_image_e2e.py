@@ -22,14 +22,32 @@ import tempfile
 import uuid
 import ci_image_archive as images
 import express_e2e as harness
+from template_http_acceptance import fixture_environment, run_controller
 
 
 def controller_missing_imports(source: Path) -> list[str]:
-    tree=ast.parse((source/'e2e_test.py').read_text());names=set()
-    for node in ast.walk(tree):
-        if isinstance(node,ast.Import):names.update(alias.name.split('.')[0] for alias in node.names)
-        elif isinstance(node,ast.ImportFrom) and not node.level and node.module:names.add(node.module.split('.')[0])
-    return sorted(name for name in names if not (source/(name+'.py')).exists() and importlib.util.find_spec(name) is None)
+    pending=[source/'e2e_test.py'];seen=set();missing=set()
+    while pending:
+        path=pending.pop()
+        if path in seen:continue
+        seen.add(path);tree=ast.parse(path.read_text());names=set()
+        for node in ast.walk(tree):
+            if isinstance(node,ast.Import):names.update(alias.name.split('.')[0] for alias in node.names)
+            elif isinstance(node,ast.ImportFrom) and not node.level and node.module:names.add(node.module.split('.')[0])
+        for name in names:
+            peer=source/(name+'.py')
+            if peer.is_file():pending.append(peer)
+            elif importlib.util.find_spec(name) is None:missing.add(name)
+    return sorted(missing)
+
+
+def check_image_cli() -> None:
+    """Reject a missing/renamed CLI surface before archive transfer or cloud writes."""
+    result=harness.default_runner(['template','from-image','--help'],30)
+    required=['--generation','--start-cmd','--ready-cmd','--cpu','--memory',
+              '--no-envd-inject','--registry-type','--registry-username','--registry-password']
+    if result.returncode or any(flag not in result.stdout for flag in required):
+        raise RuntimeError('CLI lacks the native template from-image contract; update ABX before image acceptance')
 
 
 def publish(source: Path, receipt: dict, report: dict) -> None:
@@ -48,21 +66,29 @@ def publish(source: Path, receipt: dict, report: dict) -> None:
     with (directory/('image-http-'+stamp+'.json')).open('x') as stream:json.dump(report,stream,indent=2);stream.write('\n')
 
 
-def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,sandbox_create: str="cli") -> int:
+def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,sandbox_create: str="cli",private_root: Path | None=None) -> int:
     if sandbox_create not in ("cli","sdk"):
         raise ValueError("sandbox_create must be cli or sdk")
-    source=source.resolve();private=Path(tempfile.mkdtemp(prefix='abx-ci-image-'));private.chmod(0o700)
+    source=source.resolve()
+    if private_root is not None:
+        private_root=private_root.resolve()
+        if private_root.is_relative_to(source.parent):raise ValueError('private staging must stay outside the source checkout')
+        private_root.mkdir(parents=True,exist_ok=True,mode=0o700)
+    # Keep archive/recovery staging configurable without changing the POSIX
+    # temporary directory used for the RAM-only registry-auth fd symlink.
+    private=Path(tempfile.mkdtemp(prefix='abx-ci-image-',dir=private_root));private.chmod(0o700)
     journal_path=private/'registry-intent.json';status=1;registry_clean=False;checks={};receipt=None
     report={'template':source.name,'provider':'alicloud-express','build_mode':'image',
         'verification_type':'ci-image-backed-external-http','passed':False,'registry_cleanup_verified':False,
         'sandbox_create':'python-sdk-Sandbox.create' if sandbox_create=='sdk' else 'abx create',
-        'model_acceptance':'NOT_RUN','http_acceptance':checks}
+        'model_acceptance':'NOT_RUN','http_acceptance':checks,'runtime_attempted':False}
     try:
         missing=controller_missing_imports(source) if http else []
         if missing:
             report['missing_controller_modules']=missing
             print('BLOCKED local HTTP controller prerequisites: '+', '.join(missing),flush=True)
             raise RuntimeError('controller prerequisites missing before artifact or cloud operation')
+        check_image_cli()
         print(source.name+': verifying exact-source CI image archive',flush=True)
         stage=private/'archive';images.download_verified(artifact_id,source,stage)
         print(source.name+': verified archive; transferring to owned private registry',flush=True)
@@ -80,34 +106,33 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,sandbox_creat
         prior={key:os.environ.get(key) for key in ['ABX_IMAGE_REGISTRY_USERNAME','ABX_IMAGE_REGISTRY_PASSWORD','ABX_IMAGE_CRANE']}
         os.environ.update(ABX_IMAGE_REGISTRY_USERNAME=username,ABX_IMAGE_REGISTRY_PASSWORD=password,ABX_IMAGE_CRANE=crane)
         done=False
+        server_env,controller_env,fixture_proof=fixture_environment(source.name)
+        report['test_configuration']=fixture_proof
         async def endpoint(sid):
             from agent_sandbox.api.sandbox import Sandbox
             sandbox=await Sandbox.connect(sid)
             try:
                 import yaml
                 ports=yaml.safe_load((source/'template.yaml').read_text()).get('ports',[9000])
-                return {port:sandbox.network.get_url(port) for port in ports}
+                urls={port:sandbox.network.get_url(port) for port in ports}
+                if server_env:
+                    # A prewarmed image service does not inherit create-time env.
+                    # Start an owned sibling server; never alter the built image.
+                    server=await sandbox.start_server(port=9010,commands='/home/user/app/commands.py',
+                        env={**server_env,'ABX_PTY_PORT':'9011'})
+                    await server.aclose()
+                    urls[9000]=sandbox.network.get_url(9010)
+                return urls
             finally:await sandbox.close()
         def sdk(sid,command,args):
             nonlocal done
             result=harness.default_sdk(sid,command,args)
             if http and not done:
-                done=True;urls=asyncio.run(endpoint(sid));base=urls[9000];script=source/'e2e_test.py'
-                env={k:v for k,v in os.environ.items() if not any(x in k.upper() for x in ['TOKEN','API_KEY','SECRET','PASSWORD','ACCESS_KEY'])}
-                env.update(E2E_BASE_URL=base,E2E_BASE_DIR='/home/user/app',E2E_WORKSPACE='/home/user/app',E2E_RUN_LLM='0',E2E_REQUIRE_CLI='1')
-                if source.name=='code-server':env['E2E_CODE_SERVER_URL']=urls[8443]
-                if source.name=='next-app':env.update(E2E_NEXT_URL=urls[3000],E2E_VITE_URL=urls[5173])
-                if source.name=='chrome':env.update(E2E_CHROME_CDP_URL=urls[9222],E2E_CHROME_VNC_URL=urls[6080],E2E_WORKSPACE='/home/user/workspace',E2E_REQUIRE_CHROME='1')
-                result_http=harness.run_monitored([sys.executable,str(script)],env=env,idle_timeout=600,wall_timeout=600)
-                (private/'http.log').write_text(result_http.stdout+'\n'+result_http.stderr)
-                lines=(result_http.stdout+'\n'+result_http.stderr).splitlines()
-                # Only count outcomes: assertion text may contain private URLs.
-                checks.update(passed=result_http.returncode==0,exit_code=result_http.returncode,
-                    pass_count=sum(x.startswith('[PASS]') for x in lines),fail_count=sum(x.startswith('[FAIL]') for x in lines),
-                    skip_count=sum(x.startswith('[SKIP]') for x in lines),verifier_sha256=hashlib.sha256(script.read_bytes()).hexdigest())
-                if source.name=='chrome' and checks['skip_count']:raise RuntimeError('native Chrome desktop skipped; image HTTP acceptance refused')
-                if result_http.returncode:raise RuntimeError('full external HTTP acceptance failed; private log retained')
+                done=True;urls=asyncio.run(endpoint(sid))
+                checks.update(run_controller(source,urls,private,controller_env))
+                if not checks['passed']:raise RuntimeError('full external HTTP acceptance failed; private log retained')
             return result
+        report['runtime_attempted']=True
         print(source.name+': actual native template create, READY and CLI/SDK verification',flush=True)
         try:
             with (private/'harness.log').open('w') as output,contextlib.redirect_stdout(output),contextlib.redirect_stderr(output):
@@ -128,6 +153,7 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,sandbox_creat
         if status==0:
             receipt=json.loads(next((runtime/'evidence').glob('express-*.json')).read_text())
             receipt['image_provenance']=proof
+            receipt['test_configuration']=fixture_proof
     except Exception as exc:
         # Upstream exceptions can embed temporary signed locations or credentials.
         report['failure_type']=type(exc).__name__;status=1
@@ -158,6 +184,7 @@ def main():
     parser.add_argument('--crane',required=True,help='Path to verified upstream crane binary')
     parser.add_argument('--smoke-only',action='store_true',help='Explicitly omit full HTTP acceptance')
     parser.add_argument('--sandbox-create',choices=('cli','sdk'),default='cli')
-    args=parser.parse_args();return run(args.template,args.artifact_id,args.crane,http=not args.smoke_only,sandbox_create=args.sandbox_create)
+    parser.add_argument('--private-root',type=Path,help='Private archive/recovery staging outside the source checkout; RAM auth remains in the native temporary filesystem')
+    args=parser.parse_args();return run(args.template,args.artifact_id,args.crane,http=not args.smoke_only,sandbox_create=args.sandbox_create,private_root=args.private_root)
 
 if __name__=='__main__':raise SystemExit(main())

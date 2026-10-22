@@ -105,11 +105,26 @@ Declared2vCPU/2048MB,1024×768 desktop, ports9000/9222/6080, internal9223/5901 a
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.0.5; regular image, actual CLI/SDK, complete HTTP 30 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T101624Z.json) |
+| opensandbox | 1.0.5; original Docker backend, every CLI/SDK named smoke, complete HTTP 30 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T110912Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 | Provider | Date | Scope | Evidence |
 | --- | --- | --- | --- |
 | alicloud-express | 2026-10-20 |1.0.5; original native headed Chrome145, SDK-created canonical steps, CLI/SDK smoke, fullHTTP30/0/0, independent owned cleanup | [Receipt](evidence/express-2026-10-20T230349Z.json), [controller/provenance](evidence/verification-steps-2026-10-20T230349Z.json) |
 
 Exact runtime/controller source cd144246bcd3e2ba37865d90e24cba612db8b11b; actual [L1 native image smoke](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39512397976) also passed, separately measuring64MiB shared memory. Original native CDP/noVNC/RFB authentication, actual VNC pointer input with independent DOM/redraw, valid named navigation with external CDP readback, independently downloaded PNG/bytes/hash/regions/fresh ACK and owned native/private/display/listener/sandbox/template/OSS absence all passed. Duration156.468seconds. No model/benchmark/other-provider claim. [Final record](../.agents/evidence/verify/2026-10-20-chrome-native-final.md). Historical white-cursor sampling failures and diagnostic-only attempts remain unchanged; local/source-only checks do not grant provider qualification.
+
+</details>
 
 ## Secondary development
 

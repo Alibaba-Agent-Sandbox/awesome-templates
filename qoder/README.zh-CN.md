@@ -90,6 +90,19 @@ HTTP 400：缺失、类型或范围错误；401：鉴权失败；404：未知命
 
 ## 已验证
 
+
+### 当前镜像验收 — 2026-10-22
+
+| 提供方 | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 1.1.1；常规镜像、真实 CLI/SDK、完整 HTTP 9 PASS / 0 FAIL / 1 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T113531Z.json) |
+| opensandbox | 1.1.1；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 9 PASS / 0 FAIL / 1 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T112920Z.json) |
+
+CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
+
+<details>
+<summary>此前验收记录（保留原有时间与范围）</summary>
+
 | Provider | Current version and scope | Evidence |
 | --- | --- | --- |
 | alicloud-express | 1.1.1; steps构建、官方READY、CLI/SDK基础冒烟、独立清理；当前版本真实模型尚未执行 | [2026-10-19](evidence/express-2026-10-19T184147Z.json) |
@@ -97,6 +110,8 @@ HTTP 400：缺失、类型或范围错误；401：鉴权失败；404：未知命
 新版本的目录归属已在真实生成步骤中验证。旧版本回执保持历史范围；基础冒烟不能推断完整模型验收。
 
 2026-10-21对未改动的模板1.1.1重新验证程序／API：不可变原生steps、官方READY、真实SDK创建、CLI/SDK版本smoke通过，完整HTTP9项通过、1项凭证依赖测试跳过。另起独立认证命令服务，通过SDK qoder调用真实原版Qoder1.1.72，使用固定且明确无效的合成PAT；原生程序正确拒绝认证。这是预期错误路径测试，不是厂商／模型成功调用。未使用真实厂商凭证，当前认证后的代码／模型验收仍未执行。次级服务／端口及沙箱／模板均独立确认清理，耗时140.071秒。[当前回执](evidence/express-2026-10-21T093940Z.json)、[程序／API证明](evidence/verification-steps-2026-10-21T093940Z.json)。
+
+</details>
 
 ## 历史验收
 

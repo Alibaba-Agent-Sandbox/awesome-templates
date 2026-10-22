@@ -88,6 +88,19 @@ WORKSPACE 默认 /home/user/app。CODE_SERVER_PASSWORD、ABX_SERVER_TOKEN 都是
 
 ## 已验证
 
+
+### 当前镜像验收 — 2026-10-22
+
+| 提供方 | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 1.0.0；常规镜像、真实 CLI/SDK、完整 HTTP 5 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-20T091440Z.json) |
+| opensandbox | 1.0.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 5 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T110651Z.json) |
+
+CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
+
+<details>
+<summary>此前验收记录（保留原有时间与范围）</summary>
+
 | 版本 | 提供方 | 模式及范围 | 证据 |
 | --- | --- | --- | --- |
 | 1.0.0 | alicloud-express | SDK创建的已验证镜像；完整HTTP5；sdk-local预览中的真实浏览器/终端/编辑器 | [镜像](evidence/express-2026-10-20.json)、[HTTP](evidence/image-http-2026-10-20T091440Z.json)、[浏览器](evidence/browser-ui-2026-10-20T091440Z.json) |
@@ -125,6 +138,8 @@ IDE；前面的 CLI/SDK 示例用于浏览器访问时也需要这个前提。
 通过，但[真实浏览器 UI 未通过](evidence/browser-ui-2026-10-20T055537Z.json)。
 沙箱、模板及镜像仓库均已独立确认清理；因此尚未取得完整浏览器 IDE 提供方
 验收，Issue53 保持未关闭。
+
+</details>
 
 ## 二次开发
 

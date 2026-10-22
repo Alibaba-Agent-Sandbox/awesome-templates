@@ -109,6 +109,19 @@ Private HOME/XDG/CRUSH config/data and correct native disable-default-providers/
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.0.0; regular image, actual CLI/SDK, complete HTTP 9 PASS / 0 FAIL / 1 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-20T111012Z.json) |
+| opensandbox | 1.0.0; original Docker backend, every CLI/SDK named smoke, complete HTTP 9 PASS / 0 FAIL / 1 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T111021Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 Version1.0.0 passed actual Alibaba Express registration of the verified CI image, official READY, native Python SDK Sandbox.create, CLI/SDK smoke and **17 strict real-model checks,0 FAIL/0 SKIP** using the explicit compatible qwen3.8-flash model. Source edits, new report/exact artifact, unchanged original tests and independent post-return held-out calculations passed. Sandbox/template/registry cleanup and post-runtime digest readback passed independently.
 
 | Version | Provider | Evidence |
@@ -116,6 +129,8 @@ Version1.0.0 passed actual Alibaba Express registration of the verified CI image
 | 1.0.0 | alicloud-express | [SDK-created image](evidence/express-2026-10-20.json), [strict model17](evidence/model-image-2026-10-20T111012Z.json), [model-off HTTP](evidence/image-http-2026-10-20T111012Z.json) |
 
 The separate model-off HTTP controller has9 PASS and1 explicit model SKIP; it is not model proof. The [actual native step attempt](evidence/full-http-steps-2026-10-20T110221Z.json) did not independently reach READY and failed before any HTTP assertion; owned cleanup was independently confirmed. A subsequent [official readiness diagnosis](evidence/steps-diagnosis-2026-10-20.json) identifies RUN step4 failing the exact-asset byte/deadline guard; it does not distinguish oversized bytes from deadline expiry. The verified image route is available; do not claim step success. Other providers, arm64 execution and other upstream model/provider profiles remain unverified.
+
+</details>
 
 ## Secondary development
 

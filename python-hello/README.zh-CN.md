@@ -89,7 +89,7 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/run_script" \
 
 请求体直接包含参数，没有 `args` 包装。`POST /commands/run` 加 `{"file":"main.py"}` 运行已上传脚本；`POST /commands/test` 加 `{"path":"test_main.py"}` 运行测试。成功返回 `{"result":"<stdout>"}`。`GET /commands` 列出公开命令；`GET /hello/Ada` 返回 `{"greeting":"Hello, Ada!"}`。
 
-服务端认证与 provider 网关认证分别配置。如果沙箱设置了 `ABX_SERVER_TOKEN`，受保护的请求需携带 `Authorization: Bearer $ABX_SERVER_TOKEN`；`/health` 不要求 server token。SDK 可使用 `sb.server_at(9000, token=server_token).commands.run(...)`，token 从应用的安全配置获得。需要网关访问头的 provider 还需添加该访问头，例如 `sb.network.get_access_headers()` 提供的 `X-Access-Token`，同时保留服务端 bearer token。本模板只有 Express 的历史证据，其他 provider 尚未验证。
+服务端认证与 provider 网关认证分别配置。如果沙箱设置了 `ABX_SERVER_TOKEN`，受保护的请求需携带 `Authorization: Bearer $ABX_SERVER_TOKEN`；`/health` 不要求 server token。SDK 可使用 `sb.server_at(9000, token=server_token).commands.run(...)`，token 从应用的安全配置获得。需要网关访问头的 provider 还需添加该访问头，例如 `sb.network.get_access_headers()` 提供的 `X-Access-Token`，同时保留服务端 bearer token。当前镜像后端验收及准确范围见[已验证](#已验证)。
 
 缺少或无效参数返回 HTTP 400，认证失败 401，未知命令 404，执行失败 500；错误对象包含 `error` 和 `type`。命令完成后一次返回完整输出。HTTP 客户端超时仅结束等待，不能保证服务端取消。
 
@@ -133,6 +133,19 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/run_script" \
 
 ## 已验证
 
+
+### 当前镜像验收 — 2026-10-22
+
+| 提供方 | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 1.1.1；常规镜像、真实 CLI/SDK、完整 HTTP 21 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T103900Z.json) |
+| opensandbox | 1.1.1；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 21 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T112700Z.json) |
+
+CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
+
+<details>
+<summary>此前验收记录（保留原有时间与范围）</summary>
+
 2026-10-20 同版本追加真实 step 复验，实际使用 Python `Sandbox.create`，通过 CLI/SDK 命名 smoke，并独立确认 sandbox/template 清理：[SDK 创建 step 回执](evidence/express-2026-10-20.json)。此记录单独证明创建入口；下方完整工作流回执保留原有范围。
 
 
@@ -141,6 +154,8 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/run_script" \
 | alicloud-express | 1.1.1; steps构建、官方READY、CLI/SDK、完整HTTP21项、独立清理 | [2026-10-19](evidence/express-2026-10-19T183219Z.json) |
 
 新版本的目录归属已在真实生成步骤中验证。旧版本回执保持历史范围；基础冒烟不能推断完整模型验收。
+
+</details>
 
 ## 历史验收
 

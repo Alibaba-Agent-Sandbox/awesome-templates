@@ -1,0 +1,102 @@
+{
+  "provider": "opensandbox",
+  "template": "qm",
+  "template_version": "1.0.1",
+  "verification_type": "source-image-native-opensandbox-docker-http",
+  "build_mode": "image",
+  "passed": true,
+  "cleanup_verified": true,
+  "model_acceptance": "NOT_RUN",
+  "checks": [
+    "fixed source upstream",
+    "fixed source provider",
+    "fixed source cli",
+    "fixed source sdk",
+    "actual image architecture and non-root workspace configuration",
+    "original OpenSandbox server health",
+    "actual SDK create",
+    "independent Docker identity matches exact built image",
+    "actual guest bridge endpoint",
+    "owned metadata readback",
+    "actual runtime command bytes match source",
+    "SDK observes actual non-root image user",
+    "SDK real shell Python program",
+    "SDK file write/read",
+    "SDK file removal readback",
+    "generic native interpreter explicitly unsupported",
+    "SDK starts original template service as user",
+    "original template readiness command",
+    "SDK named smoke qm_version",
+    "SDK named smoke qm_native_check",
+    "complete current external HTTP controller",
+    "independent SDK and Docker absence",
+    "owned provider engine stopped and reaped",
+    "owned original server process stopped"
+  ],
+  "pins": {
+    "upstream": "30348cbdfe4b9cfd49e0963617aed357a8f1ac4c",
+    "provider": "9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d",
+    "cli": "c8e8ad784323b8903505442cbc77d433a0d0367a",
+    "sdk": "33f857f5a79fd10326652e9d03f15f3621d6b848"
+  },
+  "source_commit": "8c0c783e19eba9409a1c3c925039509c67e62b67",
+  "context_sha256": {
+    "Dockerfile": "59fd42c75a7038074fa6469872a73ee6c06306a979fccda51ed65493f4779e08",
+    "server-sdk.commit": "57134d659449d0f55301272a5abc2ac907c86b8380a36f2b3e86e09c9b6dc6cf",
+    "template.yaml:contract": "168b334ae774a39ec2b6ae761491550749b85fb4427425e2593aeb61840744b8",
+    "upstream.json": "dce0166c7f76c3f57ac643273b3c335e0cb8923bc2532746a6e50fecfe617dec",
+    "install_runtime.py": "7c30ff93552b8c49d2e06bee490b4e9728257323806cfa63b352e4b660109299",
+    "package.json": "8057d73aebf1e9cd6c6b86a0e0961f0e1104741b1206d2a56be0c4ec70f51f03",
+    "package-lock.json": "8866bbf2879fa5219970188aa632190c66148e2bc031c6dd4590d6807f06e454",
+    "sdk-package.json": "daa89f8d72229bf72a1227030b2e1ffd907eed5041bd766b3accf6353340d49b",
+    "sdk-package-lock.json": "deb3039932292903aad4a15351dcfc118fd349c16822f55b9d2be9c9b7fc66a4",
+    "commands.py": "866e5d28cef8ea844aa4e17b78e409d28492d32ac798531080f5a515fe455cf7",
+    "worker.mjs": "488a8cd61de890b52cf74422d18af702d157ba819e530de8889b722f691640a7",
+    "adapter.mjs": "0dfa1efd82b59be00cf3783033a944340f65832b8e44fe9d2981bdb81b0ae8a9",
+    "sdk_path.py": "8e3958dc517dcef45218636b748c4ad6bd0d090ecd3237e483fd141cc5d4f419",
+    "sdk_exec.py": "da0b47dd9a18a6c4b5707d6a3f7392516da7ce2f708a251ce45f0624564bdcc1",
+    "process.py": "0ed29df96e4baf19237464ab0b39957d7d085c45d509d0aadf5dc7f0fc61e94a",
+    "tool_process.py": "6e6f2d6a22cee621c6c974774b800eecfcdb5efa50315e6dc62dcc28d024d5e1",
+    "lifecycle.py": "93da0bbfd48b838b6721d127a740ee345a2a040418a553a4ecf00230380f9d58",
+    "UPSTREAM-NOTICE.md": "5d6639554020aac4dad1c3ecb735e738341e8ada94601120485206807fa96834"
+  },
+  "server_sdk_commit": "34e7e011c5569f77b7f605e65313be7498f6cf02",
+  "workflow_run_id": 39751400293,
+  "generic_code_interpretation": "UNSUPPORTED; template named APIs tested separately",
+  "images": {
+    "template_image_id": "sha256:a134a13aaacde6e67f06c3b94e16eb21b87776aa68c209a9c71a871156fe1f07",
+    "execd_digest": "opensandbox/execd@sha256:6cf7dba2f21f0b536e100563d841ac58a9f31c2b0a081b7ac76796a24d6f47e2",
+    "execd_image_id": "sha256:e12d3de4b28e820bc966fe875484b35a5fad9322c4ef8a5b6751873da03bd214"
+  },
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "execution_identity": {
+    "selection": "image default; explicit user switching not qualified",
+    "probe_exit_code": 0,
+    "uid": 1000
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 10,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "b6cdba2fa45cb5184dc4e8c55058b9bfe758c9e43d7fd9baf25c0079b11f54fa",
+    "passed": true
+  },
+  "cleanup_observations": {
+    "sdk_not_found": true,
+    "owned_docker_containers_absent": true,
+    "errors": []
+  },
+  "versions": {
+    "agent-sandbox-client": "0.3.0",
+    "agent-sandbox-server": "0.3.0",
+    "opensandbox-server": "1.2.0rc2.dev222+g30348cbd"
+  },
+  "duration_s": 19.848,
+  "controller_sha256": "fd490021bb70a434a40ee2c361744b1870ba293baa5cdde2ad29d8714e62f0e3",
+  "workflow_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39751400293",
+  "workflow_job_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39751400293/job/119732694177",
+  "workflow_job_conclusion": "success"
+}

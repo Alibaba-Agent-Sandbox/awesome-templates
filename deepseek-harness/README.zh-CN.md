@@ -92,6 +92,19 @@ HTTP 400：缺失、类型或范围错误；401：鉴权失败；404：未知命
 
 ## 已验证
 
+
+### 当前镜像验收 — 2026-10-22
+
+| 提供方 | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 1.1.1；常规镜像、真实 CLI/SDK、完整 HTTP 9 PASS / 0 FAIL / 1 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-20T073449Z.json) |
+| opensandbox | 1.1.1；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 9 PASS / 0 FAIL / 1 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T111057Z.json) |
+
+CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
+
+<details>
+<summary>此前验收记录（保留原有时间与范围）</summary>
+
 | Provider | Current version and scope | Evidence |
 | --- | --- | --- |
 | alicloud-express | 1.1.1; steps构建、官方READY、CLI/SDK基础冒烟、独立清理；此 step 回执未执行模型阶段 | [2026-10-19](evidence/express-2026-10-19T183349Z.json) |
@@ -101,6 +114,8 @@ HTTP 400：缺失、类型或范围错误；401：鉴权失败；404：未知命
 
 
 模型为显式配置的 OpenAI 兼容接口上的 qwen3.8-flash。
+
+</details>
 
 ## 历史验收
 

@@ -153,6 +153,19 @@ The gateway uses a private temporary state/config directory, disables browser/co
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 2.1.0; regular image, actual CLI/SDK, complete HTTP 11 PASS / 0 FAIL / 1 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T112320Z.json) |
+| opensandbox | 2.1.0; original Docker backend, every CLI/SDK named smoke, complete HTTP 11 PASS / 0 FAIL / 1 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T112327Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 Version2.1.0 passed actual Alibaba Express SDK-created native steps **and** the exact CI Docker image. In each, the SDK started/authenticated the real gateway, checked that it survives the response, independently verified forwarded healthz (`ok=true`) and readyz (`ready=true`) with HTTP200, then stopped it and confirmed status, own listeners and private state absence. Only an explicitly configured exact observed test-proxy address was trusted; no private address/token is published.
 
 | Provider | Version and executed scope | Evidence |
@@ -161,6 +174,8 @@ Version2.1.0 passed actual Alibaba Express SDK-created native steps **and** the 
 | alicloud-express | 2.1.0; exact CI image, SDK lifecycle/probes, independent sandbox/template/registry cleanup | [image/source integrity](evidence/image-http-2026-10-20T163034Z.json), [full native SDK gateway](evidence/sdk-gateway-image-2026-10-20T163034Z.json) |
 
 Gateway-only scope needs no model key: model/channel/nested-sandbox acceptance is not claimed. The generic image receipt's empty HTTP suite is not a full HTTP-controller pass; the separately linked SDK gateway controller establishes useful native behavior. Four failed2.0.1 diagnostics and a2.1pre-cloud disk-budget failure remain history. See [final engineering verification](../.agents/evidence/verify/2026-10-20-openclaw-native-sdk-final.md). Earlier2.0.1receipts retain historical scope.
+
+</details>
 
 ## Historical2.0.1verification
 

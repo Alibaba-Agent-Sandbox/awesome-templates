@@ -1,0 +1,11 @@
+{
+  "native_temp_auth": {
+    "config_is_symlink": true,
+    "child_exit": 0
+  },
+  "workspace_temp_auth": {
+    "error_type": "OSError",
+    "errno": 22,
+    "reason": "Invalid argument"
+  }
+}

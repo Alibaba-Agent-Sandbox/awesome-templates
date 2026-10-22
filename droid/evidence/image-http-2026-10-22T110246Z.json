@@ -1,0 +1,59 @@
+{
+  "template": "droid",
+  "provider": "alicloud-express",
+  "build_mode": "image",
+  "verification_type": "ci-image-backed-external-http",
+  "passed": true,
+  "registry_cleanup_verified": true,
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "model_acceptance": "NOT_RUN",
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 8,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "23d8d01ad4e12f8ecf35a2ddd48a1338be926a73eded59bab953500eec886a56",
+    "passed": true
+  },
+  "runtime_attempted": true,
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "cleanup_verified": true,
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "droid",
+    "template_version": "1.2.0",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "checkout_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "workflow_run_id": "39747846635",
+    "artifact_id": "12413102338",
+    "archive_sha256": "514d8b86d0658c8c1e8acef98db3e0e1737b8cdac3e95492f61ec68e3069e7e4",
+    "image_config_sha256": "9ef7d1bf3ab925b36822708424a3f6b8437d8f0fd6136c134fba5a30f9888caa",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "62496e9c0dcdf0c181206f64b3823fcc4759a7a8694c0758b9cd9d1d5a81e38c",
+      "template.yaml:contract": "1a99e0554db1c49fc06ed2095052a4df7f332a927b6c6dfa249ac0077a37c952",
+      "package.json": "d292a30310d48d8ccb20791b567fbc03bcbcfc5478e7424c6c80f9158d5596a6",
+      "package-lock.json": "9871fb71fa7638deeeda7bf1d8be058416bf8726cb0fd376a6d40c033b13a576",
+      "commands.py": "e006ae0d9d73b45ad8d0a2b7bb97d2aec0a7fea8ae10fa0502d0df01ff46ea47",
+      "byok.py": "bcfe4dc5a19b2c8b1ab7811626393bf9c5f5ed0e39db6ef320797aa8e940ee26",
+      "process.py": "d56623fa3bdd73ba7d2338fe472b21ea7b4f4a3d8a2e731887df6ea69126fabe",
+      "lifecycle.py": "a547b32d65cd7e4c12aab6412f59fedf3e394b05c3d853318c16e52f37c8b6b1",
+      "UPSTREAM-NOTICE.md": "cc8e6858c8495f0486f926f58bd4a293ff98dddde6f4a8b0376571c8726eafe5"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:c287f36528ecda432bb115d5cd9da75b3db3c2849efed40b66be3002f9ecbff4",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "result": "PASS"
+}

@@ -123,11 +123,26 @@ Model settings enter private file stdin only; they are not inherited into Chromi
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.0.0; regular image, actual CLI/SDK, complete HTTP 11 PASS / 0 FAIL / 1 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-20T144122Z.json) |
+| opensandbox | 1.0.0; original Docker backend, every CLI/SDK named smoke, complete HTTP 11 PASS / 0 FAIL / 1 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T110655Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 | Provider | Version and executed scope | Evidence |
 | --- | --- | --- |
 | alicloud-express |1.0.0; actual SDK-created non-root image, CLI/SDK/CDP, real model counter3/submitted nonce/independent PNG and owned cleanup | [image](evidence/express-2026-10-20.json) · [model](evidence/model-image-2026-10-20T144123Z.json) |
 
 The native agent succeeds in8steps; one recovered native JSON-format error remains in its receipt. Basic full HTTP has11PASS/1SKIP with the model explicitly disabled; the separate actual model controller passes. Independent cleanup confirms sandbox/template/registry absence and controller-owned processes/files/9010/9011listeners. The native platform-step build remained building at1200seconds and failed that attempt; owned template deletion was independently confirmed. No passing step build is claimed. Other providers/architectures remain unverified. See [final acceptance](../.agents/evidence/verify/2026-10-20-browser-use-final.md).
+
+</details>
 
 ## Secondary development
 

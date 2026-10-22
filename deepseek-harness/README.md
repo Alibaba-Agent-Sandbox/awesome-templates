@@ -91,6 +91,19 @@ Secret declarations in template.yaml are empty; do not copy credentials into ima
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.1.1; regular image, actual CLI/SDK, complete HTTP 9 PASS / 0 FAIL / 1 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-20T073449Z.json) |
+| opensandbox | 1.1.1; original Docker backend, every CLI/SDK named smoke, complete HTTP 9 PASS / 0 FAIL / 1 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T111057Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 | Provider | Current version and scope | Evidence |
 | --- | --- | --- |
 | alicloud-express | 1.1.1; steps build, official READY, CLI/SDK basic smoke, independent cleanup; model phase not run in this step receipt | [2026-10-19](evidence/express-2026-10-19T183349Z.json) |
@@ -100,6 +113,8 @@ The changed workspace profile is verified in real generated steps. Prior receipt
 
 
 Model: qwen3.8-flash over the explicitly configured OpenAI-compatible endpoint.
+
+</details>
 
 ## Historical verification
 

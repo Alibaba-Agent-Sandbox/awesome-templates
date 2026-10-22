@@ -89,6 +89,19 @@ Secret declarations in template.yaml are empty; do not copy credentials into ima
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.1.1; regular image, actual CLI/SDK, complete HTTP 9 PASS / 0 FAIL / 1 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T113531Z.json) |
+| opensandbox | 1.1.1; original Docker backend, every CLI/SDK named smoke, complete HTTP 9 PASS / 0 FAIL / 1 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T112920Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 | Provider | Current version and scope | Evidence |
 | --- | --- | --- |
 | alicloud-express | 1.1.1; steps build, official READY, CLI/SDK basic smoke, independent cleanup; current-version model acceptance NOT_RUN | [2026-10-19](evidence/express-2026-10-19T184147Z.json) |
@@ -96,6 +109,8 @@ Secret declarations in template.yaml are empty; do not copy credentials into ima
 The changed workspace profile is verified in real generated steps. Prior receipts retain historical scope; basic smoke does not establish model acceptance.
 
 Fresh2026-10-21 program/API review at unchanged template1.1.1: immutable native steps/official READY/actual SDK create/CLI+SDK version smoke/full HTTP9PASS1credential-dependentSKIP. An independently configured authenticated command server then calls the actual original Qoder1.1.72 through SDK qoder using a fixed explicitly invalid synthetic PAT: native authentication is correctly refused. This is an expected error-path test, not a successful vendor/model call. No real vendor credentials were used; current authenticated coding/model acceptance remains NOT_RUN. Both secondary server/listener and outer sandbox/template absence independently confirmed;140.071seconds. [Current receipt](evidence/express-2026-10-21T093940Z.json), [program/API proof](evidence/verification-steps-2026-10-21T093940Z.json).
+
+</details>
 
 ## Historical verification
 
