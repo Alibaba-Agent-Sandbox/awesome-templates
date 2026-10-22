@@ -1,0 +1,61 @@
+{
+  "template": "tau2-bench",
+  "provider": "alicloud-express",
+  "build_mode": "image",
+  "verification_type": "ci-image-backed-external-http",
+  "passed": true,
+  "registry_cleanup_verified": true,
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "model_acceptance": "NOT_RUN",
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 8,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "da68a2b97cb38be18d55ca3f9a7775b9d0473e69fbb745480f492c6c91cec409",
+    "passed": true
+  },
+  "runtime_attempted": true,
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "cleanup_verified": true,
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "tau2-bench",
+    "template_version": "1.0.4",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "checkout_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "workflow_run_id": "39747846635",
+    "artifact_id": "12413716993",
+    "archive_sha256": "b07c103bd759289b723f82e342460b056614ecda8010a88ef679bc2b55ef6197",
+    "image_config_sha256": "64542f981cfb9e71e4f7b433833f477ae0142bee287c9f54dab61e97738b3a43",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "afd24e9b1a92c5ff1864f7b7bb909cee2b63809656886d13f7316ea5897ef326",
+      "template.yaml:contract": "1dd404e5364f86208baacf1c6e31ab184423d2c8b8cf17741fe882559ac93b02",
+      "upstream.json": "6c3ecbb8bafde46348aaffcd17fb541c3e17bf1fd0bf0a091a4669ff3c134a26",
+      "requirements.lock": "a95db46ca744f832ca3b03c7c4cc46bca510f5ca447415cd5e18c26e47972061",
+      "install_source.py": "ba33af9250679236b76e28c3fa945affcc5cdee38a838b6017dfbdf2c2e4a88a",
+      "commands.py": "bc1aa520d538c9092a7ef54d1a9eb82490083ea7cdd09fc35289e28868c4be1b",
+      "worker.py": "29c0de52f200808f73ff31dc6eec13828a81cd6c83a5b9bba414b05deb9b9917",
+      "process.py": "9d842feeaab9ec6929afa53d3cebf693fbaaf8453fee50870403ac107141568a",
+      "lifecycle.py": "6ca358fb55f42d147e89b0d00ebaa94c94ae7705fec9c8616155915136e12339",
+      "UPSTREAM-LICENSE.md": "e67c5aa0074dfcaefd3c3a1aedb94cb539234aecd15d5a972574e3200e6252fe",
+      "AUDIOOP-LICENSE.txt": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:a68cebbbce60ae0f860792a55b160125010e88a62136f51f51c75ba48fd5b7a9",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "result": "PASS"
+}
