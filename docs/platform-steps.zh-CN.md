@@ -16,7 +16,7 @@ list/info/delete 和 sandbox 命令须匹配[验收运行器](../scripts/express
 独立二进制还需要可用的官方阿里云 SDK 模块，固定源码构建会安装它们。
 
 auto 有 Dockerfile 时选 Dockerfile；显式 steps 使用 manifest 步骤。不与
-`--acr-namespace` 或 `--legacy-api` 混用；创建 sandbox 不选择构建模式。
+`--acr-namespace` 混用；创建 sandbox 不选择构建模式。
 CLI 的[模式契约](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/design/template-build-modes.md)
 说明发送形式，提供方仍需实际验证。Express ENV 参数是交替键值，例如
 `{type: ENV, args: [LANG, C.UTF-8]}`；2026-10-19 真实试验拒绝了单参数

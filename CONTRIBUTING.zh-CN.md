@@ -17,7 +17,7 @@
 
    ```bash
    python scripts/test_spec_tools.py
-   python scripts/check_template.py --all --strict
+   python scripts/check_template.py --all
    python scripts/check_docs.py
    python scripts/run_local_e2e.py
    ```

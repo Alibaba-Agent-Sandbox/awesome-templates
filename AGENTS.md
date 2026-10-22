@@ -15,7 +15,7 @@ the PR/Issue templates, and any template-local `AGENTS.md`.
 - All modified repositories need their own decision note and actual verification evidence.
   Keep historical evidence immutable and link template-local cloud receipts in place.
 - Run `python scripts/test_spec_tools.py` and
-  `python scripts/check_template.py --all --strict` for specification/catalog changes.
+  `python scripts/check_template.py --all` for specification/catalog changes.
   Run `python scripts/check_docs.py` for documentation and targeted regressions for behavior.
   Runtime/image/model changes need the corresponding acceptance tiers and CI checks.
 - Never infer provider verification from local/mocked/source-only execution. Record build

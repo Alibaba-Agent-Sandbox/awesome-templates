@@ -80,7 +80,7 @@ class CleanupTest(unittest.TestCase):
         for raises in (False, True):
             with self.subTest(raises=raises), case() as (project, options, intents):
                 def runner(args, timeout):
-                    if "--official-api" in args: return harness.Proc(0, "[]", "")
+                    if args[:3] == ["--json", "template", "list"]: return harness.Proc(0, "[]", "")
                     if "deploy" in args: return harness.Proc(0, '{"TemplateID":"owned-template","Status":"ready"}', "")
                     if "create" in args: return harness.Proc(0, '{"ID":"owned-sandbox"}', "")
                     if "run" in args: return harness.Proc(0, '{"result":"ok"}', "")
@@ -112,7 +112,7 @@ class CleanupTest(unittest.TestCase):
             calls = []
             def runner(args, timeout):
                 calls.append(args)
-                if "--official-api" in args: return harness.Proc(0, "[]", "")
+                if args[:3] == ["--json", "template", "list"]: return harness.Proc(0, "[]", "")
                 if "deploy" in args: return harness.Proc(0, '{"TemplateID":"owned-template","Status":"ready"}', "")
                 if "create" in args: return harness.Proc(1, "", "synthetic unknown response")
                 self.fail("unknown create must reconcile before any cloud delete")
@@ -159,7 +159,7 @@ class CleanupTest(unittest.TestCase):
             with self.subTest(operation=operation, raises=raises), case() as (project, options, intents):
                 recovered = []
                 def runner(args, timeout):
-                    if "--official-api" in args: return harness.Proc(0, "[]", "")
+                    if args[:3] == ["--json", "template", "list"]: return harness.Proc(0, "[]", "")
                     if "deploy" in args: return harness.Proc(0, '{"TemplateID":"owned-template","Status":"ready"}', "")
                     if "create" in args: return harness.Proc(0, '{"ID":"owned-sandbox"}', "")
                     if "run" in args: return harness.Proc(0, '{"result":"ok"}', "")
@@ -190,7 +190,7 @@ class CleanupTest(unittest.TestCase):
                 stop.assert_not_called()
                 cleanup.assert_not_called()
             self.assertEqual(len(calls), 1)
-            self.assertIn("--official-api", calls[0])
+            self.assertEqual(calls[0], ["--json", "template", "list"])
             self.assertFalse((project / "evidence").exists())
 
     def test_failed_preflight_does_not_mutate_unowned_process_or_marker(self):
@@ -211,7 +211,7 @@ class CleanupTest(unittest.TestCase):
         calls = []
         def runner(args, timeout):
             calls.append(args)
-            if "--official-api" in args: return harness.Proc(0, json.dumps(rows), "")
+            if args[:3] == ["--json", "template", "list"]: return harness.Proc(0, json.dumps(rows), "")
             self.assertEqual(args, ["template", "delete", "owned-template", "-y"])
             rows.pop(0)
             return harness.Proc(0, "", "")
@@ -231,7 +231,7 @@ class CleanupTest(unittest.TestCase):
                           "deploy_attempted":True, "create_attempted":create,
                           "template_ids":["owned-template"] if create else [], "sandbox_ids":[]}
                 def runner(args, timeout):
-                    self.assertIn("--official-api", args)
+                    self.assertEqual(args, ["--json", "template", "list"])
                     return harness.Proc(0, "[]", "")
                 with patch.object(harness, "_recover_sandboxes", lambda *args: set()):
                     self.assertIs(harness.recover_owned(intent, runner), False)
@@ -242,7 +242,7 @@ class CleanupTest(unittest.TestCase):
             def runner(args, timeout):
                 calls.append(args)
                 self.assertFalse((project / "evidence").exists())
-                if "--official-api" in args: return harness.Proc(0, "[]", "")
+                if args[:3] == ["--json", "template", "list"]: return harness.Proc(0, "[]", "")
                 if "deploy" in args:
                     self.assertEqual(args[args.index("--acr-repo") + 1], options.alias)
                     self.assertEqual(args[args.index("--tag") + 1], "review")

@@ -27,6 +27,7 @@
 # Install any template with:
 #   abx template install alibaba-agent-sandbox/awesome-templates//<name>
 
+schema_version: 1
 templates:
   # === Official Templates ===
 
