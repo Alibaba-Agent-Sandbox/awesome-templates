@@ -2,13 +2,10 @@
 """Lint one template directory against docs/template-spec.md.
 
 Exit status:
-  0  the directory conforms, or ``--all`` found no supported-spec failures
-  1  at least one violation in a directory that claims a supported spec version
-     (``--all`` still prints the legacy conformance list)
+  0  every checked directory conforms
+  1  at least one checked directory violates the supported specification
 
-A directory without ``spec_version`` is legacy. Versions 2 and 3 are supported.
-An unknown explicit version is a claimed spec failure. ``--all`` ignores only
-legacy violations; ``--strict`` fails on every violation.
+Every template must declare spec_version 2 (sandbox) or 3 (application).
 """
 from __future__ import annotations
 
@@ -581,8 +578,8 @@ def check_directory(template_dir: Path) -> list[Violation]:
             )
 
     if data:
-        if "spec_version" in data and data["spec_version"] not in (2, 3):
-            violations.append(Violation("yaml-field", "spec_version must be 2 or 3 when set"))
+        if data.get("spec_version") not in (2, 3):
+            violations.append(Violation("yaml-field", "spec_version must be 2 (sandbox) or 3 (application)"))
         if data.get("spec_version") == 3:
             from template_application import validate_v3
 
@@ -807,7 +804,6 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Lint a template directory against the template spec.")
     parser.add_argument("template", nargs="?", help="Template directory. Omit with --all.")
     parser.add_argument("--all", action="store_true", help="Lint every template under the repo root.")
-    parser.add_argument("--strict", action="store_true", help="Fail --all on legacy violations too.")
     parser.add_argument("--root", type=Path, default=ROOT, help="Repository root for --all.")
     parser.add_argument("--verbose", action="store_true", help="Print every violation in --all mode.")
     args = parser.parse_args(argv)
@@ -817,7 +813,6 @@ def main(argv: list[str] | None = None) -> int:
         if not templates:
             print("no template directories found", file=sys.stderr)
             return 1
-        claimed_failed = False
         any_failed = False
         print("CONFORMANCE")
         conformant: list[str] = []
@@ -832,10 +827,8 @@ def main(argv: list[str] | None = None) -> int:
                 conformant.append(directory.name)
                 continue
             any_failed = True
-            if claimed:
-                claimed_failed = True
             codes = sorted({item.code for item in violations})
-            kind = "spec" if claimed else "legacy"
+            kind = "spec"
             rows.append(
                 f"  {directory.name}  {kind}  {len(violations)}  {', '.join(codes)}"
             )
@@ -851,9 +844,7 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print("  (none)")
         print(f"claimed spec failures: {sum(1 for line in rows if '  spec  ' in line)}")
-        if args.strict:
-            return 1 if any_failed else 0
-        return 1 if claimed_failed else 0
+        return 1 if any_failed else 0
 
     if not args.template:
         parser.error("pass a template directory or --all")

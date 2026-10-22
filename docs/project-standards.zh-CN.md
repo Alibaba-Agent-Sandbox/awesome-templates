@@ -72,7 +72,7 @@ GitHub 私密报告功能提交；若不可用，用不含敏感信息的 Issue 
 | 变化 | 必要验证 |
 | --- | --- |
 | 文档 | 本地链接、示例、翻译、工程记录、diff |
-| 规范、检查器、目录 | `python scripts/test_spec_tools.py`、`python scripts/check_template.py --all --strict` 和针对性回归 |
+| 规范、检查器、目录 | `python scripts/test_spec_tools.py`、`python scripts/check_template.py --all` 和针对性回归 |
 | 运行逻辑、依赖 | 单元及进程测试、L0；镜像变化补镜像构建及版本检查 |
 | 提供方声明 | 精确版本的真实部署、外部 CLI/SDK smoke、独立清理确认 |
 | 编码或模型声明 | 真实模型修改已有源码、新建产物、保留原测试、独立隐藏断言 |

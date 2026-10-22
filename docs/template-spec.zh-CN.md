@@ -350,7 +350,7 @@ asyncio.run(main())
 
 写入通过记录及退出 0 还要求自有沙箱、模板清理成功，并独立使用 SDK／官方查询确认
 已知沙箱 ID／模板及精确 alias 均不再存在，不能只依据 CLI 销毁／删除的成功应答。运行器通过
-`abx --json template list --official-api` 拒绝已存在的同名 alias；清理失败或
+`abx --json template list` 拒绝已存在的同名 alias；清理失败或
 部署／创建响应不明时，在检出目录之外保留仅含自有标识、不含凭据的私有 intent。
 使用同一账号配置执行 `python3 scripts/express_e2e.py --recover-intent PRIVATE_PATH`
 可通过现有官方模板查询／删除及 SDK 沙箱查询／销毁 API 恢复清理，仅匹配本次精确
@@ -469,7 +469,7 @@ Express feasibility 写 `yes`、`slice` 或 `no`，并写出唯一的限制因�
 ```bash
 python3 scripts/check_template.py _skeleton
 python3 scripts/check_template.py --all
-python3 scripts/check_template.py --all --strict   # 旧模板的违规也导致失败
+python3 scripts/check_template.py --all   # 旧模板的违规也导致失败
 ```
 
 `--all` 打印符合性列表。每个显式 `spec_version: 2` 或 `3` 的目录都通过时退出码为 0。旧目录会带上违规代码列出来，但不让进程失败。CI 运行 `--all`。`scripts/run_local_e2e.py` 也会运行它，支持的规范版本检查失败时整个脚本失败。

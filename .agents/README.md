@@ -236,3 +236,5 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 - [K3s evaluated feasibility decision](notes/proposed/process/2026-10-21-k3s-feasibility-decision.md) · [seven original native attempts](evidence/verify/2026-10-21-k3s-final-feasibility.json)
 
 - [Original managed OpenSandbox native acceptance](notes/proposed/feature/2026-10-21-opensandbox-native-acceptance.md) · [verification](evidence/verify/2026-10-21-opensandbox-native-acceptance.md)
+
+- [Remove retired project compatibility](notes/proposed/architecture/2026-10-22-remove-legacy-compatibility.md) · [verification](evidence/verify/2026-10-22-remove-legacy-compatibility.md)

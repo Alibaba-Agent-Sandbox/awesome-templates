@@ -362,7 +362,7 @@ The runner also requires successful owned sandbox/template cleanup before writin
 the pass file or returning exit 0, including independent SDK/official-list
 readback that the known sandbox IDs/templates and exact alias are absent. CLI
 kill/delete acknowledgements alone do not establish that. It refuses an existing exact alias through
-`abx --json template list --official-api`. Cleanup failures and unknown deploy/create
+`abx --json template list`. Cleanup failures and unknown deploy/create
 responses retain a private, credential-free owned intent.
 `python3 scripts/express_e2e.py --recover-intent PRIVATE_PATH` uses existing official
 template list/delete and SDK sandbox list/kill APIs to reconcile only that attempt.
@@ -483,10 +483,10 @@ The Express feasibility section says `yes`, `slice`, or `no`, and names the sing
 ```bash
 python3 scripts/check_template.py _skeleton
 python3 scripts/check_template.py --all
-python3 scripts/check_template.py --all --strict   # fail on legacy templates too
+python3 scripts/check_template.py --all   # fail on legacy templates too
 ```
 
-`--all` prints a conformance list and exits 0 when every explicit `spec_version: 2` or `3` directory passes. Legacy directories are listed with their violation codes and do not fail the process. CI runs `--all --strict`. `scripts/run_local_e2e.py` runs it as well and fails the script when a supported-spec directory fails.
+`--all` prints a conformance list and exits 0 when every explicit `spec_version: 2` or `3` directory passes. Legacy directories are listed with their violation codes and do not fail the process. CI runs `--all`. `scripts/run_local_e2e.py` runs it as well and fails the script when a supported-spec directory fails.
 
 Violation codes include `required-file`, `readme-section`, `base-image`, `dockerfile-cmd`, `dockerfile-user`, `yaml-field`, `commands-start`, `verified-evidence`, `pinned-version`, `readme-client`, `secrets`. `pinned-version` fails when a `RUN` has neither allowed server pin above. `readme-client` fails when a spec_version 2/3 SDK section does not name `agent-sandbox-client`, or when a README tells the reader to `pip install agent-sandbox`.
 

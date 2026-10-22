@@ -41,7 +41,7 @@ already passes `scripts/check_template.py`. It is not a catalog entry.
    prints per-layer sizes.
 
    The runner refuses an existing official template alias and requires
-   `abx --json template list --official-api` for ownership checks. Exit 0 and
+   `abx --json template list` for ownership checks. Exit 0 and
    provider-pass evidence require successful owned sandbox/template cleanup.
    The runner independently reads back known sandbox IDs/templates and the exact
    official alias before publishing; cleanup acknowledgements alone are insufficient.
