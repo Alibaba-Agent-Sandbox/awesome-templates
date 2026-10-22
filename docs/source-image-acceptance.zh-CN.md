@@ -2,6 +2,9 @@
 
 [English](source-image-acceptance.md).
 
+2026-10-22 实测通过：极速版常规镜像运行及独立清理46/46、完整 HTTP46/46；OpenSandbox 原始源码镜像 CLI/SDK、完整 HTTP 及独立清理46/46。[逐模板矩阵](../.agents/evidence/verify/2026-10-22-source-image-backend-matrix.json)。
+
+
 [Issue185](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/185)
 跟踪全部46个源码模板的极速版常规镜像和原生 OpenSandbox Docker 验收。
 steps 记录单独计算；工作流、镜像构建或托管解释器通过，均不代表这些源码模板已经通过。

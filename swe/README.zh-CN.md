@@ -129,11 +129,26 @@ YAML 声明空的 `SWE_API_KEY`、`SWE_BASE_URL`、`SWE_MODEL`，必须明确注
 
 ## 已验证
 
+
+### 当前镜像验收 — 2026-10-22
+
+| 提供方 | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 1.1.0；常规镜像、真实 CLI/SDK、完整 HTTP 5 PASS / 0 FAIL / 1 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-20T091111Z.json) |
+| opensandbox | 1.1.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 5 PASS / 0 FAIL / 1 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T113251Z.json) |
+
+CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
+
+<details>
+<summary>此前验收记录（保留原有时间与范围）</summary>
+
 版本1.1.0通过真实 SDK 创建的极速版镜像注册、官方 READY、CLI/SDK 版本冒烟及14项严格兼容模型断言。官方 mini2.4.6 以原生 bash 工具调用 qwen3.8-flash 修改源码，保留原始测试，在独立全新评测环境通过全部60个原始测试身份，并取回源码补丁及报告。自有沙箱/模板/镜像仓库清理和运行后摘要均独立回查通过。这是单题可移植性切片，不是官方 SWE-bench 分数；其他提供方及官方完整 harness 未验证。
 
 | Version | Provider | Evidence |
 | --- | --- | --- |
 | 1.1.0 | alicloud-express | [image](evidence/express-2026-10-20.json), [HTTP](evidence/image-http-2026-10-20T091111Z.json), [strict model14](evidence/model-image-2026-10-20T091111Z.json) |
+
+</details>
 
 ## 历史验收
 

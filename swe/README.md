@@ -131,11 +131,26 @@ Use only trusted tasks/models in a disposable sandbox: mini executes model-gener
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.1.0; regular image, actual CLI/SDK, complete HTTP 5 PASS / 0 FAIL / 1 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-20T091111Z.json) |
+| opensandbox | 1.1.0; original Docker backend, every CLI/SDK named smoke, complete HTTP 5 PASS / 0 FAIL / 1 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T113251Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 Version1.1.0 passed actual SDK-created Express image registration and official READY, CLI/SDK version smoke and14 strict compatible-model assertions. The actual mini2.4.6 native bash-tool protocol with qwen3.8-flash edited source, preserved all original tests, passed all60 exact test identities in an independent fresh evaluator and retrieved the source patch and report. Sandbox/template/registry cleanup and post-runtime digest were independently confirmed. This is the single-instance portability slice, not an official SWE-bench score. Other providers and full official harness remain unverified.
 
 | Version | Provider | Evidence |
 | --- | --- | --- |
 | 1.1.0 | alicloud-express | [image](evidence/express-2026-10-20.json), [HTTP](evidence/image-http-2026-10-20T091111Z.json), [strict model14](evidence/model-image-2026-10-20T091111Z.json) |
+
+</details>
 
 ## Historical verification
 

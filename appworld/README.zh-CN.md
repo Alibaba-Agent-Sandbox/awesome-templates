@@ -97,6 +97,19 @@ HTTP200 返回 `{"result":"original AppWorld0.1.3.post1 native API and private c
 
 ## 已验证
 
+
+### 当前镜像验收 — 2026-10-22
+
+| 提供方 | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 1.0.6；常规镜像、真实 CLI/SDK、完整 HTTP 9 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T100518Z.json) |
+| opensandbox | 1.0.6；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 9 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T110058Z.json) |
+
+CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
+
+<details>
+<summary>此前验收记录（保留原有时间与范围）</summary>
+
 | Provider | 范围 | 证据 |
 | --- | --- | --- |
 | alicloud-express | 模板1.0.6；原生steps、官方READY、实际SDK创建、CLI/SDK原生API、真实任务与原版评分重验、独立清理 | [Express](evidence/express-2026-10-21.json)、[完整记录](evidence/verification-steps-2026-10-21T000253Z.json) |
@@ -104,6 +117,8 @@ HTTP200 返回 `{"result":"original AppWorld0.1.3.post1 native API and private c
 原版AppWorld0.1.3.post1使用自编兼容模型API连接层及显式批准的qwen3.8-flash，完成原始训练任务82e2fac_1：16轮模型响应、62次原生API调用、原版评测2/2通过、score1.0。17PASS/0FAIL/0SKIP，完整非模型HTTP9PASS/0FAIL/0SKIP。下载的原版加密产物13792字节，SHA256与原生返回一致；独立无模型密钥工作进程重新加载保存数据库，用原版评测器复现全部分数/测试计数，返回后新ACK再次检查产物。自有结果目录、私有解密状态/原生进程、次级监听、外层沙箱/模板、私有OSS均独立确认不存在；总耗时321.702秒。
 
 准确源码3eff99e2af7eae6760f717e27c44efb9283e0ff2的真实镜像L1及非root原生API smoke通过。Express证据使用steps，不是镜像部署。失败历史全部保留。本结果只覆盖一个训练任务、原版引擎/评测器和自编模型连接层，不代表论文baseline、排行榜、全任务或其他提供方。[最终工程证据](../.agents/evidence/verify/2026-10-21-appworld-native-final.md)。
+
+</details>
 
 ## 二次开发
 

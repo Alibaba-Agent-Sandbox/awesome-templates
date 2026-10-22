@@ -20,7 +20,7 @@ tags:
 - byok
 priority: P1
 wave: 2
-tested_on: [alicloud-express]
+tested_on: [alicloud-express, opensandbox]
 capabilities:
 - shell
 - files

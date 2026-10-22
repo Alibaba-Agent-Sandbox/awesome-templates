@@ -13,7 +13,8 @@ image HTTP controllers and no OpenSandbox source runtimes; steps46/46 are separa
 Reuse exact-source image builds and the canonical Express transfer/cleanup runner.
 Require owned non-model native fixtures consistently. Add an explicit keyless
 workflow option to exercise each selected image on the original OpenSandbox
-Docker server through real SDK and complete HTTP operations, with independent
+Docker server through actual provider CLI named-HTTP calls, independent SDK calls
+and complete HTTP operations, with independent
 container and process cleanup. Preserve all historical evidence and failures.
 
 ## API Design

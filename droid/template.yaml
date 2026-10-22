@@ -11,7 +11,7 @@ ready_cmd: "agent-sandbox-server healthcheck --port 9000"
 tags: [droid, factory, ai-coding, ai-agent]
 priority: P1
 wave: 1
-tested_on: [alicloud-express]
+tested_on: [alicloud-express, opensandbox]
 capabilities: [shell, files, code, ports]
 ports: [9000]
 env:

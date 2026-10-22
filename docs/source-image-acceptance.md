@@ -2,6 +2,9 @@
 
 [中文](source-image-acceptance.zh-CN.md).
 
+2026-10-22 results: Express regular-image runtime/cleanup46/46, complete HTTP46/46; original OpenSandbox source-image CLI/SDK, complete HTTP and independent cleanup46/46. [Per-template matrix](../.agents/evidence/verify/2026-10-22-source-image-backend-matrix.json).
+
+
 Issue [185](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/185)
 tracks all46 source templates on Express regular images and native OpenSandbox
 Docker. Existing steps receipts remain separate. A workflow, build or managed

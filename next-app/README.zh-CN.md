@@ -102,11 +102,26 @@ Next 使用本地 next dev --webpack --hostname0.0.0.0 --port3000；Vite 使用�
 
 ## 已验证
 
+
+### 当前镜像验收 — 2026-10-22
+
+| 提供方 | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 1.1.0；常规镜像、真实 CLI/SDK、完整 HTTP 6 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-20T102030Z.json) |
+| opensandbox | 1.1.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 6 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T112003Z.json) |
+
+CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
+
+<details>
+<summary>此前验收记录（保留原有时间与范围）</summary>
+
 版本1.1.0通过真实SDK创建的极速版已验证镜像注册、原生CLI/SDK自测、完整HTTP6 PASS/0 FAIL/0 SKIP，以及3000/5173独立转发HTTP。两个真实应用都返回SDK写入的新源码标记，再完成自有进程/项目停止及删除。沙箱/模板/镜像仓库清理和运行后摘要独立回查通过。Vite仅允许准确SDK域名。默认FC响应仍把HTML标为附件；浏览器渲染及WebSocket/HMR明确为NOT_RUN，其他提供方也未验证。
 
 | Version | Provider | Evidence |
 | --- | --- | --- |
 | 1.1.0 | alicloud-express | [SDK-created image](evidence/express-2026-10-20.json), [HTTP6](evidence/image-http-2026-10-20T102030Z.json), [independent forwarded source edits](evidence/forwarded-http-2026-10-20T102030Z.json) |
+
+</details>
 
 ## 二次开发
 

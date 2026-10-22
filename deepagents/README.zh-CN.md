@@ -111,6 +111,19 @@ HTTP200返回{"result":{"stdout":"42","stderr":"","exit_code":0}}，保留非零
 
 ## 已验证
 
+
+### 当前镜像验收 — 2026-10-22
+
+| 提供方 | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 1.0.0；常规镜像、真实 CLI/SDK、完整 HTTP 9 PASS / 0 FAIL / 1 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T110056Z.json) |
+| opensandbox | 1.0.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 9 PASS / 0 FAIL / 1 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T111055Z.json) |
+
+CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
+
+<details>
+<summary>此前验收记录（保留原有时间与范围）</summary>
+
 版本1.0.0已通过真实阿里云极速版校验CI镜像注册、官方READY、原生Python Sandbox.create、CLI/SDK冒烟及 **17项严格真实模型检查，0 FAIL/0 SKIP**。显式兼容模型qwen3.8-flash驱动真实原生Agent改源码、生成报告及精确产物、保留全部原测试，并通过返回后的独立原测试/隐藏计算。沙箱/模板/镜像仓库清理及运行后镜像digest均独立确认。
 
 | 版本 | 提供方 | 证据 |
@@ -118,6 +131,8 @@ HTTP200返回{"result":{"stdout":"42","stderr":"","exit_code":0}}，保留非零
 | 1.0.0 | alicloud-express | [SDK创建镜像](evidence/express-2026-10-20.json), [严格模型17](evidence/model-image-2026-10-20T113609Z.json), [关闭模型HTTP](evidence/image-http-2026-10-20T113609Z.json) |
 
 单独关闭模型的HTTP控制器9 PASS/1项显式模型SKIP，不是L3。[真实原生step尝试](evidence/verification-steps-2026-10-20T112245Z.json)未在1200秒内独立到达READY，最后官方状态仍为building，未创建沙箱。已删除自有模板，并[独立回查模板/沙箱不存在](evidence/steps-cleanup-2026-10-20.json)。这是失败尝试，不能宣称step通过或推断提供方存在通用RUN时限。其他提供方及其余上游模型/后端未认证。
+
+</details>
 
 ## 二次开发
 

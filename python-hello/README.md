@@ -89,7 +89,7 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/run_script" \
 
 The body is the direct JSON argument object, without an `args` wrapper. `POST /commands/run` with `{"file":"main.py"}` executes an uploaded script; `POST /commands/test` with `{"path":"test_main.py"}` runs an uploaded test. Both return `{"result":"<stdout>"}` when successful. `GET /commands` discovers public commands, and `GET /hello/Ada` returns `{"greeting":"Hello, Ada!"}`.
 
-Server authentication is separate from provider authentication. If you set `ABX_SERVER_TOKEN` inside the sandbox, include `Authorization: Bearer $ABX_SERVER_TOKEN` on protected requests; `/health` is exempt from server-token authentication. For the SDK use `sb.server_at(9000, token=server_token).commands.run(...)` with the token supplied securely by your application. A provider whose gateway requires an access header also needs that header (for example `X-Access-Token` from `sb.network.get_access_headers()`), in addition to the server bearer token. Only Express has historical provider evidence for this template; other providers remain unverified.
+Server authentication is separate from provider authentication. If you set `ABX_SERVER_TOKEN` inside the sandbox, include `Authorization: Bearer $ABX_SERVER_TOKEN` on protected requests; `/health` is exempt from server-token authentication. For the SDK use `sb.server_at(9000, token=server_token).commands.run(...)` with the token supplied securely by your application. A provider whose gateway requires an access header also needs that header (for example `X-Access-Token` from `sb.network.get_access_headers()`), in addition to the server bearer token. Current image backend acceptance and its exact scope are listed in [Verified](#verified).
 
 Missing or invalid arguments return HTTP 400, failed authentication 401, unknown commands 404, and execution failures 500. Errors contain `error` and `type`. Named-command stdout is buffered until completion. The HTTP client timeout controls how long the caller waits; it does not cancel work on the server.
 
@@ -135,6 +135,19 @@ not verify this revision's Dockerfile build or newly deployed template.
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.1.1; regular image, actual CLI/SDK, complete HTTP 21 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T103900Z.json) |
+| opensandbox | 1.1.1; original Docker backend, every CLI/SDK named smoke, complete HTTP 21 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T112700Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 Additional exact-version real steps passed on2026-10-20 using actual Python `Sandbox.create`, CLI/SDK named smoke and independently confirmed sandbox/template cleanup: [SDK-created step receipt](evidence/express-2026-10-20.json). This separately establishes the creation route; the complete workflow receipts below keep their original scope.
 
 
@@ -143,6 +156,8 @@ Additional exact-version real steps passed on2026-10-20 using actual Python `San
 | alicloud-express | 1.1.1; steps build, official READY, CLI/SDK, complete HTTP 21 assertions, independent cleanup | [2026-10-19](evidence/express-2026-10-19T183219Z.json) |
 
 The changed workspace profile is verified in real generated steps. Prior receipts retain historical scope; basic smoke does not establish model acceptance.
+
+</details>
 
 ## Historical verification
 

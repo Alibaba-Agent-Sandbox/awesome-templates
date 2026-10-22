@@ -1,6 +1,6 @@
 # Source image backend acceptance — 2026-10-22
 
-Result: PARTIAL
+Result: PASS — all three current-source backend qualification columns; final publication gates are recorded below.
 
 Base: da1da4193bb31c28cb252d745b2012fd1d011c4b. Scope: shared HTTP fixture
 enforcement, existing Express image runner, optional native OpenSandbox workflow
@@ -165,3 +165,46 @@ Native runtime acceptance is complete. Express's final two selected source image
 are still in progress at this checkpoint. PR188 meanwhile merged independent
 explicit-schema rules; integrate that main revision after the active image workers
 finish and use the updated checker without its retired `--strict` flag.
+
+## Final backend result and current-main integration
+
+All46 current sources now pass Express regular-image runtime/independent cleanup,
+complete image HTTP, and original OpenSandbox source-image CLI/SDK/full HTTP with
+independent cleanup. The final Stagehand and Tau2 Express attempts passed; the
+bounded selected batch finished25/25 with no unresolved owned cleanup. Existing
+qualified current-source image runs remain valid; this is not a claim of46new
+Express registrations. Credential-dependent model/vendor checks retain explicit
+SKIP/NOT_RUN and are not promoted to model acceptance.
+
+Integrated current main a6df7ff65a4761e64aacb74b17a5740bdca4204b (PR188/189) after
+all live workers finished. Resolved index/CI/test conflicts while preserving
+explicit-schema validation, the default template-list route, the actual
+`template from-image` registration fix and every new regression suite. Actual
+read-only nativeCLI0.4.1 calls to template list with and without the old flag both
+returned success and the required Alias/TemplateID shape; no resources created.
+Updated bilingual stale checker prose and clarified that sanitized failed-attempt
+records never qualify a provider. Runtime image inputs and the native controller
+remain unchanged; no backend pass is inferred from this documentation integration.
+
+## Final local publication checks
+
+- `python scripts/test_spec_tools.py`: PASS57.
+- `python scripts/check_template.py --all`: PASS46 sources plus skeleton, zero violations.
+- `python scripts/check_docs.py`: PASS218 current documents, zero broken local links.
+- Explicit task decision/evidence link check: PASS2 documents, zero failures.
+- `python scripts/source_image_acceptance.py`: PASS46/46 Express image runtime,
+  46/46 complete image HTTP and46/46 original native OpenSandbox.
+- `python scripts/step_acceptance.py --require-http`: PASS46/46 current step
+  runtime and46/46 complete step HTTP after the qualification-only metadata update.
+
+Permanent [image/backend matrix](2026-10-22-source-image-backend-matrix.json) and
+[step recheck](2026-10-22-current-steps-after-backend-qualification.json) retain
+individual template/version and receipt paths. [PR186](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/186)
+tracks the final-head CI, review and actual merge; no pending CI is called a pass
+in these pre-publication records. No template runtime source changed.
+
+After integrating current main and resolving the actual contract conflicts, the
+complete affected shared regression group passed223 tests and18 subtests in
+183.11seconds. This includes preparation, image/archive/cleanup/SDK creation,
+step provenance/assets, required HTTP fixtures, source qualification and bounded
+batch behavior. No remaining local gate failed or was bypassed.
