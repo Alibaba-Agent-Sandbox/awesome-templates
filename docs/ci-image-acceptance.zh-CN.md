@@ -2,7 +2,7 @@
 
 [English](ci-image-acceptance.md)。大型资产在[平台步骤](platform-steps.zh-CN.md)中
 可能传输较慢。显式镜像路径使用仓库现有 Dockerfile CI 导出，以及原生 CLI 的
-`template create`，记录 `build_mode: image`。模板仍需真实运行验收。
+`template from-image`，记录 `build_mode: image`。模板仍需真实运行验收。
 
 ## 准备公开输入
 
@@ -40,7 +40,7 @@ python scripts/run_ci_image_e2e.py ocr \
 建立所有权，确认新仓库为 PRIVATE，再传输已验证镜像并读回内容摘要。
 不修改账号策略。
 
-真实 `abx template create` 注册本次独占的 review 标签，并在注册前和运行后独立读回内容摘要确认未变，官方 API 必须返回 READY，再执行
+真实 `abx template from-image` 注册本次独占的 review 标签，并在注册前和运行后独立读回内容摘要确认未变，官方 API 必须返回 READY，再执行
 CLI/SDK 冒烟与完整外部 HTTP 验收。本控制器明确记录模型验收 NOT_RUN；Issue
 要求真实模型时，仍需独立严格的镜像内模型验证。`--smoke-only` 明确跳过完整
 HTTP 验收，不代表整个产品通过。
@@ -74,3 +74,7 @@ HTTP 验收，不代表整个产品通过。
 SDK timeout 表示沙箱生命周期，与构建 READY 等待和请求时限分别配置。创建响应
 丢失时保留私有恢复记录，不能发布验收。关闭本地客户端不删除云沙箱；runner
 随后销毁自有资源并独立确认不存在。
+
+控制器先验证实际 CLI 的 `template from-image --help` 契约，再下载归档或写入云资源。
+`--private-root` 可指定私有归档和恢复记录目录，内存认证所需的文件描述符链接仍使用
+原生临时文件系统，认证值始终只保存在匿名内存中。

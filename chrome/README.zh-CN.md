@@ -105,11 +105,26 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/chrome_open" \
 
 ## 已验证
 
+
+### 当前镜像验收 — 2026-10-22
+
+| 提供方 | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 1.0.5；常规镜像、真实 CLI/SDK、完整 HTTP 30 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T101624Z.json) |
+| opensandbox | 1.0.5；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 30 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T110912Z.json) |
+
+CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
+
+<details>
+<summary>此前验收记录（保留原有时间与范围）</summary>
+
 | 提供方 | 日期 | 范围 | 证据 |
 | --- | --- | --- | --- |
 | alicloud-express | 2026-10-20 |1.0.5；原版有界面 Chrome145，SDK 创建的原生 steps，CLI/SDK smoke、完整HTTP30/0/0及独立清理 | [收据](evidence/express-2026-10-20T230349Z.json)、[控制器/来源](evidence/verification-steps-2026-10-20T230349Z.json) |
 
 准确运行/控制器源码 cd144246bcd3e2ba37865d90e24cba612db8b11b。[L1 原生镜像 smoke](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39512397976) 也通过，独立实测64MiB共享内存。原生 CDP/noVNC/RFB 认证、真实 VNC 指针输入与独立 DOM/画面变化、有效命名导航及外部 CDP 回读、PNG 独立下载/字节/哈希/多区域/返回后随机 ACK，以及本次原生进程/私有目录/display/监听/沙箱/模板/OSS 缺席均通过，耗时156.468秒。不声明模型、基准或其他提供方验收。[最终记录](../.agents/evidence/verify/2026-10-20-chrome-native-final.md)。历史鼠标指针采样失败和仅诊断尝试保持原样；本地/源码检查不能赋予提供方资格。
+
+</details>
 
 ## 二次开发
 

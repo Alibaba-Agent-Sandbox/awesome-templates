@@ -1,0 +1,114 @@
+{
+  "provider": "opensandbox",
+  "template": "cline",
+  "template_version": "1.0.2",
+  "verification_type": "source-image-native-opensandbox-docker-http",
+  "build_mode": "image",
+  "passed": true,
+  "cleanup_verified": true,
+  "model_acceptance": "NOT_RUN",
+  "checks": [
+    "fixed source upstream",
+    "fixed source provider",
+    "fixed source cli",
+    "fixed source sdk",
+    "actual image architecture and non-root workspace configuration",
+    "original OpenSandbox server health",
+    "actual SDK create",
+    "independent Docker identity matches exact built image",
+    "actual guest bridge endpoint",
+    "owned metadata readback",
+    "actual runtime command bytes match source",
+    "SDK observes actual non-root image user",
+    "SDK real shell Python program",
+    "SDK file write/read",
+    "SDK file removal readback",
+    "generic native interpreter explicitly unsupported",
+    "SDK starts original template service as user",
+    "original template readiness command",
+    "external provider CLI named smoke cline_version",
+    "SDK named smoke cline_version",
+    "complete current external HTTP controller",
+    "independent SDK and Docker absence",
+    "owned provider engine stopped and reaped",
+    "owned original server process stopped"
+  ],
+  "commands": [
+    {
+      "index": 0,
+      "name": "cline_version",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "operation": "abx --provider opensandbox exec -> owned template HTTP named API"
+    },
+    {
+      "index": 0,
+      "name": "cline_version",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "operation": "ServerClient.commands.run against independently observed guest"
+    }
+  ],
+  "pins": {
+    "upstream": "30348cbdfe4b9cfd49e0963617aed357a8f1ac4c",
+    "provider": "9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d",
+    "cli": "c8e8ad784323b8903505442cbc77d433a0d0367a",
+    "sdk": "33f857f5a79fd10326652e9d03f15f3621d6b848"
+  },
+  "date": "2026-10-22",
+  "source_commit": "fef1c788103da5b8509cfa5fce71d40ce4109e6b",
+  "context_sha256": {
+    "Dockerfile": "80f369fdb8c3835fe07ee0666e89eefa1599c9549f2277a18933d1bb6a172203",
+    "template.yaml:contract": "d3172290d500f68f77b773f3b7be0d242fe33afa62fa4ae4f72aeae8c34c86da",
+    "package.json": "5d52107325cc988652f9cb6321d5767dcd9925404d07741f1cb12b168c6e3f99",
+    "package-lock.json": "5320a9b15ac7126b61c171b951567a745570ad18ebcae913bad0ae13072cc121",
+    "commands.py": "aa1cb4a71d5e3e90b4802679d61124006261c299661587173a9354f00e19d5f3",
+    "process.py": "6e62f3e52e0f0f75356e2fb92b21d59444c2240d0d03e990c7133375de51e1f4",
+    "lifecycle.py": "9b13690cab589d79f0f9940f33ab5f36eb3d0f5524317600ba1a69acb34847b0",
+    "UPSTREAM-LICENSE.md": "f704446a5f1271608805598b557e4288cf8580477ea038c9c3d8b361f693f6b8"
+  },
+  "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+  "workflow_run_id": 39766754883,
+  "generic_code_interpretation": "UNSUPPORTED; template named APIs tested separately",
+  "images": {
+    "template_image_id": "sha256:3356da13e4609bdbce8563f657b728bca49e2593acee308151f7b14c1a29ffd2",
+    "execd_digest": "opensandbox/execd@sha256:6cf7dba2f21f0b536e100563d841ac58a9f31c2b0a081b7ac76796a24d6f47e2",
+    "execd_image_id": "sha256:e12d3de4b28e820bc966fe875484b35a5fad9322c4ef8a5b6751873da03bd214"
+  },
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "execution_identity": {
+    "selection": "image default; explicit user switching not qualified",
+    "probe_exit_code": 0,
+    "uid": 1000
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 8,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "4f9831ecb270f2759a4c4deedda35d9af2085ef1dc46634069693823cfb7ca53",
+    "passed": true
+  },
+  "cleanup_observations": {
+    "sdk_not_found": true,
+    "owned_docker_containers_absent": true,
+    "errors": []
+  },
+  "versions": {
+    "agent-sandbox-client": "0.3.0",
+    "agent-sandbox-server": "0.3.0",
+    "opensandbox-server": "1.2.0rc2.dev222+g30348cbd"
+  },
+  "sdk_version": "0.3.0",
+  "duration_s": 15.918,
+  "controller_sha256": "9abec330f7aad1ea6ff2b5cb60ab24b63406f40d774f0448c1e5bf1af3d8ab9e",
+  "receipt_artifact_id": 12420438790,
+  "receipt_artifact_digest": "sha256:ad8695e49e92cedf16eedc6b862df2bde29d123738e48a0a748071cd5ecf7b55",
+  "workflow_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39766754883",
+  "workflow_job_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39766754883/job/119784079217",
+  "workflow_job_conclusion": "success"
+}

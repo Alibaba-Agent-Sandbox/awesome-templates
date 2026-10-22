@@ -102,11 +102,26 @@ Declared2vCPU2048MB, Linuxx64, port9000,8GiB image rootfs budget; no KVM/Docker/
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.3.1; regular image, actual CLI/SDK, complete HTTP 10 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T102154Z.json) |
+| opensandbox | 1.3.1; original Docker backend, every CLI/SDK named smoke, complete HTTP 10 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T110508Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 | Provider | Executed current scope | Evidence |
 | --- | --- | --- |
 | alicloud-express |1.3.1/original CLI2.0.76, published runtime9644342; immutable native steps, actual SDK create/CLI+SDK smoke/fullHTTP10; original read_file-equivalent Read API and controlled native Bash background cancellation; actual compatible-model19PASS0FAIL0SKIP; independently owned cleanup | [receipt](evidence/express-2026-10-21T094126Z.json), [read API](evidence/verification-steps-2026-10-21T094124Z.json), [cancellation API](evidence/verification-steps-2026-10-21T094125Z.json), [model proof](evidence/verification-steps-2026-10-21T094126Z.json) |
 
 Original Read fixture25.726seconds:2requests/2completed-required/1tool-result/0failures. Controlled original Bash fixture27.384seconds:4requests/3completed-required/1SHA256-identified asynchronous file-path cancellation/0failed; cancelled reply is never counted completed. Actual qwen3.8-flash source-edit77.552seconds:19PASS0FAIL0SKIP,11completed responses/9required/7original tool calls/28historical tool results/0failures/0cancellations. Original3test bytes/report/exact nonce/3original+4held-out assertions/fresh post-returnACK verified. All three independent secondary process/listener/owned fixture and outer template/sandbox cleanup checks PASS. Native API fixtures use only synthetic local replies; real model is separate and only its explicitly configured approved origin receives its key. Anthropic-hosted model/account authentication remains NOT_RUN; non-Claude routing is not supported/endorsed by Anthropic. Local78tests/9subtestsPASS3.10seconds; final-head CI/image/review/merge are separate gates. Historical1.2.1 pass and later failures remain unchanged.
+
+</details>
 
 ## Secondary development
 

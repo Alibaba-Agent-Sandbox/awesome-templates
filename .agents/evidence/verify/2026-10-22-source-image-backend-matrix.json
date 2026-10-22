@@ -1,0 +1,665 @@
+{
+  "scope": "current-source image native/API/HTTP qualification, not model or generic native code capability",
+  "total": 46,
+  "express_image_runtime": 46,
+  "express_image_http": 46,
+  "opensandbox_native_http": 46,
+  "complete": true,
+  "templates": [
+    {
+      "template": "agents-cli",
+      "version": "2.0.1",
+      "express_image_runtime": [
+        "agents-cli/evidence/express-2026-10-22.json",
+        "agents-cli/evidence/image-http-2026-10-22T103934Z.json"
+      ],
+      "express_image_http": [
+        "agents-cli/evidence/image-http-2026-10-22T103934Z.json"
+      ],
+      "opensandbox_native_http": [
+        "agents-cli/evidence/opensandbox-2026-10-22T110057Z.json"
+      ]
+    },
+    {
+      "template": "aider",
+      "version": "1.0.1",
+      "express_image_runtime": [
+        "aider/evidence/express-2026-10-20.json",
+        "aider/evidence/express-2026-10-20T112118Z.json",
+        "aider/evidence/image-http-2026-10-20T064247Z.json",
+        "aider/evidence/image-http-2026-10-20T112118Z.json"
+      ],
+      "express_image_http": [
+        "aider/evidence/image-http-2026-10-20T064247Z.json",
+        "aider/evidence/image-http-2026-10-20T112118Z.json"
+      ],
+      "opensandbox_native_http": [
+        "aider/evidence/opensandbox-2026-10-22T110057Z.json"
+      ]
+    },
+    {
+      "template": "amp",
+      "version": "1.2.0",
+      "express_image_runtime": [
+        "amp/evidence/express-2026-10-22.json",
+        "amp/evidence/image-http-2026-10-22T103927Z.json"
+      ],
+      "express_image_http": [
+        "amp/evidence/image-http-2026-10-22T103927Z.json"
+      ],
+      "opensandbox_native_http": [
+        "amp/evidence/opensandbox-2026-10-22T110057Z.json"
+      ]
+    },
+    {
+      "template": "apply-patch",
+      "version": "1.0.0",
+      "express_image_runtime": [
+        "apply-patch/evidence/express-2026-10-22.json",
+        "apply-patch/evidence/image-http-2026-10-22T104212Z.json"
+      ],
+      "express_image_http": [
+        "apply-patch/evidence/image-http-2026-10-22T104212Z.json"
+      ],
+      "opensandbox_native_http": [
+        "apply-patch/evidence/opensandbox-2026-10-22T110058Z.json"
+      ]
+    },
+    {
+      "template": "appworld",
+      "version": "1.0.6",
+      "express_image_runtime": [
+        "appworld/evidence/express-2026-10-22.json",
+        "appworld/evidence/image-http-2026-10-22T100518Z.json"
+      ],
+      "express_image_http": [
+        "appworld/evidence/image-http-2026-10-22T100518Z.json"
+      ],
+      "opensandbox_native_http": [
+        "appworld/evidence/opensandbox-2026-10-22T110058Z.json"
+      ]
+    },
+    {
+      "template": "browser-automation",
+      "version": "2.2.0",
+      "express_image_runtime": [
+        "browser-automation/evidence/express-2026-10-22.json",
+        "browser-automation/evidence/image-http-2026-10-22T101142Z.json"
+      ],
+      "express_image_http": [
+        "browser-automation/evidence/image-http-2026-10-22T101142Z.json"
+      ],
+      "opensandbox_native_http": [
+        "browser-automation/evidence/opensandbox-2026-10-22T110653Z.json"
+      ]
+    },
+    {
+      "template": "browser-use",
+      "version": "1.0.0",
+      "express_image_runtime": [
+        "browser-use/evidence/express-2026-10-20.json",
+        "browser-use/evidence/image-http-2026-10-20T144122Z.json"
+      ],
+      "express_image_http": [
+        "browser-use/evidence/image-http-2026-10-20T144122Z.json"
+      ],
+      "opensandbox_native_http": [
+        "browser-use/evidence/opensandbox-2026-10-22T110655Z.json"
+      ]
+    },
+    {
+      "template": "chrome",
+      "version": "1.0.5",
+      "express_image_runtime": [
+        "chrome/evidence/express-2026-10-22.json",
+        "chrome/evidence/image-http-2026-10-22T101624Z.json"
+      ],
+      "express_image_http": [
+        "chrome/evidence/image-http-2026-10-22T101624Z.json"
+      ],
+      "opensandbox_native_http": [
+        "chrome/evidence/opensandbox-2026-10-22T110912Z.json"
+      ]
+    },
+    {
+      "template": "claude-code",
+      "version": "1.3.1",
+      "express_image_runtime": [
+        "claude-code/evidence/express-2026-10-22.json",
+        "claude-code/evidence/image-http-2026-10-22T102154Z.json"
+      ],
+      "express_image_http": [
+        "claude-code/evidence/image-http-2026-10-22T102154Z.json"
+      ],
+      "opensandbox_native_http": [
+        "claude-code/evidence/opensandbox-2026-10-22T110508Z.json"
+      ]
+    },
+    {
+      "template": "cline",
+      "version": "1.0.2",
+      "express_image_runtime": [
+        "cline/evidence/express-2026-10-22.json",
+        "cline/evidence/image-http-2026-10-22T105009Z.json"
+      ],
+      "express_image_http": [
+        "cline/evidence/image-http-2026-10-22T105009Z.json"
+      ],
+      "opensandbox_native_http": [
+        "cline/evidence/opensandbox-2026-10-22T110504Z.json"
+      ]
+    },
+    {
+      "template": "code-server",
+      "version": "1.0.0",
+      "express_image_runtime": [
+        "code-server/evidence/express-2026-10-20.json",
+        "code-server/evidence/image-http-2026-10-20T091440Z.json"
+      ],
+      "express_image_http": [
+        "code-server/evidence/image-http-2026-10-20T091440Z.json"
+      ],
+      "opensandbox_native_http": [
+        "code-server/evidence/opensandbox-2026-10-22T110651Z.json"
+      ]
+    },
+    {
+      "template": "codex",
+      "version": "2.0.0",
+      "express_image_runtime": [
+        "codex/evidence/express-2026-10-20.json",
+        "codex/evidence/image-http-2026-10-20T145436Z.json"
+      ],
+      "express_image_http": [
+        "codex/evidence/image-http-2026-10-20T145436Z.json"
+      ],
+      "opensandbox_native_http": [
+        "codex/evidence/opensandbox-2026-10-22T110946Z.json"
+      ]
+    },
+    {
+      "template": "codex-agent-api",
+      "version": "2.0.0",
+      "express_image_runtime": [
+        "codex-agent-api/evidence/express-2026-10-22.json",
+        "codex-agent-api/evidence/image-http-2026-10-22T105026Z.json"
+      ],
+      "express_image_http": [
+        "codex-agent-api/evidence/image-http-2026-10-22T105026Z.json"
+      ],
+      "opensandbox_native_http": [
+        "codex-agent-api/evidence/opensandbox-2026-10-22T110910Z.json"
+      ]
+    },
+    {
+      "template": "copilot-cli",
+      "version": "1.0.0",
+      "express_image_runtime": [
+        "copilot-cli/evidence/express-2026-10-22.json",
+        "copilot-cli/evidence/image-http-2026-10-22T105025Z.json"
+      ],
+      "express_image_http": [
+        "copilot-cli/evidence/image-http-2026-10-22T105025Z.json"
+      ],
+      "opensandbox_native_http": [
+        "copilot-cli/evidence/opensandbox-2026-10-22T110834Z.json"
+      ]
+    },
+    {
+      "template": "crush",
+      "version": "1.0.0",
+      "express_image_runtime": [
+        "crush/evidence/express-2026-10-20.json",
+        "crush/evidence/image-http-2026-10-20T111012Z.json"
+      ],
+      "express_image_http": [
+        "crush/evidence/image-http-2026-10-20T111012Z.json"
+      ],
+      "opensandbox_native_http": [
+        "crush/evidence/opensandbox-2026-10-22T111021Z.json"
+      ]
+    },
+    {
+      "template": "cursor-agent",
+      "version": "1.0.0",
+      "express_image_runtime": [
+        "cursor-agent/evidence/express-2026-10-22.json",
+        "cursor-agent/evidence/image-http-2026-10-22T105311Z.json"
+      ],
+      "express_image_http": [
+        "cursor-agent/evidence/image-http-2026-10-22T105311Z.json"
+      ],
+      "opensandbox_native_http": [
+        "cursor-agent/evidence/opensandbox-2026-10-22T111132Z.json"
+      ]
+    },
+    {
+      "template": "deepagents",
+      "version": "1.0.0",
+      "express_image_runtime": [
+        "deepagents/evidence/express-2026-10-22.json",
+        "deepagents/evidence/image-http-2026-10-22T110056Z.json"
+      ],
+      "express_image_http": [
+        "deepagents/evidence/image-http-2026-10-22T110056Z.json"
+      ],
+      "opensandbox_native_http": [
+        "deepagents/evidence/opensandbox-2026-10-22T111055Z.json"
+      ]
+    },
+    {
+      "template": "deepseek-harness",
+      "version": "1.1.1",
+      "express_image_runtime": [
+        "deepseek-harness/evidence/express-2026-10-20.json",
+        "deepseek-harness/evidence/image-http-2026-10-20T073449Z.json"
+      ],
+      "express_image_http": [
+        "deepseek-harness/evidence/image-http-2026-10-20T073449Z.json"
+      ],
+      "opensandbox_native_http": [
+        "deepseek-harness/evidence/opensandbox-2026-10-22T111057Z.json"
+      ]
+    },
+    {
+      "template": "dev-services",
+      "version": "1.1.0",
+      "express_image_runtime": [
+        "dev-services/evidence/express-2026-10-20.json",
+        "dev-services/evidence/image-http-2026-10-20T101159Z.json"
+      ],
+      "express_image_http": [
+        "dev-services/evidence/image-http-2026-10-20T101159Z.json"
+      ],
+      "opensandbox_native_http": [
+        "dev-services/evidence/opensandbox-2026-10-22T111605Z.json"
+      ]
+    },
+    {
+      "template": "devin",
+      "version": "1.0.1",
+      "express_image_runtime": [
+        "devin/evidence/express-2026-10-22.json",
+        "devin/evidence/image-http-2026-10-22T110118Z.json"
+      ],
+      "express_image_http": [
+        "devin/evidence/image-http-2026-10-22T110118Z.json"
+      ],
+      "opensandbox_native_http": [
+        "devin/evidence/opensandbox-2026-10-22T111239Z.json"
+      ]
+    },
+    {
+      "template": "document-tools",
+      "version": "1.1.0",
+      "express_image_runtime": [
+        "document-tools/evidence/express-2026-10-20.json",
+        "document-tools/evidence/image-http-2026-10-20T150549Z.json"
+      ],
+      "express_image_http": [
+        "document-tools/evidence/image-http-2026-10-20T150549Z.json"
+      ],
+      "opensandbox_native_http": [
+        "document-tools/evidence/opensandbox-2026-10-22T112219Z.json"
+      ]
+    },
+    {
+      "template": "droid",
+      "version": "1.2.0",
+      "express_image_runtime": [
+        "droid/evidence/express-2026-10-22.json",
+        "droid/evidence/image-http-2026-10-22T110246Z.json"
+      ],
+      "express_image_http": [
+        "droid/evidence/image-http-2026-10-22T110246Z.json"
+      ],
+      "opensandbox_native_http": [
+        "droid/evidence/opensandbox-2026-10-22T111346Z.json"
+      ]
+    },
+    {
+      "template": "gemini",
+      "version": "2.2.0",
+      "express_image_runtime": [
+        "gemini/evidence/express-2026-10-22.json",
+        "gemini/evidence/image-http-2026-10-22T110330Z.json"
+      ],
+      "express_image_http": [
+        "gemini/evidence/image-http-2026-10-22T110330Z.json"
+      ],
+      "opensandbox_native_http": [
+        "gemini/evidence/opensandbox-2026-10-22T111421Z.json"
+      ]
+    },
+    {
+      "template": "goose",
+      "version": "1.0.0",
+      "express_image_runtime": [
+        "goose/evidence/express-2026-10-20.json",
+        "goose/evidence/image-http-2026-10-20T073500Z.json"
+      ],
+      "express_image_http": [
+        "goose/evidence/image-http-2026-10-20T073500Z.json"
+      ],
+      "opensandbox_native_http": [
+        "goose/evidence/opensandbox-2026-10-22T111529Z.json"
+      ]
+    },
+    {
+      "template": "grok",
+      "version": "1.0.1",
+      "express_image_runtime": [
+        "grok/evidence/express-2026-10-22.json",
+        "grok/evidence/image-http-2026-10-22T111201Z.json"
+      ],
+      "express_image_http": [
+        "grok/evidence/image-http-2026-10-22T111201Z.json"
+      ],
+      "opensandbox_native_http": [
+        "grok/evidence/opensandbox-2026-10-22T111604Z.json"
+      ]
+    },
+    {
+      "template": "hermes-agent",
+      "version": "1.1.1",
+      "express_image_runtime": [
+        "hermes-agent/evidence/express-2026-10-20.json",
+        "hermes-agent/evidence/express-2026-10-20T110933Z.json",
+        "hermes-agent/evidence/image-http-2026-10-20T062649Z.json",
+        "hermes-agent/evidence/image-http-2026-10-20T110933Z.json"
+      ],
+      "express_image_http": [
+        "hermes-agent/evidence/image-http-2026-10-20T062649Z.json",
+        "hermes-agent/evidence/image-http-2026-10-20T110933Z.json"
+      ],
+      "opensandbox_native_http": [
+        "hermes-agent/evidence/opensandbox-2026-10-22T111713Z.json"
+      ]
+    },
+    {
+      "template": "kimi-code",
+      "version": "1.0.0",
+      "express_image_runtime": [
+        "kimi-code/evidence/express-2026-10-22.json",
+        "kimi-code/evidence/image-http-2026-10-22T111230Z.json"
+      ],
+      "express_image_http": [
+        "kimi-code/evidence/image-http-2026-10-22T111230Z.json"
+      ],
+      "opensandbox_native_http": [
+        "kimi-code/evidence/opensandbox-2026-10-22T111821Z.json"
+      ]
+    },
+    {
+      "template": "media-tools",
+      "version": "1.1.0",
+      "express_image_runtime": [
+        "media-tools/evidence/express-2026-10-20T133417Z.json",
+        "media-tools/evidence/image-http-2026-10-20T133417Z.json"
+      ],
+      "express_image_http": [
+        "media-tools/evidence/image-http-2026-10-20T133417Z.json"
+      ],
+      "opensandbox_native_http": [
+        "media-tools/evidence/opensandbox-2026-10-22T112438Z.json"
+      ]
+    },
+    {
+      "template": "muse",
+      "version": "1.0.1",
+      "express_image_runtime": [
+        "muse/evidence/express-2026-10-22.json",
+        "muse/evidence/image-http-2026-10-22T111344Z.json"
+      ],
+      "express_image_http": [
+        "muse/evidence/image-http-2026-10-22T111344Z.json"
+      ],
+      "opensandbox_native_http": [
+        "muse/evidence/opensandbox-2026-10-22T111929Z.json"
+      ]
+    },
+    {
+      "template": "next-app",
+      "version": "1.1.0",
+      "express_image_runtime": [
+        "next-app/evidence/express-2026-10-20.json",
+        "next-app/evidence/image-http-2026-10-20T102030Z.json"
+      ],
+      "express_image_http": [
+        "next-app/evidence/image-http-2026-10-20T102030Z.json"
+      ],
+      "opensandbox_native_http": [
+        "next-app/evidence/opensandbox-2026-10-22T112003Z.json"
+      ]
+    },
+    {
+      "template": "node-web",
+      "version": "1.1.1",
+      "express_image_runtime": [
+        "node-web/evidence/express-2026-10-22.json",
+        "node-web/evidence/image-http-2026-10-22T111340Z.json"
+      ],
+      "express_image_http": [
+        "node-web/evidence/image-http-2026-10-22T111340Z.json"
+      ],
+      "opensandbox_native_http": [
+        "node-web/evidence/opensandbox-2026-10-22T112111Z.json"
+      ]
+    },
+    {
+      "template": "ocr",
+      "version": "1.0.1",
+      "express_image_runtime": [
+        "ocr/evidence/express-2026-10-20.json",
+        "ocr/evidence/image-http-2026-10-20T054627Z.json"
+      ],
+      "express_image_http": [
+        "ocr/evidence/image-http-2026-10-20T054627Z.json"
+      ],
+      "opensandbox_native_http": [
+        "ocr/evidence/opensandbox-2026-10-22T112402Z.json"
+      ]
+    },
+    {
+      "template": "openclaw",
+      "version": "2.1.0",
+      "express_image_runtime": [
+        "openclaw/evidence/express-2026-10-20.json",
+        "openclaw/evidence/express-2026-10-22.json",
+        "openclaw/evidence/image-http-2026-10-20T163034Z.json",
+        "openclaw/evidence/image-http-2026-10-22T112320Z.json"
+      ],
+      "express_image_http": [
+        "openclaw/evidence/image-http-2026-10-22T112320Z.json"
+      ],
+      "opensandbox_native_http": [
+        "openclaw/evidence/opensandbox-2026-10-22T112327Z.json"
+      ]
+    },
+    {
+      "template": "opencode",
+      "version": "2.0.2",
+      "express_image_runtime": [
+        "opencode/evidence/express-2026-10-22.json",
+        "opencode/evidence/image-http-2026-10-22T112305Z.json"
+      ],
+      "express_image_http": [
+        "opencode/evidence/image-http-2026-10-22T112305Z.json"
+      ],
+      "opensandbox_native_http": [
+        "opencode/evidence/opensandbox-2026-10-22T112437Z.json"
+      ]
+    },
+    {
+      "template": "osworld",
+      "version": "1.0.0",
+      "express_image_runtime": [
+        "osworld/evidence/express-2026-10-22.json",
+        "osworld/evidence/image-http-2026-10-22T113339Z.json"
+      ],
+      "express_image_http": [
+        "osworld/evidence/image-http-2026-10-22T113339Z.json"
+      ],
+      "opensandbox_native_http": [
+        "osworld/evidence/opensandbox-2026-10-22T113506Z.json"
+      ]
+    },
+    {
+      "template": "pi",
+      "version": "1.0.1",
+      "express_image_runtime": [
+        "pi/evidence/express-2026-10-20.json",
+        "pi/evidence/express-2026-10-20T112202Z.json",
+        "pi/evidence/image-http-2026-10-20T061437Z.json",
+        "pi/evidence/image-http-2026-10-20T112202Z.json"
+      ],
+      "express_image_http": [
+        "pi/evidence/image-http-2026-10-20T061437Z.json",
+        "pi/evidence/image-http-2026-10-20T112202Z.json"
+      ],
+      "opensandbox_native_http": [
+        "pi/evidence/opensandbox-2026-10-22T112547Z.json"
+      ]
+    },
+    {
+      "template": "polyglot-toolchain",
+      "version": "1.0.1",
+      "express_image_runtime": [
+        "polyglot-toolchain/evidence/express-2026-10-20.json",
+        "polyglot-toolchain/evidence/image-http-2026-10-20T070826Z.json"
+      ],
+      "express_image_http": [
+        "polyglot-toolchain/evidence/image-http-2026-10-20T070826Z.json"
+      ],
+      "opensandbox_native_http": [
+        "polyglot-toolchain/evidence/opensandbox-2026-10-22T112736Z.json"
+      ]
+    },
+    {
+      "template": "prime-agent",
+      "version": "1.0.0",
+      "express_image_runtime": [
+        "prime-agent/evidence/express-2026-10-22.json",
+        "prime-agent/evidence/image-http-2026-10-22T112500Z.json"
+      ],
+      "express_image_http": [
+        "prime-agent/evidence/image-http-2026-10-22T112500Z.json"
+      ],
+      "opensandbox_native_http": [
+        "prime-agent/evidence/opensandbox-2026-10-22T112738Z.json"
+      ]
+    },
+    {
+      "template": "python-hello",
+      "version": "1.1.1",
+      "express_image_runtime": [
+        "python-hello/evidence/express-2026-10-22.json",
+        "python-hello/evidence/image-http-2026-10-22T103900Z.json"
+      ],
+      "express_image_http": [
+        "python-hello/evidence/image-http-2026-10-22T103900Z.json"
+      ],
+      "opensandbox_native_http": [
+        "python-hello/evidence/opensandbox-2026-10-22T112700Z.json"
+      ]
+    },
+    {
+      "template": "qm",
+      "version": "1.0.1",
+      "express_image_runtime": [
+        "qm/evidence/express-2026-10-22.json",
+        "qm/evidence/image-http-2026-10-22T113747Z.json"
+      ],
+      "express_image_http": [
+        "qm/evidence/image-http-2026-10-22T113747Z.json"
+      ],
+      "opensandbox_native_http": [
+        "qm/evidence/opensandbox-2026-10-22T113030Z.json"
+      ]
+    },
+    {
+      "template": "qm-sandbox",
+      "version": "1.0.1",
+      "express_image_runtime": [
+        "qm-sandbox/evidence/express-2026-10-22.json",
+        "qm-sandbox/evidence/image-http-2026-10-22T113846Z.json"
+      ],
+      "express_image_http": [
+        "qm-sandbox/evidence/image-http-2026-10-22T113846Z.json"
+      ],
+      "opensandbox_native_http": [
+        "qm-sandbox/evidence/opensandbox-2026-10-22T113106Z.json"
+      ]
+    },
+    {
+      "template": "qoder",
+      "version": "1.1.1",
+      "express_image_runtime": [
+        "qoder/evidence/express-2026-10-22.json",
+        "qoder/evidence/image-http-2026-10-22T113531Z.json"
+      ],
+      "express_image_http": [
+        "qoder/evidence/image-http-2026-10-22T113531Z.json"
+      ],
+      "opensandbox_native_http": [
+        "qoder/evidence/opensandbox-2026-10-22T112920Z.json"
+      ]
+    },
+    {
+      "template": "qwen-code",
+      "version": "2.1.1",
+      "express_image_runtime": [
+        "qwen-code/evidence/express-2026-10-20.json",
+        "qwen-code/evidence/image-http-2026-10-20T073522Z.json"
+      ],
+      "express_image_http": [
+        "qwen-code/evidence/image-http-2026-10-20T073522Z.json"
+      ],
+      "opensandbox_native_http": [
+        "qwen-code/evidence/opensandbox-2026-10-22T113215Z.json"
+      ]
+    },
+    {
+      "template": "stagehand",
+      "version": "1.1.1",
+      "express_image_runtime": [
+        "stagehand/evidence/express-2026-10-22.json",
+        "stagehand/evidence/image-http-2026-10-22T114531Z.json"
+      ],
+      "express_image_http": [
+        "stagehand/evidence/image-http-2026-10-22T114531Z.json"
+      ],
+      "opensandbox_native_http": [
+        "stagehand/evidence/opensandbox-2026-10-22T113725Z.json"
+      ]
+    },
+    {
+      "template": "swe",
+      "version": "1.1.0",
+      "express_image_runtime": [
+        "swe/evidence/express-2026-10-20.json",
+        "swe/evidence/image-http-2026-10-20T091111Z.json"
+      ],
+      "express_image_http": [
+        "swe/evidence/image-http-2026-10-20T091111Z.json"
+      ],
+      "opensandbox_native_http": [
+        "swe/evidence/opensandbox-2026-10-22T113251Z.json"
+      ]
+    },
+    {
+      "template": "tau2-bench",
+      "version": "1.0.4",
+      "express_image_runtime": [
+        "tau2-bench/evidence/express-2026-10-22.json",
+        "tau2-bench/evidence/image-http-2026-10-22T114617Z.json"
+      ],
+      "express_image_http": [
+        "tau2-bench/evidence/image-http-2026-10-22T114617Z.json"
+      ],
+      "opensandbox_native_http": [
+        "tau2-bench/evidence/opensandbox-2026-10-22T113509Z.json"
+      ]
+    }
+  ]
+}

@@ -205,6 +205,19 @@ Default: 2 vCPU, 2048 MB RAM, port 9000. BYOK calls require your configured mode
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.2.0; regular image, actual CLI/SDK, complete HTTP 8 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T110246Z.json) |
+| opensandbox | 1.2.0; original Docker backend, every CLI/SDK named smoke, complete HTTP 8 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T111346Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 Template1.2.0, experimental, `tested_on: [alicloud-express]`. Actual same-source
 [L1 image39500551739](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39500551739),
 [canonical SDK-created native steps](evidence/express-2026-10-20T212811Z.json) and
@@ -219,6 +232,8 @@ Owned project/private state/listener and outer sandbox/template absence passed.
 Duration134.596s. No current real Factory-account model or other-provider pass
 is claimed. SDK snippets are syntax-checked and recorded cloud acceptance used
 the same explicitly configured9010SDK operations. Historical receipts stay unchanged.
+
+</details>
 
 ## Historical verification
 

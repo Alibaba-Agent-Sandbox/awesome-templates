@@ -1,0 +1,86 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-22",
+  "template": "prime-agent",
+  "template_version": "1.0.0",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "image",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "harness_sha256": "668ff01efbc9ebb733737ad4d4c51cfd5eb50184b0ac87c182e9fd5ef98aeb0d",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "prime_agent_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 3.232,
+      "result": "{'native_version': '0.10.0'}"
+    },
+    {
+      "name": "prime_agent_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 7.418,
+      "result": "{'native_version': '0.10.0'}"
+    },
+    {
+      "name": "prime_agent_kernel_check",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 2.084,
+      "result": "{'protocol_version': 3, 'required_imports_checked': 12}"
+    },
+    {
+      "name": "prime_agent_kernel_check",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 1.259,
+      "result": "{'protocol_version': 3, 'required_imports_checked': 12}"
+    }
+  ],
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "prime-agent",
+    "template_version": "1.0.0",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "checkout_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "workflow_run_id": "39747846635",
+    "artifact_id": "12412494307",
+    "archive_sha256": "2e5609f09b1b574b1c7f301c19bb8aef76678da87e26c3fc9534663172d2e985",
+    "image_config_sha256": "7d5e59efc8dd07d66b2e3993b49b20e58e861089732cb000775b6e9976559ee0",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "0633ff3bae71a4bd04d154e0ffcfd2fcda565136fde3650b860a2fa22376e743",
+      "template.yaml:contract": "63d0cf77467435bc40acafcf833f531408b12959c1a1d53307d42def782883fd",
+      "requirements.lock": "6174df63688f30be9e6c522e0e2c0ce3d352cce87d76a044cb13a914824301d0",
+      "upstream.json": "193db771cf95966b3fb59776f3ba75c884ce7f6edfd4986edc35917a29c566fa",
+      "install_native.py": "09e5ad8790b95495a7c1a4f6fdc964f7915ca15c1877c774f2f86ccefefe7838",
+      "kernel-python": "b4f6920a6ee21f595a71dcf84497e6fadc1960e97afb0a949d1e9608579b08a7",
+      "commands.py": "b5a2128e9a7de316781cd0fbe4f5ae5b295a38972f16ca8e4c4a1300655fe9be",
+      "filter_native.py": "25bd18629892968895bc75d458558c561849de0460bf4bae5f0d5dc56a599410",
+      "process.py": "db2f81ee4c9a2b0537eab00a690dcbc7d1b67555d2ac131635c3b2ca9698d126",
+      "lifecycle.py": "1ba7328cc89ad53bf7f179c8f12a9f48e534d3c8d19d13d27fae8fb2b877833a",
+      "UPSTREAM-NOTICE.md": "7b93fbca6f0f51a516c07ff20f66b95a1cf09593847abb19653d9056063ecea8"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:d2ac635913a20900ab32cc0c807f2b8d9888e21d0159488e551dd9b165dc92e6",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "registration_operation": "abx template from-image",
+  "boundary": "Verified CI Dockerfile image + private registry transfer; no controller Docker build or platform-step build claimed",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "registry_cleanup_verified": true
+}

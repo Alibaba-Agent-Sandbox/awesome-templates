@@ -98,11 +98,26 @@ Declared2vCPU/2048MB/Linuxx64, port9000, enforced8GiB image rootfs budget. No Do
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.0.1; regular image, actual CLI/SDK, complete HTTP 18 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T113846Z.json) |
+| opensandbox | 1.0.1; original Docker backend, every CLI/SDK named smoke, complete HTTP 18 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T113106Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 | Provider | Version / date | Passed scope and records |
 | --- | --- | --- |
 | alicloud-express | 1.0.1 / 2026-10-21 | Original native source/Node/SDK, canonical SDK-created steps, CLI+SDK smoke, fullHTTP18PASS/0FAIL/0SKIP and independently confirmed owned cleanup; [receipt](evidence/express-2026-10-21.json), [source-bound verification](evidence/verification-steps-2026-10-21T021037Z.json) |
 
 No model is required or certified for this backend template. Actual non-root L1 image build/source/hash/import/workspace checks PASS; image rootfs2018549760bytes, below8GiB. The 12871-byte native step recipe retains the15000-byte guard. SDK integer rejection uses fixed immutable [server source](server-sdk.commit), delivered by [SDK PR82](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/82). The earlier QM Sandbox17PASS/1FAIL boolean-coercion attempt and all earlier preparation failures remain in the [final engineering record](../.agents/evidence/verify/2026-10-21-qm-native-final.md). No Docker image cloud deployment, other provider, full multiplayer services or peak-memory claim.
+
+</details>
 
 ## Secondary development
 

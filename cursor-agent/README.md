@@ -132,11 +132,26 @@ Linux x86_64 only;2vCPU/4096MB/port9000, non-root user, WORKSPACE=/home/user/app
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.0.0; regular image, actual CLI/SDK, complete HTTP 16 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T105311Z.json) |
+| opensandbox | 1.0.0; original Docker backend, every CLI/SDK named smoke, complete HTTP 16 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T111132Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 | Provider | Runtime verification | Scope |
 | --- | --- | --- |
 | alicloud-express | [PASS receipt](evidence/express-2026-10-21.json) · [steps/full HTTP](evidence/verification-steps-2026-10-21T110917Z.json) | Original native version/help, actual SDK create, HTTP and SDK invalid-key refusal, independently confirmed owned sandbox/template/private-cache cleanup |
 
 The current1.0.0 published-source native step run completed in170.608seconds, with16HTTP checksPASS,0FAIL,0SKIP and7554wire bytes. A fixed explicitly invalid synthetic credential exercises the original program's authentication error; it is never counted as an authenticated model session. Genuine Cursor account/model/coding acceptance is NOT_RUN because no vendor credential is available. The catalog remains experimental. Local authored tests, hosted Docker-image checks and provider step acceptance are separate. [Research and executed checks](../.agents/evidence/verify/2026-10-21-cursor-native-research.md).
+
+</details>
 
 ## Secondary development
 

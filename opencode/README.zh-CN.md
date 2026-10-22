@@ -181,11 +181,26 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/opencode_version"
 
 ## 已验证
 
+
+### 当前镜像验收 — 2026-10-22
+
+| 提供方 | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 2.0.2；常规镜像、真实 CLI/SDK、完整 HTTP 15 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T112305Z.json) |
+| opensandbox | 2.0.2；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 15 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T112437Z.json) |
+
+CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
+
+<details>
+<summary>此前验收记录（保留原有时间与范围）</summary>
+
 | Provider | 当前版本与范围 | 证据 |
 | --- | --- | --- |
 | alicloud-express | 2.0.2；真实非 root step、Python SDK 创建、CLI/SDK及15项完整 HTTP（含 serve 生命周期），独立清理 | [step](evidence/express-2026-10-20T160725Z.json) · [HTTP](evidence/verification-steps-2026-10-20T160725Z.json) |
 
 不从旧2.0.1推断2.0.2镜像／模型验收。修改后的 Dockerfile 也通过真实 CI 镜像构建；未宣称新增模型运行。
+
+</details>
 
 ## 历史2.0.1镜像／模型验收
 

@@ -132,11 +132,26 @@ prompt为1..32768UTF8字节，非空且无NUL。cwd最长4096UTF8字节、无NUL
 
 ## 已验证
 
+
+### 当前镜像验收 — 2026-10-22
+
+| 提供方 | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 1.0.0；常规镜像、真实 CLI/SDK、完整 HTTP 16 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T105311Z.json) |
+| opensandbox | 1.0.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 16 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T111132Z.json) |
+
+CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
+
+<details>
+<summary>此前验收记录（保留原有时间与范围）</summary>
+
 | 提供商 | 运行时验证 | 范围 |
 | --- | --- | --- |
 | alicloud-express | [通过回执](evidence/express-2026-10-21.json) · [steps／完整HTTP](evidence/verification-steps-2026-10-21T110917Z.json) | 原版版本／帮助、真实SDK创建、HTTP和SDK无效密钥拒绝、独立确认沙箱／模板／私有缓存清理 |
 
 当前1.0.0已发布源的原生steps验收用时170.608秒，16项HTTP检查通过、0失败、0跳过，线传7554字节。固定且明确无效的合成凭证用于验证原版程序认证错误，不能算厂商模型会话成功。由于没有厂商凭证，真实Cursor账号／模型／编码验收为NOT_RUN；目录保持experimental。本地固定测试、托管Docker镜像检查和提供商steps验收分别记录。[研究及实际检查](../.agents/evidence/verify/2026-10-21-cursor-native-research.md)。
+
+</details>
 
 ## 二次开发
 

@@ -152,11 +152,26 @@ outside group cleanup; destroying the sandbox is the final boundary.
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.0.0; regular image, actual CLI/SDK, complete HTTP 9 PASS / 0 FAIL / 1 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-20T073500Z.json) |
+| opensandbox | 1.0.0; original Docker backend, every CLI/SDK named smoke, complete HTTP 9 PASS / 0 FAIL / 1 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T111529Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 | Version | Provider | Mode and result | Evidence |
 | --- | --- | --- | --- |
 | 1.0.0 | alicloud-express | SDK-created, verified CI image; CLI/SDK smoke and strict compatible-model17 PASS/0 FAIL/0 SKIP | [image](evidence/express-2026-10-20.json), [model](evidence/model-image-2026-10-20T073500Z.json) |
 
 The actual Goose agent edited source, created a new report, preserved and ran the original tests and passed independently generated held-out inputs using qwen3.8-flash. Owned sandbox/template/registry cleanup and registry digest readback passed independently. The separate model-off HTTP run has9 PASS and1 explicit model SKIP; that skip is not promoted to a model pass. This is the OpenAI-compatible provider profile, not every upstream provider. The actual step build failed in the native installer budget; [failed step diagnosis](evidence/steps-diagnosis-2026-10-20.json) remains a failure. Other providers and arm64 execution are unverified.
+
+</details>
 
 ## Secondary development
 

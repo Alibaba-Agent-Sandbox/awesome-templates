@@ -84,11 +84,26 @@ The legacy `rootfs_used_bytes` and `rootfs_free_bytes` response keys are visible
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.0.1; regular image, actual CLI/SDK, complete HTTP 1 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-20T070826Z.json) |
+| opensandbox | 1.0.1; original Docker backend, every CLI/SDK named smoke, complete HTTP 1 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T112736Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 | Provider | Scope | Evidence |
 | --- | --- | --- |
 | alicloud-express | 1.0.1 actual exact-source CI image, native registration/official READY, CLI and SDK; pinned Go/Rust/Java compilation, execution and owned cleanup through external HTTP; no skips | [canonical receipt](evidence/express-2026-10-20.json), [complete HTTP](evidence/image-http-2026-10-20T070826Z.json) |
 
 Sandbox/template/registry cleanup and registry digest after runtime were independently read back. This is actual image acceptance, not platform-step success. The earlier 1.0.0 archive failure and step attempt remain history. Status is experimental; other providers remain unverified.
+
+</details>
 
 ## Secondary development
 

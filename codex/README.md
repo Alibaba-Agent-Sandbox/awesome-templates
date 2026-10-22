@@ -198,11 +198,26 @@ The full `abx template deploy` runner remains unrun; this is supplemental compon
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 2.0.0; regular image, actual CLI/SDK, complete HTTP 13 PASS / 0 FAIL / 1 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-20T145436Z.json) |
+| opensandbox | 2.0.0; original Docker backend, every CLI/SDK named smoke, complete HTTP 14 PASS / 0 FAIL / 1 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T110946Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 | Provider | Current version and executed scope | Evidence |
 | --- | --- | --- |
 | alicloud-express |2.0.0; actual SDK-created non-root image, CLI/SDK commands,17strict real-model assertions and independent sandbox/template/registry cleanup | [image](evidence/express-2026-10-20.json) · [model](evidence/model-image-2026-10-20T145436Z.json) |
 
 Native Codex uses the template's actual Responses protocol with the compatible endpoint. The real model edits existing source, creates a new artifact and passes unchanged original tests plus independent assertions. Basic HTTP13PASS/1SKIP is explicitly model-off; the separate actual model has17PASS/0FAIL/0SKIP. The image injects the immutable e2cb27e server; the standalone Docker fallback is a separate build path. Version0.3.0 alone cannot distinguish those sources. See [current acceptance](../.agents/evidence/verify/2026-10-20-codex-sdk-image-acceptance.md).
+
+</details>
 
 ## Historical step verification
 

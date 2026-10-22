@@ -1,0 +1,59 @@
+{
+  "template": "browser-automation",
+  "provider": "alicloud-express",
+  "build_mode": "image",
+  "verification_type": "ci-image-backed-external-http",
+  "passed": true,
+  "registry_cleanup_verified": true,
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "model_acceptance": "NOT_RUN",
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 37,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "a4de76afd092f73639ecfc7bbea4bc7e537344f607cafd698fcf2b9629f1d5c7",
+    "passed": true
+  },
+  "runtime_attempted": true,
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "cleanup_verified": true,
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "browser-automation",
+    "template_version": "2.2.0",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "checkout_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "workflow_run_id": "39747846635",
+    "artifact_id": "12412737446",
+    "archive_sha256": "4f986180bf77f1c2eacb6229ec1ec0c3eef32c21e0b02ab3342340da34be0a50",
+    "image_config_sha256": "6ef410d77bbb1b22141462cab50f5dac872310db03d9cdc3c82626d798f4aaea",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "00e3a776441986c445a15f2f19060f792c343d2d7de3697d987023a6604cfd3c",
+      "template.yaml:contract": "6bbe7e00f931ebd21e4ab03ac725839bd4721177a90abde86cb7a0be3620036c",
+      "package.json": "7ac04e08ea0dd0591fc1f7a311514ed124b5b7b23c898a64f402fc3aa76f6222",
+      "package-lock.json": "98b5436b4699eb533e9b22733eda571a3eff8709038ea274430c87193dec557f",
+      "commands.py": "192b39ba7d9c3ac3da5a2e11bd95d2b7ab57a3cf047f0a9b0d32b4f55b0a0820",
+      "mcp_runtime.py": "5096dec88a38ed13a0a1558e66c23605c05554e68ba4987d4a3b6e173d56105e",
+      "mcp_process.py": "b5714a38ec5aa1f339ffdd146b9ae13029401f69b911f7f5feb6a2655ec5f8fb",
+      "browser_process.py": "4e14e169a1ef6b7f5705f7655e7dd8660e0792a61de99a750f72b9540f665a64",
+      "pdf_worker.py": "4ec14e521113bbfac7e361318bfeec24ad2b3abdd43883ced2b485308ccac77c"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:77bc5d895366591195185cb4c21ae02a41c5038e0eac0478a7ee1eef2f127180",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "result": "PASS"
+}

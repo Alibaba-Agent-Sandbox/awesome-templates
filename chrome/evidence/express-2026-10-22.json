@@ -1,0 +1,75 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-22",
+  "template": "chrome",
+  "template_version": "1.0.5",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "image",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "harness_sha256": "668ff01efbc9ebb733737ad4d4c51cfd5eb50184b0ac87c182e9fd5ef98aeb0d",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "chrome_smoke",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 12.438,
+      "result": "native headed Chrome145.0.7632.6 CDP/VNC/PNG and cleanup OK"
+    },
+    {
+      "name": "chrome_smoke",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 18.651,
+      "result": "native headed Chrome145.0.7632.6 CDP/VNC/PNG and cleanup OK"
+    }
+  ],
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "chrome",
+    "template_version": "1.0.5",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "checkout_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "workflow_run_id": "39747846635",
+    "artifact_id": "12413780811",
+    "archive_sha256": "a8ce20b036166814aa6147978522d4351165aa4e151f959fb619c755e7b2cd22",
+    "image_config_sha256": "4f623beebcdbdc1f4af9f8b524acb1bb93b16e205c6d11f68f019e52dc03ada4",
+    "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+    "context_sha256": {
+      "Dockerfile": "d53574df33b8665be85259764b4be89dc658724eed18e86b2b3a283f36e1fc66",
+      "template.yaml:contract": "f68a6049311a9e6acf0b76475d971fcfa30b3a819bad4ac63bb34c07b66f9bdf",
+      "requirements.lock": "1e6cfdbf5c1490be8e367beb8e922d137622ea860bc0b614d0623f6b801b9f66",
+      "browser.json": "ae5fef644f04f2edbcd55f11bca0e2503fb909c95bb351d5846fdf70bf118bed",
+      "install_browser.py": "32f5e45edb6dcb87fb29dd355835ed2f08b77b280100d0ce984e2142edf1baa6",
+      "commands.py": "6748ed5d8cc7bc5acdda631da4c7f636361b2ff728ed7c2313e5f533ab9f6ae1",
+      "worker.py": "a05e2256276e701b1e73ee87acf6164daba99cae9861368b2907c58117ed01ed",
+      "native.py": "8193deb6d66d2454f450e5991d03e8d4ea481d8091cb11797540573ace6aa91d",
+      "cdp.py": "8c39c5b59fa79522cce153ed5089f60471c90d5404fed60c46609c3c97584bdb",
+      "rfb.py": "6d645be5e03437014a2447f4997fda33e4c7abe4c6cd92e53c1e98bc3881ba2c",
+      "relay.py": "8bdd70b6df729756ac406261af2cf5fcee430c98621e06e8f8a9568449ab9844",
+      "process.py": "cb3a18a3b9e44409d638d23af391f86a47c89dd2e35f22ae1c2e53aab66f662b",
+      "lifecycle.py": "87839cfc365824229f9929a2e16e1537715b06e94b907363210784f20a298de0",
+      "UPSTREAM-NOTICE.md": "21c15b32b29d2ca1dd8132a0fc5df00b00b1a816f67c0964f16b595b6b20fbc3"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:b6865c0383db1a8ec80b3e694b92ca9b8ffffc2ca4c218bc75a27bf411ace42c",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "registration_operation": "abx template from-image",
+  "boundary": "Verified CI Dockerfile image + private registry transfer; no controller Docker build or platform-step build claimed",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "registry_cleanup_verified": true
+}

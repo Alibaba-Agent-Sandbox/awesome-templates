@@ -88,6 +88,19 @@ WORKSPACE defaults to /home/user/app. CODE_SERVER_PASSWORD and ABX_SERVER_TOKEN 
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 1.0.0; regular image, actual CLI/SDK, complete HTTP 5 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-20T091440Z.json) |
+| opensandbox | 1.0.0; original Docker backend, every CLI/SDK named smoke, complete HTTP 5 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T110651Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 | Version | Provider | Mode and scope | Evidence |
 | --- | --- | --- | --- |
 | 1.0.0 | alicloud-express | SDK-created verified image; full HTTP5; actual browser/terminal/editor through sdk-local preview | [image](evidence/express-2026-10-20.json), [HTTP](evidence/image-http-2026-10-20T091440Z.json), [browser](evidence/browser-ui-2026-10-20T091440Z.json) |
@@ -131,6 +144,8 @@ The [actual image attempt](evidence/image-attempt-2026-10-20T055537Z.json) passe
 complete HTTP5 checks but [failed real browser UI](evidence/browser-ui-2026-10-20T055537Z.json).
 Owned sandbox/template and registry cleanup were independently confirmed. It is
 not qualified as a complete browser IDE deployment; Issue53 remains open.
+
+</details>
 
 ## Secondary development
 

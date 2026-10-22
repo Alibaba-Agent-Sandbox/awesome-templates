@@ -102,11 +102,26 @@ Declared2vCPU4096MB/Linuxx64/port9000/8GiBrootfs budget; no KVM/nested Docker/GP
 
 ## Verified
 
+
+### Current image acceptance — 2026-10-22
+
+| Provider | Current version and scope | Evidence |
+| --- | --- | --- |
+| alicloud-express | 2.2.0; regular image, actual CLI/SDK, complete HTTP 10 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T110330Z.json) |
+| opensandbox | 2.2.0; original Docker backend, every CLI/SDK named smoke, complete HTTP 10 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T111421Z.json) |
+
+OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
+
+<details>
+<summary>Earlier acceptance records (original dates and scope retained)</summary>
+
 | Provider | Executed current scope | Evidence |
 | --- | --- | --- |
 | alicloud-express |2.2.0 / original CLI0.64.0, published runtimebdd01dd, immutable native steps, actual SDK creation/CLI+SDK smoke,HTTP10PASS; original read_file API2completed/0failed/1tool-result; separate real-model19PASS0FAIL0SKIP; independently owned cleanup | [receipt](evidence/express-2026-10-21T091644Z.json), [API proof](evidence/verification-steps-2026-10-21T091643Z.json), [model proof](evidence/verification-steps-2026-10-21T091644Z.json) |
 
 The original planner/tools remain unchanged; permission is explicitly allow_unsafe_tools=True on owned disposable sandboxes. Actual qwen3.8-flash uses the approved configured origin through the authored text/tool adapter. Source edit, unchanged original3tests, report, fresh nonce,3original+4held-out assertions and fresh post-returnACK pass. Google-hosted account/model/OAuth authentication remains NOT_RUN. Local102PASS1SKIP9.39seconds;8permission regressions fail against the previous source as expected. Native/API149.602seconds and actual model70.158seconds, both independent outer and secondary cleanupPASS. Earlier2.1.4receipts are historical. Latest-head image/CI/review/normal merge remain separate gates.
+
+</details>
 
 ## Secondary development
 

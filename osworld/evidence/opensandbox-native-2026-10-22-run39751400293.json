@@ -1,0 +1,96 @@
+{
+  "provider": "opensandbox",
+  "template": "osworld",
+  "template_version": "1.0.0",
+  "verification_type": "source-image-native-opensandbox-docker-http",
+  "build_mode": "image",
+  "passed": true,
+  "cleanup_verified": true,
+  "model_acceptance": "NOT_RUN",
+  "checks": [
+    "fixed source upstream",
+    "fixed source provider",
+    "fixed source cli",
+    "fixed source sdk",
+    "actual image architecture and non-root workspace configuration",
+    "original OpenSandbox server health",
+    "actual SDK create",
+    "independent Docker identity matches exact built image",
+    "actual guest bridge endpoint",
+    "owned metadata readback",
+    "actual runtime command bytes match source",
+    "SDK observes actual non-root image user",
+    "SDK real shell Python program",
+    "SDK file write/read",
+    "SDK file removal readback",
+    "generic native interpreter explicitly unsupported",
+    "SDK starts original template service as user",
+    "original template readiness command",
+    "SDK named smoke osworld_desktop_smoke",
+    "complete current external HTTP controller",
+    "independent SDK and Docker absence",
+    "owned provider engine stopped and reaped",
+    "owned original server process stopped"
+  ],
+  "pins": {
+    "upstream": "30348cbdfe4b9cfd49e0963617aed357a8f1ac4c",
+    "provider": "9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d",
+    "cli": "c8e8ad784323b8903505442cbc77d433a0d0367a",
+    "sdk": "33f857f5a79fd10326652e9d03f15f3621d6b848"
+  },
+  "source_commit": "8c0c783e19eba9409a1c3c925039509c67e62b67",
+  "context_sha256": {
+    "Dockerfile": "633bcf37d2757675d8f46c6993acb8e6512b30d529b533d5a21d935d9f835123",
+    "template.yaml:contract": "9b2da164bd6f4e5d57028547c8ca35652b518ec898b3b6ebc693271dbfcadf36",
+    "requirements.txt": "fd84ae81836222430641fbfb510b5678476cb61ade21c8cd064f8fc185e435eb",
+    "upstream/.gitattributes": "4cfb1277503d26a1eab817f1bb92376ca23e80a0bf4852f5463ed9b09ed8c972",
+    "upstream/LICENSE": "a8d1d88a0f9cce3cdbff73b03a80dc5e5d69e3ba2443946c268815a550c9e0ec",
+    "upstream/getters_misc.py": "573fa6bf7ab627a1f69f7696efe41759c5d06e3109269b0e999bfc703620bb10",
+    "upstream/main.py": "3034c869ca18dd3da5e870c66bdd7d68596501938ff69f7bc3265b79b760d3ba",
+    "upstream/metrics_general.py": "22cafba4a4b49a2c478a6266cfd98c6eb54e1bad4691d243b5113ba8896e41d7",
+    "upstream/pyxcursor.py": "87d09a465bf87c3766ac3b8584f80c3288890e874b45d9a56b811b0a4268e840",
+    "upstream/source.json": "727433e414239a0f6f738f2288e94c65f8b5609e82837611d534037fb35f5475",
+    "commands.py": "22f7814416e0dc52cb0c0b04deae8323467a785db6601d8b36603abcb396a78d",
+    "runtime.py": "a74944f97f6f3ee48057190dccbe2d2aee49305679f50c3a283bdd4ccf03bc55"
+  },
+  "server_sdk_commit": "e2cb27e24fde0a67112f82b8d44af463445a5d1a",
+  "workflow_run_id": 39751400293,
+  "generic_code_interpretation": "UNSUPPORTED; template named APIs tested separately",
+  "images": {
+    "template_image_id": "sha256:cc48487b27febc7b5a18456986ec95600532f35b4474e6646d1cc54c88d3d27b",
+    "execd_digest": "opensandbox/execd@sha256:6cf7dba2f21f0b536e100563d841ac58a9f31c2b0a081b7ac76796a24d6f47e2",
+    "execd_image_id": "sha256:e12d3de4b28e820bc966fe875484b35a5fad9322c4ef8a5b6751873da03bd214"
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "desktop_lifecycle_required": true
+  },
+  "execution_identity": {
+    "selection": "image default; explicit user switching not qualified",
+    "probe_exit_code": 0,
+    "uid": 1000
+  },
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 18,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "07a4fa0615a9329dff948d19c411c0e60e8b916465d725ea5aeff2f2ea3ab2d1",
+    "passed": true
+  },
+  "cleanup_observations": {
+    "sdk_not_found": true,
+    "owned_docker_containers_absent": true,
+    "errors": []
+  },
+  "versions": {
+    "agent-sandbox-client": "0.3.0",
+    "agent-sandbox-server": "0.3.0",
+    "opensandbox-server": "1.2.0rc2.dev222+g30348cbd"
+  },
+  "duration_s": 33.986,
+  "controller_sha256": "fd490021bb70a434a40ee2c361744b1870ba293baa5cdde2ad29d8714e62f0e3",
+  "workflow_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39751400293",
+  "workflow_job_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39751400293/job/119732693321",
+  "workflow_job_conclusion": "success"
+}

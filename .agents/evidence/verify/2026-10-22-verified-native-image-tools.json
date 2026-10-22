@@ -1,0 +1,14 @@
+{
+  "crane": {
+    "version": "0.22.1",
+    "sha256": "8e75c326adb43b053cfd78b9b987663f8f4fe4557f4d3915905643f25c730992",
+    "release_archive_digest": "sha256:0ab7a1d6932a213aed964ce97666c3077fe691c8606413674a8b3e0b9ec4cda0",
+    "release_url": "https://github.com/google/go-containerregistry/releases/tag/v0.22.1"
+  },
+  "native_cli": {
+    "version": "0.4.1",
+    "sha256": "sha256:766b0b10c3e4c633632dad503ae7750183a8be41974a9d048f060836f8cb0c44",
+    "release_url": "https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/releases/tag/v0.4.1"
+  },
+  "result": "PASS"
+}

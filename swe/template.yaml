@@ -20,8 +20,7 @@ tags:
 - evaluation
 priority: P0
 wave: 2
-tested_on:
-- alicloud-express
+tested_on: [alicloud-express, opensandbox]
 capabilities:
 - shell
 - files

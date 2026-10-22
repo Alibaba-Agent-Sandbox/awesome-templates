@@ -100,6 +100,19 @@ stdout／stderr 各限256KiB；成功／失败／超时／溢出均清理自有�
 
 ## 已验证
 
+
+### 当前镜像验收 — 2026-10-22
+
+| 提供方 | 当前版本与范围 | 证据 |
+| --- | --- | --- |
+| alicloud-express | 1.0.1；常规镜像、真实 CLI/SDK、完整 HTTP 8 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T111201Z.json) |
+| opensandbox | 1.0.1；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 8 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T111604Z.json) |
+
+CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
+
+<details>
+<summary>此前验收记录（保留原有时间与范围）</summary>
+
 | 提供方 | 当前范围 | 记录 |
 | --- | --- | --- |
 | alicloud-express | 模板1.0.1；原生 steps、官方 READY、真实 Python SDK 创建、CLI/SDK 原生版本、真实模型编码与独立清理 | [2026-10-20](evidence/express-2026-10-20.json)、[完整模型证明](evidence/verification-steps-2026-10-20T201501Z.json) |
@@ -107,6 +120,8 @@ stdout／stderr 各限256KiB；成功／失败／超时／溢出均清理自有�
 官方 Grok Build1.0.62／原始 Rust 二进制通过显式已批准兼容端点使用 qwen3.8-flash。真实 SDK 命令修复已有源码，保留原始测试字节，下载新报告和精确随机产物，返回后独立执行完整原始3项测试和4个隐藏用例并匹配新 ACK：17PASS/0FAIL/0SKIP。先使用虚拟密钥独立确认原生请求确实到达自有端点并清理测试服务，然后才注入真实密钥。原生临时 HOME／进程／额外监听端口、测试项目、外层沙箱与模板均独立确认清理。完整基础 HTTP8PASS/0FAIL/0SKIP 与真实模型验收分别记录。当前源码真实 L1 镜像构建／非 root 镜像用户版本和 SHA256 检查也通过；不声称实际镜像注册后的模型部署、xAI 托管模型／订阅或其他提供方。[最终工程证据](../.agents/evidence/verify/2026-10-20-grok-official-native-final.md)。
 
 之前的原生工具名称、结果聚合、测试服务清理和 L1 通用检查失败均保留。后来恢复资源不会把旧失败改为通过。当前独立源码／产物／原始测试／隐藏用例要求均未省略。
+
+</details>
 
 ## 二次开发
 

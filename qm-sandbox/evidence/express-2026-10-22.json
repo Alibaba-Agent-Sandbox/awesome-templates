@@ -1,0 +1,93 @@
+{
+  "provider": "alicloud-express",
+  "date": "2026-10-22",
+  "template": "qm-sandbox",
+  "template_version": "1.0.1",
+  "sdk_version": "0.3.0",
+  "cli": "abx",
+  "build_mode": "image",
+  "sandbox_create": "python-sdk-Sandbox.create",
+  "harness_sha256": "668ff01efbc9ebb733737ad4d4c51cfd5eb50184b0ac87c182e9fd5ef98aeb0d",
+  "passed": true,
+  "cleanup_verified": true,
+  "commands": [
+    {
+      "name": "qm_sandbox_version",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 8.943,
+      "result": "{'qm_version': '0.1.0', 'node_version': '24.16.0', 'sdk_version': '0.1.0'}"
+    },
+    {
+      "name": "qm_sandbox_version",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 17.933,
+      "result": "{'qm_version': '0.1.0', 'node_version': '24.16.0', 'sdk_version': '0.1.0'}"
+    },
+    {
+      "name": "qm_sandbox_native_check",
+      "via": "cli",
+      "ok": true,
+      "duration_s": 2.727,
+      "result": "{'original_qm_harness': True, 'original_tool_context': True, 'actual_sdk_client': True}"
+    },
+    {
+      "name": "qm_sandbox_native_check",
+      "via": "sdk",
+      "ok": true,
+      "duration_s": 1.869,
+      "result": "{'original_qm_harness': True, 'original_tool_context': True, 'actual_sdk_client': True}"
+    }
+  ],
+  "image_provenance": {
+    "schema_version": 1,
+    "verification_type": "ci-docker-archive",
+    "template": "qm-sandbox",
+    "template_version": "1.0.1",
+    "github_repository": "Alibaba-Agent-Sandbox/awesome-templates",
+    "source_head_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "checkout_commit": "da1da4193bb31c28cb252d745b2012fd1d011c4b",
+    "workflow_run_id": "39747846635",
+    "artifact_id": "12413017966",
+    "archive_sha256": "5fd757bb86ef0683ecde63e01158e2f8aa89643e7f5e7e7fc81303efeb2e9bc6",
+    "image_config_sha256": "f5ebd8f4956a650c29ef574a72885352b01e6376dca693a88c07377eb0622898",
+    "server_sdk_commit": "34e7e011c5569f77b7f605e65313be7498f6cf02",
+    "context_sha256": {
+      "Dockerfile": "59fd42c75a7038074fa6469872a73ee6c06306a979fccda51ed65493f4779e08",
+      "server-sdk.commit": "57134d659449d0f55301272a5abc2ac907c86b8380a36f2b3e86e09c9b6dc6cf",
+      "template.yaml:contract": "d185f87e86519af8ac67ff9347744bd159cb51b5ebeb2ab88d2f5ad2f0d4935f",
+      "upstream.json": "dce0166c7f76c3f57ac643273b3c335e0cb8923bc2532746a6e50fecfe617dec",
+      "install_runtime.py": "7c30ff93552b8c49d2e06bee490b4e9728257323806cfa63b352e4b660109299",
+      "package.json": "8057d73aebf1e9cd6c6b86a0e0961f0e1104741b1206d2a56be0c4ec70f51f03",
+      "package-lock.json": "8866bbf2879fa5219970188aa632190c66148e2bc031c6dd4590d6807f06e454",
+      "sdk-package.json": "daa89f8d72229bf72a1227030b2e1ffd907eed5041bd766b3accf6353340d49b",
+      "sdk-package-lock.json": "deb3039932292903aad4a15351dcfc118fd349c16822f55b9d2be9c9b7fc66a4",
+      "commands.py": "4f44638c84a2131b24ad5ca64da02b970794a0d867f6f24e152c08fbecdcd945",
+      "worker.mjs": "488a8cd61de890b52cf74422d18af702d157ba819e530de8889b722f691640a7",
+      "adapter.mjs": "0dfa1efd82b59be00cf3783033a944340f65832b8e44fe9d2981bdb81b0ae8a9",
+      "sdk_path.py": "8e3958dc517dcef45218636b748c4ad6bd0d090ecd3237e483fd141cc5d4f419",
+      "sdk_exec.py": "da0b47dd9a18a6c4b5707d6a3f7392516da7ce2f708a251ce45f0624564bdcc1",
+      "process.py": "0ed29df96e4baf19237464ab0b39957d7d085c45d509d0aadf5dc7f0fc61e94a",
+      "tool_process.py": "6e6f2d6a22cee621c6c974774b800eecfcdb5efa50315e6dc62dcc28d024d5e1",
+      "lifecycle.py": "93da0bbfd48b838b6721d127a740ee345a2a040418a553a4ecf00230380f9d58",
+      "UPSTREAM-NOTICE.md": "5d6639554020aac4dad1c3ecb735e738341e8ada94601120485206807fa96834"
+    },
+    "artifact_verified": true,
+    "image_context_verified": true,
+    "image_non_root": true,
+    "registry_push_verified": true,
+    "registry_private_repo_verified": true,
+    "registry_credentials_storage": "anonymous RAM fd",
+    "pushed_image_digest": "sha256:d028704d69deb00bb00f0f5d069f64b96525d3a34ea247ed69d2c80689ce422b",
+    "registration_reference_type": "owned tag with digest readback",
+    "tag_digest_verified_before_registration": true,
+    "tag_digest_verified_after_runtime": true
+  },
+  "registration_operation": "abx template from-image",
+  "boundary": "Verified CI Dockerfile image + private registry transfer; no controller Docker build or platform-step build claimed",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "registry_cleanup_verified": true
+}
