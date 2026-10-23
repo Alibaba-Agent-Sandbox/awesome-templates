@@ -102,26 +102,7 @@ HTTP200返回 `{"result":"2.0.76 (Claude Code)"}`。`POST /commands/claude_byok`
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 1.3.1；常规镜像、真实 CLI/SDK、完整 HTTP 10 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T102154Z.json) |
-| opensandbox | 1.3.1；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 10 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T110508Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-| 提供商 | 当前实际执行范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express |1.3.1／原生CLI2.0.76，已发布源9644342；不可变原生steps、真实SDK创建、CLI/SDK smoke、完整HTTP10项；原生Read API、受控Bash后台取消场景；真实兼容模型19项通过、无失败或跳过；独立确认清理 | [回执](evidence/express-2026-10-21T094126Z.json)、[读取API](evidence/verification-steps-2026-10-21T094124Z.json)、[取消API](evidence/verification-steps-2026-10-21T094125Z.json)、[模型证明](evidence/verification-steps-2026-10-21T094126Z.json) |
-
-原生Read测试25.726秒：2次请求、2次必需响应完成、1次工具结果、0失败。受控原生Bash测试27.384秒：4次请求、3次必需响应完成、1次SHA256匹配的异步文件路径分析取消、0失败；取消不计入完成。真实qwen3.8-flash源码修复77.552秒：19项通过，无失败或跳过，11次响应完成、9次必需响应、7次原生工具调用、28项历史工具结果，0失败／取消。原始3项测试字节不变、报告、精确随机标记、原始3项及独立4项断言、返回后新ACK均验证。三次测试的次级进程／端口／文件及外层模板／沙箱都独立确认清理。固定原生API测试仅使用本地合成响应；真实模型另行执行，密钥仅发往明确配置并获准的服务。Anthropic自有模型／账号认证仍未执行；Anthropic不支持或背书非Claude模型路由。本地78项测试及9项子测试通过，3.10秒；最终CI／镜像／review／合并单独检查。历史1.2.1成功与后续失败均保留。
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 二次开发
 

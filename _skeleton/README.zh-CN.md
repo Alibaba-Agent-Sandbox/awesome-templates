@@ -106,7 +106,7 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/hello" \
 
 ## 已验证
 
-版本1.0.1显式修复非root运行用户的工作区目录归属，当前版本的提供方验收尚待重跑。此前回执仅证明原始版本/哈希的已记录范围，保留在下面历史部分。
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 历史验收
 

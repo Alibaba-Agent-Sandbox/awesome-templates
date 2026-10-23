@@ -247,3 +247,9 @@ Source image backend acceptance: [decision](notes/proposed/feature/2026-10-22-so
 - [All46 source image backends](evidence/verify/2026-10-22-source-image-backend-matrix.json) · [current steps recheck](evidence/verify/2026-10-22-current-steps-after-backend-qualification.json)
 
 - [Command recovery review](notes/implemented/process/2026-10-23-command-recovery-review.md) · [verification](evidence/verify/2026-10-23-command-recovery-review.md)
+
+- [Explicit template workflows](notes/proposed/architecture/2026-10-23-explicit-template-workflows.md) · [verification](evidence/verify/2026-10-23-explicit-template-workflows.md)
+
+- [Workflow ID schema alignment](evidence/verify/2026-10-23-workflow-id-schema-alignment.md).
+
+- [Portable profile YAML scalar correction](evidence/verify/2026-10-23-portable-profile-yaml-scalar.md).

@@ -133,29 +133,7 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/run_script" \
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 1.1.1；常规镜像、真实 CLI/SDK、完整 HTTP 21 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T103900Z.json) |
-| opensandbox | 1.1.1；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 21 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T112700Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-2026-10-20 同版本追加真实 step 复验，实际使用 Python `Sandbox.create`，通过 CLI/SDK 命名 smoke，并独立确认 sandbox/template 清理：[SDK 创建 step 回执](evidence/express-2026-10-20.json)。此记录单独证明创建入口；下方完整工作流回执保留原有范围。
-
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 1.1.1; steps构建、官方READY、CLI/SDK、完整HTTP21项、独立清理 | [2026-10-19](evidence/express-2026-10-19T183219Z.json) |
-
-新版本的目录归属已在真实生成步骤中验证。旧版本回执保持历史范围；基础冒烟不能推断完整模型验收。
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 历史验收
 
@@ -204,3 +182,14 @@ python3 scripts/express_e2e.py python-hello
 ## 许可证
 
 Apache-2.0，见 [LICENSE](../LICENSE)。
+
+### 显式选择通用镜像构建方案
+
+在 OpenSandbox 上使用 `abx template launch` 时，显式传入
+`--workflow application --build-profile portable`。`Dockerfile.portable` 使用
+摘要固定的 Python 基础镜像，创建非 root 用户并直接安装固定源码版本的命令服务。
+默认 Dockerfile 保留 Express 平台占位参数；Provider 不会改写构建文件或注入 wheel。
+创建完成后，application 工作流通过 `exec.run` 启动服务。所选构建方案与源码实际
+字节都属于启动身份。声明此方案本身不代表已经通过真实后端验收。
+
+独立的 `application-image` 工作流让 Python `launch_workflow` 消费已准备好的不可变 OCI 镜像；它不执行源码准备。

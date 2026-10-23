@@ -91,6 +91,8 @@ CPU, memory, image version, exposed endpoints and device capabilities belong to 
 
 ## Verified
 
+The current workflow has no project-recognized receipt. Dated records below are historical reports of their original inputs and call paths; they do not certify this manifest. See [workflow evidence](../../workflows.md).
+
 No provider has a passing product/runtime run recorded for this entry. [Dated NOT_VERIFIED state](../evidence/verification-desktop-2026-10-21.json).
 
 The Issue explicitly allows an unverified catalog-only result without a genuine E2B key. Actual Agent Sandbox SDK rejects missing provider-specific credentials before engine/network even with a synthetic generic Express key. Published provider tests14PASS0FAIL0SKIP include the actual pinned E2B2.55.0SDK against local HTTP. These are SDK/protocol checks, not E2B desktop creation, screenshot/input or Express verification.

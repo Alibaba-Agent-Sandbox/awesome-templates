@@ -135,29 +135,7 @@ not verify this revision's Dockerfile build or newly deployed template.
 
 ## Verified
 
-
-### Current image acceptance — 2026-10-22
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 1.1.1; regular image, actual CLI/SDK, complete HTTP 21 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T103900Z.json) |
-| opensandbox | 1.1.1; original Docker backend, every CLI/SDK named smoke, complete HTTP 21 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T112700Z.json) |
-
-OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
-
-<details>
-<summary>Earlier acceptance records (original dates and scope retained)</summary>
-
-Additional exact-version real steps passed on2026-10-20 using actual Python `Sandbox.create`, CLI/SDK named smoke and independently confirmed sandbox/template cleanup: [SDK-created step receipt](evidence/express-2026-10-20.json). This separately establishes the creation route; the complete workflow receipts below keep their original scope.
-
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 1.1.1; steps build, official READY, CLI/SDK, complete HTTP 21 assertions, independent cleanup | [2026-10-19](evidence/express-2026-10-19T183219Z.json) |
-
-The changed workspace profile is verified in real generated steps. Prior receipts retain historical scope; basic smoke does not establish model acceptance.
-
-</details>
+No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
 
 ## Historical verification
 
@@ -206,3 +184,15 @@ Template issue: [awesome-templates#21](https://github.com/Alibaba-Agent-Sandbox/
 ## License
 
 Apache-2.0. See [LICENSE](../LICENSE).
+
+### Explicit portable image profile
+
+For OpenSandbox, select `--workflow application --build-profile portable` with
+`abx template launch`. `Dockerfile.portable` pins the Python base by digest,
+creates its non-root user and installs the pinned command server directly. The
+default Dockerfile retains its Express platform placeholders; providers do not
+rewrite either recipe or inject a wheel. The application workflow starts the
+server through `exec.run` after creation. The selected profile and exact source
+bytes form the launch identity. A profile declaration is not a real-backend pass.
+
+The separate `application-image` workflow consumes an already prepared immutable OCI image through Python `launch_workflow`; it does not perform source preparation.

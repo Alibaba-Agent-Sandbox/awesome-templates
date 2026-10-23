@@ -3,7 +3,7 @@ version: "1.0.0"
 description: "Original stable native Prime Agent0.10.0 with fixed CPython REPL, explicit compatible provider and private owned lifecycle."
 author: alibaba-agent-sandbox
 license: Apache-2.0
-spec_version: 2
+spec_version: 4
 base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
 generation: 2
 start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
@@ -13,8 +13,6 @@ ports: [9000]
 tags: [prime-agent, coding-agent, rlm, python]
 priority: P2
 wave: 2
-tested_on: [alicloud-express, opensandbox]
-capabilities: [shell, files, code, ports]
 env:
   ABX_SERVER_TOKEN: ""
   PRIME_MODEL_API_KEY: ""
@@ -26,3 +24,26 @@ smoke:
     expect: {native_version: "0.10.0"}
   - command: prime_agent_kernel_check
     expect: {protocol_version: 3, required_imports_checked: 12}
+workflow_contract_version: 1
+provides:
+  app:
+    protocol: agent-sandbox-server
+    version: 2
+    port: 9000
+    operations:
+    - commands.list
+    - commands.run
+default_workflow: application
+workflows:
+  application:
+    kind: application
+    input: source
+    service: app
+    startup: exec
+    binding:
+      transport: http
+      endpoint: provider-port
+      caller: host
+      authentication: service-token
+    operation: commands.run
+    required_operations: []

@@ -12,7 +12,7 @@
 
 ## 解决的问题
 
-发现外部解释器镜像，同时与[Express code-interpreter-v1](../code-interpreter-v1/README.zh-CN.md)区分。当前Agent Sandbox OpenSandbox提供商支持shell／文件，原生code.interpret不支持、返回E8004；shell Python不能冒充原生内核／会话成功。
+发现外部解释器镜像，同时与[Express code-interpreter-v1](../code-interpreter-v1/README.zh-CN.md)区分。当前Agent Sandbox OpenSandbox提供商支持shell／文件，项目统一解释器操作未接入、返回E8004；shell Python不能冒充原生内核／会话成功。
 
 ## 快速开始（CLI）
 
@@ -90,7 +90,7 @@ asyncio.run(main())
 
 ## 快速开始（HTTP POST）
 
-镜像没有本仓库定义的POST /commands/execute_code。提供商使用POST /v1/sandboxes和可选OPEN-SANDBOX-API-KEY创建，保留原生解释器启动脚本，再通过execd执行shell／文件。原生解释器需要上游Code Interpreter SDK；Agent Sandbox run_code返回不支持E8004，不静默当作成功。见[准确契约](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d/opensandbox/README.md)。不虚构HTTP结果封装。
+镜像没有本仓库定义的POST /commands/execute_code。提供商使用POST /v1/sandboxes和可选OPEN-SANDBOX-API-KEY创建，使用显式配置的解释器启动脚本，再通过execd执行shell／文件。原生解释器需要上游Code Interpreter SDK；Agent Sandbox run_code返回不支持E8004，不静默当作成功。见[准确契约](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d/opensandbox/README.md)。不虚构HTTP结果封装。
 
 ## 命令参考
 
@@ -115,11 +115,13 @@ ABX_OPENSANDBOX_BASE_URL必须为可用服务根地址，尾部/v1会规范化�
 
 ## 已验证
 
+当前清单的工作流尚无项目认可收据。下列日期记录仅作为原输入和调用路径的历史报告；不会自动认证新工作流。参见[工作流证据](../../workflows.zh-CN.md)。
+
 通过：原版OpenSandbox Docker后端、真实Agent Sandbox SDK创建／shell／文件、原版SDK连接同一ID、真实Jupyter健康与Python执行、持久／隔离上下文、程序异常、上下文删除、独立SDKNotFound／Docker容器不存在及本地引擎／服务退出。依赖及镜像准备后24项检查全通过，11.769秒。[原生回执](../evidence/verification-opensandbox-code-interpreter-2026-10-21-native-docker.json)、[真实托管运行](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39643705253)。
 
 原解释器镜像摘要`opensandbox/code-interpreter@sha256:133a3c1720dd52291a019740c2987e7164ea6de79e23d8198798e58950ae2e6e`；execd摘要、准确原服务／原生SDK／提供商／CLI／客户端来源与实测版本见回执。原生SDK版本1.2.0rc2.dev222+g30348cbd，配套Agent Sandbox包0.3.0。隔离本地服务没有使用真实云／厂商账号或模型凭证。
 
-这是OpenSandbox原生解释器验收，不是Express部署，也不代表Agent Sandbox原生code.interpret支持；通用run_code仍返回E8004。不推断GUI、特权嵌套或其他提供商资格。[原NOT_VERIFIED记录](../evidence/verification-opensandbox-code-interpreter-2026-10-21.json)及失败工程回执保留历史。
+这是OpenSandbox原生解释器验收，不是Express部署，也不代表Agent Sandbox统一解释器适配；通用run_code仍返回E8004。不推断GUI、特权嵌套或其他提供商资格。[原NOT_VERIFIED记录](../evidence/verification-opensandbox-code-interpreter-2026-10-21.json)及失败工程回执保留历史。
 
 ## 二次开发
 

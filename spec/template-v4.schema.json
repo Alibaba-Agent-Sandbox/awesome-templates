@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/Alibaba-Agent-Sandbox/awesome-templates/main/schema/template-v3.schema.json",
-  "title": "Agent Sandbox template specification v3",
+  "$id": "https://raw.githubusercontent.com/Alibaba-Agent-Sandbox/awesome-templates/main/spec/template-v4.schema.json",
+  "title": "Agent Sandbox template specification v4",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -20,10 +20,12 @@
     "tags",
     "priority",
     "wave",
-    "tested_on",
-    "capabilities",
     "env",
-    "smoke"
+    "smoke",
+    "workflow_contract_version",
+    "provides",
+    "default_workflow",
+    "workflows"
   ],
   "properties": {
     "name": {
@@ -59,7 +61,7 @@
       "minLength": 1
     },
     "spec_version": {
-      "const": 3
+      "const": 4
     },
     "generation": {
       "const": 2
@@ -119,27 +121,6 @@
         "other"
       ]
     },
-    "tested_on": {
-      "type": "array",
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
-    },
-    "capabilities": {
-      "type": "array",
-      "uniqueItems": true,
-      "items": {
-        "enum": [
-          "shell",
-          "files",
-          "code",
-          "terminal",
-          "ports"
-        ]
-      }
-    },
     "env": {
       "type": "object",
       "additionalProperties": {
@@ -152,8 +133,7 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "command",
-          "expect"
+          "command"
         ],
         "properties": {
           "command": {
@@ -178,6 +158,282 @@
     },
     "application": {
       "$ref": "#/$defs/application"
+    },
+    "workflow_contract_version": {
+      "const": 1
+    },
+    "provides": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "protocol",
+          "version",
+          "port",
+          "operations"
+        ],
+        "properties": {
+          "protocol": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "port": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "operations": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "default_workflow": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*$"
+    },
+    "workflows": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "input",
+          "startup",
+          "binding",
+          "operation",
+          "required_operations"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "application",
+              "exec",
+              "interpreter"
+            ]
+          },
+          "input": {
+            "enum": [
+              "source",
+              "image",
+              "managed",
+              "service"
+            ]
+          },
+          "startup": {
+            "enum": [
+              "exec",
+              "entrypoint",
+              "none"
+            ]
+          },
+          "binding": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "transport",
+              "endpoint",
+              "caller",
+              "authentication"
+            ],
+            "properties": {
+              "transport": {
+                "enum": [
+                  "http",
+                  "exec",
+                  "sse",
+                  "websocket"
+                ]
+              },
+              "endpoint": {
+                "enum": [
+                  "provider-port",
+                  "guest-loopback",
+                  "explicit-url",
+                  "provider-native"
+                ]
+              },
+              "caller": {
+                "enum": [
+                  "host",
+                  "guest"
+                ]
+              },
+              "authentication": {
+                "enum": [
+                  "none",
+                  "service-token",
+                  "provider"
+                ]
+              }
+            }
+          },
+          "operation": {
+            "type": "string",
+            "minLength": 1
+          },
+          "required_operations": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "sandbox.create",
+                "sandbox.get",
+                "sandbox.list",
+                "sandbox.delete",
+                "sandbox.timeout",
+                "sandbox.pause",
+                "sandbox.resume",
+                "template.prepare",
+                "exec.run",
+                "exec.stream",
+                "files.read",
+                "files.write",
+                "files.list",
+                "files.stat",
+                "files.remove",
+                "files.move",
+                "ports.resolve",
+                "code.execute",
+                "code.context.create",
+                "code.context.execute",
+                "code.context.list",
+                "code.context.restart",
+                "code.context.delete",
+                "code.default-context.execute",
+                "code.stream",
+                "code.results.structured"
+              ]
+            }
+          },
+          "service": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "required_checks": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "application"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "service"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "exec"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "operation": {
+                  "enum": [
+                    "exec.run",
+                    "exec.stream"
+                  ]
+                },
+                "binding": {
+                  "properties": {
+                    "transport": {
+                      "const": "exec"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "interpreter"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "operation": {
+                  "enum": [
+                    "code.execute",
+                    "code.context.create",
+                    "code.context.execute",
+                    "code.context.list",
+                    "code.context.restart",
+                    "code.context.delete",
+                    "code.default-context.execute",
+                    "code.stream",
+                    "code.results.structured"
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "build_profiles": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "dockerfile",
+          "context"
+        ],
+        "properties": {
+          "dockerfile": {
+            "type": "string",
+            "pattern": "^Dockerfile[.][a-z][a-z0-9.-]*$"
+          },
+          "context": {
+            "const": "."
+          }
+        }
+      }
     }
   },
   "$defs": {
@@ -704,5 +960,18 @@
       }
     }
   },
-  "description": "Sandbox template v3; optional application is consumed only by explicit application deployment."
+  "description": "Explicit workflow declarations; application deployment topology retains its original semantics.",
+  "dependentSchemas": {
+    "application": {
+      "properties": {
+        "smoke": {
+          "items": {
+            "required": [
+              "expect"
+            ]
+          }
+        }
+      }
+    }
+  }
 }

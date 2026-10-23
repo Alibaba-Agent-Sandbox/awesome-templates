@@ -13,11 +13,11 @@
 
 - [ ] Follows [docs/template-spec.md](../docs/template-spec.md)
 - [ ] Directory contains `template.yaml`, `Dockerfile`, `commands.py`, `e2e_test.py`, `README.md`, and `README.zh-CN.md`
-- [ ] Dockerfile `FROM` is the Alibaba FC base image, `WORKDIR /home/user/app`, `USER user`, pinned versions, and no `CMD` / `ENTRYPOINT`
+- [ ] Default Express Dockerfile retains its platform base and non-root contract; additional build profiles are explicit, pinned, non-root, selected by name, and preserve the original recipe
 - [ ] `commands.py` imports `command` from `agent_sandbox.server`; `start()` is only under `if __name__ == "__main__"`
 - [ ] `docs/design/<name>.md` filled from `docs/design/_TEMPLATE.md` (product templates)
 - [ ] `awesome-templates.yaml` entry matches the directory name; `status` matches passed levels
-- [ ] Verified table and `tested_on` list only providers with a passing evidence file
+- [ ] Explicit workflow/provides/default fields and evidence provenance agree; no author-written provider pass claims
 - [ ] **No secrets** committed (API keys/tokens/passwords) — empty placeholders only
 - [ ] `python3 scripts/check_template.py <name>` exits 0
 - [ ] `python3 scripts/run_local_e2e.py` passes

@@ -14,14 +14,17 @@ already passes `scripts/check_template.py`. It is not a catalog entry.
 
 1. Copy `_skeleton/` to a kebab-case directory. The directory name,
    `template.yaml` `name`, and the index `path` are the same string.
-2. Keep the Alibaba base image, `generation: 2`, `start_cmd`, `ready_cmd`,
-   pinned installs, and `USER user`. Do not add `CMD` or `ENTRYPOINT`.
+2. Keep the default Express recipe's Alibaba base image, `generation: 2`,
+   `start_cmd`, `ready_cmd`, pinned installs, and `USER user`. Do not add `CMD` or
+   `ENTRYPOINT` to that recipe. A separately declared explicit build profile may
+   use another pinned base; it must preserve the original recipe and non-root
+   runtime, and is selected by name rather than applied as a provider rewrite.
 3. Register named commands in `commands.py` with `@command`. Call `start()`
    only under `if __name__ == "__main__"`.
 4. Fill `docs/design/<name>.md` from
    [docs/design/_TEMPLATE.md](./docs/design/_TEMPLATE.md).
 5. Write `README.md` and `README.zh-CN.md` with the headings in the spec.
-   The Verified section lists only providers that have a passing evidence file.
+   The Verified section states the exact workflow evidence scope; historical records do not certify the current manifest.
 6. Add one `awesome-templates.yaml` entry. Use `experimental` until L0, L1,
    and L2 have passed. `official` also needs L3 before the README says the
    upstream agent works.
@@ -69,7 +72,7 @@ Do not commit `__pycache__/`, `.env`, or secret values. Declare secret
 The source directory remains authoritative across providers. Follow
 [provider-owned preparation](docs/provider-preparation.md): each provider owns
 base/image/registration adaptation; cross-cloud IDs are never converted.
-Missing terminal/code or other required capabilities stay unsupported.
+Only requirements of the selected workflow block that path; template-provided Python does not imply a unified interpreter dependency.
 Catalog prerequisites and launch hints do not establish native backend acceptance.
 
 Run `python scripts/check_docs.py` for local document links. Add a regression for

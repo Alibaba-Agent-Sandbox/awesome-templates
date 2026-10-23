@@ -142,26 +142,7 @@ stdout和stderr各限256KiB；命令1..600秒，加最多90秒自有后代清理
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 1.0.1；常规镜像、真实 CLI/SDK、完整 HTTP 16 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T110118Z.json) |
-| opensandbox | 1.0.1；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 16 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T111239Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-| 提供商 | 运行时验证 | 范围 |
-| --- | --- | --- |
-| alicloud-express | [当前1.0.1通过回执](evidence/express-2026-10-21T124114Z.json) · [steps／完整HTTP](evidence/verification-steps-2026-10-21T124114Z.json) | 原版版本／帮助、SDK创建、实际HTTP和SDK无账号拒绝、文件保留及独立确认沙箱／模板／私有缓存不存在 |
-
-错误来源修正已在公开源码8fa9bb821316b56c8f708945deb06b41321edccb重新验收：174.416秒，16项HTTP通过、0失败、0跳过。只验证原版预期的无账号错误路径，真实厂商账号／模型／编码仍NOT_RUN；1.0.0回执保留为历史。[补充验证](../.agents/evidence/verify/2026-10-21-devin-diagnostic-origin.md)。
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 二次开发
 

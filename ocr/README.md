@@ -106,33 +106,7 @@ The last two settings support native diagnostics; they are not command parameter
 
 ## Verified
 
-
-### Current image acceptance — 2026-10-22
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 1.0.1; regular image, actual CLI/SDK, complete HTTP 19 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-20T054627Z.json) |
-| opensandbox | 1.0.1; original Docker backend, every CLI/SDK named smoke, complete HTTP 19 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T112402Z.json) |
-
-OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
-
-<details>
-<summary>Earlier acceptance records (original dates and scope retained)</summary>
-
-| Provider | Scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | Version1.0.1 actual CI image, official READY, CLI/SDK, full HTTP19 PASS/0 SKIP and independent sandbox/template/registry cleanup | [2026-10-20](evidence/express-2026-10-20.json), [full run](evidence/image-http-2026-10-20T054627Z.json) |
-| alicloud-express | Version 1.0.1 genuine platform steps, official READY, CLI/SDK and full HTTP 19 PASS / 0 FAIL / 0 SKIP; independently confirmed sandbox/template cleanup | [step receipt](evidence/express-2026-10-20T061143Z.json), [full HTTP](evidence/full-http-steps-2026-10-20T061143Z.json) |
-
-The1vCPU/1024MB resource correction is formally versioned1.0.1 and independently
-verified at that exact contract. The controller checks random-digit pixels,
-original input bytes, downloaded TXT/TSV contents/hashes/confidence/bounds, blank
-negative control and artifact deletion. Earlier1.0.0 candidate passes and failed
-attempts remain in the historical section below; none was relabeled. This run
-uses a verified CI image and real native image registration, not Dockerfile or
-platform-step deployment. The separate passing step receipts above establish actual platform-step execution at the same version; earlier failed attempts remain history.
-
-</details>
+No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
 
 ## Historical verification
 

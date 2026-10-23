@@ -64,11 +64,11 @@ The native run_code service returned HTTP404 in this run. The SDK shell fallback
 
 ## Quick start (HTTP POST)
 
-This managed definition has no repository-defined `/commands/*` server. Use the SDK shell/files/run_code APIs; no named-command HTTP endpoint is supplied by this catalog entry.
+This managed definition has no repository-defined `/commands/*` server. Use the SDK shell/files APIs; no named-command HTTP endpoint is supplied by this catalog entry.
 
 ## Command reference
 
-SDK: Sandbox.create(template: str, timeout: int=300); commands.run(cmd: str, timeout: int) returns exit_code/stdout/stderr; files.write/read/remove/exists operate on sandbox paths; run_code(code: str) returns execution results. See [public SDK source](https://github.com/Alibaba-Agent-Sandbox/python-sdk). No custom named command is registered.
+SDK: Sandbox.create(template: str, timeout: int=300); commands.run(cmd: str, timeout: int) returns exit_code/stdout/stderr; files.write/read/remove/exists operate on sandbox paths. See [public SDK source](https://github.com/Alibaba-Agent-Sandbox/python-sdk). No custom named command is registered.
 
 ## Configuration
 
@@ -79,6 +79,8 @@ Use the configured Alibaba SDK/CLI account. Keep credentials in process environm
 Observed Linux x86_64/non-root, with no /dev/kvm or Docker socket. Resource sizing, pricing and image revisions are provider-managed. Set a finite sandbox timeout, kill owned instances and independently read back absence.
 
 ## Verified
+
+The current workflow has no project-recognized receipt. Dated records below are historical reports of their original inputs and call paths; they do not certify this manifest. See [workflow evidence](../../workflows.md).
 
 | Provider | Runtime verification | Scope |
 | --- | --- | --- |

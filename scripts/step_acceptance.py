@@ -6,9 +6,6 @@ import argparse
 import hashlib
 import json
 import re
-import subprocess
-import time
-from functools import lru_cache
 from pathlib import Path
 
 import yaml
@@ -17,35 +14,6 @@ from select_image_templates import ROOT, catalog_names
 from manifest_contract import manifest_contract_sha256
 from server_sdk_pin import server_commit as selected_server_commit
 
-
-@lru_cache(maxsize=256)
-def _legacy_manifest_contract(source_text: str, expected: str, revision: str | None) -> str | None:
-    """Find exact recorded bytes locally; no network, rewriting or guessed metadata.
-
-    A recorded immutable source must match its own manifest. Legacy inline-copy
-    receipts may have no revision: search bounded local history of this one path,
-    accepting a blob only after its complete SHA256 matches the recorded input.
-    A shallow/missing history remains MISSING, never a qualification bypass.
-    """
-    source=Path(source_text)
-    try:
-        root=subprocess.check_output(["git","-C",str(source),"rev-parse","--show-toplevel"],stderr=subprocess.DEVNULL,text=True,timeout=5).strip()
-        relative=(source/"template.yaml").relative_to(Path(root)).as_posix()
-        if revision is not None:
-            if not isinstance(revision,str) or not re.fullmatch(r"[0-9a-f]{40}",revision):return None
-            candidates=[revision]
-        else:
-            candidates=subprocess.check_output(["git","-C",root,"log","--format=%H","-n","64","--",relative],stderr=subprocess.DEVNULL,text=True,timeout=5).splitlines()
-        deadline=time.monotonic()+15
-        for candidate in candidates:
-            if time.monotonic()>deadline:return None
-            if not re.fullmatch(r"[0-9a-f]{40}",candidate):continue
-            result=subprocess.run(["git","-C",root,"show",candidate+":"+relative],stderr=subprocess.DEVNULL,stdout=subprocess.PIPE,timeout=5)
-            if result.returncode or len(result.stdout)>8*1024**2:continue
-            if hashlib.sha256(result.stdout).hexdigest()==expected:
-                return manifest_contract_sha256(result.stdout)
-    except (OSError,ValueError,TypeError,subprocess.SubprocessError):pass
-    return None
 
 
 def inspect_manifest(source: Path, proof: dict) -> tuple[bool,str]:
@@ -64,9 +32,7 @@ def inspect_manifest(source: Path, proof: dict) -> tuple[bool,str]:
             if not isinstance(recorded,str) or not re.fullmatch(r"[0-9a-f]{64}",recorded) or recorded!=contract:
                 return False,"source manifest contract changed"
         elif hashlib.sha256(current).hexdigest()!=expected:
-            previous=_legacy_manifest_contract(str(source.resolve()),expected,proof.get("copy_source_commit"))
-            if previous is None:return False,"original manifest bytes unavailable or not bound to recorded source"
-            if previous!=contract:return False,"source manifest contract changed"
+            return False,"source manifest bytes changed; historical receipts are not upgraded"
         pin=source/"server-sdk.commit"
         if pin.exists() or pin.is_symlink():
             selected=selected_server_commit(source)
@@ -75,7 +41,7 @@ def inspect_manifest(source: Path, proof: dict) -> tuple[bool,str]:
             effective=proof.get("server_commit_override") or proof.get("template_server_commit")
             if effective!=selected:return False,"required server SDK selection differs"
     except (OSError,ValueError,TypeError):return False,"invalid manifest or required server SDK provenance"
-    return True,"source manifest contract bound; qualification-only metadata excluded"
+    return True,"complete source manifest contract bound; no compatibility exclusions"
 
 
 def inspect_runtime(source: Path, receipt: dict) -> tuple[bool, str]:
@@ -102,8 +68,7 @@ def inspect_runtime(source: Path, receipt: dict) -> tuple[bool, str]:
     if not hashes.get("Dockerfile") or not hashes.get("commands.py"):
         return False, "missing runtime provenance"
     for name, expected in hashes.items():
-        # The complete manifest contract was verified above; only tested_on
-        # qualification metadata may differ. Every other recorded input is exact.
+        # The complete manifest identity was verified above. Every other input is exact.
         if name == "template.yaml":
             continue
         path = source / name
@@ -189,7 +154,8 @@ def audit(root: Path = ROOT, *, require_http: bool = False) -> dict:
                      "http": "PASS" if http else "MISSING", "http_receipts": http})
     passed = sum(row["steps"] == "PASS" for row in rows)
     http_passed = sum(row["http"] == "PASS" for row in rows)
-    return {"scope": "current-version Express platform-step runtime acceptance; not model or Docker acceptance",
+    return {"scope": "Local report of Express platform-step runtime; not trusted workflow certification",
+            "classification": "local-report", "project_verified": False,
             "passed": passed, "http_passed": http_passed, "require_http": require_http,
             "total": len(rows), "complete": passed == len(rows) and (not require_http or http_passed == len(rows)), "templates": rows}
 

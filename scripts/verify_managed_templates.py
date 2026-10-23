@@ -10,7 +10,6 @@ import asyncio
 from datetime import datetime, timezone
 import importlib.metadata
 import json
-import logging
 import os
 from pathlib import Path
 import subprocess
@@ -43,16 +42,6 @@ async def verify(name: str, output: Path, cli: str | None) -> bool:
     save()
     result = {"template": name, "provider": "alicloud-express", "verification_type": "provider-managed-runtime", "date": stamp, "passed": False, "cleanup_verified": False, "native_interpreter_verified": False, "checks": [], "client_version": importlib.metadata.version("agent-sandbox-client")}
     sb = None
-    class Fallback(logging.Handler):
-        observed = False
-        def emit(self, record):
-            if "falling back to shell execution" in record.getMessage():
-                self.observed = True
-    fallback = Fallback()
-    logger = logging.getLogger("agent_sandbox.api.code")
-    previous = logger.propagate
-    logger.addHandler(fallback)
-    logger.propagate = False
     try:
         sb = await Sandbox.create(template=name, timeout=240, metadata={"verification": tag})
         intent["sandbox_id"] = sb.id
@@ -70,11 +59,10 @@ async def verify(name: str, output: Path, cli: str | None) -> bool:
         await sb.files.remove(path)
         assert not await sb.files.exists(path)
         result["checks"].append("SDK file write/read/remove and absence")
-        code = await sb.run_code("print(6 * 7)")
-        assert code.exit_code == 0 and code.stdout.strip() == "42"
-        result["run_code_transport"] = "SDK shell fallback after native HTTP404" if fallback.observed else "native interpreter"
-        result["native_interpreter_verified"] = not fallback.observed
-        result["checks"].append("actual SDK run_code result 42")
+        # This managed workflow selects exec. It makes no unified interpreter claim.
+        result["classification"] = "local-report"
+        result["workflow_id"] = "exec"
+        result["consumer"] = "python-provider"
         if cli:
             proc = await asyncio.create_subprocess_exec(cli, "--json", "exec", sb.id, "--", "python3", "-c", "print(6*7)", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
             try:
@@ -90,8 +78,6 @@ async def verify(name: str, output: Path, cli: str | None) -> bool:
     except Exception as exc:
         result["failure_type"] = type(exc).__name__
     finally:
-        logger.removeHandler(fallback)
-        logger.propagate = previous
         try:
             if sb:
                 await sb.kill()

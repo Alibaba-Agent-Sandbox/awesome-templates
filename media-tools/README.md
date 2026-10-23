@@ -150,34 +150,7 @@ image before using native arrays; an old server can turn `list[str]` into string
 
 ## Verified
 
-
-### Current image acceptance — 2026-10-22
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 1.1.0; regular image, actual CLI/SDK, complete HTTP 28 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-20T133417Z.json) |
-| opensandbox | 1.1.0; original Docker backend, every CLI/SDK named smoke, complete HTTP 28 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T112438Z.json) |
-
-OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
-
-<details>
-<summary>Earlier acceptance records (original dates and scope retained)</summary>
-
-Version1.1passed actual SDK-created Express image and native step builds on2026-10-20,
-CLI/SDK smoke,28full HTTP assertions, independent native CLI/SDK argv conversion,
-full random PCM equality and owned artifact/process/cloud cleanup.
-
-| Provider | Scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | SDK-created image/CLI/SDK and independently checked registry cleanup | [image receipt](evidence/express-2026-10-20T133417Z.json), [full HTTP](evidence/image-http-2026-10-20T133417Z.json), [native argv](evidence/native-argv-image-2026-10-20T133417Z.json) |
-| alicloud-express | Native steps, actual SDK creation,28HTTP assertions, native CLI/SDK argv | [step receipt](evidence/express-2026-10-20T131812Z.json), [full proof](evidence/full-http-steps-2026-10-20T131812Z.json), [native argv](evidence/native-argv-steps-2026-10-20T131812Z.json) |
-
-These exact1.1results use runtime source64de1c909659f880f79f69db42614277bfdf1257
-and pinned server fd72d3210b85079d93dcf08e19bfded73643162b. The SDK
-[foundation PR78](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/78)
-is merged. The template remains experimental; no model is required by this CPU interface.
-
-</details>
+No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
 
 ## Historical1.0 verification
 

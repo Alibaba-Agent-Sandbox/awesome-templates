@@ -96,28 +96,7 @@ Hermes runs through its private Python 3.14 shebang. The image exposes only its 
 
 ## Verified
 
-
-### Current image acceptance — 2026-10-22
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 1.1.1; regular image, actual CLI/SDK, complete HTTP 9 PASS / 0 FAIL / 1 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-20T110933Z.json) |
-| opensandbox | 1.1.1; original Docker backend, every CLI/SDK named smoke, complete HTTP 9 PASS / 0 FAIL / 1 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T111713Z.json) |
-
-OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
-
-<details>
-<summary>Earlier acceptance records (original dates and scope retained)</summary>
-
-Version 1.1.1 passed actual CI-image registration, official READY, CLI/SDK and 17 strict real-model assertions (qwen3.8-flash, OpenAI-compatible), source edit/new artifact/unchanged original tests/independent held-out completion. Independently confirmed sandbox/template/registry cleanup. Status remains experimental; other providers are unverified.
-
-| Provider | Scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | Exact current version, actual image and independently verified cleanup | [canonical receipt](evidence/express-2026-10-20.json), [HTTP](evidence/image-http-2026-10-20T062649Z.json), [strict model](evidence/model-image-2026-10-20T062649Z.json) |
-
-Additional native SDK creation acceptance2026-10-20: the same1.1.1 runtime was registered from its verified CI image, reached official READY and was actually created by Python Sandbox.create, then passed CLI/SDK smoke and its model-off HTTP controller. [New immutable SDK receipt](evidence/express-2026-10-20T110933Z.json), [HTTP/cleanup](evidence/image-http-2026-10-20T110933Z.json). Owned sandbox/template/registry absence and post-runtime image digest were independently confirmed. This run did not repeat the model; the prior exact-runtime/controller real-model pass above remains a separate unchanged receipt.
-
-</details>
+No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
 
 ## Historical verification
 

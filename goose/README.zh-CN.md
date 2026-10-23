@@ -141,26 +141,7 @@ PATH/可选CA与私有运行/模型设置，不继承云端、GitHub或命令ser
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 1.0.0；常规镜像、真实 CLI/SDK、完整 HTTP 9 PASS / 0 FAIL / 1 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-20T073500Z.json) |
-| opensandbox | 1.0.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 9 PASS / 0 FAIL / 1 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T111529Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-| 版本 | 提供方 | 路径及结果 | 证据 |
-| --- | --- | --- | --- |
-| 1.0.0 | alicloud-express | SDK 创建、已验证 CI 镜像；CLI/SDK 冒烟及兼容模型严格验收17 PASS/0 FAIL/0 SKIP | [镜像](evidence/express-2026-10-20.json)、[模型](evidence/model-image-2026-10-20T073500Z.json) |
-
-真实 Goose 代理通过 qwen3.8-flash 修改源码、新建报告、保留并运行原始测试，再通过独立生成的隐藏输入。自有沙箱、模板及镜像仓库清理和镜像摘要回查均独立通过。单独关闭模型的 HTTP 测试为9 PASS、1项明确模型 SKIP，该跳过项未记为模型通过。这只验证 OpenAI 兼容配置，不代表全部上游提供方。实际 step 构建在原生安装器预算检查失败，[失败诊断](evidence/steps-diagnosis-2026-10-20.json)保留为失败。其他提供方及 arm64 执行未经验证。
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 二次开发
 

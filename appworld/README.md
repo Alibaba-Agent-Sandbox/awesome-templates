@@ -97,28 +97,7 @@ Declared2vCPU/2048MB/Linuxx64, port9000 and enforced image rootfs8GiB budget. No
 
 ## Verified
 
-
-### Current image acceptance — 2026-10-22
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 1.0.6; regular image, actual CLI/SDK, complete HTTP 9 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T100518Z.json) |
-| opensandbox | 1.0.6; original Docker backend, every CLI/SDK named smoke, complete HTTP 9 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T110058Z.json) |
-
-OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
-
-<details>
-<summary>Earlier acceptance records (original dates and scope retained)</summary>
-
-| Provider | Scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | Template1.0.6; native steps, officialREADY, actual SDK creation, CLI/SDK native API, real task/original score replay and independent cleanup | [Express](evidence/express-2026-10-21.json), [full receipt](evidence/verification-steps-2026-10-21T000253Z.json) |
-
-Original AppWorld0.1.3.post1 with the authored compatible-model API bridge and explicitly approved qwen3.8-flash completes original training task82e2fac_1:16model responses,62actual native API calls, original evaluator2/2tests PASS/score1.0.17PASS0FAIL0SKIP; complete non-modelHTTP9PASS0FAIL0SKIP. Independently downloaded original encrypted artifact13792bytes matches native SHA256. A separate keyless worker reloads saved databases with the original evaluator and reproduces every score/test count; fresh post-return ACK rechecks the artifact. Own result/private decrypted state/native processes/secondary listener, outer sandbox/template and private OSS independently absent;321.702seconds.
-
-Actual exact-source3eff99e2af7eae6760f717e27c44efb9283e0ff2 L1 image and non-root original native API smoke PASS. Express proof is steps, not image deployment. Prior failures remain intact. This is one original training task using original engine/evaluator and an authored model bridge, not the paper baseline, leaderboard, full benchmark or another provider. [Final engineering evidence](../.agents/evidence/verify/2026-10-21-appworld-native-final.md).
-
-</details>
+No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
 
 ## Secondary development
 

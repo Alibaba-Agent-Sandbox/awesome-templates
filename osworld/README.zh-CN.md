@@ -115,30 +115,7 @@ JSON body 直接放参数，成功返回 `{"result": ...}`。未设置的认证�
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 1.0.0；常规镜像、真实 CLI/SDK、完整 HTTP 18 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T113339Z.json) |
-| opensandbox | 1.0.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 18 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T113506Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-当前1.0.0已通过规范的阿里云极速版原生 steps 部署、真实 Python SDK Sandbox.create、官方 READY 及 CLI/SDK 原生桌面冒烟。未改动的外部 required-desktop 控制器完成 **18通过/0失败/0跳过**：上传新 HTML/任务、基线得分0、独立解码真实1024x768PNG、鼠标/Unicode粘贴/快捷键/点击、真实 AT-SPI 状态、上游评分1和像素变化，随后清理桌面/任务文件。自有 sandbox、模板以及临时私有官方资产对象/桶均独立确认不存在。
-
-| 版本 | 提供方 | 当前证据 |
-| --- | --- | --- |
-| 1.0.0 | alicloud-express | [SDK创建的规范 steps](evidence/express-2026-10-20T170423Z.json)、[外部桌面18及私有缓存清理](evidence/verification-steps-2026-10-20T170423Z.json) |
-
-实际原生 L1 镜像构建39462497032也通过非 root 冒烟。目录保留 experimental，仅为明确的 Linux 浏览器子集，不包括完整 VM、benchmark、模型 Agent 或 VNC。见[最终工程记录](../.agents/evidence/verify/2026-10-20-osworld-sdk-desktop-final.md)。
-
-历史范围：源码 `9a53b56` 的确切镜像已实际通过非 root、禁网络 L1 和补充 Express 验证：SDK/HTTP/CLI 三端各自执行完整真实 GUI 任务及 4096 Unicode 全文读回；外部 required-GUI 验收为 18 PASS、0 FAIL、0 SKIP，随后独立核实 owned 资源消失及 registry 删除。该路径使用 CI 构建和官方镜像注册，没有执行完整本地 `abx template deploy` 或规范 L2 runner；不宣称完整 benchmark/model 通过。参见[最终镜像/云验证](../.agents/evidence/verify/2026-10-16-osworld-changed-image.md)，先前 native/image 失败记录保留为历史。
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 二次开发
 

@@ -54,8 +54,7 @@ does not prove that an existing server process was reconfigured.
 Publish only facts supported by code, primary upstream documentation or actual
 execution. State full product versus supported slice. A capability declaration,
 successful install, model marker, mock or green configuration job does not prove
-the upstream product works. Verified tables and `tested_on` list only providers
-with matching current receipts; preserve old failures and historical receipts.
+the upstream product works. Workflow verification requires complete matching receipts and independently trusted CI provenance; preserve historical records.
 
 Use placeholder secret names and values. Never include credentials, private
 endpoints, resource IDs, signed URLs, private prompts or raw sensitive logs.

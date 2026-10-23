@@ -90,28 +90,7 @@ HTTP200返回 `{"result":{"native_version":"0.10.0"}}`。`POST /commands/prime_a
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 1.0.0；常规镜像、真实 CLI/SDK、完整 HTTP 9 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T112500Z.json) |
-| opensandbox | 1.0.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 9 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T112738Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-| Provider | 范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 模板1.0.0；原生steps、官方READY、实际SDK创建、CLI/SDK原生命令、真实编码及独立清理 | [Express](evidence/express-2026-10-21.json)、[完整记录](evidence/verification-steps-2026-10-21T000126Z.json) |
-
-未经修改的Prime Agent0.10.0使用显式批准的qwen3.8-flash兼容模型完成真实编码，原版ipython工具修改预置源文件、保持原始3项测试字节不变，生成报告和精确随机nonce产物；返回后独立运行原始3项及4项隐藏用例并执行新ACK：18PASS/0FAIL/0SKIP。完整非模型HTTP9PASS/0FAIL/0SKIP。转发真实key前，原生合成SSE探针确认1次请求只访问指定端点/模型/Bearer，冲突项目配置收到0次请求，fixture和监听已清除。原生进程/内核、私有目录、项目、9010监听、外层沙箱/模板及私有OSS均独立确认不存在。总耗时232.382秒。
-
-实际镜像L1构建及非root版本/原版CPython协议3/12项导入smoke通过，rootfs1129394176字节。该镜像没有注册部署；Express证据属于steps。未验证订阅模型、daemon、递归代理、研究基准、其他提供方或峰值内存。[最终工程证据](../.agents/evidence/verify/2026-10-21-prime-agent-native-final.md)。
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 二次开发
 

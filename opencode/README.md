@@ -184,26 +184,7 @@ Set secret values on `abx create --env` or `Sandbox.create(envs=...)`. Do not wr
 
 ## Verified
 
-
-### Current image acceptance — 2026-10-22
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 2.0.2; regular image, actual CLI/SDK, complete HTTP 15 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T112305Z.json) |
-| opensandbox | 2.0.2; original Docker backend, every CLI/SDK named smoke, complete HTTP 15 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T112437Z.json) |
-
-OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
-
-<details>
-<summary>Earlier acceptance records (original dates and scope retained)</summary>
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 2.0.2; actual non-root steps, Python SDK create, CLI/SDK and15 full HTTP checks including serve lifecycle; independent cleanup | [steps](evidence/express-2026-10-20T160725Z.json) · [HTTP](evidence/verification-steps-2026-10-20T160725Z.json) |
-
-The2.0.2 image/model scope is not inferred from historical2.0.1. The changed Dockerfile also passed the real CI image build; no new real-model run is claimed.
-
-</details>
+No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
 
 ## Historical2.0.1 image/model qualification
 

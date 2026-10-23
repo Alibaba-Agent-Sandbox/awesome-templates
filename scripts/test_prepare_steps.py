@@ -167,13 +167,13 @@ def test_explicit_template_server_pin_rejects_a_stale_step_override(tmp_path):
     assert proof['inputs_sha256']['server-sdk.commit']==hashlib.sha256((pin+'\n').encode()).hexdigest()
 
 
-def test_preparation_binds_complete_source_manifest_excluding_only_qualification(tmp_path):
+def test_preparation_binds_every_manifest_field(tmp_path):
     from manifest_contract import manifest_contract_sha256
     source=fixture(tmp_path)
     _,proof=prepare(source)
     assert proof['source_manifest_contract_sha256']==manifest_contract_sha256((source/'template.yaml').read_bytes())
     original=proof['source_manifest_contract_sha256']
     path=source/'template.yaml';path.write_text(path.read_text()+'tested_on: [alicloud-express]\n')
-    assert prepare(source)[1]['source_manifest_contract_sha256']==original
+    assert prepare(source)[1]['source_manifest_contract_sha256']!=original
     path.write_text(path.read_text()+'start_cmd: changed\n')
     assert prepare(source)[1]['source_manifest_contract_sha256']!=original

@@ -173,39 +173,7 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/amp_version" \
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 1.2.0；常规镜像、真实 CLI/SDK、完整 HTTP 7 PASS / 0 FAIL / 1 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T103927Z.json) |
-| opensandbox | 1.2.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 7 PASS / 0 FAIL / 1 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T110057Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-| 提供方 | 已执行范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
-
-该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
-
-<details>
-<summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
-
-尚未记录任何通过的提供方测试。
-
-1.2.0 修改了权限默认值与检查接口；当前版本尚未完成镜像构建、部署和模型验收。
-原有 [1.1.0 证据](./evidence/express-2026-10-15.json)保留为历史，仅覆盖版本和配置检查，
-不能据此声称 1.2.0 或真实编码任务已通过。
-
-2026-10-16 在真实 Express base 中通过固定 Amp 版本、无密钥检查、设置字节不变及 7 项外部 HTTP 检查，实例已清理。[证据](./evidence/runtime-express-2026-10-16-readonly.json)。模型执行明确关闭（1 项跳过），不声称真实编码验收或 1.2.0 镜像构建、部署通过。
-
-</details>
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 二次开发
 

@@ -133,50 +133,7 @@ The service retains at most 200 saved agent configurations; each session allows 
 
 ## Verified
 
-
-### Current image acceptance — 2026-10-22
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 2.0.0; regular image, actual CLI/SDK, complete HTTP 18 PASS / 0 FAIL / 1 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T105026Z.json) |
-| opensandbox | 2.0.0; original Docker backend, every CLI/SDK named smoke, complete HTTP 18 PASS / 0 FAIL / 1 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T110910Z.json) |
-
-OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
-
-<details>
-<summary>Earlier acceptance records (original dates and scope retained)</summary>
-
-Current template 2.0.0 passed native steps → official READY → actual Python SDK creation → CLI/SDK smoke and **30 PASS / 0 FAIL / 0 SKIP** real model checks on 2026-10-20: [canonical receipt](evidence/express-2026-10-20T175340Z.json), [model/resume/cleanup proof](evidence/native-model-sdk-steps-2026-10-20T175340Z.json). Native Codex 0.162.1 used the approved HTTP Responses provider with `qwen3.8-flash` and explicit supported `CODEX_SANDBOX=bypass` only in the owned model server; the default remains workspace-write. Acceptance repaired existing source, checked the exact report through files/artifact APIs, passed six controller-owned tests with the fresh completion ACK, resumed the exact thread through SSE, verified the second artifact SHA-256/count and reran all six tests. The owned secondary listener/private native home and outer sandbox/template were independently confirmed absent. This is current local native API acceptance, not all OpenAI Agents features or other providers.
-
-| Provider | Executed scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
-
-This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
-
-<details>
-<summary>Earlier checkpoint text (historical; current steps result is above)</summary>
-
-No provider has a passing run recorded for this template.
-
-Local child-process regressions cover silent stdout deadlines, large stderr, process-group cleanup, background expiry, redaction, replay bounds, and subscriber accounting. Local HTTP smoke exercises CRUD and parameter rejection. `test_http_runtime.py` uses an explicitly synthetic CLI fixture to check real HTTP/background/SSE/cancellation and MCP header isolation; it does not certify upstream execution. Neither static review nor L0 establishes image/provider/model acceptance. The pinned binary's version/help were executed locally; no L1 image build or L2 provider deployment has passed in this resumed session.
-
-```bash
-python3 scripts/check_template.py codex-agent-api
-python3 codex-agent-api/test_commands.py
-python3 codex-agent-api/test_http_runtime.py
-python3 -m pytest codex-agent-api/test_e2e_protocol.py -q
-E2E_BASE_URL=http://127.0.0.1:9000 python3 codex-agent-api/e2e_test.py
-# Real provider/model run, only with runtime credentials already configured:
-E2E_REQUIRE_LLM=1 E2E_MODEL=your-model E2E_BASE_URL=https://your-sandbox \
-  python3 codex-agent-api/e2e_test.py
-```
-
-The real coding checks upload a faulty existing `normalizer.py`, reproduce failures in six controller-owned tests via `/shell`, then require the background agent to fix that source and create `normalization-report.json`. The controller downloads the files, validates the report through both files and artifact APIs, and reruns the same six fixed tests to exit 0. These tests remain in the controller and are never uploaded as model-editable files. Exact-thread SSE resume must create a second artifact containing the actual report SHA-256 and output count, preserve the first source/report, and pass the fixed tests again. Agent messages `ABX_E2E_OK` and `ABX_RESUME_OK` alone cannot pass acceptance. `E2E_REQUIRE_LLM=1` forces execution and turns missing remote credentials, errors or disabled execution into failure; optional L0 without a model request reports SKIP. Set `E2E_TOKEN` (or `ABX_SERVER_TOKEN`) for server authentication, `E2E_WORKSPACE` to the server workspace when it differs from `/home/user/workspace`, and optionally `E2E_LLM_TIMEOUT` for controller polling. The harness deletes only its unique probe directory and session. Fake-remote protocol tests exercise the success branch and reject marker-only, incorrect report and incorrect resume output; they are not model/provider evidence. The pinned archive and an optional injected wheel both support `agent-sandbox-server serve --commands` with postponed-annotation dataclasses; when injecting a wheel, build it from the same fixed source commit.
-
-</details>
-
-</details>
+No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
 
 ## Express source-runtime verification
 

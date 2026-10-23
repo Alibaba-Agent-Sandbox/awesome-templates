@@ -88,58 +88,7 @@ WORKSPACE 默认 /home/user/app。CODE_SERVER_PASSWORD、ABX_SERVER_TOKEN 都是
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 1.0.0；常规镜像、真实 CLI/SDK、完整 HTTP 5 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-20T091440Z.json) |
-| opensandbox | 1.0.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 5 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T110651Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-| 版本 | 提供方 | 模式及范围 | 证据 |
-| --- | --- | --- | --- |
-| 1.0.0 | alicloud-express | SDK创建的已验证镜像；完整HTTP5；sdk-local预览中的真实浏览器/终端/编辑器 | [镜像](evidence/express-2026-10-20.json)、[HTTP](evidence/image-http-2026-10-20T091440Z.json)、[浏览器](evidence/browser-ui-2026-10-20T091440Z.json) |
-
-真实Chromium加载原生JavaScript工作台，通过终端WebSocket写入随机文件，再用Monaco编辑/保存，由SDK独立确认文件内容。上游HTTPS证书及主机名校验始终开启；本机浏览器使用HTTP回环。代理先交换本地入口认证，再进行真实IDE密码登录。浏览器/代理/IDE/随机文件清理和自有沙箱/模板/镜像仓库不存在性均独立确认。使用[SDK本机预览操作](../docs/preview-proxy.zh-CN.md)；默认FC域名直接模式仍强制HTML附件，旧失败保留为历史。这不证明直接域名渲染或其他提供方通过。
-
-### 真实浏览器、终端与编辑器检查
-
-安装 Playwright1.58.0、其 Chromium 和 `certutil`（Debian/Ubuntu 包名
-`libnss3-tools`）。在调用方独占且没有运行中 IDE 的沙箱上执行
-`python code-server/browser_e2e_test.py --sandbox-id <sandbox-id>`。
-控制器通过 SDK 返回的8443地址登录，加载工作台 JavaScript，经终端 WebSocket
-写随机文件、files SDK 独立读回，再在浏览器编辑器修改、保存并独立读回。
-它停止自己启动的 IDE、删除随机文件；调用方仍需负责销毁沙箱。
-
-全程开启 TLS 校验。Chromium 的临时私有 HOME/NSS 仅导入 Python 默认 SSL
-上下文已经信任的操作端 CA，保留原有浏览器配置，浏览器子进程不继承云端或
-模型凭据。网络使用私有 CA 时，先配置操作端受信证书库，不绕过证书校验。
-本机浏览器回归明确使用本地文件观察器，不作为云端或 SDK 验收。清理未确认
-时不能返回通过。
-
-### 默认域名的浏览器访问前提
-
-当前默认 FC 域名上的真实最小 HTML 服务返回 HTTP200/text-html，但响应被加入
-`Content-Disposition: attachment`；真实 Chromium 因此开始下载，TLS 校验始终
-开启。[完整独立对照](evidence/preview-header-control-2026-10-20T060339Z.json)
-还确认了测试沙箱列表及单独GET均已不存在。这与[官方默认域名限制](https://www.alibabacloud.com/help/en/functioncompute/web-functions)一致。
-
-交互式浏览器使用前，需要绑定提供方支持的自定义预览域名与有效证书，再让
-SDK 使用提供方返回的域名。只替换主机名字符串不会建立绑定。之后对该 SDK
-URL 重跑浏览器控制器。控制器会提前诊断强制 HTML 下载，并清理自己启动的
-IDE；前面的 CLI/SDK 示例用于浏览器访问时也需要这个前提。
-
-[真实镜像尝试](evidence/image-attempt-2026-10-20T055537Z.json)的完整 HTTP5 项
-通过，但[真实浏览器 UI 未通过](evidence/browser-ui-2026-10-20T055537Z.json)。
-沙箱、模板及镜像仓库均已独立确认清理；因此尚未取得完整浏览器 IDE 提供方
-验收，Issue53 保持未关闭。
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 二次开发
 

@@ -5,7 +5,7 @@ Exit status:
   0  every checked directory conforms
   1  at least one checked directory violates the supported specification
 
-Every template must declare spec_version 2 (sandbox) or 3 (application).
+Every template must declare specification v4 with an explicit default workflow.
 """
 from __future__ import annotations
 
@@ -224,48 +224,11 @@ def _providers_in(text: str) -> set[str]:
 
 
 def _evidence_passes(template_dir: Path, provider: str) -> bool:
-    evidence = template_dir / "evidence"
-    if not evidence.is_dir():
-        return False
-    metadata, errors = _load_yaml(template_dir / "template.yaml")
-    if errors or not isinstance(metadata, dict):
-        return False
-    slugs = PROVIDERS[provider]
-    for path in sorted(evidence.glob("*.json")):
-        matched = False
-        for slug in slugs:
-            prefix = f"{slug}-"
-            if path.name.startswith(prefix) and path.suffix == ".json":
-                date = path.name[len(prefix) : -len(".json")]
-                if re.fullmatch(r"\d{4}-\d{2}-\d{2}(?:T\d{6}Z)?", date):
-                    matched = True
-                    break
-        if not matched:
-            continue
-        try:
-            payload = json.loads(path.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
-            continue
-        if not isinstance(payload, dict):
-            continue
-        if payload.get("provider") != provider or payload.get("passed") is not True or payload.get("cleanup_verified") is not True:
-            continue
-        if payload.get("template") != metadata.get("name") or str(payload.get("template_version")) != str(metadata.get("version")):
-            continue
-        commands = payload.get("commands")
-        if not isinstance(commands, list) or not commands:
-            continue
-        vias = set()
-        good = True
-        for item in commands:
-            if not isinstance(item, dict) or item.get("ok") is not True:
-                good = False
-                break
-            via = item.get("via")
-            if via in {"cli", "sdk"}:
-                vias.add(via)
-        if good and vias == {"cli", "sdk"}:
-            return True
+    """Submitted/local JSON cannot confer project certification.
+
+    Trusted CI provenance is supplied independently at registry ingestion. The static
+    repository checker never promotes historical receipts or author-written PASS.
+    """
     return False
 
 
@@ -275,6 +238,8 @@ def _index_entries(root: Path) -> list[dict] | None:
         return None
     data, errors = _load_yaml(path)
     if errors or not isinstance(data, dict):
+        return []
+    if data.get("schema_version") != 2:
         return []
     templates = data.get("templates")
     if not isinstance(templates, list):
@@ -528,7 +493,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
     if readme_zh.is_file():
         zh_sections = _check_readme(readme_zh, README_ZH, violations)
 
-    if data.get("spec_version") in (2, 3):
+    if data.get("spec_version") == 4:
         for label, sections, heading in (
             ("README.md", en_sections, "Quick start (HTTP POST)"),
             ("README.zh-CN.md", zh_sections, "快速开始（HTTP POST）"),
@@ -578,14 +543,8 @@ def check_directory(template_dir: Path) -> list[Violation]:
             )
 
     if data:
-        if data.get("spec_version") not in (2, 3):
-            violations.append(Violation("yaml-field", "spec_version must be 2 (sandbox) or 3 (application)"))
-        if data.get("spec_version") == 3:
-            from template_application import validate_v3
-
-            violations.extend(Violation("yaml-schema", message) for message in validate_v3(data, template_dir))
-        elif "application" in data:
-            violations.append(Violation("yaml-schema", "application requires spec_version: 3"))
+        from template_application import validate_v4
+        violations.extend(Violation("yaml-schema", message) for message in validate_v4(data, template_dir))
         if data.get("generation") != 2:
             violations.append(Violation("yaml-generation", "generation must be the integer 2"))
         start = data.get("start_cmd")
@@ -623,8 +582,6 @@ def check_directory(template_dir: Path) -> list[Violation]:
             violations.append(Violation("yaml-wave", "priority must be P0, P1, or P2"))
         if data.get("wave") not in {1, 2, 3, "other"}:
             violations.append(Violation("yaml-wave", "wave must be 1, 2, 3, or other"))
-        if "tested_on" not in data or not isinstance(data.get("tested_on"), list):
-            violations.append(Violation("yaml-tested", "tested_on must be a list (empty when nothing has passed)"))
         if "env" not in data:
             violations.append(Violation("yaml-field", "template.yaml: env must be a mapping"))
         else:
@@ -715,30 +672,10 @@ def check_directory(template_dir: Path) -> list[Violation]:
                 f"README verified providers {sorted(verified_en)} differ from README.zh-CN.md {sorted(verified_zh)}",
             )
         )
-    tested = data.get("tested_on") if isinstance(data.get("tested_on"), list) else None
-    tested_set = {item for item in tested if isinstance(item, str)} if tested is not None else set()
-    if tested is not None and tested_set != verified_en:
-        violations.append(
-            Violation(
-                "verified-mismatch",
-                f"tested_on {sorted(tested_set)} must match the README Verified providers {sorted(verified_en)}",
-            )
-        )
-    for provider in sorted(verified_en | tested_set):
-        if provider not in PROVIDERS:
-            violations.append(Violation("verified-provider", f"unknown provider {provider!r}"))
-            continue
-        if not _evidence_passes(template_dir, provider):
-            slugs = " or ".join(f"evidence/{slug}-YYYY-MM-DD.json" for slug in PROVIDERS[provider])
-            violations.append(
-                Violation(
-                    "verified-evidence",
-                    f"{provider} is listed as verified but no passing evidence for this template/version ({slugs}) "
-                    "records cli and sdk results",
-                )
-            )
+    for provider in sorted(verified_en):
+        violations.append(Violation("verified-evidence", f"{provider}: a README table cannot establish trusted workflow certification"))
 
-    if name and name != SKELETON_NAME and data.get("spec_version") in (2, 3):
+    if name and name != SKELETON_NAME and data.get("spec_version") == 4:
         design = template_dir.parent / "docs" / "design" / f"{name}.md"
         if template_dir.parent.name == "docs":
             design = template_dir.parent / "design" / f"{name}.md"
@@ -759,7 +696,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
                     )
 
     if (template_dir.parent / "awesome-templates.yaml").is_file() and name and name != SKELETON_NAME:
-        if data.get("spec_version") in (2, 3):
+        if data.get("spec_version") == 4:
             entries = _index_entries(template_dir.parent) or []
             match = [item for item in entries if item.get("path") == name or item.get("name") == name]
             if not match:
@@ -770,13 +707,9 @@ def check_directory(template_dir: Path) -> list[Violation]:
                     violations.append(Violation("index", f"index name/path must both be {name}"))
                 if item.get("status") not in {"official", "community", "experimental"}:
                     violations.append(Violation("index", f"index status for {name} is not a known value"))
-                declared = data.get("capabilities")
-                indexed = item.get("capabilities")
-                if not all(isinstance(value, list) and all(isinstance(cap, str) for cap in value)
-                           for value in (declared, indexed)):
-                    violations.append(Violation("index-capabilities", f"{name}: template and index capabilities must be string lists"))
-                elif set(declared) != set(indexed):
-                    violations.append(Violation("index-capabilities", f"{name}: template and index capabilities must match"))
+                if any(key in item for key in ("capabilities", "tested_on", "providers")):
+                    violations.append(Violation("index-workflow", f"{name}: retired compatibility/verification metadata is rejected"))
+
     return violations
 
 

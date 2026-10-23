@@ -101,28 +101,7 @@ stdout／stderr 各限256KiB；成功／失败／超时／溢出均清理自有�
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 1.0.2；常规镜像、真实 CLI/SDK、完整 HTTP 8 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T105009Z.json) |
-| opensandbox | 1.0.2；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 8 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T110504Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-| 提供方 | 当前范围 | 记录 |
-| --- | --- | --- |
-| alicloud-express | 模板1.0.2；原生 steps、官方 READY、真实 Python SDK 创建、CLI/SDK 原生版本、真实模型编码和独立清理 | [2026-10-20](evidence/express-2026-10-20.json)、[完整模型证明](evidence/verification-steps-2026-10-20T201959Z.json) |
-
-真实未修改的 Cline3.0.73原生 CLI 在显式已批准兼容端点使用 qwen3.8-flash。先以虚拟密钥进行真实原生路由检查，确认1次请求的自有端点／模型／Bearer完全匹配，并独立清理测试服务后，再注入真实密钥。真实 SDK 编码修复已有源码，原始测试保持字节一致，下载新报告／精确随机产物，返回后独立执行完整3项原始测试和4个隐藏用例，并匹配新 ACK：17PASS/0FAIL/0SKIP。完整基础 HTTP8PASS/0FAIL/0SKIP另行记录。自有测试项目、原生进程／HOME／状态、额外监听端口、外层沙箱和模板全部独立确认清理。当前运行时 L1 镜像与非 root 用户原生版本／SHA256检查另有记录；不代表实际镜像注册后的模型部署、编辑器扩展、托管服务或其他提供方。[最终工程证据](../.agents/evidence/verify/2026-10-20-cline-native-final.md)。
-
-原生 submit_and_exit 会给已验证摘要添加固定前缀 `Submission recorded (verified): `。验证器仅解包此精确前缀，仍要求原生 completed／正整数迭代次数、摘要恰为本次随机 marker，以及全部独立文件／测试验证；未验证前缀和只输出 marker 不足以通过。之前的配置路径、stdin 前置条件、协议 fixture 和资源恢复失败／中断记录均保留。
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 二次开发
 

@@ -102,31 +102,7 @@ HTTP 200 返回 `{"result": ...}`；参数缺失/类型错误为 400，认证失
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 1.0.1；常规镜像、真实 CLI/SDK、完整 HTTP 19 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-20T054627Z.json) |
-| opensandbox | 1.0.1；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 19 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T112402Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-| 提供方 | 范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 版本1.0.1真实CI镜像、官方READY、CLI/SDK、完整HTTP19通过/0跳过，沙箱/模板/镜像仓库独立清理确认 | [2026-10-20](evidence/express-2026-10-20.json)、[完整检查](evidence/image-http-2026-10-20T054627Z.json) |
-| alicloud-express | 1.0.1 真实平台 step 构建、官方 READY、CLI/SDK 和完整 HTTP 19 通过 / 0 失败 / 0 跳过；独立确认 sandbox/template 清理 | [step 回执](evidence/express-2026-10-20T061143Z.json)、[完整 HTTP](evidence/full-http-steps-2026-10-20T061143Z.json) |
-
-1vCPU/1024MB资源修复正式版本1.0.1已独立验收，包括随机数字图像、原始输入
-字节不变、下载TXT/TSV后的文字/哈希/置信度/边界检查、空白负例和产物删除。
-此前1.0.0候选通过及失败记录保留在历史部分，没有重标版本。本次使用已核验
-CI镜像和真实原生镜像登记。上述另一组 step 成功回执证明同版本真实执行了
-平台 step；较早失败尝试仍作为历史保留。
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 历史验收
 

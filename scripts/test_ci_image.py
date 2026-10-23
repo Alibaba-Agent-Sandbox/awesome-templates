@@ -36,10 +36,10 @@ def test_mutable_reference_and_changed_runtime_are_rejected(tmp_path):
     with pytest.raises(ValueError,match='inputs differ'):ci_image.validate_proof(source,proof,IMAGE)
 
 
-def test_only_tested_on_metadata_can_change_without_image_rebuild(tmp_path):
+def test_any_manifest_change_invalidates_image_identity(tmp_path):
     source,proof,path=fixture(tmp_path)
     text=(source/'template.yaml').read_text().replace('tested_on: []','tested_on: [alicloud-express]');(source/'template.yaml').write_text(text)
-    assert ci_image.validate_proof(source,proof,IMAGE)==proof
+    with pytest.raises(ValueError):ci_image.validate_proof(source,proof,IMAGE)
     (source/'template.yaml').write_text(text.replace('expect: ok','expect: different'))
     with pytest.raises(ValueError):ci_image.validate_proof(source,proof,IMAGE)
 

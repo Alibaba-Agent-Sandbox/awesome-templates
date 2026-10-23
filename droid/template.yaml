@@ -3,7 +3,7 @@ version: "1.2.0"
 description: "Genuine Factory Droid0.241.1 with isolated explicit compatible BYOK and bounded headless coding."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0
-spec_version: 2
+spec_version: 4
 base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
 generation: 2
 start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
@@ -11,8 +11,6 @@ ready_cmd: "agent-sandbox-server healthcheck --port 9000"
 tags: [droid, factory, ai-coding, ai-agent]
 priority: P1
 wave: 1
-tested_on: [alicloud-express, opensandbox]
-capabilities: [shell, files, code, ports]
 ports: [9000]
 env:
   FACTORY_API_KEY: ""
@@ -28,3 +26,26 @@ smoke:
   - command: droid_version
     args: {}
     expect: "0.241.1"
+workflow_contract_version: 1
+provides:
+  app:
+    protocol: agent-sandbox-server
+    version: 2
+    port: 9000
+    operations:
+    - commands.list
+    - commands.run
+default_workflow: application
+workflows:
+  application:
+    kind: application
+    input: source
+    service: app
+    startup: exec
+    binding:
+      transport: http
+      endpoint: provider-port
+      caller: host
+      authentication: service-token
+    operation: commands.run
+    required_operations: []

@@ -144,26 +144,7 @@ Linuxx86_64 only, nonroot user,2vCPU/4096MB/port9000; build enforces rootfs<=8Gi
 
 ## Verified
 
-
-### Current image acceptance — 2026-10-22
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 1.0.1; regular image, actual CLI/SDK, complete HTTP 16 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T110118Z.json) |
-| opensandbox | 1.0.1; original Docker backend, every CLI/SDK named smoke, complete HTTP 16 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T111239Z.json) |
-
-OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
-
-<details>
-<summary>Earlier acceptance records (original dates and scope retained)</summary>
-
-| Provider | Runtime verification | Scope |
-| --- | --- | --- |
-| alicloud-express | [Current1.0.1PASS receipt](evidence/express-2026-10-21T124114Z.json) · [steps/fullHTTP](evidence/verification-steps-2026-10-21T124114Z.json) | Original native version/help, SDKcreate, actual HTTP+SDK no-account refusal, fixture preservation and independent owned sandbox/template/private-cache absence |
-
-The diagnostic-origin correction was requalified at published source8fa9bb821316b56c8f708945deb06b41321edccb:174.416seconds,16HTTPchecksPASS0FAIL0SKIP. Only the original expected no-account error path is passed; genuine vendor account/model/coding remainsNOT_RUN. Template1.0.0 receipts remain historical. [Follow-up verification](../.agents/evidence/verify/2026-10-21-devin-diagnostic-origin.md).
-
-</details>
+No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
 
 ## Secondary development
 

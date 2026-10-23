@@ -100,26 +100,7 @@ commands.py加载时捕获配置；存在性不证明连通。SDK token最长819
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 1.0.1；常规镜像、真实 CLI/SDK、完整 HTTP 10 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T113747Z.json) |
-| opensandbox | 1.0.1；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 10 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T113030Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-| 提供方 | 版本 / 日期 | 通过范围与记录 |
-| --- | --- | --- |
-| alicloud-express | 1.0.1 / 2026-10-21 | 原版源码/Node/SDK、SDK创建steps、CLI+SDK smoke、完整HTTP10PASS/0FAIL/0SKIP及独立自建资源清理；[回执](evidence/express-2026-10-21T021039Z.json)、[源码绑定验证](evidence/verification-steps-2026-10-21T021039Z.json) |
-
-原版QM/Pi使用qwen3.8-flash编码19PASS/0FAIL/0SKIP：修改源码、原3项测试字节不变、下载报告/精确nonce、返回后原3项及4项新增用例与新ACK通过。真实非root L1镜像构建、源码/哈希/导入/工作目录检查通过；rootfs2018516992字节，小于8GiB。原生steps为12859字节，保留15000字节门禁。[固定server源码](server-sdk.commit)的整数拒绝修复由[SDK PR82](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/82)交付。QM Sandbox早期17PASS/1FAIL布尔转换尝试及准备阶段失败保留在[最终工程记录](../.agents/evidence/verify/2026-10-21-qm-native-final.md)。不据此声明Docker镜像云端部署、其他提供方、完整多人服务或峰值内存通过。
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 二次开发
 

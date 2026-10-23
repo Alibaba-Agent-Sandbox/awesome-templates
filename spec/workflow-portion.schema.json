@@ -1,0 +1,265 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "workflow_contract_version",
+    "provides",
+    "default_workflow",
+    "workflows"
+  ],
+  "properties": {
+    "workflow_contract_version": {
+      "const": 1
+    },
+    "provides": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "protocol",
+          "version",
+          "port",
+          "operations"
+        ],
+        "properties": {
+          "protocol": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "port": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "operations": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "default_workflow": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*$"
+    },
+    "workflows": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "input",
+          "startup",
+          "binding",
+          "operation",
+          "required_operations"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "application",
+              "exec",
+              "interpreter"
+            ]
+          },
+          "input": {
+            "enum": [
+              "source",
+              "image",
+              "managed",
+              "service"
+            ]
+          },
+          "startup": {
+            "enum": [
+              "exec",
+              "entrypoint",
+              "none"
+            ]
+          },
+          "binding": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "transport",
+              "endpoint",
+              "caller",
+              "authentication"
+            ],
+            "properties": {
+              "transport": {
+                "enum": [
+                  "http",
+                  "exec",
+                  "sse",
+                  "websocket"
+                ]
+              },
+              "endpoint": {
+                "enum": [
+                  "provider-port",
+                  "guest-loopback",
+                  "explicit-url",
+                  "provider-native"
+                ]
+              },
+              "caller": {
+                "enum": [
+                  "host",
+                  "guest"
+                ]
+              },
+              "authentication": {
+                "enum": [
+                  "none",
+                  "service-token",
+                  "provider"
+                ]
+              }
+            }
+          },
+          "operation": {
+            "type": "string",
+            "minLength": 1
+          },
+          "required_operations": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "sandbox.create",
+                "sandbox.get",
+                "sandbox.list",
+                "sandbox.delete",
+                "sandbox.timeout",
+                "sandbox.pause",
+                "sandbox.resume",
+                "template.prepare",
+                "exec.run",
+                "exec.stream",
+                "files.read",
+                "files.write",
+                "files.list",
+                "files.stat",
+                "files.remove",
+                "files.move",
+                "ports.resolve",
+                "code.execute",
+                "code.context.create",
+                "code.context.execute",
+                "code.context.list",
+                "code.context.restart",
+                "code.context.delete",
+                "code.default-context.execute",
+                "code.stream",
+                "code.results.structured"
+              ]
+            }
+          },
+          "service": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "required_checks": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "application"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "service"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "exec"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "operation": {
+                  "enum": [
+                    "exec.run",
+                    "exec.stream"
+                  ]
+                },
+                "binding": {
+                  "properties": {
+                    "transport": {
+                      "const": "exec"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "interpreter"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "operation": {
+                  "enum": [
+                    "code.execute",
+                    "code.context.create",
+                    "code.context.execute",
+                    "code.context.list",
+                    "code.context.restart",
+                    "code.context.delete",
+                    "code.default-context.execute",
+                    "code.stream",
+                    "code.results.structured"
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

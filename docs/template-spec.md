@@ -54,7 +54,7 @@ version: "1.0.0"
 description: "One sentence."
 author: "github-handle"
 license: Apache-2.0
-spec_version: 2
+spec_version: 4
 
 base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
 generation: 2
@@ -71,9 +71,24 @@ ports:
 tags: [example]
 priority: P2      # P0, P1, or P2
 wave: other       # 1, 2, 3, or other
-tested_on: []     # provider ids with a passing evidence file, else []
 
-capabilities: [shell, files, code, ports]
+workflow_contract_version: 1
+provides:
+  app:
+    protocol: agent-sandbox-server
+    version: 2
+    port: 9000
+    operations: [commands.list, commands.run]
+default_workflow: application
+workflows:
+  application:
+    kind: application
+    input: source
+    service: app
+    startup: exec
+    binding: {transport: http, endpoint: provider-port, caller: host, authentication: service-token}
+    operation: commands.run
+    required_operations: []
 
 env:
   SOME_API_KEY: ""
@@ -89,7 +104,7 @@ smoke:
 |---|---|
 | `name` | Same as the directory. |
 | `description`, `version`, `author`, `license` | Non-empty strings. |
-| `spec_version` | Explicit `2` for the existing contract or `3` for the strict schema with optional `application`. Missing, malformed and unknown versions fail. |
+| `spec_version` | Only integer `4` is accepted. Retired and unknown schemas are rejected without compatibility mode. |
 | `base` | String. Either the placeholder `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` or a pinned `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:vX.Y.Z`. Not a mapping. |
 | `generation` | Integer `2`. |
 | `start_cmd` | `agent-sandbox-server serve` plus the path of `commands.py` inside the image. |
@@ -101,8 +116,7 @@ smoke:
 | `tags` | Non-empty list of strings. |
 | `priority` | `P0`, `P1`, or `P2`, matching `docs/template-backlog.json` when the template is listed there. |
 | `wave` | `1` (whole product on Express), `2` (a stated slice), `3` (needs another provider for the workload), or `other`. |
-| `tested_on` | Provider ids that have a passing evidence file. Empty until then. The same set is the README Verified table. |
-| `capabilities` | Subset of `shell`, `files`, `code`, `terminal`, `ports`. Metadata for the client. They do not toggle HTTP routes by themselves. |
+| `provides`, `workflows`, `default_workflow` | Provided services, explicit call paths and one default path; see [workflow contracts](workflows.md). |
 | `smoke` | List of `{command, args, expect}` run by `scripts/express_e2e.py`. `args` keys are the command parameters. `expect` is compared after strip for strings. |
 
 `abx template deploy` reads `generation`, `start_cmd`, and `ready_cmd` from this file (CLI flags win). On `alicloud-express`, a directory with `commands.py` and no explicit values defaults to generation 2 and:
@@ -116,14 +130,14 @@ Write the three keys anyway. The default path is wrong for an image whose `comma
 
 Named commands are not listed in `template.yaml`. They are registered in `commands.py`.
 
-## Optional application deployment (spec version 3)
+## Optional application deployment (spec version 4)
 
-Use `spec_version: 3` to opt into the closed machine schema
-[schema/template-v3.schema.json](../schema/template-v3.schema.json). All existing
-sandbox fields retain their meaning. V3 requires an explicit non-null smoke `expect`; it supports strings, numbers, booleans, objects and arrays with the existing structural comparison. A v2 smoke without an expectation needs an explicit expected result when adopting v3. `application` is optional, so an ordinary
-v3 sandbox template has no application deployment. v2 remains supported; adding
-`application` to v2 is an error. Unknown fields, versions and topology combinations
-fail the checker. Old CLI versions must reject v3 until they support this contract.
+Every input uses the closed [spec/template-v4.schema.json](../spec/template-v4.schema.json).
+`application` remains optional. When present, its existing deployment topology,
+hooks, durable state and non-null smoke expectations retain their meaning.
+Workflows describe sandbox call paths; application describes deployment topology.
+Unknown fields, retired versions and invalid topology combinations fail without
+compatibility mode.
 
 `template.yaml` is the sole user configuration entry. Do not add `agent-app.yaml`.
 Application deployment is an explicit CLI operation; installing a template,
@@ -170,8 +184,7 @@ Hook argv is never interpreted as a shell string by the template checker.
 Install the pinned checker dependencies with
 `python -m pip install -r scripts/requirements-spec.txt`, then run the checker and
 `scripts/test_spec_tools.py`. Runtime/image/provider/model acceptance tiers below
-still apply independently; schema validity cannot promote catalog status or
-`tested_on`.
+still apply independently; schema validity cannot certify a workflow or promote catalog status.
 
 ## Alibaba base image
 
@@ -181,7 +194,7 @@ Express sandboxes run as non-root `user`, with 2 vCPU, no `/dev/kvm`, no Docker,
 fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 ```
 
-`<region>` is `cn-hangzhou` unless `ALIBABA_CLOUD_REGION_ID` or `ABX_BASE_IMAGE_REGION` is set. `<tag>` is `v0.0.49` unless `ABX_BASE_IMAGE_TAG` is set. `abx template deploy` rewrites the placeholders in the Dockerfile before `docker build` (see `src/api/docker_builder.ts` in `agent-sandbox`). The image already contains Python 3.13 and Node.js 20.
+Workflow preparation does not automatically rewrite Dockerfile placeholders. Resolve region, version and immutable image identity through explicit reviewed build inputs before execution; unresolved inputs fail preflight. The effective FROM and build configuration are part of input identity.
 
 The image entrypoint cannot be replaced. The Dockerfile has no `CMD` and no `ENTRYPOINT`. The platform runs `start_cmd` and probes `ready_cmd`. Generation 2 is required for those commands. Updating a generation-1 template of the same name while sending `start_cmd` fails. Deploy under a new name, or delete the generation-1 template first. `scripts/express_e2e.py` uses a unique alias so it does not delete a template it did not create.
 
@@ -346,7 +359,7 @@ Use process APIs for running, reconnecting to, and cancelling background tasks.
 
 ## Test levels
 
-Record a level only when it passed. The README Verified table and `tested_on` list passed providers only.
+Record only levels actually passed. Project verification is derived from complete receipts matching workflow, binding, input identity and independently trusted CI provenance. Old evidence retains its historical scope.
 
 | Level | Pass means |
 |---|---|
@@ -396,7 +409,7 @@ The checker accepts `alicloud-express` in the Verified table only when a file of
 
 The catalog table in the root README has a Verified on column. A cell lists a provider only when that template's evidence directory contains a passing file for it. An empty cell means no passing run is recorded. Failed attempts never populate this column or qualify a provider. Preserve their sanitized results under distinct attempt filenames; provider/date pass files require successful execution and independent cleanup.
 
-Inside the template README, `## Verified` is either the sentence `No provider has a passing run recorded for this template.` or a table whose first column is the provider id. The Chinese file uses `尚未记录任何通过的提供方测试。` or the same provider ids. `tested_on` lists the same ids.
+Inside the template README, `## Verified` states the current workflow evidence scope. Author-written tables, `tested_on` or PASS fields cannot confer certification. The static checker rejects hand-written provider pass tables. See [workflow verification](workflows.md).
 
 ## Security
 
@@ -430,7 +443,7 @@ The CLI section contains an `abx run` example. The SDK section imports `Sandbox`
 
 ## Listing and acceptance
 
-A directory can be merged as `experimental` when `scripts/check_template.py <dir>` exits 0, L0 passes, and `docs/design/<name>.md` is filled in. `awesome-templates.yaml` gets one entry: `name`, `description`, `repo`, `path`, `tags`, `author`, `capabilities`, `status`.
+A directory can be merged as `experimental` when `scripts/check_template.py <dir>` exits 0, L0 passes, and `docs/design/<name>.md` is filled in. `awesome-templates.yaml` gets one entry: `name`, `description`, `repo`, `path`, `tags`, `author`, `status`.
 
 `status: official` additionally requires:
 
@@ -485,9 +498,9 @@ python3 scripts/check_template.py _skeleton
 python3 scripts/check_template.py --all
 ```
 
-`--all` checks every root directory containing `template.yaml`, including the skeleton. Every manifest requires an explicit supported `spec_version`; missing, malformed or unknown versions fail. The catalog requires `schema_version: 1`. CI and `scripts/run_local_e2e.py` use the same complete check and fail on any violation.
+`--all` checks every root directory containing `template.yaml`, including the skeleton. Every manifest requires an explicit supported `spec_version`; missing, malformed or unknown versions fail. The catalog requires `schema_version: 2`. CI and `scripts/run_local_e2e.py` use the same complete check and fail on any violation.
 
-Violation codes include `required-file`, `readme-section`, `base-image`, `dockerfile-cmd`, `dockerfile-user`, `yaml-field`, `commands-start`, `verified-evidence`, `pinned-version`, `readme-client`, `secrets`. `pinned-version` fails when a `RUN` has neither allowed server pin above. `readme-client` fails when a spec_version 2/3 SDK section does not name `agent-sandbox-client`, or when a README tells the reader to `pip install agent-sandbox`.
+Violation codes include `required-file`, `readme-section`, `base-image`, `dockerfile-cmd`, `dockerfile-user`, `yaml-field`, `commands-start`, `verified-evidence`, `pinned-version`, `readme-client`, `secrets`. `pinned-version` fails when a `RUN` has neither allowed server pin above. `readme-client` fails when a spec_version 4 SDK section does not name `agent-sandbox-client`, or when a README tells the reader to `pip install agent-sandbox`.
 
 ## Express harness
 
@@ -507,7 +520,7 @@ export ABX_SERVER_SDK_SOURCE=/path/to/python-sdk/server-sdk
 python3 scripts/express_e2e.py python-hello
 ```
 
-The current spec_version 2 `python-hello` declares its smoke and startup commands in `template.yaml`; the harness reads them directly. Preserve the caller’s native HOME.
+The current spec_version 4 `python-hello` declares its smoke and startup commands in `template.yaml`; the harness reads them directly. Preserve the caller’s native HOME.
 
 The existing native acceptance harness below targets its pinned native CLI. Its recorded cleanup flags are not current Express copy-and-paste usage; see [current CLI examples](using-templates.md#client-entry-compatibility).
 
