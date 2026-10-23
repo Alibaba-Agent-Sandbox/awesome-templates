@@ -11,6 +11,7 @@ import yaml
 from jsonschema import Draft202012Validator
 
 from check_template import README_EN, README_ZH, PROVIDERS
+from template_application import validate_workflow_references
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW_FIELDS = {'workflow_contract_version', 'provides', 'default_workflow', 'workflows'}
@@ -66,13 +67,11 @@ def check(root=ROOT):
         for error in errors:
             fail('workflow: ' + error.message)
         if not errors:
-            if row['default_workflow'] not in row['workflows']:
-                fail('default_workflow must name an existing workflow')
+            for problem in validate_workflow_references(portion):
+                fail(problem)
             for workflow_id, workflow in row['workflows'].items():
                 if workflow['input'] != 'managed':
                     fail(f'{workflow_id}: managed records require managed input')
-                if workflow['kind'] == 'application' and workflow['service'] not in row['provides']:
-                    fail(f'{workflow_id}: undeclared service')
         doc = local_file(root, row['documentation'])
         if not doc:
             fail('documentation must be an existing local file')

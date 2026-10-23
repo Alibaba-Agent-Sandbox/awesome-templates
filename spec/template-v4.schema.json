@@ -532,8 +532,7 @@
             },
             "profile": {
               "enum": [
-                "server-core-agents",
-                "legacy-codex-agent-api"
+                "server-core-agents"
               ]
             }
           }

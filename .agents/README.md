@@ -1,5 +1,7 @@
 # Engineering records: awesome-templates
 
+- [Workflow review validation](notes/proposed/architecture/2026-10-23-workflow-review-validation.md) · [verification](evidence/verify/2026-10-23-workflow-review-validation.md)
+
 - [Droid explicit compatible BYOK](notes/proposed/feature/2026-10-20-droid-explicit-byok.md) · [verification](evidence/verify/2026-10-20-droid-explicit-byok.md)
 - [Droid1.2 final native SDK/BYOK/image acceptance](evidence/verify/2026-10-20-droid-native-byok-final.md)
 - [Original Tau2 retail runner](notes/proposed/feature/2026-10-20-tau2-native-retail.md) · [verification](evidence/verify/2026-10-20-tau2-native-retail.md)

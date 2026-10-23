@@ -102,3 +102,10 @@ def test_full_schema_accepts_shared_contract_underscore_workflow_id():
     data['workflows']['application_image'] = data['workflows'].pop('application')
     data['default_workflow'] = 'application_image'
     assert validate_v4(data) == []
+
+
+def test_retired_local_runtime_profile_is_rejected():
+    data = yaml.safe_load((ROOT / 'docs/examples/application-local/template.yaml').read_text())
+    assert validate_v4(data) == []
+    data['application']['runtime']['profile'] = 'legacy-codex-agent-api'
+    assert validate_v4(data)
