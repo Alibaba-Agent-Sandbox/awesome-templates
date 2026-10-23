@@ -513,6 +513,8 @@ def build_options(argv: list[str] | None = None) -> Options:
     image_provenance = None
     if args.sandbox_timeout < 1:
         raise SystemExit("--sandbox-timeout must be positive")
+    if args.sandbox_create == "cli" and args.sandbox_timeout < 30:
+        raise SystemExit("--sandbox-timeout must be at least 30 seconds for CLI creation")
     if args.build == "image":
         if not args.image_ref or not args.image_proof:
             raise SystemExit("--build image requires --image-ref and --image-proof")
@@ -605,7 +607,7 @@ def plan_document(options: Options) -> dict[str, Any]:
 
 def _abx_argv(args: list[str]) -> list[str]:
     spec = os.environ.get("ABX") or "abx"
-    return shlex.split(spec) + args
+    return shlex.split(spec) + ["--provider", "alicloud-express", *args]
 
 
 def default_runner(args: list[str], timeout: float) -> Proc:
@@ -805,24 +807,47 @@ def save_intent(path: Path, intent: dict[str, Any]) -> None:
     temporary.replace(path)
 
 
+def cli_create_args(template_id: str, timeout: int) -> list[str]:
+    """Current Express creation contract; output is one detached sandbox ID."""
+    return ["create", template_id, "--detach", "--timeout", str(timeout)]
+
+
+def detached_sandbox_id(proc: Proc) -> str | None:
+    """Reject JSON, terminal prose, extra lines and cross-provider references."""
+    value = proc.stdout.strip()
+    return value if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,255}", value) else None
+
+
+def validate_cli_contract(run: Runner, options: Options) -> None:
+    """Read-only executable checks before any costly build/registration/create."""
+    checks = [(["template", "list", "--help"], ("--format",)),
+              (["kill", "--help"], ("sandbox kill",))]
+    if options.sandbox_create == "cli":
+        checks.append(([*cli_create_args("preflight-only", options.sandbox_timeout), "--help"],
+                       ("--detach", "--timeout")))
+    for args, required in checks:
+        proc = run(args, 30)
+        if proc.returncode or any(token not in proc.stdout for token in required):
+            raise RuntimeError("selected CLI does not support the current Express contract; no cloud action submitted")
+
+
 def official_templates(run: Runner, alias: str) -> list[str]:
     """Use the existing official CLI list API and exact unique-name matching."""
-    proc = run(["--json", "template", "list"], 120)
+    proc = run(["template", "list", "--format", "json"], 120)
     if proc.returncode:
         raise RuntimeError("official template reconciliation failed")
     data = json.loads(proc.stdout)
-    if isinstance(data, dict) and data.get("status") == "success" and str(data.get("message", "")).startswith("No official templates found"):
-        return []
     if not isinstance(data, list) or any(not isinstance(item, dict) for item in data):
         raise RuntimeError("unexpected official template list response")
     found = []
     for item in data:
-        if alias not in {item.get("Name"), item.get("Alias")}:
-            continue
-        identifier = item.get("TemplateID")
-        if not isinstance(identifier, str) or identifier.strip() in {"", "N/A"}:
-            raise RuntimeError("matching official template has no valid ID")
-        found.append(identifier)
+        aliases = item.get("aliases")
+        identifier = item.get("templateID")
+        if (not isinstance(aliases, list) or any(not isinstance(name, str) for name in aliases)
+                or not isinstance(identifier, str) or identifier.strip() in {"", "N/A"}):
+            raise RuntimeError("unexpected official template element shape")
+        if alias in aliases:
+            found.append(identifier)
     return found
 
 
@@ -1066,23 +1091,21 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
         if options.sandbox_create == "sdk":
             try:
                 known_id = default_sdk_create(template_id, options.sandbox_timeout)
-                created = Proc(0, json.dumps({"ID": known_id}), "")
+                created = Proc(0, known_id + "\n", "")
             except Exception as exc:
                 # A failed request can have created a sandbox; keep the existing
                 # unknown-create reconciliation and never publish its details.
                 created = Proc(1, "", type(exc).__name__ + "; SDK creation response unavailable")
         else:
             created = run(
-                ["--json", "create", "--template", template_id, "-y", "--timeout", str(options.sandbox_timeout)],
+                cli_create_args(template_id, options.sandbox_timeout),
                 420,
             )
         _print_proc("create", created)
-        created_payload = _last_json(created)
-        if isinstance(created_payload, dict):
-            sandbox_id = str(created_payload.get("ID") or created_payload.get("id") or "").strip() or None
-            if sandbox_id:
-                intent["sandbox_ids"] = [sandbox_id]
-                save_intent(intent_path, intent)
+        sandbox_id = detached_sandbox_id(created)
+        if sandbox_id:
+            intent["sandbox_ids"] = [sandbox_id]
+            save_intent(intent_path, intent)
         if created.returncode != 0 or not sandbox_id:
             text = created.stdout + "\n" + created.stderr
             note_blocker(text)
@@ -1159,6 +1182,7 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
     status = 1
     cleanup_ok = False
     try:
+        validate_cli_contract(run, options)
         # Refuse a pre-existing alias before the CLI can update that template.
         if official_templates(run, options.alias):
             print("BLOCKED deploy alias already exists; no owned cloud action attempted", flush=True)
@@ -1259,7 +1283,7 @@ def _cleanup(
     ok = True
     if sandbox_id:
         try:
-            proc = run(["kill", sandbox_id, "-y"], 90)
+            proc = run(["kill", sandbox_id], 90)
             _print_proc("kill", proc)
             if proc.returncode:
                 ok = False

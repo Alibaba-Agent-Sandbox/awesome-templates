@@ -76,3 +76,5 @@ HTTP body 直接是参数对象，响应是 result envelope。进程启动配置
 产品 Agent Sandbox；CLI abx；npm `@agent-sandbox/cli`；客户端 distribution
 `agent-sandbox-client`（Python namespace `agent_sandbox`）；镜像 server 包
 `agent-sandbox-server`。不要安装同名无关项目 `agent-sandbox`。
+
+当前 Express 验收脚本在构建/部署前检查实际 CLI 的 list/create/kill 合同。默认创建使用 `abx create TEMPLATE --detach --timeout SECONDS`，仅解析单个沙箱 ID；清理使用 `abx kill ID`。显式 SDK 创建仍需要兼容的 CLI 列表和清理命令。固定历史版本的审查工作流继续使用其固定脚本。

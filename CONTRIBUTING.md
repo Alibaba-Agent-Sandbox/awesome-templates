@@ -40,8 +40,14 @@ already passes `scripts/check_template.py`. It is not a catalog entry.
    when that command exits 0. `python3 scripts/image_size_report.py IMAGE`
    prints per-layer sizes.
 
+   Before build/deploy, the runner checks the executable supports current Express
+   list/create/kill syntax. Default CLI creation uses `abx create TEMPLATE --detach
+   --timeout SECONDS` and reads a single ID; cleanup uses `abx kill ID`.
+   Explicit SDK creation still requires compatible CLI list/cleanup. Historical
+   pinned review workflows retain their pinned runner.
+
    The runner refuses an existing official template alias and requires
-   `abx --json template list` for ownership checks. Exit 0 and
+   `abx template list --format json` for ownership checks. Exit 0 and
    provider-pass evidence require successful owned sandbox/template cleanup.
    The runner independently reads back known sandbox IDs/templates and the exact
    official alias before publishing; cleanup acknowledgements alone are insufficient.

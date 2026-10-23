@@ -245,3 +245,5 @@ Source image backend acceptance: [decision](notes/proposed/feature/2026-10-22-so
 
 - [Use current Express CLI in runnable template examples](notes/implemented/process/2026-10-22-current-express-cli-examples.md) · [verification](evidence/verify/2026-10-22-current-express-cli-examples.md)
 - [All46 source image backends](evidence/verify/2026-10-22-source-image-backend-matrix.json) · [current steps recheck](evidence/verify/2026-10-22-current-steps-after-backend-qualification.json)
+
+- [Command recovery review](notes/proposed/process/2026-10-23-command-recovery-review.md) · [verification](evidence/verify/2026-10-23-command-recovery-review.md)
