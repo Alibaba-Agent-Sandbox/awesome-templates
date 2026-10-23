@@ -83,7 +83,7 @@ For direct HTTP, use `sb.network.get_url(9010)` and `POST /commands/qwen_setup_c
 
 ## Server authentication is separate
 
-`ABX_SERVER_TOKEN` is read when a server starts. A later create call or a new server does not add authentication to the old port-9000 process. If a new server starts with a bearer token, send that token to that server, for example `sb.server_at(9010, token=server_token).commands.run(...)`. The current server exempts `/health` from server-token authentication; the provider gateway may still require its own credential. Health alone does not prove authentication or model configuration. This token is separate from the provider gateway credential and the upstream model key.
+`ABX_SERVER_TOKEN` is read when a server starts. A later create call or a new server does not add authentication to the old port-9000 process. If a new server starts with a bearer token, send that token to that server, for example `client = await sb.application_client(9010, token=server_token)`. The current server exempts `/health` from server-token authentication; the provider gateway may still require its own credential. Health alone does not prove authentication or model configuration. This token is separate from the provider gateway credential and the upstream model key.
 
 The example above leaves server-token configuration at its existing default. Starting a configured server on a second port does not secure or stop the default service. If all services must require authentication, establish the provider-supported startup configuration before they start and verify each exposed service; do not infer it from a successful `Sandbox.create` request.
 

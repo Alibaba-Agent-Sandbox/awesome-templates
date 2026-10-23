@@ -79,7 +79,9 @@ Arguments are the direct JSON body, without an `args` wrapper. `GET /commands`
 discovers public commands. Server authentication is separate from provider and
 gateway credentials. An anonymous Express port-9000 server does not need the
 envd token. If `ABX_SERVER_TOKEN` is configured, send that server token in an
-Authorization Bearer header; use `sb.server_at(9000, token=...)` in the SDK.
+Authorization Bearer header; use `await sb.application_client(9000, token=...)`
+and close the returned application client in the SDK. Authentication failures do
+not trigger an anonymous retry.
 A provider that requires gateway access headers additionally needs its documented
 headers. Do not send one provider's key to another provider.
 

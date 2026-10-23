@@ -26,7 +26,7 @@ HTTP 使用 `sb.network.get_url(9010)`，向 `/commands/qwen_setup_check` POST `
 
 ## 服务认证是另一层配置
 
-`ABX_SERVER_TOKEN` 在服务启动时读取。后来的创建请求或第二个服务，不能给原有 9000 进程补上认证。如果新服务启动时设置了 bearer token，客户端向该服务发送匹配令牌，例如 `sb.server_at(9010, token=server_token).commands.run(...)`；当前服务的 `/health` 不要求 server token；提供方网关仍可能要求自己的凭据。health 成功本身不证明认证或模型配置正确。它与提供方网关凭据、上游模型密钥各自独立。
+`ABX_SERVER_TOKEN` 在服务启动时读取。后来的创建请求或第二个服务，不能给原有 9000 进程补上认证。如果新服务启动时设置了 bearer token，客户端向该服务发送匹配令牌，例如 `client = await sb.application_client(9010, token=server_token)`；当前服务的 `/health` 不要求 server token；提供方网关仍可能要求自己的凭据。health 成功本身不证明认证或模型配置正确。它与提供方网关凭据、上游模型密钥各自独立。
 
 示例没有改变现有的服务认证默认设置。启动第二个服务不会保护或关闭默认服务。若要求所有服务认证，应在它们启动前配置提供方支持的启动环境，并逐一验证实际开放的服务，不能仅从 `Sandbox.create` 成功推断。
 

@@ -72,7 +72,8 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/hello"   --header
 请求体直接是参数 JSON，不包一层 `args`。`GET /commands` 发现公开命令。
 服务端鉴权、厂商凭据和网关鉴权是独立的。Express 的匿名 9000 端口服务不需要
 转发 envd token。若配置 `ABX_SERVER_TOKEN`，HTTP 加服务端 token 的 Bearer
-头，SDK 使用 `sb.server_at(9000, token=...)`。需要网关访问头的厂商还要带上
+头，SDK 使用 `await sb.application_client(9000, token=...)` 并关闭返回的应用客户端。
+认证失败不会触发匿名重试。需要网关访问头的厂商还要带上
 其文档规定的头。不要把一个厂商的密钥发送给另一个厂商。
 
 缺失/非法参数返回 400，服务端鉴权失败 401，未知命令 404，执行失败 500，
