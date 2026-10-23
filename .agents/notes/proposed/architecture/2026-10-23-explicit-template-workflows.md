@@ -7,7 +7,7 @@ A template-wide code token conflated a provided Python service with a provider i
 
 ## Decision
 
-Require specification 4 with explicit services, default workflow, exact operations and binding. Migrate all current source/application manifests and catalog schema 2 without a legacy parser. Preserve application topology and old receipts as history. Vendor exact shared contracts at commit 5f7631cfc02e6e67bdf7a7325ef39dec112f812d. Add an explicitly selected portable python-hello recipe; never rewrite the existing Express recipe.
+Require specification 4 with explicit services, default workflow, exact operations and binding. Migrate all current source/application manifests and catalog schema 2 without a legacy parser. Preserve application topology and old receipts as history. Vendor exact shared contracts at commit b8d06847780448193f7d529c59c40b5ba9cc6b8d. Add an explicitly selected portable python-hello recipe; never rewrite the existing Express recipe.
 
 ## API Design
 
@@ -20,7 +20,7 @@ Keeping broad code capability gates or silently replacing platform build instruc
 ## Dependencies
 
 - [Owner Issue](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/194)
-- [Shared contract](https://github.com/Alibaba-Agent-Sandbox/python-sdk/blob/5f7631cfc02e6e67bdf7a7325ef39dec112f812d/contracts/workflow-v1.json)
+- [Shared contract](https://github.com/Alibaba-Agent-Sandbox/python-sdk/blob/b8d06847780448193f7d529c59c40b5ba9cc6b8d/contracts/workflow-v1.json)
 - [CLI workflow implementation](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox) (consumer dependency; final reviewed revision must be pinned before native integration acceptance).
 
 ## Test Strategy

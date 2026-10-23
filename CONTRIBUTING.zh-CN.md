@@ -8,7 +8,7 @@
 ## 模板清单
 
 1. 复制 `_skeleton/` 到 kebab-case 目录，目录、manifest name 和目录索引 path 一致。
-2. 保留阿里云基础镜像、generation 2、start_cmd、ready_cmd、固定依赖和 USER user；不添加 CMD/ENTRYPOINT。
+2. 默认 Express 构建文件保留阿里云基础镜像、generation 2、start_cmd、ready_cmd、固定依赖和 USER user，不添加 CMD/ENTRYPOINT。独立声明的显式构建方案可采用其他固定基础镜像，但保留原构建文件与非 root 运行契约，由调用方按名称选择，不由 Provider 自动改写。
 3. 在 commands.py 用 server SDK 的 `@command` 注册命令；只在 main guard 内调用 start。
 4. 根据 [设计骨架](docs/design/_TEMPLATE.md) 完成 `docs/design/<name>.md`。
 5. 双语 README 使用规范要求的标题，参数、默认值、错误、CLI/SDK/HTTP 示例和限制一致。
