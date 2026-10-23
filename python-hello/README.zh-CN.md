@@ -192,4 +192,4 @@ Apache-2.0，见 [LICENSE](../LICENSE)。
 创建完成后，application 工作流通过 `exec.run` 启动服务。所选构建方案与源码实际
 字节都属于启动身份。声明此方案本身不代表已经通过真实后端验收。
 
-独立的 `application_image` 工作流让 Python `launch_workflow` 消费已准备好的不可变 OCI 镜像；它不执行源码准备。
+独立的 `application-image` 工作流让 Python `launch_workflow` 消费已准备好的不可变 OCI 镜像；它不执行源码准备。

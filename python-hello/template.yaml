@@ -51,7 +51,7 @@ workflows:
     operation: commands.run
     required_operations: []
 
-  application_image:
+  application-image:
     kind: application
     input: image
     service: app
