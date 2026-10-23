@@ -54,7 +54,7 @@ version: "1.0.0"
 description: "一句话。"
 author: "github-handle"
 license: Apache-2.0
-spec_version: 2
+spec_version: 4
 
 base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
 generation: 2
@@ -71,9 +71,24 @@ ports:
 tags: [example]
 priority: P2      # P0、P1 或 P2
 wave: other       # 1、2、3 或 other
-tested_on: []     # 有通过证据的提供方 id，否则空列表
 
-capabilities: [shell, files, code, ports]
+workflow_contract_version: 1
+provides:
+  app:
+    protocol: agent-sandbox-server
+    version: 2
+    port: 9000
+    operations: [commands.list, commands.run]
+default_workflow: application
+workflows:
+  application:
+    kind: application
+    input: source
+    service: app
+    startup: exec
+    binding: {transport: http, endpoint: provider-port, caller: host, authentication: service-token}
+    operation: commands.run
+    required_operations: []
 
 env:
   SOME_API_KEY: ""
@@ -89,7 +104,7 @@ smoke:
 |---|---|
 | `name` | 与目录名相同。 |
 | `description`、`version`、`author`、`license` | 非空字符串。 |
-| `spec_version` | 必须显式填写现有契约版本 `2`，或采用严格 schema 与可选 `application` 的版本 `3`。缺失、格式错误及未知版本均检查失败。 |
+| `spec_version` | 仅支持整数 `4`，旧版及未知版本明确拒绝，不提供兼容模式。 |
 | `base` | 字符串。占位符 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，或钉死的 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:vX.Y.Z`。不是 mapping。 |
 | `generation` | 整数 `2`。 |
 | `start_cmd` | `agent-sandbox-server serve`，并带上镜像里 `commands.py` 的路径。 |
@@ -101,8 +116,7 @@ smoke:
 | `tags` | 非空字符串列表。 |
 | `priority` | `P0`、`P1` 或 `P2`。模板已经在 `docs/template-backlog.json` 里时，与那里的优先级一致。 |
 | `wave` | `1`（整份产品能在极速版跑）、`2`（文中写明的切片）、`3`（工作负载要别的提供方）、或 `other`。 |
-| `tested_on` | 已经有通过证据的提供方 id。没有则是空列表。与 README 的 Verified 表是同一组 id。 |
-| `capabilities` | `shell`、`files`、`code`、`terminal`、`ports` 的子集。这是给客户端的元数据，本身不开关 HTTP 路由。 |
+| `provides`, `workflows`, `default_workflow` | 服务提供物、显式调用路径及唯一默认路径；详见[工作流契约](workflows.zh-CN.md)。 |
 | `smoke` | `{command, args, expect}` 列表，由 `scripts/express_e2e.py` 执行。`args` 的键是命令参数。字符串 `expect` 在去掉首尾空白后比较。 |
 
 `abx template deploy` 从本文件读取 `generation`、`start_cmd`、`ready_cmd`（命令行标志优先）。在 `alicloud-express` 上，目录里有 `commands.py` 但没写这三项时，默认是 generation 2，以及：
@@ -116,13 +130,12 @@ agent-sandbox-server healthcheck --port 9000
 
 命名命令不写在 `template.yaml` 里，在 `commands.py` 注册。
 
-## 可选应用部署（规范版本 3）
+## 可选应用部署（规范版本 4）
 
-使用 `spec_version: 3` 启用封闭的机器契约
-[schema/template-v3.schema.json](../schema/template-v3.schema.json)。原有 sandbox
-字段含义保持；`application` 可省略，因此普通 v3 sandbox 模板不产生应用部署。
-v2 继续支持，但 v2 中添加 `application` 会失败。未知字段、版本和非法拓扑组合均失败；
-旧 CLI 在支持新契约前必须拒绝 v3。
+所有输入使用封闭的 [spec/template-v4.schema.json](../spec/template-v4.schema.json)。
+`application` 可省略；存在时保留原部署拓扑、hooks、持久状态和非空 smoke 期望语义。
+工作流描述沙箱调用路径，application 描述部署拓扑，两者不能互相替代。
+未知字段、旧版本和非法拓扑组合检查失败，不提供旧版兼容。
 
 `template.yaml` 是唯一用户配置入口，不增加 `agent-app.yaml`。
 应用部署由显式 CLI 操作触发；安装模板、导入模块、构建 sandbox 镜像和
@@ -162,7 +175,7 @@ v2 继续支持，但 v2 中添加 `application` 会失败。未知字段、版�
 
 使用 `python -m pip install -r scripts/requirements-spec.txt` 安装固定检查依赖，
 然后运行检查器与 `scripts/test_spec_tools.py`。下文 runtime、镜像、提供方与模型验收
-仍独立适用；schema 有效不能提升目录状态或 `tested_on`。
+仍独立适用；schema 有效不能认证工作流或提升目录状态。
 
 ## 阿里云基础镜像
 
@@ -172,7 +185,7 @@ v2 继续支持，但 v2 中添加 `application` 会失败。未知字段、版�
 fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 ```
 
-`<region>` 默认 `cn-hangzhou`，可用 `ALIBABA_CLOUD_REGION_ID` 或 `ABX_BASE_IMAGE_REGION` 覆盖。`<tag>` 默认 `v0.0.49`，可用 `ABX_BASE_IMAGE_TAG` 覆盖。`abx template deploy` 在 `docker build` 之前替换 Dockerfile 里的占位符（`agent-sandbox` 的 `src/api/docker_builder.ts`）。镜像里已有 Python 3.13 和 Node.js 20。
+工作流准备不自动替换 Dockerfile 的占位符。执行前必须通过显式配置或已审查的构建输入解析地域、版本与不可变镜像身份；未解析时 preflight 拒绝。Dockerfile 的有效 FROM 和实际构建配置进入输入身份。
 
 镜像入口不能替换。Dockerfile 不写 `CMD`，也不写 `ENTRYPOINT`。平台执行 `start_cmd`，并用 `ready_cmd` 探测。这两条命令只在 generation 2 上生效。同名 generation 1 模板在带 `start_cmd` 更新时会失败。换一个名字部署，或先删掉 generation 1。`scripts/express_e2e.py` 使用唯一别名，不会删除不是它创建的模板。
 
@@ -336,7 +349,7 @@ asyncio.run(main())
 
 ## 测试级别
 
-只记录通过的级别。README 的 Verified 表和 `tested_on` 只列出通过的提供方。
+只记录真实通过的级别。项目验证状态必须由工作流、绑定、输入身份与可信 CI 来源匹配的完整收据推导；旧证据仅保留历史范围。
 
 | 级别 | 通过的含义 |
 |---|---|
@@ -382,7 +395,7 @@ Verified 表里出现 `alicloud-express` 时，检查器要求存在上述形状
 
 根 README 的目录表有 Verified on 列。单元格里的提供方，必须在该模板的 evidence 目录里有通过文件。空单元格表示没有通过记录。失败尝试不得写入该列或作为提供方资格；脱敏结果可用单独的 attempt 文件名保留，提供方／日期通过文件必须运行及独立清理成功。
 
-模板 README 的 `## Verified` 要么是句子 `No provider has a passing run recorded for this template.`，要么是第一列为提供方 id 的表。中文文件用 `尚未记录任何通过的提供方测试。`，或同一组提供方 id。`tested_on` 列出同一组 id。
+模板 README 的 `## 已验证` 明确说明当前工作流证据范围。作者自填表格、`tested_on` 或 PASS 不能认证；静态检查器不接受手填提供方通过表。参见[工作流验证](workflows.zh-CN.md)。
 
 ## 安全
 
@@ -416,7 +429,7 @@ CLI 一节要有 `abx run` 示例。SDK 一节要导入 `Sandbox` 并调用 `.ru
 
 ## 上架与验收
 
-`scripts/check_template.py <dir>` 退出码为 0、L0 通过、并且 `docs/design/<name>.md` 已填好时，目录可以以 `experimental` 合并。`awesome-templates.yaml` 增加一条：`name`、`description`、`repo`、`path`、`tags`、`author`、`capabilities`、`status`。
+`scripts/check_template.py <dir>` 退出码为 0、L0 通过、并且 `docs/design/<name>.md` 已填好时，目录可以以 `experimental` 合并。`awesome-templates.yaml` 增加一条：`name`、`description`、`repo`、`path`、`tags`、`author`、`status`。
 
 `status: official` 还要同时满足：
 
@@ -471,9 +484,9 @@ python3 scripts/check_template.py _skeleton
 python3 scripts/check_template.py --all
 ```
 
-`--all` 检查根目录下所有包含 `template.yaml` 的目录，包括 skeleton。每份清单必须显式填写受支持的 `spec_version`，缺失、格式错误及未知版本均失败。目录索引必须声明 `schema_version: 1`。CI 和 `scripts/run_local_e2e.py` 使用同一项完整检查，任一违规都会导致失败。
+`--all` 检查根目录下所有包含 `template.yaml` 的目录，包括 skeleton。每份清单必须显式填写受支持的 `spec_version`，缺失、格式错误及未知版本均失败。目录索引必须声明 `schema_version: 2`。CI 和 `scripts/run_local_e2e.py` 使用同一项完整检查，任一违规都会导致失败。
 
-违规代码包括 `required-file`、`readme-section`、`base-image`、`dockerfile-cmd`、`dockerfile-user`、`yaml-field`、`commands-start`、`verified-evidence`、`pinned-version`、`readme-client`、`secrets`。`RUN` 上两种服务端钉都没有时，`pinned-version` 失败。spec_version 2/3 的 SDK 章节没有写 `agent-sandbox-client`，或 README 让读者 `pip install agent-sandbox` 时，`readme-client` 失败。
+违规代码包括 `required-file`、`readme-section`、`base-image`、`dockerfile-cmd`、`dockerfile-user`、`yaml-field`、`commands-start`、`verified-evidence`、`pinned-version`、`readme-client`、`secrets`。`RUN` 上两种服务端钉都没有时，`pinned-version` 失败。spec_version 4 的 SDK 章节没有写 `agent-sandbox-client`，或 README 让读者 `pip install agent-sandbox` 时，`readme-client` 失败。
 
 ## 极速版 harness
 
@@ -493,7 +506,7 @@ export ABX_SERVER_SDK_SOURCE=/path/to/python-sdk/server-sdk
 python3 scripts/express_e2e.py python-hello
 ```
 
-当前 spec_version 2 的 `python-hello` 已在 `template.yaml` 中声明 smoke 和启动命令，harness 直接读取。保留调用者原有的 HOME。
+当前 spec_version 4 的 `python-hello` 已在 `template.yaml` 中声明 smoke 和启动命令，harness 直接读取。保留调用者原有的 HOME。
 
 下述既有原生验收脚本对应其固定原生 CLI；保留的清理参数不是当前极速版的复制用法，参见[当前 CLI 示例](using-templates.zh-CN.md#客户端入口兼容性)。
 

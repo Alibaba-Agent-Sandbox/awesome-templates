@@ -159,28 +159,7 @@ PDF在独立HOME子进程执行，执行时限1–120秒并有有界清理。通
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 2.2.0；常规镜像、真实 CLI/SDK、完整 HTTP 37 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T101142Z.json) |
-| opensandbox | 2.2.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 37 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T110653Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-版本2.2.0已通过真实阿里云极速版原生step构建、Python SDK Sandbox.create、CLI/SDK浏览器和MCP冒烟，完整远程HTTP **37 PASS / 0 FAIL / 0 SKIP**。通过独立文件HTTP验证截图PNG、横向及纵向PDF实际字节和页面尺寸；自有产物、进程及沙箱/模板清理均确认。源码构建包含8GiB根文件系统门禁。未运行模型验收，其他提供方及未执行的MCP动作未认证。
-
-| 版本 | 提供方 | 证据 |
-| --- | --- | --- |
-| 2.2.0 | alicloud-express | [SDK创建及step](evidence/express-2026-10-20T103410Z.json), [完整HTTP37](evidence/full-http-steps-2026-10-20T103410Z.json) |
-
-下面2.1.0回执保留原版本。
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 2.1.0 历史验收
 

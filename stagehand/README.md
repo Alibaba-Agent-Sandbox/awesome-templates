@@ -99,26 +99,7 @@ Pinned compatibility profile: SDK4.3.0 accepts extensionId in its local connect 
 
 ## Verified
 
-
-### Current image acceptance — 2026-10-22
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 1.1.1; regular image, actual CLI/SDK, complete HTTP 13 PASS / 0 FAIL / 1 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T114531Z.json) |
-| opensandbox | 1.1.1; original Docker backend, every CLI/SDK named smoke, complete HTTP 13 PASS / 0 FAIL / 1 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T113725Z.json) |
-
-OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
-
-<details>
-<summary>Earlier acceptance records (original dates and scope retained)</summary>
-
-| Provider | Current scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | Template1.1.1; native steps → official READY → actual Python SDK creation → CLI/SDK native smoke; genuine model act/extract, independent counter/receipt/PNG and owned cleanup | [2026-10-20](evidence/express-2026-10-20.json), [native model and cleanup](evidence/verification-steps-2026-10-20T190109Z.json) |
-
-Actual native SDK4.3.0 with the disclosed patch used qwen3.8-flash at the approved compatible endpoint. Three model calls completed a browser click and native text extraction. Independent HTTP confirmed exactly one click and the fresh receipt; SDK downloaded15192PNG bytes, independently decoded as1024×768 with SHA256 verified. Own model processes/listeners/files/native private state, outer sandbox/template and private OSS objects/bucket were independently confirmed absent. Complete non-model HTTP13PASS/0FAIL/1explicit model skip is separate from the actual SDK native-model PASS; the skip was not relabeled. Real image L1 and image-user native self-test are separately recorded. [Final engineering evidence](../.agents/evidence/verify/2026-10-20-stagehand-native-final.md). No actual-image model deployment, Browserbase hosted services or other provider is claimed.
-
-</details>
+No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
 
 ## Historical verification
 

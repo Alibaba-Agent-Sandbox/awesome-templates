@@ -143,32 +143,7 @@ fallback 一致；镜像 CI、归档及运行证明均核对同一 commit。没�
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 1.1.0；常规镜像、真实 CLI/SDK、完整 HTTP 28 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-20T133417Z.json) |
-| opensandbox | 1.1.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 28 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T112438Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-1.1版于2026-10-20通过真实 SDK 创建的极速版镜像和原生 step 构建、CLI/SDK smoke、
-完整 HTTP28项断言，以及独立的 CLI/SDK argv 转码、随机 PCM 逐样本比对和自有产物/云资源清理。
-
-| 提供方 | 范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | SDK创建镜像、CLI/SDK、独立镜像仓库清理核验 | [镜像回执](evidence/express-2026-10-20T133417Z.json)、[完整HTTP](evidence/image-http-2026-10-20T133417Z.json)、[原生argv](evidence/native-argv-image-2026-10-20T133417Z.json) |
-| alicloud-express | 原生step、真实SDK创建、HTTP28项及原生CLI/SDK数组 | [step回执](evidence/express-2026-10-20T131812Z.json)、[完整构建证明](evidence/full-http-steps-2026-10-20T131812Z.json)、[原生argv](evidence/native-argv-steps-2026-10-20T131812Z.json) |
-
-运行源码64de1c909659f880f79f69db42614277bfdf1257，固定服务器
-fd72d3210b85079d93dcf08e19bfded73643162b，SDK[基础PR78](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/78)已合并。
-模板目录仍为experimental；此CPU接口无需模型。
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 1.0历史验证
 

@@ -60,7 +60,7 @@ class CheckerTest(unittest.TestCase):
             dated=evidence/"express-2026-10-19T180000Z.json";dated.write_text(json.dumps(current))
             self.assertFalse(check_template._evidence_passes(dest,"alicloud-express"))
             current["cleanup_verified"]=True;dated.write_text(json.dumps(current))
-            self.assertTrue(check_template._evidence_passes(dest,"alicloud-express"))
+            self.assertFalse(check_template._evidence_passes(dest,"alicloud-express"))
             self.assertEqual(legacy.read_bytes(),original)
     def test_fc_resource_profile_rejects_actual_ocr_ratio_failure(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -90,23 +90,19 @@ class CheckerTest(unittest.TestCase):
             self.assertTrue(any(v.code == "verified-evidence" for v in violations))
             self.assertFalse(check_template._evidence_passes(dest, "alicloud-express"))
 
-    def test_catalog_capabilities_match_template_ignoring_order(self) -> None:
+    def test_catalog_retired_compatibility_fields_are_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             dest = root / "example"
             shutil.copytree(SKELETON, dest)
             metadata = check_template.yaml.safe_load((dest / "template.yaml").read_text())
             metadata["name"] = "example"
-            metadata["capabilities"] = ["shell", "files", "ports"]
             (dest / "template.yaml").write_text(check_template.yaml.safe_dump(metadata))
-            for capabilities, rejected in ((["ports", "files", "shell"], False),
-                                             (["ports"], True), ({"ports": True}, True)):
-                with self.subTest(capabilities=capabilities):
-                    (root / "awesome-templates.yaml").write_text(check_template.yaml.safe_dump({
-                        "templates": [{"name": "example", "path": "example", "status": "experimental",
-                                       "capabilities": capabilities}]}))
-                    violations = check_template.check_directory(dest)
-                    self.assertEqual(any(item.code == "index-capabilities" for item in violations), rejected)
+            for key in ("capabilities", "tested_on", "providers"):
+                with self.subTest(key=key):
+                    row = {"name": "example", "path": "example", "status": "experimental", key: []}
+                    (root / "awesome-templates.yaml").write_text(check_template.yaml.safe_dump({"schema_version": 2, "templates": [row]}))
+                    self.assertIn("index-workflow", {item.code for item in check_template.check_directory(dest)})
 
     def test_http_section_requires_request_and_result(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -170,7 +166,7 @@ class CheckerTest(unittest.TestCase):
                 encoding="utf-8",
             )
             codes = {item.code for item in check_template.check_directory(dest)}
-            self.assertNotIn("verified-evidence", codes)
+            self.assertIn("verified-evidence", codes)
 
             evidence_file = evidence / "express-2026-10-15.json"
             original = json.loads(evidence_file.read_text(encoding="utf-8"))

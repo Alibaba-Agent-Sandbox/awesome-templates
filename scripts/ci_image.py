@@ -41,7 +41,6 @@ def context_sha256(source: Path) -> dict[str,str]:
     if (source/'.dockerignore').exists():
         result['.dockerignore']=hashlib.sha256((source/'.dockerignore').read_bytes()).hexdigest()
     manifest=yaml.safe_load((source/'template.yaml').read_text())
-    manifest.pop('tested_on',None)  # Acceptance metadata is not an image/runtime contract.
     result['template.yaml:contract']=hashlib.sha256(json.dumps(manifest,sort_keys=True,separators=(',',':')).encode()).hexdigest()
     for kind,value in instructions(dockerfile.decode()):
         if kind!='COPY' or value=='*.whl /tmp/':continue

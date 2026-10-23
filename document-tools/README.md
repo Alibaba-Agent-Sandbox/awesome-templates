@@ -160,26 +160,7 @@ Prewarmed servers read their process-start configuration before subsequent shell
 
 ## Verified
 
-
-### Current image acceptance — 2026-10-22
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 1.1.0; regular image, actual CLI/SDK, complete HTTP 36 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-20T150549Z.json) |
-| opensandbox | 1.1.0; original Docker backend, every CLI/SDK named smoke, complete HTTP 36 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T112219Z.json) |
-
-OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
-
-<details>
-<summary>Earlier acceptance records (original dates and scope retained)</summary>
-
-| Provider | Current version and executed scope | Evidence |
-| --- | --- | --- |
-| alicloud-express |1.1.0; actual SDK-created image and native steps,36full HTTP checks each with0FAIL/0SKIP, independent owned cleanup | [image](evidence/express-2026-10-20.json) · [steps](evidence/full-http-steps-2026-10-20T143722Z.json) |
-
-Real native Writer PDF pages/fresh text/Unicode, PPTX/DOCX XML, complete hashes and unchanged original inputs are independently verified. Image acceptance additionally confirms private-registry absence. Older1.0receipts and failed attempts remain historical. See [final acceptance](../.agents/evidence/verify/2026-10-20-document-html-pptx-pdf-final.md).
-
-</details>
+No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
 
 ## Historical 1.0 verification
 

@@ -205,30 +205,7 @@ Factory 凭据在 [Factory API 密钥设置](https://app.factory.ai/settings/api
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 1.2.0；常规镜像、真实 CLI/SDK、完整 HTTP 8 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T110246Z.json) |
-| opensandbox | 1.2.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 8 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T111346Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-模板1.2.0 为 experimental，`tested_on: [alicloud-express]`。
-[同源码镜像 L1](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39500551739)、
-[标准原生步骤及 SDK 创建](evidence/express-2026-10-20T212811Z.json)、
-[完整 HTTP/模型记录](evidence/verification-steps-2026-10-20T212811Z.json)通过：HTTP8PASS/0FAIL/0SKIP，
-真实批准模型 BYOK17PASS/0FAIL/0SKIP。传入真实模型密钥前，云端原生合成探测已确认正确模型/Bearer、
-冲突项目配置零请求、六种原生文件工具和测试文件/端口清理。真实编码修复已有失败源文件，原测试字节不变，
-生成新报告及 nonce 产物，返回后以不可预知 ACK 独立通过完整原测试与隐藏用例。所属项目、私有状态、
-监听端口及外层沙箱/模板均独立确认清理，耗时134.596秒。不声明当前 Factory 账户模型或其他提供商通过。
-SDK 示例已核对语法，云记录通过显式9010服务执行同样 SDK 操作；历史回执不改写。
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 历史验收
 

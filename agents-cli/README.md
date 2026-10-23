@@ -219,26 +219,7 @@ memory and latency have not been measured; no image-size acceptance is claimed.
 
 ## Verified
 
-
-### Current image acceptance — 2026-10-22
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 2.0.1; regular image, actual CLI/SDK, complete HTTP 18 PASS / 0 FAIL / 1 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T103934Z.json) |
-| opensandbox | 2.0.1; original Docker backend, every CLI/SDK named smoke, complete HTTP 18 PASS / 0 FAIL / 1 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T110057Z.json) |
-
-OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
-
-<details>
-<summary>Earlier acceptance records (original dates and scope retained)</summary>
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 2.0.1; native steps → READY → Python SDK creation; CLI/SDK smoke; separate real Qwen Code and Codex coding runs; independent owned cleanup | [2026-10-20](evidence/express-2026-10-20T175429Z.json), [both models](evidence/two-native-sdk-steps-2026-10-20T175429Z.json) |
-
-Current source `5343a671` passed each native backend in a separate fresh owned SDK sandbox: [Qwen Code](evidence/native-sdk-qwen-code-2026-10-20T175150Z.json) and [Codex](evidence/native-sdk-codex-2026-10-20T175150Z.json). Both repaired existing source, preserved original tests, created the exact JSON artifact/report, and passed original/generated suites plus six independent held-out cases and a fresh post-return ACK. The original restricted HTTP policy remained enforced. The outer canonical sandbox/template and both model sandboxes were independently confirmed absent. Codex used an explicit private HTTP Responses provider with websockets disabled and an environment key reference; no key value was written. The earlier Codex timeout remains a failed receipt; its exact cause was not established. This verifies local native adapters, with `qwen3.8-flash` at the approved compatible endpoint; it does not certify a hosted Agents service or other providers.
-
-</details>
+No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
 
 ## Historical verification
 

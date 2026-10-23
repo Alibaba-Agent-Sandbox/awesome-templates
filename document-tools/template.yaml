@@ -3,7 +3,7 @@ version: "1.1.0"
 description: "Bounded Markdown/HTML to DOCX, TXT, PPTX and headless LibreOffice PDF."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0
-spec_version: 2
+spec_version: 4
 base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
 generation: 2
 start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
@@ -15,8 +15,6 @@ ports: [9000]
 tags: [pandoc, documents, markdown, docx, cpu]
 priority: P1
 wave: 1
-tested_on: [alicloud-express, opensandbox]
-capabilities: [shell, files, code, ports]
 env:
   ABX_SERVER_TOKEN: ""
 smoke:
@@ -32,3 +30,26 @@ smoke:
   - command: document_extended_smoke
     args: {}
     expect: "Pandoc HTML/PPTX and LibreOffice PDF artifacts OK"
+workflow_contract_version: 1
+provides:
+  app:
+    protocol: agent-sandbox-server
+    version: 2
+    port: 9000
+    operations:
+    - commands.list
+    - commands.run
+default_workflow: application
+workflows:
+  application:
+    kind: application
+    input: source
+    service: app
+    startup: exec
+    binding:
+      transport: http
+      endpoint: provider-port
+      caller: host
+      authentication: service-token
+    operation: commands.run
+    required_operations: []

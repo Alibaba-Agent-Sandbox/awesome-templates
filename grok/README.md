@@ -100,28 +100,7 @@ Linuxx64 only,2vCPU,4096MB, port9000, about10GiB Express rootfs;8GiB image budge
 
 ## Verified
 
-
-### Current image acceptance — 2026-10-22
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 1.0.1; regular image, actual CLI/SDK, complete HTTP 8 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T111201Z.json) |
-| opensandbox | 1.0.1; original Docker backend, every CLI/SDK named smoke, complete HTTP 8 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T111604Z.json) |
-
-OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
-
-<details>
-<summary>Earlier acceptance records (original dates and scope retained)</summary>
-
-| Provider | Current scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | Template1.0.1; native steps, official READY, actual Python SDK creation, CLI/SDK native version, real model coding and independent cleanup | [2026-10-20](evidence/express-2026-10-20.json), [full native model proof](evidence/verification-steps-2026-10-20T201501Z.json) |
-
-Official Grok Build1.0.62/original Rust binary used qwen3.8-flash through the explicitly approved compatible endpoint. Actual SDK coding repaired existing source, preserved original test bytes, downloaded a new report/exact nonce artifact, then independently passed all original3tests and4held-out cases with fresh post-return ACKs:17PASS/0FAIL/0SKIP. Before any real key, a synthetic-key native probe independently verified the exact owned endpoint/model/auth and own fixture cleanup. Own native HOME/processes/secondary listener, test project, outer sandbox/template were independently confirmed absent. Complete baseline HTTP8PASS/0FAIL/0SKIP is recorded separately. Exact current-source L1 image build/non-root image-user native version/SHA256 also passed. No actual-image registration/model deployment, xAI-hosted model/subscription or other provider is claimed. [Final engineering proof](../.agents/evidence/verify/2026-10-20-grok-official-native-final.md).
-
-Earlier native tool-name/final-text aggregation/fixture cleanup/generic L1 pin failures remain immutable. Later resource recovery does not turn an old failure into a pass. Current independent source/artifact/original-test/held-out requirements were not omitted.
-
-</details>
+No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
 
 ## Secondary development
 

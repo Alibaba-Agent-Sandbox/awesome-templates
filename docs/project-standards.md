@@ -33,7 +33,7 @@ datasets and external services instead of substituting a similarly named tool.
 
 Start from `_skeleton/`. Preserve the platform base, generation, readiness,
 non-root runtime, reserved ports and `agent_sandbox.server` contract. Declare
-capabilities actually used. Validate arguments and bound input/output sizes,
+provided services and explicit workflow requirements. Validate arguments and bound input/output sizes,
 execution time and subprocesses. Pass user input as argv, preserve nonzero exits
 as errors, and clean up owned descendants on completion, failure and timeout.
 Inspection commands must not silently alter configuration. Isolate generated

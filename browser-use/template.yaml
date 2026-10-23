@@ -3,7 +3,7 @@ version: 1.0.0
 description: Native browser-use0.13.11 text-DOM agent on private pinned local Chromium.
 author: alibaba-agent-sandbox
 license: Apache-2.0
-spec_version: 2
+spec_version: 4
 base: fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 generation: 2
 start_cmd: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
@@ -19,12 +19,6 @@ tags:
 - coding-agent
 priority: P0
 wave: 1
-tested_on: [alicloud-express, opensandbox]
-capabilities:
-- shell
-- files
-- code
-- ports
 env:
   ABX_SERVER_TOKEN: ''
   PLAYWRIGHT_BROWSERS_PATH: /opt/playwright
@@ -37,3 +31,26 @@ smoke:
   expect: 0.13.11
 - command: browser_use_self_test
   expect: BROWSER_USE_NATIVE_OK
+workflow_contract_version: 1
+provides:
+  app:
+    protocol: agent-sandbox-server
+    version: 2
+    port: 9000
+    operations:
+    - commands.list
+    - commands.run
+default_workflow: application
+workflows:
+  application:
+    kind: application
+    input: source
+    service: app
+    startup: exec
+    binding:
+      transport: http
+      endpoint: provider-port
+      caller: host
+      authentication: service-token
+    operation: commands.run
+    required_operations: []

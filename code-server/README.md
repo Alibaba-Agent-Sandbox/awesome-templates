@@ -88,64 +88,7 @@ WORKSPACE defaults to /home/user/app. CODE_SERVER_PASSWORD and ABX_SERVER_TOKEN 
 
 ## Verified
 
-
-### Current image acceptance — 2026-10-22
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 1.0.0; regular image, actual CLI/SDK, complete HTTP 5 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-20T091440Z.json) |
-| opensandbox | 1.0.0; original Docker backend, every CLI/SDK named smoke, complete HTTP 5 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T110651Z.json) |
-
-OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
-
-<details>
-<summary>Earlier acceptance records (original dates and scope retained)</summary>
-
-| Version | Provider | Mode and scope | Evidence |
-| --- | --- | --- | --- |
-| 1.0.0 | alicloud-express | SDK-created verified image; full HTTP5; actual browser/terminal/editor through sdk-local preview | [image](evidence/express-2026-10-20.json), [HTTP](evidence/image-http-2026-10-20T091440Z.json), [browser](evidence/browser-ui-2026-10-20T091440Z.json) |
-
-Actual Chromium loaded the native JavaScript workbench, wrote a nonce through the terminal WebSocket, edited/saved it with Monaco and independently confirmed bytes through the SDK. Upstream HTTPS certificate/hostname verification stayed enabled; the local browser used HTTP loopback. The relay exchanged its capability before real IDE password login. Browser/proxy/IDE/nonce cleanup and sandbox/template/registry absence were independently confirmed. Use the [SDK local preview operation](../docs/preview-proxy.md); default FC direct mode still forces HTML attachment and its earlier failures remain historical. This does not certify direct-domain browser rendering or other providers.
-
-### Actual browser, terminal and editor check
-
-Install Playwright1.58.0, its Chromium browser and `certutil` (Debian/Ubuntu:
-`libnss3-tools`). With an exclusively caller-owned sandbox and no running IDE,
-execute `python code-server/browser_e2e_test.py --sandbox-id <sandbox-id>`.
-It logs in through the SDK-forwarded8443 URL, loads workbench JavaScript, writes
-a nonce through the terminal WebSocket, independently reads it through files SDK,
-edits/saves in the browser and independently reads the changed bytes. It stops
-its IDE and removes its nonce file; the caller must destroy the sandbox.
-
-TLS stays enabled. Chromium uses a private temporary HOME/NSS store containing
-only CA certificates already trusted by Python's default SSL context from the
-operator's configured bundles. It preserves the caller's browser profile and
-filters cloud/model credentials from browser children. For a private network CA,
-configure the operator trusted store first. No certificate validation bypass is
-used. Local browser regressions explicitly use a filesystem observer and do not
-establish cloud/SDK acceptance. Cleanup failure prevents a passing result.
-
-### Default-domain browser prerequisite
-
-A real minimal HTML service on the currently configured default FC domain returned
-HTTP200/text-html with forced `Content-Disposition: attachment`; actual Chromium
-started a download. TLS verification remained enabled. The independent probe and
-sandbox absence readback are in [the complete control](evidence/preview-header-control-2026-10-20T060339Z.json).
-This matches the [official default-domain restriction](https://www.alibabacloud.com/help/en/functioncompute/web-functions).
-
-Bind a provider-supported custom preview domain with a valid certificate and
-configure the SDK to use the provider-returned domain before browser UI use.
-Changing a hostname string alone does not register a mapping. Run the browser
-controller again against that SDK URL. It now diagnoses forced HTML attachment
-before browser startup and still cleans up its IDE. The existing CLI/SDK examples
-need that access prerequisite for interactive browser use.
-
-The [actual image attempt](evidence/image-attempt-2026-10-20T055537Z.json) passed
-complete HTTP5 checks but [failed real browser UI](evidence/browser-ui-2026-10-20T055537Z.json).
-Owned sandbox/template and registry cleanup were independently confirmed. It is
-not qualified as a complete browser IDE deployment; Issue53 remains open.
-
-</details>
+No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
 
 ## Secondary development
 

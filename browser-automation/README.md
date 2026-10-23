@@ -169,28 +169,7 @@ small `/dev/shm`; concurrent browser requests increase memory usage. Delete old
 
 ## Verified
 
-
-### Current image acceptance — 2026-10-22
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 2.2.0; regular image, actual CLI/SDK, complete HTTP 37 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T101142Z.json) |
-| opensandbox | 2.2.0; original Docker backend, every CLI/SDK named smoke, complete HTTP 37 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T110653Z.json) |
-
-OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
-
-<details>
-<summary>Earlier acceptance records (original dates and scope retained)</summary>
-
-Version2.2.0 passed actual Alibaba Express native steps and Python SDK Sandbox.create, CLI/SDK browser/MCP smoke and full remote HTTP **37 PASS / 0 FAIL / 0 SKIP**. Independent files HTTP verified screenshot PNG and both portrait/landscape PDF bytes and geometry; owned artifacts/processes and sandbox/template cleanup were confirmed. The source build includes the8GiB rootfs gate. Model acceptance was not run; other providers and unexercised MCP actions remain unverified.
-
-| Version | Provider | Evidence |
-| --- | --- | --- |
-| 2.2.0 | alicloud-express | [SDK-created steps](evidence/express-2026-10-20T103410Z.json), [full HTTP37](evidence/full-http-steps-2026-10-20T103410Z.json) |
-
-Prior2.1.0 receipts below retain their original version.
-
-</details>
+No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
 
 ## Historical2.1.0 verification
 

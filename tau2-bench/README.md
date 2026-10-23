@@ -212,35 +212,7 @@ are deleted. Kill and independently confirm absence of your outer cloud resource
 
 ## Verified
 
-
-### Current image acceptance — 2026-10-22
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 1.0.4; regular image, actual CLI/SDK, complete HTTP 8 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T114617Z.json) |
-| opensandbox | 1.0.4; original Docker backend, every CLI/SDK named smoke, complete HTTP 8 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T113509Z.json) |
-
-OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
-
-<details>
-<summary>Earlier acceptance records (original dates and scope retained)</summary>
-
-Experimental; `tested_on: [alicloud-express]` for template1.0.4. Actual image
-[L1 run39500169930](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39500169930)
-passed at the same acceptance source3a0d8e91a6246bd276372a6c04a53a7de71cb6ae.
-[SDK-created canonical native steps](evidence/express-2026-10-20T212600Z.json) and
-[full HTTP/model proof](evidence/verification-steps-2026-10-20T212600Z.json):8HTTP
-PASS/0FAIL/0SKIP and17real-model PASS/0FAIL/0SKIP. Original retail task0 scored1.0
-with22messages,11assistant messages,4user messages and7actual native tool calls;
-79,516-byte trajectory downloaded/hash-checked and independently keyless strict
-replayed to1.0. Fresh post-return ACK, owned result/private state/listener,
-outer sandbox/template and private OSS bucket/object absence all passed. Duration
-230.319s. Scope is this original text retail task, not all114tasks or other
-providers. Historical failures are retained. SDK snippets are syntax-checked;
-recorded cloud tests exercised the same SDK/native operations with explicit9010
-startup.
-
-</details>
+No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
 
 ## Secondary development
 

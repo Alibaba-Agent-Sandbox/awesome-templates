@@ -3,7 +3,7 @@ version: "1.0.1"
 description: "Original native Meta Muse Code with explicit compatible Responses model and owned catalogue/credential relay."
 author: alibaba-agent-sandbox
 license: Apache-2.0
-spec_version: 2
+spec_version: 4
 base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
 generation: 2
 start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
@@ -13,8 +13,6 @@ ports: [9000]
 tags: [muse, meta, coding-agent]
 priority: P2
 wave: 2
-tested_on: [alicloud-express, opensandbox]
-capabilities: [shell, files, code, ports]
 env:
   MUSE_MODEL_API_KEY: ""
   MUSE_MODEL_BASE_URL: ""
@@ -26,3 +24,26 @@ smoke:
     expect: "Muse Code 1.4.11 (1.4.11-R6667.1)"
   - command: muse_native_check
     expect: {original_native: true, headless_json: true, anonymous_api_key_stdin: true, no_session_log: true}
+workflow_contract_version: 1
+provides:
+  app:
+    protocol: agent-sandbox-server
+    version: 2
+    port: 9000
+    operations:
+    - commands.list
+    - commands.run
+default_workflow: application
+workflows:
+  application:
+    kind: application
+    input: source
+    service: app
+    startup: exec
+    binding:
+      transport: http
+      endpoint: provider-port
+      caller: host
+      authentication: service-token
+    operation: commands.run
+    required_operations: []

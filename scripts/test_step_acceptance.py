@@ -37,10 +37,10 @@ def test_changed_runtime_cannot_inherit_acceptance(tmp_path, name):
     assert not inspect_receipt(tmp_path, receipt)[0]
 
 
-def test_qualification_only_manifest_update_preserves_runtime_receipt(tmp_path):
+def test_retired_qualification_metadata_invalidates_runtime_receipt(tmp_path):
     receipt = example(tmp_path)
     (tmp_path / "template.yaml").write_text("name: example\nversion: 1.0.0\nsmoke: [{command: hello}]\ntested_on: [alicloud-express]\n")
-    assert inspect_receipt(tmp_path, receipt)[0]
+    assert not inspect_receipt(tmp_path, receipt)[0]
 
 
 def test_sdk_only_call_does_not_certify_cli(tmp_path):
@@ -129,7 +129,7 @@ def test_legacy_metadata_update_requires_exact_original_historical_bytes(tmp_pat
     revision=init_history(tmp_path)
     if recorded_revision:proof['copy_source_commit']=revision
     path=tmp_path/'template.yaml';path.write_text(path.read_text()+'tested_on: [alicloud-express]\n')
-    assert inspect_receipt(tmp_path,receipt)[0]
+    assert not inspect_receipt(tmp_path,receipt)[0]
     path.write_text(path.read_text()+'start_cmd: changed-contract\n')
     assert not inspect_receipt(tmp_path,receipt)[0]
 

@@ -101,28 +101,7 @@ Linuxx64 only,2vCPU,4096MB, port9000, about10GiB Express rootfs;8GiB image budge
 
 ## Verified
 
-
-### Current image acceptance — 2026-10-22
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 1.0.2; regular image, actual CLI/SDK, complete HTTP 8 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T105009Z.json) |
-| opensandbox | 1.0.2; original Docker backend, every CLI/SDK named smoke, complete HTTP 8 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T110504Z.json) |
-
-OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
-
-<details>
-<summary>Earlier acceptance records (original dates and scope retained)</summary>
-
-| Provider | Current scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | Template1.0.2; native steps, official READY, actual Python SDK creation, CLI/SDK native version, real coding and independent cleanup | [2026-10-20](evidence/express-2026-10-20.json), [complete native model proof](evidence/verification-steps-2026-10-20T201959Z.json) |
-
-Genuine unmodified Cline3.0.73 native CLI used qwen3.8-flash at the explicitly approved compatible endpoint. Before any real key, an actual native synthetic-key probe independently confirmed one exact owned endpoint/model/Bearer request and removed its fixture/listeners. Actual SDK coding then repaired existing source, preserved original test bytes, downloaded new report/exact fresh nonce artifact and independently passed all original3tests and4held-outs after return with unpredictable ACKs:17PASS/0FAIL/0SKIP. Complete baseline HTTP8PASS/0FAIL/0SKIP is separate. Own project/native processes/HOME/state/secondary listeners/outer sandbox/template were independently confirmed absent. Current-runtime L1 image/non-root native version/SHA256 are separately recorded; no actual-image model deployment, editor extension, hosted service or other provider is claimed. [Final engineering proof](../.agents/evidence/verify/2026-10-20-cline-native-final.md).
-
-Native submit_and_exit wraps a verified summary in the exact prefix `Submission recorded (verified): `. The verifier unwraps only that native prefix and still requires completed/positive iterations, an exact fresh marker summary and every independent file/test predicate. Unverified prefix and marker-only output are insufficient. Earlier configuration-path/stdin-preflight/protocol-fixture/recovery failures or interruptions remain immutable.
-
-</details>
+No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
 
 ## Secondary development
 

@@ -87,28 +87,7 @@ Linux 下每次调用拥有独立进程组，并发排空 stdout/stderr；成功
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 1.0.1；常规镜像、真实 CLI/SDK、完整 HTTP 10 PASS / 0 FAIL / 1 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-20T112202Z.json) |
-| opensandbox | 1.0.1；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 10 PASS / 0 FAIL / 1 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T112547Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-版本 1.0.1 已通过真实 CI 镜像登记、官方 READY、CLI/SDK，以及 18 项严格真实模型检查（qwen3.8-flash、OpenAI 兼容协议），含源码修改、新产物、原始测试不变和独立 held-out 完成证明。独立确认 sandbox/template/registry 清理。状态仍为 experimental；其他提供方未验证。
-
-| 提供方 | 范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 精确当前版本、真实镜像和独立清理 | [正式回执](evidence/express-2026-10-20.json)、[HTTP](evidence/image-http-2026-10-20T061437Z.json)、[严格模型](evidence/model-image-2026-10-20T061438Z.json) |
-
-补充原生SDK创建验收2026-10-20：同一1.0.1运行时由已验证CI镜像注册、官方READY、真实Python Sandbox.create创建，完成CLI/SDK冒烟及关闭模型的HTTP控制器。[新的不可变SDK回执](evidence/express-2026-10-20T112202Z.json)、[HTTP及清理](evidence/image-http-2026-10-20T112202Z.json)。沙箱/模板/镜像仓库不存在性和运行后镜像digest均独立确认。本次没有重跑模型；上方同一运行时/控制器的历史真实模型通过仍单独保留。
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 历史验收
 

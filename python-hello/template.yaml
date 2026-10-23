@@ -3,7 +3,7 @@ version: "1.1.1"
 description: "Python command server with script execution, pytest, and file examples"
 author: "alibaba-agent-sandbox"
 license: Apache-2.0
-spec_version: 2
+spec_version: 4
 base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
 generation: 2
 start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
@@ -16,8 +16,6 @@ tags: [python, hello-world, example, pytest]
 priority: P2
 wave: other
 # The retained 2026-10-15 evidence covers hello on 1.0.0, not this revision.
-tested_on: [alicloud-express, opensandbox]
-capabilities: [shell, files, code, ports]
 env:
   LANG: C.UTF-8
   ABX_SERVER_TOKEN: ""
@@ -29,3 +27,32 @@ smoke:
     args:
       code: "print(21 * 2)"
     expect: "42"
+workflow_contract_version: 1
+provides:
+  app:
+    protocol: agent-sandbox-server
+    version: 2
+    port: 9000
+    operations:
+    - commands.list
+    - commands.run
+default_workflow: application
+workflows:
+  application:
+    kind: application
+    input: source
+    service: app
+    startup: exec
+    binding:
+      transport: http
+      endpoint: provider-port
+      caller: host
+      authentication: service-token
+    operation: commands.run
+    required_operations: []
+
+# Select explicitly with --build-profile portable; the default Dockerfile stays provider-native.
+build_profiles:
+  portable:
+    dockerfile: Dockerfile.portable
+    context: .

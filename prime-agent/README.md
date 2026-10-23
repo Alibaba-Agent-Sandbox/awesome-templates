@@ -90,28 +90,7 @@ Linuxx64, declared2vCPU/2048MB, port9000,8GiB enforced rootfs budget within Expr
 
 ## Verified
 
-
-### Current image acceptance — 2026-10-22
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 1.0.0; regular image, actual CLI/SDK, complete HTTP 9 PASS / 0 FAIL / 0 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T112500Z.json) |
-| opensandbox | 1.0.0; original Docker backend, every CLI/SDK named smoke, complete HTTP 9 PASS / 0 FAIL / 0 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T112738Z.json) |
-
-OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
-
-<details>
-<summary>Earlier acceptance records (original dates and scope retained)</summary>
-
-| Provider | Scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | Template1.0.0; native steps, officialREADY, actual SDK creation, CLI/SDK native smokes, genuine coding and independent cleanup | [Express](evidence/express-2026-10-21.json), [full receipt](evidence/verification-steps-2026-10-21T000126Z.json) |
-
-Unchanged Prime Agent0.10.0 used the explicitly approved qwen3.8-flash compatible model and original ipython tool to repair seeded source, preserve original3test bytes, create a report/exact fresh nonce artifact, then independently pass all original3 and4held-out post-return cases with fresh ACKs:18PASS/0FAIL/0SKIP. Complete non-modelHTTP9PASS/0FAIL/0SKIP. Before forwarding a real key, original synthetic SSE routing made1request to the exact owned endpoint/model/Bearer and0requests to conflicting project settings; fixtures/listeners were absent before real-key forwarding. Own native/kernel/private state/project/9010listener, outer sandbox/template and private OSS independently confirmed absent. Duration232.382seconds.
-
-Actual L1 image build/non-root native version/original CPython protocol3/12import smokes PASS; rootfs1129394176bytes. That image was not registered/deployed; Express proof is steps. No subscription, daemon, recursive-agent, research benchmark, other-provider or peak-memory acceptance. [Final engineering evidence](../.agents/evidence/verify/2026-10-21-prime-agent-native-final.md).
-
-</details>
+No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
 
 ## Secondary development
 

@@ -105,26 +105,7 @@ psql使用 -X、ON_ERROR_STOP；redis-cli使用 -e 将协议错误作为失败�
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 1.1.0；常规镜像、真实 CLI/SDK、完整 HTTP 6 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-20T101159Z.json) |
-| opensandbox | 1.1.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 6 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T111605Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-版本1.1.0通过真实SDK创建的极速版镜像注册、CLI/SDK引擎及自测冒烟、完整实际引擎HTTP6 PASS/0 FAIL/0 SKIP。真实PostgreSQL/Redis认证、SQL及键读写、停止重启持久化、自有数据/进程/监听清理，以及沙箱/模板/镜像仓库独立不存在性回查均通过。镜像默认5432/16379，保留已占用的无关6379监听。外部原始TCP转发及其他提供方仍未验证。
-
-| Version | Provider | Evidence |
-| --- | --- | --- |
-| 1.1.0 | alicloud-express | [SDK-created image](evidence/express-2026-10-20.json), [full HTTP6](evidence/image-http-2026-10-20T101159Z.json) |
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 二次开发
 

@@ -16,13 +16,13 @@ Repository maintenance follows the [project standards and definition of done](do
 
 The index in [`awesome-templates.yaml`](./awesome-templates.yaml) is what
 `abx template search` and `abx template install <name>` read.
-**Verified on** lists a provider only when that template has a passing
+**Historical evidence** retains original input and call-path scope. It does not certify the new workflow manifest. The previous table lists a provider only when that template had a passing
 evidence file under `<name>/evidence/`. An empty cell means no passing run
 is recorded.
 
 ## Templates
 
-2026-10-22 current-source image acceptance: **Express regular-image runtime and independent cleanup46/46; complete image HTTP46/46; original OpenSandbox source images46/46**. Every OpenSandbox result includes real provider CLI and SDK named calls, the complete HTTP controller and independent SDK/container/process cleanup. [Full matrix](.agents/evidence/verify/2026-10-22-source-image-backend-matrix.json) · [reproduce](docs/source-image-acceptance.md) ([中文](docs/source-image-acceptance.zh-CN.md)). Model/vendor-account skips and unsupported generic `run_code`/CLI launch capabilities remain separate limits. Existing Express step46/46 and full HTTP46/46 were [rechecked after qualification metadata changed](.agents/evidence/verify/2026-10-22-current-steps-after-backend-qualification.json); earlier checkpoints remain below.
+Historical 2026-10-22 source-image acceptance (before workflow schema v4): **Express regular-image runtime and independent cleanup46/46; complete image HTTP46/46; original OpenSandbox source images46/46**. Every OpenSandbox result includes real provider CLI and SDK named calls, the complete HTTP controller and independent SDK/container/process cleanup. [Full matrix](.agents/evidence/verify/2026-10-22-source-image-backend-matrix.json) · [reproduce](docs/source-image-acceptance.md) ([中文](docs/source-image-acceptance.zh-CN.md)). Model/vendor-account skips and unsupported generic `run_code`/CLI launch capabilities remain separate limits. Existing Express step46/46 and full HTTP46/46 were [rechecked after qualification metadata changed](.agents/evidence/verify/2026-10-22-current-steps-after-backend-qualification.json); earlier checkpoints remain below.
 
 
 2026-10-21 current46-template Express platform-step checkpoint: **46/46 current native/runtime and required full HTTP PASS**, with actual CLI/SDK calls and independently verified owned cleanup. [Current46matrix](.agents/evidence/verify/2026-10-21-current-native-http46-devin101.json) · [operations and scope](docs/platform-steps.md) ([中文](docs/platform-steps.zh-CN.md)). These are current-version receipt matches, not46new deployments or universal model/Docker/vendor acceptance. Per-template Verified sections retain the exact product/model scope.
@@ -32,7 +32,7 @@ Historical [44matrix](.agents/evidence/verify/2026-10-21-current-native-http44.j
 
 The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](docs/verification-2026-10-18.zh-CN.md)) records the historical23-template checkpoint and its unresolved gates. Current scoped receipts are linked below.
 
-| Template | Description | Status | Verified on |
+| Template | Description | Status | Historical evidence |
 |----------|-------------|--------|-------------|
 | [python-hello](./python-hello/README.md) | A minimal Python hello world template for testing | experimental | [alicloud-express 1.1.1; steps/runtime + HTTP](./python-hello/evidence/full-http-steps-2026-10-19T183219Z.json) · [Express image + HTTP](python-hello/evidence/image-http-2026-10-22T103900Z.json) · [OpenSandbox image + HTTP](python-hello/evidence/opensandbox-2026-10-22T112700Z.json) |
 | [browser-use](./browser-use/README.md) | Native browser-use0.13.11 with private local pinned Chromium and explicit model. | experimental | [alicloud-express 1.0.0; steps/runtime + HTTP](./browser-use/evidence/verification-steps-2026-10-20T153859Z.json) · [Express image + HTTP](browser-use/evidence/image-http-2026-10-20T144122Z.json) · [OpenSandbox image + HTTP](browser-use/evidence/opensandbox-2026-10-22T110655Z.json) |
@@ -83,11 +83,11 @@ The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](do
 
 Provider-managed images belong to their own backend; they are separate from this repository's source Dockerfiles. Express `base`/`code-interpreter-v1` and the original OpenSandbox interpreter are documented in the [managed runtime catalog](#provider-managed-runtime-catalog).
 
-For automatic source preparation supported by the installed provider on a provider-capable CLI host, use `abx --provider <provider> template launch Alibaba-Agent-Sandbox/awesome-templates//<name> --yes`. The provider owns its native base/image build, registration and launch reference; capabilities and provider configuration remain required. See the [CLI preparation/launch guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/c8e8ad784323b8903505442cbc77d433a0d0367a/docs/en/guide/template-launch.md). An existing ID or source directory never converts between providers. Original OpenSandbox interpreter images retain their native runtime entrypoint; source-template startup is prepared by the adapter rather than a manual server-start step.
+For automatic source preparation supported by the installed provider on a provider-capable CLI host, use `abx --provider <provider> template launch Alibaba-Agent-Sandbox/awesome-templates//<name> --yes`. The provider owns its native base/image build, registration and launch reference; selected workflow operations and provider configuration remain required. See the [CLI preparation/launch guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/c8e8ad784323b8903505442cbc77d433a0d0367a/docs/en/guide/template-launch.md). An existing ID or source directory never converts between providers. OpenSandbox keepalive entrypoint configuration is explicit; selected exec startup belongs to the workflow.
 
 Catalog provider values are preparation prerequisites, not verification. See
 [provider-owned source preparation](docs/provider-preparation.md) ([中文](docs/provider-preparation.zh-CN.md));
-missing capabilities remain unsupported and provider IDs never convert across clouds.
+missing operations block only their selected workflow and provider IDs never convert across clouds.
 
 The maintained registry website and ingestion code live in the separate
 [registry repository](https://github.com/Alibaba-Agent-Sandbox/registry).
@@ -163,13 +163,15 @@ Apache-2.0. See [LICENSE](./LICENSE).
 
 ## Automatic preparation on another provider
 
+See the [current workflow contract](docs/workflows.md) ([中文](docs/workflows.zh-CN.md)). Source manifests use specification4; historical evidence below does not certify new consumer paths. Unresolved base placeholders fail preflight, and retained preparation artifacts require explicit recovery.
+
 Use a CLI build that includes `template launch` and configure the selected provider once. The adapter builds or registers the source and passes its returned ID, name or image directly to sandbox creation:
 
 ```sh
 abx --provider e2b template launch alibaba-agent-sandbox/awesome-templates//python-hello --yes
 ```
 
-Third-party providers remain Beta. `provider-prepared` is a workflow hint, not a native verification receipt. Required runtime capabilities are checked before building; a missing PTY/code feature is not repaired by converting a reference. Native base images, registry access and cluster requirements belong to each provider. See the [provider preparation guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/guide/template-launch.md). Existing provider/template evidence remains authoritative; no Verified-on claim changes here.
+Third-party providers remain Beta. Explicit manifest workflows replace handwritten provider hints. Only the selected workflow is checked before building; an application HTTP path does not require unified code interpretation. Native base images, registry access and cluster requirements belong to each provider. See the [provider preparation guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/guide/template-launch.md). Existing provider/template evidence remains authoritative; no Verified-on claim changes here.
 
 ## 在其他提供方上自动准备
 
@@ -179,7 +181,7 @@ Third-party providers remain Beta. `provider-prepared` is a workflow hint, not a
 abx --provider e2b template launch alibaba-agent-sandbox/awesome-templates//python-hello --yes
 ```
 
-第三方提供方继续为 Beta。`provider-prepared` 是流程提示，不是原生验收记录。构建前会检查运行时能力，引用转换不会补齐 PTY 或代码执行能力。原生基础镜像、镜像仓库和集群条件由各提供方维护。见[自动准备指南](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/zh/guide/template-launch.md)。已有验收证据仍为准，本次不修改 Verified-on 声明。
+第三方提供方继续为 Beta。清单的显式工作流取代手写提供方提示。构建前仅检查选中路径；应用 HTTP 不依赖统一解释器。原生基础镜像、镜像仓库和集群条件由各提供方维护。见[自动准备指南](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/zh/guide/template-launch.md)。已有验收证据仍为准，本次不修改 Verified-on 声明。
 
 [Next.js/Vite preview template](next-app/README.md) · experimental; [alicloud-express1.1.0 SDK image and independent forwarded HTTP](next-app/evidence/express-2026-10-20.json).
 Browser IDE: [code-server](code-server/README.md) (experimental; [alicloud-express1.0.0 SDK image and sdk-local browser](code-server/evidence/express-2026-10-20.json)).
@@ -194,10 +196,10 @@ Official terminal agent: [goose](goose/README.md) (experimental; [alicloud-expre
 
 | ID | Provider | Documentation | Verified scope |
 | --- | --- | --- | --- |
-| base | alicloud-express | [English](docs/managed/base/README.md) · [中文](docs/managed/base/README.zh-CN.md) | shell, files, SDK shell-fallback code, CLI exec; owned cleanup |
-| code-interpreter-v1 | alicloud-express | [English](docs/managed/code-interpreter-v1/README.md) · [中文](docs/managed/code-interpreter-v1/README.zh-CN.md) | shell, files, SDK shell-fallback code, CLI exec; owned cleanup |
+| base | alicloud-express | [English](docs/managed/base/README.md) · [中文](docs/managed/base/README.zh-CN.md) | shell, files, historical SDK shell-fallback code (removed), CLI exec; owned cleanup |
+| code-interpreter-v1 | alicloud-express | [English](docs/managed/code-interpreter-v1/README.md) · [中文](docs/managed/code-interpreter-v1/README.zh-CN.md) | shell, files, historical SDK shell-fallback code (removed), CLI exec; owned cleanup |
 | desktop | e2b | [English](docs/managed/desktop/README.md) · [中文](docs/managed/desktop/README.zh-CN.md) | NOT_VERIFIED; no independent account key; actual SDK/protocol tests only |
-| opensandbox-code-interpreter | opensandbox | [English](docs/managed/opensandbox-code-interpreter/README.md) · [中文](docs/managed/opensandbox-code-interpreter/README.zh-CN.md) | Original Docker server + SDK shell/files + native interpreter/context/error checks24PASS; independent cleanup; generic code.interpret remains E8004 |
+| opensandbox-code-interpreter | opensandbox | [English](docs/managed/opensandbox-code-interpreter/README.md) · [中文](docs/managed/opensandbox-code-interpreter/README.zh-CN.md) | Original Docker server + SDK shell/files + native interpreter/context/error checks24PASS; independent cleanup; project unified interpreter is not adapted |
 
 These provider-managed IDs are listed separately from buildable source templates.
 For the two Express entries, native interpreter service was HTTP404 in their recorded tests.

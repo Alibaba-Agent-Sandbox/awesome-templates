@@ -142,29 +142,7 @@ Linux 下短生命周期健康检查 RPC 会持续读取输出，并在清理自
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 2.1.0；常规镜像、真实 CLI/SDK、完整 HTTP 11 PASS / 0 FAIL / 1 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T112320Z.json) |
-| opensandbox | 2.1.0；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 11 PASS / 0 FAIL / 1 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T112327Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-2.1.0 已在阿里云极速版通过真实 SDK 创建的原生 steps **及**精确 CI Docker 镜像验收。两种模式均实际启动并认证原生网关、确认返回后持续运行，独立检查转发 healthz（ok=true）和 readyz（ready=true）均 HTTP200，再停止并确认状态、自有监听端口和临时状态不存在。测试仅显式信任独立观测到的精确代理地址，不公开地址或 token。
-
-| 提供方 | 版本和已执行范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 2.1.0；原生 steps、SDK 生命周期/探针、自有资源独立清理 | [CLI/SDK 冒烟](evidence/express-2026-10-20T153536Z.json)、[完整原生 SDK 网关](evidence/sdk-gateway-steps-2026-10-20T153536Z.json) |
-| alicloud-express | 2.1.0；精确 CI 镜像、SDK 生命周期/探针、sandbox/模板/镜像独立清理 | [镜像/源码完整性](evidence/image-http-2026-10-20T163034Z.json)、[完整原生 SDK 网关](evidence/sdk-gateway-image-2026-10-20T163034Z.json) |
-
-网关范围无需模型 key；不推断模型、消息通道或嵌套 sandbox 已验证。通用镜像回执中的空 HTTP 测试集不算完整 HTTP 控制器通过，原生功能由单独 SDK 网关控制器证明。保留四次2.0.1失败诊断和一次2.1云操作前磁盘预算失败。见[最终工程记录](../.agents/evidence/verify/2026-10-20-openclaw-native-sdk-final.md)。旧2.0.1凭证仅保留历史范围。
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 2.0.1历史验证
 

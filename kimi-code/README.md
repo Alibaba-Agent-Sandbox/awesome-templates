@@ -90,35 +90,7 @@ Model variables are verified in the actual npm 2.2.0 runtime and its official [p
 
 ## Verified
 
-
-### Current image acceptance — 2026-10-22
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 1.0.0; regular image, actual CLI/SDK, complete HTTP 9 PASS / 0 FAIL / 1 SKIP, independent sandbox/template/private-registry cleanup | [Runtime and HTTP receipt](evidence/image-http-2026-10-22T111230Z.json) |
-| opensandbox | 1.0.0; original Docker backend, every CLI/SDK named smoke, complete HTTP 9 PASS / 0 FAIL / 1 SKIP, independent SDK/container/process cleanup | [Native source image receipt](evidence/opensandbox-2026-10-22T111821Z.json) |
-
-OpenSandbox CLI smoke uses actual `abx exec` into the guest named HTTP API. Generic `run_code` remains unsupported and `template launch` capability checks still apply. Missing model/vendor-account checks remain explicit skips in the receipts and do not establish model acceptance. [Reproduction and scope](../docs/source-image-acceptance.md).
-
-<details>
-<summary>Earlier acceptance records (original dates and scope retained)</summary>
-
-| Provider | Executed scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
-
-This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
-
-Image-backed real-model coding acceptance also passed17 checks with qwen3.8-flash; see the [model receipt](evidence/model-express-2026-10-19T153814Z.json). Earlier failed attempts remain separate.
-
-<details>
-<summary>Earlier checkpoint text (historical; current steps result is above)</summary>
-
-No provider has a passing run recorded for this template.
-
-</details>
-
-</details>
+No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
 
 ## Secondary development
 

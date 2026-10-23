@@ -64,11 +64,11 @@ asyncio.run(main())
 
 ## 快速开始（HTTP POST）
 
-该托管模板没有本仓库定义的 `/commands/*` HTTP 服务。使用 SDK 的 shell/files/run_code API；不编造 HTTP 地址或命名命令。
+该托管模板没有本仓库定义的 `/commands/*` HTTP 服务。使用 SDK 的 shell/files API；不编造 HTTP 地址或命名命令。
 
 ## 命令参考
 
-SDK 参数：Sandbox.create(template: str, timeout: int=300)；commands.run(cmd: str, timeout: int) 返回 exit_code/stdout/stderr；files.write/read/remove/exists 接受沙箱路径；run_code(code: str) 返回执行结果。参见[公开 SDK 源码](https://github.com/Alibaba-Agent-Sandbox/python-sdk)。命名命令不适用。
+SDK 参数：Sandbox.create(template: str, timeout: int=300)；commands.run(cmd: str, timeout: int) 返回 exit_code/stdout/stderr；files.write/read/remove/exists 接受沙箱路径。参见[公开 SDK 源码](https://github.com/Alibaba-Agent-Sandbox/python-sdk)。命名命令不适用。
 
 ## 配置
 
@@ -79,6 +79,8 @@ SDK 参数：Sandbox.create(template: str, timeout: int=300)；commands.run(cmd:
 本次实测 Linux x86_64、非 root；/dev/kvm 和 Docker socket 不存在。平台托管资源，不在此承诺固定容量、费用或镜像版本；创建时设置 timeout，结束后 kill 并回查列表。
 
 ## 已验证
+
+当前清单的工作流尚无项目认可收据。下列日期记录仅作为原输入和调用路径的历史报告；不会自动认证新工作流。参见[工作流证据](../../workflows.zh-CN.md)。
 
 | Provider | Runtime verification | Scope |
 | --- | --- | --- |

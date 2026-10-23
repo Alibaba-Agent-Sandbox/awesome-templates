@@ -131,7 +131,7 @@ def verify_source(source: Path, checkout: str, expected: dict[str,str]) -> None:
         if result.returncode:raise ValueError('reviewed image source is unavailable; fetch the exact public checkout first')
         content=result.stdout
         if name=='template.yaml:contract':
-            data=yaml.safe_load(content);data.pop('tested_on',None);content=json.dumps(data,sort_keys=True,separators=(',',':')).encode()
+            data=yaml.safe_load(content);content=json.dumps(data,sort_keys=True,separators=(',',':')).encode()
         if hashlib.sha256(content).hexdigest()!=digest:raise ValueError('current source differs from the actual CI image checkout: '+filename)
 
 

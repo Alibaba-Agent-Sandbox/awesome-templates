@@ -162,29 +162,7 @@ curl --fail-with-body -X POST "$SERVER_URL/commands/tau2_version" -H "Authorizat
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 1.0.4；常规镜像、真实 CLI/SDK、完整 HTTP 8 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T114617Z.json) |
-| opensandbox | 1.0.4；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 8 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T113509Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-模板1.0.4 为 experimental，`tested_on: [alicloud-express]`。
-[同验收源码镜像 L1](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39500169930)
-及[SDK 创建的标准原生步骤](evidence/express-2026-10-20T212600Z.json)、
-[完整 HTTP/模型记录](evidence/verification-steps-2026-10-20T212600Z.json)通过：HTTP8PASS/0FAIL/0SKIP，
-真实模型17PASS/0FAIL/0SKIP。原版零售任务0得分1.0，22条消息、11条 assistant、4条 user、7次实际工具调用；
-独立下载核对79,516字节轨迹与哈希，无密钥原版严格重放复现1.0。返回后新鲜确认、所属结果、私有状态、监听端口、
-外层沙箱/模板和私有 OSS 资产均独立确认清理，耗时230.319秒。范围仅为此原版文本零售任务，不推断114个任务或其他提供商。
-历史失败保留。SDK 示例已检查语法；记录中的云验收通过显式9010启动执行同样的 SDK/原生操作。
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 二次开发
 

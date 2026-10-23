@@ -12,7 +12,7 @@ Original [OpenSandbox example at30348cbd](https://github.com/opensandbox-group/O
 
 ## Problem solved
 
-Discover the external interpreter image without confusing it with Express[code-interpreter-v1](../code-interpreter-v1/README.md). The current Agent Sandbox OpenSandbox provider supports shell/files; native code.interpret is unsupported(E8004), so shell Python is not a native interpreter/session pass.
+Discover the external interpreter image without confusing it with Express[code-interpreter-v1](../code-interpreter-v1/README.md). The current Agent Sandbox OpenSandbox provider supports shell/files; project unified interpreter operations are unsupported(E8004), so shell Python is not a native interpreter/session pass.
 
 ## Quick start (CLI)
 
@@ -90,7 +90,7 @@ Use unique metadata/private creation intent in production so an ambiguous create
 
 ## Quick start (HTTP POST)
 
-This image supplies no repository-defined POST /commands/execute_code. The provider creates through POST /v1/sandboxes with optional OPEN-SANDBOX-API-KEY, preserving the original code-interpreter entrypoint, then uses execd for shell/files. Native interpreter requests need the original OpenSandbox Code Interpreter SDK; Agent Sandbox run_code is unsupported(E8004), not silently claimed as working. See the[exact provider contract](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d/opensandbox/README.md). No raw invented HTTP result envelope is supplied.
+This image supplies no repository-defined POST /commands/execute_code. The provider creates through POST /v1/sandboxes with optional OPEN-SANDBOX-API-KEY, using the explicitly configured interpreter startup script, then uses execd for shell/files. Native interpreter requests need the original OpenSandbox Code Interpreter SDK; Agent Sandbox run_code is unsupported(E8004), not silently claimed as working. See the[exact provider contract](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d/opensandbox/README.md). No raw invented HTTP result envelope is supplied.
 
 ## Command reference
 
@@ -115,11 +115,13 @@ The recorded native run requested2CPU/3072MB/600seconds on hosted Linuxamd64 Doc
 
 ## Verified
 
+The current workflow has no project-recognized receipt. Dated records below are historical reports of their original inputs and call paths; they do not certify this manifest. See [workflow evidence](../../workflows.md).
+
 PASS: original OpenSandbox Docker backend, actual Agent Sandbox SDK create/shell/files, original SDK connection to the same ID, real Jupyter health and Python execution, persistent and isolated contexts, deliberate program failure, context deletion, independent SDKNotFound/Docker absence and local engine/server shutdown. All24checksPASS11.769seconds after dependency/image preparation. [Native receipt](../evidence/verification-opensandbox-code-interpreter-2026-10-21-native-docker.json), [actual hosted run](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39643705253).
 
 Original interpreter image digest: `opensandbox/code-interpreter@sha256:133a3c1720dd52291a019740c2987e7164ea6de79e23d8198798e58950ae2e6e`; execd digest and exact original server/native SDK/provider/CLI/client pins/observed versions are in the receipt. Native SDKs report1.2.0rc2.dev222+g30348cbd; paired Agent Sandbox packages0.3.0. No real account/cloud/model credential was needed for this isolated local server.
 
-This is OpenSandbox native interpreter acceptance, not Express deployment or Agent Sandbox native code.interpret support; generic run_code still returnsE8004. No GUI, privileged nesting or other provider qualification is implied. Preserve the [earlier NOT_VERIFIED record](../evidence/verification-opensandbox-code-interpreter-2026-10-21.json) and failed-run engineering records as history.
+This is OpenSandbox native interpreter acceptance, not Express deployment or Agent Sandbox unified interpreter adapter support; generic run_code still returnsE8004. No GUI, privileged nesting or other provider qualification is implied. Preserve the [earlier NOT_VERIFIED record](../evidence/verification-opensandbox-code-interpreter-2026-10-21.json) and failed-run engineering records as history.
 
 ## Secondary development
 

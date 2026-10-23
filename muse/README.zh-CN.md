@@ -101,28 +101,7 @@ commands.py导入时捕获配置；存在标志不证明账号有效。key最长
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 1.0.1；常规镜像、真实 CLI/SDK、完整 HTTP 10 PASS / 0 FAIL / 0 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T111344Z.json) |
-| opensandbox | 1.0.1；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 10 PASS / 0 FAIL / 0 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T111929Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-| 提供方 | 版本 / 日期 | 通过范围与记录 |
-| --- | --- | --- |
-| alicloud-express | 1.0.1 / 2026-10-21 | 精确原版ELF/版本/无头flags，SDK创建原生steps/CLI+SDK smoke/完整HTTP10PASS，真实原版编码19PASS/0FAIL/0SKIP；[回执](evidence/express-2026-10-21T031347Z.json)、[源码绑定证明](evidence/verification-steps-2026-10-21T031347Z.json) |
-
-原版Muse exec/miniswe经原样Responses代理使用qwen3.8-flash修改已有源码；独立SDK控制器下载验证源码改变、原3项测试字节不变、新报告/精确nonce、返回后原3项及4项新增用例和新ACK。当前原生固定回复fixture检查精确path/model/合成Bearer/最终回复、冲突项目请求为0，并在真实密钥进入前确认fixture/监听释放。原生私有状态、项目、次级监听、外层沙箱/模板及私有OSS清理独立通过；整轮185.96秒。16步/7999字节保留15000门禁。
-
-真实非root L1[镜像run39537371000](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/39537371000)/job119017078085通过：原版二进制/哈希/版本/无头帮助、server/工作目录/rootfs1070862336字节小于8GiB。[最终记录与先前失败](../.agents/evidence/verify/2026-10-21-muse-native-final.md)。不声明镜像云端部署、Meta托管模型/账号/订阅、其他提供方或峰值内存通过。
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 二次开发
 

@@ -99,26 +99,7 @@ task／提取指令各最多32768 UTF-8字节，URL最多8192。结果含 `versi
 
 ## 已验证
 
-
-### 当前镜像验收 — 2026-10-22
-
-| 提供方 | 当前版本与范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 1.1.1；常规镜像、真实 CLI/SDK、完整 HTTP 13 PASS / 0 FAIL / 1 SKIP、沙箱/模板/私有镜像仓库独立清理 | [运行与 HTTP 回执](evidence/image-http-2026-10-22T114531Z.json) |
-| opensandbox | 1.1.1；原始 Docker 后端、逐项 CLI/SDK 命名 smoke、完整 HTTP 13 PASS / 0 FAIL / 1 SKIP、SDK/容器/进程独立清理 | [原生源码镜像回执](evidence/opensandbox-2026-10-22T113725Z.json) |
-
-CLI 在 OpenSandbox 中通过实际 `abx exec` 调用容器内命名 HTTP API；通用 `run_code` 仍不支持，`template launch` 的能力检查仍生效。缺少模型或厂商账号的检查按回执明确跳过，不计为真实模型通过。[复现与验收范围](../docs/source-image-acceptance.zh-CN.md)。
-
-<details>
-<summary>此前验收记录（保留原有时间与范围）</summary>
-
-| 提供方 | 当前范围 | 记录 |
-| --- | --- | --- |
-| alicloud-express | 模板1.1.1；原生 steps → 官方 READY → 真实 Python SDK 创建 → CLI/SDK 原生自检；真实模型 act/extract、独立计数／回执／PNG与资源清理 | [2026-10-20](evidence/express-2026-10-20.json)、[模型／清理证明](evidence/verification-steps-2026-10-20T190109Z.json) |
-
-实际原生 SDK4.3.0（含下述明确补丁）使用授权兼容端点上的 qwen3.8-flash，3次模型调用完成按钮点击、原生文本提取；独立 HTTP 确认点击计数恰好1、新回执匹配。SDK 下载15192字节 PNG，经独立解码验证1024×768及 SHA-256。模型进程、额外端口、文件、原生私有状态、外层沙箱／模板、私有 OSS 缓存对象／桶均已独立确认清理。基础完整 HTTP13PASS/0FAIL/1显式模型跳过，另行真实 SDK 模型验收 PASS；跳过没有改标为模型通过。真实 L1 镜像构建／镜像用户自检另有记录。详见[最终工程证据](../.agents/evidence/verify/2026-10-20-stagehand-native-final.md)。不代表实际镜像注册后模型部署、Browserbase 托管服务或其他提供方。
-
-</details>
+当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
 
 ## 历史验收
 
