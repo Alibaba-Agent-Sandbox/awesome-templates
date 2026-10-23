@@ -292,7 +292,7 @@ if __name__ == "__main__":
 
 The server reads `ABX_SERVER_TOKEN` when the process starts. When the variable is non-empty, protected requests need `Authorization: Bearer <token>` or `X-Access-Token: <token>`. Declare the name in `env` with an empty value. Provide the real value to the server process before it starts. Create-time injection (`abx create --env` or `Sandbox.create(envs=...)`) applies only when that provider starts the server with those values; it cannot reconfigure a prewarmed process. Follow [runtime environment configuration](runtime-environment.md), inspect the actual service and target its configured port.
 
-When the variable is unset, anonymous calls are allowed. On Express the gateway may still present the sandbox access token. Current `abx` (agent-sandbox main, the deploy/run fix in `#16`) retries a 401 once without that header. Current `agent_sandbox.Sandbox.server` does not send the sandbox token to port 9000. A template that sets `ABX_SERVER_TOKEN` must document how the client passes `token=` to `server_at`.
+When the variable is unset, the application allows anonymous calls; provider gateway authentication remains separate. The client preserves the provider's gateway headers and sends an explicit application token as `Authorization: Bearer <token>`. Authentication failures are returned without an anonymous retry. Templates that set `ABX_SERVER_TOKEN` must document `await sb.application_client(port, token=...)` for the project Python API and `ABX_SERVER_TOKEN` for CLI named commands.
 
 ## Calling a command
 
@@ -534,7 +534,7 @@ Concurrent harnesses take an exclusive `flock` on `/tmp/abx-acr-push.lock` (`ABX
 
 `--plan` prints the resolved commands, the lock path, and the timeouts. It does not call `abx`.
 
-Exit 2 means the output matched a known CLI or SDK failure mode (string `base` rejected, generation-1 update, `AuthError` / HTTP 401, or envd `promised N bytes in enveloped message`). Those were tracked as agent-sandbox `#12` `#13` `#14` and python-sdk `#15` `#17`. The deploy/run CLI fix is on `agent-sandbox` main (`#16`). The envd framing and port-9000 auth fix is on `python-sdk` main. The harness still classifies the old messages so an older binary stays explicit.
+Exit 2 means the output matched a known CLI or SDK failure mode (string `base` rejected, generation-1 update, `AuthError` / HTTP 401, or envd `promised N bytes in enveloped message`). Those were tracked as agent-sandbox `#12` `#13` `#14` and python-sdk `#15` `#17`. The deploy/run CLI fix is on `agent-sandbox` main (`#16`). The envd framing and port-9000 auth fix is on `python-sdk` main. A failing or incompatible executable produces no acceptance receipt; use the current reviewed CLI and SDK pins.
 
 Exit 1 is any other failure. Exit 0 writes the evidence file.
 

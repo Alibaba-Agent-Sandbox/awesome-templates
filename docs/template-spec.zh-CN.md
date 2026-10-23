@@ -283,7 +283,7 @@ if __name__ == "__main__":
 
 进程启动时读取 `ABX_SERVER_TOKEN`。变量非空时，受保护的请求需要带 `Authorization: Bearer <token>` 或 `X-Access-Token: <token>`。在 `env` 里声明这个名字，值为空字符串。真正的值必须在服务进程启动前传入。创建时注入（`abx create --env` 或 `Sandbox.create(envs=...)`）仅适用于提供方实际使用这些值启动服务的情况，不能重新配置预热进程。参考[运行环境配置](runtime-environment.zh-CN.md)，检查实际服务并选中已配置端口。
 
-变量未设置时允许匿名调用。极速版网关仍可能带上沙箱访问令牌。当前 `abx`（`agent-sandbox` main，`#16` 的部署与运行修复）在 401 后会不带该头重试一次。当前 `agent_sandbox.Sandbox.server` 不会把沙箱令牌发给端口 9000。模板若设置了 `ABX_SERVER_TOKEN`，要写明客户端如何把 `token=` 传给 `server_at`。
+变量未设置时应用允许匿名调用；提供方网关认证仍单独处理。客户端保留提供方的网关访问头，把显式应用令牌放入 `Authorization: Bearer <token>`。认证失败会直接返回，不会自动匿名重试。设置 `ABX_SERVER_TOKEN` 的模板必须说明：项目 Python API 使用 `await sb.application_client(port, token=...)`，CLI 命名命令使用 `ABX_SERVER_TOKEN`。
 
 ## 客户端如何调用
 
@@ -520,7 +520,7 @@ harness 用现有标志调用 `abx template deploy`（`--json`、`-y`、`--gener
 
 `--plan` 打印解析后的命令、锁路径和超时，不调用 `abx`。
 
-退出码 2 表示输出命中了已知的 CLI 或 SDK 失败（字符串 `base` 被拒绝、generation 1 更新、`AuthError` / HTTP 401，或 envd 的 `promised N bytes in enveloped message`）。这些曾记在 agent-sandbox `#12` `#13` `#14` 和 python-sdk `#15` `#17`。部署与运行的 CLI 修复已在 `agent-sandbox` main（`#16`）。envd 帧和端口 9000 认证的修复已在 `python-sdk` main。harness 仍然识别旧的报错，这样旧二进制也会给出明确结果。
+退出码 2 表示输出命中了已知的 CLI 或 SDK 失败（字符串 `base` 被拒绝、generation 1 更新、`AuthError` / HTTP 401，或 envd 的 `promised N bytes in enveloped message`）。这些曾记在 agent-sandbox `#12` `#13` `#14` 和 python-sdk `#15` `#17`。部署与运行的 CLI 修复已在 `agent-sandbox` main（`#16`）。envd 帧和端口 9000 认证的修复已在 `python-sdk` main。失败或不兼容的可执行程序不会产生验收通过回执；请使用当前经过审查的 CLI 与 SDK 固定版本。
 
 退出码 1 是其他失败。退出码 0 会写入证据文件。
 

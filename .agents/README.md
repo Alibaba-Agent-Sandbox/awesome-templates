@@ -253,3 +253,7 @@ Source image backend acceptance: [decision](notes/proposed/feature/2026-10-22-so
 - [Workflow ID schema alignment](evidence/verify/2026-10-23-workflow-id-schema-alignment.md).
 
 - [Portable profile YAML scalar correction](evidence/verify/2026-10-23-portable-profile-yaml-scalar.md).
+
+- [Current application authentication docs](evidence/verify/2026-10-23-current-application-auth-docs.md).
+
+- [Application auth docs follow-up scope](evidence/verify/2026-10-23-auth-docs-followup-scope.md).
