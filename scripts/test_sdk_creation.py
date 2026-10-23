@@ -4,7 +4,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 import express_e2e as h
-from test_express_cleanup import case
+from test_express_cleanup import case, cli_help
 
 
 def test_sdk_creation_uses_owned_ready_template_and_keeps_cli_smoke_cleanup():
@@ -12,10 +12,11 @@ def test_sdk_creation_uses_owned_ready_template_and_keeps_cli_smoke_cleanup():
         options=h.build_options([str(project),'--alias','e2e-cleanup-regression','--sandbox-create','sdk','--sandbox-timeout','600'])
         events=[]
         def runner(args,timeout):
+            if (help_result := cli_help(args)) is not None: return help_result
             events.append(args)
-            if args[:3] == ['--json','template','list']:return h.Proc(0,'[]','')
+            if args == ['template','list','--format','json']:return h.Proc(0,'[]','')
             if 'deploy' in args:return h.Proc(0,'{"TemplateID":"owned-template","Status":"ready"}','')
-            if args[:2]==['--json','create']:raise AssertionError('CLI creation selected despite explicit SDK route')
+            if args[:1]==['create']:raise AssertionError('CLI creation selected despite explicit SDK route')
             if 'run' in args:return h.Proc(0,'{"result":"ok"}','')
             return h.Proc(0,'','')
         async def create(template, *, timeout):
@@ -37,7 +38,8 @@ def test_sdk_create_failure_stays_ambiguous_without_acceptance():
     with case() as (project, options, intents):
         options=h.build_options([str(project),'--alias','e2e-cleanup-regression','--sandbox-create','sdk'])
         def runner(args,timeout):
-            if args[:3] == ['--json','template','list']:return h.Proc(0,'[]','')
+            if (help_result := cli_help(args)) is not None: return help_result
+            if args == ['template','list','--format','json']:return h.Proc(0,'[]','')
             if 'deploy' in args:return h.Proc(0,'{"TemplateID":"owned-template","Status":"ready"}','')
             raise AssertionError('unknown creation must reconcile before mutation')
         with patch.object(h,'default_sdk_create',side_effect=TimeoutError('private upstream details')),patch.object(h,'recover_owned',return_value=False):

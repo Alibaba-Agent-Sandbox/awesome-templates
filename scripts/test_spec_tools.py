@@ -2,6 +2,7 @@
 """Unit tests for the template checker and the Express harness."""
 from __future__ import annotations
 
+from test_express_cleanup import cli_help
 import json
 import os
 import re
@@ -311,9 +312,10 @@ class HarnessTest(unittest.TestCase):
             calls: list[list[str]] = []
 
             def runner(args: list[str], timeout: float) -> Proc:
+                if (help_result := cli_help(args)) is not None: return help_result
                 del timeout
                 calls.append(args)
-                if args[:3] == ["--json", "template", "list"]:
+                if args == ["template", "list", "--format", "json"]:
                     return Proc(0, "[]", "")
                 if "deploy" in args:
                     return Proc(1, "", "BuildModeError: base must be a mapping")
@@ -336,14 +338,15 @@ class HarnessTest(unittest.TestCase):
             calls: list[list[str]] = []
 
             def runner(args: list[str], timeout: float) -> Proc:
+                if (help_result := cli_help(args)) is not None: return help_result
                 del timeout
                 calls.append(list(args))
-                if args[:3] == ["--json", "template", "list"]:
+                if args == ["template", "list", "--format", "json"]:
                     return Proc(0, "[]", "")
                 if "deploy" in args:
                     return Proc(0, json.dumps({"TemplateID": "tmpl-spec", "Status": "ready"}), "")
                 if "create" in args:
-                    return Proc(0, json.dumps({"ID": "sb-spec"}), "")
+                    return Proc(0, "sb-spec\n", "")
                 if "run" in args:
                     return Proc(0, json.dumps({"result": "Hello, E2E!"}), "")
                 return Proc(0, "", "")
@@ -383,14 +386,15 @@ class HarnessTest(unittest.TestCase):
             calls: list[list[str]] = []
 
             def runner(args: list[str], timeout: float) -> Proc:
+                if (help_result := cli_help(args)) is not None: return help_result
                 del timeout
                 calls.append(list(args))
-                if args[:3] == ["--json", "template", "list"]:
+                if args == ["template", "list", "--format", "json"]:
                     return Proc(0, "[]", "")
                 if "deploy" in args:
                     return Proc(0, json.dumps({"TemplateID": "tmpl-spec", "Status": "ready"}), "")
                 if "create" in args:
-                    return Proc(0, json.dumps({"ID": "sb-spec"}), "")
+                    return Proc(0, "sb-spec\n", "")
                 if "run" in args:
                     return Proc(0, json.dumps({"result": "Hello, E2E!"}), "")
                 return Proc(0, "", "")
@@ -416,9 +420,10 @@ class HarnessTest(unittest.TestCase):
             calls: list[list[str]] = []
 
             def runner(args: list[str], timeout: float) -> Proc:
+                if (help_result := cli_help(args)) is not None: return help_result
                 del timeout
                 calls.append(list(args))
-                if args[:3] == ["--json", "template", "list"]:
+                if args == ["template", "list", "--format", "json"]:
                     return Proc(0, "[]", "")
                 if "deploy" in args:
                     attempt = sum(1 for item in calls if "deploy" in item)
@@ -426,7 +431,7 @@ class HarnessTest(unittest.TestCase):
                         return Proc(124, "", "no ACR push progress for 180s. Stopped process group 1.")
                     return Proc(0, json.dumps({"TemplateID": "tmpl-retry", "Status": "ready"}), "")
                 if "create" in args:
-                    return Proc(0, json.dumps({"ID": "sb-retry"}), "")
+                    return Proc(0, "sb-retry\n", "")
                 if "run" in args:
                     return Proc(0, json.dumps({"result": "Hello, E2E!"}), "")
                 return Proc(0, "", "")
@@ -449,9 +454,10 @@ class HarnessTest(unittest.TestCase):
             calls: list[list[str]] = []
 
             def runner(args: list[str], timeout: float) -> Proc:
+                if (help_result := cli_help(args)) is not None: return help_result
                 del timeout
                 calls.append(list(args))
-                if args[:3] == ["--json", "template", "list"]:
+                if args == ["template", "list", "--format", "json"]:
                     return Proc(0, "[]", "")
                 return Proc(1, "", "Docker build failed (exit 1)")
 

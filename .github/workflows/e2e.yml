@@ -6,6 +6,33 @@ on:
   pull_request:
 
 jobs:
+  express-cli-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Checkout immutable CLI contract source
+        uses: actions/checkout@v4
+        with:
+          repository: Alibaba-Agent-Sandbox/agent-sandbox
+          ref: 6df41f624249c316654fbd5c6d36c34a7beca0b8
+          path: vendor/cli-contract
+          persist-credentials: false
+      - name: Build the actual CLI and verify parser and cleanup without cloud mutation
+        run: |
+          npm ci --prefix vendor/cli-contract
+          npm run build --prefix vendor/cli-contract
+          python -m pip install -r scripts/requirements-spec.txt
+          ABX="node $GITHUB_WORKSPACE/vendor/cli-contract/dist/bin/abx.js" python scripts/test_express_cli_contract.py
+
   documentation:
     runs-on: ubuntu-24.04
     timeout-minutes: 5

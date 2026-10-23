@@ -13,6 +13,13 @@ sys.path.insert(0, str(Path(__file__).parent))
 import express_e2e as harness
 
 
+def cli_help(args):
+    """Synthetic help for controller tests; actual parser is tested separately."""
+    if args[-1:] == ["--help"]:
+        return harness.Proc(0, "sandbox kill --detach --timeout --format", "")
+    return None
+
+
 @contextmanager
 def case():
     with tempfile.TemporaryDirectory(prefix="express-cleanup-unit-") as folder:
@@ -59,8 +66,8 @@ class CleanupTest(unittest.TestCase):
     def test_exact_alias_without_valid_id_is_not_absent(self):
         for identifier in (None, "", " ", "N/A", 3):
             with self.subTest(identifier=identifier):
-                row = {"Name":"e2e-cleanup-regression"}
-                if identifier is not None: row["TemplateID"] = identifier
+                row = {"aliases":["e2e-cleanup-regression"]}
+                if identifier is not None: row["templateID"] = identifier
                 def run(*args): return harness.Proc(0, json.dumps([row]), "")
                 with self.assertRaises(RuntimeError):
                     harness.official_templates(run, "e2e-cleanup-regression")
@@ -80,9 +87,10 @@ class CleanupTest(unittest.TestCase):
         for raises in (False, True):
             with self.subTest(raises=raises), case() as (project, options, intents):
                 def runner(args, timeout):
-                    if args[:3] == ["--json", "template", "list"]: return harness.Proc(0, "[]", "")
+                    if (help_result := cli_help(args)) is not None: return help_result
+                    if args == ["template", "list", "--format", "json"]: return harness.Proc(0, "[]", "")
                     if "deploy" in args: return harness.Proc(0, '{"TemplateID":"owned-template","Status":"ready"}', "")
-                    if "create" in args: return harness.Proc(0, '{"ID":"owned-sandbox"}', "")
+                    if "create" in args: return harness.Proc(0, "owned-sandbox\n", "")
                     if "run" in args: return harness.Proc(0, '{"result":"ok"}', "")
                     return harness.Proc(0, "", "")
                 def verify(intent, run):
@@ -111,8 +119,9 @@ class CleanupTest(unittest.TestCase):
         with case() as (project, options, intents):
             calls = []
             def runner(args, timeout):
+                if (help_result := cli_help(args)) is not None: return help_result
                 calls.append(args)
-                if args[:3] == ["--json", "template", "list"]: return harness.Proc(0, "[]", "")
+                if args == ["template", "list", "--format", "json"]: return harness.Proc(0, "[]", "")
                 if "deploy" in args: return harness.Proc(0, '{"TemplateID":"owned-template","Status":"ready"}', "")
                 if "create" in args: return harness.Proc(1, "", "synthetic unknown response")
                 self.fail("unknown create must reconcile before any cloud delete")
@@ -159,9 +168,10 @@ class CleanupTest(unittest.TestCase):
             with self.subTest(operation=operation, raises=raises), case() as (project, options, intents):
                 recovered = []
                 def runner(args, timeout):
-                    if args[:3] == ["--json", "template", "list"]: return harness.Proc(0, "[]", "")
+                    if (help_result := cli_help(args)) is not None: return help_result
+                    if args == ["template", "list", "--format", "json"]: return harness.Proc(0, "[]", "")
                     if "deploy" in args: return harness.Proc(0, '{"TemplateID":"owned-template","Status":"ready"}', "")
-                    if "create" in args: return harness.Proc(0, '{"ID":"owned-sandbox"}', "")
+                    if "create" in args: return harness.Proc(0, "owned-sandbox\n", "")
                     if "run" in args: return harness.Proc(0, '{"result":"ok"}', "")
                     if operation in args:
                         if raises: raise RuntimeError("synthetic cleanup rejection")
@@ -183,20 +193,22 @@ class CleanupTest(unittest.TestCase):
         with case() as (project, options, intents):
             calls = []
             def runner(args, timeout):
+                if (help_result := cli_help(args)) is not None: return help_result
                 calls.append(args)
-                return harness.Proc(0, '[{"TemplateID":"unrelated-template","Name":"e2e-cleanup-regression"}]', "")
+                return harness.Proc(0, '[{"templateID":"unrelated-template","aliases":["e2e-cleanup-regression"]}]', "")
             with patch.object(harness, "stop_deploy_processes") as stop, patch.object(harness, "_cleanup") as cleanup:
                 self.assertEqual(harness.execute(options, runner=runner, sdk=lambda *a: "ok", verify=lambda *_: True), 2)
                 stop.assert_not_called()
                 cleanup.assert_not_called()
             self.assertEqual(len(calls), 1)
-            self.assertEqual(calls[0], ["--json", "template", "list"])
+            self.assertEqual(calls[0], ["template", "list", "--format", "json"])
             self.assertFalse((project / "evidence").exists())
 
     def test_failed_preflight_does_not_mutate_unowned_process_or_marker(self):
         with case() as (project, options, intents):
             marker = project / "Dockerfile.abx-build"
             def runner(args, timeout):
+                if (help_result := cli_help(args)) is not None: return help_result
                 marker.write_text("concurrent unowned marker")
                 return harness.Proc(1, "", "synthetic list rejection")
             with patch.object(harness, "stop_deploy_processes") as stop, patch.object(harness, "_cleanup") as cleanup:
@@ -206,12 +218,13 @@ class CleanupTest(unittest.TestCase):
             self.assertEqual(marker.read_text(), "concurrent unowned marker")
 
     def test_recovery_uses_exact_alias_and_ignores_unrelated_template(self):
-        rows = [{"TemplateID":"owned-template","Name":"e2e-cleanup-regression"},
-                {"TemplateID":"other-template","Name":"e2e-cleanup-regression-other"}]
+        rows = [{"templateID":"owned-template","aliases":["e2e-cleanup-regression"]},
+                {"templateID":"other-template","aliases":["e2e-cleanup-regression-other"]}]
         calls = []
         def runner(args, timeout):
+            if (help_result := cli_help(args)) is not None: return help_result
             calls.append(args)
-            if args[:3] == ["--json", "template", "list"]: return harness.Proc(0, json.dumps(rows), "")
+            if args == ["template", "list", "--format", "json"]: return harness.Proc(0, json.dumps(rows), "")
             self.assertEqual(args, ["template", "delete", "owned-template", "-y"])
             rows.pop(0)
             return harness.Proc(0, "", "")
@@ -231,7 +244,8 @@ class CleanupTest(unittest.TestCase):
                           "deploy_attempted":True, "create_attempted":create,
                           "template_ids":["owned-template"] if create else [], "sandbox_ids":[]}
                 def runner(args, timeout):
-                    self.assertEqual(args, ["--json", "template", "list"])
+                    if (help_result := cli_help(args)) is not None: return help_result
+                    self.assertEqual(args, ["template", "list", "--format", "json"])
                     return harness.Proc(0, "[]", "")
                 with patch.object(harness, "_recover_sandboxes", lambda *args: set()):
                     self.assertIs(harness.recover_owned(intent, runner), False)
@@ -240,21 +254,22 @@ class CleanupTest(unittest.TestCase):
         with case() as (project, options, intents):
             calls = []
             def runner(args, timeout):
+                if (help_result := cli_help(args)) is not None: return help_result
                 calls.append(args)
                 self.assertFalse((project / "evidence").exists())
-                if args[:3] == ["--json", "template", "list"]: return harness.Proc(0, "[]", "")
+                if args == ["template", "list", "--format", "json"]: return harness.Proc(0, "[]", "")
                 if "deploy" in args:
                     self.assertEqual(args[args.index("--acr-repo") + 1], options.alias)
                     self.assertEqual(args[args.index("--tag") + 1], "review")
                     self.assertNotEqual(args[args.index("--acr-repo") + 1], "product")
                     return harness.Proc(0, '{"TemplateID":"owned-template","Status":"ready"}', "")
-                if "create" in args: return harness.Proc(0, '{"ID":"owned-sandbox"}', "")
+                if "create" in args: return harness.Proc(0, "owned-sandbox\n", "")
                 if "run" in args: return harness.Proc(0, '{"result":"ok"}', "")
                 return harness.Proc(0, "", "")
             self.assertEqual(harness.execute(options, runner=runner, sdk=lambda *a: "ok", verify=lambda *_: True), 0)
             self.assertEqual(len(list((project / "evidence").glob("express-*.json"))), 1)
             self.assertFalse(intents[0].exists())
-            self.assertEqual(calls[-2:], [["kill", "owned-sandbox", "-y"], ["template", "delete", "owned-template", "-y"]])
+            self.assertEqual(calls[-2:], [["kill", "owned-sandbox"], ["template", "delete", "owned-template", "-y"]])
 
 
 if __name__ == "__main__":
