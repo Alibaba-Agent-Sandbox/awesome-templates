@@ -1,6 +1,6 @@
 # Decision: Current Express acceptance CLI contract
 
-Status: proposed
+Status: implemented
 
 ## Problem
 
@@ -28,12 +28,16 @@ Update ownership/image/SDK controller regressions, add preflight ordering and st
 
 ## Acceptance criteria
 
-- [ ] Compatible list/create/kill and strict parsing regressions pass.
-- [ ] Mismatched CLI stops before deploy/cleanup.
-- [ ] Existing ownership/recovery and SDK/image controller tests pass.
-- [ ] Actual parser integration and repository CI pass.
-- [ ] Bilingual contributor instructions and dated evidence included; PR merged.
+- Compatible list/create/kill and strict parsing regressions pass.
+- Mismatched CLI stops before deploy/cleanup.
+- Existing ownership/recovery and SDK/image controller tests pass.
+- Actual parser integration and repository CI pass.
+- Bilingual contributor instructions and dated evidence included; PR merged.
 
 ## Evidence
 
 [Verification](../../../evidence/verify/2026-10-23-command-recovery-review.md). Issue: https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/192.
+
+## Implementation
+
+The scoped code and design corrections are implemented and locally verified. Reporting remains design-only. Final-head repository CI and merge confirmation are recorded in the linked PR; this pre-merge evidence snapshot does not claim that pending checks or publication already completed.
