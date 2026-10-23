@@ -51,6 +51,19 @@ workflows:
     operation: commands.run
     required_operations: []
 
+  application_image:
+    kind: application
+    input: image
+    service: app
+    startup: exec
+    binding:
+      transport: http
+      endpoint: provider-port
+      caller: host
+      authentication: service-token
+    operation: commands.run
+    required_operations: []
+
 # Select explicitly with --build-profile portable; the default Dockerfile stays provider-native.
 build_profiles:
   portable:

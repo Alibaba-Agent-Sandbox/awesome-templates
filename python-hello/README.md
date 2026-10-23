@@ -194,3 +194,5 @@ default Dockerfile retains its Express platform placeholders; providers do not
 rewrite either recipe or inject a wheel. The application workflow starts the
 server through `exec.run` after creation. The selected profile and exact source
 bytes form the launch identity. A profile declaration is not a real-backend pass.
+
+The separate `application_image` workflow consumes an already prepared immutable OCI image through Python `launch_workflow`; it does not perform source preparation.
