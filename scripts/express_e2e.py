@@ -814,6 +814,8 @@ def cli_create_args(template_id: str, timeout: int) -> list[str]:
 
 def detached_sandbox_id(proc: Proc) -> str | None:
     """Reject JSON, terminal prose, extra lines and cross-provider references."""
+    if proc.returncode != 0:
+        return None  # Failed create is ambiguous; recover by the owned template.
     value = proc.stdout.strip()
     return value if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,255}", value) else None
 

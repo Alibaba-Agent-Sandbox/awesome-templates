@@ -20,6 +20,7 @@ class ExpressCliContract(unittest.TestCase):
             self.assertEqual(harness.build_options([str(project), "--sandbox-create", "sdk", "--sandbox-timeout", "1"]).sandbox_timeout, 1)
 
     def test_detached_id_is_one_identifier_not_json_or_terminal_output(self):
+        self.assertIsNone(harness.detached_sandbox_id(harness.Proc(1, "unrelated-sandbox\n", "failed")))
         for value in ("sb-owned_123\n", "\n sb-owned_123 \n"):
             self.assertEqual(harness.detached_sandbox_id(harness.Proc(0, value, "")), "sb-owned_123")
         for value in ("", '{"ID":"sb-owned"}', "ID: sb-owned", "hello\nsb-owned",

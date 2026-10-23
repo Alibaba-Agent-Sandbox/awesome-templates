@@ -2,7 +2,7 @@
 
 - Date: 2026-10-23
 - Result: PASS for scoped controller/parser/cloud-helper verification. Final repository CI and merge are separate gates recorded in PR #193.
-- Tested code head: 1cf28716775f (base 068119d022d96358a5031a35c0b6690f75e2fa13); following changes finalize records.
+- Tested code head: 1cf28716775f (base 068119d022d96358a5031a35c0b6690f75e2fa13); final review also guards failed-create stdout as described below.
 - Environment: Linux, Python 3.13.13, Node 22.22.2. Credentials only in ignored environment; no private IDs or raw cloud logs committed.
 
 ## Commands and results
@@ -29,3 +29,7 @@ A first 60-second real helper smoke failed after create; short TTL under slow st
 The immutable historical canonical workflow retains its pinned runner. Canonical cloud/image jobs skipped by their unchanged authorization/path gates are not counted as provider acceptance. No Codex Docker/ACR rebuild, new L1/L2/L3 qualification or template/runtime/model change is claimed. General diagnostic reporting remains a CLI design proposal, with no backend deployment.
 
 This pre-merge receipt does not claim the pending complete repository workflow already finished. [PR #193](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/193) records final-head CI and actual merge; [CLI PR #110](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/pull/110) owns recovery/generator fixes and the reporting proposal review.
+
+## Failed-create stdout review
+
+A nonzero create result never supplies a trusted ID, even if stdout looks like one. The attempt remains ambiguous and recovers through the owned template, preventing normal cleanup from acting on an arbitrary diagnostic token. The same five-suite controller command passed again: 94 tests, 186 subtests, one deliberate no-ABX integration skip. Successful creation and cloud-helper behavior are unchanged.
