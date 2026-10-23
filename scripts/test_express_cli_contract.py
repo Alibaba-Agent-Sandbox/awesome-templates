@@ -12,6 +12,13 @@ from test_express_cleanup import case, cli_help
 
 
 class ExpressCliContract(unittest.TestCase):
+    def test_cli_timeout_is_validated_before_deploy(self):
+        with case() as (project, _, _):
+            with self.assertRaisesRegex(SystemExit, "at least 30 seconds"):
+                harness.build_options([str(project), "--sandbox-timeout", "29"])
+            self.assertEqual(harness.build_options([str(project), "--sandbox-timeout", "30"]).sandbox_timeout, 30)
+            self.assertEqual(harness.build_options([str(project), "--sandbox-create", "sdk", "--sandbox-timeout", "1"]).sandbox_timeout, 1)
+
     def test_detached_id_is_one_identifier_not_json_or_terminal_output(self):
         for value in ("sb-owned_123\n", "\n sb-owned_123 \n"):
             self.assertEqual(harness.detached_sandbox_id(harness.Proc(0, value, "")), "sb-owned_123")
@@ -44,7 +51,7 @@ class ExpressCliContract(unittest.TestCase):
                     return harness.Proc(1, "", "unsupported") if failed in args else cli_help(args)
                 # case() does not stub this guard; exercise execute's real ordering.
                 with patch.object(harness, "_cleanup") as cleanup, patch.object(harness, "recover_owned") as recover:
-                    self.assertEqual(harness.execute(options, runner=run), 1)
+                    self.assertEqual(harness.execute(options, runner=run), 2)
                     cleanup.assert_not_called()
                     recover.assert_not_called()
                 self.assertFalse((project / "evidence").exists())

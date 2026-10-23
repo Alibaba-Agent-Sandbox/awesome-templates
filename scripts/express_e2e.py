@@ -818,6 +818,10 @@ def detached_sandbox_id(proc: Proc) -> str | None:
     return value if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,255}", value) else None
 
 
+class CliContractError(RuntimeError):
+    """The selected executable cannot run this acceptance contract."""
+
+
 def validate_cli_contract(run: Runner, options: Options) -> None:
     """Read-only executable checks before any costly build/registration/create."""
     checks = [(["template", "list", "--help"], ("--format",)),
@@ -828,7 +832,7 @@ def validate_cli_contract(run: Runner, options: Options) -> None:
     for args, required in checks:
         proc = run(args, 30)
         if proc.returncode or any(token not in proc.stdout for token in required):
-            raise RuntimeError("selected CLI does not support the current Express contract; no cloud action submitted")
+            raise CliContractError("selected CLI does not support the current Express contract")
 
 
 def official_templates(run: Runner, alias: str) -> list[str]:
@@ -1190,6 +1194,10 @@ def execute(options: Options, *, runner: Runner | None = None, sdk: Sdk | None =
         intent["ownership_confirmed"] = True
         save_intent(intent_path, intent)
         status = conduct()
+    except CliContractError:
+        print("BLOCKED selected CLI lacks the current Express list/create/kill contract. "
+              "Update abx or set ABX to a compatible executable; no cloud action submitted.", flush=True)
+        status = 2
     except Exception as exc:
         print(f"harness operation failed: {type(exc).__name__}; upstream details omitted", flush=True)
         status = 1
