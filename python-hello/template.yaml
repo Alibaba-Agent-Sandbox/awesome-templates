@@ -68,4 +68,5 @@ workflows:
 build_profiles:
   portable:
     dockerfile: Dockerfile.portable
-    context: .
+    # Quote the root path: YAML 1.1 float resolvers can treat a bare dot as NaN.
+    context: '.'
