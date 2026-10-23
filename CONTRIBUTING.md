@@ -14,8 +14,11 @@ already passes `scripts/check_template.py`. It is not a catalog entry.
 
 1. Copy `_skeleton/` to a kebab-case directory. The directory name,
    `template.yaml` `name`, and the index `path` are the same string.
-2. Keep the Alibaba base image, `generation: 2`, `start_cmd`, `ready_cmd`,
-   pinned installs, and `USER user`. Do not add `CMD` or `ENTRYPOINT`.
+2. Keep the default Express recipe's Alibaba base image, `generation: 2`,
+   `start_cmd`, `ready_cmd`, pinned installs, and `USER user`. Do not add `CMD` or
+   `ENTRYPOINT` to that recipe. A separately declared explicit build profile may
+   use another pinned base; it must preserve the original recipe and non-root
+   runtime, and is selected by name rather than applied as a provider rewrite.
 3. Register named commands in `commands.py` with `@command`. Call `start()`
    only under `if __name__ == "__main__"`.
 4. Fill `docs/design/<name>.md` from

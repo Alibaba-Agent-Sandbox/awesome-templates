@@ -49,3 +49,14 @@ Provider Beta/Stable maturity remains an independent maintainer decision. A miss
 ## Validation
 
 Install `scripts/requirements-spec.txt` with the repository's locked dependency versions. Run `scripts/test_spec_tools.py`, `scripts/check_template.py --all`, `scripts/check_managed_catalog.py`, workflow regressions and `scripts/check_docs.py`. These are local checks; real-backend workflow claims additionally require exact-path execution and independently confirmed cleanup. No current template receives project certification merely from this schema update.
+
+## Explicit build profiles
+
+A source may declare `build_profiles.<id>: {dockerfile: Dockerfile.<id>, context: "."}`.
+The caller chooses `--build-profile <id>` explicitly; no profile is inferred from a
+provider name. The default Express recipe keeps its platform base and contract.
+A separate profile may use another digest-pinned base while retaining non-root
+execution and pinned runtime dependencies. Every selected file is part of the
+immutable source/build identity. Providers preserve the recipe's FROM, USER, COPY
+and ENTRYPOINT bytes. `python-hello` supplies `portable` as the first such profile.
+A declared profile or a passing source checker is not an image/native acceptance.

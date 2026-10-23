@@ -49,3 +49,12 @@ Provider 的 Beta/Stable 成熟度仍由维护者独立判断。缺少统一解�
 ## 检查
 
 按 `scripts/requirements-spec.txt` 固定版本安装依赖，运行 `scripts/test_spec_tools.py`、`scripts/check_template.py --all`、`scripts/check_managed_catalog.py`、工作流回归和 `scripts/check_docs.py`。这些只是本地检查。真实后端声明还需精确路径实测及独立清理确认；schema 更新本身不会认证任何当前模板。
+
+## 显式构建方案
+
+源码可声明 `build_profiles.<id>: {dockerfile: Dockerfile.<id>, context: "."}`。
+调用方通过 `--build-profile <id>` 明确选择，不根据 Provider 名称推断。默认 Express
+构建文件保持平台基础镜像及其契约，独立方案可采用摘要固定的其他基础镜像，同时
+保持非 root 执行及运行时依赖固定。所有选中文件均进入不可变源码/构建身份；Provider
+保留 FROM、USER、COPY 与 ENTRYPOINT 的原始字节。`python-hello` 的 `portable` 是
+首个显式方案。声明方案或通过源码检查，不等于镜像/原生后端已经验收。
