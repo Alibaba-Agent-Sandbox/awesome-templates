@@ -95,3 +95,10 @@ def test_explicit_portable_build_profile_is_not_an_implicit_source_rewrite():
     assert 'USER user' in portable
     data['build_profiles']['portable']['context'] = '../foreign'
     assert validate_v4(data, source)
+
+
+def test_full_schema_accepts_shared_contract_underscore_workflow_id():
+    data = manifest()
+    data['workflows']['application_image'] = data['workflows'].pop('application')
+    data['default_workflow'] = 'application_image'
+    assert validate_v4(data) == []

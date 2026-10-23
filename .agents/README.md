@@ -249,3 +249,5 @@ Source image backend acceptance: [decision](notes/proposed/feature/2026-10-22-so
 - [Command recovery review](notes/implemented/process/2026-10-23-command-recovery-review.md) · [verification](evidence/verify/2026-10-23-command-recovery-review.md)
 
 - [Explicit template workflows](notes/proposed/architecture/2026-10-23-explicit-template-workflows.md) · [verification](evidence/verify/2026-10-23-explicit-template-workflows.md)
+
+- [Workflow ID schema alignment](evidence/verify/2026-10-23-workflow-id-schema-alignment.md).
