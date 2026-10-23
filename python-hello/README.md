@@ -8,6 +8,8 @@ A small Python development sandbox that greets callers, executes inline Python o
 
 ## Stack
 
+Revision 1.1.2 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
+
 - Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` supplies Python 3.13 and Node.js 20. `abx template deploy` resolves the defaults to `cn-hangzhou` and `v0.0.49`.
 - Server pinned to python-sdk commit `35da216a300f1e2e84254a1cf4b4a7ea98681505`; an SDK wheel injected during deployment takes precedence.
 - `pytest==8.4.2` is installed in the image for the `test` command.

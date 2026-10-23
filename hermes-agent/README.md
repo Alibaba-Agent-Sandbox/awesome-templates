@@ -6,6 +6,8 @@ Run the actual upstream Hermes Agent CLI with its local terminal and file toolse
 
 ## Stack
 
+Revision 1.1.2 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
+
 NousResearch Hermes Agent v0.22.1, commit `297552a9d646119871391d202509822cd86330df`; private Python 3.14.6; `uv==0.12.3`; upstream frozen `uv.lock`; platform Agent Sandbox server.
 
 [Dockerfile](Dockerfile) · [template.yaml](template.yaml) · [Upstream](https://github.com/NousResearch/hermes-agent/tree/297552a9d646119871391d202509822cd86330df)

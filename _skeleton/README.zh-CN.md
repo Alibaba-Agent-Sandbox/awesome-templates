@@ -8,6 +8,8 @@
 
 ## 技术栈
 
+版本 1.0.2 将默认服务器源码与 CI wheel 的提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a` 对齐。历史回执保留原始输入范围；此版本需要重新完成镜像及工作流验收。
+
 - 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`abx template deploy` 把 `<region>` 换成 `ALIBABA_CLOUD_REGION_ID` 或 `cn-hangzhou`，把 `<tag>` 换成 `ABX_BASE_IMAGE_TAG` 或 `v0.0.49`。
 - 构建上下文里没有 wheel 时，从 python-sdk 提交 `35da216a300f1e2e84254a1cf4b4a7ea98681505` 安装 `agent-sandbox-server`：`pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/<40位hex>.tar.gz#subdirectory=server-sdk"`。`abx template deploy` 注入的 wheel 优先。另一个允许的钉是 `agent-sandbox-server==X.Y.Z`，前提是该版本已经在 PyPI 上。2026-10-15 时 `0.3.0` 不在 PyPI。
 - 工作目录 `/home/user/app`。运行用户 `user`。

@@ -145,3 +145,5 @@ The agent API, exact-session flow and runtime files are unchanged. Same-user
 hostile-code containment is not claimed. Historical genuine model results remain
 history and do not establish this new gate. Actual hardened-image/model recheck,
 canonical deployment, parents and final remote checks remain pending.
+
+Release readiness 2.0.3: align default and injected server SDK source to `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; preserve historical receipts and require new image/workflow acceptance.

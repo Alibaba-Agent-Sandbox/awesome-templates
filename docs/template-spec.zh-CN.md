@@ -223,7 +223,7 @@ EXPOSE 9000
 
 `<40位hex-sha>` 是 `Alibaba-Agent-Sandbox/python-sdk` 的完整提交（40 个十六进制字符），不是短 sha。2026-10-15 时 `agent-sandbox-server==0.3.0` 不在 PyPI（`https://pypi.org/pypi/agent-sandbox-server/0.3.0/json` 返回 404）。在该版本发布之前使用归档钉。归档钉更精确：它选中某一次提交，包括 `61c43e0` 及之后的极速版服务端修复。
 
-`ABX_SERVER_SDK_SOURCE` 指向 `server-sdk` 源码树时，`abx template deploy` 会把 `agent-sandbox-server` 的 wheel 注入构建上下文。`if` 分支安装这个 wheel。`else` 分支仍然带上两种钉之一。用 BuildKit 构建，这样没有注入 wheel 时 `COPY *.whl` 也能通过（`DOCKER_BUILDKIT=1`）。
+`ABX_SERVER_SDK_SOURCE` 指向 `server-sdk` 源码树时，`abx template deploy` 会把 `agent-sandbox-server` 的 wheel 注入构建上下文。`if` 分支安装这个 wheel。`else` 分支仍然带上两种钉之一。直接 Docker 构建时，含 `COPY *.whl` 的配方需要提供配对 wheel；BuildKit 不会把不存在的 COPY 源变为可选。若不注入 wheel，请显式选择直接安装固定归档的配方，例如 python-hello 的 portable profile。
 
 每次 `pip install` 都加 `--no-cache-dir`。npm 安装在同一层里清掉缓存（`npm cache clean --force`）。
 
@@ -542,3 +542,5 @@ Exec 启动必须有明确的 `start_cmd`。托管记录不包含该字段，因
 
 
 托管目录通过 `python scripts/check_managed_catalog.py` 检查准确字段、与源码目录不重名、显式工作流 schema 及引用、双语 14 个有序 README 章节，以及本地历史证据身份。`historical_evidence` 只链接原始回执，其内容不授予当前工作流认证。只有完整、输入匹配且来源受独立信任的回执才能认证路径，参见[工作流验证](workflows.zh-CN.md)。托管 ID 仍排除在源码镜像选择／steps 之外。[Desktop](managed/desktop/README.zh-CN.md)和[OpenSandbox 解释器](managed/opensandbox-code-interpreter/README.zh-CN.md)说明各条目的条件、实际证据范围和剩余产品门槛。
+
+默认 Dockerfile 中的服务器归档提交必须与 `scripts/server_sdk_pin.py`（或显式的 `server-sdk.commit`）一致。检查器拒绝不一致的 fallback，确保默认构建与 CI 注入构建选择同一服务器源码。修改提交后须重新完成对应源码的镜像及工作流验收，原有回执仅作为历史保留。

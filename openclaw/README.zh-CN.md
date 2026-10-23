@@ -8,6 +8,8 @@
 
 ## 技术栈
 
+版本 2.1.1 将默认服务器源码与 CI wheel 的提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a` 对齐。历史回执保留原始输入范围；此版本需要重新完成镜像及工作流验收。
+
 - 阿里云 FC 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，部署工具解析占位符。
 - Node.js `24.16.0`，npm 包 `openclaw@2026.10.4`。该上游包要求 Node >=24.16.0，基础镜像的 Node 20 不满足要求。
 - server 固定为 python-sdk 提交 `35da216a300f1e2e84254a1cf4b4a7ea98681505`；部署时注入的 wheel 优先。

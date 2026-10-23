@@ -8,6 +8,8 @@
 
 ## 技术栈
 
+版本 1.1.2 将默认服务器源码与 CI wheel 的提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a` 对齐。历史回执保留原始输入范围；此版本需要重新完成镜像及工作流验收。
+
 - Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` 自带 Python 3.13、Node.js 20。部署时默认解析为 `cn-hangzhou` 和 `v0.0.49`。
 - 服务端固定到 python-sdk 提交 `35da216a300f1e2e84254a1cf4b4a7ea98681505`，部署注入的 SDK wheel 优先。
 - 镜像安装 `pytest==8.4.2`，供 `test` 命令使用。

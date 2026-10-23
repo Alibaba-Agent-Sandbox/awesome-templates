@@ -646,7 +646,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
                 violations.append(Violation("pinned-version", f"unpinned npm install in Dockerfile: {line}"))
 
     opt_in = template_dir / "server-sdk.commit"
-    if opt_in.exists() or opt_in.is_symlink():
+    if dockerfile.is_file() or opt_in.exists() or opt_in.is_symlink():
         try:
             try:
                 from .server_sdk_pin import server_commit

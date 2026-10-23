@@ -18,6 +18,7 @@ from unittest.mock import patch
 import check_template
 import express_e2e
 import image_size_report
+from server_sdk_pin import SERVER_COMMIT
 from test_template_application import ApplicationContractTest  # include v3 contract regressions
 from express_e2e import Proc
 
@@ -206,12 +207,20 @@ class CheckerTest(unittest.TestCase):
             self.assertEqual([str(item) for item in check_template.check_directory(dest)], [])
 
             short = text.replace(
-                "35da216a300f1e2e84254a1cf4b4a7ea98681505",
+                SERVER_COMMIT,
                 "35da216",
             )
             dockerfile.write_text(short, encoding="utf-8")
             codes = {item.code for item in check_template.check_directory(dest)}
             self.assertIn("pinned-version", codes)
+
+    def test_default_fallback_must_match_ci_source(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp) / "_skeleton"
+            shutil.copytree(SKELETON, dest)
+            dockerfile = dest / "Dockerfile"
+            dockerfile.write_text(dockerfile.read_text().replace(SERVER_COMMIT, "a" * 40))
+            self.assertIn("server-sdk-pin", {item.code for item in check_template.check_directory(dest)})
 
     def test_pypi_pin_is_enough(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

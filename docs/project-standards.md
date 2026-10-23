@@ -157,3 +157,5 @@ Dockerfile server fallback. L1 checks out that source before building the wheel;
 archive and registration proof checks select the same pin. The opt-in file is part
 of the hashed context. Templates without it retain the historical common injected
 pin, so adding one consumer does not requalify or change other runtimes.
+
+The default Dockerfile server archive must match `scripts/server_sdk_pin.py` (or the explicit `server-sdk.commit`). The checker rejects a different fallback, so default and CI-injected builds select the same server source. Changing a pin invalidates prior source-specific image/workflow acceptance; preserve those receipts as history.

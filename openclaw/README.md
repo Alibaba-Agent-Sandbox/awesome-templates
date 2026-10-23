@@ -8,6 +8,8 @@ Runs an authenticated OpenClaw WebSocket gateway as an owned background process.
 
 ## Stack
 
+Revision 2.1.1 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
+
 - Alibaba FC base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (deployment resolves the placeholders).
 - Node.js `24.16.0`, npm package `openclaw@2026.10.4`. The upstream package requires Node >=24.16.0; the base image Node 20 is insufficient.
 - `agent-sandbox-server` pinned to python-sdk commit `35da216a300f1e2e84254a1cf4b4a7ea98681505`, unless deployment injects a wheel.

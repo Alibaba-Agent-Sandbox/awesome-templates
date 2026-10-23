@@ -8,6 +8,8 @@ Registers one named command, `hello`, on `agent-sandbox-server` at port 9000. Th
 
 ## Stack
 
+Revision 1.0.2 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
+
 - Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template deploy` replaces `<region>` with `ALIBABA_CLOUD_REGION_ID` or `cn-hangzhou`, and `<tag>` with `ABX_BASE_IMAGE_TAG` or `v0.0.49`.
 - `agent-sandbox-server` from python-sdk commit `35da216a300f1e2e84254a1cf4b4a7ea98681505` when the build context has no wheel: `pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/<40-hex>.tar.gz#subdirectory=server-sdk"`. A wheel injected by `abx template deploy` wins. `agent-sandbox-server==X.Y.Z` is the other allowed pin once that release exists on PyPI. `0.3.0` was not on PyPI on 2026-10-15.
 - Work directory `/home/user/app`. Runtime user `user`.

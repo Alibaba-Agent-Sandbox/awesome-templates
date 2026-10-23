@@ -31,3 +31,5 @@ Auto mode may edit files and execute tools with sandbox user authority. It is fa
 ## Test plan
 
 L0: actual pinned --version, typed HTTP, missing-model guard, process/timeout/credential/argv regression tests. L1: build actual image and assert Node24.16.0/Kimi2.2.0 as USER user. L2: real canonical Express deployment, version/setup through CLI and SDK, owned cleanup readback. L3: compatible-model turn fixes seeded calculator.py, creates REPORT.md and exact random artifact, leaves original tests unchanged and passes isolated original/held-out verification with post-response random ACKs. Missing/disabled required model fails; fixtures prove only verifier behavior. L4: not claimed.
+
+Release readiness 1.0.1: align default and injected server SDK source to `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; preserve historical receipts and require new image/workflow acceptance.

@@ -19,14 +19,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && npm install -g @openai/codex@0.162.1 \
     && npm cache clean --force
 
-# agent-sandbox-server==0.3.0 is python-sdk 61c43e0 (includes PR #21).
+# Server source matches the common CI wheel source in scripts/server_sdk_pin.py.
 # The PyPI name `agent-sandbox` is a different project, so the fallback installs
 # that commit's server-sdk tree.
 COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
         pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
     else \
-        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/61c43e0be65a1f57aa09186d578e7b399e48429b.tar.gz#subdirectory=server-sdk"; \
+        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/e2cb27e24fde0a67112f82b8d44af463445a5d1a.tar.gz#subdirectory=server-sdk"; \
     fi
 
 WORKDIR /home/user/app
