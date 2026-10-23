@@ -150,7 +150,7 @@ agent-sandbox-server healthcheck --port 9000
 
 | Application 字段 | 契约 |
 | --- | --- |
-| `runtime` | `placement: external` 需要 `driver: python-remote-tools`，不能写本地 profile。`in-sandbox` 需要 `driver: sandbox-local-api`，profile 为 `server-core-agents` 或 `legacy-codex-agent-api`。Profile 不证明全部本地接口已开放。 |
+| `runtime` | `placement: external` 需要 `driver: python-remote-tools`，不能写本地 profile。`in-sandbox` 需要 `driver: sandbox-local-api`，profile 为 `server-core-agents`。Profile 不证明全部本地接口已开放。 |
 | `gateway` | `placement: fc-web` 表示外部网关；`client-direct` 仅适用于 sandbox 内 runtime。 |
 | `deployment` | 直连只能是 `{adapter: none}`。FC 需要 `adapter: serverless-devs-fc3`、`accessRef`、`toolchainLock`，以及 `inline`、`project` 二选一。Access 引用是名称，不是凭据。 |
 | `deployment.inline` | Serverless Devs v3 mapping，包括 `edition: "3.0.0"`、`name`、`resources`。资源键限 `gateway`、`worker`、`dispatcher`；外部 runtime 三者都必需。每项包含精确 `component: fc3@X.Y.Z`、非空 `props`，可选 `actions`。Adapter 提取 mapping 生成冻结的 `s.yaml`，用户无需再维护一份 YAML。Schema 不验证 FC 属性、组件可用性、IAM 或实际代码。 |
@@ -528,11 +528,17 @@ harness 用现有标志调用 `abx template deploy`（`--json`、`-y`、`--gener
 
 ## 提供方托管条目
 
-`managed_templates` 是附加目录命名空间，与可安装源码 `templates` 分开。字段包含 name/provider/template_id/kind/documentation/evidence/verification_scope/native_interpreter_verified。托管 ID 没有此仓库拥有的 Dockerfile、镜像版本、commands.py 或构建上下文，因此不参与源码模板的镜像选择、steps 生成和部署检查。实测必须写明 SDK 回退、运行时版本及独立清理。通用 shell／SDK 回退结果不能认证另一提供方或原生解释器；原生解释器声明需要真实原版解释器执行，以及所声明的持久／隔离上下文行为，并单独记录来源／镜像身份与独立清理。参见 [base](managed/base/README.zh-CN.md) 和 [code-interpreter-v1](managed/code-interpreter-v1/README.zh-CN.md)。
+`managed_templates` 是与可安装源码 `templates` 分开的目录命名空间。每条记录只能包含 `name`、`provider`、`template_id`、`kind: provider-managed`、`documentation`、`historical_evidence`、`spec_version: 4`、`workflow_contract_version: 1`、`provides`、`default_workflow` 和 `workflows`。所有工作流使用 `input: managed`。应用工作流必须引用已声明的服务及该服务提供的操作，其他工作流类型不能绑定服务。旧字段直接拒绝，不做转换。
+
+Exec 启动必须有明确的 `start_cmd`。托管记录不包含该字段，因此拒绝
+`startup: exec`。请选择 `none` 或提供方确实支持的原生 `entrypoint` 路径；
+元数据本身不授予提供方启动能力。
+
+托管 ID 没有此仓库拥有的 Dockerfile、镜像版本、commands.py 或构建上下文，因此不参与源码模板的镜像选择、steps 生成和部署检查。原生模板引用本身不证明运行时身份不可变。实测必须绑定实际输入、消费入口和网络路径，核对准确的操作语义，并独立确认自有资源清理。Shell 执行不能认证原生或统一解释器。参见 [base](managed/base/README.zh-CN.md) 和 [code-interpreter-v1](managed/code-interpreter-v1/README.zh-CN.md)。
 
 同一天验证新版本时，使用独立的 express-YYYY-MM-DDTHHMMSSZ.json 回执，保留旧日期文件。提供方资格必须匹配当前清单版本，且 passed 和 cleanup_verified 都为 true，并含真实 CLI/SDK 成功调用；旧版本不能认证变更后的模板。
 
-V3 的 smoke 必须显式填写非 null 的 `expect`，支持字符串、数值、布尔、对象和数组，沿用现有结构化比较。v2 中没有期望值的 smoke 升级 v3 时需要补充明确结果；v2 自身行为不变。
+含 `application` 的 spec4 清单必须为 smoke 显式填写非 null 的 `expect`，支持字符串、数值、布尔、对象和数组，并使用结构化比较。旧 schema 输入直接拒绝。
 
 
-托管目录通过`python scripts/check_managed_catalog.py`检查准确字段、与源目录不重名、双语14个有序README章节、本地证据身份、原生解释器声明及运行时检查／清理。外部未验证条目使用`verification_scope: catalog-only-unverified`及证据`status: NOT_VERIFIED`、`passed: false`、`native_interpreter_verified: false`；这是合法目录元数据，不是提供商／运行时通过。运行时资格需要真实检查和独立清理。托管ID仍排除在源镜像选择／steps之外。[Desktop](managed/desktop/README.zh-CN.md)和[OpenSandbox解释器](managed/opensandbox-code-interpreter/README.zh-CN.md)分别说明真实后端条件、当前实际验证范围及仍未运行的产品门槛。
+托管目录通过 `python scripts/check_managed_catalog.py` 检查准确字段、与源码目录不重名、显式工作流 schema 及引用、双语 14 个有序 README 章节，以及本地历史证据身份。`historical_evidence` 只链接原始回执，其内容不授予当前工作流认证。只有完整、输入匹配且来源受独立信任的回执才能认证路径，参见[工作流验证](workflows.zh-CN.md)。托管 ID 仍排除在源码镜像选择／steps 之外。[Desktop](managed/desktop/README.zh-CN.md)和[OpenSandbox 解释器](managed/opensandbox-code-interpreter/README.zh-CN.md)说明各条目的条件、实际证据范围和剩余产品门槛。

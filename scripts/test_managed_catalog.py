@@ -80,3 +80,39 @@ def test_untyped_provider_or_history_cannot_bypass_validation(tmp_path):
     row['historical_evidence'] = 'proof.json'
     write(tmp_path, row, proof)
     assert check(tmp_path)
+
+
+def test_managed_application_requires_its_selected_service_operation(tmp_path):
+    row, proof = fixture(tmp_path)
+    row['provides'] = {'app': {'protocol': 'agent-sandbox-server', 'version': 2,
+                               'port': 9000, 'operations': ['commands.list']}}
+    row['workflows']['exec'] = {
+        'kind': 'application', 'input': 'managed', 'startup': 'none', 'service': 'app',
+        'binding': {'transport': 'http', 'endpoint': 'provider-port',
+                    'caller': 'host', 'authentication': 'service-token'},
+        'operation': 'commands.run', 'required_operations': [],
+    }
+    write(tmp_path, row, proof)
+    assert any('operation is not provided' in problem for problem in check(tmp_path))
+    row['provides']['app']['operations'].append('commands.run')
+    write(tmp_path, row, proof)
+    assert check(tmp_path) == []
+
+
+@pytest.mark.parametrize('kind', ['exec', 'interpreter'])
+def test_managed_non_application_cannot_bind_a_service(tmp_path, kind):
+    row, proof = fixture(tmp_path)
+    workflow = row['workflows']['exec']
+    workflow['service'] = 'app'
+    if kind == 'interpreter':
+        workflow.update(kind='interpreter', operation='code.default-context.execute')
+        workflow['binding']['transport'] = 'http'
+    write(tmp_path, row, proof)
+    assert any('service only applies to application' in problem for problem in check(tmp_path))
+
+
+def test_managed_exec_startup_requires_an_explicit_command(tmp_path):
+    row, proof = fixture(tmp_path)
+    row['workflows']['exec']['startup'] = 'exec'
+    write(tmp_path, row, proof)
+    assert any('exec startup needs an explicit start_cmd' in problem for problem in check(tmp_path))
