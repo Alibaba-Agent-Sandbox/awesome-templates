@@ -279,6 +279,9 @@ async def verify(args):
     import httpx
 
     source, manifest, cases = load_plan(args.template)
+    if args.template == 'qwen-code':
+        # Extra README operation; do not modify the fetched template manifest.
+        cases.append({'command': 'qwen_setup_check', 'args': {}})
     env = os.environ.copy()
     # This is a generated application credential for this run, never a model key.
     for key, value in manifest.get('env', {}).items():
@@ -316,7 +319,7 @@ async def verify(args):
     try:
         launch = await asyncio.to_thread(cli.run,
             ['template', 'launch', args.source or report['source'], '--workflow', manifest['default_workflow'],
-             '--alias', alias, '--timeout', str(args.build_timeout), '--sandbox-timeout', '1800', '--yes'],
+             '--alias', alias, '--timeout', str(args.build_timeout), '--sandbox-timeout', '900', '--yes'],
             args.build_timeout + 300)
         require(launch.get('manifest_digest') == 'sha256:' + report['manifest_sha256'],
                 'launched manifest must match the selected local verifier input')
@@ -349,6 +352,12 @@ async def verify(args):
                 require(response.status_code == 200, f'HTTP smoke {index} status')
                 http_result = response.json()['result']
                 require(matches(http_result, case['expect']) if 'expect' in case else http_result is not None and http_result != '', f'HTTP smoke {index} result')
+                if name == 'qwen_setup_check':
+                    for value in [observed, result, http_result]:
+                        require(isinstance(value, dict) and value.get('installed') is True
+                                and value.get('version') == '0.23.0' and value.get('api_key_set') is False,
+                                'documented keyless Qwen setup result')
+                    report['checks'].append('README qwen_setup_check: installed and pinned version, no model key; three consumers')
                 report['checks'].append({'smoke': index, 'command': name, 'consumers': ['cli', 'python', 'host-http'], 'has_expected_result': 'expect' in case})
             # Test service authentication without dropping required gateway headers.
             phase = 'authentication-negative'

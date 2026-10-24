@@ -161,7 +161,7 @@ jobs:
           ACR_NAMESPACE: ${{ matrix.provider == 'alicloud-express' && secrets.PUBLIC_LAUNCH_ACR_NAMESPACE || '' }}
           ALIBABA_CLOUD_REGION_ID: cn-hangzhou
         run: |
-          python scripts/public_launch_e2e.py "$TEMPLATE_NAME" --provider "$TARGET_PROVIDER" --source "alibaba-agent-sandbox/awesome-templates//$TEMPLATE_NAME@ba17fbd32da188a2e4452f5946fa72135fc41c8e" --build-timeout 3600 --output "$RUNNER_TEMP/public-launch.json"
+          python scripts/public_launch_e2e.py "$TEMPLATE_NAME" --provider "$TARGET_PROVIDER" --source "alibaba-agent-sandbox/awesome-templates//$TEMPLATE_NAME@98ab49fc390ab6b29700aa86d819ece8dc1273fc" --build-timeout 3600 --output "$RUNNER_TEMP/public-launch.json"
       - name: Record actual public Git provenance
         if: always()
         run: |
@@ -171,7 +171,7 @@ jobs:
           path = Path(os.environ['RUNNER_TEMP']) / 'public-launch.json'
           if path.exists():
               report = json.loads(path.read_text())
-              sources = {'template_requested_commit': 'ba17fbd32da188a2e4452f5946fa72135fc41c8e',
+              sources = {'template_requested_commit': '98ab49fc390ab6b29700aa86d819ece8dc1273fc',
                          'template_source_digest': report.get('input_receipt', {}).get('source_digest'),
                          'provider_fixture_ref_scope': 'checkout fixture; not the installed provider revision'}
               if report['provider'] == 'opensandbox':
