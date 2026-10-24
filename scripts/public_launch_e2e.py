@@ -285,6 +285,16 @@ async def verify(args):
         'cli_version': cli.run(['--version'], json_output=False),
         'python_client_version': importlib.metadata.version('agent-sandbox-client'),
         'checks': [], 'cleanup': {'sandbox': 'not created', 'prepared_artifacts': 'not checked'}}
+    if env.get('PUBLIC_CLI_VERSION') and env.get('PUBLIC_SDK_VERSION'):
+        report['installed_packages'] = {
+            'cli': {'name': '@agent-sandbox/cli', 'version': env['PUBLIC_CLI_VERSION'],
+                    'registry': 'https://registry.npmjs.org', 'source_ref': env.get('PUBLIC_LAUNCH_CLI_REF')},
+            'python_client': {'name': 'agent-sandbox-client', 'version': importlib.metadata.version('agent-sandbox-client'),
+                    'registry': 'https://pypi.org/simple', 'source_ref': env.get('PUBLIC_LAUNCH_SDK_REF')},
+            'python_server': {'name': 'agent-sandbox-server', 'version': importlib.metadata.version('agent-sandbox-server'),
+                    'registry': 'https://pypi.org/simple', 'source_ref': env.get('PUBLIC_LAUNCH_SDK_REF')},
+            'provider_source_ref': env.get('PUBLIC_LAUNCH_PROVIDERS_REF'),
+        }
     alias = 'public-e2e-' + secrets.token_hex(8)
     report['run_alias'] = alias
     if args.provider == 'opensandbox':

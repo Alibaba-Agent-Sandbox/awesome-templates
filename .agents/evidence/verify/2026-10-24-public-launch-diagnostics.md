@@ -35,3 +35,5 @@ Follow-up local validation: 19 runner tests pass after aligning manual HTTP requ
 Final matrix preparation: public package installation replaces repeated source builds, with fixed-ref version extraction and installed-version checks. This is pending the new versions being published and a new public-install pilot. Negative authentication explicitly preserves a pre-existing mixed-case gateway X-Access-Token.
 
 Local follow-up: 20 runner tests, workflow YAML parse and diff checks PASS after public package installation preparation. Full public-install pilot remains pending publication.
+
+Public-install workflow explicitly selects npmjs.org and PyPI and verifies actual installed metadata. Each sanitized attempt includes the package versions and fixed source refs selected by this workflow. Local fixed-ref version extraction passed for CLI0.4.16 and SDK0.3.1a4; this does not assert their publication.

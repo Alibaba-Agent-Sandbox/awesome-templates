@@ -129,8 +129,8 @@ jobs:
           PYVERSIONS
       - name: Install and verify published package versions
         run: |
-          npm install -g "@agent-sandbox/cli@$PUBLIC_CLI_VERSION"
-          python -m pip install "agent-sandbox-client==$PUBLIC_SDK_VERSION" "agent-sandbox-server==$PUBLIC_SDK_VERSION" -r scripts/requirements-spec.txt
+          npm install -g --registry https://registry.npmjs.org "@agent-sandbox/cli@$PUBLIC_CLI_VERSION"
+          python -m pip install --index-url https://pypi.org/simple "agent-sandbox-client==$PUBLIC_SDK_VERSION" "agent-sandbox-server==$PUBLIC_SDK_VERSION" -r scripts/requirements-spec.txt
           python -m pip check
           python - <<'PYVERSIONS'
           import importlib.metadata, json, os, subprocess
@@ -150,6 +150,9 @@ jobs:
         env:
           TEMPLATE_NAME: ${{ matrix.template }}
           TARGET_PROVIDER: ${{ matrix.provider }}
+          PUBLIC_LAUNCH_CLI_REF: ${{ inputs.cli_ref }}
+          PUBLIC_LAUNCH_SDK_REF: ${{ inputs.sdk_ref }}
+          PUBLIC_LAUNCH_PROVIDERS_REF: ${{ inputs.providers_ref }}
           ABX_SANDBOX_API_KEY: ${{ matrix.provider == 'alicloud-express' && secrets.PUBLIC_LAUNCH_SANDBOX_API_KEY || '' }}
           ABX_SANDBOX_BASE_URL: ${{ matrix.provider == 'alicloud-express' && secrets.PUBLIC_LAUNCH_SANDBOX_BASE_URL || '' }}
           ABX_SANDBOX_DOMAIN: ${{ matrix.provider == 'alicloud-express' && secrets.PUBLIC_LAUNCH_SANDBOX_DOMAIN || '' }}
