@@ -56,7 +56,8 @@ asyncio.run(main())
 持久 Python 上下文使用上游 OpenSandbox SDK。按[复现工作流](../../../.github/workflows/managed-opensandbox.yml)中的命令和锁文件安装固定的上游 SDK 依赖，并安装[公开 Python 客户端](../../python-client-installation.md)。下面显式启动镜像内的原生解释器服务，并让上游 SDK 连接同一个实例。
 
 ```python
-import asyncio, os, uuid
+import asyncio, os
+from datetime import timedelta
 from urllib.parse import urlsplit
 from opensandbox import Sandbox as NativeSandbox
 from opensandbox.config import ConnectionConfig
@@ -68,29 +69,22 @@ async def main():
     sb = await ProviderSandbox.create(provider=provider, template="opensandbox/code-interpreter:v1.1.0", timeout=600, cpu=2, memory=3072,
         provider_options={"entrypoint": "/opt/code-interpreter/code-interpreter.sh"},
         envs={"PYTHON_VERSION": "3.11", "JAVA_VERSION": "17", "NODE_VERSION": "20", "GO_VERSION": "1.24"},
-        metadata={"verification": "managed-example-" + uuid.uuid4().hex})
+        )
     sid = sb.id
     try:
-        result = await sb.commands.run("python3 -c 'print(6*7)'", timeout=30)
-        assert result.exit_code == 0 and result.stdout.strip() == "42"
-        path = "/tmp/owned-example-" + uuid.uuid4().hex + ".txt"
-        await sb.files.write(path, "owned-example\n")
-        assert await sb.files.read(path) == "owned-example\n"
-        await sb.files.remove(path)
-        assert not await sb.files.exists(path)
         url = urlsplit(os.environ.get("ABX_OPENSANDBOX_BASE_URL", "http://127.0.0.1:8080"))
         config = ConnectionConfig(domain=url.netloc, protocol=url.scheme,
             api_key=os.environ.get("ABX_OPENSANDBOX_API_KEY") or os.environ.get("OPEN_SANDBOX_API_KEY"),
-            use_server_proxy=True)
+            use_server_proxy=True, request_timeout=timedelta(seconds=60))
         native = await NativeSandbox.connect(sid, connection_config=config)
         try:
-            interpreter = await CodeInterpreter.create(sandbox=native)
+            interpreter = await CodeInterpreter.create(sandbox=native, ready_timeout=timedelta(seconds=120))
             try:
                 context = await interpreter.codes.create_context(SupportedLanguage.PYTHON)
-                first = await interpreter.codes.run("owned_value = 37\nowned_value", context=context)
-                assert first.error is None and first.result[0].text.strip() == "37"
-                second = await interpreter.codes.run("owned_value + 5", context=context)
-                assert second.error is None and second.result[0].text.strip() == "42"
+                first = await interpreter.codes.run("value = 37\nvalue", context=context)
+                print(first.result[0].text)  # 37
+                second = await interpreter.codes.run("value + 5", context=context)
+                print(second.result[0].text)  # 42
                 await interpreter.codes.delete_context(context.id)
             finally:
                 await interpreter.aclose()
