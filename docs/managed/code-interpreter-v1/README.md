@@ -19,9 +19,9 @@ Run Python data processing with preinstalled numerical packages.
 Install [CLI and provider configuration](../../using-templates.md), then replace `<sandbox-id>` with the ID returned by create.
 
 ```bash
-abx --provider alicloud-express create --template code-interpreter-v1 --timeout 180 -y
+abx --provider alicloud-express create code-interpreter-v1 --detach --timeout 180
 abx --provider alicloud-express exec <sandbox-id> -- python3 -c 'print(6*7)'
-abx --provider alicloud-express kill <sandbox-id> -y
+abx --provider alicloud-express kill <sandbox-id>
 ```
 
 ## Quick start (Python SDK)

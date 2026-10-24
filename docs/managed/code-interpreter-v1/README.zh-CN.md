@@ -19,9 +19,9 @@
 先完成 [CLI 安装和平台配置](../../using-templates.zh-CN.md)，将 `<sandbox-id>` 替换为创建时返回的实例 ID。
 
 ```bash
-abx --provider alicloud-express create --template code-interpreter-v1 --timeout 180 -y
+abx --provider alicloud-express create code-interpreter-v1 --detach --timeout 180
 abx --provider alicloud-express exec <sandbox-id> -- python3 -c 'print(6*7)'
-abx --provider alicloud-express kill <sandbox-id> -y
+abx --provider alicloud-express kill <sandbox-id>
 ```
 
 ## 快速开始（Python SDK）
