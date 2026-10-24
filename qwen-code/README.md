@@ -46,7 +46,7 @@ abx upload "$SANDBOX_ID" ./calculator.py /home/user/app/calculator.py
 abx upload "$SANDBOX_ID" ./test_calculator.py /home/user/app/test_calculator.py
 ```
 
-Run the coding call described in the Python SDK section below, then execute independent tests and download the report. CLI 0.4.16 named calls wait up to 30 seconds; use the Python/HTTP client with explicit `timeout=330` for a longer coding task. `command_timeout` bounds server execution and does not extend the CLI wait.
+Run the coding call described in the Python SDK section below, then execute independent tests and download the report. For a longer coding task, CLI 0.4.17 supports `ABX_HTTP_TIMEOUT=330 abx run ...`; Python/HTTP clients use explicit `timeout=330`. `command_timeout` bounds server execution separately. CLI 0.4.16 named calls retain their 30-second wait; upgrade before using the CLI timeout setting. A client timeout does not cancel the remote task.
 
 ```bash
 abx exec "$SANDBOX_ID" -- python3 -m unittest discover -s /home/user/app -p test_calculator.py

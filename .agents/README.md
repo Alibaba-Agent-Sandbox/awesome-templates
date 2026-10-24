@@ -1,5 +1,15 @@
 # Engineering records: awesome-templates
 
+## Current delivery (2026-10-24)
+
+- [Documentation and record synchronization](notes/implemented/process/2026-10-24-current-documentation-sync.md) · [verification](evidence/verify/2026-10-24-current-documentation-sync.md)
+- [Public launch: 46 sources × 2 platforms](evidence/verify/2026-10-24-public-template-matrix.md) · [separate remote Git journeys](evidence/verify/2026-10-24-public-git-journeys.md)
+- [Managed default execution and native upstream sessions](evidence/verify/2026-10-24-managed-template-usage.md) · [bilingual source quick starts](evidence/verify/2026-10-24-source-application-quickstarts.md)
+
+These are dated results at their recorded inputs. CLI 0.4.17 is the current installation recommendation; the 92-case matrix used CLI 0.4.16. Managed entries, model tasks, PTY and desktop behavior do not inherit a source-smoke pass.
+
+The earlier [cloud-steps documentation decision](notes/proposed/process/2026-10-24-developer-journey-docs.md) and its [partial receipt](evidence/verify/2026-10-24-developer-journey-docs.md) retain their pending post-publication rerun scope. The later default source-image matrix does not substitute for that separate no-Docker journey.
+
 - [Workflow review validation](notes/proposed/architecture/2026-10-23-workflow-review-validation.md) · [verification](evidence/verify/2026-10-23-workflow-review-validation.md)
 
 - [Droid explicit compatible BYOK](notes/proposed/feature/2026-10-20-droid-explicit-byok.md) · [verification](evidence/verify/2026-10-20-droid-explicit-byok.md)
@@ -64,7 +74,7 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 
 ## Current review
 
-- [Complete public-template launch evidence](notes/proposed/process/2026-10-24-public-template-matrix.md) · [92-case matrix](evidence/verify/2026-10-24-public-template-matrix.md) · [public-install pilot](evidence/verify/2026-10-24-public-install-pilot-2.md) · [public Git journeys](evidence/verify/2026-10-24-public-git-journeys.md)
+- [Complete public-template launch evidence](notes/implemented/process/2026-10-24-public-template-matrix.md) · [92-case matrix](evidence/verify/2026-10-24-public-template-matrix.md) · [public-install pilot](evidence/verify/2026-10-24-public-install-pilot-2.md) · [public Git journeys](evidence/verify/2026-10-24-public-git-journeys.md)
 
 - [Final verification overview](notes/proposed/process/2026-10-21-final-acceptance-overview.md) · [verification](evidence/verify/2026-10-21-final-acceptance-overview.md)
 
@@ -266,11 +276,11 @@ Source image backend acceptance: [decision](notes/proposed/feature/2026-10-22-so
 
 - [Release integration on current main](evidence/verify/2026-10-24-release-integration.md).
 
-- [Simplify template usage](notes/proposed/process/2026-10-24-template-usage-simplification.md) · [verification](evidence/verify/2026-10-24-template-usage-simplification.md)
+- [Simplify template usage](notes/implemented/process/2026-10-24-template-usage-simplification.md) · [verification](evidence/verify/2026-10-24-template-usage-simplification.md)
 
-- [Public launch diagnostics and native cleanup](notes/proposed/process/2026-10-24-public-launch-diagnostics.md) · [verification](evidence/verify/2026-10-24-public-launch-diagnostics.md).
+- [Public launch diagnostics and native cleanup](notes/implemented/process/2026-10-24-public-launch-diagnostics.md) · [verification](evidence/verify/2026-10-24-public-launch-diagnostics.md).
 
 - [Public launch pilot2, both default platforms](evidence/verify/2026-10-24-public-launch-pilot-2.md).
 
 - [Source application quick starts](notes/implemented/process/2026-10-24-source-application-quickstarts.md) · [verification](evidence/verify/2026-10-24-source-application-quickstarts.md).
-- [Managed template usage and default execution](notes/proposed/process/2026-10-24-managed-template-usage.md) · [verification](evidence/verify/2026-10-24-managed-template-usage.md)
+- [Managed template usage and default execution](notes/implemented/process/2026-10-24-managed-template-usage.md) · [verification](evidence/verify/2026-10-24-managed-template-usage.md)

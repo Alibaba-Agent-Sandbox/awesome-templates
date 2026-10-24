@@ -1,6 +1,6 @@
 # Complete public-package template launch evidence
 
-Status: proposed
+Status: implemented
 
 ## Problem
 
@@ -55,3 +55,7 @@ and record checks plus normal current-head CI before merging this evidence chang
 - Historical failures remain available; no model/native interpreter/PTY/desktop claim is inferred.
 - Only task-created secrets are deleted, with absence read back after the final run.
 - The indexed owner evidence and this scoped PR pass review and required checks.
+
+## Delivery
+
+Implemented in [PR #210](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/210). The [current documentation synchronization](2026-10-24-current-documentation-sync.md) links later public delivery and dated verification without rewriting historical attempts.

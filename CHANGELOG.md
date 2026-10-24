@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Publish the complete 46-source × Express/OpenSandbox launch evidence with exact public-package inputs, separate remote Git checks and cleanup results. Keep managed entries and real-model/native-interface claims separately scoped.
+- Align source-template quick starts with running application connections, provider selection, gateway authentication and owned cleanup in both languages.
+- Recommend public CLI 0.4.17 and document its application HTTP timeout for long Qwen tasks; use the public Python `ProviderSandbox` entry. Existing cloud receipts retain CLI 0.4.16 and their original inputs.
+
 - Change the managed `opensandbox-code-interpreter` default from the unimplemented
   `native-interpreter` workflow to the existing `exec` create/process path. Consumers
   explicitly selecting the old workflow name must select `exec` for project-managed

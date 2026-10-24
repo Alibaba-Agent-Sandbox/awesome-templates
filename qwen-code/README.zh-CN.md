@@ -46,7 +46,7 @@ abx upload "$SANDBOX_ID" ./calculator.py /home/user/app/calculator.py
 abx upload "$SANDBOX_ID" ./test_calculator.py /home/user/app/test_calculator.py
 ```
 
-使用下面 Python SDK 示例中的编码调用完成任务后，再运行独立测试并下载报告。CLI 0.4.16 的命名调用最多等待 30 秒；长编码任务使用显式 `timeout=330` 的 Python/HTTP 客户端。`command_timeout` 是服务端任务期限，不能延长 CLI 的等待。
+使用下面 Python SDK 示例中的编码调用完成任务后，再运行独立测试并下载报告。长编码任务可在 CLI 0.4.17 使用 `ABX_HTTP_TIMEOUT=330 abx run ...`；Python/HTTP 客户端使用显式 `timeout=330`。`command_timeout` 单独控制服务端任务期限。CLI 0.4.16 的命名调用仍最多等待 30 秒，需升级后再使用 CLI 超时配置。客户端超时不会取消远端任务。
 
 ```bash
 abx exec "$SANDBOX_ID" -- python3 -m unittest discover -s /home/user/app -p test_calculator.py
