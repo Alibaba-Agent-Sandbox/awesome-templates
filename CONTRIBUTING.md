@@ -25,9 +25,11 @@ already passes `scripts/check_template.py`. It is not a catalog entry.
    [docs/design/_TEMPLATE.md](./docs/design/_TEMPLATE.md).
 5. Write `README.md` and `README.zh-CN.md` with the headings in the spec.
    The Verified section states the exact workflow evidence scope; historical records do not certify the current manifest.
-6. Add one `awesome-templates.yaml` entry. Use `experimental` until L0, L1,
-   and L2 have passed. `official` also needs L3 before the README says the
-   upstream agent works.
+6. Add one `awesome-templates.yaml` entry. `official` means maintained by this
+   project, `community` means externally maintained, and `experimental` marks
+   development in progress. These labels do not certify runtime capabilities.
+   Required component tests and exact provider/entry evidence remain mandatory;
+   real-model claims require actual model tests.
 7. From this repository, with `agent-sandbox-server`, `httpx`, and the pinned checker dependencies
    installed (`python3 -m pip install -r scripts/requirements-spec.txt`):
 
@@ -107,8 +109,10 @@ if __name__ == "__main__":
 ```
 
 Callers use `abx run <sandbox-id> hello --arg name=Ada` or
-`await sb.run("hello", name="Ada")` after `from agent_sandbox.api.sandbox import Sandbox`
-and `await Sandbox.create(...)`.
+`await client.commands.run("hello", name="Ada")` after `ProviderSandbox.connect(...)`
+and `await sb.application_client(9000, token=...)`. The CLI launch starts the
+application; creating another sandbox alone does not start that service. See
+[the complete example](docs/using-templates.md#cli-sdk-and-http).
 A shell string is `sb.commands.run("echo hi")` or `abx exec`.
 
 ## Where to file issues

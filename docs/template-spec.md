@@ -292,11 +292,11 @@ if __name__ == "__main__":
 
 The server reads `ABX_SERVER_TOKEN` when the process starts. When the variable is non-empty, protected requests need `Authorization: Bearer <token>` or `X-Access-Token: <token>`. Declare the name in `env` with an empty value. Provide the real value to the server process before it starts. Create-time injection (`abx create --env` or `Sandbox.create(envs=...)`) applies only when that provider starts the server with those values; it cannot reconfigure a prewarmed process. Follow [runtime environment configuration](runtime-environment.md), inspect the actual service and target its configured port.
 
-When the variable is unset, the application allows anonymous calls; provider gateway authentication remains separate. The client preserves the provider's gateway headers and sends an explicit application token as `Authorization: Bearer <token>`. Authentication failures are returned without an anonymous retry. Templates that set `ABX_SERVER_TOKEN` must document `await sb.application_client(port, token=...)` for the project Python API and `ABX_SERVER_TOKEN` for CLI named commands.
+When the variable is unset, the application allows anonymous calls; provider gateway authentication remains separate. The client preserves the provider's gateway headers and sends an explicit application token as `Authorization: Bearer <token>`, also adding the existing application `X-Access-Token` header when unoccupied. Authentication failures are returned without an anonymous retry. Templates that set `ABX_SERVER_TOKEN` must document `await sb.application_client(port, token=...)` for the project Python API and `ABX_SERVER_TOKEN` for CLI named commands.
 
 ## Calling a command
 
-CLI, after `abx create <id> --detach`:
+CLI, after `abx --provider alicloud-express template launch <source> --yes` has started the application:
 
 ```bash
 abx run <sandbox-id> hello --arg name=Ada
@@ -309,33 +309,34 @@ abx exec <sandbox-id> -- python3 -c 'print(1)'
 
 Python SDK. The client distribution on PyPI is `agent-sandbox-client`. The import stays `agent_sandbox`. `pip install agent-sandbox` installs an unrelated project.
 
-Check package availability before using the index command below. For an
-unpublished release, use the paired, pinned source installation in
-[Python client installation](./python-client-installation.md).
-
-```bash
-python3 -m pip install agent-sandbox-client
-```
+Install the compatible published version from [Python client installation](./python-client-installation.md).
+Connect to the instance launched above, using the same application token:
 
 ```python
 import asyncio
-from agent_sandbox.api.sandbox import Sandbox
+import os
+from agent_sandbox import ProviderSandbox
 
 async def main() -> None:
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
+    sb = await ProviderSandbox.connect("<sandbox-id>", provider="alicloud-express")
     try:
-        print(await sb.run("hello", name="Ada"))  # "Hello, Ada!"
+        client = await sb.application_client(9000, token=os.environ["ABX_SERVER_TOKEN"])
+        try:
+            print(await client.commands.run("hello", name="Ada"))
+        finally:
+            await client.aclose()
         print((await sb.commands.run("python3 -c 'print(1)'")).stdout)
-        print(sb.network.get_url(9000))
     finally:
-        await sb.kill()
+        await sb.close()
 
 asyncio.run(main())
 ```
 
-`sb.run` posts the keyword arguments as the JSON body of `POST /commands/hello` and returns the `result` value. `sb.commands.run` is the shell API. Attach to an existing sandbox with `await Sandbox.connect(sandbox_id)`.
-
-The checked-out python-sdk includes the sync-classmethod fix in [python-sdk#24](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/24). Older commits that drop the class argument raise `TypeError`; update the SDK or use async constructors. Record the source commit as well as the package version when validating a checkout.
+`client.commands.run` posts keyword arguments as the JSON body of `POST /commands/hello`
+and returns `result`. `sb.commands.run` is the process API. Closing a connection does
+not delete the sandbox: delete your owned instance with `abx kill <sandbox-id>` when
+finished, and reconcile its prepared template/image separately. Record source refs
+and installed package versions for acceptance.
 
 Local L0 does not create a cloud sandbox. `scripts/run_local_e2e.py` starts `python3 commands.py`, sets `E2E_BASE_URL`, and runs `e2e_test.py`. That test may use HTTP against `E2E_BASE_URL`. Every cloud path uses the SDK above.
 
@@ -439,22 +440,36 @@ Inside the template README, `## Verified` states the current workflow evidence s
 | Issues | 问题反馈 |
 | License | 许可证 |
 
-The CLI section contains an `abx run` example. The SDK section imports `Sandbox` and calls `.run` or `.run_sync`. The command reference is a table with the parameters. A non-Alibaba base adds `## Base image` / `## 基础镜像`.
+The CLI section contains an `abx run` example. The SDK section imports `ProviderSandbox`, resolves its application client with `application_client`, and calls `client.commands.run`. The command reference is a table with the parameters. A non-Alibaba base adds `## Base image` / `## 基础镜像`.
 
 ## Listing and acceptance
 
-A directory can be merged as `experimental` when `scripts/check_template.py <dir>` exits 0, L0 passes, and `docs/design/<name>.md` is filled in. `awesome-templates.yaml` gets one entry: `name`, `description`, `repo`, `path`, `tags`, `author`, `status`.
+A directory must pass `scripts/check_template.py <dir>` and L0, with
+`docs/design/<name>.md` completed. Add one `awesome-templates.yaml` entry:
+`name`, `description`, `repo`, `path`, `tags`, `author`, `status`.
 
-`status: official` additionally requires:
+The existing catalog labels describe maintenance: `official` is maintained by this
+project, `community` is maintained externally, and `experimental` marks development
+in progress. No test automatically promotes a label. A label does not prove a
+provider, startup method, terminal, interpreter or model task works.
+
+Actual component acceptance requirements remain:
 
 1. L0 green in CI (`python3 scripts/run_local_e2e.py`).
-2. L1 recorded on the PR (image build, pinned version visible).
-3. L2 evidence for `alicloud-express` for the smoke commands that do not need a missing key.
-4. L3 evidence before the README says the upstream agent itself works. A SKIP is not that statement.
+2. L1 recorded for the image recipe (build and pinned version).
+3. L2 evidence for the implemented Express smoke path, including owned cleanup.
+4. L3 evidence before claiming the upstream agent/model task works. SKIP is not a pass.
 
-`experimental` is the status until those passes exist. `community` is for a template maintained outside the official set that still meets the same file rules. The `providers` map on an index entry is not a verification record. The Verified column is.
+Apply the required tests and CI to the changed component as defined in the
+[definition of done](project-standards.md#definition-of-done). Documentation-only
+changes do not rerun unrelated cloud tests. Unfinished deployment/model acceptance
+criteria keep their Issue open, regardless of catalog label. Record the exact source,
+provider, entry point, test and cleanup result; the `providers` map is not evidence.
 
-`abx template install` builds on `alicloud-express`. Other providers are documented only after an L4 run.
+`abx --provider <provider> template launch <source>` prepares the selected recipe
+and starts its application through that provider's implemented operations. Document
+the actual usage contract for each provider. Claim a path is tested only when its
+matching execution record exists; missing evidence does not by itself mean unsupported.
 
 ## Contribution
 
@@ -462,7 +477,7 @@ A directory can be merged as `experimental` when `scripts/check_template.py <dir
 2. Write `docs/design/<name>.md` from `docs/design/_TEMPLATE.md`.
 3. Copy `_skeleton/` to `<name>/`. Keep the Alibaba base image, the pinned server install, and the README headings.
 4. Register commands that call the upstream program. Pin versions.
-5. Add the index entry with `status: experimental` unless the acceptance list above is already true.
+5. Add the index entry with the maintenance/development label described above; record test results separately.
 6. Run `python3 scripts/check_template.py <name>` and `python3 scripts/run_local_e2e.py`.
 7. Run `python3 scripts/express_e2e.py <name>` when Express credentials are available. Commit the evidence file only when the process exits 0.
 8. Open the PR. The body says which levels passed.

@@ -283,11 +283,11 @@ if __name__ == "__main__":
 
 进程启动时读取 `ABX_SERVER_TOKEN`。变量非空时，受保护的请求需要带 `Authorization: Bearer <token>` 或 `X-Access-Token: <token>`。在 `env` 里声明这个名字，值为空字符串。真正的值必须在服务进程启动前传入。创建时注入（`abx create --env` 或 `Sandbox.create(envs=...)`）仅适用于提供方实际使用这些值启动服务的情况，不能重新配置预热进程。参考[运行环境配置](runtime-environment.zh-CN.md)，检查实际服务并选中已配置端口。
 
-变量未设置时应用允许匿名调用；提供方网关认证仍单独处理。客户端保留提供方的网关访问头，把显式应用令牌放入 `Authorization: Bearer <token>`。认证失败会直接返回，不会自动匿名重试。设置 `ABX_SERVER_TOKEN` 的模板必须说明：项目 Python API 使用 `await sb.application_client(port, token=...)`，CLI 命名命令使用 `ABX_SERVER_TOKEN`。
+变量未设置时应用允许匿名调用；提供方网关认证仍单独处理。客户端保留提供方的网关访问头，把显式应用令牌放入 `Authorization: Bearer <token>`，并在同名头未被占用时补充已有应用 `X-Access-Token` 头。认证失败会直接返回，不会自动匿名重试。设置 `ABX_SERVER_TOKEN` 的模板必须说明：项目 Python API 使用 `await sb.application_client(port, token=...)`，CLI 命名命令使用 `ABX_SERVER_TOKEN`。
 
 ## 客户端如何调用
 
-CLI，在 `abx create <id> --detach` 之后：
+CLI，在 `abx --provider alicloud-express template launch <source> --yes` 已启动应用之后：
 
 ```bash
 abx run <sandbox-id> hello --arg name=Ada
@@ -300,32 +300,32 @@ abx exec <sandbox-id> -- python3 -c 'print(1)'
 
 Python SDK。PyPI 上的客户端发行名是 `agent-sandbox-client`。导入名仍是 `agent_sandbox`。`pip install agent-sandbox` 会装上一个无关项目。
 
-使用下面的索引安装命令前先确认发行包已发布。尚未发布时，按
-[Python 客户端安装](./python-client-installation.md) 同时从固定提交安装两个配套包。
-
-```bash
-python3 -m pip install agent-sandbox-client
-```
+按 [Python 客户端安装](./python-client-installation.md) 安装兼容的已发布版本。
+连接前面已启动的实例，并使用相同的应用令牌：
 
 ```python
 import asyncio
-from agent_sandbox.api.sandbox import Sandbox
+import os
+from agent_sandbox import ProviderSandbox
 
 async def main() -> None:
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
+    sb = await ProviderSandbox.connect("<sandbox-id>", provider="alicloud-express")
     try:
-        print(await sb.run("hello", name="Ada"))  # "Hello, Ada!"
+        client = await sb.application_client(9000, token=os.environ["ABX_SERVER_TOKEN"])
+        try:
+            print(await client.commands.run("hello", name="Ada"))
+        finally:
+            await client.aclose()
         print((await sb.commands.run("python3 -c 'print(1)'")).stdout)
-        print(sb.network.get_url(9000))
     finally:
-        await sb.kill()
+        await sb.close()
 
 asyncio.run(main())
 ```
 
-`sb.run` 把关键字参数作为 `POST /commands/hello` 的 JSON 正文，并返回 `result`。`sb.commands.run` 是 shell API。连接已有沙箱用 `await Sandbox.connect(sandbox_id)`。
-
-当前检出的 python-sdk 已由 [python-sdk#24](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/24) 修复同步类方法。旧提交若因类参数丢失抛出 `TypeError`，请升级 SDK 或使用异步构造；验收同时记录源码提交与发行版本。
+`client.commands.run` 把关键字参数作为 `POST /commands/hello` 的 JSON 正文并返回 `result`；
+`sb.commands.run` 是进程 API。关闭连接不会删除沙箱；用完执行 `abx kill <sandbox-id>`
+删除自己创建的实例，并另行核对准备的模板和镜像。验收记录源码提交及实际安装版本。
 
 本地 L0 不创建云沙箱。`scripts/run_local_e2e.py` 启动 `python3 commands.py`，设置 `E2E_BASE_URL`，再运行 `e2e_test.py`。该测试可以对 `E2E_BASE_URL` 发 HTTP。所有云上路径使用上面的 SDK。
 
@@ -425,22 +425,31 @@ Verified 表里出现 `alicloud-express` 时，检查器要求存在上述形状
 | Issues | 问题反馈 |
 | License | 许可证 |
 
-CLI 一节要有 `abx run` 示例。SDK 一节要导入 `Sandbox` 并调用 `.run` 或 `.run_sync`。命令参考是带参数的表。非阿里云基础镜像再加 `## Base image` / `## 基础镜像`。
+CLI 一节要有 `abx run` 示例。SDK 一节导入 `ProviderSandbox`，通过 `application_client` 获取应用客户端，并调用 `client.commands.run`。命令参考是带参数的表。非阿里云基础镜像再加 `## Base image` / `## 基础镜像`。
 
 ## 上架与验收
 
-`scripts/check_template.py <dir>` 退出码为 0、L0 通过、并且 `docs/design/<name>.md` 已填好时，目录可以以 `experimental` 合并。`awesome-templates.yaml` 增加一条：`name`、`description`、`repo`、`path`、`tags`、`author`、`status`。
+目录必须通过 `scripts/check_template.py <dir>` 和 L0，并完成 `docs/design/<name>.md`。
+`awesome-templates.yaml` 添加一条：`name`、`description`、`repo`、`path`、`tags`、`author`、`status`。
 
-`status: official` 还要同时满足：
+现有目录标签描述维护归属：`official` 表示本项目维护，`community` 表示外部维护，
+`experimental` 标记开发中。测试不会自动晋升标签。标签不证明某个平台、启动方法、终端、
+解释器或模型任务可用。
 
-1. CI 里 L0 为绿（`python3 scripts/run_local_e2e.py`）。
-2. PR 上记录了 L1（镜像构建，能看到钉死的版本）。
-3. 不需要缺失密钥的 smoke 命令有 `alicloud-express` 的 L2 证据。
-4. README 声称上游 Agent 本身可用之前，要有 L3 证据。SKIP 不是这句声明。
+实际组件验收要求保留：
 
-在这些通过记录出现之前，状态是 `experimental`。`community` 给仓库外维护、但仍然满足同一套文件规则的模板。索引条目上的 `providers` 映射不是验收记录。Verified 列才是。
+1. CI 中 L0 通过（`python3 scripts/run_local_e2e.py`）。
+2. 镜像配方有 L1 记录，包含构建及固定版本。
+3. 已实现的 Express smoke 路径有 L2 证据，包含自有资源清理。
+4. 声称上游 Agent／模型任务可用前须有 L3 证据；SKIP 不算通过。
 
-`abx template install` 在 `alicloud-express` 上构建。其他提供方只在有 L4 运行之后才写入文档。
+按[完成标准](project-standards.zh-CN.md#完成标准)对变更组件运行适用测试和必需 CI；
+文档变更不重跑无关云测试。部署／模型验收条件未完成时，Issue 继续开放，不受目录标签影响。
+记录准确源码、提供方、调用入口、测试及清理结果；`providers` 映射不是证据。
+
+`abx --provider <provider> template launch <source>` 通过所选提供方已实现的操作准备配方并启动应用。
+文档应说明各提供方的实际使用契约；只有匹配的真实运行记录才能证明该路径已测试。
+没有证据本身不等于不支持。
 
 ## 贡献
 
@@ -448,7 +457,7 @@ CLI 一节要有 `abx run` 示例。SDK 一节要导入 `Sandbox` 并调用 `.ru
 2. 按 `docs/design/_TEMPLATE.md` 写 `docs/design/<name>.md`。
 3. 把 `_skeleton/` 复制为 `<name>/`。保留阿里云基础镜像、钉死的服务安装和 README 标题。
 4. 注册真正调用上游程序的命令。钉住版本。
-5. 上面的验收清单还没满足时，索引入口的 `status` 写 `experimental`。
+5. 按上面的维护归属／开发阶段填写索引标签，测试结果单独记录。
 6. 运行 `python3 scripts/check_template.py <name>` 和 `python3 scripts/run_local_e2e.py`。
 7. 有极速版凭证时运行 `python3 scripts/express_e2e.py <name>`。只有进程退出码为 0 才提交证据文件。
 8. 开 PR。正文写明哪些级别通过了。
