@@ -57,7 +57,7 @@ asyncio.run(main())
 
 `ProviderSandbox.create(provider=..., template=..., timeout=...)` 创建实例；`commands.run` 返回 `exit_code`、`stdout`、`stderr`；`files.write/read/remove` 操作沙箱内文件。`kill` 删除实例，`close` 释放本地连接。
 
-极速版的 `run_code` 可以通过 shell 回退执行。需要持久内核或解释器会话时，应使用对应接口，不能将 shell 执行成功视为这些接口已可用。
+当前极速版提供商未实现 `ProviderSandbox.run_code`（`E8004`）。运行 Python 进程请使用上面的 `commands.run`；持久内核或解释器会话需要对应的已接入接口。
 
 ## 配置
 

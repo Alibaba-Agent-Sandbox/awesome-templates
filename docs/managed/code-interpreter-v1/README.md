@@ -57,7 +57,7 @@ This managed image does not supply the project `/commands/*` application server.
 
 `ProviderSandbox.create(provider=..., template=..., timeout=...)` creates an instance; `commands.run` returns `exit_code`, `stdout` and `stderr`; `files.write/read/remove` operate on sandbox paths. `kill` deletes the instance and `close` releases local connections.
 
-`run_code` on Express can execute through a shell fallback. For a persistent kernel or interpreter session, do not treat a successful shell command as that interface.
+The current Express provider does not implement `ProviderSandbox.run_code` (`E8004`). Use `commands.run` for Python processes as above. A persistent kernel or interpreter session requires its own supported interface.
 
 ## Configuration
 
