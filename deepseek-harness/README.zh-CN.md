@@ -6,6 +6,8 @@
 
 ## 技术栈
 
+版本 1.1.2 将默认服务器源码与 CI wheel 的提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a` 对齐。历史回执保留原始输入范围；此版本需要重新完成镜像及工作流验收。
+
 Python 3.13; `httpx==0.28.1`; Agent Sandbox server. No third-party agent CLI.
 
 [Dockerfile](Dockerfile) · [template.yaml](template.yaml) · [Upstream](https://api-docs.deepseek.com/guides/tool_calls/)

@@ -23,6 +23,8 @@ Amp 不接受 DashScope 密钥、`ABX_LLM_API_KEY` 或 OpenAI 兼容的 base URL
 
 ## 技术栈
 
+版本 1.2.1 将默认服务器源码与 CI wheel 的提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a` 对齐。历史回执保留原始输入范围；此版本需要重新完成镜像及工作流验收。
+
 - 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`abx template deploy` 把 `<region>` 换成 `ALIBABA_CLOUD_REGION_ID` 或 `cn-hangzhou`，把 `<tag>` 换成 `ABX_BASE_IMAGE_TAG` 或 `v0.0.49`。
 - 基础镜像里的 Node.js 20，只用来跑 `npm`。`amp` 二进制是同版本可选包 `@ampcode/cli-linux-x64` 里的 glibc ELF。
 - `@ampcode/cli@0.0.1792022479-ge66e24`，来自 2026-10-15 的 `npm view @ampcode/cli version`。目录里原来的 pin 是 `0.0.1791964847-g13f24a`。基础镜像把 npm 源设成 `registry.npmmirror.com`，该源对这个版本的 `@ampcode/cli-linux-x64` 返回 404，所以 Dockerfile 从 `https://registry.npmjs.org` 安装。构建时会跑 `amp version`，原生二进制没解出来时构建失败。

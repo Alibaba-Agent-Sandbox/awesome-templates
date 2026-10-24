@@ -45,3 +45,5 @@ Commands intentionally run caller-provided Python, including filesystem and netw
 - L2: `python3 scripts/express_e2e.py python-hello` deploys READY, creates a sandbox, calls `hello` and `run_script` through CLI and SDK and asserts `Hello, Express!`/`42`. Only then record new 1.1.0 provider evidence and update `tested_on`.
 - Product workflow: run `e2e_test.py` against the remote port URL with `E2E_WORKSPACE=/home/user/app` so file/script/pytest behavior is checked remotely as well. This is distinct from harness smoke coverage.
 - L3 model calls do not apply: this template is Python tooling, not a model-powered agent. L4 providers remain unverified until independently run.
+
+Release readiness 1.1.2: align default and injected server SDK source to `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; preserve historical receipts and require new image/workflow acceptance.

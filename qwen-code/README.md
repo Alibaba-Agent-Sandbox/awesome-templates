@@ -8,7 +8,9 @@ Runs the pinned Qwen Code CLI as a non-interactive coding agent, with named HTTP
 
 ## Stack
 
-Alibaba FC generation-2 base, Python from the platform, Node.js 22 when the base does not provide Node >=22, `@qwen-code/qwen-code@0.23.0`, and the pinned in-sandbox server in [Dockerfile](Dockerfile). No extra DashScope or OpenAI Python library is needed by the CLI.
+Revision 2.1.2 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
+
+Alibaba FC generation-2 base, Python from the platform, Node.js 24.16.0 (fixed release and SHA256 for x86_64/aarch64), `@qwen-code/qwen-code@0.23.0`, and the pinned in-sandbox server in [Dockerfile](Dockerfile). No extra DashScope or OpenAI Python library is needed by the CLI.
 
 ## Problem solved
 

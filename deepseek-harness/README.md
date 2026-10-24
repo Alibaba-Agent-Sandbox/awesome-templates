@@ -6,6 +6,8 @@ Run a repository-owned coding agent using the official DeepSeek Chat Completions
 
 ## Stack
 
+Revision 1.1.2 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
+
 Python 3.13; `httpx==0.28.1`; Agent Sandbox server. No third-party agent CLI.
 
 [Dockerfile](Dockerfile) · [template.yaml](template.yaml) · [Upstream](https://api-docs.deepseek.com/guides/tool_calls/)

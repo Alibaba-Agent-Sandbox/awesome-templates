@@ -1,5 +1,5 @@
 name: amp
-version: "1.2.0"
+version: "1.2.1"
 description: "Sourcegraph Amp CLI. amp_execute runs amp -x; amp_version and amp_setup_check do not need a key."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0

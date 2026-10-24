@@ -1,20 +1,53 @@
 FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 
 ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8
-# Qwen Code 0.23.0 requires Node >=22; do not silently use an older base runtime.
-RUN if ! command -v node >/dev/null 2>&1 || ! node -e "process.exit(Number(process.versions.node.split('.')[0]) >= 22 ? 0 : 1)"; then \
-        curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-        && apt-get install -y --no-install-recommends nodejs \
-        && rm -rf /var/lib/apt/lists/*; \
-    fi \
-    && npm install -g @qwen-code/qwen-code@0.23.0 \
-    && qwen --version
+# Fixed Node runtime and upstream SHA256s on both supported architectures.
+RUN python3 - <<'NODE'
+import hashlib
+from pathlib import Path
+import platform
+import tarfile
+import time
+import urllib.error
+import urllib.request
+
+architectures = {
+    "x86_64": ("x64", "2faf6a387e9b62b888e21c54f01249fb27537ffecf1842f29f4c919d0a59a0ff"),
+    "aarch64": ("arm64", "589f5b6dd4fcfee4dfda73013903c966abaa8abd93dbc9d436544e472b4f0e74"),
+}
+arch, expected = architectures[platform.machine()]
+name = f"node-v24.16.0-linux-{arch}"
+archive = Path("/tmp/node.tar.gz")
+for attempt in range(4):
+    try:
+        with urllib.request.urlopen(f"https://nodejs.org/dist/v24.16.0/{name}.tar.gz", timeout=90) as response:
+            content = response.read(100 * 1024 * 1024 + 1)
+        if len(content) > 100 * 1024 * 1024:
+            raise RuntimeError("Node archive exceeds expected size budget")
+        archive.write_bytes(content)
+        break
+    except (urllib.error.URLError, TimeoutError):
+        if attempt == 3:
+            raise RuntimeError("pinned Node archive download failed") from None
+        time.sleep(2 ** attempt)
+if hashlib.sha256(archive.read_bytes()).hexdigest() != expected:
+    raise RuntimeError("Node archive SHA256 mismatch")
+root = Path("/opt/node")
+root.mkdir(parents=True, exist_ok=True)
+with tarfile.open(archive) as source:
+    source.extractall(root, filter="data")
+(root / "current").symlink_to(root / name)
+archive.unlink()
+NODE
+ENV PATH="/opt/node/current/bin:${PATH}"
+RUN npm install -g @qwen-code/qwen-code@0.23.0 \
+    && qwen --version && npm cache clean --force
 
 COPY *.whl /tmp/
 RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
         pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
     else \
-        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/35da216a300f1e2e84254a1cf4b4a7ea98681505.tar.gz#subdirectory=server-sdk"; \
+        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/e2cb27e24fde0a67112f82b8d44af463445a5d1a.tar.gz#subdirectory=server-sdk"; \
     fi
 
 ENV HOME=/home/user WORKSPACE=/home/user/app

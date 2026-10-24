@@ -232,7 +232,7 @@ A `RUN` line must use one of these two forms. The checker accepts either. A comm
 
 `<40-hex-sha>` is the full commit of `Alibaba-Agent-Sandbox/python-sdk` (40 hex characters), not a short sha. On 2026-10-15, `agent-sandbox-server==0.3.0` was not on PyPI (`https://pypi.org/pypi/agent-sandbox-server/0.3.0/json` returned 404). Use the archive pin until that release exists. The archive install is the more exact pin: it selects the commit, including the Express server fixes on `61c43e0` and later.
 
-`abx template deploy` injects an `agent-sandbox-server` wheel into the build context when `ABX_SERVER_SDK_SOURCE` points at a `server-sdk` tree. The `if` branch installs that wheel. The `else` branch still carries one of the two pins. Build with BuildKit so an empty `COPY *.whl` is accepted when no wheel was injected (`DOCKER_BUILDKIT=1`).
+`abx template deploy` injects an `agent-sandbox-server` wheel into the build context when `ABX_SERVER_SDK_SOURCE` points at a `server-sdk` tree. The `if` branch installs that wheel. The `else` branch still carries one of the two pins. For a direct Docker build, supply the matching wheel when the recipe contains `COPY *.whl`; BuildKit does not make a missing COPY source optional. To build without wheel injection, select an explicit recipe such as python-hello's portable profile, which installs the pinned archive directly.
 
 Every `pip install` uses `--no-cache-dir`. An npm install deletes the npm cache in the same layer (`npm cache clean --force`).
 
@@ -556,3 +556,5 @@ Spec4 manifests containing `application` require an explicit, non-null smoke `ex
 
 
 Managed catalog validation: `python scripts/check_managed_catalog.py` checks exact fields, disjoint names, the explicit workflow schema and references, 14 ordered bilingual README sections, and local historical-evidence identity. `historical_evidence` links original receipts; its contents do not confer current workflow certification. Only complete, input-matching receipts with independently trusted provenance can certify a path; see [workflow verification](workflows.md). Managed IDs remain excluded from source image selection/steps. [Desktop](managed/desktop/README.md) and [OpenSandbox interpreter](managed/opensandbox-code-interpreter/README.md) document each entry’s prerequisites, actual evidence scope and remaining product gates.
+
+The default Dockerfile server archive must match `scripts/server_sdk_pin.py` (or the explicit `server-sdk.commit`). The checker rejects a different fallback, so default and CI-injected builds select the same server source. Changing a pin invalidates prior source-specific image/workflow acceptance; preserve those receipts as history.

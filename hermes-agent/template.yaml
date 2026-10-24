@@ -1,5 +1,5 @@
 name: hermes-agent
-version: "1.1.1"
+version: "1.1.2"
 description: "Pinned upstream Hermes Agent headless CLI with local file and terminal tools."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0

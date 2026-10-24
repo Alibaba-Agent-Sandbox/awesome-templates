@@ -23,6 +23,8 @@ Amp does not accept a DashScope key, `ABX_LLM_API_KEY`, or an OpenAI-compatible 
 
 ## Stack
 
+Revision 1.2.1 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
+
 - Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template deploy` replaces `<region>` with `ALIBABA_CLOUD_REGION_ID` or `cn-hangzhou`, and `<tag>` with `ABX_BASE_IMAGE_TAG` or `v0.0.49`.
 - Node.js 20 from that image, used only to run `npm`. The `amp` binary is a glibc ELF from the optional package `@ampcode/cli-linux-x64` at the same version.
 - `@ampcode/cli@0.0.1792022479-ge66e24`, from `npm view @ampcode/cli version` on 2026-10-15. The previous directory pin was `0.0.1791964847-g13f24a`. The base image sets npm's registry to `registry.npmmirror.com`, which returned 404 for `@ampcode/cli-linux-x64` at this version, so the Dockerfile installs from `https://registry.npmjs.org`. `amp version` runs in the image build and fails the build if the native binary was not unpacked.

@@ -8,7 +8,9 @@
 
 ## 技术栈
 
-Alibaba FC generation 2 基础镜像、平台 Python、基础镜像未提供 Node >=22 时安装的 Node.js 22、`@qwen-code/qwen-code@0.23.0`，以及 [Dockerfile](Dockerfile) 固定提交的沙箱服务器。CLI 不需要额外的 DashScope/OpenAI Python 库。
+版本 2.1.2 将默认服务器源码与 CI wheel 的提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a` 对齐。历史回执保留原始输入范围；此版本需要重新完成镜像及工作流验收。
+
+Alibaba FC generation 2 基础镜像、平台 Python、固定版本且校验 x86_64/aarch64 SHA256 的 Node.js 24.16.0、`@qwen-code/qwen-code@0.23.0`，以及 [Dockerfile](Dockerfile) 固定提交的沙箱服务器。CLI 不需要额外的 DashScope/OpenAI Python 库。
 
 ## 解决的问题
 

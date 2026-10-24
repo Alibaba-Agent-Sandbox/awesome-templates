@@ -162,10 +162,11 @@ def test_conflicting_server_pins_are_refused(tmp_path):
         ci_image.server_commit(source)
 
 
-def test_existing_templates_keep_historical_injected_server_pin(tmp_path):
+def test_default_server_pin_rejects_a_different_fallback(tmp_path):
     source,_,_=fixture(tmp_path)
     (source/'Dockerfile').write_text('RUN pip install https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/'+'a'*40+'.tar.gz#subdirectory=server-sdk\n')
-    assert ci_image.server_commit(source)==ci_image.SERVER_COMMIT
+    with pytest.raises(ValueError, match="differs from the Dockerfile fallback"):
+        ci_image.server_commit(source)
 
 
 @pytest.mark.parametrize('value',['main\n','a'*40,'A'*40+'\n','a'*40+'\nextra'])
@@ -233,3 +234,9 @@ def test_missing_image_cli_contract_blocks_before_archive_or_registry_calls(tmp_
     assert runner.run(source, 123, '/unused/crane', http=False, private_root=tmp_path / 'private') == 1
     receipt = json.loads(next((source / 'evidence').glob('image-attempt-*.json')).read_text())
     assert receipt['runtime_attempted'] is False and receipt['passed'] is False
+
+
+def test_default_server_pin_accepts_the_matching_fallback(tmp_path):
+    source, _, _ = fixture(tmp_path)
+    (source / 'Dockerfile').write_text('RUN pip install https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/' + ci_image.SERVER_COMMIT + '.tar.gz#subdirectory=server-sdk\n')
+    assert ci_image.server_commit(source) == ci_image.SERVER_COMMIT

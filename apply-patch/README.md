@@ -6,6 +6,8 @@ Runs the actual official Codex *** Begin Patch dialect: add, update, move and de
 
 ## Stack
 
+Revision 1.0.1 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
+
 Alibaba FC base v0.0.49, generation2, non-root user. `npm ci --ignore-scripts` installs official @openai/codex0.162.1/native architecture packages using [lockfile integrity](package-lock.json). The validated native binary is dispatched by apply_patch argv0. The corresponding official release tag points to [092d3acd](https://github.com/openai/codex/tree/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d). This uses official prebuilt packages; it does not claim a local rebuild from that source commit.
 
 ## Problem solved

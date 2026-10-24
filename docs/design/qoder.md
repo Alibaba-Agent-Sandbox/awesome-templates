@@ -57,3 +57,5 @@ Secrets are declared with empty values. Error/output paths redact known secret e
 - L4: no provider claim until a real run.
 
 Primary protocol/source reference: [Qoder](https://docs.qoder.com/cli/run-in-scripts).
+
+Release readiness 1.1.2: align default and injected server SDK source to `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; preserve historical receipts and require new image/workflow acceptance.

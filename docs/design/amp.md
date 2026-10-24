@@ -95,3 +95,5 @@ L4: not planned. No other provider will be claimed.
 Ran on 2026-10-15: L0 and L1 passed. L2 on alicloud-express passed for `amp_version` and `amp_setup_check` through `abx run` and `Sandbox.run` (template version 1.1.0, SDK 0.3.0). L3 was not run. `abx template deploy` logged a PyPI 404 for `agent-sandbox-server==0.3.0` and then used the Dockerfile archive pin. That warning is [agent-sandbox#24](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues/24).
 
 Version 1.2.0 acceptance remains incomplete. The 2026-10-15 L1/L2 result above applies only to 1.1.0. Its evidence is preserved; the 1.2.0 catalog remains experimental and tested_on is empty. No authorized AMP_API_KEY is available for the required real coding/model task.
+
+Release readiness 1.2.1: align default and injected server SDK source to `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; preserve historical receipts and require new image/workflow acceptance.

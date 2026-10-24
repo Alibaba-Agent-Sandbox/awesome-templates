@@ -35,3 +35,5 @@ workspace, filters child environment to compiler necessities, drains both pipes
 concurrently and rejects output beyond256KiB per stream while retaining the
 90-second deadline and unreaped group identity. Actual noisy-child and inherited
 credential regressions are required. Old1.0.0 image/export records are historical.
+
+Release readiness 1.0.2: align default and injected server SDK source to `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; preserve historical receipts and require new image/workflow acceptance.

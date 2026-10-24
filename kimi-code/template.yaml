@@ -1,5 +1,5 @@
 name: kimi-code
-version: 1.0.0
+version: "1.0.1"
 description: Pinned Kimi Code 2.2.0 with isolated headless turns and explicit tool
   permission.
 author: alibaba-agent-sandbox

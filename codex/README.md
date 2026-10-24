@@ -12,6 +12,8 @@ The standalone `apply_patch` binary is a different template (issue #60). The Age
 
 ## Stack
 
+Revision 2.0.1 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
+
 - Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template deploy` replaces `<region>` with `cn-hangzhou` (or `ALIBABA_CLOUD_REGION_ID`) and `<tag>` with `v0.0.49` (or `ABX_BASE_IMAGE_TAG`).
 - Node.js 20 and Python 3.13 from that image.
 - `@openai/codex@0.162.1` (`codex-cli 0.162.1`).

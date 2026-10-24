@@ -1,5 +1,5 @@
 name: qoder
-version: "1.1.1"
+version: "1.1.2"
 description: "Pinned Qoder headless CLI with typed named commands and a local Python compatibility command."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0

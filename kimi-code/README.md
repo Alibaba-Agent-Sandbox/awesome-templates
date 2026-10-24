@@ -6,6 +6,8 @@ Run official Kimi Code 2.2.0 for one headless prompt in an existing sandbox dire
 
 ## Stack
 
+Revision 1.0.1 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
+
 Alibaba FC base v0.0.49, pinned Node.js 24.16.0 (architecture-specific SHA256 verified), npm `@moonshot-ai/kimi-code@2.2.0` (MIT), and the exact public server SDK source in Dockerfile. This uses the current Node CLI, not the unrelated/older Python distribution.
 
 ## Problem solved
