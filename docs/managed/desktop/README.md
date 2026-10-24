@@ -1,116 +1,88 @@
 # desktop
 
-[中文](README.zh-CN.md).
+[中文](README.zh-CN.md)
 
 ## What it does
 
-Provider-managed E2B `desktop` catalog entry. The provider owns its mutable template registration/image and desktop runtime. This repository supplies documentation and tests, without copying/rebuilding its template.
+Create an instance of the E2B-managed `desktop` template with an E2B account.
 
 ## Stack
 
-Original E2B Desktop source at[9fe5f55f](https://github.com/e2b-dev/desktop/tree/9fe5f55fabe3bd9f0277661a830e1d228b463b44) builds production aliasdesktop from Ubuntu22.04/Xfce. That is inspected source, not an observed deployed version. The official Desktop SDK is now in the E2B monorepo; neither Desktop SDK nor GUI tasks are claimed by Agent Sandbox generic exec/files.
+The [E2B Desktop source](https://github.com/e2b-dev/desktop/tree/9fe5f55fabe3bd9f0277661a830e1d228b463b44) defines an Ubuntu/Xfce desktop image. The deployed template is managed by E2B.
 
 ## Problem solved
 
-Discover the external desktop ID without confusing it with the independently implemented Express[OSWorld slice](../../../osworld/README.md). Generic shell/files smoke is separate from native screenshot/input/stream acceptance.
+Access an existing desktop environment. Shell/files use Agent Sandbox; screenshots and desktop input use the upstream E2B Desktop SDK.
 
 ## Quick start (CLI)
 
-Use the Node-capable[provider host](../../using-templates.md#client-entry-compatibility), not a native-only step builder. Install the exact public provider revision; configure its independent account/server first. These examples were syntax/source reviewed, NOT_RUN on a live backend. Replace the owned sandbox ID with the result of your own create; do not delete the managed template definition.
+Install the [CLI](../../using-templates.md) and Node.js 22+, configure your provider below, and replace `<sandbox-id>` with the ID returned by create.
 
 ```bash
-abx provider install Alibaba-Agent-Sandbox/awesome-providers//e2b@9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d --yes
-abx provider info e2b
+abx provider install Alibaba-Agent-Sandbox/awesome-providers//e2b --allow-unpinned --yes
 abx provider doctor e2b
 abx --provider e2b create --template desktop --timeout 180 -y
-abx --provider e2b exec <owned-sandbox-id> -- python3 -c 'print(6*7)'
-abx --provider e2b kill <owned-sandbox-id> -y
+abx --provider e2b exec <sandbox-id> -- python3 -c 'print(6*7)'
+abx --provider e2b kill <sandbox-id> -y
 ```
 
 ## Quick start (Python SDK)
 
-Install the[paired agent-sandbox-client](../../python-client-installation.md) and the same provider/engine. Configure the provider-specific settings below before startup. This actual Agent Sandbox SDK example runs shell/files only; it is syntax checked and NOT_RUN live.
+Install the [Python client](../../python-client-installation.md) and the same provider plugin; keep Node.js on PATH for the provider engine.
 
 ```python
-import asyncio, uuid
-from agent_sandbox.api.sandbox import Sandbox
-from agent_sandbox.models.errors import SandboxNotFoundError
+import asyncio
+from agent_sandbox import ProviderSandbox
 
 async def main():
-    provider = "e2b"
-    sb = await Sandbox.create(provider=provider, template="desktop", timeout=180,
-        metadata={"verification": "managed-example-" + uuid.uuid4().hex})
-    sid = sb.id
+    sb = await ProviderSandbox.create(provider="e2b", template="desktop", timeout=180)
     try:
         result = await sb.commands.run("python3 -c 'print(6*7)'", timeout=30)
-        assert result.exit_code == 0 and result.stdout.strip() == "42"
-        path = "/tmp/owned-example-" + uuid.uuid4().hex + ".txt"
-        await sb.files.write(path, "owned-example\n")
-        assert await sb.files.read(path) == "owned-example\n"
-        await sb.files.remove(path)
-        assert not await sb.files.exists(path)
+        print(result.stdout)  # 42
+        await sb.files.write("/tmp/example.txt", "hello")
+        print(await sb.files.read("/tmp/example.txt"))
+        await sb.files.remove("/tmp/example.txt")
     finally:
         try:
             await sb.kill()
         finally:
             await sb.close()
-    try:
-        await Sandbox.get_info_by_id(sid, provider=provider)
-    except SandboxNotFoundError:
-        pass
-    else:
-        raise RuntimeError("owned sandbox cleanup is not verified")
 
 asyncio.run(main())
 ```
 
-Use unique metadata/private creation intent in production so an ambiguous create can be reconciled; a lost response plus empty inventory is not confirmed cleanup. No model-generated code runs in this example.
-
 ## Quick start (HTTP POST)
 
-There is no repository-defined POST /commands/screenshot or port9000 command server for this managed ID. The E2B provider maps lifecycle creation to POST /sandboxes with X-API-Key; generic shell uses the native process protocol, not an invented JSON named command. Use the SDK above and the[provider contract](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d/e2b/docs/README.md). Native E2B Desktop screenshot/input/stream APIs require its original SDK and separate real GUI acceptance.
+This image does not contain the project `/commands/*` application server. Use the provider SDK for lifecycle and process/file operations, and the upstream Desktop SDK for screenshot/input operations.
 
 ## Command reference
 
-| Operation | Parameters/result | Scope |
-| --- | --- | --- |
-| Sandbox.create | provider:string, template:string, timeout:int seconds, metadata:dict; returns owned sandbox | Native provider lifecycle |
-| commands.run | command:string, timeout:int seconds; exit_code/stdout/stderr | Generic shell, not desktop/native interpreter |
-| files.write/read/remove/exists | sandbox path and text/bytes | Generic file round trip |
-| kill/get_info_by_id | exact owned ID, same provider/config | Independent absence must follow cleanup |
-
-No repository @command is registered. Unsupported features raise E8004; authentication/transport/permission failures remain failures. Client timeout and backend TTL differ; use bounded commands and explicit cleanup.
+`ProviderSandbox.create` creates an instance; `commands.run` returns `exit_code/stdout/stderr`; `files.write/read/remove` operate on files. `kill` deletes the instance; `close` releases local connections.
 
 ## Configuration
 
-Set ABX_E2B_API_KEY to a genuine independent E2B account credential, and ABX_E2B_BASE_URL/ABX_E2B_DOMAIN only when your E2B deployment requires them. The pinned provider reads no generic E2B_API_KEY or Express key. Here the generic key equals an Express alias and was never forwarded. No genuine ABX_E2B_API_KEY was available.
+Set `ABX_E2B_API_KEY` to your E2B account credential. Set `ABX_E2B_BASE_URL` and `ABX_E2B_DOMAIN` only for deployments that require them. See the [E2B provider guide](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/tree/main/e2b).
 
 ## Resources
 
-CPU, memory, image version, exposed endpoints and device capabilities belong to the external deployment; no live inventory was observed here. Finite180second example TTL is not a provider quota guarantee. No KVM/privileged/GUI/native-kernel claim is inferred from catalog metadata. Keep credentials/private URLs/IDs/raw logs out of public receipts; delete only your own sandbox, forwards and fixtures.
+The timeout is in seconds. CPU, memory and image availability depend on your deployment. Delete instances after use.
 
 ## Verified
 
-The current workflow has no project-recognized receipt. Dated records below are historical reports of their original inputs and call paths; they do not certify this manifest. See [workflow evidence](../../workflows.md).
-
-No provider has a passing product/runtime run recorded for this entry. [Dated NOT_VERIFIED state](../evidence/verification-desktop-2026-10-21.json).
-
-The Issue explicitly allows an unverified catalog-only result without a genuine E2B key. Actual Agent Sandbox SDK rejects missing provider-specific credentials before engine/network even with a synthetic generic Express key. Published provider tests14PASS0FAIL0SKIP include the actual pinned E2B2.55.0SDK against local HTTP. These are SDK/protocol checks, not E2B desktop creation, screenshot/input or Express verification.
+The CLI/SDK examples have been checked against their interfaces; there is no recorded live E2B desktop run. See the [2026-10-21 review](../evidence/verification-desktop-2026-10-21.json).
 
 ## Secondary development
 
-Keep this entry in managed_templates, outside source image selection/steps. Do not add a fake source directory, Alibaba Dockerfile, commands.py or tested_on to represent this external ID. Reproduce offline tests with the exact provider fixture described in the[verification record](../../../.agents/evidence/verify/2026-10-21-external-managed-catalog.md).
-
-Before promoting runtime claims, run actual SDK create/shell/files, a real Desktop SDK screenshot with decoded pixels and observable input/application state change, then independent cleanup. Preserve a new dated result; source-image L1/L2/steps do not certify a provider-managed ID.
+Use the upstream E2B Desktop project for desktop customization. The separate [OSWorld source template](../../../osworld/README.md) is available for an Express-based workflow.
 
 ## Contributing
 
-Follow[CONTRIBUTING](../../../CONTRIBUTING.md),[project standards](../../project-standards.md) and[documentation standards](../../documentation-standards.md). Keep English/Chinese guides, catalog scope and dated evidence aligned. The managed catalog checker validates metadata/claims; it does not turn NOT_VERIFIED into a runtime pass.
+Follow [CONTRIBUTING](../../../CONTRIBUTING.md). Keep both languages aligned and preserve dated test records.
 
 ## Issues
 
-Tracking [Issue33](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/33);[templates](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues),[SDK](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues),[providers](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/issues),[CLI](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues). Native service/GUI behavior belongs to its upstream project.
+[Report a template issue](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues). Provider integration belongs to [awesome-providers](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/issues).
 
 ## License
 
-Authored documentation/testsApache-2.0. Upstream image, bundled OS/applications, SDKs and service retain their own licenses/terms; this repository copies no external Dockerfile, binary or registered image. Source inspection is not a redistribution grant or vendor endorsement.
+Authored documentation/tests: Apache-2.0. The upstream image, SDKs and bundled applications retain their own licenses and terms.
