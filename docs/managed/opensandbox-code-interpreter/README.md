@@ -113,13 +113,15 @@ This image does not contain the project `/commands/*` application server. Use th
 
 Set `ABX_OPENSANDBOX_BASE_URL` to your OpenSandbox server root and `ABX_OPENSANDBOX_API_KEY` when the server requires a key. The default process keeps the instance alive for exec/files. To start the native interpreter service, pass `provider_options={"entrypoint": "/opt/code-interpreter/code-interpreter.sh"}` as below; for CLI create, set `ABX_OPENSANDBOX_ENTRYPOINT` to that script path.
 
+This provider requires execd with `argv` request support. The [reproduction workflow](../../../.github/workflows/managed-opensandbox.yml) pins the verified release-1.1.1 execd digest. Execd and the `v1.1.0` interpreter image are separate components; the old execd `v1.1.0` does not implement the current provider protocol.
+
 ## Resources
 
 The timeout is in seconds. CPU, memory and image availability depend on your deployment. Delete instances after use.
 
 ## Verified
 
-[2026-10-21 native Docker record](../evidence/verification-opensandbox-code-interpreter-2026-10-21-native-docker.json): SDK create/shell/files, upstream Python execution and persistent/isolated contexts, and confirmed cleanup. It records its original dependency revisions. Current default-start and explicit-entrypoint checks are tracked in [Issue 206](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/206).
+The [2026-10-24 run](../../../.agents/evidence/verify/2026-10-24-managed-native-pass.json) separately verifies default instance create/exec and an explicitly started native interpreter: Jupyter health, persistent/isolated Python contexts, program errors and deletion. Both instances were independently confirmed absent. Exact dependencies and image digests are recorded; the [2026-10-21 historical record](../evidence/verification-opensandbox-code-interpreter-2026-10-21-native-docker.json) remains unchanged.
 
 ## Secondary development
 

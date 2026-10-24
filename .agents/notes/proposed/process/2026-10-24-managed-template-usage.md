@@ -34,7 +34,8 @@ Adding another capability/status schema is unnecessary.
 
 Use CLI 0.4.16, public paired Python packages 0.3.1a5 and provider source
 6eec4e76bb955a2a8cd89f725e66bb7887d6c819. The existing native Docker fixture retains
-its upstream server/native SDK source and lockfiles. Historical JSON is immutable.
+its upstream server/native SDK source and lockfiles, with the current argv-capable
+execd pinned by digest independently of the interpreter image. Historical JSON is immutable.
 
 ## Test Strategy
 

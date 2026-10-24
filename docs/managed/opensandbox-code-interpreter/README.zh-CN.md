@@ -113,13 +113,15 @@ asyncio.run(main())
 
 将 `ABX_OPENSANDBOX_BASE_URL` 设为服务根地址；服务需要密钥时配置 `ABX_OPENSANDBOX_API_KEY`。默认进程保活实例以便执行命令和操作文件。启动原生解释器时，按上方示例传入 `provider_options={"entrypoint": "/opt/code-interpreter/code-interpreter.sh"}`；使用 CLI 创建时，将 `ABX_OPENSANDBOX_ENTRYPOINT` 设为该脚本路径。
 
+该提供商需要支持 `argv` 请求的 execd；[复现工作流](../../../.github/workflows/managed-opensandbox.yml)固定了已验证的 release-1.1.1 execd 镜像摘要。它与解释器镜像 `v1.1.0` 是两个独立组件；旧 execd `v1.1.0` 不适用于当前提供商。
+
 ## 资源
 
 超时单位为秒。CPU、内存和镜像可用性取决于部署配置；用完后删除实例。
 
 ## 已验证
 
-[2026-10-21 原生 Docker 记录](../evidence/verification-opensandbox-code-interpreter-2026-10-21-native-docker.json)覆盖 SDK 创建、shell/文件、上游 Python 执行与持久/隔离上下文，以及清理确认；具体依赖版本保留在原记录中。当前默认启动和显式入口复验见 [Issue 206](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/206)。
+[2026-10-24 运行记录](../../../.agents/evidence/verify/2026-10-24-managed-native-pass.json)分别验证了默认实例创建和执行，以及显式启动原生解释器后的 Jupyter 健康、Python 持久/隔离上下文、程序异常和删除清理。两类实例均独立确认已删除。原始依赖版本与镜像摘要保留在记录中；[2026-10-21 历史记录](../evidence/verification-opensandbox-code-interpreter-2026-10-21-native-docker.json)也原样保留。
 
 ## 二次开发
 

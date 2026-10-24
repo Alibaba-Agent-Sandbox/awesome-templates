@@ -1,0 +1,52 @@
+{
+  "provider": "opensandbox",
+  "template": "opensandbox-code-interpreter",
+  "template_id": "opensandbox/code-interpreter:v1.1.0",
+  "build_mode": "external-docker-image",
+  "passed": false,
+  "cleanup_verified": false,
+  "native_interpreter_verified": false,
+  "pins": {
+    "upstream": "30348cbdfe4b9cfd49e0963617aed357a8f1ac4c",
+    "provider": "6eec4e76bb955a2a8cd89f725e66bb7887d6c819",
+    "cli": "413d575a688bd6f870c42c711d11346d176e0f38",
+    "sdk": "1b235830bc4a8cbec275b530bf2dc2869e8d0c4b"
+  },
+  "checks": [
+    "fixed source upstream",
+    "fixed source provider",
+    "fixed source cli",
+    "fixed source sdk",
+    "fixed-source original OpenSandbox Docker server health",
+    "public paired Python packages 0.3.1a5",
+    "default managed image identity",
+    "default managed instance does not select native interpreter entrypoint",
+    "default managed instance independently absent",
+    "owned local provider engine stopped and child reaped",
+    "owned local original server process stopped"
+  ],
+  "images": {
+    "interpreter": {
+      "requested": "opensandbox/code-interpreter:v1.1.0",
+      "digest": "opensandbox/code-interpreter@sha256:133a3c1720dd52291a019740c2987e7164ea6de79e23d8198798e58950ae2e6e",
+      "image_id": "sha256:e11f9eb1dfca494bf6be559985c315a7cb9afea96eb170d4156317694229f128",
+      "architecture": "amd64"
+    },
+    "execd": {
+      "requested": "opensandbox/execd:v1.1.0",
+      "digest": "opensandbox/execd@sha256:6cf7dba2f21f0b536e100563d841ac58a9f31c2b0a081b7ac76796a24d6f47e2",
+      "image_id": "sha256:e12d3de4b28e820bc966fe875484b35a5fad9322c4ef8a5b6751873da03bd214",
+      "architecture": "amd64"
+    }
+  },
+  "default_cleanup": {
+    "sdk_not_found": true,
+    "no_new_containers": true,
+    "errors": []
+  },
+  "default_cleanup_verified": true,
+  "error_type": "ProviderConfigError",
+  "error_message": "[E8002] OpenSandbox HTTP 400 (run command): invalid request, validation error Key: 'RunCommandRequest.Command' Error:Field validation for 'Command' failed on the 'required' tag",
+  "duration_s": 7.122,
+  "controller_sha256": "e8251b527e53d3436f0da23fe6c5bf71b4f75d2e211e5336fb1bf1442632e8d5"
+}
