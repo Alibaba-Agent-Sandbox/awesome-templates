@@ -46,3 +46,5 @@ pilot with the exact same producer refs after reviewing this fix.
 Owner checks pass, failed evidence remains available, the real pilot is repeated,
 and every success claim includes owned-resource cleanup. Full 46×2 acceptance stays
 open in Issue #203 until executed.
+
+The raw HTTP request now sends the existing X-Access-Token application header when the gateway has not supplied one, alongside Bearer. It never replaces a gateway header, retries authentication, or falls back to another endpoint. Negative authentication reconstructs both application headers with the wrong token so the positive X-Access-Token cannot invalidate the negative test.

@@ -41,6 +41,15 @@ def command_url(base, name):
         parts.path.rstrip('/') + '/commands/' + urllib.parse.quote(name, safe=''), parts.query, ''))
 
 
+def application_headers(gateway_headers, token):
+    require(all(key.lower() != 'authorization' for key in gateway_headers),
+            'application and gateway Authorization must not overwrite one another')
+    headers = {**gateway_headers, 'Authorization': 'Bearer ' + token}
+    if all(key.lower() != 'x-access-token' for key in gateway_headers):
+        headers['X-Access-Token'] = token
+    return headers
+
+
 def require(value, label):
     if not value:
         raise AssertionError(label)
@@ -302,10 +311,8 @@ async def verify(args):
         phase = 'application-client'
         client = await sandbox.application_client(9000, token=env['ABX_SERVER_TOKEN'], timeout=180)
         phase = 'endpoint-resolution'
-        endpoint, headers = await sandbox.network.resolve(9000)
-        require(all(key.lower() != 'authorization' for key in headers),
-                'application and gateway Authorization must not overwrite one another')
-        headers = {**headers, 'Authorization': 'Bearer ' + env['ABX_SERVER_TOKEN']}
+        endpoint, gateway_headers = await sandbox.network.resolve(9000)
+        headers = application_headers(gateway_headers, env['ABX_SERVER_TOKEN'])
         async with httpx.AsyncClient(timeout=180, follow_redirects=False, trust_env=False) as http:
             for index, case in enumerate(cases):
                 name, values = case['command'], case.get('args', {})
@@ -328,7 +335,7 @@ async def verify(args):
             # Test service authentication without dropping required gateway headers.
             phase = 'authentication-negative'
             unauthorized = await http.post(command_url(endpoint, cases[0]['command']),
-                headers={**headers, 'Authorization': 'Bearer intentionally-wrong'}, json=cases[0].get('args', {}))
+                headers=application_headers(gateway_headers, 'intentionally-wrong'), json=cases[0].get('args', {}))
             require(unauthorized.status_code == 401, 'wrong service token must be rejected')
         report['checks'].append('service authentication rejects wrong token')
         phase = 'source-identity'

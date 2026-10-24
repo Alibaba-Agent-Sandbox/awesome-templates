@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from public_launch_e2e import CLI, CLIError, cli_diagnostics, safe_diagnostics, command_url, load_plan, matches, source_names, cleanup_prepared, cleanup_before_close, delete_sandbox
+from public_launch_e2e import CLI, CLIError, cli_diagnostics, safe_diagnostics, application_headers, command_url, load_plan, matches, source_names, cleanup_prepared, cleanup_before_close, delete_sandbox
 
 
 class PublicLaunchTests(unittest.TestCase):
@@ -35,6 +35,24 @@ class PublicLaunchTests(unittest.TestCase):
         for endpoint in ['file:///tmp/server', 'https://secret@host.invalid', 'https://host.invalid/#x']:
             with self.assertRaises(ValueError):
                 command_url(endpoint, 'hello')
+
+    def test_existing_application_token_headers_and_negative_auth(self):
+        gateway = {'X-Gateway-Token': 'gateway-value'}
+        self.assertEqual(application_headers(gateway, 'app-token'), {
+            'X-Gateway-Token': 'gateway-value', 'Authorization': 'Bearer app-token', 'X-Access-Token': 'app-token'})
+        wrong = application_headers(gateway, 'intentionally-wrong')
+        self.assertEqual(wrong['X-Access-Token'], 'intentionally-wrong')
+        self.assertEqual(wrong['Authorization'], 'Bearer intentionally-wrong')
+        self.assertEqual(gateway, {'X-Gateway-Token': 'gateway-value'})
+
+    def test_gateway_access_token_is_preserved_case_insensitively(self):
+        headers = application_headers({'x-ACCESS-token': 'gateway-credential'}, 'app-token')
+        self.assertEqual(headers['x-ACCESS-token'], 'gateway-credential')
+        self.assertNotIn('X-Access-Token', headers)
+
+    def test_gateway_authorization_is_never_overwritten(self):
+        with self.assertRaisesRegex(AssertionError, 'must not overwrite'):
+            application_headers({'authorization': 'gateway-credential'}, 'app-token')
 
     def test_cli_failure_does_not_leak_raw_output(self):
         from subprocess import CompletedProcess

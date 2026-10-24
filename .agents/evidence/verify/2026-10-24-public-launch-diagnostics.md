@@ -29,3 +29,5 @@ credentials, or native resource identifiers are included. The exact failed clean
 operation was not recorded by the old runner; this change makes future failures diagnosable.
 
 The follow-up default matrix explicitly selects OpenSandbox direct mode and records that mode in its report. It does not overwrite the failed proxy run or constitute proxy acceptance. A separate provider native probe checks actual direct/proxy authentication on the same owned sandbox.
+
+Follow-up local validation: 19 runner tests pass after aligning manual HTTP requests with the already-supported X-Access-Token header. New regressions preserve gateway headers case-insensitively, prohibit overwriting gateway Authorization, and ensure both application headers are invalid in negative authentication. This newer request code still requires a new exact-ref live receipt; the prior pilot2 report remains tied to5d70861.
