@@ -1,0 +1,75 @@
+{
+  "result": "PASS",
+  "template": "qm-sandbox",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch + manifest smoke via host CLI, Python and HTTP; no real-model acceptance",
+  "source": "local-candidate/qm-sandbox",
+  "manifest_sha256": "2e02af65fd066f9f5b8750e42e584c8762c3fc3e86fb51d4ae789fde08fac043",
+  "cli_version": "abx, version 0.4.16",
+  "python_client_version": "0.3.1a5",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "qm_sandbox_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "qm_sandbox_native_check",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "installed_packages": {
+    "cli": {
+      "name": "@agent-sandbox/cli",
+      "version": "0.4.16",
+      "registry": "https://registry.npmjs.org",
+      "source_ref": "413d575a688bd6f870c42c711d11346d176e0f38"
+    },
+    "python_client": {
+      "name": "agent-sandbox-client",
+      "version": "0.3.1a5",
+      "registry": "https://pypi.org/simple",
+      "source_ref": "1b235830bc4a8cbec275b530bf2dc2869e8d0c4b"
+    },
+    "python_server": {
+      "name": "agent-sandbox-server",
+      "version": "0.3.1a5",
+      "registry": "https://pypi.org/simple",
+      "source_ref": "1b235830bc4a8cbec275b530bf2dc2869e8d0c4b"
+    },
+    "provider_source_ref": "e18489155697dcf2ee55a47b403396069d6cfa20"
+  },
+  "run_alias": "public-e2e-2bc782a38e616c0d",
+  "input_receipt": {
+    "manifest_digest": "sha256:2e02af65fd066f9f5b8750e42e584c8762c3fc3e86fb51d4ae789fde08fac043",
+    "source_digest": "81a59932093e24a9df17cd09311d81ffd0909ca5656665b1b6ff2371ee46421c",
+    "provider_digest": "sha256:0edfcdc0eb10fd9fde3d81c03254c872ff040418af3b9c62d28449481941742d",
+    "provider_snapshot_digest": "43fc3aa7637b8b8a59d2dfc71f7d255006252012a9527596d0ddeaf59a5224a1",
+    "plan_digest": "67fa0b91de10055be34281918abbe328e56476ccc9a427d8644e8e668ad105f5",
+    "build_profile": null
+  },
+  "application_result": "PASS"
+}

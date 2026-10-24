@@ -1,0 +1,9 @@
+{
+  "result": "PASS",
+  "method": "GitHub Git commit tree identity",
+  "commit_trees": {
+    "e581d273aa1b7bbc099da8c4c7745c1728230364": "0529cdf8087a4a10ee1cb46eaaa91beb9b898b20",
+    "ba17fbd32da188a2e4452f5946fa72135fc41c8e": "0529cdf8087a4a10ee1cb46eaaa91beb9b898b20"
+  },
+  "meaning": "The full matrix tested head and merged template commit contain the same file tree; this is provenance equality, not a substitute for runtime results."
+}

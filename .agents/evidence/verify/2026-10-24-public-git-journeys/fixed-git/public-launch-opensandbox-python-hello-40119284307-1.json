@@ -1,0 +1,83 @@
+{
+  "result": "PASS",
+  "template": "python-hello",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch + manifest smoke via host CLI, Python and HTTP; no real-model acceptance",
+  "source": "alibaba-agent-sandbox/awesome-templates//python-hello@ba17fbd32da188a2e4452f5946fa72135fc41c8e",
+  "manifest_sha256": "2b7d32f54affa308e14f1daeb35a61c7d67c46918f1d9a5c007b0af6ee5b8a44",
+  "cli_version": "abx, version 0.4.16",
+  "python_client_version": "0.3.1a5",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "hello",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "run_script",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "installed_packages": {
+    "cli": {
+      "name": "@agent-sandbox/cli",
+      "version": "0.4.16",
+      "registry": "https://registry.npmjs.org",
+      "source_ref": "413d575a688bd6f870c42c711d11346d176e0f38"
+    },
+    "python_client": {
+      "name": "agent-sandbox-client",
+      "version": "0.3.1a5",
+      "registry": "https://pypi.org/simple",
+      "source_ref": "1b235830bc4a8cbec275b530bf2dc2869e8d0c4b"
+    },
+    "python_server": {
+      "name": "agent-sandbox-server",
+      "version": "0.3.1a5",
+      "registry": "https://pypi.org/simple",
+      "source_ref": "1b235830bc4a8cbec275b530bf2dc2869e8d0c4b"
+    },
+    "provider_source_ref": "6eec4e76bb955a2a8cd89f725e66bb7887d6c819"
+  },
+  "run_alias": "public-e2e-20e75c95c35c9231",
+  "endpoint_mode": "direct",
+  "input_receipt": {
+    "manifest_digest": "sha256:2b7d32f54affa308e14f1daeb35a61c7d67c46918f1d9a5c007b0af6ee5b8a44",
+    "source_digest": "9f57176c85627031253a6225255c1f8fe929a91fde96584e065c632ca70ceaa0",
+    "provider_digest": "sha256:11ca22e2824255ec1d5540ab557a01c70d66fa9e3313d89bd29a613bd00e7777",
+    "provider_snapshot_digest": "79f089c85ca66538208bd5916a9322f4a6474b4a8eda0e15f5a8627c726695bb",
+    "plan_digest": "9ce0f9629210c251c3b5f31f4ea20e77ba5a2ea001c073307152a77a1af803f5",
+    "build_profile": null
+  },
+  "application_result": "PASS",
+  "public_git_sources": {
+    "template_requested_commit": "ba17fbd32da188a2e4452f5946fa72135fc41c8e",
+    "template_source_digest": "9f57176c85627031253a6225255c1f8fe929a91fde96584e065c632ca70ceaa0",
+    "provider_fixture_ref_scope": "checkout fixture; not the installed provider revision",
+    "installed_provider_commit": "998a9d6a438f5c9b1f149ace26608b4132222b1c",
+    "installed_provider_tree_sha256": "79f089c85ca66538208bd5916a9322f4a6474b4a8eda0e15f5a8627c726695bb"
+  }
+}
