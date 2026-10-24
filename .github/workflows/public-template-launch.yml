@@ -145,7 +145,7 @@ jobs:
         run: |
           bash .launch-fixtures/sdk/e2e/opensandbox/local-up.sh up
           docker run -d --name abx-public-launch-registry -p 5000:5000 -e REGISTRY_STORAGE_DELETE_ENABLED=true registry:2.8.3
-          abx provider install ./.launch-fixtures/providers/opensandbox --yes
+          abx provider install alibaba-agent-sandbox/awesome-providers//opensandbox --allow-unpinned --yes
       - name: Launch unchanged candidate source and call its API from the host
         env:
           TEMPLATE_NAME: ${{ matrix.template }}
@@ -161,7 +161,7 @@ jobs:
           ACR_NAMESPACE: ${{ matrix.provider == 'alicloud-express' && secrets.PUBLIC_LAUNCH_ACR_NAMESPACE || '' }}
           ALIBABA_CLOUD_REGION_ID: cn-hangzhou
         run: |
-          python scripts/public_launch_e2e.py "$TEMPLATE_NAME" --provider "$TARGET_PROVIDER" --source "./$TEMPLATE_NAME" --build-timeout 3600 --output "$RUNNER_TEMP/public-launch.json"
+          python scripts/public_launch_e2e.py "$TEMPLATE_NAME" --provider "$TARGET_PROVIDER" --source "alibaba-agent-sandbox/awesome-templates//$TEMPLATE_NAME" --build-timeout 3600 --output "$RUNNER_TEMP/public-launch.json"
       - name: Stop only this disposable backend and registry
         if: always() && matrix.provider == 'opensandbox'
         run: |
