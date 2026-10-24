@@ -1,0 +1,26 @@
+{
+  "run_id": 40114977362,
+  "attempt": 1,
+  "result": "FAIL",
+  "stage": "public-package-installation",
+  "requested_python_version": "0.3.1a5",
+  "observed_simple_index_versions": [
+    "0.3.1a1",
+    "0.3.1a2",
+    "0.3.1a3"
+  ],
+  "pip_failure": "No matching distribution found for agent-sandbox-client==0.3.1a5",
+  "platforms": [
+    "opensandbox",
+    "alicloud-express"
+  ],
+  "cloud_launch_started": false,
+  "backend_up_started": false,
+  "resource_creation": "not reached",
+  "source_refs": {
+    "templates": "d6522b8d01637e5c6ae88f848f727ef09b11544a",
+    "cli": "413d575a688bd6f870c42c711d11346d176e0f38",
+    "sdk": "1b235830bc4a8cbec275b530bf2dc2869e8d0c4b",
+    "providers": "e18489155697dcf2ee55a47b403396069d6cfa20"
+  }
+}

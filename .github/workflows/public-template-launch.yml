@@ -130,7 +130,7 @@ jobs:
       - name: Install and verify published package versions
         run: |
           npm install -g --registry https://registry.npmjs.org "@agent-sandbox/cli@$PUBLIC_CLI_VERSION"
-          python -m pip install --index-url https://pypi.org/simple "agent-sandbox-client==$PUBLIC_SDK_VERSION" "agent-sandbox-server==$PUBLIC_SDK_VERSION" -r scripts/requirements-spec.txt
+          python -m pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-client==$PUBLIC_SDK_VERSION" "agent-sandbox-server==$PUBLIC_SDK_VERSION" -r scripts/requirements-spec.txt
           python -m pip check
           python - <<'PYVERSIONS'
           import importlib.metadata, json, os, subprocess
