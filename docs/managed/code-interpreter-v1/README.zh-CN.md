@@ -1,111 +1,88 @@
 # code-interpreter-v1
 
+[English](README.md)
+
 ## 做什么
 
-阿里云极速版托管的模板 ID，直接创建沙箱。此仓库不拥有它的 Dockerfile、镜像版本或部署生命周期。
+阿里云极速版提供的 `code-interpreter-v1` 托管模板。直接创建实例即可使用，无需构建镜像。
 
 ## 技术栈
 
-2026-10-19 实测清单；托管镜像可变，这些版本不是仓库固定依赖。
-
-| Component | Observed version |
-| --- | --- |
-| Python | 3.13.13 |
-| Node.js | v20.20.2 |
-| Git | git version 2.47.3 |
-| pip | 26.0.1 |
-| numpy | 2.4.6 |
-| pandas | 3.0.3 |
-| matplotlib | 3.11.1 |
-| jupyter | not installed |
-| ipykernel | 7.3.0 |
+[2026-10-19 清单](../evidence/code-interpreter-v1-2026-10-19T154153Z.json)记录了 Python 3.13、Node.js 20，以及 numpy、pandas、matplotlib。提供方会更新镜像；业务依赖特定版本时，请查询实例内的实际版本。
 
 ## 解决的问题
 
-无需构建用户镜像即可使用基础 shell、文件 API 和 SDK 代码执行。
+使用预装的数值计算包进行 Python 数据处理。
 
 ## 快速开始（CLI）
 
-Native CLI0.3 syntax (check `abx create --help`):
+先完成 [CLI 安装和平台配置](../../using-templates.zh-CN.md)，将 `<sandbox-id>` 替换为创建时返回的实例 ID。
 
 ```bash
-abx create code-interpreter-v1 --detach --timeout 180
-abx exec <sandbox-id> -- python3 -c 'print(6*7)'
-abx kill <sandbox-id>
+abx --provider alicloud-express create code-interpreter-v1 --detach --timeout 180
+abx --provider alicloud-express exec <sandbox-id> -- python3 -c 'print(6*7)'
+abx --provider alicloud-express kill <sandbox-id>
 ```
-
-标准入口差异见[兼容性](../../using-templates.md#client-entry-compatibility)。不删除提供方托管模板定义。
 
 ## 快速开始（Python SDK）
 
-Install the [paired `agent-sandbox-client`](../../python-client-installation.md), then:
+安装 [Python 客户端](../../python-client-installation.md)，配置相同的极速版账号。下面打印 `42`，读写文件，并在结束后删除本次创建的沙箱。
 
 ```python
 import asyncio
-from agent_sandbox.api.sandbox import Sandbox
+from agent_sandbox import ProviderSandbox
 
 async def main():
-    sb = await Sandbox.create(template="code-interpreter-v1", timeout=180)
+    sb = await ProviderSandbox.create(provider="alicloud-express", template="code-interpreter-v1", timeout=180)
     try:
-        print((await sb.commands.run("python3 --version")).stdout)
-        await sb.files.write("/tmp/owned-example.txt", "hello")
-        print(await sb.files.read("/tmp/owned-example.txt"))
-        await sb.files.remove("/tmp/owned-example.txt")
-        result = await sb.run_code("print(6*7)")
-        assert result.exit_code == 0 and result.stdout.strip() == "42"
+        result = await sb.commands.run("python3 -c 'print(6*7)'", timeout=30)
+        print(result.stdout)  # 42
+        await sb.files.write("/tmp/example.txt", "hello")
+        print(await sb.files.read("/tmp/example.txt"))
+        await sb.files.remove("/tmp/example.txt")
     finally:
-        await sb.kill()
-        await sb.close()
+        try:
+            await sb.kill()
+        finally:
+            await sb.close()
 
 asyncio.run(main())
 ```
 
-本次 run_code 的原生服务返回 HTTP 404；SDK 回退到 shell，执行得到 42。没有验证原生代码解释器、多语言内核或持久上下文。安装 ipykernel 也不等于原生服务可用。
-
 ## 快速开始（HTTP POST）
 
-该托管模板没有本仓库定义的 `/commands/*` HTTP 服务。使用 SDK 的 shell/files API；不编造 HTTP 地址或命名命令。
+该托管镜像不提供项目的 `/commands/*` 应用服务。使用上面的进程和文件 API；需要自定义 HTTP 命令时，从[源码模板](../../../_skeleton/README.zh-CN.md)开始。
 
 ## 命令参考
 
-SDK 参数：Sandbox.create(template: str, timeout: int=300)；commands.run(cmd: str, timeout: int) 返回 exit_code/stdout/stderr；files.write/read/remove/exists 接受沙箱路径。参见[公开 SDK 源码](https://github.com/Alibaba-Agent-Sandbox/python-sdk)。命名命令不适用。
+`ProviderSandbox.create(provider=..., template=..., timeout=...)` 创建实例；`commands.run` 返回 `exit_code`、`stdout`、`stderr`；`files.write/read/remove` 操作沙箱内文件。`kill` 删除实例，`close` 释放本地连接。
+
+当前极速版提供商未实现 `ProviderSandbox.run_code`（`E8004`）。运行 Python 进程请使用上面的 `commands.run`；持久内核或解释器会话需要对应的已接入接口。
 
 ## 配置
 
-使用已配置的阿里云 SDK/CLI 账号。密钥只进入进程环境；不用模型密钥。创建时环境变量不保证修改已预热服务，参见[进程环境](../../runtime-environment.md)。
+按[使用指南](../../using-templates.zh-CN.md)配置极速版账号。本例不需要模型密钥；预热进程的环境变量规则见[运行环境](../../runtime-environment.zh-CN.md)。
 
 ## 资源
 
-本次实测 Linux x86_64、非 root；/dev/kvm 和 Docker socket 不存在。平台托管资源，不在此承诺固定容量、费用或镜像版本；创建时设置 timeout，结束后 kill 并回查列表。
+设置有限的超时时间（秒），结束后删除实例。CPU、内存与镜像更新由平台管理。
 
 ## 已验证
 
-当前清单的工作流尚无项目认可收据。下列日期记录仅作为原输入和调用路径的历史报告；不会自动认证新工作流。参见[工作流证据](../../workflows.zh-CN.md)。
-
-| Provider | Runtime verification | Scope |
-| --- | --- | --- |
-| alicloud-express | [PASS receipt](../evidence/code-interpreter-v1-2026-10-19T154153Z.json) | SDK shell/files/run_code fallback + real CLI exec; cleanup confirmed |
-
-本次 run_code 的原生服务返回 HTTP 404；SDK 回退到 shell，执行得到 42。没有验证原生代码解释器、多语言内核或持久上下文。安装 ipykernel 也不等于原生服务可用。
-
-其他提供方未测试。此记录不属于仓库源码镜像的 L1/L2 部署证明。
+[2026-10-24 公开包记录](../../../.agents/evidence/verify/2026-10-24-managed-public-cli.json)：CLI 0.4.16 实际创建、执行得到 `42`、删除；Python 0.3.1a5 文件读写删除、`ProviderSandbox.run_code` 明确返回 `E8004`，并独立确认实例已删除。[2026-10-19 历史记录](../evidence/code-interpreter-v1-2026-10-19T154153Z.json)保留原始版本与调用路径。
 
 ## 二次开发
 
-steps 用于构建新的源码模板，不用于重建这些提供方托管 ID。若需自定义依赖，从[源码骨架](../../../_skeleton/README.md)开始并创建新模板。复测本条目：
-
-```bash
-python scripts/verify_managed_templates.py code-interpreter-v1 --cli /path/to/abx --output /tmp/managed-proof
-```
+需要额外依赖或自定义命令服务时，从[源码骨架](../../../_skeleton/README.zh-CN.md)创建独立模板。
 
 ## 贡献
 
-参见[贡献规范](../../../CONTRIBUTING.zh-CN.md)。更新证据时新增带时间戳的记录，不覆盖历史。
+遵循[贡献规范](../../../CONTRIBUTING.zh-CN.md)。保持中英文一致，新运行新增带日期的记录。
 
 ## 问题反馈
 
-[awesome-templates](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues) · [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues) · [agent-sandbox CLI](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues). 跟踪 Issue [32](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/32).
+[反馈模板问题](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues)。
 
 ## 许可证
 
-文档与验证脚本：Apache-2.0。托管镜像及内置软件遵循各自许可证；本仓库不重新分发该镜像。
+文档与验证脚本采用 Apache-2.0；托管镜像及内置软件保留各自许可证。

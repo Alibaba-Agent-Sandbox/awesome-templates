@@ -37,23 +37,23 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: Alibaba-Agent-Sandbox/awesome-providers
-          ref: 9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d
+          ref: 6eec4e76bb955a2a8cd89f725e66bb7887d6c819
           path: .native-fixtures/providers
       - uses: actions/checkout@v4
         with:
           repository: Alibaba-Agent-Sandbox/agent-sandbox
-          ref: c8e8ad784323b8903505442cbc77d433a0d0367a
+          ref: 413d575a688bd6f870c42c711d11346d176e0f38
           path: .native-fixtures/cli
       - uses: actions/checkout@v4
         with:
           repository: Alibaba-Agent-Sandbox/python-sdk
-          ref: 33f857f5a79fd10326652e9d03f15f3621d6b848
+          ref: 1b235830bc4a8cbec275b530bf2dc2869e8d0c4b
           path: .native-fixtures/sdk
       - name: Install original frozen server and interpreter SDK
         run: |
           uv sync --project .native-fixtures/upstream/server --frozen --no-dev --python 3.12
           uv sync --project .native-fixtures/upstream/sdks/code-interpreter/python --frozen --no-dev --python 3.12
-          uv pip install --python .native-fixtures/upstream/sdks/code-interpreter/python/.venv/bin/python ./.native-fixtures/sdk/server-sdk ./.native-fixtures/sdk/client-sdk
+          uv pip install --no-cache --index-url https://pypi.org/simple --python .native-fixtures/upstream/sdks/code-interpreter/python/.venv/bin/python agent-sandbox-client==0.3.1a5 agent-sandbox-server==0.3.1a5
           uv pip check --python .native-fixtures/upstream/sdks/code-interpreter/python/.venv/bin/python
       - name: Build pinned CLI with its lockfile
         working-directory: .native-fixtures/cli
@@ -62,7 +62,7 @@ jobs:
           npm run build
       - name: Pull original runtime images and capture immutable digests
         run: |
-          docker pull opensandbox/execd:v1.1.0
+          docker pull opensandbox/execd@sha256:cda2bc35409bbf57561599b316cafb899598f7dce671332e7ceda14eb1cfeded
           docker pull opensandbox/code-interpreter:v1.1.0
       - name: Actual SDK shell files native interpreter sessions and independent cleanup
         run: |

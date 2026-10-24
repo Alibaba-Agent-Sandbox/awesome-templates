@@ -1,111 +1,88 @@
 # base
 
+[中文](README.zh-CN.md)
+
 ## What it does
 
-Provider-managed template ID on Alibaba Express. Create a sandbox directly; this repository does not own its Dockerfile, image version or deployment lifecycle.
+Alibaba Express manages the `base` template and its image. Create an instance directly; no image build is needed.
 
 ## Stack
 
-Observed inventory on2026-10-19; the provider-managed image is mutable, so these are observations, not repository pins.
-
-| Component | Observed version |
-| --- | --- |
-| Python | 3.13.13 |
-| Node.js | v20.20.2 |
-| Git | git version 2.47.3 |
-| pip | 26.0.1 |
-| numpy | not installed |
-| pandas | not installed |
-| matplotlib | not installed |
-| jupyter | not installed |
-| ipykernel | not installed |
+The [2026-10-19 inventory](../evidence/base-2026-10-19T154144Z.json) observed Python 3.13 and Node.js 20. The provider can update this image; query installed versions when your application needs specific dependencies.
 
 ## Problem solved
 
-Use shell, files and SDK code execution without building a user image.
+Run shell commands and work with files without preparing an image.
 
 ## Quick start (CLI)
 
-Native CLI0.3 syntax (check `abx create --help`):
+Install [CLI and provider configuration](../../using-templates.md), then replace `<sandbox-id>` with the ID returned by create.
 
 ```bash
-abx create base --detach --timeout 180
-abx exec <sandbox-id> -- python3 -c 'print(6*7)'
-abx kill <sandbox-id>
+abx --provider alicloud-express create base --detach --timeout 180
+abx --provider alicloud-express exec <sandbox-id> -- python3 -c 'print(6*7)'
+abx --provider alicloud-express kill <sandbox-id>
 ```
-
-See [client entry compatibility](../../using-templates.md#client-entry-compatibility) for the standard CLI. Delete only your sandbox; do not delete the provider-managed template definition.
 
 ## Quick start (Python SDK)
 
-Install the [paired `agent-sandbox-client`](../../python-client-installation.md), then:
+Install the [Python client](../../python-client-installation.md) and configure the same Express account. This example prints `42`, writes and reads a file, then deletes its sandbox.
 
 ```python
 import asyncio
-from agent_sandbox.api.sandbox import Sandbox
+from agent_sandbox import ProviderSandbox
 
 async def main():
-    sb = await Sandbox.create(template="base", timeout=180)
+    sb = await ProviderSandbox.create(provider="alicloud-express", template="base", timeout=180)
     try:
-        print((await sb.commands.run("python3 --version")).stdout)
-        await sb.files.write("/tmp/owned-example.txt", "hello")
-        print(await sb.files.read("/tmp/owned-example.txt"))
-        await sb.files.remove("/tmp/owned-example.txt")
-        result = await sb.run_code("print(6*7)")
-        assert result.exit_code == 0 and result.stdout.strip() == "42"
+        result = await sb.commands.run("python3 -c 'print(6*7)'", timeout=30)
+        print(result.stdout)  # 42
+        await sb.files.write("/tmp/example.txt", "hello")
+        print(await sb.files.read("/tmp/example.txt"))
+        await sb.files.remove("/tmp/example.txt")
     finally:
-        await sb.kill()
-        await sb.close()
+        try:
+            await sb.kill()
+        finally:
+            await sb.close()
 
 asyncio.run(main())
 ```
 
-The native run_code service returned HTTP404 in this run. The SDK shell fallback executed successfully and returned42. Native interpreter service, multiple language kernels and persistent contexts are unverified. An installed ipykernel does not establish service availability.
-
 ## Quick start (HTTP POST)
 
-This managed definition has no repository-defined `/commands/*` server. Use the SDK shell/files APIs; no named-command HTTP endpoint is supplied by this catalog entry.
+This managed image does not supply the project `/commands/*` application server. Use the process and file APIs above. For custom HTTP commands, create a [source template](../../../_skeleton/README.md).
 
 ## Command reference
 
-SDK: Sandbox.create(template: str, timeout: int=300); commands.run(cmd: str, timeout: int) returns exit_code/stdout/stderr; files.write/read/remove/exists operate on sandbox paths. See [public SDK source](https://github.com/Alibaba-Agent-Sandbox/python-sdk). No custom named command is registered.
+`ProviderSandbox.create(provider=..., template=..., timeout=...)` creates an instance; `commands.run` returns `exit_code`, `stdout` and `stderr`; `files.write/read/remove` operate on sandbox paths. `kill` deletes the instance and `close` releases local connections.
+
+The current Express provider does not implement `ProviderSandbox.run_code` (`E8004`). Use `commands.run` for Python processes as above. A persistent kernel or interpreter session requires its own supported interface.
 
 ## Configuration
 
-Use the configured Alibaba SDK/CLI account. Keep credentials in process environments; no model key is required. Create-time environment does not guarantee reconfiguration of prewarmed servers; see [runtime environment](../../runtime-environment.md).
+Use the Express account settings in the [usage guide](../../using-templates.md). No model credential is needed for this example. For prewarmed processes, see [runtime environment](../../runtime-environment.md).
 
 ## Resources
 
-Observed Linux x86_64/non-root, with no /dev/kvm or Docker socket. Resource sizing, pricing and image revisions are provider-managed. Set a finite sandbox timeout, kill owned instances and independently read back absence.
+Choose a finite timeout in seconds and delete instances when finished. CPU, memory and image updates are managed by the provider.
 
 ## Verified
 
-The current workflow has no project-recognized receipt. Dated records below are historical reports of their original inputs and call paths; they do not certify this manifest. See [workflow evidence](../../workflows.md).
-
-| Provider | Runtime verification | Scope |
-| --- | --- | --- |
-| alicloud-express | [PASS receipt](../evidence/base-2026-10-19T154144Z.json) | SDK shell/files/run_code fallback + real CLI exec; cleanup confirmed |
-
-The native run_code service returned HTTP404 in this run. The SDK shell fallback executed successfully and returned42. Native interpreter service, multiple language kernels and persistent contexts are unverified. An installed ipykernel does not establish service availability.
-
-Other providers were not tested. This is a managed-runtime receipt, not source-template L1/L2 deployment acceptance.
+[2026-10-24 public-package record](../../../.agents/evidence/verify/2026-10-24-managed-public-cli.json): CLI 0.4.16 create/exec yielding `42`/kill; Python 0.3.1a5 file round trip, explicit `ProviderSandbox.run_code` rejection with `E8004`, and independent instance absence. The [2026-10-19 historical record](../evidence/base-2026-10-19T154144Z.json) retains its original versions and call paths.
 
 ## Secondary development
 
-Platform steps build a new source template; they do not rebuild provider-managed IDs. Start from the [source skeleton](../../../_skeleton/README.md) for custom dependencies. Reproduce this entry:
-
-```bash
-python scripts/verify_managed_templates.py base --cli /path/to/abx --output /tmp/managed-proof
-```
+For additional dependencies or a custom command service, start from the [source skeleton](../../../_skeleton/README.md); it produces a separate template.
 
 ## Contributing
 
-Follow [contribution standards](../../../CONTRIBUTING.md). Add a timestamped receipt on rerun; preserve history.
+Follow [CONTRIBUTING](../../../CONTRIBUTING.md). Keep both languages aligned and add a new dated record for a new runtime test.
 
 ## Issues
 
-[awesome-templates](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues) · [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues) · [agent-sandbox CLI](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues). Tracking Issue [31](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/31).
+[Report a template issue](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues).
 
 ## License
 
-Documentation and verification script: Apache-2.0. Provider-managed image and bundled software retain their own licenses; this repository does not redistribute that image.
+Documentation and verification scripts: Apache-2.0. The provider-managed image and its bundled software retain their own licenses.
