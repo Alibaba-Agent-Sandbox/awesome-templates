@@ -23,8 +23,6 @@ Amp does not accept a DashScope key, `ABX_LLM_API_KEY`, or an OpenAI-compatible 
 
 ## Stack
 
-Revision 1.2.1 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
-
 - Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template deploy` replaces `<region>` with `ALIBABA_CLOUD_REGION_ID` or `cn-hangzhou`, and `<tag>` with `ABX_BASE_IMAGE_TAG` or `v0.0.49`.
 - Node.js 20 from that image, used only to run `npm`. The `amp` binary is a glibc ELF from the optional package `@ampcode/cli-linux-x64` at the same version.
 - `@ampcode/cli@0.0.1792022479-ge66e24`, from `npm view @ampcode/cli version` on 2026-10-15. The previous directory pin was `0.0.1791964847-g13f24a`. The base image sets npm's registry to `registry.npmmirror.com`, which returned 404 for `@ampcode/cli-linux-x64` at this version, so the Dockerfile installs from `https://registry.npmjs.org`. `amp version` runs in the image build and fails the build if the native binary was not unpacked.
@@ -38,89 +36,41 @@ A generation-2 sandbox can run a pinned Amp CLI without a TUI, inspect the versi
 
 ## Quick start (CLI)
 
-The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
-
-Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
-
-From a checkout of this repository, with Express credentials in the environment:
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template deploy ./amp -y --generation 2 \
-  --start-cmd 'agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py' \
-  --ready-cmd 'agent-sandbox-server healthcheck --port 9000'
-abx create <template-id> --detach
-abx run <sandbox-id> amp_version
-abx run <sandbox-id> amp_setup_check
+export ABX_PROVIDER=alicloud-express
+abx template launch ./amp --workflow application --yes
+abx run <sandbox-id> amp_version --json-args '{}'
 ```
 
-`template.yaml` already stores `generation`, `start_cmd`, and `ready_cmd`. A live turn needs an Amp access token. Pass it at create time. Do not bake it into the image:
-
-```bash
-abx create <template-id> --detach --env AMP_API_KEY=<amp-access-token>
-abx run <sandbox-id> amp_execute --arg prompt='Reply with exactly: ABX_E2E_OK'
-```
-
-`stream_json` is a boolean. Pass it with `--json-args`:
-
-```bash
-abx run <sandbox-id> amp_execute --json-args '{"prompt":"Reply with exactly: ABX_E2E_OK","stream_json":true}'
-```
-
-Remove the sandbox and the template when you are done:
-
-```bash
-abx kill <sandbox-id>
-abx template delete <template-id> -y
-```
-
-`python3 scripts/express_e2e.py amp` deploys a unique alias, runs the `smoke` commands (`amp_version` and `amp_setup_check`) through `abx run` and the Python SDK, writes evidence only after a pass, and deletes that sandbox and that template.
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` using the [paired, pinned source instructions](../docs/python-client-installation.md) until the matching packages are published. The import is `agent_sandbox`. `pip install agent-sandbox` is an unrelated project.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main() -> None:
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        print(await sb.run("amp_version"))
-        print(await sb.run("amp_setup_check"))
-        # AMP_API_KEY is an Amp access token, not a DashScope key.
-        # print(await sb.run("amp_execute", prompt="Reply with exactly: ABX_E2E_OK"))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('amp_version'))
 ```
 
-Create with the key when you want `amp_execute`:
-
-```python
-sb = await Sandbox.create(
-    template="<template-id>",
-    timeout=300,
-    envs={"AMP_API_KEY": "<amp-access-token>"},
-)
-text = await sb.run("amp_execute", prompt="Reply with exactly: ABX_E2E_OK", stream_json=False)
-```
-
-`await sb.run(...)` returns the command's `result` value. `sb.commands.run` is a shell command, not one of these names. The checked-out SDK includes the sync-classmethod fix in [python-sdk#24](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/24). Upgrade older commits or use the async constructors if they raise TypeError.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Use the sandbox port-9000 URL, or http://127.0.0.1:9000 locally. Include the authentication header when ABX_SERVER_TOKEN is set on the server.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/amp_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/amp_version" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" \
-  --data '{}'
+```json
+{}
 ```
 
-The JSON body contains command parameters directly, without an args wrapper. HTTP 200 returns `{"result":"0.0.1792022479-ge66e24"}`. Invalid arguments return 400, failed authentication 401, and execution errors 500; error responses contain error and type. Results are buffered until completion. An HTTP client timeout does not guarantee server-side cancellation; manage long tasks through the process API.
+Expected response for this check:
+
+```json
+{"result": "0.0.1792022479-ge66e24"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -155,10 +105,10 @@ This subprocess lifecycle requires Linux. The command closes its owned process g
 | `AMP_URL` | no | `https://ampcode.com/` | Amp service URL. The CLI's own default. Not set by the image. |
 | `AMP_SETTINGS_FILE` | no | `/home/user/.config/amp/settings.json` in the image | Caller-owned settings file inspected without writes. |
 | `AMP_LOG_FILE` | no | `/home/user/.cache/amp/logs/cli.log` in the image | CLI log path. |
-| `ABX_SERVER_TOKEN` | no | empty | When set inside the sandbox, clients send `Authorization: Bearer`. |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | no | `9000` | Port for a local `python3 commands.py`. |
 
-Set secrets on `abx create --env` or `Sandbox.create(envs=...)`. Do not write them into the image or the log.
+Before `template launch`, securely export the secret variables declared empty in the manifest so the application reads them at startup. Keep values out of images, YAML and logs.
 
 Outside the image, set `AMP_SETTINGS_FILE` or `WORKSPACE` before starting `commands.py`. Otherwise a process whose `HOME` is not `/home/user` inspects `.e2e_amp/settings.json` in the current directory. The directory is not created.
 

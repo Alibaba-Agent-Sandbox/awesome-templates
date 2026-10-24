@@ -16,88 +16,41 @@
 
 ## 快速开始（CLI）
 
-`abx run`命令在此显式选用`abx --native run`入口。
-
-使用[已验证的原生CLI入口](../docs/using-templates.md#client-entry-compatibility)和已授权的Express配置。将<run>、<published-commit>、<owned-template-id>、<owned-sandbox-id>替换为唯一运行标记、公开40位源码提交和本次创建的资源。必须先发布精确源码；部署前将生成清单的name改成cursor-agent-<run>。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-python scripts/prepare_steps.py cursor-agent --output /tmp/cursor-agent-steps-<run> \
-  --source-commit <published-commit> --asset-transport parallel
-python - <<'CONFIG'
-from pathlib import Path
-import yaml
-p = Path("/tmp/cursor-agent-steps-<run>/template.yaml")
-v = yaml.safe_load(p.read_text())
-v["name"] = "cursor-agent-<run>"
-p.write_text(yaml.safe_dump(v, sort_keys=False))
-CONFIG
-abx --native template deploy /tmp/cursor-agent-steps-<run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> agent_version
-abx --native run <owned-sandbox-id> agent_native_check
-abx --native run <owned-sandbox-id> agent_setup_check
-# 命令服务在启动前已获得自己的厂商密钥时：
-abx --native run <owned-sandbox-id> agent --json-args '{"prompt":"Repair existing calc.py and preserve tests","cwd":"project","command_timeout":300,"allow_unsafe_tools":true}'
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./cursor-agent --workflow application --yes
+abx run <sandbox-id> agent_version --json-args '{}'
 ```
 
-先创建project。带真实厂商账号的调用行仅检查语法，未声称调用成功。create环境不会重新配置预热进程；参见下方显式启动和[运行时指南](../docs/runtime-environment.md)。原生CLI支持--server-port；SDK/HTTP示例使用独立认证的9010服务，认证信息必须与进程匹配。
-
-正式无凭证测试仅在自有测试配方中设置明确无效的合成密钥，实际调用原版程序的HTTP和SDK错误路径；不会注入操作端厂商／模型密钥：
-
-```bash
-ABX='abx --native' python scripts/run_steps_e2e.py cursor-agent \
-  --sandbox-create sdk --http --asset-transport oss
-```
-
-OSS传输需要[固定的可选缓存依赖](../scripts/requirements-steps-cache.txt)，仅创建本次私有临时对象，校验原包摘要／ACL并独立确认删除。原生steps无需本地Docker；Docker镜像验收单独记录。
+`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-按[配对源码安装](../docs/python-client-installation.md)安装agent-sandbox-client。在操作端安全环境中设置CURSOR_API_KEY；不把密钥值放入argv或命令JSON。<owned-template-id>属于本次部署，示例创建独立项目与沙箱。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio, os, secrets, uuid
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=900)
-    server = None
-    try:
-        print(await sb.run("agent_version"))
-        project = "/home/user/app/cursor-example-" + uuid.uuid4().hex
-        await sb.commands.run("mkdir -p " + project)
-        await sb.files.write(project + "/calc.py", "def add(a,b): return a-b\n")
-        token = secrets.token_urlsafe(32)
-        server = await sb.start_server(port=9010, commands="/home/user/app/commands.py",
-            token=token, env={"CURSOR_API_KEY": os.environ["CURSOR_API_KEY"], "ABX_PTY_PORT": "9011"})
-        print(await server.commands.run("agent_setup_check"))
-        result = await server.commands.run("agent", prompt="Repair existing calc.py and write report.txt",
-            cwd=project, command_timeout=300, allow_unsafe_tools=True, timeout=420)
-        print(result["stdout"])
-    finally:
-        if server is not None:
-            await server.aclose()
-        await sb.kill()
-        await sb.close()
-
-asyncio.run(main())
+print(await client.commands.run('agent_version'))
 ```
 
-未声称厂商账号调用行执行成功。沙箱寿命需覆盖命令及清理；命令超时与TTL分开。关闭借用服务客户端会关闭客户端传输；删除自有沙箱结束远程进程。自动化部署需独立确认资源已不存在。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-使用已配置进程的转发URL和独立Bearer；直接JSON参数不包含厂商密钥。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/agent_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body -X POST "$CURSOR_COMMAND_SERVER_URL/commands/agent" \
-  -H "Authorization: Bearer $COMMAND_SERVER_TOKEN" -H 'Content-Type: application/json' \
-  --data '{"prompt":"Repair existing calc.py and write report.txt","cwd":"project","command_timeout":300,"allow_unsafe_tools":true}'
+```json
+{}
 ```
 
-HTTP200封装为`{"result":{"stdout":"...","stderr":"","exit_code":0,...}}`。缺失／未知／类型错误参数400，命令认证401，未知命令404，语义或原生执行错误500，错误仅给出有界类别与退出码。预期的无效密钥500是程序错误路径测试，不是模型成功。/health、/commands、文件和shell共享相同进程／认证边界。HTTP断开不取消云作业，原操作仍按期限清理。
+该检查的预期响应：
+
+```json
+{"result": "2026.10.19-6bbf2c4"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -120,7 +73,7 @@ prompt为1..32768UTF8字节，非空且无NUL。cwd最长4096UTF8字节、无NUL
 | --- | --- | --- |
 | CURSOR_API_KEY | 空；agent必需 | 厂商凭证，命令模块导入时捕获 |
 | WORKSPACE | /home/user/app | 项目根目录，导入时捕获 |
-| ABX_SERVER_TOKEN | 空／可选 | 独立命令服务Bearer，不是Cursor凭证 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 原生子进程只获得自身显式厂商密钥及私有HOME/config/data/cache/TMP等最小环境。固定原生参数关闭更新和项目配置加载；不使用操作系统钥匙串或原生持久会话。成功／失败／超时后删除每次私有状态。服务和工具共享OS用户，路径不是其他租户的隔离边界；自动工具仅用于自有一次性沙箱。
 

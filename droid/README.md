@@ -16,158 +16,41 @@ An automation can upload a project, ask Droid to edit it, inspect files, and run
 
 ## Quick start (CLI)
 
-The primary path is explicit BYOK. Replace placeholders with this run's unique directory and owned IDs. Publish the immutable source before preparation. Start the server with the three `DROID_MODEL_*` settings before the coding call; do not put secrets in CLI arguments. Native CLI0.4.1 syntax below is source-checked; current SDK/Express acceptance is linked below. Require official READY and independently verify owned cleanup.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-python scripts/prepare_steps.py droid --output /tmp/droid-steps-<unique-run> --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
-abx --native template deploy /tmp/droid-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> droid_version
-abx --native run <owned-sandbox-id> droid_byok_setup_check
-abx --native run <owned-sandbox-id> droid_byok --arg prompt='Create hello.txt containing Hello from Droid.'
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./droid --workflow application --yes
+abx run <sandbox-id> droid_version --json-args '{}'
 ```
 
-The following retained example uses the separate Factory-account command.
-
-The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
-
-Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
-
-Install the CLI following the [official installation instructions](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#readme), then build this template on `alicloud-express`:
-
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//droid
-abx create <template-id> --detach
-abx run <sandbox-id> droid_version
-abx run <sandbox-id> droid_setup_check
-abx run <sandbox-id> droid --arg prompt='Review the existing project' --arg auto=''
-```
-
-Use the template ID returned by installation. Inject `FACTORY_API_KEY` through your private environment configuration at sandbox creation; provider credentials and the Factory product key are separate. The final command requires the Factory key. Upload a project with the SDK files API before a coding task. Remove the sandbox with `abx kill <sandbox-id>` when done.
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-BYOK example with the paired `agent-sandbox-client`: install using the [source guide](../docs/python-client-installation.md). Settings are captured at server import. Inspect setup flags; a prewarmed process requires [explicit environment startup](../docs/runtime-environment.md). No model key is passed in named-command arguments. The example is syntax-checked; recorded cloud acceptance exercised these SDK operations with the explicitly configured9010server.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-import os
-import secrets
-
-import httpx
-from agent_sandbox.api.sandbox import Sandbox
-
-async def example():
-    settings = {name: os.environ[name] for name in ('DROID_MODEL_API_KEY', 'DROID_MODEL_BASE_URL', 'DROID_MODEL')}
-    token = secrets.token_urlsafe(32)
-    settings.update(HOME="/home/user", WORKSPACE='/home/user/app',
-                    ABX_SERVER_BASE_DIR='/home/user/app', ABX_SERVER_TOKEN=token,
-                    PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin")
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=1200)
-    stream = drain = server = None
-    try:
-        stream = await sb.commands.start(
-            "agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py",
-            env=settings, timeout=1100)
-        started = asyncio.Event()
-        async def consume():
-            async for chunk in stream:
-                if chunk.pid:
-                    started.set()
-        drain = asyncio.create_task(consume())
-        await asyncio.wait_for(started.wait(), 90)
-        async with httpx.AsyncClient(timeout=10) as client:
-            for _ in range(60):
-                try:
-                    response = await client.get(sb.network.get_url(9010) + "/health",
-                                                headers=sb.network.get_access_headers())
-                    if response.status_code == 200:
-                        break
-                except httpx.HTTPError:
-                    pass
-                await asyncio.sleep(1)
-            else:
-                raise RuntimeError("configured server not healthy")
-        server = sb.server_at(9010, token=token)
-        print(await server.commands.run('droid_version', timeout=90))
-        setup = await server.commands.run('droid_byok_setup_check', timeout=60)
-        if not all(setup.get(k) is True for k in ("api_key_set", "base_url_set", "model_set")):
-            raise RuntimeError("model configuration not present in this server")
-        await sb.files.write("/home/user/app/calc.py", "def add(a, b): return a - b\n")
-        result = await server.commands.run("droid_byok", prompt="Fix calc.py so add returns the sum.",
-                                           command_timeout=600, timeout=660)
-        if result["exit_code"] != 0:
-            raise RuntimeError("native Droid did not complete successfully")
-        print(await sb.files.read("/home/user/app/calc.py"))
-    finally:
-        try:
-            if server is not None:
-                await server.aclose()
-        finally:
-            try:
-                await sb.kill()
-            finally:
-                if drain is not None:
-                    drain.cancel()
-                    await asyncio.gather(drain, return_exceptions=True)
-                if stream is not None:
-                    await stream.cancel()
-
-asyncio.run(example())
+print(await client.commands.run('droid_version'))
 ```
 
-Legacy Factory-account example:
-
-Use `agent-sandbox-client`, imported as `agent_sandbox`. For an unpublished release, use the [paired source installation](../docs/python-client-installation.md).
-
-```python
-import asyncio
-import os
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(
-        template="<template-id>", timeout=600,
-        envs={"FACTORY_API_KEY": os.environ["FACTORY_API_KEY"]},
-    )
-    try:
-        await sb.files.write("/home/user/app/calc.py", "def add(a, b):\n    return a - b\n")
-        print(await sb.run("droid_version"))  # "0.241.1"
-        print(await sb.run("droid", prompt="Fix calc.py so add returns the sum.",
-                           auto="low", command_timeout=300, timeout=360))
-        print(await sb.files.read("/home/user/app/calc.py"))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
-```
-
-`command_timeout` is the server-side execution deadline. `Sandbox.run(timeout=360)` is the client HTTP timeout; a shorter client timeout does not guarantee cancellation. Results are buffered. For background jobs, progress and cancellation, use the SDK process API.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-BYOK uses a direct JSON argument object and your own server URL/token in environment variables. The envelope is `{"result":{"exit_code":0,"native_version":"0.241.1","stdout":"<native JSON>","stderr":""}}`. Native nonzero exits remain visible in `exit_code`; do not treat HTTP200 alone as agent success. `POST /commands/droid_byok_setup_check` accepts `{}`. Schema errors400, authentication401, unknown commands404 and semantic/configuration/deadline failures500. Buffered output; client disconnection does not cancel execution.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/droid_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body -X POST "$SERVER_URL/commands/droid_byok" -H "Authorization: Bearer $ABX_SERVER_TOKEN" -H 'Content-Type: application/json' -d '{"prompt":"Fix calc.py so add returns the sum.","command_timeout":300}'
+```json
+{}
 ```
 
-Legacy Factory-account HTTP:
+Expected response for this check:
 
-Obtain the sandbox URL for port 9000 using `sb.network.get_url(9000)`:
-
-```bash
-curl -X POST '<sandbox-port-9000-url>/commands/droid' \
-  -H 'Content-Type: application/json' \
-  -H "Authorization: Bearer ${ABX_SERVER_TOKEN}" \
-  -d '{"prompt":"Fix calc.py so add returns the sum.","auto":"low","command_timeout":300}'
+```json
+{"result": "0.241.1"}
 ```
 
-The request body is the direct argument object. A successful reply is `{"result":"<buffered Droid output>"}`. If `ABX_SERVER_TOKEN` is empty, omit that header. A nonempty server token requires `Authorization: Bearer <token>` or `X-Access-Token: <token>`; with the Python SDK, use `sb.server_at(9000, token=...)`. Provider gateway authentication is separate: add the access header required by your provider in addition to server authentication. `GET /commands` describes signatures. `POST /commands/droid_version` and `/commands/droid_setup_check` accept `{}`.
-
-HTTP 400 indicates missing or mistyped arguments; 401 indicates server authentication failure; 404 indicates an unknown command; 500 indicates invalid value ranges, missing Factory credentials, upstream failure or execution timeout. No streamed response is returned.
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -193,7 +76,7 @@ This subprocess lifecycle requires Linux. The command closes its owned process g
 | `DROID_MODEL_BASE_URL` | Empty; required for BYOK | Explicit HTTPS compatible base, at most2048 characters, no userinfo/query/fragment; literal local HTTP only for fixtures. |
 | `DROID_MODEL` | Empty; required for BYOK | Explicit1–200-character model identifier. |
 | `FACTORY_API_KEY` | Empty | Factory account API key, injected at creation. Required only for `droid`. |
-| `ABX_SERVER_TOKEN` | Empty | Optional HTTP server authentication. |
+| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 | `WORKSPACE` | `/home/user/app` | Existing project root; an invalid explicit root fails. |
 | `FACTORY_DROID_AUTO_UPDATE_ENABLED` | `false` | Forced off in subprocesses to preserve the pin. |
 

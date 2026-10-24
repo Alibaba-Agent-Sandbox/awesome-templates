@@ -16,58 +16,41 @@ Make the real Grok Build coding agent available through named commands without i
 
 ## Quick start (CLI)
 
-Install the [verified native CLI entry](../docs/platform-steps.md), configure authorized Express access, publish the exact source commit when preparation needs public COPY inputs, and replace unique-run/template/sandbox placeholders with your own values. Named commands use `abx run`; CLI0.4.1 selects this entry as `abx --native run`. Wait for official READY before creation. The dated Verified section records the actual tested source and scope.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-python scripts/prepare_steps.py grok --output /tmp/grok-steps-<unique-run> \
-  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
-abx --native template deploy /tmp/grok-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> grok_version
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./grok --workflow application --yes
+abx run <sandbox-id> grok_version --json-args '{}'
 ```
 
-The expected diagnostic is `{"native_version":"1.0.62"}`. Automatic native step/SDK acceptance uses:
-
-```bash
-export ABX='abx --native'
-python scripts/run_steps_e2e.py grok --sandbox-create sdk --http
-```
-
-Once the command server has the model configuration below, a genuine task can use `abx --native run <owned-sandbox-id> grok --json-args '{"prompt":"Inspect the existing project and fix its failing tests","cwd":"project","command_timeout":300}'`. The project directory must already exist inside WORKSPACE. Inspect `exit_code` and native `stopReason`; installing or echoing a marker does not prove coding success.
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install distribution `agent-sandbox-client` using the [paired source instructions](../docs/python-client-installation.md); import `agent_sandbox`. The model-free example owns and cleans its new sandbox.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=300)
-    try:
-        print(await sb.run("grok_version", timeout=60))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('grok_version'))
 ```
 
-For real coding, first configure `GROK_MODEL_API_KEY`, `GROK_MODEL_BASE_URL`, `GROK_MODEL` on the command server before startup. [Explicit process configuration](../docs/runtime-environment.md) explains prewarmed servers: later create-time environment does not reconfigure9000. Verify presence through `grok_setup_check`. Then call `await sb.run("grok", prompt="Fix the existing calc.py and preserve test_calc.py", cwd="project", command_timeout=300, timeout=330)`. This returns `{stdout,stderr,exit_code,native_version}` directly; it does not stream stdout chunks. Nonzero native exit remains a nonzero exit_code, never a success claim.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-ABX_SERVER_URL is `sb.network.get_url(9000)`. Configure the command server's own ABX_SERVER_TOKEN separately from model/provider credentials.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/grok_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/grok_version" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" --data '{}'
+```json
+{}
 ```
 
-HTTP200 returns `{"result":{"native_version":"1.0.62"}}`. `POST /commands/grok` accepts direct `{prompt,cwd,command_timeout}` JSON, without an args wrapper. Missing/type-invalid/unknown arguments return400, authentication failure401, unknown command404, semantic guards or execution exceptions500 with `{error,type}`. A completed native process returns its structured result including nonzero exit_code when applicable. Client disconnect does not cancel the bounded process; finally cleanup still owns native descendants/private state.
+Expected response for this check:
+
+```json
+{"result": {"native_version": "1.0.62"}}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -90,7 +73,7 @@ Native output is capped256KiB per stream, with whole-process-group/pidfd/unique-
 | GROK_MODEL_BASE_URL | model required; empty | Explicit HTTPS API base, literal localhost HTTP for authored development only; no userinfo/query/fragment; max2048characters |
 | GROK_MODEL | model required; empty | Actual model identifier, max200allowed identifier characters |
 | WORKSPACE | `/home/user/workspace` | Existing workspace root |
-| ABX_SERVER_TOKEN | optional; empty | Independent named-server Bearer credential |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 
 Values are captured when commands.py loads. A private0600 config.toml stores explicit model/base and env_key="ABX_GROK_MODEL_KEY" without the key value. Custom api_backend="chat_completions" prevents selecting a hosted vendor model. Private GROK_HOME/HOME/cache/session state is removed after each call; auto-update, leader, telemetry/trace upload, memory and background workflows are disabled. Native shell_environment_policy inherits core with default secret exclusion; no caller cloud/GitHub/vendor account token is forwarded. Agent tools still have OS authority in the disposable sandbox.
 

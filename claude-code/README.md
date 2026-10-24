@@ -14,58 +14,41 @@ Expose original native tool execution through SDK/HTTP, with a new explicitly se
 
 ## Quick start (CLI)
 
-The `abx run` native entry is `abx --native run`. Use verified CLI0.4.1 native entry, existing authorized Express settings and a unique owned run. Publish the exact source before immutable COPY preparation. Replace all placeholders; wait for official READY and retain all owned IDs for cleanup.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-python scripts/prepare_steps.py claude-code --output /tmp/claude-steps-<unique-run> \
-  --server-commit 34e7e011c5569f77b7f605e65313be7498f6cf02
-python - <<'CONFIG'
-from pathlib import Path
-import yaml
-p=Path('/tmp/claude-steps-<unique-run>/template.yaml')
-v=yaml.safe_load(p.read_text());v['name']='claude-<unique-run>'
-p.write_text(yaml.safe_dump(v,sort_keys=False))
-CONFIG
-abx --native template deploy /tmp/claude-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> claude_version
-abx --native run <owned-sandbox-id> claude_native_check
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./claude-code --workflow application --yes
+abx run <sandbox-id> claude_version --json-args '{}'
 ```
 
-Canonical owned steps: `ABX='abx --native' python scripts/run_steps_e2e.py claude-code --sandbox-create sdk --http`. Steps do not certify Docker image cloud deployment. For configured coding, `abx --native run <owned-sandbox-id> claude_byok --json-args '{"prompt":"Repair existing calc.py and preserve its tests","cwd":"project","command_timeout":300,"allow_unsafe_tools":true}'`.
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install distribution `agent-sandbox-client` using the [paired pinned source instructions](../docs/python-client-installation.md).
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-async def main():
-    sb=await Sandbox.create(template='<owned-template-id>',timeout=900)
-    try:
-        print(await sb.run('claude_version',timeout=60))
-        print(await sb.run('claude_native_check',timeout=60))
-    finally:
-        await sb.kill()
-asyncio.run(main())
+print(await client.commands.run('claude_version'))
 ```
 
-Set all three CLAUDE_MODEL_* variables before the named-command process starts, check `claude_setup_check`, and invoke `await server.commands.run('claude_byok',prompt='Repair existing calc.py; preserve its tests',cwd='project',command_timeout=300,allow_unsafe_tools=True,timeout=540)`. Create the project first. Use `sb.server_at(port,token=...)` and close that borrowed client after use. A prewarmed9000process does not acquire later create-time env; follow [explicit process configuration](../docs/runtime-environment.md). An independently configured9010server needs a separate matching Bearer token. Results are buffered direct objects.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-ABX_SERVER_URL is `sb.network.get_url(port)` for the configured process; its Bearer token is independent of model/platform credentials.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/claude_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/claude_version" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header 'Content-Type: application/json' --data '{}'
+```json
+{}
 ```
 
-HTTP200 returns `{"result":"2.0.76 (Claude Code)"}`. `POST /commands/claude_byok` takes direct `{prompt,cwd,command_timeout,allow_unsafe_tools}` JSON. Missing/unknown/type arguments400, auth401, unknown command404; semantic/native errors500 with sanitized diagnostics. Disconnect does not cancel an issued provider job; bounded owned process/adapter cleanup still runs.
+Expected response for this check:
+
+```json
+{"result": "2.0.76 (Claude Code)"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -92,7 +75,7 @@ Text and original tool schemas/results are translated; unsupported image/thinkin
 | CLAUDE_MODEL | empty; required for BYOK | Selected model1..200identifier characters |
 | ANTHROPIC_API_KEY | empty; legacy mode only | Existing Anthropic-compatible legacy configuration; not silently reused by BYOK |
 | WORKSPACE | /home/user/app | Existing project root |
-| ABX_SERVER_TOKEN | empty; optional | Separate command-server credential |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 
 New settings captured at module import. Key max8192/no control characters; no default provider/model/key fallback. Native/tool environment gets only an ephemeral local adapter token and minimal private HOME/config/cache; real upstream key remains in the parent and is sent only to exact configured Chat origin. Original command results and error messages omit credentials/private endpoints/transcripts. Same-user OS access remains; environment filtering/cwd containment is not another tenant boundary. Legacy resume/settings behavior is retained and outside BYOK isolation claims.
 

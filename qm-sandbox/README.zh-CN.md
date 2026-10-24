@@ -14,59 +14,41 @@
 
 ## 快速开始（CLI）
 
-按[原生CLI说明](../docs/platform-steps.zh-CN.md)配置授权的极速版访问，并替换全部尖括号占位符。不可变公共COPY准备前先发布准确提交。按下面代码为生成manifest设置独占名称；等待官方READY后再创建。同一无需模型任务供CLI、SDK及HTTP调用。CLI0.4.1通过 `abx --native run` 使用 `abx run`。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-python scripts/prepare_steps.py qm-sandbox --output /tmp/qm-sandbox-steps-<unique-run> \
-  --asset-transport parallel --server-commit 34e7e011c5569f77b7f605e65313be7498f6cf02
-python - <<'CONFIG'
-from pathlib import Path
-import yaml
-p = Path("/tmp/qm-sandbox-steps-<unique-run>/template.yaml")
-v = yaml.safe_load(p.read_text())
-v["name"] = "qm-sandbox-<unique-run>"
-p.write_text(yaml.safe_dump(v, sort_keys=False))
-CONFIG
-abx --native template deploy /tmp/qm-sandbox-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> qm_sandbox_sdk_smoke
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./qm-sandbox --workflow application --yes
+abx run <sandbox-id> qm_sandbox_version --json-args '{}'
 ```
-规范验证入口：`ABX='abx --native' python scripts/run_steps_e2e.py qm-sandbox --sandbox-create sdk --http --asset-transport oss`，负责独占资源、恢复和私有OSS缓存清理。手动调用者清理自身已知ID；steps通过不代表Docker镜像部署通过。
+
+`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-按[配套源码说明](../docs/python-client-installation.md)安装发行包 `agent-sandbox-client`，导入 `agent_sandbox`。示例只做语法检查，不构成提供方通过；本示例负责清理，默认命令服务token为空。任何端口如配置Bearer，都使用 `sb.server_at(9000,token=...)`（或实际端口）的命令客户端并关闭。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=300)
-    try:
-        result = await sb.run("qm_sandbox_sdk_smoke", timeout=200)
-        assert result == "Original QM tools and actual Agent Sandbox SDK round trip/owned cleanup OK"
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('qm_sandbox_version'))
 ```
-执行可用 `await sb.run("qm_sandbox_exec", command="python3 -c 'print(1 + 1)'", cwd="project", command_timeout=30, timeout=110)`；读文件用 `await sb.run("qm_sandbox_file", action="read", path="notes.txt", cwd="project", timeout=150)`。项目必须已存在；后端teardown保留调用方文件。
 
-[预热服务配置](../docs/runtime-environment.zh-CN.md)：后续create环境变量不会重配已有9000进程。单独启动9010服务时显式配置QM_SANDBOX_BASE_URL=http://127.0.0.1:9010及匹配SDK Bearer。通过sb.server_at(port,token=...)调用并关闭客户端；停止、排空/取消本次服务流，最后销毁外层沙箱。禁止把密钥/token值放入argv。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-ABX_SERVER_URL来自 `sb.network.get_url(9000)`；命令服务Bearer、可选提供方入口头、SDK Bearer和模型凭据分别配置。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/qm_sandbox_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/qm_sandbox_sdk_smoke" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" --data '{}'
+```json
+{}
 ```
-HTTP200返回 `{"result":"Original QM tools and actual Agent Sandbox SDK round trip/owned cleanup OK"}`。参数为直接JSON对象，不包args。缺失/未知/类型错误400，鉴权401，未知命令404，语义/原生异常500及 `{error,type}`。执行结果分别保留真实code和timedOut；命令自己exit124不会自动算超时。断开HTTP请求不取消有界原生操作。后端关闭前等待已发出的SDK请求结束；模型工具执行上限为30秒与turn期限的较小值，中止结果不报告成功。
+
+该检查的预期响应：
+
+```json
+{"result": {"qm_version": "0.1.0", "node_version": "24.16.0", "sdk_version": "0.1.0"}}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -88,7 +70,7 @@ HTTP200返回 `{"result":"Original QM tools and actual Agent Sandbox SDK round t
 | WORKSPACE | /home/user/app | Existing caller project root, captured at startup |
 | QM_SANDBOX_BASE_URL | http://127.0.0.1:9000 | Actual SDK data-plane server on the same owned computer; literal local HTTP only, no userinfo/query/fragment/path |
 | QM_SANDBOX_TOKEN | empty; optional | SDK server's independent Bearer token; falls back to ABX_SERVER_TOKEN for the default same server |
-| ABX_SERVER_TOKEN | empty; optional | Command server's independent Bearer credential |
+| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 commands.py加载时捕获配置；存在性不证明连通。SDK token最长8192且不含CR/LF/NUL，模型key最长8192且无控制字符。Node工作进程仅通过匿名stdin接收配置，不在环境继承模型/云/GitHub凭据；工具Bash另用最小环境和私有HOME，同一用户仍有OS访问权限。每次调用删除私有HOME/缓存/配置/模型目录/临时workspace镜像。返回文本脱敏密钥、base、token及JSON转义值。原版QM禁用Pi默认内置工具，使用原版QM工具；不加载扩展、skill、上下文文件或子会话，只批准execute/files读写，不启动委派、Slack/邮件或控制服务。调用方项目/产物保留到调用方删除或销毁外层沙箱。
 

@@ -23,81 +23,41 @@ hint和会话配置。本配置选择上游支持的OpenAI兼容服务，不代�
 
 ## 快速开始（CLI）
 
-原生CLI语法；先确认[入口兼容性](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template deploy ./goose -y
-abx create <template-id> --detach --timeout 900
-abx run <sandbox-id> goose_version
-abx run <sandbox-id> goose_setup_check
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./goose --workflow application --yes
+abx run <sandbox-id> goose_version --json-args '{}'
 ```
 
-版本/配置检查不需要key。模型调用需要运行中命令server已经取得配置，见下面
-SDK显式启动；create-time环境不会重配预热server。[使用指南](../docs/using-templates.zh-CN.md)
-说明提供方配置和ID所有权。
+`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-按[配套说明](../docs/python-client-installation.md)从固定源码安装 `agent-sandbox-client` 发行包。在操作端环境设置三个
-GOOSE变量；凭据不进入argv。例子拥有整个沙箱，销毁前读取产物。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-import os
-import secrets
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=900)
-    server = None
-    try:
-        server = await sb.start_server(
-            port=9010, commands="/home/user/app/commands.py", timeout=60,
-            token=secrets.token_urlsafe(32),
-            env={"GOOSE_API_KEY": os.environ["GOOSE_API_KEY"],
-                 "GOOSE_BASE_URL": os.environ["GOOSE_BASE_URL"],
-                 "GOOSE_MODEL": os.environ["GOOSE_MODEL"],
-                 "WORKSPACE": "/home/user/app"})
-        result = await server.commands.run(
-            "goose", prompt="Create HELLO.txt containing hello, then read it back.",
-            allow_tools=True, command_timeout=600, timeout=660)
-        if result["exit_code"] != 0:
-            raise RuntimeError("Goose failed; inspect the private returned diagnostics")
-        print(await sb.files.read("/home/user/app/HELLO.txt"))
-    finally:
-        try:
-            if server is not None:
-                await server.aclose()
-            await sb.kill()
-        finally:
-            await sb.close()
-
-asyncio.run(main())
-
+print(await client.commands.run('goose_version'))
 ```
 
-SDK helper在9010启动新server，使用独立随机bearer token，不重配原9000进程。
-仅销毁调用者拥有的沙箱。示例已按API/源码检查；实际提供方/模型通过依赖下面
-独立回执。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-`ABX_SERVER_URL` 为已配置server的SDK9010转发URL，`ABX_SERVER_TOKEN` 为该
-进程启动时的随机token。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/goose_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --max-time 660 -X POST "$ABX_SERVER_URL/commands/goose" \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN" -H 'Content-Type: application/json' \
-  --data '{"prompt":"Explain 6*7 briefly","allow_tools":false,"command_timeout":600}'
+```json
+{}
 ```
 
-示例响应：`{"result":{"stdout":"42","stderr":"","exit_code":0}}`。
-HTTP200通过 `result` 包装 `{stdout,stderr,exit_code}`，保留上游非零退出码。
-缺少/多余/错误类型参数400、鉴权失败401、未知命令404；路径、配置、版本、
-限额或超时失败500，带error/type。响应缓冲。HTTP等待时限与命令时限不同，
-断连不保证原生进程取消。
+该检查的预期响应：
+
+```json
+{"result": "1.54.0"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -122,7 +82,7 @@ quiet文本输出和提供方/模型，工具模式仅加载developer builtin。
 | GOOSE_BASE_URL | 模型调用 | 空 | 显式HTTP(S)地址，无userinfo/query/fragment，映射上游OPENAI_BASE_URL |
 | GOOSE_MODEL | 模型调用 | 空 | 上游真实模型ID |
 | WORKSPACE | 否 | /home/user/app | 自有工作目录 |
-| ABX_SERVER_TOKEN | 否 | 空 | 命令server进程bearer token |
+| ABX_SERVER_TOKEN | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | GOOSE_BINARY | 仅操作端诊断 | 镜像PATH中的Goose | 独立安装的二进制，仍检查精确版本 |
 
 私有GOOSE_PATH_ROOT/HOME和XDG目录，关闭keyring、遥测、自动会话命名，

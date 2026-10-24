@@ -14,61 +14,41 @@ Provide genuine original Muse file/tool execution through named SDK/HTTP command
 
 ## Quick start (CLI)
 
-The `abx run` native surface is selected as `abx --native run`. Use verified CLI0.4.1's explicit native entry and existing authorized Express settings. Publish the exact source before immutable COPY preparation; replace placeholders and give the generated manifest a unique owned name before deployment. Wait for official READY before creation. The same keyless operation is used by CLI, Python SDK and HTTP.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-python scripts/prepare_steps.py muse --output /tmp/muse-steps-<unique-run> \
-  --asset-transport parallel --server-commit 34e7e011c5569f77b7f605e65313be7498f6cf02
-python - <<'CONFIG'
-from pathlib import Path
-import yaml
-p = Path("/tmp/muse-steps-<unique-run>/template.yaml")
-v = yaml.safe_load(p.read_text())
-v["name"] = "muse-<unique-run>"
-p.write_text(yaml.safe_dump(v, sort_keys=False))
-CONFIG
-abx --native template deploy /tmp/muse-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> muse_version
-abx --native run <owned-sandbox-id> muse_native_check
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./muse --workflow application --yes
+abx run <sandbox-id> muse_version --json-args '{}'
 ```
 
-Canonical ownership/cleanup: `ABX='abx --native' python scripts/run_steps_e2e.py muse --sandbox-create sdk --http --asset-transport oss`. Manual callers own all created IDs. Native steps require no local Docker daemon; steps acceptance does not certify image cloud deployment.
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install distribution `agent-sandbox-client` (import `agent_sandbox`) using the [paired source instructions](../docs/python-client-installation.md).
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=900)
-    try:
-        print(await sb.run("muse_version", timeout=60))
-        print(await sb.run("muse_native_check", timeout=60))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('muse_version'))
 ```
 
-For coding, configure all three MUSE_MODEL_* variables **before the named-command server starts**, inspect `muse_setup_check`, then call `await server.commands.run("muse",prompt="Repair existing calc.py and preserve its tests",cwd="project",command_timeout=300,timeout=380)`. The project must already exist. Use `sb.server_at(port,token=...)` for an independently authenticated server and close that borrowed client afterwards. A prewarmed9000process is not reconfigured by later create-time env: follow [explicit process setup](../docs/runtime-environment.md); a separately configured9010server needs its own matching token. Results are buffered/direct, not transport-streamed native events.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-ABX_SERVER_URL is the configured server's `sb.network.get_url(port)`; ABX_SERVER_TOKEN is separate from model/platform credentials.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/muse_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/muse_version" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" --data '{}'
+```json
+{}
 ```
 
-HTTP200 returns `{"result":"Muse Code 1.4.11 (1.4.11-R6667.1)"}`. `POST /commands/muse` takes direct `{prompt,cwd,command_timeout}` JSON. Missing/unknown/type arguments400, authentication401, unknown command404; semantic/native errors500 with sanitized `{error,type}`. HTTP disconnect does not cancel the native process or upstream provider job; bounded owned cleanup still runs.
+Expected response for this check:
+
+```json
+{"result": "Muse Code 1.4.11 (1.4.11-R6667.1)"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -91,7 +71,7 @@ Native completion requires exact correlated original model/usage/terminal record
 | MUSE_MODEL_BASE_URL | empty; required for coding | Explicit HTTPS Responses base, max2048characters, no userinfo/query/fragment; literal-loopback HTTP only for authored fixtures |
 | MUSE_MODEL | empty; required for coding | Actual upstream model identifier,1..200allowed identifier characters |
 | WORKSPACE | `/home/user/app` | Existing caller project root |
-| ABX_SERVER_TOKEN | empty; optional | Independent command-server Bearer credential |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 
 Captured at commands.py import; presence flags do not prove authentication. Key max8192/no control characters. Native receives only a fresh per-call local relay token by anonymous stdin. The parent relay uses the upstream key only for the exact approved Responses endpoint, rejects redirects and wrong route/token/model, and retains no transcript. Native/tools use a minimal environment and private HOME/cache/config; caller project artifacts persist. Same-user OS access remains; cwd containment and environment filtering are not another tenant boundary. `--yolo` selects the disposable outer sandbox as the execution boundary.
 

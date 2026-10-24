@@ -27,111 +27,41 @@ MIT 许可的[固定原版源码](https://github.com/sierra-research/tau2-bench/
 
 ## 快速开始（CLI）
 
-依照[步骤构建指南](../docs/platform-steps.zh-CN.md)安装已验证原生 CLI，并配置自己的极速版提供商。以下占位符须替换为本次唯一输出目录和自己创建的资源 ID。先发布源码提交，再准备不可变 COPY 步骤；步骤构建不能证明 Docker 镜像构建通过。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-python scripts/prepare_steps.py tau2-bench --asset-transport oss --output /tmp/tau2-steps-<unique-run> --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
-abx --native template deploy /tmp/tau2-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> tau2_version
-# Requires the explicitly configured model server; select its port as documented below.
-abx --native run <owned-sandbox-id> tau2_run --server-port 9010
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./tau2-bench --workflow application --yes
+abx run <sandbox-id> tau2_version --json-args '{}'
 ```
 
-命名命令使用 `abx run`；`--native` 选择已验证的原生 CLI 后端。版本结果应包含原版 `1.0.1`、领域 `retail`、`task_count: 114`。标准非模型部署、SDK 创建、HTTP 检查及清理命令：
-
-```bash
-ABX='abx --native' python scripts/run_steps_e2e.py tau2-bench --sandbox-create sdk --http --asset-transport oss
-```
-
-要求官方状态 READY，使用后独立确认本次沙箱、模板和私有资产对象均不存在。清理不确定时保留私有恢复日志。模型配置仅通过下述进程环境传递，密钥不得放入 CLI 参数。
+`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-按[固定客户端安装说明](../docs/python-client-installation.md)安装配套 `agent-sandbox-client`。模板占位符必须属于自己。示例已通过语法检查，同样的 SDK/原生操作已在记录中的所属云验收执行；代码显式启动带模型配置的9010服务。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-import os
-import secrets
-
-import httpx
-from agent_sandbox.api.sandbox import Sandbox
-
-async def example():
-    settings = {name: os.environ[name] for name in ('TAU2_MODEL_API_KEY', 'TAU2_MODEL_BASE_URL', 'TAU2_MODEL')}
-    token = secrets.token_urlsafe(32)
-    settings.update(HOME="/home/user", WORKSPACE='/home/user/workspace',
-                    ABX_SERVER_BASE_DIR='/home/user/workspace', ABX_SERVER_TOKEN=token,
-                    PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin")
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=1200)
-    stream = drain = server = None
-    try:
-        stream = await sb.commands.start(
-            "agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py",
-            env=settings, timeout=1100)
-        started = asyncio.Event()
-        async def consume():
-            async for chunk in stream:
-                if chunk.pid:
-                    started.set()
-        drain = asyncio.create_task(consume())
-        await asyncio.wait_for(started.wait(), 90)
-        async with httpx.AsyncClient(timeout=10) as client:
-            for _ in range(60):
-                try:
-                    response = await client.get(sb.network.get_url(9010) + "/health",
-                                                headers=sb.network.get_access_headers())
-                    if response.status_code == 200:
-                        break
-                except httpx.HTTPError:
-                    pass
-                await asyncio.sleep(1)
-            else:
-                raise RuntimeError("configured server not healthy")
-        server = sb.server_at(9010, token=token)
-        print(await server.commands.run('tau2_version', timeout=90))
-        setup = await server.commands.run('tau2_setup_check', timeout=60)
-        if not all(setup.get(k) is True for k in ("api_key_set", "base_url_set", "model_set")):
-            raise RuntimeError("model configuration not present in this server")
-        result = await server.commands.run("tau2_run", domain="retail", task_id="0",
-                                           max_steps=40, command_timeout=900, timeout=1000)
-        trajectory = await sb.files.read_bytes(result["log_path"], max_bytes=8 * 1024 * 1024)
-        print(result["score"], len(trajectory))
-        print(await server.commands.run("tau2_verify_artifact", path=result["log_path"],
-                                        task_id="0", timeout=150))
-    finally:
-        try:
-            if server is not None:
-                await server.aclose()
-        finally:
-            try:
-                await sb.kill()
-            finally:
-                if drain is not None:
-                    drain.cancel()
-                    await asyncio.gather(drain, return_exceptions=True)
-                if stream is not None:
-                    await stream.cancel()
-
-asyncio.run(example())
+print(await client.commands.run('tau2_version'))
 ```
 
-创建时设置环境变量不会重配预热服务，遵循[运行环境说明](../docs/runtime-environment.zh-CN.md)，模型运行前检查 `tau2_setup_check`。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-将自己服务的 URL 和 Bearer token 安全注入环境，勿公开。参数直接作为 JSON 对象发送，不包裹 `args`。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/tau2_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body -X POST "$SERVER_URL/commands/tau2_version" -H "Authorization: Bearer $ABX_SERVER_TOKEN" -H 'Content-Type: application/json' -d '{}'
+```json
+{}
 ```
 
-返回 JSON 为 `{"result":{"native_version":"1.0.1","domain":"retail","task_count":114}}`。调用 `tau2_run` 使用
-`{"domain":"retail","task_id":"0","max_steps":30,"command_timeout":600}`；重放使用
-`{"path":"<returned-artifact-path>","task_id":"0"}`。参数结构、类型、缺失或未知参数错误为 HTTP400，认证失败401，未知命令404，语义或原版执行失败500。结果缓冲返回；客户端超时应长于执行期限，断开连接不会取消服务端任务。
+该检查的预期响应：
+
+```json
+{"result": {"native_version": "1.0.1", "domain": "retail", "task_count": 114}}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -152,7 +82,7 @@ curl --fail-with-body -X POST "$SERVER_URL/commands/tau2_version" -H "Authorizat
 | `TAU2_MODEL_BASE_URL` | 运行任务必填；空 | 显式 HTTPS 兼容接口，最多2048字符；仅本地字面地址允许 HTTP 合成测试；禁止 userinfo、query、fragment。 |
 | `TAU2_MODEL` | 运行任务必填；空 | 明确模型标识，最多200个允许的标识字符。 |
 | `WORKSPACE` | `/home/user/workspace` | 已有且可写的结果根目录。 |
-| `ABX_SERVER_TOKEN` | 空 | 对外服务应配置认证 token。 |
+| `ABX_SERVER_TOKEN` | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 配置在服务导入时捕获。双方原生模型均设置相同 `openai/` 模型和显式 `api_base`，密钥只经匿名 stdin 进入私有工作进程环境，不写入 argv 或配置文件。排除操作端云凭据、GitHub 凭据和二进制覆盖变量。所有路径清理私有 HOME、临时原生日志和子进程；成功轨迹归调用者管理，失败的部分结果删除。轨迹的键和值递归移除实际密钥和接口字符串；重放不携带模型密钥。禁用遥测及模型价格网络刷新；未知价格返回零不代表免费或准确账单。
 

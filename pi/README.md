@@ -14,49 +14,41 @@ Use Pi through typed sandbox commands with a deadline, isolated model configurat
 
 ## Quick start (CLI)
 
-The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
-
-Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template install alibaba-agent-sandbox/awesome-templates//pi
-abx create <template-id> --detach --env PI_BASE_URL="$PI_BASE_URL" --env PI_MODEL="$PI_MODEL" --env PI_API_KEY="$PI_API_KEY"
-abx run <sandbox-id> pi --arg prompt="Review this project"
-abx run <sandbox-id> pi --arg prompt="Fix the failing calculation" --arg allow_tools=true
+export ABX_PROVIDER=alicloud-express
+abx template launch ./pi --workflow application --yes
+abx run <sandbox-id> pi_version --json-args '{}'
 ```
+
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client`; see [source installation](../docs/python-client-installation.md).
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-import os
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=900,
-        envs={key: os.environ[key] for key in ("PI_BASE_URL", "PI_MODEL", "PI_API_KEY")})
-    try:
-        print(await sb.run("pi", prompt="Fix the failing calculation",
-                           allow_tools=True, command_timeout=600, timeout=660))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('pi_version'))
 ```
+
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-```bash
-curl -X POST "$SANDBOX_PORT_9000_URL/commands/pi" \
-  -H 'Content-Type: application/json' \
-  -H "X-Access-Token: $GATEWAY_ACCESS_TOKEN" \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --data '{"prompt":"Review this project","allow_tools":false,"command_timeout":600}'
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/pi_version`, with `Content-Type: application/json` and this direct argument object:
+
+```json
+{}
 ```
 
-Arguments are the JSON body, with no `args` wrapper. Success is `{"result":"buffered output"}`. The provider gateway token and optional server bearer token are separate; omit unset headers. HTTP 400 means invalid arguments, 401 authentication, 404 unknown command, and 500 missing configuration, execution failure or timeout. SDK HTTP `timeout` does not cancel the model process; `command_timeout` bounds its lifetime.
+Expected response for this check:
+
+```json
+{"result": "1.3.0"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 

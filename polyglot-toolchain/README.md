@@ -6,8 +6,6 @@ Runs Go 1.25.14, Rust/Cargo 1.90.0 and Eclipse Temurin JDK 21.0.12.1+1 in one no
 
 ## Stack
 
-Revision 1.0.2 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
-
 Alibaba FC base v0.0.49, generation 2, 2 vCPU / 2048 MB, agent-sandbox-server on port 9000. Official upstream archives and SHA256 for x86_64/aarch64 are pinned in [toolchains.json](toolchains.json). No rustup, version manager or runtime automatic Go toolchain download. Rustc, the target standard library and Cargo are installed as individual official components. GCC supplies the system linker. The installer rejects actual rootfs use above 8 GiB.
 
 ## Problem solved
@@ -16,52 +14,41 @@ Coding agents can build Go, Rust and Java projects without installing compilers 
 
 ## Quick start (CLI)
 
-Use the native CLI syntax (`abx create --help` lists `--template`):
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template deploy ./polyglot-toolchain -y
-abx create <template-id> --detach --timeout 300
-abx run <sandbox-id> toolchain_versions
-abx run <sandbox-id> toolchain_smoke
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./polyglot-toolchain --workflow application --yes
+abx run <sandbox-id> toolchain_smoke --json-args '{}'
 ```
 
-For the standard CLI entry and paired client installation, see [using templates](../docs/using-templates.md).
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install the [paired `agent-sandbox-client`](../docs/python-client-installation.md):
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        print(await sb.run("toolchain_versions"))
-        print(await sb.run("toolchain_smoke"))
-    finally:
-        await sb.kill()
-        await sb.close()
-
-asyncio.run(main())
+print(await client.commands.run('toolchain_smoke'))
 ```
+
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Response: `{"result":{"go":"GO_OK","rust":"RUST_OK","java":"JAVA_OK","cleanup_verified":true}}`.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/toolchain_smoke`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl -fsS -X POST -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer <server-token>' \
-  -d '{}' '<sandbox-port-9000-url>/commands/toolchain_smoke'
+```json
+{}
 ```
 
-The server token is set in the named-command server process. See [runtime environment](../docs/runtime-environment.md).
+Expected response for this check:
 
-HTTP 200 wraps the result in `result`; invalid arguments return 400, missing/invalid server authentication 401, and execution errors 500. Output is buffered; allow a client deadline above the complete multi-compiler workflow. These CLI/SDK/HTTP snippets describe the public operations; the executed cloud scope is recorded in Verified.
+```json
+{"result": {"go": "GO_OK", "rust": "RUST_OK", "java": "JAVA_OK", "cleanup_verified": true}}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -74,7 +61,7 @@ Both commands take no parameters. `toolchain_versions() -> dict` returns actual 
 
 ## Configuration
 
-No model key. `ABX_SERVER_TOKEN` is an optional empty manifest placeholder; inject the value into the server process. `JAVA_HOME=/opt/toolchains/java`, `GOTOOLCHAIN=local`; image PATH selects only the pinned toolchains. The smoke owns its Go build cache and removes it.
+No model key. Export `ABX_SERVER_TOKEN` before application launch; the manifest declares its name with an empty value. `JAVA_HOME=/opt/toolchains/java`, `GOTOOLCHAIN=local`; image PATH selects only the pinned toolchains. The smoke owns its Go build cache and removes it.
 
 Version1.0.1 explicitly owns the runtime workspace. Native children inherit only PATH/HOME/JAVA_HOME/TMPDIR plus fixed locale and GOTOOLCHAIN=local; cloud/model/server credentials and injected compiler/loader options are excluded. Output is drained concurrently with a256KiB limit per stream, a90-second deadline and owned group cleanup. Earlier1.0.0 attempts do not qualify this changed profile.
 

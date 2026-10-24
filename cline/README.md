@@ -14,58 +14,41 @@ Make the real Cline coding agent available through named commands without intera
 
 ## Quick start (CLI)
 
-Install the [verified native CLI entry](../docs/platform-steps.md), configure authorized Express access, publish the exact source commit when preparation needs public COPY inputs, and replace unique-run/template/sandbox placeholders with your own values. Named commands use `abx run`; CLI0.4.1 selects this entry as `abx --native run`. Wait for official READY before creation. See the dated Verified section for actual source and acceptance scope.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-python scripts/prepare_steps.py cline --output /tmp/cline-steps-<unique-run> \
-  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
-abx --native template deploy /tmp/cline-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> cline_version
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./cline --workflow application --yes
+abx run <sandbox-id> cline_version --json-args '{}'
 ```
 
-The expected diagnostic is `{"native_version":"3.0.73"}`. Automatic native step/SDK acceptance uses:
-
-```bash
-export ABX='abx --native'
-python scripts/run_steps_e2e.py cline --sandbox-create sdk --http
-```
-
-Once the command server has the model configuration below, a genuine task can use `abx --native run <owned-sandbox-id> cline --json-args '{"prompt":"Inspect the existing project and fix its failing tests","cwd":"project","command_timeout":300}'`. The project directory must already exist inside WORKSPACE. Inspect `exit_code` and native `run_result.finishReason`; installing or echoing a marker does not prove coding success.
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install distribution `agent-sandbox-client` using the [paired source instructions](../docs/python-client-installation.md); import `agent_sandbox`. The model-free example owns and cleans its new sandbox.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=300)
-    try:
-        print(await sb.run("cline_version", timeout=60))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('cline_version'))
 ```
 
-For real coding, first configure `CLINE_MODEL_API_KEY`, `CLINE_MODEL_BASE_URL`, `CLINE_MODEL` on the command server before startup. [Explicit process configuration](../docs/runtime-environment.md) explains prewarmed servers: later create-time environment does not reconfigure9000. Verify presence through `cline_setup_check`. Then call `await sb.run("cline", prompt="Fix the existing calc.py and preserve test_calc.py", cwd="project", command_timeout=300, timeout=330)`. This returns `{stdout,stderr,exit_code,native_version}` directly; it does not stream stdout chunks. Nonzero native exit remains a nonzero exit_code, never a success claim.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-ABX_SERVER_URL is `sb.network.get_url(9000)`. Configure the command server's own ABX_SERVER_TOKEN separately from model/provider credentials.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/cline_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/cline_version" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" --data '{}'
+```json
+{}
 ```
 
-HTTP200 returns `{"result":{"native_version":"3.0.73"}}`. `POST /commands/cline` accepts direct `{prompt,cwd,command_timeout}` JSON, without an args wrapper. Missing/type-invalid/unknown arguments return400, authentication failure401, unknown command404, semantic guards or execution exceptions500 with `{error,type}`. A completed native process returns its structured result including nonzero exit_code when applicable. Client disconnect does not cancel the bounded process; finally cleanup still owns native descendants/private state.
+Expected response for this check:
+
+```json
+{"result": {"native_version": "3.0.73"}}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -91,7 +74,7 @@ Runtime1.0.2 writes the provider profile at the exact native-resolved private da
 | CLINE_MODEL_BASE_URL | model required; empty | Explicit HTTPS API base, literal localhost HTTP for authored development only; no userinfo/query/fragment; max2048characters |
 | CLINE_MODEL | model required; empty | Actual model identifier, max200allowed identifier characters |
 | WORKSPACE | `/home/user/workspace` | Existing workspace root |
-| ABX_SERVER_TOKEN | optional; empty | Independent named-server Bearer credential |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 
 Values are captured when commands.py loads. The wrapper writes only provider/model/base metadata into private0600settings, not a model key value; native key resolution uses its documented environment support. Native state is private and removed on return/failure. Global telemetry/auto-update and runtime file logging are disabled; public/private model catalog refresh is disabled. Cline config/data/team/MCP paths are per-call and no caller GitHub/cloud keys, alternate binary override or Cline account token is forwarded. Host operator credentials never enter the native coding process.
 

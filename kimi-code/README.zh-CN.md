@@ -6,8 +6,6 @@
 
 ## 技术栈
 
-版本 1.0.1 将默认服务器源码与 CI wheel 的提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a` 对齐。历史回执保留原始输入范围；此版本需要重新完成镜像及工作流验收。
-
 阿里云 FC v0.0.49、SHA256 校验的固定 Node.js 24.16.0、MIT 许可的 `@moonshot-ai/kimi-code@2.2.0` 和 Dockerfile 中固定 server SDK 源码。使用现行 Node CLI，不安装旧 Python 发行包。
 
 ## 解决的问题
@@ -16,52 +14,41 @@
 
 ## 快速开始（CLI）
 
-先按[安装指南](../docs/using-templates.zh-CN.md)安装源码可追溯的 CLI 及 agent-sandbox-client/server。在服务进程启动前注入配置；[预热服务说明](../docs/runtime-environment.zh-CN.md)解释 create env 与已有进程的区别。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template deploy ./kimi-code -y
-abx create <template-id> --detach
-abx run <sandbox-id> kimi_version
-abx run <sandbox-id> kimi --json-args '{"prompt":"Summarize the files in the current directory.","command_timeout":120,"allow_tools":true}'
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./kimi-code --workflow application --yes
+abx run <sandbox-id> kimi_version --json-args '{}'
 ```
 
-替换上一命令返回的 ID。示例使用当前极速版 CLI，命名命令使用 `abx run`。
+`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-客户端 distribution 是 agent-sandbox-client，按[固定源码](../docs/python-client-installation.md)安装。先配置目标服务的模型环境。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=600)
-    try:
-        print(await sb.run("kimi", prompt="Summarize the files in the current directory.",
-                           command_timeout=120, allow_tools=True, timeout=150))
-        print(sb.network.get_url(9000))
-    finally:
-        await sb.kill()
-        await sb.close()
-
-asyncio.run(main())
+print(await client.commands.run('kimi_version'))
 ```
 
-timeout 是客户端 HTTP 预算，command_timeout 是进程组截止时间；HTTP 超时不保证取消。显式配置的服务使用对应 server_at 端口和 token。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-使用 port 9000 的服务 URL；服务认证和 provider gateway 认证独立，必要时加提供方明确要求的 gateway header。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/kimi_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/kimi"   --header 'Content-Type: application/json'   --header "Authorization: Bearer $ABX_SERVER_TOKEN"   --data '{"prompt":"Summarize the files in the current directory.","command_timeout":120,"allow_tools":true}'
-# {"result":"<buffered upstream stream-JSON text>"}
+```json
+{}
 ```
 
-服务无 token 时才省略 Authorization。body 直接是参数对象。参数缺失/类型错误为 400，认证 401，未知命令 404，执行或输入错误 500，包含 error/type。
+该检查的预期响应：
+
+```json
+{"result": "2.2.0"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -82,7 +69,7 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/kimi"   --header 
 | KIMI_MODEL_BASE_URL | 模型任务需要 | 明确授权的兼容端点，不隐式转发凭据 |
 | KIMI_MODEL_PROVIDER_TYPE | 否 | openai，也可 kimi/anthropic |
 | WORKSPACE | 否 | /home/user/app |
-| ABX_SERVER_TOKEN | 否 | 服务认证，默认空 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 配置名称已从实际 npm 2.2.0 runtime 核对，另见[官方配置](https://github.com/MoonshotAI/kimi-code/blob/main/docs/en/configuration/providers.md)。每次调用用独有 KIMI_CODE_HOME，保留用户配置，去除无关云端/registry 凭据，响应中脱敏 secret 及 JSON 转义形式。allow_tools=false 拒绝启动，不声称提供只读 prompt 模式。
 

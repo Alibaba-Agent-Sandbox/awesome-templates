@@ -14,50 +14,41 @@ Expose actual native coding through Agent Sandbox without interactive account lo
 
 ## Quick start (CLI)
 
-Install the [verified native CLI entry](../docs/platform-steps.md), configure authorized Express access and replace angle-bracket placeholders with unique owned values. Publish the exact source commit before steps preparation uses immutable public COPY inputs. Wait for official READY before creation. CLI0.4.1 uses `abx --native run`; the named-command interface is `abx run`.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-python scripts/prepare_steps.py prime-agent --output /tmp/prime-steps-<unique-run> \
-  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
-abx --native template deploy /tmp/prime-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> prime_agent_version
-abx --native run <owned-sandbox-id> prime_agent_kernel_check
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./prime-agent --workflow application --yes
+abx run <sandbox-id> prime_agent_version --json-args '{}'
 ```
-Expected version is `{"native_version":"0.10.0"}`. After configuring the command server, a real task is `abx --native run <owned-sandbox-id> prime_agent --json-args '{"prompt":"Inspect the existing project and fix failing tests","cwd":"project","command_timeout":300}'`. Existing project path must be contained in WORKSPACE. Native completion and independent file/tests are required before accepting coding success.
+
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install distribution `agent-sandbox-client` from the [paired source instructions](../docs/python-client-installation.md); import `agent_sandbox`. This model-free example owns and removes its sandbox. Examples are syntax checked; real-cloud qualification remains in Verified.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=300)
-    try:
-        print(await sb.run("prime_agent_version", timeout=60))
-        print(await sb.run("prime_agent_kernel_check", timeout=90))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('prime_agent_version'))
 ```
-Configure PRIME_MODEL_API_KEY/PRIME_MODEL_BASE_URL/PRIME_MODEL before command-server startup. [Prewarmed process configuration](../docs/runtime-environment.md) explains that later create-time environment does not reconfigure an existing9000 process. Verify presence with `prime_agent_setup_check`, then `await sb.run("prime_agent", prompt="Fix existing source and preserve its tests", cwd="project", command_timeout=300, timeout=330)`. Result is returned directly; it is buffered, without streaming events.
+
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-ABX_SERVER_URL is `sb.network.get_url(9000)`. The server token is separate from model and provider credentials.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/prime_agent_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/prime_agent_version" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" --data '{}'
+```json
+{}
 ```
-HTTP200 returns `{"result":{"native_version":"0.10.0"}}`. `POST /commands/prime_agent` accepts direct `{prompt,cwd,command_timeout}` JSON. Type/unknown/missing arguments400, authentication401, unknown command404, semantic guards/execution exceptions500 with `{error,type}`. A completed original process returns its actual exit_code even when nonzero. Disconnect does not cancel the bounded native operation; final cleanup still runs.
+
+Expected response for this check:
+
+```json
+{"result": {"native_version": "0.10.0"}}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -80,7 +71,7 @@ Transparent event filtering preserves original settled NDJSON records unchanged 
 | PRIME_MODEL_BASE_URL | empty; required for coding | Explicit HTTPS base; literal local HTTP for authored fixtures only; no userinfo/query/fragment; max2048characters |
 | PRIME_MODEL | empty; required for coding | Actual model identifier; max200allowed identifier characters |
 | WORKSPACE | `/home/user/workspace` | Existing caller project root |
-| ABX_SERVER_TOKEN | optional; empty | Independent command-server Bearer token |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 
 Captured when commands.py loads. Private0700HOME/0600models.json uses apiKey="ABX_PRIME_MODEL_KEY", storing an environment reference instead of key bytes. No operator cloud/GitHub/vendor credentials are inherited. The fixed kernel launcher removes ABX_PRIME_MODEL_KEY before original CPython starts; same-user OS access means this is environment minimization, not credential isolation. Literal/JSON-escaped key and base values are redacted from returned output. Telemetry/traces/refinement/compaction/factory and discovery are disabled; rlmMaxDepth0 is set. Original print mode supplies no child host and therefore uses NoRlmChildren: no delegated agent is launched. No daemon mode is started. Custom model pricing is unspecified; zero defaults are not a free-service claim.
 

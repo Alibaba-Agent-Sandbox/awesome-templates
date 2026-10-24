@@ -16,87 +16,41 @@
 
 ## 快速开始（CLI）
 
-示例使用当前极速版 CLI：`abx create <template-id> --detach` 输出沙箱 ID，`abx kill <sandbox-id>` 清理沙箱；命名命令使用 `abx run`。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
-
-按[项目说明](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#readme)安装 CLI，本地有 Docker 时构建：
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template deploy ./swe
-# 然后按下方 SDK 示例从模板创建专用沙箱并启动配置好的服务。
-abx run "$SANDBOX_ID" swe_version
-ABX_HTTP_TIMEOUT=240 abx run "$SANDBOX_ID" swe_prepare --server-port 9010
-ABX_HTTP_TIMEOUT=660 abx run "$SANDBOX_ID" swe_run_agent --server-port 9010 --arg run_id="$RUN_ID" --arg allow_execution=true --arg max_steps=30 --arg command_timeout=600
-ABX_HTTP_TIMEOUT=240 abx run "$SANDBOX_ID" swe_evaluate --server-port 9010 --arg run_id="$RUN_ID"
-abx run "$SANDBOX_ID" swe_report --server-port 9010 --arg run_id="$RUN_ID"
-abx run "$SANDBOX_ID" swe_cleanup --server-port 9010 --arg run_id="$RUN_ID"
+export ABX_PROVIDER=alicloud-express
+abx template launch ./swe --workflow application --yes
+abx run <sandbox-id> swe_version --json-args '{}'
 ```
 
-`RUN_ID` 是 prepare 返回的不透明标识。模型调用的客户端 HTTP 超时需长于命令期限。下方 SDK 配方会启动新的配置进程；创建沙箱时的 env 可能晚于默认服务预热，不能假设它们已经配置了运行中的旧进程。
+`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-按[客户端安装指南](../docs/python-client-installation.md)安装 `agent-sandbox-client`。客户端环境设置 `SWE_TEMPLATE`、`SWE_API_KEY`、OpenAI 兼容 `/v1` 地址 `SWE_BASE_URL` 与原始模型名 `SWE_MODEL`（例如 `qwen3.8-flash`）。提供方凭据遵循 SDK 文档。只使用不含其他工作或凭据的全新专用沙箱。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-import os
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sandbox = await Sandbox.create(os.environ['SWE_TEMPLATE'], provider='alicloud-express', timeout=900)
-    stream = None
-    consumer = None
-    try:
-        stream = await sandbox.commands.start(
-            'agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py',
-            env={key: os.environ[key] for key in ('SWE_API_KEY', 'SWE_BASE_URL', 'SWE_MODEL')}
-                | {'WORKSPACE': '/home/user/app', 'ABX_SERVER_BASE_DIR': '/home/user/app', 'SWE_MODEL_PROTOCOL': 'toolcall'},
-            timeout=900,
-        )
-        async def drain():
-            async for _ in stream:
-                pass
-        consumer = asyncio.create_task(drain())  # 消费流才真正启动进程
-        for attempt in range(30):
-            try:
-                assert await sandbox.run('swe_version', server_port=9010) == 'mini-swe-agent 2.4.6'
-                break
-            except Exception:
-                if attempt == 29:
-                    raise
-                await asyncio.sleep(1)
-        prepared = await sandbox.run('swe_prepare', server_port=9010, timeout=240)
-        run_id = prepared['run_id']
-        await sandbox.run('swe_run_agent', run_id=run_id, allow_execution=True,
-                          max_steps=30, command_timeout=600, server_port=9010, timeout=660)
-        report = await sandbox.run('swe_evaluate', run_id=run_id, server_port=9010, timeout=240)
-        patch = await sandbox.files.read(report['patch_path'])
-        assert report['resolved_slice'] and report['passed'] == 60 and patch
-        await sandbox.run('swe_cleanup', run_id=run_id, server_port=9010)
-    finally:
-        await sandbox.kill()
-        if consumer:
-            consumer.cancel()
-            await asyncio.gather(consumer, return_exceptions=True)
-        if stream:
-            await stream.cancel()
-
-asyncio.run(main())
+print(await client.commands.run('swe_version'))
 ```
+
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-以 SDK 中配置好的 `sandbox.network.get_url(9010)` 为 `BASE_URL`。请求体直接传参数，不包一层 args；成功返回 `{"result": ...}`。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/swe_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl -fsS -X POST "$BASE_URL/commands/swe_prepare" -H 'Content-Type: application/json' -d '{}'
-curl -fsS --max-time 660 "$BASE_URL/commands/swe_run_agent" -H 'Content-Type: application/json' \
-  -d '{"run_id":"<prepare run_id>","allow_execution":true,"max_steps":30,"command_timeout":600}'
-curl -fsS --max-time 240 "$BASE_URL/commands/swe_evaluate" -H 'Content-Type: application/json' \
-  -d '{"run_id":"<prepare run_id>"}'
+```json
+{}
 ```
 
-向其他调用者开放时，应按服务端文档在新进程启动时配置 token，SDK 使用 `sandbox.server_at(9010, token=...)`，HTTP 带 bearer 头。另起进程不会改变默认 9000 服务。
+该检查的预期响应：
+
+```json
+{"result": "mini-swe-agent 2.4.6"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 

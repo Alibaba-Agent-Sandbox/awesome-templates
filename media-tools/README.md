@@ -19,55 +19,41 @@ Give media workflows a small, predictable CPU conversion interface with independ
 
 ## Quick start (CLI)
 
-The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template deploy ./media-tools -y --generation 2
-abx create <template-id> --detach
-abx run <sandbox-id> media_smoke
-abx run <sandbox-id> transcode --arg input_path=uploaded.mkv --arg output_name=preview.mp4
-abx run <sandbox-id> transcode_args --json-args '{"args":["-i","uploaded.mkv","-vn","-c:a","flac","audio.flac"],"max_seconds":5}'
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./media-tools --workflow application --yes
+abx run <sandbox-id> media_version --json-args '{}'
 ```
 
-Upload `uploaded.mkv` into `/home/user/app` through the files API first. `media_smoke` needs no upload: it creates its own audio, converts it, independently decodes every sample, and removes its owned files. The template contains its generation/start/readiness settings.
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install the `agent-sandbox-client` distribution using [the verified client installation instructions](../docs/python-client-installation.md). Import `agent_sandbox`.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        print(await sb.run("media_smoke"))
-        # After an upload into /home/user/app:
-        result = await sb.run("transcode", input_path="uploaded.mkv", output_name="preview.mp4", timeout=150)
-        print(result["output_path"], result["sha256"])
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('media_version'))
 ```
 
-`sb.run` invokes named commands; `sb.commands.run` invokes the shared server shell API. Download artifacts through the files API. `timeout` above is the client HTTP timeout; `command_timeout` below controls the server operation deadline.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Use the sandbox port-9000 URL. Send the provider's required gateway access header as well as any server authentication. When `ABX_SERVER_TOKEN` is configured on the running server, the bearer token below is required.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/media_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --max-time 150 --request POST "$ABX_SERVER_URL/commands/transcode" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header 'Content-Type: application/json' \
-  --data '{"input_path":"uploaded.mkv","output_name":"preview.mp4","preset":"mp4","max_seconds":5,"command_timeout":60}'
+```json
+{}
 ```
 
-Arguments are the direct JSON object. HTTP 200 returns `{"result":{"output_path":"/home/user/app/preview.mp4","bytes":12345,"sha256":"<64 hex characters>","duration_s":5.0,"format":"mov,mp4,m4a,3gp,3g2,mj2","streams":[...]}}`; numeric values depend on the input. Missing or mistyped arguments return 400; failed authentication 401; unknown commands 404; rejected paths/content/limits or tool failures 500 with `error` and `type`. Results are buffered. A client timeout or disconnection does not guarantee server cancellation.
+Expected response for this check:
+
+```json
+{"result": "FFmpeg 7.1.5-0+deb13u1"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -90,7 +76,7 @@ Outputs use a plain filename beginning with an ASCII letter/digit, followed by a
 
 | Name | Required | Default | Purpose |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | no | empty | Process-start server authentication. |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | no | `9000` | Direct local server startup port. |
 | `WORKSPACE` | no | `/home/user/app` | Existing input/output directory owned by the runtime user. |
 
@@ -125,8 +111,10 @@ Unlisted flags, extra inputs, arbitrary filters, protocols and output paths are
 refused. Final thread/duration/size/no-overwrite/metadata limits are enforced
 by the wrapper and cannot be replaced with user flags.
 
+Using the `client` bound in the Python quick start above:
+
 ```python
-result = await sb.run("transcode_args", args=["-i", "literal file.wav", "-c:a", "flac", "result.flac"])
+result = await client.commands.run("transcode_args", args=["-i", "literal file.wav", "-c:a", "flac", "result.flac"])
 assert result["exit_code"] == 0
 ```
 

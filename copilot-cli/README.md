@@ -16,72 +16,41 @@ Expose authenticated named commands, file transfer and sandbox lifecycle around 
 
 ## Quick start (CLI)
 
-```bash
-abx template deploy ./copilot-cli -y
-abx create <template-id> --detach --timeout 900
-abx run <sandbox-id> copilot_version
-abx run <sandbox-id> copilot_setup_check
-abx kill <sandbox-id>
-abx template delete <template-id> -y
-```
-
-Deploy/create return the IDs substituted above. Version/setup are model-free. See [client/provider setup](../docs/using-templates.md#client-entry-compatibility). The equivalent native platform-step build uses the same source and owned cleanup:
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-python scripts/express_e2e.py ./copilot-cli --build steps --sandbox-create sdk
+export ABX_PROVIDER=alicloud-express
+abx template launch ./copilot-cli --workflow application --yes
+abx run <sandbox-id> copilot_version --json-args '{}'
 ```
 
-A step pass does not establish a Dockerfile build. The SDK example configures a separate command server because environment on sandbox creation does not reconfigure a prewarmed server.
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` using [pinned source instructions](../docs/python-client-installation.md). Set the three model variables in the operator environment. The template ID is the deploy result.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-import os
-import secrets
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=900)
-    server = None
-    try:
-        server = await sb.start_server(
-            port=9010, commands="/home/user/app/commands.py", timeout=60,
-            token=secrets.token_urlsafe(32),
-            env={name: os.environ[name] for name in (
-                "COPILOT_PROVIDER_BASE_URL", "COPILOT_PROVIDER_API_KEY", "COPILOT_MODEL")})
-        result = await server.commands.run(
-            "copilot", prompt="Create HELLO.txt containing hello, then read it back.",
-            allow_write=True, command_timeout=300, timeout=360)
-        if result["exit_code"] != 0:
-            raise RuntimeError("Native Copilot failed; inspect private diagnostics")
-        print(await sb.files.read("/home/user/app/HELLO.txt"))
-    finally:
-        try:
-            if server is not None:
-                await server.aclose()
-            await sb.kill()
-        finally:
-            await sb.close()
-
-asyncio.run(main())
+print(await client.commands.run('copilot_version'))
 ```
 
-The example starts its own authenticated9010 server, reads the target artifact and destroys its owned sandbox. It is source checked; only the Verified receipts establish execution.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Set ABX_SERVER_URL to the SDK-forwarded9010 URL and ABX_SERVER_TOKEN to that server's random token.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/copilot_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --max-time 360 -X POST "$ABX_SERVER_URL/commands/copilot" \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN" -H 'Content-Type: application/json' \
-  --data '{"prompt":"Explain the existing source","allow_write":false,"command_timeout":300}'
+```json
+{}
 ```
 
-HTTP200 returns `{"result":{"stdout":"<native JSONL>","stderr":"","exit_code":0,"native_version":"1.0.100"}}`. Native nonzero status stays in `exit_code`. Authentication401, unknown command404, schema errors400; invalid configuration/path/bounds, overflow or timeout500 with error/type. Buffered output is bounded to256KiB per stream. Client disconnection does not guarantee cancellation.
+Expected response for this check:
+
+```json
+{"result": {"native_version": "1.0.100"}}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -103,7 +72,7 @@ The shared server Boolean scalar also accepts true/false/yes/no/1/0 string forms
 | COPILOT_PROVIDER_API_KEY | model calls/empty | explicit endpoint credential, max8192characters/no CR/LF/NUL |
 | COPILOT_MODEL | model calls/empty | explicit model identifier, max200ASCII characters |
 | WORKSPACE | /home/user/app | allowed cwd root |
-| ABX_SERVER_TOKEN | operator set | authenticated command server token |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 
 The three model settings are captured at server startup. BYOK type=openai, wire API=completions and transport=http are fixed; token limits65536prompt/4096output. No key-command, extra headers, bearer override, GitHub token or unrelated host credential is forwarded. Native secret-env filtering and wrapper redaction mask the exact key. Only PATH/optional CA paths plus private HOME/XDG/temp/state enter the process. Private profile/cache/log state is removed after identity-pinned process group and marked detached descendants stop; project edits remain. The owned cloud sandbox is the final boundary against malicious code. See [runtime environment](../docs/runtime-environment.md) and [official BYOK](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/use-byok-models).
 

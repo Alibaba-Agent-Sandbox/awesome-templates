@@ -42,128 +42,41 @@ all completion, source, score and strict replay acceptance gates remain required
 
 ## Quick start (CLI)
 
-Install the verified native CLI and configure your own Express provider using the
-[steps guide](../docs/platform-steps.md). Replace the placeholders below with this
-run's unique output directory and owned resource IDs. Publish the source commit
-before preparing immutable COPY steps. Steps do not prove a Docker image build.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-python scripts/prepare_steps.py tau2-bench --asset-transport oss --output /tmp/tau2-steps-<unique-run> --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
-abx --native template deploy /tmp/tau2-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> tau2_version
-# Requires the explicitly configured model server; select its port as documented below.
-abx --native run <owned-sandbox-id> tau2_run --server-port 9010
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./tau2-bench --workflow application --yes
+abx run <sandbox-id> tau2_version --json-args '{}'
 ```
 
-Named commands use `abx run`; `--native` selects the verified native CLI backend.
-The version response must report native version `1.0.1`, domain `retail` and
-`task_count: 114`. The canonical non-model deploy/SDK-create/HTTP/cleanup runner is:
-
-```bash
-ABX='abx --native' python scripts/run_steps_e2e.py tau2-bench --sandbox-create sdk --http --asset-transport oss
-```
-
-Require official READY and independently verify absence of every owned sandbox,
-template and private asset object after use. Preserve private recovery journals
-when cleanup is uncertain. Configure the model only through the process
-environment described below; do not put keys in CLI arguments.
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install the paired `agent-sandbox-client` using the
-[pinned client guide](../docs/python-client-installation.md). The placeholder
-template must belong to you. These examples are syntax-checked; the same SDK/native operations were exercised in the recorded owned cloud fixture. `tau2_run` requires a server started with the three model settings.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-import os
-import secrets
-
-import httpx
-from agent_sandbox.api.sandbox import Sandbox
-
-async def example():
-    settings = {name: os.environ[name] for name in ('TAU2_MODEL_API_KEY', 'TAU2_MODEL_BASE_URL', 'TAU2_MODEL')}
-    token = secrets.token_urlsafe(32)
-    settings.update(HOME="/home/user", WORKSPACE='/home/user/workspace',
-                    ABX_SERVER_BASE_DIR='/home/user/workspace', ABX_SERVER_TOKEN=token,
-                    PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin")
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=1200)
-    stream = drain = server = None
-    try:
-        stream = await sb.commands.start(
-            "agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py",
-            env=settings, timeout=1100)
-        started = asyncio.Event()
-        async def consume():
-            async for chunk in stream:
-                if chunk.pid:
-                    started.set()
-        drain = asyncio.create_task(consume())
-        await asyncio.wait_for(started.wait(), 90)
-        async with httpx.AsyncClient(timeout=10) as client:
-            for _ in range(60):
-                try:
-                    response = await client.get(sb.network.get_url(9010) + "/health",
-                                                headers=sb.network.get_access_headers())
-                    if response.status_code == 200:
-                        break
-                except httpx.HTTPError:
-                    pass
-                await asyncio.sleep(1)
-            else:
-                raise RuntimeError("configured server not healthy")
-        server = sb.server_at(9010, token=token)
-        print(await server.commands.run('tau2_version', timeout=90))
-        setup = await server.commands.run('tau2_setup_check', timeout=60)
-        if not all(setup.get(k) is True for k in ("api_key_set", "base_url_set", "model_set")):
-            raise RuntimeError("model configuration not present in this server")
-        result = await server.commands.run("tau2_run", domain="retail", task_id="0",
-                                           max_steps=40, command_timeout=900, timeout=1000)
-        trajectory = await sb.files.read_bytes(result["log_path"], max_bytes=8 * 1024 * 1024)
-        print(result["score"], len(trajectory))
-        print(await server.commands.run("tau2_verify_artifact", path=result["log_path"],
-                                        task_id="0", timeout=150))
-    finally:
-        try:
-            if server is not None:
-                await server.aclose()
-        finally:
-            try:
-                await sb.kill()
-            finally:
-                if drain is not None:
-                    drain.cancel()
-                    await asyncio.gather(drain, return_exceptions=True)
-                if stream is not None:
-                    await stream.cancel()
-
-asyncio.run(example())
+print(await client.commands.run('tau2_version'))
 ```
 
-A create-time environment does not reconfigure a prewarmed server; follow
-[runtime environment](../docs/runtime-environment.md) and inspect
-`tau2_setup_check` before model execution.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Use your own server URL and its Bearer token in environment variables. Never
-publish them. Direct JSON arguments go to the named route, without an `args` wrapper.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/tau2_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body -X POST "$SERVER_URL/commands/tau2_version" -H "Authorization: Bearer $ABX_SERVER_TOKEN" -H 'Content-Type: application/json' -d '{}'
+```json
+{}
 ```
 
-The JSON envelope is `{"result":{"native_version":"1.0.1","domain":"retail","task_count":114}}`. For `tau2_run`, POST
-`{"domain":"retail","task_id":"0","max_steps":30,"command_timeout":600}`;
-for `tau2_verify_artifact`, POST `{"path":"<returned-artifact-path>","task_id":"0"}`.
-Schema/type/missing/unknown argument errors use HTTP400, authentication HTTP401,
-unknown commands HTTP404, and semantic/native execution failures HTTP500. Commands
-are buffered. Set client HTTP timeout beyond the execution deadline; disconnecting
-the client does not cancel the server operation.
+Expected response for this check:
+
+```json
+{"result": {"native_version": "1.0.1", "domain": "retail", "task_count": 114}}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -187,7 +100,7 @@ invalid source/task, reward mismatch or malformed output fails the command.
 | `TAU2_MODEL_BASE_URL` | Required for run; empty | Explicit HTTPS compatible base URL, at most2048 characters; literal local HTTP permitted for synthetic fixtures. No userinfo, query or fragment. |
 | `TAU2_MODEL` | Required for run; empty | Explicit model identifier, at most200 allowed identifier characters. |
 | `WORKSPACE` | `/home/user/workspace` | Existing writable result root. |
-| `ABX_SERVER_TOKEN` | Empty | Set a token for the exposed server. |
+| `ABX_SERVER_TOKEN` | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 
 Settings are captured at server import. Both native participants receive the same
 explicit `openai/` model and `api_base`; the key is supplied only to the private

@@ -20,52 +20,41 @@ Python3.13 兼容：原版 SQLAlchemy1.4.54 无对应 wheel，使用其未修改
 
 ## 快速开始（CLI）
 
-按[平台 steps](../docs/platform-steps.md)安装 CLI0.4.1 原生入口并配置已授权的极速版。该版本通过 `abx --native run` 使用 `abx run`。尖括号占位值替换为独占资源；不可变 COPY 需要先发布对应提交。等待官方 READY 后创建。以下无需模型的任务初始化原版世界并调用真实 API。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-python scripts/prepare_steps.py appworld --output /tmp/appworld-steps-<unique-run> \
-  --asset-transport parallel --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
-abx --native template deploy /tmp/appworld-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> appworld_native_smoke
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./appworld --workflow application --yes
+abx run <sandbox-id> appworld_native_smoke --json-args '{}'
 ```
 
-完整验证：`ABX="abx --native" python scripts/run_steps_e2e.py appworld --sandbox-create sdk --http --asset-transport oss`。私有 OSS 仅缓存精确原版加密数据，并独立确认清理；steps 不能证明 Docker 镜像验收。配置模型后使用 `abx --native run <owned-sandbox-id> appworld_run --json-args '{"task":"","max_steps":40,"command_timeout":900}'`，并检查原生分数和产物。
+`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-按[配套源码安装](../docs/python-client-installation.md)安装 `agent-sandbox-client`。示例完成同一个无需模型的 CLI/HTTP 任务，并清理本次沙箱；已做语法检查，实际云端与模型证据见下文。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=300)
-    try:
-        result = await sb.run("appworld_native_smoke", timeout=150)
-        assert result == "original AppWorld0.1.3.post1 native API and private cleanup OK"
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('appworld_native_smoke'))
 ```
 
-在命令服务启动前配置 APPWORLD_MODEL_API_KEY/BASE_URL/MODEL 并检查 setup 后，可调用 `await sb.run("appworld_run", task="", max_steps=40, command_timeout=900, timeout=1000)`，用 `sb.files.read_bytes(result["artifact_path"], max_bytes=64*1024**2)` 下载加密产物，再调用 `await sb.run("appworld_verify_artifact", path=result["artifact_path"], task=result["task"], timeout=200)`。按[预热服务配置](../docs/runtime-environment.md)显式启动所需进程；创建时变量不会重配现有9000服务。单独 Bearer 服务使用 `sb.server_at(port, token=...)` 的命令客户端，并在 finally 关闭客户端、停止本次进程、排空/取消流及销毁沙箱。不要打印密钥、私有地址或解密任务内容。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-ABX_SERVER_URL 为 `sb.network.get_url(9000)`；可选 ABX_SERVER_TOKEN 需在服务启动前配置。按所选提供方要求同时设置网关访问头。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/appworld_native_smoke`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/appworld_native_smoke" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" --data '{}'
+```json
+{}
 ```
 
-HTTP200 返回 `{"result":"original AppWorld0.1.3.post1 native API and private cleanup OK"}`。run 直接传 `{task,max_steps,command_timeout}`，verify 传 `{path,task}`，不使用 args 包装。参数缺失/类型错误400、服务端认证失败401、未知命令404、语义/执行错误500并含 `{error,type}`。未完成的原生运行失败；完成但答案错误的任务可以返回0.0。请求超时不会取消有界工作进程。
+该检查的预期响应：
+
+```json
+{"result": "original AppWorld0.1.3.post1 native API and private cleanup OK"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -87,7 +76,7 @@ HTTP200 返回 `{"result":"original AppWorld0.1.3.post1 native API and private c
 | APPWORLD_MODEL_BASE_URL | 模型必需；空 | 显式 HTTPS；自编测试仅允许回环 HTTP；无用户信息/查询/片段，最长2048字符 |
 | APPWORLD_MODEL | 模型必需；空 | 实际模型标识，1..200安全字符 |
 | WORKSPACE | /home/user/workspace | 已存在结果根目录，服务启动读取 |
-| ABX_SERVER_TOKEN | 可选；空 | 独立命令服务 Bearer |
+| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 密钥最长8192字符，不含 CR/LF/NUL。原生子进程不继承操作者云/GitHub/模型令牌；配置由匿名 stdin 传入。保留 AppWorld 原版安全默认值。连接层校验原版 app/API 范围，将 JSON 参数转为 Python 字面量，不接受可执行模型 Python。每回复最多执行16工具调用；17..64项批次逐项反馈拒绝且不执行API，更多则失败。每任务空choices最多3次，回复8192token，最多160原生交互，每交互50API调用，原生执行30秒，模型 HTTP60秒且 SDK 不重试，工具输出有界、模型上下文最大1MiB。
 

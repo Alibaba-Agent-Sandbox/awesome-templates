@@ -16,58 +16,41 @@
 
 ## 快速开始（CLI）
 
-按照[原生 CLI 配置](../docs/platform-steps.zh-CN.md)准备环境。完成预览后执行停止和删除；标准入口参数差异见[入口兼容说明](../docs/using-templates.md#client-entry-compatibility)。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template deploy ./next-app -y --generation 2 \
-  --start-cmd 'agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py' \
-  --ready-cmd 'agent-sandbox-server healthcheck --port 9000'
-abx create <template-id> --detach
-abx run <sandbox-id> scaffold --arg kind=next --arg path=preview-app
-abx run <sandbox-id> dev_start --arg kind=next --arg path=preview-app
-abx run <sandbox-id> dev_logs
-abx run <sandbox-id> dev_stop
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./next-app --workflow application --yes
+abx run <sandbox-id> toolchain_versions --json-args '{}'
 ```
+
+`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-客户端发行包为 `agent-sandbox-client`，导入 `agent_sandbox`。安装[配对 SDK](../docs/python-client-installation.md)，通过 sb.network.get_url(port) 获取平台真实转发地址。停止前先完成访问及文件保存。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from urllib.parse import urlsplit
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        await sb.run("scaffold", kind="vite", path="preview-app")
-        await sb.run("dev_start", kind="vite", path="preview-app",
-                     allowed_host=urlsplit(sb.network.get_url(5173)).hostname)
-        print(sb.network.get_url(5173))
-        # Fetch/edit the preview before stopping it. Preserve desired source files.
-        print(await sb.run("dev_logs", tail_bytes=4096))
-        await sb.run("dev_stop")
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('toolchain_versions'))
 ```
+
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-将 ABX_SERVER_URL 设置为 SDK9000地址。命令服务鉴权使用启动前配置的 ABX_SERVER_TOKEN；预热进程配置见[运行环境](../docs/runtime-environment.md)。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/toolchain_versions`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/scaffold" \
-  --header 'Content-Type: application/json' \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --data '{"kind":"next","path":"preview-app"}'
+```json
+{}
 ```
 
-成功响应 {"result":{"path":"preview-app","kind":"next"}}。随后以相同参数调用 /commands/dev_start，访问 SDK3000地址，最后调用 /commands/dev_stop，参数 {}。缺失参数400，未知命令404，运行错误500。客户端超时不保证取消。
+该检查的预期响应：
+
+```json
+{"result": {"next": "16.4.2", "react": "19.3.1", "react-dom": "19.3.1", "vite": "8.3.4"}}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -83,13 +66,13 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/scaffold" \
 
 Next 使用本地 next dev --webpack --hostname0.0.0.0 --port3000；Vite 使用本地 vite --host0.0.0.0 --port5173 --strictPort，参数不经过 shell。拒绝已存在目录、符号链接目录及路径越界。受控 node_modules 链接只指向预装工具链。停止保留源码和构建缓存；需要时由调用方显式删除。日志为缓冲结果，不宣称实时流式。
 
-版本1.1.0为Vite新增准确SDK转发主机名 allowed_host。默认空值保留本机域名权限；传入 urlsplit(sb.network.get_url(5173)).hostname，仅设置固定Vite8.3.4源码及[官方文档](https://vite.dev/config/server-options#server-allowedhosts)支持的 __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS。拒绝通配符、前导点后缀、协议、端口、凭据、逗号及空DNS标签。Next不接受此Vite专用设置。原1.0.0真实转发Vite403仍为失败；1.1.0需要新镜像/提供方验收。不改写Host，也不开全域允许。
+版本1.1.0为Vite新增准确SDK转发主机名 allowed_host。默认空值保留本机域名权限；传入 urlsplit((await sb.network.resolve(5173))[0]).hostname，仅设置固定Vite8.3.4源码及[官方文档](https://vite.dev/config/server-options#server-allowedhosts)支持的 __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS。拒绝通配符、前导点后缀、协议、端口、凭据、逗号及空DNS标签。Next不接受此Vite专用设置。原1.0.0真实转发Vite403仍为失败；1.1.0的镜像与转发实测记录见下文。不改写Host，也不开全域允许。
 
 ## 配置
 
 | 名称 | 默认值 | 用途 |
 |---|---|---|
-| ABX_SERVER_TOKEN | 空 | 命令接口 Bearer 鉴权，必须在进程启动前提供 |
+| ABX_SERVER_TOKEN | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | ABX_SERVER_PORT | 9000 | 本地命令服务端口 |
 | WORKSPACE | /home/user/app | 已存在工作区 |
 | NEXT_APP_TOOLCHAIN | /opt/next-app | 可信固定工具链；本机测试可指向安装目录 |

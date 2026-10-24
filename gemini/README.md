@@ -14,58 +14,41 @@ Give an explicitly approved Chat gateway access to original Gemini text/tool pla
 
 ## Quick start (CLI)
 
-The `abx run` native entry is `abx --native run`. Use verified CLI0.4.1/existing authorized Express settings. Replace placeholders, publish exact source before immutable COPY, choose a unique owned manifest name, wait for official READY and retain IDs for cleanup.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-python scripts/prepare_steps.py gemini --output /tmp/gemini-steps-<unique-run> \
-  --server-commit 34e7e011c5569f77b7f605e65313be7498f6cf02
-python - <<'CONFIG'
-from pathlib import Path
-import yaml
-p=Path('/tmp/gemini-steps-<unique-run>/template.yaml')
-v=yaml.safe_load(p.read_text());v['name']='gemini-<unique-run>'
-p.write_text(yaml.safe_dump(v,sort_keys=False))
-CONFIG
-abx --native template deploy /tmp/gemini-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> gemini_version
-abx --native run <owned-sandbox-id> gemini_native_check
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./gemini --workflow application --yes
+abx run <sandbox-id> gemini_version --json-args '{}'
 ```
 
-Canonical ownership: `ABX='abx --native' python scripts/run_steps_e2e.py gemini --sandbox-create sdk --http`. Native steps require no local Docker daemon and do not certify Docker image cloud deployment. On a configured process, call `abx --native run <owned-sandbox-id> gemini_byok --json-args '{"prompt":"Repair existing calc.py and preserve tests","cwd":"project","command_timeout":300,"allow_unsafe_tools":true}'`.
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install distribution agent-sandbox-client through the [paired fixed source instructions](../docs/python-client-installation.md).
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-async def main():
-    sb=await Sandbox.create(template='<owned-template-id>',timeout=900)
-    try:
-        print(await sb.run('gemini_version',timeout=60))
-        print(await sb.run('gemini_native_check',timeout=60))
-    finally:
-        await sb.kill()
-asyncio.run(main())
+print(await client.commands.run('gemini_version'))
 ```
 
-Set all GEMINI_BYOK_* variables before the named-command server starts; inspect gemini_byok_setup_check, then `await server.commands.run('gemini_byok',prompt='Repair existing calc.py; preserve tests',cwd='project',command_timeout=300,allow_unsafe_tools=True,timeout=420)`. Create the project first. For an independent process use sb.server_at(port,token=...) and close the borrowed client. A prewarmed9000process does not acquire later create-time env; follow [explicit process configuration](../docs/runtime-environment.md). A separately configured9010server uses its matching independent token. Results are buffered direct objects.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-ABX_SERVER_URL is sb.network.get_url(port) of the configured process; its Bearer is separate from platform/model credentials.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/gemini_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/gemini_version" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header 'Content-Type: application/json' --data '{}'
+```json
+{}
 ```
 
-HTTP200 returns {"result":"0.64.0"}. POST/commands/gemini_byok accepts direct {prompt,cwd,command_timeout,allow_unsafe_tools} JSON. Missing/unknown/type arguments400, authentication401, unknown command404; native/semantic errors500 with sanitized diagnostics. Disconnect does not cancel a provider job; bounded owned cleanup still runs.
+Expected response for this check:
+
+```json
+{"result": "0.64.0"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -92,7 +75,7 @@ Translate only text and original function declarations/results with exact IDs or
 | GEMINI_API_KEY | empty; legacy only | Existing Google/native-compatible key; BYOK never silently reuses it |
 | GEMINI_MODEL | gemini-3.1-flash-lite; legacy only | Existing legacy default; separate from explicit BYOK selection |
 | WORKSPACE | /home/user/app | Existing caller project root |
-| ABX_SERVER_TOKEN | empty/optional | Separate command-server Bearer |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 
 BYOK settings captured at module import; key max8192/no control characters. Native environment has only fresh local adapter token, minimal PATH and private HOME/config/cache; real upstream key is sent only to exact approved Chat origin. Same-user OS access remains; cwd/environment filters are not another tenant boundary. Existing legacy configuration behavior stays separate. No private endpoints/keys/transcripts in results or errors.
 
