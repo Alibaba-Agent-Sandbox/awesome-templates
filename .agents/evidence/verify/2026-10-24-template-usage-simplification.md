@@ -11,3 +11,5 @@ No cloud resources were created by these local checks. Workflow execution and it
 Adversarial review caught a wrong ServerClient close method before any cloud execution. Corrected to `aclose()` after all owned resource cleanup; regression proves a close failure cannot skip sandbox/template/image cleanup. Deletion uses independent control-plane GET with bounded eventual-absence polling, never connect/resume.
 
 Third review used an actual Express journal shape: shared repository `python-hello`, unique per-launch tag. Artifact cleanup now verifies configured namespace and the exact journal tag prefix, then deletes only that tag and confirms absence. Regressions cover shared repositories and reject a foreign tag even when its repository contains the launch alias.
+
+Matrix scheduling permits four independent runners at once (same 46×2 total tasks). Workflow YAML parsed successfully after this scheduling-only change. Diagnostics without `expect` are explicitly scoped to call-path success in both guide languages.

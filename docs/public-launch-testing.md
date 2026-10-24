@@ -21,14 +21,16 @@ not a public package installation. An existing output file is never overwritten.
 
 The manual **Public template launch matrix** GitHub workflow accepts exact reviewed
 CLI, SDK and provider commits, a comma-separated selection or `all`, and either
-backend or both. `all` currently selects 46 source templates. OpenSandbox uses
+backend or both. `all` currently selects 46 source templates, with at most four
+independent runners active at once. OpenSandbox uses
 its real Docker server, server-proxy endpoint and an owned local registry.
 Express uses the `PUBLIC_LAUNCH_*` credentials explicitly configured for that
 workflow. Missing credentials fail the attempt; they never become a cloud pass.
 
 Checks use each manifest's expected output where supplied. Diagnostic commands
 without an `expect` require successful nonempty results independently on each
-consumer; their output may legitimately vary. The suite does not claim real-model
+consumer; their output may legitimately vary. These cases prove the call path,
+not the correctness of the reported business state. The suite does not claim real-model
 business acceptance. The source recipes' smoke commands must be safe to repeat;
 application-specific full controllers remain separate tests.
 
@@ -50,11 +52,12 @@ Docker bridge 地址。默认读取公开 Git 目录；测试候选输入可明�
 `--source`。启动清单与实际运行命令源码都须和本地验证输入一致。
 
 手动矩阵工作流接受准确的 CLI、SDK、provider 提交，以及模板选择和平台。
-`all` 当前为 46 个源码模板。OpenSandbox 使用真实 Docker 服务和 server proxy；
+`all` 当前为 46 个源码模板，最多同时运行四个独立 runner。OpenSandbox 使用真实 Docker 服务和 server proxy；
 Express 使用该工作流配置的凭据。缺凭据不能算通过。
 
 有 `expect` 的命令逐入口断言输出；没有的诊断命令分别检查调用成功和非空结果，
-不要求时间等动态信息相同。smoke 必须可重复执行，真实模型业务和完整应用控制器
+不要求时间等动态信息相同；这种结果仅证明调用链成功，不能证明业务状态正确。
+smoke 必须可重复执行，真实模型业务和完整应用控制器
 另行验证，不由本次结果代替。
 
 应用结果与资源清理分开记录。仅删除启动记录中确切属于本次的资源，并独立回查。
