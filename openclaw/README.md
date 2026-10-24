@@ -8,8 +8,6 @@ Runs an authenticated OpenClaw WebSocket gateway as an owned background process.
 
 ## Stack
 
-Revision 2.1.1 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
-
 - Alibaba FC base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (deployment resolves the placeholders).
 - Node.js `24.16.0`, npm package `openclaw@2026.10.4`. The upstream package requires Node >=24.16.0; the base image Node 20 is insufficient.
 - `agent-sandbox-server` pinned to python-sdk commit `35da216a300f1e2e84254a1cf4b4a7ea98681505`, unless deployment injects a wheel.
@@ -21,78 +19,40 @@ A gateway is a long-lived server. Running `openclaw start` synchronously is neit
 
 ## Quick start (CLI)
 
-The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
-
-Runtime configuration: the SDK examples explicitly configure a new command server. A prewarmed process does not adopt later create-time settings; see [explicit process configuration](../docs/runtime-environment.md).
-
-Use an installed `abx` with your provider configuration. The SDK verification controller generates private gateway/server tokens and starts its own configured process; no token is passed in shell arguments.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template install ./openclaw --registry-type local
-abx create <template-id> --detach
-abx run <sandbox-id> gateway_status
-python3 openclaw/sdk_e2e_test.py --sandbox-id <sandbox-id>
-abx run <sandbox-id> gateway_status
-abx kill <sandbox-id>
+abx --provider alicloud-express template launch ./openclaw --workflow application --yes
+abx run <sandbox-id> gateway_status --json-args '{}'
 ```
 
-`loopback` is the default. Use `bind=lan` only when you need sandbox port forwarding. Returned URLs are inside the sandbox; use the provider's port URL for external access and authenticate using the gateway token. Do not confuse it with `ABX_SERVER_TOKEN` for port 9000.
+`template launch` prepares and starts this instance's application. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client`; the import is `agent_sandbox`. For unpublished versions, use the [paired source installation](../docs/python-client-installation.md).
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-import os
-import secrets
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    server = None
-    try:
-        server = await sb.start_server(
-            port=9010, commands="/home/user/app/commands.py", timeout=60,
-            token=secrets.token_urlsafe(32),
-            env={"OPENCLAW_GATEWAY_TOKEN": secrets.token_urlsafe(32),
-                 "OPENCLAW_TRUSTED_PROXIES": os.environ.get("OPENCLAW_TRUSTED_PROXIES", "")})
-        print(await server.commands.run("gateway_start", port=18789, bind="loopback", command_timeout=60, timeout=90))
-        print(await server.commands.run("gateway_health", command_timeout=20, timeout=35))
-        print(await server.commands.run("gateway_stop", command_timeout=10, timeout=25))
-    finally:
-        if server:
-            await server.aclose()
-        try:
-            await sb.kill()
-        finally:
-            await sb.close()
-
-asyncio.run(main())
+print(await client.commands.run('gateway_status'))
 ```
 
-`command_timeout` controls the server process deadline; SDK `timeout` controls the HTTP wait and is reserved by `Sandbox.run`. Set the HTTP wait above the server deadline and cleanup margin. Named commands use `sb.run`; shell execution uses `sb.commands.run`. If you enable `ABX_SERVER_TOKEN`, use `sb.server_at(9000, token=...)` for authenticated named calls as documented in the [template spec](../docs/template-spec.md).
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-`ABX_SERVER_URL` is the port-9000 server URL. The gateway token must already exist in the server's environment.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/gateway_status`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/gateway_start"  \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN"  \
-  -H 'Content-Type: application/json'  \
-  --data '{"port":18789,"bind":"loopback","command_timeout":60}'
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/gateway_health"  \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN"  \
-  -H 'Content-Type: application/json' --data '{"command_timeout":20}'
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/gateway_stop"  \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN"  \
-  -H 'Content-Type: application/json' --data '{}'
+```json
+{}
 ```
 
-Omit the Authorization header when server authentication is disabled. Parameters are the JSON body directly. HTTP 200 wraps the value in `{"result":...}`. Missing/mistyped parameters produce 400; authentication failures produce 401; invalid ranges/actions, missing CLI/token, occupied ports, startup timeout and failed gateway health produce 500 with `{"error","type"}`. Execution errors are never healthy results. An HTTP client disconnect does not cancel the server operation; start and stop have their own bounds.
+Expected response for this check:
 
-The current server exposes `/health` as a public probe; business routes such as `/commands` require authentication when configured.
+```json
+{"result": {"running": false, "owned": false, "url": null}}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -143,7 +103,7 @@ On Linux, each short-lived gateway health RPC drains its output and keeps its le
 |---|---|---|
 | `OPENCLAW_GATEWAY_TOKEN` | empty | Required for gateway start; inject via sandbox environment, never a command parameter. It is passed in the child environment and referenced by name in isolated config, never returned or included in argv. |
 | `OPENCLAW_TRUSTED_PROXIES` | empty | Explicit verified proxy IP/CIDR list for forwarded access; max16/2048bytes, no unrestricted/multicast networks. |
-| `ABX_SERVER_TOKEN` | empty | Optional bearer authentication for port-9000 business routes; `/health` is public. |
+| `ABX_SERVER_TOKEN` | Required; empty manifest declaration | Export the independent application token before launch |
 | `ABX_SERVER_PORT` | 9000 | Local `python commands.py` HTTP port; cloud start command explicitly uses 9000. |
 | `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` | empty | Optional upstream model credentials; gateway health does not need them. No model call is implemented or validated by these commands. |
 

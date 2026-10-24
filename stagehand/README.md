@@ -14,58 +14,40 @@ Expose real Stagehand semantic browser actions through the Agent Sandbox named-c
 
 ## Quick start (CLI)
 
-Named operations use `abx run`; CLI0.4.1 selects this surface explicitly as `abx --native run` below.
-
-Install the [verified native CLI entry](../docs/platform-steps.md), configure Express credentials, publish the exact source commit when preparation needs public COPY inputs, and replace each unique-run/template/sandbox placeholder with your own value. Wait for official READY before creating. The following uses the native CLI syntax; it is a reproduction recipe, not a passing cloud receipt.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-python scripts/prepare_steps.py stagehand --output /tmp/stagehand-steps-<unique-run> \
-  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
-abx --native template deploy /tmp/stagehand-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> stagehand_self_test
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+abx --provider alicloud-express template launch ./stagehand --workflow application --yes
+abx run <sandbox-id> stagehand_version --json-args '{}'
 ```
 
-`stagehand_self_test` returns `STAGEHAND_NATIVE_OK` after real offline browser/extension navigation/title/PNG and owned cleanup. Prefer the canonical SDK-created acceptance runner for automatic receipts and exact ownership recovery:
-
-```bash
-export ABX='abx --native'
-python scripts/run_steps_e2e.py stagehand --sandbox-create sdk --http
-```
+`template launch` prepares and starts this instance's application. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` from the [paired pinned source](../docs/python-client-installation.md); import `agent_sandbox`. The example uses only its own sandbox and the model-free native self-test.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=300)
-    try:
-        print(await sb.run("stagehand_self_test", timeout=90))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('stagehand_version'))
 ```
 
-For real actions, configure `STAGEHAND_API_KEY`, `STAGEHAND_BASE_URL` and `STAGEHAND_MODEL` on the command server before it starts. A prewarmed9000 server does not inherit later create-time environment automatically; follow [explicit process configuration](../docs/runtime-environment.md). Then `await sb.run("stagehand", task="Click the Publish button", url="https://your-authorized-site.example/", extract_instruction="Read the displayed receipt", command_timeout=180, timeout=210)` returns the schema below. Replace the URL with an authorized reachable site. Use only a fresh owned sandbox without valuable credentials.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-`ABX_SERVER_URL` is the sandbox port9000 URL (`sb.network.get_url(9000)`). When server authentication is enabled, inject its own `ABX_SERVER_TOKEN` separately from the model key.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/stagehand_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/stagehand_self_test" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" --data '{}'
+```json
+{}
 ```
 
-HTTP200 is `{"result":"STAGEHAND_NATIVE_OK"}`. `POST /commands/stagehand` accepts the direct JSON argument object, without an args wrapper. Missing/type-invalid/unknown arguments return400, authentication failure401, unknown command404 and semantic guards/runtime/native/model failure500 with `{error,type}`. Results are buffered; client disconnection does not cancel the bounded native process.
+Expected response for this check:
+
+```json
+{"result": "4.3.0"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -85,7 +67,7 @@ Task and extraction instructions each cap32768UTF-8 bytes; URL caps8192. Return 
 | STAGEHAND_API_KEY | required for model; empty | Approved compatible endpoint credential; never a Browserbase token |
 | STAGEHAND_BASE_URL | required for model; empty | HTTPS API base ending in your endpoint's API prefix; literal localhost HTTP allowed for development; no userinfo/query/fragment; appends `/chat/completions` |
 | STAGEHAND_MODEL | required for model; empty | Actual model identifier, at most200 allowed identifier characters |
-| ABX_SERVER_TOKEN | optional; empty | Independent named-server Bearer credential |
+| ABX_SERVER_TOKEN | Required; empty manifest declaration | Export the independent application token before launch |
 | WORKSPACE | `/home/user/app` | Existing artifact root |
 
 The wrapper uses upstream ClientLLM structured generation, maps text/images and requires complete JSON-schema model replies. Requests cap2MiB, replies1MiB, each inference60seconds; no redirects, retries or provider fallback. Model values are captured at server import. Secrets enter the Node consumer via anonymous stdin memory, never argv, browser environment or credential files. Browser subprocesses inherit only selected runtime/certificate variables and new private HOME/cache/profile. Native Chromium sandbox is explicitly disabled inside the outer disposable sandbox; it is not a tenant/security boundary. Pages can reach networks accessible to that sandbox; authenticate/trust named-command callers accordingly.

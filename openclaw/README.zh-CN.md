@@ -8,8 +8,6 @@
 
 ## 技术栈
 
-版本 2.1.1 将默认服务器源码与 CI wheel 的提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a` 对齐。历史回执保留原始输入范围；此版本需要重新完成镜像及工作流验收。
-
 - 阿里云 FC 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，部署工具解析占位符。
 - Node.js `24.16.0`，npm 包 `openclaw@2026.10.4`。该上游包要求 Node >=24.16.0，基础镜像的 Node 20 不满足要求。
 - server 固定为 python-sdk 提交 `35da216a300f1e2e84254a1cf4b4a7ea98681505`；部署时注入的 wheel 优先。
@@ -21,76 +19,40 @@
 
 ## 快速开始（CLI）
 
-示例使用当前极速版 CLI：`abx create <template-id> --detach` 输出沙箱 ID，`abx kill <sandbox-id>` 清理沙箱；命名命令使用 `abx run`。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
-
-运行配置：SDK 示例显式启动并配置新的命名服务。预热进程不会自动获得后续创建时设置，参见[显式进程配置](../docs/runtime-environment.zh-CN.md)。
-
-先配置 `abx` 和 provider。SDK 验收控制器在内存中生成私有网关和服务器令牌，显式启动自有进程，令牌不进入 shell 参数。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template install ./openclaw --registry-type local
-abx create <template-id> --detach
-abx run <sandbox-id> gateway_status
-python3 openclaw/sdk_e2e_test.py --sandbox-id <sandbox-id>
-abx run <sandbox-id> gateway_status
-abx kill <sandbox-id>
+abx --provider alicloud-express template launch ./openclaw --workflow application --yes
+abx run <sandbox-id> gateway_status --json-args '{}'
 ```
 
-默认只监听 `loopback`。确需沙箱端口转发时才使用 `bind=lan`。返回的 URL 是沙箱内部地址；外部访问使用 provider 的端口 URL 并携带网关 token。它与保护 9000 端口的 `ABX_SERVER_TOKEN` 是两个独立凭据。
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-客户端分发名为 `agent-sandbox-client`，导入名为 `agent_sandbox`。尚未发布的版本使用[配套源码安装](../docs/python-client-installation.md)。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-import os
-import secrets
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    server = None
-    try:
-        server = await sb.start_server(
-            port=9010, commands="/home/user/app/commands.py", timeout=60,
-            token=secrets.token_urlsafe(32),
-            env={"OPENCLAW_GATEWAY_TOKEN": secrets.token_urlsafe(32),
-                 "OPENCLAW_TRUSTED_PROXIES": os.environ.get("OPENCLAW_TRUSTED_PROXIES", "")})
-        print(await server.commands.run("gateway_start", port=18789, bind="loopback", command_timeout=60, timeout=90))
-        print(await server.commands.run("gateway_health", command_timeout=20, timeout=35))
-        print(await server.commands.run("gateway_stop", command_timeout=10, timeout=25))
-    finally:
-        if server:
-            await server.aclose()
-        try:
-            await sb.kill()
-        finally:
-            await sb.close()
-
-asyncio.run(main())
+print(await client.commands.run('gateway_status'))
 ```
 
-`command_timeout` 控制服务端生命周期；SDK保留的 `timeout` 仅控制HTTP等待，应大于服务端时限及清理余量。命名命令使用 `sb.run`；shell 使用 `sb.commands.run`。启用 `ABX_SERVER_TOKEN` 时，按[模板规范](../docs/template-spec.md)使用 `sb.server_at(9000, token=...)` 调用认证 server。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-`ABX_SERVER_URL` 指向 9000 端口。网关 token 应预先注入 server 环境。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/gateway_status`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/gateway_start" \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  -H 'Content-Type: application/json' \
-  --data '{"port":18789,"bind":"loopback","command_timeout":60}'
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/gateway_health" \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  -H 'Content-Type: application/json' --data '{"command_timeout":20}'
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/gateway_stop" \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  -H 'Content-Type: application/json' --data '{}'
+```json
+{}
 ```
 
-未启用 server 认证时去掉 Authorization。参数直接放在 JSON body 内。成功返回 HTTP 200 `{"result":...}`；缺少或错误类型参数为 400；认证失败为 401；范围或 action 不合法、缺少 CLI/token、端口冲突、启动超时、认证健康失败为 500 `{"error","type"}`。执行异常不能作为网关成功。客户端断开不会自动取消服务端操作；生命周期命令各自有超时。当前 server `/health` 是公开探针，`/commands` 等业务路由受认证保护。
+该检查的预期响应：
+
+```json
+{"result": {"running": false, "owned": false, "url": null}}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -132,7 +94,7 @@ Linux 下短生命周期健康检查 RPC 会持续读取输出，并在清理自
 |---|---|---|
 | `OPENCLAW_GATEWAY_TOKEN` | 空 | 启动网关必需，通过沙箱环境注入，不作为命令参数。子进程环境接收值，配置只引用变量名，不返回或加入 argv。 |
 | `OPENCLAW_TRUSTED_PROXIES` | 空 | 端口转发使用的显式已核实代理 IP/CIDR；最多16项/2048字节，拒绝全网和组播。 |
-| `ABX_SERVER_TOKEN` | 空 | 9000端口业务路由的可选 bearer 认证；公开 `/health` 探针除外。 |
+| `ABX_SERVER_TOKEN` | 必填；清单值为空 | 启动前导出独立应用令牌 |
 | `ABX_SERVER_PORT` | 9000 | 本地 `python commands.py` 的 server 端口；云端 start_cmd 明确使用9000。 |
 | `OPENAI_API_KEY`、`ANTHROPIC_API_KEY` | 空 | 可选上游模型凭据，网关健康不需要。本命令集不实现或验证模型调用。 |
 

@@ -16,61 +16,40 @@ Provide real databases for sandboxed apps without privileged Docker, mounts or s
 
 ## Quick start (CLI)
 
-Use [native CLI setup](../docs/platform-steps.md); provide account configuration through process environment.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template deploy ./dev-services -y --generation 2 \
-  --start-cmd 'agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py' \
-  --ready-cmd 'agent-sandbox-server healthcheck --port 9000'
-abx create <template-id> --detach
-abx run <sandbox-id> services_self_test
-abx run <sandbox-id> services_status
-abx run <sandbox-id> services_stop
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+abx --provider alicloud-express template launch ./dev-services --workflow application --yes
+abx run <sandbox-id> services_versions --json-args '{}'
 ```
 
-Use the SDK example for password-controlled persistent service usage without placing the password in shell argv. [Step preparation](../docs/platform-steps.md) is structurally supported; cloud receipts remain required. [Client-entry differences](../docs/using-templates.md#client-entry-compatibility) describe standard versus native CLI.
+`template launch` prepares and starts this instance's application. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install [paired client source](../docs/python-client-installation.md), distribution agent-sandbox-client, import agent_sandbox.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-import secrets
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    password = secrets.token_urlsafe(24)
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        print(await sb.run("services_start", password=password))
-        print(await sb.run("services_sql", sql="SELECT 19+23"))
-        await sb.run("services_redis", action="SET", key="example", value="42")
-        print(await sb.run("services_redis", action="GET", key="example"))
-        await sb.run("services_stop")
-        # Save needed data after stop, before destroying the sandbox.
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('services_versions'))
 ```
 
-Applications inside the sandbox connect to127.0.0.1, PostgreSQL user sandbox/database postgres, and the supplied password. The same password is required when restarting its existing PostgreSQL cluster. Stop retains data; sandbox deletion does not preserve ephemeral disk. For explicit expose=True, use SDK network.get_url only for provider-supported protocol routing; external TCP forwarding has not been certified.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Use the command-server9000 URL from SDK network.get_url(9000). Set command-server authentication before startup if needed; see [runtime environment](../docs/runtime-environment.md).
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/services_versions`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/services_self_test" \
-  --header 'Content-Type: application/json' \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --data '{}'
+```json
+{}
 ```
 
-HTTP200 returns {"result":"POSTGRES_REDIS_OK"}. The self-test generates temporary credentials, checks real read/write/restart persistence and removes its nonce-owned data. Invalid command parameters400, unknown command404, execution errors500. A client timeout does not guarantee server-side cancellation.
+Expected response for this check:
+
+```json
+{"result": {"postgres": "17.11", "redis": "8.0.2"}}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -93,7 +72,7 @@ Version1.1.0 adds postgres_port:int=0 and redis_port:int=0 to services_start. Ze
 
 | Name | Default | Purpose |
 |---|---|---|
-| ABX_SERVER_TOKEN | empty | optional command-server Bearer authentication before process startup |
+| ABX_SERVER_TOKEN | Required; empty manifest declaration | Export the independent application token before launch |
 | ABX_SERVER_PORT | 9000 | local command API port |
 | WORKSPACE | /home/user/app | existing workspace root |
 | DEV_SERVICES_PASSWORD | empty | optional default password; per-call password also supported |

@@ -8,8 +8,6 @@ A small Python development sandbox that greets callers, executes inline Python o
 
 ## Stack
 
-Revision 1.1.2 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
-
 - Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` supplies Python 3.13 and Node.js 20. `abx template deploy` resolves the defaults to `cn-hangzhou` and `v0.0.49`.
 - Server pinned to python-sdk commit `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; an SDK wheel injected during deployment takes precedence.
 - `pytest==8.4.2` is installed in the image for the `test` command.
@@ -21,81 +19,40 @@ Use this template to learn the named-command contract or to upload a Python prog
 
 ## Quick start (CLI)
 
-No local Docker? Follow the [cloud-steps quick start](../docs/platform-steps.md#quick-start-python-hello-without-docker). Adding `--build steps` alone does not convert this template's Dockerfile: prepare an explicit steps manifest first.
-
-The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
-
-Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
-
-Run from this repository with an already configured Express provider:
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template deploy ./python-hello -y
-abx create <template-id> --detach
-abx run <sandbox-id> hello --arg name=Ada
-abx run <sandbox-id> run_script --json-args '{"code":"print(21 * 2)"}'
-abx upload <sandbox-id> ./main.py /home/user/app/main.py
-abx run <sandbox-id> run --arg file=main.py
-abx upload <sandbox-id> ./test_main.py /home/user/app/test_main.py
-abx run <sandbox-id> test --arg path=test_main.py
+abx --provider alicloud-express template launch ./python-hello --workflow application --yes
+abx run <sandbox-id> hello --json-args '{"name": "Express"}'
 ```
 
-The deploy result supplies `<template-id>`; create supplies `<sandbox-id>`. `hello` returns `Hello, Ada!`; `run_script` returns `42\n`. The source and test files are your own files. `abx run` invokes a named command; use `abx exec` for shell commands. Clean up resources when finished:
-
-```bash
-abx kill <sandbox-id>
-abx template delete <template-id> -y
-```
+`template launch` prepares and starts this instance's application. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-The client distribution is `agent-sandbox-client` (import `agent_sandbox`). See [Python installation](../docs/python-client-installation.md).
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main() -> None:
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        print(await sb.run("hello", name="Ada"))
-        print(await sb.run("run_script", code="print(21 * 2)"))
-        await sb.files.write("/home/user/app/main.py", "print(6 * 7)\n")
-        await sb.files.write(
-            "/home/user/app/test_main.py",
-            "def test_answer():\n    assert 6 * 7 == 42\n",
-        )
-        print(await sb.run("run", file="main.py", timeout=70))
-        print(await sb.run("test", path="test_main.py", timeout=130))
-        print(sb.network.get_url(9000))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('hello', name='Express'))
 ```
 
-`Sandbox.connect` attaches to an existing sandbox. `sb.run` returns the JSON `result` value; `sb.commands.run` is the process/shell API. The `timeout` in `sb.run` is the HTTP request timeout in seconds. The command execution deadlines are fixed below; a client timeout does not guarantee cancellation. Use process APIs for background work, reconnecting and cancellation.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Set `ABX_SERVER_URL` to `sb.network.get_url(9000)` for the sandbox, or `http://127.0.0.1:9000` for a local server. On Express, the port-9000 server does not require the sandbox gateway token: do not forward the envd `X-Access-Token` to an anonymous server.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/hello`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/hello" \
-  --header 'Content-Type: application/json' \
-  --data '{"name":"Ada"}'
-# {"result":"Hello, Ada!"}
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/run_script" \
-  --header 'Content-Type: application/json' \
-  --data '{"code":"print(21 * 2)"}'
-# {"result":"42\n"}
+```json
+{"name": "Express"}
 ```
 
-The body is the direct JSON argument object, without an `args` wrapper. `POST /commands/run` with `{"file":"main.py"}` executes an uploaded script; `POST /commands/test` with `{"path":"test_main.py"}` runs an uploaded test. Both return `{"result":"<stdout>"}` when successful. `GET /commands` discovers public commands, and `GET /hello/Ada` returns `{"greeting":"Hello, Ada!"}`.
+Expected response for this check:
 
-Server authentication is separate from provider authentication. If you set `ABX_SERVER_TOKEN` inside the sandbox, include `Authorization: Bearer $ABX_SERVER_TOKEN` on protected requests; `/health` is exempt from server-token authentication. For the SDK use `sb.server_at(9000, token=server_token).commands.run(...)` with the token supplied securely by your application. A provider whose gateway requires an access header also needs that header (for example `X-Access-Token` from `sb.network.get_access_headers()`), in addition to the server bearer token. Current image backend acceptance and its exact scope are listed in [Verified](#verified).
+```json
+{"result": "Hello, Express!"}
+```
 
-Missing or invalid arguments return HTTP 400, failed authentication 401, unknown commands 404, and execution failures 500. Errors contain `error` and `type`. Named-command stdout is buffered until completion. The HTTP client timeout controls how long the caller waits; it does not cancel work on the server.
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -115,13 +72,13 @@ All arguments below are strings with no template-defined length limit. Paths may
 
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | No | Empty | Optional server bearer authentication; inject at sandbox creation. |
+| `ABX_SERVER_TOKEN` | Required; empty manifest declaration | Export the independent application token before launch | Optional server bearer authentication; inject at sandbox creation. |
 | `WORKSPACE` | No | Directory containing `commands.py` | Existing directory used by all Python subprocesses; override alongside your upload paths. |
 | `ABX_SERVER_BASE_DIR` | No | `/home/user` | File API path boundary; a custom workspace must be inside the configured boundary. This does not restrict arbitrary Python execution. |
 | `ABX_SERVER_PORT` | No | `9000` | Local `python3 commands.py` port; cloud `start_cmd` explicitly uses 9000. |
 | `LANG` | No | `C.UTF-8` | Unicode process output. |
 
-Supply secret values via your existing secure configuration and `Sandbox.create(envs=...)`; store only empty secret declarations in YAML. Do not log tokens or upload credential files.
+Before `template launch`, securely export the secret variables declared empty in the manifest so the application reads them at startup. Keep values out of images, YAML and logs.
 
 ## Resources
 

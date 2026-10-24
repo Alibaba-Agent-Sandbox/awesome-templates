@@ -12,8 +12,6 @@ The standalone `apply_patch` binary is a different template (issue #60). The Age
 
 ## Stack
 
-Revision 2.0.1 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
-
 - Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template deploy` replaces `<region>` with `cn-hangzhou` (or `ALIBABA_CLOUD_REGION_ID`) and `<tag>` with `v0.0.49` (or `ABX_BASE_IMAGE_TAG`).
 - Node.js 20 and Python 3.13 from that image.
 - `@openai/codex@0.162.1` (`codex-cli 0.162.1`).
@@ -27,91 +25,40 @@ Gives a sandbox a pinned, non-interactive Codex CLI: JSON events, an explicit wo
 
 ## Quick start (CLI)
 
-The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
-
-Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
-
-From a checkout of this repository, with Express credentials in the environment:
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template deploy ./codex -y --generation 2 \
-  --start-cmd 'agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py' \
-  --ready-cmd 'agent-sandbox-server healthcheck --port 9000'
-abx create <template-id> --detach \
-  --env OPENAI_API_KEY=<key> \
-  --env OPENAI_BASE_URL=<https://host/compatible-mode/v1> \
-  --env CODEX_MODEL=qwen-plus
-abx run <sandbox-id> codex_version
-abx run <sandbox-id> codex_setup_check
-abx run <sandbox-id> codex_exec --json-args '{"prompt":"Summarize the workspace.","model":"qwen-plus"}'
+abx --provider alicloud-express template launch ./codex --workflow application --yes
+abx run <sandbox-id> codex_version --json-args '{}'
 ```
 
-`template.yaml` already stores `generation`, `start_cmd`, and `ready_cmd`.
-
-Remove the sandbox and the template when you are done:
-
-```bash
-abx kill <sandbox-id>
-abx template delete <template-id> -y
-```
-
-`python3 scripts/express_e2e.py codex` deploys a unique alias, runs the smoke commands, writes evidence only after a pass, and deletes that sandbox and that template.
+`template launch` prepares and starts this instance's application. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-The client distribution is `agent-sandbox-client` (import `agent_sandbox`). See [Python installation](../docs/python-client-installation.md).
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main() -> None:
-    sb = await Sandbox.create(
-        template="<template-id>",
-        timeout=300,
-        envs={
-            "OPENAI_API_KEY": "<key>",
-            "OPENAI_BASE_URL": "https://host/compatible-mode/v1",
-            "CODEX_MODEL": "qwen-plus",
-        },
-    )
-    try:
-        print(await sb.run("codex_version"))
-        print(await sb.run(
-            "codex_exec",
-            prompt="Reply with exactly: ABX_E2E_OK",
-            model="qwen-plus",
-            sandbox="auto",
-        ))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('codex_version'))
 ```
 
-`await sb.run("codex_exec", prompt="...")` returns the result object (`last_message`, `events`, `thread_id`). `sb.commands.run` is the shell API; use the async `Sandbox.create` example above for sandbox lifecycle management.
-
-Resume with the `thread_id` from the first result:
-
-```python
-await sb.run("codex_exec", prompt="Continue.", resume="<thread_id>")
-```
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-For a server reachable at `http://127.0.0.1:9000` (for example a local template process):
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/codex_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body -X POST http://127.0.0.1:9000/commands/codex_exec \
-  -H 'Content-Type: application/json' \
-  --data '{"prompt":"Summarize the workspace.","sandbox":"read-only","approval":"never","json_events":true,"timeout_s":120}'
+```json
+{}
 ```
 
-Use the sandbox gateway URL from `sb.network.get_url(9000)` for a remote sandbox and the gateway's required authentication. When the application has `ABX_SERVER_TOKEN` configured, send its bearer token in the authorization header using your application's secret handling. The response wraps the command result in `{"result": ...}`; tool events and stderr redact known secret environment values.
+Expected response for this check:
 
-A successful execution is HTTP 200 with `{"result":{"last_message":"...","events":[],"thread_id":"..."}}`. Missing or mistyped required arguments produce HTTP 400; failed application authentication produces HTTP 401. Invalid sandbox policy or upstream execution failure produces HTTP 500 with `{"error":"...","type":"RuntimeError"}` (or `ValueError` for invalid values).
+```json
+{"result": "0.162.1"}
+```
 
-`timeout_s` defaults to 300 and accepts integers from 1 to 3600. Set your HTTP read timeout above that value, including server and gateway overhead. A client or gateway timeout can happen before the server finishes; it does not confirm that the child process stopped. A server-side Codex timeout is reported as HTTP 500. Named commands return one complete JSON response, so use the process API for live output.
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -162,10 +109,10 @@ A successful execution is HTTP 200 with `{"result":{"last_message":"...","events
 | `CODEX_MODEL` | no | empty | `model` written into `config.toml` and used when `codex_exec` omits `model`. |
 | `CODEX_HOME` | no | `/home/user/.codex` | Directory of `config.toml` and sessions. |
 | `WORKSPACE` | no | `/home/user/workspace` | Default `cwd`. A starter `AGENTS.md` is in the image. |
-| `ABX_SERVER_TOKEN` | no | empty | When set, clients send `Authorization: Bearer`. |
+| `ABX_SERVER_TOKEN` | Required; empty manifest declaration | Export the independent application token before launch | When set, clients send `Authorization: Bearer`. |
 | `ABX_SERVER_PORT` | no | `9000` | Port for a local `python3 commands.py`. |
 
-Set secret values on `abx create --env` or `Sandbox.create(envs=...)`. Do not write them into the image.
+Before `template launch`, securely export the secret variables declared empty in the manifest so the application reads them at startup. Keep values out of images, YAML and logs.
 
 `codex_exec` creates `config.toml` when a base URL is set and the file is missing. `codex_config_write` overwrites the file. Codex 0.162.1 will not send Chat Completions; `wire_api = "chat"` is a hard error.
 

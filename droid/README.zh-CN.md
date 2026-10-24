@@ -16,158 +16,40 @@
 
 ## 快速开始（CLI）
 
-主要路径为显式 BYOK。占位符替换为本次唯一目录和所属资源 ID，准备前先发布固定源码。编码调用前须按三个 `DROID_MODEL_*` 配置启动服务，密钥不要放在 CLI 参数中。以下原生 CLI0.4.1 语法已核对源码，当前版本云验收已通过，CLI 示例仅核对源码；要求官方 READY 并独立确认所属资源清理。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-python scripts/prepare_steps.py droid --output /tmp/droid-steps-<unique-run> --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
-abx --native template deploy /tmp/droid-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> droid_version
-abx --native run <owned-sandbox-id> droid_byok_setup_check
-abx --native run <owned-sandbox-id> droid_byok --arg prompt='Create hello.txt containing Hello from Droid.'
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+abx --provider alicloud-express template launch ./droid --workflow application --yes
+abx run <sandbox-id> droid_version --json-args '{}'
 ```
 
-以下保留示例使用独立的 Factory 账户命令。
-
-示例使用当前极速版 CLI：`abx create <template-id> --detach` 输出沙箱 ID，`abx kill <sandbox-id>` 清理沙箱；命名命令使用 `abx run`。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
-
-运行配置：以下创建时注入密钥的示例，要求命名服务启动时实际获得这些值。预热服务请先检查模板提供的 setup 标志（如有），再按[显式进程配置](../docs/runtime-environment.zh-CN.md)操作；创建沙箱不会重新配置已运行的服务。
-
-按[官方安装说明](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#readme)安装 CLI，在 `alicloud-express` 构建：
-
-```bash
-abx template install alibaba-agent-sandbox/awesome-templates//droid
-abx create <template-id> --detach
-abx run <sandbox-id> droid_version
-abx run <sandbox-id> droid_setup_check
-abx run <sandbox-id> droid --arg prompt='Review the existing project' --arg auto=''
-```
-
-使用安装返回的模板 ID。创建沙箱时通过私有环境配置注入 `FACTORY_API_KEY`；提供方凭据与 Factory 产品密钥不同。最后一条命令需要 Factory 密钥。编码前通过 SDK 文件 API 上传项目。结束后执行 `abx kill <sandbox-id>`。
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-BYOK 示例使用配套 `agent-sandbox-client`，按[源码安装说明](../docs/python-client-installation.md)安装。配置在服务导入时捕获，须检查 setup 标志；预热进程需要[显式环境启动](../docs/runtime-environment.zh-CN.md)。模型密钥不经具名命令参数传递。示例已通过语法检查，记录中的云验收已通过显式9010服务执行这些 SDK 操作。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-import os
-import secrets
-
-import httpx
-from agent_sandbox.api.sandbox import Sandbox
-
-async def example():
-    settings = {name: os.environ[name] for name in ('DROID_MODEL_API_KEY', 'DROID_MODEL_BASE_URL', 'DROID_MODEL')}
-    token = secrets.token_urlsafe(32)
-    settings.update(HOME="/home/user", WORKSPACE='/home/user/app',
-                    ABX_SERVER_BASE_DIR='/home/user/app', ABX_SERVER_TOKEN=token,
-                    PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin")
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=1200)
-    stream = drain = server = None
-    try:
-        stream = await sb.commands.start(
-            "agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py",
-            env=settings, timeout=1100)
-        started = asyncio.Event()
-        async def consume():
-            async for chunk in stream:
-                if chunk.pid:
-                    started.set()
-        drain = asyncio.create_task(consume())
-        await asyncio.wait_for(started.wait(), 90)
-        async with httpx.AsyncClient(timeout=10) as client:
-            for _ in range(60):
-                try:
-                    response = await client.get(sb.network.get_url(9010) + "/health",
-                                                headers=sb.network.get_access_headers())
-                    if response.status_code == 200:
-                        break
-                except httpx.HTTPError:
-                    pass
-                await asyncio.sleep(1)
-            else:
-                raise RuntimeError("configured server not healthy")
-        server = sb.server_at(9010, token=token)
-        print(await server.commands.run('droid_version', timeout=90))
-        setup = await server.commands.run('droid_byok_setup_check', timeout=60)
-        if not all(setup.get(k) is True for k in ("api_key_set", "base_url_set", "model_set")):
-            raise RuntimeError("model configuration not present in this server")
-        await sb.files.write("/home/user/app/calc.py", "def add(a, b): return a - b\n")
-        result = await server.commands.run("droid_byok", prompt="Fix calc.py so add returns the sum.",
-                                           command_timeout=600, timeout=660)
-        if result["exit_code"] != 0:
-            raise RuntimeError("native Droid did not complete successfully")
-        print(await sb.files.read("/home/user/app/calc.py"))
-    finally:
-        try:
-            if server is not None:
-                await server.aclose()
-        finally:
-            try:
-                await sb.kill()
-            finally:
-                if drain is not None:
-                    drain.cancel()
-                    await asyncio.gather(drain, return_exceptions=True)
-                if stream is not None:
-                    await stream.cancel()
-
-asyncio.run(example())
+print(await client.commands.run('droid_version'))
 ```
 
-保留的 Factory 账户模式示例：
-
-客户端包名为 `agent-sandbox-client`，导入名为 `agent_sandbox`。版本尚未发布时使用[配套源码安装](../docs/python-client-installation.md)。
-
-```python
-import asyncio
-import os
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(
-        template="<template-id>", timeout=600,
-        envs={"FACTORY_API_KEY": os.environ["FACTORY_API_KEY"]},
-    )
-    try:
-        await sb.files.write("/home/user/app/calc.py", "def add(a, b):\n    return a - b\n")
-        print(await sb.run("droid_version"))  # "0.241.1"
-        print(await sb.run("droid", prompt="Fix calc.py so add returns the sum.",
-                           auto="low", command_timeout=300, timeout=360))
-        print(await sb.files.read("/home/user/app/calc.py"))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
-```
-
-`command_timeout` 控制服务端执行期限；`Sandbox.run(timeout=360)` 控制客户端 HTTP 等待时间。客户端超时不保证取消进程。具名命令返回缓冲结果；后台执行、进度和取消使用 SDK 进程 API。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-BYOK 使用直接 JSON 参数对象，将自己的服务 URL/token 注入环境。返回 `{"result":{"exit_code":0,"native_version":"0.241.1","stdout":"<native JSON>","stderr":""}}`。原生非零退出保留在 `exit_code`，不能仅凭 HTTP200认定智能体成功。`POST /commands/droid_byok_setup_check` 接受 `{}`。参数结构错误400、认证401、未知命令404、语义/配置/期限错误500。结果缓冲返回，断开连接不会取消执行。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/droid_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body -X POST "$SERVER_URL/commands/droid_byok" -H "Authorization: Bearer $ABX_SERVER_TOKEN" -H 'Content-Type: application/json' -d '{"prompt":"Fix calc.py so add returns the sum.","command_timeout":300}'
+```json
+{}
 ```
 
-保留的 Factory 账户 HTTP：
+该检查的预期响应：
 
-通过 `sb.network.get_url(9000)` 获取沙箱 9000 端口 URL：
-
-```bash
-curl -X POST '<sandbox-port-9000-url>/commands/droid' \
-  -H 'Content-Type: application/json' \
-  -H "Authorization: Bearer ${ABX_SERVER_TOKEN}" \
-  -d '{"prompt":"Fix calc.py so add returns the sum.","auto":"low","command_timeout":300}'
+```json
+{"result": "0.241.1"}
 ```
 
-请求体直接为参数对象，不加 `args` 包装。成功响应为 `{"result":"<缓冲的 Droid 输出>"}`。`ABX_SERVER_TOKEN` 为空时去掉该头；非空时必须带 `Authorization: Bearer <token>` 或 `X-Access-Token: <token>`。Python SDK 使用 `sb.server_at(9000, token=...)`。提供方网关鉴权与服务端鉴权不同，需要另加所选提供方要求的访问头。`GET /commands` 返回签名；`POST /commands/droid_version` 与 `/commands/droid_setup_check` 接受 `{}`。
-
-HTTP 400 表示缺少参数或类型错误；401 表示服务端鉴权失败；404 表示未知命令；500 表示参数范围无效、缺少 Factory 凭据、上游执行失败或执行超时。响应不流式返回。
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -193,7 +75,7 @@ HTTP 400 表示缺少参数或类型错误；401 表示服务端鉴权失败；4
 | `DROID_MODEL_BASE_URL` | 空；BYOK 必填 | 显式 HTTPS 兼容接口，最多2048字符，无 userinfo/query/fragment；仅本地字面 HTTP 用于合成测试。 |
 | `DROID_MODEL` | 空；BYOK 必填 | 显式1–200字符模型标识。 |
 | `FACTORY_API_KEY` | 空 | 创建时注入的 Factory 账户 API 密钥；仅 `droid` 需要。 |
-| `ABX_SERVER_TOKEN` | 空 | 可选 HTTP 服务鉴权。 |
+| `ABX_SERVER_TOKEN` | 必填；清单值为空 | 启动前导出独立应用令牌 |
 | `WORKSPACE` | `/home/user/app` | 现有项目根目录；显式配置无效目录会报错。 |
 | `FACTORY_DROID_AUTO_UPDATE_ENABLED` | `false` | 子进程强制禁用自动更新，保持固定版本。 |
 

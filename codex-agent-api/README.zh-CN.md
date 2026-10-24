@@ -16,67 +16,40 @@ Alibaba 平台基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/bas
 
 ## 快速开始（CLI）
 
-示例使用当前极速版 CLI：`abx create <template-id> --detach` 输出沙箱 ID，`abx kill <sandbox-id>` 清理沙箱；命名命令使用 `abx run`。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
-
-运行配置：以下创建时注入密钥的示例，要求命名服务启动时实际获得这些值。预热服务请先检查模板提供的 setup 标志（如有），再按[显式进程配置](../docs/runtime-environment.zh-CN.md)操作；创建沙箱不会重新配置已运行的服务。
-
-在仓库根目录，使用已有的提供方配置：
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template deploy ./codex-agent-api -y --generation 2
-abx create <template-id> --detach
-abx run <sandbox-id> codex_version
-abx run <sandbox-id> agent_status
-abx run <sandbox-id> codex --arg prompt='Reply with hello' --arg timeout_s=120
+abx --provider alicloud-express template launch ./codex-agent-api --workflow application --yes
+abx run <sandbox-id> codex_version --json-args '{}'
 ```
 
-模型调用需要在创建沙箱时通过秘密注入机制提供密钥和模型，不要将秘密写入源文件或 shell 历史。默认 `CODEX_SANDBOX=workspace-write`。Express 可能不允许 Linux 用户命名空间；只有确认容器提供所需隔离时，才在创建环境中明确设置 `CODEX_SANDBOX=bypass`。适配器不自动更改隔离选择。
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-使用 `agent-sandbox-client`（导入名 `agent_sandbox`），不要安装无关的 PyPI `agent-sandbox`：
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-import os
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    runtime_env = {name: os.environ[name] for name in (
-        "OPENAI_API_KEY", "CODEX_API_KEY", "ABX_LLM_API_KEY", "OPENAI_BASE_URL",
-        "ABX_LLM_BASE_URL", "CODEX_MODEL", "CODEX_SANDBOX",
-    ) if os.environ.get(name)}
-    sb = await Sandbox.create(template="<template-id>", envs=runtime_env)
-    try:
-        print(await sb.run("codex_version"))
-        result = await sb.run("codex", prompt="Reply with hello", timeout_s=120, timeout=150)
-        print(result["status"])
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('codex_version'))
 ```
 
-模型调用需要配置下表中的运行时提供方环境。SDK 命名命令直接返回命令结果。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-使用沙箱端口 9000 的经过认证的 URL，并保留提供方要求的认证头。配置 `ABX_SERVER_TOKEN` 后，服务端另要求 `Authorization: Bearer <token>`。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/codex_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl -X POST "$SANDBOX_URL/commands/codex" \
-  -H 'Content-Type: application/json' \
-  -d '{"prompt":"Reply with hello","model":"your-model","timeout_s":120}'
-curl -X POST "$SANDBOX_URL/v1/agents/sessions" \
-  -H 'Content-Type: application/json' \
-  -d '{"agent":{"model":"your-model","instructions":"Be concise"},"input":"Reply with hello","background":true}'
-curl "$SANDBOX_URL/v1/agents/sessions/<session-id>"
-curl -N -X POST "$SANDBOX_URL/v1/agents/sessions/<session-id>/events" \
-  -H 'Content-Type: application/json' \
-  -d '{"input":"Continue","stream":true}'
+```json
+{}
 ```
 
-命名命令返回 `{"result": ...}`，会话路由直接返回 JSON，`stream=true` 时返回 SSE。HTTP 200 的 JSON 中若 `status=failed`，仍表示模型调用失败。`background=true` 立即返回，之后轮询至 `idle`、`failed` 或 `cancelled`；不能同时将 `stream`、`background` 设为 true。
+该检查的预期响应：
+
+```json
+{"result": "0.162.1"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -122,7 +95,7 @@ SSE 包括 `agent.session.created`、`agent.session.turn.started`、`agent.sessi
 | `WORKSPACE` | `/home/user/workspace` |
 | `AGENT_MAX_SESSIONS` | `20` |
 | `AGENT_SESSION_TTL` | `1800` 秒；每 60 秒 GC |
-| `ABX_SERVER_PORT`、`ABX_SERVER_TOKEN` | `9000`、空；端口和服务认证 |
+| `ABX_SERVER_PORT`、`ABX_SERVER_TOKEN` | 启动 application 工作流前必填；独立于模型和网关凭据 |
 
 服务最多保留 200 个 agent 配置，每会话最多 100 轮。回放及保留 item 缓冲各限制为 1000 个事件 / 2 MB；单行 JSONL 超过 256000 字节时轮次失败。stderr 始终消费，只将有界且脱敏的尾部用于错误提示。环境秘密值、请求提供的 MCP header 值与 bearer token 从返回事件、配置、错误和文本 artifact 中脱敏。Artifact 拒绝 `.env`、`.aws`、`.codex`、`.ssh` 路径及指向工作区外的符号链接。标准 shell/files 接口仍需要受信任访问及 server policy；这些过滤不是租户隔离。
 

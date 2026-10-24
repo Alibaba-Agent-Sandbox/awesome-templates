@@ -269,3 +269,5 @@ Source image backend acceptance: [decision](notes/proposed/feature/2026-10-22-so
 - [Public launch diagnostics and native cleanup](notes/proposed/process/2026-10-24-public-launch-diagnostics.md) · [verification](evidence/verify/2026-10-24-public-launch-diagnostics.md).
 
 - [Public launch pilot2, both default platforms](evidence/verify/2026-10-24-public-launch-pilot-2.md).
+
+- [Source application quick starts](notes/proposed/process/2026-10-24-source-application-quickstarts.md) · [verification](evidence/verify/2026-10-24-source-application-quickstarts.md).

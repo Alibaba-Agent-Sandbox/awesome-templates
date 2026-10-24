@@ -16,64 +16,40 @@ Alibaba generation2 basev0.0.49、Python3.13/Linuxx64；完整 SHA256 校验的�
 
 ## 快速开始（CLI）
 
-按[平台 steps](../docs/platform-steps.md)安装已验证 CLI0.4.1 原生入口并配置已授权的极速版访问。尖括号值需替换为本次独占资源；不可变 COPY 需要先发布对应源码提交。等待官方 READY 后再创建。以下操作打开 example.org 并截图。chrome_start 返回临时 VNC 密码，应私密保存，避免写入日志。
-
-The `abx run` command uses the CLI0.4.1 native entry as `abx --native run`.
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-python scripts/prepare_steps.py chrome --output /tmp/chrome-steps-<unique-run> \
-  --asset-transport parallel --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
-abx --native template deploy /tmp/chrome-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> chrome_start
-abx --native run <owned-sandbox-id> chrome_open --arg url=https://example.org
-abx --native run <owned-sandbox-id> chrome_screenshot
-abx --native run <owned-sandbox-id> chrome_stop
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+abx --provider alicloud-express template launch ./chrome --workflow application --yes
+abx run <sandbox-id> chrome_smoke --json-args '{}'
 ```
 
-完整验证入口：`ABX="abx --native" python scripts/run_steps_e2e.py chrome --sandbox-create sdk --http --asset-transport oss`。OSS 私有缓存只传输精确哈希归档，并独立验证本次对象/桶清理。steps 运行不能证明 Docker 镜像已构建。
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-按[配套源码安装](../docs/python-client-installation.md)安装 `agent-sandbox-client`。示例已做语法检查；真实验收使用独占离线测试页面，见下方记录；任务与 CLI/HTTP 相同。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=300)
-    try:
-        info = await sb.run("chrome_start", timeout=150)
-        # Keep info["vnc_password"] private; enter it in the noVNC UI.
-        cdp_url = sb.network.get_url(9222)
-        vnc_url = sb.network.get_url(6080) + "/vnc.html"
-        await sb.run("chrome_open", url="https://example.org", timeout=60)
-        image = await sb.run("chrome_screenshot", timeout=60)
-        png = await sb.files.read_bytes(image["path"], max_bytes=8 * 1024**2)
-        assert png.startswith(b"\x89PNG\r\n\x1a\n")
-        await sb.run("chrome_stop", timeout=90)
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('chrome_smoke'))
 ```
 
-CDP 和 WebSocket 需要所选提供方的网关访问头。通过 noVNC 界面输入生成的密码，不要将密码写入 URL。配置 ABX_SERVER_TOKEN 后使用 `sb.server_at(9000, token=...)` 的命令客户端，并在 finally 关闭该客户端；CDP 转发也要求相同 Bearer。请求超时不会取消桌面，仍须 chrome_stop 或销毁独占沙箱。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-先用 `{}` 调用 `POST /commands/chrome_start`。ABX_SERVER_URL 为 `sb.network.get_url(9000)`；需要时同时提供网关访问头和独立服务端 Bearer。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/chrome_smoke`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/chrome_open" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" --data '{"url":"https://example.org"}'
+```json
+{}
 ```
 
-直接传递参数对象，不使用 args 包装。示例 HTTP200 返回 `{"result":{"url":"https://example.org/","title":"Example Domain"}}`。之后用 `{}` 调用 chrome_screenshot、chrome_stop。参数缺失/类型错误400，服务端认证失败401，未知命令404，语义/执行错误500并包含 `{error,type}`。原生浏览器或网络失败不会作为成功返回。
+该检查的预期响应：
+
+```json
+{"result": "native headed Chrome145.0.7632.6 CDP/VNC/PNG and cleanup OK"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -95,7 +71,7 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/chrome_open" \
 | 变量 | 默认值/要求 | 用途 |
 | --- | --- | --- |
 | WORKSPACE | /home/user/workspace；已存在目录 | 截图根目录，命令模块启动时读取 |
-| ABX_SERVER_TOKEN | 可选；空 | 命令服务/CDP Bearer，与网关/VNC 认证独立 |
+| ABX_SERVER_TOKEN | 必填；清单值为空 | 启动前导出独立应用令牌 |
 
 [运行环境](../docs/runtime-environment.md)说明预热服务：创建沙箱时注入变量不会重配现有进程。每个独占会话生成私有8字符 VNC 密码与 Xauthority cookie；密码仅由授权的 start 调用返回，不进入 argv/日志。浏览器环境不包含操作者云、模型或 GitHub 凭据。停止删除本次 HOME、配置、cookie、密码文件。noVNC 仍需 VNC 密码；转发 URL 应使用提供方访问控制。
 

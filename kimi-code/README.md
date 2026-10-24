@@ -6,8 +6,6 @@ Run official Kimi Code 2.2.0 for one headless prompt in an existing sandbox dire
 
 ## Stack
 
-Revision 1.0.1 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
-
 Alibaba FC base v0.0.49, pinned Node.js 24.16.0 (architecture-specific SHA256 verified), npm `@moonshot-ai/kimi-code@2.2.0` (MIT), and the exact public server SDK source in Dockerfile. This uses the current Node CLI, not the unrelated/older Python distribution.
 
 ## Problem solved
@@ -16,52 +14,40 @@ Give callers a reproducible Moonshot CLI inside one Express sandbox, with compat
 
 ## Quick start (CLI)
 
-Install the source-aware CLI and paired `agent-sandbox-client`/server as described in [setup](../docs/using-templates.md). Configure the selected model environment before the named server starts; [prewarmed process configuration](../docs/runtime-environment.md) explains why create-time env does not reconfigure an existing process.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template deploy ./kimi-code -y
-abx create <template-id> --detach
-abx run <sandbox-id> kimi_version
-abx run <sandbox-id> kimi --json-args '{"prompt":"Summarize the files in the current directory.","command_timeout":120,"allow_tools":true}'
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+abx --provider alicloud-express template launch ./kimi-code --workflow application --yes
+abx run <sandbox-id> kimi_version --json-args '{}'
 ```
 
-Replace IDs with results from the preceding commands. These examples use the current Express CLI. Named-command invocation uses `abx run`.
+`template launch` prepares and starts this instance's application. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` from the [paired pinned source](../docs/python-client-installation.md). Set the documented Kimi model variables on the configured server process.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=600)
-    try:
-        print(await sb.run("kimi", prompt="Summarize the files in the current directory.",
-                           command_timeout=120, allow_tools=True, timeout=150))
-        print(sb.network.get_url(9000))
-    finally:
-        await sb.kill()
-        await sb.close()
-
-asyncio.run(main())
+print(await client.commands.run('kimi_version'))
 ```
 
-`timeout=150` is the client request budget; `command_timeout=120` bounds the process group. An HTTP timeout alone does not cancel a turn. Select `server_at` for an explicitly configured server port/token.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Use the server URL returned for port 9000. Server and provider-gateway authentication are separate; include the selected provider's documented gateway headers when required.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/kimi_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/kimi"   --header 'Content-Type: application/json'   --header "Authorization: Bearer $ABX_SERVER_TOKEN"   --data '{"prompt":"Summarize the files in the current directory.","command_timeout":120,"allow_tools":true}'
-# {"result":"<buffered upstream stream-JSON text>"}
+```json
+{}
 ```
 
-Omit Authorization only when the server has no token. The body is the direct argument object. Missing/mistyped arguments return 400, invalid auth 401, unknown commands 404 and execution/input errors 500 with `error` and `type`.
+Expected response for this check:
+
+```json
+{"result": "2.2.0"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -82,7 +68,7 @@ The CLI argv is `kimi --prompt PROMPT --output-format stream-json`. Upstream 2.2
 | KIMI_MODEL_BASE_URL | for model turns | explicit authorized compatible endpoint; no implicit credential forwarding |
 | KIMI_MODEL_PROVIDER_TYPE | no | openai; also kimi or anthropic, matching upstream 2.2.0 |
 | WORKSPACE | no | /home/user/app |
-| ABX_SERVER_TOKEN | no | server authentication, empty by default |
+| ABX_SERVER_TOKEN | Required; empty manifest declaration | Export the independent application token before launch |
 
 Model variables are verified in the actual npm 2.2.0 runtime and its official [provider documentation](https://github.com/MoonshotAI/kimi-code/blob/main/docs/en/configuration/providers.md). Each invocation sets KIMI_CODE_HOME to an owned temporary directory, leaving caller settings intact, and excludes unrelated cloud/registry credential variables. Secret values and JSON-escaped variants are redacted from returned stdout/stderr. The wrapper does not promise a read-only prompt mode.
 

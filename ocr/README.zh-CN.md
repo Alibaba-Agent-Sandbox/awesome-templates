@@ -16,55 +16,40 @@ Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag
 
 ## 快速开始（CLI）
 
-示例使用当前极速版 CLI：`abx create <template-id> --detach` 输出沙箱 ID，`abx kill <sandbox-id>` 清理沙箱；命名命令使用 `abx run`。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template deploy ./ocr -y --generation 2
-abx create <template-id> --detach
-abx run <sandbox-id> ocr_smoke
-abx run <sandbox-id> ocr --arg image_path=/home/user/app/fixtures/sample.png
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+abx --provider alicloud-express template launch ./ocr --workflow application --yes
+abx run <sandbox-id> ocr_smoke --json-args '{}'
 ```
 
-自定义图片先通过 SDK 文件 API 上传至工作区。成功结果保留在返回的 `.ocr-<随机值>/` 目录，供下载；使用后由调用者删除，或销毁沙箱。smoke 只删除自己创建的图片和结果。
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-使用 `agent-sandbox-client` 与配套 `agent-sandbox-server`；按[固定源码安装说明](../docs/python-client-installation.md)安装。
-
-按[固定版本源码安装说明](../docs/python-client-installation.md)安装客户端与配套服务端，导入 `agent_sandbox`。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        result = await sb.run("ocr", image_path="/home/user/app/fixtures/sample.png")
-        print(result["text"])
-        print(result["text_path"], result["tsv_path"])
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('ocr_smoke'))
 ```
 
-`sb.run` 调用命名命令，`sb.commands.run` 是通用 shell API。本模板保留共享服务器的 shell/files/code/ports 能力；OCR 路径限制只约束 OCR 命令，不限制其他已认证服务器 API。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-使用沙箱的 9000 端口 URL 和服务器认证 token，建议客户端超时至少 90 秒，以覆盖有界处理和清理。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/ocr_smoke`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --request POST --max-time 90 "$ABX_SERVER_URL/commands/ocr" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header 'Content-Type: application/json' \
-  --data '{"image_path":"/home/user/app/fixtures/sample.png"}'
+```json
+{}
 ```
 
-HTTP 200 返回 `{"result": ...}`；参数缺失/类型错误为 400，认证失败为 401，路径/图片内容拒绝或执行失败为 500，错误对象包含 `error` 和 `type`。结果完成后一次性返回；客户端断开不保证服务端取消。
+该检查的预期响应：
+
+```json
+{"result": "Tesseract image/text/TSV artifacts OK"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -83,7 +68,7 @@ HTTP 200 返回 `{"result": ...}`；参数缺失/类型错误为 400，认证失
 
 | 名称 | 必填 | 默认值 | 用途 |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | 否 | 空 | 创建沙箱时配置，客户端发送 bearer token。 |
+| `ABX_SERVER_TOKEN` | 必填；清单值为空 | 启动前导出独立应用令牌 | 创建沙箱时配置，客户端发送 bearer token。 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 直接本地启动端口。 |
 | `WORKSPACE` | 否 | `/home/user/app` | 已存在、运行用户拥有的输入输出根目录。 |
 | `OCR_TESSERACT_BINARY` | 否 | `/usr/bin/tesseract` | 运维配置的绝对程序路径，仍检查固定版本。 |

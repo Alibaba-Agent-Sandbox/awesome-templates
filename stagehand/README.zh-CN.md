@@ -14,58 +14,40 @@ Alibaba generation2 base v0.0.49、SHA256 固定的 Node24.16.0、npm integrity 
 
 ## 快速开始（CLI）
 
-命名调用使用 `abx run`；CLI0.4.1 需要显式选择此入口，完整形式为下方 `abx --native run`。
-
-安装[已验证原生 CLI 入口](../docs/platform-steps.zh-CN.md)，配置 Express 凭据。公开 COPY 输入需要先发布精确源码提交。unique-run／template／sandbox 占位符均替换为本次自有值，确认官方 READY 后创建。以下是原生 CLI 复现流程，本身不是云端通过记录。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-python scripts/prepare_steps.py stagehand --output /tmp/stagehand-steps-<unique-run> \
-  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
-abx --native template deploy /tmp/stagehand-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> stagehand_self_test
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+abx --provider alicloud-express template launch ./stagehand --workflow application --yes
+abx run <sandbox-id> stagehand_version --json-args '{}'
 ```
 
-原生无模型自检成功返回 `STAGEHAND_NATIVE_OK`，实际验证浏览器／扩展、导航、标题、PNG 与清理。推荐规范控制器自动生成回执并记录资源归属：
-
-```bash
-export ABX='abx --native'
-python scripts/run_steps_e2e.py stagehand --sandbox-create sdk --http
-```
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-通过[成对固定源码](../docs/python-client-installation.md)安装 `agent-sandbox-client`，导入 `agent_sandbox`。示例只创建／删除本次自有沙箱并执行无模型自检。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=300)
-    try:
-        print(await sb.run("stagehand_self_test", timeout=90))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('stagehand_version'))
 ```
 
-真实动作要求在命令服务启动前注入 `STAGEHAND_API_KEY`、`STAGEHAND_BASE_URL`、`STAGEHAND_MODEL`。预热9000进程不会自动获取稍后 create-time 环境；参阅[显式进程配置](../docs/runtime-environment.md)。配置后可执行 `await sb.run("stagehand", task="Click the Publish button", url="https://your-authorized-site.example/", extract_instruction="Read the displayed receipt", command_timeout=180, timeout=210)`。将网址替换为授权可访问页面，只在全新自有、无重要凭据的沙箱中运行。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-`ABX_SERVER_URL` 为沙箱9000端口 URL，即 `sb.network.get_url(9000)`。服务开启认证时，独立注入 `ABX_SERVER_TOKEN`，不要使用模型密钥充当服务令牌。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/stagehand_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/stagehand_self_test" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" --data '{}'
+```json
+{}
 ```
 
-HTTP200 返回 `{"result":"STAGEHAND_NATIVE_OK"}`。`POST /commands/stagehand` 直接传入参数 JSON，不包 args。缺失／类型非法／未知参数400，认证失败401，未知命令404，语义守卫／上游／模型／运行错误500并返回 `{error,type}`。结果为缓冲输出；客户端断开不会取消服务端有界任务。
+该检查的预期响应：
+
+```json
+{"result": "4.3.0"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -85,7 +67,7 @@ task／提取指令各最多32768 UTF-8字节，URL最多8192。结果含 `versi
 | STAGEHAND_API_KEY | 模型必需，空 | 授权兼容模型端点密钥，不是 Browserbase token |
 | STAGEHAND_BASE_URL | 模型必需，空 | HTTPS API base，包含实际 API 前缀，追加 `/chat/completions`；仅本地开发可用 literal localhost HTTP；无用户信息／query／fragment |
 | STAGEHAND_MODEL | 模型必需，空 | 实际模型名，最多200个允许的标识字符 |
-| ABX_SERVER_TOKEN | 可选，空 | 独立服务 Bearer 凭据 |
+| ABX_SERVER_TOKEN | 必填；清单值为空 | 启动前导出独立应用令牌 |
 | WORKSPACE | `/home/user/app` | 已存在产物根目录 |
 
 上游 ClientLLM 结构化请求支持文本和图片，必须完整返回 JSON-schema 结果；请求最多2MiB、响应1MiB，每次推理60秒，不自动重定向、重试或切换提供方。配置在服务 import 时读取。模型秘密只经匿名 stdin 内存传入 Node，不写文件、不进 argv／浏览器环境。浏览器只继承选定运行时／证书变量以及全新私有 HOME／cache／profile。明确在外层一次性沙箱中关闭 Chromium 内层 sandbox；这不构成租户安全边界。页面能访问沙箱可达网络，命令调用者需要受信任且认证。

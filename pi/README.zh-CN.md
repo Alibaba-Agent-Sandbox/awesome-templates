@@ -14,49 +14,40 @@
 
 ## 快速开始（CLI）
 
-示例使用当前极速版 CLI：`abx create <template-id> --detach` 输出沙箱 ID，`abx kill <sandbox-id>` 清理沙箱；命名命令使用 `abx run`。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
-
-运行配置：以下创建时注入密钥的示例，要求命名服务启动时实际获得这些值。预热服务请先检查模板提供的 setup 标志（如有），再按[显式进程配置](../docs/runtime-environment.zh-CN.md)操作；创建沙箱不会重新配置已运行的服务。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template install alibaba-agent-sandbox/awesome-templates//pi
-abx create <template-id> --detach --env PI_BASE_URL="$PI_BASE_URL" --env PI_MODEL="$PI_MODEL" --env PI_API_KEY="$PI_API_KEY"
-abx run <sandbox-id> pi --arg prompt="检查这个项目"
-abx run <sandbox-id> pi --arg prompt="修复计算错误" --arg allow_tools=true
+abx --provider alicloud-express template launch ./pi --workflow application --yes
+abx run <sandbox-id> pi_version --json-args '{}'
 ```
+
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`；参见[源码安装说明](../docs/python-client-installation.md)。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-import os
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=900,
-        envs={key: os.environ[key] for key in ("PI_BASE_URL", "PI_MODEL", "PI_API_KEY")})
-    try:
-        print(await sb.run("pi", prompt="修复计算错误", allow_tools=True,
-                           command_timeout=600, timeout=660))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('pi_version'))
 ```
+
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-```bash
-curl -X POST "$SANDBOX_PORT_9000_URL/commands/pi" \
-  -H 'Content-Type: application/json' \
-  -H "X-Access-Token: $GATEWAY_ACCESS_TOKEN" \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --data '{"prompt":"检查这个项目","allow_tools":false,"command_timeout":600}'
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/pi_version`，`Content-Type: application/json`，直接发送以下参数对象：
+
+```json
+{}
 ```
 
-参数直接放在 JSON body 中，不包裹 `args`。成功返回 `{"result":"缓冲输出"}`。网关 token 与可选的 server bearer token 分开配置，未设置时省略对应 header。HTTP 400 表示参数无效，401 表示认证失败，404 表示命令不存在，500 表示配置缺失、执行失败或超时。SDK 的 HTTP `timeout` 不会取消模型进程；进程期限由 `command_timeout` 控制。
+该检查的预期响应：
+
+```json
+{"result": "1.3.0"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 

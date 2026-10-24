@@ -6,8 +6,6 @@
 
 ## 技术栈
 
-版本 1.0.1 将默认服务器源码与 CI wheel 的提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a` 对齐。历史回执保留原始输入范围；此版本需要重新完成镜像及工作流验收。
-
 阿里云 FC base v0.0.49，generation2，非 root user。`npm ci --ignore-scripts` 依据 [package-lock.json](package-lock.json) 的完整性值安装 @openai/codex0.162.1 和对应架构的官方原生包。版本检查后用 apply_patch argv0 调用同一个原生二进制。对应发布 tag 的源码提交为 [092d3acd](https://github.com/openai/codex/tree/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d)。本模板使用官方预编译包，不宣称本地重新编译该提交。
 
 ## 解决的问题
@@ -16,52 +14,40 @@
 
 ## 快速开始（CLI）
 
-以下是原生 CLI 语法；标准入口差异参阅[兼容说明](../docs/using-templates.md#client-entry-compatibility)。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template deploy ./apply-patch -y
-abx create <template-id> --detach --timeout 300
-abx run <sandbox-id> apply_patch_smoke
-abx run <sandbox-id> apply_patch --arg 'patch_text=*** Begin Patch
-*** Add File: hello.txt
-+hello
-*** End Patch'
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+abx --provider alicloud-express template launch ./apply-patch --workflow application --yes
+abx run <sandbox-id> apply_patch_version --json-args '{}'
 ```
+
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-Install the paired [`agent-sandbox-client`](../docs/python-client-installation.md):
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        patch = "*** Begin Patch\n*** Add File: hello.txt\n+hello\n*** End Patch\n"
-        result = await sb.run("apply_patch", patch_text=patch)
-        assert result["exit_code"] == 0
-        assert await sb.files.read("/home/user/app/hello.txt") == "hello\n"
-    finally:
-        await sb.kill()
-        await sb.close()
-
-asyncio.run(main())
+print(await client.commands.run('apply_patch_version'))
 ```
+
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-```bash
-curl -fsS -X POST -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer <server-token>' \
-  -d '{"patch_text":"*** Begin Patch\n*** Add File: hello.txt\n+hello\n*** End Patch\n"}' \
-  '<sandbox-port-9000-url>/commands/apply_patch'
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/apply_patch_version`，`Content-Type: application/json`，直接发送以下参数对象：
+
+```json
+{}
 ```
 
-Response envelope: `{"result":{"stdout":"...","stderr":"","exit_code":0}}`.
+该检查的预期响应：
+
+```json
+{"result": "codex-cli 0.162.1"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 

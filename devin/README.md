@@ -16,100 +16,40 @@ Use the real headless program with deterministic installation, explicit permissi
 
 ## Quick start (CLI)
 
-The `abx run` surface explicitly uses `abx --native run` below. Publish the exact source first and replace `<run>`/`<published-commit>` with a unique run and its public40-character commit.
-
-Use the actual native0.4.1 command surface and your configured Express account. Replace owned IDs with results from your own deploy/create; no IDs are stored in this repository.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-python scripts/prepare_steps.py devin --output /tmp/devin-steps-<run> \
-  --source-commit <published-commit> --asset-transport parallel
-python - <<'CONFIG'
-from pathlib import Path
-import yaml
-p = Path("/tmp/devin-steps-<run>/template.yaml")
-v = yaml.safe_load(p.read_text())
-v["name"] = "devin-<run>"
-p.write_text(yaml.safe_dump(v, sort_keys=False))
-CONFIG
-abx --native template deploy /tmp/devin-steps-<run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> devin_version
-abx --native run <owned-sandbox-id> devin_native_check
-abx --native run <owned-sandbox-id> devin_setup_check
-# A process configured with an original credentials file before startup:
-abx --native run <owned-sandbox-id> devin --json-args '{"prompt":"Repair existing calc.py and preserve tests","cwd":"project","command_timeout":300,"allow_unsafe_tools":true}'
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+abx --provider alicloud-express template launch ./devin --workflow application --yes
+abx run <sandbox-id> devin_version --json-args '{}'
 ```
 
-Create the project first. The account line is syntax checked, not an authenticated pass. Create-time environment does not reconfigure prewarmed commands; use explicit process startup below. CLI `--server-port` selects another command-server port; authentication must match that process. Follow [runtime environment](../docs/runtime-environment.md).
-
-The canonical no-account test invokes the original `--print` through HTTP and SDK and requires explicit native authentication refusal, unchanged fixture bytes and cleanup:
-
-```bash
-ABX='abx --native' python scripts/run_steps_e2e.py devin \
-  --sandbox-create sdk --http --asset-transport oss
-```
-
-OSS uses the [pinned optional prerequisites](../scripts/requirements-steps-cache.txt) and owned private temporary original-archive cache, with hashes/private ACL/independent deletion. Source steps need no local Docker; Docker-image acceptance is separate. No account/model/operator key is injected by this fixture.
+`template launch` prepares and starts this instance's application. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install the [paired `agent-sandbox-client`](../docs/python-client-installation.md). Native diagnostic/no-account named calls need no account. For real coding, first authenticate with the original CLI on your own authorized machine (`devin auth login`). The vendor permits copying that original sensitive `credentials.toml` between your own machines; see [official authentication](https://docs.devin.ai/cli/enterprise/devin-auth). Set DEVIN_CREDENTIALS_FILE locally to that file's path. This is an authored wrapper setting, not a vendor API-key environment variable. Keep it out of Git and model prompts.
-
-The following real-account example is syntax checked, NOT_RUN without an account. Upload the original file bytes to a private path outside WORKSPACE, set mode0600, then start an independent9010server/Bearer. `<owned-template-id>` belongs to this run.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio, os, secrets, uuid
-from pathlib import Path
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=900)
-    server = None
-    try:
-        print(await sb.run("devin_version"))
-        folder = "/home/user/devin-private-" + uuid.uuid4().hex
-        await sb.commands.run("mkdir -m 700 " + folder)
-        credential = folder + "/credentials.toml"
-        await sb.files.write(credential, Path(os.environ["DEVIN_CREDENTIALS_FILE"]).read_bytes())
-        await sb.commands.run("chmod 600 " + credential)
-        project = "/home/user/app/devin-example-" + uuid.uuid4().hex
-        await sb.commands.run("mkdir -m 700 " + project)
-        await sb.files.write(project + "/calc.py", "def add(a,b): return a-b\n")
-        token = secrets.token_urlsafe(32)
-        server = await sb.start_server(port=9010, commands="/home/user/app/commands.py",
-            token=token, env={"DEVIN_CREDENTIALS_FILE": credential, "ABX_PTY_PORT": "9011"})
-        print(await server.commands.run("devin_setup_check"))
-        result = await server.commands.run("devin", prompt="Repair existing calc.py and write report.txt",
-            cwd=project, command_timeout=300, allow_unsafe_tools=True, timeout=420)
-        print(result["stdout"])
-    finally:
-        try:
-            if server is not None:
-                await server.aclose()
-        finally:
-            try:
-                await sb.kill()
-            finally:
-                await sb.close()
-
-asyncio.run(main())
+print(await client.commands.run('devin_version'))
 ```
 
-Original credentials can persist until revoked; never treat a short sandbox TTL as revocation of the original token. Each invocation copies bytes unchanged to a new private `$XDG_DATA_HOME/devin/credentials.toml` and deletes that copy afterward. The input file remains caller-owned; sandbox deletion removes this example's upload. Independently read back absence after deleting owned resources. No `stop_server` method is assumed.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Use the forwarded URL of the configured command server and its independent Bearer; no vendor token or credential file contents belong in JSON arguments.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/devin_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body -X POST "$DEVIN_COMMAND_SERVER_URL/commands/devin" \
-  -H "Authorization: Bearer $COMMAND_SERVER_TOKEN" -H 'Content-Type: application/json' \
-  --data '{"prompt":"Repair existing calc.py and write report.txt","cwd":"project","command_timeout":300,"allow_unsafe_tools":true}'
+```json
+{}
 ```
 
-Success HTTP200 contains `{"result":{"stdout":"...","stderr":"","exit_code":0,...}}`. Missing/unknown/type-invalid arguments400; command-server authentication401; unknown command404; semantic/native execution errors500. Native no-account refusal is an expected500 program error-path check, not model success. Error output exposes only bounded exit/category. `/health`, `/commands`, files and shell share the same server authentication boundary. HTTP disconnect does not cancel the remote operation; its own deadline still applies.
+Expected response for this check:
+
+```json
+{"result": "devin 3000.11.92 (7f4e64980e22)"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -132,7 +72,7 @@ Success requires original exit0 and nonempty stdout, returning stdout, empty std
 | --- | --- | --- |
 | DEVIN_CREDENTIALS_FILE | empty; optional for diagnostics/error-path, required for account tasks | Authored wrapper input path captured at module import; absolute, outside WORKSPACE, regular nonsymlink owned by root/current UID, no group/other permissions,1..65536bytes valid UTF8TOML |
 | WORKSPACE | /home/user/app | Captured existing project root |
-| ABX_SERVER_TOKEN | empty/optional | Independent command-server Bearer, not vendor account auth |
+| ABX_SERVER_TOKEN | Required; empty manifest declaration | Export the independent application token before launch |
 
 A missing original account file reaches original print and preserves its explicit login refusal; no interactive login, made-up DEVIN_API_KEY, root model key or fallback planner is used. The subprocess receives minimal private state environment without operator/model/cloud credentials or the source credential path. Known credential TOML string values, server Bearer/private HOME/source path are redacted in returned stdout. Native errors omit raw output. One operation per server process; overlap returns busy.
 

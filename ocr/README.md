@@ -20,55 +20,40 @@ Extract searchable English text and word coordinates from an uploaded image with
 
 ## Quick start (CLI)
 
-The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template deploy ./ocr -y --generation 2
-abx create <template-id> --detach
-abx run <sandbox-id> ocr_smoke
-abx run <sandbox-id> ocr --arg image_path=/home/user/app/fixtures/sample.png
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+abx --provider alicloud-express template launch ./ocr --workflow application --yes
+abx run <sandbox-id> ocr_smoke --json-args '{}'
 ```
 
-Upload custom images through the SDK files API into the workspace before calling `ocr`. Successful artifacts remain in the returned `.ocr-<random>/` directory until you remove them or destroy the sandbox. The smoke command removes only its own image and results.
+`template launch` prepares and starts this instance's application. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Use `agent-sandbox-client` with its paired `agent-sandbox-server`; follow [the pinned source installation recipe](../docs/python-client-installation.md).
-
-Install the paired source packages using [the pinned SDK installation recipe](../docs/python-client-installation.md). The Python import is `agent_sandbox`.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        result = await sb.run("ocr", image_path="/home/user/app/fixtures/sample.png")
-        print(result["text"])
-        print(result["text_path"], result["tsv_path"])
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('ocr_smoke'))
 ```
 
-`sb.run` invokes a named command; `sb.commands.run` invokes the server's shell API. The template retains the shared server's shell/files/code/ports capabilities. OCR path checks constrain this named command and do not sandbox other authenticated server APIs.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Use the sandbox's port-9000 URL and the configured server bearer token. Allow at least 90 seconds for bounded processing and cleanup.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/ocr_smoke`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --request POST --max-time 90 "$ABX_SERVER_URL/commands/ocr" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header 'Content-Type: application/json' \
-  --data '{"image_path":"/home/user/app/fixtures/sample.png"}'
+```json
+{}
 ```
 
-HTTP 200 wraps the result in `{"result": ...}`. Missing or mistyped arguments return 400; failed authentication returns 401. Invalid image content, rejected paths or execution failures return 500 with `error` and `type`. Results are buffered. Client disconnection does not guarantee cancellation.
+Expected response for this check:
+
+```json
+{"result": "Tesseract image/text/TSV artifacts OK"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -87,7 +72,7 @@ One OCR job runs at a time; another request fails promptly. The actual argv is `
 
 | Name | Required | Default | Purpose |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | no | empty | Set on sandbox creation; clients send a bearer token. |
+| `ABX_SERVER_TOKEN` | Required; empty manifest declaration | Export the independent application token before launch | Set on sandbox creation; clients send a bearer token. |
 | `ABX_SERVER_PORT` | no | `9000` | Direct local startup port. |
 | `WORKSPACE` | no | `/home/user/app` | Existing runtime-user-owned input/output root. |
 | `OCR_TESSERACT_BINARY` | no | `/usr/bin/tesseract` | Operator-only absolute executable path; version remains checked. |

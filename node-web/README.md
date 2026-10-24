@@ -6,8 +6,6 @@ Runs one real Node HTTP application per sandbox. `serve` starts a JavaScript ent
 
 ## Stack
 
-Revision 1.1.2 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
-
 Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` supplies Node 20 and Python 3.13. Deployment resolves the placeholders to `cn-hangzhou` / `v0.0.49` unless configured otherwise. The server fallback is pinned to python-sdk commit `35da216a300f1e2e84254a1cf4b4a7ea98681505`; a CLI-injected server wheel takes precedence. There are no additional npm dependencies. Work directory `/home/user/app`; non-root `user`; generation 2. Platform `start_cmd` runs the server on 9000 and `ready_cmd` runs its healthcheck; no Docker CMD/ENTRYPOINT is added.
 
 ## Problem solved
@@ -16,69 +14,40 @@ A successful spawn or open TCP port does not prove an application works. This te
 
 ## Quick start (CLI)
 
-The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
-
-Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
-
-With the provider already configured, deploy from the repository root:
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template deploy ./node-web -y
-abx create <template-id> --detach
-abx run <sandbox-id> serve --json-args '{"entry":"index.js","port":3000}'
-abx run <sandbox-id> request --json-args '{"path":"/"}'
-abx run <sandbox-id> logs --json-args '{"max_bytes":16384}'
-abx run <sandbox-id> stop
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+abx --provider alicloud-express template launch ./node-web --workflow application --yes
+abx run <sandbox-id> smoke --json-args '{}'
 ```
 
-The request returns `status_code: 200` and `body: "node-web ready\n"`. Upload your application and its locked dependencies before using a custom `entry` or `cwd`. `start`/`dev`/`build` require your `package.json` scripts; the bundled sample needs none. A service must honor `PORT` and bind to `0.0.0.0` for a gateway preview. Preview its provider URL for port 3000; the command API uses port 9000.
+`template launch` prepares and starts this instance's application. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-The client distribution is `agent-sandbox-client` (import `agent_sandbox`). See [Python installation](../docs/python-client-installation.md).
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        print(await sb.run("serve", entry="index.js", port=3000, timeout_s=20))
-        result = await sb.run("request", path="/")
-        assert result["status_code"] == 200
-        assert result["body"] == "node-web ready\n"
-        print(sb.network.get_url(3000))
-        print(await sb.run("logs", max_bytes=16384))
-        await sb.run("stop")
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('smoke'))
 ```
 
-`sb.run` returns the value inside the HTTP `result` wrapper. `sb.commands.run` is the separate shell/process API. For long builds, set an HTTP `timeout` greater than `timeout_s`, e.g. `await sb.run("build", cwd="/home/user/app/my-app", timeout_s=120, timeout=150)`. `timeout_s` is the execution/readiness deadline; the client's `timeout` only limits the request and does not guarantee cancellation. Use process APIs for reconnectable jobs.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Set `SERVER_URL` to the provider's sandbox port-9000 URL (`sb.network.get_url(9000)`), or `http://127.0.0.1:9000` for local L0. The following requests use direct JSON parameter objects, without an `args` wrapper:
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/smoke`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body -X POST "$SERVER_URL/commands/serve" \
-  -H 'Content-Type: application/json' -d '{"entry":"index.js","port":3000,"timeout_s":20}'
-curl --fail-with-body -X POST "$SERVER_URL/commands/request" \
-  -H 'Content-Type: application/json' -d '{"path":"/"}'
-curl --fail-with-body -X POST "$SERVER_URL/commands/stop" \
-  -H 'Content-Type: application/json' -d '{}'
+```json
+{}
 ```
 
-The request response is `{"result":{"status_code":200,"body":"node-web ready\n","truncated":false}}`. The serve response includes `pid`, `port`, `status`, `cwd`, and `http_status`; stop returns `status` and `pid`.
+Expected response for this check:
 
-If `ABX_SERVER_TOKEN` is set inside the sandbox, add `Authorization: Bearer $ABX_SERVER_TOKEN` or `X-Access-Token: $ABX_SERVER_TOKEN` to **every** command request. For Python, use `sb.server_at(9000, token=server_token).commands.run(...)` with the same token supplied to that server before startup. Provider gateway authentication is separate: add the header required by the chosen provider (Express uses `X-Access-Token: $SANDBOX_ACCESS_TOKEN`); when both are needed, put the server token in `Authorization` and the gateway token in `X-Access-Token`. Obtain both from your authorized runtime configuration; examples contain no real values.
+```json
+{"result": "node-web ready"}
+```
 
-Errors use `{"error":"...","type":"..."}`: 400 for missing/mistyped/unknown arguments, 401 for server authentication, 404 for an unknown named command, and 500 for command execution failures (including out-of-range values, unavailable ports, failed builds and readiness deadlines). All named responses are buffered. A service's own HTTP 404 is returned in `request.result.status_code`, with command HTTP 200.
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -107,7 +76,7 @@ One service can run at a time; a second start fails until `stop`. Readiness test
 | `HOST` | set to `0.0.0.0` by launch | Hint to compatible application servers; application must honor it |
 | `WORKSPACE` | unset | Default application working directory |
 | `ABX_SERVER_PORT` | `9000` | Local command server port |
-| `ABX_SERVER_TOKEN` | empty | Optional command-server authentication; secret name declared with an empty value |
+| `ABX_SERVER_TOKEN` | Required; empty manifest declaration | Export the independent application token before launch |
 
 No model/cloud key is needed by these commands. Keep secret values out of source, images and logs. Inject them only through authorized runtime configuration; do not log environment variables. App stdout is user controlled and can contain secrets: applications must redact before logging, and logs must not be attached to public issues without review.
 

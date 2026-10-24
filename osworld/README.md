@@ -14,62 +14,40 @@ Use real browser desktop observations and actions on Express without KVM, a Dock
 
 ## Quick start (CLI)
 
-The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template install alibaba-agent-sandbox/awesome-templates//osworld
-abx create <template-id> --detach
-abx run <sandbox-id> osworld_desktop_smoke
-abx run <sandbox-id> desktop_start
-abx run <sandbox-id> screenshot
-abx run <sandbox-id> a11y_tree
-abx run <sandbox-id> click --json-args '{"x":120,"y":200}'
-abx run <sandbox-id> type --arg text="Example text"
-abx run <sandbox-id> hotkey --arg keys="ctrl,a"
-abx run <sandbox-id> desktop_stop
+abx --provider alicloud-express template launch ./osworld --workflow application --yes
+abx run <sandbox-id> osworld_desktop_smoke --json-args '{}'
 ```
 
-Inspect a screenshot/tree before choosing coordinates. The disposable smoke requires no existing desktop and cleans up its own session.
+`template launch` prepares and starts this instance's application. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Use `agent-sandbox-client` with its paired `agent-sandbox-server`; follow [the pinned source installation recipe](../docs/python-client-installation.md).
-
-Install the paired source packages using [the pinned SDK installation recipe](../docs/python-client-installation.md). The Python import is `agent_sandbox`.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-import base64
-from pathlib import Path
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=900)
-    try:
-        print(await sb.run("osworld_desktop_smoke", timeout=120))
-        await sb.run("desktop_start", timeout=90)
-        image = await sb.run("screenshot")
-        Path("desktop.png").write_bytes(base64.b64decode(image["base64"]))
-        print(await sb.run("a11y_tree"))
-    finally:
-        try:
-            await sb.run("desktop_stop")
-        finally:
-            await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('osworld_desktop_smoke'))
 ```
+
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-```bash
-curl -X POST "$SANDBOX_PORT_9000_URL/commands/desktop_start" \
-  -H 'Content-Type: application/json' \
-  -H "X-Access-Token: $GATEWAY_ACCESS_TOKEN" \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN" --data '{}'
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/osworld_desktop_smoke`, with `Content-Type: application/json` and this direct argument object:
+
+```json
+{}
 ```
 
-The JSON body contains arguments directly. Success is `{"result": ...}`. Omit unset headers. Gateway access and optional server bearer tokens are separate. HTTP 400 means missing/unconvertible arguments; a function's validation, unsupported configuration or runtime failure returns 500 with `ValueError`/`RuntimeError`. Unknown commands return 404; missing server authentication returns 401.
+Expected response for this check:
+
+```json
+{"result": "desktop screenshot/click/type/hotkey/AT-SPI/evaluation OK"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 

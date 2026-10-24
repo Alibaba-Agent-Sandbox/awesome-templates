@@ -16,72 +16,40 @@
 
 ## 快速开始（CLI）
 
-```bash
-abx template deploy ./copilot-cli -y
-abx create <template-id> --detach --timeout 900
-abx run <sandbox-id> copilot_version
-abx run <sandbox-id> copilot_setup_check
-abx kill <sandbox-id>
-abx template delete <template-id> -y
-```
-
-使用 deploy/create 返回的 ID 替换占位符。版本与配置检查不调用模型。参见[客户端和提供商配置](../docs/using-templates.md#client-entry-compatibility)。同一源码也可使用原生平台 steps，保留资源归属和清理：
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-python scripts/express_e2e.py ./copilot-cli --build steps --sandbox-create sdk
+abx --provider alicloud-express template launch ./copilot-cli --workflow application --yes
+abx run <sandbox-id> copilot_version --json-args '{}'
 ```
 
-steps 通过不能证明 Dockerfile 已构建。预热服务不会因 create 环境参数而重新配置，模型示例显式启动独立服务。
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-按[固定源码安装说明](../docs/python-client-installation.md)安装 agent-sandbox-client，在操作者环境设置三个模型变量，使用部署结果的模板 ID。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-import os
-import secrets
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=900)
-    server = None
-    try:
-        server = await sb.start_server(
-            port=9010, commands="/home/user/app/commands.py", timeout=60,
-            token=secrets.token_urlsafe(32),
-            env={name: os.environ[name] for name in (
-                "COPILOT_PROVIDER_BASE_URL", "COPILOT_PROVIDER_API_KEY", "COPILOT_MODEL")})
-        result = await server.commands.run(
-            "copilot", prompt="Create HELLO.txt containing hello, then read it back.",
-            allow_write=True, command_timeout=300, timeout=360)
-        if result["exit_code"] != 0:
-            raise RuntimeError("Native Copilot failed; inspect private diagnostics")
-        print(await sb.files.read("/home/user/app/HELLO.txt"))
-    finally:
-        try:
-            if server is not None:
-                await server.aclose()
-            await sb.kill()
-        finally:
-            await sb.close()
-
-asyncio.run(main())
+print(await client.commands.run('copilot_version'))
 ```
 
-示例创建独立鉴权9010服务、读取目标文件并销毁自有 sandbox。源码检查不等于真实执行，执行资格以凭证为准。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-ABX_SERVER_URL 为 SDK 转发的9010地址；ABX_SERVER_TOKEN 为该服务的随机 token。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/copilot_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --max-time 360 -X POST "$ABX_SERVER_URL/commands/copilot" \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN" -H 'Content-Type: application/json' \
-  --data '{"prompt":"Explain the existing source","allow_write":false,"command_timeout":300}'
+```json
+{}
 ```
 
-HTTP200 返回 `{"result":{"stdout":"<native JSONL>","stderr":"","exit_code":0,"native_version":"1.0.100"}}`。原生命令非零退出保留 exit_code。鉴权401、命令不存在404、schema 错误400；配置、路径、限额、输出溢出或超时返回500及 error/type。每路输出缓冲上限256KiB。客户端断开不保证取消进程。
+该检查的预期响应：
+
+```json
+{"result": {"native_version": "1.0.100"}}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -103,7 +71,7 @@ HTTP200 返回 `{"result":{"stdout":"<native JSONL>","stderr":"","exit_code":0,"
 | COPILOT_PROVIDER_API_KEY | 模型请求/空 | 显式端点凭据，最长8192字符，禁止 CR/LF/NUL |
 | COPILOT_MODEL | 模型请求/空 | 显式模型标识，最长200ASCII字符 |
 | WORKSPACE | /home/user/app | cwd 根目录 |
-| ABX_SERVER_TOKEN | 操作者设置 | 命令服务鉴权 token |
+| ABX_SERVER_TOKEN | 必填；清单值为空 | 启动前导出独立应用令牌 |
 
 模型变量在服务启动时读取。固定 type=openai、wire API=completions、transport=http，prompt/output token 上限65536/4096。不转发 key-command、自定义 headers、bearer、GitHub token 或其他主机凭据。上游 secret-env 过滤和包装层替换保护配置的 key。子进程只继承 PATH/可选 CA 路径及独立 HOME/XDG/temp/state。停止自有进程组和带随机标记的脱离子进程后删除临时配置/缓存/日志，项目修改保留。自有云 sandbox 是恶意代码的最终边界。参见[运行环境](../docs/runtime-environment.md)和[官方 BYOK](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/use-byok-models)。
 

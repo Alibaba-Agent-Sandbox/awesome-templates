@@ -6,8 +6,6 @@
 
 ## 技术栈
 
-版本 1.1.2 将默认服务器源码与 CI wheel 的提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a` 对齐。历史回执保留原始输入范围；此版本需要重新完成镜像及工作流验收。
-
 Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` 提供 Node 20 和 Python 3.13；部署默认替换为 `cn-hangzhou`、`v0.0.49`。server 的归档安装锁定 python-sdk 提交 `35da216a300f1e2e84254a1cf4b4a7ea98681505`，CLI 注入的 wheel 优先。无额外 npm 依赖。工作目录 `/home/user/app`，以非 root 的 `user` 运行，generation 2。`start_cmd` 在 9000 启动命令服务，`ready_cmd` 做 healthcheck；Dockerfile 无 CMD/ENTRYPOINT。
 
 ## 解决的问题
@@ -16,69 +14,40 @@ Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag
 
 ## 快速开始（CLI）
 
-示例使用当前极速版 CLI：`abx create <template-id> --detach` 输出沙箱 ID，`abx kill <sandbox-id>` 清理沙箱；命名命令使用 `abx run`。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
-
-运行配置：以下创建时注入密钥的示例，要求命名服务启动时实际获得这些值。预热服务请先检查模板提供的 setup 标志（如有），再按[显式进程配置](../docs/runtime-environment.zh-CN.md)操作；创建沙箱不会重新配置已运行的服务。
-
-已有提供方配置时，在仓库根目录执行：
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template deploy ./node-web -y
-abx create <template-id> --detach
-abx run <sandbox-id> serve --json-args '{"entry":"index.js","port":3000}'
-abx run <sandbox-id> request --json-args '{"path":"/"}'
-abx run <sandbox-id> logs --json-args '{"max_bytes":16384}'
-abx run <sandbox-id> stop
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+abx --provider alicloud-express template launch ./node-web --workflow application --yes
+abx run <sandbox-id> smoke --json-args '{}'
 ```
 
-request 返回 `status_code: 200` 和 `body: "node-web ready\n"`。自定义 `entry`/`cwd` 前，上传应用及锁定依赖。`start`/`dev`/`build` 需要项目自己的 `package.json` 脚本，内置样例无需 npm 安装。应用须使用 `PORT` 并绑定 `0.0.0.0`，才能通过提供方网关预览。应用端口默认 3000，命令 API 端口为 9000。
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-客户端发行名为 `agent-sandbox-client`，导入名为 `agent_sandbox`。配套版本发布前，请按[固定提交的双包安装说明](../docs/python-client-installation.md)安装。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        print(await sb.run("serve", entry="index.js", port=3000, timeout_s=20))
-        result = await sb.run("request", path="/")
-        assert result["status_code"] == 200
-        assert result["body"] == "node-web ready\n"
-        print(sb.network.get_url(3000))
-        print(await sb.run("logs", max_bytes=16384))
-        await sb.run("stop")
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('smoke'))
 ```
 
-`sb.run` 返回 HTTP `result` 内的值。`sb.commands.run` 为独立 shell/进程 API。长构建需让 HTTP `timeout` 大于执行参数 `timeout_s`，如 `await sb.run("build", cwd="/home/user/app/my-app", timeout_s=120, timeout=150)`。`timeout_s` 是执行/就绪期限；客户端 `timeout` 只限制请求，超时不保证取消。需断线重连的长任务请使用进程 API。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-将 `SERVER_URL` 设为沙箱端口 9000 的提供方 URL（`sb.network.get_url(9000)`），本地 L0 使用 `http://127.0.0.1:9000`。JSON 直接传参数对象，无 `args` 包装：
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/smoke`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body -X POST "$SERVER_URL/commands/serve" \
-  -H 'Content-Type: application/json' -d '{"entry":"index.js","port":3000,"timeout_s":20}'
-curl --fail-with-body -X POST "$SERVER_URL/commands/request" \
-  -H 'Content-Type: application/json' -d '{"path":"/"}'
-curl --fail-with-body -X POST "$SERVER_URL/commands/stop" \
-  -H 'Content-Type: application/json' -d '{}'
+```json
+{}
 ```
 
-请求结果：`{"result":{"status_code":200,"body":"node-web ready\n","truncated":false}}`。serve 返回 `pid`、`port`、`status`、`cwd`、`http_status`；stop 返回 `status` 与 `pid`。
+该检查的预期响应：
 
-沙箱中配置 `ABX_SERVER_TOKEN` 后，每次命令请求须添加 `Authorization: Bearer $ABX_SERVER_TOKEN` 或 `X-Access-Token: $ABX_SERVER_TOKEN`。Python 使用 `sb.server_at(9000, token=server_token).commands.run(...)`，token 与该服务启动前获得的值一致。提供方网关鉴权独立：按该提供方要求添加访问头（Express 为 `X-Access-Token: $SANDBOX_ACCESS_TOKEN`）。同时启用时，server token 放 `Authorization`，网关 token 放 `X-Access-Token`。仅从已授权运行配置取得值，示例不含真实凭据。
+```json
+{"result": "node-web ready"}
+```
 
-错误体为 `{"error":"...","type":"..."}`：参数缺失、类型错误、未知参数为 400；server 鉴权失败 401；未知命令 404；命令执行失败 500（包括数值越界、端口占用、构建失败、就绪超时）。命令结果一次缓冲返回。应用本身返回 HTTP 404 时，命令 API 仍是 HTTP 200，应用码位于 `request.result.status_code`。
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -107,7 +76,7 @@ curl --fail-with-body -X POST "$SERVER_URL/commands/stop" \
 | `HOST` | 启动时设为 `0.0.0.0` | 兼容应用的监听提示，应用须自行遵循 |
 | `WORKSPACE` | 未设置 | 默认应用目录 |
 | `ABX_SERVER_PORT` | `9000` | 本地命令服务端口 |
-| `ABX_SERVER_TOKEN` | 空 | 可选 server 鉴权，仅以空值声明密钥名 |
+| `ABX_SERVER_TOKEN` | 必填；清单值为空 | 启动前导出独立应用令牌 |
 
 命令无需模型或云密钥。秘密值不得写进源码、镜像、日志。只通过授权运行配置注入，不打印环境变量。应用 stdout 由用户代码决定，可能含敏感信息，应用须自行脱敏，公开 issue 前须审阅日志。
 

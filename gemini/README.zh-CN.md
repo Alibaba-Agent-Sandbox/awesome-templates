@@ -14,58 +14,40 @@
 
 ## 快速开始（CLI）
 
-`abx run`的native入口为`abx --native run`。使用已验证CLI0.4.1和现有授权Express配置。替换占位符，先发布精确源码再生成不可变COPY，使用唯一任务名称，等待官方READY并保存资源ID清理。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-python scripts/prepare_steps.py gemini --output /tmp/gemini-steps-<unique-run> \
-  --server-commit 34e7e011c5569f77b7f605e65313be7498f6cf02
-python - <<'CONFIG'
-from pathlib import Path
-import yaml
-p=Path('/tmp/gemini-steps-<unique-run>/template.yaml')
-v=yaml.safe_load(p.read_text());v['name']='gemini-<unique-run>'
-p.write_text(yaml.safe_dump(v,sort_keys=False))
-CONFIG
-abx --native template deploy /tmp/gemini-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> gemini_version
-abx --native run <owned-sandbox-id> gemini_native_check
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+abx --provider alicloud-express template launch ./gemini --workflow application --yes
+abx run <sandbox-id> gemini_version --json-args '{}'
 ```
 
-规范资源流程：`ABX='abx --native' python scripts/run_steps_e2e.py gemini --sandbox-create sdk --http`。无需本地Docker；steps不等于镜像云端部署。已配置模型进程使用`abx --native run <owned-sandbox-id> gemini_byok --json-args '{"prompt":"Repair existing calc.py and preserve tests","cwd":"project","command_timeout":300,"allow_unsafe_tools":true}'`。
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-发行名agent-sandbox-client，遵循[固定配套源码安装](../docs/python-client-installation.md)。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-async def main():
-    sb=await Sandbox.create(template='<owned-template-id>',timeout=900)
-    try:
-        print(await sb.run('gemini_version',timeout=60))
-        print(await sb.run('gemini_native_check',timeout=60))
-    finally:
-        await sb.kill()
-asyncio.run(main())
+print(await client.commands.run('gemini_version'))
 ```
 
-命令进程启动前设置全部GEMINI_BYOK_*变量，检查gemini_byok_setup_check，再调用`await server.commands.run('gemini_byok',prompt='Repair existing calc.py; preserve tests',cwd='project',command_timeout=300,allow_unsafe_tools=True,timeout=420)`。项目需预先创建。独立服务用sb.server_at(port,token=...)，关闭借用客户端。预热9000不会获得后续create环境，遵循[显式进程配置](../docs/runtime-environment.md)；独立9010进程使用匹配的独立Bearer。结果是缓冲后的直接对象。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-ABX_SERVER_URL来自对应进程sb.network.get_url(port)，服务Bearer与平台/模型密钥独立。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/gemini_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/gemini_version" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header 'Content-Type: application/json' --data '{}'
+```json
+{}
 ```
 
-HTTP200返回{"result":"0.64.0"}。POST/commands/gemini_byok接收直接{prompt,cwd,command_timeout,allow_unsafe_tools}JSON。缺失/未知/类型参数400、认证401、未知命令404；执行/语义错误500并脱敏。断连不取消已发上游任务，仍执行有界自有清理。
+该检查的预期响应：
+
+```json
+{"result": "0.64.0"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -92,7 +74,7 @@ HTTP200返回{"result":"0.64.0"}。POST/commands/gemini_byok接收直接{prompt,
 | GEMINI_API_KEY | 空，仅旧模式 | 原Google/原生兼容密钥，BYOK不隐式复用 |
 | GEMINI_MODEL | gemini-3.1-flash-lite，仅旧模式 | 原有默认值，与显式BYOK模型分离 |
 | WORKSPACE | /home/user/app | 已有项目根目录 |
-| ABX_SERVER_TOKEN | 空，可选 | 独立命令服务Bearer |
+| ABX_SERVER_TOKEN | 必填；清单值为空 | 启动前导出独立应用令牌 |
 
 BYOK模块导入时捕获设置，密钥最多8192字符且无控制字符。原生环境仅临时本地token、最小PATH、私有HOME/config/cache；真实密钥只发往精确授权Chat来源。同用户OS访问仍存在，cwd与环境过滤不是另一个租户边界。旧配置行为单独保留。结果与错误不包含私有地址、密钥或完整轨迹。
 

@@ -31,151 +31,40 @@ actual CLIs; disabling model tests never substitutes synthetic programs.
 
 ## Quick start (CLI)
 
-The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
-
-Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
-
-From this repository with the required provider build credentials:
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template deploy ./agents-cli -y
-abx create <template-id> --detach
-abx run <sandbox-id> agents_version
+abx --provider alicloud-express template launch ./agents-cli --workflow application --yes
+abx run <sandbox-id> agents_version --json-args '{}'
 ```
 
-The result is `codex 0.162.1; qwen-code 0.23.0`. Model configuration must reach the
-server process before it starts. Create-time environment does not retroactively
-configure a prewarmed port-9000 process. The SDK verifier below starts a new
-port-9010 process with explicit configuration. Do not include credentials in
-images or checked-in files.
-
-```bash
-abx kill <sandbox-id>
-abx template delete <template-id> -y
-```
+`template launch` prepares and starts this instance's application. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` using the [paired pinned source instructions](../docs/python-client-installation.md)
-until the matching package is published. The import is `agent_sandbox`.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        print(await sb.run("agents_version", timeout=60))
-        print(sb.network.get_url(9000))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('agents_version'))
 ```
 
-If the sandbox was created with `ABX_SERVER_TOKEN`, pass the matching server credential with
-`await sb.server_at(9000, token="<server-token>").commands.run("agents_version", timeout=60)`.
-
-The named diagnostic returns a buffered string. Use the HTTP session routes below
-for turns. The named server's HTTP files/process APIs return 404 under this policy;
-the separate provider-native SDK management channel remains available.
-
-### Independent native coding acceptance
-
-From a checkout with the paired SDK installed, export `OPENAI_API_KEY` and
-`OPENAI_BASE_URL` for an OpenAI-compatible, tool-capable endpoint. Set
-`OPENAI_MODEL` to your actual model, for example `qwen3.8-flash`. Then run:
-
-```bash
-mkdir -m 700 /tmp/agents-cli-private-<unique-run>
-python agents-cli/e2e_sdk.py --template <owned-agents-cli-template-id> \
-  --journal /tmp/agents-cli-private-<unique-run>/journal.json \
-  --report /tmp/agents-cli-private-<unique-run>/result.json
-```
-
-The controller calls `Sandbox.create(provider="alicloud-express")`, seeds a
-disposable project through provider-native commands, and proves the exact initial
-failure. It starts the unchanged installed commands and policy on port 9010 with
-selected model configuration, its own server token, workspace and private state
-directory. It retains the original `HOME`; host GitHub/cloud credentials are not
-forwarded. It selects the exact native `--adapter` (default `qwen-code`, or `codex`), submits a genuine session/event, reconnects and polls items. Run each adapter with a fresh journal/report: `--adapter codex` exercises Codex independently; it cannot inherit a Qwen result. No synthetic CLI is selected. The new server explicitly selects the installed pinned Node24 PATH; no operator PATH is forwarded.
-
-Independent native processes require changed existing source, byte-identical
-original tests, exact JSON artifact values and a nonempty report, complete
-original plus agent-written unittest modules, and six held-out cases. They compile
-source under isolated Python and require a fresh post-agent random ACK, rejecting
-skip, early exit0 and stale bytecode. A marker response cannot pass. The pinned
-server's own private persisted turn state is additionally inspected for completed
-status because this policy disables turn-status/SSE routes; this is an internal
-diagnostic for server commit `e2cb27e`, not a new public API or artifact receipt.
-
-The session API currently runs the agent with **full_access**. It does not accept
-per-session permissions or time limits from the inline JSON. Closing HTTP
-shell/files/process routes does not contain the CLI's tools or arbitrary same-user
-code. Run only in a newly owned disposable sandbox without valuable files or
-other credentials. The verifier checks ordinary correctness; it does not isolate
-hostile code that can inspect or alter its own OS processes. The host turn deadline
-defaults to 540 seconds (30–600 configurable); HTTP disconnect is not cancellation.
-The owned sandbox TTL is 1800 seconds and the new server deadline is 1500 seconds;
-these leave setup/evaluation headroom and do not replace immediate cleanup.
-`finally` destroys the owned sandbox and checks a paginated provider listing for
-its ID and random metadata nonce. A permission/readback failure fails acceptance
-and retains the private recovery journal. Resolve its exact owned resources before
-deleting the journal.
-
-This controller does not deploy/delete a template or registry repository. The
-owner who supplies the template handles those resources separately. Qwen success
-does not establish Codex success: Codex 0.162.1 requires a compatible Responses
-endpoint, and its coding branch needs independent acceptance.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Use the sandbox's port-9000 URL. Add the provider's gateway access header when
-required, independently of the optional server token:
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/agents_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/agents_version" \
-  --header "Content-Type: application/json" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --data '{}'
+```json
+{}
 ```
 
-The direct argument object has no `args` wrapper. HTTP 200 returns
-`{"result":"codex 0.162.1; qwen-code 0.23.0"}`. Server authentication uses
-`ABX_SERVER_TOKEN` with Bearer or `X-Access-Token`; when a gateway also requires
-`X-Access-Token`, put the server token in Bearer. `/health` is public.
+Expected response for this check:
 
-A model session uses an explicit runtime and an existing target workspace:
-
-```bash
-curl --fail-with-body "$ABX_SERVER_URL/v1/agents/sessions" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" \
-  --data '{"adapter":"qwen-code","agent":{"model":"<compatible-model>"},"environment":{"type":"self_hosted","workspace_directory":"/home/user/workspace"}}'
+```json
+{"result": "codex 0.162.1; qwen-code 0.23.0"}
 ```
 
-The session response contains `id`. Send a turn, then poll items:
-
-```bash
-curl --fail-with-body "$ABX_SERVER_URL/v1/agents/sessions/<id>/events" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" \
-  --data '{"events":[{"type":"agent.session.input.message","input":[{"role":"user","content":[{"type":"input_text","text":"Describe this workspace."}]}]}]}'
-curl --fail-with-body "$ABX_SERVER_URL/v1/agents/sessions/<id>/items?limit=100&order=asc" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN"
-```
-
-Event submission returns 202 before model completion. HTTP 400 means invalid
-arguments, 401 missing/incorrect server authentication, 404 an unknown or disabled
-route/runtime/session, and 500 a diagnostic execution failure. Model-turn failures
-may appear in items. The current session view can return idle without exposing
-the final turn's error; accepting an event or observing idle does not prove model
-success. The SDK verifier independently inspects results. An HTTP timeout does
-not cancel an upstream turn.
-
-
-For `--adapter codex`, the controller creates a fresh private CODEX_HOME with an explicit compatible HTTP Responses provider and websockets disabled. The key is referenced by OPENAI_API_KEY, never written into that config. This selects the approved endpoint deliberately instead of relying on ambient native provider defaults; the entire owned sandbox/profile is removed on cleanup.
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -200,7 +89,7 @@ allowlist. Destroy an owned sandbox to end its server and resources.
 
 | Name | Required | Purpose |
 |---|---|---|
-| `ABX_SERVER_TOKEN` | Recommended for exposed endpoints | Server API authentication, declared empty |
+| `ABX_SERVER_TOKEN` | Required; empty manifest declaration | Export the independent application token before launch |
 | `OPENAI_API_KEY` | For compatible model turns | Runtime credential, declared empty; usable by Qwen and compatible Codex setups |
 | `CODEX_API_KEY` | Optional Codex alternative | Declared empty; actual authentication support depends on the chosen upstream provider |
 | `OPENAI_BASE_URL`, `OPENAI_MODEL` | Provider-dependent | Qwen's compatible endpoint/model configuration |

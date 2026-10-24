@@ -16,73 +16,40 @@ Run the genuine LangChain Deep Agent inside an owned cloud sandbox without askin
 
 ## Quick start (CLI)
 
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+
 ```bash
-abx template deploy ./deepagents -y
-abx create <template-id> --detach --timeout 900
-abx run <sandbox-id> deepagents_version
-abx run <sandbox-id> deepagents_setup_check
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+abx --provider alicloud-express template launch ./deepagents --workflow application --yes
+abx run <sandbox-id> deepagents_version --json-args '{}'
 ```
 
-Deploy returns the template ID and create returns the owned sandbox ID used above. Version/setup need no model key. See [entry compatibility and provider setup](../docs/using-templates.md#client-entry-compatibility). Model settings must be present in the running server; create-time environment does not reconfigure a prewarmed server.
-
-
+`template launch` prepares and starts this instance's application. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install agent-sandbox-client using the [pinned source instructions](../docs/python-client-installation.md). Set the three DEEPAGENTS variables in the operator environment, then run:
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-import os
-import secrets
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=900)
-    server = None
-    try:
-        server = await sb.start_server(
-            port=9010, commands="/home/user/app/commands.py", timeout=60,
-            token=secrets.token_urlsafe(32),
-            env={"DEEPAGENTS_API_KEY": os.environ["DEEPAGENTS_API_KEY"],
-                 "DEEPAGENTS_BASE_URL": os.environ["DEEPAGENTS_BASE_URL"],
-                 "DEEPAGENTS_MODEL": os.environ["DEEPAGENTS_MODEL"],
-                 "WORKSPACE": "/home/user/app"})
-        result = await server.commands.run(
-            "deepagents", task="Create HELLO.txt containing hello, then read it back.",
-            allow_tools=True, command_timeout=600, timeout=660)
-        if result["exit_code"] != 0:
-            raise RuntimeError("DeepAgents failed; inspect the private returned diagnostics")
-        print(await sb.files.read("/home/user/app/HELLO.txt"))
-    finally:
-        try:
-            if server is not None:
-                await server.aclose()
-            await sb.kill()
-        finally:
-            await sb.close()
-
-asyncio.run(main())
-
+print(await client.commands.run('deepagents_version'))
 ```
 
-The example starts its own random-token9010 command server, exports the generated file and destroys only its owned sandbox. This source-checked example does not itself establish provider/model acceptance.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Use the SDK-forwarded9010 URL as ABX_SERVER_URL and that server's random token as ABX_SERVER_TOKEN.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/deepagents_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --max-time 660 -X POST "$ABX_SERVER_URL/commands/deepagents" \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN" -H 'Content-Type: application/json' \
-  --data '{"task":"Explain 6*7 briefly","allow_tools":false,"command_timeout":600}'
+```json
+{}
 ```
 
-HTTP200 result is {"result":{"stdout":"42","stderr":"","exit_code":0}}; retain nonzero native status. Undeclared/missing/mistyped arguments400, auth401, unknown command404, invalid path/config/limits/pin or timeout500 with error/type. Both response streams are buffered; client timeout/disconnection does not guarantee process cancellation.
+Expected response for this check:
 
+```json
+{"result": "0.7.25"}
+```
 
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -105,7 +72,7 @@ The graph recursion limit is40 (graph steps, not a promise of40 model turns); ea
 | DEEPAGENTS_MODEL | model calls | empty | explicit model identifier |
 | DEEPAGENTS_PYTHON | no | /opt/deepagents/bin/python | exact native dependency environment, version checked |
 | WORKSPACE | no | /home/user/app | existing owned project directory |
-| ABX_SERVER_TOKEN | no | empty | command-server process bearer token |
+| ABX_SERVER_TOKEN | Required; empty manifest declaration | Export the independent application token before launch | command-server process bearer token |
 
 The selected model settings remain in private stdin only, never inherited as environment by generated shells. Child runtime receives PATH/optional CA plus private HOME/XDG and disabled LangSmith tracing. LocalShellBackend gets only PATH/HOME/locale and the random non-secret process ownership marker, no inherited model/cloud/GitHub/server credentials. No skills/memory/profile files are loaded. The backend's virtual filesystem maps tool paths inside cwd; shell execution still has the sandbox user's full authority and is not restricted by that mapping.
 

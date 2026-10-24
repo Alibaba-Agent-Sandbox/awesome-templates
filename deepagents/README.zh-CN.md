@@ -16,69 +16,40 @@
 
 ## 快速开始（CLI）
 
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+
 ```bash
-abx template deploy ./deepagents -y
-abx create <template-id> --detach --timeout 900
-abx run <sandbox-id> deepagents_version
-abx run <sandbox-id> deepagents_setup_check
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+abx --provider alicloud-express template launch ./deepagents --workflow application --yes
+abx run <sandbox-id> deepagents_version --json-args '{}'
 ```
 
-Deploy returns the template ID and create returns the owned sandbox ID used above. Version/setup need no model key. See [entry compatibility and provider setup](../docs/using-templates.md#client-entry-compatibility). Model settings must be present in the running server; create-time environment does not reconfigure a prewarmed server.
-
-
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-按[固定客户端说明](../docs/python-client-installation.md)安装agent-sandbox-client，在操作者环境设置三个DEEPAGENTS模型变量。下面创建自有Sandbox及随机令牌9010服务，导出文件后清理；示例经源码检查，不自动构成云端验收。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-import os
-import secrets
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=900)
-    server = None
-    try:
-        server = await sb.start_server(
-            port=9010, commands="/home/user/app/commands.py", timeout=60,
-            token=secrets.token_urlsafe(32),
-            env={"DEEPAGENTS_API_KEY": os.environ["DEEPAGENTS_API_KEY"],
-                 "DEEPAGENTS_BASE_URL": os.environ["DEEPAGENTS_BASE_URL"],
-                 "DEEPAGENTS_MODEL": os.environ["DEEPAGENTS_MODEL"],
-                 "WORKSPACE": "/home/user/app"})
-        result = await server.commands.run(
-            "deepagents", task="Create HELLO.txt containing hello, then read it back.",
-            allow_tools=True, command_timeout=600, timeout=660)
-        if result["exit_code"] != 0:
-            raise RuntimeError("DeepAgents failed; inspect the private returned diagnostics")
-        print(await sb.files.read("/home/user/app/HELLO.txt"))
-    finally:
-        try:
-            if server is not None:
-                await server.aclose()
-            await sb.kill()
-        finally:
-            await sb.close()
-
-asyncio.run(main())
-
+print(await client.commands.run('deepagents_version'))
 ```
+
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-ABX_SERVER_URL为SDK转发的9010地址，ABX_SERVER_TOKEN为该服务随机令牌。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/deepagents_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --max-time 660 -X POST "$ABX_SERVER_URL/commands/deepagents" \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN" -H 'Content-Type: application/json' \
-  --data '{"task":"Explain 6*7 briefly","allow_tools":false,"command_timeout":600}'
+```json
+{}
 ```
 
-HTTP200返回{"result":{"stdout":"42","stderr":"","exit_code":0}}，保留非零原生退出码。参数缺失/未声明/类型错误400，认证401，未知命令404；路径/配置/限制/超时500。结果缓冲，客户端超时/断连不保证取消原生执行。
+该检查的预期响应：
+
+```json
+{"result": "0.7.25"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -101,7 +72,7 @@ HTTP200返回{"result":{"stdout":"42","stderr":"","exit_code":0}}，保留非零
 | DEEPAGENTS_MODEL | model calls | empty | explicit model identifier |
 | DEEPAGENTS_PYTHON | no | /opt/deepagents/bin/python | exact native dependency environment, version checked |
 | WORKSPACE | no | /home/user/app | existing owned project directory |
-| ABX_SERVER_TOKEN | no | empty | command-server process bearer token |
+| ABX_SERVER_TOKEN | 必填；清单值为空 | 启动前导出独立应用令牌 | command-server process bearer token |
 
 显式模型配置保留在私有stdin，不作为环境传入生成的shell。运行时仅PATH/可选CA、私有HOME/XDG、关闭LangSmith追踪；LocalShellBackend只接收PATH/HOME/locale及随机非秘密进程归属标记，不继承模型/云/GitHub/服务密钥。不加载skills/memory/profile文件。虚拟文件路径映射至cwd，但shell仍有沙箱用户全部权限，该映射不是shell隔离边界。
 

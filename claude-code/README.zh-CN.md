@@ -14,58 +14,40 @@
 
 ## 快速开始（CLI）
 
-`abx run` 的 native 入口为 `abx --native run`。使用已验证 CLI0.4.1的 native 入口、现有授权 Express 配置和唯一任务名称。先发布精确源码再生成不可变 COPY；替换全部占位符，等待官方 READY 并保存自建资源ID用于清理。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-python scripts/prepare_steps.py claude-code --output /tmp/claude-steps-<unique-run> \
-  --server-commit 34e7e011c5569f77b7f605e65313be7498f6cf02
-python - <<'CONFIG'
-from pathlib import Path
-import yaml
-p=Path('/tmp/claude-steps-<unique-run>/template.yaml')
-v=yaml.safe_load(p.read_text());v['name']='claude-<unique-run>'
-p.write_text(yaml.safe_dump(v,sort_keys=False))
-CONFIG
-abx --native template deploy /tmp/claude-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> claude_version
-abx --native run <owned-sandbox-id> claude_native_check
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+abx --provider alicloud-express template launch ./claude-code --workflow application --yes
+abx run <sandbox-id> claude_version --json-args '{}'
 ```
 
-规范自有资源流程：`ABX='abx --native' python scripts/run_steps_e2e.py claude-code --sandbox-create sdk --http`。steps 不能证明镜像在云端部署。模型服务已配置时使用 `abx --native run <owned-sandbox-id> claude_byok --json-args '{"prompt":"Repair existing calc.py and preserve its tests","cwd":"project","command_timeout":300,"allow_unsafe_tools":true}'`。
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-客户端发行名 `agent-sandbox-client`，使用[固定配套源码安装说明](../docs/python-client-installation.md)。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-async def main():
-    sb=await Sandbox.create(template='<owned-template-id>',timeout=900)
-    try:
-        print(await sb.run('claude_version',timeout=60))
-        print(await sb.run('claude_native_check',timeout=60))
-    finally:
-        await sb.kill()
-asyncio.run(main())
+print(await client.commands.run('claude_version'))
 ```
 
-命令服务启动前设置全部三个 CLAUDE_MODEL_* 变量，检查 `claude_setup_check`，然后调用 `await server.commands.run('claude_byok',prompt='Repair existing calc.py; preserve its tests',cwd='project',command_timeout=300,allow_unsafe_tools=True,timeout=540)`。项目需预先创建。独立服务使用 `sb.server_at(port,token=...)`，使用后关闭借用客户端。预热9000进程不会读取后续创建参数；遵循[显式进程配置](../docs/runtime-environment.md)，独立9010进程使用对应独立 Bearer。结果为缓冲后的直接对象。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-ABX_SERVER_URL 来自已配置服务的 `sb.network.get_url(port)`；服务 Bearer 与平台和模型密钥独立。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/claude_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/claude_version" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header 'Content-Type: application/json' --data '{}'
+```json
+{}
 ```
 
-HTTP200返回 `{"result":"2.0.76 (Claude Code)"}`。`POST /commands/claude_byok` 接受直接 `{prompt,cwd,command_timeout,allow_unsafe_tools}` JSON。缺失、未知或类型参数400，认证401，未知命令404；语义或原生执行错误500并脱敏。HTTP断连不撤销已发出的模型任务；有界进程及适配器清理仍执行。
+该检查的预期响应：
+
+```json
+{"result": "2.0.76 (Claude Code)"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -92,7 +74,7 @@ HTTP200返回 `{"result":"2.0.76 (Claude Code)"}`。`POST /commands/claude_byok`
 | CLAUDE_MODEL | 空，BYOK必需 | 选定模型，1..200允许的标识字符 |
 | ANTHROPIC_API_KEY | 空，仅旧模式 | 旧Anthropic兼容配置；新增入口不会隐式复用 |
 | WORKSPACE | /home/user/app | 已有项目根目录 |
-| ABX_SERVER_TOKEN | 空，可选 | 独立命令服务凭据 |
+| ABX_SERVER_TOKEN | 必填；清单值为空 | 启动前导出独立应用令牌 |
 
 新增配置在模块导入时捕获。密钥最多8192字符且无控制字符；不默认回退厂商、模型或密钥。原CLI和工具仅获得临时本地适配器token、最小环境以及私有HOME/config/cache；真实密钥仅父进程持有并只发往明确指定的Chat来源。结果与错误不含凭据、私有地址或完整轨迹。同用户OS访问仍存在；环境过滤和cwd约束不构成另一个租户边界。旧接口resume与设置行为保留，不纳入BYOK隔离承诺。
 

@@ -16,64 +16,40 @@ Use the same actual browser through automation and a visible interactive screen 
 
 ## Quick start (CLI)
 
-Install the verified CLI0.4.1 native entry and configure authorized Express access as in [platform steps](../docs/platform-steps.md). Replace angle-bracket placeholders with unique owned values; publish the exact source commit before immutable COPY preparation. Wait for official READY before creation. The commands below open example.org and capture the actual desktop. CLI output from chrome_start contains the private temporary VNC password; keep it out of logs.
-
-The `abx run` command uses the CLI0.4.1 native entry as `abx --native run`.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-python scripts/prepare_steps.py chrome --output /tmp/chrome-steps-<unique-run> \
-  --asset-transport parallel --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
-abx --native template deploy /tmp/chrome-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> chrome_start
-abx --native run <owned-sandbox-id> chrome_open --arg url=https://example.org
-abx --native run <owned-sandbox-id> chrome_screenshot
-abx --native run <owned-sandbox-id> chrome_stop
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+abx --provider alicloud-express template launch ./chrome --workflow application --yes
+abx run <sandbox-id> chrome_smoke --json-args '{}'
 ```
 
-The canonical validation command is `ABX="abx --native" python scripts/run_steps_e2e.py chrome --sandbox-create sdk --http --asset-transport oss`. OSS uses a private exact-hash archive cache and independently verifies owned object/bucket cleanup. The source recipe remains authoritative; steps do not certify a Docker build.
+`template launch` prepares and starts this instance's application. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` through the [paired source instructions](../docs/python-client-installation.md). The example is syntax checked; actual acceptance uses an owned offline fixture as recorded below. It returns the same browser task as CLI/HTTP.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=300)
-    try:
-        info = await sb.run("chrome_start", timeout=150)
-        # Keep info["vnc_password"] private; enter it in the noVNC UI.
-        cdp_url = sb.network.get_url(9222)
-        vnc_url = sb.network.get_url(6080) + "/vnc.html"
-        await sb.run("chrome_open", url="https://example.org", timeout=60)
-        image = await sb.run("chrome_screenshot", timeout=60)
-        png = await sb.files.read_bytes(image["path"], max_bytes=8 * 1024**2)
-        assert png.startswith(b"\x89PNG\r\n\x1a\n")
-        await sb.run("chrome_stop", timeout=90)
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('chrome_smoke'))
 ```
 
-Use the selected provider gateway access headers for CDP and its WebSocket. Enter the generated password in noVNC; never add it to a URL. If the named server has ABX_SERVER_TOKEN, use `sb.server_at(9000, token=...)` and its commands client, closing that client in finally. The CDP relay also requires that Bearer token when configured. A client request timeout does not cancel the owned session; call chrome_stop or kill the disposable sandbox.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-First call `POST /commands/chrome_start` with `{}`. Set ABX_SERVER_URL to `sb.network.get_url(9000)`; use the provider gateway header in addition to the independent server Bearer header when required.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/chrome_smoke`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/chrome_open" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" --data '{"url":"https://example.org"}'
+```json
+{}
 ```
 
-The body is the direct argument object, without an args wrapper. HTTP200 returns `{"result": {"url": "https://example.org/", "title": "Example Domain"}}` for the example. Follow with chrome_screenshot `{}` and chrome_stop `{}`. Missing/type-invalid arguments400, server auth401, unknown command404, semantic/execution errors500 with `{error,type}`. Browser/network failures retain their failure status.
+Expected response for this check:
+
+```json
+{"result": "native headed Chrome145.0.7632.6 CDP/VNC/PNG and cleanup OK"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -95,7 +71,7 @@ Calls serialize. Startup readiness budget90seconds; navigation/CDP/VNC operation
 | Name | Default / requirement | Meaning |
 | --- | --- | --- |
 | WORKSPACE | /home/user/workspace; existing directory | Browser screenshot root, captured at command-module startup |
-| ABX_SERVER_TOKEN | optional; empty | Named-server and CDP-relay Bearer authentication; separate from provider gateway/VNC auth |
+| ABX_SERVER_TOKEN | Required; empty manifest declaration | Export the independent application token before launch |
 
 [Runtime environment](../docs/runtime-environment.md) explains prewarmed processes: create-time env does not reconfigure an already-running server. Each owned session generates a private8-character VNC password and Xauthority cookie; password is returned only to the authorized start caller, never logged or passed in argv. Browser receives a minimal environment without operator cloud/model/GitHub credentials. Session HOME/profile/config/cookies/password files are private and removed on stop. A noVNC connection still needs the VNC password; protect forwarded URLs with provider access controls.
 

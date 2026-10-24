@@ -8,13 +8,11 @@ Agent Sandbox 里的 OpenCode（`sst/opencode`）。镜像安装 npm 包 `openco
 
 `agent-sandbox-server` 监听端口 9000，并注册调用 `opencode` 的命令。`opencode_run` 执行一次非交互的 `opencode run --format json`，返回助手文本、脱敏后的 JSON 事件和会话 id。`opencode_version` 和 `opencode_setup_check` 检查钉死的二进制和 `opencode.json`，不调用模型。
 
-`opencode_serve_start` 在端口 4096 上启动 `opencode serve`，绑定 `0.0.0.0`。该进程是 OpenCode 自己的 HTTP API（`GET /global/health`）。用 `sb.network.get_url(4096)` 访问。平台的 `start_cmd` 不会启动它。
+`opencode_serve_start` 在端口 4096 上启动 `opencode serve`，绑定 `0.0.0.0`。该进程是 OpenCode 自己的 HTTP API（`GET /global/health`）。通过 `await sb.network.resolve(4096)` 取得地址，保留返回的网关头及 OpenCode 自身认证。平台的 `start_cmd` 不会启动它。
 
 `opencode` 是以前的命令名。它和 `opencode_run` 使用同一组 argv，返回脱敏后的 JSON 事件 stdout 字符串。
 
 ## 技术栈
-
-版本 2.0.3 将默认服务器源码与 CI wheel 的提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a` 对齐。历史回执保留原始输入范围；此版本需要重新完成镜像及工作流验收。
 
 - 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`abx template deploy` 把 `<region>` 换成 `ALIBABA_CLOUD_REGION_ID` 或 `cn-hangzhou`，把 `<tag>` 换成 `ABX_BASE_IMAGE_TAG` 或 `v0.0.49`。Python 3.13 和 Node.js 20 来自该镜像。
 - `opencode-ai@1.19.0`（2026-10-15 的 npm `latest`）。包提供的命令名是 `opencode`。上游是 [sst/opencode](https://github.com/sst/opencode)。
@@ -29,92 +27,40 @@ Agent Sandbox 里的 OpenCode（`sst/opencode`）。镜像安装 npm 包 `openco
 
 ## 快速开始（CLI）
 
-示例使用当前极速版 CLI：`abx create <template-id> --detach` 输出沙箱 ID，`abx kill <sandbox-id>` 清理沙箱；命名命令使用 `abx run`。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
-
-运行配置：以下创建时注入密钥的示例，要求命名服务启动时实际获得这些值。预热服务请先检查模板提供的 setup 标志（如有），再按[显式进程配置](../docs/runtime-environment.zh-CN.md)操作；创建沙箱不会重新配置已运行的服务。
-
-在本仓库检出目录，环境里放好极速版凭证：
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template deploy ./opencode -y --generation 2 \
-  --start-cmd 'agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py' \
-  --ready-cmd 'agent-sandbox-server healthcheck --port 9000'
-abx create <template-id> --detach \
-  --env ABX_LLM_API_KEY=<密钥> \
-  --env ABX_LLM_BASE_URL=<OpenAI兼容的base-url>
-abx run <sandbox-id> opencode_version
-abx run <sandbox-id> opencode_setup_check
-abx run <sandbox-id> opencode_run --json-args '{"prompt":"Reply with exactly ABX_E2E_OK","model":"dashscope/qwen3.8-flash"}'
-abx run <sandbox-id> opencode_serve_start
+abx --provider alicloud-express template launch ./opencode --workflow application --yes
+abx run <sandbox-id> opencode_version --json-args '{}'
 ```
 
-`template.yaml` 已经写了 `generation`、`start_cmd` 和 `ready_cmd`。上面的参数把它们重复一遍，这样命令可以单独阅读。
-
-`continue_session`（布尔）和 `port`（整数）要用 `--json-args`。`--arg` 的值都是字符串。
-
-用完后删除沙箱和模板：
-
-```bash
-abx kill <sandbox-id>
-abx template delete <template-id> -y
-```
-
-`python3 scripts/express_e2e.py opencode` 会部署、运行冒烟命令（`opencode_version`、`opencode_setup_check`），只有通过之后才写 evidence，然后删除这次创建的沙箱和模板。
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-客户端发行名为 `agent-sandbox-client`，导入名为 `agent_sandbox`。配套版本发布前，请按[固定提交的双包安装说明](../docs/python-client-installation.md)安装。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main() -> None:
-    sb = await Sandbox.create(
-        template="<template-id>",
-        timeout=300,
-        envs={
-            "ABX_LLM_API_KEY": "<密钥>",
-            "ABX_LLM_BASE_URL": "<OpenAI兼容的base-url>",
-        },
-    )
-    try:
-        print(await sb.run("opencode_version"))
-        result = await sb.run(
-            "opencode_run",
-            prompt="Reply with exactly ABX_E2E_OK",
-            model="dashscope/qwen3.8-flash",
-        )
-        print(result["text"], result["session_id"])
-        await sb.run(
-            "opencode_run",
-            prompt="Say ABX_E2E_OK again",
-            session=result["session_id"],
-        )
-        await sb.run("opencode_serve_start")
-        print(sb.network.get_url(4096))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('opencode_version'))
 ```
 
-`await sb.run("opencode_run", prompt="...")` 返回的字典包含 `text`、`stdout`、`session_id`、`model`、`agent` 和 `cwd`。`sb.commands.run` 是 shell，不是这个命名命令。较早且尚未包含同步包装器修复的 SDK 提交中，`Sandbox.create_sync` 可能抛出 `TypeError`（[python-sdk#22](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues/22)）；[python-sdk#24](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/24) 已修复。请升级到包含该修复的提交或版本，或使用 `await Sandbox.create`。
-
-`opencode_run` 是主 API：一次请求、一份 JSON、无头 CLI。`opencode serve` 给已经使用 OpenCode HTTP API 的客户端。两者都在镜像里。沙箱启动时只有端口 9000 上的命令服务。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-使用沙箱端口 9000 的 URL；本地默认 http://127.0.0.1:9000。服务启用了 ABX_SERVER_TOKEN 时才添加认证头。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/opencode_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/opencode_version" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" \
-  --data '{}'
+```json
+{}
 ```
 
-请求体直接包含命名命令参数，不嵌套在 args 中。HTTP 200 的响应为 `{"result":"1.19.0"}`。参数错误为 HTTP 400，认证失败为 401，执行异常为 500；错误响应包含 error 和 type。命令响应在执行完成后整体返回。HTTP 客户端超时不保证取消服务端命令；长任务使用进程 API 管理。
+该检查的预期响应：
+
+```json
+{"result": "1.19.0"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -152,7 +98,7 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/opencode_version"
 
 缺少 `prompt` 时 HTTP 400。CLI 非零退出时 HTTP 500，正文是 `{"error","type":"RuntimeError"}`。消息里不含密钥。超时 600 秒。标准输入是 `/dev/null`。
 
-`opencode_serve_start` 返回 `running`、`port`、`hostname`、`pid` 和 `healthy`。它会等到 `GET http://127.0.0.1:<port>/global/health` 返回 `{"healthy": true, "version": "1.19.0"}`。对外地址是 `sb.network.get_url(port)`，不是这个 localhost 地址。同一端口与 hostname 再次启动会返回当前状态。start/status/stop 全程由进程内锁串行处理；stop 仅允许终止本解释器持有的 Popen 子进程，并校验进程组身份，不读取旧 PID 文件。命令服务器重启后不会接管旧 serve 进程；需要回收 sandbox 清理这类进程。
+`opencode_serve_start` 返回 `running`、`port`、`hostname`、`pid` 和 `healthy`。它会等到 `GET http://127.0.0.1:<port>/global/health` 返回 `{"healthy": true, "version": "1.19.0"}`。通过 `await sb.network.resolve(port)` 获取对外端点及网关头；localhost 地址仅供内部使用。同一端口与 hostname 再次启动会返回当前状态。start/status/stop 全程由进程内锁串行处理；stop 仅允许终止本解释器持有的 Popen 子进程，并校验进程组身份，不读取旧 PID 文件。命令服务器重启后不会接管旧 serve 进程；需要回收 sandbox 清理这类进程。
 
 ## 配置
 
@@ -163,14 +109,14 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/opencode_version"
 | `OPENCODE_MODEL` | 否 | `dashscope/qwen3.8-flash` | `model` 为空时使用。 |
 | `OPENCODE_API_KEY` | 否 | 空 | `model` 为 `opencode/<id>` 时的 OpenCode Zen 凭证。 |
 | `OPENCODE_SERVER_PASSWORD` | 否 | 空 | `opencode serve` 的基本认证密码。未设置时 CLI 会警告。 |
-| `ABX_SERVER_TOKEN` | 否 | 空 | 设置后，端口 9000 需要 `Authorization: Bearer`。把 `token=` 传给 SDK 客户端。不设置则允许匿名调用。 |
+| `ABX_SERVER_TOKEN` | 必填；清单值为空 | 启动前导出独立应用令牌 | 设置后，端口 9000 需要 `Authorization: Bearer`。把 `token=` 传给 SDK 客户端。不设置则允许匿名调用。 |
 | `OPENCODE_CONFIG` | 否 | `/home/user/app/opencode.json` | 子进程读取的配置文件。 |
 | `OPENCODE_DISABLE_AUTOUPDATE` | 否 | 镜像里为 `true` | 阻止已钉死的 CLI 自行升级。 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 本地 `python3 commands.py` 时 `start()` 绑定的端口。 |
 
 `opencode.json` 定义供应商 `dashscope`，npm 包是 `@ai-sdk/openai-compatible`。文件里带的模型 id 是 `qwen3.8-flash` 和 `qwen3.8-max`。`dashscope/` 下的其他 id 会在那一次 `opencode_run` 里写进临时配置。其他供应商的模型沿用现有配置文件；把该供应商写进 `opencode.json`，或传入文件已经允许的 `model`。
 
-密钥放在 `abx create --env` 或 `Sandbox.create(envs=...)`。不要写进镜像。
+在 `template launch` 前安全导出清单中声明为空的秘密变量，让应用启动时读取；不要写入镜像、YAML 或日志。
 
 ## 资源
 

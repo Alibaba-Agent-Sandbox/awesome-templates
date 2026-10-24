@@ -14,60 +14,40 @@ OSWorld 固定源码 `b138d348256078fa634fc3b73567a7337c793e6b`（Apache-2.0）�
 
 ## 快速开始（CLI）
 
-示例使用当前极速版 CLI：`abx create <template-id> --detach` 输出沙箱 ID，`abx kill <sandbox-id>` 清理沙箱；命名命令使用 `abx run`。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template install alibaba-agent-sandbox/awesome-templates//osworld
-abx create <template-id> --detach
-abx run <sandbox-id> osworld_desktop_smoke
-abx run <sandbox-id> desktop_start
-abx run <sandbox-id> screenshot
-abx run <sandbox-id> a11y_tree
-abx run <sandbox-id> click --json-args '{"x":120,"y":200}'
-abx run <sandbox-id> type --arg text="Example text"
-abx run <sandbox-id> hotkey --arg keys="ctrl,a"
-abx run <sandbox-id> desktop_stop
+abx --provider alicloud-express template launch ./osworld --workflow application --yes
+abx run <sandbox-id> osworld_desktop_smoke --json-args '{}'
 ```
 
-先查看截图/可访问性树再选择坐标。一次性 smoke 要求没有正在运行的桌面，结束后清理自己创建的会话。
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`；见[源码安装说明](../docs/python-client-installation.md)。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-import base64
-from pathlib import Path
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=900)
-    try:
-        print(await sb.run("osworld_desktop_smoke", timeout=120))
-        await sb.run("desktop_start", timeout=90)
-        image = await sb.run("screenshot")
-        Path("desktop.png").write_bytes(base64.b64decode(image["base64"]))
-        print(await sb.run("a11y_tree"))
-    finally:
-        try:
-            await sb.run("desktop_stop")
-        finally:
-            await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('osworld_desktop_smoke'))
 ```
+
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-```bash
-curl -X POST "$SANDBOX_PORT_9000_URL/commands/desktop_start" \
-  -H 'Content-Type: application/json' \
-  -H "X-Access-Token: $GATEWAY_ACCESS_TOKEN" \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN" --data '{}'
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/osworld_desktop_smoke`，`Content-Type: application/json`，直接发送以下参数对象：
+
+```json
+{}
 ```
 
-JSON body 直接放参数，成功返回 `{"result": ...}`。未设置的认证头请省略。网关 token 与可选 server bearer token 分开。缺参/无法转换的类型返回 HTTP 400；函数校验、不支持的配置和运行失败返回 500 及 `ValueError`/`RuntimeError`。未知命令返回 404，缺少 server 认证返回 401。
+该检查的预期响应：
+
+```json
+{"result": "desktop screenshot/click/type/hotkey/AT-SPI/evaluation OK"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 

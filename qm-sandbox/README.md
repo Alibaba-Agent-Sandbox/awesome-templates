@@ -14,59 +14,40 @@ Run genuine exported original QM functionality with actual SDK-backed tools with
 
 ## Quick start (CLI)
 
-Install the [verified CLI native entry](../docs/platform-steps.md), configure authorized Express access and replace every angle-bracket placeholder. Publish the exact source commit before immutable public COPY preparation. Assign the generated manifest a unique owned name as below; wait for official READY before creation. The same model-free task is used by CLI, Python SDK and HTTP. `abx run` is selected as `abx --native run` in CLI0.4.1.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-python scripts/prepare_steps.py qm-sandbox --output /tmp/qm-sandbox-steps-<unique-run> \
-  --asset-transport parallel --server-commit 34e7e011c5569f77b7f605e65313be7498f6cf02
-python - <<'CONFIG'
-from pathlib import Path
-import yaml
-p = Path("/tmp/qm-sandbox-steps-<unique-run>/template.yaml")
-v = yaml.safe_load(p.read_text())
-v["name"] = "qm-sandbox-<unique-run>"
-p.write_text(yaml.safe_dump(v, sort_keys=False))
-CONFIG
-abx --native template deploy /tmp/qm-sandbox-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> qm_sandbox_sdk_smoke
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+abx --provider alicloud-express template launch ./qm-sandbox --workflow application --yes
+abx run <sandbox-id> qm_sandbox_version --json-args '{}'
 ```
-Canonical owned validation uses `ABX='abx --native' python scripts/run_steps_e2e.py qm-sandbox --sandbox-create sdk --http --asset-transport oss`; it owns/reconciles temporary resources and private OSS caches. Manual callers must clean their own known IDs. Steps acceptance does not prove Docker image deployment.
+
+`template launch` prepares and starts this instance's application. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install distribution `agent-sandbox-client` following the [paired source instructions](../docs/python-client-installation.md); import `agent_sandbox`. Examples are syntax checked, not a provider pass. This example owns cleanup and assumes the default empty command-server token. If any server has a Bearer configured, use `sb.server_at(9000,token=...)` (or its actual port), call that client’s commands and close it.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=300)
-    try:
-        result = await sb.run("qm_sandbox_sdk_smoke", timeout=200)
-        assert result == "Original QM tools and actual Agent Sandbox SDK round trip/owned cleanup OK"
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('qm_sandbox_version'))
 ```
-Call `await sb.run("qm_sandbox_exec", command="python3 -c 'print(1 + 1)'", cwd="project", command_timeout=30, timeout=110)` for actual original tool execution, or `await sb.run("qm_sandbox_file", action="read", path="notes.txt", cwd="project", timeout=150)`. The selected project must exist; caller files remain after backend teardown.
 
-[Prewarmed server configuration](../docs/runtime-environment.md): later create-time environment does not reconfigure an existing9000process. A separately started9010server must explicitly set QM_SANDBOX_BASE_URL=http://127.0.0.1:9010 and the matching SDK Bearer. Use sb.server_at(port,token=...) for named calls, close that client, stop/drain/cancel its owned server stream and finally kill the outer sandbox. Never place key/token values in argv.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-ABX_SERVER_URL is `sb.network.get_url(9000)`; command-server Bearer, optional provider gateway access headers, SDK Bearer and model credentials are distinct.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/qm_sandbox_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/qm_sandbox_sdk_smoke" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" --data '{}'
+```json
+{}
 ```
-HTTP200 returns `{"result":"Original QM tools and actual Agent Sandbox SDK round trip/owned cleanup OK"}`. Named commands accept direct JSON argument objects, without an args wrapper. Missing/unknown/type-invalid arguments400, auth401, unknown command404, semantic/native exceptions500 with `{error,type}`. Exec results preserve actual command code and timedOut separately; an authored command exiting124 is not automatically a timeout. A request disconnect does not cancel the native bounded operation. Backend close drains already issued SDK requests before closing transport; model-tool deadlines are capped to min(30seconds, the turn deadline), and an aborted run is not reported as successful.
+
+Expected response for this check:
+
+```json
+{"result": {"qm_version": "0.1.0", "node_version": "24.16.0", "sdk_version": "0.1.0"}}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -87,8 +68,8 @@ Requests serialize; overlap fails busy. Native process stdout/stderr256KiB each 
 | --- | --- | --- |
 | WORKSPACE | /home/user/app | Existing caller project root, captured at startup |
 | QM_SANDBOX_BASE_URL | http://127.0.0.1:9000 | Actual SDK data-plane server on the same owned computer; literal local HTTP only, no userinfo/query/fragment/path |
-| QM_SANDBOX_TOKEN | empty; optional | SDK server's independent Bearer token; falls back to ABX_SERVER_TOKEN for the default same server |
-| ABX_SERVER_TOKEN | empty; optional | Command server's independent Bearer credential |
+| QM_SANDBOX_TOKEN | Required; empty manifest declaration | Export the independent application token before launch |
+| ABX_SERVER_TOKEN | Required; empty manifest declaration | Export the independent application token before launch |
 
 Captured when commands.py loads; read-only setup flags do not prove connectivity. SDK token max8192/noCRLF/NUL; model key max8192/no control characters. Node worker receives configuration by anonymous stdin and no model/cloud/GitHub credentials in its environment. Model/tool child Bash gets a separate minimal environment and private HOME; same-user OS access remains. Private native HOME/cache/settings/model-catalog/temporary workspace mirrors are removed after every call. Literal and JSON-escaped configured keys/bases/tokens are redacted from returned strings. Original QM native Pi builtins are disabled in favor of its original QM tools; no extensions/skills/context files or session children are loaded. Only execute/files read/write approval identities are enabled; no delegation, Slack/email delivery or control service. Caller project/artifacts persist until caller removes them or kills the outer sandbox.
 

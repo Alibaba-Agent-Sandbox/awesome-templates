@@ -14,58 +14,40 @@ Alibaba generation2 basev0.0.49／Python3.13、SHA256 固定 Node24.16.0、npm i
 
 ## 快速开始（CLI）
 
-安装[已验证原生 CLI 入口](../docs/platform-steps.zh-CN.md)，配置授权 Express 访问。公开 COPY 输入需要先发布精确源码提交。unique-run／template／sandbox 均替换为本次自有值，等待官方 READY 后创建。命名调用为 `abx run`；CLI0.4.1 需显式选择 `abx --native run`。下面是复现流程，尚不代表通过记录。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-python scripts/prepare_steps.py cline --output /tmp/cline-steps-<unique-run> \
-  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
-abx --native template deploy /tmp/cline-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> cline_version
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+abx --provider alicloud-express template launch ./cline --workflow application --yes
+abx run <sandbox-id> cline_version --json-args '{}'
 ```
 
-诊断预期为 `{"native_version":"3.0.73"}`。自动 steps／SDK 验收：
-
-```bash
-export ABX='abx --native'
-python scripts/run_steps_e2e.py cline --sandbox-create sdk --http
-```
-
-命令服务配置模型后，可执行 `abx --native run <owned-sandbox-id> cline --json-args '{"prompt":"Inspect the existing project and fix its failing tests","cwd":"project","command_timeout":300}'`。project 必须已在 WORKSPACE 内存在。检查 exit_code 及原生 run_result.finishReason；安装／回复 marker 不代表编码成功。
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-按[成对固定源码](../docs/python-client-installation.md)安装 `agent-sandbox-client`，导入 `agent_sandbox`。示例只创建、删除本次自有沙箱并读取真实版本。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=300)
-    try:
-        print(await sb.run("cline_version", timeout=60))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('cline_version'))
 ```
 
-真实编码前，在服务启动前注入 CLINE_MODEL_API_KEY、CLINE_MODEL_BASE_URL、CLINE_MODEL。[显式进程配置](../docs/runtime-environment.zh-CN.md)说明预热9000进程不会自动获取稍后 create-time 环境。先调用 cline_setup_check 确认存在，再执行 `await sb.run("cline", prompt="Fix the existing calc.py and preserve test_calc.py", cwd="project", command_timeout=300, timeout=330)`。直接返回 `{stdout,stderr,exit_code,native_version}`，不流式返回 stdout。非零退出保留为非零 exit_code，不能当作成功。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-ABX_SERVER_URL 为 `sb.network.get_url(9000)`，服务 ABX_SERVER_TOKEN 与模型／提供方凭据独立。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/cline_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/cline_version" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" --data '{}'
+```json
+{}
 ```
 
-HTTP200 返回 `{"result":{"native_version":"3.0.73"}}`。`POST /commands/cline` 直接接收 `{prompt,cwd,command_timeout}`，无 args 包装。缺失／类型非法／未知参数400，认证失败401，未知命令404，语义守卫／执行异常500并含 `{error,type}`。执行结束的原生进程返回结构化结果，包括可能的非零 exit_code。客户端断开不取消有界进程；finally 仍清理自有后代和私有状态。
+该检查的预期响应：
+
+```json
+{"result": {"native_version": "3.0.73"}}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -91,7 +73,7 @@ stdout／stderr 各限256KiB；成功／失败／超时／溢出均清理自有�
 | CLINE_MODEL_BASE_URL | 模型必需，空 | 显式 HTTPS API base；仅固定本地地址可用 HTTP；无用户信息／query／fragment；最多2048字符 |
 | CLINE_MODEL | 模型必需，空 | 实际模型标识，最多200个允许字符 |
 | WORKSPACE | `/home/user/workspace` | 已存在工作区根目录 |
-| ABX_SERVER_TOKEN | 可选，空 | 独立命名服务 Bearer 凭据 |
+| ABX_SERVER_TOKEN | 必填；清单值为空 | 启动前导出独立应用令牌 |
 
 配置在 commands.py 加载时读取。包装器只向私有0600设置文件写提供方／模型／base元数据，不写模型密钥值；原生密钥按其文档从环境读取。原生状态受私有目录保护并在返回／失败时删除。关闭全局 telemetry／自动更新／运行时文件日志，以及公共／私有模型目录刷新。config／data／team／MCP 路径均每次隔离，不传宿主 GitHub／云密钥、二进制替换配置或 Cline 账号 token，宿主控制端凭据不进入编码进程。
 

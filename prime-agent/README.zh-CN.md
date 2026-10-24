@@ -14,50 +14,40 @@
 
 ## 快速开始（CLI）
 
-安装[已验证的原生 CLI](../docs/platform-steps.zh-CN.md)，配置已授权的 Express 访问，将尖括号占位符替换为本次唯一的自有值。steps 使用不可变公共 COPY 输入前先发布准确提交；等待官方 READY 后再创建沙箱。CLI0.4.1 使用 `abx --native run`，命名命令入口为 `abx run`。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-python scripts/prepare_steps.py prime-agent --output /tmp/prime-steps-<unique-run> \
-  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
-abx --native template deploy /tmp/prime-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> prime_agent_version
-abx --native run <owned-sandbox-id> prime_agent_kernel_check
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+abx --provider alicloud-express template launch ./prime-agent --workflow application --yes
+abx run <sandbox-id> prime_agent_version --json-args '{}'
 ```
-版本预期 `{"native_version":"0.10.0"}`。配置命令服务后可调用 `abx --native run <owned-sandbox-id> prime_agent --json-args '{"prompt":"Inspect the existing project and fix failing tests","cwd":"project","command_timeout":300}'`。项目须已存在且位于 WORKSPACE。编码成功还需原生终态及独立文件/测试验证。
+
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-按[配套源码安装说明](../docs/python-client-installation.md)安装发行包 `agent-sandbox-client`，导入 `agent_sandbox`。以下示例不调用模型，并清理自身沙箱；示例做语法检查，真实云端结论以“已验证”为准。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=300)
-    try:
-        print(await sb.run("prime_agent_version", timeout=60))
-        print(await sb.run("prime_agent_kernel_check", timeout=90))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('prime_agent_version'))
 ```
-命令服务启动前配置 PRIME_MODEL_API_KEY/PRIME_MODEL_BASE_URL/PRIME_MODEL。[预热进程配置](../docs/runtime-environment.zh-CN.md)说明后续 create 环境不会重配已有9000服务。先通过 `prime_agent_setup_check` 检查存在性，再调用 `await sb.run("prime_agent", prompt="Fix existing source and preserve its tests", cwd="project", command_timeout=300, timeout=330)`。直接返回结构化缓冲结果，不流式返回事件。
+
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-ABX_SERVER_URL 来自 `sb.network.get_url(9000)`；命令服务 token 独立于模型和云端凭据。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/prime_agent_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/prime_agent_version" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" --data '{}'
+```json
+{}
 ```
-HTTP200返回 `{"result":{"native_version":"0.10.0"}}`。`POST /commands/prime_agent` 直接接收 `{prompt,cwd,command_timeout}`。类型/未知/缺失参数400，鉴权401，未知命令404，语义校验或执行异常500及 `{error,type}`。原生进程结束后返回真实 exit_code，包括非零值。客户端断连不取消有界执行，最终清理仍会运行。
+
+该检查的预期响应：
+
+```json
+{"result": {"native_version": "0.10.0"}}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -80,7 +70,7 @@ HTTP200返回 `{"result":{"native_version":"0.10.0"}}`。`POST /commands/prime_a
 | PRIME_MODEL_BASE_URL | empty; required for coding | Explicit HTTPS base; literal local HTTP for authored fixtures only; no userinfo/query/fragment; max2048characters |
 | PRIME_MODEL | empty; required for coding | Actual model identifier; max200allowed identifier characters |
 | WORKSPACE | `/home/user/workspace` | Existing caller project root |
-| ABX_SERVER_TOKEN | optional; empty | Independent command-server Bearer token |
+| ABX_SERVER_TOKEN | 必填；清单值为空 | 启动前导出独立应用令牌 |
 
 配置在commands.py加载时读取。私有0700HOME/0600models.json使用 apiKey="ABX_PRIME_MODEL_KEY" 环境变量引用，不保存key值。不继承操作端云/GitHub/厂商凭据。固定内核入口在启动原版CPython前删除ABX_PRIME_MODEL_KEY；同一用户仍有OS访问权限，这只是环境收敛，不是凭据隔离。返回值脱敏原值及JSON转义的key/base。禁用遥测、trace、refinement、compaction、factory及发现，设置rlmMaxDepth0；原生print模式不传child host，使用NoRlmChildren，不启动委派代理或daemon。自定义模型价格未知，默认0不能理解为免费。
 

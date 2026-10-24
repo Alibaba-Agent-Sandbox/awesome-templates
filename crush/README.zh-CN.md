@@ -16,69 +16,40 @@
 
 ## 快速开始（CLI）
 
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+
 ```bash
-abx template deploy ./crush -y
-abx create <template-id> --detach --timeout 900
-abx run <sandbox-id> crush_version
-abx run <sandbox-id> crush_setup_check
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+abx --provider alicloud-express template launch ./crush --workflow application --yes
+abx run <sandbox-id> crush_version --json-args '{}'
 ```
 
-deploy返回模板ID，create返回自有沙箱ID。version/setup无需模型密钥。[入口兼容及提供方配置](../docs/using-templates.md#client-entry-compatibility)。模型配置必须进入运行中的命令服务，create环境不能重新配置预热服务。
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-按[固定客户端安装说明](../docs/python-client-installation.md)安装agent-sandbox-client，在操作者环境设置三个CRUSH变量：
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-import os
-import secrets
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=900)
-    server = None
-    try:
-        server = await sb.start_server(
-            port=9010, commands="/home/user/app/commands.py", timeout=60,
-            token=secrets.token_urlsafe(32),
-            env={"CRUSH_API_KEY": os.environ["CRUSH_API_KEY"],
-                 "CRUSH_BASE_URL": os.environ["CRUSH_BASE_URL"],
-                 "CRUSH_MODEL": os.environ["CRUSH_MODEL"],
-                 "WORKSPACE": "/home/user/app"})
-        result = await server.commands.run(
-            "crush", prompt="Create HELLO.txt containing hello, then read it back.",
-            allow_tools=True, command_timeout=600, timeout=660)
-        if result["exit_code"] != 0:
-            raise RuntimeError("Crush failed; inspect the private returned diagnostics")
-        print(await sb.files.read("/home/user/app/HELLO.txt"))
-    finally:
-        try:
-            if server is not None:
-                await server.aclose()
-            await sb.kill()
-        finally:
-            await sb.close()
-
-asyncio.run(main())
-
+print(await client.commands.run('crush_version'))
 ```
 
-新建9010服务使用随机令牌，导出文件后仅销毁本次自有沙箱。示例完成源码检查，不自动构成云端/模型验收。启动服务保留镜像PATH；显式覆盖时包含/opt/crush。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-ABX_SERVER_URL为SDK转发的9010地址，ABX_SERVER_TOKEN为该服务随机令牌。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/crush_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --max-time 660 -X POST "$ABX_SERVER_URL/commands/crush" \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN" -H 'Content-Type: application/json' \
-  --data '{"prompt":"Explain 6*7 briefly","allow_tools":false,"command_timeout":600}'
+```json
+{}
 ```
 
-HTTP200返回{"result":{"stdout":"42","stderr":"","exit_code":0}}，保留非零退出码。缺失/未声明/类型错误参数400，认证401，未知命令404，路径/配置/限制/版本或超时500。结果缓冲；客户端超时/断连不保证取消原生进程。
+该检查的预期响应：
+
+```json
+{"result": "0.98.1"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -98,7 +69,7 @@ HTTP200返回{"result":{"stdout":"42","stderr":"","exit_code":0}}，保留非零
 | CRUSH_BASE_URL | model calls | empty | HTTP(S) endpoint; no userinfo/query/fragment |
 | CRUSH_MODEL | model calls | empty | bounded native model identifier |
 | WORKSPACE | no | /home/user/app | existing caller workspace |
-| ABX_SERVER_TOKEN | no | empty | server process bearer token |
+| ABX_SERVER_TOKEN | 必填；清单值为空 | 启动前导出独立应用令牌 | server process bearer token |
 | CRUSH_BINARY | diagnostics | image PATH | binary override; actual version still checked |
 
 独立HOME/XDG/CRUSH配置数据目录，使用原生禁用默认提供方及自动更新开关。上游自动读取项目配置，因此cwd至最近Git根目录间存在.crushrc/crushrc/.crush.json/crush.json时，在运行前拒绝，保留调用者原文件；无Git时只检查cwd。子进程仅继承PATH/可选CA和私有运行设置，排除云/GitHub/服务密钥。显式模型密钥与地址写入私有0600配置，返回诊断替换其完整值；项目输出仍可能含项目私密内容。

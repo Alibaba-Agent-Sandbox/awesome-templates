@@ -6,8 +6,6 @@
 
 ## 技术栈
 
-版本 1.0.2 将默认服务器源码与 CI wheel 的提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a` 对齐。历史回执保留原始输入范围；此版本需要重新完成镜像及工作流验收。
-
 阿里云 FC base v0.0.49，generation 2，2 vCPU / 2048 MB，9000 端口运行 agent-sandbox-server。[toolchains.json](toolchains.json) 固定 x86_64/aarch64 官方下载地址及 SHA256。安装独立 rustc、标准库和 Cargo 组件，不安装多版本管理器；GOTOOLCHAIN=local 禁止自动下载其他 Go 版本，GCC 提供链接器。安装后实际根文件系统已用空间超过 8 GiB 即失败。
 
 ## 解决的问题
@@ -16,50 +14,40 @@
 
 ## 快速开始（CLI）
 
-以下使用原生 CLI 语法，`abx create --help` 列出 `--template` 参数。`<template-id>` 和 `<sandbox-id>` 分别替换为前一步返回的模板 ID 和沙箱 ID。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template deploy ./polyglot-toolchain -y
-abx create <template-id> --detach --timeout 300
-abx run <sandbox-id> toolchain_versions
-abx run <sandbox-id> toolchain_smoke
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+abx --provider alicloud-express template launch ./polyglot-toolchain --workflow application --yes
+abx run <sandbox-id> toolchain_smoke --json-args '{}'
 ```
 
-标准 CLI 入口及配套客户端安装见[模板使用指南](../docs/using-templates.md)。
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-先安装[配套的 `agent-sandbox-client`](../docs/python-client-installation.md)，将 `<template-id>` 替换为已部署模板 ID：
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        print(await sb.run("toolchain_versions"))
-        print(await sb.run("toolchain_smoke"))
-    finally:
-        await sb.kill()
-        await sb.close()
-
-asyncio.run(main())
+print(await client.commands.run('toolchain_smoke'))
 ```
+
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-返回示例： `{"result":{"go":"GO_OK","rust":"RUST_OK","java":"JAVA_OK","cleanup_verified":true}}`.
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/toolchain_smoke`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl -fsS -X POST -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer <server-token>' \
-  -d '{}' '<sandbox-port-9000-url>/commands/toolchain_smoke'
+```json
+{}
 ```
 
-将 `<sandbox-port-9000-url>` 替换为 SDK 返回的 9000 端口 URL；`<server-token>` 是在命名命令服务进程中设置的 token，见[运行环境](../docs/runtime-environment.zh-CN.md)。HTTP 200 以 `result` 包装结果，参数错误返回 400，认证缺失或错误返回 401，执行错误返回 500。输出缓冲返回，客户端时限应覆盖整个多编译器流程。示例描述公开操作，实际云端执行范围以已验证记录为准。
+该检查的预期响应：
+
+```json
+{"result": {"go": "GO_OK", "rust": "RUST_OK", "java": "JAVA_OK", "cleanup_verified": true}}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 

@@ -8,8 +8,6 @@
 
 ## 技术栈
 
-版本 1.1.2 将默认服务器源码与 CI wheel 的提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a` 对齐。历史回执保留原始输入范围；此版本需要重新完成镜像及工作流验收。
-
 - Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` 自带 Python 3.13、Node.js 20。部署时默认解析为 `cn-hangzhou` 和 `v0.0.49`。
 - 服务端固定到 python-sdk 提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a`，部署注入的 SDK wheel 优先。
 - 镜像安装 `pytest==8.4.2`，供 `test` 命令使用。
@@ -21,81 +19,40 @@
 
 ## 快速开始（CLI）
 
-本机没有 Docker？请按[云端 steps 快速开始](../docs/platform-steps.zh-CN.md#无-docker-运行-python-hello)先准备显式 steps manifest。仅增加 `--build steps` 不会自动转换此模板的 Dockerfile。
-
-示例使用当前极速版 CLI：`abx create <template-id> --detach` 输出沙箱 ID，`abx kill <sandbox-id>` 清理沙箱；命名命令使用 `abx run`。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
-
-运行配置：以下创建时注入密钥的示例，要求命名服务启动时实际获得这些值。预热服务请先检查模板提供的 setup 标志（如有），再按[显式进程配置](../docs/runtime-environment.zh-CN.md)操作；创建沙箱不会重新配置已运行的服务。
-
-在仓库根目录执行，使用已经配置好的 Express provider：
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template deploy ./python-hello -y
-abx create <template-id> --detach
-abx run <sandbox-id> hello --arg name=Ada
-abx run <sandbox-id> run_script --json-args '{"code":"print(21 * 2)"}'
-abx upload <sandbox-id> ./main.py /home/user/app/main.py
-abx run <sandbox-id> run --arg file=main.py
-abx upload <sandbox-id> ./test_main.py /home/user/app/test_main.py
-abx run <sandbox-id> test --arg path=test_main.py
+abx --provider alicloud-express template launch ./python-hello --workflow application --yes
+abx run <sandbox-id> hello --json-args '{"name": "Express"}'
 ```
 
-部署结果提供 `<template-id>`，创建结果提供 `<sandbox-id>`。`hello` 返回 `Hello, Ada!`，`run_script` 返回 `42\n`。脚本与测试文件由你提供。`abx run` 调用命名命令，shell 使用 `abx exec`。完成后清理：
-
-```bash
-abx kill <sandbox-id>
-abx template delete <template-id> -y
-```
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-客户端发行名为 `agent-sandbox-client`，导入名为 `agent_sandbox`。配套版本发布前，请按[固定提交的双包安装说明](../docs/python-client-installation.md)安装。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main() -> None:
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        print(await sb.run("hello", name="Ada"))
-        print(await sb.run("run_script", code="print(21 * 2)"))
-        await sb.files.write("/home/user/app/main.py", "print(6 * 7)\n")
-        await sb.files.write(
-            "/home/user/app/test_main.py",
-            "def test_answer():\n    assert 6 * 7 == 42\n",
-        )
-        print(await sb.run("run", file="main.py", timeout=70))
-        print(await sb.run("test", path="test_main.py", timeout=130))
-        print(sb.network.get_url(9000))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('hello', name='Express'))
 ```
 
-`Sandbox.connect` 可连接已有沙箱。`sb.run` 返回 JSON 中的 `result`，`sb.commands.run` 是进程/shell API。`sb.run` 的 `timeout` 单位为秒，控制 HTTP 等待时间；各命令的执行期限固定，见下表。客户端超时不能保证服务端工作取消；后台运行、重连、取消应使用进程 API。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-`ABX_SERVER_URL` 使用沙箱的 `sb.network.get_url(9000)`，本地可用 `http://127.0.0.1:9000`。Express 的 9000 端口服务不要求沙箱网关 token；匿名服务器不应接收 envd 的 `X-Access-Token`。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/hello`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/hello" \
-  --header 'Content-Type: application/json' \
-  --data '{"name":"Ada"}'
-# {"result":"Hello, Ada!"}
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/run_script" \
-  --header 'Content-Type: application/json' \
-  --data '{"code":"print(21 * 2)"}'
-# {"result":"42\n"}
+```json
+{"name": "Express"}
 ```
 
-请求体直接包含参数，没有 `args` 包装。`POST /commands/run` 加 `{"file":"main.py"}` 运行已上传脚本；`POST /commands/test` 加 `{"path":"test_main.py"}` 运行测试。成功返回 `{"result":"<stdout>"}`。`GET /commands` 列出公开命令；`GET /hello/Ada` 返回 `{"greeting":"Hello, Ada!"}`。
+该检查的预期响应：
 
-服务端认证与 provider 网关认证分别配置。如果沙箱设置了 `ABX_SERVER_TOKEN`，受保护的请求需携带 `Authorization: Bearer $ABX_SERVER_TOKEN`；`/health` 不要求 server token。SDK 可使用 `sb.server_at(9000, token=server_token).commands.run(...)`，token 从应用的安全配置获得。需要网关访问头的 provider 还需添加该访问头，例如 `sb.network.get_access_headers()` 提供的 `X-Access-Token`，同时保留服务端 bearer token。当前镜像后端验收及准确范围见[已验证](#已验证)。
+```json
+{"result": "Hello, Express!"}
+```
 
-缺少或无效参数返回 HTTP 400，认证失败 401，未知命令 404，执行失败 500；错误对象包含 `error` 和 `type`。命令完成后一次返回完整输出。HTTP 客户端超时仅结束等待，不能保证服务端取消。
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -115,13 +72,13 @@ curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/run_script" \
 
 | 变量 | 必填 | 默认值 | 用途 |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | 否 | 空 | 可选服务端 bearer 认证，在创建沙箱时注入。 |
+| `ABX_SERVER_TOKEN` | 必填；清单值为空 | 启动前导出独立应用令牌 | 可选服务端 bearer 认证，在创建沙箱时注入。 |
 | `WORKSPACE` | 否 | `commands.py` 所在目录 | 所有 Python 子进程使用的已有目录，调整时同步修改上传路径。 |
 | `ABX_SERVER_BASE_DIR` | 否 | `/home/user` | 文件 API 路径边界；自定义工作目录需位于该边界内。此设置不限制任意 Python 代码。 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 本地 `python3 commands.py` 监听端口；云端 `start_cmd` 固定指定 9000。 |
 | `LANG` | 否 | `C.UTF-8` | Unicode 输出。 |
 
-通过已有安全配置和 `Sandbox.create(envs=...)` 传入秘密值，YAML 只保留空的秘密变量声明。不要记录 token 或上传凭据文件。
+在 `template launch` 前安全导出清单中声明为空的秘密变量，让应用启动时读取；不要写入镜像、YAML 或日志。
 
 ## 资源
 

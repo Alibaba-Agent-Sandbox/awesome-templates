@@ -14,61 +14,40 @@
 
 ## 快速开始（CLI）
 
-CLI0.4.1显式使用原生入口；`abx run`选择为`abx --native run`。配置已有授权Express访问，先发布精确源码再准备不可变COPY；替换占位符，为生成manifest设置唯一自建名称，官方READY后创建。CLI、SDK与HTTP使用相同无模型命令。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-python scripts/prepare_steps.py muse --output /tmp/muse-steps-<unique-run> \
-  --asset-transport parallel --server-commit 34e7e011c5569f77b7f605e65313be7498f6cf02
-python - <<'CONFIG'
-from pathlib import Path
-import yaml
-p = Path("/tmp/muse-steps-<unique-run>/template.yaml")
-v = yaml.safe_load(p.read_text())
-v["name"] = "muse-<unique-run>"
-p.write_text(yaml.safe_dump(v, sort_keys=False))
-CONFIG
-abx --native template deploy /tmp/muse-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> muse_version
-abx --native run <owned-sandbox-id> muse_native_check
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+abx --provider alicloud-express template launch ./muse --workflow application --yes
+abx run <sandbox-id> muse_version --json-args '{}'
 ```
 
-统一所有权与清理：`ABX='abx --native' python scripts/run_steps_e2e.py muse --sandbox-create sdk --http --asset-transport oss`。手工操作方负责所有已知资源。原生steps无需本地Docker；steps通过不代表Docker镜像云端部署通过。
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-发行包为`agent-sandbox-client`，导入`agent_sandbox`，按[配对固定源码说明](../docs/python-client-installation.md)安装。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=900)
-    try:
-        print(await sb.run("muse_version", timeout=60))
-        print(await sb.run("muse_native_check", timeout=60))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('muse_version'))
 ```
 
-编码前须在**命令服务启动之前**配置全部MUSE_MODEL_*变量，查看`muse_setup_check`，然后调用`await server.commands.run("muse",prompt="Repair existing calc.py and preserve its tests",cwd="project",command_timeout=300,timeout=380)`；项目必须已存在。独立鉴权服务使用`sb.server_at(port,token=...)`，结束后关闭借用客户端。后续create-time env不会重配已预热的9000进程，按[显式进程配置](../docs/runtime-environment.md)启动；另起9010服务须用其匹配token。返回值是直接缓冲结果，不向调用方转发原始事件流。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-ABX_SERVER_URL为相应服务的`sb.network.get_url(port)`；ABX_SERVER_TOKEN与模型/平台凭据分开。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/muse_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/muse_version" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" --data '{}'
+```json
+{}
 ```
 
-HTTP200返回`{"result":"Muse Code 1.4.11 (1.4.11-R6667.1)"}`。`POST /commands/muse`直接接收`{prompt,cwd,command_timeout}`。缺失/未知/类型参数为400，鉴权401，未知命令404；语义或原生执行异常为500，返回已脱敏的`{error,type}`。断开HTTP不代表取消原生进程或上游模型任务；有界自建资源清理仍会运行。
+该检查的预期响应：
+
+```json
+{"result": "Muse Code 1.4.11 (1.4.11-R6667.1)"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -91,7 +70,7 @@ HTTP200返回`{"result":"Muse Code 1.4.11 (1.4.11-R6667.1)"}`。`POST /commands/
 | MUSE_MODEL_BASE_URL | 空；编码必需 | 显式HTTPS Responses基址，最长2048字符，无userinfo/query/fragment；自编fixture仅可用字面loopback HTTP |
 | MUSE_MODEL | 空；编码必需 | 实际上游模型标识，1..200个允许字符 |
 | WORKSPACE | `/home/user/app` | 调用方已有项目根目录 |
-| ABX_SERVER_TOKEN | 空；可选 | 命令服务独立Bearer凭据 |
+| ABX_SERVER_TOKEN | 必填；清单值为空 | 启动前导出独立应用令牌 |
 
 commands.py导入时捕获配置；存在标志不证明账号有效。key最长8192且无控制字符。原生进程仅通过匿名stdin取得逐次随机本地代理token。父代理只向固定授权Responses端点使用上游密钥，拒绝重定向及错误路由/token/model，不留轨迹。原版工具采用最小环境及私有HOME/缓存/配置，调用方项目产物保留。同一用户仍有OS访问权限，cwd检查和环境过滤不构成额外租户边界；`--yolo`选择自建外层沙箱作为执行边界。
 

@@ -6,8 +6,6 @@ Run a repository-owned coding agent using the official DeepSeek Chat Completions
 
 ## Stack
 
-Revision 1.1.2 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
-
 Python 3.13; `httpx==0.28.1`; Agent Sandbox server. No third-party agent CLI.
 
 [Dockerfile](Dockerfile) · [template.yaml](template.yaml) · [Upstream](https://api-docs.deepseek.com/guides/tool_calls/)
@@ -18,50 +16,40 @@ Expose a typed, bounded coding task through one named command; inject model cred
 
 ## Quick start (CLI)
 
-The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
-
-Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template install alibaba-agent-sandbox/awesome-templates//deepseek-harness
-abx create <template-id> --detach --env DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY"
-abx run <sandbox-id> deepseek --arg prompt="Inspect this project and fix the failing calculation"
+abx --provider alicloud-express template launch ./deepseek-harness --workflow application --yes
+abx run <sandbox-id> deepseek_tools --json-args '{}'
 ```
+
+`template launch` prepares and starts this instance's application. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-The client distribution is `agent-sandbox-client`. See [installation](../docs/python-client-installation.md) for availability and pinned source installation.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-import os
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=900,
-                              envs={"DEEPSEEK_API_KEY": os.environ["DEEPSEEK_API_KEY"]})
-    try:
-        print(await sb.run("deepseek", prompt="Inspect and fix the calculation",
-                           timeout=660))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('deepseek_tools'))
 ```
+
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-```bash
-curl -X POST "$SANDBOX_PORT_9000_URL/commands/deepseek" \
-  -H 'Content-Type: application/json' \
-  -H "X-Access-Token: $GATEWAY_ACCESS_TOKEN" \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --data '{"prompt":"Inspect and fix the calculation","command_timeout":600}'
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/deepseek_tools`, with `Content-Type: application/json` and this direct argument object:
+
+```json
+{}
 ```
 
-Success is `{"result":"buffered output"}`. Send arguments directly, with no `args` wrapper. The provider defines gateway access credentials; `ABX_SERVER_TOKEN` separately protects this server. Omit Authorization when unset. The SDK supports `sb.server_at(9000, token=...)`.
+Expected response for this check:
 
-HTTP 400: missing/invalid/range arguments; 401: authentication; 404: unknown command; 500: missing credentials, execution failure or timeout. Results are buffered. `command_timeout` bounds execution; SDK `timeout` only controls HTTP waiting and does not guarantee cancellation. Use process APIs for background work.
+```json
+{"result": "list_files,read_file,run_shell,write_file"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 

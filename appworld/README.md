@@ -20,52 +20,40 @@ Evaluate genuine AppWorld tasks on a disposable sandbox without nested Docker or
 
 ## Quick start (CLI)
 
-Install CLI0.4.1 native entry and configure authorized Express access via [platform steps](../docs/platform-steps.md). `abx run` uses this release as `abx --native run`. Replace placeholders with unique owned values, publish the exact source commit for immutable COPY, and wait for official READY. The common model-free task initializes an original world and calls its actual API.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-python scripts/prepare_steps.py appworld --output /tmp/appworld-steps-<unique-run> \
-  --asset-transport parallel --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
-abx --native template deploy /tmp/appworld-steps-<unique-run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> appworld_native_smoke
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+abx --provider alicloud-express template launch ./appworld --workflow application --yes
+abx run <sandbox-id> appworld_native_smoke --json-args '{}'
 ```
 
-Complete canonical validation: `ABX="abx --native" python scripts/run_steps_e2e.py appworld --sandbox-create sdk --http --asset-transport oss`. Private OSS caches only exact original encrypted data and independently verifies owned cleanup. Steps acceptance does not prove Docker image acceptance. After explicit model setup, use `abx --native run <owned-sandbox-id> appworld_run --json-args '{"task":"","max_steps":40,"command_timeout":900}'` and verify the returned native score/artifact.
+`template launch` prepares and starts this instance's application. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` with the [paired source instructions](../docs/python-client-installation.md). This model-free example performs the same task as CLI/HTTP and owns cleanup; snippets are syntax checked; actual native cloud/model evidence is linked below.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=300)
-    try:
-        result = await sb.run("appworld_native_smoke", timeout=150)
-        assert result == "original AppWorld0.1.3.post1 native API and private cleanup OK"
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('appworld_native_smoke'))
 ```
 
-Once the named server has explicit APPWORLD_MODEL_API_KEY/BASE_URL/MODEL before startup and setup presence is true, call `await sb.run("appworld_run", task="", max_steps=40, command_timeout=900, timeout=1000)`, download the encrypted file via `sb.files.read_bytes(result["artifact_path"], max_bytes=64*1024**2)`, then `await sb.run("appworld_verify_artifact", path=result["artifact_path"], task=result["task"], timeout=200)`. Use the [explicit prewarmed-server configuration](../docs/runtime-environment.md): later create-time env does not reconfigure9000. For a separate Bearer server use `sb.server_at(port, token=...)`, its commands client and finally close it. Stop any explicitly started process and drain/cancel its stream before sandbox deletion. Never print model keys, private endpoints, decrypted protected tasks or trajectories.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Set ABX_SERVER_URL to `sb.network.get_url(9000)` and configure optional independent ABX_SERVER_TOKEN before server startup. Add the selected provider gateway access header when required.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/appworld_native_smoke`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/appworld_native_smoke" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" --data '{}'
+```json
+{}
 ```
 
-HTTP200 returns `{"result":"original AppWorld0.1.3.post1 native API and private cleanup OK"}`. Run accepts the direct `{task,max_steps,command_timeout}` JSON object, without an args wrapper; verify accepts `{path,task}`. Missing/type-invalid arguments400, server auth401, unknown command404, semantic/native execution errors500 with `{error,type}`. Native incomplete runs fail; a completed task can validly score0.0. A client timeout does not cancel a bounded worker.
+Expected response for this check:
+
+```json
+{"result": "original AppWorld0.1.3.post1 native API and private cleanup OK"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -87,7 +75,7 @@ Native operations serialize and reject overlap. Requests at most32KiB; native st
 | APPWORLD_MODEL_BASE_URL | model required; empty | Explicit HTTPS base; literal loopback HTTP only for authored fixtures; no userinfo/query/fragment, max2048characters |
 | APPWORLD_MODEL | model required; empty | Actual model identifier,1..200 safe characters |
 | WORKSPACE | /home/user/workspace | Existing result root, captured at module startup |
-| ABX_SERVER_TOKEN | optional; empty | Independent named-server Bearer token |
+| ABX_SERVER_TOKEN | Required; empty manifest declaration | Export the independent application token before launch |
 
 Configuration is captured at command-server startup. Key max8192characters/noCRLF/NUL. Worker environment excludes operator cloud/GitHub/model tokens; model settings travel via anonymous stdin into private memory. Original model execution guards remain enabled. Bridge validates allowed original app/API identifiers and renders JSON arguments as Python literals; it does not accept executable model Python. At most16tool calls execute per response;17..64calls receive complete rejection feedback without API execution and larger batches fail. At most3empty-choice responses across a task,8192response tokens,160native interactions,50API calls/interaction,30seconds/native execution,60seconds/model HTTP without SDK retries. Native inspect/API tool output is bounded; model context at most1MiB.
 

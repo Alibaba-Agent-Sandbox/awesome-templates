@@ -22,77 +22,40 @@ Python 的 browse/scrape/fill_form 每次独立创建浏览器；原生MCP调用
 
 ## 快速开始（CLI）
 
-示例使用当前极速版 CLI：`abx create <template-id> --detach` 输出沙箱 ID，`abx kill <sandbox-id>` 清理沙箱；命名命令使用 `abx run`。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
-
-运行配置：以下创建时注入密钥的示例，要求命名服务启动时实际获得这些值。预热服务请先检查模板提供的 setup 标志（如有），再按[显式进程配置](../docs/runtime-environment.zh-CN.md)操作；创建沙箱不会重新配置已运行的服务。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template install alibaba-agent-sandbox/awesome-templates//browser-automation
-abx create <template-id> --detach
-abx run <sandbox-id> browse --arg url=https://example.com --arg action=extract
-abx run <sandbox-id> browse --json-args '{"url":"https://example.com","action":"screenshot","timeout_s":30}'
-abx run <sandbox-id> scrape --arg url=https://example.com --arg selector=h1
+abx --provider alicloud-express template launch ./browser-automation --workflow application --yes
+abx run <sandbox-id> browse --json-args '{"url": "data:text/html,<title>ABX_E2E_OK</title><h1>ABX_E2E_OK</h1>", "action": "extract"}'
 ```
 
-使用 CLI 返回的模板和沙箱 id。`abx run` 调用命名命令，`abx exec` 执行 shell
-程序。`--arg` 传字符串，整数 `timeout_s` 用 `--json-args`。真实表单秘密不要
-写进命令行或 shell 历史；在妥善管理秘密的进程中使用 SDK。
+`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-客户端发行名为 `agent-sandbox-client`，导入名为 `agent_sandbox`。配套版本发布前，请按[固定提交的双包安装说明](../docs/python-client-installation.md)安装。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        result = await sb.run("browse", url="https://example.com", action="extract", timeout=90)
-        print(result["title"])
-        screenshot = await sb.run("browse", url="https://example.com", action="screenshot", timeout=90)
-        await sb.server.files.download_file(screenshot["path"], "example.png")
-        print(sb.network.get_url(9000))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('browse', url='data:text/html,<title>ABX_E2E_OK</title><h1>ABX_E2E_OK</h1>', action='extract'))
 ```
 
-`sb.run` 返回解包后的 `result`。`timeout=90` 是客户端 HTTP 超时；命令
-`timeout_s=30` 默认分别限制浏览器启动、导航和每项动作，不是整个命令的墙钟
-截止时间。每个表单字段都可能消耗一次动作超时。客户端超时不保证取消服务端。
-后台浏览器脚本、重连、取消请用进程 API。配置 `ABX_SERVER_TOKEN` 后用
-`sb.server_at(9000, token=server_token, timeout=90).commands.run(...)`。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-`BASE_URL` 为 `sb.network.get_url(9000)` 返回的沙箱端口地址。
-本地未配置认证时：
-
-```bash
-curl --fail-with-body -X POST "$BASE_URL/commands/browse" \
-  -H 'Content-Type: application/json' \
-  --data '{"url":"https://example.com","action":"extract","timeout_s":30}'
-```
-
-返回形状（网页文本可能变化）：
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/browse`，`Content-Type: application/json`，直接发送以下参数对象：
 
 ```json
-{"result":{"action":"extract","title":"Example Domain","text":"Example Domain\n..."}}
+{"url": "data:text/html,<title>ABX_E2E_OK</title><h1>ABX_E2E_OK</h1>", "action": "extract"}
 ```
 
-参数对象直接放 JSON 正文，不包 `args`。服务端认证是独立可选项：创建沙箱时
-注入 `ABX_SERVER_TOKEN` 后，加 `Authorization: Bearer ${SERVER_TOKEN}` 或
-`X-Access-Token: ${SERVER_TOKEN}`。提供方网关认证与它不同：提供方要求时，
-使用 `sb.network.get_access_headers()` 返回的访问头。当前极速版 9000 端口在
-网关处公开，不要把沙箱访问令牌当服务端令牌。两层同时认证时，保留服务端
-Authorization 头及提供方独立网关头，不记录任何实际令牌。
+该检查的预期响应：
 
-HTTP 400 为缺少参数或类型错误；401 为服务端认证失败；404 为命令不存在；
-500 为浏览器/脚本失败，或非法 action、URL、范围、表单 JSON 等语义错误。
-错误格式为 `{"error":"...","type":"..."}`，浏览器错误不包含请求值。
+```json
+{"result": {"action": "extract", "title": "ABX_E2E_OK", "text": "ABX_E2E_OK"}}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -129,7 +92,7 @@ HTTP 400 为缺少参数或类型错误；401 为服务端认证失败；404 为
 | mcp_stop | 无 | 自有进程、浏览器和监听端口清理确认后返回running:false |
 | mcp_self_test | 无 | 真正初始化、列工具、由独立HTTP fixture确认两次浏览器点击、生成真实PNG并完成清理后才返回PLAYWRIGHT_MCP_OK |
 
-执行 `abx run <sandbox-id> mcp_start`，再执行 `abx run <sandbox-id> mcp_call --arg method=tools/list`。同一沙箱内的标准 MCP 客户端访问 `http://127.0.0.1:8931/mcp`，使用原生MCP会话及协议头。8931仅监听沙箱回环，不是带认证的公网网关。外部通过 SDK 的 `await sb.run("mcp_call", method="tools/list")` 使用命令服务配置的 bearer 认证。固定上游的 browser_click 使用新 browser_snapshot 中的 `target`，不是旧版ref参数。
+执行 `abx run <sandbox-id> mcp_start`，再执行 `abx run <sandbox-id> mcp_call --arg method=tools/list`。同一沙箱内的标准 MCP 客户端访问 `http://127.0.0.1:8931/mcp`，使用原生MCP会话及协议头。8931仅监听沙箱回环，不是带认证的公网网关。外部通过 SDK 的 `await client.commands.run("mcp_call", method="tools/list")` 使用命令服务配置的 bearer 认证。固定上游的 browser_click 使用新 browser_snapshot 中的 `target`，不是旧版ref参数。
 
 诊断设置 `MCP_NODE_MODULES` 可选择独立安装且版本完全匹配的依赖树；镜像默认 /opt/playwright-mcp/node_modules。MCP HOME、浏览器配置和输出独立，停止后删除，不加载保存的浏览器配置或扩展。原生动作/导航时限10/20秒，HTTP响应4MiB、输出文件达到10MiB时触发旧文件淘汰（不是硬磁盘配额）、浏览器空闲60秒。调用串行；原生沙箱内端点保留MCP流式传输，命名mcp_call缓冲返回。子进程不继承云端、模型、服务密钥及Node注入变量。浏览器仍使用沙箱网络权限，没有额外SSRF策略。请求、页面和返回值可能含隐私，不公开记录。
 
@@ -145,7 +108,7 @@ PDF在独立HOME子进程执行，执行时限1–120秒并有有界清理。通
 |---|---|---|
 | `PLAYWRIGHT_BROWSERS_PATH` | 镜像内 `/opt/playwright` | 共享可读 Chromium 安装目录 |
 | `WORKSPACE` | `/home/user/app` | 脚本根和 `browser-artifacts/` 产物根，与服务端文件策略对齐 |
-| `ABX_SERVER_TOKEN` | 未设置/空 | 可选服务端认证，创建沙箱时注入 |
+| `ABX_SERVER_TOKEN` | 必填；清单值为空 | 启动前导出独立应用令牌 |
 | `ABX_SERVER_PORT` | `9000` | 本地 `python3 commands.py` 启动端口 |
 
 正文、截图、链接和用户脚本输出可能包含页面敏感信息。产物应按私有文件处理，

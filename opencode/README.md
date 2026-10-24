@@ -11,13 +11,11 @@ requires independent code, artifact and exact-session continuation checks.
 
 `agent-sandbox-server` listens on port 9000 and registers commands that run `opencode`. `opencode_run` executes one non-interactive `opencode run --format json` and returns the assistant text, sanitized JSON events, and the session id. `opencode_version` and `opencode_setup_check` check the pinned binary and `opencode.json` without calling a model.
 
-`opencode_serve_start` starts `opencode serve` on port 4096 bound to `0.0.0.0`. That process is OpenCode's own HTTP API (`GET /global/health`). Reach it with `sb.network.get_url(4096)`. The platform `start_cmd` does not start it.
+`opencode_serve_start` starts `opencode serve` on port 4096 bound to `0.0.0.0`. That process is OpenCode's own HTTP API (`GET /global/health`). Resolve it with `await sb.network.resolve(4096)` and preserve the returned gateway headers alongside OpenCode authentication. The platform `start_cmd` does not start it.
 
 `opencode` is the previous command name. It runs the same argv as `opencode_run` and returns the sanitized JSON-event stdout string.
 
 ## Stack
-
-Revision 2.0.3 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
 
 - Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template deploy` replaces `<region>` with `ALIBABA_CLOUD_REGION_ID` or `cn-hangzhou`, and `<tag>` with `ABX_BASE_IMAGE_TAG` or `v0.0.49`. Python 3.13 and Node.js 20 come from that image.
 - `opencode-ai@1.19.0` (npm `latest` on 2026-10-15). The package binary is `opencode`. Upstream is [sst/opencode](https://github.com/sst/opencode).
@@ -32,92 +30,40 @@ Gives a caller a pinned OpenCode CLI inside a sandbox, with one JSON command for
 
 ## Quick start (CLI)
 
-The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
-
-Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
-
-From a checkout of this repository, with Express credentials in the environment:
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template deploy ./opencode -y --generation 2 \
-  --start-cmd 'agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py' \
-  --ready-cmd 'agent-sandbox-server healthcheck --port 9000'
-abx create <template-id> --detach \
-  --env ABX_LLM_API_KEY=<key> \
-  --env ABX_LLM_BASE_URL=<openai-compatible-base-url>
-abx run <sandbox-id> opencode_version
-abx run <sandbox-id> opencode_setup_check
-abx run <sandbox-id> opencode_run --json-args '{"prompt":"Reply with exactly ABX_E2E_OK","model":"dashscope/qwen3.8-flash"}'
-abx run <sandbox-id> opencode_serve_start
+abx --provider alicloud-express template launch ./opencode --workflow application --yes
+abx run <sandbox-id> opencode_version --json-args '{}'
 ```
 
-`template.yaml` already stores `generation`, `start_cmd`, and `ready_cmd`. The flags repeat them so the command stands alone.
-
-`--json-args` is required for `continue_session` (boolean) and `port` (integer). `--arg` values are strings.
-
-Remove the sandbox and the template when you are done:
-
-```bash
-abx kill <sandbox-id>
-abx template delete <template-id> -y
-```
-
-`python3 scripts/express_e2e.py opencode` deploys, runs the smoke commands (`opencode_version`, `opencode_setup_check`), writes evidence only after a pass, and deletes that sandbox and that template.
+`template launch` prepares and starts this instance's application. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-The client distribution is `agent-sandbox-client` (import `agent_sandbox`). See [Python installation](../docs/python-client-installation.md).
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main() -> None:
-    sb = await Sandbox.create(
-        template="<template-id>",
-        timeout=300,
-        envs={
-            "ABX_LLM_API_KEY": "<key>",
-            "ABX_LLM_BASE_URL": "<openai-compatible-base-url>",
-        },
-    )
-    try:
-        print(await sb.run("opencode_version"))
-        result = await sb.run(
-            "opencode_run",
-            prompt="Reply with exactly ABX_E2E_OK",
-            model="dashscope/qwen3.8-flash",
-        )
-        print(result["text"], result["session_id"])
-        await sb.run(
-            "opencode_run",
-            prompt="Say ABX_E2E_OK again",
-            session=result["session_id"],
-        )
-        await sb.run("opencode_serve_start")
-        print(sb.network.get_url(4096))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('opencode_version'))
 ```
 
-`await sb.run("opencode_run", prompt="...")` returns a dict with `text`, `stdout`, `session_id`, `model`, `agent`, and `cwd`. `sb.commands.run` is a shell command, not this named command. Older SDK snapshots before the sync-wrapper fix could raise `TypeError` from `Sandbox.create_sync` ([python-sdk#22](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues/22)); this was fixed in [python-sdk#24](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/24). Upgrade to a commit or release containing that fix, or use `await Sandbox.create`.
-
-`opencode_run` is the primary API: one request, one JSON body, the headless CLI. `opencode serve` is for clients that already speak OpenCode's HTTP API. Both are in the image. Only the command server on port 9000 starts with the sandbox.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Use the sandbox port-9000 URL, or http://127.0.0.1:9000 locally. Include the authentication header when ABX_SERVER_TOKEN is set on the server.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/opencode_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/opencode_version" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header "Content-Type: application/json" \
-  --data '{}'
+```json
+{}
 ```
 
-The JSON body contains command parameters directly, without an args wrapper. HTTP 200 returns `{"result":"1.19.0"}`. Invalid arguments return 400, failed authentication 401, and execution errors 500; error responses contain error and type. Results are buffered until completion. An HTTP client timeout does not guarantee server-side cancellation; manage long tasks through the process API.
+Expected response for this check:
+
+```json
+{"result": "1.19.0"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -155,7 +101,7 @@ The JSON body contains command parameters directly, without an args wrapper. HTT
 
 A missing `prompt` is HTTP 400. A non-zero CLI exit is HTTP 500 `{"error","type":"RuntimeError"}`. CLI error output is omitted, so prompts, tool arguments, and credentials are not copied into error messages. Successful event values redact known environment secrets. Serve logs are discarded. Timeout is 600 seconds. Stdin is `/dev/null`.
 
-`opencode_serve_start` returns `running`, `port`, `hostname`, `pid`, `healthy`, and `version`. It waits until `GET http://127.0.0.1:<port>/global/health` returns `{"healthy": true, "version": "1.19.0"}`. The target-side health probe supports `OPENCODE_SERVER_PASSWORD` and requires the pinned version. The public URL is `sb.network.get_url(port)`, not that localhost address. A second start with the same port and hostname returns the current status. Start/status/stop are serialized by an in-process lock. Stop signals only the Popen child owned by this interpreter and verifies its process group; old PID files are never read. Restarting the command server does not adopt an older serve process; recycle the sandbox to clean up such a process.
+`opencode_serve_start` returns `running`, `port`, `hostname`, `pid`, `healthy`, and `version`. It waits until `GET http://127.0.0.1:<port>/global/health` returns `{"healthy": true, "version": "1.19.0"}`. The target-side health probe supports `OPENCODE_SERVER_PASSWORD` and requires the pinned version. Resolve the public endpoint and gateway headers with `await sb.network.resolve(port)`; the localhost address is internal. A second start with the same port and hostname returns the current status. Start/status/stop are serialized by an in-process lock. Stop signals only the Popen child owned by this interpreter and verifies its process group; old PID files are never read. Restarting the command server does not adopt an older serve process; recycle the sandbox to clean up such a process.
 
 ## Configuration
 
@@ -166,14 +112,14 @@ A missing `prompt` is HTTP 400. A non-zero CLI exit is HTTP 500 `{"error","type"
 | `OPENCODE_MODEL` | no | `dashscope/qwen3.8-flash` | Used when `model` is empty. |
 | `OPENCODE_API_KEY` | no | empty | OpenCode Zen credential when `model` is `opencode/<id>`. |
 | `OPENCODE_SERVER_PASSWORD` | no | empty | Basic auth password for `opencode serve`. The CLI warns when it is unset. |
-| `ABX_SERVER_TOKEN` | no | empty | When set, port 9000 requires `Authorization: Bearer`. Pass `token=` to the SDK client. Leave unset for anonymous calls. |
+| `ABX_SERVER_TOKEN` | Required; empty manifest declaration | Export the independent application token before launch | When set, port 9000 requires `Authorization: Bearer`. Pass `token=` to the SDK client. Leave unset for anonymous calls. |
 | `OPENCODE_CONFIG` | no | `/home/user/app/opencode.json` | Config file the child process reads. |
 | `OPENCODE_DISABLE_AUTOUPDATE` | no | `true` in the image | Stops the pinned CLI from upgrading itself. |
 | `ABX_SERVER_PORT` | no | `9000` | Port `start()` binds for a local `python3 commands.py`. |
 
 `opencode.json` defines provider `dashscope` with npm package `@ai-sdk/openai-compatible`. Model ids shipped in that file are `qwen3.8-flash` and `qwen3.8-max`. Another id under `dashscope/` is added to a temporary config for that one `opencode_run`. A model on a different provider uses the config file as written; put that provider in `opencode.json` or pass a `model` the file already allows.
 
-Set secret values on `abx create --env` or `Sandbox.create(envs=...)`. Do not write them into the image.
+Before `template launch`, securely export the secret variables declared empty in the manifest so the application reads them at startup. Keep values out of images, YAML and logs.
 
 ## Resources
 
