@@ -1,0 +1,845 @@
+{
+  "result": "PASS",
+  "run_id": 40115813586,
+  "run_attempt": 1,
+  "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/40115813586",
+  "tested_templates_commit": "e581d273aa1b7bbc099da8c4c7745c1728230364",
+  "all_workflow_jobs_successful": true,
+  "case_count": 92,
+  "by_provider": {
+    "alicloud-express": 46,
+    "opensandbox": 46
+  },
+  "report_scope": "published host packages; fixed local provider/template sources; default recipe; OpenSandbox direct",
+  "smoke_calls": 438,
+  "cases": [
+    {
+      "template": "agents-cli",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-agents-cli-40115813586-1.json",
+      "sha256": "4427e6f03f3cab52ab2011336b79b107956b491930dc40da3ba5464e72381b3f"
+    },
+    {
+      "template": "aider",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-aider-40115813586-1.json",
+      "sha256": "f68ab6b4c7d843b7148020af16b96f32bcf5f9259b06df50c166776ce2b03167"
+    },
+    {
+      "template": "amp",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-alicloud-express-amp-40115813586-1.json",
+      "sha256": "3bc72429a742c0c62db85c69ac3d6158301c01d71acb5fc61511aa86eb48cc10"
+    },
+    {
+      "template": "apply-patch",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-alicloud-express-apply-patch-40115813586-1.json",
+      "sha256": "82624a9f524f29f421f810432626930055a4b22d9db961f83eb91b2a6f9e85c3"
+    },
+    {
+      "template": "appworld",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-appworld-40115813586-1.json",
+      "sha256": "e20aec136221e0a705224fe01f5f452da2d31b8999cf98ee696caf9224fcbe93"
+    },
+    {
+      "template": "browser-automation",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-alicloud-express-browser-automation-40115813586-1.json",
+      "sha256": "8931812b86138180c0001e95350636709e23a6435512ee59701ae9c679adb7b4"
+    },
+    {
+      "template": "browser-use",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-alicloud-express-browser-use-40115813586-1.json",
+      "sha256": "72b093f87cfdaa4cd8b0ef6d3abd49f9d4ccbb08861d2174829422750c131353"
+    },
+    {
+      "template": "chrome",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-chrome-40115813586-1.json",
+      "sha256": "4130aa0858cd4a203f5fcc79d7277d5f78c4289c9749c5ae438d6afa14278bac"
+    },
+    {
+      "template": "claude-code",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-claude-code-40115813586-1.json",
+      "sha256": "277713b2f35182cc8968b4d170420c4df10dc24aac24f59785b512e57c167fd2"
+    },
+    {
+      "template": "cline",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-cline-40115813586-1.json",
+      "sha256": "756eac743292854403bb0d4add76b35f3b7d3a9528f382089aeb72f796b67985"
+    },
+    {
+      "template": "code-server",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-alicloud-express-code-server-40115813586-1.json",
+      "sha256": "7c7039570027e61890915084dcd2171452c4c5be5addebea4a57980961386ba3"
+    },
+    {
+      "template": "codex",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-codex-40115813586-1.json",
+      "sha256": "d60d9ae4ea6827c09606ff35dfbeefb88eef3817a9bcc0c70dbafb2237925508"
+    },
+    {
+      "template": "codex-agent-api",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-alicloud-express-codex-agent-api-40115813586-1.json",
+      "sha256": "9edbdefdfc77317a4b0558aaa60d675829a8044a0e4b802b3f7edf5f77aabc34"
+    },
+    {
+      "template": "copilot-cli",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-copilot-cli-40115813586-1.json",
+      "sha256": "9002dc63bd06fe38cbfd6a462bc098bf4df4c3ec62bffd6806aa9a6d2e903e26"
+    },
+    {
+      "template": "crush",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-crush-40115813586-1.json",
+      "sha256": "bf0ceeadd45d458a66a38c6aebf0f4a701608ee7427f564056bf7cc17a2c5c6d"
+    },
+    {
+      "template": "cursor-agent",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-cursor-agent-40115813586-1.json",
+      "sha256": "b10bd2328771f063fa6c4673e9e15c59e4eb4457ffa41f9c291bead6a88b6c16"
+    },
+    {
+      "template": "deepagents",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-deepagents-40115813586-1.json",
+      "sha256": "9b66c093d94194b1b3efd4427fcbccd994d0a3efd3850b89dfffa737391d625e"
+    },
+    {
+      "template": "deepseek-harness",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-deepseek-harness-40115813586-1.json",
+      "sha256": "cff02e70c6f033d35ffb7e14a87e830038db1eea2a8c089edbe8d67839a21e17"
+    },
+    {
+      "template": "dev-services",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-alicloud-express-dev-services-40115813586-1.json",
+      "sha256": "859e29d1b423816c057ad29df551e983ccfa65fd0ef766309200bc45a0242503"
+    },
+    {
+      "template": "devin",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-devin-40115813586-1.json",
+      "sha256": "c0710d907da8ef736d3ae43dc3796dcc474b7a37598e24f8af1702b765528752"
+    },
+    {
+      "template": "document-tools",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 4,
+      "smoke_with_expect": 4,
+      "report": "public-launch-alicloud-express-document-tools-40115813586-1.json",
+      "sha256": "72a2b01fcbc08d0d684247f4ee87b62edc463c62894065f8499f00d0aab00966"
+    },
+    {
+      "template": "droid",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-droid-40115813586-1.json",
+      "sha256": "8eaff87d6b5625ad237e3d57d90d50cad69335436990cb753b0c096c59261837"
+    },
+    {
+      "template": "gemini",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-gemini-40115813586-1.json",
+      "sha256": "0f5f5f3f70f0d6c2b33c551ee274a1047975f520787a5ee944dc9304b74a5c92"
+    },
+    {
+      "template": "goose",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-goose-40115813586-1.json",
+      "sha256": "192d874eb2fd5214909245fe1c99065fd9262c54da90ea75198fbfd9183da6d9"
+    },
+    {
+      "template": "grok",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-grok-40115813586-1.json",
+      "sha256": "8df122ea7fa777ffe4d5cea762972e3bdfbc9f83df7445949b98bc374a714d9f"
+    },
+    {
+      "template": "hermes-agent",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 0,
+      "report": "public-launch-alicloud-express-hermes-agent-40115813586-1.json",
+      "sha256": "449545808c9b09c0e35ea5d62e44e731a1f82406387ce97b3a7de94134132bbb"
+    },
+    {
+      "template": "kimi-code",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-kimi-code-40115813586-1.json",
+      "sha256": "81764077066c8998e3f29a1640af3dae98eff628eb7edb56543d0dfce1ced2c9"
+    },
+    {
+      "template": "media-tools",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 4,
+      "smoke_with_expect": 4,
+      "report": "public-launch-alicloud-express-media-tools-40115813586-1.json",
+      "sha256": "04da20cf74f6373d6be527f9e220e49a7b8c3fddb86e6c17e00632633f314fff"
+    },
+    {
+      "template": "muse",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-alicloud-express-muse-40115813586-1.json",
+      "sha256": "02aad15c0c6e2947c05018cf7b8ce8e1f646117f9e3b2d89227484766e35c824"
+    },
+    {
+      "template": "next-app",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-alicloud-express-next-app-40115813586-1.json",
+      "sha256": "d915d5785c45d552769cf3c9a3000b15ca0619ccb223d1fa96b7323e1ff63b19"
+    },
+    {
+      "template": "node-web",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-node-web-40115813586-1.json",
+      "sha256": "0fcad97e12eae1e3fd7ddf9f0bcdd840c3a111a9f83a038bfbed839b1a0f2f25"
+    },
+    {
+      "template": "ocr",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-ocr-40115813586-1.json",
+      "sha256": "7558b0813c29f1643a4ecba4f37a5b273b32e4531ee05e057c93b46462d02b7c"
+    },
+    {
+      "template": "openclaw",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-openclaw-40115813586-1.json",
+      "sha256": "a46cddca9cc711b47c76c6ec274827b198e26dc173302213795d65626c278a09"
+    },
+    {
+      "template": "opencode",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-alicloud-express-opencode-40115813586-1.json",
+      "sha256": "cd3c856241d9b31e4a769bafd082378d0ee08663121f00922f85ae9eca4dbd02"
+    },
+    {
+      "template": "osworld",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-osworld-40115813586-1.json",
+      "sha256": "342f2594464ebbfc05536a47846f13ee2cf0492e4d015ba800fa311347118999"
+    },
+    {
+      "template": "pi",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-alicloud-express-pi-40115813586-1.json",
+      "sha256": "6af2d64fa5a4c3265e85bc08c4f66161a42e8921c73921439d3cb744985cd6cf"
+    },
+    {
+      "template": "polyglot-toolchain",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-polyglot-toolchain-40115813586-1.json",
+      "sha256": "e389f5c530411f73e0c8ee8cf07492960a89a71a1d932dc3459259f9747185eb"
+    },
+    {
+      "template": "prime-agent",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-alicloud-express-prime-agent-40115813586-1.json",
+      "sha256": "6697e14d2b3d8ffdb8348475916daf9c8a412a674feb3f48c972a0eaefe24660"
+    },
+    {
+      "template": "python-hello",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-alicloud-express-python-hello-40115813586-1.json",
+      "sha256": "e5aaab5c225c2eb260569c006a68d7646b366af1aca09fa722f3820b9d953dda"
+    },
+    {
+      "template": "qm",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-alicloud-express-qm-40115813586-1.json",
+      "sha256": "e03ade3a09e7c7709cb8368b200be1fae4eb941408a03f55025787020d7d2ff1"
+    },
+    {
+      "template": "qm-sandbox",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-alicloud-express-qm-sandbox-40115813586-1.json",
+      "sha256": "68649eb3a3933aeec94f053f48e9edaa6aaff06fa86cd70c1402010ca4002cae"
+    },
+    {
+      "template": "qoder",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-qoder-40115813586-1.json",
+      "sha256": "b10d24d1555fa40f58ae539b2613271d15e1482d7e6432293b9213c9a0864148"
+    },
+    {
+      "template": "qwen-code",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-qwen-code-40115813586-1.json",
+      "sha256": "788af358682176e846f5aa9058ac5a43c4b6c05c501fe7348e7df5601fe666bf"
+    },
+    {
+      "template": "stagehand",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-alicloud-express-stagehand-40115813586-1.json",
+      "sha256": "109559fc57b6c3e706f1bc6ba5f6c23dc429e32c260ebe98b04818803768c1a4"
+    },
+    {
+      "template": "swe",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-swe-40115813586-1.json",
+      "sha256": "4272dd11bf9c33014d2e02b0506c2fa3ceac6ffddc4fd8aef6c9763908ba7750"
+    },
+    {
+      "template": "tau2-bench",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-alicloud-express-tau2-bench-40115813586-1.json",
+      "sha256": "718082e9b1eaa0be916ffa0a2ae96756b9b405482879d2f206d0ad708538612e"
+    },
+    {
+      "template": "agents-cli",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-agents-cli-40115813586-1.json",
+      "sha256": "09686552987e6bd8b7618383c374066bb485333c37844d6220f5fe1d0b6a1302"
+    },
+    {
+      "template": "aider",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-aider-40115813586-1.json",
+      "sha256": "393f242ab0fe9f89d984dbae55ec074395e53057624d4d2ed923aca81210c130"
+    },
+    {
+      "template": "amp",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-opensandbox-amp-40115813586-1.json",
+      "sha256": "4406b391f29f0c81db329a01a37851bb1f24e64efaee52af1ee2dd7c59173edf"
+    },
+    {
+      "template": "apply-patch",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-opensandbox-apply-patch-40115813586-1.json",
+      "sha256": "0c917a7e058a3d08b3c054201b0b18db89df5ec7b97c5951db743cede2c1e4d2"
+    },
+    {
+      "template": "appworld",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-appworld-40115813586-1.json",
+      "sha256": "727a041a2eb129d0a8c9309dfa124aed1640894862f9072513a86ab9647ddc68"
+    },
+    {
+      "template": "browser-automation",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-opensandbox-browser-automation-40115813586-1.json",
+      "sha256": "28145673d41e32eac5a6c4b9524a269bfc64e4b65171160b3a38826634ef77fd"
+    },
+    {
+      "template": "browser-use",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-opensandbox-browser-use-40115813586-1.json",
+      "sha256": "35899768387408851a76fd72b98ff64b447c9b11ddba972d6f374a885d69ddd3"
+    },
+    {
+      "template": "chrome",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-chrome-40115813586-1.json",
+      "sha256": "ee3ebd3c4739f89ee7897a3cac02d80b9f5c2d2e417c015b8d2be440eedfbaa6"
+    },
+    {
+      "template": "claude-code",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-claude-code-40115813586-1.json",
+      "sha256": "c74acd5e5412953aaa52ca0d44ed32cc32504d02914f92f3010cdf0c270ae353"
+    },
+    {
+      "template": "cline",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-cline-40115813586-1.json",
+      "sha256": "91e5b220679f982812bcdad49299c05499849cd398f176f08c991ab75a726b95"
+    },
+    {
+      "template": "code-server",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-opensandbox-code-server-40115813586-1.json",
+      "sha256": "6b1b3f9a3ba174373e1abf440528c998c9e3e2f658f4dfe4a1138ce50511d5fa"
+    },
+    {
+      "template": "codex",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-codex-40115813586-1.json",
+      "sha256": "0e20a8e15ec06161d1fd05cf22b9bd2a32b0d5a1d9bc6f589795c24ff9338c83"
+    },
+    {
+      "template": "codex-agent-api",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-opensandbox-codex-agent-api-40115813586-1.json",
+      "sha256": "349f334968110830ca349e614640c760f1e83ad886bb2169d6ff28d12bd07d35"
+    },
+    {
+      "template": "copilot-cli",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-copilot-cli-40115813586-1.json",
+      "sha256": "449d938ea2dbc137fc6d846e2538eaca4295dcf394721458165086500e4361e2"
+    },
+    {
+      "template": "crush",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-crush-40115813586-1.json",
+      "sha256": "dda38132232365033fa9fc5c7700fa4dda03c65ecd126dc5f1ac0818c5651cf4"
+    },
+    {
+      "template": "cursor-agent",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-cursor-agent-40115813586-1.json",
+      "sha256": "ed9c907b5366ec63e8f28a107e4eacc127e53f7d4d0f1d332584ae50d87ba4d3"
+    },
+    {
+      "template": "deepagents",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-deepagents-40115813586-1.json",
+      "sha256": "4ac098e3edd4b5e5a69641cb8070a835925a7ab9346140158b23f8f119da1b75"
+    },
+    {
+      "template": "deepseek-harness",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-deepseek-harness-40115813586-1.json",
+      "sha256": "3dc4d9f04f1e5b4d7247b74bfb616faaf843af1a9ec3f1f212df0fb4cf8a39f5"
+    },
+    {
+      "template": "dev-services",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-opensandbox-dev-services-40115813586-1.json",
+      "sha256": "6cf32839e44c3b12322ed9cbab8a02852e419085aa0f2f69688c067966a65235"
+    },
+    {
+      "template": "devin",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-devin-40115813586-1.json",
+      "sha256": "b70c93ca8d1ae9b69f14cfa31f1e77df56779610239f17417c74bc9b085e1b9c"
+    },
+    {
+      "template": "document-tools",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 4,
+      "smoke_with_expect": 4,
+      "report": "public-launch-opensandbox-document-tools-40115813586-1.json",
+      "sha256": "648ad63550010faac5260eb74c2282e5984ebf12d13ec09b23c91bf695b32b2a"
+    },
+    {
+      "template": "droid",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-droid-40115813586-1.json",
+      "sha256": "edb845f97ccf89d8519e512bb66c4d7a381e4cb4ff908186a45a59cea727a658"
+    },
+    {
+      "template": "gemini",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-gemini-40115813586-1.json",
+      "sha256": "29f3eb900d71ea66602f24dccec857cf751de0d10055b94053fd7a7427af164c"
+    },
+    {
+      "template": "goose",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-goose-40115813586-1.json",
+      "sha256": "9e3ad83c05dc64d79d5267584be9d6470f1caaf8101fcd5b2192a52d24114d41"
+    },
+    {
+      "template": "grok",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-grok-40115813586-1.json",
+      "sha256": "3903c34829df9a2349b82a3d36ade0082821f90b2ce733859750388cdd4efa1c"
+    },
+    {
+      "template": "hermes-agent",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 0,
+      "report": "public-launch-opensandbox-hermes-agent-40115813586-1.json",
+      "sha256": "b45d0de4b0da8856dd2d836a86ea6f6c92557bced345d6b5bee532a78e7fbff2"
+    },
+    {
+      "template": "kimi-code",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-kimi-code-40115813586-1.json",
+      "sha256": "d209219295739d772118d0f54cd0207c0c5b28120e48e34ea7c834ce457f82bf"
+    },
+    {
+      "template": "media-tools",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 4,
+      "smoke_with_expect": 4,
+      "report": "public-launch-opensandbox-media-tools-40115813586-1.json",
+      "sha256": "aa124aa275f6f22899f7caec6eaf1709836d6cc76bb0ee440f63cad129b1369b"
+    },
+    {
+      "template": "muse",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-opensandbox-muse-40115813586-1.json",
+      "sha256": "69a17f0aaaab79d8751ab4ed42e3ea2d89e7b88e1cee1700a57ad61ebc6c4693"
+    },
+    {
+      "template": "next-app",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-opensandbox-next-app-40115813586-1.json",
+      "sha256": "feb948651798ca9e1ed523268f760145036c9c7f67acd410342927e2056ab72a"
+    },
+    {
+      "template": "node-web",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-node-web-40115813586-1.json",
+      "sha256": "865a304e1d0821ca6ada319c94a880632b361c9823f480e24cf77808205b0d09"
+    },
+    {
+      "template": "ocr",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-ocr-40115813586-1.json",
+      "sha256": "22035f53d1c7314535ca95173f8c2963d7192922b3abc660798fe601989b6bbb"
+    },
+    {
+      "template": "openclaw",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-openclaw-40115813586-1.json",
+      "sha256": "8c469f32ba987d3ec62aa4caead7c58aebd680eaec7affb32b7ab4352078ab8a"
+    },
+    {
+      "template": "opencode",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-opensandbox-opencode-40115813586-1.json",
+      "sha256": "402c1797b0bd5cc11d9fc01018845923cddc7bc256ff8481561865ae74acdc43"
+    },
+    {
+      "template": "osworld",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-osworld-40115813586-1.json",
+      "sha256": "db089894ac82da37fd5c5750dece17dd4f5a4bf3b129d0fc2edb468155bfb0e5"
+    },
+    {
+      "template": "pi",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-opensandbox-pi-40115813586-1.json",
+      "sha256": "af3852e7735ae31f7473c046e021b537ebaaee619675625c49383e220e459468"
+    },
+    {
+      "template": "polyglot-toolchain",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-polyglot-toolchain-40115813586-1.json",
+      "sha256": "c34f5da9c18354f5380bd86d8d2af1779c0333ce35d732f55be8be52ae0052e4"
+    },
+    {
+      "template": "prime-agent",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-opensandbox-prime-agent-40115813586-1.json",
+      "sha256": "3b7d6e7107745746c00554d271d9c584393e3699fd31bf21db65d5990d73607d"
+    },
+    {
+      "template": "python-hello",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-opensandbox-python-hello-40115813586-1.json",
+      "sha256": "5156882d4b3c131b6f084bb7c90a1989d96ebd503caad1cecf343f6c6d476fa6"
+    },
+    {
+      "template": "qm",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-opensandbox-qm-40115813586-1.json",
+      "sha256": "2b21692cfaa296457a707f0536f9b125ddb56572b147084290883d2e58eab962"
+    },
+    {
+      "template": "qm-sandbox",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-opensandbox-qm-sandbox-40115813586-1.json",
+      "sha256": "5eca84ff32d6ab0cf52b824c926b8713b483b0953010ec9750b5763ab8c5e831"
+    },
+    {
+      "template": "qoder",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-qoder-40115813586-1.json",
+      "sha256": "a40fe234000ff0a5060699bed3714e42a79585f502b9aa009af6c3beec731f8f"
+    },
+    {
+      "template": "qwen-code",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-qwen-code-40115813586-1.json",
+      "sha256": "042a31b8e247577c06237999dd2dd92592793af9cf86bc02c8db07277cc1c1c8"
+    },
+    {
+      "template": "stagehand",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 2,
+      "smoke_with_expect": 2,
+      "report": "public-launch-opensandbox-stagehand-40115813586-1.json",
+      "sha256": "63e9cfbed7dac699bc51e67f11b83c3d7aae6c10d48fe4a89be16f1170f57fb9"
+    },
+    {
+      "template": "swe",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-swe-40115813586-1.json",
+      "sha256": "8b46f1eea63f13cccd6d462fd456c07bcc946a08138406e3d879604fa97e7464"
+    },
+    {
+      "template": "tau2-bench",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "smoke_count": 1,
+      "smoke_with_expect": 1,
+      "report": "public-launch-opensandbox-tau2-bench-40115813586-1.json",
+      "sha256": "6821b6a8e9ad1e612bb1d49f10ea6cd6412c9c85474809925bfa39496ac02afc"
+    }
+  ]
+}

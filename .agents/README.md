@@ -64,6 +64,8 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 
 ## Current review
 
+- [Complete public-template launch evidence](notes/proposed/process/2026-10-24-public-template-matrix.md) · [92-case matrix](evidence/verify/2026-10-24-public-template-matrix.md) · [public-install pilot](evidence/verify/2026-10-24-public-install-pilot-2.md) · [public Git journeys](evidence/verify/2026-10-24-public-git-journeys.md)
+
 - [Final verification overview](notes/proposed/process/2026-10-21-final-acceptance-overview.md) · [verification](evidence/verify/2026-10-21-final-acceptance-overview.md)
 
 - [Node Web HTTP output protocol](notes/proposed/process/2026-10-16-node-web-http-output.md)

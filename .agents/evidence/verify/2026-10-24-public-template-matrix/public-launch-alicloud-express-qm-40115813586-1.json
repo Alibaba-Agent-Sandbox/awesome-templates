@@ -1,0 +1,75 @@
+{
+  "result": "PASS",
+  "template": "qm",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch + manifest smoke via host CLI, Python and HTTP; no real-model acceptance",
+  "source": "local-candidate/qm",
+  "manifest_sha256": "c8aabef71607102331fe5eca81d9050a3ad31f4b426f86ead8a4272e9b24c5ec",
+  "cli_version": "abx, version 0.4.16",
+  "python_client_version": "0.3.1a5",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "qm_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "qm_native_check",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "installed_packages": {
+    "cli": {
+      "name": "@agent-sandbox/cli",
+      "version": "0.4.16",
+      "registry": "https://registry.npmjs.org",
+      "source_ref": "413d575a688bd6f870c42c711d11346d176e0f38"
+    },
+    "python_client": {
+      "name": "agent-sandbox-client",
+      "version": "0.3.1a5",
+      "registry": "https://pypi.org/simple",
+      "source_ref": "1b235830bc4a8cbec275b530bf2dc2869e8d0c4b"
+    },
+    "python_server": {
+      "name": "agent-sandbox-server",
+      "version": "0.3.1a5",
+      "registry": "https://pypi.org/simple",
+      "source_ref": "1b235830bc4a8cbec275b530bf2dc2869e8d0c4b"
+    },
+    "provider_source_ref": "e18489155697dcf2ee55a47b403396069d6cfa20"
+  },
+  "run_alias": "public-e2e-23ece9d1e899c40f",
+  "input_receipt": {
+    "manifest_digest": "sha256:c8aabef71607102331fe5eca81d9050a3ad31f4b426f86ead8a4272e9b24c5ec",
+    "source_digest": "cd61de2ac186cc3609df6e3d31671e372699efae5bdfc5bb9a0a9637c68c1901",
+    "provider_digest": "sha256:0edfcdc0eb10fd9fde3d81c03254c872ff040418af3b9c62d28449481941742d",
+    "provider_snapshot_digest": "43fc3aa7637b8b8a59d2dfc71f7d255006252012a9527596d0ddeaf59a5224a1",
+    "plan_digest": "a32a05fdada2a4773d89b5deb8391fc3f9754099fc3027abd9f257046e64b3bf",
+    "build_profile": null
+  },
+  "application_result": "PASS"
+}

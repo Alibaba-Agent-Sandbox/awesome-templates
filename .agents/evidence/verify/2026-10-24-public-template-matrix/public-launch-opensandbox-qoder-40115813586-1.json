@@ -1,0 +1,66 @@
+{
+  "result": "PASS",
+  "template": "qoder",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch + manifest smoke via host CLI, Python and HTTP; no real-model acceptance",
+  "source": "local-candidate/qoder",
+  "manifest_sha256": "daea5b5bb3832a5ad8bc72a8a71f3ff1bacf55117625a6aee7e8c9c7857556d5",
+  "cli_version": "abx, version 0.4.16",
+  "python_client_version": "0.3.1a5",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "qoder_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "installed_packages": {
+    "cli": {
+      "name": "@agent-sandbox/cli",
+      "version": "0.4.16",
+      "registry": "https://registry.npmjs.org",
+      "source_ref": "413d575a688bd6f870c42c711d11346d176e0f38"
+    },
+    "python_client": {
+      "name": "agent-sandbox-client",
+      "version": "0.3.1a5",
+      "registry": "https://pypi.org/simple",
+      "source_ref": "1b235830bc4a8cbec275b530bf2dc2869e8d0c4b"
+    },
+    "python_server": {
+      "name": "agent-sandbox-server",
+      "version": "0.3.1a5",
+      "registry": "https://pypi.org/simple",
+      "source_ref": "1b235830bc4a8cbec275b530bf2dc2869e8d0c4b"
+    },
+    "provider_source_ref": "e18489155697dcf2ee55a47b403396069d6cfa20"
+  },
+  "run_alias": "public-e2e-02a30709592ff432",
+  "endpoint_mode": "direct",
+  "input_receipt": {
+    "manifest_digest": "sha256:daea5b5bb3832a5ad8bc72a8a71f3ff1bacf55117625a6aee7e8c9c7857556d5",
+    "source_digest": "e5476e434ab4588a79f2748fd4e5a1f33401a30a2fe1b838afac8aca87dabf95",
+    "provider_digest": "sha256:eb53e9378fb685f1e15039b747eaf62cd7a37d1c920041d59874786c1caf157b",
+    "provider_snapshot_digest": "d9f9ba633140a47f561183eecaa285eb19e6fc656cb5adf1f83b6f6e147285bd",
+    "plan_digest": "200648d777013e16c35299e02155e7b8ae1ecda3f558def963215441730a26df",
+    "build_profile": null
+  },
+  "application_result": "PASS"
+}

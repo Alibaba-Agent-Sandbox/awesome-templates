@@ -1,0 +1,75 @@
+{
+  "result": "PASS",
+  "template": "copilot-cli",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch + manifest smoke via host CLI, Python and HTTP; no real-model acceptance",
+  "source": "local-candidate/copilot-cli",
+  "manifest_sha256": "5f1207869ed161c7a2bba76de6f416a0ce6f12104f557b63021ef7059f15171a",
+  "cli_version": "abx, version 0.4.16",
+  "python_client_version": "0.3.1a5",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "copilot_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "copilot_setup_check",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": false
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "installed_packages": {
+    "cli": {
+      "name": "@agent-sandbox/cli",
+      "version": "0.4.16",
+      "registry": "https://registry.npmjs.org",
+      "source_ref": "413d575a688bd6f870c42c711d11346d176e0f38"
+    },
+    "python_client": {
+      "name": "agent-sandbox-client",
+      "version": "0.3.1a5",
+      "registry": "https://pypi.org/simple",
+      "source_ref": "1b235830bc4a8cbec275b530bf2dc2869e8d0c4b"
+    },
+    "python_server": {
+      "name": "agent-sandbox-server",
+      "version": "0.3.1a5",
+      "registry": "https://pypi.org/simple",
+      "source_ref": "1b235830bc4a8cbec275b530bf2dc2869e8d0c4b"
+    },
+    "provider_source_ref": "e18489155697dcf2ee55a47b403396069d6cfa20"
+  },
+  "run_alias": "public-e2e-4af3d9ce1556b6b0",
+  "input_receipt": {
+    "manifest_digest": "sha256:5f1207869ed161c7a2bba76de6f416a0ce6f12104f557b63021ef7059f15171a",
+    "source_digest": "44bae7c15136b92e4ef8f690b16f3137f57db73612fbce3a0bc4bdbf496cc15b",
+    "provider_digest": "sha256:0edfcdc0eb10fd9fde3d81c03254c872ff040418af3b9c62d28449481941742d",
+    "provider_snapshot_digest": "43fc3aa7637b8b8a59d2dfc71f7d255006252012a9527596d0ddeaf59a5224a1",
+    "plan_digest": "b92e58a36baf615fbd72c13eadc7afef48b438c94e625eeb016d823e04103e2f",
+    "build_profile": null
+  },
+  "application_result": "PASS"
+}

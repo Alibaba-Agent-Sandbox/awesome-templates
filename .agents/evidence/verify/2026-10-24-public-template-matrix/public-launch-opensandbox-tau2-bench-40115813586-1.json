@@ -1,0 +1,66 @@
+{
+  "result": "PASS",
+  "template": "tau2-bench",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch + manifest smoke via host CLI, Python and HTTP; no real-model acceptance",
+  "source": "local-candidate/tau2-bench",
+  "manifest_sha256": "c14c6de8eb811bf72da7755e1a39e16340547363f74845f30d2b61ed76c23b8a",
+  "cli_version": "abx, version 0.4.16",
+  "python_client_version": "0.3.1a5",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "tau2_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "installed_packages": {
+    "cli": {
+      "name": "@agent-sandbox/cli",
+      "version": "0.4.16",
+      "registry": "https://registry.npmjs.org",
+      "source_ref": "413d575a688bd6f870c42c711d11346d176e0f38"
+    },
+    "python_client": {
+      "name": "agent-sandbox-client",
+      "version": "0.3.1a5",
+      "registry": "https://pypi.org/simple",
+      "source_ref": "1b235830bc4a8cbec275b530bf2dc2869e8d0c4b"
+    },
+    "python_server": {
+      "name": "agent-sandbox-server",
+      "version": "0.3.1a5",
+      "registry": "https://pypi.org/simple",
+      "source_ref": "1b235830bc4a8cbec275b530bf2dc2869e8d0c4b"
+    },
+    "provider_source_ref": "e18489155697dcf2ee55a47b403396069d6cfa20"
+  },
+  "run_alias": "public-e2e-9daea353437145cc",
+  "endpoint_mode": "direct",
+  "input_receipt": {
+    "manifest_digest": "sha256:c14c6de8eb811bf72da7755e1a39e16340547363f74845f30d2b61ed76c23b8a",
+    "source_digest": "dca5e8b0173e9daed13f04ed11b23c3e0980a287feb30c68e806b603b4ebfd74",
+    "provider_digest": "sha256:eb53e9378fb685f1e15039b747eaf62cd7a37d1c920041d59874786c1caf157b",
+    "provider_snapshot_digest": "d9f9ba633140a47f561183eecaa285eb19e6fc656cb5adf1f83b6f6e147285bd",
+    "plan_digest": "9bcc16095e517840ce93c71b0f9fd35860f129b66959d5195226b32fd3c1790d",
+    "build_profile": null
+  },
+  "application_result": "PASS"
+}
