@@ -6,7 +6,7 @@
 
 清单显式声明 `provides`、`workflows` 和 `default_workflow`。规划器只检查选中路径的操作、输入种类和启动方式；Provider 的成熟度与该路径是否已验证独立。
 
-源码准备由对应 adapter 构建、推送并按平台协议注册。保留 Dockerfile 的 FROM、USER、COPY 和 ENTRYPOINT；不读取 `build_base_image` 替换输入。占位符未显式解析时，构建前检查失败。应用部署 hooks 仍只由应用部署操作执行。
+源码准备由对应 adapter 构建、推送并按平台协议注册。CLI 在临时构建目录解析官方配方的 `<region>`/`<tag>`，通过 Docker 阶段准备固定版本服务端 wheel。应用指令、非 root USER 和源码文件不变；其他未解析占位符在构建前报错，自定义基础镜像使用显式构建方案。应用部署 hooks 仍只由应用部署操作执行。
 
 ## 路径条件
 

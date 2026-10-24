@@ -8,93 +8,61 @@ separate check that does not establish image deployment acceptance.
 
 ## Installation
 
-On 2026-10-18 public 0.3.0 metadata for `@agent-sandbox/cli`,
-`agent-sandbox-client` and `agent-sandbox-server` returned HTTP 404. Package
-names alone are not proof of publication. Install the paired Python packages
-using [the pinned source instructions](python-client-installation.md).
-For a reproducible CLI source build with Node 20 or 22:
+Install the published CLI and preview Python SDK (Node 22+ is recommended for terminal support):
 
 ```bash
-git clone https://github.com/Alibaba-Agent-Sandbox/agent-sandbox.git agent-sandbox-cli
-git -C agent-sandbox-cli checkout 850a9bb780c44857630ac7928c2361c7be270921
-npm --prefix agent-sandbox-cli ci
-npm --prefix agent-sandbox-cli run build
-ABX_CLI_ENTRY="$(pwd)/agent-sandbox-cli/dist/bin/abx.js"
-abx() { node "$ABX_CLI_ENTRY" "$@"; }
+npm install -g @agent-sandbox/cli@0.4.14
+python3 -m pip install 'agent-sandbox-client==0.3.1a2'
 abx --version
 ```
 
-This shell function invokes the built entry by absolute path. For standalone
-binaries follow the CLI owner's [installation guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/guide/binary-installation.md)
-and verify the selected release exists before downloading it. Source pins here
-identify a setup baseline; they do not validate later template/SDK/CLI revisions.
-
-Configure the provider securely before deployment. Express sandbox calls need
-`ABX_SANDBOX_API_KEY` and the matching `ABX_SANDBOX_BASE_URL` and
-`ABX_SANDBOX_DOMAIN`. Docker/ACR template deployment additionally needs a working
-Docker daemon, authorized Alibaba control-plane credentials and ACR namespace.
-Do not paste credentials into shell command arguments, reports or Issues.
+For standalone binaries, follow the [CLI installation guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/guide/binary-installation.md). Docker and a writable image registry are needed to build source templates. Configure the selected provider using its guide; keep credentials in environment variables or the provider configuration.
 
 ## CLI, SDK and HTTP
 
-From this repository checkout, with Express configured, deploy the selected
-folder. For `python-hello`:
+For Express, configure its Sandbox API key, base URL/domain, control-plane credentials and ACR namespace. Set `ABX_SERVER_TOKEN` securely before launching the application:
 
 ```bash
-abx template deploy ./python-hello -y
-abx create <template-id> --detach
+abx --provider alicloud-express template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello --yes
 abx sandbox command list <sandbox-id>
 abx run <sandbox-id> hello --arg name=Ada
 ```
 
-Replace angle-bracket placeholders with IDs from the preceding command; they
-are not literal shell syntax. `abx run` calls a registered command. `abx exec`
-is the process/shell API. Use `--json-args` for typed numeric/boolean arguments.
-Template-specific READMEs show complete examples for their own commands.
+Launch returns the sandbox ID and prepared template reference. The CLI starts the application for this instance. `abx run` calls a named template command; `abx exec` runs a process. Use `--json-args` for numeric/boolean arguments.
+
+Connect the Python SDK to that running instance. Creating another instance from its template reference requires its own application startup; it does not inherit the first instance's running process.
 
 ```python
 import asyncio
-from agent_sandbox.api.sandbox import Sandbox
+import os
+from agent_sandbox import ProviderSandbox
 
 async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
+    sb = await ProviderSandbox.connect("<sandbox-id>", provider="alicloud-express")
     try:
-        print(await sb.run("hello", name="Ada"))
-        print(sb.network.get_url(9000))
+        client = await sb.application_client(9000, token=os.environ["ABX_SERVER_TOKEN"])
+        try:
+            print(await client.commands.run("hello", name="Ada"))
+        finally:
+            await client.aclose()
     finally:
-        await sb.kill()
         await sb.close()
 
 asyncio.run(main())
 ```
 
-The SDK returns the `result` value. Use the printed URL as `ABX_SERVER_URL`:
+For HTTP, use the port URL from `abx sandbox url <sandbox-id> --port 9000` as `ABX_SERVER_URL`:
 
 ```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/hello"   --header 'Content-Type: application/json' --data '{"name":"Ada"}'
+curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/hello"   --header 'Content-Type: application/json'   --header "Authorization: Bearer $ABX_SERVER_TOKEN" --data '{"name":"Ada"}'
 # {"result":"Hello, Ada!"}
 ```
 
-Arguments are the direct JSON body, without an `args` wrapper. `GET /commands`
-discovers public commands. Server authentication is separate from provider and
-gateway credentials. An anonymous Express port-9000 server does not need the
-envd token. If `ABX_SERVER_TOKEN` is configured, send that server token in an
-Authorization Bearer header; use `await sb.application_client(9000, token=...)`
-and close the returned application client in the SDK. Authentication failures do
-not trigger an anonymous retry.
-A provider that requires gateway access headers additionally needs its documented
-headers. Do not send one provider's key to another provider.
+Arguments are the direct JSON body. A provider gateway may additionally require its own access header; the Python application client resolves that header automatically. A failed authentication is an error, never a reason to retry anonymously.
 
-Missing/invalid command arguments return 400, failed server auth 401, unknown
-commands 404 and execution failures 500 with `error` and `type`. A caller timeout
-does not prove remote cancellation. Each README documents command-specific
-timeouts, processes and cleanup. Delete the created sandbox and only the template
-you own when finished:
+When finished, delete the instance with `abx kill <sandbox-id>`. The launch journal identifies the prepared template and image retained for reuse. Delete those exact owned resources separately when they are no longer needed. Connecting a client does not transfer ownership or automatically delete the instance.
 
-```bash
-abx kill <sandbox-id>
-abx template delete <template-id> -y
-```
+For OpenSandbox, install/configure the [provider](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md) and select `--provider opensandbox` on every CLI call and `provider="opensandbox"` when connecting Python. The updated CLI materializes the default source recipe; this requires the materialization fix newer than 0.4.14. The existing 0.4.14 alternative for python-hello is its explicit `--build-profile portable`. Do not claim the default route is released until the corrected CLI is published.
 
 ## Evidence and providers
 
@@ -108,16 +76,9 @@ abx template delete <template-id> -y
 | L3 product/model | The recorded task and independently checked result | A different template source/version or all upstream product behavior |
 | L4 another provider | The actual recorded provider and workload | Unconfigured vendors |
 
-`tested_on` and the README Verified table must match a passing, exact-version
-provider evidence file. Keep previous evidence as history; never transfer its
-badge to changed code. A green image job or skipped model/provider is not a pass
-for another tier. Existing draft PRs must retain these boundaries.
+The [2026-10-22 matrix](../.agents/evidence/verify/2026-10-22-source-image-backend-matrix.json) records 46 source templates passing Express image/HTTP and OpenSandbox image/HTTP checks. [Steps results](../.agents/evidence/verify/2026-10-22-current-steps-after-backend-qualification.json) record the separate Express steps route. These are real historical tests, with the original inputs and calling paths. OpenSandbox used sandbox-local/bridge HTTP; those results do not certify later host `template launch` changes or unrun model tasks.
 
-Only the Express Dockerfile workflow is supplied by these catalog sources.
-Installed provider plugins have their own declared capabilities. An image URI or
-pre-existing template ID accepted by a provider does not establish that it can
-build/deploy this catalog. Consult the provider's own README and test on that
-provider before adding a verification badge.
+A missing record means no matching test record, not an unsupported platform. Read the date, template input, provider, build method and executed checks; do not infer terminal or interpreter coverage from a command API pass. Historical receipts remain unchanged.
 
 ## Documentation and catalog ownership
 

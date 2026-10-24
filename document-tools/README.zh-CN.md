@@ -146,7 +146,7 @@ Office限制2GiB地址空间及60–61秒CPU；Pandoc保留1GiB地址空间、25
 
 ## 已验证
 
-当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
+参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
 
 ## 1.0历史验证
 
@@ -156,15 +156,6 @@ Office限制2GiB地址空间及60–61秒CPU；Pandoc保留1GiB地址空间、25
 | alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
 
 该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
-
-<details>
-<summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
-
-尚未记录任何通过的提供方测试。
-
-记录的运行时代码已实际通过镜像 L1 和专门的原生/SDK/HTTP CI，见 [CI 确认](../.agents/evidence/verify/2026-10-18-document-tools-ci-confirmation.md)。本地准备及首次远端失败保留在[原始记录](../.agents/evidence/verify/2026-10-18-document-tools-runtime.md)。canonical L2 尚未运行；保持 experimental 和空 `tested_on`。
-
-</details>
 
 ## 二次开发
 

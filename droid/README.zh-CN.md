@@ -205,7 +205,7 @@ Factory 凭据在 [Factory API 密钥设置](https://app.factory.ai/settings/api
 
 ## 已验证
 
-当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
+参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
 
 ## 历史验收
 
@@ -214,15 +214,6 @@ Factory 凭据在 [Factory API 密钥设置](https://app.factory.ai/settings/api
 | alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
 
 该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
-
-<details>
-<summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
-
-2026-10-18 源码运行验收：原生 Python SDK 完成固定版本 Droid 后台安装、SDK 无密钥版本/配置检查、外部 HTTP 套件与自有资源清理，九项记录均通过。见[准确范围证据](../.agents/evidence/verify/2026-10-18-droid-native-runtime.md)。这不是镜像标准部署 L2 或模型验收，`tested_on` 不变。
-
-尚未记录通过的标准镜像部署厂商验收。
-
-</details>
 
 ## 二次开发
 

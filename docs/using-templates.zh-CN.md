@@ -6,84 +6,61 @@
 
 ## 安装
 
-2026-10-18 查询 `@agent-sandbox/cli`、`agent-sandbox-client` 和
-`agent-sandbox-server` 的公开 0.3.0 元数据均返回 HTTP 404。包名不代表已发布。
-Python 客户端和服务端须按[固定提交的双包说明](python-client-installation.md)
-一起安装。CLI 使用 Node 20 或 22，可从固定源码构建：
+安装已发布的 CLI 和 Python SDK 预览版；需要终端能力时建议 Node 22+：
 
 ```bash
-git clone https://github.com/Alibaba-Agent-Sandbox/agent-sandbox.git agent-sandbox-cli
-git -C agent-sandbox-cli checkout 850a9bb780c44857630ac7928c2361c7be270921
-npm --prefix agent-sandbox-cli ci
-npm --prefix agent-sandbox-cli run build
-ABX_CLI_ENTRY="$(pwd)/agent-sandbox-cli/dist/bin/abx.js"
-abx() { node "$ABX_CLI_ENTRY" "$@"; }
+npm install -g @agent-sandbox/cli@0.4.14
+python3 -m pip install 'agent-sandbox-client==0.3.1a2'
 abx --version
 ```
 
-该 shell 函数通过绝对路径调用构建入口。独立二进制参见 CLI 仓库的
-[安装指南](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/zh/guide/binary-installation.md)，
-下载前确认目标 release 实际存在。这里的源码提交只是安装基线，不能证明后续
-模板、SDK 或 CLI 版本已经验收。
-
-部署前通过安全配置提供凭据。Express 沙箱调用需要 `ABX_SANDBOX_API_KEY`
-及对应的 `ABX_SANDBOX_BASE_URL`、`ABX_SANDBOX_DOMAIN`。Docker/ACR 模板部署
-还需要可用 Docker daemon、授权的阿里云控制面凭据和 ACR namespace。
-不要把密钥放进命令参数、报告或 Issue。
+独立二进制见 [CLI 安装指南](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/zh/guide/binary-installation.md)。构建源码模板需要 Docker 和可写镜像仓库。按所选 provider 的指南配置账号，将凭据放在环境变量或配置文件中。
 
 ## CLI、SDK 与 HTTP
 
-在模板仓库中、Express 配置完成后部署目标目录，以 `python-hello` 为例：
+极速版需配置 Sandbox API key、base URL/domain、控制面凭据和 ACR namespace。安全设置 `ABX_SERVER_TOKEN` 后启动应用：
 
 ```bash
-abx template deploy ./python-hello -y
-abx create <template-id> --detach
+abx --provider alicloud-express template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello --yes
 abx sandbox command list <sandbox-id>
 abx run <sandbox-id> hello --arg name=Ada
 ```
 
-尖括号内容须替换为上一条命令返回的 ID，不是可直接执行的 shell 语法。
-`abx run` 调用注册命令；`abx exec` 是进程/脚本接口。数字和布尔参数使用
-`--json-args`。每个模板 README 展示自己的具体调用示例。
+启动结果包含沙箱 ID 和已准备的模板引用。CLI 负责启动这个实例的应用服务。`abx run` 调用模板命名命令，`abx exec` 执行进程，数值或布尔参数使用 `--json-args`。
+
+Python 连接这个已运行的实例。使用模板引用另建实例时，需要为新实例单独启动应用；原实例的运行进程不会继承过去。
 
 ```python
 import asyncio
-from agent_sandbox.api.sandbox import Sandbox
+import os
+from agent_sandbox import ProviderSandbox
 
 async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
+    sb = await ProviderSandbox.connect("<sandbox-id>", provider="alicloud-express")
     try:
-        print(await sb.run("hello", name="Ada"))
-        print(sb.network.get_url(9000))
+        client = await sb.application_client(9000, token=os.environ["ABX_SERVER_TOKEN"])
+        try:
+            print(await client.commands.run("hello", name="Ada"))
+        finally:
+            await client.aclose()
     finally:
-        await sb.kill()
         await sb.close()
 
 asyncio.run(main())
 ```
 
-SDK 返回 `result` 的值。将打印的网址设为 `ABX_SERVER_URL`，可直接 POST：
+HTTP 使用 `abx sandbox url <sandbox-id> --port 9000` 返回的网址作为 `ABX_SERVER_URL`：
 
 ```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/hello"   --header 'Content-Type: application/json' --data '{"name":"Ada"}'
+curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/hello"   --header 'Content-Type: application/json'   --header "Authorization: Bearer $ABX_SERVER_TOKEN" --data '{"name":"Ada"}'
 # {"result":"Hello, Ada!"}
 ```
 
-请求体直接是参数 JSON，不包一层 `args`。`GET /commands` 发现公开命令。
-服务端鉴权、厂商凭据和网关鉴权是独立的。Express 的匿名 9000 端口服务不需要
-转发 envd token。若配置 `ABX_SERVER_TOKEN`，HTTP 加服务端 token 的 Bearer
-头，SDK 使用 `await sb.application_client(9000, token=...)` 并关闭返回的应用客户端。
-认证失败不会触发匿名重试。需要网关访问头的厂商还要带上
-其文档规定的头。不要把一个厂商的密钥发送给另一个厂商。
+请求体直接是参数 JSON。provider 网关可能还要求自己的访问头；Python application client 会自动解析。认证失败直接报错，不匿名重试。
 
-缺失/非法参数返回 400，服务端鉴权失败 401，未知命令 404，执行失败 500，
-错误体含 `error`、`type`。客户端超时不能证明远端操作已取消；具体执行期限、
-进程和清理约定查模板 README。结束后删除本次沙箱及自己拥有的模板：
+用完执行 `abx kill <sandbox-id>` 删除实例。启动记录中列出保留供复用的模板和镜像；不再需要时，单独删除这些确切属于本次的资源。连接客户端不转移资源归属，也不自动销毁实例。
 
-```bash
-abx kill <sandbox-id>
-abx template delete <template-id> -y
-```
+OpenSandbox 先安装配置 [provider](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)，每条 CLI 命令指定 `--provider opensandbox`，Python 连接指定 `provider="opensandbox"`。默认源码配方由新版 CLI 准备，此修复尚不包含在 0.4.14；该版本的 python-hello 可显式选择 `--build-profile portable`。修复版本发布前，不能把默认路径写成已经发布。
 
 ## 验收与厂商
 
@@ -97,13 +74,9 @@ abx template delete <template-id> -y
 | L3 产品/模型 | 记录中的任务和独立验证结果 | 其他源码/版本或上游所有能力 |
 | L4 其他厂商 | 实际测试的厂商及工作负载 | 没有配置的其他厂商 |
 
-`tested_on` 与 README 已验证表必须对应当前版本通过的厂商证据。保留历史记录，
-但不要把旧版本徽章复制到新代码。镜像 CI 绿色不等于其他层级通过；跳过也不是
-通过。现有草稿 PR 继续遵守这些边界。
+[2026-10-22 矩阵](../.agents/evidence/verify/2026-10-22-source-image-backend-matrix.json)记录了 46 个源码模板的 Express 镜像/HTTP 与 OpenSandbox 镜像/HTTP 测试通过；[steps 记录](../.agents/evidence/verify/2026-10-22-current-steps-after-backend-qualification.json)对应另一条 Express 构建路径。这些是真实历史测试，保留当时输入和入口。OpenSandbox 使用沙箱内或 bridge HTTP，不能证明后来新增的宿主 `template launch` 或未执行的模型任务。
 
-目录源码提供 Express Dockerfile 工作流。已安装提供方各有自己的能力声明；
-能接受镜像 URI 或已有模板 ID，不等于能构建和部署这些 Dockerfile。先读厂商
-README，并完成该厂商实际测试，再增加已验证标记。
+没有匹配记录不等于平台不支持。查看测试日期、模板输入、provider、构建方式和实际检查内容；命名 API 通过不能推出终端或解释器也通过。历史收据保持原样。
 
 ## 文档与目录归属
 

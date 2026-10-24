@@ -86,7 +86,7 @@ The legacy `rootfs_used_bytes` and `rootfs_free_bytes` response keys are visible
 
 ## Verified
 
-No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
+See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
 
 ## Secondary development
 

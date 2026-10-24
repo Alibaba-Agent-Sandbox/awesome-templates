@@ -219,7 +219,7 @@ memory and latency have not been measured; no image-size acceptance is claimed.
 
 ## Verified
 
-No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
+See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
 
 ## Historical verification
 
@@ -228,26 +228,6 @@ No project-recognized receipt certifies the current workflow manifest. Historica
 | alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
 
 This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
-
-<details>
-<summary>Earlier checkpoint text (historical; current steps result is above)</summary>
-
-On 2026-10-16 the reviewed actual CI image passed the owned Express/Qwen SDK
-coding slice: real `qwen3.8-flash` session, changed existing source, original tests
-unchanged, exact artifact/report, complete unittest modules and six held-out cases.
-All eight cleanup flags passed, followed by five independent read-only absence
-checks. See [image/SDK evidence](./evidence/qwen-image-sdk-2026-10-16.json) and
-[strict readbacks](./evidence/qwen-image-sdk-strict-readback-2026-10-16.json).
-
-The image came from source `a361f49` and official artifact12026073735; the host
-verifier ran frozen `1f975ff`. Product commands/policy/Dockerfile/YAML are identical
-between these commits. No source was overlaid into the image. This is actual
-image registration/SDK/model evidence, separate from the complete local
-`abx template deploy` wrapper, which was not run. Formal `tested_on` remains empty;
-Codex coding and other providers remain unverified by this suite. Fixture
-protocol tests and model-disabled HTTP checks are recorded separately.
-
-</details>
 
 ## Secondary development
 
