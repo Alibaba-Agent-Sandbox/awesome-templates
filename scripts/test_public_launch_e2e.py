@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from public_launch_e2e import CLI, command_url, load_plan, matches, source_names, cleanup_prepared
+from public_launch_e2e import CLI, command_url, load_plan, matches, source_names, cleanup_prepared, cleanup_before_close, delete_sandbox
 
 
 class PublicLaunchTests(unittest.TestCase):
@@ -43,6 +43,36 @@ class PublicLaunchTests(unittest.TestCase):
 
 
 class CleanupTests(unittest.IsolatedAsyncioTestCase):
+    async def test_client_close_failure_does_not_skip_resource_cleanup(self):
+        events = []
+        async def release():
+            events.extend(['sandbox deleted', 'template deleted', 'image deleted'])
+        class Client:
+            async def aclose(self):
+                events.append('application close')
+                raise RuntimeError('local HTTP close failure')
+        class Sandbox:
+            async def close(self):
+                events.append('sandbox close')
+        self.assertEqual(await cleanup_before_close(release, Client(), Sandbox()), ['RuntimeError'])
+        self.assertEqual(events, ['sandbox deleted', 'template deleted', 'image deleted', 'application close', 'sandbox close'])
+
+    async def test_delete_polls_control_plane_without_reconnect(self):
+        class NotFound(Exception):
+            pass
+        events = []
+        class API:
+            @staticmethod
+            async def kill_by_id(sid, **kwargs):
+                events.append('delete')
+            @staticmethod
+            async def get_info_by_id(sid, **kwargs):
+                events.append('get')
+                if events.count('get') == 3:
+                    raise NotFound()
+        await delete_sandbox(API, 'owned', 'opensandbox', NotFound, delay=0)
+        self.assertEqual(events, ['delete', 'get', 'get', 'get'])
+
     async def test_unknown_registry_and_uncertain_intents_are_retained(self):
         entries = [
             {'intent_id': 'one', 'kind': 'image', 'state': 'retained', 'id': 'unfamiliar.invalid/team/image@sha256:' + 'a' * 64,

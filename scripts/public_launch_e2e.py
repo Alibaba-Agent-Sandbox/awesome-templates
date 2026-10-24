@@ -166,6 +166,38 @@ async def cleanup_prepared(entries, cli, alias):
     return done, failures
 
 
+async def cleanup_before_close(release_resources, client, sandbox):
+    """Local HTTP close errors must never prevent deleting cloud resources."""
+    errors = []
+    try:
+        await release_resources()
+    except Exception as failure:
+        errors.append(type(failure).__name__)
+    finally:
+        for target, method in [(client, 'aclose'), (sandbox, 'close')]:
+            if target is not None:
+                try:
+                    await getattr(target, method)()
+                except Exception as failure:
+                    errors.append(type(failure).__name__)
+    return errors
+
+
+async def delete_sandbox(api, sid, provider, not_found, delay=1):
+    try:
+        await api.kill_by_id(sid, provider=provider)
+    except not_found:
+        pass
+    for attempt in range(10):
+        try:
+            await api.get_info_by_id(sid, provider=provider)
+        except not_found:
+            return
+        if attempt < 9:
+            await asyncio.sleep(delay)
+    raise AssertionError('owned sandbox remains after deletion')
+
+
 async def verify(args):
     from agent_sandbox import ProviderSandbox
     from agent_sandbox.models.errors import SandboxNotFoundError
@@ -250,54 +282,39 @@ async def verify(args):
         if isinstance(failure, AssertionError):
             report['failed_check'] = str(failure)
     finally:
-        if client is not None:
-            await client.close()
-        journals = []
-        for path in set(journal_dir.glob('*.json')) - original_journals:
-            data = json.loads(path.read_text())
-            if data.get('provider') == args.provider and any(
-                alias + '-' in str(entry.get('correlation_key', '')) for entry in data.get('entries', [])):
-                journals.append(data)
-        entries = [entry for journal in journals for entry in journal.get('entries', [])]
-        ids = {entry['id'] for entry in entries if entry['kind'] == 'sandbox' and entry.get('id')}
-        if launch:
-            ids.add(launch['sandbox_id'])
-        cleanup_failed = False
-        for sid in ids:
-            owned = None
-            try:
+        async def release_resources():
+            journals = []
+            for path in set(journal_dir.glob('*.json')) - original_journals:
+                data = json.loads(path.read_text())
+                if data.get('provider') == args.provider and any(
+                    alias + '-' in str(entry.get('correlation_key', '')) for entry in data.get('entries', [])):
+                    journals.append(data)
+            entries = [entry for journal in journals for entry in journal.get('entries', [])]
+            ids = {entry['id'] for entry in entries if entry['kind'] == 'sandbox' and entry.get('id')}
+            if launch:
+                ids.add(launch['sandbox_id'])
+            cleanup_failed = False
+            for sid in ids:
                 try:
-                    owned = await ProviderSandbox.connect(sid, provider=args.provider)
-                except SandboxNotFoundError:
-                    continue
-                await owned.kill()
-                # Read independently through a new connection; DELETE acknowledgement is insufficient.
-                try:
-                    remaining = await ProviderSandbox.connect(sid, provider=args.provider)
-                except SandboxNotFoundError:
-                    pass
-                else:
-                    await remaining.close()
-                    raise AssertionError('owned sandbox remains after deletion')
-            except Exception:
-                cleanup_failed = True
-            finally:
-                if owned:
-                    await owned.close()
-        if sandbox:
-            await sandbox.close()
-        report['cleanup']['sandbox'] = 'failed' if cleanup_failed else ('confirmed absent' if ids else 'not observed')
-        prepared_done, prepared_failures = await cleanup_prepared(entries, cli, alias)
-        cleanup_failed = cleanup_failed or prepared_failures > 0
-        pending = [entry for entry in entries if entry['kind'] != 'sandbox' and entry.get('state') != 'deleted' and entry['intent_id'] not in prepared_done]
-        unknown = [entry for entry in entries if entry.get('state') in {'intent', 'uncertain'}]
-        report['cleanup']['prepared_artifacts'] = 'retained in private CLI journal' if pending else ('confirmed absent' if prepared_done else 'none observed')
-        report['cleanup']['artifact_cleanup_failures'] = prepared_failures
-        report['cleanup']['retained_artifact_count'] = len(pending)
-        report['cleanup']['uncertain_count'] = len(unknown)
-        # A successful application test cannot silently certify registry/template cleanup.
-        if report.get('application_result') == 'PASS' and not cleanup_failed:
-            report['result'] = 'PARTIAL' if pending or unknown or not journals else 'PASS'
+                    await delete_sandbox(ProviderSandbox, sid, args.provider, SandboxNotFoundError)
+                except Exception:
+                    cleanup_failed = True
+            report['cleanup']['sandbox'] = 'failed' if cleanup_failed else ('confirmed absent' if ids else 'not observed')
+            prepared_done, prepared_failures = await cleanup_prepared(entries, cli, alias)
+            cleanup_failed = cleanup_failed or prepared_failures > 0
+            pending = [entry for entry in entries if entry['kind'] != 'sandbox' and entry.get('state') != 'deleted' and entry['intent_id'] not in prepared_done]
+            unknown = [entry for entry in entries if entry.get('state') in {'intent', 'uncertain'}]
+            report['cleanup']['prepared_artifacts'] = 'retained in private CLI journal' if pending else ('confirmed absent' if prepared_done else 'none observed')
+            report['cleanup']['artifact_cleanup_failures'] = prepared_failures
+            report['cleanup']['retained_artifact_count'] = len(pending)
+            report['cleanup']['uncertain_count'] = len(unknown)
+            # A successful application test cannot silently certify registry/template cleanup.
+            if report.get('application_result') == 'PASS' and not cleanup_failed:
+                report['result'] = 'PARTIAL' if pending or unknown or not journals else 'PASS'
+        close_errors = await cleanup_before_close(release_resources, client, sandbox)
+        if close_errors:
+            report['result'] = 'FAIL'
+            report['cleanup']['errors'] = close_errors
         args.output.parent.mkdir(parents=True, exist_ok=True)
         with args.output.open('x') as stream:
             json.dump(report, stream, indent=2)

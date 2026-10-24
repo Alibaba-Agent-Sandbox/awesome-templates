@@ -42,7 +42,7 @@ async def main():
         try:
             print(await client.commands.run("hello", name="Ada"))
         finally:
-            await client.close()
+            await client.aclose()
     finally:
         await sb.close()
 

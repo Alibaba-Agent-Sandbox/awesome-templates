@@ -32,8 +32,7 @@ consumer; their output may legitimately vary. The suite does not claim real-mode
 business acceptance. The source recipes' smoke commands must be safe to repeat;
 application-specific full controllers remain separate tests.
 
-The runner deletes known owned sandboxes and confirms absence through a new SDK
-connection. For Express, it deletes journal-owned templates and reads the complete
+The runner deletes known owned sandboxes and confirms absence through independent SDK control-plane reads. For Express, it deletes journal-owned templates and reads the complete
 inventory, then removes exact owned Hangzhou ACR tags using the existing cleanup
 verifier. Other registry types remain explicit pending cleanup. For the disposable
 OpenSandbox registry it removes exact owned manifests, checks absence and removes
