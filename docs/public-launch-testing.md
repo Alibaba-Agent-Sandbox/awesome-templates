@@ -23,7 +23,9 @@ The manual **Public template launch matrix** GitHub workflow accepts exact revie
 CLI, SDK and provider commits, a comma-separated selection or `all`, and either
 backend or both. `all` currently selects 46 source templates, with at most four
 independent runners active at once. OpenSandbox uses
-its real Docker server, server-proxy endpoint and an owned local registry.
+its real Docker server, provider-resolved direct endpoint and an owned local registry.
+The workflow explicitly selects the provider default `use_server_proxy=false`; it
+does not silently fall back from proxy mode. Proxy authentication is a separate probe.
 Express uses the `PUBLIC_LAUNCH_*` credentials explicitly configured for that
 workflow. Missing credentials fail the attempt; they never become a cloud pass.
 
@@ -35,13 +37,16 @@ business acceptance. The source recipes' smoke commands must be safe to repeat;
 application-specific full controllers remain separate tests.
 
 The runner deletes known owned sandboxes and confirms absence through independent SDK control-plane reads. For Express, it deletes journal-owned templates and reads the complete
-inventory, then removes exact owned Hangzhou ACR tags using the existing cleanup
+inventory using explicit `--native --json` (without a standard-only `--format` flag),
+then removes exact owned Hangzhou ACR tags using the existing cleanup
 verifier. Other registry types remain explicit pending cleanup. For the disposable
 OpenSandbox registry it removes exact owned manifests, checks absence and removes
 local tags. An uncertain intent is not blindly replayed. The private CLI journal
 contains recovery identifiers; raw subprocess diagnostics stay in a mode-0700 temporary
 `abx-public-launch-*` directory with mode-0600 files and are not uploaded; reports contain counts and outcomes, never keys or
-native IDs. `PARTIAL` is a nonzero result and must be reconciled before claiming a
+native IDs. The generated test alias, controlled failure phase/category, stable SDK
+error code and numeric HTTP status may be recorded for recovery; dynamic exception
+messages are never included. `PARTIAL` is a nonzero result and must be reconciled before claiming a
 complete acceptance.
 
 ## 中文
@@ -52,7 +57,7 @@ Docker bridge 地址。默认读取公开 Git 目录；测试候选输入可明�
 `--source`。启动清单与实际运行命令源码都须和本地验证输入一致。
 
 手动矩阵工作流接受准确的 CLI、SDK、provider 提交，以及模板选择和平台。
-`all` 当前为 46 个源码模板，最多同时运行四个独立 runner。OpenSandbox 使用真实 Docker 服务和 server proxy；
+`all` 当前为 46 个源码模板，最多同时运行四个独立 runner。OpenSandbox 使用真实 Docker 服务及 provider 返回的直连端点（明确选择默认的 `use_server_proxy=false`）；
 Express 使用该工作流配置的凭据。缺凭据不能算通过。
 
 有 `expect` 的命令逐入口断言输出；没有的诊断命令分别检查调用成功和非空结果，

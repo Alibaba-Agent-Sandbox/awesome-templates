@@ -1,9 +1,10 @@
 import tempfile
+import json
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from public_launch_e2e import CLI, command_url, load_plan, matches, source_names, cleanup_prepared, cleanup_before_close, delete_sandbox
+from public_launch_e2e import CLI, CLIError, cli_diagnostics, safe_diagnostics, command_url, load_plan, matches, source_names, cleanup_prepared, cleanup_before_close, delete_sandbox
 
 
 class PublicLaunchTests(unittest.TestCase):
@@ -40,6 +41,23 @@ class PublicLaunchTests(unittest.TestCase):
         with patch('public_launch_e2e.subprocess.run', return_value=CompletedProcess([], 1, 'PRIVATE-ID', 'secret-value')):
             with self.assertRaisesRegex(RuntimeError, '^CLI template failed \\(exit 1\\)$'):
                 CLI('node /tmp/installed-abx.js', 'opensandbox', {}).run(['template', 'launch'])
+
+
+    def test_cli_diagnostics_only_exports_controlled_values(self):
+        payload = json.dumps({'code': 'E8003', 'message': 'Template startup failed; owned sandbox PRIVATE-ID; HTTP 401 secret-value',
+                              'suggestion': 'secret-value', 'private': 'PRIVATE-ID'})
+        self.assertEqual(cli_diagnostics(payload), {'code': 'E8003', 'category': 'template-startup', 'http_status': 401})
+        failure = CLIError('template', 2, payload)
+        self.assertNotIn('PRIVATE-ID', str(failure))
+        self.assertNotIn('secret-value', json.dumps(safe_diagnostics(failure)))
+        self.assertEqual(cli_diagnostics(json.dumps({'code': 'private-token', 'message': 'unrecognized secret-value'})), {})
+
+    def test_native_selection_is_the_first_cli_argument(self):
+        from subprocess import CompletedProcess
+        with patch('public_launch_e2e.subprocess.run', return_value=CompletedProcess([], 0, '[]', '')) as run:
+            CLI('node /tmp/installed-abx.js', 'alicloud-express', {}).run(['template', 'list'], native=True)
+        self.assertEqual(run.call_args.args[0], ['node', '/tmp/installed-abx.js', '--native', '--provider', 'alicloud-express', '--json', 'template', 'list'])
+
 
 
 class CleanupTests(unittest.IsolatedAsyncioTestCase):
@@ -88,14 +106,29 @@ class CleanupTests(unittest.IsolatedAsyncioTestCase):
         class FakeCLI:
             provider = 'alicloud-express'
             def run(self, args, **kwargs):
-                calls.append(args)
+                calls.append((args, kwargs))
                 return [{'templateID': 'owned-template'}] if args[1] == 'list' else ''
         entries = [{'intent_id': 'one', 'kind': 'template', 'state': 'retained', 'id': 'owned-template',
                     'correlation_key': 'public-e2e-123-build'}]
         done, failures = await cleanup_prepared(entries, FakeCLI(), 'public-e2e-123')
         self.assertEqual(done, set())
         self.assertEqual(failures, 1)
-        self.assertEqual([item[1] for item in calls], ['delete', 'list'])
+        self.assertEqual([item[0][1] for item in calls], ['delete', 'list'])
+        self.assertTrue(all(item[1].get('native') is True for item in calls))
+        self.assertEqual(calls[-1][0], ['template', 'list'])
+
+    async def test_cleanup_diagnostic_never_contains_resource_identifier(self):
+        class FakeCLI:
+            provider = 'alicloud-express'
+            def run(self, args, **kwargs):
+                raise CLIError('template', 2, json.dumps({'code': 'E8003', 'message': 'PRIVATE-ID secret-value HTTP 403'}))
+        entries = [{'intent_id': 'one', 'kind': 'template', 'state': 'retained', 'id': 'PRIVATE-ID',
+                    'correlation_key': 'public-e2e-123-build'}]
+        details = []
+        done, failures = await cleanup_prepared(entries, FakeCLI(), 'public-e2e-123', details)
+        self.assertEqual((done, failures), (set(), 1))
+        self.assertEqual(details, [{'kind': 'template', 'failure_type': 'CLIError', 'code': 'E8003', 'http_status': 403}])
+        self.assertNotIn('PRIVATE-ID', json.dumps(details))
 
     async def test_express_shared_repository_deletes_only_owned_journal_tag(self):
         class FakeCLI:

@@ -1,0 +1,10 @@
+{
+  "workflow_run": 40107869809,
+  "express_template_inventory": "native list succeeded; no public-e2e aliases observed",
+  "acr_tags": "python-hello repository list succeeded; no public-e2e tags observed",
+  "destructive_actions": 0,
+  "limits": "inventory readback does not identify which original harness cleanup check failed",
+  "acr_inventory_rows": 37,
+  "acr_inventory_total": 37,
+  "native_template_inventory_rows": 27
+}

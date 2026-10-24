@@ -82,7 +82,7 @@ jobs:
       OSB_EXECD_IMAGE: opensandbox/execd@sha256:cda2bc35409bbf57561599b316cafb899598f7dce671332e7ceda14eb1cfeded
       ABX_OPENSANDBOX_BASE_URL: http://127.0.0.1:8080
       ABX_OPENSANDBOX_API_KEY: local-dev-key
-      ABX_OPENSANDBOX_USE_SERVER_PROXY: 'true'
+      ABX_OPENSANDBOX_USE_SERVER_PROXY: 'false'
       ABX_OPENSANDBOX_IMAGE_REPOSITORY: localhost:5000/public-launch
       ABX_NO_KEYCHAIN: '1'
       NO_COLOR: '1'
