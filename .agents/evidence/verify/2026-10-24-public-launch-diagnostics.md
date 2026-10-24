@@ -39,3 +39,5 @@ Local follow-up: 20 runner tests, workflow YAML parse and diff checks PASS after
 Public-install workflow explicitly selects npmjs.org and PyPI and verifies actual installed metadata. Each sanitized attempt includes the package versions and fixed source refs selected by this workflow. Local fixed-ref version extraction passed for CLI0.4.16 and SDK0.3.1a4; this does not assert their publication.
 
 Final privacy review: only runner-owned CheckFailed and CLIError labels are exportable. Generic AssertionError/RuntimeError text from dependencies is excluded, including messages beginning with CLI. All21 runner regressions PASS; Python compile, YAML parse and diff checks PASS. No launch, authentication or cleanup behavior changes.
+
+Candidate guide update: install CLI0.4.16 and paired Python0.3.1a5, remove stale unreleased-materialization prose, and show existing application token headers with gateway ownership preserved. This documentation change is release-gated: Python a5 publication and public-package pilot must complete before merge. Earlier source-candidate a4 evidence is unchanged.
