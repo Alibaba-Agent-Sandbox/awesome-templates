@@ -13,6 +13,7 @@ import hashlib
 import importlib.metadata
 import json
 import os
+import re
 from pathlib import Path
 import secrets
 import shlex
@@ -40,9 +41,79 @@ def command_url(base, name):
         parts.path.rstrip('/') + '/commands/' + urllib.parse.quote(name, safe=''), parts.query, ''))
 
 
+def application_headers(gateway_headers, token):
+    require(all(key.lower() != 'authorization' for key in gateway_headers),
+            'application and gateway Authorization must not overwrite one another')
+    headers = {**gateway_headers, 'Authorization': 'Bearer ' + token}
+    if all(key.lower() != 'x-access-token' for key in gateway_headers):
+        headers['X-Access-Token'] = token
+    return headers
+
+
+class CheckFailed(AssertionError):
+    """A runner-owned, controlled check label, never a dependency exception."""
+
+
 def require(value, label):
     if not value:
-        raise AssertionError(label)
+        raise CheckFailed(label)
+
+
+def safe_failure_label(failure):
+    return str(failure) if isinstance(failure, (CheckFailed, CLIError)) else None
+
+
+def safe_diagnostics(failure):
+    """Only controlled categories, numeric HTTP status and stable SDK codes escape."""
+    if isinstance(failure, CLIError):
+        return failure.diagnostics
+    details = {}
+    code = getattr(failure, 'code', None)
+    if isinstance(code, str) and re.fullmatch(r'E[0-9]{4}', code):
+        details['code'] = code
+    response = getattr(failure, 'response', None)
+    status = getattr(response, 'status_code', None)
+    if type(status) is int and 100 <= status <= 599:
+        details['http_status'] = status
+    match = re.search(r'\bHTTP(?: status)?[ :]+([1-5][0-9]{2})\b', str(failure))
+    if match:
+        details['http_status'] = int(match.group(1))
+    return details
+
+
+def cli_diagnostics(output):
+    try:
+        payload = json.loads(output)
+    except (ValueError, TypeError):
+        return {}
+    if not isinstance(payload, dict):
+        return {}
+    details = {}
+    code = payload.get('code')
+    if isinstance(code, str) and re.fullmatch(r'E[0-9]{4}', code):
+        details['code'] = code
+    message = payload.get('message', '')
+    if not isinstance(message, str):
+        return details
+    for prefix, category in [
+        ('Template startup failed', 'template-startup'),
+        ('Sandbox creation/session binding failed', 'sandbox-session-binding'),
+        ('Sandbox creation has an uncertain outcome', 'sandbox-creation-uncertain'),
+        ('Template preparation failed', 'template-preparation'),
+    ]:
+        if message.startswith(prefix):
+            details['category'] = category
+            break
+    match = re.search(r'\bHTTP(?: status)?[ :]+([1-5][0-9]{2})\b', message)
+    if match:
+        details['http_status'] = int(match.group(1))
+    return details
+
+
+class CLIError(RuntimeError):
+    def __init__(self, operation, returncode, output):
+        super().__init__(f'CLI {operation} failed (exit {returncode})')
+        self.diagnostics = cli_diagnostics(output)
 
 
 class CLI:
@@ -54,8 +125,8 @@ class CLI:
         self.private_directory = Path(tempfile.mkdtemp(prefix="abx-public-launch-"))
         self.call_count = 0
 
-    def run(self, args, timeout=300, json_output=True):
-        proc = subprocess.run(self.command + ['--provider', self.provider]
+    def run(self, args, timeout=300, json_output=True, native=False):
+        proc = subprocess.run(self.command + (['--native'] if native else []) + ['--provider', self.provider]
             + (['--json'] if json_output else []) + args,
             env=self.env, stdin=subprocess.DEVNULL, capture_output=True,
             text=True, timeout=timeout)
@@ -67,7 +138,7 @@ class CLI:
         if proc.returncode:
             # Raw output can contain resource IDs or secrets; let the CLI journal
             # provide recovery and retain only the failed operation in this report.
-            raise RuntimeError(f'CLI {args[0]} failed (exit {proc.returncode})')
+            raise CLIError(args[0], proc.returncode, proc.stdout)
         return json.loads(proc.stdout) if json_output else proc.stdout.strip()
 
 
@@ -98,7 +169,7 @@ def json_contains(value, target):
     return value == target
 
 
-async def cleanup_prepared(entries, cli, alias):
+async def cleanup_prepared(entries, cli, alias, diagnostics=None):
     """Delete only exact receipt-owned artifacts; unfamiliar registries stay pending."""
     import httpx
     done = set()
@@ -112,8 +183,8 @@ async def cleanup_prepared(entries, cli, alias):
             continue
         try:
             if entry['kind'] == 'template' and cli.provider == 'alicloud-express':
-                await asyncio.to_thread(cli.run, ['template', 'delete', reference, '--yes'], json_output=False)
-                inventory = await asyncio.to_thread(cli.run, ['template', 'list', '--format', 'json'])
+                await asyncio.to_thread(cli.run, ['template', 'delete', reference, '--yes'], json_output=False, native=True)
+                inventory = await asyncio.to_thread(cli.run, ['template', 'list'], native=True)
                 require(not json_contains(inventory, reference), 'owned template deletion readback')
             elif entry['kind'] == 'image':
                 # Local Docker tags have no registry hostname; never remove by image ID.
@@ -163,8 +234,10 @@ async def cleanup_prepared(entries, cli, alias):
             else:
                 continue
             done.add(entry['intent_id'])
-        except Exception:
+        except Exception as failure:
             failures += 1
+            if diagnostics is not None:
+                diagnostics.append({'kind': entry['kind'], 'failure_type': type(failure).__name__, **safe_diagnostics(failure)})
     return done, failures
 
 
@@ -220,12 +293,26 @@ async def verify(args):
         'cli_version': cli.run(['--version'], json_output=False),
         'python_client_version': importlib.metadata.version('agent-sandbox-client'),
         'checks': [], 'cleanup': {'sandbox': 'not created', 'prepared_artifacts': 'not checked'}}
+    if env.get('PUBLIC_CLI_VERSION') and env.get('PUBLIC_SDK_VERSION'):
+        report['installed_packages'] = {
+            'cli': {'name': '@agent-sandbox/cli', 'version': env['PUBLIC_CLI_VERSION'],
+                    'registry': 'https://registry.npmjs.org', 'source_ref': env.get('PUBLIC_LAUNCH_CLI_REF')},
+            'python_client': {'name': 'agent-sandbox-client', 'version': importlib.metadata.version('agent-sandbox-client'),
+                    'registry': 'https://pypi.org/simple', 'source_ref': env.get('PUBLIC_LAUNCH_SDK_REF')},
+            'python_server': {'name': 'agent-sandbox-server', 'version': importlib.metadata.version('agent-sandbox-server'),
+                    'registry': 'https://pypi.org/simple', 'source_ref': env.get('PUBLIC_LAUNCH_SDK_REF')},
+            'provider_source_ref': env.get('PUBLIC_LAUNCH_PROVIDERS_REF'),
+        }
     alias = 'public-e2e-' + secrets.token_hex(8)
+    report['run_alias'] = alias
+    if args.provider == 'opensandbox':
+        report['endpoint_mode'] = 'server-proxy' if env.get('ABX_OPENSANDBOX_USE_SERVER_PROXY', '').lower() in {'1', 'true', 'yes', 'on'} else 'direct'
     journal_dir = Path.home() / '.abx' / 'resource-journal'
     original_journals = set(journal_dir.glob('*.json'))
     launch = None
     sandbox = None
     client = None
+    phase = 'template-launch'
     try:
         launch = await asyncio.to_thread(cli.run,
             ['template', 'launch', args.source or report['source'], '--workflow', manifest['default_workflow'],
@@ -237,37 +324,45 @@ async def verify(args):
         report['input_receipt'] = {key: launch.get(key) for key in
             ['manifest_digest', 'source_digest', 'provider_digest', 'provider_snapshot_digest', 'plan_digest', 'build_profile']}
         report['checks'].append('unchanged source launched by installed CLI')
+        phase = 'sdk-connect'
         sandbox = await ProviderSandbox.connect(launch['sandbox_id'], provider=args.provider)
+        phase = 'application-client'
         client = await sandbox.application_client(9000, token=env['ABX_SERVER_TOKEN'], timeout=180)
-        endpoint, headers = await sandbox.network.resolve(9000)
-        require(all(key.lower() != 'authorization' for key in headers),
-                'application and gateway Authorization must not overwrite one another')
-        headers = {**headers, 'Authorization': 'Bearer ' + env['ABX_SERVER_TOKEN']}
+        phase = 'endpoint-resolution'
+        endpoint, gateway_headers = await sandbox.network.resolve(9000)
+        headers = application_headers(gateway_headers, env['ABX_SERVER_TOKEN'])
         async with httpx.AsyncClient(timeout=180, follow_redirects=False, trust_env=False) as http:
             for index, case in enumerate(cases):
                 name, values = case['command'], case.get('args', {})
+                phase = 'cli-command'
                 result = await asyncio.to_thread(cli.run, ['run', sandbox.id, name, '--json-args', json.dumps(values)])
                 observed = result['result']
                 if 'expect' in case:
                     require(matches(observed, case['expect']), f'CLI smoke {index} result')
                 else:
                     require(observed is not None and observed != '', f'CLI smoke {index} nonempty result')
+                phase = 'python-command'
                 result = await client.commands.run(name, **values)
                 require(matches(result, case['expect']) if 'expect' in case else result is not None and result != '', f'Python smoke {index} result')
+                phase = 'http-command'
                 response = await http.post(command_url(endpoint, name), headers=headers, json=values)
                 require(response.status_code == 200, f'HTTP smoke {index} status')
                 http_result = response.json()['result']
                 require(matches(http_result, case['expect']) if 'expect' in case else http_result is not None and http_result != '', f'HTTP smoke {index} result')
                 report['checks'].append({'smoke': index, 'command': name, 'consumers': ['cli', 'python', 'host-http'], 'has_expected_result': 'expect' in case})
             # Test service authentication without dropping required gateway headers.
+            phase = 'authentication-negative'
             unauthorized = await http.post(command_url(endpoint, cases[0]['command']),
-                headers={**headers, 'Authorization': 'Bearer intentionally-wrong'}, json=cases[0].get('args', {}))
+                headers=application_headers(gateway_headers, 'intentionally-wrong'), json=cases[0].get('args', {}))
             require(unauthorized.status_code == 401, 'wrong service token must be rejected')
         report['checks'].append('service authentication rejects wrong token')
+        phase = 'source-identity'
         observed = await sandbox.files.read('/home/user/app/commands.py')
         require(observed.encode() == (source / 'commands.py').read_bytes(), 'runtime command bytes match selected source')
+        phase = 'sdk-exec'
         result = await sandbox.commands.run('python3 -c "print(21 * 2)"', timeout=30)
         require(result.exit_code == 0 and result.stdout.strip() == '42', 'SDK exec result')
+        phase = 'sdk-files'
         path = '/tmp/' + alias + '.txt'
         await sandbox.files.write(path, 'owned acceptance file\n')
         require(await sandbox.files.read(path) == 'owned acceptance file\n', 'SDK file readback')
@@ -279,10 +374,11 @@ async def verify(args):
         report['application_result'] = 'FAIL'
         # Exceptions from remote SDKs can contain private data; save type only.
         report['failure_type'] = type(failure).__name__
-        if isinstance(failure, RuntimeError) and str(failure).startswith('CLI '):
-            report['failed_check'] = str(failure)
-        if isinstance(failure, AssertionError):
-            report['failed_check'] = str(failure)
+        report['failed_phase'] = phase
+        report['diagnostics'] = safe_diagnostics(failure)
+        label = safe_failure_label(failure)
+        if label is not None:
+            report['failed_check'] = label
     finally:
         async def release_resources():
             journals = []
@@ -302,7 +398,9 @@ async def verify(args):
                 except Exception:
                     cleanup_failed = True
             report['cleanup']['sandbox'] = 'failed' if cleanup_failed else ('confirmed absent' if ids else 'not observed')
-            prepared_done, prepared_failures = await cleanup_prepared(entries, cli, alias)
+            cleanup_diagnostics = []
+            prepared_done, prepared_failures = await cleanup_prepared(entries, cli, alias, cleanup_diagnostics)
+            report['cleanup']['diagnostics'] = cleanup_diagnostics
             cleanup_failed = cleanup_failed or prepared_failures > 0
             pending = [entry for entry in entries if entry['kind'] != 'sandbox' and entry.get('state') != 'deleted' and entry['intent_id'] not in prepared_done]
             unknown = [entry for entry in entries if entry.get('state') in {'intent', 'uncertain'}]

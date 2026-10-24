@@ -1,0 +1,55 @@
+{
+  "result": "PASS",
+  "template": "python-hello",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch + manifest smoke via host CLI, Python and HTTP; no real-model acceptance",
+  "source": "local-candidate/python-hello",
+  "manifest_sha256": "2b7d32f54affa308e14f1daeb35a61c7d67c46918f1d9a5c007b0af6ee5b8a44",
+  "cli_version": "abx, version 0.4.15",
+  "python_client_version": "0.3.1a3",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "hello",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "run_script",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "run_alias": "public-e2e-b2e5e0523e769dc7",
+  "endpoint_mode": "direct",
+  "input_receipt": {
+    "manifest_digest": "sha256:2b7d32f54affa308e14f1daeb35a61c7d67c46918f1d9a5c007b0af6ee5b8a44",
+    "source_digest": "9f57176c85627031253a6225255c1f8fe929a91fde96584e065c632ca70ceaa0",
+    "provider_digest": "sha256:aa5a5cdb3a737bfa7868dee1c75b131f2e17184d3974a2045032218e9ba7f854",
+    "provider_snapshot_digest": "224f45c53e2b40f4ff10fc702ae89906f4c9f81a136ea96cf40fcb37b2406913",
+    "plan_digest": "70acbe096dccdc590bbec5b2683c4b1072ec7b3c19fc969f8fb9bd6e1f02d69d",
+    "build_profile": null
+  },
+  "application_result": "PASS"
+}

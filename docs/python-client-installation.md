@@ -3,7 +3,7 @@
 Install the published preview client and its matching server dependency:
 
 ```bash
-python3 -m pip install 'agent-sandbox-client==0.3.1a2'
+python3 -m pip install 'agent-sandbox-client==0.3.1a5'
 ```
 
 The import is `agent_sandbox`. `agent-sandbox-server` is the in-sandbox service;
