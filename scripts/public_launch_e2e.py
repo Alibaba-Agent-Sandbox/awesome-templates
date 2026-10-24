@@ -108,7 +108,7 @@ async def cleanup_prepared(entries, cli, alias):
             continue
         reference = entry.get('id')
         correlation = str(entry.get('correlation_key', ''))
-        if not reference or alias not in correlation:
+        if not reference or alias + '-' not in correlation:
             continue
         try:
             if entry['kind'] == 'template' and cli.provider == 'alicloud-express':
@@ -152,7 +152,9 @@ async def cleanup_prepared(entries, cli, alias):
                     from canonical_express_review import delete_absent
                     repository, tag = correlation.split('/', 1)[1].rsplit(':', 1)
                     namespace, name = repository.split('/', 1)
-                    require(namespace == os.environ.get('ACR_NAMESPACE') and name.startswith(alias + '-'), 'owned ACR repository')
+                    # The repository is shared (usually the manifest name); only the
+                    # per-launch tag is owned. Never delete the repository itself.
+                    require(namespace == os.environ.get('ACR_NAMESPACE') and tag.startswith(alias + '-'), 'owned ACR tag')
                     require(os.environ.get('ALIBABA_CLOUD_REGION_ID', 'cn-hangzhou') == 'cn-hangzhou', 'ACR region')
                     await asyncio.to_thread(delete_absent, '/repos/' + urllib.parse.quote(namespace, safe='') + '/'
                         + urllib.parse.quote(name, safe='') + '/tags/' + urllib.parse.quote(tag, safe=''))

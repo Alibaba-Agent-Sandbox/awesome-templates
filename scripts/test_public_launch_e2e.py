@@ -97,6 +97,33 @@ class CleanupTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(failures, 1)
         self.assertEqual([item[1] for item in calls], ['delete', 'list'])
 
+    async def test_express_shared_repository_deletes_only_owned_journal_tag(self):
+        class FakeCLI:
+            provider = 'alicloud-express'
+        tag = 'public-e2e-123-build'
+        reference = 'registry.cn-hangzhou.aliyuncs.com/test-namespace/python-hello:' + tag
+        entries = [{'intent_id': 'image-one', 'kind': 'image', 'state': 'retained',
+                    'id': reference, 'correlation_key': reference}]
+        with patch.dict('os.environ', {'ACR_NAMESPACE': 'test-namespace', 'ALIBABA_CLOUD_REGION_ID': 'cn-hangzhou'}), \
+             patch('canonical_express_review.delete_absent') as delete:
+            done, failures = await cleanup_prepared(entries, FakeCLI(), 'public-e2e-123')
+        self.assertEqual(done, {'image-one'})
+        self.assertEqual(failures, 0)
+        delete.assert_called_once_with('/repos/test-namespace/python-hello/tags/' + tag)
+
+    async def test_express_alias_in_repository_does_not_own_foreign_tag(self):
+        class FakeCLI:
+            provider = 'alicloud-express'
+        reference = 'registry.cn-hangzhou.aliyuncs.com/test-namespace/public-e2e-123-build:someone-else'
+        entries = [{'intent_id': 'image-one', 'kind': 'image', 'state': 'retained',
+                    'id': reference, 'correlation_key': reference}]
+        with patch.dict('os.environ', {'ACR_NAMESPACE': 'test-namespace'}), \
+             patch('canonical_express_review.delete_absent') as delete:
+            done, failures = await cleanup_prepared(entries, FakeCLI(), 'public-e2e-123')
+        self.assertEqual(done, set())
+        self.assertEqual(failures, 1)
+        delete.assert_not_called()
+
     async def test_foreign_template_is_never_deleted(self):
         class FakeCLI:
             provider = 'alicloud-express'
