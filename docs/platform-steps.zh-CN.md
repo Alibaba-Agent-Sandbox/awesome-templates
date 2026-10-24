@@ -9,11 +9,9 @@
 
 ## 前置条件和模式
 
-通过环境配置已有授权的 Express API 与阿里云控制面凭据。CLI 的 deploy、官方
-list/info/delete 和 sandbox 命令须匹配[验收运行器](../scripts/express_e2e.py)。
-[安装指南](using-templates.zh-CN.md)中的源码 CLI 提供这些接口。仅有版本号不足以
-证明兼容：公开 0.4.0 的标准 list/create 接口与本运行器的原生接口不同；0.3.0
-独立二进制还需要可用的官方阿里云 SDK 模块，固定源码构建会安装它们。
+使用已发布的 `abx` CLI（本流程以 0.4.11 验证）、Python 3.10+ 与 Git。
+按[安装指南](using-templates.zh-CN.md)配置已有授权的 Express API 和阿里云控制面凭据。
+当前公开入口是 `abx`，不添加已经退役的 `--native` 参数。
 
 auto 有 Dockerfile 时选 Dockerfile；显式 steps 使用 manifest 步骤。不与
 `--acr-namespace` 混用；创建 sandbox 不选择构建模式。
@@ -23,14 +21,63 @@ CLI 的[模式契约](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blo
 `LANG=C.UTF-8`，失败记录保留。
 
 
-CLI0.4.1 使用显式原生入口，--native 放在所有其他根参数之前：
+## 无 Docker 运行 python-hello
+
+此路径把目录中的源码准备成云端 steps，不在本机构建 Docker 镜像。请使用新的工作目录；
+它会创建计费云资源。凭据保存在已有环境中，不放进模板目录。
 
 ```bash
-export ABX='abx --native'
-python scripts/run_steps_e2e.py python-hello --sandbox-create sdk
+git clone https://github.com/Alibaba-Agent-Sandbox/awesome-templates.git
+cd awesome-templates
+git rev-parse HEAD  # 将此源码提交保存在本次验证记录中
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install "PyYAML==6.0.3"
+python scripts/prepare_steps.py python-hello --output ./python-hello-steps
+abx --json template deploy ./python-hello-steps --build steps \
+  --alias "python-hello-$(date +%s)" -y
 ```
 
-真实安装的0.4.1候选已通过 step READY、SDK 创建、CLI/SDK 与独立清理；公开入口由 [CLI PR90](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/pull/90)负责，默认标准命令保持原义。
+将输出的 `TemplateID` 私下保存为 `TEMPLATE_ID`。部署结果可能是 `submitted`：只表示注册
+请求已受理，不表示已经可以创建沙箱。继续查询该精确模板，直到状态为 `ready`；构建失败或
+超过自行设定的期限（例如 15 分钟）则停止：
+
+```bash
+export TEMPLATE_ID="<部署输出的 TemplateID>"
+abx --json template info "$TEMPLATE_ID"
+```
+
+CLI 0.4.11 的 `status` 是 `{'state': 'ready'}` 这样的字符串，不是嵌套 JSON 对象。
+自动化时先解析外层 JSON，再用 Python `ast.literal_eval` 解析该字符串，不使用 `eval`。
+状态仍为 `building` 时不要创建沙箱。
+
+就绪后创建，将输出的 ID 保存为 `SANDBOX_ID`：
+
+```bash
+abx create "$TEMPLATE_ID" --detach --timeout 600
+export SANDBOX_ID="<create 输出的 ID>"
+abx info "$SANDBOX_ID" --format json
+abx run "$SANDBOX_ID" hello --arg name=Ada
+abx run "$SANDBOX_ID" run_script --json-args '{"code":"print(21 * 2)"}'
+abx exec "$SANDBOX_ID" -- python3 --version
+```
+
+命名命令应分别返回 `Hello, Ada!` 和 `42`。[模板 README](../python-hello/README.zh-CN.md)
+还有文件传输、pytest 与外部 HTTP POST 示例。标准 `info` 使用 `--format json`；
+项目扩展仅在各自帮助支持时使用 `--json`。
+
+检查失败时也要清理自己创建的精确 ID：
+
+```bash
+abx kill "$SANDBOX_ID"
+abx info "$SANDBOX_ID"  # 应报告不存在，退出非零
+abx template delete "$TEMPLATE_ID" -y
+abx --json template info "$TEMPLATE_ID"  # 应报告 TemplateNotFound/404
+```
+
+若构建失败、尚未创建沙箱，只删除记录的模板。列表为空不能证明某个资源已删除。
+准备工具保留原命令字节、固定服务端依赖、运行用户、启动与就绪命令，
+并将转换来源记录在 `steps-provenance.json`。
 
 ## 准备真实模板
 

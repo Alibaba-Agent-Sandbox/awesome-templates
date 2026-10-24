@@ -11,7 +11,7 @@
 版本 1.1.2 将默认服务器源码与 CI wheel 的提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a` 对齐。历史回执保留原始输入范围；此版本需要重新完成镜像及工作流验收。
 
 - Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` 自带 Python 3.13、Node.js 20。部署时默认解析为 `cn-hangzhou` 和 `v0.0.49`。
-- 服务端固定到 python-sdk 提交 `35da216a300f1e2e84254a1cf4b4a7ea98681505`，部署注入的 SDK wheel 优先。
+- 服务端固定到 python-sdk 提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a`，部署注入的 SDK wheel 优先。
 - 镜像安装 `pytest==8.4.2`，供 `test` 命令使用。
 - 非 root 用户 `user`，工作目录 `/home/user/app`，generation 2。平台执行 YAML 的 `start_cmd` 并用 `ready_cmd` 探测就绪。
 
@@ -20,6 +20,8 @@
 用于学习命名命令协议，或通过同一沙箱上传、运行、测试 Python 程序。内联代码、脚本路径、pytest 路径统一使用一个工作目录，避免上传文件与执行目录不一致。
 
 ## 快速开始（CLI）
+
+本机没有 Docker？请按[云端 steps 快速开始](../docs/platform-steps.zh-CN.md#无-docker-运行-python-hello)先准备显式 steps manifest。仅增加 `--build steps` 不会自动转换此模板的 Dockerfile。
 
 示例使用当前极速版 CLI：`abx create <template-id> --detach` 输出沙箱 ID，`abx kill <sandbox-id>` 清理沙箱；命名命令使用 `abx run`。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
 
