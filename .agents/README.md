@@ -8,6 +8,8 @@
 
 These are dated results at their recorded inputs. CLI 0.4.17 is the current installation recommendation; the 92-case matrix used CLI 0.4.16. Managed entries, model tasks, PTY and desktop behavior do not inherit a source-smoke pass.
 
+The earlier [cloud-steps documentation decision](notes/proposed/process/2026-10-24-developer-journey-docs.md) and its [partial receipt](evidence/verify/2026-10-24-developer-journey-docs.md) retain their pending post-publication rerun scope. The later default source-image matrix does not substitute for that separate no-Docker journey.
+
 - [Workflow review validation](notes/proposed/architecture/2026-10-23-workflow-review-validation.md) · [verification](evidence/verify/2026-10-23-workflow-review-validation.md)
 
 - [Droid explicit compatible BYOK](notes/proposed/feature/2026-10-20-droid-explicit-byok.md) · [verification](evidence/verify/2026-10-20-droid-explicit-byok.md)

@@ -20,3 +20,5 @@ Environment: existing isolated worktree, Python 3.13 and Node 22; only documenta
 - GitHub release readback: CLI `v0.4.17` published at `2026-10-24T19:02:49Z`; Python `v0.3.1a5` published at `2026-10-24T17:00:19Z`; neither is a draft. Release delivery PRs [CLI #149](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/pull/149) and [Python #103](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/103) are merged.
 
 No package install or cloud scenario is claimed from these readbacks. The original 92-case matrix, proxy candidate-source runs and managed/native sessions keep their own exact inputs and limitations. Normal remote CI and review must pass on this PR's final head before merge.
+
+The earlier cloud-steps decision from merged PR #202 is now indexed, but remains proposed: its own partial receipt still lacks the post-publication no-Docker rerun. Issue closure alone is not treated as that missing runtime evidence; this docs synchronization makes no new cloud-steps claim.
