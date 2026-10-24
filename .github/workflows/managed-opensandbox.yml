@@ -62,7 +62,7 @@ jobs:
           npm run build
       - name: Pull original runtime images and capture immutable digests
         run: |
-          docker pull opensandbox/execd:v1.1.0
+          docker pull opensandbox/execd@sha256:cda2bc35409bbf57561599b316cafb899598f7dce671332e7ceda14eb1cfeded
           docker pull opensandbox/code-interpreter:v1.1.0
       - name: Actual SDK shell files native interpreter sessions and independent cleanup
         run: |

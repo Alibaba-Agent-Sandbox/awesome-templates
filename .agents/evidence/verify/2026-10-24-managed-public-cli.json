@@ -1,0 +1,36 @@
+{
+  "scope": "Published CLI managed Express create/exec/kill; public Python file round trip, explicit interpreter boundary and independent absence",
+  "cli_version": "abx, version 0.4.16",
+  "python_version": "0.3.1a5",
+  "cases": [
+    {
+      "template": "base",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        "published CLI positional create with detach and timeout",
+        "documented CLI exec prints 42",
+        "public Python file write/read/remove",
+        "ProviderSandbox interpreter explicitly E8004, no shell fallback",
+        "documented CLI kill without -y"
+      ],
+      "cleanup": "confirmed absent",
+      "application_result": "PASS"
+    },
+    {
+      "template": "code-interpreter-v1",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        "published CLI positional create with detach and timeout",
+        "documented CLI exec prints 42",
+        "public Python file write/read/remove",
+        "ProviderSandbox interpreter explicitly E8004, no shell fallback",
+        "documented CLI kill without -y"
+      ],
+      "cleanup": "confirmed absent",
+      "application_result": "PASS"
+    }
+  ],
+  "result": "PASS"
+}

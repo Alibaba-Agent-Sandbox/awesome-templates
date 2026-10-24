@@ -29,7 +29,7 @@ def docker_ids():
 def image(reference):
     data=json.loads(subprocess.check_output(['docker','image','inspect',reference],text=True))[0]
     assert data['Architecture']=='amd64'
-    digest=next(value for value in data['RepoDigests']if value.startswith(reference.split(':')[0]+'@sha256:'))
+    digest=next(value for value in data['RepoDigests']if value.startswith(reference.split('@',1)[0].split(':',1)[0]+'@sha256:'))
     return {'requested':reference,'digest':digest,'image_id':data['Id'],'architecture':data['Architecture']}
 
 async def exercise_default(image_id):
@@ -176,7 +176,7 @@ def main():
             for name,revision in PINS.items():
                 actual=subprocess.check_output(['git','-C',str(fixtures/('providers'if name=='provider'else name)),'rev-parse','HEAD'],text=True).strip()
                 check(actual==revision,'fixed source '+name)
-            runtime=image('opensandbox/code-interpreter:v1.1.0');execd=image('opensandbox/execd:v1.1.0');RESULT['images']={'interpreter':runtime,'execd':execd}
+            runtime=image('opensandbox/code-interpreter:v1.1.0');execd=image('opensandbox/execd@sha256:cda2bc35409bbf57561599b316cafb899598f7dce671332e7ceda14eb1cfeded');RESULT['images']={'interpreter':runtime,'execd':execd}
             config=work/'server.toml';config.write_text('[server]\nhost="127.0.0.1"\nport=8080\napi_key="fixed-synthetic-opensandbox-key"\n[runtime]\ntype="docker"\nexecd_image='+json.dumps(execd['digest'])+'\n[store]\ntype="sqlite"\npath='+json.dumps(str(work/'server.db'))+'\n[docker]\nnetwork_mode="bridge"\npublish_host="127.0.0.1"\n[ingress]\nmode="direct"\n');config.chmod(0o600)
             server=subprocess.Popen([str(fixtures/'upstream/server/.venv/bin/opensandbox-server'),'--config',str(config)],stdout=log,stderr=log,start_new_session=True,env={'PATH':os.environ['PATH'],'HOME':str(home),'LANG':'C.UTF-8'})
             for _ in range(120):

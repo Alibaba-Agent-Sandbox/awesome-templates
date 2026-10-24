@@ -69,7 +69,7 @@ Choose a finite timeout in seconds and delete instances when finished. CPU, memo
 
 ## Verified
 
-[2026-10-19 record](../evidence/code-interpreter-v1-2026-10-19T154153Z.json): real CLI execution and SDK shell/files, shell fallback for `run_code`, and confirmed instance deletion. The record contains its original versions and call paths.
+[2026-10-24 public-package record](../../../.agents/evidence/verify/2026-10-24-managed-public-cli.json): CLI 0.4.16 create/exec yielding `42`/kill; Python 0.3.1a5 file round trip, explicit `ProviderSandbox.run_code` rejection with `E8004`, and independent instance absence. The [2026-10-19 historical record](../evidence/code-interpreter-v1-2026-10-19T154153Z.json) retains its original versions and call paths.
 
 ## Secondary development
 
