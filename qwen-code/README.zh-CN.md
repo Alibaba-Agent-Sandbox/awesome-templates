@@ -19,8 +19,9 @@ Alibaba FC generation 2 基础镜像、平台 Python、固定版本且校验 x86
 先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装已发布 CLI 和 Python 客户端、配置极速版。在本仓库根目录执行，确保 Docker 和提供方镜像仓库可用。先在当前终端生成独立应用令牌：
 
 ```bash
+export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
-abx --provider alicloud-express template launch ./qwen-code --workflow application --sandbox-timeout 900 --yes
+abx template launch ./qwen-code --workflow application --sandbox-timeout 900 --yes
 ```
 
 该命令准备模板、创建沙箱并启动其应用。将返回的沙箱 ID 写入 `SANDBOX_ID`；三个客户端使用同一个应用令牌：
@@ -32,7 +33,7 @@ abx run "$SANDBOX_ID" qwen_version
 abx run "$SANDBOX_ID" qwen_setup_check
 ```
 
-`qwen_version` 返回 `0.23.0`。setup 结果只报告安装和配置是否存在，不返回凭据。两个命令都不需要模型密钥，也不执行编码任务。使用 OpenSandbox 时，按[调用指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置，在每条 CLI 命令上选择 `--provider opensandbox`，下面 Python 改用 `provider="opensandbox"`。
+`qwen_version` 返回 `0.23.0`。setup 结果只报告安装和配置是否存在，不返回凭据。两个命令都不需要模型密钥，也不执行编码任务。使用 OpenSandbox 时，按[调用指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置，在启动前设置 `ABX_PROVIDER=opensandbox`，下面 Python 改用 `provider="opensandbox"`。
 
 ### 运行编码任务
 

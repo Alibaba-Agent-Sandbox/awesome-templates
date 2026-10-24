@@ -17,11 +17,12 @@ A successful spawn or open TCP port does not prove an application works. This te
 Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx --provider alicloud-express template launch ./node-web --workflow application --yes
+export ABX_PROVIDER=alicloud-express
+abx template launch ./node-web --workflow application --yes
 abx run <sandbox-id> smoke --json-args '{}'
 ```
 
-`template launch` prepares and starts this instance's application. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 

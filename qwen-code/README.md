@@ -19,8 +19,9 @@ Provides a reproducible headless CLI rather than requiring browser OAuth or conf
 Install the published CLI and Python client and configure Express using the [usage guide](../docs/using-templates.md#installation). Run from this repository's root with Docker and the provider's image registry configured. Generate an independent application token in your current shell:
 
 ```bash
+export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
-abx --provider alicloud-express template launch ./qwen-code --workflow application --sandbox-timeout 900 --yes
+abx template launch ./qwen-code --workflow application --sandbox-timeout 900 --yes
 ```
 
 The launch prepares the template, creates the sandbox and starts its application. Copy the returned sandbox ID into `SANDBOX_ID`, then keep the same application token for all three clients:
@@ -32,7 +33,7 @@ abx run "$SANDBOX_ID" qwen_version
 abx run "$SANDBOX_ID" qwen_setup_check
 ```
 
-`qwen_version` returns `0.23.0`. The setup result reports installation and configuration presence without exposing credentials. Neither command needs a model key; these checks do not execute a coding task. For OpenSandbox, follow its setup in the [calling guide](../docs/using-templates.md#cli-sdk-and-http), select `--provider opensandbox` on every CLI command and use `provider="opensandbox"` in Python below.
+`qwen_version` returns `0.23.0`. The setup result reports installation and configuration presence without exposing credentials. Neither command needs a model key; these checks do not execute a coding task. For OpenSandbox, follow its setup in the [calling guide](../docs/using-templates.md#cli-sdk-and-http), set `ABX_PROVIDER=opensandbox` before launch and use `provider="opensandbox"` in Python below.
 
 ### Run a coding task
 

@@ -1,0 +1,82 @@
+{
+  "result": "PASS",
+  "template": "qwen-code",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch + manifest smoke via host CLI, Python and HTTP; no real-model acceptance",
+  "source": "alibaba-agent-sandbox/awesome-templates//qwen-code@98ab49fc390ab6b29700aa86d819ece8dc1273fc",
+  "manifest_sha256": "6a8e7a2206df27ea7657be1cb6f5619f3891e21fa99c9681d194a35709b515c8",
+  "cli_version": "abx, version 0.4.16",
+  "python_client_version": "0.3.1a5",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "qwen_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "README qwen_setup_check: installed and pinned version, no model key; three consumers",
+    {
+      "smoke": 1,
+      "command": "qwen_setup_check",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": false
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "installed_packages": {
+    "cli": {
+      "name": "@agent-sandbox/cli",
+      "version": "0.4.16",
+      "registry": "https://registry.npmjs.org",
+      "source_ref": "413d575a688bd6f870c42c711d11346d176e0f38"
+    },
+    "python_client": {
+      "name": "agent-sandbox-client",
+      "version": "0.3.1a5",
+      "registry": "https://pypi.org/simple",
+      "source_ref": "1b235830bc4a8cbec275b530bf2dc2869e8d0c4b"
+    },
+    "python_server": {
+      "name": "agent-sandbox-server",
+      "version": "0.3.1a5",
+      "registry": "https://pypi.org/simple",
+      "source_ref": "1b235830bc4a8cbec275b530bf2dc2869e8d0c4b"
+    },
+    "provider_source_ref": "998a9d6a438f5c9b1f149ace26608b4132222b1c"
+  },
+  "run_alias": "public-e2e-f5281d2a746563e7",
+  "input_receipt": {
+    "manifest_digest": "sha256:6a8e7a2206df27ea7657be1cb6f5619f3891e21fa99c9681d194a35709b515c8",
+    "source_digest": "c6ba7ab821bfb8a5a22324036a3dcb9bd025d4bb4b7cb4107e51fa9eb2ca1c6a",
+    "provider_digest": "sha256:0edfcdc0eb10fd9fde3d81c03254c872ff040418af3b9c62d28449481941742d",
+    "provider_snapshot_digest": "43fc3aa7637b8b8a59d2dfc71f7d255006252012a9527596d0ddeaf59a5224a1",
+    "plan_digest": "b394c5199f58ce2f1844f4636255ef9c3dfde7757cd94b5acc022aba835923fc",
+    "build_profile": null
+  },
+  "application_result": "PASS",
+  "public_git_sources": {
+    "template_requested_commit": "98ab49fc390ab6b29700aa86d819ece8dc1273fc",
+    "template_source_digest": "c6ba7ab821bfb8a5a22324036a3dcb9bd025d4bb4b7cb4107e51fa9eb2ca1c6a",
+    "provider_fixture_ref_scope": "checkout fixture; not the installed provider revision",
+    "installed_provider_source": "built into the installed CLI and Python packages"
+  }
+}

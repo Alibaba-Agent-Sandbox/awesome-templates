@@ -30,11 +30,12 @@ MIT 许可的[固定原版源码](https://github.com/sierra-research/tau2-bench/
 先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx --provider alicloud-express template launch ./tau2-bench --workflow application --yes
+export ABX_PROVIDER=alicloud-express
+abx template launch ./tau2-bench --workflow application --yes
 abx run <sandbox-id> tau2_version --json-args '{}'
 ```
 
-`template launch` 负责准备并启动该实例的应用。OpenSandbox 的配置、每次调用的提供方选择和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
