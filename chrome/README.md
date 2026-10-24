@@ -71,7 +71,7 @@ Calls serialize. Startup readiness budget90seconds; navigation/CDP/VNC operation
 | Name | Default / requirement | Meaning |
 | --- | --- | --- |
 | WORKSPACE | /home/user/workspace; existing directory | Browser screenshot root, captured at command-module startup |
-| ABX_SERVER_TOKEN | Required; empty manifest declaration | Export the independent application token before launch |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials Also used for CDP relay authentication. |
 
 [Runtime environment](../docs/runtime-environment.md) explains prewarmed processes: create-time env does not reconfigure an already-running server. Each owned session generates a private8-character VNC password and Xauthority cookie; password is returned only to the authorized start caller, never logged or passed in argv. Browser receives a minimal environment without operator cloud/model/GitHub credentials. Session HOME/profile/config/cookies/password files are private and removed on stop. A noVNC connection still needs the VNC password; protect forwarded URLs with provider access controls.
 

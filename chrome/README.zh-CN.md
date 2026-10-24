@@ -71,7 +71,7 @@ print(await client.commands.run('chrome_smoke'))
 | 变量 | 默认值/要求 | 用途 |
 | --- | --- | --- |
 | WORKSPACE | /home/user/workspace；已存在目录 | 截图根目录，命令模块启动时读取 |
-| ABX_SERVER_TOKEN | 必填；清单值为空 | 启动前导出独立应用令牌 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 也用于 CDP relay 认证。 |
 
 [运行环境](../docs/runtime-environment.md)说明预热服务：创建沙箱时注入变量不会重配现有进程。每个独占会话生成私有8字符 VNC 密码与 Xauthority cookie；密码仅由授权的 start 调用返回，不进入 argv/日志。浏览器环境不包含操作者云、模型或 GitHub 凭据。停止删除本次 HOME、配置、cookie、密码文件。noVNC 仍需 VNC 密码；转发 URL 应使用提供方访问控制。
 

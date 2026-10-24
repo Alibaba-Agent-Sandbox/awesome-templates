@@ -74,7 +74,7 @@ print(await client.commands.run('gemini_version'))
 | GEMINI_API_KEY | 空，仅旧模式 | 原Google/原生兼容密钥，BYOK不隐式复用 |
 | GEMINI_MODEL | gemini-3.1-flash-lite，仅旧模式 | 原有默认值，与显式BYOK模型分离 |
 | WORKSPACE | /home/user/app | 已有项目根目录 |
-| ABX_SERVER_TOKEN | 必填；清单值为空 | 启动前导出独立应用令牌 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 BYOK模块导入时捕获设置，密钥最多8192字符且无控制字符。原生环境仅临时本地token、最小PATH、私有HOME/config/cache；真实密钥只发往精确授权Chat来源。同用户OS访问仍存在，cwd与环境过滤不是另一个租户边界。旧配置行为单独保留。结果与错误不包含私有地址、密钥或完整轨迹。
 

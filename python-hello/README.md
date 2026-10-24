@@ -72,7 +72,7 @@ All arguments below are strings with no template-defined length limit. Paths may
 
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | Required; empty manifest declaration | Export the independent application token before launch | Optional server bearer authentication; inject at sandbox creation. |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 | `WORKSPACE` | No | Directory containing `commands.py` | Existing directory used by all Python subprocesses; override alongside your upload paths. |
 | `ABX_SERVER_BASE_DIR` | No | `/home/user` | File API path boundary; a custom workspace must be inside the configured boundary. This does not restrict arbitrary Python execution. |
 | `ABX_SERVER_PORT` | No | `9000` | Local `python3 commands.py` port; cloud `start_cmd` explicitly uses 9000. |

@@ -70,7 +70,7 @@ Native completion requires exact correlated original model/usage/terminal record
 | MUSE_MODEL_BASE_URL | empty; required for coding | Explicit HTTPS Responses base, max2048characters, no userinfo/query/fragment; literal-loopback HTTP only for authored fixtures |
 | MUSE_MODEL | empty; required for coding | Actual upstream model identifier,1..200allowed identifier characters |
 | WORKSPACE | `/home/user/app` | Existing caller project root |
-| ABX_SERVER_TOKEN | Required; empty manifest declaration | Export the independent application token before launch |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 
 Captured at commands.py import; presence flags do not prove authentication. Key max8192/no control characters. Native receives only a fresh per-call local relay token by anonymous stdin. The parent relay uses the upstream key only for the exact approved Responses endpoint, rejects redirects and wrong route/token/model, and retains no transcript. Native/tools use a minimal environment and private HOME/cache/config; caller project artifacts persist. Same-user OS access remains; cwd containment and environment filtering are not another tenant boundary. `--yolo` selects the disposable outer sandbox as the execution boundary.
 

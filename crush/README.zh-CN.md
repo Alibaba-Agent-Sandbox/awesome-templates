@@ -69,7 +69,7 @@ print(await client.commands.run('crush_version'))
 | CRUSH_BASE_URL | model calls | empty | HTTP(S) endpoint; no userinfo/query/fragment |
 | CRUSH_MODEL | model calls | empty | bounded native model identifier |
 | WORKSPACE | no | /home/user/app | existing caller workspace |
-| ABX_SERVER_TOKEN | 必填；清单值为空 | 启动前导出独立应用令牌 | server process bearer token |
+| ABX_SERVER_TOKEN | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | CRUSH_BINARY | diagnostics | image PATH | binary override; actual version still checked |
 
 独立HOME/XDG/CRUSH配置数据目录，使用原生禁用默认提供方及自动更新开关。上游自动读取项目配置，因此cwd至最近Git根目录间存在.crushrc/crushrc/.crush.json/crush.json时，在运行前拒绝，保留调用者原文件；无Git时只检查cwd。子进程仅继承PATH/可选CA和私有运行设置，排除云/GitHub/服务密钥。显式模型密钥与地址写入私有0600配置，返回诊断替换其完整值；项目输出仍可能含项目私密内容。

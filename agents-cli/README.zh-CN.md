@@ -84,7 +84,7 @@ print(await client.commands.run('agents_version'))
 
 | 名称 | 必需 | 用途 |
 |---|---|---|
-| `ABX_SERVER_TOKEN` | 必填；清单值为空 | 启动前导出独立应用令牌 |
+| `ABX_SERVER_TOKEN` | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `OPENAI_API_KEY` | 兼容模型调用需要 | Qwen 及兼容 Codex 配置的模型凭据，清单中为空 |
 | `CODEX_API_KEY` | Codex 可选替代项 | 清单中为空；实际支持取决于上游及提供方配置 |
 | `OPENAI_BASE_URL`、`OPENAI_MODEL` | 取决于提供方 | Qwen 兼容端点和模型配置 |

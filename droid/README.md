@@ -75,7 +75,7 @@ This subprocess lifecycle requires Linux. The command closes its owned process g
 | `DROID_MODEL_BASE_URL` | Empty; required for BYOK | Explicit HTTPS compatible base, at most2048 characters, no userinfo/query/fragment; literal local HTTP only for fixtures. |
 | `DROID_MODEL` | Empty; required for BYOK | Explicit1–200-character model identifier. |
 | `FACTORY_API_KEY` | Empty | Factory account API key, injected at creation. Required only for `droid`. |
-| `ABX_SERVER_TOKEN` | Required; empty manifest declaration | Export the independent application token before launch |
+| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 | `WORKSPACE` | `/home/user/app` | Existing project root; an invalid explicit root fails. |
 | `FACTORY_DROID_AUTO_UPDATE_ENABLED` | `false` | Forced off in subprocesses to preserve the pin. |
 

@@ -75,7 +75,7 @@ Outputs use a plain filename beginning with an ASCII letter/digit, followed by a
 
 | Name | Required | Default | Purpose |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | Required; empty manifest declaration | Export the independent application token before launch | Process-start server authentication. |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | no | `9000` | Direct local server startup port. |
 | `WORKSPACE` | no | `/home/user/app` | Existing input/output directory owned by the runtime user. |
 

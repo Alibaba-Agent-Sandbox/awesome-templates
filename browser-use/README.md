@@ -75,7 +75,7 @@ Exactly15 native actions are enabled: done/navigate/click/input/scroll/wait/go_b
 | PLAYWRIGHT_BROWSERS_PATH | no | /opt/playwright | installed Chromium1208 cache |
 | BROWSER_USE_BROWSER_BINARY | diagnostics | Chromium1208/chrome-linux64/chrome | executable override; actual145.0.7632.6 still required |
 | WORKSPACE | no | /home/user/app | owned root for new browser-use-artifacts PNGs |
-| ABX_SERVER_TOKEN | Required; empty manifest declaration | Export the independent application token before launch | command-server process bearer token |
+| ABX_SERVER_TOKEN | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 
 Model settings enter private file stdin only; they are not inherited into Chromium. Every call has fresh HOME/XDG/profile/native file-system state. Disable native telemetry/cloud sync/default extensions and use_cloud; no caller profile or saved browser account is imported. CDP launch requests loopback binding and only command9000 is advertised. This container-only profile explicitly sets chromium_sandbox=false instead of relying on Docker detection; the owned sandbox supplies OS isolation. The browser and model still have sandbox-user authority and network access; these action restrictions are not another OS isolation boundary. Returned result/PNG can contain private webpage information; exact configured model key/base values are redacted from result strings.
 

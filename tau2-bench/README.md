@@ -99,7 +99,7 @@ invalid source/task, reward mismatch or malformed output fails the command.
 | `TAU2_MODEL_BASE_URL` | Required for run; empty | Explicit HTTPS compatible base URL, at most2048 characters; literal local HTTP permitted for synthetic fixtures. No userinfo, query or fragment. |
 | `TAU2_MODEL` | Required for run; empty | Explicit model identifier, at most200 allowed identifier characters. |
 | `WORKSPACE` | `/home/user/workspace` | Existing writable result root. |
-| `ABX_SERVER_TOKEN` | Required; empty manifest declaration | Export the independent application token before launch |
+| `ABX_SERVER_TOKEN` | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 
 Settings are captured at server import. Both native participants receive the same
 explicit `openai/` model and `api_base`; the key is supplied only to the private

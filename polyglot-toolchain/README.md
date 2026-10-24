@@ -60,7 +60,7 @@ Both commands take no parameters. `toolchain_versions() -> dict` returns actual 
 
 ## Configuration
 
-No model key. `ABX_SERVER_TOKEN` is an optional empty manifest placeholder; inject the value into the server process. `JAVA_HOME=/opt/toolchains/java`, `GOTOOLCHAIN=local`; image PATH selects only the pinned toolchains. The smoke owns its Go build cache and removes it.
+No model key. Export `ABX_SERVER_TOKEN` before application launch; the manifest declares its name with an empty value. `JAVA_HOME=/opt/toolchains/java`, `GOTOOLCHAIN=local`; image PATH selects only the pinned toolchains. The smoke owns its Go build cache and removes it.
 
 Version1.0.1 explicitly owns the runtime workspace. Native children inherit only PATH/HOME/JAVA_HOME/TMPDIR plus fixed locale and GOTOOLCHAIN=local; cloud/model/server credentials and injected compiler/loader options are excluded. Output is drained concurrently with a256KiB limit per stream, a90-second deadline and owned group cleanup. Earlier1.0.0 attempts do not qualify this changed profile.
 

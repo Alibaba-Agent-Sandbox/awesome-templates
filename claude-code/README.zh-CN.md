@@ -74,7 +74,7 @@ print(await client.commands.run('claude_version'))
 | CLAUDE_MODEL | 空，BYOK必需 | 选定模型，1..200允许的标识字符 |
 | ANTHROPIC_API_KEY | 空，仅旧模式 | 旧Anthropic兼容配置；新增入口不会隐式复用 |
 | WORKSPACE | /home/user/app | 已有项目根目录 |
-| ABX_SERVER_TOKEN | 必填；清单值为空 | 启动前导出独立应用令牌 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 新增配置在模块导入时捕获。密钥最多8192字符且无控制字符；不默认回退厂商、模型或密钥。原CLI和工具仅获得临时本地适配器token、最小环境以及私有HOME/config/cache；真实密钥仅父进程持有并只发往明确指定的Chat来源。结果与错误不含凭据、私有地址或完整轨迹。同用户OS访问仍存在；环境过滤和cwd约束不构成另一个租户边界。旧接口resume与设置行为保留，不纳入BYOK隔离承诺。
 

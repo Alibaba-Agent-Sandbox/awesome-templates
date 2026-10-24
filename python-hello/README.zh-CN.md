@@ -72,7 +72,7 @@ print(await client.commands.run('hello', name='Express'))
 
 | 变量 | 必填 | 默认值 | 用途 |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | 必填；清单值为空 | 启动前导出独立应用令牌 | 可选服务端 bearer 认证，在创建沙箱时注入。 |
+| `ABX_SERVER_TOKEN` | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `WORKSPACE` | 否 | `commands.py` 所在目录 | 所有 Python 子进程使用的已有目录，调整时同步修改上传路径。 |
 | `ABX_SERVER_BASE_DIR` | 否 | `/home/user` | 文件 API 路径边界；自定义工作目录需位于该边界内。此设置不限制任意 Python 代码。 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 本地 `python3 commands.py` 监听端口；云端 `start_cmd` 固定指定 9000。 |

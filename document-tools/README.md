@@ -76,7 +76,7 @@ One conversion runs at a time. Pandoc has 1 GiB address space, a 256 MiB Haskell
 
 | Name | Required | Default | Purpose |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | Required; empty manifest declaration | Export the independent application token before launch | Configure authentication before the server process starts. |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | no | `9000` | Port for direct local startup. |
 | `WORKSPACE` | no | `/home/user/app` | Existing runtime-user-owned input/output directory. |
 | `DOCUMENT_PANDOC_BINARY` | no | `/usr/bin/pandoc` | Operator-only absolute executable path, still version checked. |

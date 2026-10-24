@@ -109,7 +109,7 @@ print(await client.commands.run('codex_version'))
 | `CODEX_MODEL` | 否 | 空 | 写入 `config.toml` 的 `model`；`codex_exec` 未传 `model` 时使用。 |
 | `CODEX_HOME` | 否 | `/home/user/.codex` | `config.toml` 和会话目录。 |
 | `WORKSPACE` | 否 | `/home/user/workspace` | 默认 `cwd`。镜像里有一份起始 `AGENTS.md`。 |
-| `ABX_SERVER_TOKEN` | 必填；清单值为空 | 启动前导出独立应用令牌 | 设置后客户端发送 `Authorization: Bearer`。 |
+| `ABX_SERVER_TOKEN` | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 本地 `python3 commands.py` 的端口。 |
 
 在 `template launch` 前安全导出清单中声明为空的秘密变量，让应用启动时读取；不要写入镜像、YAML 或日志。

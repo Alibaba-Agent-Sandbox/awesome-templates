@@ -95,7 +95,8 @@ SSE 包括 `agent.session.created`、`agent.session.turn.started`、`agent.sessi
 | `WORKSPACE` | `/home/user/workspace` |
 | `AGENT_MAX_SESSIONS` | `20` |
 | `AGENT_SESSION_TTL` | `1800` 秒；每 60 秒 GC |
-| `ABX_SERVER_PORT`、`ABX_SERVER_TOKEN` | 启动 application 工作流前必填；独立于模型和网关凭据 |
+| `ABX_SERVER_PORT` | `9000`；服务端口 |
+| `ABX_SERVER_TOKEN` | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 服务最多保留 200 个 agent 配置，每会话最多 100 轮。回放及保留 item 缓冲各限制为 1000 个事件 / 2 MB；单行 JSONL 超过 256000 字节时轮次失败。stderr 始终消费，只将有界且脱敏的尾部用于错误提示。环境秘密值、请求提供的 MCP header 值与 bearer token 从返回事件、配置、错误和文本 artifact 中脱敏。Artifact 拒绝 `.env`、`.aws`、`.codex`、`.ssh` 路径及指向工作区外的符号链接。标准 shell/files 接口仍需要受信任访问及 server policy；这些过滤不是租户隔离。
 

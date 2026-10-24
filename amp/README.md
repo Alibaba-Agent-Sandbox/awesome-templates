@@ -104,7 +104,7 @@ This subprocess lifecycle requires Linux. The command closes its owned process g
 | `AMP_URL` | no | `https://ampcode.com/` | Amp service URL. The CLI's own default. Not set by the image. |
 | `AMP_SETTINGS_FILE` | no | `/home/user/.config/amp/settings.json` in the image | Caller-owned settings file inspected without writes. |
 | `AMP_LOG_FILE` | no | `/home/user/.cache/amp/logs/cli.log` in the image | CLI log path. |
-| `ABX_SERVER_TOKEN` | Required; empty manifest declaration | Export the independent application token before launch | When set inside the sandbox, clients send `Authorization: Bearer`. |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | no | `9000` | Port for a local `python3 commands.py`. |
 
 Before `template launch`, securely export the secret variables declared empty in the manifest so the application reads them at startup. Keep values out of images, YAML and logs.

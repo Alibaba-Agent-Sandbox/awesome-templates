@@ -81,7 +81,7 @@ quiet文本输出和提供方/模型，工具模式仅加载developer builtin。
 | GOOSE_BASE_URL | 模型调用 | 空 | 显式HTTP(S)地址，无userinfo/query/fragment，映射上游OPENAI_BASE_URL |
 | GOOSE_MODEL | 模型调用 | 空 | 上游真实模型ID |
 | WORKSPACE | 否 | /home/user/app | 自有工作目录 |
-| ABX_SERVER_TOKEN | 必填；清单值为空 | 启动前导出独立应用令牌 | 命令server进程bearer token |
+| ABX_SERVER_TOKEN | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | GOOSE_BINARY | 仅操作端诊断 | 镜像PATH中的Goose | 独立安装的二进制，仍检查精确版本 |
 
 私有GOOSE_PATH_ROOT/HOME和XDG目录，关闭keyring、遥测、自动会话命名，

@@ -71,7 +71,7 @@ Next 使用本地 next dev --webpack --hostname0.0.0.0 --port3000；Vite 使用�
 
 | 名称 | 默认值 | 用途 |
 |---|---|---|
-| ABX_SERVER_TOKEN | 必填；清单值为空 | 启动前导出独立应用令牌 |
+| ABX_SERVER_TOKEN | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | ABX_SERVER_PORT | 9000 | 本地命令服务端口 |
 | WORKSPACE | /home/user/app | 已存在工作区 |
 | NEXT_APP_TOOLCHAIN | /opt/next-app | 可信固定工具链；本机测试可指向安装目录 |

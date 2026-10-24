@@ -70,7 +70,7 @@ print(await client.commands.run('muse_version'))
 | MUSE_MODEL_BASE_URL | 空；编码必需 | 显式HTTPS Responses基址，最长2048字符，无userinfo/query/fragment；自编fixture仅可用字面loopback HTTP |
 | MUSE_MODEL | 空；编码必需 | 实际上游模型标识，1..200个允许字符 |
 | WORKSPACE | `/home/user/app` | 调用方已有项目根目录 |
-| ABX_SERVER_TOKEN | 必填；清单值为空 | 启动前导出独立应用令牌 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 commands.py导入时捕获配置；存在标志不证明账号有效。key最长8192且无控制字符。原生进程仅通过匿名stdin取得逐次随机本地代理token。父代理只向固定授权Responses端点使用上游密钥，拒绝重定向及错误路由/token/model，不留轨迹。原版工具采用最小环境及私有HOME/缓存/配置，调用方项目产物保留。同一用户仍有OS访问权限，cwd检查和环境过滤不构成额外租户边界；`--yolo`选择自建外层沙箱作为执行边界。
 

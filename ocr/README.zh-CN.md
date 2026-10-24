@@ -68,7 +68,7 @@ print(await client.commands.run('ocr_smoke'))
 
 | 名称 | 必填 | 默认值 | 用途 |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | 必填；清单值为空 | 启动前导出独立应用令牌 | 创建沙箱时配置，客户端发送 bearer token。 |
+| `ABX_SERVER_TOKEN` | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 直接本地启动端口。 |
 | `WORKSPACE` | 否 | `/home/user/app` | 已存在、运行用户拥有的输入输出根目录。 |
 | `OCR_TESSERACT_BINARY` | 否 | `/usr/bin/tesseract` | 运维配置的绝对程序路径，仍检查固定版本。 |

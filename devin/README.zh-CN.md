@@ -72,7 +72,7 @@ prompt为1..32768UTF8字节、非空且无NUL；cwd最长4096UTF8字节、无NUL
 | --- | --- | --- |
 | DEVIN_CREDENTIALS_FILE | 空；诊断／错误路径可缺，账号任务需要 | 包装层变量，模块导入捕获路径；绝对路径、WORKSPACE外、root或当前UID持有的普通非符号链接、无组／其他权限、1..65536字节合法UTF8TOML |
 | WORKSPACE | /home/user/app | 导入捕获的项目根目录 |
-| ABX_SERVER_TOKEN | 必填；清单值为空 | 启动前导出独立应用令牌 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 缺文件时让原版print明确返回登录拒绝；不执行交互登录、不虚构DEVIN_API_KEY、不借用其他模型／云密钥。子进程只收到最小私有状态环境，不继承操作端密钥或源凭证路径。返回stdout脱敏已知TOML字符串、服务Bearer／私有HOME／源文件路径；原生错误隐藏原输出。同一服务最多一个操作，重叠返回busy。
 

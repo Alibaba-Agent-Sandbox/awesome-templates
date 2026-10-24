@@ -75,7 +75,7 @@ print(await client.commands.run('document_version'))
 
 | 名称 | 必需 | 默认 | 用途 |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | 必填；清单值为空 | 启动前导出独立应用令牌 | server 进程启动前配置鉴权。 |
+| `ABX_SERVER_TOKEN` | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 本地直接启动端口。 |
 | `WORKSPACE` | 否 | `/home/user/app` | 已存在且属于运行用户的输入/输出目录。 |
 | `DOCUMENT_PANDOC_BINARY` | 否 | `/usr/bin/pandoc` | 运维指定绝对程序路径，仍检查版本。 |

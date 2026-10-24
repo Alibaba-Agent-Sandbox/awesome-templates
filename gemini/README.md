@@ -74,7 +74,7 @@ Translate only text and original function declarations/results with exact IDs or
 | GEMINI_API_KEY | empty; legacy only | Existing Google/native-compatible key; BYOK never silently reuses it |
 | GEMINI_MODEL | gemini-3.1-flash-lite; legacy only | Existing legacy default; separate from explicit BYOK selection |
 | WORKSPACE | /home/user/app | Existing caller project root |
-| ABX_SERVER_TOKEN | Required; empty manifest declaration | Export the independent application token before launch |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 
 BYOK settings captured at module import; key max8192/no control characters. Native environment has only fresh local adapter token, minimal PATH and private HOME/config/cache; real upstream key is sent only to exact approved Chat origin. Same-user OS access remains; cwd/environment filters are not another tenant boundary. Existing legacy configuration behavior stays separate. No private endpoints/keys/transcripts in results or errors.
 

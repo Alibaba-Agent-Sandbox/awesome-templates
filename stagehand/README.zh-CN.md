@@ -67,7 +67,7 @@ task／提取指令各最多32768 UTF-8字节，URL最多8192。结果含 `versi
 | STAGEHAND_API_KEY | 模型必需，空 | 授权兼容模型端点密钥，不是 Browserbase token |
 | STAGEHAND_BASE_URL | 模型必需，空 | HTTPS API base，包含实际 API 前缀，追加 `/chat/completions`；仅本地开发可用 literal localhost HTTP；无用户信息／query／fragment |
 | STAGEHAND_MODEL | 模型必需，空 | 实际模型名，最多200个允许的标识字符 |
-| ABX_SERVER_TOKEN | 必填；清单值为空 | 启动前导出独立应用令牌 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | WORKSPACE | `/home/user/app` | 已存在产物根目录 |
 
 上游 ClientLLM 结构化请求支持文本和图片，必须完整返回 JSON-schema 结果；请求最多2MiB、响应1MiB，每次推理60秒，不自动重定向、重试或切换提供方。配置在服务 import 时读取。模型秘密只经匿名 stdin 内存传入 Node，不写文件、不进 argv／浏览器环境。浏览器只继承选定运行时／证书变量以及全新私有 HOME／cache／profile。明确在外层一次性沙箱中关闭 Chromium 内层 sandbox；这不构成租户安全边界。页面能访问沙箱可达网络，命令调用者需要受信任且认证。

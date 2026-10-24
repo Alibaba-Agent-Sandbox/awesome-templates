@@ -109,7 +109,7 @@ print(await client.commands.run('opencode_version'))
 | `OPENCODE_MODEL` | 否 | `dashscope/qwen3.8-flash` | `model` 为空时使用。 |
 | `OPENCODE_API_KEY` | 否 | 空 | `model` 为 `opencode/<id>` 时的 OpenCode Zen 凭证。 |
 | `OPENCODE_SERVER_PASSWORD` | 否 | 空 | `opencode serve` 的基本认证密码。未设置时 CLI 会警告。 |
-| `ABX_SERVER_TOKEN` | 必填；清单值为空 | 启动前导出独立应用令牌 | 设置后，端口 9000 需要 `Authorization: Bearer`。把 `token=` 传给 SDK 客户端。不设置则允许匿名调用。 |
+| `ABX_SERVER_TOKEN` | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `OPENCODE_CONFIG` | 否 | `/home/user/app/opencode.json` | 子进程读取的配置文件。 |
 | `OPENCODE_DISABLE_AUTOUPDATE` | 否 | 镜像里为 `true` | 阻止已钉死的 CLI 自行升级。 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 本地 `python3 commands.py` 时 `start()` 绑定的端口。 |

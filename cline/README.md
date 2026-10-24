@@ -73,7 +73,7 @@ Runtime1.0.2 writes the provider profile at the exact native-resolved private da
 | CLINE_MODEL_BASE_URL | model required; empty | Explicit HTTPS API base, literal localhost HTTP for authored development only; no userinfo/query/fragment; max2048characters |
 | CLINE_MODEL | model required; empty | Actual model identifier, max200allowed identifier characters |
 | WORKSPACE | `/home/user/workspace` | Existing workspace root |
-| ABX_SERVER_TOKEN | Required; empty manifest declaration | Export the independent application token before launch |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 
 Values are captured when commands.py loads. The wrapper writes only provider/model/base metadata into private0600settings, not a model key value; native key resolution uses its documented environment support. Native state is private and removed on return/failure. Global telemetry/auto-update and runtime file logging are disabled; public/private model catalog refresh is disabled. Cline config/data/team/MCP paths are per-call and no caller GitHub/cloud keys, alternate binary override or Cline account token is forwarded. Host operator credentials never enter the native coding process.
 

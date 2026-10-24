@@ -111,7 +111,7 @@ PDF execution runs in a private-HOME child with its own1–120second execution d
 |---|---|---|
 | `PLAYWRIGHT_BROWSERS_PATH` | `/opt/playwright` in the image | Shared readable Chromium installation |
 | `WORKSPACE` | `/home/user/app` | Script root and `browser-artifacts/` output root; keep aligned with the server file policy |
-| `ABX_SERVER_TOKEN` | Required; empty manifest declaration | Export the independent application token before launch |
+| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | `9000` | Local `python3 commands.py` server port |
 
 Outputs from extraction, screenshots, links and user scripts may contain sensitive
