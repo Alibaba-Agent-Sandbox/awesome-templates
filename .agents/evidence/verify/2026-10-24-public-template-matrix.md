@@ -138,3 +138,9 @@ passed without printing secret values. Local current-document link validation
 passed (222 documents), as did the six explicitly checked new/updated record and
 PR-template documents. The repository’s normal current-head CI and review remain
 the merge gates; this record does not substitute the cloud run for those checks.
+
+A second reviewer independently checked all 92 stored report SHA256 values against
+the summary, reconciled 46 cases per provider and 438 calls, re-ran the complete
+job/cleanup verifier, and reviewed the host/guest and Git-provenance boundaries.
+No blocking discrepancy was found. Later CLI releases do not change this run’s
+recorded public CLI 0.4.16 input.
