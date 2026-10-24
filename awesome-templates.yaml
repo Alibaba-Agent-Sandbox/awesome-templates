@@ -582,17 +582,17 @@ managed_templates:
   - docs/managed/evidence/verification-opensandbox-code-interpreter-2026-10-21-native-docker.json
   workflow_contract_version: 1
   provides: {}
-  default_workflow: native-interpreter
+  default_workflow: exec
   workflows:
-    native-interpreter:
-      kind: interpreter
+    exec:
+      kind: exec
       input: managed
       startup: none
       binding:
-        transport: http
+        transport: exec
         endpoint: provider-native
         caller: host
         authentication: provider
-      operation: code.default-context.execute
+      operation: exec.run
       required_operations: []
   spec_version: 4

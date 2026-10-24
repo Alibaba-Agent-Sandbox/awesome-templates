@@ -8,7 +8,7 @@ import argparse,asyncio,contextlib,hashlib,importlib.metadata,json,logging,os,re
 from datetime import timedelta
 from pathlib import Path
 
-PINS={'upstream':'30348cbdfe4b9cfd49e0963617aed357a8f1ac4c','provider':'9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d','cli':'c8e8ad784323b8903505442cbc77d433a0d0367a','sdk':'33f857f5a79fd10326652e9d03f15f3621d6b848'}
+PINS={'upstream':'30348cbdfe4b9cfd49e0963617aed357a8f1ac4c','provider':'6eec4e76bb955a2a8cd89f725e66bb7887d6c819','cli':'413d575a688bd6f870c42c711d11346d176e0f38','sdk':'1b235830bc4a8cbec275b530bf2dc2869e8d0c4b'}
 RESULT={'provider':'opensandbox','template':'opensandbox-code-interpreter','template_id':'opensandbox/code-interpreter:v1.1.0','build_mode':'external-docker-image','passed':False,'cleanup_verified':False,'native_interpreter_verified':False,'pins':PINS,'checks':[]}
 
 def check(value,label):
@@ -32,8 +32,49 @@ def image(reference):
     digest=next(value for value in data['RepoDigests']if value.startswith(reference.split(':')[0]+'@sha256:'))
     return {'requested':reference,'digest':digest,'image_id':data['Id'],'architecture':data['Architecture']}
 
+async def exercise_default(image_id):
+    """The catalog default uses exec, without starting a native interpreter service."""
+    from agent_sandbox import ProviderSandbox
+    from agent_sandbox.models.errors import SandboxNotFoundError
+    baseline=docker_ids();sb=None;sid=None;nonce='managed-default-'+uuid.uuid4().hex
+    failures=[];absence=False
+    try:
+        sb=await ProviderSandbox.create(provider='opensandbox',template=RESULT['template_id'],timeout=180,
+            metadata={'verification':nonce})
+        sid=sb.id
+        observed=json.loads(subprocess.check_output(['docker','inspect',*sorted(docker_ids()-baseline)],text=True))
+        check(any(sid in value['Name'] and value['Image']==image_id for value in observed),'default managed image identity')
+        check(any(sid in value['Name'] and '/opt/code-interpreter/code-interpreter.sh' not in str(value['Config']['Cmd']) for value in observed),'default managed instance does not select native interpreter entrypoint')
+        result=await sb.commands.run("python3 -c 'print(6*7)'",timeout=30)
+        check(result.exit_code==0 and result.stdout.strip()=='42','default managed create and exec returns 42')
+        RESULT['default_exec_verified']=True
+    finally:
+        if sb is not None:
+            try:await sb.kill()
+            except Exception as exc:failures.append(type(exc).__name__)
+            try:await sb.close()
+            except Exception as exc:failures.append(type(exc).__name__)
+        else:
+            # A missing create response must be reconciled by this request's metadata.
+            try:
+                owned=[v for v in await ProviderSandbox.list(provider='opensandbox') if v.metadata.get('verification')==nonce]
+                if not owned:failures.append('unresolved_create')
+                for item in owned:await ProviderSandbox.kill_by_id(item.sandbox_id,provider='opensandbox')
+            except Exception as exc:failures.append(type(exc).__name__)
+        for _ in range(60):
+            if sid:
+                try:await ProviderSandbox.get_info_by_id(sid,provider='opensandbox')
+                except SandboxNotFoundError:absence=True
+                except Exception:pass
+            if absence and not(docker_ids()-baseline):break
+            await asyncio.sleep(.5)
+        clean=absence and not(docker_ids()-baseline) and not failures
+        RESULT['default_cleanup']={'sdk_not_found':absence,'no_new_containers':not(docker_ids()-baseline),'errors':failures}
+        RESULT['default_cleanup_verified']=clean
+        check(clean,'default managed instance independently absent')
+
 async def exercise(work,image_uri,image_id):
-    from agent_sandbox.api.sandbox import Sandbox
+    from agent_sandbox import ProviderSandbox as Sandbox
     from agent_sandbox.models.errors import SandboxNotFoundError,ProviderFeatureNotSupportedError
     from opensandbox import Sandbox as NativeSandbox
     from opensandbox.config import ConnectionConfig
@@ -42,6 +83,7 @@ async def exercise(work,image_uri,image_id):
     sb=native=interpreter=None;sid=None;owned_containers=set();cleanup_error=None
     try:
         sb=await Sandbox.create(provider='opensandbox',template=image_uri,timeout=600,cpu=2,memory=3072,
+            provider_options={'entrypoint':'/opt/code-interpreter/code-interpreter.sh'},
             envs={'PYTHON_VERSION':'3.11','JAVA_VERSION':'17','NODE_VERSION':'20','GO_VERSION':'1.24'},metadata={'verification':nonce})
         sid=sb.id;owned_containers=docker_ids()-baseline
         (work/'owned-intent.json').write_text(json.dumps({'id':sid,'metadata':nonce,'docker_ids':sorted(owned_containers)}))
@@ -115,6 +157,10 @@ async def exercise(work,image_uri,image_id):
         check(RESULT['cleanup_verified'],'independent SDK NotFound and Docker container absence')
         if (work/'owned-intent.json').exists()and RESULT['cleanup_verified']:(work/'owned-intent.json').unlink()
 
+async def exercise_cases(work, runtime):
+    await exercise_default(runtime["image_id"])
+    await exercise(work, runtime["digest"], runtime["image_id"])
+
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--fixtures',type=Path,required=True);parser.add_argument('--work',type=Path,required=True);parser.add_argument('--output',type=Path,required=True);args=parser.parse_args()
     fixtures=args.fixtures.resolve();work=args.work.resolve();work.mkdir(parents=True,exist_ok=True);work.chmod(0o700)
@@ -143,7 +189,8 @@ def main():
             else:raise RuntimeError('original server health timeout')
             check(True,'fixed-source original OpenSandbox Docker server health')
             subprocess.run([sys.executable,'-m','agent_sandbox.providers','install',str(fixtures/'providers/opensandbox'),'--yes'],stdout=log,stderr=log,check=True)
-            asyncio.run(exercise(work,runtime['digest'],runtime['image_id']))
+            check(all(importlib.metadata.version(name)=='0.3.1a5' for name in ['agent-sandbox-client','agent-sandbox-server']),'public paired Python packages 0.3.1a5')
+            asyncio.run(exercise_cases(work,runtime))
             RESULT['versions']={name:importlib.metadata.version(name)for name in ['agent-sandbox-client','agent-sandbox-server','opensandbox','opensandbox-code-interpreter']}
         except Exception as exc:
             failure=type(exc).__name__;traceback.print_exc();RESULT['error_type']=failure;RESULT['error_message']=safe_error(exc)
@@ -168,7 +215,7 @@ def main():
                 try:server.wait(timeout=10)
                 except subprocess.TimeoutExpired:os.killpg(server.pid,signal.SIGKILL);server.wait(timeout=5)
                 check(server.poll()is not None,'owned local original server process stopped')
-    RESULT['duration_s']=round(time.monotonic()-started,3);RESULT['passed']=failure is None and RESULT['native_interpreter_verified']and RESULT['cleanup_verified']and bool(RESULT['checks'])and 'failed_check'not in RESULT
+    RESULT['duration_s']=round(time.monotonic()-started,3);RESULT['passed']=failure is None and RESULT.get('default_exec_verified') and RESULT.get('default_cleanup_verified') and RESULT['native_interpreter_verified']and RESULT['cleanup_verified']and bool(RESULT['checks'])and 'failed_check'not in RESULT
     RESULT['controller_sha256']=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
     args.output.parent.mkdir(parents=True,exist_ok=True);args.output.write_text(json.dumps(RESULT,indent=2)+'\n')
     if os.environ.get('GITHUB_ACTIONS')=='true':
