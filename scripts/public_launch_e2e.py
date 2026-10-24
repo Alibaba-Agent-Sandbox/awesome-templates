@@ -17,6 +17,7 @@ from pathlib import Path
 import secrets
 import shlex
 import subprocess
+import tempfile
 import sys
 import urllib.parse
 
@@ -50,12 +51,19 @@ class CLI:
         if not self.command:
             raise ValueError('ABX_BIN must select an installed CLI')
         self.provider, self.env = provider, env
+        self.private_directory = Path(tempfile.mkdtemp(prefix="abx-public-launch-"))
+        self.call_count = 0
 
     def run(self, args, timeout=300, json_output=True):
         proc = subprocess.run(self.command + ['--provider', self.provider]
             + (['--json'] if json_output else []) + args,
             env=self.env, stdin=subprocess.DEVNULL, capture_output=True,
             text=True, timeout=timeout)
+        self.call_count += 1
+        log = self.private_directory / f'cli-{self.call_count}.log'
+        with log.open('x') as stream:
+            os.chmod(log, 0o600)
+            stream.write(proc.stdout + '\n' + proc.stderr)
         if proc.returncode:
             # Raw output can contain resource IDs or secrets; let the CLI journal
             # provide recovery and retain only the failed operation in this report.
@@ -237,6 +245,8 @@ async def verify(args):
         report['application_result'] = 'FAIL'
         # Exceptions from remote SDKs can contain private data; save type only.
         report['failure_type'] = type(failure).__name__
+        if isinstance(failure, RuntimeError) and str(failure).startswith('CLI '):
+            report['failed_check'] = str(failure)
         if isinstance(failure, AssertionError):
             report['failed_check'] = str(failure)
     finally:

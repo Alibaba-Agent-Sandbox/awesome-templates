@@ -38,7 +38,8 @@ inventory, then removes exact owned Hangzhou ACR tags using the existing cleanup
 verifier. Other registry types remain explicit pending cleanup. For the disposable
 OpenSandbox registry it removes exact owned manifests, checks absence and removes
 local tags. An uncertain intent is not blindly replayed. The private CLI journal
-contains recovery identifiers; reports contain counts and outcomes, never keys or
+contains recovery identifiers; raw subprocess diagnostics stay in a mode-0700 temporary
+`abx-public-launch-*` directory with mode-0600 files and are not uploaded; reports contain counts and outcomes, never keys or
 native IDs. `PARTIAL` is a nonzero result and must be reconciled before claiming a
 complete acceptance.
 
