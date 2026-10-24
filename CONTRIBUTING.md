@@ -38,33 +38,19 @@ already passes `scripts/check_template.py`. It is not a catalog entry.
    python3 scripts/run_local_e2e.py
    ```
 
-   With Express credentials, `python3 scripts/express_e2e.py <name>` is L2.
-   Concurrent runs share `/tmp/abx-acr-push.lock` so only one ACR push is
-   active. A deploy dies when CLI output is idle for `--idle-timeout` seconds
-   (default 180), then retries. Commit `evidence/express-<date>.json` only
-   when that command exits 0. `python3 scripts/image_size_report.py IMAGE`
-   prints per-layer sizes.
+   For actual source-launch acceptance, configure the selected provider and run:
 
-   Before build/deploy, the runner checks the executable supports current Express
-   list/create/kill syntax. Default CLI creation uses `abx create TEMPLATE --detach
-   --timeout SECONDS` and reads a single ID; cleanup uses `abx kill ID`.
-   Explicit SDK creation still requires compatible CLI list/cleanup. Historical
-   pinned review workflows retain their pinned runner.
+   ```bash
+   python scripts/public_launch_e2e.py <name> --provider alicloud-express --source ./<name> --output attempt.json
+   ```
 
-   The runner refuses an existing official template alias and requires
-   `abx template list --format json` for ownership checks. Exit 0 and
-   provider-pass evidence require successful owned sandbox/template cleanup.
-   The runner independently reads back known sandbox IDs/templates and the exact
-   official alias before publishing; cleanup acknowledgements alone are insufficient.
-   A failed or ambiguous deploy/create keeps a private `intent.json` outside the
-   checkout containing only owned identifiers, never credentials. Reconcile with
-   `python3 scripts/express_e2e.py --recover-intent PRIVATE_PATH` using the same
-   account/provider configuration. Recovery matches exact aliases/template IDs;
-   an empty inventory after an unknown response does not prove cancellation.
-   Successful recovery does not turn the failed attempt into L2 acceptance.
-   The deploy explicitly uses the owned alias as ACR repository and the fixed
-   temporary tag `review`; plan/private intent records both. Registry image
-   retention/deletion is separate from the runner's sandbox/template cleanup.
+   Use `--provider opensandbox` for that backend. Follow the
+   [public launch testing guide](docs/public-launch-testing.md) for installation,
+   the two-platform matrix, assertions and independent owned-resource cleanup.
+   Preserve failed attempts and unresolved cleanup; neither is a pass. The older
+   `express_e2e.py` deployment harness belongs to the
+   [pinned maintenance workflow](docs/canonical-express-review.md), not the current
+   default user path. Do not copy its historical native flags into public CLI examples.
 
 Do not commit `__pycache__/`, `.env`, or secret values. Declare secret
 *names* with empty values in `template.yaml` `env`.

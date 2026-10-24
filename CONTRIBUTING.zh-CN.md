@@ -22,14 +22,18 @@
    python scripts/run_local_e2e.py
    ```
 
-   本地检查不证明镜像、提供方和模型通过。Express L2 使用
-   `python scripts/express_e2e.py <name>`；配置与退出码见模板规范。
-   ACR 上传使用共享锁、空闲超时及重试；只有退出 0 且自有清理独立读回成功才能提交 pass 记录。
+   本地检查不证明镜像、提供方或模型通过。真实源码启动验收在配置所选 provider 后运行：
 
-运行器拒绝已有官方模板别名；不确定的 deploy/create 结果保留私有 intent。
-用 `python scripts/express_e2e.py --recover-intent PRIVATE_PATH` 精确对账；空列表不等于
-未知请求已取消。恢复成功不将原失败变成通过。临时 ACR 仓库/tag 的保留和删除独立于
-sandbox/template 清理。不要提交 `.env`、凭据、缓存或原始敏感日志；manifest 只声明空 secret 名。
+   ```bash
+   python scripts/public_launch_e2e.py <name> --provider alicloud-express --source ./<name> --output attempt.json
+   ```
+
+   OpenSandbox 改用 `--provider opensandbox`。安装、双平台矩阵、断言及独立自有资源清理见
+   [公开启动测试指南](docs/public-launch-testing.md#中文)。保留失败与未完成的清理，不记为通过。
+   旧 `express_e2e.py` 属于[固定版本维护流程](docs/canonical-express-review.zh-CN.md)，
+   不是当前默认用户入口；不要把历史 native 参数复制到当前公开 CLI 示例。
+
+不要提交 `.env`、凭据、缓存或原始敏感日志；manifest 只声明空 secret 名。
 
 ## 命名命令与使用
 
@@ -77,5 +81,3 @@ HTTP body 直接是参数对象，响应是 result envelope。进程启动配置
 产品 Agent Sandbox；CLI abx；npm `@agent-sandbox/cli`；客户端 distribution
 `agent-sandbox-client`（Python namespace `agent_sandbox`）；镜像 server 包
 `agent-sandbox-server`。不要安装同名无关项目 `agent-sandbox`。
-
-当前 Express 验收脚本在构建/部署前检查实际 CLI 的 list/create/kill 合同。默认创建使用 `abx create TEMPLATE --detach --timeout SECONDS`，仅解析单个沙箱 ID；清理使用 `abx kill ID`。显式 SDK 创建仍需要兼容的 CLI 列表和清理命令。固定历史版本的审查工作流继续使用其固定脚本。

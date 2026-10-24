@@ -9,7 +9,7 @@ Tooling that later template work relies on:
 | Tool | Role |
 |---|---|
 | `scripts/check_template.py` | Static lint. Exit 0 when the directory matches this spec. |
-| `scripts/express_e2e.py` | L2 on `alicloud-express`. Writes evidence only after smoke and owned sandbox/template cleanup pass. Serializes ACR pushes with a file lock and stops a push that makes no progress. |
+| `scripts/public_launch_e2e.py` | Installed CLI source launch, host CLI/Python/HTTP smoke and independent owned-resource cleanup on Express or OpenSandbox. |
 | `scripts/run_local_e2e.py` | L0 for every directory that has `commands.py` and `e2e_test.py`. Also runs the checker. |
 | `scripts/image_size_report.py` | Per-layer sizes of a local image (`docker history`). |
 
@@ -28,7 +28,7 @@ A template is one directory at the repository root. The directory name, `templat
 ├── e2e_test.py
 ├── README.md
 ├── README.zh-CN.md
-└── evidence/                 # only after a passing provider run
+└── evidence/                 # dated attempts; successful receipts remain distinct
     └── express-<YYYY-MM-DD>.json
 docs/design/<name>.md         # required for every product template
 ```
@@ -44,7 +44,7 @@ docs/design/<name>.md         # required for every product template
 | `docs/design/<name>.md` | Pre-analysis. Copy [docs/design/_TEMPLATE.md](./design/_TEMPLATE.md). |
 | `evidence/*.json` | Sanitized machine-readable results. Provider/date qualification files require a passing run and independent cleanup; retain failed attempts under distinct attempt filenames without claiming provider acceptance. |
 
-OpenSandbox images that the SDK already resolves (`code-interpreter`, `code-interpreter-base`, `desktop`, `playwright`, `vscode`) stay out of this repository. Do not copy those Dockerfiles in.
+Provider-managed runtimes are catalog references, not copied source recipes. Keep their provider identity and usage contract in the managed catalog described below.
 
 ## template.yaml
 
@@ -117,16 +117,12 @@ smoke:
 | `priority` | `P0`, `P1`, or `P2`, matching `docs/template-backlog.json` when the template is listed there. |
 | `wave` | `1` (whole product on Express), `2` (a stated slice), `3` (needs another provider for the workload), or `other`. |
 | `provides`, `workflows`, `default_workflow` | Provided services, explicit call paths and one default path; see [workflow contracts](workflows.md). |
-| `smoke` | List of `{command, args, expect}` run by `scripts/express_e2e.py`. `args` keys are the command parameters. `expect` is compared after strip for strings. |
+| `smoke` | List of `{command, args, expect}` run by `scripts/public_launch_e2e.py`. `args` keys are the command parameters. An optional `expect` is compared after strip for strings; without it, a successful nonempty result proves only the call path. |
 
-`abx template deploy` reads `generation`, `start_cmd`, and `ready_cmd` from this file (CLI flags win). On `alicloud-express`, a directory with `commands.py` and no explicit values defaults to generation 2 and:
-
-```
-agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
-agent-sandbox-server healthcheck --port 9000
-```
-
-Write the three keys anyway. The default path is wrong for an image whose `commands.py` is not at `/home/user/app/commands.py`.
+`template launch` uses the selected workflow, `start_cmd` and `ready_cmd` to start
+and probe this instance's application. Preserve the generation and startup fields
+in the source recipe; the runtime path must match the selected workflow. Creating
+another sandbox from a prepared reference does not inherit a running process.
 
 Named commands are not listed in `template.yaml`. They are registered in `commands.py`.
 
@@ -141,7 +137,7 @@ compatibility mode.
 
 `template.yaml` is the sole user configuration entry. Do not add `agent-app.yaml`.
 Application deployment is an explicit CLI operation; installing a template,
-importing a module, building a sandbox image, or `Sandbox.create()` never executes
+importing a module, building a sandbox image, or `ProviderSandbox.create()` never executes
 application hooks or deploys FC functions. Sandbox providers and application
 deployment adapters remain separate interfaces.
 
@@ -188,15 +184,23 @@ still apply independently; schema validity cannot certify a workflow or promote 
 
 ## Alibaba base image
 
-Express sandboxes run as non-root `user`, with 2 vCPU, no `/dev/kvm`, no Docker, no extra capabilities, about 10G of rootfs, and working egress. The platform base image is:
+The default official recipe keeps non-root `user` and declares resources in its manifest. Provider limits are separate from application requirements. Its base image is:
 
 ```
 fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 ```
 
-Workflow preparation does not automatically rewrite Dockerfile placeholders. Resolve region, version and immutable image identity through explicit reviewed build inputs before execution; unresolved inputs fail preflight. The effective FROM and build configuration are part of input identity.
+The installed CLI stages the official source recipe and resolves its supported
+`<region>` and `<tag>` placeholders using the selected provider's configuration or
+CLI defaults. For OpenSandbox's single-stage official recipe with `COPY *.whl /tmp/`, shared CLI staging
+builds the wheel from the exact SDK archive commit in a Docker builder stage;
+original runtime instructions and non-root execution are preserved. The source
+checkout is unchanged. Other image placeholders are not implicitly resolved and
+portable profiles are selected explicitly. Effective build inputs enter the receipt.
 
-The image entrypoint cannot be replaced. The Dockerfile has no `CMD` and no `ENTRYPOINT`. The platform runs `start_cmd` and probes `ready_cmd`. Generation 2 is required for those commands. Updating a generation-1 template of the same name while sending `start_cmd` fails. Deploy under a new name, or delete the generation-1 template first. `scripts/express_e2e.py` uses a unique alias so it does not delete a template it did not create.
+The default Express recipe must not replace the platform entrypoint with `CMD`
+or `ENTRYPOINT`. Preserve its generation2 startup/readiness configuration. An
+explicit portable profile is a separate reviewed recipe, not a silent fallback.
 
 `Dockerfile` shape:
 
@@ -230,9 +234,17 @@ A `RUN` line must use one of these two forms. The checker accepts either. A comm
 | PyPI | `pip install --no-cache-dir "agent-sandbox-server==X.Y.Z"` |
 | python-sdk git archive | `pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/<40-hex-sha>.tar.gz#subdirectory=server-sdk"` |
 
-`<40-hex-sha>` is the full commit of `Alibaba-Agent-Sandbox/python-sdk` (40 hex characters), not a short sha. On 2026-10-15, `agent-sandbox-server==0.3.0` was not on PyPI (`https://pypi.org/pypi/agent-sandbox-server/0.3.0/json` returned 404). Use the archive pin until that release exists. The archive install is the more exact pin: it selects the commit, including the Express server fixes on `61c43e0` and later.
+`<40-hex-sha>` is the full immutable `Alibaba-Agent-Sandbox/python-sdk` commit,
+not a short SHA or branch. A PyPI pin must identify an actually published version.
+The image SDK pin belongs to the recipe; it need not change merely because the
+host client gets a compatible bug-fix release.
 
-`abx template deploy` injects an `agent-sandbox-server` wheel into the build context when `ABX_SERVER_SDK_SOURCE` points at a `server-sdk` tree. The `if` branch installs that wheel. The `else` branch still carries one of the two pins. For a direct Docker build, supply the matching wheel when the recipe contains `COPY *.whl`; BuildKit does not make a missing COPY source optional. To build without wheel injection, select an explicit recipe such as python-hello's portable profile, which installs the pinned archive directly.
+Express uses its native preparation adapter. For OpenSandbox `template launch`,
+the official wheel recipe is prepared automatically as specified above; a host
+Python source checkout is unnecessary. A raw `docker build`
+that bypasses CLI preparation still needs a matching wheel for `COPY *.whl`, or an
+explicit recipe such as python-hello's portable profile that installs its pinned
+archive directly. Missing COPY inputs are not optional Docker instructions.
 
 Every `pip install` uses `--no-cache-dir`. An npm install deletes the npm cache in the same layer (`npm cache clean --force`).
 
@@ -290,7 +302,7 @@ if __name__ == "__main__":
 
 `/health` is exempt from server-token authentication; the provider gateway may still authenticate that request. A successful health probe does not prove named-command authentication or model configuration.
 
-The server reads `ABX_SERVER_TOKEN` when the process starts. When the variable is non-empty, protected requests need `Authorization: Bearer <token>` or `X-Access-Token: <token>`. Declare the name in `env` with an empty value. Provide the real value to the server process before it starts. Create-time injection (`abx create --env` or `Sandbox.create(envs=...)`) applies only when that provider starts the server with those values; it cannot reconfigure a prewarmed process. Follow [runtime environment configuration](runtime-environment.md), inspect the actual service and target its configured port.
+The server reads `ABX_SERVER_TOKEN` when the process starts. When the variable is non-empty, protected requests need `Authorization: Bearer <token>` or `X-Access-Token: <token>`. Declare the name in `env` with an empty value. Provide the real value to the server process before it starts. Create-time injection (`abx create --env` or `ProviderSandbox.create(envs=...)`) applies only when that provider starts the server with those values; it cannot reconfigure a prewarmed process. Follow [runtime environment configuration](runtime-environment.md), inspect the actual service and target its configured port.
 
 When the variable is unset, the application allows anonymous calls; provider gateway authentication remains separate. The client preserves the provider's gateway headers and sends an explicit application token as `Authorization: Bearer <token>`, also adding the existing application `X-Access-Token` header when unoccupied. Authentication failures are returned without an anonymous retry. Templates that set `ABX_SERVER_TOKEN` must document `await sb.application_client(port, token=...)` for the project Python API and `ABX_SERVER_TOKEN` for CLI named commands.
 
@@ -338,7 +350,7 @@ not delete the sandbox: delete your owned instance with `abx kill <sandbox-id>` 
 finished, and reconcile its prepared template/image separately. Record source refs
 and installed package versions for acceptance.
 
-Local L0 does not create a cloud sandbox. `scripts/run_local_e2e.py` starts `python3 commands.py`, sets `E2E_BASE_URL`, and runs `e2e_test.py`. That test may use HTTP against `E2E_BASE_URL`. Every cloud path uses the SDK above.
+Local L0 does not create a cloud sandbox. `scripts/run_local_e2e.py` starts `python3 commands.py`, sets `E2E_BASE_URL`, and runs `e2e_test.py`. That test may use HTTP against `E2E_BASE_URL`. Cloud acceptance must exercise the actual selected CLI/SDK/HTTP entry points.
 
 ### HTTP POST contract
 
@@ -353,39 +365,32 @@ never put real credentials in an example. Use the gateway access header required
 by the selected provider in addition to any server authentication.
 
 Named commands return buffered results. Distinguish a command execution deadline
-from the client HTTP timeout: `Sandbox.run(timeout=...)` controls the HTTP request,
+from the client HTTP timeout: `sb.application_client(..., timeout=...)` sets the client HTTP timeout,
 so a command deadline parameter must have a different name, such as
 `command_timeout` or `timeout_s`. A client timeout does not guarantee cancellation.
 Use process APIs for running, reconnecting to, and cancelling background tasks.
 
 ## Test levels
 
-Record only levels actually passed. Project verification is derived from complete receipts matching workflow, binding, input identity and independently trusted CI provenance. Old evidence retains its historical scope.
+These retained evidence labels describe test scope, not promotion or increasing platform support. Record only checks actually run with exact workflow, binding and source inputs. Old evidence retains its historical scope.
 
 | Level | Pass means |
 |---|---|
 | L0 | `python3 scripts/run_local_e2e.py` starts the template and `e2e_test.py` exits 0. A missing model key inside one case may print SKIP. That SKIP is not acceptance of the agent. `E2E_RUN_LLM=0` is what the local script sets. |
 | L1 | `docker build` succeeds and the log shows the pinned upstream version. |
-| L2 | `abx template deploy` reaches READY, `Sandbox.create(template=<id>)` (or `connect`) succeeds, and each smoke command is invoked from outside the sandbox through the SDK and asserted. Record provider `alicloud-express`, the UTC date, template version, and SDK version. Do not record the template id. |
+| L2 | The recorded Express source preparation/startup reaches readiness, and declared smoke commands pass through the recorded host entry points with independent owned cleanup. Record exact source, CLI/SDK versions, startup path and checks; preserve historical deploy receipts without claiming they tested later launch code. |
 | L3 | A real model or product call with a compatible key. Coding agents must modify an existing source file, create a new artifact, and pass independently executed tests in the sandbox. Verify artifacts through the remote files/process APIs when the server is remote. A response marker alone is insufficient. An empty key fails when `E2E_REQUIRE_LLM=1`. |
 | L4 | `e2b`, `opensandbox`, `alicloud-container`, or `cubesandbox`, only after a run on that provider. |
 
-`scripts/express_e2e.py <dir>` is the L2 runner. It writes `evidence/express-<YYYY-MM-DD>.json` only when every smoke command passed through the CLI and the SDK:
+The current default acceptance runner is [public source launch](public-launch-testing.md).
+It calls the installed CLI, then host CLI/Python/HTTP, and independently verifies
+sandbox, prepared-template and image cleanup. It records failed attempts separately;
+`PARTIAL` is not a pass. The retained native deployment harness is a
+[pinned maintenance workflow](canonical-express-review.md).
 
-The runner also requires successful owned sandbox/template cleanup before writing
-the pass file or returning exit 0, including independent SDK/official-list
-readback that the known sandbox IDs/templates and exact alias are absent. CLI
-kill/delete acknowledgements alone do not establish that. It refuses an existing exact alias through
-`abx --json template list`. Cleanup failures and unknown deploy/create
-responses retain a private, credential-free owned intent.
-`python3 scripts/express_e2e.py --recover-intent PRIVATE_PATH` uses existing official
-template list/delete and SDK sandbox list/kill APIs to reconcile only that attempt.
-An unresolved response stays blocked; recovery success does not grant provider
-acceptance to the original failed run. Registry-image retention is a separate
-operator responsibility; this runner cleans sandbox/template resources and local
-deploy processes.
-The canonical deploy passes `--acr-repo <owned-alias> --tag review`; the private
-intent records these exact registry identifiers for the operator.
+The following is the legacy dated receipt shape still read by the catalog checker.
+Its original source, calling path and cleanup scope remain historical. It is not
+the new public-launch report format and does not prove a later entry point:
 
 ```json
 {
@@ -408,15 +413,15 @@ The checker accepts `alicloud-express` in the Verified table only when a file of
 
 ### Verified on
 
-The catalog table in the root README has a Verified on column. A cell lists a provider only when that template's evidence directory contains a passing file for it. An empty cell means no passing run is recorded. Failed attempts never populate this column or qualify a provider. Preserve their sanitized results under distinct attempt filenames; provider/date pass files require successful execution and independent cleanup.
+The catalog table in the root README has a Verified on column. A cell links a recorded historical provider run. Read that receipt for its exact source, entry point, checks and date; it does not assert current default-path acceptance. An empty cell means no matching record, not lack of support. Failed attempts never populate this column or qualify a provider. Preserve their sanitized results under distinct attempt filenames; provider/date pass files require successful execution and independent cleanup.
 
-Inside the template README, `## Verified` states the current workflow evidence scope. Author-written tables, `tested_on` or PASS fields cannot confer certification. The static checker rejects hand-written provider pass tables. See [workflow verification](workflows.md).
+Inside the template README, `## Verified` states the exact scope of the available evidence. Author-written tables, `tested_on` or PASS fields cannot confer certification. The static checker rejects hand-written provider pass tables. See [workflow verification](workflows.md).
 
 ## Security
 
 - Secret values are not copied into the image, `template.yaml`, Docker history, or evidence JSON.
 - `env` declares the name and an empty string. Pass values explicitly to the process that needs them before it starts; a create call does not update existing processes.
-- Logs and exception text omit tokens. `scripts/express_e2e.py` redacts environment values whose names contain `KEY`, `SECRET`, `TOKEN`, or `PASSWORD` before printing.
+- Logs and reports must omit secrets and native resource identifiers. The public runner keeps raw subprocess diagnostics private and exports only controlled check labels, stable codes and numeric HTTP statuses.
 - Do not commit `.env`, cloud credentials, or `Dockerfile.abx-build`.
 
 ## README sections
@@ -479,7 +484,7 @@ matching execution record exists; missing evidence does not by itself mean unsup
 4. Register commands that call the upstream program. Pin versions.
 5. Add the index entry with the maintenance/development label described above; record test results separately.
 6. Run `python3 scripts/check_template.py <name>` and `python3 scripts/run_local_e2e.py`.
-7. Run `python3 scripts/express_e2e.py <name>` when Express credentials are available. Commit the evidence file only when the process exits 0.
+7. Run the public source-launch acceptance for each required provider/entry point. Preserve each attempt, assert outcomes and independently confirm owned cleanup; missing credentials leave that requirement incomplete.
 8. Open the PR. The body says which levels passed.
 
 ## Where to file issues
@@ -517,43 +522,14 @@ python3 scripts/check_template.py --all
 
 Violation codes include `required-file`, `readme-section`, `base-image`, `dockerfile-cmd`, `dockerfile-user`, `yaml-field`, `commands-start`, `verified-evidence`, `pinned-version`, `readme-client`, `secrets`. `pinned-version` fails when a `RUN` has neither allowed server pin above. `readme-client` fails when a spec_version 4 SDK section does not name `agent-sandbox-client`, or when a README tells the reader to `pip install agent-sandbox`.
 
-## Express harness
+## Native deployment maintenance
 
-```bash
-unset ABX_PROVIDER
-export ABX='node /path/to/agent-sandbox/dist/bin/abx.js'
-export ACR_NAMESPACE=...
-export ALICLOUD_ACCESS_KEY_ID=...
-export ALICLOUD_ACCESS_KEY_SECRET=...
-export ABX_SANDBOX_API_KEY=...
-export ABX_SANDBOX_BASE_URL=...
-export ABX_SANDBOX_DOMAIN=...
-export ALIBABA_CLOUD_REGION_ID=cn-hangzhou
-# optional: build the in-image server from a checkout
-export ABX_SERVER_SDK_SOURCE=/path/to/python-sdk/server-sdk
-
-python3 scripts/express_e2e.py python-hello
-```
-
-The current spec_version 4 `python-hello` declares its smoke and startup commands in `template.yaml`; the harness reads them directly. Preserve the caller’s native HOME.
-
-The existing native acceptance harness below targets its pinned native CLI. Its recorded cleanup flags are not current Express copy-and-paste usage; see [current CLI examples](using-templates.md#client-entry-compatibility).
-
-The remote name is a unique `e2e-<name>-<hex>` alias, not the catalog name, so a pre-existing generation-1 template is left alone. The `finally` block runs `abx kill <id> -y` and `abx template delete <id> -y` for ids this process created. It also kills the deploy process group and any `docker push` whose command line contains that alias. A wall-clock kill of only the `abx` process used to leave the push running (the push is not in the same process group unless the harness starts one).
-
-The harness calls `abx template deploy` with the existing flags (`--json`, `-y`, `--generation`, `--start-cmd`, `--ready-cmd`, `--alias`, `--acr-repo`, `--tag`, `--timeout`, `--verbose`). It does not push the image itself. `--timeout` is the READY poll budget inside `abx`. It is not a cap on the upload. `--verbose` is what makes layer lines show up under `--json`; without them the CLI prints phase lines only and a slow push looks idle. The harness drops `CI` and the other variables `abx` uses to detect CI (`GITHUB_ACTIONS`, `GITLAB_CI`, and the rest of that list), because CI mode suppresses those lines.
-
-Concurrent harnesses take an exclusive `flock` on `/tmp/abx-acr-push.lock` (`ABX_ACR_PUSH_LOCK` overrides the path) for the whole deploy. The CLI does not expose a push-only step, so the lock covers build, push, and the READY poll. That is coarser than a lock around `docker push` alone. Push locking and a no-progress timeout belong in `abx` ([agent-sandbox#29](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues/29)). Until that ships, the harness is the lock.
-
-`--idle-timeout` (default 180) kills the deploy when stdout and stderr produce no new bytes. A push that is still printing layer status is in progress and is not killed. `--wall-timeout` (default `max(21600, --timeout)`) is only a safety cap for a deploy that never goes idle. Six hours covers a progressing upload of about 1 GB at the ~35 KB/s measured on a contended link; the idle timer is what stops a push that has stopped moving. `--push-retries` (default 2) retries a stalled push or a push error. A known CLI/SDK blocker and a Docker build failure are not retried. Each retry stops leftover `docker push` processes for this alias first, so a new upload is not piled on an orphan.
-
-`--plan` prints the resolved commands, the lock path, and the timeouts. It does not call `abx`.
-
-Exit 2 means the output matched a known CLI or SDK failure mode (string `base` rejected, generation-1 update, `AuthError` / HTTP 401, or envd `promised N bytes in enveloped message`). Those were tracked as agent-sandbox `#12` `#13` `#14` and python-sdk `#15` `#17`. The deploy/run CLI fix is on `agent-sandbox` main (`#16`). The envd framing and port-9000 auth fix is on `python-sdk` main. A failing or incompatible executable produces no acceptance receipt; use the current reviewed CLI and SDK pins.
-
-Exit 1 is any other failure. Exit 0 writes the evidence file.
-
-Alibaba FC resource profile: memory must be a multiple of64MB and1..4GiB per vCPU. The checker rejects invalid declared profiles before cloud use. [Official CreateFunction contract](https://api.alibabacloud.com/document/FC/2023-03-30/CreateFunction).
+The older `scripts/express_e2e.py` and its private intent recovery remain available
+for the [fixed native review workflow](canonical-express-review.md). Their native
+flags and cleanup scope are tied to those pinned inputs. Current contributor and
+user acceptance starts with [public source launch](public-launch-testing.md), which
+uses explicit native-first `--native --json` only for Express preparation cleanup.
+Never treat a successful recovery as a successful original application attempt.
 
 ## Provider-managed catalog entries
 

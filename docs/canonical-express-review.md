@@ -1,5 +1,7 @@
 # Canonical Express acceptance on an explicitly authorized runner
 
+This page preserves the pinned maintenance workflow and task scope from2026-10-18. It is not the current default installation/launch guide. Use [public source launch testing](public-launch-testing.md) for current CLI/SDK acceptance; historical records below remain tied to their original inputs.
+
 ## Current task: local Express acceptance
 
 The user selected local real deployment and model acceptance on 2026-10-18.
