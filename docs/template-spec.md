@@ -415,7 +415,7 @@ The checker accepts `alicloud-express` in the Verified table only when a file of
 
 The catalog table in the root README has a Verified on column. A cell links a recorded historical provider run. Read that receipt for its exact source, entry point, checks and date; it does not assert current default-path acceptance. An empty cell means no matching record, not lack of support. Failed attempts never populate this column or qualify a provider. Preserve their sanitized results under distinct attempt filenames; provider/date pass files require successful execution and independent cleanup.
 
-Inside the template README, `## Verified` states the exact scope of the available evidence. Author-written tables, `tested_on` or PASS fields cannot confer certification. The static checker rejects hand-written provider pass tables. See [workflow verification](workflows.md).
+Inside the template README, `## Verified` states the exact scope of the available evidence. An author-written pass claim does not establish an executed test. The static checker rejects hand-written provider pass tables. See [workflow verification](workflows.md).
 
 ## Security
 
@@ -469,7 +469,8 @@ Apply the required tests and CI to the changed component as defined in the
 [definition of done](project-standards.md#definition-of-done). Documentation-only
 changes do not rerun unrelated cloud tests. Unfinished deployment/model acceptance
 criteria keep their Issue open, regardless of catalog label. Record the exact source,
-provider, entry point, test and cleanup result; the `providers` map is not evidence.
+provider, entry point, test and cleanup result. Index entries must use only fields
+accepted by the current catalog schema; retired capability/verification fields are rejected.
 
 `abx --provider <provider> template launch <source>` prepares the selected recipe
 and starts its application through that provider's implemented operations. Document
