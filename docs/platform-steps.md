@@ -10,15 +10,10 @@ push. [中文](platform-steps.zh-CN.md).
 
 ## Requirements and build-mode selection
 
-Configure the existing authorized Express sandbox API and Alibaba control-plane
-credentials in the environment. Use a CLI revision whose deploy, official
-template inventory/info/delete and sandbox commands match the
-[canonical harness](../scripts/express_e2e.py). The source CLI described in
-[installation](using-templates.md#installation) supports those interfaces.
-Do not infer compatibility from the displayed package version alone: the
-published 0.4.0's standard template-list/create interface differs from the native
-interface used by this harness. The 0.3.0 standalone release requires the official
-Alibaba SDK modules to be available; a verified source build supplies them.
+Use the published `abx` CLI (the walkthrough was tested with 0.4.11), Python 3.10+
+and Git. Configure the authorized Express sandbox API and Alibaba control-plane
+credentials using [the installation guide](using-templates.md#installation).
+The normal public entry is `abx`; do not add the retired `--native` option.
 
 `auto` selects a Dockerfile when present. Explicit `--build steps` selects the
 manifest's steps even if a Dockerfile exists. Never combine it with
@@ -30,14 +25,66 @@ example `{type: ENV, args: [LANG, C.UTF-8]}`. A single `LANG=C.UTF-8` argument w
 rejected in the real 2026-10-19 pilot; that failed attempt remains recorded.
 
 
-For CLI0.4.1, select the existing project surface explicitly before all other root options:
+## Quick start: python-hello without Docker
+
+This path prepares this catalog's source for cloud steps; it does not build a Docker
+image locally. Use a fresh work directory. It creates billable cloud resources.
+Keep credentials in your existing environment, outside the template directory.
 
 ```bash
-export ABX='abx --native'
-python scripts/run_steps_e2e.py python-hello --sandbox-create sdk
+git clone https://github.com/Alibaba-Agent-Sandbox/awesome-templates.git
+cd awesome-templates
+git rev-parse HEAD  # retain this source revision with your run evidence
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install "PyYAML==6.0.3"
+python scripts/prepare_steps.py python-hello --output ./python-hello-steps
+abx --json template deploy ./python-hello-steps --build steps \
+  --alias "python-hello-$(date +%s)" -y
 ```
 
-The actual installed0.4.1 candidate passed real step READY/SDK creation/CLI+SDK/cleanup. The public entry is owned by [CLI PR90](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/pull/90); its default standard commands remain unchanged.
+Retain the returned `TemplateID` privately as `TEMPLATE_ID`. The deploy result can
+be `submitted`: that is registration acceptance, not a ready sandbox. Inspect the
+exact template until its state is `ready`; stop on failure or after your chosen
+build deadline (for example 15 minutes):
+
+```bash
+export TEMPLATE_ID="<TemplateID from deploy>"
+abx --json template info "$TEMPLATE_ID"
+```
+
+In CLI 0.4.11, `status` is a string such as `{'state': 'ready'}`, not a nested JSON
+object. For automation, parse the outer JSON, then use Python `ast.literal_eval`
+for this string (never `eval`). Do not create while it says `building`.
+
+Once ready, create and retain the printed ID as `SANDBOX_ID`:
+
+```bash
+abx create "$TEMPLATE_ID" --detach --timeout 600
+export SANDBOX_ID="<ID printed by create>"
+abx info "$SANDBOX_ID" --format json
+abx run "$SANDBOX_ID" hello --arg name=Ada
+abx run "$SANDBOX_ID" run_script --json-args '{"code":"print(21 * 2)"}'
+abx exec "$SANDBOX_ID" -- python3 --version
+```
+
+Expected command results are `Hello, Ada!` and `42`. The [template README](../python-hello/README.md)
+adds file transfer, pytest and external HTTP POST examples. Standard `info` uses
+`--format json`; extension commands use `--json` where their help supports it.
+
+Always clean up the exact IDs you created, including after a failed check:
+
+```bash
+abx kill "$SANDBOX_ID"
+abx info "$SANDBOX_ID"  # expected: not found, nonzero exit
+abx template delete "$TEMPLATE_ID" -y
+abx --json template info "$TEMPLATE_ID"  # expected: TemplateNotFound/404
+```
+
+If the build failed before sandbox creation, delete only the recorded template.
+A blank list is not proof that an individual resource was deleted. Source preparation
+preserves the original command bytes, pinned server dependency, runtime user,
+startup and readiness commands; it records its transformations in `steps-provenance.json`.
 
 ## Preparing an actual template
 
