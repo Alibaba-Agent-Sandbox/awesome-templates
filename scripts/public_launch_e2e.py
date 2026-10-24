@@ -50,9 +50,17 @@ def application_headers(gateway_headers, token):
     return headers
 
 
+class CheckFailed(AssertionError):
+    """A runner-owned, controlled check label, never a dependency exception."""
+
+
 def require(value, label):
     if not value:
-        raise AssertionError(label)
+        raise CheckFailed(label)
+
+
+def safe_failure_label(failure):
+    return str(failure) if isinstance(failure, (CheckFailed, CLIError)) else None
 
 
 def safe_diagnostics(failure):
@@ -368,10 +376,9 @@ async def verify(args):
         report['failure_type'] = type(failure).__name__
         report['failed_phase'] = phase
         report['diagnostics'] = safe_diagnostics(failure)
-        if isinstance(failure, RuntimeError) and str(failure).startswith('CLI '):
-            report['failed_check'] = str(failure)
-        if isinstance(failure, AssertionError):
-            report['failed_check'] = str(failure)
+        label = safe_failure_label(failure)
+        if label is not None:
+            report['failed_check'] = label
     finally:
         async def release_resources():
             journals = []

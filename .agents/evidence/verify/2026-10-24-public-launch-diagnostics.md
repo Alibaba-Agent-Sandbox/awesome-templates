@@ -37,3 +37,5 @@ Final matrix preparation: public package installation replaces repeated source b
 Local follow-up: 20 runner tests, workflow YAML parse and diff checks PASS after public package installation preparation. Full public-install pilot remains pending publication.
 
 Public-install workflow explicitly selects npmjs.org and PyPI and verifies actual installed metadata. Each sanitized attempt includes the package versions and fixed source refs selected by this workflow. Local fixed-ref version extraction passed for CLI0.4.16 and SDK0.3.1a4; this does not assert their publication.
+
+Final privacy review: only runner-owned CheckFailed and CLIError labels are exportable. Generic AssertionError/RuntimeError text from dependencies is excluded, including messages beginning with CLI. All21 runner regressions PASS; Python compile, YAML parse and diff checks PASS. No launch, authentication or cleanup behavior changes.

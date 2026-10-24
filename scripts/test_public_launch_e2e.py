@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from public_launch_e2e import CLI, CLIError, cli_diagnostics, safe_diagnostics, application_headers, command_url, load_plan, matches, source_names, cleanup_prepared, cleanup_before_close, delete_sandbox
+from public_launch_e2e import CLI, CLIError, CheckFailed, safe_failure_label, cli_diagnostics, safe_diagnostics, application_headers, command_url, load_plan, matches, source_names, cleanup_prepared, cleanup_before_close, delete_sandbox
 
 
 class PublicLaunchTests(unittest.TestCase):
@@ -61,6 +61,12 @@ class PublicLaunchTests(unittest.TestCase):
     def test_gateway_authorization_is_never_overwritten(self):
         with self.assertRaisesRegex(AssertionError, 'must not overwrite'):
             application_headers({'authorization': 'gateway-credential'}, 'app-token')
+
+    def test_only_owned_failure_labels_are_exported(self):
+        for failure in (AssertionError('PRIVATE-ID secret-value'), RuntimeError('CLI secret-value')):
+            self.assertIsNone(safe_failure_label(failure))
+        self.assertEqual(safe_failure_label(CheckFailed('SDK exec result')), 'SDK exec result')
+        self.assertEqual(safe_failure_label(CLIError('template', 2, 'PRIVATE-ID')), 'CLI template failed (exit 2)')
 
     def test_cli_failure_does_not_leak_raw_output(self):
         from subprocess import CompletedProcess
