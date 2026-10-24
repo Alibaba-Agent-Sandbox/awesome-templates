@@ -261,3 +261,5 @@ Source image backend acceptance: [decision](notes/proposed/feature/2026-10-22-so
 - [Application auth docs follow-up scope](evidence/verify/2026-10-23-auth-docs-followup-scope.md).
 
 - [Release source alignment](notes/proposed/feature/2026-10-23-release-readiness.md) · [verification](evidence/verify/2026-10-23-release-readiness.md)
+
+- [Release integration on current main](evidence/verify/2026-10-24-release-integration.md).
