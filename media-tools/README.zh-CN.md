@@ -19,55 +19,41 @@ FFmpeg 离线 CPU 媒体转码。[English](README.md)。
 
 ## 快速开始（CLI）
 
-示例使用当前极速版 CLI：`abx create <template-id> --detach` 输出沙箱 ID，`abx kill <sandbox-id>` 清理沙箱；命名命令使用 `abx run`。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template deploy ./media-tools -y --generation 2
-abx create <template-id> --detach
-abx run <sandbox-id> media_smoke
-abx run <sandbox-id> transcode --arg input_path=uploaded.mkv --arg output_name=preview.mp4
-abx run <sandbox-id> transcode_args --json-args '{"args":["-i","uploaded.mkv","-vn","-c:a","flac","audio.flac"],"max_seconds":5}'
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./media-tools --workflow application --yes
+abx run <sandbox-id> media_version --json-args '{}'
 ```
 
-自定义转码前，通过 files API 把 `uploaded.mkv` 上传到 `/home/user/app`。`media_smoke` 无需上传：自行生成音频、实际转码、独立解码逐样本比对，再清理自有文件。模板已声明 generation/start/readiness。
+`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-按[客户端安装说明](../docs/python-client-installation.md)安装 `agent-sandbox-client`，导入名为 `agent_sandbox`。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        print(await sb.run("media_smoke"))
-        # 先把输入上传到 /home/user/app：
-        result = await sb.run("transcode", input_path="uploaded.mkv", output_name="preview.mp4", timeout=150)
-        print(result["output_path"], result["sha256"])
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('media_version'))
 ```
 
-`sb.run` 调用命名命令；`sb.commands.run` 调用共享 server shell。通过 files API 下载产物。上例 `timeout` 是客户端 HTTP 等待时限；服务端操作时限使用 `command_timeout`。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-使用沙箱 9000 端口 URL，同时携带提供方网关要求的访问头。运行中的 server 设置了 `ABX_SERVER_TOKEN` 时，需要下面的 bearer token。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/media_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --max-time 150 --request POST "$ABX_SERVER_URL/commands/transcode" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header 'Content-Type: application/json' \
-  --data '{"input_path":"uploaded.mkv","output_name":"preview.mp4","preset":"mp4","max_seconds":5,"command_timeout":60}'
+```json
+{}
 ```
 
-JSON 对象直接包含参数。HTTP 200 返回 `{"result":{"output_path":"/home/user/app/preview.mp4","bytes":12345,"sha256":"<64位十六进制>","duration_s":5.0,"format":"mov,mp4,m4a,3gp,3g2,mj2","streams":[...]}}`，数值取决于输入。缺失或错误类型参数返回 400；鉴权失败 401；未知命令 404；路径、内容、限制检查或工具执行失败返回 500，含 `error` 和 `type`。结果缓冲后返回。HTTP 超时或断连不保证取消服务端操作。
+该检查的预期响应：
+
+```json
+{"result": "FFmpeg 7.1.5-0+deb13u1"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -90,7 +76,7 @@ JSON 对象直接包含参数。HTTP 200 返回 `{"result":{"output_path":"/home
 
 | 名称 | 必需 | 默认 | 用途 |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | 否 | 空 | server 进程启动时鉴权。 |
+| `ABX_SERVER_TOKEN` | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 本地直接启动的端口。 |
 | `WORKSPACE` | 否 | `/home/user/app` | 已存在且属于运行用户的输入/输出目录。 |
 
@@ -122,8 +108,10 @@ JSON 对象直接包含参数。HTTP 200 返回 `{"result":{"output_path":"/home
 成对选项必须带值。拒绝未列出的参数、多输入、任意滤镜、协议及输出路径；
 最终线程、时长、大小、禁止覆盖与元数据限制由 wrapper 强制追加。
 
+使用上面 Python 快启已绑定的 `client`：
+
 ```python
-result = await sb.run("transcode_args", args=["-i", "literal file.wav", "-c:a", "flac", "result.flac"])
+result = await client.commands.run("transcode_args", args=["-i", "literal file.wav", "-c:a", "flac", "result.flac"])
 assert result["exit_code"] == 0
 ```
 

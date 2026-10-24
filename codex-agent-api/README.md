@@ -16,68 +16,41 @@ Provides HTTP session lifecycle, JSONL-to-SSE mapping, usage accounting and exac
 
 ## Quick start (CLI)
 
-The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
-
-Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
-
-From the repository root, with existing provider configuration:
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template deploy ./codex-agent-api -y --generation 2
-abx create <template-id> --detach
-abx run <sandbox-id> codex_version
-abx run <sandbox-id> agent_status
-abx run <sandbox-id> codex --arg prompt='Reply with hello' --arg timeout_s=120
+export ABX_PROVIDER=alicloud-express
+abx template launch ./codex-agent-api --workflow application --yes
+abx run <sandbox-id> codex_version --json-args '{}'
 ```
 
-Inject the model provider's key and model into the sandbox creation environment through your secret mechanism. Do not place credentials in source files or shell history. `CODEX_SANDBOX=workspace-write` is the default. On Express, Linux user namespaces may be unavailable. Set `CODEX_SANDBOX=bypass` explicitly at creation only if the sandbox container supplies the required isolation. The adapter never changes that choice automatically.
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Use `agent-sandbox-client` (`agent_sandbox`), not the unrelated PyPI package `agent-sandbox`:
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-import os
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    runtime_env = {name: os.environ[name] for name in (
-        "OPENAI_API_KEY", "CODEX_API_KEY", "ABX_LLM_API_KEY", "OPENAI_BASE_URL",
-        "ABX_LLM_BASE_URL", "CODEX_MODEL", "CODEX_SANDBOX",
-    ) if os.environ.get(name)}
-    sb = await Sandbox.create(template="<template-id>", envs=runtime_env)
-    try:
-        print(await sb.run("codex_version"))
-        result = await sb.run("codex", prompt="Reply with hello", timeout_s=120, timeout=150)
-        print(result["status"])
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('codex_version'))
 ```
 
-Model calls require the provider environment described below. SDK named command calls return the command result directly.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Use the sandbox's authenticated port-9000 URL; retain the provider-required authentication headers. `ABX_SERVER_TOKEN`, when configured, adds `Authorization: Bearer <token>` at the server boundary.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/codex_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl -X POST "$SANDBOX_URL/commands/codex" \
-  -H 'Content-Type: application/json' \
-  -d '{"prompt":"Reply with hello","model":"your-model","timeout_s":120}'
-
-curl -X POST "$SANDBOX_URL/v1/agents/sessions" \
-  -H 'Content-Type: application/json' \
-  -d '{"agent":{"model":"your-model","instructions":"Be concise"},"input":"Reply with hello","background":true}'
-curl "$SANDBOX_URL/v1/agents/sessions/<session-id>"
-curl -N -X POST "$SANDBOX_URL/v1/agents/sessions/<session-id>/events" \
-  -H 'Content-Type: application/json' \
-  -d '{"input":"Continue","stream":true}'
+```json
+{}
 ```
 
-Named commands return `{"result": ...}`. Session routes return their JSON directly, or SSE when `stream=true`. A JSON session response with `status=failed` is a failed model turn even if the HTTP status is 200. `background=true` returns immediately; poll the session until `status` is `idle`, `failed`, or `cancelled`. `stream` and `background` cannot both be true.
+Expected response for this check:
+
+```json
+{"result": "0.162.1"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -123,7 +96,8 @@ Mapped SSE events include `agent.session.created`, `agent.session.turn.started`,
 | `WORKSPACE` | `/home/user/workspace` |
 | `AGENT_MAX_SESSIONS` | `20` |
 | `AGENT_SESSION_TTL` | `1800` seconds; GC checks every 60 seconds |
-| `ABX_SERVER_PORT`, `ABX_SERVER_TOKEN` | `9000`, empty; server port/authentication |
+| `ABX_SERVER_PORT` | `9000`; server port |
+| `ABX_SERVER_TOKEN` | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 
 The service retains at most 200 saved agent configurations; each session allows 100 turns. Replay and retained item buffers each hold at most 1000 events / 2 MB; a single JSONL line exceeding 256000 bytes fails the turn. stderr is drained continuously and only a bounded, redacted tail can be included in errors. Environment secret values, request-supplied MCP header values and bearer tokens are redacted from returned events/configurations/errors/text artifacts. Artifacts reject `.env`, `.aws`, `.codex`, `.ssh` paths and symlinks outside the workspace. This filtering supplements sandbox isolation; the standard shell/files APIs still require trusted access and server policy.
 

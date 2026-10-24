@@ -6,8 +6,6 @@ Runs the actual official Codex *** Begin Patch dialect: add, update, move and de
 
 ## Stack
 
-Revision 1.0.1 aligns the default server source with the CI wheel source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. Historical receipts retain their original inputs; this revision requires new image/workflow acceptance.
-
 Alibaba FC base v0.0.49, generation2, non-root user. `npm ci --ignore-scripts` installs official @openai/codex0.162.1/native architecture packages using [lockfile integrity](package-lock.json). The validated native binary is dispatched by apply_patch argv0. The corresponding official release tag points to [092d3acd](https://github.com/openai/codex/tree/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d). This uses official prebuilt packages; it does not claim a local rebuild from that source commit.
 
 ## Problem solved
@@ -16,52 +14,41 @@ Supplies the real Codex file tool without a model account, Rust compiler, Docker
 
 ## Quick start (CLI)
 
-Native CLI syntax; see [entry compatibility](../docs/using-templates.md#client-entry-compatibility) for the standard entry.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template deploy ./apply-patch -y
-abx create <template-id> --detach --timeout 300
-abx run <sandbox-id> apply_patch_smoke
-abx run <sandbox-id> apply_patch --arg 'patch_text=*** Begin Patch
-*** Add File: hello.txt
-+hello
-*** End Patch'
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./apply-patch --workflow application --yes
+abx run <sandbox-id> apply_patch_version --json-args '{}'
 ```
+
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install the paired [`agent-sandbox-client`](../docs/python-client-installation.md):
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        patch = "*** Begin Patch\n*** Add File: hello.txt\n+hello\n*** End Patch\n"
-        result = await sb.run("apply_patch", patch_text=patch)
-        assert result["exit_code"] == 0
-        assert await sb.files.read("/home/user/app/hello.txt") == "hello\n"
-    finally:
-        await sb.kill()
-        await sb.close()
-
-asyncio.run(main())
+print(await client.commands.run('apply_patch_version'))
 ```
+
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-```bash
-curl -fsS -X POST -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer <server-token>' \
-  -d '{"patch_text":"*** Begin Patch\n*** Add File: hello.txt\n+hello\n*** End Patch\n"}' \
-  '<sandbox-port-9000-url>/commands/apply_patch'
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/apply_patch_version`, with `Content-Type: application/json` and this direct argument object:
+
+```json
+{}
 ```
 
-Response envelope: `{"result":{"stdout":"...","stderr":"","exit_code":0}}`.
+Expected response for this check:
+
+```json
+{"result": "codex-cli 0.162.1"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -75,7 +62,7 @@ Upstream failures retain nonzero exit_code; HTTP200 means the invocation complet
 
 ## Configuration
 
-No model key. WORKSPACE defaults to /home/user/app. Inject the optional ABX_SERVER_TOKEN in the server process; see [runtime environment](../docs/runtime-environment.md). Native patch subprocesses receive only PATH and LANG, without model/cloud credentials.
+No model key. WORKSPACE defaults to /home/user/app. Export ABX_SERVER_TOKEN before application launch; see [runtime environment](../docs/runtime-environment.md). Native patch subprocesses receive only PATH and LANG, without model/cloud credentials.
 
 ## Resources
 

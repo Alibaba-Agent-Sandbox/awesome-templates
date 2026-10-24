@@ -16,69 +16,41 @@ Run genuine terminal coding in an owned sandbox with explicit model settings and
 
 ## Quick start (CLI)
 
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+
 ```bash
-abx template deploy ./crush -y
-abx create <template-id> --detach --timeout 900
-abx run <sandbox-id> crush_version
-abx run <sandbox-id> crush_setup_check
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./crush --workflow application --yes
+abx run <sandbox-id> crush_version --json-args '{}'
 ```
 
-Deploy returns the template ID and create returns the owned sandbox ID used above. Version/setup need no model key. See [entry compatibility and provider setup](../docs/using-templates.md#client-entry-compatibility). Model settings must be present in the running server; create-time environment does not reconfigure a prewarmed server.
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install agent-sandbox-client using the [pinned source instructions](../docs/python-client-installation.md). Set the three CRUSH variables in the operator environment, then run:
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-import os
-import secrets
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=900)
-    server = None
-    try:
-        server = await sb.start_server(
-            port=9010, commands="/home/user/app/commands.py", timeout=60,
-            token=secrets.token_urlsafe(32),
-            env={"CRUSH_API_KEY": os.environ["CRUSH_API_KEY"],
-                 "CRUSH_BASE_URL": os.environ["CRUSH_BASE_URL"],
-                 "CRUSH_MODEL": os.environ["CRUSH_MODEL"],
-                 "WORKSPACE": "/home/user/app"})
-        result = await server.commands.run(
-            "crush", prompt="Create HELLO.txt containing hello, then read it back.",
-            allow_tools=True, command_timeout=600, timeout=660)
-        if result["exit_code"] != 0:
-            raise RuntimeError("Crush failed; inspect the private returned diagnostics")
-        print(await sb.files.read("/home/user/app/HELLO.txt"))
-    finally:
-        try:
-            if server is not None:
-                await server.aclose()
-            await sb.kill()
-        finally:
-            await sb.close()
-
-asyncio.run(main())
-
+print(await client.commands.run('crush_version'))
 ```
 
-The example starts its own random-token9010 command server, exports the generated file and destroys only its owned sandbox. This source-checked example does not itself establish provider/model acceptance. Preserve image PATH when starting a secondary server; a replacement must include /opt/crush.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Use the SDK-forwarded9010 URL as ABX_SERVER_URL and that server's random token as ABX_SERVER_TOKEN.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/crush_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --max-time 660 -X POST "$ABX_SERVER_URL/commands/crush" \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN" -H 'Content-Type: application/json' \
-  --data '{"prompt":"Explain 6*7 briefly","allow_tools":false,"command_timeout":600}'
+```json
+{}
 ```
 
-HTTP200 result is {"result":{"stdout":"42","stderr":"","exit_code":0}}; retain nonzero native status. Undeclared/missing/mistyped arguments400, auth401, unknown command404, invalid path/config/limits/pin or timeout500 with error/type. Both response streams are buffered; client timeout/disconnection does not guarantee process cancellation.
+Expected response for this check:
+
+```json
+{"result": "0.98.1"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -98,7 +70,7 @@ Actual argv: crush run --quiet --model owned/ID --small-model owned/ID --cwd DIR
 | CRUSH_BASE_URL | model calls | empty | HTTP(S) endpoint; no userinfo/query/fragment |
 | CRUSH_MODEL | model calls | empty | bounded native model identifier |
 | WORKSPACE | no | /home/user/app | existing caller workspace |
-| ABX_SERVER_TOKEN | no | empty | server process bearer token |
+| ABX_SERVER_TOKEN | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 | CRUSH_BINARY | diagnostics | image PATH | binary override; actual version still checked |
 
 Private HOME/XDG/CRUSH config/data and correct native disable-default-providers/auto-update flags prevent loading caller global state. Existing .crushrc/crushrc/.crush.json/crush.json between cwd and the nearest Git worktree root are refused before a native run, because upstream automatically loads them. Caller configuration is preserved. With no Git root, upstream checks cwd only. Only PATH/optional CA settings plus private runtime settings enter children; cloud/GitHub/server keys are excluded. The selected key/base URL enter the private0600 config, are never prompt argv, and exact values are redacted from returned diagnostics. Project output can still contain project secrets.

@@ -16,88 +16,41 @@ Provide a reproducible headless Cursor installation, a scalar SDK/HTTP interface
 
 ## Quick start (CLI)
 
-The `abx run` surface uses `abx --native run` here.
-
-Use the [verified CLI/native entry](../docs/using-templates.md#client-entry-compatibility) and authorized Express settings. Replace `<run>`, `<published-commit>`, `<owned-template-id>` and `<owned-sandbox-id>` with your unique run, exact public40-character source commit and resources created by that run. Publish the exact source before immutable COPY preparation. Rename the generated manifest `name` to `cursor-agent-<run>` before deployment.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-python scripts/prepare_steps.py cursor-agent --output /tmp/cursor-agent-steps-<run> \
-  --source-commit <published-commit> --asset-transport parallel
-python - <<'CONFIG'
-from pathlib import Path
-import yaml
-p = Path("/tmp/cursor-agent-steps-<run>/template.yaml")
-v = yaml.safe_load(p.read_text())
-v["name"] = "cursor-agent-<run>"
-p.write_text(yaml.safe_dump(v, sort_keys=False))
-CONFIG
-abx --native template deploy /tmp/cursor-agent-steps-<run> --build steps -y
-abx --native create --template <owned-template-id> -y
-abx --native run <owned-sandbox-id> agent_version
-abx --native run <owned-sandbox-id> agent_native_check
-abx --native run <owned-sandbox-id> agent_setup_check
-# On a command-server process configured with its own vendor key before startup:
-abx --native run <owned-sandbox-id> agent --json-args '{"prompt":"Repair existing calc.py and preserve tests","cwd":"project","command_timeout":300,"allow_unsafe_tools":true}'
-abx --native kill <owned-sandbox-id> -y
-abx --native template delete <owned-template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./cursor-agent --workflow application --yes
+abx run <sandbox-id> agent_version --json-args '{}'
 ```
 
-Create the project first. The configured-agent line is syntax-checked, not a successful account test. A create-time environment does not configure a prewarmed process; use the explicit process startup below and [runtime guide](../docs/runtime-environment.md). The native CLI supports `--server-port`; SDK/HTTP examples use a separately authenticated9010process. Match authentication to that process.
-
-The canonical keyless test prepares an explicitly invalid synthetic vendor-key fixture and calls the actual original program through HTTP/SDK; it never injects the operator's vendor/model key:
-
-```bash
-ABX='abx --native' python scripts/run_steps_e2e.py cursor-agent \
-  --sandbox-create sdk --http --asset-transport oss
-```
-
-OSS transport requires the [pinned optional cache prerequisites](../scripts/requirements-steps-cache.txt), creates only owned private temporary objects, verifies original hashes/ACL and independently deletes them. Native steps need no local Docker daemon. Docker image acceptance is a separate check.
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` through the [paired source instructions](../docs/python-client-installation.md). Set CURSOR_API_KEY in the operator's secure environment. `<owned-template-id>` is the template you created; this example's unique project and sandbox belong to the example. No vendor key value is placed in argv or JSON command arguments.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio, os, secrets, uuid
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<owned-template-id>", timeout=900)
-    server = None
-    try:
-        print(await sb.run("agent_version"))
-        project = "/home/user/app/cursor-example-" + uuid.uuid4().hex
-        await sb.commands.run("mkdir -p " + project)
-        await sb.files.write(project + "/calc.py", "def add(a,b): return a-b\n")
-        token = secrets.token_urlsafe(32)
-        server = await sb.start_server(port=9010, commands="/home/user/app/commands.py",
-            token=token, env={"CURSOR_API_KEY": os.environ["CURSOR_API_KEY"], "ABX_PTY_PORT": "9011"})
-        print(await server.commands.run("agent_setup_check"))
-        result = await server.commands.run("agent", prompt="Repair existing calc.py and write report.txt",
-            cwd=project, command_timeout=300, allow_unsafe_tools=True, timeout=420)
-        print(result["stdout"])
-    finally:
-        if server is not None:
-            await server.aclose()
-        await sb.kill()
-        await sb.close()
-
-asyncio.run(main())
+print(await client.commands.run('agent_version'))
 ```
 
-Vendor-authenticated lines are not claimed executed. Set a sandbox lifetime covering the command and cleanup; a command timeout is separate from sandbox TTL. Closing a borrowed server client closes its client transport; killing the owned sandbox ends its remote processes. Independently confirm resource absence when automating deployment.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Use the forwarded URL of the configured server process and its independent command-server Bearer from the SDK example. The direct JSON arguments do not include the vendor key.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/agent_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body -X POST "$CURSOR_COMMAND_SERVER_URL/commands/agent" \
-  -H "Authorization: Bearer $COMMAND_SERVER_TOKEN" -H 'Content-Type: application/json' \
-  --data '{"prompt":"Repair existing calc.py and write report.txt","cwd":"project","command_timeout":300,"allow_unsafe_tools":true}'
+```json
+{}
 ```
 
-HTTP200 has `{"result":{"stdout":"...","stderr":"","exit_code":0,...}}`. Missing/unknown/wrong-type arguments400; command authentication401; unknown command404; semantic/native errors500 with bounded sanitized category/exit code. An expected invalid-key500 is a program error-path test, not model success. `/health`, `/commands`, files and shell use the same process/auth boundary. HTTP client disconnect does not cancel a provider job; the bounded owned operation still cleans up.
+Expected response for this check:
+
+```json
+{"result": "2026.10.19-6bbf2c4"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -120,7 +73,7 @@ Fixed original argv: --print --output-format json --disable-auto-update --disabl
 | --- | --- | --- |
 | CURSOR_API_KEY | empty; required for agent | Genuine vendor credential captured when the server imports commands |
 | WORKSPACE | /home/user/app | Contained project root, captured at import |
-| ABX_SERVER_TOKEN | empty/optional | Independent command-server Bearer, not a Cursor credential |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 
 Original programs receive a minimal environment with only their explicit vendor key and private HOME/config/data/cache/TMP paths. Updates and project configuration loading are disabled by pinned original flags; OS keychain/persistent native sessions are not used. Per-call native state is removed after success/error/timeout. The server process and native tools share an OS user; these paths are not another tenant boundary. Use a fresh caller-owned disposable sandbox for automatic tools.
 

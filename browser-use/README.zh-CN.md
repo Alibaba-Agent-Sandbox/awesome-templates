@@ -16,78 +16,41 @@ FC v0.0.49、generation2、非root user、Linux x86_64、Python3.13。[requireme
 
 ## 快速开始（CLI）
 
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+
 ```bash
-abx template deploy ./browser-use -y
-abx create <template-id> --detach --timeout 900
-abx run <sandbox-id> browser_use_version
-abx run <sandbox-id> browser_use_setup_check
-abx run <sandbox-id> browser_use_self_test
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./browser-use --workflow application --yes
+abx run <sandbox-id> browser_use_version --json-args '{}'
 ```
 
-deploy/create返回上述模板/沙箱ID。version/setup/self-test无需模型密钥，期望BROWSER_USE_NATIVE_OK。[入口兼容及提供方设置](../docs/using-templates.md#client-entry-compatibility)。创建时环境不能重新配置预热服务；真实模型采用下方SDK显式启动服务。
+`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-按[固定客户端源码说明](../docs/python-client-installation.md)安装agent-sandbox-client。相同原生自测后可选执行真实模型；操作者环境设置三个BROWSER_USE模型变量，不需要模型时移除可选段。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-import os
-from pathlib import Path
-import secrets
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=900)
-    clients = []
-    try:
-        native = sb.server_at(9000)
-        clients.append(native)
-        print(await native.commands.run("browser_use_self_test", timeout=90))
-        # Optional real model turn; these three variables hold model settings.
-        model = await sb.start_server(
-            port=9010, commands="/home/user/app/commands.py", timeout=60,
-            token=secrets.token_urlsafe(32),
-            env={"BROWSER_USE_API_KEY": os.environ["BROWSER_USE_API_KEY"],
-                 "BROWSER_USE_BASE_URL": os.environ["BROWSER_USE_BASE_URL"],
-                 "BROWSER_USE_MODEL": os.environ["BROWSER_USE_MODEL"]})
-        clients.append(model)
-        result = await model.commands.run(
-            "browser_use", task="Read the heading and summarize it briefly.",
-            url="https://example.com/", max_steps=8,
-            command_timeout=300, timeout=360)
-        if not result["done"] or not result["success"]:
-            raise RuntimeError("Native browser agent did not complete the task")
-        png = await sb.files.read_bytes(result["screenshot_path"], max_bytes=16*1024**2)
-        output = Path("browser-use-" + secrets.token_hex(8) + ".png")
-        with output.open("xb") as file:
-            file.write(png)
-        print(result["result"], output)
-    finally:
-        await asyncio.gather(*(client.aclose() for client in clients), return_exceptions=True)
-        try:
-            await sb.kill()
-        finally:
-            await sb.close()
-
-asyncio.run(main())
+print(await client.commands.run('browser_use_version'))
 ```
 
-示例拥有该沙箱，删除前导出PNG。ServerClient.aclose只关闭HTTP客户端，最终sb.kill才清理该沙箱内远程进程。示例仅源码/语法检查，不能替代执行后的云端/模型回执。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-ABX_SERVER_URL来自运行中模板SDK network.get_url(9000)，ABX_SERVER_TOKEN为该服务已配置的进程令牌。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/browser_use_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --max-time 90 -X POST "$ABX_SERVER_URL/commands/browser_use_self_test" \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN" -H 'Content-Type: application/json' \
-  --data '{}'
+```json
+{}
 ```
 
-返回{"result":"BROWSER_USE_NATIVE_OK"}。模型调用使用SDK启动的9010地址/令牌，POST /commands/browser_use，JSON为{"task":"Read the heading","url":"https://example.com/","max_steps":8,"command_timeout":300}。HTTP200的result包裹结构化结果；必须done和success都为true才表示原生任务成功。参数缺失/未声明/类型错误400，认证401，未知命令404；限制/配置/路径/版本/忙碌/期限/原生失败500。响应缓冲，客户端超时/断连不保证取消。
+该检查的预期响应：
+
+```json
+{"result": "0.13.11"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -113,7 +76,7 @@ curl --fail-with-body --max-time 90 -X POST "$ABX_SERVER_URL/commands/browser_us
 | PLAYWRIGHT_BROWSERS_PATH | no | /opt/playwright | installed Chromium1208 cache |
 | BROWSER_USE_BROWSER_BINARY | diagnostics | Chromium1208/chrome-linux64/chrome | executable override; actual145.0.7632.6 still required |
 | WORKSPACE | no | /home/user/app | owned root for new browser-use-artifacts PNGs |
-| ABX_SERVER_TOKEN | no | empty | command-server process bearer token |
+| ABX_SERVER_TOKEN | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 模型配置只通过私有文件stdin进入，不继承到Chromium。每次独立HOME/XDG/profile/原生文件目录，关闭遥测/云同步/默认扩展/use_cloud，不导入调用者账号或已保存浏览器。CDP启动显式请求回环地址，只公布命令9000。此容器模板显式设置chromium_sandbox=false，使用自有沙箱提供OS隔离，不依赖Docker自动探测。浏览器和模型仍有沙箱用户权限及网络，这不是额外OS隔离。结果和PNG可能含网页私密信息；返回字符串替换模型密钥/地址的完整值。
 

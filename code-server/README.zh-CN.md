@@ -14,54 +14,41 @@
 
 ## 快速开始（CLI）
 
-下列使用原生 CLI 语法；[标准入口兼容说明](../docs/using-templates.md#client-entry-compatibility)。私人密码可通过 SDK 进程环境读取后传入。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template deploy ./code-server -y
-abx create <template-id> --detach --timeout 300
-abx run <sandbox-id> code_server_version
-abx run <sandbox-id> code_server_self_test
-abx run <sandbox-id> code_server_start --arg 'password=<your-private-12-byte-or-longer-password>'
-abx run <sandbox-id> code_server_status
-abx run <sandbox-id> code_server_stop
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./code-server --workflow application --yes
+abx run <sandbox-id> code_server_version --json-args '{}'
 ```
+
+`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-Install the [paired `agent-sandbox-client`](../docs/python-client-installation.md):
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-import os
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        await sb.run("code_server_start", password=os.environ["CODE_SERVER_PASSWORD"])
-        print(sb.network.get_url(8443))
-        # Open this URL in your browser and log in with the same private password.
-        # Export any workspace files you need before destroying the sandbox.
-        await asyncio.to_thread(input, "Press Enter when finished editing: ")
-        await sb.run("code_server_stop")
-    finally:
-        await sb.kill()
-        await sb.close()
-
-asyncio.run(main())
+print(await client.commands.run('code_server_version'))
 ```
+
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-```bash
-curl -fsS -X POST -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer <server-token>' -d '{}' \
-  '<sandbox-port-9000-url>/commands/code_server_self_test'
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/code_server_version`，`Content-Type: application/json`，直接发送以下参数对象：
+
+```json
+{}
 ```
 
-Response: `{"result":"CODE_SERVER_OK"}`. The IDE is a separate password-protected HTTP/WebSocket service on8443.
+该检查的预期响应：
+
+```json
+{"result": "4.141.0"}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 

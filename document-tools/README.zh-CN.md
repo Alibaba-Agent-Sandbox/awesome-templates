@@ -19,92 +19,41 @@ Pandoc 离线 Markdown 文档转换。[English](README.md)。
 
 ## 快速开始（CLI）
 
-示例使用当前极速版 CLI：`abx create <template-id> --detach` 输出沙箱 ID，`abx kill <sandbox-id>` 清理沙箱；命名命令使用 `abx run`。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template deploy ./document-tools -y --generation 2
-abx create <template-id> --detach
-abx run <sandbox-id> document_smoke
-abx run <sandbox-id> convert --arg input_path=report.md --arg output_name=report.docx
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./document-tools --workflow application --yes
+abx run <sandbox-id> document_version --json-args '{}'
 ```
 
-先把 `report.md` 上传到 `/home/user/app`。`document_smoke` 自行生成 Markdown，实际转码并独立检查 DOCX XML/TXT，最后删除自有文件。普通转换产物由调用方删除，或随沙箱销毁。
+`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-按[客户端安装说明](../docs/python-client-installation.md)安装 `agent-sandbox-client`，导入 `agent_sandbox`。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        print(await sb.run("document_smoke"))
-        # 先把 report.md 上传到 /home/user/app：
-        result = await sb.run("convert", input_path="report.md", output_name="report.docx", timeout=90)
-        print(result["output_path"], result["sha256"])
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('document_version'))
 ```
 
-`sb.run` 调用命名命令；`sb.commands.run` 调用共享 server shell；files API 负责文件传输。上例 `timeout` 为 HTTP 超时，命名命令的服务端 deadline 参数为 `command_timeout`。
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-使用沙箱 9000 端口 URL，并携带提供方网关要求的访问头。运行中的 server 配置了 `ABX_SERVER_TOKEN` 时另需 bearer token。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/document_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --max-time 90 --request POST "$ABX_SERVER_URL/commands/convert" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header 'Content-Type: application/json' \
-  --data '{"input_path":"report.md","output_name":"report.docx","output_format":"docx","command_timeout":30}'
+```json
+{}
 ```
 
-JSON 对象直接包含参数。HTTP 200 返回 `{"result":{"output_path":"/home/user/app/report.docx","output_format":"docx","bytes":12345,"sha256":"<64位十六进制>"}}`，大小和哈希取决于内容。缺失/错误类型参数为 400；鉴权失败 401；未知命令 404；路径、内容、限制或执行错误为 500，含 `error` 和 `type`。结果缓冲返回；HTTP 超时/断连不保证服务端取消。
+该检查的预期响应：
 
-### 1.1版文本文档接口
-
-`convert` 保留原有必填路径及默认Markdown/DOCX行为，增加可选 `input_format="html"`，
-输出支持 `docx`、`txt`、`pptx`、`pdf`，普通输出文件名扩展名需与格式一致。
-
-```bash
-abx run <sandbox-id> convert --arg input_path=uploaded.html --arg input_format=html --arg output_name=document.pdf --arg output_format=pdf --arg command_timeout=60
-abx run <sandbox-id> convert --arg input_path=uploaded.md --arg output_name=slides.pptx --arg output_format=pptx
+```json
+{"result": "pandoc 3.1.11.1"}
 ```
 
-```python
-result = await sb.run("convert", input_path="uploaded.html", input_format="html", output_name="document.pdf", output_format="pdf", command_timeout=60, timeout=90)
-```
-
-HTTP直接正文：`{"input_path":"uploaded.html","input_format":"html","output_name":"document.pdf","output_format":"pdf","command_timeout":60}`，
-成功时保留路径、格式、字节数和SHA256字段。`office_version` 检查实际无头Writer及其固定
-Debian包；`document_extended_smoke` 实际生成HTML/DOCX、PPTX和Writer PDF并清理自己的文件。
-自检的PDF签名检查由完整HTTP控制器的独立pypdf页数、文本及随机nonce核验补充。
-
-Pandoc保持3.1.11.1及独立固定的数据包。PDF仅接收经AST校验、无元数据/图片/raw节点后
-由Pandoc生成的DOCX，再交给原生LibreOffice Writer。固定writer-nogui/core-nogui/common
-为 `4:25.2.3-2+deb13u8`、DejaVu2.37-8、Noto CJK1:20240730+repack1-1；其他系统库由Debian解析。
-不接收上传的DOCX或宏。每次文档转换都使用自己的HOME/XDG/临时目录/用户配置，
-执行官方soffice启动器以处理原生首次启动重启，带 `-env:UserInstallation` 和无头/无默认文档参数，不复用调用者配置。
-无需GUI、显示器、常驻服务、GPU或模型。
-
-HTML只接收显式配平的文本标签、标题、列表、表格、强调、代码和web/mail/fragment链接；
-在原生sandbox reader之前拒绝图片、iframe、脚本、样式、事件及资源属性和任意标签。
-最多20000标签/100层，仍执行AST节点限制。PPTX使用原生Pandoc的slide-level2，
-验证1–100个slide XML。输入仍为1MiB UTF-8，所有输出≤8MiB，保留共享期限和禁止覆盖发布。
-Office限制2GiB地址空间及60–61秒CPU；Pandoc保留1GiB地址空间、256MiB Haskell堆和30–31秒CPU限制。
-沙箱配置调整为2vCPU/4GiB；主动脱离进程组或服务突然丢失仍以最终删除沙箱清理。
-
-独立PDF控制器安装 `pypdf==6.21.1`，镜像无需该Python库。LibreOffice、字体及Pandoc
-保留已安装的Debian版权文件，模板代码仍为Apache-2.0。
-参见[原生Writer包](https://packages.debian.org/trixie/libreoffice-writer-nogui)
-和[官方无头、用户配置及格式转换参数](https://help.libreoffice.org/latest/en-US/text/shared/guide/start_parameters.html)。
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -127,7 +76,7 @@ Office限制2GiB地址空间及60–61秒CPU；Pandoc保留1GiB地址空间、25
 
 | 名称 | 必需 | 默认 | 用途 |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | 否 | 空 | server 进程启动前配置鉴权。 |
+| `ABX_SERVER_TOKEN` | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 本地直接启动端口。 |
 | `WORKSPACE` | 否 | `/home/user/app` | 已存在且属于运行用户的输入/输出目录。 |
 | `DOCUMENT_PANDOC_BINARY` | 否 | `/usr/bin/pandoc` | 运维指定绝对程序路径，仍检查版本。 |

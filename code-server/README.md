@@ -14,54 +14,41 @@ A real browser IDE for editing sandbox workspaces without local Docker, KVM, des
 
 ## Quick start (CLI)
 
-Native CLI syntax; see [entry compatibility](../docs/using-templates.md#client-entry-compatibility). Use the SDK to read a private password from your process environment.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template deploy ./code-server -y
-abx create <template-id> --detach --timeout 300
-abx run <sandbox-id> code_server_version
-abx run <sandbox-id> code_server_self_test
-abx run <sandbox-id> code_server_start --arg 'password=<your-private-12-byte-or-longer-password>'
-abx run <sandbox-id> code_server_status
-abx run <sandbox-id> code_server_stop
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./code-server --workflow application --yes
+abx run <sandbox-id> code_server_version --json-args '{}'
 ```
+
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install the [paired `agent-sandbox-client`](../docs/python-client-installation.md):
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-import os
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        await sb.run("code_server_start", password=os.environ["CODE_SERVER_PASSWORD"])
-        print(sb.network.get_url(8443))
-        # Open this URL in your browser and log in with the same private password.
-        # Export any workspace files you need before destroying the sandbox.
-        await asyncio.to_thread(input, "Press Enter when finished editing: ")
-        await sb.run("code_server_stop")
-    finally:
-        await sb.kill()
-        await sb.close()
-
-asyncio.run(main())
+print(await client.commands.run('code_server_version'))
 ```
+
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-```bash
-curl -fsS -X POST -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer <server-token>' -d '{}' \
-  '<sandbox-port-9000-url>/commands/code_server_self_test'
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/code_server_version`, with `Content-Type: application/json` and this direct argument object:
+
+```json
+{}
 ```
 
-Response: `{"result":"CODE_SERVER_OK"}`. The IDE is a separate password-protected HTTP/WebSocket service on8443.
+Expected response for this check:
+
+```json
+{"result": "4.141.0"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 

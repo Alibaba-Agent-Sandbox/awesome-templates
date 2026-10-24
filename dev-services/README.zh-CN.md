@@ -16,57 +16,41 @@
 
 ## 快速开始（CLI）
 
-按[原生 CLI 配置](../docs/platform-steps.zh-CN.md)准备环境。自测生成临时密码并清理全部数据；长期应用使用下面 SDK 示例，避免密码进入 shell 参数。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template deploy ./dev-services -y --generation 2 \
-  --start-cmd 'agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py' \
-  --ready-cmd 'agent-sandbox-server healthcheck --port 9000'
-abx create <template-id> --detach
-abx run <sandbox-id> services_self_test
-abx run <sandbox-id> services_status
-abx run <sandbox-id> services_stop
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./dev-services --workflow application --yes
+abx run <sandbox-id> services_versions --json-args '{}'
 ```
+
+`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-客户端发行包 agent-sandbox-client，导入 agent_sandbox；安装[配对 SDK](../docs/python-client-installation.md)。停止后保存所需数据，再删除沙箱。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-import secrets
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    password = secrets.token_urlsafe(24)
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        print(await sb.run("services_start", password=password))
-        print(await sb.run("services_sql", sql="SELECT 19+23"))
-        await sb.run("services_redis", action="SET", key="example", value="42")
-        print(await sb.run("services_redis", action="GET", key="example"))
-        await sb.run("services_stop")
-        # Save needed data after stop, before destroying the sandbox.
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('services_versions'))
 ```
+
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-将 ABX_SERVER_URL 设置为 SDK network.get_url(9000)。命令接口鉴权在进程启动前配置 ABX_SERVER_TOKEN。
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/services_versions`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/services_self_test" \
-  --header 'Content-Type: application/json' \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --data '{}'
+```json
+{}
 ```
 
-成功响应 {"result":"POSTGRES_REDIS_OK"}。缺失参数400、未知命令404、执行错误500。客户端超时不保证服务端取消。
+该检查的预期响应：
+
+```json
+{"result": {"postgres": "17.11", "redis": "8.0.2"}}
+```
+
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -89,7 +73,7 @@ psql使用 -X、ON_ERROR_STOP；redis-cli使用 -e 将协议错误作为失败�
 
 | 名称 | 默认值 | 用途 |
 |---|---|---|
-| ABX_SERVER_TOKEN | 空 | 启动前配置的命令接口鉴权 |
+| ABX_SERVER_TOKEN | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | ABX_SERVER_PORT | 9000 | 本地命令端口 |
 | WORKSPACE | /home/user/app | 已存在工作区 |
 | DEV_SERVICES_PASSWORD | 空 | 可选默认密码，也可每次启动显式传入 |

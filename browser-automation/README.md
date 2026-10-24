@@ -24,82 +24,41 @@ requiring Docker, KVM, a desktop, a model API key, or a persistent browser sessi
 
 ## Quick start (CLI)
 
-The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
-
-Runtime configuration: the create-time key examples below require the named-command server to start with those values. For a prewarmed server, inspect its setup flags when provided and follow [explicit process configuration](../docs/runtime-environment.md); creating a sandbox does not reconfigure an already running server.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template install alibaba-agent-sandbox/awesome-templates//browser-automation
-abx create <template-id> --detach
-abx run <sandbox-id> browse --arg url=https://example.com --arg action=extract
-abx run <sandbox-id> browse --json-args '{"url":"https://example.com","action":"screenshot","timeout_s":30}'
-abx run <sandbox-id> scrape --arg url=https://example.com --arg selector=h1
+export ABX_PROVIDER=alicloud-express
+abx template launch ./browser-automation --workflow application --yes
+abx run <sandbox-id> browse --json-args '{"url": "data:text/html,<title>ABX_E2E_OK</title><h1>ABX_E2E_OK</h1>", "action": "extract"}'
 ```
 
-Use the installed template id and sandbox id returned by the CLI. `abx run`
-invokes named commands. `abx exec` runs shell programs. `--arg` passes strings;
-use `--json-args` for typed integer `timeout_s`. Do not put real form secrets on
-the command line or in shell history; use the SDK from a secret-aware process.
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-The client distribution is `agent-sandbox-client` (import `agent_sandbox`). See [Python installation](../docs/python-client-installation.md).
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        result = await sb.run("browse", url="https://example.com", action="extract", timeout=90)
-        print(result["title"])
-        screenshot = await sb.run("browse", url="https://example.com", action="screenshot", timeout=90)
-        await sb.server.files.download_file(screenshot["path"], "example.png")
-        print(sb.network.get_url(9000))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('browse', url='data:text/html,<title>ABX_E2E_OK</title><h1>ABX_E2E_OK</h1>', action='extract'))
 ```
 
-`sb.run` returns the unwrapped `result`. `timeout=90` is the client HTTP timeout;
-command `timeout_s=30` defaults to 30 seconds per browser launch/navigation/action,
-not a wall-clock deadline for the whole command. Each form field may consume one
-action timeout. A client timeout does not guarantee cancellation. Use the process
-API for background browser scripts, reconnecting and cancellation. With
-`ABX_SERVER_TOKEN`, use `sb.server_at(9000, token=server_token, timeout=90).commands.run(...)`.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-`BASE_URL` is the sandbox's port 9000 URL from `sb.network.get_url(9000)`.
-For an unauthenticated local server:
-
-```bash
-curl --fail-with-body -X POST "$BASE_URL/commands/browse" \
-  -H 'Content-Type: application/json' \
-  --data '{"url":"https://example.com","action":"extract","timeout_s":30}'
-```
-
-Response shape (page text may change):
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/browse`, with `Content-Type: application/json` and this direct argument object:
 
 ```json
-{"result":{"action":"extract","title":"Example Domain","text":"Example Domain\n..."}}
+{"url": "data:text/html,<title>ABX_E2E_OK</title><h1>ABX_E2E_OK</h1>", "action": "extract"}
 ```
 
-Send the argument object directly, without an `args` wrapper. Server authentication
-is optional: if `ABX_SERVER_TOKEN` was injected when creating the sandbox, add
-`Authorization: Bearer ${SERVER_TOKEN}` or `X-Access-Token: ${SERVER_TOKEN}`.
-Provider gateway authentication is separate: use the access headers returned by
-`sb.network.get_access_headers()` when required by that provider. The Express port
-9000 URL is currently public at the gateway; do not send its sandbox access token
-as a server token. When both layers require credentials, preserve the server
-Authorization header and the provider's distinct gateway header. Never log either.
+Expected response for this check:
 
-HTTP 400 means missing or mistyped arguments, 401 means server authentication
-failed, 404 means an unknown command, and 500 means browser/script failure or
-semantic validation (invalid action, URL, range, or form JSON). Errors use
-`{"error":"...","type":"..."}`. Browser execution errors omit request values.
+```json
+{"result": {"action": "extract", "title": "ABX_E2E_OK", "text": "ABX_E2E_OK"}}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -137,7 +96,7 @@ Version2.1.0 adds official `@playwright/mcp@0.0.83`, lockfile-pinned JavaScript 
 | mcp_stop | none | running:false after owned process/browser/listener cleanup |
 | mcp_self_test | none | PLAYWRIGHT_MCP_OK only after actual initialization/tools, two browser clicks independently observed by an owned HTTP fixture, real PNG screenshot and cleanup |
 
-Run `abx run <sandbox-id> mcp_start`, then `abx run <sandbox-id> mcp_call --arg method=tools/list`. Inside that same sandbox a standard MCP client uses `http://127.0.0.1:8931/mcp` with the native MCP HTTP session/protocol headers. The listener is private to the sandbox;8931 is not an authenticated public gateway. Outside clients use SDK `await sb.run("mcp_call", method="tools/list")` through the command server's configured bearer authentication. For browser_click, the pinned upstream schema uses `target` from a fresh browser_snapshot; it does not use the old ref argument.
+Run `abx run <sandbox-id> mcp_start`, then `abx run <sandbox-id> mcp_call --arg method=tools/list`. Inside that same sandbox a standard MCP client uses `http://127.0.0.1:8931/mcp` with the native MCP HTTP session/protocol headers. The listener is private to the sandbox;8931 is not an authenticated public gateway. Outside clients use SDK `await client.commands.run("mcp_call", method="tools/list")` through the command server's configured bearer authentication. For browser_click, the pinned upstream schema uses `target` from a fresh browser_snapshot; it does not use the old ref argument.
 
 A process-start diagnostic `MCP_NODE_MODULES` may select an independently installed exact lockfile tree; production uses /opt/playwright-mcp/node_modules. MCP HOME/profile/output are private and deleted on stop; no saved browser/profile/extensions are loaded. Default action/navigation limits10/20seconds, HTTP response4MiB, native output-file eviction threshold10MiB (not a hard disk quota) and idle browser60seconds. Calls are serialized; streaming stays on the native in-sandbox MCP endpoint, while mcp_call returns a buffered result. Native child environment excludes operator cloud/model/server keys and Node injection variables. Browser navigation shares the sandbox's egress authority; no SSRF policy is added. Caller requests, page data and results can be private and must not be publicly logged.
 
@@ -153,7 +112,7 @@ PDF execution runs in a private-HOME child with its own1–120second execution d
 |---|---|---|
 | `PLAYWRIGHT_BROWSERS_PATH` | `/opt/playwright` in the image | Shared readable Chromium installation |
 | `WORKSPACE` | `/home/user/app` | Script root and `browser-artifacts/` output root; keep aligned with the server file policy |
-| `ABX_SERVER_TOKEN` | unset/empty | Optional server authentication, injected at sandbox creation |
+| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | `9000` | Local `python3 commands.py` server port |
 
 Outputs from extraction, screenshots, links and user scripts may contain sensitive

@@ -26,84 +26,41 @@ provider or the Goose desktop application.
 
 ## Quick start (CLI)
 
-Native CLI syntax; check [entry compatibility](../docs/using-templates.md#client-entry-compatibility).
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template deploy ./goose -y
-abx create <template-id> --detach --timeout 900
-abx run <sandbox-id> goose_version
-abx run <sandbox-id> goose_setup_check
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./goose --workflow application --yes
+abx run <sandbox-id> goose_version --json-args '{}'
 ```
 
-Version/setup need no key. Model calls need settings in the running command server;
-use the explicit SDK startup below. Create-time environment does not reconfigure
-a prewarmed server. Provider setup and ID ownership are in [using templates](../docs/using-templates.md).
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install the `agent-sandbox-client` distribution using the [pinned client instructions](../docs/python-client-installation.md). Configure the
-three GOOSE variables in your operator environment; credentials stay out of argv.
-The example owns the sandbox and exports a file before destroying it.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-import os
-import secrets
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=900)
-    server = None
-    try:
-        server = await sb.start_server(
-            port=9010, commands="/home/user/app/commands.py", timeout=60,
-            token=secrets.token_urlsafe(32),
-            env={"GOOSE_API_KEY": os.environ["GOOSE_API_KEY"],
-                 "GOOSE_BASE_URL": os.environ["GOOSE_BASE_URL"],
-                 "GOOSE_MODEL": os.environ["GOOSE_MODEL"],
-                 "WORKSPACE": "/home/user/app"})
-        result = await server.commands.run(
-            "goose", prompt="Create HELLO.txt containing hello, then read it back.",
-            allow_tools=True, command_timeout=600, timeout=660)
-        if result["exit_code"] != 0:
-            raise RuntimeError("Goose failed; inspect the private returned diagnostics")
-        print(await sb.files.read("/home/user/app/HELLO.txt"))
-    finally:
-        try:
-            if server is not None:
-                await server.aclose()
-            await sb.kill()
-        finally:
-            await sb.close()
-
-asyncio.run(main())
-
+print(await client.commands.run('goose_version'))
 ```
 
-The SDK helper starts a new9010 server with a separate random bearer token. It
-keeps model settings out of the already-running9000 server. Only the caller-owned
-sandbox is destroyed. This example is API/source checked; actual provider/model
-claims require the receipts below.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Use the SDK-forwarded9010 URL of that configured server as `ABX_SERVER_URL`, and
-its random process-start token as `ABX_SERVER_TOKEN`.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/goose_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --max-time 660 -X POST "$ABX_SERVER_URL/commands/goose" \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN" -H 'Content-Type: application/json' \
-  --data '{"prompt":"Explain 6*7 briefly","allow_tools":false,"command_timeout":600}'
+```json
+{}
 ```
 
-Example response: `{"result":{"stdout":"42","stderr":"","exit_code":0}}`.
-HTTP200 wraps `{stdout,stderr,exit_code}` in `result`; preserve nonzero upstream
-status. Missing/undeclared/mistyped arguments are400, auth failure401, unknown
-command404; invalid paths/settings/pins/limits or timeout are500 with error/type.
-The response is buffered. Client HTTP timeout is distinct from command timeout;
-disconnection does not guarantee native cancellation.
+Expected response for this check:
+
+```json
+{"result": "1.54.0"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -130,7 +87,7 @@ and base URL, but project stdout may still contain private project content.
 | GOOSE_BASE_URL | model calls | empty | explicit HTTP(S) endpoint; no userinfo/query/fragment; mapped to upstream OPENAI_BASE_URL |
 | GOOSE_MODEL | model calls | empty | actual upstream model ID |
 | WORKSPACE | no | /home/user/app | caller-owned working directory |
-| ABX_SERVER_TOKEN | no | empty | command-server process bearer token |
+| ABX_SERVER_TOKEN | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 | GOOSE_BINARY | operator diagnostics only | Goose on image PATH | independently installed binary override, still checks exact version |
 
 A private GOOSE_PATH_ROOT/HOME and XDG dirs, disabled keyring/telemetry/session

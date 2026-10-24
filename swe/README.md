@@ -16,89 +16,41 @@ Separates an actual source repair from an agent saying it finished. The evaluato
 
 ## Quick start (CLI)
 
-The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
-
-Install the CLI using the [project instructions](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#readme), then build with Docker available locally:
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template deploy ./swe
-# Create a dedicated sandbox from the resulting template through the SDK below.
-abx run "$SANDBOX_ID" swe_version
-ABX_HTTP_TIMEOUT=240 abx run "$SANDBOX_ID" swe_prepare --server-port 9010
-ABX_HTTP_TIMEOUT=660 abx run "$SANDBOX_ID" swe_run_agent --server-port 9010 --arg run_id="$RUN_ID" --arg allow_execution=true --arg max_steps=30 --arg command_timeout=600
-ABX_HTTP_TIMEOUT=240 abx run "$SANDBOX_ID" swe_evaluate --server-port 9010 --arg run_id="$RUN_ID"
-abx run "$SANDBOX_ID" swe_report --server-port 9010 --arg run_id="$RUN_ID"
-abx run "$SANDBOX_ID" swe_cleanup --server-port 9010 --arg run_id="$RUN_ID"
+export ABX_PROVIDER=alicloud-express
+abx template launch ./swe --workflow application --yes
+abx run <sandbox-id> swe_version --json-args '{}'
 ```
 
-`RUN_ID` is the opaque field returned by prepare. Use a client HTTP timeout longer than the command deadline for the model call. The SDK recipe below starts the configured server; create-time env values may arrive after a prewarmed default server has started. Do not assume they configure that existing process.
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Use `agent-sandbox-client` with its paired `agent-sandbox-server`; follow [the pinned source installation recipe](../docs/python-client-installation.md).
-
-Install the paired source packages using [the pinned SDK installation recipe](../docs/python-client-installation.md). The Python import is `agent_sandbox`.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-import os
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sandbox = await Sandbox.create(os.environ['SWE_TEMPLATE'], provider='alicloud-express', timeout=900)
-    stream = None
-    consumer = None
-    try:
-        stream = await sandbox.commands.start(
-            'agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py',
-            env={key: os.environ[key] for key in ('SWE_API_KEY', 'SWE_BASE_URL', 'SWE_MODEL')}
-                | {'WORKSPACE': '/home/user/app', 'ABX_SERVER_BASE_DIR': '/home/user/app', 'SWE_MODEL_PROTOCOL': 'toolcall'},
-            timeout=900,
-        )
-        async def drain():
-            async for _ in stream:
-                pass
-        consumer = asyncio.create_task(drain())  # stream consumption starts the process
-        for attempt in range(30):
-            try:
-                assert await sandbox.run('swe_version', server_port=9010) == 'mini-swe-agent 2.4.6'
-                break
-            except Exception:
-                if attempt == 29:
-                    raise
-                await asyncio.sleep(1)
-        prepared = await sandbox.run('swe_prepare', server_port=9010, timeout=240)
-        run_id = prepared['run_id']
-        await sandbox.run('swe_run_agent', run_id=run_id, allow_execution=True,
-                          max_steps=30, command_timeout=600, server_port=9010, timeout=660)
-        report = await sandbox.run('swe_evaluate', run_id=run_id, server_port=9010, timeout=240)
-        patch = await sandbox.files.read(report['patch_path'])
-        assert report['resolved_slice'] and report['passed'] == 60 and patch
-        await sandbox.run('swe_cleanup', run_id=run_id, server_port=9010)
-    finally:
-        await sandbox.kill()
-        if consumer:
-            consumer.cancel()
-            await asyncio.gather(consumer, return_exceptions=True)
-        if stream:
-            await stream.cancel()
-
-asyncio.run(main())
+print(await client.commands.run('swe_version'))
 ```
+
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Use `sandbox.network.get_url(9010)` from the configured SDK recipe as `BASE_URL`. The body is the direct argument object, and successful responses wrap the result in `{"result": ...}`.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/swe_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl -fsS -X POST "$BASE_URL/commands/swe_prepare" -H 'Content-Type: application/json' -d '{}'
-curl -fsS --max-time 660 "$BASE_URL/commands/swe_run_agent" -H 'Content-Type: application/json' \
-  -d '{"run_id":"<prepare run_id>","allow_execution":true,"max_steps":30,"command_timeout":600}'
-curl -fsS --max-time 240 "$BASE_URL/commands/swe_evaluate" -H 'Content-Type: application/json' \
-  -d '{"run_id":"<prepare run_id>"}'
+```json
+{}
 ```
 
-Protect the named server using the server's documented token configuration if exposing it to other callers; authenticate through `sandbox.server_at(9010, token=...)` and HTTP bearer headers. That configuration must be present when the new process starts. Starting another process does not change the default port 9000 server.
+Expected response for this check:
+
+```json
+{"result": "mini-swe-agent 2.4.6"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 

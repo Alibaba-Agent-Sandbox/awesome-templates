@@ -12,8 +12,6 @@
 
 ## 技术栈
 
-版本 2.0.1 将默认服务器源码与 CI wheel 的提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a` 对齐。历史回执保留原始输入范围；此版本需要重新完成镜像及工作流验收。
-
 - 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`abx template deploy` 把 `<region>` 换成 `cn-hangzhou`（或 `ALIBABA_CLOUD_REGION_ID`），把 `<tag>` 换成 `v0.0.49`（或 `ABX_BASE_IMAGE_TAG`）。
 - 镜像自带 Node.js 20 和 Python 3.13。
 - `@openai/codex@0.162.1`（`codex-cli 0.162.1`）。
@@ -27,91 +25,41 @@
 
 ## 快速开始（CLI）
 
-示例使用当前极速版 CLI：`abx create <template-id> --detach` 输出沙箱 ID，`abx kill <sandbox-id>` 清理沙箱；命名命令使用 `abx run`。完整对照见[使用指南](../docs/using-templates.zh-CN.md#客户端入口兼容性)。
-
-运行配置：以下创建时注入密钥的示例，要求命名服务启动时实际获得这些值。预热服务请先检查模板提供的 setup 标志（如有），再按[显式进程配置](../docs/runtime-environment.zh-CN.md)操作；创建沙箱不会重新配置已运行的服务。
-
-在本仓库检出目录，环境里已有 Express 凭证：
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
 
 ```bash
-abx template deploy ./codex -y --generation 2 \
-  --start-cmd 'agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py' \
-  --ready-cmd 'agent-sandbox-server healthcheck --port 9000'
-abx create <template-id> --detach \
-  --env OPENAI_API_KEY=<key> \
-  --env OPENAI_BASE_URL=<https://host/compatible-mode/v1> \
-  --env CODEX_MODEL=qwen-plus
-abx run <sandbox-id> codex_version
-abx run <sandbox-id> codex_setup_check
-abx run <sandbox-id> codex_exec --json-args '{"prompt":"总结工作区。","model":"qwen-plus"}'
+export ABX_PROVIDER=alicloud-express
+abx template launch ./codex --workflow application --yes
+abx run <sandbox-id> codex_version --json-args '{}'
 ```
 
-`template.yaml` 里已经写了 `generation`、`start_cmd` 和 `ready_cmd`。
-
-用完后删除沙箱和模板：
-
-```bash
-abx kill <sandbox-id>
-abx template delete <template-id> -y
-```
-
-`python3 scripts/express_e2e.py codex` 会用唯一别名部署，跑 smoke 命令，只有通过后才写 evidence，并删除它创建的沙箱和模板。
+`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-客户端发行名为 `agent-sandbox-client`，导入名为 `agent_sandbox`。配套版本发布前，请按[固定提交的双包安装说明](../docs/python-client-installation.md)安装。
+安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main() -> None:
-    sb = await Sandbox.create(
-        template="<template-id>",
-        timeout=300,
-        envs={
-            "OPENAI_API_KEY": "<key>",
-            "OPENAI_BASE_URL": "https://host/compatible-mode/v1",
-            "CODEX_MODEL": "qwen-plus",
-        },
-    )
-    try:
-        print(await sb.run("codex_version"))
-        print(await sb.run(
-            "codex_exec",
-            prompt="Reply with exactly: ABX_E2E_OK",
-            model="qwen-plus",
-            sandbox="auto",
-        ))
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('codex_version'))
 ```
 
-`await sb.run("codex_exec", prompt="...")` 返回结果对象（`last_message`、`events`、`thread_id`）。`sb.commands.run` 是 shell API；沙箱生命周期管理使用上面的异步 `Sandbox.create` 示例。
-
-用第一次结果里的 `thread_id` 续跑：
-
-```python
-await sb.run("codex_exec", prompt="继续。", resume="<thread_id>")
-```
+复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
 
 ## 快速开始（HTTP POST）
 
-对于 `http://127.0.0.1:9000` 可访问的服务（例如本地模板进程）：
+按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/codex_version`，`Content-Type: application/json`，直接发送以下参数对象：
 
-```bash
-curl --fail-with-body -X POST http://127.0.0.1:9000/commands/codex_exec \
-  -H 'Content-Type: application/json' \
-  --data '{"prompt":"总结工作区。","sandbox":"read-only","approval":"never","json_events":true,"timeout_s":120}'
+```json
+{}
 ```
 
-远程沙箱使用 `sb.network.get_url(9000)` 返回的网关地址及其要求的认证。应用配置了 `ABX_SERVER_TOKEN` 时，使用应用的秘密管理机制在授权头传递 bearer token。响应将命令结果包在 `{"result": ...}` 中；工具事件和 stderr 会对已知秘密环境变量值脱敏。
+该检查的预期响应：
 
-执行成功返回 HTTP 200，正文为 `{"result":{"last_message":"...","events":[],"thread_id":"..."}}`。缺少必填参数或类型不符返回 HTTP 400；应用认证失败返回 HTTP 401。沙箱策略非法或上游执行失败返回 HTTP 500，正文为 `{"error":"...","type":"RuntimeError"}`（非法值使用 `ValueError`）。
+```json
+{"result": "0.162.1"}
+```
 
-`timeout_s` 默认为 300，接受 1 到 3600 的整数。HTTP 读取超时应大于此值并预留服务和网关开销。客户端或网关可能先超时，这不代表子进程已停止；服务端 Codex 超时返回 HTTP 500。命名命令只返回一份完整 JSON；需要实时输出时使用进程 API。
+`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
 
 ## 命令参考
 
@@ -162,10 +110,10 @@ curl --fail-with-body -X POST http://127.0.0.1:9000/commands/codex_exec \
 | `CODEX_MODEL` | 否 | 空 | 写入 `config.toml` 的 `model`；`codex_exec` 未传 `model` 时使用。 |
 | `CODEX_HOME` | 否 | `/home/user/.codex` | `config.toml` 和会话目录。 |
 | `WORKSPACE` | 否 | `/home/user/workspace` | 默认 `cwd`。镜像里有一份起始 `AGENTS.md`。 |
-| `ABX_SERVER_TOKEN` | 否 | 空 | 设置后客户端发送 `Authorization: Bearer`。 |
+| `ABX_SERVER_TOKEN` | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 本地 `python3 commands.py` 的端口。 |
 
-密钥用 `abx create --env` 或 `Sandbox.create(envs=...)` 注入。不要写进镜像。
+在 `template launch` 前安全导出清单中声明为空的秘密变量，让应用启动时读取；不要写入镜像、YAML 或日志。
 
 设置了 base URL 且 `config.toml` 不存在时，`codex_exec` 会创建它。`codex_config_write` 会覆盖该文件。Codex 0.162.1 不会发送 Chat Completions；`wire_api = "chat"` 是硬错误。
 

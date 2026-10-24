@@ -16,62 +16,41 @@ Provide concrete front-end scaffolds and persistent previews beyond generic Node
 
 ## Quick start (CLI)
 
-Use the [native CLI setup](../docs/platform-steps.md) and paired credentials in process environment.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template deploy ./next-app -y --generation 2 \
-  --start-cmd 'agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py' \
-  --ready-cmd 'agent-sandbox-server healthcheck --port 9000'
-abx create <template-id> --detach
-abx run <sandbox-id> scaffold --arg kind=next --arg path=preview-app
-abx run <sandbox-id> dev_start --arg kind=next --arg path=preview-app
-abx run <sandbox-id> dev_logs
-abx run <sandbox-id> dev_stop
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./next-app --workflow application --yes
+abx run <sandbox-id> toolchain_versions --json-args '{}'
 ```
 
-[Platform step preparation](../docs/platform-steps.md) is also supported structurally; a real provider receipt is still required. Standard-entry CLI syntax differs: inspect [entry compatibility](../docs/using-templates.md#client-entry-compatibility).
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Client distribution: `agent-sandbox-client`; import `agent_sandbox`. Install the [paired source client](../docs/python-client-installation.md).
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from urllib.parse import urlsplit
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        await sb.run("scaffold", kind="vite", path="preview-app")
-        await sb.run("dev_start", kind="vite", path="preview-app",
-                     allowed_host=urlsplit(sb.network.get_url(5173)).hostname)
-        print(sb.network.get_url(5173))
-        # Fetch/edit the preview before stopping it. Preserve desired source files.
-        print(await sb.run("dev_logs", tail_bytes=4096))
-        await sb.run("dev_stop")
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('toolchain_versions'))
 ```
 
-SDK network.get_url supplies the provider's authoritative forwarded URL. Commands return ports; no host rewrite or invented CLI port command is needed. SDK files can edit app/page.js or index.html before fetching the preview again.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Use sb.network.get_url(9000) and set ABX_SERVER_URL to that URL. When configured, provide the command server token through process environment; see [prewarmed environment](../docs/runtime-environment.md).
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/toolchain_versions`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/scaffold" \
-  --header 'Content-Type: application/json' \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --data '{"kind":"next","path":"preview-app"}'
+```json
+{}
 ```
 
-HTTP200 returns `{"result":{"path":"preview-app","kind":"next"}}`. POST /commands/dev_start with the same body, fetch the SDK3000 URL, then POST /commands/dev_stop with `{}`. Invalid schema400, unknown command404, runtime errors500. A client timeout does not cancel a server command.
+Expected response for this check:
+
+```json
+{"result": {"next": "16.4.2", "react": "19.3.1", "react-dom": "19.3.1", "vite": "8.3.4"}}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -87,13 +66,13 @@ HTTP200 returns `{"result":{"path":"preview-app","kind":"next"}}`. POST /command
 
 Next uses local next dev --webpack --hostname0.0.0.0 --port3000. Vite uses local vite --host0.0.0.0 --port5173 --strictPort. Literal argv; no shell interpolation. Existing directories and symlink/traversal paths are rejected. The controlled node_modules symlink points to the immutable preinstalled toolchain. Project source/build cache remain after stop; remove them explicitly when no longer needed.
 
-Version1.1.0 adds allowed_host for Vite's exact SDK-forwarded hostname. The default empty value preserves localhost-only host authorization; pass urlsplit(sb.network.get_url(5173)).hostname from the SDK. It sets only the upstream-supported __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS, verified in pinned Vite8.3.4 source and [official server options](https://vite.dev/config/server-options#server-allowedhosts). Wildcards, leading-dot suffixes, schemes, ports, credentials, commas and empty DNS labels are refused. Next does not accept this Vite-only setting. Runtime1.0.0's actual forwarded Vite403 attempt remains a failure;the completed1.1.0 image/forwarded acceptance is linked below. No Host rewrite or global allow-all mode is used.
+Version1.1.0 adds allowed_host for Vite's exact SDK-forwarded hostname. The default empty value preserves localhost-only host authorization; pass urlsplit((await sb.network.resolve(5173))[0]).hostname from the SDK. It sets only the upstream-supported __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS, verified in pinned Vite8.3.4 source and [official server options](https://vite.dev/config/server-options#server-allowedhosts). Wildcards, leading-dot suffixes, schemes, ports, credentials, commas and empty DNS labels are refused. Next does not accept this Vite-only setting. Runtime1.0.0's actual forwarded Vite403 attempt remains a failure;the completed1.1.0 image/forwarded acceptance is linked below. No Host rewrite or global allow-all mode is used.
 
 ## Configuration
 
 | Name | Default | Purpose |
 |---|---|---|
-| ABX_SERVER_TOKEN | empty | command-server Bearer authentication when set before startup |
+| ABX_SERVER_TOKEN | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 | ABX_SERVER_PORT | 9000 | local server port |
 | WORKSPACE | /home/user/app | existing workspace root |
 | NEXT_APP_TOOLCHAIN | /opt/next-app | trusted pinned toolchain; local tests may select the installed source directory |

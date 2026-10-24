@@ -20,105 +20,41 @@ Deliver the bounded text conversion requested by [Issue 55](https://github.com/A
 
 ## Quick start (CLI)
 
-The examples use the current Express CLI: `abx create <template-id> --detach` prints the sandbox ID; `abx kill <sandbox-id>` cleans it up. Named commands use `abx run`. See the [entry comparison](../docs/using-templates.md#client-entry-compatibility).
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
 
 ```bash
-abx template deploy ./document-tools -y --generation 2
-abx create <template-id> --detach
-abx run <sandbox-id> document_smoke
-abx run <sandbox-id> convert --arg input_path=report.md --arg output_name=report.docx
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./document-tools --workflow application --yes
+abx run <sandbox-id> document_version --json-args '{}'
 ```
 
-Upload `report.md` to `/home/user/app` first. `document_smoke` creates original Markdown, converts it, independently inspects DOCX XML and TXT content, and deletes only its owned files. Ordinary conversion artifacts remain until callers delete them or destroy the sandbox.
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Use `agent-sandbox-client` with its paired `agent-sandbox-server`; follow [the pinned source installation recipe](../docs/python-client-installation.md).
-
-Install the paired source packages using [the pinned SDK installation recipe](../docs/python-client-installation.md). The Python import is `agent_sandbox`.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=300)
-    try:
-        print(await sb.run("document_smoke"))
-        # After uploading report.md into /home/user/app:
-        result = await sb.run("convert", input_path="report.md", output_name="report.docx", timeout=90)
-        print(result["output_path"], result["sha256"])
-    finally:
-        await sb.kill()
-
-asyncio.run(main())
+print(await client.commands.run('document_version'))
 ```
 
-`sb.run` invokes a named command; `sb.commands.run` invokes the shared server shell. Use the files API to upload/download artifacts. `timeout` above is the HTTP timeout; the named command's deadline parameter is `command_timeout`.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Use the sandbox's port-9000 URL and the provider's required gateway access header. Supply a separate bearer token when the running server has `ABX_SERVER_TOKEN` configured.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/document_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --max-time 90 --request POST "$ABX_SERVER_URL/commands/convert" \
-  --header "Authorization: Bearer $ABX_SERVER_TOKEN" \
-  --header 'Content-Type: application/json' \
-  --data '{"input_path":"report.md","output_name":"report.docx","output_format":"docx","command_timeout":30}'
+```json
+{}
 ```
 
-Arguments are direct JSON parameters. HTTP 200 returns `{"result":{"output_path":"/home/user/app/report.docx","output_format":"docx","bytes":12345,"sha256":"<64 hex characters>"}}`, with size/hash depending on content. Missing/mistyped arguments return 400; failed authentication 401; unknown commands 404; invalid paths, document content, limits or execution errors 500 with `error` and `type`. Results are buffered. A client timeout or disconnection does not guarantee cancellation.
+Expected response for this check:
 
-### Version 1.1 text-document profile
-
-The existing `convert` command keeps its required paths and default Markdown/DOCX
-behavior. Add `input_format="html"` for balanced text HTML and choose
-`output_format="docx"|"txt"|"pptx"|"pdf"`. The extra parameter is optional;
-existing callers remain compatible. A plain output filename must match its format.
-
-```bash
-abx run <sandbox-id> convert --arg input_path=uploaded.html --arg input_format=html --arg output_name=document.pdf --arg output_format=pdf --arg command_timeout=60
-abx run <sandbox-id> convert --arg input_path=uploaded.md --arg output_name=slides.pptx --arg output_format=pptx
+```json
+{"result": "pandoc 3.1.11.1"}
 ```
 
-```python
-result = await sb.run("convert", input_path="uploaded.html", input_format="html", output_name="document.pdf", output_format="pdf", command_timeout=60, timeout=90)
-```
-
-The direct HTTP body is `{"input_path":"uploaded.html","input_format":"html","output_name":"document.pdf","output_format":"pdf","command_timeout":60}`.
-Successful calls return the existing output path/format/bytes/SHA256 fields.
-`office_version` verifies actual headless Writer and its exact Debian package;
-`document_extended_smoke` creates HTML/DOCX, native PPTX and Writer PDF and removes
-its own files. Its PDF signature is supplemented by independent external pypdf
-page/text/nonce verification in the full HTTP controller.
-
-Pandoc remains at `3.1.11.1` with its distinct pinned Debian data package. PDF uses only
-DOCX generated from validated, metadata-free, image/raw-free Pandoc AST, then
-actual LibreOffice Writer. Pin writer-nogui/core-nogui/common to
-`4:25.2.3-2+deb13u8`, DejaVu `2.37-8` and Noto CJK `1:20240730+repack1-1`;
-Debian resolves unrelated libraries. No uploaded DOCX/macros are accepted.
-Each document conversion uses a fresh private HOME/XDG/temp/profile and the official
-soffice launcher with `-env:UserInstallation`, headless/no-default-document flags.
-The caller's profile is never reused. No GUI/display, daemon, GPU or model is needed.
-
-HTML accepts explicit balanced text tags, headings, lists, tables, emphasis,
-code and web/mail/fragment links. Reject resource/script/style/event attributes,
-images/iframes/objects and arbitrary tags before the sandboxed reader. At most
-20,000 tags and depth 100; AST bounds still apply. PPTX uses native Pandoc slide level 2
-and validates 1–100 slide XML entries. PDF and all artifacts remain at most 8 MiB;
-inputs remain 1 MiB/UTF-8. Shared deadlines and no-clobber publication remain.
-Office has 2 GiB address-space/60–61second CPU guards; Pandoc keeps 1 GiB address
-space/256 MiB Haskell heap and 30–31 second CPU guards. The sandbox profile is now
-2 vCPU/4 GiB. A deliberately detached child or abrupt server loss still requires
-final sandbox destruction.
-
-For independent PDF verification, install the public controller dependency
-`pypdf==6.21.1`; the image does not require that Python library. Native LibreOffice,
-font and Pandoc licenses remain in installed Debian copyright files; template
-code retains Apache-2.0. See [LibreOffice package](https://packages.debian.org/trixie/libreoffice-writer-nogui)
-and [official profile/headless/conversion parameters](https://help.libreoffice.org/latest/en-US/text/shared/guide/start_parameters.html).
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -141,7 +77,7 @@ One conversion runs at a time. Pandoc has 1 GiB address space, a 256 MiB Haskell
 
 | Name | Required | Default | Purpose |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | no | empty | Configure authentication before the server process starts. |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | no | `9000` | Port for direct local startup. |
 | `WORKSPACE` | no | `/home/user/app` | Existing runtime-user-owned input/output directory. |
 | `DOCUMENT_PANDOC_BINARY` | no | `/usr/bin/pandoc` | Operator-only absolute executable path, still version checked. |

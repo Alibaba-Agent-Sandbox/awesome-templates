@@ -16,78 +16,41 @@ Give a real model a local browser inside an owned sandbox, with independent arti
 
 ## Quick start (CLI)
 
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+
 ```bash
-abx template deploy ./browser-use -y
-abx create <template-id> --detach --timeout 900
-abx run <sandbox-id> browser_use_version
-abx run <sandbox-id> browser_use_setup_check
-abx run <sandbox-id> browser_use_self_test
-abx kill <sandbox-id>
-abx template delete <template-id> -y
+export ABX_PROVIDER=alicloud-express
+abx template launch ./browser-use --workflow application --yes
+abx run <sandbox-id> browser_use_version --json-args '{}'
 ```
 
-Deploy/create return the template/sandbox IDs above. Native version/setup/self-test require no model key; expected self-test result is BROWSER_USE_NATIVE_OK. See [entry compatibility and provider setup](../docs/using-templates.md#client-entry-compatibility). Create-time environment does not reconfigure a prewarmed server. Use the explicit SDK process-start example for real model settings.
+`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install agent-sandbox-client using the [pinned client source instructions](../docs/python-client-installation.md). The same native self-test is followed by an optional real model turn. Set the three BROWSER_USE model variables in the operator environment first; remove the optional turn for a keyless test.
+Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
-import asyncio
-import os
-from pathlib import Path
-import secrets
-from agent_sandbox.api.sandbox import Sandbox
-
-async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=900)
-    clients = []
-    try:
-        native = sb.server_at(9000)
-        clients.append(native)
-        print(await native.commands.run("browser_use_self_test", timeout=90))
-        # Optional real model turn; these three variables hold model settings.
-        model = await sb.start_server(
-            port=9010, commands="/home/user/app/commands.py", timeout=60,
-            token=secrets.token_urlsafe(32),
-            env={"BROWSER_USE_API_KEY": os.environ["BROWSER_USE_API_KEY"],
-                 "BROWSER_USE_BASE_URL": os.environ["BROWSER_USE_BASE_URL"],
-                 "BROWSER_USE_MODEL": os.environ["BROWSER_USE_MODEL"]})
-        clients.append(model)
-        result = await model.commands.run(
-            "browser_use", task="Read the heading and summarize it briefly.",
-            url="https://example.com/", max_steps=8,
-            command_timeout=300, timeout=360)
-        if not result["done"] or not result["success"]:
-            raise RuntimeError("Native browser agent did not complete the task")
-        png = await sb.files.read_bytes(result["screenshot_path"], max_bytes=16*1024**2)
-        output = Path("browser-use-" + secrets.token_hex(8) + ".png")
-        with output.open("xb") as file:
-            file.write(png)
-        print(result["result"], output)
-    finally:
-        await asyncio.gather(*(client.aclose() for client in clients), return_exceptions=True)
-        try:
-            await sb.kill()
-        finally:
-            await sb.close()
-
-asyncio.run(main())
+print(await client.commands.run('browser_use_version'))
 ```
 
-The example owns this sandbox, exports its PNG before deletion, and closes HTTP clients before destroying the sandbox. ServerClient.aclose only closes HTTP resources; sb.kill supplies final remote process cleanup here. This example is source/syntax checked; provider/model claims require executed receipts.
+Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
 
 ## Quick start (HTTP POST)
 
-Set ABX_SERVER_URL to the SDK network.get_url(9000) of a running template and ABX_SERVER_TOKEN to its process token if configured.
+Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/browser_use_version`, with `Content-Type: application/json` and this direct argument object:
 
-```bash
-curl --fail-with-body --max-time 90 -X POST "$ABX_SERVER_URL/commands/browser_use_self_test" \
-  -H "Authorization: Bearer $ABX_SERVER_TOKEN" -H 'Content-Type: application/json' \
-  --data '{}'
+```json
+{}
 ```
 
-Response: {"result":"BROWSER_USE_NATIVE_OK"}. For the SDK-started configured9010 server, use its URL/token and POST /commands/browser_use with {"task":"Read the heading","url":"https://example.com/","max_steps":8,"command_timeout":300}. HTTP200 wraps the structured output in result; done/success describe the native outcome and must both be true for successful completion. Parameters missing/undeclared/mistyped400, bearer mismatch401, unknown command404; invalid limits/config/path/pins/busy/deadline/native execution500 with error/type. Buffered response; client timeout/disconnection does not guarantee cancellation.
+Expected response for this check:
+
+```json
+{"result": "0.13.11"}
+```
+
+`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
 
 ## Command reference
 
@@ -113,7 +76,7 @@ Exactly15 native actions are enabled: done/navigate/click/input/scroll/wait/go_b
 | PLAYWRIGHT_BROWSERS_PATH | no | /opt/playwright | installed Chromium1208 cache |
 | BROWSER_USE_BROWSER_BINARY | diagnostics | Chromium1208/chrome-linux64/chrome | executable override; actual145.0.7632.6 still required |
 | WORKSPACE | no | /home/user/app | owned root for new browser-use-artifacts PNGs |
-| ABX_SERVER_TOKEN | no | empty | command-server process bearer token |
+| ABX_SERVER_TOKEN | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
 
 Model settings enter private file stdin only; they are not inherited into Chromium. Every call has fresh HOME/XDG/profile/native file-system state. Disable native telemetry/cloud sync/default extensions and use_cloud; no caller profile or saved browser account is imported. CDP launch requests loopback binding and only command9000 is advertised. This container-only profile explicitly sets chromium_sandbox=false instead of relying on Docker detection; the owned sandbox supplies OS isolation. The browser and model still have sandbox-user authority and network access; these action restrictions are not another OS isolation boundary. Returned result/PNG can contain private webpage information; exact configured model key/base values are redacted from result strings.
 
