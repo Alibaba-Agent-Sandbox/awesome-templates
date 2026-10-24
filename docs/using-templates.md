@@ -51,11 +51,35 @@ async def main():
 asyncio.run(main())
 ```
 
-For HTTP, use the port URL from `abx sandbox url <sandbox-id> --port 9000` as `ABX_SERVER_URL`:
+For a direct HTTP POST, resolve the provider endpoint and its gateway headers through the SDK. This keeps any gateway path and query parameters:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/hello"   --header 'Content-Type: application/json'   --header "Authorization: Bearer $ABX_SERVER_TOKEN" --header "X-Access-Token: $ABX_SERVER_TOKEN" --data '{"name":"Ada"}'
-# {"result":"Hello, Ada!"}
+```python
+import asyncio
+import os
+import httpx
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect("<sandbox-id>", provider="alicloud-express")
+    try:
+        endpoint, gateway_headers = await sb.network.resolve(9000)
+        headers = dict(gateway_headers)
+        if any(key.lower() == "authorization" for key in headers):
+            raise ValueError("Keep the gateway Authorization header; do not replace it")
+        token = os.environ["ABX_SERVER_TOKEN"]
+        headers["Authorization"] = "Bearer " + token
+        if not any(key.lower() == "x-access-token" for key in headers):
+            headers["X-Access-Token"] = token
+        url = httpx.URL(endpoint)
+        url = url.copy_with(path=url.path.rstrip("/") + "/commands/hello")
+        async with httpx.AsyncClient(timeout=180) as http:
+            response = await http.post(url, headers=headers, json={"name": "Ada"})
+            response.raise_for_status()
+            print(response.json())  # {"result": "Hello, Ada!"}
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
 Arguments are the direct JSON body. The existing application `X-Access-Token` header also works through the OpenSandbox server proxy, which strips Bearer authorization. The CLI and Python application client add it automatically when that header is unoccupied. A provider gateway may require its own headers: preserve those values, including an existing gateway `X-Access-Token`. A failed authentication is an error, never a reason to retry anonymously.
