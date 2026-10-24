@@ -86,4 +86,3 @@ Follow [CONTRIBUTING](../../../CONTRIBUTING.md). Keep both languages aligned and
 ## License
 
 Documentation and verification scripts: Apache-2.0. The provider-managed image and its bundled software retain their own licenses.
-

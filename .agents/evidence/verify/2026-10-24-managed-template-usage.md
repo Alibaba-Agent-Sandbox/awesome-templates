@@ -2,6 +2,7 @@
 
 Result: PARTIAL — real isolated Docker job and normal PR checks pending.
 
+- Existing managed catalog and safe diagnostic regressions: 22 tests passed.
 - Managed catalog: zero violations; historical JSON unchanged.
 - Documentation: 222 documents, zero broken local targets.
 - All ten Python examples in eight bilingual README files parse.

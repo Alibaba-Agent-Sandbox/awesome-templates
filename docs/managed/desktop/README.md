@@ -86,4 +86,3 @@ Follow [CONTRIBUTING](../../../CONTRIBUTING.md). Keep both languages aligned and
 ## License
 
 Authored documentation/tests: Apache-2.0. The upstream image, SDKs and bundled applications retain their own licenses and terms.
-
