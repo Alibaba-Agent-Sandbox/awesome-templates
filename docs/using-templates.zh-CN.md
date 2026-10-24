@@ -9,8 +9,8 @@
 安装已发布的 CLI 和 Python SDK 预览版；需要终端能力时建议 Node 22+：
 
 ```bash
-npm install -g @agent-sandbox/cli@0.4.14
-python3 -m pip install 'agent-sandbox-client==0.3.1a2'
+npm install -g @agent-sandbox/cli@0.4.16
+python3 -m pip install 'agent-sandbox-client==0.3.1a5'
 abx --version
 ```
 
@@ -49,18 +49,42 @@ async def main():
 asyncio.run(main())
 ```
 
-HTTP 使用 `abx sandbox url <sandbox-id> --port 9000` 返回的网址作为 `ABX_SERVER_URL`：
+直接 HTTP POST 时，用 SDK 解析提供方端点及网关头，并保留端点的路径与查询参数：
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/hello"   --header 'Content-Type: application/json'   --header "Authorization: Bearer $ABX_SERVER_TOKEN" --data '{"name":"Ada"}'
-# {"result":"Hello, Ada!"}
+```python
+import asyncio
+import os
+import httpx
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect("<sandbox-id>", provider="alicloud-express")
+    try:
+        endpoint, gateway_headers = await sb.network.resolve(9000)
+        headers = dict(gateway_headers)
+        if any(key.lower() == "authorization" for key in headers):
+            raise ValueError("Keep the gateway Authorization header; do not replace it")
+        token = os.environ["ABX_SERVER_TOKEN"]
+        headers["Authorization"] = "Bearer " + token
+        if not any(key.lower() == "x-access-token" for key in headers):
+            headers["X-Access-Token"] = token
+        url = httpx.URL(endpoint)
+        url = url.copy_with(path=url.path.rstrip("/") + "/commands/hello")
+        async with httpx.AsyncClient(timeout=180) as http:
+            response = await http.post(url, headers=headers, json={"name": "Ada"})
+            response.raise_for_status()
+            print(response.json())  # {"result": "Hello, Ada!"}
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-请求体直接是参数 JSON。provider 网关可能还要求自己的访问头；Python application client 会自动解析。认证失败直接报错，不匿名重试。
+请求体直接是参数 JSON。已有的应用 `X-Access-Token` 头也可经过 OpenSandbox server proxy；该代理会移除 Bearer 认证头。CLI 和 Python application client 在同名头未被占用时自动补充它。provider 网关若要求自己的头，应保留原值，包括已有的网关 `X-Access-Token`。认证失败直接报错，不匿名重试。
 
 用完执行 `abx kill <sandbox-id>` 删除实例。启动记录中列出保留供复用的模板和镜像；不再需要时，单独删除这些确切属于本次的资源。连接客户端不转移资源归属，也不自动销毁实例。
 
-OpenSandbox 先安装配置 [provider](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)，每条 CLI 命令指定 `--provider opensandbox`，Python 连接指定 `provider="opensandbox"`。默认源码配方由新版 CLI 准备，此修复尚不包含在 0.4.14；该版本的 python-hello 可显式选择 `--build-profile portable`。修复版本发布前，不能把默认路径写成已经发布。
+OpenSandbox 先安装配置 [provider](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)，每条 CLI 命令指定 `--provider opensandbox`，Python 连接指定 `provider="opensandbox"`。CLI 直接准备默认源码配方。对于已声明 portable profile 的模板，也可显式使用 `--build-profile portable` 构建。
 
 ## 验收与厂商
 

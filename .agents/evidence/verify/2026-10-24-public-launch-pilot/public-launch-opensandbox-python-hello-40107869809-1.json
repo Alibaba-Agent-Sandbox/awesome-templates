@@ -1,0 +1,21 @@
+{
+  "result": "FAIL",
+  "template": "python-hello",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch + manifest smoke via host CLI, Python and HTTP; no real-model acceptance",
+  "source": "local-candidate/python-hello",
+  "manifest_sha256": "2b7d32f54affa308e14f1daeb35a61c7d67c46918f1d9a5c007b0af6ee5b8a44",
+  "cli_version": "abx, version 0.4.15",
+  "python_client_version": "0.3.1a3",
+  "checks": [],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "application_result": "FAIL",
+  "failure_type": "RuntimeError",
+  "failed_check": "CLI template failed (exit 2)"
+}

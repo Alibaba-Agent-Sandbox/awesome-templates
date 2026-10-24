@@ -82,7 +82,7 @@ jobs:
       OSB_EXECD_IMAGE: opensandbox/execd@sha256:cda2bc35409bbf57561599b316cafb899598f7dce671332e7ceda14eb1cfeded
       ABX_OPENSANDBOX_BASE_URL: http://127.0.0.1:8080
       ABX_OPENSANDBOX_API_KEY: local-dev-key
-      ABX_OPENSANDBOX_USE_SERVER_PROXY: 'true'
+      ABX_OPENSANDBOX_USE_SERVER_PROXY: 'false'
       ABX_OPENSANDBOX_IMAGE_REPOSITORY: localhost:5000/public-launch
       ABX_NO_KEYCHAIN: '1'
       NO_COLOR: '1'
@@ -114,13 +114,31 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Install candidate CLI package and matching SDK
+      - name: Install fixed public CLI and Python packages
         run: |
-          npm ci --prefix .launch-fixtures/cli
-          npm run build --prefix .launch-fixtures/cli
-          npm pack ./.launch-fixtures/cli --pack-destination "$RUNNER_TEMP"
-          npm install -g "$RUNNER_TEMP"/agent-sandbox-cli-*.tgz
-          python -m pip install ./.launch-fixtures/sdk/server-sdk ./.launch-fixtures/sdk/client-sdk -r scripts/requirements-spec.txt
+          python - <<'PYVERSIONS'
+          import json, os, re, runpy
+          from pathlib import Path
+          cli = json.loads(Path('.launch-fixtures/cli/package.json').read_text())
+          assert cli['name'] == '@agent-sandbox/cli'
+          sdk = runpy.run_path('.launch-fixtures/sdk/scripts/check_release.py')['release_version']()
+          assert re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', cli['version'])
+          assert re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:a[0-9]+)?', sdk)
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              output.write(f"PUBLIC_CLI_VERSION={cli['version']}\nPUBLIC_SDK_VERSION={sdk}\n")
+          PYVERSIONS
+      - name: Install and verify published package versions
+        run: |
+          npm install -g --registry https://registry.npmjs.org "@agent-sandbox/cli@$PUBLIC_CLI_VERSION"
+          python -m pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-client==$PUBLIC_SDK_VERSION" "agent-sandbox-server==$PUBLIC_SDK_VERSION" -r scripts/requirements-spec.txt
+          python -m pip check
+          python - <<'PYVERSIONS'
+          import importlib.metadata, json, os, subprocess
+          cli = json.loads(subprocess.check_output(['npm', 'list', '-g', '@agent-sandbox/cli', '--json'], text=True))
+          assert cli['dependencies']['@agent-sandbox/cli']['version'] == os.environ['PUBLIC_CLI_VERSION']
+          for name in ('agent-sandbox-client', 'agent-sandbox-server'):
+              assert importlib.metadata.version(name) == os.environ['PUBLIC_SDK_VERSION']
+          PYVERSIONS
           abx --version
       - name: Start Docker-backed OpenSandbox and owned image registry
         if: matrix.provider == 'opensandbox'
@@ -132,6 +150,9 @@ jobs:
         env:
           TEMPLATE_NAME: ${{ matrix.template }}
           TARGET_PROVIDER: ${{ matrix.provider }}
+          PUBLIC_LAUNCH_CLI_REF: ${{ inputs.cli_ref }}
+          PUBLIC_LAUNCH_SDK_REF: ${{ inputs.sdk_ref }}
+          PUBLIC_LAUNCH_PROVIDERS_REF: ${{ inputs.providers_ref }}
           ABX_SANDBOX_API_KEY: ${{ matrix.provider == 'alicloud-express' && secrets.PUBLIC_LAUNCH_SANDBOX_API_KEY || '' }}
           ABX_SANDBOX_BASE_URL: ${{ matrix.provider == 'alicloud-express' && secrets.PUBLIC_LAUNCH_SANDBOX_BASE_URL || '' }}
           ABX_SANDBOX_DOMAIN: ${{ matrix.provider == 'alicloud-express' && secrets.PUBLIC_LAUNCH_SANDBOX_DOMAIN || '' }}

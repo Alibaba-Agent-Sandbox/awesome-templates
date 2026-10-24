@@ -1,0 +1,54 @@
+{
+  "result": "PASS",
+  "template": "python-hello",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch + manifest smoke via host CLI, Python and HTTP; no real-model acceptance",
+  "source": "local-candidate/python-hello",
+  "manifest_sha256": "2b7d32f54affa308e14f1daeb35a61c7d67c46918f1d9a5c007b0af6ee5b8a44",
+  "cli_version": "abx, version 0.4.15",
+  "python_client_version": "0.3.1a3",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "hello",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "run_script",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "run_alias": "public-e2e-01cf9451a278c6f4",
+  "input_receipt": {
+    "manifest_digest": "sha256:2b7d32f54affa308e14f1daeb35a61c7d67c46918f1d9a5c007b0af6ee5b8a44",
+    "source_digest": "2f38ce1895d70c15235539f8c3f93923ce84171659c1e92fd8e771f3022a04fa",
+    "provider_digest": "sha256:0edfcdc0eb10fd9fde3d81c03254c872ff040418af3b9c62d28449481941742d",
+    "provider_snapshot_digest": "43fc3aa7637b8b8a59d2dfc71f7d255006252012a9527596d0ddeaf59a5224a1",
+    "plan_digest": "6caaf262f214a6822f02f3b27a9b42b1a7de474c61d55332635acefa5bbe8b77",
+    "build_profile": null
+  },
+  "application_result": "PASS"
+}

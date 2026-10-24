@@ -11,8 +11,8 @@ separate check that does not establish image deployment acceptance.
 Install the published CLI and preview Python SDK (Node 22+ is recommended for terminal support):
 
 ```bash
-npm install -g @agent-sandbox/cli@0.4.14
-python3 -m pip install 'agent-sandbox-client==0.3.1a2'
+npm install -g @agent-sandbox/cli@0.4.16
+python3 -m pip install 'agent-sandbox-client==0.3.1a5'
 abx --version
 ```
 
@@ -51,18 +51,42 @@ async def main():
 asyncio.run(main())
 ```
 
-For HTTP, use the port URL from `abx sandbox url <sandbox-id> --port 9000` as `ABX_SERVER_URL`:
+For a direct HTTP POST, resolve the provider endpoint and its gateway headers through the SDK. This keeps any gateway path and query parameters:
 
-```bash
-curl --fail-with-body --request POST "$ABX_SERVER_URL/commands/hello"   --header 'Content-Type: application/json'   --header "Authorization: Bearer $ABX_SERVER_TOKEN" --data '{"name":"Ada"}'
-# {"result":"Hello, Ada!"}
+```python
+import asyncio
+import os
+import httpx
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect("<sandbox-id>", provider="alicloud-express")
+    try:
+        endpoint, gateway_headers = await sb.network.resolve(9000)
+        headers = dict(gateway_headers)
+        if any(key.lower() == "authorization" for key in headers):
+            raise ValueError("Keep the gateway Authorization header; do not replace it")
+        token = os.environ["ABX_SERVER_TOKEN"]
+        headers["Authorization"] = "Bearer " + token
+        if not any(key.lower() == "x-access-token" for key in headers):
+            headers["X-Access-Token"] = token
+        url = httpx.URL(endpoint)
+        url = url.copy_with(path=url.path.rstrip("/") + "/commands/hello")
+        async with httpx.AsyncClient(timeout=180) as http:
+            response = await http.post(url, headers=headers, json={"name": "Ada"})
+            response.raise_for_status()
+            print(response.json())  # {"result": "Hello, Ada!"}
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-Arguments are the direct JSON body. A provider gateway may additionally require its own access header; the Python application client resolves that header automatically. A failed authentication is an error, never a reason to retry anonymously.
+Arguments are the direct JSON body. The existing application `X-Access-Token` header also works through the OpenSandbox server proxy, which strips Bearer authorization. The CLI and Python application client add it automatically when that header is unoccupied. A provider gateway may require its own headers: preserve those values, including an existing gateway `X-Access-Token`. A failed authentication is an error, never a reason to retry anonymously.
 
 When finished, delete the instance with `abx kill <sandbox-id>`. The launch journal identifies the prepared template and image retained for reuse. Delete those exact owned resources separately when they are no longer needed. Connecting a client does not transfer ownership or automatically delete the instance.
 
-For OpenSandbox, install/configure the [provider](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md) and select `--provider opensandbox` on every CLI call and `provider="opensandbox"` when connecting Python. The updated CLI materializes the default source recipe; this requires the materialization fix newer than 0.4.14. The existing 0.4.14 alternative for python-hello is its explicit `--build-profile portable`. Do not claim the default route is released until the corrected CLI is published.
+For OpenSandbox, install/configure the [provider](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md) and select `--provider opensandbox` on every CLI call and `provider="opensandbox"` when connecting Python. The CLI prepares the default source recipe directly. A template with a declared portable profile may also be built with explicit `--build-profile portable`.
 
 ## Evidence and providers
 

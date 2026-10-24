@@ -1,0 +1,51 @@
+# Public launch diagnostic follow-up
+
+Result: PARTIAL
+
+Scope: `fix/public-launch-diagnostics`, acceptance runner and evidence only.
+Local environment: Python 3.13. PASS: 16 runner regressions; 44 specification-tool tests; 222 Markdown documents with zero link failures; Python compile; diff check.
+The real follow-up run is not yet executed at this checkpoint.
+
+The first [pilot run 40107869809](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/40107869809)
+used templates `295aff8f45f710eadf46d164b7ce4150b2c914ec`, CLI
+`25e22d8f5c38bb0b7636ba699511da4f4695ec48`, paired Python SDK
+`6398c6fdd777ff6c8ae9c7b2acb4cc52d457a633`, and provider
+`4b4027cac0ec145aa89bdddda36cf8f7268c8d0e`. It installed a packed candidate CLI,
+candidate SDK, and local provider checkout; this is not public-index installation evidence.
+
+- Express: all application assertions passed, including host CLI/Python/HTTP expected
+  results, negative authentication, source identity, process execution, and files.
+  Overall FAIL: one prepared cleanup check failed. The sandbox was confirmed absent.
+- OpenSandbox with server proxy explicitly enabled: CLI template launch exited 2;
+  overall FAIL. Sandbox and prepared artifacts were independently confirmed absent.
+  The old error report cannot establish the underlying startup/binding cause.
+- A subsequent independent Express native inventory found no `public-e2e` template
+  aliases and no matching tags in the `python-hello` ACR repository. No destructive
+  action was taken. This does not retroactively change the original failed report.
+
+Original sanitized reports and the separate inventory readback are preserved in
+[the pilot evidence directory](2026-10-24-public-launch-pilot/). No raw CLI logs,
+credentials, or native resource identifiers are included. The exact failed cleanup
+operation was not recorded by the old runner; this change makes future failures diagnosable.
+
+The follow-up default matrix explicitly selects OpenSandbox direct mode and records that mode in its report. It does not overwrite the failed proxy run or constitute proxy acceptance. A separate provider native probe checks actual direct/proxy authentication on the same owned sandbox.
+
+Follow-up local validation: 19 runner tests pass after aligning manual HTTP requests with the already-supported X-Access-Token header. New regressions preserve gateway headers case-insensitively, prohibit overwriting gateway Authorization, and ensure both application headers are invalid in negative authentication. This newer request code still requires a new exact-ref live receipt; the prior pilot2 report remains tied to5d70861.
+
+Final matrix preparation: public package installation replaces repeated source builds, with fixed-ref version extraction and installed-version checks. This is pending the new versions being published and a new public-install pilot. Negative authentication explicitly preserves a pre-existing mixed-case gateway X-Access-Token.
+
+Local follow-up: 20 runner tests, workflow YAML parse and diff checks PASS after public package installation preparation. Full public-install pilot remains pending publication.
+
+Public-install workflow explicitly selects npmjs.org and PyPI and verifies actual installed metadata. Each sanitized attempt includes the package versions and fixed source refs selected by this workflow. Local fixed-ref version extraction passed for CLI0.4.16 and SDK0.3.1a4; this does not assert their publication.
+
+Final privacy review: only runner-owned CheckFailed and CLIError labels are exportable. Generic AssertionError/RuntimeError text from dependencies is excluded, including messages beginning with CLI. All21 runner regressions PASS; Python compile, YAML parse and diff checks PASS. No launch, authentication or cleanup behavior changes.
+
+Candidate guide update: install CLI0.4.16 and paired Python0.3.1a5, remove stale unreleased-materialization prose, and show existing application token headers with gateway ownership preserved. This documentation change is release-gated: Python a5 publication and public-package pilot must complete before merge. Earlier source-candidate a4 evidence is unchanged.
+
+Bilingual specification/contributor correction: removed automatic catalog promotion and the obsolete Express-only/provider-documentation restrictions; retained schema/enums and existing required component tests/CI. Current project SDK examples use application_client with explicit close/ownership behavior. All222 Markdown documents pass local link validation; diff check PASS. Documentation does not certify new runtime executions.
+
+Active-guides consolidation: both contributor/spec languages now route current acceptance to public_launch_e2e, explain supported official placeholder resolution and OpenSandbox Docker wheel staging, distinguish Express native preparation, remove obsolete unpublished0.3.0 installation advice and Sandbox.run timeout usage, and retain the old native harness only under its explicitly dated maintenance guide. Historical receipt data and pinned runner code are unchanged. Required component and CI gates are unchanged. All222 Markdown documents and diff checks PASS.
+
+CLI cross-review confirmed there is no public sandbox url subcommand. The two shared guides now use the actual ProviderSandbox.network.resolve API and a complete host HTTP POST preserving gateway headers and endpoint path/query. A full active-Markdown scan found no other occurrences in template READMEs or skeleton. The public acceptance runner already used this actual API; historical runtime evidence is unaffected.
+
+Public-install pilot40114977362 failed before cloud work: both GitHub runners saw only clienta1/a2/a3 in the public Simple index and could not install requested a5. npm installation began; backend startup and public launch were not executed. The separate sanitized receipt preserves this FAIL. A later fresh install elsewhere and release retry succeeded, but do not rewrite this attempt. Add --no-cache-dir to public pip installation and repeat with the same released CLI/SDK/provider refs; never fall back to source installation.
