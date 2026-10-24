@@ -155,7 +155,7 @@ The gateway uses a private temporary state/config directory, disables browser/co
 
 ## Verified
 
-No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
+See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
 
 ## Historical2.0.1verification
 
@@ -173,13 +173,6 @@ The changed workspace profile is verified in real generated steps. Prior receipt
 | alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
 
 This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
-
-<details>
-<summary>Earlier checkpoint text (historical; current steps result is above)</summary>
-
-No provider has passing image/cloud evidence for this revision. Local real CLI gateway start, authenticated health, persistent process status and cleanup are recorded in [engineering evidence](../.agents/evidence/verify/2026-10-16-openclaw-owned-gateway.md). L1 image build and L2 Express remain required; local runtime evidence is not either tier. Model/coding L3 has not been run.
-
-</details>
 
 ## Secondary development
 

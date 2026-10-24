@@ -263,3 +263,5 @@ Source image backend acceptance: [decision](notes/proposed/feature/2026-10-22-so
 - [Release source alignment](notes/proposed/feature/2026-10-23-release-readiness.md) · [verification](evidence/verify/2026-10-23-release-readiness.md)
 
 - [Release integration on current main](evidence/verify/2026-10-24-release-integration.md).
+
+- [Simplify template usage](notes/proposed/process/2026-10-24-template-usage-simplification.md) · [verification](evidence/verify/2026-10-24-template-usage-simplification.md)

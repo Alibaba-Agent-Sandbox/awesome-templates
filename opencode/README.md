@@ -66,7 +66,7 @@ abx template delete <template-id> -y
 
 ## Quick start (Python SDK)
 
-The client distribution is `agent-sandbox-client` (import `agent_sandbox`). Until the matching release is available, use the [paired, pinned source installation](../docs/python-client-installation.md).
+The client distribution is `agent-sandbox-client` (import `agent_sandbox`). See [Python installation](../docs/python-client-installation.md).
 
 ```python
 import asyncio
@@ -186,7 +186,7 @@ Set secret values on `abx create --env` or `Sandbox.create(envs=...)`. Do not wr
 
 ## Verified
 
-No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
+See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
 
 ## Historical2.0.1 image/model qualification
 
@@ -203,13 +203,6 @@ The exact-source CI image is independently verified before registration. The act
 | alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
 
 This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
-
-<details>
-<summary>Earlier checkpoint text (historical; current steps result is above)</summary>
-
-No provider has a passing run recorded for this template.
-
-</details>
 
 ## Secondary development
 

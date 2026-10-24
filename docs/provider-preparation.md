@@ -6,7 +6,7 @@ A source directory is portable input. Native template IDs, image URIs and launch
 
 The manifest explicitly declares `provides`, `workflows` and `default_workflow`. The planner checks only the selected path's operations, input kind and startup mode. Provider maturity is separate from verification of that path.
 
-The selected adapter builds, pushes and registers source through its native protocol. It preserves Dockerfile FROM, USER, COPY and ENTRYPOINT; `build_base_image` replacement is removed. Unresolved placeholders fail preflight. Application deployment hooks still run only through explicit application deployment.
+The selected adapter builds, pushes and registers source through its native protocol. The CLI resolves the official base recipe’s `<region>`/`<tag>` and builds its pinned server wheel in a temporary Docker stage. Application instructions, non-root USER and source files remain unchanged. Other unresolved placeholders fail preflight; a custom base is an explicit build profile. Application deployment hooks still run only through explicit application deployment.
 
 ## Path requirements
 

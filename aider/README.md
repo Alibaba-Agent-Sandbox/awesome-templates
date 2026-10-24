@@ -208,7 +208,7 @@ this is not an installed-image size. The separate Python 3.12 archive adds about
 
 ## Verified
 
-No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
+See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
 
 ## Historical verification
 

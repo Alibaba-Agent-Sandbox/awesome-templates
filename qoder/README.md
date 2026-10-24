@@ -91,7 +91,7 @@ Secret declarations in template.yaml are empty; do not copy credentials into ima
 
 ## Verified
 
-No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
+See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
 
 ## Historical verification
 
@@ -100,13 +100,6 @@ No project-recognized receipt certifies the current workflow manifest. Historica
 | alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
 
 This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
-
-<details>
-<summary>Earlier checkpoint text (historical; current steps result is above)</summary>
-
-No provider has a passing run recorded for this template.
-
-</details>
 
 ## Secondary development
 

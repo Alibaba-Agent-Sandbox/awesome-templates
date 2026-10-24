@@ -43,7 +43,7 @@ the command line or in shell history; use the SDK from a secret-aware process.
 
 ## Quick start (Python SDK)
 
-The client distribution is `agent-sandbox-client` (import `agent_sandbox`). Until the matching release is available, use the [paired, pinned source installation](../docs/python-client-installation.md).
+The client distribution is `agent-sandbox-client` (import `agent_sandbox`). See [Python installation](../docs/python-client-installation.md).
 
 ```python
 import asyncio
@@ -169,7 +169,7 @@ small `/dev/shm`; concurrent browser requests increase memory usage. Delete old
 
 ## Verified
 
-No project-recognized receipt certifies the current workflow manifest. Historical acceptance records retain only their original input and call-path scope; see [workflow verification](../docs/workflows.md).
+See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
 
 ## Historical2.1.0 verification
 

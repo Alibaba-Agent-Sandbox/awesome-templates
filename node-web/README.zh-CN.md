@@ -117,7 +117,7 @@ curl --fail-with-body -X POST "$SERVER_URL/commands/stop" \
 
 ## 已验证
 
-当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
+参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
 
 ## 历史验收
 
@@ -126,15 +126,6 @@ curl --fail-with-body -X POST "$SERVER_URL/commands/stop" \
 | alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
 
 该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
-
-<details>
-<summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
-
-尚未记录任何通过的提供方测试。
-
-2026-10-16 本地 L0 使用真实 Node 22.22.2、隔离 npm 10.9.4、agent-sandbox-server 0.3.0、httpx 0.28.1，60 项断言全部通过：HTTP API 发现、就绪前 4 MiB 高输出、真实 HTTP 请求、stderr 日志、npm 构建产物、start/dev 及进程组停止后端口重用、构建非零/超时、就绪失败。该结果仅为本地主机验证，未证明 Node 20 镜像或云端行为。Docker 缺失，L1 待运行；L2/L4 待运行，`tested_on` 保持空。服务模板不需要模型调用。
-
-</details>
 
 ## Express 源码运行验证
 

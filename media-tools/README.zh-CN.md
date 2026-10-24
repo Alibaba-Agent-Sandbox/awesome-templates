@@ -143,7 +143,7 @@ fallback 一致；镜像 CI、归档及运行证明均核对同一 commit。没�
 
 ## 已验证
 
-当前工作流清单尚无项目认可的验收收据。历史验收记录仅证明原输入和原调用路径；参见[工作流验证](../docs/workflows.zh-CN.md)。
+参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
 
 ## 1.0历史验证
 
@@ -156,15 +156,6 @@ fallback 一致；镜像 CI、归档及运行证明均核对同一 commit。没�
 | alicloud-express | 完整媒体 HTTP21 项断言，真实 steps READY/CLI/SDK 及独立清理确认 | [完整检查](evidence/full-http-steps-2026-10-19T184323Z.json)、[构建证据](evidence/steps-full-http-2026-10-19T184323Z.json) |
 
 该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
-
-<details>
-<summary>较早检查点的历史说明（当前 steps 结果见上表）</summary>
-
-尚未记录任何通过的提供方测试。
-
-记录的源码版本已实际通过镜像 L1、43 项原生/SDK 回归及 21 项 HTTP 检查，见 [CI 确认](../.agents/evidence/verify/2026-10-18-media-tools-ci-confirmation.md)。失败尝试及本地准备保留在[原始证据](../.agents/evidence/verify/2026-10-18-media-tools-runtime.md)。canonical L2 云验收尚未运行；保持 experimental 和空 `tested_on`。
-
-</details>
 
 ## 二次开发
 
