@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Change the managed `opensandbox-code-interpreter` default from the unimplemented
+  `native-interpreter` workflow to the existing `exec` create/process path. Consumers
+  explicitly selecting the old workflow name must select `exec` for project-managed
+  execution. Native interpreter sessions remain available through the upstream SDK
+  with an explicit service entrypoint; this does not add a unified interpreter adapter.
+- Simplify the four managed templates' English/Chinese usage guides, use the public
+  `ProviderSandbox` entry, and separate current behavior from dated evidence.
+
 - Validate managed service/operation references and exec startup commands with the same semantics as source templates; reject service bindings on other workflow kinds and commandless managed exec startup.
 - Remove the unused legacy local runtime profile and document only the strict current managed catalog fields.
 - Align13 template server fallbacks and the skeleton with the CI source pin; reject default/fallback drift and preserve old receipts as history. Changed template contracts receive patch versions and require new image/workflow acceptance.

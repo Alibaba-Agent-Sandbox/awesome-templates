@@ -21,7 +21,11 @@ entrypoint. E2B desktop retains a concise statement that no live run is recorded
 ## API Design
 
 No provider or SDK API changes. OpenSandbox's catalog workflow uses the existing
-exec.run operation. The existing provider_options.entrypoint starts the upstream
+exec.run operation. The previous explicit native-interpreter workflow name is no
+longer a current catalog entry: use exec for project-managed creation/processes,
+and the documented upstream SDK for native interpreter sessions. This managed
+catalog change is tracked in Git and CHANGELOG, without inventing a package version.
+The existing provider_options.entrypoint starts the upstream
 interpreter; it does not implement ProviderSandbox.run_code for this provider.
 
 ## Alternatives considered
