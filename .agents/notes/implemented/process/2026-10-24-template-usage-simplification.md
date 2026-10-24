@@ -1,6 +1,6 @@
 # Template usage simplification
 
-Status: proposed
+Status: implemented
 
 ## Problem
 
@@ -29,3 +29,7 @@ Run owner checks and scope-specific regressions. Execute the real public launch 
 ## Acceptance criteria
 
 Guides have usable examples and precise scope; historical receipts remain unchanged; required owner checks and current-head CI pass. New backend claims require executed receipts, actual caller endpoint assertions and independent owned cleanup.
+
+## Delivery
+
+Implemented in [PR #204](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/204). The [current documentation synchronization](2026-10-24-current-documentation-sync.md) links later public delivery and dated verification without rewriting historical attempts.

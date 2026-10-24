@@ -9,7 +9,7 @@
 安装已发布的 CLI 和 Python SDK 预览版；需要终端能力时建议 Node 22+：
 
 ```bash
-npm install -g @agent-sandbox/cli@0.4.16
+npm install -g @agent-sandbox/cli@0.4.17
 python3 -m pip install 'agent-sandbox-client==0.3.1a5'
 abx --version
 ```
@@ -100,6 +100,8 @@ OpenSandbox 先安装配置 [provider](https://github.com/Alibaba-Agent-Sandbox/
 
 [2026-10-22 矩阵](../.agents/evidence/verify/2026-10-22-source-image-backend-matrix.json)记录了 46 个源码模板的 Express 镜像/HTTP 与 OpenSandbox 镜像/HTTP 测试通过；[steps 记录](../.agents/evidence/verify/2026-10-22-current-steps-after-backend-qualification.json)对应另一条 Express 构建路径。这些是真实历史测试，保留当时输入和入口。OpenSandbox 使用沙箱内或 bridge HTTP，不能证明后来新增的宿主 `template launch` 或未执行的模型任务。
 
+[2026-10-24 公开启动矩阵](../.agents/evidence/verify/2026-10-24-public-template-matrix.md)在极速版和默认直连 OpenSandbox 上通过全部 46 个源码模板，共 92 组、438 次 CLI/Python/HTTP smoke 调用，并确认自有资源清理。该测试使用公开 CLI 0.4.16、宿主 Python 包 0.3.1a5 及固定模板/provider checkout，不是 CLI 0.4.17 重跑结果。[远程 Git 操作](../.agents/evidence/verify/2026-10-24-public-git-journeys.md)另行测试。这些 smoke 不认证真实模型任务、PTY 或原生解释器会话。4 个托管目录条目不属于这 46 个源码配方，其[默认执行与上游原生会话证据](../.agents/evidence/verify/2026-10-24-managed-template-usage.md)单独说明准确路径。
+
 没有匹配记录不等于平台不支持。查看测试日期、模板输入、provider、构建方式和实际检查内容；命名 API 通过不能推出终端或解释器也通过。历史收据保持原样。
 
 ## 文档与目录归属
@@ -124,13 +126,11 @@ OpenSandbox 先安装配置 [provider](https://github.com/Alibaba-Agent-Sandbox/
 
 ## 客户端入口兼容性
 
-自定义命令、provider、会话和 `sb.server` 示例显式导入
-`from agent_sandbox.api.sandbox import Sandbox`。这个原生异步入口可用于当前
-主分支及标准客户端候选版本，避免根入口切换为同步 `Sandbox` 后误用 await。
-标准 `Sandbox` / `AsyncSandbox` 与解释器导入属于另一个契约，见
-[SDK47](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/47)。
+本页 provider 和应用示例使用公开入口 `from agent_sandbox import ProviderSandbox`。
+异步 `application_client` 连接已经运行的服务。标准 `Sandbox` / `AsyncSandbox`
+是独立接口，见 [SDK 入口说明](https://github.com/Alibaba-Agent-Sandbox/python-sdk/blob/main/README.md)。
 
-当前极速版使用位置模板参数；本页及模板 README 的示例与上述 CLI 源码提交一致。旧版原生 CLI 的参数不同，应使用对应版本的帮助。
+当前极速版使用位置模板参数；本页及模板 README 使用上面安装的公开 CLI。旧版原生 CLI 的参数不同，应使用对应版本的帮助。
 
 | 操作 | 当前极速版入口 |
 | --- | --- |

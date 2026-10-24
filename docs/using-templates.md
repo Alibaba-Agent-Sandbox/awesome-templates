@@ -11,7 +11,7 @@ separate check that does not establish image deployment acceptance.
 Install the published CLI and preview Python SDK (Node 22+ is recommended for terminal support):
 
 ```bash
-npm install -g @agent-sandbox/cli@0.4.16
+npm install -g @agent-sandbox/cli@0.4.17
 python3 -m pip install 'agent-sandbox-client==0.3.1a5'
 abx --version
 ```
@@ -102,6 +102,8 @@ For OpenSandbox, install/configure the [provider](https://github.com/Alibaba-Age
 
 The [2026-10-22 matrix](../.agents/evidence/verify/2026-10-22-source-image-backend-matrix.json) records 46 source templates passing Express image/HTTP and OpenSandbox image/HTTP checks. [Steps results](../.agents/evidence/verify/2026-10-22-current-steps-after-backend-qualification.json) record the separate Express steps route. These are real historical tests, with the original inputs and calling paths. OpenSandbox used sandbox-local/bridge HTTP; those results do not certify later host `template launch` changes or unrun model tasks.
 
+The [2026-10-24 public launch matrix](../.agents/evidence/verify/2026-10-24-public-template-matrix.md) passed all 46 source templates on Express and default direct OpenSandbox (92 cases, 438 CLI/Python/HTTP smoke calls), with owned cleanup. It used public CLI 0.4.16 and host Python packages 0.3.1a5 with fixed template/provider checkouts; it is not a rerun on CLI 0.4.17. [Remote Git journeys](../.agents/evidence/verify/2026-10-24-public-git-journeys.md) were tested separately. These smoke results do not certify real-model tasks, PTY or native interpreter sessions. The four managed catalog entries are separate from the 46 source recipes; their [default execution and upstream native-session evidence](../.agents/evidence/verify/2026-10-24-managed-template-usage.md) states the exact tested paths.
+
 A missing record means no matching test record, not an unsupported platform. Read the date, template input, provider, build method and executed checks; do not infer terminal or interpreter coverage from a command API pass. Historical receipts remain unchanged.
 
 ## Documentation and catalog ownership
@@ -129,13 +131,12 @@ Local acceptance cleanup preserves Python verifier sources, including `e2e_sdk.p
 
 ## Client entry compatibility
 
-Custom commands, providers, sessions and `sb.server` examples explicitly import
-`from agent_sandbox.api.sandbox import Sandbox`. This native async entry works on
-accepted main and the standard-client candidate, avoiding await on the synchronous
-root Sandbox. Standard Sandbox/AsyncSandbox and interpreter imports have a separate
-contract: [SDK47](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/47).
+Use the public `from agent_sandbox import ProviderSandbox` entry for the provider
+and application examples on this page. Its asynchronous `application_client`
+connects to an already running service. The standard `Sandbox` / `AsyncSandbox`
+interfaces are separate; see the [SDK entry-point guide](https://github.com/Alibaba-Agent-Sandbox/python-sdk/blob/main/README.md).
 
-The current Express entry takes a positional template. This guide and template README examples target the CLI source revision above. Older native builds have different flags; consult the help shipped with that revision.
+The current Express entry takes a positional template. This guide and template README examples use the published CLI installed above. Older native builds have different flags; consult the help shipped with that revision.
 
 | Operation | Current Express entry |
 | --- | --- |

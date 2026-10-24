@@ -1,6 +1,6 @@
 # Managed template usage and default execution
 
-Status: proposed
+Status: implemented
 
 ## Problem
 
@@ -56,3 +56,7 @@ Both languages are usable; the default catalog entry produces executable command
 actual default and native SDK checks plus cleanup pass on exact recorded inputs;
 all normal owner CI/review gates pass. No E2B desktop or unified interpreter pass is
 inferred. The independent 46 × 2 source-template matrix continues unchanged.
+
+## Delivery
+
+Implemented in [PR #207](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/207). The [current documentation synchronization](2026-10-24-current-documentation-sync.md) links later public delivery and dated verification without rewriting historical attempts.

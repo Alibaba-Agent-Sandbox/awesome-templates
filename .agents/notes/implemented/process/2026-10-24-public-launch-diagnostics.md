@@ -1,6 +1,6 @@
 # Public launch diagnostics and native cleanup
 
-Status: proposed
+Status: implemented
 
 ## Problem
 
@@ -53,3 +53,7 @@ The raw HTTP request now sends the existing X-Access-Token application header wh
 The final matrix installs exact public npm/PyPI versions read from fixed source refs, verifies installed metadata, and keeps checkout inputs for backend fixtures and provider installation. Earlier packed-candidate pilot receipts retain their original installation scope.
 
 Final cross-review found obsolete catalog promotion rules in both contributor guides and specifications. Existing status/schema/enums remain compatible: official describes project maintenance, community external maintenance, experimental development in progress. Exact platform/entry/source/test/cleanup records prove runtime results independently. Required CI and component L0/L1/L2/model checks remain; this removes status-as-certification coupling, not acceptance gates. Active SDK examples now connect through ProviderSandbox.application_client and do not imply creating an instance starts the application.
+
+## Delivery
+
+Implemented in [PR #205](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/205). The [current documentation synchronization](2026-10-24-current-documentation-sync.md) links later public delivery and dated verification without rewriting historical attempts.
