@@ -50,6 +50,14 @@ class PublicLaunchTests(unittest.TestCase):
         self.assertEqual(headers['x-ACCESS-token'], 'gateway-credential')
         self.assertNotIn('X-Access-Token', headers)
 
+    def test_negative_auth_keeps_gateway_access_token(self):
+        gateway = {'x-ACCESS-token': 'gateway-credential'}
+        headers = application_headers(gateway, 'intentionally-wrong')
+        self.assertEqual(headers['x-ACCESS-token'], 'gateway-credential')
+        self.assertEqual(headers['Authorization'], 'Bearer intentionally-wrong')
+        self.assertNotIn('X-Access-Token', headers)
+        self.assertEqual(gateway, {'x-ACCESS-token': 'gateway-credential'})
+
     def test_gateway_authorization_is_never_overwritten(self):
         with self.assertRaisesRegex(AssertionError, 'must not overwrite'):
             application_headers({'authorization': 'gateway-credential'}, 'app-token')

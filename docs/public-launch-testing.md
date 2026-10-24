@@ -17,11 +17,15 @@ python scripts/public_launch_e2e.py --list
 The default source is the public Git catalog. The launched manifest and runtime
 command source must match this checkout. For a candidate revision use
 `--source ./python-hello`; the report records that this was a local candidate,
-not a public package installation. An existing output file is never overwritten.
+not a public Git template lookup. CLI/SDK package installation is recorded separately. An existing output file is never overwritten.
 
 The manual **Public template launch matrix** GitHub workflow accepts exact reviewed
 CLI, SDK and provider commits, a comma-separated selection or `all`, and either
-backend or both. `all` currently selects 46 source templates, with at most four
+backend or both. It reads the release versions from those exact CLI/SDK commits,
+installs the fixed published npm/PyPI packages, and verifies installed versions.
+The SDK checkout supplies the Docker backend fixture; the provider installs from
+the exact selected checkout. Template source uses this workflow checkout unchanged.
+It fails if a selected version has not been published. `all` currently selects 46 source templates, with at most four
 independent runners active at once. OpenSandbox uses
 its real Docker server, provider-resolved direct endpoint and an owned local registry.
 The workflow explicitly selects the provider default `use_server_proxy=false`; it
@@ -57,6 +61,7 @@ Docker bridge 地址。默认读取公开 Git 目录；测试候选输入可明�
 `--source`。启动清单与实际运行命令源码都须和本地验证输入一致。
 
 手动矩阵工作流接受准确的 CLI、SDK、provider 提交，以及模板选择和平台。
+从这些精确提交读取版本，安装固定版本的 npm/PyPI 公开包并核对安装结果；SDK 源码只提供本地后端 fixture，provider 安装精确 checkout，模板仍使用本次工作流的原始源码。未发布的版本会安装失败。
 `all` 当前为 46 个源码模板，最多同时运行四个独立 runner。OpenSandbox 使用真实 Docker 服务及 provider 返回的直连端点（明确选择默认的 `use_server_proxy=false`）；
 Express 使用该工作流配置的凭据。缺凭据不能算通过。
 

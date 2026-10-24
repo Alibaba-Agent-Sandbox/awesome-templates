@@ -32,8 +32,9 @@ a direct-address success without separately recording which path was exercised.
 ## Dependencies
 
 Actual pilot https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/40107869809 .
-The OpenSandbox proxy failure still needs evidence; adding a guessed authentication
-header is not justified by the pinned server's single-tenant implementation.
+The independent provider probe confirmed direct Bearer 200, proxy Bearer 401, and
+proxy X-Access-Token 200 on the same sandbox. Consumer compatibility uses the
+already-supported application header; no provider protocol changes are needed.
 
 ## Test Strategy
 
@@ -48,3 +49,5 @@ and every success claim includes owned-resource cleanup. Full 46×2 acceptance s
 open in Issue #203 until executed.
 
 The raw HTTP request now sends the existing X-Access-Token application header when the gateway has not supplied one, alongside Bearer. It never replaces a gateway header, retries authentication, or falls back to another endpoint. Negative authentication reconstructs both application headers with the wrong token so the positive X-Access-Token cannot invalidate the negative test.
+
+The final matrix installs exact public npm/PyPI versions read from fixed source refs, verifies installed metadata, and keeps checkout inputs for backend fixtures and provider installation. Earlier packed-candidate pilot receipts retain their original installation scope.
