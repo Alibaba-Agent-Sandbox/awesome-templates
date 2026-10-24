@@ -83,3 +83,5 @@ Current-head CI and cross-review are required before merge. Source documentation
 publication needs the Website/Registry final aggregation; it is not claimed by
 this repository check. Historical receipts remain unchanged. The original
 full matrix stays independently tracked in Issue203.
+
+Cross-review: parent independently reviewed final usage candidate `ded8885ef4df7fd168d12a9a7478b1199766fe4b`, including bilingual Qwen/python-hello, provider selection and token table boundaries; no remaining content blocker. The accepted decision is recorded as implemented; merge still requires exact-head CI.
