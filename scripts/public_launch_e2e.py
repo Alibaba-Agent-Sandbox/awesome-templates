@@ -173,7 +173,7 @@ async def verify(args):
     cli = CLI(args.abx, args.provider, env)
     report = {'result': 'FAIL', 'template': args.template, 'provider': args.provider,
         'scope': 'public CLI source launch + manifest smoke via host CLI, Python and HTTP; no real-model acceptance',
-        'source': args.source or f'Alibaba-Agent-Sandbox/awesome-templates//{args.template}',
+        'source': ('local-candidate/' + args.template) if args.source and Path(args.source).is_dir() else (args.source or f'Alibaba-Agent-Sandbox/awesome-templates//{args.template}'),
         'manifest_sha256': hashlib.sha256((source / 'template.yaml').read_bytes()).hexdigest(),
         'cli_version': cli.run(['--version'], json_output=False),
         'python_client_version': importlib.metadata.version('agent-sandbox-client'),
@@ -186,7 +186,7 @@ async def verify(args):
     client = None
     try:
         launch = await asyncio.to_thread(cli.run,
-            ['template', 'launch', report['source'], '--workflow', manifest['default_workflow'],
+            ['template', 'launch', args.source or report['source'], '--workflow', manifest['default_workflow'],
              '--alias', alias, '--timeout', str(args.build_timeout), '--sandbox-timeout', '1800', '--yes'],
             args.build_timeout + 300)
         require(launch.get('manifest_digest') == 'sha256:' + report['manifest_sha256'],
@@ -246,7 +246,7 @@ async def verify(args):
         for path in set(journal_dir.glob('*.json')) - original_journals:
             data = json.loads(path.read_text())
             if data.get('provider') == args.provider and any(
-                str(entry.get('correlation_key', '')).startswith(alias + '-') for entry in data.get('entries', [])):
+                alias + '-' in str(entry.get('correlation_key', '')) for entry in data.get('entries', [])):
                 journals.append(data)
         entries = [entry for journal in journals for entry in journal.get('entries', [])]
         ids = {entry['id'] for entry in entries if entry['kind'] == 'sandbox' and entry.get('id')}
