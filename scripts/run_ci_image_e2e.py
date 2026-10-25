@@ -24,7 +24,7 @@ import uuid
 import secrets
 import time
 import yaml
-from public_launch_e2e import CLI, require, matches, command_url, application_headers, delete_sandbox, json_contains, verify_cli_io
+from public_launch_e2e import CLI, CLIError, require, matches, command_url, application_headers, delete_sandbox, json_contains, verify_cli_io
 import ci_image_archive as images
 from template_http_acceptance import fixture_environment, run_controller
 
@@ -83,6 +83,26 @@ def exact_templates(cli: CLI, alias: str) -> list[str]:
     rows=cli.run(['template','list'],native=True)
     require(isinstance(rows,list),'native template inventory shape')
     return [row['TemplateID'] for row in rows if row.get('Name')==alias]
+
+
+def delete_owned_templates(cli: CLI, alias: str, known_id: str | None, timeout: float=60) -> bool:
+    """Delete exact owned IDs and require per-ID GetTemplate 404 plus empty alias."""
+    ids=set(exact_templates(cli,alias))
+    if known_id:ids.add(known_id)
+    if not ids:return False  # An ambiguous submission cannot be cleared by an empty index.
+    for identifier in ids:
+        cli.run(['template','delete',identifier,'--yes'],native=True,json_output=False)
+    deadline=time.monotonic()+timeout
+    for identifier in ids:
+        while True:
+            try:cli.run(['template','info',identifier],native=True)
+            except CLIError as exc:
+                if exc.diagnostics.get('code')=='E2001':
+                    break
+                raise
+            if time.monotonic()>=deadline:return False
+            time.sleep(1)
+    return not exact_templates(cli,alias)
 
 
 def wait_ready(cli: CLI, template_id: str, timeout: int=900) -> None:
@@ -250,10 +270,7 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,private_root:
         if platform_path.exists():
             try:
                 intent=json.loads(platform_path.read_text())
-                ids=set(exact_templates(cli,alias))
-                if intent.get('template_id'):ids.add(intent['template_id'])
-                for identifier in ids:cli.run(['template','delete',identifier,'--yes'],native=True,json_output=False)
-                template_clean=bool(ids) and not exact_templates(cli,alias)
+                template_clean=delete_owned_templates(cli,alias,intent.get('template_id'))
                 intent['template_cleanup_verified']=template_clean;images.save_private(platform_path,intent)
             except Exception as exc:report['template_cleanup_failure_type']=type(exc).__name__
         if journal_path.exists():

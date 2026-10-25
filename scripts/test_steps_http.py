@@ -38,6 +38,10 @@ def prepared(tmp_path,monkeypatch):
             assert args[args.index('--start-cmd')+1]==''
             assert args[args.index('--ready-cmd')+1]==''
             resources.append('owned-template');return {'TemplateID':'owned-template'}
+        if args[:2]==['template','info']:
+            if args[2] in resources:return {'status':{'state':'ready'}}
+            from public_launch_e2e import CLIError
+            raise CLIError('template',1,json.dumps({'code':'E2001','message':'owned template not found'}))
         if args[:2]==['template','delete']:
             assert kwargs['native'] is True
             resources.remove(args[2]);return {}
@@ -146,3 +150,20 @@ def test_lost_registration_response_and_empty_inventory_remain_uncertain(prepare
     intent=json.loads((stages[0]/'platform-intent.json').read_text())
     assert intent['registration_attempted'] and not intent.get('template_id')
     assert intent['template_cleanup_verified'] is False
+
+
+def test_missing_alias_and_successful_delete_cannot_hide_still_present_known_id(prepared,monkeypatch):
+    _,_,resources,_=prepared
+    monkeypatch.setattr(current,'exact_templates',lambda *args:[])
+    original=CLI.run
+    def no_op_delete(self,args,*a,**k):
+        if args[:2]==['template','delete']:return ''
+        return original(self,args,*a,**k)
+    monkeypatch.setattr(CLI,'run',no_op_delete)
+    cleanup=current.delete_owned_templates
+    monkeypatch.setattr(current,'delete_owned_templates',lambda cli,alias,known:cleanup(cli,alias,known,timeout=0))
+    async def exercise(*args):args[3].update(application_result='PASS',cleanup_verified=True,commands=[])
+    monkeypatch.setattr(current,'exercise',exercise)
+    report=steps.run_one('example',config())
+    assert report['passed'] is False and report['template_cleanup_verified'] is False
+    assert report['unresolved_owned_cleanup'] is True and resources==['owned-template']

@@ -12,15 +12,15 @@ Keep genuine native prepare/deploy, asset transport, source hashes, READY pollin
 
 ## API Design
 
-run_steps_e2e.py always performs full current application acceptance. The internal native deploy prepares only; public template launch does not gain a build-steps flag or another mode. Native help is checked before asset/cloud writes. Known template IDs are deleted even if inventory temporarily omits them, and absence is independently read back. Failed attempts preserve private recovery staging; successful attempts remove their own staging after evidence. No new state, secret storage or fallback is introduced.
+run_steps_e2e.py always performs full current application acceptance. The internal native deploy prepares only; public template launch does not gain a build-steps flag or another mode. Native help is checked before asset/cloud writes. Known template IDs are deleted even if inventory temporarily omits them; per-ID info must return the current CLI typed E2001 before alias absence can complete cleanup. Unknown submitted registration retains intent and stops the serial batch. Failed attempts preserve private recovery staging; successful attempts remove their own staging after evidence. No new state, secret storage or fallback is introduced.
 
 ## Alternatives considered
 
-Keeping SDK/CLI creation switches duplicates the public startup contract and can start a different service. Creating a second runner or receipt compatibility upgrader would repeat existing acceptance. Retaining the self-only step_acceptance qualification auditor would reject new hashed-argument receipts or require old-format compatibility; remove it and its mirror tests instead. Existing real source/assets/controller/cleanup checks remain.
+Keeping SDK/CLI creation switches duplicates the public startup contract and can start a different service. Creating a second runner or receipt compatibility upgrader would repeat existing acceptance. Retaining the retired step_acceptance qualification auditor would reject new hashed-argument receipts or require old-format compatibility; remove it and its mirror tests instead. Existing real source/assets/controller/cleanup checks remain.
 
 ## Dependencies
 
-Published CLI 0.5.3, Python client/server 0.4.0a2 and the prepared-template consumer from https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/220. Runtime package/proof cleanup depends on https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/222. This change follows https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/223.
+Candidate native acceptance used published CLI 0.5.3 and Python client/server 0.4.0a2. The stronger per-ID cleanup requires CLI 0.5.4 typed GetTemplate 404, and final matrices wait for public client/server a3. The prepared-template consumer is from https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/220. Runtime package/proof cleanup depends on https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/222. This change follows https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/223.
 
 ## Test Strategy
 

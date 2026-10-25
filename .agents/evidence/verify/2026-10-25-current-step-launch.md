@@ -1,313 +1,49 @@
-import tempfile
-import json
-import unittest
-from pathlib import Path
-from unittest.mock import patch
+# Native steps current-launch verification
 
-from public_launch_e2e import export_owned_image, installation_provenance, CLI, CLIError, CheckFailed, safe_failure_label, controller_label, cli_diagnostics, safe_diagnostics, application_headers, command_url, load_plan, matches, source_names, cleanup_prepared, cleanup_before_close, delete_sandbox
+Date: 2026-10-25
+Result: PARTIAL
+Issue: https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/223
+Dependency: https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/222
 
+Current contract inspection used the actual installed public client/server 0.4.0a2. Native CLI deploy help supports build steps and explicit empty start/ready commands. Public launch has no steps-build flag. The maintained consumer uses public CLI template launch with the original manifest and owned native reference, then ProviderSandbox/application-client/HTTP; it is not recorded as a Python launch_template call.
 
-class PublicLaunchTests(unittest.TestCase):
-    def test_candidate_source_never_claims_published_package_acceptance(self):
-        env = {'PUBLIC_CLI_VERSION': '0.4.17', 'PUBLIC_LAUNCH_DISTRIBUTION': 'source',
-               'PUBLIC_LAUNCH_CLI_REF': 'a' * 40, 'PUBLIC_LAUNCH_SDK_REF': 'b' * 40,
-               'PUBLIC_LAUNCH_PROVIDERS_REF': 'c' * 40, 'PUBLIC_LAUNCH_TEMPLATES_REF': 'd' * 40}
-        source = installation_provenance(env, '0.3.1a5', '0.3.1a5')
-        self.assertEqual(source['distribution'], 'source')
-        self.assertNotIn('registry', source['cli'])
-        self.assertNotIn('registry', source['python_client'])
-        self.assertEqual(source['template_source_ref'], 'd' * 40)
-        env['PUBLIC_LAUNCH_DISTRIBUTION'] = 'published'
-        published = installation_provenance(env, '0.3.1a5', '0.3.1a5')
-        self.assertEqual(published['cli']['registry'], 'https://registry.npmjs.org')
-        self.assertEqual(published['python_server']['registry'], 'https://pypi.org/simple')
-        env['PUBLIC_LAUNCH_DISTRIBUTION'] = 'unknown'
-        with self.assertRaises(ValueError):
-            installation_provenance(env, '0.3.1a5', '0.3.1a5')
+Actual old process-monitor reproduction: ten flushed short log lines at 0.15-second intervals, idle 0.5 seconds and wall 5 seconds returned exit 124 after four lines. It was still producing output. The corrected monitor uses os.read plus incremental UTF-8 decoding; the strengthened existing progress test runs ten 0.2-second intervals with idle 0.5 seconds. Spec suite passes 38 tests, including this actual subprocess, hard wall deadline and idle descendant cleanup. Completed leader exit 0 and exit 7 both leave no delayed descendant artifact.
 
-    def test_all_source_templates_have_named_smoke_cases(self):
-        names = source_names()
-        self.assertEqual(len(names), 46)
-        for name in names:
-            source, manifest, cases = load_plan(name)
-            self.assertTrue(cases)
-            self.assertTrue((source / 'commands.py').is_file())
+PASS: current native orchestration/process/prepare/image/archive/public-launch/shared-HTTP/assets/cache/batch regressions: 163 tests plus 2 subtests. These are local tooling/process checks, not a cloud matrix. Earlier first invocation failed collection after an obsolete helper fixture was removed; maintained tests were migrated to the current consumer and then passed. The old implementation-shaped SDK/create/deploy/retry/recovery tests were removed with code that has no remaining runtime callers; current public-launch and prepared-image ownership/controller/digest tests remain.
 
-    def test_native_reference_is_not_accepted_as_source_template(self):
-        with self.assertRaises(ValueError):
-            load_plan('base')
+The initial search missed the hidden CI test-list caller of step_acceptance.py. Subsequent explicit .github search identified that caller; it was removed together with the old manual/self-test auditor. The current schema/launch gates remain. It expected the retired receipt arguments instead of current hashed-argument calls. Delete that unused qualification path rather than adding compatibility or new status. Historical raw receipts remain unmodified. Source hashes, native readiness, original asset size/hash/wire bounds, complete controllers and independent owned cleanup are still enforced by the maintained runner.
 
-    def test_results_are_compared_not_only_http_success(self):
-        self.assertTrue(matches('42\n', '42'))
-        self.assertFalse(matches({'ok': False}, {'ok': True}))
-        self.assertFalse(matches('0', 0))
-        self.assertFalse(matches('anything', None))
+PASS: catalog checker all 47 conformant; document checker 222 documents and zero failures. Current guides/readmes remove old native-binary installation, sandbox-create/http selectors and manual parallel startup examples. Declared runtime Dockerfiles and template versions are inherited from dependent PR222, not changed again by documentation/tooling cleanup.
 
-    def test_gateway_prefix_and_query_are_retained(self):
-        self.assertEqual(command_url('https://gateway.invalid/sbx/port/9000?tenant=a', 'hello'),
-            'https://gateway.invalid/sbx/port/9000/commands/hello?tenant=a')
-        self.assertTrue(command_url('https://host.invalid/', '../hello').endswith('/commands/..%2Fhello'))
+The initial local-only verification did not run cloud acceptance. The later scoped native candidate experiments below did create and clean owned resources. No GitHub secrets were uploaded. Current-head remote CI and the final public-source matrix remain separate gates.
 
-    def test_endpoint_rejects_user_information_and_non_http(self):
-        for endpoint in ['file:///tmp/server', 'https://secret@host.invalid', 'https://host.invalid/#x']:
-            with self.assertRaises(ValueError):
-                command_url(endpoint, 'hello')
+## CLI process and file verification
 
-    def test_existing_application_token_headers_and_negative_auth(self):
-        gateway = {'X-Gateway-Token': 'gateway-value'}
-        self.assertEqual(application_headers(gateway, 'app-token'), {
-            'X-Gateway-Token': 'gateway-value', 'Authorization': 'Bearer app-token', 'X-Access-Token': 'app-token'})
-        wrong = application_headers(gateway, 'intentionally-wrong')
-        self.assertEqual(wrong['X-Access-Token'], 'intentionally-wrong')
-        self.assertEqual(wrong['Authorization'], 'Bearer intentionally-wrong')
-        self.assertEqual(gateway, {'X-Gateway-Token': 'gateway-value'})
+The existing public-source and prepared-image consumers share the same small CLI I/O check: standard CLI exec prints 42; an owned UTF-8 file uploads, is independently read through the SDK, is statted/downloaded with byte equality and is removed with SDK absence. Partial-upload/corrupt-download regressions preserve failure and clean the owned file. No PTY capability or new runner is introduced. The direct public-launch unittest entry point now includes these tests.
 
-    def test_gateway_access_token_is_preserved_case_insensitively(self):
-        headers = application_headers({'x-ACCESS-token': 'gateway-credential'}, 'app-token')
-        self.assertEqual(headers['x-ACCESS-token'], 'gateway-credential')
-        self.assertNotIn('X-Access-Token', headers)
+## Actual native candidate attempts
 
-    def test_negative_auth_keeps_gateway_access_token(self):
-        gateway = {'x-ACCESS-token': 'gateway-credential'}
-        headers = application_headers(gateway, 'intentionally-wrong')
-        self.assertEqual(headers['x-ACCESS-token'], 'gateway-credential')
-        self.assertEqual(headers['Authorization'], 'Bearer intentionally-wrong')
-        self.assertNotIn('X-Access-Token', headers)
-        self.assertEqual(gateway, {'x-ACCESS-token': 'gateway-credential'})
+The first source/verifier 466f7b4a163298a9a654d20f0a98e3fb5b2e3987 attempt, python-hello/evidence/verification-steps-2026-10-25T150841Z.json, FAILED after 240.505 seconds. Native preparation, current CLI launch and two named CLI responses passed; the new helper mistakenly requested native-only --json on standard exec. This is a harness dispatch error, not a provider JSON capability defect. The guest server version was not read before that failure. The private failed stage was retained. Its wrapper read Git HEAD after execution; the starting runtime SHA and input hashes above, not that late wrapper label, identify the tested source.
 
-    def test_gateway_authorization_is_never_overwritten(self):
-        with self.assertRaisesRegex(AssertionError, 'must not overwrite'):
-            application_headers({'authorization': 'gateway-credential'}, 'app-token')
+The corrected source/verifier 84cd7b1f956e8fef886420c11353cdf9028645e1 attempt, python-hello/evidence/verification-steps-2026-10-25T152027Z.json, PASSED in 27.913 seconds with published CLI 0.5.3, PyPI client 0.4.0a2 and independently observed guest server 0.4.0a2. Two declared smoke commands passed via CLI/Python/host HTTP (6 calls), and the complete HTTP controller reported 21 PASS / 0 FAIL / 0 SKIP. Wrong app token rejection, runtime command bytes, SDK process/files and CLI exec/upload/stat/download/removal passed. Successful private staging was removed.
 
-    def test_only_owned_failure_labels_are_exported(self):
-        for failure in (AssertionError('PRIVATE-ID secret-value'), RuntimeError('CLI secret-value')):
-            self.assertIsNone(safe_failure_label(failure))
-        self.assertEqual(safe_failure_label(CheckFailed('SDK exec result')), 'SDK exec result')
-        self.assertEqual(safe_failure_label(CLIError('template', 2, 'PRIVATE-ID')), 'CLI template failed (exit 2)')
+Both attempts verified sandbox absence independently. Their prepared-template cleanup evidence was successful native deletion plus exact alias inventory absence; it did **not** include per-ID typed GetTemplate 404. The immutable receipts retain their original booleans; this record narrows their interpretation rather than claiming stronger historical evidence. An additional read of the first attempt's known deleted ID on 2026-10-25 independently observed official GetTemplate TemplateNotFound/statusCode 404, but CLI 0.5.3 wrapped it as E5000; no raw IDs/request IDs or error payloads are published.
 
-    def test_cli_failure_does_not_leak_raw_output(self):
-        from subprocess import CompletedProcess
-        with patch('public_launch_e2e.subprocess.run', return_value=CompletedProcess([], 1, 'PRIVATE-ID', 'secret-value')):
-            with self.assertRaisesRegex(RuntimeError, '^CLI template failed \\(exit 1\\)$'):
-                CLI('node /tmp/installed-abx.js', 'opensandbox', {}).run(['template', 'launch'])
+These are native-step candidate experiments, not public-main or default Express Docker acceptance. They do not certify future SDK a3 or CLI 0.5.4. The default source-Docker path remains unrun locally because Docker is absent.
+
+## Unknown submission and exact journal ownership
+
+Registration submitted without a returned identifier cannot be declared clean merely because the alias inventory is empty. The runner retains the private intent, reports unresolved owned cleanup and stops the existing serial batch before another case. Known identifiers are included even if the alias inventory omits them. Both current consumers use CLI.env HOME for the CLI journal directory, with an independent-home regression. No new recovery framework, state or user flag is added.
+
+## Stronger per-ID cleanup candidate
+
+The latest tooling adds one shared owned-template cleanup helper: delete all exact owned IDs, independently query every known ID until the current native CLI reports E2001 (TemplateNotFoundError), then require empty alias inventory. A successful delete or empty index alone cannot produce PASS. Still-existing IDs, authentication/network/server errors and unknown registration remain failures or unresolved cleanup. No legacy CLI message parsing or E5000 compatibility is accepted.
+
+This stricter candidate depends on the CLI 0.5.4 typed official GetTemplate-404 fix. Local regressions exercise the current E2001 contract; published 0.5.4 actual readback and final remote CI are PENDING. The historical 0.5.3 candidate successes do not verify this new helper. Full two-provider matrices are held until public SDK a3 and CLI 0.5.4 are available and template runtime pins are updated.
+
+## Final local verification
+
+Before the per-ID cleanup delta, the integrated suite passed 191 tests plus 2 subtests; spec tools passed 38, actual published CLI 0.5.3 help contract passed 1, direct public-launch unittest passed 28, catalog checks passed all 47 and document checks passed 222 with zero failures. The restored engineering record replaces an accidental unmerged copy of test source; it preserves the actual earlier results and explicitly records the narrower historical cleanup scope.
 
 
-    def test_cli_diagnostics_only_exports_controlled_values(self):
-        payload = json.dumps({'code': 'E8003', 'message': 'Template startup failed; owned sandbox PRIVATE-ID; HTTP 401 secret-value',
-                              'suggestion': 'secret-value', 'private': 'PRIVATE-ID'})
-        self.assertEqual(cli_diagnostics(payload), {'code': 'E8003', 'category': 'template-startup', 'http_status': 401})
-        failure = CLIError('template', 2, payload)
-        self.assertNotIn('PRIVATE-ID', str(failure))
-        self.assertNotIn('secret-value', json.dumps(safe_diagnostics(failure)))
-        self.assertEqual(cli_diagnostics(json.dumps({'code': 'private-token', 'message': 'unrecognized secret-value'})), {})
-
-    def test_controller_failure_labels_do_not_import_retired_runner_or_expose_secrets(self):
-        label = controller_label('[FAIL] fixture-value https://host.invalid/private /tmp/private 1234567890abcdef', ['fixture-value'])
-        self.assertEqual(label, '[FAIL] [FIXTURE] [LOCATION] [LOCATION] [ID]')
-        self.assertEqual(len(controller_label('x' * 500)), 300)
-
-    def test_native_selection_is_the_first_cli_argument(self):
-        from subprocess import CompletedProcess
-        with patch('public_launch_e2e.subprocess.run', return_value=CompletedProcess([], 0, '[]', '')) as run:
-            CLI('node /tmp/installed-abx.js', 'alicloud-express', {}).run(['template', 'list'], native=True)
-        self.assertEqual(run.call_args.args[0], ['node', '/tmp/installed-abx.js', '--native', '--provider', 'alicloud-express', '--json', 'template', 'list'])
-
-
-
-class CleanupTests(unittest.IsolatedAsyncioTestCase):
-    async def test_client_close_failure_does_not_skip_resource_cleanup(self):
-        events = []
-        async def release():
-            events.extend(['sandbox deleted', 'template deleted', 'image deleted'])
-        class Client:
-            async def aclose(self):
-                events.append('application close')
-                raise RuntimeError('local HTTP close failure')
-        class Sandbox:
-            async def close(self):
-                events.append('sandbox close')
-        self.assertEqual(await cleanup_before_close(release, Client(), Sandbox()), ['RuntimeError'])
-        self.assertEqual(events, ['sandbox deleted', 'template deleted', 'image deleted', 'application close', 'sandbox close'])
-
-    async def test_delete_polls_control_plane_without_reconnect(self):
-        class NotFound(Exception):
-            pass
-        events = []
-        class API:
-            @staticmethod
-            async def kill_by_id(sid, **kwargs):
-                events.append('delete')
-            @staticmethod
-            async def get_info_by_id(sid, **kwargs):
-                events.append('get')
-                if events.count('get') == 3:
-                    raise NotFound()
-        await delete_sandbox(API, 'owned', 'opensandbox', NotFound, delay=0)
-        self.assertEqual(events, ['delete', 'get', 'get', 'get'])
-
-    async def test_unknown_registry_and_uncertain_intents_are_retained(self):
-        entries = [
-            {'intent_id': 'one', 'kind': 'image', 'state': 'retained', 'id': 'unfamiliar.invalid/team/image@sha256:' + 'a' * 64,
-             'correlation_key': 'unfamiliar.invalid/team/image:public-e2e-123-build'},
-            {'intent_id': 'two', 'kind': 'template', 'state': 'uncertain', 'correlation_key': 'public-e2e-123-build'},
-        ]
-        done, failures = await cleanup_prepared(entries, CLI('abx', 'opensandbox', {}), 'public-e2e-123')
-        self.assertEqual(done, set())
-        self.assertEqual(failures, 0)
-
-    async def test_template_absence_requires_readback(self):
-        calls = []
-        class FakeCLI:
-            provider = 'alicloud-express'
-            def run(self, args, **kwargs):
-                calls.append((args, kwargs))
-                return [{'templateID': 'owned-template'}] if args[1] == 'list' else ''
-        entries = [{'intent_id': 'one', 'kind': 'template', 'state': 'retained', 'id': 'owned-template',
-                    'correlation_key': 'public-e2e-123-build'}]
-        done, failures = await cleanup_prepared(entries, FakeCLI(), 'public-e2e-123')
-        self.assertEqual(done, set())
-        self.assertEqual(failures, 1)
-        self.assertEqual([item[0][1] for item in calls], ['delete', 'list'])
-        self.assertTrue(all(item[1].get('native') is True for item in calls))
-        self.assertEqual(calls[-1][0], ['template', 'list'])
-
-    async def test_cleanup_diagnostic_never_contains_resource_identifier(self):
-        class FakeCLI:
-            provider = 'alicloud-express'
-            def run(self, args, **kwargs):
-                raise CLIError('template', 2, json.dumps({'code': 'E8003', 'message': 'PRIVATE-ID secret-value HTTP 403'}))
-        entries = [{'intent_id': 'one', 'kind': 'template', 'state': 'retained', 'id': 'PRIVATE-ID',
-                    'correlation_key': 'public-e2e-123-build'}]
-        details = []
-        done, failures = await cleanup_prepared(entries, FakeCLI(), 'public-e2e-123', details)
-        self.assertEqual((done, failures), (set(), 1))
-        self.assertEqual(details, [{'kind': 'template', 'failure_type': 'CLIError', 'code': 'E8003', 'http_status': 403}])
-        self.assertNotIn('PRIVATE-ID', json.dumps(details))
-
-    async def test_express_shared_repository_deletes_only_owned_journal_tag(self):
-        class FakeCLI:
-            provider = 'alicloud-express'
-        tag = 'public-e2e-123-build'
-        reference = 'registry.cn-hangzhou.aliyuncs.com/test-namespace/python-hello:' + tag
-        entries = [{'intent_id': 'image-one', 'kind': 'image', 'state': 'retained',
-                    'id': reference, 'correlation_key': reference}]
-        with patch.dict('os.environ', {'ACR_NAMESPACE': 'test-namespace', 'ALIBABA_CLOUD_REGION_ID': 'cn-hangzhou'}), \
-             patch('canonical_express_review.delete_absent') as delete:
-            done, failures = await cleanup_prepared(entries, FakeCLI(), 'public-e2e-123')
-        self.assertEqual(done, {'image-one'})
-        self.assertEqual(failures, 0)
-        delete.assert_called_once_with('/repos/test-namespace/python-hello/tags/' + tag)
-
-    async def test_express_alias_in_repository_does_not_own_foreign_tag(self):
-        class FakeCLI:
-            provider = 'alicloud-express'
-        reference = 'registry.cn-hangzhou.aliyuncs.com/test-namespace/public-e2e-123-build:someone-else'
-        entries = [{'intent_id': 'image-one', 'kind': 'image', 'state': 'retained',
-                    'id': reference, 'correlation_key': reference}]
-        with patch.dict('os.environ', {'ACR_NAMESPACE': 'test-namespace'}), \
-             patch('canonical_express_review.delete_absent') as delete:
-            done, failures = await cleanup_prepared(entries, FakeCLI(), 'public-e2e-123')
-        self.assertEqual(done, set())
-        self.assertEqual(failures, 1)
-        delete.assert_not_called()
-
-    async def test_foreign_template_is_never_deleted(self):
-        class FakeCLI:
-            provider = 'alicloud-express'
-            def run(self, *args, **kwargs):
-                raise AssertionError('foreign resource must not be touched')
-        entries = [{'intent_id': 'one', 'kind': 'template', 'state': 'retained', 'id': 'foreign-template',
-                    'correlation_key': 'different-run-build'}]
-        done, failures = await cleanup_prepared(entries, FakeCLI(), 'public-e2e-123')
-        self.assertEqual(done, set())
-        self.assertEqual(failures, 0)
-
-
-
-
-class ImageExportTests(unittest.TestCase):
-    def test_foreign_or_ambiguous_images_are_never_exported(self):
-        from subprocess import CompletedProcess
-        with tempfile.TemporaryDirectory() as temp:
-            target = Path(temp) / 'export'
-            with patch('public_launch_e2e.subprocess.run') as run:
-                with self.assertRaisesRegex(CheckFailed, 'exactly one owned'):
-                    export_owned_image([{'kind': 'image', 'correlation_key': 'foreign-build'}],
-                                       'public-e2e-owned', Path(temp) / 'python-hello', target, {})
-                run.assert_not_called()
-            entries = [{'kind': 'image', 'correlation_key': 'public-e2e-owned-' + x} for x in ('one', 'two')]
-            results = [CompletedProcess([], 0, 'sha256:' + x * 64, '') for x in ('a', 'b')]
-            with patch('public_launch_e2e.subprocess.run', side_effect=results) as run:
-                with self.assertRaisesRegex(CheckFailed, 'exactly one owned'):
-                    export_owned_image(entries, 'public-e2e-owned', Path(temp) / 'python-hello', target, {})
-                self.assertTrue(all(call.args[0][1:3] == ['image', 'inspect'] for call in run.call_args_list))
-            self.assertFalse(target.exists())
-
-
-def test_foreign_managed_identity_has_controlled_compatibility_diagnostic():
-    assert cli_diagnostics(json.dumps({'code':'E8002', 'message':'Template cannot launch on this provider: provider-mismatch.'})) == {'code':'E8002','category':'provider-mismatch'}
-
-
-class CliIoTests(unittest.IsolatedAsyncioTestCase):
-    async def exercise(self, directory, *, corrupt=False, failed_upload=False):
-        from types import SimpleNamespace
-        from public_launch_e2e import verify_cli_io
-        remote = {};calls = []
-        class Files:
-            async def read(self, path):return remote[path].decode('utf-8')
-            async def exists(self, path):return path in remote
-            async def remove(self, path):del remote[path]
-        class Adapter:
-            def run(self, args, **kwargs):
-                calls.append(args)
-                if args[0] == 'exec':
-                    assert kwargs['json_output'] is False
-                    return '42'
-                if args[0] == 'upload':
-                    remote[args[3]] = Path(args[2]).read_bytes()
-                    if failed_upload:raise RuntimeError('controlled partial upload failure')
-                elif args[0] == 'download':
-                    Path(args[3]).write_bytes(b'wrong' if corrupt else remote[args[2]])
-                elif args[:3] == ['sandbox','files','rm']:
-                    del remote[args[args.index('--path')+1]]
-                elif args[:3] != ['sandbox','files','stat']:
-                    raise AssertionError('unexpected current CLI operation')
-        sandbox=SimpleNamespace(id='owned-fixture',files=Files())
-        try:
-            await verify_cli_io(Adapter(), sandbox, 'owned-run', directory)
-        finally:
-            self.assertEqual(remote,{})
-            self.assertEqual(list(directory.iterdir()),[])
-        return calls
-
-    async def test_current_cli_roundtrip_independently_reads_same_unicode_bytes(self):
-        with tempfile.TemporaryDirectory() as directory:
-            calls=await self.exercise(Path(directory))
-        self.assertEqual([args[0] for args in calls],['exec','upload','sandbox','download','sandbox'])
-        self.assertEqual(calls[0],['exec','owned-fixture','--','python3','-c','print(21 * 2)'])
-        self.assertTrue(calls[1][3].startswith('/tmp/owned-run-cli-'))
-
-    async def test_changed_download_bytes_fail_and_owned_file_is_removed(self):
-        with tempfile.TemporaryDirectory() as directory:
-            with self.assertRaisesRegex(CheckFailed,'CLI download preserves'):
-                await self.exercise(Path(directory),corrupt=True)
-
-    async def test_partial_upload_failure_keeps_failure_and_sdk_cleans_owned_file(self):
-        with tempfile.TemporaryDirectory() as directory:
-            with self.assertRaisesRegex(RuntimeError,'partial upload'):
-                await self.exercise(Path(directory),failed_upload=True)
-
-if __name__ == '__main__':
-    unittest.main()
-
-## Real corrected candidate acceptance
-
-Source/verifier 84cd7b1f956e8fef886420c11353cdf9028645e1, fresh owned attempt verification-steps-2026-10-25T152027Z.json: PASS in 27.913 seconds with published CLI 0.5.3 and PyPI client 0.4.0a2. The actual guest reports server 0.4.0a2. Two declared smoke commands passed through CLI/Python/host HTTP (6 calls), complete HTTP controller 21 PASS / 0 FAIL / 0 SKIP, wrong app token rejected, runtime command bytes and SDK file/process checks passed. Real CLI exec returned 42; owned UTF-8 upload/stat/download/removal passed with independent SDK byte comparison and absence. Sandbox and prepared-template absence independently confirmed; no uncertain sandbox intent remains; successful private stage removed.
-
-This is native-step candidate acceptance only, not a public-main run or the default Express Docker developer path. The first failed attempt remains a separate receipt. The existing --all loop now stops before another template when its already-used unresolved_owned_cleanup signal is true, while an independently cleaned application failure retains its FAIL and allows other selected templates to run. No new state, selector or runner was introduced.
-
-## Unknown registration and journal ownership guard
-
-A lost native-registration response with zero known IDs and a temporarily empty alias inventory now keeps template_cleanup_verified false; empty inventory alone cannot prove a pending submission absent. The private registration intent remains, unresolved_owned_cleanup stops another selection, and no foreign or unknown resource is deleted. A known returned ID is still deleted even if inventory omits it. Actual regression covers the lost response/empty-list path and confirms the retained intent and stopped batch; cleaned failures may continue.
-
-Actual candidate subprocess HOME and CLI.env HOME were the same isolated directory, and none of the 46 source manifests declares HOME. Both existing consumers nevertheless now derive the journal location from the CLI's own HOME environment, matching its Node os.homedir contract. A regression passes a distinct CLI HOME and asserts that exact resource-journal directory, avoiding lookup in an unrelated operator home. No recovery framework is added.
+After the per-ID cleanup candidate, the relevant current native/process/prepare/archive/public-launch/shared-HTTP/assets/cache/batch/managed/launch-contract suite passed 177 tests. The first command selected a nonexistent old test filename and collected no tests; it was corrected using actual tracked file names before this successful run. Targeted cleanup/public-launch tests passed 64 tests including still-present known ID despite missing inventory, unknown zero-ID registration and E5000/permission rejection; these are local regressions, not public CLI 0.5.4 cloud acceptance.

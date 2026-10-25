@@ -38,7 +38,7 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
               "preparation_attempted": False, "runtime_attempted": False, "cleanup_verified": False, "template_cleanup_verified": False}
     cache = None
     try:
-        from run_ci_image_e2e import controller_missing_imports, exercise, exact_templates, wait_ready
+        from run_ci_image_e2e import controller_missing_imports, exercise, exact_templates, wait_ready, delete_owned_templates
         from public_launch_e2e import CLI, require
         from ci_image_archive import save_private
         missing = controller_missing_imports(source)
@@ -86,13 +86,8 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
         finally:
             clean = True
             try:
-                ids = set(exact_templates(cli, alias))
                 known = json.loads(intent_path.read_text()).get('template_id')
-                if known:
-                    ids.add(known)
-                for template_id in ids:
-                    cli.run(['template', 'delete', template_id, '--yes'], native=True, json_output=False)
-                clean = bool(ids) and not exact_templates(cli, alias)
+                clean = delete_owned_templates(cli, alias, known)
             except Exception as failure:
                 clean = False
                 result['template_cleanup_failure_type'] = type(failure).__name__
