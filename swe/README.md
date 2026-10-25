@@ -8,9 +8,9 @@ This single-instance portability slice does not run the official Docker harness,
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
-Alibaba base `v0.0.49` (resolved by the builder), Python 3.13 server/agent, independent official-SHA Python 3.11.10 evaluation runtime, existing Node.js 20, mini-swe-agent 2.4.6, LiteLLM 1.82.6, pytest 8.3.5. The in-sandbox server uses source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. See [Dockerfile](./Dockerfile) for all pins. No nested Docker, system installs at runtime or full dataset download.
+Alibaba base `v0.0.49` (resolved by the builder), Python 3.13 server/agent, independent official-SHA Python 3.11.10 evaluation runtime, existing Node.js 20, mini-swe-agent 2.4.6, LiteLLM 1.82.6, pytest 8.3.5. Published server package. See [Dockerfile](./Dockerfile) for all pins. No nested Docker, system installs at runtime or full dataset download.
 
 ## Problem solved
 
@@ -105,7 +105,7 @@ From a repository checkout, `python scripts/run_steps_e2e.py swe` builds and ver
 
 ## Contributing
 
-Run `python -m pytest -q swe/test_commands.py swe/test_e2e_protocol.py`, `python3 scripts/check_template.py swe`, `python3 scripts/test_spec_tools.py`, and `python3 scripts/run_local_e2e.py`. Build the actual image, run the [canonical Express deployment](../scripts/express_e2e.py), and run `E2E_REQUIRE_LLM=1 E2E_RUN_LLM=1 E2E_BASE_URL=<configured server> python swe/e2e_test.py` with a compatible model. Preserve failures/skips and record exact source revisions, test identities, patch retrieval and owned resource cleanup. Never submit raw trajectories, credentials or private resource IDs.
+Run `python -m pytest -q swe/test_commands.py swe/test_e2e_protocol.py`, `python3 scripts/check_template.py swe`, `python3 scripts/test_spec_tools.py`, and `python3 scripts/run_local_e2e.py`. Build the actual image, run the [current Express source-launch acceptance](../docs/public-launch-testing.md), and run `E2E_REQUIRE_LLM=1 E2E_RUN_LLM=1 E2E_BASE_URL=<configured server> python swe/e2e_test.py` with a compatible model. Preserve failures/skips and record exact source revisions, test identities, patch retrieval and owned resource cleanup. Never submit raw trajectories, credentials or private resource IDs.
 
 ## Issues
 

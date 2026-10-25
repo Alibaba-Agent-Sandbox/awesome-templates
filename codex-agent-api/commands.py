@@ -145,7 +145,7 @@ def _validate_body(body: Any) -> str:
 
 table = default_table()
 
-# ── Named commands (basic codex command for backward compat) ──────────
+# ── Named one-shot command and version inspection ────────────────────
 
 
 @command("codex_version", description="Print the installed Codex CLI version without a model call.")

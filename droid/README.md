@@ -8,9 +8,9 @@ Run Factory Droid 0.241.1 headlessly on an existing project. Named commands expo
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
-Official npm `@factory/cli@0.241.1` plus `@factory/cli-linux-x64@0.241.1`, full npm integrity [lock](package-lock.json), unmodified native SHA256 `1f50e238df053573aec1dae7b90b19c8e5afca83ab13a790a00f53ba4e4b9ab1`, Alibaba FC base, Python3.13 and immutable servere2cb27e. Install hooks are disabled; execute the fixed native binary directly. SHA256 is checked at build and every native command. [Provenance](upstream.json), [upstream notice](UPSTREAM-NOTICE.md), [Dockerfile](Dockerfile). Native metadata is proprietary `UNLICENSED`; its repository field does not establish a public source commit. Non-root `user`, generation2, port9000.
+Official npm `@factory/cli@0.241.1` plus `@factory/cli-linux-x64@0.241.1`, full npm integrity [lock](package-lock.json), unmodified native SHA256 `1f50e238df053573aec1dae7b90b19c8e5afca83ab13a790a00f53ba4e4b9ab1`, Alibaba FC base, Python3.13 and published server package. Install hooks are disabled; execute the fixed native binary directly. SHA256 is checked at build and every native command. [Provenance](upstream.json), [upstream notice](UPSTREAM-NOTICE.md), [Dockerfile](Dockerfile). Native metadata is proprietary `UNLICENSED`; its repository field does not establish a public source commit. Non-root `user`, generation2, port9000.
 
 ## Problem solved
 
@@ -98,17 +98,17 @@ See [test results and scope](../docs/using-templates.md#evidence-and-providers).
 | --- | --- | --- |
 | alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
 
-This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+This historical run used the pinned e2cb27e server-source override matching the then-current image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
 
 ## Secondary development
 
-Keep the Alibaba base, exact CLI/server pins and non-root user. Extend [commands.py](commands.py) through `@command`; pass argv directly and keep secret redaction, key guards and deadline cleanup. Build with BuildKit; deployment may inject a server wheel. Run:
+Keep the Alibaba base, exact CLI/server pins and non-root user. Extend [commands.py](commands.py) through `@command`; pass argv directly and keep secret redaction, key guards and deadline cleanup. Build with the exact published server package pinned in the Dockerfile. Run:
 
 ```bash
 python3 -m pytest -q droid/test_commands.py droid/test_e2e_protocol.py droid/test_byok.py droid/test_model_controller.py
 python3 scripts/check_template.py droid
 python3 scripts/run_local_e2e.py
-python scripts/public_launch_e2e.py droid --provider alicloud-express --application-controller
+python scripts/public_launch_e2e.py droid --provider alicloud-express --application-controller --source ./droid --output droid-attempt-1.json
 ```
 
 Source-only local execution explicitly skips the missing native version; it cannot qualify the provider. L1 builds the actual Dockerfile and checks the real native SHA/version. Required L2 uses actual SDK creation, canonical steps, full HTTP and independent owned cleanup. L3 `E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 E2E_REMOTE_SANDBOX=1` runs [e2e_test.py](e2e_test.py) on a fresh owned cloud server configured for BYOK: real native successful JSON with positive turns, exact fresh final nonce, existing source edit, new artifacts, byte-identical original tests, complete independent original and held-out post-return checks with fresh ACKs, and owned project absence. Generated code never runs on the operator. Legacy Factory controller is retained separately as [factory_e2e.py](factory_e2e.py), requiring a genuine Factory key; no such current model pass is claimed.

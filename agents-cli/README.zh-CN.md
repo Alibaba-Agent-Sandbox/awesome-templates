@@ -14,12 +14,10 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
 - 阿里云 generation 2 基础镜像及其 Python；安装经 SHA256 校验的官方 Node.js `24.16.0`，替换基础 Node 20，满足 Qwen Code 的 Node >=22 要求。
 - Codex `0.162.1`、Qwen Code `0.23.0`，镜像构建时断言两个实际版本。
-- `agent-sandbox-server` 固定到 python-sdk 提交
-  `e2cb27e24fde0a67112f82b8d44af463445a5d1a`，也支持注入源码构建的 wheel。
 - 非 root 用户 `user`；程序 `/home/user/app`，工作区 `/home/user/workspace`，端口 9000。
 
 ## 解决的问题
@@ -113,7 +111,7 @@ print(await client.commands.run('agents_version'))
 | --- | --- | --- |
 | alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
 
-该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
+该历史记录采用 e2cb27e 服务端来源覆盖，与当时的镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
 
 ## 二次开发
 

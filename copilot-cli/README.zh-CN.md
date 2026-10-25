@@ -8,9 +8,9 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
-阿里云 FC generation2 基础镜像、Linux x86_64、非 root user。固定 @github/copilot@1.0.100 和必需的 @github/copilot-linux-x64@1.0.100；[lockfile](package-lock.json) 校验完整性，禁用 npm 安装脚本并省略其他架构的可选包。服务端固定 e2cb27e24fde0a67112f82b8d44af463445a5d1a。原生软件使用独立[上游许可证](UPSTREAM-LICENSE.md)。
+阿里云 FC generation2 基础镜像、Linux x86_64、非 root user。固定 @github/copilot@1.0.100 和必需的 @github/copilot-linux-x64@1.0.100；[lockfile](package-lock.json) 校验完整性，禁用 npm 安装脚本并省略其他架构的可选包。已发布服务端包。原生软件使用独立[上游许可证](UPSTREAM-LICENSE.md)。
 
 ## 解决的问题
 

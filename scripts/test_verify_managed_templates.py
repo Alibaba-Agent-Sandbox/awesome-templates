@@ -15,7 +15,7 @@ def setup(monkeypatch, *, connect_failure=False, kill_failure=False):
         def __init__(self, *args): pass
         def run(self, args, **kwargs):
             calls.append(args[0])
-            if args[0]=='--version': return 'abx, version 0.5.1'
+            if args[0]=='--version': return 'abx, version 0.5.5'
             if args[0]=='template': return {'sandbox_id':'owned-fixture'}
             if args[0]=='kill' and kill_failure: raise RuntimeError('synthetic CLI failure')
             return '42'

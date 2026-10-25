@@ -16,7 +16,7 @@ if not isinstance(_GATEWAY_HEADERS, dict) or any(not isinstance(k, str) or not i
     raise ValueError("E2E_GATEWAY_HEADERS_JSON must be an object of string headers")
 _APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKEN"]} if os.environ.get("ABX_SERVER_TOKEN") else {}
 
-NAMES = {"gateway", "gateway_start", "gateway_status", "gateway_stop", "gateway_health"}
+NAMES = { "gateway_start", "gateway_status", "gateway_stop", "gateway_health"}
 
 
 def check(condition, label):
@@ -35,9 +35,9 @@ def main():
         check(response.status_code == 200 and response.json().get("status") == "ok", "server health")
         response = client.get("/commands")
         check(response.status_code == 200 and NAMES <= {c['name'] for c in response.json()['commands']}, "registered lifecycle commands")
-        response = client.post("/commands/gateway", json={"action": "__invalid__"})
-        check(response.status_code == 500 and response.json().get("type") == "ValueError"
-              and "action must be" in response.json().get("error", ""), "unknown action fails explicitly")
+        check("gateway" not in {c['name'] for c in response.json()['commands']}, "retired command absent from discovery")
+        response = client.post("/commands/gateway", json={})
+        check(response.status_code == 404, "retired command invocation is 404")
         response = client.post("/commands/gateway_start", json={"port": "not-a-number"})
         check(response.status_code == 400 and response.json().get("type") == "TypeError", "invalid argument type is HTTP 400")
         response = client.post("/commands/gateway_status", json={})

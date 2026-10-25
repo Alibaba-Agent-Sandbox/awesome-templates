@@ -14,7 +14,7 @@ Complete bilingual [command reference](../../browser-use/README.md#command-refer
 
 ## How to build
 
-[Dockerfile](../../browser-use/Dockerfile): FC generation2/Python3.13, complete package SHA256 lock/browser-use0.13.11, actual pip hash enforcement/pip check. Browser-use itself uses CDP-use, not a Playwright Python dependency. An explicit Playwright1.58.0 installer selects Chromium1208/145.0.7632.6; --no-shell avoids a second headless-shell installation. Fixed SDK sourcee2cb or injected wheel, serve/healthcheck9000, chown workspace before non-root user,8GiB rootfs build gate. Hash-lock spec support dependency: [PR146](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/146), land before consumer.
+[Dockerfile](../../browser-use/Dockerfile): FC generation2/Python3.13, complete package SHA256 lock/browser-use0.13.11, actual pip hash enforcement/pip check. Browser-use itself uses CDP-use, not a Playwright Python dependency. An explicit Playwright1.58.0 installer selects Chromium1208/145.0.7632.6; --no-shell avoids a second headless-shell installation. Published server package, serve/healthcheck9000, chown workspace before non-root user,8GiB rootfs build gate. Hash-lock spec support dependency: [PR146](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/146), land before consumer.
 
 ## Express feasibility
 

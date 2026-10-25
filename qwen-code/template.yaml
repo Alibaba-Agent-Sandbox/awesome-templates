@@ -1,5 +1,5 @@
 name: qwen-code
-version: "2.1.3"
+version: "2.1.4"
 description: "Qwen Code CLI with typed headless commands and OpenAI-compatible authentication."
 author: alibaba-agent-sandbox
 license: Apache-2.0

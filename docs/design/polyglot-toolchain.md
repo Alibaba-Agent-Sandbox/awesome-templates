@@ -14,7 +14,7 @@ Non-root shell/files/code/ports. All three compilers, Cargo, standard libraries 
 
 ## How to build
 
-[Dockerfile](../../polyglot-toolchain/Dockerfile) installs official Go1.25.14, Rust1.90.0 components and Temurin21.0.12.1+1, with immutable [asset hashes](../../polyglot-toolchain/toolchains.json), retains licenses and enforces actual rootfs budget8GiB. Base v0.0.49, server pinned source fallback or injected wheel. generation2 start_cmd `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`, ready_cmd `agent-sandbox-server healthcheck --port 9000`. 2vCPU/2048MB; non-root final USER.
+[Dockerfile](../../polyglot-toolchain/Dockerfile) installs official Go1.25.14, Rust1.90.0 components and Temurin21.0.12.1+1, with immutable [asset hashes](../../polyglot-toolchain/toolchains.json), retains licenses and enforces actual rootfs budget8GiB. Base v0.0.49, published server package. generation2 start_cmd `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`, ready_cmd `agent-sandbox-server healthcheck --port 9000`. 2vCPU/2048MB; non-root final USER.
 
 ## Express feasibility
 
@@ -35,5 +35,3 @@ workspace, filters child environment to compiler necessities, drains both pipes
 concurrently and rejects output beyond256KiB per stream while retaining the
 90-second deadline and unreaped group identity. Actual noisy-child and inherited
 credential regressions are required. Old1.0.0 image/export records are historical.
-
-Release readiness 1.0.2: align default and injected server SDK source to `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; preserve historical receipts and require new image/workflow acceptance.

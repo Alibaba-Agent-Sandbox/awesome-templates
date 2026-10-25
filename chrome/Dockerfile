@@ -17,7 +17,7 @@ RUN python3 -m venv /opt/chrome \
 COPY browser.json /opt/chrome/browser.json
 COPY install_browser.py /tmp/chrome-install.py
 RUN python3 /tmp/chrome-install.py && rm /tmp/chrome-install.py
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6"
 ENV HOME=/home/user WORKSPACE=/home/user/workspace
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py worker.py native.py cdp.py rfb.py relay.py process.py lifecycle.py UPSTREAM-NOTICE.md ./

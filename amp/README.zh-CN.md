@@ -11,7 +11,6 @@ Agent Sandbox 里的 Sourcegraph Amp CLI。镜像钉住 `@ampcode/cli`，在端�
 | `amp_version` | `amp version` |
 | `amp_setup_check` | `amp version`，然后只读检查现有设置文件 |
 | `amp_execute` | `amp --no-color --no-notifications --no-ide -x <prompt>` |
-| `amp` | `amp_execute` 的旧名字。参数相同。 |
 
 `stream_json` 为 true 时，`amp_execute` 加上 `--stream-json`。HTTP 响应是进程退出后的完整标准输出，不是实时流。
 
@@ -23,14 +22,13 @@ Amp 不接受 DashScope 密钥、`ABX_LLM_API_KEY` 或 OpenAI 兼容的 base URL
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
 - 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`abx template deploy` 把 `<region>` 换成 `ALIBABA_CLOUD_REGION_ID` 或 `cn-hangzhou`，把 `<tag>` 换成 `ABX_BASE_IMAGE_TAG` 或 `v0.0.49`。
 - 基础镜像里的 Node.js 20，只用来跑 `npm`。`amp` 二进制是同版本可选包 `@ampcode/cli-linux-x64` 里的 glibc ELF。
 - `@ampcode/cli@0.0.1792022479-ge66e24`，来自 2026-10-15 的 `npm view @ampcode/cli version`。目录里原来的 pin 是 `0.0.1791964847-g13f24a`。基础镜像把 npm 源设成 `registry.npmmirror.com`，该源对这个版本的 `@ampcode/cli-linux-x64` 返回 404，所以 Dockerfile 从 `https://registry.npmjs.org` 安装。构建时会跑 `amp version`，原生二进制没解出来时构建失败。
-- `agent-sandbox-server` 来自 python-sdk 提交 `61c43e0be65a1f57aa09186d578e7b399e48429b`（PR #21）。这个发行包不在 PyPI 上。
 - git 和 ripgrep。
-- 工作目录 `/home/user/app`。运行用户 `user`。平台用 `start_cmd` 启动进程。Dockerfile 没有 `CMD` 或 `ENTRYPOINT`。
+- 工作目录 `/home/user/app`。运行用户 `user`。`abx template launch` 执行模板的 `start_cmd` 启动进程。Dockerfile 没有 `CMD` 或 `ENTRYPOINT`。
 
 ## 解决的问题
 
@@ -81,7 +79,6 @@ print(await client.commands.run('amp_version'))
 | `amp_version` | 无 | 字符串 | `amp version` 的第一个字段，例如 `0.0.1792022479-ge66e24`。 |
 | `amp_setup_check` | 无 | 对象 | `installed`、`package`、`version`、`api_key_set`、`settings_path`、`settings_exists`、`dangerously_allow_all`、`updates_mode`。不写文件；文件缺失时报告 false 和 `default`。 |
 | `amp_execute` | `prompt` 字符串，必填。`stream_json` 布尔，可选，默认 `false`；`dangerously_allow_all` 布尔，可选，默认 `false`。 | 字符串 | `amp -x` 的标准输出。`stream_json` 为 true 时加上 `--stream-json`。 |
-| `amp` | 与 `amp_execute` 相同 | 字符串 | 旧命令名。 |
 
 `POST /commands/amp_execute`，请求体 `{"prompt":"hi"}`，CLI 退出码为 0 时响应 `{"result":"<stdout>"}`。缺少 `prompt` 是 HTTP 400。缺少 `AMP_API_KEY`、找不到二进制，或 `amp` 非零退出，是 HTTP 500，响应体含 `error` 和 `type`。`api_key_set` 只是布尔值，不返回密钥。成功与错误输出均会替换环境中配置的秘密值，包括 JSON 转义形式。命令超过 600 秒后会终止自己创建的进程组；客户端超时不等于取消。
 

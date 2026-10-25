@@ -8,12 +8,12 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
 - 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`abx template deploy` 把 `<region>` 换成 `ALIBABA_CLOUD_REGION_ID` 或 `cn-hangzhou`，把 `<tag>` 换成 `ABX_BASE_IMAGE_TAG` 或 `v0.0.49`。
 - 工作目录 `/home/user/app`。运行用户 `user`。
 - 基础镜像自带 Python 3.13 和 Node.js 20。
-- 平台用 `start_cmd` 启动进程。Dockerfile 在 `USER` 和 `EXPOSE` 之后结束。
+- `abx template launch` 执行模板的 `start_cmd` 启动进程。Dockerfile 在 `USER` 和 `EXPOSE` 之后结束。
 
 ## 解决的问题
 

@@ -6,7 +6,7 @@ Run a repository-owned coding agent using the official DeepSeek Chat Completions
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 Python 3.13; `httpx==0.28.1`; Agent Sandbox server. No third-party agent CLI.
 
@@ -92,7 +92,7 @@ See [test results and scope](../docs/using-templates.md#evidence-and-providers).
 | --- | --- | --- |
 | alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
 
-This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+This historical run used the pinned e2cb27e server-source override matching the then-current image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
 
 ## Secondary development
 

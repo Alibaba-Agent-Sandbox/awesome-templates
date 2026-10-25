@@ -37,7 +37,7 @@ pin. Separate `pip install`, `playwright install-deps chromium`, and `playwright
 RUN steps execute during build before USER user. Version2.0.2 splits the build to
 isolate installation phases after a stream deadline failure; runtime APIs and
 the full Chromium profile are unchanged.
-The browser path is `/opt/playwright`. The Dockerfile installs published `agent-sandbox-server==0.4.0a2` directly.
+The browser path is `/opt/playwright`. The Dockerfile installs published `agent-sandbox-server==0.4.0a6` directly.
 Generation 2 uses `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`
 and readiness `agent-sandbox-server healthcheck --port 9000`. No CMD/ENTRYPOINT.
 
@@ -71,7 +71,7 @@ PNG signature verified after HTTP files download, actual filled value checks,
 sensitive success/error redaction, required/mistyped args, unknown command and
 parallel request isolation. Missing Chromium must exit 1, never SKIP/PASS.
 L1: actual image build, logs confirm Playwright 1.58.0 and its Chromium revision.
-L2: `python scripts/public_launch_e2e.py browser-automation --provider alicloud-express --application-controller`, outside CLI and SDK must
+L2: `python scripts/public_launch_e2e.py browser-automation --provider alicloud-express --application-controller --source ./browser-automation --output browser-automation-attempt-1.json`, outside CLI and SDK must
 assert smoke browse result action=extract, title/text=ABX_E2E_OK. Also download and
 validate screenshots through remote files APIs; no host file shortcut.
 L3: no model key required; browser product behavior is tested by actual navigation

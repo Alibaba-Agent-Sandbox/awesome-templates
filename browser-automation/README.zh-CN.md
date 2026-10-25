@@ -10,7 +10,7 @@ Python 的 browse/scrape/fill_form 每次独立创建浏览器；原生MCP调用
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
 阿里云 runtime 基础镜像（默认 `v0.0.49`，Python 3.13）、Playwright `1.58.0`
 与其匹配的 Chromium revision，以及 Dockerfile 中精确提交钉住的
@@ -161,8 +161,8 @@ PDF在独立HOME子进程执行，执行时限1–120秒并有有界清理。通
 一次真实构建流截止。后续成功诊断超过300秒，不能推断极速版统一单步时限。Playwright 版本及完整 Chromium 不变；旧版本证据保留。
 
 
-在本目录运行 `abx template deploy` 或上述安装命令。部署器替换阿里云 region/tag
-占位符，并可从 `ABX_SERVER_SDK_SOURCE` 注入服务端 wheel；否则使用归档提交钉。
+在本目录运行 `abx template deploy` 或上述安装命令。提供方解析阿里云 region/tag
+占位符；Dockerfile 直接安装精确的已发布服务端包。
 重型安装放前层，`COPY commands.py` 放最后。Dockerfile 无 CMD/ENTRYPOINT，
 generation 2 使用 YAML 的 `start_cmd`、`ready_cmd`，以 `user` 运行。
 

@@ -40,7 +40,7 @@ RUN npm install -g @openai/codex@0.162.1 @qwen-code/qwen-code@0.23.0 \
     && test "$(qwen --version)" = "0.23.0" \
     && npm cache clean --force
 
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6"
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py server-policy.json ./

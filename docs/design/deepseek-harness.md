@@ -30,7 +30,7 @@ Template1.1.1 explicitly owns /home/user/app as user:user before runtime USER. T
 
 [Dockerfile](../../deepseek-harness/Dockerfile) uses the Alibaba generation-2 base, non-root user,
 2048 MB and `/home/user/app`. Python 3.13; `httpx==0.28.1`; Agent Sandbox server. No third-party agent CLI.
-The Dockerfile installs published `agent-sandbox-server==0.4.0a2` directly.
+The Dockerfile installs published `agent-sandbox-server==0.4.0a6` directly.
 `start_cmd`: `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`.
 `ready_cmd`: `agent-sandbox-server healthcheck --port 9000`.
 No CMD or ENTRYPOINT.
@@ -53,7 +53,7 @@ Secrets are declared with empty values. Error/output paths redact known secret e
 
 - L0: `python3 scripts/check_template.py deepseek-harness`; `python3 -m pytest -q deepseek-harness/test_commands.py`; local HTTP `e2e_test.py`, model disabled.
 - L1: image build and pinned upstream version/dependency output; Docker is required.
-- L2: `python scripts/public_launch_e2e.py deepseek-harness --provider alicloud-express --application-controller` invokes declared no-key smoke through external CLI and SDK. Only passing runs become provider evidence.
+- L2: `python scripts/public_launch_e2e.py deepseek-harness --provider alicloud-express --application-controller --source ./deepseek-harness --output deepseek-harness-attempt-1.json` invokes declared no-key smoke through external CLI and SDK. Only passing runs become provider evidence.
 - L3: target diagnostics must report compatible credentials. Repair seeded `calculator.py`, preserve the seeded test, create REPORT.md and acceptance.txt with an exact ABX_E2E_OK marker, retrieve via remote files API, execute independent unittest and held-out tests. Required mode fails on missing credentials.
 - L4: no provider claim until a real run.
 
@@ -63,5 +63,3 @@ Primary protocol/source reference: [DeepSeek coding harness](https://api-docs.de
 ### Premature-exit acceptance guard
 
 The current coding controller imports trusted standard-library code under `python3 -I`, compiles the actual calculator and original-test source bytes, and requires exactly all three original tests to succeed without skips, expected failures or unexpected successes. Each test/held-out process must return a fresh completion acknowledgment generated after the model response; it is never included in the model prompt. Premature `SystemExit`, `os._exit(0)`, a static `INDEPENDENT_OK` string and stale bytecode cannot supply that acknowledgment. This protects ordinary acceptance against premature exits; it is not a security boundary against hostile Python with the same OS authority. Historical model runs retain their original controller hashes and do not prove this new gate; record a separate actual model run at the new controller revision on the reviewed image. Canonical deployment/provider qualification remains a separate required gate.
-
-Release readiness 1.1.2: align default and injected server SDK source to `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; preserve historical receipts and require new image/workflow acceptance.

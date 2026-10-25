@@ -14,7 +14,7 @@ Eight complete named contracts in [README](../../dev-services/README.md#command-
 
 ## How to build
 
-[Dockerfile](../../dev-services/Dockerfile), Alibaba base defaultv0.0.49, PostgreSQL/client/libpq17.11-0+deb13u1 and Redis/tools5:8.0.2-3+deb13u3. Critical packages fixed, transitive OS security dependencies repo-resolved. Disable default root cluster/autostart; generation2 standard serve/health, server fallback e2cb27e commit, USER user.
+[Dockerfile](../../dev-services/Dockerfile), Alibaba base defaultv0.0.49, PostgreSQL/client/libpq17.11-0+deb13u1 and Redis/tools5:8.0.2-3+deb13u3. Critical packages fixed, transitive OS security dependencies repo-resolved. Disable default root cluster/autostart; generation2 standard serve/health, published server package, USER user.
 
 ## Express feasibility
 

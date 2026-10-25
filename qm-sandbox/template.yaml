@@ -1,5 +1,5 @@
 name: qm-sandbox
-version: "1.0.2"
+version: "1.0.3"
 description: "Original QM0.1.0 native SDK-backed sandbox layer on an owned Express computer."
 author: alibaba-agent-sandbox
 license: Apache-2.0

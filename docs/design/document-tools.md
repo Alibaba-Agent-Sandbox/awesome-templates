@@ -19,7 +19,7 @@ No public SDK/server API changes are made. The new template narrows the survey's
 
 ## How to build
 
-[Dockerfile](../../document-tools/Dockerfile) uses the Alibaba base, exact `pandoc=3.1.11.1+ds-2` and `pandoc-data=3.1.11.1-3`, preserved distribution notices and standard generation 2 serve/healthcheck. The server dependency is the published `agent-sandbox-server==0.4.0a2` package. Non-root `user` owns `/home/user/app`. Headless writer-nogui/core-nogui/common are pinned to4:25.2.3-2+deb13u8with DejaVu/Noto fonts. Each conversion gets a fresh private profile; only generated validated DOCX reaches Writer. There is no persistent office daemon. Pandoc package identities and actual extracted programs were verified. Writer package availability is checked against official Debian metadata; its native CI and actual SDK-created image/step execution now pass.
+[Dockerfile](../../document-tools/Dockerfile) uses the Alibaba base, exact `pandoc=3.1.11.1+ds-2` and `pandoc-data=3.1.11.1-3`, preserved distribution notices and standard generation 2 serve/healthcheck. The server dependency is the published `agent-sandbox-server==0.4.0a6` package. Non-root `user` owns `/home/user/app`. Headless writer-nogui/core-nogui/common are pinned to4:25.2.3-2+deb13u8with DejaVu/Noto fonts. Each conversion gets a fresh private profile; only generated validated DOCX reaches Writer. There is no persistent office daemon. Pandoc package identities and actual extracted programs were verified. Writer package availability is checked against official Debian metadata; its native CI and actual SDK-created image/step execution now pass.
 
 ## Express feasibility
 
@@ -39,7 +39,7 @@ Native children receive no cloud/model credentials, use bounded diagnostics and 
 
 L0: checker; actual pinned Pandoc regression suite; actual authenticated Python SDK; required-engine HTTP E2E. Independent controllers create nonce/Unicode Markdown, upload/download through files APIs, verify full bytes/hashes and parse DOCX XML heading/bold/content plus TXT. Original input remains unchanged. Negative cases include path/URI/argv attempts, symlinks/FIFO/oversized/binary/empty inputs, images/raw/non-web links, no-clobber outputs, invalid limits/formats, concurrent work, bounded diagnostics, secret-environment exclusion, and real native descendant cleanup for success/failure/timeout. Missing source files during smoke failure must not prevent cleanup of other owned artifacts.
 
-L1: actual Docker build must show the exact installed package/version and run non-root `document_version`/`document_smoke`. L2: actual canonical `python scripts/public_launch_e2e.py document-tools --provider alicloud-express --application-controller` must deploy with the real CLI and run all declared smoke commands externally via CLI/SDK with strict owned resource cleanup. L3: N/A; no model/agent claim. L4: no additional provider verified.
+L1: actual Docker build must show the exact installed package/version and run non-root `document_version`/`document_smoke`. L2: actual canonical `python scripts/public_launch_e2e.py document-tools --provider alicloud-express --application-controller --source ./document-tools --output document-tools-attempt-1.json` must deploy with the real CLI and run all declared smoke commands externally via CLI/SDK with strict owned resource cleanup. L3: N/A; no model/agent claim. L4: no additional provider verified.
 
 
 ## Version1.1implementation and independent acceptance

@@ -8,11 +8,10 @@ Inspect uploaded audio/video files and create bounded MP4/H.264, WAV or FLAC art
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 - Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`, normally `cn-hangzhou` / `v0.0.49`.
 - Debian 13 [FFmpeg `7:7.1.5-0+deb13u1`](https://packages.debian.org/trixie/ffmpeg), including the same exact version of its FFmpeg ABI libraries; other operating-system dependencies resolve from Debian repositories.
-- Injected server wheel or python-sdk source pin `fd72d3210b85079d93dcf08e19bfded73643162b`.
 - Non-root `user`; writable `/home/user/app`; generation 2 `agent-sandbox-server serve` / `healthcheck`, port 9000.
 
 ## Problem solved
@@ -148,7 +147,7 @@ Additional exact-version real steps passed on2026-10-20 using actual Python `San
 | alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
 | alicloud-express | complete media HTTP21 assertions, actual steps READY/CLI/SDK and independent cleanup | [full run](evidence/full-http-steps-2026-10-19T184323Z.json), [provenance](evidence/steps-full-http-2026-10-19T184323Z.json) |
 
-This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+This historical run used the pinned e2cb27e server-source override matching the then-current image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
 
 ## Secondary development
 

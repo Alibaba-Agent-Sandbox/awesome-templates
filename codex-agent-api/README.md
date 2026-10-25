@@ -8,9 +8,9 @@ Each turn uses `codex exec --json`. New sessions start a fresh Codex thread; lat
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
-Alibaba runtime base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (deployment defaults: `cn-hangzhou`, `v0.0.49`), Python 3.13, Node.js 20, Codex 0.162.1, and `agent-sandbox-server` pinned to python-sdk commit `e2cb27e24fde0a67112f82b8d44af463445a5d1a` in [Dockerfile](Dockerfile) (includes the dataclass command-loader fix). Runtime user: `user`. App: `/home/user/app`; workspace: `/home/user/workspace`. No image `CMD` or `ENTRYPOINT`.
+Alibaba runtime base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (deployment defaults: `cn-hangzhou`, `v0.0.49`), Python 3.13, Node.js 20, Codex 0.162.1, and `agent-sandbox-server` installed from its published package pin in [Dockerfile](Dockerfile). Runtime user: `user`. App: `/home/user/app`; workspace: `/home/user/workspace`. No image `CMD` or `ENTRYPOINT`.
 
 ## Problem solved
 

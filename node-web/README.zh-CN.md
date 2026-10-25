@@ -6,9 +6,9 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
-Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` 提供 Node 20 和 Python 3.13；部署默认替换为 `cn-hangzhou`、`v0.0.49`。server 的归档安装锁定 python-sdk 提交 `35da216a300f1e2e84254a1cf4b4a7ea98681505`，CLI 注入的 wheel 优先。无额外 npm 依赖。工作目录 `/home/user/app`，以非 root 的 `user` 运行，generation 2。`start_cmd` 在 9000 启动命令服务，`ready_cmd` 做 healthcheck；Dockerfile 无 CMD/ENTRYPOINT。
+Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` 提供 Node 20 和 Python 3.13；部署默认替换为 `cn-hangzhou`、`v0.0.49`。无额外 npm 依赖。工作目录 `/home/user/app`，以非 root 的 `user` 运行，generation 2。`start_cmd` 在 9000 启动命令服务，`ready_cmd` 做 healthcheck；Dockerfile 无 CMD/ENTRYPOINT。
 
 ## 解决的问题
 
@@ -97,7 +97,7 @@ print(await client.commands.run('smoke'))
 | --- | --- | --- |
 | alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
 
-该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
+该历史记录采用 e2cb27e 服务端来源覆盖，与当时的镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
 
 ## Express 源码运行验证
 
@@ -121,7 +121,7 @@ fixture 检查非零退出和可识别失败。测试仅使用自有临时 npm c
 
 ## 贡献
 
-阅读 [CONTRIBUTING.md](../CONTRIBUTING.md)、[模板规范](../docs/template-spec.zh-CN.md)与[设计分析](../docs/design/node-web.md)。在仓库根运行 `python3 scripts/check_template.py node-web`，再运行 `python3 scripts/run_local_e2e.py`；需 server SDK、httpx、PyYAML、Node 与 npm。测试运行真实进程并断言结果。具备 Docker 与已授权 Express 配置时运行 `python scripts/public_launch_e2e.py node-web --provider alicloud-express --application-controller`，仅通过后添加提供方证据。在此之前保持 tested_on 与提供方验证列表为空。合并前交叉审查进程生命周期与失败路径。
+阅读 [CONTRIBUTING.md](../CONTRIBUTING.md)、[模板规范](../docs/template-spec.zh-CN.md)与[设计分析](../docs/design/node-web.md)。在仓库根运行 `python3 scripts/check_template.py node-web`，再运行 `python3 scripts/run_local_e2e.py`；需 server SDK、httpx、PyYAML、Node 与 npm。测试运行真实进程并断言结果。具备 Docker 与已授权 Express 配置时运行 `python scripts/public_launch_e2e.py node-web --provider alicloud-express --application-controller --source ./node-web --output node-web-attempt-1.json`，仅通过后添加提供方证据。提供方验证结论以已完成的准确输入实测为准。合并前交叉审查进程生命周期与失败路径。
 
 ## 问题反馈
 

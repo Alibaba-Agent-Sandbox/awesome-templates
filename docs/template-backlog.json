@@ -82,8 +82,7 @@
       "codex_setup_check",
       "codex_config_write",
       "codex_agents_write",
-      "codex_exec",
-      "codex"
+      "codex_exec"
     ],
     "analysis_ref": "docs/template-market-survey-2026-10.md#codex",
     "batch": "1",
@@ -132,7 +131,6 @@
     "rationale": "已有 experimental。 切片：整条 CLI。",
     "named_commands": [
       "opencode_run",
-      "opencode",
       "opencode_version",
       "opencode_setup_check",
       "opencode_serve_start",

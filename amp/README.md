@@ -11,7 +11,6 @@ Installs the Amp CLI (`amp`) and registers four commands:
 | `amp_version` | `amp version` |
 | `amp_setup_check` | `amp version`, then reads existing settings without changing them |
 | `amp_execute` | `amp --no-color --no-notifications --no-ide -x <prompt>` |
-| `amp` | The previous name of `amp_execute`. Same arguments. |
 
 `amp_execute` adds `--stream-json` when `stream_json` is true. The HTTP response is the full stdout after the process exits. It is not a live stream.
 
@@ -23,14 +22,13 @@ Amp does not accept a DashScope key, `ABX_LLM_API_KEY`, or an OpenAI-compatible 
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 - Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template deploy` replaces `<region>` with `ALIBABA_CLOUD_REGION_ID` or `cn-hangzhou`, and `<tag>` with `ABX_BASE_IMAGE_TAG` or `v0.0.49`.
 - Node.js 20 from that image, used only to run `npm`. The `amp` binary is a glibc ELF from the optional package `@ampcode/cli-linux-x64` at the same version.
 - `@ampcode/cli@0.0.1792022479-ge66e24`, from `npm view @ampcode/cli version` on 2026-10-15. The previous directory pin was `0.0.1791964847-g13f24a`. The base image sets npm's registry to `registry.npmmirror.com`, which returned 404 for `@ampcode/cli-linux-x64` at this version, so the Dockerfile installs from `https://registry.npmjs.org`. `amp version` runs in the image build and fails the build if the native binary was not unpacked.
-- `agent-sandbox-server` from python-sdk commit `61c43e0be65a1f57aa09186d578e7b399e48429b` (PR #21). That distribution is not on PyPI.
 - git and ripgrep.
-- Work directory `/home/user/app`. Runtime user `user`. The platform starts `start_cmd`. The Dockerfile has no `CMD` or `ENTRYPOINT`.
+- Work directory `/home/user/app`. Runtime user `user`. `abx template launch` executes the template's `start_cmd`. The Dockerfile has no `CMD` or `ENTRYPOINT`.
 
 ## Problem solved
 
@@ -81,7 +79,6 @@ Expected response for this check:
 | `amp_version` | none | string | First token of `amp version`, for example `0.0.1792022479-ge66e24`. |
 | `amp_setup_check` | none | object | `installed`, `package`, `version`, `api_key_set`, `settings_path`, `settings_exists`, `dangerously_allow_all`, `updates_mode`. No files are written. An absent file reports false and `default`. |
 | `amp_execute` | `prompt` string, required. `stream_json` boolean, optional, default `false`; `dangerously_allow_all` boolean, optional, default `false`. | string | Stdout of `amp -x`. `--stream-json` when `stream_json` is true. |
-| `amp` | same as `amp_execute` | string | Previous command name. |
 
 `POST /commands/amp_execute` with `{"prompt":"hi"}` returns `{"result":"<stdout>"}` when the CLI exits 0. A missing `prompt` is HTTP 400. A missing `AMP_API_KEY`, a missing binary, or a non-zero `amp` exit is HTTP 500 `{"error","type"}`. `api_key_set` is a boolean. The secret is not returned. Success and error output redact configured secret values, including JSON-escaped values. The command kills its owned process group after 600 seconds; client timeouts alone do not cancel it.
 

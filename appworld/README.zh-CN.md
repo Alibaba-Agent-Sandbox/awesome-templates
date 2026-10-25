@@ -8,9 +8,9 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
-Alibaba generation2 basev0.0.49、Linuxx64/Python3.13；独立[完整哈希依赖锁](requirements.lock)、原版 appworld0.1.3.post1 wheel 和34,280,074字节加密数据。服务端源码 e2cb27e24fde0a67112f82b8d44af463445a5d1a，user 运行、9000端口。[Dockerfile](Dockerfile)、[来源记录](upstream.json)、[设计](../docs/design/appworld.md)。可分发镜像内受保护源码和数据保持加密。
+Alibaba generation2 basev0.0.49、Linuxx64/Python3.13；独立[完整哈希依赖锁](requirements.lock)、原版 appworld0.1.3.post1 wheel 和34,280,074字节加密数据。已发布服务端包，user 运行、9000端口。[Dockerfile](Dockerfile)、[来源记录](upstream.json)、[设计](../docs/design/appworld.md)。可分发镜像内受保护源码和数据保持加密。
 
 
 

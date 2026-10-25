@@ -1,5 +1,5 @@
 name: polyglot-toolchain
-version: "1.0.3"
+version: "1.0.4"
 description: Pinned Go 1.25.14, Rust 1.90.0 and Eclipse Temurin 21 toolchains with
   actual compilation proof.
 author: alibaba-agent-sandbox

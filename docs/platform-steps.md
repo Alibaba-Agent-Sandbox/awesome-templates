@@ -41,7 +41,7 @@ USER, heredocs and continuations. It transfers explicit public COPY inputs with
 hashes and file modes. Missing, private or escaping inputs fail before cloud
 submission. Larger profiles fetch the immutable public source archive and verify
 all copied bytes; publish the exact source commit before cloud execution. The
-original Dockerfile installs published server 0.4.0a2 directly from official PyPI;
+original Dockerfile installs published server 0.4.0a6 directly from official PyPI;
 there is no injected wheel, Git-server fallback or server-source selector.
 
 The default base resolves to region `cn-hangzhou`, tag `v0.0.49`. Use `--region` or

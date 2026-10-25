@@ -171,3 +171,44 @@ def test_explicit_owned_loopback_gateway_reaches_native_auth_fixture(name, monke
     monkeypatch.delenv('E2E_REMOTE_SANDBOX')
     method(client,'/owned-fixture','http://127.0.0.1:43210')
     assert not client.calls and observations==[False]
+
+
+@pytest.mark.parametrize('template,canonical,retired,args', [
+    ('opencode','opencode_run','opencode',{}),
+    ('amp','amp_execute','amp',{}),
+    ('codex','codex_exec','codex',{}),
+    ('openclaw','gateway_status','gateway',{}),
+])
+def test_current_template_commands_use_only_canonical_public_names(tmp_path,template,canonical,retired,args):
+    """Load actual template modules and dispatch real local HTTP, without upstream/model calls."""
+    import os,socket,subprocess,sys,time
+    from pathlib import Path
+    import httpx
+    source=Path(__file__).resolve().parents[1]/template/'commands.py'
+    with socket.socket() as listener:
+        listener.bind(('127.0.0.1',0));port=listener.getsockname()[1]
+    env={'PATH':os.environ.get('PATH',''),'HOME':str(tmp_path),'WORKSPACE':str(tmp_path),
+         'ABX_SERVER_PORT':str(port),'ABX_SERVER_TOKEN':'owned-test-token'}
+    process=subprocess.Popen([sys.executable,str(source)],cwd=tmp_path,env=env,
+                             stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    try:
+        with httpx.Client(base_url=f'http://127.0.0.1:{port}',headers={'Authorization':'Bearer owned-test-token'},
+                          timeout=3,trust_env=False) as client:
+            deadline=time.monotonic()+10
+            while True:
+                try:
+                    if client.get('/health').status_code==200:break
+                except httpx.HTTPError:pass
+                assert process.poll() is None and time.monotonic()<deadline,'actual template server did not become ready'
+                time.sleep(0.05)
+            names={row['name'] for row in client.get('/commands').json()['commands']}
+            assert canonical in names and retired not in names
+            assert client.post('/commands/'+retired,json=args).status_code==404
+            response=client.post('/commands/'+canonical,json=args)
+            if canonical=='gateway_status':
+                assert response.status_code==200 and response.json()['result']['running'] is False
+            else:assert response.status_code==400  # Canonical required-prompt validation, no model process.
+    finally:
+        process.terminate()
+        try:process.wait(timeout=5)
+        except subprocess.TimeoutExpired:process.kill();process.wait(timeout=5)

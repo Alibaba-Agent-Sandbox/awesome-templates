@@ -6,7 +6,7 @@ Runs Go 1.25.14, Rust/Cargo 1.90.0 and Eclipse Temurin JDK 21.0.12.1+1 in one no
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 Alibaba FC base v0.0.49, generation 2, 2 vCPU / 2048 MB, agent-sandbox-server on port 9000. Official upstream archives and SHA256 for x86_64/aarch64 are pinned in [toolchains.json](toolchains.json). No rustup, version manager or runtime automatic Go toolchain download. Rustc, the target standard library and Cargo are installed as individual official components. GCC supplies the system linker. The installer rejects actual rootfs use above 8 GiB.
 
@@ -79,7 +79,7 @@ See [test results and scope](../docs/using-templates.md#evidence-and-providers).
 
 ## Secondary development
 
-Change the official archive/version/hash together and retain upstream licenses. Use [platform steps](../docs/platform-steps.md) with `python scripts/prepare_steps.py polyglot-toolchain --output /tmp/toolchain-steps`. That prepares files only. Real Express acceptance: `python scripts/run_steps_e2e.py polyglot-toolchain --timeout 1800`; Dockerfile acceptance remains `python scripts/public_launch_e2e.py polyglot-toolchain --provider alicloud-express --application-controller`. Run L0 with `python scripts/run_local_e2e.py`; a host lacking the exact tools reports a skip. Images must compile all three, and local absence cannot certify them.
+Change the official archive/version/hash together and retain upstream licenses. Use [platform steps](../docs/platform-steps.md) with `python scripts/prepare_steps.py polyglot-toolchain --output /tmp/toolchain-steps`. That prepares files only. Real Express acceptance: `python scripts/run_steps_e2e.py polyglot-toolchain --timeout 1800`; Dockerfile acceptance remains `python scripts/public_launch_e2e.py polyglot-toolchain --provider alicloud-express --application-controller --source ./polyglot-toolchain --output polyglot-toolchain-attempt-1.json`. Run L0 with `python scripts/run_local_e2e.py`; a host lacking the exact tools reports a skip. Images must compile all three, and local absence cannot certify them.
 
 ## Contributing
 

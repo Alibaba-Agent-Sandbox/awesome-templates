@@ -17,16 +17,16 @@
     }
   },
   "agent-sandbox-node-sdk": {
-    "url": "https://codeload.github.com/Alibaba-Agent-Sandbox/nodejs-sdk/tar.gz/90b5187dca84fca78d75d3045896482540641c72",
-    "source_commit": "90b5187dca84fca78d75d3045896482540641c72",
-    "size": 27746,
-    "sha256": "6b51e849090656de448812dbc5b08bb0a7ac0a981241739e116597cd8383cfd6",
+    "url": "https://codeload.github.com/Alibaba-Agent-Sandbox/nodejs-sdk/tar.gz/63d7cd8ece221b9f968eef51eeb932ea334c90d3",
+    "source_commit": "63d7cd8ece221b9f968eef51eeb932ea334c90d3",
+    "size": 42302,
+    "sha256": "6fe5ad0e27ca024eed2c2db29e6a2ecf310336505423de6802719baa3137b598",
     "digest_basis": "controller measured original immutable public source archive; not upstream-published checksum",
     "version": "0.1.0",
     "identity_files": {
       "package.json": "daa89f8d72229bf72a1227030b2e1ffd907eed5041bd766b3accf6353340d49b",
       "package-lock.json": "deb3039932292903aad4a15351dcfc118fd349c16822f55b9d2be9c9b7fc66a4",
-      "src/server-client.ts": "a3489ce27c457b40873908b4c9d43f652417cb737e95f8d2ad633a7dee045441",
+      "src/server-client.ts": "0c53798c9de4854b50b11da3275417867a231fe9495898d465effdc6b7ceab3d",
       "src/index.ts": "c2dfc5122bd7ea0a6c1a870d318691f748ee64cb1976a06a227830d915a9ceec",
       "LICENSE": "99e25d9b65728b3dd8246d17feefc9e0b8aea24ab651ee6e4f5735a240de59ac",
       "NOTICE": "7e6949ac5a233f4e1acde91d9f85219045a0bad23434d6bf2e93e7743151e860"

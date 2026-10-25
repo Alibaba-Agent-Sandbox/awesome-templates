@@ -8,9 +8,9 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
-构建器解析的阿里云 `v0.0.49` 基础镜像，Python 3.13 服务端/代理、官方 SHA 固定的独立 Python 3.11.10 评测运行时，保留原 Node.js 20，mini-swe-agent 2.4.6、LiteLLM 1.82.6、pytest 8.3.5。沙箱服务端源码固定于 `e2cb27e24fde0a67112f82b8d44af463445a5d1a`。所有固定依赖见 [Dockerfile](./Dockerfile)。不需要嵌套 Docker、运行时系统安装或下载整份数据集。
+构建器解析的阿里云 `v0.0.49` 基础镜像，Python 3.13 服务端/代理、官方 SHA 固定的独立 Python 3.11.10 评测运行时，保留原 Node.js 20，mini-swe-agent 2.4.6、LiteLLM 1.82.6、pytest 8.3.5。已发布服务端包。所有固定依赖见 [Dockerfile](./Dockerfile)。不需要嵌套 Docker、运行时系统安装或下载整份数据集。
 
 ## 解决的问题
 
@@ -105,7 +105,7 @@ L0 可以跳过缺失的上游运行时/模型前置，这不证明代理运行�
 
 ## 贡献
 
-执行 `python -m pytest -q swe/test_commands.py swe/test_e2e_protocol.py`、`python3 scripts/check_template.py swe`、`python3 scripts/test_spec_tools.py` 与 `python3 scripts/run_local_e2e.py`。构建真实镜像，跑[标准 Express 部署](../scripts/express_e2e.py)，再配置兼容模型后执行 `E2E_REQUIRE_LLM=1 E2E_RUN_LLM=1 E2E_BASE_URL=<已配置服务> python swe/e2e_test.py`。保留失败/跳过，记录准确版本、测试身份、补丁读取与自有资源清理。不要提交原始 trajectory、凭据或私有资源 ID。
+执行 `python -m pytest -q swe/test_commands.py swe/test_e2e_protocol.py`、`python3 scripts/check_template.py swe`、`python3 scripts/test_spec_tools.py` 与 `python3 scripts/run_local_e2e.py`。构建真实镜像，跑[当前 Express 源码启动验证](../docs/public-launch-testing.md)，再配置兼容模型后执行 `E2E_REQUIRE_LLM=1 E2E_RUN_LLM=1 E2E_BASE_URL=<已配置服务> python swe/e2e_test.py`。保留失败/跳过，记录准确版本、测试身份、补丁读取与自有资源清理。不要提交原始 trajectory、凭据或私有资源 ID。
 
 ## 问题反馈
 

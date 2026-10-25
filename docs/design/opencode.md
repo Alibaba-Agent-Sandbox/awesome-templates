@@ -2,7 +2,7 @@
 
 ## Purpose
 
-People who want the OpenCode coding agent (`sst/opencode`, npm package `opencode-ai`) inside an Agent Sandbox. The sandbox installs the pinned CLI and exposes it as named commands. A caller sends one headless prompt, or starts OpenCode's own HTTP server and opens that port with `sb.network.get_url`.
+People who want the OpenCode coding agent (`sst/opencode`, npm package `opencode-ai`) inside an Agent Sandbox. The sandbox installs the pinned CLI and exposes it as named commands. A caller sends one headless prompt, or starts OpenCode's own HTTP server and opens that port with `sb.network.resolve`.
 
 ## Capabilities
 
@@ -10,9 +10,9 @@ After the sandbox is READY the image has `opencode` 1.19.0 on `PATH`, git, and r
 
 The primary API is `opencode_run`: one `opencode run` invocation, JSON events, then a single JSON result. Parameters cover the prompt, `provider/model`, agent name, session continue (`--continue` or `--session`), and the working directory.
 
-The secondary API is `opencode serve` on port 4096. It is not started by `start_cmd`. `opencode_serve_start` launches it, `opencode_serve_status` reports it, and `opencode_serve_stop` stops it. Clients that speak the OpenCode HTTP API use `sb.network.get_url(4096)`. `GET /global/health` on that port returns `{"healthy": true, "version": "1.19.0"}`.
+The secondary API is `opencode serve` on port 4096. It is not started by `start_cmd`. `opencode_serve_start` launches it, `opencode_serve_status` reports it, and `opencode_serve_stop` stops it. Clients that speak the OpenCode HTTP API use `sb.network.resolve(4096)`. `GET /global/health` on that port returns `{"healthy": true, "version": "1.19.0"}`.
 
-`opencode_version` and `opencode_setup_check` do not call a model. `opencode` remains as a compatibility alias of `opencode_run` and returns sanitized JSON-event stdout.
+`opencode_version` and `opencode_setup_check` do not call a model.
 
 The interactive TUI is not started. Express has no separate TTY for the platform process, and a named command is one request and one JSON body.
 
@@ -27,18 +27,6 @@ opencode run --pure --format json --auto --model <model> --dir <cwd> [--agent <a
 ```
 
 `<model>` is the `model` argument, else `OPENCODE_MODEL`, else `dashscope/qwen3.8-flash`. `<cwd>` defaults to the module directory (`/home/user/app` inside the image). `--auto` approves permissions the agent has not explicitly denied. `--pure` skips external plugins. A non-zero exit raises `RuntimeError` with the exit code; subprocess stdout/stderr are omitted so prompts and tool arguments cannot leak through errors. Success JSON events redact secret environment values, including JSON-escaped strings. The child `OPENCODE_CONFIG` points at the image `opencode.json`, or at a temp copy when the requested DashScope model id is not already listed.
-
-`opencode(prompt, model="", agent="", session="", continue_session=false, cwd="") -> stdout string`
-
-Same argv as `opencode_run`. Kept so callers of the previous `opencode` command still receive the CLI stdout. New callers should use `opencode_run`.
-
-`opencode_version() -> "1.19.0"`
-
-Argv: `opencode --version`.
-
-`opencode_setup_check() -> "ok"`
-
-Argv: `opencode --version`, then a read of `opencode.json`. Checks the pinned version and that provider `dashscope` uses `@ai-sdk/openai-compatible` with `{env:ABX_LLM_BASE_URL}` and `{env:ABX_LLM_API_KEY}`. No network call.
 
 `opencode_serve_start(port=4096, hostname="0.0.0.0") -> {running, port, hostname, pid, healthy}`
 
@@ -58,13 +46,8 @@ Template2.0.1 explicitly owns /home/user/app as user:user before runtime USER. T
 
 Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (the platform image already has Python 3.13 and Node.js 20). `npm view opencode-ai version` on 2026-10-15 still resolved `latest` to `1.19.0`; the Dockerfile installs `opencode-ai@1.19.0` and runs `opencode --version`.
 
-Install the exact published `agent-sandbox-server==0.4.0a2` distribution from PyPI, as declared in the Dockerfile.
+Install the exact published `agent-sandbox-server==0.4.0a6` distribution from PyPI, as declared in the Dockerfile.
 
-```text
-Install the exact published `agent-sandbox-server==0.4.0a2` distribution from PyPI, as declared in the Dockerfile.
-```
-
-The PyPI pin `agent-sandbox-server==0.3.0` is recorded in the Dockerfile comment and is not what the image runs. That release predates the Express server fixes.
 
 `start_cmd`: `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`
 
@@ -125,9 +108,9 @@ L0: run `python3 opencode/e2e_test.py` against `E2E_BASE_URL`, or use the reposi
 
 L1: `docker build` with the Alibaba base image. Not run in the restored environment because Docker is unavailable.
 
-L2: `python scripts/public_launch_e2e.py opencode --provider alicloud-express --application-controller` on `alicloud-express`. The smoke commands run through the actual provider API and SDK. No provider pass or `tested_on` entry is claimed until that run succeeds and is recorded. A serve port proxy probe uses the provider URL for port 4096, rather than the tester's localhost.
+L2: `python scripts/public_launch_e2e.py opencode --provider alicloud-express --application-controller --source ./opencode --output opencode-attempt-1.json` on `alicloud-express`. The smoke commands run through the actual provider API and SDK. Provider acceptance requires that exact-input run to succeed and be recorded. A serve port proxy probe uses the provider URL for port 4096, rather than the tester's localhost.
 
-L3: the real agent/file and exact-session continuation acceptance above with provider-injected model configuration. Local credential-free checks never establish this result. The 2026-10-16 Express source-runtime run recorded 28 HTTP checks passing with a real `dashscope/qwen3.8-flash` model, including the coding turn, exact-session continuation, independent artifact/hash/calculation checks and owned-project cleanup. A separate repeat rebuilt the server wheel from clean SDK source (`bb7881dc703ccdc3b97ff5ad67bcb129c4ea80ea`), verified all 56 packaged Python modules against that git archive, and passed the same 28 checks. Each owning sandbox was killed in `finally`. Source-runtime checks use uploaded commands/configuration and separately installed dependencies on an existing base template. They do not verify this Dockerfile or deployment of a newly built template image; keep `tested_on` empty until the image L1/L2 gates pass.
+L3: the real agent/file and exact-session continuation acceptance above with provider-injected model configuration. Local credential-free checks never establish this result. The 2026-10-16 Express source-runtime run recorded 28 HTTP checks passing with a real `dashscope/qwen3.8-flash` model, including the coding turn, exact-session continuation, independent artifact/hash/calculation checks and owned-project cleanup. A separate repeat rebuilt the server wheel from clean SDK source (`bb7881dc703ccdc3b97ff5ad67bcb129c4ea80ea`), verified all 56 packaged Python modules against that git archive, and passed the same 28 checks. Each owning sandbox was killed in `finally`. Source-runtime checks use uploaded commands/configuration and separately installed dependencies on an existing base template. They do not verify this Dockerfile or deployment of a newly built template image; current image and source-launch acceptance require their own matching L1/L2 receipts.
 
 L4: no other provider has been accepted. All provider evidence remains empty.
 
@@ -145,5 +128,3 @@ The agent API, exact-session flow and runtime files are unchanged. Same-user
 hostile-code containment is not claimed. Historical genuine model results remain
 history and do not establish this new gate. Actual hardened-image/model recheck,
 canonical deployment, parents and final remote checks remain pending.
-
-Release readiness 2.0.3: align default and injected server SDK source to `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; preserve historical receipts and require new image/workflow acceptance.

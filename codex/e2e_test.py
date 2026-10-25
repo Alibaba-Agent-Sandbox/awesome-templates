@@ -46,7 +46,6 @@ COMMANDS = {
     "codex_exec",
     "codex_config_write",
     "codex_agents_write",
-    "codex",
 }
 
 
@@ -97,6 +96,9 @@ def _run_checks(client: httpx.Client) -> int:
     body = listed.json()
     entries = {item.get("name"): item for item in body.get("commands", []) if isinstance(item, dict)}
     check("GET /commands", listed.status_code == 200 and COMMANDS <= set(entries), str(sorted(entries)))
+
+    check("retired command absent", "codex" not in entries and
+          client.post("/commands/codex", json={"prompt":"unused"}).status_code == 404)
 
     exec_args = {item.get("name"): item.get("type") for item in entries.get("codex_exec", {}).get("args", [])}
     check(

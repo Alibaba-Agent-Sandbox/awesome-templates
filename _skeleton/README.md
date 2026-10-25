@@ -8,12 +8,12 @@ Registers one named command, `hello`, on `agent-sandbox-server` at port 9000. Th
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 - Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template deploy` replaces `<region>` with `ALIBABA_CLOUD_REGION_ID` or `cn-hangzhou`, and `<tag>` with `ABX_BASE_IMAGE_TAG` or `v0.0.49`.
 - Work directory `/home/user/app`. Runtime user `user`.
 - Python 3.13 and Node.js 20 come from the base image.
-- The platform starts the process with `start_cmd`. The Dockerfile stops after `USER` and `EXPOSE`.
+- `abx template launch` starts the process with the template's `start_cmd`. The Dockerfile stops after `USER` and `EXPOSE`.
 
 ## Problem solved
 

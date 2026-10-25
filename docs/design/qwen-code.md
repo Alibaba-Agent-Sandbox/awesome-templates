@@ -19,7 +19,7 @@ The complete headless CLI can edit source, run tests and produce files. Named di
 
 Template2.1.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
 
-[Dockerfile](../../qwen-code/Dockerfile) keeps the Alibaba FC base, `@qwen-code/qwen-code@0.23.0`, the existing approved pinned server source commit, `/home/user/app` and `USER user`. A task-built wheel takes precedence. Generation 2 uses `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py` and `agent-sandbox-server healthcheck --port 9000`. No image CMD or ENTRYPOINT. Removes unused unpinned Python libraries and root-only settings/skills from the legacy image.
+[Dockerfile](../../qwen-code/Dockerfile) keeps the Alibaba FC base, `@qwen-code/qwen-code@0.23.0`, the exact published server package pin, `/home/user/app` and `USER user`. Generation 2 uses `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py` and `agent-sandbox-server healthcheck --port 9000`. No image CMD or ENTRYPOINT. Removes unused unpinned Python libraries and root-only settings/skills from the legacy image.
 
 ## Express feasibility
 
@@ -42,6 +42,5 @@ L0: static checker, subprocess/configuration/privacy regressions, HTTP command s
 
 The current coding controller imports trusted standard-library code under `python3 -I`, compiles the actual calculator and original-test source bytes, and requires exactly all three original tests to succeed without skips, expected failures or unexpected successes. Each test/held-out process must return a fresh completion acknowledgment generated after the model response; it is never included in the model prompt. Premature `SystemExit`, `os._exit(0)`, a static `INDEPENDENT_OK` string and stale bytecode cannot supply that acknowledgment. This protects ordinary acceptance against premature exits; it is not a security boundary against hostile Python with the same OS authority. Historical model runs retain their original controller hashes and do not prove this new gate; record a separate actual model run at the new controller revision on the reviewed image. Canonical deployment/provider qualification remains a separate required gate.
 
-Release readiness 2.1.2: align default and injected server SDK source to `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; preserve historical receipts and require new image/workflow acceptance.
 
 Node is always 24.16.0, installed from official x64/arm64 archives after SHA256 verification; no moving NodeSource setup script. Qwen remains pinned 0.23.0. New image/model acceptance remains required.

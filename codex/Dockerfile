@@ -19,8 +19,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && npm install -g @openai/codex@0.162.1 \
     && npm cache clean --force
 
-# The PyPI name `agent-sandbox` is a different project, so the fallback installs
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
+# Install the published server; the PyPI name `agent-sandbox` is a different project.
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6"
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py AGENTS.md /home/user/app/

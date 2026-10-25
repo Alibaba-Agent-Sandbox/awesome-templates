@@ -6,13 +6,13 @@ Non-interactive [OpenAI Codex CLI](https://github.com/openai/codex) in an Agent 
 
 Named commands on `agent-sandbox-server` (port 9000) call `codex exec`. `codex_exec` returns JSONL events (`thread.started`, `turn.*`, `item.*`), the last agent message, and the `thread_id` used to resume. `codex_version` prints the CLI version. `codex_setup_check` probes Codex's Linux sandbox and reports `--dangerously-bypass-approvals-and-sandbox` when bubblewrap, seccomp, or the legacy landlock path cannot start. `codex_config_write` writes `$CODEX_HOME/config.toml` for an OpenAI-compatible `base_url` (`wire_api = "responses"` only). `codex_agents_write` writes `AGENTS.md`, which Codex reads from the working directory.
 
-`codex` is a compatibility alias of `codex_exec` (`prompt` and `model` only). Codex 0.162.1 does not accept the old `codex -p ... --output-format json` argv, and it rejects `--full-auto`.
+Codex 0.162.1 does not accept the old `codex -p ... --output-format json` argv, and it rejects `--full-auto`.
 
 The standalone `apply_patch` binary is a different template (issue #60). The Agents API HTTP service is `codex-agent-api` (issue #23). See [docs/design/codex.md](../docs/design/codex.md).
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 - Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template deploy` replaces `<region>` with `cn-hangzhou` (or `ALIBABA_CLOUD_REGION_ID`) and `<tag>` with `v0.0.49` (or `ABX_BASE_IMAGE_TAG`).
 - Node.js 20 and Python 3.13 from that image.
@@ -22,7 +22,7 @@ Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by
 
 ## Problem solved
 
-Gives a sandbox a pinned, non-interactive Codex CLI: JSON events, an explicit working directory, resume, a generated provider config for DashScope-style OpenAI-compatible endpoints, and a sandbox probe that does not assume landlock or user namespaces exist. Callers use `abx run` or `Sandbox.run` instead of embedding CLI flags in a shell string.
+Gives a sandbox a pinned, non-interactive Codex CLI: JSON events, an explicit working directory, resume, a generated provider config for DashScope-style OpenAI-compatible endpoints, and a sandbox probe that does not assume landlock or user namespaces exist. Callers use `abx run` or `client.commands.run` instead of embedding CLI flags in a shell string.
 
 ## Quick start (CLI)
 
@@ -71,7 +71,6 @@ Expected response for this check:
 | `codex_exec` | see the table below | object, events and last message |
 | `codex_config_write` | `base_url`, `provider`, `env_key`, `model`, `wire_api`, `codex_home` | object, path and toml |
 | `codex_agents_write` | `content` (required), `cwd` | object, `path` and `bytes` |
-| `codex` | `prompt` (required), `model` | same object as `codex_exec` |
 
 `codex_exec` parameters:
 
@@ -158,7 +157,7 @@ See [test results and scope](../docs/using-templates.md#evidence-and-providers).
 | --- | --- | --- |
 | alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
 
-This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+This historical run used the pinned e2cb27e server-source override matching the then-current image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
 
 ## Secondary development
 

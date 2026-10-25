@@ -15,7 +15,7 @@ RUN python3 -c "from pathlib import Path; mapping={'package.json':'/opt/qm/packa
     && NODE_OPTIONS=--use-system-ca npm ci --prefix /opt/qm --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org \
     && npm cache clean --force \
     && chmod -R a+rX /opt/node /opt/qm /opt/agent-sandbox-node-sdk /opt/qm-bootstrap
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6"
 ENV HOME=/home/user WORKSPACE=/home/user/app QM_SANDBOX_BASE_URL=http://127.0.0.1:9000
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py worker.mjs adapter.mjs sdk_path.py sdk_exec.py process.py tool_process.py lifecycle.py UPSTREAM-NOTICE.md ./

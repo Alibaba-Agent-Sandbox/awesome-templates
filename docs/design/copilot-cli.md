@@ -14,7 +14,7 @@ The [bilingual command reference](../../copilot-cli/README.md#command-reference)
 
 ## How to build
 
-[Dockerfile](../../copilot-cli/Dockerfile), generation2/base/start_cmd/ready_cmd from [manifest](../../copilot-cli/template.yaml), non-root user, Linux x86_64. Exact @github/copilot and native-linux-x64=1.0.100 plus detect-libc use [npm lockfile](../../copilot-cli/package-lock.json); npm ci --ignore-scripts --omit=optional. Native binary/license are unmodified. Server fallback/common injected e2cb27e24fde0a67112f82b8d44af463445a5d1a. Provider-owned Dockerfile/steps preparation preserves source pins.
+[Dockerfile](../../copilot-cli/Dockerfile), generation2/base/start_cmd/ready_cmd from [manifest](../../copilot-cli/template.yaml), non-root user, Linux x86_64. Exact @github/copilot and native-linux-x64=1.0.100 plus detect-libc use [npm lockfile](../../copilot-cli/package-lock.json); npm ci --ignore-scripts --omit=optional. Native binary/license are unmodified. Server package version is pinned in the Dockerfile. Provider-owned Dockerfile/steps preparation preserves source pins.
 
 ## Express feasibility
 

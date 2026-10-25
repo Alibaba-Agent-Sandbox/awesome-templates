@@ -8,12 +8,11 @@ Convert UTF-8 Markdown or bounded text HTML workspace files to actual DOCX, TXT,
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 - Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`, normally `cn-hangzhou` / `v0.0.49`.
 - Exact Debian 13 `pandoc=3.1.11.1+ds-2`, `pandoc-data=3.1.11.1-3`; their different version strings are intentional. Other OS libraries resolve from Debian repositories.
 - Headless LibreOffice writer/core/common `4:25.2.3-2+deb13u8`, DejaVu `2.37-8` and Noto CJK `1:20240730+repack1-1`.
-- Injected server wheel or immutable python-sdk source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`.
 - Non-root `user`, writable `/home/user/app`, generation 2 standard serve/healthcheck, port 9000.
 
 ## Problem solved
@@ -107,7 +106,7 @@ See [test results and scope](../docs/using-templates.md#evidence-and-providers).
 | --- | --- | --- |
 | alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
 
-This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+This historical run used the pinned e2cb27e server-source override matching the then-current image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
 
 ## Secondary development
 

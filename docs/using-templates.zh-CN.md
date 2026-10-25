@@ -6,11 +6,11 @@
 
 ## 安装
 
-使用完整模板目录（包括源码和托管模板）需要 CLI 0.5.3 或更高版本。以下示例使用 CLI 0.5.3 和 Python client 0.4.0a2；Python 包仍为预览版，因此明确指定版本。需要终端能力时建议 Node 22+。
+安装当前 CLI 0.5.5。以下示例使用 CLI 0.5.5 和 Python client 0.4.0a6；Python 包仍为预览版，因此明确指定版本。需要终端能力时建议 Node 22+。
 
 ```bash
-npm install -g @agent-sandbox/cli@0.5.3 --registry=https://registry.npmjs.org
-python3 -m pip install --index-url https://pypi.org/simple 'agent-sandbox-client==0.4.0a2'
+npm install -g @agent-sandbox/cli@0.5.5 --registry=https://registry.npmjs.org
+python3 -m pip install --index-url https://pypi.org/simple 'agent-sandbox-client==0.4.0a6'
 abx --version
 ```
 

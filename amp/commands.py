@@ -254,11 +254,5 @@ def amp_execute(prompt: str, stream_json: bool = False, dangerously_allow_all: b
     return _execute(prompt, stream_json=stream_json, dangerously_allow_all=dangerously_allow_all)
 
 
-@command("amp", description="Previous name for amp_execute. Same arguments.")
-def amp(prompt: str, stream_json: bool = False, dangerously_allow_all: bool = False) -> str:
-    """Backward-compatible name. The directory used to register only this command."""
-    return _execute(prompt, stream_json=stream_json, dangerously_allow_all=dangerously_allow_all)
-
-
 if __name__ == "__main__":
     start(int(os.environ.get("ABX_SERVER_PORT", "9000")))

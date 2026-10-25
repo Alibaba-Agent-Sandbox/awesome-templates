@@ -22,7 +22,7 @@ Two additional commands: `droid_byok(prompt: str, cwd: str="", command_timeout: 
 
 Template1.1.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
 
-[Dockerfile](../../droid/Dockerfile) uses Alibaba FC base and published server package 0.4.0a2. Full npm0.241.1 lock installs from the official registry with hooks disabled. Execute the fixed Linuxx64 native binary directly; SHA256 is checked at build and every command. Retain [proprietary upstream notice](../../droid/UPSTREAM-NOTICE.md). No public source commit is inferred from package metadata. Rootfs8GiB guard and non-root runtime remain. Version1.2.0 requires fresh image/cloud receipts; historical1.1.1 receipts are unchanged.
+[Dockerfile](../../droid/Dockerfile) uses Alibaba FC base and published server package 0.4.0a6. Full npm0.241.1 lock installs from the official registry with hooks disabled. Execute the fixed Linuxx64 native binary directly; SHA256 is checked at build and every command. Retain [proprietary upstream notice](../../droid/UPSTREAM-NOTICE.md). No public source commit is inferred from package metadata. Rootfs8GiB guard and non-root runtime remain. Version1.2.0 requires fresh image/cloud receipts; historical1.1.1 receipts are unchanged.
 
 Generation 2 starts `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`; ready command is `agent-sandbox-server healthcheck --port 9000`. No image CMD/ENTRYPOINT; runtime user is `user`. [template.yaml](../../droid/template.yaml) declares only empty secret placeholders.
 
@@ -47,7 +47,7 @@ Factory keys and provider credentials are distinct. Legacy mode requires a Facto
 - Regression: `python3 -m pytest -q droid/test_commands.py droid/test_e2e_protocol.py droid/test_byok.py droid/test_model_controller.py`; authored process, bound, secret isolation, cleanup, genuine terminal-result and independent verifier contracts. Mocks do not qualify the native product.
 - L0: source-only HTTP may explicitly SKIP missing native version when CLI is not required. This never establishes native/Express acceptance. Actual-image and Express controllers require the installed fixed binary and refuse skips.
 - L1: build image and verify exact `0.241.1` in the Docker install assertion; unavailable without Docker.
-- L2: `python scripts/public_launch_e2e.py droid --provider alicloud-express --application-controller`; `droid_version` must equal `0.241.1` through external CLI and SDK before provider evidence may be listed.
+- L2: `python scripts/public_launch_e2e.py droid --provider alicloud-express --application-controller --source ./droid --output droid-attempt-1.json`; `droid_version` must equal `0.241.1` through external CLI and SDK before provider evidence may be listed.
 - L3: `E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 E2E_REMOTE_SANDBOX=1` with the explicit approved compatible settings on a fresh cloud target. Actual SDK command, genuine positive-turn terminal JSON and exact fresh final response; existing source edit, new artifacts, byte-identical original tests, complete original and held-out checks with unpredictable post-return ACKs and independently confirmed owned project absence. Missing model keys/skipped native checks fail. Legacy Factory model controller remains separate and requires that account key.
 - L4: no other-provider run planned or claimed in this change.
 

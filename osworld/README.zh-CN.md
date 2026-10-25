@@ -6,7 +6,7 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
 OSWorld 固定源码 `b138d348256078fa634fc3b73567a7337c793e6b`（Apache-2.0）；Playwright 1.58.0 及对应 Chromium revision；PyAutoGUI 0.9.54、Pillow 11.3.0、Flask 3.1.2、NumPy 2.3.3、lxml 6.0.1、requests 2.32.5。Python 完整依赖图有[哈希锁文件](requirements.txt)。Debian 13 x86_64 关键桌面包固定版本，传递系统依赖仍由发行版仓库解析。见 [Dockerfile](Dockerfile)、[源码归属](upstream/source.json)与[设计](../docs/design/osworld.md)。
 

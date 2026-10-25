@@ -17,7 +17,7 @@ After the server is READY the sandbox can:
 
 Express slice: the CLI itself runs. Its nested Linux sandbox often does not. See Express feasibility.
 
-The legacy command `codex` remains as an alias of `codex_exec` with `prompt` and `model` only. Codex 0.162.1 rejects the old argv `codex -p <prompt> --model <model> --yolo --output-format json` (`--output-format` is an unexpected argument). `--full-auto` is also rejected. `--yolo` is a hidden alias of the bypass flag on `codex exec`; the template passes the documented long flag instead.
+Codex 0.162.1 rejects the old argv `codex -p <prompt> --model <model> --yolo --output-format json` (`--output-format` is an unexpected argument). `--full-auto` is also rejected. `--yolo` is a hidden alias of the bypass flag on `codex exec`; the template passes the documented long flag instead.
 
 ### apply-patch (separate template)
 
@@ -145,7 +145,7 @@ Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (`cn-ha
 Pins, in `codex/Dockerfile`:
 
 - `npm install -g @openai/codex@0.162.1` (probed with `npm view` on 2026-10-15; `codex --version` prints `codex-cli 0.162.1`).
-Install the exact published `agent-sandbox-server==0.4.0a2` distribution from PyPI, as declared in the Dockerfile.
+Install the exact published `agent-sandbox-server==0.4.0a6` distribution from PyPI, as declared in the Dockerfile.
 
 Also installed from apt, unpinned distro packages: `git`, `ripgrep`, `jq`, `ca-certificates`. System `bubblewrap` is not installed, so Codex keeps using the `bwrap` bundled under `codex-resources/` instead of a PATH binary that cannot create user namespaces.
 
@@ -184,9 +184,7 @@ Isolation for an Express run that had to bypass is the platform sandbox, not Cod
 ## Test plan
 
 - L0: `python3 scripts/run_local_e2e.py` (or this directory's `e2e_test.py` against `E2E_BASE_URL`). Expect `/health`, the six command names, HTTP 400 for a missing `prompt`, HTTP 500 `ValueError` for `sandbox=nope` and for `wire_api=chat`, a `codex_setup_check` object whose `bypass_flag` is `--dangerously-bypass-approvals-and-sandbox`, a `config.toml` that contains `wire_api = "responses"` and no key material, and an `AGENTS.md` write. `codex_version` is asserted when `codex` is on PATH and asserted as "not on PATH" when it is not. `E2E_RUN_LLM=0` skips the model case.
-- L1: `docker build` of this Dockerfile after substituting the base-image placeholder. The log shows `@openai/codex@0.162.1` and the python-sdk archive `61c43e0be65a1f57aa09186d578e7b399e48429b`.
-- L2: `python scripts/public_launch_e2e.py codex --provider alicloud-express --application-controller` on `alicloud-express`. Smoke is `codex_version` expecting `0.162.1`, then `codex_setup_check` (success, no exact body). Both `abx run` and `Sandbox.run`. Evidence only after both pass.
+- L1: `docker build` of this Dockerfile after substituting the base-image placeholder. The log shows `@openai/codex@0.162.1` and the server package version declared in the Dockerfile.
+- L2: `python scripts/public_launch_e2e.py codex --provider alicloud-express --application-controller --source ./codex --output codex-attempt-1.json` on `alicloud-express`. Smoke is `codex_version` expecting `0.162.1`, then `codex_setup_check` (success, no exact body). Call through both `abx run` and the Python SDK application client. Evidence only after both pass.
 - L3: only with a real authorized key and a Responses-compatible endpoint. The HTTP controller seeds an incorrect existing Fibonacci implementation and two original tests, requires the specific one-failure baseline, and asks the agent to fix the source without changing the original tests. Successful command events and the final marker, a nonempty report, exact acceptance artifact, independent held-out assertions, and reruns of both original and generated tests are required. Empty keys with `E2E_REQUIRE_LLM=1` fail. Independent verifier processes preload standard-library modules with Python `-I`, compile actual source bytes, catch premature exits, require fresh post-agent completion acknowledgements, and reject missing/skipped/expected-failing tests. This ordinary completion guard is not an OS security boundary. This test definition alone establishes no provider acceptance.
 - L4: not planned. No e2b, opensandbox, alicloud-container, or cubesandbox credentials will be used.
-
-Release readiness 2.0.1: align default and injected server SDK source to `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; preserve historical receipts and require new image/workflow acceptance.

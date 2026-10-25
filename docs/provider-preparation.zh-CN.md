@@ -6,13 +6,13 @@
 
 清单声明一个启动命令和 `provides` 中的全部服务。规划器根据启动与服务推导实际需要的 Provider 操作，作者无需声明工作流。Provider 成熟度与实际启动是否验证相互独立。
 
-源码准备由对应 adapter 构建、推送并按平台协议注册。CLI 在临时构建目录解析官方配方的 `<region>`/`<tag>`，通过 Docker 阶段准备固定版本服务端 wheel。应用指令、非 root USER 和源码文件不变；其他未解析占位符在构建前报错，自定义基础镜像使用显式构建方案。应用部署 hooks 仍只由应用部署操作执行。
+源码准备由对应 adapter 构建、推送并按平台协议注册。CLI 在临时构建目录解析官方配方的 `<region>`/`<tag>`，Dockerfile 直接安装固定的已发布服务端包。应用指令、非 root USER 和源码文件不变；其他未解析占位符在构建前报错，自定义基础镜像使用显式构建方案。应用部署 hooks 与沙箱启动分开，由对应的显式应用部署操作执行。
 
 ## 路径条件
 
 模板的 Python、命名服务和软件由镜像提供。应用 HTTP 路径不依赖统一解释器。普通 exec、模板服务和统一解释器必须分别声明和检查；缺少上下文或实时流支持时明确拒绝，不能忽略参数或降级 shell。
 
-E2B、Cube 和容器版使用平台托管引用，不能将 OCI image 当模板 ID。OpenSandbox 使用镜像及 execd，当前不承诺执行镜像原生 ENTRYPOINT。Python Provider 不进行源码准备，需显式准备的镜像或托管引用。
+E2B、Cube 和容器版使用平台托管引用，不能将 OCI image 当模板 ID。OpenSandbox 使用镜像及 execd，当前不承诺执行镜像原生 ENTRYPOINT。Python 统一入口 `launch_template(...) -> TemplateSession` 不构建 Registry 源码项目，调用方需传入已准备的平台镜像或托管引用。
 
 准备、配置、权限、网络和协议故障分别报告。平台凭据与模板应用凭据隔离，端点必须属于本次 sandbox 和 port；不自动重定向或匿名重试。
 

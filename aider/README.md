@@ -10,12 +10,12 @@ copies back selected results. It never auto-commits.
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 Alibaba FC base `v0.0.49`, its Python 3.13 server and Node 20 remain intact.
 Aider requires Python `>=3.10,<3.13`; a separate SHA256-verified official
 python-build-standalone **3.12.12 / 20260211** runs Aider in `/opt/aider`.
-The server uses a source-built wheel or the fixed SDK commit in the Dockerfile.
+
 No browser, Node upgrade or additional HTTP server is installed.
 
 ## Problem solved
@@ -145,8 +145,8 @@ early-exit and stale-cache false positives. Seven owned-resource cleanup checks
 and a separate strict official template-absence readback passed. Earlier evidence
 is preserved and predates this completion guard.
 
-The catalog remains experimental with `tested_on: []`: the canonical
-`scripts/express_e2e.py` → `abx template deploy` L2 wrapper has not passed.
+The catalog maintenance label remains experimental. These dated image/model
+results do not certify the current [source-launch path](../docs/public-launch-testing.md).
 Other providers remain unverified. See [design](../docs/design/aider.md).
 
 ## Secondary development

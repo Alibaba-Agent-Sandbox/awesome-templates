@@ -1,5 +1,5 @@
 name: opencode
-version: "2.0.4"
+version: "2.0.5"
 description: "OpenCode coding agent. Headless opencode run and optional opencode serve. Package opencode-ai@1.19.0."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0

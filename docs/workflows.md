@@ -8,7 +8,7 @@ abx --provider alicloud-express template launch Alibaba-Agent-Sandbox/awesome-te
 
 ## Current machine contract
 
-Source manifests and managed catalog entries use `spec_version: 5`; the catalog uses `schema_version: 2`. The source schema is [template-v5.schema.json](../spec/template-v5.schema.json). [Shared launch rules](../spec/contracts/launch-v1.json) are copied from the [Python contract owner](https://github.com/Alibaba-Agent-Sandbox/python-sdk/tree/main/contracts) with an exact source lock; synchronize them through `scripts/sync_launch_contracts.py`. Remove `workflow_contract_version`, `default_workflow` and `workflows` when migrating a version 4 manifest. Old runtime manifests fail with a migration error; launch does not silently select an old path. Upgrade CLI/SDK to a build supporting specification 5 before using these manifests; CLI 0.4.17 predates this format.
+Source manifests and managed catalog entries use `spec_version: 5`; the catalog uses `schema_version: 2`. The source schema is [template-v5.schema.json](../spec/template-v5.schema.json). [Shared launch rules](../spec/contracts/launch-v1.json) are copied from the [Python contract owner](https://github.com/Alibaba-Agent-Sandbox/python-sdk/tree/main/contracts) with an exact source lock; synchronize them through `scripts/sync_launch_contracts.py`.
 
 `provides` lists all exposed services, each with protocol, version, port and operations. `start_cmd` starts the template and `ready_cmd` checks readiness. The command registry remains in `commands.py`. There are no per-operation startup modes or user-written capability plans.
 

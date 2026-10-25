@@ -8,12 +8,11 @@ A small Python development sandbox that greets callers, executes inline Python o
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 - Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` supplies Python 3.13 and Node.js 20. `abx template deploy` resolves the defaults to `cn-hangzhou` and `v0.0.49`.
-- Server pinned to python-sdk commit `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; an SDK wheel injected during deployment takes precedence.
 - `pytest==8.4.2` is installed in the image for the `test` command.
-- Non-root runtime `user`, working directory `/home/user/app`, generation 2. The platform launches the YAML `start_cmd` and probes `ready_cmd`.
+- Non-root runtime `user`, working directory `/home/user/app`, generation 2. `abx template launch` executes the YAML `start_cmd` and probes `ready_cmd`.
 
 ## Problem solved
 
@@ -107,7 +106,7 @@ See [test results and scope](../docs/using-templates.md#evidence-and-providers).
 | --- | --- | --- |
 | alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
 
-This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+This historical run used the pinned e2cb27e server-source override matching the then-current image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
 
 ## Secondary development
 
@@ -119,7 +118,7 @@ From the repository root with the development server, `httpx`, pytest and PyYAML
 python3 scripts/check_template.py python-hello
 python3 -m pytest python-hello/test_command_errors.py -q
 python3 scripts/run_local_e2e.py
-python scripts/public_launch_e2e.py python-hello --provider alicloud-express --application-controller
+python scripts/public_launch_e2e.py python-hello --provider alicloud-express --application-controller --source ./python-hello --output python-hello-attempt-1.json
 ```
 
 The local runner starts the server with a real workspace and exercises file upload/download/list/delete, uploaded scripts, a passing pytest case and a deliberately failing pytest case. File failures fail acceptance instead of being skipped. The Express harness requires configured credentials plus Docker, writes evidence only after successful CLI/SDK smoke cases, and cleans up the sandbox/template it creates. An Express smoke pass alone does not run every local regression remotely.

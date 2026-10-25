@@ -14,7 +14,7 @@ See the complete [parameter table](../../crush/README.md#command-reference). Act
 
 ## How to build
 
-[Dockerfile](../../crush/Dockerfile), exact official assets/hash/length/source8b1824282eccc78cc62c188c245cf375230a18ce and actual binary version check. Retain upstream FSL-1.1-MIT/license/notices. Published server package 0.4.0a2, generation2 serve/healthcheck9000, chown workspace before USER user and8GiB du gate. No CMD/ENTRYPOINT.
+[Dockerfile](../../crush/Dockerfile), exact official assets/hash/length/source8b1824282eccc78cc62c188c245cf375230a18ce and actual binary version check. Retain upstream FSL-1.1-MIT/license/notices. Published server package 0.4.0a6, generation2 serve/healthcheck9000, chown workspace before USER user and8GiB du gate. No CMD/ENTRYPOINT.
 
 ## Express feasibility
 

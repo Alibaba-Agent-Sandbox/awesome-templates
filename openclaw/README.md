@@ -8,7 +8,7 @@ Runs an authenticated OpenClaw WebSocket gateway as an owned background process.
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 - Alibaba FC base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (deployment resolves the placeholders).
 - Node.js `24.16.0`, npm package `openclaw@2026.10.4`. The upstream package requires Node >=24.16.0; the base image Node 20 is insufficient.
@@ -64,7 +64,6 @@ Expected response for this check:
 | `gateway_status` | none | `{running,owned,url}` for this server's handle only; never implies health. |
 | `gateway_health` | `command_timeout: int=20` (1..120 seconds) | `{healthy:true,url}` only after `openclaw gateway health --json --timeout <milliseconds>` with the isolated config/token environment; otherwise raises. |
 | `gateway_stop` | `command_timeout: int=10` (1..120 seconds) | `{running:false,owned:false}`; sends TERM to the owned process group, then KILL on timeout with at most five additional seconds for reaping. Idempotent. |
-| `gateway` | `action: str="start"` (`start`, `status`, `health`, `stop`); `port: int=18789`; `bind: str="loopback"`; `command_timeout: int=60` | Compatibility alias to the corresponding command. Port/bind apply only to start; command_timeout applies to start/health/stop. It no longer forwards arbitrary main commands to the CLI. |
 
 Health probes allow a bounded cleanup margin after their execution deadline for group termination, reaping and pipe-reader shutdown; failed startup also cleans its owned gateway. The server owns a single gateway. No systemd/service installation is required. Abrupt server death loses the in-memory handle: this implementation deliberately will not adopt or kill an unknown process after restart. Destroying the sandbox cleans up its processes. State is temporary and removed by stop; configure persistent upstream agents separately rather than assuming this smoke runtime preserves sessions.
 
@@ -134,7 +133,7 @@ The changed workspace profile is verified in real generated steps. Prior receipt
 | --- | --- | --- |
 | alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
 
-This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+This historical run used the pinned e2cb27e server-source override matching the then-current image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
 
 ## Secondary development
 
@@ -146,7 +145,7 @@ From a repository checkout, `python scripts/run_steps_e2e.py openclaw` builds an
 
 ## Contributing
 
-Follow [CONTRIBUTING.md](../CONTRIBUTING.md) and [template spec](../docs/template-spec.md). Run `python3 scripts/check_template.py openclaw` and `python3 -m pytest openclaw/test_commands.py`. For local HTTP smoke, start `python3 openclaw/commands.py` and run `python3 openclaw/e2e_test.py` with matching `E2E_BASE_URL`, server auth and gateway token. A synthetic random gateway token suffices for a real local gateway test; a model key is unnecessary. Keep `tested_on: []` until provider evidence passes. Required image/cloud acceptance must remain explicit if unavailable.
+Follow [CONTRIBUTING.md](../CONTRIBUTING.md) and [template spec](../docs/template-spec.md). Run `python3 scripts/check_template.py openclaw` and `python3 -m pytest openclaw/test_commands.py`. For local HTTP smoke, start `python3 openclaw/commands.py` and run `python3 openclaw/e2e_test.py` with matching `E2E_BASE_URL`, server auth and gateway token. A synthetic random gateway token suffices for a real local gateway test; a model key is unnecessary. Require independent exact-input provider evidence before claiming provider acceptance. Required image/cloud acceptance must remain explicit if unavailable.
 
 ## Issues
 

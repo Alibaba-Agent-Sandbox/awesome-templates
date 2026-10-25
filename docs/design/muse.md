@@ -10,7 +10,7 @@ Actual original native version/help checks, read-only setup flags and bounded or
 [muse README command table](../../muse/README.md#command-reference): muse_version()->str; muse_native_check()->fourbools; muse_setup_check()->presence metadata; muse(prompt:required1..32768UTF8bytes,cwd:strdefaultempty/existing contained max4096bytes,command_timeout:integer1..600default300)->original final/validated counts/identities/exit0/relay stats. Tools can modify the caller project.
 
 ## How to build
-[Dockerfile](../../muse/Dockerfile), [original binary provenance](../../muse/upstream.json), exact official1.4.11-R6667.1 Linuxx64 artifact384809176bytes/SHA2566fda12a6a4f236528dafa707384cf6395fe859b1438ef77c7be26ed9d7976839. Root-owned original ELF, fixed server package 0.4.0a2. Alibaba generation2base/Python3.13, stdlib controls, no new dependencies; non-root user/WORKSPACE/home/user/app/port9000/no CMD or ENTRYPOINT. Native steps preserve15000wire budget and original hash verification; only this exact reviewed384.8MB file exceeds the otherwise unchanged300MiB archive ceiling.
+[Dockerfile](../../muse/Dockerfile), [original binary provenance](../../muse/upstream.json), exact official1.4.11-R6667.1 Linuxx64 artifact384809176bytes/SHA2566fda12a6a4f236528dafa707384cf6395fe859b1438ef77c7be26ed9d7976839. Root-owned original ELF, fixed server package 0.4.0a6. Alibaba generation2base/Python3.13, stdlib controls, no new dependencies; non-root user/WORKSPACE/home/user/app/port9000/no CMD or ENTRYPOINT. Native steps preserve15000wire budget and original hash verification; only this exact reviewed384.8MB file exceeds the otherwise unchanged300MiB archive ceiling.
 
 ## Express feasibility
 Feasible: slice

@@ -11,13 +11,11 @@ requires independent code, artifact and exact-session continuation checks.
 
 `agent-sandbox-server` listens on port 9000 and registers commands that run `opencode`. `opencode_run` executes one non-interactive `opencode run --format json` and returns the assistant text, sanitized JSON events, and the session id. `opencode_version` and `opencode_setup_check` check the pinned binary and `opencode.json` without calling a model.
 
-`opencode_serve_start` starts `opencode serve` on port 4096 bound to `0.0.0.0`. That process is OpenCode's own HTTP API (`GET /global/health`). Resolve it with `await sb.network.resolve(4096)` and preserve the returned gateway headers alongside OpenCode authentication. The platform `start_cmd` does not start it.
-
-`opencode` is the previous command name. It runs the same argv as `opencode_run` and returns the sanitized JSON-event stdout string.
+`opencode_serve_start` starts `opencode serve` on port 4096 bound to `0.0.0.0`. That process is OpenCode's own HTTP API (`GET /global/health`). Resolve it with `await sb.network.resolve(4096)` and preserve the returned gateway headers alongside OpenCode authentication. The template's `start_cmd` does not start this optional OpenCode service.
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 - Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template deploy` replaces `<region>` with `ALIBABA_CLOUD_REGION_ID` or `cn-hangzhou`, and `<tag>` with `ABX_BASE_IMAGE_TAG` or `v0.0.49`. Python 3.13 and Node.js 20 come from that image.
 - `opencode-ai@1.19.0` (npm `latest` on 2026-10-15). The package binary is `opencode`. Upstream is [sst/opencode](https://github.com/sst/opencode).
@@ -72,7 +70,6 @@ Expected response for this check:
 | Command | Parameters | Returns | Upstream |
 |---|---|---|---|
 | `opencode_run` | see the table below | object | `opencode run --pure --format json --auto ...` |
-| `opencode` | same as `opencode_run` | string (sanitized JSON events) | same argv as `opencode_run` |
 | `opencode_version` | none | `"1.19.0"` | `opencode --version` |
 | `opencode_setup_check` | none | `"ok"` | `opencode --version` plus a read of `opencode.json` |
 | `opencode_serve_start` | `port` integer, default `4096`; `hostname` string, default `0.0.0.0` | object | `opencode serve --pure --hostname --port` |
@@ -142,7 +139,7 @@ See [test results and scope](../docs/using-templates.md#evidence-and-providers).
 | --- | --- | --- |
 | alicloud-express | 2.0.1; actual SDK-created image, CLI/SDK commands,28strict real-model assertions and independent sandbox/template/registry cleanup | [2026-10-20](evidence/express-2026-10-20.json) · [model](evidence/model-image-2026-10-20T142001Z.json) |
 
-The exact-source CI image is independently verified before registration. The actual model edits existing source, creates a new artifact and passes unchanged original tests, fresh held-out assertions and exact-session continuation. The matching runtime also has [real platform-step basic acceptance](evidence/verification-steps-2026-10-19T184023Z.json), which does not itself claim model acceptance. The image actually injects server e2cb27e; the older standalone Docker fallback is a separate build path. See [current acceptance](../.agents/evidence/verify/2026-10-20-native-coding-sdk-acceptance.md) for provenance, limits and historical failures.
+The exact-source CI image is independently verified before registration. The actual model edits existing source, creates a new artifact and passes unchanged original tests, fresh held-out assertions and exact-session continuation. The matching runtime also has [real platform-step basic acceptance](evidence/verification-steps-2026-10-19T184023Z.json), which does not itself claim model acceptance. That historical image injected server e2cb27e; its then-existing standalone Docker fallback used a different pin. See the [historical acceptance](../.agents/evidence/verify/2026-10-20-native-coding-sdk-acceptance.md) for provenance, limits and historical failures.
 
 ## Historical verification
 
@@ -150,7 +147,7 @@ The exact-source CI image is independently verified before registration. The act
 | --- | --- | --- |
 | alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
 
-This run uses the pinned e2cb27e server-source override matching existing image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+This historical run used the pinned e2cb27e server-source override matching the then-current image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
 
 ## Secondary development
 

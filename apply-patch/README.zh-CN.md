@@ -6,7 +6,7 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
 阿里云 FC base v0.0.49，generation2，非 root user。`npm ci --ignore-scripts` 依据 [package-lock.json](package-lock.json) 的完整性值安装 @openai/codex0.162.1 和对应架构的官方原生包。版本检查后用 apply_patch argv0 调用同一个原生二进制。对应发布 tag 的源码提交为 [092d3acd](https://github.com/openai/codex/tree/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d)。本模板使用官方预编译包，不宣称本地重新编译该提交。
 

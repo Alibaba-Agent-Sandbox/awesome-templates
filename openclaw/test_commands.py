@@ -72,11 +72,6 @@ def test_invalid_args(args):
         commands.gateway_start(**args)
 
 
-def test_alias_rejects_unknown_action_without_cli():
-    with pytest.raises(ValueError, match="action must be"):
-        commands.gateway(action="__invalid__")
-
-
 def test_status_does_not_claim_health():
     assert commands.gateway_status() == {"running": False, "owned": False, "url": None}
 

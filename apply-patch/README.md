@@ -6,7 +6,7 @@ Runs the actual official Codex *** Begin Patch dialect: add, update, move and de
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 Alibaba FC base v0.0.49, generation2, non-root user. `npm ci --ignore-scripts` installs official @openai/codex0.162.1/native architecture packages using [lockfile integrity](package-lock.json). The validated native binary is dispatched by apply_patch argv0. The corresponding official release tag points to [092d3acd](https://github.com/openai/codex/tree/092d3acd6bec3e3a14bdc7e7a2810ab628ab759d). This uses official prebuilt packages; it does not claim a local rebuild from that source commit.
 

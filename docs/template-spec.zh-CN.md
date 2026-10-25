@@ -185,7 +185,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # 重的工具放在前面的一层（一条 RUN，钉死版本，pip --no-cache-dir，清掉 npm cache）。
 # commands.py 是最后一次 COPY，改命令不会重建那一层。
-RUN pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6"
 
 # 其他安装同样钉死：pip name==X.Y.Z，npm package@X.Y.Z。
 WORKDIR /home/user/app
@@ -199,7 +199,7 @@ EXPOSE 9000
 `RUN` 必须直接安装一个准确且实际已发布的版本，例如：
 
 ```dockerfile
-RUN pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6"
 ```
 
 不使用 Git 归档回退、注入 wheel 或独立的 `server-sdk.commit`。直接 Docker 构建和

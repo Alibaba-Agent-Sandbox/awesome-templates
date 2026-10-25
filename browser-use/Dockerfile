@@ -10,7 +10,7 @@ RUN python3 -c "import sys; assert sys.version_info[:2] == (3,13), 'reviewed Pyt
     && /opt/browser-use/bin/python -m pip check \
     && /opt/browser-use/bin/python -c "from importlib.metadata import version; assert version('browser-use') == '0.13.11'" \
     && rm /tmp/browser-use-requirements.lock
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6"
 ENV HOME=/home/user WORKSPACE=/home/user/app BROWSER_USE_PYTHON=/opt/browser-use/bin/python
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py worker.py process.py lifecycle.py .

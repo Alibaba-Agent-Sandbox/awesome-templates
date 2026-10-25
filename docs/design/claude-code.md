@@ -10,7 +10,7 @@ Original headless planning/Read/Edit/Write/Bash tool execution, bounded per-call
 Legacy claude/version signatures preserved. New claude_byok(prompt,cwd='',command_timeout300,allow_unsafe_tools=False) -> buffered native completion metadata/final text; timeout integer1..600, cwd existing/contained, prompt1..32768UTF8/noNUL. Native/check setup only fixed identity/help or presence/no values. [Complete contracts and constraints](../../claude-code/README.md#command-reference).
 
 ## How to build
-Alibaba generation2basev0.0.49/non-root; original npm2.0.76/SHA512 exact lockfile with npm ci --omit=optional --ignore-scripts; root-owned original cli.js verified SHA256 at first/stat-changed use. Base Node20 supports upstream Node>=18. Preserve upstream license/ripgrep notices. Server34e7e011... optional explicit pin and immutable fallback. No image cloud deployment claim from native steps.
+Alibaba generation2basev0.0.49/non-root; original npm2.0.76/SHA512 exact lockfile with npm ci --omit=optional --ignore-scripts; root-owned original cli.js verified SHA256 at first/stat-changed use. Base Node20 supports upstream Node>=18. Preserve upstream license/ripgrep notices. Published server package pinned in the Dockerfile. No image cloud deployment claim from native steps.
 
 ## Express feasibility
 Feasible: yes

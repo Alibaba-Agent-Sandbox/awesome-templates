@@ -41,7 +41,7 @@ port 9000 and generation 2 server commands. Official PyPI metadata for
 [python-build-standalone 20260211](https://github.com/astral-sh/python-build-standalone/releases/tag/20260211)
 3.12.12 archive is pinned by architecture-specific API asset SHA256 and extracted
 with safe tar handling. Aider installs in its own venv; server continues on base
-Python 3.13 using published server package 0.4.0a2. Node20 is unchanged
+Python 3.13 using published server package 0.4.0a6. Node20 is unchanged
 because Aider has no Node requirement. Installed licenses are preserved.
 
 Metadata-only Python 3.11 resolution found 108 distributions, all compatible wheels,
@@ -58,8 +58,7 @@ Limiting factor: upstream Python compatibility requires the separate3.12 runtime
 2 vCPU/2 GiB, native user, no Docker/KVM/extra capabilities and egress suffice for the
 selected-file CLI workflow. A model credential and compatible endpoint are
 required. Source-runtime verification does not establish a deployed template image.
-Catalog stays experimental and tested_on remains empty until actual named-template
-L2 acceptance. Server wheel source is fixed independently of Aider's environment.
+Current source-launch acceptance requires its own exact-input L2 receipt. Server package version is fixed independently of Aider's environment.
 
 ## Risks
 
@@ -111,14 +110,13 @@ Actual configured-image evidence now records official READY, exact command and
 56-module server provenance, SDK/HTTP/CLI configuration, real upstream guards,
 and qwen3.8-flash coding: 21 PASS / 0 FAIL / 0 SKIP with independent target tests
 and retrieved artifacts. See [the immutable run](../../aider/evidence/image-runtime-2026-10-16-configured.json).
-The first failed image run is retained. Canonical deploy-wrapper L2 remains
-pending, so catalog tested_on stays empty and the PR remains draft.
+The first failed image run is retained. Those dated image/model results do not substitute for current source-launch verification.
 
 ## Test plan
 
 L0: actual server HTTP registry/types/400/404/missing-configuration smoke and
 unit positive/negative guards. CLI absence is explicit SKIP, not acceptance.
-L1: actual Docker image CI must install fixed Python/Aider, non-root server wheel,
+L1: actual Docker image CI must install fixed Python/Aider, non-root server package,
 and execute real `aider_version`. L2: deployment READY plus SDK/CLI smoke is required
 before listing a verified provider. L3: qwen3.8-flash compatible route in a fresh
 owned source runtime; baseline three independent tests fail, real Aider changes

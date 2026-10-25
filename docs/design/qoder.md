@@ -28,7 +28,7 @@ Template1.1.1 explicitly owns /home/user/app as user:user before runtime USER. T
 
 [Dockerfile](../../qoder/Dockerfile) uses the Alibaba generation-2 base, non-root user,
 2048 MB and `/home/user/app`. Qoder CLI `@qoder-ai/qodercli@1.1.72`; platform Python 3.13 / Node.js 20; Agent Sandbox server.
-The Dockerfile installs published `agent-sandbox-server==0.4.0a2` directly.
+The Dockerfile installs published `agent-sandbox-server==0.4.0a6` directly.
 `start_cmd`: `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`.
 `ready_cmd`: `agent-sandbox-server healthcheck --port 9000`.
 No CMD or ENTRYPOINT.
@@ -51,10 +51,8 @@ Secrets are declared with empty values. Error/output paths redact known secret e
 
 - L0: `python3 scripts/check_template.py qoder`; `python3 -m pytest -q qoder/test_commands.py`; local HTTP `e2e_test.py`, model disabled.
 - L1: image build and pinned upstream version/dependency output; Docker is required.
-- L2: `python scripts/public_launch_e2e.py qoder --provider alicloud-express --application-controller` invokes declared no-key smoke through external CLI and SDK. Only passing runs become provider evidence.
+- L2: `python scripts/public_launch_e2e.py qoder --provider alicloud-express --application-controller --source ./qoder --output qoder-attempt-1.json` invokes declared no-key smoke through external CLI and SDK. Only passing runs become provider evidence.
 - L3: target diagnostics must report compatible credentials. Repair seeded `calculator.py`, preserve the seeded test, create REPORT.md and acceptance.txt with an exact ABX_E2E_OK marker, retrieve via remote files API, execute independent unittest and held-out tests. Required mode fails on missing credentials.
 - L4: no provider claim until a real run.
 
 Primary protocol/source reference: [Qoder](https://docs.qoder.com/cli/run-in-scripts).
-
-Release readiness 1.1.2: align default and injected server SDK source to `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; preserve historical receipts and require new image/workflow acceptance.

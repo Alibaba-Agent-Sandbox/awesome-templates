@@ -11,7 +11,7 @@ ENV LANG=C.UTF-8
 #   RUN apt-get update && apt-get install -y --no-install-recommends git=<version> \
 #       && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6"
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py .

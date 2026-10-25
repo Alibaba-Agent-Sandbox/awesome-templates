@@ -32,7 +32,7 @@ RUN /opt/aider-runtime/python/bin/python3.12 -m venv /opt/aider \
     && /opt/aider/bin/python -c 'import sys,importlib.metadata; assert sys.version_info[:3] == (3,12,12); assert importlib.metadata.version("aider-chat") == "0.86.2"' \
     && ln -s /opt/aider/bin/aider /usr/local/bin/aider
 
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6"
 
 ENV WORKSPACE=/home/user/app PYTHON_DOTENV_DISABLED=1 LITELLM_LOCAL_MODEL_COST_MAP=True
 WORKDIR /home/user/app

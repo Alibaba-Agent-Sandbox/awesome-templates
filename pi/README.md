@@ -6,7 +6,7 @@ Run the official [Pi coding CLI](https://github.com/earendil-works/pi) in Alibab
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 `@earendil-works/pi-coding-agent@1.3.0` (MIT), SHA256-verified Node.js 24.16.0, platform Python 3.13 and Agent Sandbox server. The committed package-lock freezes all 118 npm dependencies; `npm ci --ignore-scripts --omit=dev` installs them. Official fd 10.5.0 and ripgrep 15.2.0 musl archives are SHA256-verified. [Dockerfile](Dockerfile) · [template.yaml](template.yaml).
 
