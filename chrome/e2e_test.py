@@ -1,7 +1,7 @@
 """External SDK/native CDP/noVNC verification; never infer GUI from a fake PNG."""
 import asyncio,base64,hashlib,io,json,os,re,shlex,sys,time,uuid
 from pathlib import Path
-from urllib.parse import quote,urlsplit,urlunsplit
+from urllib.parse import quote
 import httpx
 
 # The host runner passes provider gateway authentication separately from app auth.
@@ -38,7 +38,7 @@ def target_code(client,code):
 
 
 async def real_desktop(base,client,headers):
-    from cdp import Page
+    from cdp import Page,endpoint_url
     from rfb import capture_websocket
     from PIL import Image
     ports=[9222,9223,5901,6080]
@@ -46,7 +46,7 @@ async def real_desktop(base,client,headers):
     screenshot=None;started=False
     cdp=os.environ.get('E2E_CHROME_CDP_URL','http://127.0.0.1:9222').rstrip('/')
     vnc=os.environ.get('E2E_CHROME_VNC_URL','http://127.0.0.1:6080').rstrip('/')
-    vnc_parts=urlsplit(vnc);ws=urlunsplit(('wss'if vnc_parts.scheme=='https'else'ws',vnc_parts.netloc,'/websockify','',''))
+    ws=endpoint_url(vnc,'/websockify',websocket=True)
     try:
         value=await sdk(base,'chrome_start');started=value.get('reused')is False
         record(started,'fixture starts a new owned session without adopting an existing browser')
@@ -55,8 +55,8 @@ async def real_desktop(base,client,headers):
         record(value.get('running')is True and value.get('headed')is True and value.get('browser_version')=='145.0.7632.6'and value.get('cdp')==9222 and value.get('vnc')==6080,'actual SDK starts headed native Chrome/CDP/noVNC')
         record(len(password)==8 and password.isascii(),'native VNC uses generated password authentication')
         print('NATIVE_CHROME_RESOURCE '+json.dumps({k:value.get(k)for k in ['browser_version','width','height','shm_bytes','memory_limit','cpu_quota','headed']},sort_keys=True),flush=True)
-        response=client.get(vnc+'/vnc.html');record(response.status_code==200 and'noVNC'in response.text,'actual upstream noVNC UI is served externally')
-        response=client.get(cdp+'/json/version');version=response.json()
+        response=client.get(endpoint_url(vnc,'/vnc.html'));record(response.status_code==200 and'noVNC'in response.text,'actual upstream noVNC UI is served externally')
+        response=client.get(endpoint_url(cdp,'/json/version'));version=response.json()
         record(response.status_code==200 and'145.0.7632.6'in version.get('Browser','')and'devtools/browser/'in version.get('webSocketDebuggerUrl',''),'forwarded native DevTools discovery and original version')
         marker='CHROME_E2E_'+uuid.uuid4().hex
         html='<!doctype html><html><head><title>'+marker+'</title></head><body style="margin:0;min-height:100vh;background:rgb(230,20,10)"><h1>'+marker+'</h1><button id="action" style="position:absolute;left:30px;top:180px;width:180px;height:70px" onclick="window.n=(window.n||0)+1;document.body.style.background=window.n==1?\'rgb(10,230,20)\':\'rgb(10,20,230)\';this.textContent=String(window.n)">0</button></body></html>'
