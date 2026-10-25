@@ -47,3 +47,9 @@ The one-time complete-snapshot reconciliation needed by the old export's incorre
 Maintained image acceptance now uses only `ProviderSandbox`, `application_client`, current CLI/host HTTP, and the shared launch startup. It no longer starts a sibling application on port 9010 or selects between SDK/CLI creation modes. Focused archive/managed/current-startup/controller regressions: 81 PASS. `scripts/test_spec_tools.py`: 58 PASS; `scripts/check_template.py --all`: 46 conformant/0 failures; `scripts/check_docs.py`: 222 documents/0 link failures. These are tooling checks, not a full prepared-image matrix pass.
 
 The final matrix requires the latest paired public server/client version and freshly built images, then a fresh public CLI install. Old image experiments are stopped rather than extended into a stale 45-entry acceptance run.
+
+## Current-main and published a2 tooling integration
+
+Normal merge of current main ecaacebd1582c033049ff9f32038e0249f80f82a retained both the public Express and controller-authentication records. The Chinese public launch guide uses only ABX_SERVER_TOKEN; application and provider gateway credentials remain separate. No old token aliases were restored.
+
+Current tooling validation with the actual official PyPI client/server 0.4.0a2: archive, current managed lifecycle, shared HTTP controllers and public launch regressions 68 PASS; provider missing-key-before-engine and unsupported-interpreter-before-transport boundaries 2 PASS. CI host dependencies now install public a2 and provider fixture 48f09103380657ad7e5ea97422e50156cb01e1dc, rather than incompatible old provider/API snapshots. Document links: 222 documents, zero failures. These are tooling and read-only boundary checks, not a new Express image/source matrix result. Runtime public pins, final image digest gate, archive proof field cleanup and the complete new-runtime matrix belong to dependent PR222.
