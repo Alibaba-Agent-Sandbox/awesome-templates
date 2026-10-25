@@ -8,8 +8,10 @@ import sys
 _PIN = re.compile(r'agent-sandbox-server==([0-9]+\.[0-9]+\.[0-9]+(?:[A-Za-z0-9.+-]*)?)')
 
 
-def server_version(source: Path) -> str:
-    path = source / 'Dockerfile'
+def server_version(source: Path, dockerfile: str = 'Dockerfile') -> str:
+    path = source / dockerfile
+    if not path.resolve().is_relative_to(source.resolve()):
+        raise ValueError('server package Dockerfile must stay inside the template')
     if path.is_symlink() or not path.is_file() or path.stat().st_size > 256 * 1024:
         raise ValueError('server package requires a regular bounded Dockerfile')
     text = '\n'.join(line for line in path.read_text().splitlines()

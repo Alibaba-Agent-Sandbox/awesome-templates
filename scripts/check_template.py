@@ -641,7 +641,13 @@ def check_directory(template_dir: Path) -> list[Violation]:
     if dockerfile.is_file():
         try:
             from server_package import server_version
-            server_version(template_dir)
+            version = server_version(template_dir)
+            profiles = data.get('build_profiles', {})
+            if isinstance(profiles, dict):
+                for profile, recipe in profiles.items():
+                    if isinstance(recipe, dict) and isinstance(recipe.get('dockerfile'), str):
+                        if server_version(template_dir, recipe['dockerfile']) != version:
+                            raise ValueError(f'build profile {profile} server package differs from the default recipe')
         except (ValueError, OSError) as exc:
             violations.append(Violation("server-package-pin", str(exc)))
 

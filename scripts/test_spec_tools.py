@@ -215,6 +215,23 @@ class CheckerTest(unittest.TestCase):
             path.write_text(path.read_text().replace('agent-sandbox-server==0.4.0a2', 'agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/' + 'a'*40 + '.tar.gz#subdirectory=server-sdk'))
             self.assertIn('server-package-pin', {item.code for item in check_template.check_directory(dest)})
 
+    def test_declared_profile_requires_same_published_server_pin(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp) / '_skeleton'
+            shutil.copytree(SKELETON, dest)
+            metadata = dest / 'template.yaml'
+            data = check_template.yaml.safe_load(metadata.read_text())
+            data['build_profiles'] = {'portable': {'dockerfile': 'Dockerfile.portable', 'context': '.'}}
+            metadata.write_text(check_template.yaml.safe_dump(data))
+            profile = dest / 'Dockerfile.portable'
+            original = (dest / 'Dockerfile').read_text()
+            profile.write_text(original)
+            self.assertEqual(check_template.check_directory(dest), [])
+            for pin in ['agent-sandbox-server', 'agent-sandbox-server==0.4.0a1',
+                        'agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/' + 'a'*40 + '.tar.gz#subdirectory=server-sdk']:
+                profile.write_text(original.replace('agent-sandbox-server==0.4.0a2', pin))
+                self.assertIn('server-package-pin', {v.code for v in check_template.check_directory(dest)})
+
     def test_hash_enforced_local_lock_requires_every_pin_and_hash(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             dest=Path(tmp)/"_skeleton";shutil.copytree(SKELETON,dest)

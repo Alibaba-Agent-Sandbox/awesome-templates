@@ -19,7 +19,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && npm install -g @openai/codex@0.162.1 \
     && npm cache clean --force
 
-# Server source matches the common CI wheel source in scripts/server_sdk_pin.py.
 # The PyPI name `agent-sandbox` is a different project, so the fallback installs
 RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
 

@@ -26,3 +26,7 @@ The same candidate e2e run 40202240853 failed two external-provider boundary tes
 ## Prepared-image final digest gate
 
 The adapted prepared-image consumer now reads the actual guest server package and requires it to equal the Dockerfile pin. Its final result additionally requires the after-runtime registry digest check to have completed. Previously an application PASS plus cleanup could set the final result PASS after the caught digest assertion; publication then rejected missing proof. Two real control-flow regressions now simulate unchanged/changed digests through the current consumer: changed digest returns FAIL, preserves successful application/cleanup scope and publishes no pass; unchanged digest passes. The combined archive/public-launch suite passes 47 tests.
+
+## Explicit portable profile audit correction
+
+Provider T4's real second (portable) run failed the guest a2 assertion. The initial directory-only audit missed python-hello/Dockerfile.portable, which still installed the old Git archive. Enumerating every declared build profile and all Dockerfile-named files found exactly one additional recipe (48 total including the skeleton). It now pins public a2 from the official index, and the dead codex source-helper comment is removed. Existing template checking now scans each declared profile and rejects missing/archive pins or package drift from the default recipe. A regression covers all three failures without weakening source/profile readiness gates. The earlier default-plus-proxy success is not a portable pass.
