@@ -3,13 +3,20 @@ import os
 import secrets
 import httpx
 
+# The host runner passes provider gateway authentication separately from app auth.
+import json as _e2e_json
+_GATEWAY_HEADERS = _e2e_json.loads(os.environ.get("E2E_GATEWAY_HEADERS_JSON", "{}"))
+if not isinstance(_GATEWAY_HEADERS, dict) or any(not isinstance(k, str) or not isinstance(v, str) for k, v in _GATEWAY_HEADERS.items()):
+    raise ValueError("E2E_GATEWAY_HEADERS_JSON must be an object of string headers")
+_APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKEN"]} if os.environ.get("ABX_SERVER_TOKEN") else {}
+
 
 def main():
     token=os.environ.get('E2E_TOKEN','')
     headers={'Authorization':'Bearer '+token} if token else {}
     base=os.environ.get('E2E_BASE_URL','http://localhost:9000')
     web=os.environ.get('E2E_CODE_SERVER_URL','http://127.0.0.1:8443')
-    with httpx.Client(base_url=base,headers=headers,timeout=180) as client:
+    with httpx.Client(base_url=base,headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS},timeout=180) as client:
         assert client.get('/health').status_code==200
         result=client.post('/commands/code_server_version',json={})
         assert result.status_code==200 and result.json()['result']=='4.141.0'
@@ -25,7 +32,7 @@ def main():
             result=client.post('/commands/code_server_status',json={})
             assert result.status_code==200 and result.json()['result']['running'] is True
             print('[PASS] owned IDE starts and persists across HTTP calls')
-            with httpx.Client(base_url=web,timeout=30,follow_redirects=False) as ui:
+            with httpx.Client(base_url=web,timeout=30,follow_redirects=False, headers=_GATEWAY_HEADERS) as ui:
                 response=ui.get('/')
                 assert response.status_code==302 and 'login' in response.headers.get('location','')
                 wrong=ui.post('/login',data={'password':'synthetic-wrong-password'})

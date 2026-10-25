@@ -16,10 +16,14 @@ on:
         required: true
         type: string
       templates:
-        description: all or comma-separated source template names
+        description: all, managed, or comma-separated source template names
         default: all
         required: true
         type: string
+      export_images:
+        description: Export successful owned OpenSandbox images for a separate verified backend run
+        default: false
+        type: boolean
       distribution:
         description: Published packages or reviewed candidate source
         type: choice
@@ -39,6 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
+      run_source: ${{ steps.matrix.outputs.run_source }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,6 +59,7 @@ jobs:
           PROVIDERS_REF: ${{ inputs.providers_ref }}
           REQUESTED_TEMPLATES: ${{ inputs.templates }}
           REQUESTED_PROVIDER: ${{ inputs.provider }}
+          REQUESTED_DISTRIBUTION: ${{ inputs.distribution }}
         run: |
           python - <<'PY'
           import json, os, re, sys
@@ -62,8 +68,13 @@ jobs:
           for key in ['CLI_REF', 'SDK_REF', 'PROVIDERS_REF']:
               if not re.fullmatch('[0-9a-f]{40}', os.environ[key]):
                   raise SystemExit(key + ' must be an exact reviewed commit')
+          if os.environ['REQUESTED_TEMPLATES'] == 'managed' and os.environ['REQUESTED_PROVIDER'] != 'opensandbox':
+              raise SystemExit('Managed native journey requires provider opensandbox')
+          if os.environ['REQUESTED_TEMPLATES'] == 'managed' and os.environ['REQUESTED_DISTRIBUTION'] != 'published':
+              raise SystemExit('Managed native journey requires published packages')
           available = source_names()
-          names = available if os.environ['REQUESTED_TEMPLATES'] == 'all' else os.environ['REQUESTED_TEMPLATES'].split(',')
+          managed = os.environ['REQUESTED_TEMPLATES'] == 'managed'
+          names = available if os.environ['REQUESTED_TEMPLATES'] == 'all' else (['python-hello'] if managed else os.environ['REQUESTED_TEMPLATES'].split(','))
           if not names or any(name not in available for name in names) or len(set(names)) != len(names):
               raise SystemExit('Select unique source template names from the catalog')
           selected = os.environ['REQUESTED_PROVIDER']
@@ -72,9 +83,11 @@ jobs:
           providers = ['opensandbox', 'alicloud-express'] if selected == 'both' else [selected]
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               output.write('matrix=' + json.dumps({'template': names, 'provider': providers}) + '\n')
+              output.write('run_source=' + ('false' if managed else 'true') + '\n')
           PY
   launch:
     needs: plan
+    if: needs.plan.outputs.run_source == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 100
     strategy:
@@ -137,6 +150,8 @@ jobs:
         run: |
           npm install -g --registry https://registry.npmjs.org "@agent-sandbox/cli@$PUBLIC_CLI_VERSION"
           python -m pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-client==$PUBLIC_SDK_VERSION" "agent-sandbox-server==$PUBLIC_SDK_VERSION" -r scripts/requirements-spec.txt
+          python -m pip install --index-url https://pypi.org/simple Pillow==11.3.0 pypdf==6.21.1
+          python -m pip install --require-hashes -r scripts/requirements-native-http.txt
           python -m pip check
           python - <<'PYVERSIONS'
           import importlib.metadata, json, os, subprocess
@@ -160,11 +175,13 @@ jobs:
         run: |
           bash .launch-fixtures/sdk/e2e/opensandbox/local-up.sh up
           docker run -d --name abx-public-launch-registry -p 5000:5000 -e REGISTRY_STORAGE_DELETE_ENABLED=true registry:2.8.3
-          abx provider install ./.launch-fixtures/providers/opensandbox --yes
-      - name: Launch unchanged candidate source and call its API from the host
+          abx provider install Alibaba-Agent-Sandbox/awesome-providers//opensandbox --ref "${{ inputs.providers_ref }}" --yes
+          abx provider doctor opensandbox
+      - name: Launch documented public source and call its API from the host
         env:
           TEMPLATE_NAME: ${{ matrix.template }}
           TARGET_PROVIDER: ${{ matrix.provider }}
+          EXPORT_IMAGES: ${{ inputs.export_images }}
           PUBLIC_LAUNCH_DISTRIBUTION: ${{ inputs.distribution }}
           PUBLIC_LAUNCH_TEMPLATES_REF: ${{ github.sha }}
           PUBLIC_LAUNCH_CLI_REF: ${{ inputs.cli_ref }}
@@ -178,7 +195,23 @@ jobs:
           ACR_NAMESPACE: ${{ matrix.provider == 'alicloud-express' && secrets.PUBLIC_LAUNCH_ACR_NAMESPACE || '' }}
           ALIBABA_CLOUD_REGION_ID: cn-hangzhou
         run: |
-          python scripts/public_launch_e2e.py "$TEMPLATE_NAME" --provider "$TARGET_PROVIDER" --source "./$TEMPLATE_NAME" --build-timeout 3600 --output "$RUNNER_TEMP/public-launch.json"
+          options=(--application-controller)
+          if [ "$PUBLIC_LAUNCH_DISTRIBUTION" = 'source' ]; then
+            options+=(--source "./$TEMPLATE_NAME")
+          fi
+          if [ "$EXPORT_IMAGES" = 'true' ] && [ "$TARGET_PROVIDER" = 'opensandbox' ]; then
+            options+=(--export-image-dir "$RUNNER_TEMP/export-image")
+          fi
+          python scripts/public_launch_e2e.py "$TEMPLATE_NAME" --provider "$TARGET_PROVIDER" --build-timeout 3600 --output "$RUNNER_TEMP/public-launch.json" "${options[@]}"
+      - name: Retain the exact successful public-launch image for one day
+        if: success() && inputs.export_images && matrix.provider == 'opensandbox'
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-${{ matrix.template }}-${{ github.sha }}
+          path: ${{ runner.temp }}/export-image/*
+          retention-days: 1
+          compression-level: 1
+          if-no-files-found: error
       - name: Stop only this disposable backend and registry
         if: always() && matrix.provider == 'opensandbox'
         run: |
@@ -195,5 +228,84 @@ jobs:
         with:
           name: public-launch-${{ matrix.provider }}-${{ matrix.template }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/public-launch.json
+          if-no-files-found: warn
+          retention-days: 14
+  native-managed:
+    needs: plan
+    if: inputs.templates == 'managed' && inputs.provider != 'alicloud-express'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      OSB_WORKDIR: /tmp/abx-public-managed-opensandbox
+      OSB_API_KEY: fixed-synthetic-opensandbox-key
+      OSB_WITH_EGRESS: '0'
+      OSB_WITH_CODE_INTERPRETER: '1'
+      OSB_EXECD_IMAGE: opensandbox/execd@sha256:cda2bc35409bbf57561599b316cafb899598f7dce671332e7ceda14eb1cfeded
+      ABX_OPENSANDBOX_BASE_URL: http://127.0.0.1:8080
+      ABX_OPENSANDBOX_API_KEY: fixed-synthetic-opensandbox-key
+      ABX_OPENSANDBOX_USE_SERVER_PROXY: 'false'
+      ABX_NO_KEYCHAIN: '1'
+      NO_COLOR: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Alibaba-Agent-Sandbox/python-sdk
+          ref: ${{ inputs.sdk_ref }}
+          path: .launch-fixtures/sdk
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Alibaba-Agent-Sandbox/agent-sandbox
+          ref: ${{ inputs.cli_ref }}
+          path: .launch-fixtures/cli
+          persist-credentials: false
+      - name: Resolve exact published CLI version
+        run: |
+          python - <<'PY'
+          import json,os,runpy
+          from pathlib import Path
+          version=json.loads(Path('.launch-fixtures/cli/package.json').read_text())['version']
+          sdk=runpy.run_path('.launch-fixtures/sdk/scripts/check_release.py')['release_version']()
+          with open(os.environ['GITHUB_ENV'],'a') as stream:
+              stream.write('PUBLIC_CLI_VERSION='+version+'\nPUBLIC_SDK_VERSION='+sdk+'\n')
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Fresh published CLI, paired Python packages and upstream interpreter SDK
+        run: |
+          python - <<'PY'
+          import os,re
+          assert re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+',os.environ['PUBLIC_CLI_VERSION'])
+          PY
+          npm install -g --registry https://registry.npmjs.org "@agent-sandbox/cli@$PUBLIC_CLI_VERSION"
+          python -m pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-client==$PUBLIC_SDK_VERSION" "agent-sandbox-server==$PUBLIC_SDK_VERSION" opensandbox-code-interpreter==1.1.1 -r scripts/requirements-spec.txt
+          python -m pip check
+          abx --version
+          abx provider install Alibaba-Agent-Sandbox/awesome-providers//opensandbox --ref "${{ inputs.providers_ref }}" --yes
+      - name: Start a dedicated original Docker-backed backend
+        run: |
+          bash .launch-fixtures/sdk/e2e/opensandbox/local-up.sh up
+          abx provider doctor opensandbox
+      - name: Native catalog launch and persistent interpreter business assertions
+        run: |
+          python scripts/public_managed_opensandbox.py --work "$RUNNER_TEMP/managed-owned" --output "$RUNNER_TEMP/managed-public.json"
+      - name: Stop only this disposable dedicated backend
+        if: always()
+        run: |
+          bash .launch-fixtures/sdk/e2e/opensandbox/local-up.sh down
+          test -z "$(docker ps -aq --filter name=sandbox-)"
+      - name: Preserve sanitized outcome including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: managed-opensandbox-public-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/managed-public.json
           if-no-files-found: warn
           retention-days: 14

@@ -12,6 +12,13 @@ import uuid
 
 import httpx
 
+# The host runner passes provider gateway authentication separately from app auth.
+import json as _e2e_json
+_GATEWAY_HEADERS = _e2e_json.loads(os.environ.get("E2E_GATEWAY_HEADERS_JSON", "{}"))
+if not isinstance(_GATEWAY_HEADERS, dict) or any(not isinstance(k, str) or not isinstance(v, str) for k, v in _GATEWAY_HEADERS.items()):
+    raise ValueError("E2E_GATEWAY_HEADERS_JSON must be an object of string headers")
+_APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKEN"]} if os.environ.get("ABX_SERVER_TOKEN") else {}
+
 BASE_URL = os.environ.get("E2E_BASE_URL", "http://127.0.0.1:9000").rstrip("/")
 BASE_DIR = os.environ.get("E2E_BASE_DIR", "/home/user").rstrip("/")
 TOKEN = os.environ.get("E2E_TOKEN", "")
@@ -175,7 +182,7 @@ def coding(client: httpx.Client, setup: dict | None = None) -> None:
 
 def main() -> int:
     headers = {"X-Access-Token": TOKEN} if TOKEN else {}
-    with httpx.Client(base_url=BASE_URL, headers=headers, timeout=60) as client:
+    with httpx.Client(base_url=BASE_URL, headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS}, timeout=60) as client:
         record(client.get("/health").status_code == 200, "health")
         response = client.get("/commands")
         entries = {c["name"]: c for c in response.json().get("commands", [])}

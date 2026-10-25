@@ -92,3 +92,82 @@ def test_actual_https_controller_retains_verification_with_configured_ca(tmp_pat
         server.shutdown()
         server.server_close()
         thread.join(timeout=5)
+
+
+def test_application_token_is_explicit_and_not_borrowed_from_operator(tmp_path, monkeypatch):
+    monkeypatch.setenv('E2E_TOKEN', 'unrelated-operator-token')
+    monkeypatch.setenv('ABX_SERVER_TOKEN', 'unrelated-server-token')
+    source = controller(tmp_path, 'example', "import os\nassert os.environ['E2E_TOKEN']=='owned-application-token'\nassert os.environ['ABX_SERVER_TOKEN']=='owned-application-token'\nprint('[PASS] explicit owned application token')\n")
+    environment = controller_environment(source, {9000: 'http://synthetic.invalid'}, {})
+    assert 'E2E_TOKEN' not in environment
+    proof = run_controller(source, {9000: 'http://synthetic.invalid'}, tmp_path, {}, token='owned-application-token')
+    assert proof['passed'] and proof['pass_count'] == 1
+
+
+@pytest.mark.parametrize('headers', [[], {'x': 1}, {'x': None}, {'': 'value'}, {'x': 'line\r\nvalue'}])
+def test_gateway_headers_reject_malformed_input_before_child_process(tmp_path, headers):
+    with pytest.raises(ValueError, match='object of string HTTP headers'):
+        controller_environment(tmp_path, {9000: 'http://synthetic.invalid'}, {}, gateway_headers=headers)
+
+
+def test_gateway_headers_and_application_bearer_remain_separate(tmp_path, monkeypatch):
+    monkeypatch.setenv('E2E_GATEWAY_HEADERS_JSON', '{"Unrelated":"operator-secret"}')
+    source=controller(tmp_path,'example', "import json,os\nassert json.loads(os.environ['E2E_GATEWAY_HEADERS_JSON'])=={'X-Access-Token':'owned-gateway'}\nassert os.environ['E2E_TOKEN']==os.environ['ABX_SERVER_TOKEN']==os.environ['E2E_SERVER_TOKEN']=='owned-application'\nprint('[PASS] gateway and application authentication are distinct')\n")
+    proof=run_controller(source,{9000:'http://synthetic.invalid'},tmp_path,{},token='owned-application',gateway_headers={'X-Access-Token':'owned-gateway'})
+    assert proof['passed']
+    assert 'owned-gateway' not in json.dumps(proof) and 'owned-application' not in json.dumps(proof)
+    with pytest.raises(ValueError,match='cannot overwrite'):
+        controller_environment(source,{9000:'http://synthetic.invalid'},{},token='owned-application',gateway_headers={'authorization':'gateway'})
+
+
+def test_standalone_controller_refuses_malformed_header_json_without_echoing_values(tmp_path):
+    import os,subprocess,sys
+    from pathlib import Path
+    script=Path(__file__).resolve().parents[1]/'python-hello/e2e_test.py'
+    for value in ['[]','{"private-synthetic-header": 7}']:
+        env={**os.environ,'E2E_GATEWAY_HEADERS_JSON':value}
+        result=subprocess.run([sys.executable,'-c','import runpy;runpy.run_path('+repr(str(script))+',run_name="standalone-import")'],env=env,text=True,capture_output=True)
+        assert result.returncode!=0 and 'must be an object of string headers' in result.stderr
+        assert 'private-synthetic-header' not in result.stdout+result.stderr
+
+
+def test_every_catalog_http_controller_compiles_before_cloud_execution():
+    from pathlib import Path
+    from public_launch_e2e import source_names
+    root=Path(__file__).resolve().parents[1]
+    for name in source_names():
+        script=root/name/'e2e_test.py'
+        compile(script.read_text(),name+'/e2e_test.py','exec')
+
+
+@pytest.mark.parametrize('name', ['cursor-agent','devin'])
+def test_explicit_owned_loopback_gateway_reaches_native_auth_fixture(name, monkeypatch):
+    import base64,runpy
+    from pathlib import Path
+    namespace=runpy.run_path(str(Path(__file__).resolve().parents[1]/name/'e2e_test.py'),run_name='controller-import')
+    observations=[]
+    def record(value,label):observations.append(value)
+    def refused(*args):raise RuntimeError('category=authentication_refused')
+    method=namespace['native_auth_check']
+    method.__globals__.update(record=record,native_sdk_command=refused)
+    class Response:
+        def __init__(self,status,data):self.status_code,self.data=status,data
+        def json(self):return self.data
+        def raise_for_status(self):assert self.status_code==200
+    class Client:
+        def __init__(self):self.calls=[]
+        def post(self,path,json):
+            self.calls.append(path)
+            if path=='/shell':return Response(200,{'exit_code':0,'stdout':'OWNED_AUTH_CLEAN\n'})
+            return Response(500,{'error':'category=authentication_refused'})
+        def get(self,*args,**kwargs):
+            self.calls.append('/files/download-stream')
+            return Response(200,{'content_base64':base64.b64encode(b'OWNED_AUTH_FIXTURE').decode()})
+    client=Client()
+    monkeypatch.setenv('E2E_REMOTE_SANDBOX','1')
+    method(client,'/owned-fixture','http://127.0.0.1:43210')
+    assert client.calls and observations and all(observations)
+    client.calls.clear();observations.clear()
+    monkeypatch.delenv('E2E_REMOTE_SANDBOX')
+    method(client,'/owned-fixture','http://127.0.0.1:43210')
+    assert not client.calls and observations==[False]

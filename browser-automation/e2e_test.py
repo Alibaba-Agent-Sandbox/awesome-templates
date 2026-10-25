@@ -12,6 +12,13 @@ from urllib.parse import quote
 
 import httpx
 
+# The host runner passes provider gateway authentication separately from app auth.
+import json as _e2e_json
+_GATEWAY_HEADERS = _e2e_json.loads(os.environ.get("E2E_GATEWAY_HEADERS_JSON", "{}"))
+if not isinstance(_GATEWAY_HEADERS, dict) or any(not isinstance(k, str) or not isinstance(v, str) for k, v in _GATEWAY_HEADERS.items()):
+    raise ValueError("E2E_GATEWAY_HEADERS_JSON must be an object of string headers")
+_APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKEN"]} if os.environ.get("ABX_SERVER_TOKEN") else {}
+
 BASE_URL = os.environ.get("E2E_BASE_URL", "http://localhost:9000").rstrip("/")
 WORKSPACE = os.environ.get("E2E_WORKSPACE", "/home/user/app")
 HTML = """<html><head><title>ABX_E2E_OK</title></head><body>
@@ -39,7 +46,7 @@ def check(name: str, condition: bool) -> None:
 def main() -> int:
     token = os.environ.get("E2E_TOKEN") or os.environ.get("ABX_SERVER_TOKEN", "")
     headers = {"Authorization": "Bearer " + token} if token else {}
-    with httpx.Client(base_url=BASE_URL, timeout=180, headers=headers) as client:
+    with httpx.Client(base_url=BASE_URL, timeout=180, headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS}) as client:
         check("server health", client.get("/health").status_code == 200)
         listed = client.get("/commands")
         names = {entry["name"] for entry in listed.json().get("commands", [])}
@@ -134,7 +141,7 @@ def main() -> int:
         def concurrent_browse(index: int) -> bool:
             title = f"isolated-{index}"
             response = httpx.post(BASE_URL + "/commands/browse", timeout=180,
-                json={"url": "data:text/html,<title>" + title + "</title><h1>ok</h1>", "action": "extract"})
+                json={"url": "data:text/html,<title>" + title + "</title><h1>ok</h1>", "action": "extract"}, headers={**_GATEWAY_HEADERS, **_APPLICATION_HEADERS})
             return response.status_code == 200 and response.json()["result"]["title"] == title
         with ThreadPoolExecutor(max_workers=2) as pool:
             check("concurrent requests have independent browsers", all(pool.map(concurrent_browse, range(2))))

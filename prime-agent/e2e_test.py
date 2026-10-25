@@ -15,6 +15,13 @@ import uuid
 from urllib.parse import urlsplit
 import httpx
 
+# The host runner passes provider gateway authentication separately from app auth.
+import json as _e2e_json
+_GATEWAY_HEADERS = _e2e_json.loads(os.environ.get("E2E_GATEWAY_HEADERS_JSON", "{}"))
+if not isinstance(_GATEWAY_HEADERS, dict) or any(not isinstance(k, str) or not isinstance(v, str) for k, v in _GATEWAY_HEADERS.items()):
+    raise ValueError("E2E_GATEWAY_HEADERS_JSON must be an object of string headers")
+_APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKEN"]} if os.environ.get("ABX_SERVER_TOKEN") else {}
+
 RESULTS=[]
 INVALID_REQUESTS=[{'prompt':''},{'prompt':'x','command_timeout':'bad'},{'prompt':'x','command_timeout':601},{'prompt':'x','cwd':'/outside-workspace'}]
 def record(ok,label):
@@ -51,7 +58,7 @@ def final_text(stdout):
 def native_sdk_command(base,parameters):
     from agent_sandbox.api.server_client import ServerClient
     async def run():
-        server=ServerClient(base,token=os.environ.get('E2E_SERVER_TOKEN') or None,timeout=660)
+        server=ServerClient(base,token=os.environ.get('E2E_SERVER_TOKEN') or None,timeout=660, headers=_GATEWAY_HEADERS)
         try:return await server.commands.run('prime_agent',timeout=660,**parameters)
         finally:await server.aclose()
     return asyncio.run(run())
@@ -119,7 +126,7 @@ def model_check(client,workspace,base):
 def main():
     base=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000').rstrip('/');workspace=os.environ.get('E2E_WORKSPACE','/home/user/app').rstrip('/')
     token=os.environ.get('E2E_SERVER_TOKEN','');headers={'Authorization':'Bearer '+token} if token else {}
-    with httpx.Client(base_url=base,headers=headers,timeout=90) as client:
+    with httpx.Client(base_url=base,headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS},timeout=90) as client:
         r=client.get('/health');record(r.status_code==200 and r.json().get('status')=='ok','HTTP health')
         r=client.get('/commands');names={x.get('name') for x in r.json().get('commands',[])};record(r.status_code==200 and {'prime_agent','prime_agent_version','prime_agent_kernel_check','prime_agent_setup_check'}.issubset(names),'named commands discovery')
         r=client.post('/commands/prime_agent_setup_check',json={});record(r.status_code==200 and r.json().get('result',{}).get('mode')=='original-native-prime-cpython-repl','read-only setup check')

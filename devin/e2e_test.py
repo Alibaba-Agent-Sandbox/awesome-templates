@@ -15,6 +15,13 @@ import uuid
 from urllib.parse import urlsplit
 import httpx
 
+# The host runner passes provider gateway authentication separately from app auth.
+import json as _e2e_json
+_GATEWAY_HEADERS = _e2e_json.loads(os.environ.get("E2E_GATEWAY_HEADERS_JSON", "{}"))
+if not isinstance(_GATEWAY_HEADERS, dict) or any(not isinstance(k, str) or not isinstance(v, str) for k, v in _GATEWAY_HEADERS.items()):
+    raise ValueError("E2E_GATEWAY_HEADERS_JSON must be an object of string headers")
+_APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKEN"]} if os.environ.get("ABX_SERVER_TOKEN") else {}
+
 RESULTS=[]
 INVALID_REQUESTS=[{'prompt':''},{'prompt':'x','command_timeout':'bad'},{'prompt':'x','command_timeout':601},{'prompt':'x','cwd':'/outside-workspace','allow_unsafe_tools':True},{'prompt':'x','command_timeout':True}]
 INVALID_REQUESTS=[{**value,'allow_unsafe_tools':True}for value in INVALID_REQUESTS]
@@ -32,7 +39,7 @@ def final_text(value):
 def native_sdk_command(base,parameters):
     from agent_sandbox.api.server_client import ServerClient
     async def run():
-        server=ServerClient(base,token=os.environ.get('E2E_SERVER_TOKEN') or None,timeout=760)
+        server=ServerClient(base,token=os.environ.get('E2E_SERVER_TOKEN') or None,timeout=760, headers=_GATEWAY_HEADERS)
         try:return await server.commands.run('devin',timeout=760,**parameters)
         finally:await server.aclose()
     return asyncio.run(run())
@@ -113,8 +120,8 @@ def safe_diagnostic(text):
     return value
 
 def native_auth_check(client,workspace,base):
-    if os.environ.get('E2E_REMOTE_SANDBOX')!='1'or local_target(base):
-        record(False,'original native authentication fixture requires an explicitly owned cloud target');return
+    if os.environ.get('E2E_REMOTE_SANDBOX')!='1':
+        record(False,'original native authentication fixture requires an explicitly owned sandbox target');return
     import uuid
     project=workspace+'/.devin-auth-'+uuid.uuid4().hex
     payload={'prompt':'Return OWNED_NATIVE_AUTH_CHECK without reading or changing files.','cwd':project,'command_timeout':40,'allow_unsafe_tools':True}
@@ -139,7 +146,7 @@ def native_auth_check(client,workspace,base):
 def main():
     base=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000').rstrip('/');workspace=os.environ.get('E2E_WORKSPACE',os.environ.get('E2E_BASE_DIR','/home/user/app')).rstrip('/')
     token=os.environ.get('E2E_SERVER_TOKEN','');headers={'Authorization':'Bearer '+token}if token else{}
-    with httpx.Client(base_url=base,headers=headers,timeout=180)as client:
+    with httpx.Client(base_url=base,headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS},timeout=180)as client:
         response=client.get('/health');record(response.status_code==200 and response.json().get('status')=='ok','HTTP health')
         response=client.get('/commands');names={x.get('name')for x in response.json().get('commands',[])};record({'devin','devin_version','devin_setup_check','devin_native_check'}<=names,'typed named commands discovery')
         response=client.post('/commands/devin_setup_check',json={});state=response.json().get('result',{});record(response.status_code==200 and state.get('mode')=='original-devin-native'and state.get('requires_unsafe_optin')is True,'read-only native configuration presence')
