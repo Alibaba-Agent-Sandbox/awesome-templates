@@ -8,7 +8,7 @@ separate check that does not establish image deployment acceptance.
 
 ## Installation
 
-Using the complete source and provider-managed template catalog requires CLI 0.5.4 or later. The examples below use CLI 0.5.4 and Python client 0.4.0a4; the Python package is a preview and is pinned explicitly. Node 22+ is recommended for terminal support.
+Install the current CLI 0.5.4. The examples below use CLI 0.5.4 and Python client 0.4.0a4; the Python package is a preview and is pinned explicitly. Node 22+ is recommended for terminal support.
 
 ```bash
 npm install -g @agent-sandbox/cli@0.5.4 --registry=https://registry.npmjs.org

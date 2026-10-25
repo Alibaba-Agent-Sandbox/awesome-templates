@@ -6,7 +6,7 @@
 
 ## 安装
 
-使用完整模板目录（包括源码和托管模板）需要 CLI 0.5.4 或更高版本。以下示例使用 CLI 0.5.4 和 Python client 0.4.0a4；Python 包仍为预览版，因此明确指定版本。需要终端能力时建议 Node 22+。
+安装当前 CLI 0.5.4。以下示例使用 CLI 0.5.4 和 Python client 0.4.0a4；Python 包仍为预览版，因此明确指定版本。需要终端能力时建议 Node 22+。
 
 ```bash
 npm install -g @agent-sandbox/cli@0.5.4 --registry=https://registry.npmjs.org

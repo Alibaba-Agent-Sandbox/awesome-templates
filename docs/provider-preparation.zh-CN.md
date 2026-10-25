@@ -12,7 +12,7 @@
 
 模板的 Python、命名服务和软件由镜像提供。应用 HTTP 路径不依赖统一解释器。普通 exec、模板服务和统一解释器必须分别声明和检查；缺少上下文或实时流支持时明确拒绝，不能忽略参数或降级 shell。
 
-E2B、Cube 和容器版使用平台托管引用，不能将 OCI image 当模板 ID。OpenSandbox 使用镜像及 execd，当前不承诺执行镜像原生 ENTRYPOINT。Python SDK 不构建源码项目，需显式准备的镜像或托管引用。
+E2B、Cube 和容器版使用平台托管引用，不能将 OCI image 当模板 ID。OpenSandbox 使用镜像及 execd，当前不承诺执行镜像原生 ENTRYPOINT。Python 统一入口 `launch_template(...) -> TemplateSession` 不构建 Registry 源码项目，调用方需传入已准备的平台镜像或托管引用。
 
 准备、配置、权限、网络和协议故障分别报告。平台凭据与模板应用凭据隔离，端点必须属于本次 sandbox 和 port；不自动重定向或匿名重试。
 

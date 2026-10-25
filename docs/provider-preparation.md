@@ -12,7 +12,7 @@ The selected adapter builds, pushes and registers source through its native prot
 
 Python, named services and software can come from the image. Application HTTP does not require a unified interpreter. Exec, template services and unified interpretation declare and check their own operations. Unsupported contexts and real-time streaming fail explicitly; parameters are never dropped or replaced with shell execution.
 
-E2B, Cube and container edition consume managed native references, not raw OCI image IDs. OpenSandbox consumes images and execd; it does not promise native Dockerfile ENTRYPOINT startup. The Python SDK does not build source projects; callers supply an explicitly prepared image or managed reference.
+E2B, Cube and container edition consume managed native references, not raw OCI image IDs. OpenSandbox consumes images and execd; it does not promise native Dockerfile ENTRYPOINT startup. The unified Python `launch_template(...) -> TemplateSession` entry point does not build Registry source projects; callers supply a previously prepared provider image or managed reference.
 
 Configuration, authorization, reachability and protocol failures are distinct. Platform and application credentials remain separate. Endpoints bind to the selected sandbox and port; no automatic redirects or anonymous retry.
 
