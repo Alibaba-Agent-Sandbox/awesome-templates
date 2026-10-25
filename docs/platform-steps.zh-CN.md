@@ -32,7 +32,7 @@ python scripts/prepare_steps.py python-hello --output /tmp/python-hello-steps
 输出目录必须是新目录。转换保留 RUN、ENV、WORKDIR、USER 的顺序及 heredoc／续行；
 仅传输明确的公开 COPY 输入，并核对哈希和文件模式。缺失、私有或越界输入在云端
 提交前失败。较大配方从不可变公开提交获取源码归档并核对全部字节；先公开准确提交，
-再执行云端构建。原 Dockerfile 直接从官方 PyPI 安装已发布 server 0.4.0a2，没有
+再执行云端构建。原 Dockerfile 直接从官方 PyPI 安装已发布 server 0.4.0a6，没有
 注入 wheel、Git 服务端回退或服务端源码选择器。
 
 默认基础镜像解析为 `cn-hangzhou`、`v0.0.49`。只有主动选择其他基础镜像时才设置

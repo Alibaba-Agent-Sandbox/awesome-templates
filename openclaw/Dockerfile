@@ -30,7 +30,7 @@ RUN node --version \
     && npm install -g openclaw@2026.10.4 \
     && openclaw --version \
     && npm cache clean --force
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6"
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py .
 RUN chown user:user /home/user/app

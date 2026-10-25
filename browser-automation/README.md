@@ -11,7 +11,7 @@ input values internally and returns only a count. It does not submit the form.
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 Alibaba runtime base (default `v0.0.49`, Python 3.13); Playwright `1.58.0` with
 its matching Chromium revision; pinned `agent-sandbox-server` archive in the

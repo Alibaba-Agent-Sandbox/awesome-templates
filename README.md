@@ -87,7 +87,7 @@ The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](do
 
 Provider-managed images belong to their own backend; they are separate from this repository's source Dockerfiles. Express `base`/`code-interpreter-v1` and the original OpenSandbox interpreter are documented in the [managed runtime catalog](#provider-managed-runtime-catalog).
 
-For automatic source preparation supported by the installed provider on a provider-capable CLI host, use `abx --provider <provider> template launch Alibaba-Agent-Sandbox/awesome-templates//<name> --yes`. The provider owns its native base/image build, registration and launch reference; template startup operations and provider configuration remain required. See the [CLI preparation/launch guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/v0.5.4/docs/en/guide/template-launch.md). An existing ID or source directory never converts between providers. OpenSandbox keepalive entrypoint configuration is explicit; the template start command starts its services.
+For automatic source preparation supported by the installed provider on a provider-capable CLI host, use `abx --provider <provider> template launch Alibaba-Agent-Sandbox/awesome-templates//<name> --yes`. The provider owns its native base/image build, registration and launch reference; template startup operations and provider configuration remain required. See the [CLI preparation/launch guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/v0.5.5/docs/en/guide/template-launch.md). An existing ID or source directory never converts between providers. OpenSandbox keepalive entrypoint configuration is explicit; the template start command starts its services.
 
 Catalog provider values are preparation prerequisites, not verification. See
 [provider-owned source preparation](docs/provider-preparation.md) ([中文](docs/provider-preparation.zh-CN.md));
@@ -205,11 +205,13 @@ Official terminal agent: [goose](goose/README.md) (experimental; [alicloud-expre
 | base | alicloud-express | [English](docs/managed/base/README.md) · [中文](docs/managed/base/README.zh-CN.md) | shell, files, historical SDK shell-fallback code (removed), CLI exec; owned cleanup |
 | code-interpreter-v1 | alicloud-express | [English](docs/managed/code-interpreter-v1/README.md) · [中文](docs/managed/code-interpreter-v1/README.zh-CN.md) | shell, files, historical SDK shell-fallback code (removed), CLI exec; owned cleanup |
 | desktop | e2b | [English](docs/managed/desktop/README.md) · [中文](docs/managed/desktop/README.zh-CN.md) | NOT_VERIFIED; no independent account key; actual SDK/protocol tests only |
-| opensandbox-code-interpreter | opensandbox | [English](docs/managed/opensandbox-code-interpreter/README.md) · [中文](docs/managed/opensandbox-code-interpreter/README.zh-CN.md) | Original Docker server + SDK shell/files + native interpreter/context/error checks24PASS; independent cleanup; project unified interpreter is not adapted |
+| opensandbox-code-interpreter | opensandbox | [English](docs/managed/opensandbox-code-interpreter/README.md) · [中文](docs/managed/opensandbox-code-interpreter/README.zh-CN.md) | [2026-10-21: 24 native checks passed](docs/managed/evidence/verification-opensandbox-code-interpreter-2026-10-21-native-docker.json), including upstream SDK contexts/errors and independent cleanup; project unified interpreter is not adapted |
 
 These provider-managed IDs are listed separately from buildable source templates.
 For the two Express entries, native interpreter service was HTTP404 in their recorded tests.
-The two external entries remain NOT_VERIFIED; no native interpreter or other-provider certification is claimed.
+E2B `desktop` remains unverified live because no independent E2B account key was available.
+
+OpenSandbox native sessions were verified separately against the original Docker server and `opensandbox/code-interpreter:v1.1.0`: the linked 2026-10-21 run used project Python packages 0.3.0 and fixed upstream/provider/CLI/SDK sources. The [2026-10-24 run](.agents/evidence/verify/2026-10-24-managed-native-pass.json) passed 29 checks with public Python packages 0.3.1a5 and digest-pinned release-1.1.1 execd, covering default exec and explicit-entrypoint upstream interpreter sessions. Both receipts record exact source/image inputs and independently confirmed cleanup. This verifies the upstream interpreter path; the project's unified `ProviderSandbox.run_code` remained unsupported (`E8004`). These dated results do not certify newer package releases or another provider.
 
 Official native Crush: [crush](crush/README.md) (experimental; [alicloud-express1.0.0 SDK image and model17](crush/evidence/express-2026-10-20.json)).
 [Development database template](dev-services/README.md) · experimental; [alicloud-express1.1.0 SDK image and HTTP6](dev-services/evidence/express-2026-10-20.json).

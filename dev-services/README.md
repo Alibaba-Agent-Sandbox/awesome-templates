@@ -8,7 +8,7 @@ Initialize a private workspace database directory, start both actual servers, ex
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 Alibaba base fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>, defaultv0.0.49. Debian postgresql-17/client/libpq5 fixed17.11-0+deb13u1; redis-server/tools fixed5:8.0.2-3+deb13u3. Remaining OS security libraries resolve from configured Debian repositories.  Generation2, USER user, /home/user/app, standard agent-sandbox-server serve/healthcheck; no CMD/ENTRYPOINT. Package default cluster/autostart disabled; no root runtime initdb.
 

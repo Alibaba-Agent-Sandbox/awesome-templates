@@ -8,7 +8,7 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a4`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
 阿里云基础镜像 fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>，默认v0.0.49；Debian PostgreSQL服务端/客户端/libpq5 固定17.11-0+deb13u1，Redis服务端/工具固定5:8.0.2-3+deb13u3。传递系统安全库由当前 Debian 源解析。generation2、USER user、/home/user/app，标准启动及健康命令，无 CMD/ENTRYPOINT。构建时关闭默认集群及自动启动。
 

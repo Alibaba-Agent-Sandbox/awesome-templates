@@ -8,7 +8,7 @@ Runs an authenticated OpenClaw WebSocket gateway as an owned background process.
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 - Alibaba FC base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (deployment resolves the placeholders).
 - Node.js `24.16.0`, npm package `openclaw@2026.10.4`. The upstream package requires Node >=24.16.0; the base image Node 20 is insufficient.

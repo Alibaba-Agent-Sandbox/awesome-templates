@@ -14,7 +14,7 @@ ENV LANG=C.UTF-8
 COPY install_runtime.py assets.json /tmp/code-server-build/
 RUN python3 /tmp/code-server-build/install_runtime.py --check-rootfs && rm -rf /tmp/code-server-build
 ENV PATH="/opt/code-server/current/bin:${PATH}" WORKSPACE=/home/user/app
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6"
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py .

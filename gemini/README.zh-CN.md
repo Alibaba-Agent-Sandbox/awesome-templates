@@ -6,7 +6,7 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a4`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
 阿里云generation2基础镜像v0.0.49/Linuxx64/Python3.13/Node20；官方npm0.64.0以SHA512锁文件校验，[upstream.json](upstream.json)固定原449文件/98597935字节各自SHA256。原压缩包20841287字节/SHA256891a794e55c8319b6b78f6f8f13d6b8b2782a4709dfd2fcabf3a1f63ae8365e6。npm ci --omit=optional --ignore-scripts排除可选交互PTY/密钥链组件和安装脚本；保留上游代码和声明。已发布服务端包，适配器/进程管理仅标准库。[Dockerfile](Dockerfile)、[设计](../docs/design/gemini.md)、[声明](UPSTREAM-NOTICE.md)。
 

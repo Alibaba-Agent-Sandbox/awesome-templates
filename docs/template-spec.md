@@ -201,7 +201,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Heavy tools first (one RUN, pinned versions, pip --no-cache-dir, npm cache cleaned).
 # commands.py is the last COPY so a command edit does not rebuild that layer.
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6"
 
 # Pin every other installer the same way: pip name==X.Y.Z, npm package@X.Y.Z.
 WORKDIR /home/user/app
@@ -215,7 +215,7 @@ EXPOSE 9000
 A `RUN` instruction must install one exact, actually published distribution, for example:
 
 ```dockerfile
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6"
 ```
 
 A comment does not count as an install. Git-archive and injected-wheel fallbacks are removed from current recipes. The image dependency belongs to the Dockerfile and is verified in the actual image; a host client version alone does not establish the guest server version.

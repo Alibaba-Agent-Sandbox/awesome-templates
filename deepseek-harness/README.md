@@ -6,7 +6,7 @@ Run a repository-owned coding agent using the official DeepSeek Chat Completions
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 Python 3.13; `httpx==0.28.1`; Agent Sandbox server. No third-party agent CLI.
 

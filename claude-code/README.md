@@ -6,7 +6,7 @@ Run unchanged official Claude Code2.0.76 headless planning and Read/Edit/Write/B
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 Alibaba generation2 basev0.0.49/Linuxx64/Python3.13/Node20; original npm package2.0.76 from its SHA512 integrity lock; exact original cli.js SHA256 in [upstream.json](upstream.json). `npm ci --omit=optional --ignore-scripts` excludes optional image codecs and package hooks. Original CLI, embedded tool code and bundled notices remain unchanged. Published server package, authored stdlib adapter/process ownership. [Dockerfile](Dockerfile), [license notice](UPSTREAM-NOTICE.md), [design](../docs/design/claude-code.md).
 

@@ -3,7 +3,7 @@ ENV LANG=C.UTF-8
 RUN python3 -c "import platform,sys; assert platform.machine()=='x86_64' and sys.version_info[:2]==(3,13)" && command -v bash && command -v git
 COPY upstream.json install_runtime.py /tmp/devin-original-installer/
 RUN python3 /tmp/devin-original-installer/install_runtime.py && rm -rf /tmp/devin-original-installer && ln -s /opt/devin/bin/devin /usr/local/bin/devin
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6"
 ENV HOME=/home/user WORKSPACE=/home/user/app
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py runtime.py process.py lifecycle.py upstream.json UPSTREAM-NOTICE.md ./

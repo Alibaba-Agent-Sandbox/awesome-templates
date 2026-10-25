@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Use published server 0.4.0a4 in all declared source recipes with minimal template patches. Correct stale Git/wheel runtime documentation, remove the four retired project command aliases, and update QM consumers to the reviewed current immutable Node SDK source. Preserve historical evidence and require fresh current-input image/provider acceptance. / 所有源码构建统一已发布 a4 服务端并最小增加模板版本，清理四个旧命令转发及过时运行时说明；QM 使用已审核的当前 Node SDK 源码，重新验证真实平台。
+- Use published server 0.4.0a6 in all declared source recipes with minimal template patches. Correct stale Git/wheel runtime documentation, remove the four retired project command aliases, and update QM consumers to the reviewed current immutable Node SDK source. Preserve historical evidence and require fresh current-input image/provider acceptance. / 所有源码构建统一已发布 a6 服务端并最小增加模板版本，清理四个旧命令转发及过时运行时说明；QM 使用已审核的当前 Node SDK 源码，重新验证真实平台。
 
 - Use one current launch consumer after native step preparation; remove old creation modes, duplicate recovery/HTTP harnesses and unused qualification audit. Fix idle monitoring of actual small ongoing controller logs and preserve owned process-group cleanup.
 

@@ -6,7 +6,7 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a4`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
 Alibaba generation2 base v0.0.49、SHA256 固定的 Node24.16.0、npm integrity 锁定的 Stagehand4.3.0/Zod4.4.3，以及明确披露、精确源码校验的连接参数补丁、Playwright1.58.0 Chromium1208/145.0.7632.6、Python3.13，已发布服务端包。以非 root user 运行，目录 `/home/user/app`、端口9000。[Dockerfile](Dockerfile)、[锁文件](package-lock.json)、[设计](../docs/design/stagehand.md)。
 

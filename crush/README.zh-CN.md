@@ -8,7 +8,7 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a4`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
 阿里云FC generation2 CPU、非root user、已发布服务端包。[assets.json](assets.json)固定官方GNU Linux x86_64/aarch64下载长度与SHA256，源码[8b1824282eccc78cc62c188c245cf375230a18ce](https://github.com/charmbracelet/crush/tree/8b1824282eccc78cc62c188c245cf375230a18ce)。arm64固定版本不等于已验证运行。
 

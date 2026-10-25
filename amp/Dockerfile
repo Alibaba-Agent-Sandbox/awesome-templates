@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && command -v amp
 
 # Keep source-built wheel injection compatible with standalone template contexts.
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6"
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py .

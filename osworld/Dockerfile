@@ -23,7 +23,7 @@ RUN /opt/osworld/bin/pip install --no-cache-dir "pip==25.2" "setuptools==80.9.0"
     && /opt/osworld/bin/python -m playwright install --with-deps chromium \
     && chmod -R a+rX /opt/osworld-browser
 
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6"
 
 WORKDIR /home/user/app
 COPY --chown=user:user upstream ./upstream

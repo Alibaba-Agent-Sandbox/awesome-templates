@@ -12,7 +12,7 @@ Agent Sandbox 里的 OpenCode（`sst/opencode`）。镜像安装 npm 包 `openco
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a4`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
 - 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`abx template deploy` 把 `<region>` 换成 `ALIBABA_CLOUD_REGION_ID` 或 `cn-hangzhou`，把 `<tag>` 换成 `ABX_BASE_IMAGE_TAG` 或 `v0.0.49`。Python 3.13 和 Node.js 20 来自该镜像。
 - `opencode-ai@1.19.0`（2026-10-15 的 npm `latest`）。包提供的命令名是 `opencode`。上游是 [sst/opencode](https://github.com/sst/opencode)。

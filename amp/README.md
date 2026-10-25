@@ -22,7 +22,7 @@ Amp does not accept a DashScope key, `ABX_LLM_API_KEY`, or an OpenAI-compatible 
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 - Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template deploy` replaces `<region>` with `ALIBABA_CLOUD_REGION_ID` or `cn-hangzhou`, and `<tag>` with `ABX_BASE_IMAGE_TAG` or `v0.0.49`.
 - Node.js 20 from that image, used only to run `npm`. The `amp` binary is a glibc ELF from the optional package `@ampcode/cli-linux-x64` at the same version.

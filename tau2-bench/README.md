@@ -12,7 +12,7 @@ judge are refused. A single task score does not measure the full benchmark.
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 Original MIT-licensed [source at the pinned revision](https://github.com/sierra-research/tau2-bench/tree/fc0055dc4e0a316c3f83133267fbd6faaa770992),
 Python 3.13, isolated hash-locked dependencies, LiteLLM1.81.11, and Agent Sandbox

@@ -8,7 +8,7 @@ Run the original Cursor Agent CLI in an owned disposable sandbox through typed n
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 Original official CLI2026.10.19-6bbf2c4 for Linux x86_64, including its original bundled Node/launcher/native modules. The unchanged183,733,394-byte archive has controller-measured SHA256 `cf80cc18d8b33bf33e762353977ca1868cfc45290c92c0ffdcef83bb8b37b44f`; this is not an upstream-published checksum. The460regular-file inventory totals585,886,062bytes. Python3.13 and the Alibaba generation2 base; published server package. See [original metadata](upstream.json), [notice](UPSTREAM-NOTICE.md) and [design](../docs/design/cursor-agent.md).
 

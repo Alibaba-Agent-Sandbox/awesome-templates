@@ -29,7 +29,7 @@ ENV PATH="/opt/node/current/bin:${PATH}"
 WORKDIR /opt/cline
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts --no-audit --no-fund     && python3 -c "import hashlib,pathlib; p=pathlib.Path('/opt/cline/node_modules/@cline/cli-linux-x64/bin/cline'); assert hashlib.file_digest(p.open('rb'),'sha256').hexdigest()=='1ff8841d17d4d83763134c193d414e4f7fcf2ef56af759e5ebbe96727fc2c8f7'"     && npm cache clean --force
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6"
 ENV HOME=/home/user WORKSPACE=/home/user/workspace
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py process.py lifecycle.py UPSTREAM-LICENSE.md ./

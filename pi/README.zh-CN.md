@@ -6,7 +6,7 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a4`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
 `@earendil-works/pi-coding-agent@1.3.0`（MIT）、校验 SHA256 的 Node.js 24.16.0、平台 Python 3.13 和 Agent Sandbox server。提交的 package-lock 冻结全部 118 个 npm 依赖，使用 `npm ci --ignore-scripts --omit=dev` 安装；fd 10.5.0 与 ripgrep 15.2.0 官方 musl 归档也校验 SHA256。[Dockerfile](Dockerfile) · [template.yaml](template.yaml)。
 

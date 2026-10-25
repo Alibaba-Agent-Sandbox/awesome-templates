@@ -8,7 +8,7 @@ CPU English image recognition with official Tesseract. See [中文说明](README
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 - Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`; deployment defaults are `cn-hangzhou` / `v0.0.49`.
 - Debian 13 Tesseract / libtesseract `5.5.0-1+b1`, English and orientation data `1:4.1.0-2`, Leptonica `1.84.1-4`. Other OS libraries resolve through the base's Debian repositories.

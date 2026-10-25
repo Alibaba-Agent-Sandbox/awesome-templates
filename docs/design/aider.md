@@ -41,7 +41,7 @@ port 9000 and generation 2 server commands. Official PyPI metadata for
 [python-build-standalone 20260211](https://github.com/astral-sh/python-build-standalone/releases/tag/20260211)
 3.12.12 archive is pinned by architecture-specific API asset SHA256 and extracted
 with safe tar handling. Aider installs in its own venv; server continues on base
-Python 3.13 using published server package 0.4.0a4. Node20 is unchanged
+Python 3.13 using published server package 0.4.0a6. Node20 is unchanged
 because Aider has no Node requirement. Installed licenses are preserved.
 
 Metadata-only Python 3.11 resolution found 108 distributions, all compatible wheels,

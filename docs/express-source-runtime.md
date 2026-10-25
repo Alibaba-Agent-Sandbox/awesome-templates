@@ -12,7 +12,7 @@ itself. Do not put credentials in command arguments, evidence, or shell tracing.
 ```bash
 python -m build --wheel --outdir /tmp/server-wheel ../python-sdk/server-sdk
 python scripts/express_runtime_e2e.py python-hello \
-  --server-wheel /tmp/server-wheel/agent_sandbox_server-0.4.0a4-py3-none-any.whl \
+  --server-wheel /tmp/server-wheel/agent_sandbox_server-0.4.0a6-py3-none-any.whl \
   --output-dir /tmp/python-hello-runtime \
   --sdk-source-commit SDK_COMMIT
 ```

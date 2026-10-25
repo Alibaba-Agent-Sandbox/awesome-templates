@@ -6,7 +6,7 @@ Runs the genuine Node.js `@browserbasehq/stagehand@4.3.0` SDK and its bundled br
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 Alibaba generation2 base v0.0.49, SHA256-pinned Node24.16.0, npm integrity-locked Stagehand4.3.0/Zod4.4.3 with the disclosed exact-source connect-parameter patch, Playwright1.58.0 Chromium1208/145.0.7632.6, Python3.13 and published server package. Runtime is non-root user; app `/home/user/app`, port9000. [Dockerfile](Dockerfile), [lockfile](package-lock.json), [design](../docs/design/stagehand.md).
 

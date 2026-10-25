@@ -6,7 +6,7 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a4`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
 阿里云generation2 basev0.0.49/Linuxx64/Python3.13；root所有的原版ELF384809176字节及官方SHA256，Python标准库代理/进程控制，已发布服务端包，无新增Python/Node依赖。[Dockerfile](Dockerfile)、[来源](upstream.json)、[上游声明](UPSTREAM-NOTICE.md)、[设计](../docs/design/muse.md)。模板源码许可证不重新授权原版上游文件。可将任务自有gzip缓存重新校验后流式上传私有OSS，避免在操作端另占384.8MB原始文件；目标端仍检查未修改的原版字节。
 

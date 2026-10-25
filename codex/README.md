@@ -12,7 +12,7 @@ The standalone `apply_patch` binary is a different template (issue #60). The Age
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 - Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template deploy` replaces `<region>` with `cn-hangzhou` (or `ALIBABA_CLOUD_REGION_ID`) and `<tag>` with `v0.0.49` (or `ABX_BASE_IMAGE_TAG`).
 - Node.js 20 and Python 3.13 from that image.

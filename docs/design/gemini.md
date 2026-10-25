@@ -10,7 +10,7 @@ Original tool/planning engine; bounded private per-call state and original funct
 Legacy gemini/version/setup unchanged. New gemini_byok(prompt,cwd='',command_timeout300,allow_unsafe_tools=False) -> buffered original final/identity/actual transport and tool counts; nonempty32768UTF8byte prompt/contained existing project/integer1..600/no bool. Native hash/help and BYOK presence-only setup checks. Only original seven text/file/shell tool schemas are exposed.
 
 ## How to build
-Alibaba generation2basev0.0.49/non-root, baseNode20/upstreamrequires>=20; original npm0.64.0 exact SHA512 lock/no optional interactive addons/no lifecycle scripts. Root-owned449files/98597935bytes SHA256 checked before native diagnostics/exec; preserve original Apache/bundled notices. Explicit server package 0.4.0a4. Runtime code independent of sibling templates.
+Alibaba generation2basev0.0.49/non-root, baseNode20/upstreamrequires>=20; original npm0.64.0 exact SHA512 lock/no optional interactive addons/no lifecycle scripts. Root-owned449files/98597935bytes SHA256 checked before native diagnostics/exec; preserve original Apache/bundled notices. Explicit server package 0.4.0a6. Runtime code independent of sibling templates.
 
 ## Express feasibility
 Feasible: yes

@@ -8,7 +8,7 @@ Runs actual DeepAgents0.7.25 with a local file/shell backend and explicit OpenAI
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
 Alibaba FC base, generation2/non-root, published server package. [requirements.lock](requirements.lock) fixes every resolved dependency and SHA256, including [DeepAgents0.7.25](https://pypi.org/project/deepagents/0.7.25/) and langchain-openai1.7.2. Generated from [requirements.in](requirements.in) using uv0.11.28 for Python3.13. Image pip verifies hashes and runs pip check. No remote E2B/OpenSandbox backend or model weights.
 

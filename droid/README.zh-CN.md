@@ -8,7 +8,7 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a4`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
 官方 npm `@factory/cli@0.241.1` 与 `@factory/cli-linux-x64@0.241.1`、完整 npm integrity [锁文件](package-lock.json)、未修改原生二进制 SHA256 `1f50e238df053573aec1dae7b90b19c8e5afca83ab13a790a00f53ba4e4b9ab1`、阿里云 FC 基础镜像、Python3.13及固定 published server package。禁用安装 hooks，直接执行固定原生路径，每次原生命令和构建均检查 SHA256。见[来源](upstream.json)、[上游声明](UPSTREAM-NOTICE.md)、[Dockerfile](Dockerfile)。上游标记为私有 `UNLICENSED`，仓库元数据不证明源码公开。非 root `user`、generation2、9000端口。
 
