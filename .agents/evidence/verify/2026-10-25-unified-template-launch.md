@@ -57,3 +57,15 @@ Final rerun after service-schema alignment and candidate installation documentat
 ## Managed catalog quick starts
 
 All four managed entries now show the same `template launch <catalog-name>` CLI entry, with provider selection and a finite sandbox lifetime. Their Python create/process examples remain available. The text explicitly requires the coordinated specification 5 CLI/catalog update and does not reclassify older create/exec evidence as new catalog-launch verification. Managed catalog and documentation checks both passed after this update.
+
+## Real OpenSandbox source-candidate pilot
+
+PASS: [GitHub run 40176791139](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/40176791139), tested template checkout `7c02f7f00f2100909d6cdd06748656bf1e397e02`, CLI `ea28f207c8a0016cf798f5a355e3c363c7c936f4`, Python SDK `ff073167f8993a5c580c78cccccd5779db1f5836`, provider catalog `ebfb1c1554a567585e337f2e68cb3d449d5414b1`. Distribution is **source candidates**, not npm/PyPI publication.
+
+- [python-hello receipt](2026-10-25-unified-template-launch/public-launch-opensandbox-python-hello-40176791139-1.json): `hello` and `run_script` returned expected results via CLI, Python and host HTTP.
+- [agents-cli receipt](2026-10-25-unified-template-launch/public-launch-opensandbox-agents-cli-40176791139-1.json): `agents_version` returned its expected result through the same three consumers.
+- Both passed actual source launch, negative service-token authentication, runtime source identity, SDK exec and file round trip. Nine named-command consumer calls passed in total.
+- Both independently confirmed sandbox and prepared-artifact absence; retained, uncertain and cleanup-failure counts are zero.
+- Downloaded sanitized receipts were checked against current manifest SHA-256 values. They retain the original tested source commit and installation provenance.
+
+This pilot does not establish real-model coding, PTY, native interpreter or other templates. The full 46-source OpenSandbox candidate run [40177005215](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/40177005215) targets checkout `1d2953e16eec96da6c9c8a0a631220e2933c2aaf` with the same consumer/provider commits and is pending; it is not yet a pass.
