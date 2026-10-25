@@ -8,11 +8,10 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a3`，由 Dockerfile 直接安装。
 
 - 阿里云 FC 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，部署工具解析占位符。
 - Node.js `24.16.0`，npm 包 `openclaw@2026.10.4`。该上游包要求 Node >=24.16.0，基础镜像的 Node 20 不满足要求。
-- server 固定为 python-sdk 提交 `35da216a300f1e2e84254a1cf4b4a7ea98681505`；部署时注入的 wheel 优先。
 - 非 root `user`，目录 `/home/user/app`，generation 2；HTTP server 9000，网关默认 18789。
 
 ## 解决的问题
@@ -65,7 +64,6 @@ print(await client.commands.run('gateway_status'))
 | `gateway_status` | 无 | `{running,owned,url}`，仅检查本 server 持有的进程，不代表健康。 |
 | `gateway_health` | `command_timeout: int=20`（1..120秒） | 以隔离配置及 token 环境执行 `openclaw gateway health --json --timeout <毫秒>`，认证成功返回 `{healthy:true,url}`，否则异常。 |
 | `gateway_stop` | `command_timeout: int=10`（1..120秒） | 对拥有的进程组先 TERM，超时 KILL，最多再等5秒回收。返回 `{running:false,owned:false}`，重复调用安全。 |
-| `gateway` | `action: str="start"`（start、status、health、stop）；`port: int=18789`；`bind: str="loopback"`；`command_timeout: int=60` | 兼容别名，返回对应命令结果。port/bind仅用于start；command_timeout用于start/health/stop。不再向上游透传任意主命令。 |
 
 健康探针在执行截止后还需要有界的组终止、进程回收及管道读取清理时间；启动失败也会清理自己创建的网关。一个 server 只拥有一个网关。不安装 systemd 服务。server 意外死亡后内存 handle 丢失；重启不会接管或误杀未知进程。销毁沙箱负责清理其进程。stop 删除临时状态；需要持久化会话时应独立设计上游 Agent 配置，不能假定此运行时保存会话。
 
@@ -126,7 +124,7 @@ Linux 下短生命周期健康检查 RPC 会持续读取输出，并在清理自
 | --- | --- | --- |
 | alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
 
-该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
+该历史记录采用 e2cb27e 服务端来源覆盖，与当时的镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
 
 ## 二次开发
 

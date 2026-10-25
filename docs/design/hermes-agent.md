@@ -31,7 +31,7 @@ Template1.1.1 explicitly owns /home/user/app as user:user before runtime USER. T
 
 [Dockerfile](../../hermes-agent/Dockerfile) uses the Alibaba generation-2 base, non-root user,
 2048 MB and `/home/user/app`. NousResearch Hermes Agent v0.22.1, commit `297552a9d646119871391d202509822cd86330df`; private Python 3.14.6; `uv==0.12.3`; upstream frozen `uv.lock`; platform Agent Sandbox server.
-The Dockerfile installs published `agent-sandbox-server==0.4.0a2` directly.
+The Dockerfile installs published `agent-sandbox-server==0.4.0a3` directly.
 `start_cmd`: `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`.
 `ready_cmd`: `agent-sandbox-server healthcheck --port 9000`.
 No CMD or ENTRYPOINT.
@@ -79,5 +79,3 @@ Primary protocol/source reference: [Hermes Agent](https://github.com/NousResearc
 The current coding controller imports trusted standard-library code under `python3 -I`, compiles the actual calculator and original-test source bytes, and requires exactly all three original tests to succeed without skips, expected failures or unexpected successes. Each test/held-out process must return a fresh completion acknowledgment generated after the model response; it is never included in the model prompt. Premature `SystemExit`, `os._exit(0)`, a static `INDEPENDENT_OK` string and stale bytecode cannot supply that acknowledgment. This protects ordinary acceptance against premature exits; it is not a security boundary against hostile Python with the same OS authority. Historical model runs retain their original controller hashes and do not prove this new gate; record a separate actual model run at the new controller revision on the reviewed image. Canonical deployment/provider qualification remains a separate required gate.
 
 Current-version acceptance on 2026-10-20: version 1.1.1 genuine image READY/CLI/SDK and 17 strict real-model assertions (qwen3.8-flash, OpenAI-compatible), source edit/new artifact/unchanged original tests/independent held-out completion. Independently verified sandbox/template/registry cleanup. Historical pending statements describe earlier checkpoints; see the current [Verified table](../../hermes-agent/README.md#verified).
-
-Release readiness 1.1.2: align default and injected server SDK source to `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; preserve historical receipts and require new image/workflow acceptance.

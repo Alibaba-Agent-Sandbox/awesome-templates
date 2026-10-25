@@ -1,5 +1,5 @@
 name: goose
-version: "1.0.1"
+version: "1.0.2"
 description: "Official Goose1.54.0 CLI with private compatible-provider config and explicit developer tools."
 author: alibaba-agent-sandbox
 license: Apache-2.0

@@ -667,11 +667,5 @@ def codex_exec(
     }
 
 
-@command("codex", description="Compatibility alias of codex_exec (prompt and model only).")
-def codex(prompt: str, model: str = "") -> dict:
-    """The legacy ``codex -p`` argv is not accepted by Codex 0.162.1."""
-    return codex_exec(prompt=prompt, model=model)
-
-
 if __name__ == "__main__":
     start(int(os.environ.get("ABX_SERVER_PORT", "9000")))

@@ -8,9 +8,9 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a3`，由 Dockerfile 直接安装。
 
-官方 npm `@factory/cli@0.241.1` 与 `@factory/cli-linux-x64@0.241.1`、完整 npm integrity [锁文件](package-lock.json)、未修改原生二进制 SHA256 `1f50e238df053573aec1dae7b90b19c8e5afca83ab13a790a00f53ba4e4b9ab1`、阿里云 FC 基础镜像、Python3.13及固定 servere2cb27e。禁用安装 hooks，直接执行固定原生路径，每次原生命令和构建均检查 SHA256。见[来源](upstream.json)、[上游声明](UPSTREAM-NOTICE.md)、[Dockerfile](Dockerfile)。上游标记为私有 `UNLICENSED`，仓库元数据不证明源码公开。非 root `user`、generation2、9000端口。
+官方 npm `@factory/cli@0.241.1` 与 `@factory/cli-linux-x64@0.241.1`、完整 npm integrity [锁文件](package-lock.json)、未修改原生二进制 SHA256 `1f50e238df053573aec1dae7b90b19c8e5afca83ab13a790a00f53ba4e4b9ab1`、阿里云 FC 基础镜像、Python3.13及固定 published server package。禁用安装 hooks，直接执行固定原生路径，每次原生命令和构建均检查 SHA256。见[来源](upstream.json)、[上游声明](UPSTREAM-NOTICE.md)、[Dockerfile](Dockerfile)。上游标记为私有 `UNLICENSED`，仓库元数据不证明源码公开。非 root `user`、generation2、9000端口。
 
 ## 解决的问题
 
@@ -98,11 +98,11 @@ Factory 凭据在 [Factory API 密钥设置](https://app.factory.ai/settings/api
 | --- | --- | --- |
 | alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
 
-该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
+该历史记录采用 e2cb27e 服务端来源覆盖，与当时的镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
 
 ## 二次开发
 
-保留阿里云基础镜像、精确 CLI/server 版本和非 root 用户。通过 `@command` 扩展 [commands.py](commands.py)，直接传 argv，保留密钥检查、脱敏和超时清理。使用 BuildKit 构建，部署可注入 server wheel。运行：
+保留阿里云基础镜像、精确 CLI/server 版本和非 root 用户。通过 `@command` 扩展 [commands.py](commands.py)，直接传 argv，保留密钥检查、脱敏和超时清理。使用 Dockerfile 中固定的已发布服务端包构建。运行：
 
 ```bash
 python3 -m pytest -q droid/test_commands.py droid/test_e2e_protocol.py droid/test_byok.py droid/test_model_controller.py

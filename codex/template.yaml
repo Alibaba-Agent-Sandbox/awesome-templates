@@ -1,5 +1,5 @@
 name: codex
-version: "2.0.2"
+version: "2.0.3"
 description: "OpenAI Codex CLI (@openai/codex@0.162.1) non-interactive exec with JSON events and an OpenAI-compatible config."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0

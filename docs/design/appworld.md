@@ -14,7 +14,7 @@ Original engine/API/SQLite/evaluator plus explicitly authored compatible-model A
 
 ## How to build
 
-[Dockerfile](../../appworld/Dockerfile): Alibaba generation2v0.0.49/Python3.13/Linuxx64, isolated full SHA256 Python lock and pip check. Original published wheel0.1.3.post1 corresponds to public tag66ad8099e12188ece0d3fe45e661dbc01880813b, not a reproducible-build claim. Original encrypted package bundles are SHA checked. Official encrypted data34280074bytes/SHA256fd9f9608c2ec71ed0ac25c3633a738b9129a318a129e31230425b9188e508250 is controller-measured, not upstream-published. No protected unpack during public image build. Runtime copies the package and invokes original install/unpack only in its private HOME. server package 0.4.0a2, non-root/9000,8GiB rootfs guard/noCMD/ENTRYPOINT. Exact S3 object transport remains hash-bound; arbitrary S3 paths are rejected.
+[Dockerfile](../../appworld/Dockerfile): Alibaba generation2v0.0.49/Python3.13/Linuxx64, isolated full SHA256 Python lock and pip check. Original published wheel0.1.3.post1 corresponds to public tag66ad8099e12188ece0d3fe45e661dbc01880813b, not a reproducible-build claim. Original encrypted package bundles are SHA checked. Official encrypted data34280074bytes/SHA256fd9f9608c2ec71ed0ac25c3633a738b9129a318a129e31230425b9188e508250 is controller-measured, not upstream-published. No protected unpack during public image build. Runtime copies the package and invokes original install/unpack only in its private HOME. server package 0.4.0a3, non-root/9000,8GiB rootfs guard/noCMD/ENTRYPOINT. Exact S3 object transport remains hash-bound; arbitrary S3 paths are rejected.
 
 
 

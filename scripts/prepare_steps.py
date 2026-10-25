@@ -119,7 +119,7 @@ def parallel_assets(source: Path) -> dict:
         expected = {
             "node": ("https://nodejs.org/dist/v24.16.0/node-v24.16.0-linux-x64.tar.gz", 57023429, "2faf6a387e9b62b888e21c54f01249fb27537ffecf1842f29f4c919d0a59a0ff"),
             "qm": ("https://codeload.github.com/yc-software/qm/tar.gz/deef9b8b1e2b85bd4166dd833604bb31bcb8e255", 10625243, "40fb0d69319753a1cfab2dc8a1e8574d206e92589d26b264e768e94fa9109b4e"),
-            "agent-sandbox-node-sdk": ("https://codeload.github.com/Alibaba-Agent-Sandbox/nodejs-sdk/tar.gz/90b5187dca84fca78d75d3045896482540641c72", 27746, "6b51e849090656de448812dbc5b08bb0a7ac0a981241739e116597cd8383cfd6"),
+            "agent-sandbox-node-sdk": ("https://codeload.github.com/Alibaba-Agent-Sandbox/nodejs-sdk/tar.gz/63d7cd8ece221b9f968eef51eeb932ea334c90d3", 42302, "6fe5ad0e27ca024eed2c2db29e6a2ecf310336505423de6802719baa3137b598"),
         }
         for name, identity in expected.items():
             item = metadata[name]
@@ -128,7 +128,7 @@ def parallel_assets(source: Path) -> dict:
         if (metadata["node"]["version"] != "24.16.0" or metadata["node"]["binary_size"] != 123438592
                 or metadata["node"]["binary_sha256"] != "b2959781cc5a74c357ffa02367efa8a0330cbb1c9cb347732fdfaaaca381cbcd"
                 or metadata["qm"]["source_commit"] != "deef9b8b1e2b85bd4166dd833604bb31bcb8e255"
-                or metadata["agent-sandbox-node-sdk"]["source_commit"] != "90b5187dca84fca78d75d3045896482540641c72"):
+                or metadata["agent-sandbox-node-sdk"]["source_commit"] != "63d7cd8ece221b9f968eef51eeb932ea334c90d3"):
             raise ValueError("unreviewed original QM/SDK/Node identity")
         return {"x86_64": [{key: metadata[name][key] for key in ["url", "size", "sha256"]} for name in expected]}
     if source.name == "prime-agent":
@@ -225,7 +225,7 @@ def _copy(source: Path, value: str, workdir: str, source_commit: str | None = No
     hashes = {}
     for item in sources:
         if any(char in item for char in "*?["):
-            raise ValueError("COPY globs are unsupported except the injected server wheel")
+            raise ValueError("COPY globs are unsupported")
         path = source / item
         if not path.exists() or path.is_symlink() or not path.resolve().is_relative_to(source.resolve()):
             raise ValueError("COPY input is missing, symlinked or outside the template")
@@ -388,8 +388,6 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
                 raise ValueError("only the single-stage catalog Alibaba base profile is supported")
             seen_from = True
         elif kind == "COPY":
-            if value == "*.whl /tmp/":
-                continue  # Local source-wheel injection has no remote COPY context.
             command, hashes = _copy(source, value, workdir, None if _inline else source_commit)
             copied.update(hashes)
             steps.append(run_step(command))

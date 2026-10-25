@@ -24,8 +24,6 @@ parameter/default/type/return contract, mirrored in the Chinese README.
 JSON `ok:true` counts as health. `gateway_status()` reports `{running,owned,url}`
 from a Popen handle. `gateway_stop(command_timeout:int=10)` terminates and reaps the owned
 process group. All parameters are optional; timeouts must be 1..120 seconds.
-`gateway(action:str="start", port:int=18789, bind:str="loopback", command_timeout:int=60)`
-preserves the old command name with an explicit bounded action enum.
 
 ## How to build
 
@@ -33,9 +31,8 @@ Template2.0.1 explicitly owns /home/user/app as user:user before runtime USER. T
 
 [Dockerfile](../../openclaw/Dockerfile) uses the Alibaba FC base, installs pinned
 Node 24.16.0 from the official architecture-specific tarball with embedded
-SHA256 verification (x64/arm64), and OpenClaw 2026.10.4, cleans npm cache, then installs a deployment
-wheel or the server archive pinned to python-sdk commit
-`35da216a300f1e2e84254a1cf4b4a7ea98681505`. Workdir is `/home/user/app`; runtime
+SHA256 verification (x64/arm64), and OpenClaw 2026.10.4, cleans npm cache, then installs the published server
+package pinned in the Dockerfile. Workdir is `/home/user/app`; runtime
 is `USER user`; no CMD or ENTRYPOINT. The package metadata requires Node
 `>=24.16.0 <25 || >=26.1.0`; Node 20/22 from older images is insufficient.
 The platform starts `agent-sandbox-server serve --port 9000 --commands
@@ -98,5 +95,3 @@ Work tracks [Issue #20](https://github.com/Alibaba-Agent-Sandbox/awesome-templat
 Actual2.0.1 native authenticated gateway start/RPC and externally forwarded healthz pass, but forwarded readyz returns403 under the pinned upstream's proxy-attribution policy. Add only explicit operator OPENCLAW_TRUSTED_PROXIES IPs/CIDRs to the owned private config. Refuse invalid/empty/whole-Internet/multicast entries; cap16addresses/2048bytes and canonicalize duplicates. Never infer trust from X-Forwarded-For or introduce universal trust. Defaults and token authentication remain. Current2.1native steps and exact CI image now pass actual SDK auth lifecycle, external healthz/readyz and independent owned process/state/sandbox/template/registry cleanup; see the [final record](../../.agents/evidence/verify/2026-10-20-openclaw-native-sdk-final.md). Old2.0.1receipts stay historical.
 
 The borrowed-sandbox SDK controller owns an ephemeral nonce probe on9012, then explicitly configures its own9010server with that observed kernel peer's exact address for testing. Native gateway runs on18789 with token auth; SDK lifecycle, externally forwarded liveness/readiness and independent listener/state cleanup are required. The probe shuts itself down naturally; the caller retains sandbox ownership. No agent/model/channel claim is added. Source/controller tests and actual1:1 image/step proof are separate.
-
-Release readiness 2.1.1: align default and injected server SDK source to `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; preserve historical receipts and require new image/workflow acceptance.

@@ -6,9 +6,9 @@ Run the unchanged official Meta Muse Code1.4.11-R6667.1 native headless agent, o
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a3`, installed directly by the Dockerfile.
 
-Alibaba generation2 basev0.0.49/Linuxx64/Python3.13, root-owned original native ELF384809176bytes with its published SHA256, Python stdlib relay/process controls, published server package 0.4.0a2. No new Python/Node dependencies. [Dockerfile](Dockerfile), [provenance](upstream.json), [upstream notice](UPSTREAM-NOTICE.md), [design](../docs/design/muse.md). The template source license does not relicense the original upstream artifact. A task-owned local gzip cache can be rehashed and streamed to private OSS without a second384.8MB operator disk copy; the target still checks unchanged original bytes.
+Alibaba generation2 basev0.0.49/Linuxx64/Python3.13, root-owned original native ELF384809176bytes with its published SHA256, Python stdlib relay/process controls, published server package 0.4.0a3. No new Python/Node dependencies. [Dockerfile](Dockerfile), [provenance](upstream.json), [upstream notice](UPSTREAM-NOTICE.md), [design](../docs/design/muse.md). The template source license does not relicense the original upstream artifact. A task-owned local gzip cache can be rehashed and streamed to private OSS without a second384.8MB operator disk copy; the target still checks unchanged original bytes.
 
 ## Problem solved
 

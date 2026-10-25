@@ -6,9 +6,9 @@ Provide an actual Agent Sandbox Node.js SDK backend implementing the original QM
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a3`, installed directly by the Dockerfile.
 
-Alibaba generation2 basev0.0.49/Linuxx64/Python3.13. SHA256-pinned original Node24.16.0 archive/executable, full original QM source0.1.0/immutable commit and original npm integrity lock. Original Node SDK0.1.0 source90b5187dca84fca78d75d3045896482540641c72 built with its original lock/build script; npm0.1.0 returned404 on2026-10-21, so no npm release is assumed. Server34e7e011c5569f77b7f605e65313be7498f6cf02. [Dockerfile](Dockerfile), [provenance](upstream.json), [QM lock](package-lock.json), [SDK lock](sdk-package-lock.json), [design](../docs/design/qm-sandbox.md).
+Alibaba generation2 basev0.0.49/Linuxx64/Python3.13. SHA256-pinned original Node24.16.0 archive/executable, full original QM source0.1.0/immutable commit and original npm integrity lock. Original Node SDK0.1.0 source63d7cd8ece221b9f968eef51eeb932ea334c90d3 built with its original lock/build script; The npm package is not published; this image builds the reviewed immutable SDK source. Published server package. [Dockerfile](Dockerfile), [provenance](upstream.json), [QM lock](package-lock.json), [SDK lock](sdk-package-lock.json), [design](../docs/design/qm-sandbox.md).
 
 ## Problem solved
 

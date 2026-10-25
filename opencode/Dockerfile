@@ -33,7 +33,7 @@ RUN node --version && npm --version \
         /root/.npm \
         /home/user/.npm
 
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a3"
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py opencode.json ./

@@ -14,7 +14,7 @@ Actual upstream localBrowser.connect with the disclosed extensionId forwarding f
 
 ## How to build
 
-[Dockerfile](../../stagehand/Dockerfile): Alibaba basev0.0.49, generation2, Python3.13, official SHA256-pinned Node24.16.0, npm ci with a full integrity lock for Stagehand4.3.0 and Zod4.4.3, Playwright1.58.0/Chromium1208/145.0.7632.6. Pinned server sourcee2cb27e with existing optional injected wheel shape. Non-root user, WORKDIR/home/user/app, explicit serve/healthcheck9000, no CMD/ENTRYPOINT;8GiB rootfs budget. Steps adapter preserves exact COPY hashes and official bounded browser asset cache; no cloud credentials enter CI.
+[Dockerfile](../../stagehand/Dockerfile): Alibaba basev0.0.49, generation2, Python3.13, official SHA256-pinned Node24.16.0, npm ci with a full integrity lock for Stagehand4.3.0 and Zod4.4.3, Playwright1.58.0/Chromium1208/145.0.7632.6. Published server package pinned in the Dockerfile. Non-root user, WORKDIR/home/user/app, explicit serve/healthcheck9000, no CMD/ENTRYPOINT;8GiB rootfs budget. Steps adapter preserves exact COPY hashes and official bounded browser asset cache; no cloud credentials enter CI.
 
 ## Express feasibility
 

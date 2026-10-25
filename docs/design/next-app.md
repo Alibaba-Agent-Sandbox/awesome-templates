@@ -14,7 +14,7 @@ See complete parameter/default/return table in [README](../../next-app/README.md
 
 ## How to build
 
-[Dockerfile](../../next-app/Dockerfile) installs integrity-locked Next16.4.2/React19.3.1/Vite8.3.4 with npm ci, retains package notices and uses observed base Node20.20.2. Alibaba base defaultv0.0.49, server e2cb27e source fallback, generation2 standard start/health commands, USER user.
+[Dockerfile](../../next-app/Dockerfile) installs integrity-locked Next16.4.2/React19.3.1/Vite8.3.4 with npm ci, retains package notices and uses observed base Node20.20.2. Alibaba base defaultv0.0.49, published server package, generation2 standard start/health commands, USER user.
 
 ## Express feasibility
 

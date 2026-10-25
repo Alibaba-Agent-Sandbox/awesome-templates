@@ -37,7 +37,7 @@ RUN npm ci --prefix /opt/pi-cli --ignore-scripts --omit=dev --registry=https://r
 COPY install_tools.py /tmp/pi-install-tools.py
 RUN python3 /tmp/pi-install-tools.py && rm /tmp/pi-install-tools.py
 
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a3"
 
 ENV HOME=/home/user WORKSPACE=/home/user/app PI_OFFLINE=1 PI_TELEMETRY=0
 WORKDIR /home/user/app

@@ -202,9 +202,9 @@ class CheckerTest(unittest.TestCase):
             shutil.copytree(SKELETON, dest)
             path = dest / "Dockerfile"
             text = path.read_text()
-            self.assertIn('agent-sandbox-server==0.4.0a2', text)
+            self.assertIn('agent-sandbox-server==0.4.0a3', text)
             self.assertEqual(check_template.check_directory(dest), [])
-            path.write_text(text.replace('agent-sandbox-server==0.4.0a2', 'agent-sandbox-server'))
+            path.write_text(text.replace('agent-sandbox-server==0.4.0a3', 'agent-sandbox-server'))
             self.assertIn('server-package-pin', {item.code for item in check_template.check_directory(dest)})
 
     def test_retired_server_archive_is_not_a_public_package_pin(self) -> None:
@@ -212,7 +212,7 @@ class CheckerTest(unittest.TestCase):
             dest = Path(tmp) / "_skeleton"
             shutil.copytree(SKELETON, dest)
             path = dest / "Dockerfile"
-            path.write_text(path.read_text().replace('agent-sandbox-server==0.4.0a2', 'agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/' + 'a'*40 + '.tar.gz#subdirectory=server-sdk'))
+            path.write_text(path.read_text().replace('agent-sandbox-server==0.4.0a3', 'agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/' + 'a'*40 + '.tar.gz#subdirectory=server-sdk'))
             self.assertIn('server-package-pin', {item.code for item in check_template.check_directory(dest)})
 
     def test_declared_profile_requires_same_published_server_pin(self) -> None:
@@ -229,7 +229,7 @@ class CheckerTest(unittest.TestCase):
             self.assertEqual(check_template.check_directory(dest), [])
             for pin in ['agent-sandbox-server', 'agent-sandbox-server==0.4.0a1',
                         'agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/' + 'a'*40 + '.tar.gz#subdirectory=server-sdk']:
-                profile.write_text(original.replace('agent-sandbox-server==0.4.0a2', pin))
+                profile.write_text(original.replace('agent-sandbox-server==0.4.0a3', pin))
                 self.assertIn('server-package-pin', {v.code for v in check_template.check_directory(dest)})
 
     def test_hash_enforced_local_lock_requires_every_pin_and_hash(self) -> None:
@@ -576,7 +576,7 @@ class ImageBuildContextTest(unittest.TestCase):
                         b"FROM fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
                         b"FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"), original)
                     self.assertFalse(list(context.glob("*.whl")))
-                    self.assertIn(b'pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"', materialized)
+                    self.assertIn(b'pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a3"', materialized)
 
 
 class ImageReportTest(unittest.TestCase):

@@ -8,9 +8,9 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a3`，由 Dockerfile 直接安装。
 
-Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，默认区域/版本为 `cn-hangzhou` / `v0.0.49`。Debian 13 的 Tesseract/libtesseract 固定为 `5.5.0-1+b1`，英文和方向数据为 `1:4.1.0-2`，Leptonica 为 `1.84.1-4`；其他系统依赖由发行版仓库解析。Pillow `11.3.0` 先按提交的 wheel SHA256 白名单下载，再以 --no-index/--no-deps 离线安装，禁止源码安装。SDK 优先使用构建时注入的 wheel，否则使用固定源码提交 `e2cb27e24fde0a67112f82b8d44af463445a5d1a`。以非 root 的 `user` 运行，工作区 `/home/user/app`，端口 9000；保留原 HOME。
+Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，默认区域/版本为 `cn-hangzhou` / `v0.0.49`。Debian 13 的 Tesseract/libtesseract 固定为 `5.5.0-1+b1`，英文和方向数据为 `1:4.1.0-2`，Leptonica 为 `1.84.1-4`；其他系统依赖由发行版仓库解析。Pillow `11.3.0` 先按提交的 wheel SHA256 白名单下载，再以 --no-index/--no-deps 离线安装，禁止源码安装。以非 root 的 `user` 运行，工作区 `/home/user/app`，端口 9000；保留原 HOME。
 
 ## 解决的问题
 
@@ -110,7 +110,7 @@ Linux 进程管理通过 `waitid(WNOWAIT)` 保留 leader 身份，持续排空�
 
 ### Agent Sandbox step 构建
 
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py ocr --timeout 1200 --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。公开 runner 执行 CLI/SDK fixture smoke；另一完整 HTTP 控制器在 READY 后通过了全部 19 项断言，见[实际执行步骤](../.agents/evidence/verify/2026-10-20-ocr-step-acceptance.md)。此原生 OCR 任务不需要模型。
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py ocr --timeout 1200`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。公开 runner 执行 CLI/SDK fixture smoke；另一完整 HTTP 控制器在 READY 后通过了全部 19 项断言，见[实际执行步骤](../.agents/evidence/verify/2026-10-20-ocr-step-acceptance.md)。此原生 OCR 任务不需要模型。
 
 ## 贡献
 

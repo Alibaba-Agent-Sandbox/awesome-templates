@@ -49,7 +49,7 @@ def test_heredoc_and_continuation_remain_executable():
     assert rows[-1] == ("USER", "user")
 
 
-@pytest.mark.parametrize("extra", ["ADD public /app\n", "ARG UNPINNED\n", "COPY ../outside /app/\n", "COPY .env /app/\n"])
+@pytest.mark.parametrize("extra", ["ADD public /app\n", "ARG UNPINNED\n", "COPY ../outside /app/\n", "COPY .env /app/\n", "COPY *.whl /tmp/\n"])
 def test_unsupported_or_private_inputs_rejected(tmp_path: Path, extra: str):
     source = fixture(tmp_path, extra)
     (source / ".env").write_text("SECRET=placeholder")

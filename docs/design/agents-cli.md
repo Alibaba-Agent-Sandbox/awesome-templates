@@ -37,7 +37,7 @@ Template2.0.1 explicitly owns /home/user/app as user:user before runtime USER. T
 
 [Dockerfile](../../agents-cli/Dockerfile) retains the Alibaba base, generation 2,
 non-root user and no CMD/ENTRYPOINT. Installs pin `@openai/codex@0.162.1`,
-`@qwen-code/qwen-code@0.23.0`, and published `agent-sandbox-server==0.4.0a2`.
+`@qwen-code/qwen-code@0.23.0`, and published `agent-sandbox-server==0.4.0a3`.
 The base Node 20 is below Qwen Code 0.23.0's declared Node>=22 requirement. Install official Node 24.16.0 from architecture-specific SHA256-verified archives using the same pinned installer as OpenClaw. Build logs must assert both actual CLI versions. commands.py and server-policy.json
 are copied after package installation. Synthetic e2e-bin programs are not copied.
 
@@ -102,7 +102,7 @@ One actual Qwen session submits a coding task and polls items/reconnect until
 idle. The fixed server's idle state alone cannot prove the final turn succeeded:
 wire_sessions maps terminal turn events to SSE, but this policy permits only
 POST events, not GET events or turn-status routes. Native code therefore reads
-the original e2cb27e server's own explicit private state directory and requires
+the server's explicitly configured private state directory and requires
 this session's sole turn completed without error. This is internal diagnostic
 observation, not a public endpoint, receipt, transcript export, or standalone
 coding proof. The sanitized report stores only checks/statuses.

@@ -6,7 +6,7 @@ Run official Kimi Code 2.2.0 for one headless prompt in an existing sandbox dire
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a3`, installed directly by the Dockerfile.
 
 Alibaba FC base v0.0.49, pinned Node.js 24.16.0 (architecture-specific SHA256 verified), npm `@moonshot-ai/kimi-code@2.2.0` (MIT), and the exact public server SDK source in Dockerfile. This uses the current Node CLI, not the unrelated/older Python distribution.
 

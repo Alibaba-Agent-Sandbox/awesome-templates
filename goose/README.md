@@ -10,9 +10,9 @@ chat; explicit `allow_tools=true` enables the bundled developer tools.
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a3`, installed directly by the Dockerfile.
 
-Alibaba FC base v0.0.49, generation2, non-root `user`, pinned server SDK e2cb27e.
+Alibaba FC base v0.0.49, generation2, non-root `user`, published server package.
 Official CPU GNU Linux x86_64/aarch64 release assets have exact byte lengths and
 SHA256 in [assets.json](assets.json), tied to source commit
 [cd643d2126fffab4c6a6186905211ba868d6a657](https://github.com/block/goose/tree/cd643d2126fffab4c6a6186905211ba868d6a657).

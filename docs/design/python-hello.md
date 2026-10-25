@@ -24,7 +24,7 @@ Expose greetings, inline Python, uploaded scripts, pytest, one hidden debug comm
 
 Template1.1.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
 
-The [Dockerfile](../../python-hello/Dockerfile) uses Alibaba base placeholders resolved by `abx` (default `cn-hangzhou`, `v0.0.49`), the server archive pinned to python-sdk `35da216a300f1e2e84254a1cf4b4a7ea98681505`, and `pytest==8.4.2`. An injected wheel takes precedence. BuildKit handles the optional wheel glob. Runtime is non-root `user` at `/home/user/app`. Generation-2 start command is `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`; ready command is `agent-sandbox-server healthcheck --port 9000`. No CMD/ENTRYPOINT overrides the platform entrypoint.
+The [Dockerfile](../../python-hello/Dockerfile) uses Alibaba base placeholders resolved by `abx` (default `cn-hangzhou`, `v0.0.49`), the published server package pinned in the Dockerfile, and `pytest==8.4.2`. Runtime is non-root `user` at `/home/user/app`. Generation-2 start command is `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`; ready command is `agent-sandbox-server healthcheck --port 9000`. No CMD/ENTRYPOINT overrides the platform entrypoint.
 
 ## Express feasibility
 
@@ -41,9 +41,7 @@ Commands intentionally run caller-provided Python, including filesystem and netw
 ## Test plan
 
 - L0: `python3 scripts/run_local_e2e.py` starts a real local server. Assert command discovery/hiding, greeting/custom route, inline code, argument/unknown-command errors, file upload/download/list/delete, uploaded script output `42`, passing pytest, failing pytest as HTTP 500, shell response, and cleanup. No file-operation SKIP is accepted.
-- L1: build the Dockerfile, verify server archive/wheel identity and `pytest==8.4.2`, check `USER user`, and invoke `run`/`test` in the image. Requires Docker; no local HTTP result substitutes for this.
+- L1: build the Dockerfile, verify the declared installed server package version and `pytest==8.4.2`, check `USER user`, and invoke `run`/`test` in the image. Requires Docker; no local HTTP result substitutes for this.
 - L2: `python3 scripts/express_e2e.py python-hello` deploys READY, creates a sandbox, calls `hello` and `run_script` through CLI and SDK and asserts `Hello, Express!`/`42`. Only then record new 1.1.0 provider evidence and update `tested_on`.
 - Product workflow: run `e2e_test.py` against the remote port URL with `E2E_WORKSPACE=/home/user/app` so file/script/pytest behavior is checked remotely as well. This is distinct from harness smoke coverage.
 - L3 model calls do not apply: this template is Python tooling, not a model-powered agent. L4 providers remain unverified until independently run.
-
-Release readiness 1.1.2: align default and injected server SDK source to `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; preserve historical receipts and require new image/workflow acceptance.

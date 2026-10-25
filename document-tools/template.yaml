@@ -1,5 +1,5 @@
 name: document-tools
-version: "1.1.1"
+version: "1.1.2"
 description: "Bounded Markdown/HTML to DOCX, TXT, PPTX and headless LibreOffice PDF."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0

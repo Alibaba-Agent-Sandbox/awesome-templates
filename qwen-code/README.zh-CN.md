@@ -8,7 +8,7 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a3`，由 Dockerfile 直接安装。
 
 Alibaba FC generation 2 基础镜像、平台 Python、固定版本且校验 x86_64/aarch64 SHA256 的 Node.js 24.16.0、`@qwen-code/qwen-code@0.23.0`，以及 [Dockerfile](Dockerfile) 固定提交的沙箱服务器。CLI 不需要额外的 DashScope/OpenAI Python 库。
 
@@ -132,7 +132,7 @@ asyncio.run(main())
 | `qwen` | `prompt: str` 必填非空；`max_turns: int=100`（1–1000）；`model: str=""` 使用 `OPENAI_MODEL`；`cwd: str=""` 使用工作区；`command_timeout: int=600`（1–1800 秒）；`yolo: bool=false` | 字符串；`qwen -p PROMPT --auth-type openai --output-format json --max-session-turns N --max-wall-time SECONDS --no-chat-recording`，按需加 `--model MODEL`、`--yolo` |
 | `qwen_version` | 无 | 真实 `qwen --version` 输出，不需密钥 |
 | `qwen_setup_check` | 无 | 安装/版本/pin、密钥/模型/base URL 是否配置、设置文件存在与 JSON 有效性；不返回设置内容，不写文件 |
-| `run` | `script: str="main.py"` | 兼容命令，返回 Python stdout，执行期限 120 秒 |
+| `run` | `script: str="main.py"` | 返回 Python stdout，执行期限 120 秒 |
 
 `cwd` 为绝对路径或相对 `WORKSPACE` 的路径，必须已经存在。包装器使用 argv 数组，不拼接 shell。上游编码代理可以修改文件并执行 shell 工具。
 
@@ -165,7 +165,7 @@ asyncio.run(main())
 | --- | --- | --- |
 | alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
 
-该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。该历史 smoke 不证明真实模型任务或当前 launch 路径。
+该历史记录采用 e2cb27e 服务端来源覆盖，与当时的镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。该历史 smoke 不证明真实模型任务或当前 launch 路径。
 
 ## 二次开发
 

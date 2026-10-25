@@ -178,7 +178,7 @@ def qwen(prompt: str, max_turns: int = 100, model: str = "", cwd: str = "",
     return _run(args, timeout=command_timeout, cwd=cwd, env=env)
 
 
-@command("run", description="Run a Python script in the workspace (compatibility command).")
+@command("run", description="Run a Python script in the workspace.")
 def run(script: str = "main.py") -> str:
     return _run([sys.executable, script], timeout=120)
 

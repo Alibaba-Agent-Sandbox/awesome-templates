@@ -26,8 +26,7 @@ file stdin. API errors and limits are specified in both READMEs.
 [Dockerfile](../../goose/Dockerfile): required FC base, exact official1.54.0 CPU
 GNU archive URL/length/SHA256 for x64/arm64 and sourcecd643d2126fffab4c6a6186905211ba868d6a657.
 Do not use floating install scripts or Vulkan/CUDA archives. Verify actual
-version before install completion; preserve upstream license. Fixed SDK e2cb27e
-or injected source wheel; generation2 serve/healthcheck9000, explicit app chown
+version before install completion; preserve upstream license. Published server package pinned in the Dockerfile; generation2 serve/healthcheck9000, explicit app chown
 before USER user, no CMD/ENTRYPOINT. Separate Docker-only8GiB du budget.
 
 ## Express feasibility

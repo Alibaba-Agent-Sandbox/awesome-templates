@@ -22,9 +22,9 @@ One monitor per process starts immediately, uses a selector to drain both pipes,
 
 ## How to build
 
-Use [Dockerfile](../../codex-agent-api/Dockerfile): Alibaba runtime base with deployment-resolved region/tag (`cn-hangzhou`, `v0.0.49` defaults), Codex 0.162.1 npm pin/cache cleanup, and python-sdk archive fallback pinned to `e2cb27e24fde0a67112f82b8d44af463445a5d1a` (includes the dataclass loader fix). The image uses `WORKDIR /home/user/app`, `USER user`, `WORKSPACE=/home/user/workspace` and `CODEX_HOME=/home/user/.codex`. No `CMD`/`ENTRYPOINT` override. The fallback includes `sys.modules` registration for dynamically imported dataclasses with postponed annotations; an optional injected wheel should use the same fixed source commit.
+Use [Dockerfile](../../codex-agent-api/Dockerfile): Alibaba runtime base with deployment-resolved region/tag (`cn-hangzhou`, `v0.0.49` defaults), Codex 0.162.1 npm pin/cache cleanup, and the exact published server package pin (including the dataclass loader fix). The image uses `WORKDIR /home/user/app`, `USER user`, `WORKSPACE=/home/user/workspace` and `CODEX_HOME=/home/user/.codex`. No `CMD`/`ENTRYPOINT` override.
 
-`generation: 2`; `start_cmd`: `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`; `ready_cmd`: `agent-sandbox-server healthcheck --port 9000`. `commands.py` is copied after dependency installation. The pinned source fallback works without an injected wheel; deployment may inject a wheel built from the same source commit. No OpenAI Python SDK package is needed by the server.
+`generation: 2`; `start_cmd`: `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`; `ready_cmd`: `agent-sandbox-server healthcheck --port 9000`. `commands.py` is copied after dependency installation. No OpenAI Python SDK package is needed by the server.
 
 ## Express feasibility
 
@@ -42,7 +42,7 @@ Runtime model calls and MCP requests use network access. Keys are injected throu
 
 L0: `python3 scripts/check_template.py codex-agent-api`; `python3 codex-agent-api/test_commands.py`; `python3 codex-agent-api/test_http_runtime.py` (explicit synthetic CLI fixture, actual HTTP/child processes); local server plus `E2E_BASE_URL=... python3 codex-agent-api/e2e_test.py`. Actual subprocess regressions must demonstrate silent stdout deadline, large-stderr draining, tool descendant termination, background expiry, multi-subscriber accounting, synthetic secret redaction, event size/replay bounds and failure when upstream emits `turn.failed` or exits without completion. HTTP smoke covers saved-agent/session CRUD, invalid input/tool rejection and artifact secret-path denial.
 
-L1: build the Alibaba-based image; confirm `codex-cli 0.162.1` from inside the image and successful `serve --commands` with the fixed SDK archive or corresponding injected wheel. Local npm binary version/help alone do not establish L1.
+L1: build the Alibaba-based image; confirm `codex-cli 0.162.1` from inside the image and successful `serve --commands` with the declared published server package. Local npm binary version/help alone do not establish L1.
 
 L2: `python3 scripts/express_e2e.py codex-agent-api`; smoke `codex_version == "0.162.1"` and `agent_status == "[]"` through CLI and SDK. Save provider evidence only on complete pass. Current native steps L2 and strict native model L3 passed on2026-10-20; historical image/source-only receipts retain their original scope.
 

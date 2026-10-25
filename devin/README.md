@@ -8,7 +8,7 @@ Run the original Cognition Devin CLI3000.11.92 through typed bounded named comma
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a3`, installed directly by the Dockerfile.
 
 Alibaba generation2 Linuxx86_64 base, Python3.13 server, original fixed [official archive](https://static.devin.ai/cli/3000.11.92/devin-3000.11.92-x86_64-unknown-linux.tar.gz), original234files/200878983bytes, compressed67245544bytes. SHA256 `2d829139682e038cf122510f1170eee3d7060bcc7ebf92445cbc5d28c9fbcfa0` was published by the official platform manifest observed2026-10-21; see [inventory](upstream.json). The server package is pinned in the Dockerfile. Build verifies original archive/per-file hashes without executing it; runtime verifies original root-owned files. Original binaries/docs/manpages retain their own terms.
 

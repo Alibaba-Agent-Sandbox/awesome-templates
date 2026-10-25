@@ -14,7 +14,7 @@ Named native version, original kernel/import check, read-only setup and bounded 
 
 ## How to build
 
-[Dockerfile](../../prime-agent/Dockerfile): Alibaba FC generation2/Python3.13/Linuxx64, original SHA256-pinned stable release from [upstream.json](../../prime-agent/upstream.json), full original sidecars/notices,49-package hash lock in isolated /opt/prime-kernel. No floating native install script/uv/kernel dependency setup. Common server package 0.4.0a2, non-root user, start_cmd agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py; ready_cmd agent-sandbox-server healthcheck --port 9000. No CMD/ENTRYPOINT. [Steps operation](../../docs/platform-steps.md) preserves exact immutable context/public asset hashes; no local Docker required for steps.
+[Dockerfile](../../prime-agent/Dockerfile): Alibaba FC generation2/Python3.13/Linuxx64, original SHA256-pinned stable release from [upstream.json](../../prime-agent/upstream.json), full original sidecars/notices,49-package hash lock in isolated /opt/prime-kernel. No floating native install script/uv/kernel dependency setup. Common server package 0.4.0a3, non-root user, start_cmd agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py; ready_cmd agent-sandbox-server healthcheck --port 9000. No CMD/ENTRYPOINT. [Steps operation](../../docs/platform-steps.md) preserves exact immutable context/public asset hashes; no local Docker required for steps.
 
 ## Express feasibility
 

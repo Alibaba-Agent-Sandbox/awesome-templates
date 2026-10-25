@@ -30,7 +30,7 @@ The task file must exist within `WORKSPACE`, including after symlink resolution,
 
 [Dockerfile](../../osworld/Dockerfile) starts from the required Alibaba placeholder (production cn-hangzhou/v0.0.49), installs exact critical Debian 13 x86_64 package versions, creates a system-Python GI-compatible virtualenv, installs the [hash-locked Python graph](../../osworld/requirements.txt), and installs Playwright 1.58.0's Chromium revision. Transitive OS packages remain resolved by Debian's repositories. The worker explicitly retains PLAYWRIGHT_BROWSERS_PATH from the image environment. No GUI packages install at runtime and no extra capability is needed. System Python handles GI; the separate platform Python runs the SDK server.
 
-Canonical generation-2 startup is `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`, readiness is `agent-sandbox-server healthcheck --port 9000`. The pinned public SDK archive remains in the original wheel/fallback branch. Runtime, upstream source, full license and metadata are in the standalone Docker context. The final user is `user`.
+Canonical generation-2 startup is `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`, readiness is `agent-sandbox-server healthcheck --port 9000`. The Dockerfile installs the exact published server package. Runtime, upstream source, full license and metadata are in the standalone Docker context. The final user is `user`.
 
 ## Express feasibility
 

@@ -1,5 +1,5 @@
 name: prime-agent
-version: "1.0.1"
+version: "1.0.2"
 description: "Original stable native Prime Agent0.10.0 with fixed CPython REPL, explicit compatible provider and private owned lifecycle."
 author: alibaba-agent-sandbox
 license: Apache-2.0

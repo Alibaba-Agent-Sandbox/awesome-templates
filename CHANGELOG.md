@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Use published server 0.4.0a3 in all declared source recipes with minimal template patches. Correct stale Git/wheel runtime documentation, remove the four retired project command aliases, and update QM consumers to the reviewed current immutable Node SDK source. Preserve historical evidence and require fresh current-input image/provider acceptance. / 所有源码构建统一已发布 a3 服务端并最小增加模板版本，清理四个旧命令转发及过时运行时说明；QM 使用已审核的当前 Node SDK 源码，重新验证真实平台。
+
 - Install published server 0.4.0a2 directly in all source recipes and increment their patch versions. Remove pre-release archive/wheel fallbacks and duplicate historical cloud runners; retain keyless image gates and full current public-launch acceptance with actual guest package readback. Selected image batches always rerun.
 
 - Current Express acceptance uses public managed catalog launch and the shared whole-template startup for prepared images; remove duplicate SDK creation and test-only sibling service paths. Preserve original failures, runtime/package provenance and exact owned cleanup separately. / 极速版验证统一使用当前模板启动与公共 SDK，移除重复创建分支和测试专用第二服务；分别保留失败、来源与资源清理证据。

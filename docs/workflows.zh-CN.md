@@ -8,7 +8,7 @@ abx --provider alicloud-express template launch Alibaba-Agent-Sandbox/awesome-te
 
 ## 当前机器契约
 
-源码清单和托管目录条目使用 `spec_version: 5`，目录索引使用 `schema_version: 2`。源码 schema 为 [template-v5.schema.json](../spec/template-v5.schema.json)。[共享启动规则](../spec/contracts/launch-v1.json)来自 [Python 契约仓库](https://github.com/Alibaba-Agent-Sandbox/python-sdk/tree/main/contracts)，通过 `scripts/sync_launch_contracts.py` 按精确提交同步并锁定。迁移版本 4 时，删除 `workflow_contract_version`、`default_workflow` 和 `workflows`。旧运行清单会明确提示迁移，不会暗中选择旧路径。使用这些清单前，需要升级到支持规范 5 的 CLI/SDK；CLI 0.4.17 尚不支持此格式。
+源码清单和托管目录条目使用 `spec_version: 5`，目录索引使用 `schema_version: 2`。源码 schema 为 [template-v5.schema.json](../spec/template-v5.schema.json)。[共享启动规则](../spec/contracts/launch-v1.json)来自 [Python 契约仓库](https://github.com/Alibaba-Agent-Sandbox/python-sdk/tree/main/contracts)，通过 `scripts/sync_launch_contracts.py` 按精确提交同步并锁定。
 
 `provides` 列出全部对外服务，包括协议、版本、端口和操作；`start_cmd` 启动模板，`ready_cmd` 检查就绪。命令继续在 `commands.py` 注册，不要求作者为每个操作重复声明启动方式或能力计划。
 

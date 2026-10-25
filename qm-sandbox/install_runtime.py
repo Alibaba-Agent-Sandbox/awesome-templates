@@ -7,7 +7,7 @@ def validate(metadata):
     expected={
         'node':('https://nodejs.org/dist/v24.16.0/node-v24.16.0-linux-x64.tar.gz',57023429,'2faf6a387e9b62b888e21c54f01249fb27537ffecf1842f29f4c919d0a59a0ff'),
         'qm':('https://codeload.github.com/yc-software/qm/tar.gz/deef9b8b1e2b85bd4166dd833604bb31bcb8e255',10625243,'40fb0d69319753a1cfab2dc8a1e8574d206e92589d26b264e768e94fa9109b4e'),
-        'agent-sandbox-node-sdk':('https://codeload.github.com/Alibaba-Agent-Sandbox/nodejs-sdk/tar.gz/90b5187dca84fca78d75d3045896482540641c72',27746,'6b51e849090656de448812dbc5b08bb0a7ac0a981241739e116597cd8383cfd6'),
+        'agent-sandbox-node-sdk':('https://codeload.github.com/Alibaba-Agent-Sandbox/nodejs-sdk/tar.gz/63d7cd8ece221b9f968eef51eeb932ea334c90d3',42302,'6fe5ad0e27ca024eed2c2db29e6a2ecf310336505423de6802719baa3137b598'),
     }
     for name,pin in expected.items():
         item=metadata[name]

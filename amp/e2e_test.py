@@ -32,7 +32,7 @@ TOKEN = os.environ.get("ABX_SERVER_TOKEN", "")
 LLM_TIMEOUT = float(os.environ.get("E2E_LLM_TIMEOUT", "600"))
 RUN_LLM = os.environ.get("E2E_RUN_LLM", "").strip().lower()
 REQUIRE = os.environ.get("E2E_REQUIRE_LLM", "").strip().lower() in {"1", "true", "yes"}
-NAMES = {"amp_version", "amp_setup_check", "amp_execute", "amp"}
+NAMES = {"amp_version", "amp_setup_check", "amp_execute"}
 
 RESULTS: list[tuple[str, str, str]] = []
 
@@ -67,6 +67,10 @@ def main() -> int:
         names = {item.get("name") for item in entries if isinstance(item, dict)}
         ok = listed.status_code == 200 and NAMES <= names
         record("PASS" if ok else "FAIL", "GET /commands", f"names={sorted(names)}")
+        failures += not ok
+
+        ok = "amp" not in names and client.post("/commands/amp", json={"prompt":"unused"}).status_code == 404
+        record("PASS" if ok else "FAIL", "retired command absent", "discovery and invocation")
         failures += not ok
 
         by_name = {item.get("name"): item for item in entries if isinstance(item, dict)}

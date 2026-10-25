@@ -16,9 +16,9 @@ IMAGE='registry.cn-hangzhou.aliyuncs.com/example/e2e-ci-image-'+'a'*16+':review'
 def fixture(tmp_path):
     source=tmp_path/'product';source.mkdir()
     (source/'template.yaml').write_text('name: product\nversion: 1.0.0\nresources: {cpu: 2, memory: 2048}\nsmoke:\n  - command: hello\n    expect: ok\ntested_on: []\n')
-    (source/'Dockerfile').write_text('FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>\nRUN pip install agent-sandbox-server==0.4.0a2\nWORKDIR /home/user/app\nCOPY --chown=user:user commands.py .\nUSER user\n')
+    (source/'Dockerfile').write_text('FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>\nRUN pip install agent-sandbox-server==0.4.0a3\nWORKDIR /home/user/app\nCOPY --chown=user:user commands.py .\nUSER user\n')
     (source/'commands.py').write_text('# immutable public runtime\n')
-    proof={'schema_version':1,'verification_type':'ci-docker-archive','template':'product','template_version':'1.0.0','github_repository':'Alibaba-Agent-Sandbox/awesome-templates','source_head_commit':'b'*40,'checkout_commit':'b'*40,'workflow_run_id':'123','artifact_id':'456','archive_sha256':'c'*64,'image_config_sha256':'d'*64,'pushed_image_digest':'sha256:'+'a'*64,'server_package_version':'0.4.0a2','context_sha256':ci_image.context_sha256(source),'artifact_verified':True,'image_context_verified':True,'image_non_root':True,'registry_push_verified':True,'registry_private_repo_verified':True,'registry_credentials_storage':'anonymous RAM fd','registration_reference_type':'owned tag with digest readback','tag_digest_verified_before_registration':True,'tag_digest_verified_after_runtime':False}
+    proof={'schema_version':1,'verification_type':'ci-docker-archive','template':'product','template_version':'1.0.0','github_repository':'Alibaba-Agent-Sandbox/awesome-templates','source_head_commit':'b'*40,'checkout_commit':'b'*40,'workflow_run_id':'123','artifact_id':'456','archive_sha256':'c'*64,'image_config_sha256':'d'*64,'pushed_image_digest':'sha256:'+'a'*64,'server_package_version':'0.4.0a3','context_sha256':ci_image.context_sha256(source),'artifact_verified':True,'image_context_verified':True,'image_non_root':True,'registry_push_verified':True,'registry_private_repo_verified':True,'registry_credentials_storage':'anonymous RAM fd','registration_reference_type':'owned tag with digest readback','tag_digest_verified_before_registration':True,'tag_digest_verified_after_runtime':False}
     path=tmp_path/'public-proof.json';path.write_text(json.dumps(proof))
     return source,proof,path
 
@@ -135,15 +135,15 @@ def test_changed_tag_after_runtime_cannot_publish_even_when_cleanup_succeeds(tmp
 def test_proof_requires_the_declared_public_server_package(tmp_path):
     source,proof,_=fixture(tmp_path)
     path=source/'Dockerfile'
-    path.write_text(path.read_text().replace('0.4.0a2','0.4.0a3'))
+    path.write_text(path.read_text().replace('0.4.0a3','0.4.0a2'))
     proof['context_sha256']=ci_image.context_sha256(source)
     with pytest.raises(ValueError,match='server package'):
         ci_image.validate_proof(source,proof,IMAGE)
-    proof['server_package_version']='0.4.0a3'
+    proof['server_package_version']='0.4.0a2'
     assert ci_image.validate_proof(source,proof,IMAGE)==proof
 
 
-@pytest.mark.parametrize('pin',['agent-sandbox-server', 'agent-sandbox-server>=0.4.0a2', 'agent-sandbox-server==0.4.0a2 agent-sandbox-server==0.4.0a3'])
+@pytest.mark.parametrize('pin',['agent-sandbox-server', 'agent-sandbox-server>=0.4.0a3', 'agent-sandbox-server==0.4.0a3 agent-sandbox-server==0.4.0a2'])
 def test_missing_or_conflicting_public_server_pins_are_rejected(tmp_path,pin):
     source,_,_=fixture(tmp_path)
     (source/'Dockerfile').write_text('RUN pip install '+pin+'\n')
@@ -212,5 +212,5 @@ def test_missing_image_cli_contract_blocks_before_archive_or_registry_calls(tmp_
 
 def test_server_version_comes_from_the_public_package_declaration(tmp_path):
     source, _, _ = fixture(tmp_path)
-    (source / 'Dockerfile').write_text('RUN pip install agent-sandbox-server==0.4.0a2\n')
-    assert ci_image.server_version(source) == '0.4.0a2'
+    (source / 'Dockerfile').write_text('RUN pip install agent-sandbox-server==0.4.0a3\n')
+    assert ci_image.server_version(source) == '0.4.0a3'

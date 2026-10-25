@@ -357,22 +357,6 @@ def opencode_run(
     return _execute_run(prompt, model, agent, session, continue_session, cwd)
 
 
-@command(
-    "opencode",
-    description="Compatibility alias of opencode_run. Returns sanitized JSON-event stdout.",
-)
-def opencode(
-    prompt: str,
-    model: str = "",
-    agent: str = "",
-    session: str = "",
-    continue_session: bool = False,
-    cwd: str = "",
-) -> str:
-    """Same argv as ``opencode_run``. Prefer ``opencode_run`` for the parsed text."""
-    return _execute_run(prompt, model, agent, session, continue_session, cwd)["stdout"]
-
-
 @command("opencode_version", description="Print the pinned opencode version.")
 def opencode_version() -> str:
     """Return ``opencode --version`` with surrounding whitespace removed."""

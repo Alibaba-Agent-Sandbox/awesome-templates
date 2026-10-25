@@ -8,12 +8,11 @@ CPU English image recognition with official Tesseract. See [中文说明](README
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a3`, installed directly by the Dockerfile.
 
 - Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`; deployment defaults are `cn-hangzhou` / `v0.0.49`.
 - Debian 13 Tesseract / libtesseract `5.5.0-1+b1`, English and orientation data `1:4.1.0-2`, Leptonica `1.84.1-4`. Other OS libraries resolve through the base's Debian repositories.
 - Pillow `11.3.0`, downloaded against the committed SHA256 wheel allowlist, then installed offline with --no-index/--no-deps; source distributions are disabled.
-- Server from an injected source-built wheel or python-sdk commit `e2cb27e24fde0a67112f82b8d44af463445a5d1a`.
 - Non-root `user`, `/home/user/app`, generation 2 canonical server startup, port 9000. Original `HOME` is preserved.
 
 ## Problem solved
@@ -114,7 +113,7 @@ The Linux runner keeps its process leader unreaped with `waitid(WNOWAIT)`, drain
 
 ### Agent Sandbox platform steps
 
-From a repository checkout, `python scripts/run_steps_e2e.py ocr --timeout 1200 --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). The public runner performs CLI/SDK fixture smoke. The separate full-HTTP controller also passed all 19 assertions after READY; see the [executed procedure](../.agents/evidence/verify/2026-10-20-ocr-step-acceptance.md). No model is required for this native OCR task.
+From a repository checkout, `python scripts/run_steps_e2e.py ocr --timeout 1200` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). The public runner performs CLI/SDK fixture smoke. The separate full-HTTP controller also passed all 19 assertions after READY; see the [executed procedure](../.agents/evidence/verify/2026-10-20-ocr-step-acceptance.md). No model is required for this native OCR task.
 
 ## Contributing
 

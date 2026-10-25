@@ -10,7 +10,7 @@ Postgres durability, cron, subscriptions or a delegated-agent service.
 Node24.16.0 original Linuxx64 archive is verified against its official SHA256;
 its measured original executable SHA256 is verified before native calls. Full
 original Node notices remain installed. Agent Sandbox Node SDK0.1.0 comes from
-exact original source90b5187dca84fca78d75d3045896482540641c72, compiled with its
+exact original source63d7cd8ece221b9f968eef51eeb932ea334c90d3, compiled with its
 original hash/integrity lock/build script. npm0.1.0 is unpublished as checked on
 2026-10-21; no npm release availability is claimed. Full SDK Apache-2.0 LICENSE
 and NOTICE remain installed without relicensing.

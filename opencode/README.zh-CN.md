@@ -10,15 +10,12 @@ Agent Sandbox 里的 OpenCode（`sst/opencode`）。镜像安装 npm 包 `openco
 
 `opencode_serve_start` 在端口 4096 上启动 `opencode serve`，绑定 `0.0.0.0`。该进程是 OpenCode 自己的 HTTP API（`GET /global/health`）。通过 `await sb.network.resolve(4096)` 取得地址，保留返回的网关头及 OpenCode 自身认证。平台的 `start_cmd` 不会启动它。
 
-`opencode` 是以前的命令名。它和 `opencode_run` 使用同一组 argv，返回脱敏后的 JSON 事件 stdout 字符串。
-
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a3`，由 Dockerfile 直接安装。
 
 - 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`abx template deploy` 把 `<region>` 换成 `ALIBABA_CLOUD_REGION_ID` 或 `cn-hangzhou`，把 `<tag>` 换成 `ABX_BASE_IMAGE_TAG` 或 `v0.0.49`。Python 3.13 和 Node.js 20 来自该镜像。
 - `opencode-ai@1.19.0`（2026-10-15 的 npm `latest`）。包提供的命令名是 `opencode`。上游是 [sst/opencode](https://github.com/sst/opencode)。
-- 构建上下文里没有 wheel 时，从 python-sdk 提交 `61c43e0be65a1f57aa09186d578e7b399e48429b` 安装 `agent-sandbox-server`。`abx template deploy` 注入的 wheel 优先。PyPI 上的 `agent-sandbox-server==0.3.0` 早于该提交，镜像不安装它。
 - git 和 ripgrep。
 - 工作目录 `/home/user/app`。运行用户 `user`。镜像没有 `CMD` 或 `ENTRYPOINT`。
 - Generation 2。`start_cmd` 是 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`。`ready_cmd` 是 `agent-sandbox-server healthcheck --port 9000`。
@@ -70,7 +67,6 @@ print(await client.commands.run('opencode_version'))
 | 命令 | 参数 | 返回 | 上游 |
 |---|---|---|---|
 | `opencode_run` | 见下表 | 对象 | `opencode run --pure --format json --auto ...` |
-| `opencode` | 与 `opencode_run` 相同 | 字符串（脱敏后的 JSON 事件） | 与 `opencode_run` 相同的 argv |
 | `opencode_version` | 无 | `"1.19.0"` | `opencode --version` |
 | `opencode_setup_check` | 无 | `"ok"` | `opencode --version`，并读取 `opencode.json` |
 | `opencode_serve_start` | `port` 整数，默认 `4096`；`hostname` 字符串，默认 `0.0.0.0` | 对象 | `opencode serve --pure --hostname --port` |
@@ -140,7 +136,7 @@ print(await client.commands.run('opencode_version'))
 | --- | --- | --- |
 | alicloud-express | 2.0.1；实际 SDK 创建的镜像沙箱、CLI/SDK 命令、28 项严格真实模型断言、独立沙箱/模板/仓库清理 | [2026-10-20](evidence/express-2026-10-20.json) · [模型](evidence/model-image-2026-10-20T142001Z.json) |
 
-本次使用逐项核验源码和归档哈希的真实 CI 镜像。模型实际修改已有源码、生成新产物，并通过未改动的原始测试、独立断言和准确 session 延续。当前运行时代码另有[真实平台 step 基础验证](evidence/verification-steps-2026-10-19T184023Z.json)，该记录本身不声称模型通过。镜像实际注入的 server 为 e2cb27e；独立 Docker fallback 的旧 pin 是另一条构建路径。完整来源、限制和历史失败见[验收记录](../.agents/evidence/verify/2026-10-20-native-coding-sdk-acceptance.md)。
+本次使用逐项核验源码和归档哈希的真实 CI 镜像。模型实际修改已有源码、生成新产物，并通过未改动的原始测试、独立断言和准确 session 延续。当时的运行时代码另有[真实平台 step 基础验证](evidence/verification-steps-2026-10-19T184023Z.json)，该记录本身不声称模型通过。该历史镜像注入的 server 为 e2cb27e；当时独立 Docker fallback 是另一条构建路径。完整来源、限制和历史失败见[验收记录](../.agents/evidence/verify/2026-10-20-native-coding-sdk-acceptance.md)。
 
 ## 历史验收
 
@@ -148,7 +144,7 @@ print(await client.commands.run('opencode_version'))
 | --- | --- | --- |
 | alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
 
-该记录采用已固定的 e2cb27e 服务端来源覆盖，与现有镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
+该历史记录采用 e2cb27e 服务端来源覆盖，与当时的镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
 
 ## 二次开发
 

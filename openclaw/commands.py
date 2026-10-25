@@ -285,19 +285,6 @@ def gateway_stop(command_timeout: int = 10) -> dict:
         return {"running": False, "owned": False}
 
 
-@command("gateway", description="Compatibility alias: action=start|status|health|stop.")
-def gateway(action: str = "start", port: int = 18789, bind: str = "loopback", command_timeout: int = 60) -> dict:
-    if action == "start":
-        return gateway_start(port, bind, command_timeout)
-    if action == "status":
-        return gateway_status()
-    if action == "health":
-        return gateway_health(command_timeout)
-    if action == "stop":
-        return gateway_stop(command_timeout)
-    raise ValueError("action must be start, status, health, or stop")
-
-
 atexit.register(_stop_owned, 2)
 
 if __name__ == "__main__":

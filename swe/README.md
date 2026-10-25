@@ -8,9 +8,9 @@ This single-instance portability slice does not run the official Docker harness,
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a3`, installed directly by the Dockerfile.
 
-Alibaba base `v0.0.49` (resolved by the builder), Python 3.13 server/agent, independent official-SHA Python 3.11.10 evaluation runtime, existing Node.js 20, mini-swe-agent 2.4.6, LiteLLM 1.82.6, pytest 8.3.5. The in-sandbox server uses source `e2cb27e24fde0a67112f82b8d44af463445a5d1a`. See [Dockerfile](./Dockerfile) for all pins. No nested Docker, system installs at runtime or full dataset download.
+Alibaba base `v0.0.49` (resolved by the builder), Python 3.13 server/agent, independent official-SHA Python 3.11.10 evaluation runtime, existing Node.js 20, mini-swe-agent 2.4.6, LiteLLM 1.82.6, pytest 8.3.5. Published server package. See [Dockerfile](./Dockerfile) for all pins. No nested Docker, system installs at runtime or full dataset download.
 
 ## Problem solved
 

@@ -6,9 +6,9 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a3`，由 Dockerfile 直接安装。
 
-阿里云generation2 basev0.0.49/Linuxx64/Python3.13；原版Node24.16.0归档/可执行文件SHA256固定，完整QM源码0.1.0、不可变提交和原版npm完整性锁。原版Node SDK0.1.0源码90b5187dca84fca78d75d3045896482540641c72使用原锁和build脚本编译；2026-10-21查询npm0.1.0返回404，不假设已发布。server源码34e7e011c5569f77b7f605e65313be7498f6cf02。[Dockerfile](Dockerfile)、[来源](upstream.json)、[QM锁](package-lock.json)、[SDK锁](sdk-package-lock.json)、[设计](../docs/design/qm.md)。
+阿里云generation2 basev0.0.49/Linuxx64/Python3.13；原版Node24.16.0归档/可执行文件SHA256固定，完整QM源码0.1.0、不可变提交和原版npm完整性锁。原版Node SDK0.1.0源码63d7cd8ece221b9f968eef51eeb932ea334c90d3使用原锁和build脚本编译；npm 包尚未发布；镜像从已审核的不可变 SDK 源码构建。已发布服务端包。[Dockerfile](Dockerfile)、[来源](upstream.json)、[QM锁](package-lock.json)、[SDK锁](sdk-package-lock.json)、[设计](../docs/design/qm.md)。
 
 ## 解决的问题
 

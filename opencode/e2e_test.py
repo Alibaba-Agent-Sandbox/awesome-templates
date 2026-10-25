@@ -30,7 +30,7 @@ WORKSPACE = os.environ.get("E2E_WORKSPACE", "/home/user/app").rstrip("/")
 RUN_LLM = os.environ.get("E2E_RUN_LLM", "0").strip().lower()
 REQUIRE = os.environ.get("E2E_REQUIRE_LLM", "0").strip().lower() in {"1", "true", "yes"}
 PINNED = "1.19.0"
-REQUIRED = {"opencode", "opencode_run", "opencode_version", "opencode_setup_check",
+REQUIRED = {"opencode_run", "opencode_version", "opencode_setup_check",
             "opencode_serve_start", "opencode_serve_status", "opencode_serve_stop"}
 RUN_PARAMS = {"prompt", "model", "agent", "session", "continue_session", "cwd"}
 RESULTS: list[tuple[str, str]] = []
@@ -324,6 +324,8 @@ def main() -> int:
         params = {arg.get("name") for arg in run.get("args", [])}
         record(commands.status_code == 200 and REQUIRED <= names and RUN_PARAMS <= params,
                "target command registration and parameters")
+        record("opencode" not in names and client.post("/commands/opencode", json={"prompt":"unused"}).status_code == 404,
+               "retired command is absent from discovery and invocation")
         missing = client.post("/commands/opencode_run", json={})
         record(missing.status_code == 400, "missing required prompt returns 400")
         invalid = client.post("/commands/opencode_run", json={"prompt": "  "})
