@@ -239,3 +239,7 @@ class ImageExportTests(unittest.TestCase):
                     export_owned_image(entries, 'public-e2e-owned', Path(temp) / 'python-hello', target, {})
                 self.assertTrue(all(call.args[0][1:3] == ['image', 'inspect'] for call in run.call_args_list))
             self.assertFalse(target.exists())
+
+
+def test_foreign_managed_identity_has_controlled_compatibility_diagnostic():
+    assert cli_diagnostics(json.dumps({'code':'E8002', 'message':'Template cannot launch on this provider: provider-mismatch.'})) == {'code':'E8002','category':'provider-mismatch'}

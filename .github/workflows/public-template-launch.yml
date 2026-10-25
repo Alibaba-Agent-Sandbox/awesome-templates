@@ -16,7 +16,7 @@ on:
         required: true
         type: string
       templates:
-        description: all or comma-separated source template names
+        description: all, managed, or comma-separated source template names
         default: all
         required: true
         type: string
@@ -43,6 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
+      run_source: ${{ steps.matrix.outputs.run_source }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -67,7 +68,8 @@ jobs:
               if not re.fullmatch('[0-9a-f]{40}', os.environ[key]):
                   raise SystemExit(key + ' must be an exact reviewed commit')
           available = source_names()
-          names = available if os.environ['REQUESTED_TEMPLATES'] == 'all' else os.environ['REQUESTED_TEMPLATES'].split(',')
+          managed = os.environ['REQUESTED_TEMPLATES'] == 'managed'
+          names = available if os.environ['REQUESTED_TEMPLATES'] == 'all' else (['python-hello'] if managed else os.environ['REQUESTED_TEMPLATES'].split(','))
           if not names or any(name not in available for name in names) or len(set(names)) != len(names):
               raise SystemExit('Select unique source template names from the catalog')
           selected = os.environ['REQUESTED_PROVIDER']
@@ -76,9 +78,11 @@ jobs:
           providers = ['opensandbox', 'alicloud-express'] if selected == 'both' else [selected]
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               output.write('matrix=' + json.dumps({'template': names, 'provider': providers}) + '\n')
+              output.write('run_source=' + ('false' if managed else 'true') + '\n')
           PY
   launch:
     needs: plan
+    if: needs.plan.outputs.run_source == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 100
     strategy:
@@ -219,5 +223,81 @@ jobs:
         with:
           name: public-launch-${{ matrix.provider }}-${{ matrix.template }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/public-launch.json
+          if-no-files-found: warn
+          retention-days: 14
+  native-managed:
+    if: inputs.templates == 'managed' && inputs.provider != 'alicloud-express'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      OSB_WORKDIR: /tmp/abx-public-managed-opensandbox
+      OSB_API_KEY: fixed-synthetic-opensandbox-key
+      OSB_WITH_EGRESS: '0'
+      OSB_WITH_CODE_INTERPRETER: '1'
+      OSB_EXECD_IMAGE: opensandbox/execd@sha256:cda2bc35409bbf57561599b316cafb899598f7dce671332e7ceda14eb1cfeded
+      ABX_OPENSANDBOX_BASE_URL: http://127.0.0.1:8080
+      ABX_OPENSANDBOX_API_KEY: fixed-synthetic-opensandbox-key
+      ABX_OPENSANDBOX_USE_SERVER_PROXY: 'false'
+      ABX_NO_KEYCHAIN: '1'
+      NO_COLOR: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Alibaba-Agent-Sandbox/python-sdk
+          ref: ${{ inputs.sdk_ref }}
+          path: .launch-fixtures/sdk
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Alibaba-Agent-Sandbox/agent-sandbox
+          ref: ${{ inputs.cli_ref }}
+          path: .launch-fixtures/cli
+          persist-credentials: false
+      - name: Resolve exact published CLI version
+        run: |
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          version=json.loads(Path('.launch-fixtures/cli/package.json').read_text())['version']
+          with open(os.environ['GITHUB_ENV'],'a') as stream:stream.write('PUBLIC_CLI_VERSION='+version+'\n')
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Fresh published CLI, paired Python packages and upstream interpreter SDK
+        run: |
+          python - <<'PY'
+          import os,re
+          assert re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+',os.environ['PUBLIC_CLI_VERSION'])
+          PY
+          npm install -g --registry https://registry.npmjs.org "@agent-sandbox/cli@$PUBLIC_CLI_VERSION"
+          python -m pip install --no-cache-dir --index-url https://pypi.org/simple agent-sandbox-client==0.4.0a1 agent-sandbox-server==0.4.0a1 opensandbox-code-interpreter==1.1.1 -r scripts/requirements-spec.txt
+          python -m pip check
+          abx --version
+          abx provider install Alibaba-Agent-Sandbox/awesome-providers//opensandbox --ref "${{ inputs.providers_ref }}" --yes
+      - name: Start a dedicated original Docker-backed backend
+        run: |
+          bash .launch-fixtures/sdk/e2e/opensandbox/local-up.sh up
+          abx provider doctor opensandbox
+      - name: Native catalog launch and persistent interpreter business assertions
+        run: |
+          python scripts/public_managed_opensandbox.py --work "$RUNNER_TEMP/managed-owned" --output "$RUNNER_TEMP/managed-public.json"
+      - name: Stop only this disposable dedicated backend
+        if: always()
+        run: |
+          bash .launch-fixtures/sdk/e2e/opensandbox/local-up.sh down
+          test -z "$(docker ps -aq --filter name=sandbox-)"
+      - name: Preserve sanitized outcome including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: managed-opensandbox-public-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/managed-public.json
           if-no-files-found: warn
           retention-days: 14

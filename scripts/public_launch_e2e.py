@@ -96,6 +96,7 @@ def cli_diagnostics(output):
     if not isinstance(message, str):
         return details
     for prefix, category in [
+        ('Template cannot launch on this provider: provider-mismatch.', 'provider-mismatch'),
         ('Template startup failed', 'template-startup'),
         ('Sandbox creation/session binding failed', 'sandbox-session-binding'),
         ('Sandbox creation has an uncertain outcome', 'sandbox-creation-uncertain'),
@@ -438,6 +439,11 @@ async def verify(args):
                 urls[port] = url
             report['http_acceptance'] = await asyncio.to_thread(run_controller, source, urls,
                 cli.private_directory, controller_fixture, token=env['ABX_SERVER_TOKEN'])
+            if not report['http_acceptance']['passed']:
+                from opensandbox_template_e2e import safe_label
+                labels = [line for line in (cli.private_directory / 'http.log').read_text().splitlines()
+                          if line.startswith(('[FAIL]', '[SKIP]'))]
+                report['http_diagnostics'] = [safe_label(line, [env['ABX_SERVER_TOKEN'], *server_fixture.values()]) for line in labels[:12]]
             require(report['http_acceptance']['passed'], 'template application HTTP controller')
         if args.export_image_dir:
             phase = 'export-owned-image'

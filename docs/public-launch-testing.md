@@ -86,3 +86,23 @@ smoke 必须可重复执行，真实模型业务和完整应用控制器
 非零退出码；原始失败不被之后的清理或重跑覆盖。
 
 可选 `export_images: true` 会在清理前保存本次成功启动实际构建的唯一镜像、SHA256 和包/源码来源，保留一天，供另一个明确标记的已有镜像后端实验使用；它不能证明另一平台的源码准备路径。非本次或不唯一的镜像会拒绝导出。
+
+
+## Native provider-owned catalog entries
+
+Select `templates: managed` and `provider: opensandbox` in the same manual workflow. This native journey installs the
+published npm CLI, paired PyPI client/server 0.4.0a1, the pinned provider from its
+public Git URL and upstream `opensandbox-code-interpreter==1.1.1`. It launches
+`opensandbox-code-interpreter` through the public catalog, exercises CLI shell and
+Python shell/files, then runs real native persistent/isolated interpreter contexts,
+program error and context-deletion assertions. SDK NotFound and Docker observations
+independently verify cleanup. The same attempt checks that the three foreign
+provider identities (`base`, `code-interpreter-v1`, `desktop`) are rejected on
+OpenSandbox without creating containers. These entries are reported
+`NOT_APPLICABLE`, never as a successful cross-provider launch.
+
+中文：同一手动工作流选择 `templates: managed`、`provider: opensandbox`，从公开包和公开
+provider Git 地址开始，测试内置解释器模板的 CLI 启动、进程/文件，以及真实原生
+持久上下文、隔离、程序异常和上下文删除；SDK 与 Docker 独立确认资源清理。
+另外三个绑定其他提供方的内置标识会验证明确拒绝和未创建容器，记为
+`NOT_APPLICABLE`，不能算跨平台启动成功。

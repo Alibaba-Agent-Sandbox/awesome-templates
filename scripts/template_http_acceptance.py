@@ -61,6 +61,7 @@ def controller_environment(source: Path, urls: dict[int, str], fixture: dict[str
     env.update(fixture)
     if token is not None:
         env["E2E_TOKEN"] = token
+        env["ABX_SERVER_TOKEN"] = token
     return env
 
 
