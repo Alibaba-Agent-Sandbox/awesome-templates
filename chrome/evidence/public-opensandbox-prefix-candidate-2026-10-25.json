@@ -1,0 +1,104 @@
+{
+  "result": "PASS",
+  "template": "chrome",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch + manifest smoke via host CLI, Python and HTTP; no real-model acceptance",
+  "manifest_sha256": "cca98fff0c664d788430ba52887bd89d654e02a44b5dcc25917c47d4ef4dc5ce",
+  "cli_version": "abx, version 0.5.1",
+  "python_client_version": "0.4.0a1",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "chrome_smoke",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "installed_packages": {
+    "distribution": "source",
+    "cli": {
+      "name": "@agent-sandbox/cli",
+      "version": "0.5.1",
+      "source_ref": "0015bb59af90aca273307112cdc1b2b2de9c8805"
+    },
+    "python_client": {
+      "name": "agent-sandbox-client",
+      "version": "0.4.0a1",
+      "source_ref": "d0b8d190489e8fc779914cdd28cf9888abfeda33"
+    },
+    "python_server": {
+      "name": "agent-sandbox-server",
+      "version": "0.4.0a1",
+      "source_ref": "d0b8d190489e8fc779914cdd28cf9888abfeda33"
+    },
+    "provider_source_ref": "48f09103380657ad7e5ea97422e50156cb01e1dc",
+    "template_source_ref": "1d31a2acd62c524f76d47bd43f0c24ed389d6782"
+  },
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "endpoint_mode": "direct",
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 30,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "bb0f0515b62a07d68b5794daaa148fa2dd73dfd47890019b9d750cb5235428d3",
+    "passed": true
+  },
+  "application_result": "PASS",
+  "input_receipt": {
+    "manifest_digest": "sha256:cca98fff0c664d788430ba52887bd89d654e02a44b5dcc25917c47d4ef4dc5ce",
+    "source_digest": "7ff43c41124cf0dc27c676aa64552053b5dc0663515ac73a9ef7d974d4b3c751",
+    "provider_digest": "sha256:5e61ec1d9b2f580804166b5e5a89b424b2f13054c9e22c5fc85a9b624b6ec3cc",
+    "provider_snapshot_digest": "82ce5dac02f0d162f1b55ed58bc4e20f8d448dc025b49c8d7e31d92290efb25f",
+    "plan_digest": "a36e15556bb9175121a7c05a9f74f9bfdc8863d7ee5ebb9466a2d49e01446035",
+    "build_profile": null
+  },
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    },
+    {
+      "port": 9222,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    },
+    {
+      "port": 6080,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "github_attempt": {
+    "run_id": "40195245899",
+    "artifact_id": 12599651507,
+    "artifact_digest": "sha256:c96ecf1ab0db1c4831b824bc2ab2800994b1bb7d8ab1a4cee72b59070cee3a06",
+    "receipt_sha256": "3467262c895d628e9aa612c751ac8ce9a6822bd7eea161c695f2eaf775c50a6a"
+  },
+  "workflow_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/40195245899"
+}
