@@ -29,7 +29,7 @@ for n in ['pip','numpy','pandas','matplotlib','jupyter','ipykernel']:
 print(json.dumps(result))"""
 
 async def verify(name: str, output: Path, cli: str | None) -> bool:
-    from agent_sandbox.api.sandbox import Sandbox
+    from agent_sandbox import ProviderSandbox
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
     tag = "managed-proof-" + uuid.uuid4().hex
     private = Path(tempfile.mkdtemp(prefix="abx-managed-owned-"))
@@ -43,7 +43,7 @@ async def verify(name: str, output: Path, cli: str | None) -> bool:
     result = {"template": name, "provider": "alicloud-express", "verification_type": "provider-managed-runtime", "date": stamp, "passed": False, "cleanup_verified": False, "native_interpreter_verified": False, "checks": [], "client_version": importlib.metadata.version("agent-sandbox-client")}
     sb = None
     try:
-        sb = await Sandbox.create(template=name, timeout=240, metadata={"verification": tag})
+        sb = await ProviderSandbox.create(template=name, timeout=240, metadata={"verification": tag})
         intent["sandbox_id"] = sb.id
         save()
         import shlex
@@ -85,7 +85,7 @@ async def verify(name: str, output: Path, cli: str | None) -> bool:
             offset = 0
             matches = []
             while True:
-                rows = await Sandbox.list(limit=100, offset=offset)
+                rows = await ProviderSandbox.list(limit=100, offset=offset)
                 matches.extend(x for x in rows if (x.metadata or {}).get("verification") == tag)
                 if len(rows) < 100:
                     break

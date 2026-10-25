@@ -111,9 +111,4 @@ release/tag 操作须有授权范围、兼容说明和验证产物；示例安�
 pip哈希锁安装使用--require-hashes -r与一个显式COPY的本地锁文件。每项依赖必须固定精确版本和SHA256，不混入额外未固定包、外部requirements或索引指令。检查器支持简单COPY源到目标文件映射；镜像内仍需pip实际哈希校验及pip check。
 
 
-需要新版服务器契约时，模板可增加 `server-sdk.commit`：单个小写40位公开 commit
-加换行，必须与 Dockerfile 的不可变服务器 fallback 一致。L1 先检出该源码构建
-wheel，归档及注册证明核对相同 pin；该文件计入上下文哈希。没有该文件的模板
-继续使用历史共同注入 pin，增加一个消费者不会更改或重新认证其他运行时。
-
-默认 Dockerfile 中的服务器归档提交必须与 `scripts/server_sdk_pin.py`（或显式的 `server-sdk.commit`）一致。检查器拒绝不一致的 fallback，确保默认构建与 CI 注入构建选择同一服务器源码。修改提交后须重新完成对应源码的镜像及工作流验收，原有回执仅作为历史保留。
+当前镜像在 Dockerfile 中固定已发布的 `agent-sandbox-server` 包版本，CI 直接构建该配方并核对实际安装版本。修改依赖后须重新完成镜像及运行测试；旧记录保留为历史。当前构建不使用 SDK 源码归档、按模板选择 Git 提交或 wheel 回退。

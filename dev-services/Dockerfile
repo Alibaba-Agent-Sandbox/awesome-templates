@@ -12,12 +12,7 @@ RUN mkdir -p /etc/postgresql-common \
     && dpkg-query -W postgresql-17 postgresql-client-17 libpq5 redis-server redis-tools \
     && rm -rf /var/lib/apt/lists/*
 ENV WORKSPACE=/home/user/app DEV_SERVICES_POSTGRES_PORT=5432 DEV_SERVICES_REDIS_PORT=16379
-COPY *.whl /tmp/
-RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
-        pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
-    else \
-        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/e2cb27e24fde0a67112f82b8d44af463445a5d1a.tar.gz#subdirectory=server-sdk"; \
-    fi
+RUN pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py lifecycle.py .

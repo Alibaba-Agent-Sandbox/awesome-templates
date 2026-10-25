@@ -207,8 +207,8 @@ async def sdk_preview(sandbox, *, remote_port: int = 8443):
 
 
 async def main(sandbox_id, remote_port=8443):
-    from agent_sandbox.api.sandbox import Sandbox
-    sandbox = await Sandbox.connect(sandbox_id)
+    from agent_sandbox import ProviderSandbox
+    sandbox = await ProviderSandbox.connect(sandbox_id)
     try:
         async with sdk_preview(sandbox, remote_port=remote_port) as relay:
             print('Open the private local preview:', relay.url, flush=True)

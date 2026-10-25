@@ -8,6 +8,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 固定官方CLI2026.10.19-6bbf2c4、Linux x86_64，原版启动器、内置Node及原生模块保持不变。原包183,733,394字节，控制端实测SHA256为`cf80cc18d8b33bf33e762353977ca1868cfc45290c92c0ffdcef83bb8b37b44f`，并非上游发布的校验和。460个普通文件共585,886,062字节。[完整清单](upstream.json)、[许可说明](UPSTREAM-NOTICE.md)、[设计](../docs/design/cursor-agent.md)。基础镜像为阿里云generation2，Python3.13；服务端源码固定34e7e011c5569f77b7f605e65313be7498f6cf02。
 
 ## 解决的问题

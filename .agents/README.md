@@ -2,11 +2,13 @@
 
 ## Specification 5 delivery (2026-10-25)
 
+- [Published runtime and current acceptance](notes/proposed/process/2026-10-25-published-server-runtime.md) · [verification](evidence/verify/2026-10-25-published-server-runtime.md). New package pins require new image/cloud evidence; prior matrices retain their exact dated scope.
+
 - [Unified template launch](notes/proposed/architecture/2026-10-25-unified-template-launch.md) · [verification](evidence/verify/2026-10-25-unified-template-launch.md).
 
 - [Release installation and durable matrix evidence](notes/proposed/process/2026-10-25-unified-launch-release-docs.md) · [documentation verification](evidence/verify/2026-10-25-unified-launch-release-docs.md) · [complete OpenSandbox matrix](evidence/verify/2026-10-25-unified-launch-opensandbox-matrix.md).
 
-Current authoring uses one startup command and all declared services, without workflow selectors. The source-candidate OpenSandbox matrix passed 46/46 recipes and 219 consumer calls with independent cleanup. Its receipts preserve exact source provenance; published package installation and managed catalog launch remain separate checks. Current setup targets CLI 0.5.1+ and Python client 0.4.0a1. Their official installation and a separate public CLI 0.5.1 Express `base` launch/exec/cleanup have passed; this does not extend the other managed or source-matrix scopes. Earlier cloud receipts below retain their exact historical scope.
+Current authoring uses one startup command and all declared services, without workflow selectors. The source-candidate OpenSandbox matrix passed 46/46 recipes and 219 consumer calls with independent cleanup. Its receipts preserve exact source provenance; published package installation and managed catalog launch remain separate checks. Current setup targets CLI 0.5.1+ and published Python client 0.4.0a2. The new server pins are pending fresh image/cloud acceptance. Their official installation and a separate public CLI 0.5.1 Express `base` launch/exec/cleanup have passed; this does not extend the other managed or source-matrix scopes. Earlier cloud receipts below retain their exact historical scope.
 
 ## Historical delivery (2026-10-24)
 
@@ -293,7 +295,7 @@ Source image backend acceptance: [decision](notes/proposed/feature/2026-10-22-so
 - [Source application quick starts](notes/implemented/process/2026-10-24-source-application-quickstarts.md) · [verification](evidence/verify/2026-10-24-source-application-quickstarts.md).
 - [Managed template usage and default execution](notes/implemented/process/2026-10-24-managed-template-usage.md) · [verification](evidence/verify/2026-10-24-managed-template-usage.md)
 
-Chrome provider-path correction: [decision](notes/proposed/feature/2026-10-25-chrome-provider-prefix.md) · [verification](evidence/verify/2026-10-25-chrome-provider-prefix.md).
+Chrome provider-path correction: [decision](notes/implemented/feature/2026-10-25-chrome-provider-prefix.md) · [verification](evidence/verify/2026-10-25-chrome-provider-prefix.md).
 Current public-package rerun: [decision](notes/proposed/process/2026-10-25-public-opensandbox-rerun.md), [verification](evidence/verify/2026-10-25-public-opensandbox-rerun.md).
 
 Current controller authentication: [decision](notes/proposed/process/2026-10-25-current-controller-auth.md) · [verification](evidence/verify/2026-10-25-current-controller-auth.md).

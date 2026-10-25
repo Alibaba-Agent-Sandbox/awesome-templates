@@ -145,7 +145,7 @@ Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (`cn-ha
 Pins, in `codex/Dockerfile`:
 
 - `npm install -g @openai/codex@0.162.1` (probed with `npm view` on 2026-10-15; `codex --version` prints `codex-cli 0.162.1`).
-- `agent-sandbox-server==0.3.0` from python-sdk `61c43e0be65a1f57aa09186d578e7b399e48429b` (includes PR #21). A wheel injected by `abx template deploy` wins; otherwise the Dockerfile installs that git archive (`subdirectory=server-sdk`). The PyPI project named `agent-sandbox` is a different package.
+Install the exact published `agent-sandbox-server==0.4.0a2` distribution from PyPI, as declared in the Dockerfile.
 
 Also installed from apt, unpinned distro packages: `git`, `ripgrep`, `jq`, `ca-certificates`. System `bubblewrap` is not installed, so Codex keeps using the `bwrap` bundled under `codex-resources/` instead of a PATH binary that cannot create user namespaces.
 

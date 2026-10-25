@@ -16,14 +16,14 @@ IMAGE='registry.cn-hangzhou.aliyuncs.com/example/e2e-ci-image-'+'a'*16+':review'
 def fixture(tmp_path):
     source=tmp_path/'product';source.mkdir()
     (source/'template.yaml').write_text('name: product\nversion: 1.0.0\nresources: {cpu: 2, memory: 2048}\nsmoke:\n  - command: hello\n    expect: ok\ntested_on: []\n')
-    (source/'Dockerfile').write_text('FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>\nWORKDIR /home/user/app\nCOPY --chown=user:user commands.py .\nUSER user\n')
+    (source/'Dockerfile').write_text('FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>\nRUN pip install agent-sandbox-server==0.4.0a2\nWORKDIR /home/user/app\nCOPY --chown=user:user commands.py .\nUSER user\n')
     (source/'commands.py').write_text('# immutable public runtime\n')
-    proof={'schema_version':1,'verification_type':'ci-docker-archive','template':'product','template_version':'1.0.0','github_repository':'Alibaba-Agent-Sandbox/awesome-templates','source_head_commit':'b'*40,'checkout_commit':'b'*40,'workflow_run_id':'123','artifact_id':'456','archive_sha256':'c'*64,'image_config_sha256':'d'*64,'pushed_image_digest':'sha256:'+'a'*64,'server_sdk_commit':ci_image.SERVER_COMMIT,'context_sha256':ci_image.context_sha256(source),'artifact_verified':True,'image_context_verified':True,'image_non_root':True,'registry_push_verified':True,'registry_private_repo_verified':True,'registry_credentials_storage':'anonymous RAM fd','registration_reference_type':'owned tag with digest readback','tag_digest_verified_before_registration':True,'tag_digest_verified_after_runtime':False}
+    proof={'schema_version':1,'verification_type':'ci-docker-archive','template':'product','template_version':'1.0.0','github_repository':'Alibaba-Agent-Sandbox/awesome-templates','source_head_commit':'b'*40,'checkout_commit':'b'*40,'workflow_run_id':'123','artifact_id':'456','archive_sha256':'c'*64,'image_config_sha256':'d'*64,'pushed_image_digest':'sha256:'+'a'*64,'server_package_version':'0.4.0a2','context_sha256':ci_image.context_sha256(source),'artifact_verified':True,'image_context_verified':True,'image_non_root':True,'registry_push_verified':True,'registry_private_repo_verified':True,'registry_credentials_storage':'anonymous RAM fd','registration_reference_type':'owned tag with digest readback','tag_digest_verified_before_registration':True,'tag_digest_verified_after_runtime':False}
     path=tmp_path/'public-proof.json';path.write_text(json.dumps(proof))
     return source,proof,path
 
 
-@pytest.mark.parametrize('key,value',[('artifact_verified',False),('image_non_root',False),('registry_private_repo_verified',False),('server_sdk_commit','e'*40),('template_version','9.0.0'),('github_repository','unreviewed/fork'),('pushed_image_digest','invalid'),('registry_credentials_storage','disk config'),('private_registry_password','not-public')])
+@pytest.mark.parametrize('key,value',[('artifact_verified',False),('image_non_root',False),('registry_private_repo_verified',False),('server_package_version','e'*40),('template_version','9.0.0'),('github_repository','unreviewed/fork'),('pushed_image_digest','invalid'),('registry_credentials_storage','disk config'),('private_registry_password','not-public')])
 def test_wrong_or_private_proof_fails_before_cloud(tmp_path,key,value):
     source,proof,path=fixture(tmp_path);proof[key]=value;path.write_text(json.dumps(proof))
     with pytest.raises(SystemExit):h.build_options([str(source),'--build','image','--image-ref',IMAGE,'--image-proof',str(path)])
@@ -132,49 +132,23 @@ def test_changed_tag_after_runtime_cannot_publish_even_when_cleanup_succeeds(tmp
     assert not (source/'evidence').exists()
 
 
-def test_proof_requires_the_exact_template_server_pin(tmp_path):
+def test_proof_requires_the_declared_public_server_package(tmp_path):
     source,proof,_=fixture(tmp_path)
-    pin='f'*40
-    (source/'server-sdk.commit').write_text(pin+'\n')
-    dockerfile=source/'Dockerfile'
-    dockerfile.write_text(dockerfile.read_text()+f'RUN pip install "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/{pin}.tar.gz#subdirectory=server-sdk"\n')
+    path=source/'Dockerfile'
+    path.write_text(path.read_text().replace('0.4.0a2','0.4.0a3'))
     proof['context_sha256']=ci_image.context_sha256(source)
-    with pytest.raises(ValueError,match='server source'):
+    with pytest.raises(ValueError,match='server package'):
         ci_image.validate_proof(source,proof,IMAGE)
-    proof['server_sdk_commit']=pin
+    proof['server_package_version']='0.4.0a3'
     assert ci_image.validate_proof(source,proof,IMAGE)==proof
 
 
-@pytest.mark.parametrize('archive', ['main.tar.gz#subdirectory=server-sdk', 'v0.3.0.tar.gz#subdirectory=server-sdk', 'a'*40+'.tar.gz#subdirectory=client-sdk'])
-def test_mutable_or_wrong_server_archives_are_refused(tmp_path,archive):
+@pytest.mark.parametrize('pin',['agent-sandbox-server', 'agent-sandbox-server>=0.4.0a2', 'agent-sandbox-server==0.4.0a2 agent-sandbox-server==0.4.0a3'])
+def test_missing_or_conflicting_public_server_pins_are_rejected(tmp_path,pin):
     source,_,_=fixture(tmp_path)
-    (source/'server-sdk.commit').write_text('a'*40+'\n')
-    (source/'Dockerfile').write_text('RUN pip install https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/'+archive+'\n')
-    with pytest.raises(ValueError,match='exact public'):
-        ci_image.server_commit(source)
-
-
-def test_conflicting_server_pins_are_refused(tmp_path):
-    source,_,_=fixture(tmp_path)
-    (source/'server-sdk.commit').write_text('a'*40+'\n')
-    (source/'Dockerfile').write_text('\n'.join('RUN pip install https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/'+pin*40+'.tar.gz#subdirectory=server-sdk' for pin in ['a','b']))
-    with pytest.raises(ValueError,match='conflicting'):
-        ci_image.server_commit(source)
-
-
-def test_default_server_pin_rejects_a_different_fallback(tmp_path):
-    source,_,_=fixture(tmp_path)
-    (source/'Dockerfile').write_text('RUN pip install https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/'+'a'*40+'.tar.gz#subdirectory=server-sdk\n')
-    with pytest.raises(ValueError, match="differs from the Dockerfile fallback"):
-        ci_image.server_commit(source)
-
-
-@pytest.mark.parametrize('value',['main\n','a'*40,'A'*40+'\n','a'*40+'\nextra'])
-def test_template_server_opt_in_refuses_mutable_or_ambiguous_values(tmp_path,value):
-    source,_,_=fixture(tmp_path)
-    (source/'server-sdk.commit').write_text(value)
-    with pytest.raises(ValueError,match='immutable'):
-        ci_image.server_commit(source)
+    (source/'Dockerfile').write_text('RUN pip install '+pin+'\n')
+    with pytest.raises(ValueError,match='one exact public'):
+        ci_image.server_version(source)
 
 
 def test_private_archive_staging_keeps_registry_auth_on_native_temp_filesystem(tmp_path, monkeypatch):
@@ -236,7 +210,7 @@ def test_missing_image_cli_contract_blocks_before_archive_or_registry_calls(tmp_
     assert receipt['runtime_attempted'] is False and receipt['passed'] is False
 
 
-def test_default_server_pin_accepts_the_matching_fallback(tmp_path):
+def test_server_version_comes_from_the_public_package_declaration(tmp_path):
     source, _, _ = fixture(tmp_path)
-    (source / 'Dockerfile').write_text('RUN pip install https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/' + ci_image.SERVER_COMMIT + '.tar.gz#subdirectory=server-sdk\n')
-    assert ci_image.server_commit(source) == ci_image.SERVER_COMMIT
+    (source / 'Dockerfile').write_text('RUN pip install agent-sandbox-server==0.4.0a2\n')
+    assert ci_image.server_version(source) == '0.4.0a2'

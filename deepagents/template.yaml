@@ -1,5 +1,5 @@
 name: deepagents
-version: 1.0.0
+version: 1.0.1
 description: Pinned native DeepAgents0.7.25 with local file/shell backend, explicit
   compatible provider and no subagents.
 author: alibaba-agent-sandbox

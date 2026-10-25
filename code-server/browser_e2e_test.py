@@ -246,8 +246,8 @@ async def verify_ui(sandbox, *, workspace='/home/user/app', preview_mode='direct
 
 
 async def main(sandbox_id, preview_mode='direct'):
-    from agent_sandbox.api.sandbox import Sandbox
-    sandbox = await Sandbox.connect(sandbox_id)
+    from agent_sandbox import ProviderSandbox
+    sandbox = await ProviderSandbox.connect(sandbox_id)
     try:
         try:
             result = await verify_ui(sandbox, preview_mode=preview_mode)

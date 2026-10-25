@@ -1,5 +1,5 @@
 name: codex-agent-api
-version: "2.0.0"
+version: "2.0.1"
 description: "Project session HTTP API backed by pinned upstream Codex exec JSONL."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0

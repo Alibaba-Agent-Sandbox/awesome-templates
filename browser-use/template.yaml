@@ -1,5 +1,5 @@
 name: browser-use
-version: 1.0.0
+version: 1.0.1
 description: Native browser-use0.13.11 text-DOM agent on private pinned local Chromium.
 author: alibaba-agent-sandbox
 license: Apache-2.0

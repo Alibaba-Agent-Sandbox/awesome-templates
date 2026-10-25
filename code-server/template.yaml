@@ -1,5 +1,5 @@
 name: code-server
-version: 1.0.0
+version: 1.0.1
 description: Pinned code-server4.141.0 browser IDE with mandatory password authentication,
   owned lifecycle and real login/workbench smoke.
 author: alibaba-agent-sandbox

@@ -1,5 +1,5 @@
 name: apply-patch
-version: "1.0.1"
+version: "1.0.2"
 description: Official Codex 0.162.1 patch dialect with file stdin, bounded process
   lifecycle and relative workspace paths.
 author: alibaba-agent-sandbox

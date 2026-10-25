@@ -8,6 +8,8 @@ Run original headed Chrome-for-Testing145.0.7632.6 on a private Xvfb/Openbox des
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 Alibaba generation2 basev0.0.49/Python3.13/Linuxx64; original hash-checked Chrome ZIP; exact desktop/VNC Debian package pins; isolated hash-locked aiohttp3.14.5, pycryptodome4.1.0 and Pillow11.3.0. [Dockerfile](Dockerfile), [browser provenance](browser.json), [Python lock](requirements.lock), [design](../docs/design/chrome.md). Server source e2cb27e24fde0a67112f82b8d44af463445a5d1a.
 
 ## Problem solved

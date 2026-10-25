@@ -9,6 +9,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 阿里云 FC 基础镜像v0.0.49、generation2、非root用户user、SDK源码e2cb27e。
 官方Linux x86_64/aarch64 CPU GNU资产的字节数和SHA256固定在
 [assets.json](assets.json)，对应[源码cd643d2126fffab4c6a6186905211ba868d6a657](https://github.com/block/goose/tree/cd643d2126fffab4c6a6186905211ba868d6a657)。

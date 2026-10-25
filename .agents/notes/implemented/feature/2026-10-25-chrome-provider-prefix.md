@@ -1,6 +1,6 @@
 # Preserve provider-resolved Chrome endpoint routes
 
-Status: proposed
+Status: implemented
 
 ## Problem
 

@@ -8,6 +8,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 FC v0.0.49、generation2、非root user、Linux x86_64、Python3.13。[requirements.lock](requirements.lock)固定browser-use0.13.11及全部传递依赖版本/SHA256，由[requirements.in](requirements.in)通过uv0.11.28生成。该版本依赖CDP-use，并非Python Playwright；显式Playwright1.58.0安装器选定Chromium1208/Google Chrome for Testing145.0.7632.6，--no-shell不再安装第二份headless shell。SDK固定e2cb27e或匹配注入wheel。
 
 ## 解决的问题

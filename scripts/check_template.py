@@ -67,16 +67,9 @@ DESIGN_HEADINGS = (
     "Risks",
     "Test plan",
 )
-# Allowed agent-sandbox-server installs. Either form on a RUN line is a pin.
-# PyPI:  agent-sandbox-server==X.Y.Z
-# git:   agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/<40-hex>.tar.gz#subdirectory=server-sdk
+# The runtime uses one exact public server distribution.
 SERVER_PYPI_PIN = re.compile(
     r"agent-sandbox-server==([0-9]+\.[0-9]+\.[0-9]+(?:[A-Za-z0-9.+-]*)?)"
-)
-SERVER_GIT_ARCHIVE = re.compile(
-    r"agent-sandbox-server\s*@\s*[\"']?"
-    r"https://github\.com/Alibaba-Agent-Sandbox/python-sdk/archive/"
-    r"([0-9a-fA-F]{40})\.tar\.gz#subdirectory=server-sdk"
 )
 # `pip install agent-sandbox` is a different project. `-client` and `-server` are ours.
 BARE_CLIENT_INSTALL = re.compile(
@@ -190,8 +183,8 @@ def _instruction(line: str) -> str:
     return line.split(None, 1)[0].upper()
 
 
-def _server_sdk_pinned(line: str) -> bool:
-    return SERVER_PYPI_PIN.search(line) is not None or SERVER_GIT_ARCHIVE.search(line) is not None
+def _server_package_pinned(line: str) -> bool:
+    return SERVER_PYPI_PIN.search(line) is not None
 
 
 def _bad_client_install(text: str) -> bool:
@@ -622,7 +615,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
         if not workdirs or workdirs[-1] != "/home/user/app":
             violations.append(Violation("dockerfile-workdir", "the last WORKDIR must be /home/user/app"))
         run_lines = [line for line in lines if _instruction(line) == "RUN"]
-        if not any(_server_sdk_pinned(line) for line in run_lines):
+        if not any(_server_package_pinned(line) for line in run_lines):
             violations.append(
                 Violation(
                     "pinned-version",
@@ -638,23 +631,19 @@ def check_directory(template_dir: Path) -> list[Violation]:
                 continue
             if re.search(r"pip install\b[^&|;]*==", line):
                 continue
-            if _server_sdk_pinned(line) or _pip_hash_lock(line, template_dir, lines):
+            if _server_package_pinned(line) or _pip_hash_lock(line, template_dir, lines):
                 continue
             violations.append(Violation("pinned-version", f"unpinned pip install in Dockerfile: {line}"))
         for line in lines:
             if _instruction(line) == "RUN" and "npm install" in line and "@" not in line.split("npm install", 1)[1]:
                 violations.append(Violation("pinned-version", f"unpinned npm install in Dockerfile: {line}"))
 
-    opt_in = template_dir / "server-sdk.commit"
-    if dockerfile.is_file() or opt_in.exists() or opt_in.is_symlink():
+    if dockerfile.is_file():
         try:
-            try:
-                from .server_sdk_pin import server_commit
-            except ImportError:
-                from server_sdk_pin import server_commit
-            server_commit(template_dir)
+            from server_package import server_version
+            server_version(template_dir)
         except (ValueError, OSError) as exc:
-            violations.append(Violation("server-sdk-pin", str(exc)))
+            violations.append(Violation("server-package-pin", str(exc)))
 
     commands = template_dir / "commands.py"
     if commands.is_file():

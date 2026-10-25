@@ -8,9 +8,10 @@ Runs an authenticated OpenClaw WebSocket gateway as an owned background process.
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 - Alibaba FC base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (deployment resolves the placeholders).
 - Node.js `24.16.0`, npm package `openclaw@2026.10.4`. The upstream package requires Node >=24.16.0; the base image Node 20 is insufficient.
-- `agent-sandbox-server` pinned to python-sdk commit `35da216a300f1e2e84254a1cf4b4a7ea98681505`, unless deployment injects a wheel.
 - Non-root `user`, work directory `/home/user/app`, generation 2, HTTP server port 9000 and optional gateway port 18789.
 
 ## Problem solved

@@ -17,9 +17,10 @@ requires independent code, artifact and exact-session continuation checks.
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 - Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template deploy` replaces `<region>` with `ALIBABA_CLOUD_REGION_ID` or `cn-hangzhou`, and `<tag>` with `ABX_BASE_IMAGE_TAG` or `v0.0.49`. Python 3.13 and Node.js 20 come from that image.
 - `opencode-ai@1.19.0` (npm `latest` on 2026-10-15). The package binary is `opencode`. Upstream is [sst/opencode](https://github.com/sst/opencode).
-- `agent-sandbox-server` from python-sdk commit `61c43e0be65a1f57aa09186d578e7b399e48429b` when the build context has no wheel. A wheel injected by `abx template deploy` wins. The PyPI release `agent-sandbox-server==0.3.0` predates that commit and is not installed.
 - git and ripgrep.
 - Work directory `/home/user/app`. Runtime user `user`. No image `CMD` or `ENTRYPOINT`.
 - Generation 2. `start_cmd` is `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`. `ready_cmd` is `agent-sandbox-server healthcheck --port 9000`.

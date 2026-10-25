@@ -8,6 +8,8 @@ A small Python development sandbox that greets callers, executes inline Python o
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 - Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` supplies Python 3.13 and Node.js 20. `abx template deploy` resolves the defaults to `cn-hangzhou` and `v0.0.49`.
 - Server pinned to python-sdk commit `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; an SDK wheel injected during deployment takes precedence.
 - `pytest==8.4.2` is installed in the image for the `test` command.

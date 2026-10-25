@@ -12,10 +12,11 @@ The standalone `apply_patch` binary is a different template (issue #60). The Age
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 - Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template deploy` replaces `<region>` with `cn-hangzhou` (or `ALIBABA_CLOUD_REGION_ID`) and `<tag>` with `v0.0.49` (or `ABX_BASE_IMAGE_TAG`).
 - Node.js 20 and Python 3.13 from that image.
 - `@openai/codex@0.162.1` (`codex-cli 0.162.1`).
-- `agent-sandbox-server==0.3.0` from python-sdk commit `61c43e0be65a1f57aa09186d578e7b399e48429b` when the build context has no wheel.
 - `git`, `ripgrep`, `jq`. System `bubblewrap` is not installed, so Codex uses the `bwrap` shipped inside the npm package.
 - Work directory `/home/user/app`. Workspace `/home/user/workspace`. Runtime user `user`. No image `CMD` or `ENTRYPOINT`.
 

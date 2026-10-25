@@ -8,6 +8,8 @@ Runs the actual browser-use0.13.11 agent on a private local Chromium browser. It
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 FC base v0.0.49/generation2/non-root Linux x86_64/Python3.13. [requirements.lock](requirements.lock) pins browser-use0.13.11 and every transitive version/SHA256; [requirements.in](requirements.in) is compiled by uv0.11.28. The package uses CDP-use, not a Python Playwright dependency. An explicitly pinned Playwright1.58.0 installer selects Chromium1208/Google Chrome for Testing145.0.7632.6; --no-shell avoids another headless-shell copy. Server source is fixede2cb27e or injected matching wheel.
 
 ## Problem solved

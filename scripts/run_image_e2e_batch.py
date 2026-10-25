@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run missing current-source Express image acceptance in isolated bounded workers.
+"""Run current-source Express image acceptance in isolated bounded workers.
 
 Uses an already successful exact-source image-export workflow. Credentials stay
 in the operator environment and each child runs the canonical one-image harness.
@@ -17,25 +17,21 @@ import sys
 from ci_image_archive import github
 from run_ci_image_e2e import check_image_cli
 from select_image_templates import ROOT, catalog_names
-from source_image_acceptance import audit
 
 
-def selection(root: Path, requested: str | None, rerun: bool) -> list[str]:
+def selection(root: Path, requested: str | None) -> list[str]:
     names = catalog_names(root)
     if requested is not None:
         selected = [name.strip() for name in requested.split(',')]
         if not selected or any(name not in names for name in selected) or len(set(selected)) != len(selected):
             raise ValueError('templates must be unique comma-separated catalog names')
         names = selected
-    if not rerun:
-        complete = {row['template'] for row in audit(root)['templates'] if row['express_image_http']}
-        names = [name for name in names if name not in complete]
     return sorted(names, key=lambda name: (name != 'python-hello', name))
 
 
 def exported_artifacts(run_id: int, names: list[str]) -> tuple[str, dict[str, int]]:
     workflow = github('/actions/runs/' + str(run_id))
-    if workflow.get('status') != 'completed' or workflow.get('conclusion') != 'success' or workflow.get('event') != 'workflow_dispatch':
+    if workflow.get('event') != 'workflow_dispatch' or workflow.get('status') != 'completed' or workflow.get('conclusion') != 'success':
         raise ValueError('a completed successful explicit exact-source export is required')
     head = workflow['head_sha']
     artifacts = []
@@ -60,7 +56,7 @@ def worker(source: Path, artifact_id: int, crane: Path, private_root: Path) -> d
     with (private / 'private-worker-console.log').open('w') as output:
         response = subprocess.run([sys.executable, str(ROOT / 'scripts/run_ci_image_e2e.py'),
             str(source), '--artifact-id', str(artifact_id), '--crane', str(crane),
-            '--sandbox-create', 'sdk', '--private-root', str(private)], stdout=output, stderr=output)
+            '--private-root', str(private)], stdout=output, stderr=output)
     added = sorted(set((source / 'evidence').glob('*.json')) - before)
     reports = []
     for path in added:
@@ -75,6 +71,9 @@ def worker(source: Path, artifact_id: int, crane: Path, private_root: Path) -> d
             unresolved = True
     if runtime_started and any(report.get('cleanup_verified') is not True for report in reports):
         unresolved = True
+    for path in private.glob('abx-ci-image-*/platform-intent.json'):
+        if json.loads(path.read_text()).get('template_cleanup_verified') is not True:
+            unresolved = True
     passed = response.returncode == 0 and any(report.get('passed') is True and
         report.get('cleanup_verified') is True and report.get('registry_cleanup_verified') is True
         and report.get('http_acceptance', {}).get('passed') is True for report in reports)
@@ -125,13 +124,12 @@ def main():
     parser.add_argument('--private-root', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--templates', help='Explicit comma-separated names; default selects missing current image HTTP')
-    parser.add_argument('--rerun', action='store_true', help='Explicitly include already qualified sources')
     parser.add_argument('--workers', type=int, choices=range(1, 5), default=2)
     args = parser.parse_args()
     private = args.private_root.resolve()
     if private.is_relative_to(ROOT):
         parser.error('private recovery/log/archive staging must stay outside the checkout')
-    names = selection(ROOT, args.templates, args.rerun)
+    names = selection(ROOT, args.templates)
     check_image_cli()
     head, artifacts = exported_artifacts(args.workflow_run, names)
     report = {'workflow_run': args.workflow_run, 'source_head_commit': head, 'selected': names,

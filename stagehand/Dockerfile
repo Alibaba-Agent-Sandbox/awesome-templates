@@ -34,12 +34,7 @@ RUN npm ci --omit=dev --ignore-scripts     && node --input-type=module -e "impor
 COPY patch_sdk.py /tmp/patch-stagehand-sdk.py
 RUN python3 /tmp/patch-stagehand-sdk.py /home/user/app/node_modules/@browserbasehq/stagehand/dist/index.mjs \
     && rm /tmp/patch-stagehand-sdk.py
-COPY *.whl /tmp/
-RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
-        pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
-    else \
-        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/e2cb27e24fde0a67112f82b8d44af463445a5d1a.tar.gz#subdirectory=server-sdk"; \
-    fi
+RUN pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"
 ENV HOME=/home/user WORKSPACE=/home/user/app
 COPY --chown=user:user commands.py worker.mjs browser.mjs transport.mjs process.py lifecycle.py UPSTREAM-LICENSE.md ./
 RUN chown user:user /home/user/app     && python3 -c "import subprocess; p=subprocess.run(['du','-sx','--block-size=1','/'],capture_output=True,text=True,timeout=120); assert p.returncode==0; n=int(p.stdout.split()[0]); print('image_rootfs_bytes='+str(n)); assert n<=8*1024**3"

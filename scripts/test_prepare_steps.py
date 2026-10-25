@@ -59,13 +59,10 @@ def test_unsupported_or_private_inputs_rejected(tmp_path: Path, extra: str):
 
 def test_all_catalog_profiles_generate_with_explicit_pins():
     for path in ROOT.glob("*/Dockerfile"):
-        selected = (prepare_steps.pinned_server_commit(path.parent) if (path.parent / "server-sdk.commit").exists()
-                    else "e2cb27e24fde0a67112f82b8d44af463445a5d1a")
-        data, proof = prepare(path.parent, server_commit=selected)
+        data, proof = prepare(path.parent)
         assert data["build"]["steps"][-1] == {"type": "USER", "args": ["user"]}
         assert "<" not in data["base"]
         assert proof["inputs_sha256"]["Dockerfile"]
-        assert proof["server_commit_override"] == selected
         assert proof["steps_json_bytes"] <= 15000
 
 
@@ -151,20 +148,6 @@ def test_failed_or_unknown_state_cannot_pass(tmp_path: Path, status):
         assert not harness.wait_for_steps_ready("synthetic", options, run)
     except ValueError:
         assert isinstance(status, list)
-
-
-def test_explicit_template_server_pin_rejects_a_stale_step_override(tmp_path):
-    import hashlib
-    source=fixture(tmp_path)
-    pin='f'*40
-    (source/'server-sdk.commit').write_text(pin+'\n')
-    dockerfile=source/'Dockerfile'
-    dockerfile.write_text(dockerfile.read_text().replace('USER user\n', f'RUN pip install "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/{pin}.tar.gz#subdirectory=server-sdk"\nUSER user\n'))
-    with pytest.raises(ValueError,match='required template'):
-        prepare(source,server_commit='e'*40)
-    _,proof=prepare(source,server_commit=pin)
-    assert proof['template_server_commit']==pin
-    assert proof['inputs_sha256']['server-sdk.commit']==hashlib.sha256((pin+'\n').encode()).hexdigest()
 
 
 def test_preparation_binds_every_manifest_field(tmp_path):

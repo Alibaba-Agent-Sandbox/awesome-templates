@@ -1,5 +1,5 @@
 name: _skeleton
-version: "1.0.2"
+version: "1.0.3"
 description: "Scaffold for a new Agent Sandbox template. Not a catalog entry."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0

@@ -8,6 +8,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 Alibaba FC generation 2 基础镜像、平台 Python、固定版本且校验 x86_64/aarch64 SHA256 的 Node.js 24.16.0、`@qwen-code/qwen-code@0.23.0`，以及 [Dockerfile](Dockerfile) 固定提交的沙箱服务器。CLI 不需要额外的 DashScope/OpenAI Python 库。
 
 ## 解决的问题

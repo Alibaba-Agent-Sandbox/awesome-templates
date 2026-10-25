@@ -37,8 +37,7 @@ pin. Separate `pip install`, `playwright install-deps chromium`, and `playwright
 RUN steps execute during build before USER user. Version2.0.2 splits the build to
 isolate installation phases after a stream deadline failure; runtime APIs and
 the full Chromium profile are unchanged.
-The browser path is `/opt/playwright`. The server wheel injected by deploy wins;
-current2.1.0 fallback is python-sdk archive `e2cb27e24fde0a67112f82b8d44af463445a5d1a`.
+The browser path is `/opt/playwright`. The Dockerfile installs published `agent-sandbox-server==0.4.0a2` directly.
 Generation 2 uses `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`
 and readiness `agent-sandbox-server healthcheck --port 9000`. No CMD/ENTRYPOINT.
 

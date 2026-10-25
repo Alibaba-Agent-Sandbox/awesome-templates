@@ -40,12 +40,7 @@ with urllib.request.urlopen(url, timeout=120) as response:
     p.write_bytes(response.read(2 * 1024 * 1024))
 assert hashlib.sha256(p.read_bytes()).hexdigest() == 'b1a4c83b7d12981b81e5f8d2028a73eacfbd153f4e425504c254a6f177b99997'
 PY
-COPY *.whl /tmp/
-RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
-        pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
-    else \
-        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/e2cb27e24fde0a67112f82b8d44af463445a5d1a.tar.gz#subdirectory=server-sdk"; \
-    fi
+RUN pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"
 ENV WORKSPACE=/home/user/app PYTHON_DOTENV_DISABLED=1
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py swe_process.py swe_environment.py instance.json ./

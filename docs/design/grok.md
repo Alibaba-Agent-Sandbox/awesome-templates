@@ -14,7 +14,7 @@ Both [English](../../grok/README.md#command-reference) and [Chinese](../../grok/
 
 ## How to build
 
-[Dockerfile](../../grok/Dockerfile): Alibaba generation2/v0.0.49, SHA256 Node24.16.0, full official npm integrity lock @xai-official/grok1.0.62/native optional package. No upstream install scripts: authored Node Brotli extraction creates fixed /opt/grok/bin/grok; native SHA2562a46d9e4d7ebd7a9cff7f95716714b19dad5f21dd2a497822400b1fb128969aa required. Official Apache2.0 license and packaged third-party notices retained. Servere2cb27e24fde0a67112f82b8d44af463445a5d1a, user runtime, start/health9000, no Docker CMD/ENTRYPOINT. Source snapshot2bdd1d6a6369de0e8c68132ea4539e9abd9e14a8 is contract research, not claimed as native build1474f9cbdd91.
+[Dockerfile](../../grok/Dockerfile): Alibaba generation2/v0.0.49, SHA256 Node24.16.0, full official npm integrity lock @xai-official/grok1.0.62/native optional package. No upstream install scripts: authored Node Brotli extraction creates fixed /opt/grok/bin/grok; native SHA2562a46d9e4d7ebd7a9cff7f95716714b19dad5f21dd2a497822400b1fb128969aa required. Official Apache2.0 license and packaged third-party notices retained. server package 0.4.0a2, user runtime, start/health9000, no Docker CMD/ENTRYPOINT. Source snapshot2bdd1d6a6369de0e8c68132ea4539e9abd9e14a8 is contract research, not claimed as native build1474f9cbdd91.
 
 ## Express feasibility
 

@@ -225,11 +225,11 @@ async def verify(sb, diagnostics=None):
 
 
 async def main():
-    from agent_sandbox.api.sandbox import Sandbox
+    from agent_sandbox import ProviderSandbox
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--sandbox-id', required=True)
     args = parser.parse_args()
-    sb = await Sandbox.connect(args.sandbox_id)
+    sb = await ProviderSandbox.connect(args.sandbox_id)
     try:
         print(json.dumps(await verify(sb), indent=2))
     finally:

@@ -160,25 +160,6 @@ def test_missing_or_changed_manifest_hash_is_rejected(tmp_path,missing):
     assert not inspect_receipt(tmp_path,receipt)[0]
 
 
-def test_explicit_current_sdk_pin_requires_matching_hashed_input_and_effective_selection(tmp_path):
-    receipt=example(tmp_path);proof=receipt['build_provenance'];pin='f'*40
-    docker=tmp_path/'Dockerfile';docker.write_text('RUN pip install "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/'+pin+'.tar.gz#subdirectory=server-sdk"\n')
-    proof['inputs_sha256']['Dockerfile']=hashlib.sha256(docker.read_bytes()).hexdigest()
-    (tmp_path/'server-sdk.commit').write_text(pin+'\n')
-    proof['server_commit_override']=pin
-    assert not inspect_receipt(tmp_path,receipt)[0]
-    proof['inputs_sha256']['server-sdk.commit']=hashlib.sha256((tmp_path/'server-sdk.commit').read_bytes()).hexdigest()
-    assert inspect_receipt(tmp_path,receipt)[0]
-    proof['server_commit_override']='e'*40
-    assert not inspect_receipt(tmp_path,receipt)[0]
-
-
-def test_symlinked_or_invalid_sdk_pin_does_not_qualify(tmp_path):
-    receipt=example(tmp_path)
-    (tmp_path/'server-sdk.commit').write_text('not-a-commit\n')
-    assert not inspect_receipt(tmp_path,receipt)[0]
-
-
 def test_osworld_nonmodel_gui_skip_is_not_full_http_acceptance(tmp_path):
     source=tmp_path/'osworld';source.mkdir();receipt=example(source)
     (source/'e2e_test.py').write_text('original external desktop controller')

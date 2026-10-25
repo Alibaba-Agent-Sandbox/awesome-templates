@@ -8,6 +8,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 构建器解析的阿里云 `v0.0.49` 基础镜像，Python 3.13 服务端/代理、官方 SHA 固定的独立 Python 3.11.10 评测运行时，保留原 Node.js 20，mini-swe-agent 2.4.6、LiteLLM 1.82.6、pytest 8.3.5。沙箱服务端源码固定于 `e2cb27e24fde0a67112f82b8d44af463445a5d1a`。所有固定依赖见 [Dockerfile](./Dockerfile)。不需要嵌套 Docker、运行时系统安装或下载整份数据集。
 
 ## 解决的问题

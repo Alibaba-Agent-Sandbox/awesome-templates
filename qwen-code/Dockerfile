@@ -43,12 +43,7 @@ ENV PATH="/opt/node/current/bin:${PATH}"
 RUN npm install -g @qwen-code/qwen-code@0.23.0 \
     && qwen --version && npm cache clean --force
 
-COPY *.whl /tmp/
-RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
-        pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
-    else \
-        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/e2cb27e24fde0a67112f82b8d44af463445a5d1a.tar.gz#subdirectory=server-sdk"; \
-    fi
+RUN pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"
 
 ENV HOME=/home/user WORKSPACE=/home/user/app
 ENV OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1

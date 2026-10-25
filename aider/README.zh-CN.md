@@ -9,6 +9,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 Alibaba FC base `v0.0.49` 的 Python 3.13 server 与 Node 20 保持原状。
 Aider 官方要求 Python `>=3.10,<3.13`，因此单独安装经过 SHA256 校验的
 python-build-standalone **3.12.12 / 20260211**，并在 `/opt/aider` 的独立

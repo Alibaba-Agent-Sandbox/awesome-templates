@@ -8,6 +8,8 @@ Runs the official native Crush0.98.1 terminal agent using an explicitly configur
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 Alibaba FC generation2 CPU/non-root base, pinned SDK e2cb27e. Official GNU Linux x86_64/aarch64 archives are fixed by byte length and SHA256 in [assets.json](assets.json), source [8b1824282eccc78cc62c188c245cf375230a18ce](https://github.com/charmbracelet/crush/tree/8b1824282eccc78cc62c188c245cf375230a18ce). An arm64 pin is not arm64 execution evidence.
 
 ## Problem solved

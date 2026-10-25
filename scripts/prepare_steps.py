@@ -24,10 +24,6 @@ try:
     from .manifest_contract import manifest_contract_sha256
 except ImportError:
     from manifest_contract import manifest_contract_sha256
-try:
-    from .server_sdk_pin import server_commit as pinned_server_commit
-except ImportError:
-    from server_sdk_pin import server_commit as pinned_server_commit
 
 ROOT = Path(__file__).resolve().parents[1]
 MATERIALIZER_SHA256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
@@ -304,7 +300,7 @@ def compact_run(command: str) -> str:
 
 
 def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
-            server_commit: str | None = None, source_commit: str | None = None,
+            source_commit: str | None = None,
             base_path: str | None = None, asset_transport: str = "direct",
             asset_cache: dict | None = None,
             _inline: bool = True) -> tuple[dict, dict]:
@@ -312,13 +308,7 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
         raise ValueError("asset transport must be direct, parallel or oss")
     if not re.fullmatch(r"[a-z]+-[a-z]+(?:-\d+)?", region) or not re.fullmatch(r"v\d+\.\d+\.\d+", tag):
         raise ValueError("use an explicit Alibaba region and versioned base tag")
-    if server_commit is not None and not re.fullmatch(r"[0-9a-f]{40}", server_commit):
-        raise ValueError("server source must be an immutable 40-character commit")
     source = source.resolve()
-    opt_in = source / "server-sdk.commit"
-    selected_server = pinned_server_commit(source) if opt_in.exists() or opt_in.is_symlink() else None
-    if selected_server and server_commit is not None and server_commit != selected_server:
-        raise ValueError("step server override differs from the required template SDK commit")
     if source_commit is None and source.parent == ROOT:
         head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=source, capture_output=True, text=True)
         source_commit = head.stdout.strip() if head.returncode == 0 else None
@@ -331,7 +321,7 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
     # Express executes steps as user by default; Docker's build profile installs
     # dependencies as root and explicitly returns to USER user for the runtime.
     steps = [{"type": "USER", "args": ["root"]}]
-    copied = {"server-sdk.commit": hashlib.sha256(opt_in.read_bytes()).hexdigest()} if selected_server else {}
+    copied = {}
     workdir = "/"
     seen_from = False
     dockerfile = (source / "Dockerfile").read_text()
@@ -449,15 +439,6 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
                         part = f"python3 {asset_root}/step_assets.py playwright " + part
                     steps.append(run_step(part))
                 continue
-            if "if ls /tmp/*.whl" in value:
-                match = re.fullmatch(r"if ls /tmp/\*\.whl.*?; then\s+.*?else\s+(.*?)\s*;\s*fi(.*)", value, re.S)
-                if not match:
-                    raise ValueError("unknown server-wheel fallback; review it before generating steps")
-                value = match[1] + match[2]
-                if server_commit:
-                    value, count = re.subn(r"(?<=python-sdk/archive/)[0-9a-f]{40}(?=\.tar\.gz)", server_commit, value)
-                    if count != 1:
-                        raise ValueError("expected one pinned server-source fallback")
             steps.append(run_step(value))
         elif kind == "WORKDIR":
             if not value.startswith("/"):
@@ -504,7 +485,7 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
     wire_bytes = len(json.dumps(steps, ensure_ascii=False).encode())
     if wire_bytes > 15000:
         if _inline and source_commit:
-            return prepare(source, region=region, tag=tag, server_commit=server_commit,
+            return prepare(source, region=region, tag=tag,
                            source_commit=source_commit, base_path=base_path,
                            asset_transport=asset_transport, asset_cache=asset_cache, _inline=False)
         raise ValueError(f"compressed steps ({wire_bytes} bytes) exceed the provider's 16 KiB limit; use an immutable source archive or Dockerfile mode")
@@ -514,8 +495,7 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
                   "materializer_sha256": MATERIALIZER_SHA256,
                   "source_manifest_contract_sha256": manifest_contract_sha256((source / "template.yaml").read_bytes()),
                   "template_version": str(data["version"]), "build_mode": "steps",
-                  "base_image": data["base"], "server_commit_override": server_commit,
-                  "template_server_commit": selected_server,
+                  "base_image": data["base"],
                   "verified_base_path": base_path or BASE_PATH,
                   "copy_source_commit": None if _inline else source_commit,
                   "asset_transport": asset_transport if assets else "parallel" if temporary_uv else "direct",
@@ -547,12 +527,11 @@ def main() -> int:
     parser.add_argument("--region", default="cn-hangzhou")
     parser.add_argument("--base-tag", default="v0.0.49")
     parser.add_argument("--base-path", help="Verified PATH when using a different base-image tag")
-    parser.add_argument("--server-commit")
     parser.add_argument("--source-commit", help="Immutable public source; unchanged COPY files are fetched and hash-checked")
     parser.add_argument("--asset-transport", choices=("direct", "parallel"), default="direct")
     args = parser.parse_args()
     data, provenance = prepare(args.template, region=args.region, tag=args.base_tag,
-                               server_commit=args.server_commit, source_commit=args.source_commit,
+                               source_commit=args.source_commit,
                                base_path=args.base_path, asset_transport=args.asset_transport)
     args.output.mkdir(parents=True, exist_ok=False)
     (args.output / "template.yaml").write_text(yaml.safe_dump(data, sort_keys=False, allow_unicode=True))

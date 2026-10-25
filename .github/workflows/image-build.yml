@@ -15,10 +15,6 @@ on:
         description: "Export selected successful images for a separate local transfer"
         default: false
         type: boolean
-      test_opensandbox:
-        description: "Run native original OpenSandbox Docker SDK and complete template HTTP acceptance on each selected image"
-        default: false
-        type: boolean
 
 permissions:
   contents: read
@@ -64,35 +60,18 @@ jobs:
         template: ${{ fromJSON(needs.plan.outputs.templates) }}
     env:
       TEMPLATE: ${{ matrix.template }}
-      SERVER_SDK_SHA: e2cb27e24fde0a67112f82b8d44af463445a5d1a
       SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
 
-      - name: Resolve the template's immutable server source
-        run: |
-          sdk_sha=$(python3 scripts/server_sdk_pin.py "$TEMPLATE")
-          echo "SERVER_SDK_SHA=$sdk_sha" >> "$GITHUB_ENV"
-
-      - name: Checkout the public pinned server source
-        uses: actions/checkout@v4
-        with:
-          repository: alibaba-agent-sandbox/python-sdk
-          ref: ${{ env.SERVER_SDK_SHA }}
-          path: vendor/python-sdk
-          persist-credentials: false
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
 
-      - name: Build the source server wheel
-        run: |
-          test "$(git -C vendor/python-sdk rev-parse HEAD)" = "$SERVER_SDK_SHA"
-          python -m pip install pyyaml==6.0.3 jsonschema==4.26.0
-          python -m pip wheel ./vendor/python-sdk/server-sdk --no-deps --wheel-dir "$RUNNER_TEMP/server-wheel"
+      - name: Install specification check prerequisites
+        run: python -m pip install -r scripts/requirements-spec.txt
 
       - name: Prepare the standalone template context
         run: |
@@ -104,12 +83,9 @@ jobs:
 
           source = Path(os.environ["TEMPLATE"])
           assert re.fullmatch(r"[a-z0-9][a-z0-9-]*", source.name)
-          wheels = list((Path(os.environ["RUNNER_TEMP"]) / "server-wheel").glob("agent_sandbox_server-*.whl"))
-          assert len(wheels) == 1, "exactly one source-built server wheel is required"
           context = Path(os.environ["RUNNER_TEMP"]) / ("image-context-" + source.name)
           shutil.copytree(source, context, ignore=shutil.ignore_patterns(
               ".env", ".env.*", "*.whl", "__pycache__", ".pytest_cache"))
-          shutil.copy2(wheels[0], context / wheels[0].name)
           dockerfile = context / "Dockerfile"
           lines = dockerfile.read_text().splitlines(keepends=True)
           from_count = 0
@@ -118,13 +94,10 @@ jobs:
                   lines[index] = line.replace("<region>", "cn-hangzhou").replace("<tag>", "v0.0.49")
                   from_count += 1
           assert from_count == 1, "this gate expects one Alibaba template base"
-          # Keep the original SDK COPY/if branch. This is not abx's Dockerfile
-          # rewrite/materialization test: an injected wheel selects its real branch.
-          assert "COPY *.whl /tmp/" in dockerfile.read_text()
           dockerfile.write_text("".join(lines))
           with Path(os.environ["GITHUB_ENV"]).open("a") as output:
               output.write(f"L1_CONTEXT={context}\n")
-          print(f"{source.name}: standalone context; SDK source {os.environ['SERVER_SDK_SHA']}; wheel {wheels[0].name}")
+          print(f"{source.name}: unchanged public server package install; default provider base resolved")
           PY
 
       - name: Build the actual image without publishing
@@ -142,6 +115,7 @@ jobs:
           import subprocess
 
           import yaml
+          from scripts.server_package import server_version
 
           template = os.environ["TEMPLATE"]
           config = yaml.safe_load((Path(template) / "template.yaml").read_text())
@@ -163,7 +137,7 @@ jobs:
               "kimi-code": [("node --version", "v24.16.0"), ("kimi --version", "2.2.0")],
               "qwen-code": [("qwen --version", "0.23.0")],
           }
-          payload = {"smoke": config["smoke"], "pins": pins.get(template, []), "template": template}
+          payload = {"smoke": config["smoke"], "pins": pins.get(template, []), "template": template, "server_version": server_version(Path(template))}
           code = r'''
           import importlib.metadata
           import importlib.util
@@ -184,8 +158,8 @@ jobs:
               artifact.write_bytes(b"workspace-write-proof")
               assert artifact.read_bytes()==b"workspace-write-proof"
           print("PASS actual non-root workspace write/read/removal",flush=True)
-          assert importlib.metadata.version("agent-sandbox-server") == "0.3.0"
-          print("PASS agent-sandbox-server 0.3.0 (source wheel); non-root image user", flush=True)
+          assert importlib.metadata.version("agent-sandbox-server") == payload["server_version"]
+          print("PASS public agent-sandbox-server " + payload["server_version"] + "; non-root image user", flush=True)
           for command, expected in payload["pins"]:
               result = subprocess.run(shlex.split(command), text=True, capture_output=True, timeout=60)
               assert result.returncode == 0 and expected in result.stdout.split(), command + " pin mismatch"
@@ -214,66 +188,6 @@ jobs:
                           "abx-l1:" + template, "-c", code, json.dumps(payload)], check=True, timeout=240)
           PY
 
-      - uses: actions/setup-node@v4
-        if: github.event_name == 'workflow_dispatch' && inputs.test_opensandbox
-        with:
-          node-version: '22'
-      - uses: astral-sh/setup-uv@v6
-        if: github.event_name == 'workflow_dispatch' && inputs.test_opensandbox
-        with:
-          version: '0.9.5'
-      - uses: actions/checkout@v4
-        if: github.event_name == 'workflow_dispatch' && inputs.test_opensandbox
-        with:
-          repository: opensandbox-group/OpenSandbox
-          ref: 30348cbdfe4b9cfd49e0963617aed357a8f1ac4c
-          fetch-depth: 0
-          persist-credentials: false
-          path: .native-fixtures/upstream
-      - uses: actions/checkout@v4
-        if: github.event_name == 'workflow_dispatch' && inputs.test_opensandbox
-        with:
-          repository: Alibaba-Agent-Sandbox/awesome-providers
-          ref: 9d2cf07467ff0e36303e4c80cbfe9fbf0fd70c6d
-          persist-credentials: false
-          path: .native-fixtures/providers
-      - uses: actions/checkout@v4
-        if: github.event_name == 'workflow_dispatch' && inputs.test_opensandbox
-        with:
-          repository: Alibaba-Agent-Sandbox/agent-sandbox
-          ref: c8e8ad784323b8903505442cbc77d433a0d0367a
-          persist-credentials: false
-          path: .native-fixtures/cli
-      - uses: actions/checkout@v4
-        if: github.event_name == 'workflow_dispatch' && inputs.test_opensandbox
-        with:
-          repository: Alibaba-Agent-Sandbox/python-sdk
-          ref: 33f857f5a79fd10326652e9d03f15f3621d6b848
-          persist-credentials: false
-          path: .native-fixtures/sdk
-      - name: Install pinned native backend and SDK controller dependencies
-        if: github.event_name == 'workflow_dispatch' && inputs.test_opensandbox
-        run: |
-          uv sync --project .native-fixtures/upstream/server --frozen --no-dev --python 3.12
-          uv pip install --python .native-fixtures/upstream/server/.venv/bin/python ./.native-fixtures/sdk/server-sdk ./.native-fixtures/sdk/client-sdk PyYAML==6.0.3 Pillow==11.3.0 pypdf==6.21.1
-          uv pip install --python .native-fixtures/upstream/server/.venv/bin/python --require-hashes -r scripts/requirements-native-http.txt
-          uv pip check --python .native-fixtures/upstream/server/.venv/bin/python
-          npm ci --prefix .native-fixtures/cli
-          npm run build --prefix .native-fixtures/cli
-          docker pull opensandbox/execd:v1.1.0
-      - name: Native OpenSandbox source image lifecycle SDK and complete HTTP acceptance
-        if: github.event_name == 'workflow_dispatch' && inputs.test_opensandbox
-        run: |
-          .native-fixtures/upstream/server/.venv/bin/python scripts/opensandbox_template_e2e.py "$TEMPLATE" --image "abx-l1:$TEMPLATE" --fixtures .native-fixtures --work "$RUNNER_TEMP/source-opensandbox-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --output "$RUNNER_TEMP/$TEMPLATE-opensandbox-native.json"
-      - name: Preserve sanitized native source acceptance receipt
-        if: always() && github.event_name == 'workflow_dispatch' && inputs.test_opensandbox
-        uses: actions/upload-artifact@v4
-        with:
-          name: opensandbox-native-${{ matrix.template }}-${{ github.sha }}
-          path: ${{ runner.temp }}/${{ matrix.template }}-opensandbox-native.json
-          if-no-files-found: warn
-          retention-days: 14
-
       - name: Export selected images for a separate local registry transfer
         if: success() && ((github.event_name == 'workflow_dispatch' && inputs.export_images) || (github.event_name != 'workflow_dispatch' && (needs.plan.outputs.export_all_selected == 'true' || matrix.template == 'python-hello' || matrix.template == 'pi')))
         run: |
@@ -284,6 +198,7 @@ jobs:
           import os
           from pathlib import Path
           import subprocess
+          from scripts.server_package import server_version
 
           root = Path(os.environ["RUNNER_TEMP"])
           template = os.environ["TEMPLATE"]
@@ -293,12 +208,13 @@ jobs:
           (root / (template + "-image.tar.sha256")).write_text(checksum + "  " + archive.name + "\n")
           metadata = {
               "format": "docker-archive",
+              "origin": "template-image-l1",
               "template": template,
               "repository": os.environ["GITHUB_REPOSITORY"],
               "checkout_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
               "source_head_commit": os.environ["SOURCE_HEAD_SHA"],
               "workflow_run_id": os.environ["GITHUB_RUN_ID"],
-              "server_sdk_commit": os.environ["SERVER_SDK_SHA"],
+              "server_package_version": server_version(Path(template)),
               "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
               "local_image_id": subprocess.check_output(
                   ["docker", "image", "inspect", "--format", "{{.Id}}", "abx-l1:" + template], text=True).strip(),

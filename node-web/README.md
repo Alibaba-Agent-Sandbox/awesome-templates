@@ -6,6 +6,8 @@ Runs one real Node HTTP application per sandbox. `serve` starts a JavaScript ent
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` supplies Node 20 and Python 3.13. Deployment resolves the placeholders to `cn-hangzhou` / `v0.0.49` unless configured otherwise. The server fallback is pinned to python-sdk commit `35da216a300f1e2e84254a1cf4b4a7ea98681505`; a CLI-injected server wheel takes precedence. There are no additional npm dependencies. Work directory `/home/user/app`; non-root `user`; generation 2. Platform `start_cmd` runs the server on 9000 and `ready_cmd` runs its healthcheck; no Docker CMD/ENTRYPOINT is added.
 
 ## Problem solved

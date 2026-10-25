@@ -7,12 +7,7 @@ RUN python3 -m venv /opt/deepagents \
     && /opt/deepagents/bin/python -c "from importlib.metadata import version; assert version('deepagents') == '0.7.25'; assert version('langchain-openai') == '1.7.2'" \
     && rm /tmp/deepagents-requirements.lock
 ENV HOME=/home/user WORKSPACE=/home/user/app DEEPAGENTS_PYTHON=/opt/deepagents/bin/python
-COPY *.whl /tmp/
-RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
-        pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
-    else \
-        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/e2cb27e24fde0a67112f82b8d44af463445a5d1a.tar.gz#subdirectory=server-sdk"; \
-    fi
+RUN pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py worker.py process.py lifecycle.py .
 RUN chown user:user /home/user/app \

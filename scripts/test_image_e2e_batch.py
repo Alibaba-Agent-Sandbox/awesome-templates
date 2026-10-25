@@ -4,15 +4,12 @@ import pytest
 import run_image_e2e_batch as batch
 
 
-def test_current_qualified_sources_are_not_redeployed_without_explicit_rerun(monkeypatch, tmp_path):
+def test_every_explicitly_selected_template_runs_again(monkeypatch, tmp_path):
     monkeypatch.setattr(batch, 'catalog_names', lambda root: ['a', 'b'])
-    monkeypatch.setattr(batch, 'audit', lambda root: {'templates': [
-        {'template': 'a', 'express_image_http': []},
-        {'template': 'b', 'express_image_http': ['b/evidence/current.json']}]})
-    assert batch.selection(tmp_path, None, False) == ['a']
-    assert batch.selection(tmp_path, None, True) == ['a', 'b']
+    assert batch.selection(tmp_path, None) == ['a', 'b']
+    assert batch.selection(tmp_path, 'b') == ['b']
     with pytest.raises(ValueError, match='unique'):
-        batch.selection(tmp_path, 'a,a', False)
+        batch.selection(tmp_path, 'a,a')
 
 
 def test_uncertain_cleanup_stops_new_operations_and_cannot_complete():

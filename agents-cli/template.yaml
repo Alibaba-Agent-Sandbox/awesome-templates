@@ -1,5 +1,5 @@
 name: agents-cli
-version: "2.0.1"
+version: "2.0.2"
 description: "Restricted local Agents HTTP API with pinned Codex and Qwen Code CLIs."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0

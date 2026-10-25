@@ -58,10 +58,10 @@ Template2.0.1 explicitly owns /home/user/app as user:user before runtime USER. T
 
 Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (the platform image already has Python 3.13 and Node.js 20). `npm view opencode-ai version` on 2026-10-15 still resolved `latest` to `1.19.0`; the Dockerfile installs `opencode-ai@1.19.0` and runs `opencode --version`.
 
-`agent-sandbox-server` comes from a wheel injected by `abx template deploy` when one is in the build context. Otherwise the Dockerfile installs python-sdk main `61c43e0be65a1f57aa09186d578e7b399e48429b` (the commit on `main` that includes PR #21) with:
+Install the exact published `agent-sandbox-server==0.4.0a2` distribution from PyPI, as declared in the Dockerfile.
 
 ```text
-pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/61c43e0be65a1f57aa09186d578e7b399e48429b.tar.gz#subdirectory=server-sdk"
+Install the exact published `agent-sandbox-server==0.4.0a2` distribution from PyPI, as declared in the Dockerfile.
 ```
 
 The PyPI pin `agent-sandbox-server==0.3.0` is recorded in the Dockerfile comment and is not what the image runs. That release predates the Express server fixes.

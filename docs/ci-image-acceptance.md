@@ -51,8 +51,7 @@ and reads back its content digest. Existing account policy is never changed.
 Actual `abx template from-image` registers the nonce-owned review tag; live digest readback before registration and after runtime requires an unchanged content digest. Official API polling requires
 READY, and real CLI/SDK smoke precedes external HTTP acceptance. Model acceptance
 is explicitly NOT_RUN by this controller; use a separate strict image-backed
-model verifier when the owner Issue requires it. `--smoke-only` explicitly omits
-full HTTP acceptance and does not certify the complete product.
+model verifier when the owner Issue requires it. This command always runs complete HTTP acceptance.
 
 ## Evidence and cleanup
 
@@ -73,24 +72,6 @@ Actual digest-form registration attempted to pull latest and failed on2026-10-19
 
 The runner checks local external-controller imports before artifact/cloud work. Install the template controller dependencies first (OCR needs Pillow); a missing controller is not a provider pass. Failed test status and independently observed cloud cleanup are recorded separately. SDK secondary URLs are passed to the code-server/Next/Vite verifiers.
 
-### Select actual Python SDK creation
-
-Add `--sandbox-create sdk` to the step or verified-image runner when acceptance
-requires executing `agent_sandbox.api.sandbox.Sandbox.create`. The default is
-`cli`, preserving existing `abx create` behavior. Both routes wait for the owned
-template to reach READY, execute named smoke commands through CLI and SDK, and
-retain the same independently read-back sandbox/template cleanup gates.
-
-For example, `python scripts/run_steps_e2e.py python-hello --sandbox-create sdk`
-builds genuine platform steps and creates the resulting sandbox through Python.
-The verified-image equivalent adds `--sandbox-create sdk` to
-`scripts/run_ci_image_e2e.py` with the existing reviewed artifact ID and verified
-crane arguments. The receipt's `sandbox_create` is `python-sdk-Sandbox.create`
-or `abx create`; earlier receipts do not establish an unrecorded SDK-create call.
-The SDK timeout is sandbox lifetime, independent of build readiness and request
-timeouts. A lost creation response keeps the private recovery intent and never
-publishes acceptance. Local client close does not delete the cloud sandbox;
-the harness performs owned destruction and independent absence checks afterward.
 
 The runner verifies the actual native `template from-image --help` contract before
 archive or cloud writes. `--private-root` can place large archive/recovery files

@@ -14,7 +14,7 @@ Actual unmodified official Linuxx64/Bun binary and npm wrapper; native headless 
 
 ## How to build
 
-[Dockerfile](../../cline/Dockerfile): Alibaba basev0.0.49, generation2, Python3.13, official Node24.16.0 with SHA256, npm ci full integrity lock for cline3.0.73 and its exact native/core packages. Actual binary SHA2561ff8841d17d4d83763134c193d414e4f7fcf2ef56af759e5ebbe96727fc2c8f7 verified both build/runtime. Server sourcee2cb27e or matching injected wheel; explicit serve/healthcheck9000, WORKDIR/home/user/app, non-root user, owned workspace/home/user/workspace, no CMD/ENTRYPOINT,8GiB rootfs budget. Steps use immutable public COPY with every hash; large package lock requires publishing exact source first.
+[Dockerfile](../../cline/Dockerfile): Alibaba basev0.0.49, generation2, Python3.13, official Node24.16.0 with SHA256, npm ci full integrity lock for cline3.0.73 and its exact native/core packages. Actual binary SHA2561ff8841d17d4d83763134c193d414e4f7fcf2ef56af759e5ebbe96727fc2c8f7 verified both build/runtime. Published server package 0.4.0a2; explicit serve/healthcheck9000, WORKDIR/home/user/app, non-root user, owned workspace/home/user/workspace, no CMD/ENTRYPOINT,8GiB rootfs budget. Steps use immutable public COPY with every hash; large package lock requires publishing exact source first.
 
 ## Express feasibility
 

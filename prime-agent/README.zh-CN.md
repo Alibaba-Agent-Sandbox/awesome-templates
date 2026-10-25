@@ -6,6 +6,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 阿里云 generation2 basev0.0.49/Python3.13/Linuxx64；发行归档和可执行文件均校验官方 manifest 发布的 SHA256。保留完整原版 sidecar、runtime源码0.1.0/protocol3及许可证。独立49包 Python 哈希锁；通过原生解释器覆盖跳过浮动 uv/bootstrap。server源码 e2cb27e24fde0a67112f82b8d44af463445a5d1a，非root user，9000端口。[Dockerfile](Dockerfile)、[来源](upstream.json)、[锁文件](requirements.lock)、[设计](../docs/design/prime-agent.md)。
 
 ## 解决的问题

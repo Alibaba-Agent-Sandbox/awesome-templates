@@ -7,7 +7,6 @@ ENV OPENCODE_DISABLE_AUTOUPDATE=true
 ENV OPENCODE_MODEL=dashscope/qwen3.8-flash
 ENV OPENCODE_CONFIG=/home/user/app/opencode.json
 
-# Spec fallback pin agent-sandbox-server==0.3.0 is not what this image runs.
 # python-sdk main 61c43e0be65a1f57aa09186d578e7b399e48429b includes PR #21.
 # abx template deploy substitutes <region> and <tag> and may inject a wheel.
 
@@ -34,12 +33,7 @@ RUN node --version && npm --version \
         /root/.npm \
         /home/user/.npm
 
-COPY *.whl /tmp/
-RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
-        pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
-    else \
-        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/e2cb27e24fde0a67112f82b8d44af463445a5d1a.tar.gz#subdirectory=server-sdk"; \
-    fi
+RUN pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py opencode.json ./

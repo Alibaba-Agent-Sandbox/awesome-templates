@@ -94,3 +94,98 @@ def test_missing_controller_dependency_is_found_before_artifact_or_cloud(tmp_pat
     report=json.loads(next((source/'evidence').glob('image-attempt-*.json')).read_text())
     assert report['missing_controller_modules']==['synthetic_missing_controller_dependency']
     assert report['passed'] is False
+
+
+def public_export():
+    return {'origin': 'public-template-launch', 'server_package_version': '0.4.0a2',
+        'public_source_commit': 'a'*40, 'source_head_commit': 'a'*40, 'source_snapshot_digest': 'c'*64,
+        'installed_packages': {'distribution': 'published',
+            'cli': {'version': '0.5.1', 'registry': 'https://registry.npmjs.org'},
+            'python_client': {'version': '0.4.0a1', 'registry': 'https://pypi.org/simple'},
+            'python_server': {'version': '0.4.0a1', 'registry': 'https://pypi.org/simple'}}}
+
+
+def test_public_export_requires_matching_workflow_and_observed_runtime():
+    data=public_export();workflow={'path': '.github/workflows/public-template-launch.yml'}
+    images.validate_archive_origin(data, workflow)
+    with pytest.raises(ValueError, match='workflow origin'):
+        images.validate_archive_origin(data, {'path': '.github/workflows/image-build.yml'})
+    data.pop('server_package_version')
+    with pytest.raises(ValueError, match='observed runtime'):
+        images.validate_archive_origin(data, workflow)
+
+
+@pytest.mark.parametrize('field', ['cli', 'python_client', 'python_server'])
+def test_public_export_rejects_source_or_unofficial_package_provenance(field):
+    workflow={'path': '.github/workflows/public-template-launch.yml'}
+    data=public_export();data['installed_packages'][field]['registry']='https://unreviewed.invalid'
+    with pytest.raises(ValueError, match='official package'):
+        images.validate_archive_origin(data,workflow)
+    data=public_export();data['installed_packages']['distribution']='source'
+    with pytest.raises(ValueError, match='published-package'):
+        images.validate_archive_origin(data,workflow)
+
+
+def test_historical_export_is_not_relabelled_public():
+    images.validate_archive_origin({'origin':'template-image-l1','server_package_version': '0.4.0a2'}, {'path': '.github/workflows/image-build.yml'})
+
+
+def test_public_template_revision_is_distinct_from_verifier_revision():
+    public='a'*40;verifier='b'*40
+    metadata={'origin':'public-template-launch','source_head_commit':public,'checkout_commit':public,
+        'verifier_commit':verifier,'workflow_run_id':'123'}
+    workflow={'event':'workflow_dispatch','head_sha':verifier,'id':123}
+    artifact={'workflow_run':{'head_sha':verifier},'name':'image-example-'+verifier}
+    images.validate_archive_revisions(metadata,workflow,artifact,'example')
+    metadata.pop('verifier_commit')
+    with pytest.raises(ValueError,match='distinct verifier'):
+        images.validate_archive_revisions(metadata,workflow,artifact,'example')
+    metadata['verifier_commit']=public
+    with pytest.raises(ValueError,match='exact-source'):
+        images.validate_archive_revisions(metadata,workflow,artifact,'example')
+
+
+def test_public_artifact_name_must_identify_actual_verifier():
+    public='a'*40;verifier='b'*40
+    metadata={'origin':'public-template-launch','source_head_commit':public,'checkout_commit':public,
+        'verifier_commit':verifier,'workflow_run_id':'123'}
+    workflow={'event':'workflow_dispatch','head_sha':verifier,'id':123}
+    artifact={'workflow_run':{'head_sha':verifier},'name':'image-example-'+public}
+    with pytest.raises(ValueError,match='CI identity'):
+        images.validate_archive_revisions(metadata,workflow,artifact,'example')
+
+
+def test_public_export_refuses_mixed_public_and_verifier_source_labels():
+    data=public_export();data['public_source_commit']='b'*40
+    with pytest.raises(ValueError,match='pinned public input'):
+        images.validate_archive_origin(data,{'path':'.github/workflows/public-template-launch.yml'})
+
+
+def test_prepared_image_uses_shared_startup_contract_and_current_services(tmp_path):
+    import yaml
+    source=tmp_path/'example';source.mkdir()
+    manifest={'spec_version':5,'name':'example','version':'1.0.0','start_cmd':'python commands.py',
+        'ready_cmd':'python check.py','env':{'ABX_SERVER_TOKEN':'','OTHER':'fixed'},
+        'ports':[9000,9001],'provides':{'app':{'protocol':'agent-sandbox-server','version':2,
+        'port':9000,'operations':['commands.run']}},'smoke':[{'command':'hello'}]}
+    (source/'template.yaml').write_text(yaml.safe_dump(manifest))
+    actual=review.prepared_launch_manifest(source,'owned-template')
+    assert actual==dict(manifest,provider='alicloud-express',template_id='owned-template')
+    assert yaml.safe_load((source/'template.yaml').read_text())==manifest
+
+
+def test_native_readiness_consumes_structured_json_and_rejects_legacy_python_strings():
+    from types import SimpleNamespace
+    calls=[]
+    cli=SimpleNamespace(run=lambda args,**kwargs: calls.append((args,kwargs)) or {'status':{'state':'ready'}})
+    review.wait_ready(cli,'owned-template',timeout=1)
+    assert calls==[(['template','info','owned-template'],{'native':True})]
+    cli.run=lambda *args,**kwargs:{'status':"{'state': 'ready'}"}
+    with pytest.raises(AssertionError):review.wait_ready(cli,'owned-template',timeout=1)
+
+
+def test_native_inventory_matches_only_exact_owned_name():
+    from types import SimpleNamespace
+    cli=SimpleNamespace(run=lambda *args,**kwargs:[{'Name':'owned','TemplateID':'correct'},
+        {'Name':'owned-extra','TemplateID':'foreign'},{'Name':'other','TemplateID':'another'}])
+    assert review.exact_templates(cli,'owned')==['correct']

@@ -107,8 +107,8 @@ async def verify(sb,settings,diagnostics=None):
     return report
 
 async def main():
-    from agent_sandbox.api.sandbox import Sandbox
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--sandbox-id',required=True);args=parser.parse_args();settings={key:os.environ[key] for key in ['BROWSER_USE_API_KEY','BROWSER_USE_BASE_URL','BROWSER_USE_MODEL']};sb=await Sandbox.connect(args.sandbox_id)
+    from agent_sandbox import ProviderSandbox
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--sandbox-id',required=True);args=parser.parse_args();settings={key:os.environ[key] for key in ['BROWSER_USE_API_KEY','BROWSER_USE_BASE_URL','BROWSER_USE_MODEL']};sb=await ProviderSandbox.connect(args.sandbox_id)
     try:print(json.dumps(await verify(sb,settings),indent=2))
     finally:await sb.close()
 

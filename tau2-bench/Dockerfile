@@ -10,12 +10,7 @@ RUN python3 /tmp/tau2-install.py \
     && python3 -m venv /opt/tau2-venv \
     && /opt/tau2-venv/bin/pip install --no-cache-dir --require-hashes -r /opt/tau2-bootstrap/requirements.lock \
     && /opt/tau2-venv/bin/pip check
-COPY *.whl /tmp/
-RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
-        pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
-    else \
-        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/e2cb27e24fde0a67112f82b8d44af463445a5d1a.tar.gz#subdirectory=server-sdk"; \
-    fi
+RUN pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"
 ENV HOME=/home/user WORKSPACE=/home/user/workspace
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py worker.py process.py lifecycle.py UPSTREAM-LICENSE.md AUDIOOP-LICENSE.txt ./

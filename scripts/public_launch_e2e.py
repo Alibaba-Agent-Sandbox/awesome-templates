@@ -63,6 +63,16 @@ def safe_failure_label(failure):
     return str(failure) if isinstance(failure, (CheckFailed, CLIError)) else None
 
 
+def controller_label(value, secrets=()):
+    """Keep bounded controller check labels without private locations or credentials."""
+    for secret in secrets:
+        if secret:
+            value = value.replace(secret, '[FIXTURE]')
+    value = re.sub(r'https?://\S+|/[A-Za-z0-9_.@%/+-]+', '[LOCATION]', value)
+    value = re.sub(r'\b[0-9a-fA-F-]{16,}\b', '[ID]', value)
+    return value[:300]
+
+
 def safe_diagnostics(failure):
     """Only controlled categories, numeric HTTP status and stable SDK codes escape."""
     if isinstance(failure, CLIError):
@@ -245,7 +255,7 @@ async def cleanup_prepared(entries, cli, alias, diagnostics=None):
 
 def export_owned_image(entries, alias, source, directory, provenance, runtime_version=None, public_source_commit=None, source_snapshot_digest=None):
     """Export only the image built by this successful launch, before owned cleanup."""
-    from server_sdk_pin import server_commit
+    from server_package import server_version
     require(not directory.exists(), 'image export directory must be fresh')
     images = {}
     for entry in entries:
@@ -261,6 +271,7 @@ def export_owned_image(entries, alias, source, directory, provenance, runtime_ve
     require(len(images) == 1, 'exactly one owned image must be exported')
     image_id, tag = next(iter(images.items()))
     require(re.fullmatch(r'sha256:[0-9a-f]{64}', image_id), 'owned export image identity')
+    require(runtime_version == server_version(source), 'export image server matches declared public package')
     directory.mkdir(parents=True)
     archive = directory / (source.name + '-image.tar')
     subprocess.run(['docker', 'image', 'save', '--output', str(archive), tag],
@@ -275,9 +286,8 @@ def export_owned_image(entries, alias, source, directory, provenance, runtime_ve
         'verifier_commit': revision, 'public_source_commit': public_source_commit,
         'source_snapshot_digest': source_snapshot_digest,
         'workflow_run_id': os.environ.get('GITHUB_RUN_ID'),
-        'server_sdk_commit': server_commit(source), 'local_image_id': image_id,
+        'server_package_version': runtime_version, 'local_image_id': image_id,
         'archive_sha256': digest, 'installed_packages': provenance,
-        'runtime_server_version': runtime_version,
         'acceptance': 'published CLI launch and manifest smoke on OpenSandbox; no Express or model acceptance'}
     (directory / (source.name + '-image-metadata.json')).write_text(json.dumps(metadata, indent=2) + '\n')
     return {'archive_sha256': digest, 'image_config_sha256': image_id.removeprefix('sha256:')}
@@ -447,6 +457,14 @@ async def verify(args):
         await sandbox.files.remove(path)
         require(not await sandbox.files.exists(path), 'SDK file deletion readback')
         report['checks'].extend(['runtime source identity', 'SDK exec and file round trip'])
+        phase = 'runtime-package'
+        version = await sandbox.commands.run('python3 -c "import importlib.metadata; print(importlib.metadata.version(\'agent-sandbox-server\'))"', timeout=30)
+        require(version.exit_code == 0 and re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:a[0-9]+)?', version.stdout.strip()),
+                'runtime server version is a release version')
+        from server_package import server_version
+        require(version.stdout.strip() == server_version(source), 'runtime server matches declared public package')
+        report['server_package_version'] = version.stdout.strip()
+
         if args.application_controller:
             phase = 'application-controller'
             urls = {}
@@ -462,22 +480,17 @@ async def verify(args):
             report['http_acceptance'] = await asyncio.to_thread(run_controller, source, urls,
                 cli.private_directory, controller_fixture, token=env['ABX_SERVER_TOKEN'], gateway_headers=gateway_headers)
             if not report['http_acceptance']['passed']:
-                from opensandbox_template_e2e import safe_label
                 labels = [line for line in (cli.private_directory / 'http.log').read_text().splitlines()
                           if line.startswith(('[FAIL]', '[SKIP]'))]
-                report['http_diagnostics'] = [safe_label(line, [env['ABX_SERVER_TOKEN'], *server_fixture.values()]) for line in labels[:12]]
+                report['http_diagnostics'] = [controller_label(line, [env['ABX_SERVER_TOKEN'], *server_fixture.values()]) for line in labels[:12]]
             require(report['http_acceptance']['passed'], 'template application HTTP controller')
         if args.export_image_dir:
             phase = 'export-owned-image'
             require(args.provider == 'opensandbox', 'image export requires the disposable OpenSandbox backend')
             entries = [entry for path in set(journal_dir.glob('*.json')) - original_journals
                        for entry in json.loads(path.read_text()).get('entries', [])]
-            version = await sandbox.commands.run('python3 -c "import importlib.metadata; print(importlib.metadata.version(\'agent-sandbox-server\'))"', timeout=30)
-            require(version.exit_code == 0 and re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:a[0-9]+)?', version.stdout.strip()),
-                    'runtime server version is a release version')
-            report['runtime_server_version'] = version.stdout.strip()
             report['image_export'] = await asyncio.to_thread(export_owned_image, entries, alias, source,
-                args.export_image_dir, report.get('installed_packages'), version.stdout.strip(), public_source_commit, launch.get('source_digest'))
+                args.export_image_dir, report.get('installed_packages'), report['server_package_version'], public_source_commit, launch.get('source_digest'))
         report['application_result'] = 'PASS'
     except Exception as failure:
         report['application_result'] = 'FAIL'

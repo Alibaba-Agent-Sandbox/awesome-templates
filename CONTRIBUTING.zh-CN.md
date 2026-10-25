@@ -13,7 +13,7 @@
 4. 根据 [设计骨架](docs/design/_TEMPLATE.md) 完成 `docs/design/<name>.md`。
 5. 双语 README 使用规范要求的标题，参数、默认值、错误、CLI/SDK/HTTP 示例和限制一致。
 6. 在 awesome-templates.yaml 添加条目。official 表示本项目维护，community 表示外部维护，experimental 标记开发中；这些标签不认证运行能力。适用组件测试及准确的提供方／入口证据仍是必需，模型功能声明必须有真实模型测试。
-7. 安装固定源码 server/client 和测试依赖（`python -m pip install -r scripts/requirements-spec.txt`）后，从仓库执行：
+7. 安装已发布的固定 server/client 0.4.0a2 和测试依赖（`python -m pip install -r scripts/requirements-spec.txt`）后，从仓库执行：
 
    ```bash
    python scripts/test_spec_tools.py
@@ -30,8 +30,8 @@
 
    OpenSandbox 改用 `--provider opensandbox`。安装、双平台矩阵、断言及独立自有资源清理见
    [公开启动测试指南](docs/public-launch-testing.md#中文)。保留失败与未完成的清理，不记为通过。
-   旧 `express_e2e.py` 属于[固定版本维护流程](docs/canonical-express-review.zh-CN.md)，
-   不是当前默认用户入口；不要把历史 native 参数复制到当前公开 CLI 示例。
+   旧固定版本维护云流程仅作为历史记录；当前验收使用上面的公开启动入口。
+   不要把历史 native 参数复制到当前 CLI 示例。
 
 不要提交 `.env`、凭据、缓存或原始敏感日志；manifest 只声明空 secret 名。
 

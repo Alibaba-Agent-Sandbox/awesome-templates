@@ -36,7 +36,7 @@ def test_controller_runs_once_and_failed_assertions_cannot_pass(tmp_path, monkey
             return cls()
 
     report = {}
-    with patch("agent_sandbox.api.sandbox.Sandbox", Sandbox), patch.object(express_e2e, "default_sdk", return_value="smoke"):
+    with patch("agent_sandbox.ProviderSandbox", Sandbox), patch.object(express_e2e, "default_sdk", return_value="smoke"):
         callback = http_callback(tmp_path, tmp_path, report)
         if exit_code:
             with pytest.raises(RuntimeError, match="controller failed"):
@@ -94,7 +94,7 @@ def test_osworld_requires_real_desktop_and_rejects_nonmodel_skip(tmp_path):
         @classmethod
         async def connect(cls,sandbox_id):return cls()
     report={}
-    with patch('agent_sandbox.api.sandbox.Sandbox',Sandbox),patch.object(express_e2e,'default_sdk',return_value='smoke'):
+    with patch('agent_sandbox.ProviderSandbox',Sandbox),patch.object(express_e2e,'default_sdk',return_value='smoke'):
         callback=http_callback(source,tmp_path,report)
         with pytest.raises(RuntimeError,match='desktop lifecycle'):callback('synthetic','desktop',{})
     assert report['http_acceptance']['skip_count']==1
@@ -113,7 +113,7 @@ def test_chrome_controller_receives_all_native_ports_and_requires_gui(tmp_path, 
         @classmethod
         async def connect(cls,sandbox_id):return cls()
     report={}
-    with patch('agent_sandbox.api.sandbox.Sandbox',Sandbox),patch.object(express_e2e,'default_sdk',return_value='smoke'):
+    with patch('agent_sandbox.ProviderSandbox',Sandbox),patch.object(express_e2e,'default_sdk',return_value='smoke'):
         if skip_native:
             with pytest.raises(RuntimeError,match='Chrome desktop was skipped'):http_callback(source,tmp_path,report)('synthetic','chrome_smoke',{})
         else:

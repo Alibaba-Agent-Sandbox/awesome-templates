@@ -37,8 +37,7 @@ Template2.0.1 explicitly owns /home/user/app as user:user before runtime USER. T
 
 [Dockerfile](../../agents-cli/Dockerfile) retains the Alibaba base, generation 2,
 non-root user and no CMD/ENTRYPOINT. Installs pin `@openai/codex@0.162.1`,
-`@qwen-code/qwen-code@0.23.0`, and python-sdk server archive commit
-`e2cb27e24fde0a67112f82b8d44af463445a5d1a` unless a source wheel is supplied.
+`@qwen-code/qwen-code@0.23.0`, and published `agent-sandbox-server==0.4.0a2`.
 The base Node 20 is below Qwen Code 0.23.0's declared Node>=22 requirement. Install official Node 24.16.0 from architecture-specific SHA256-verified archives using the same pinned installer as OpenClaw. Build logs must assert both actual CLI versions. commands.py and server-policy.json
 are copied after package installation. Synthetic e2e-bin programs are not copied.
 

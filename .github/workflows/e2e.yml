@@ -64,17 +64,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Checkout exact paired public server SDK
-        uses: actions/checkout@v4
-        with:
-          repository: Alibaba-Agent-Sandbox/python-sdk
-          ref: e2cb27e24fde0a67112f82b8d44af463445a5d1a
-          path: vendor/python-sdk
-          persist-credentials: false
       - name: Install test dependencies
         run: |
           python3 -m venv /tmp/database-venv
-          /tmp/database-venv/bin/pip install ./vendor/python-sdk/server-sdk httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3
+          /tmp/database-venv/bin/pip install "agent-sandbox-server==0.4.0a2" httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3
           chown -R service-test:service-test "$GITHUB_WORKSPACE"
       - name: Exercise actual authenticated engines and HTTP as non-root
         env:
@@ -101,17 +94,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Checkout paired pinned public SDK sources
-        uses: actions/checkout@v4
-        with:
-          repository: alibaba-agent-sandbox/python-sdk
-          ref: e2cb27e24fde0a67112f82b8d44af463445a5d1a
-          path: vendor/python-sdk
-          persist-credentials: false
       - name: Install scoped test dependencies
         run: |
           python3 -m venv /tmp/document-venv
-          /tmp/document-venv/bin/pip install ./vendor/python-sdk/server-sdk ./vendor/python-sdk/client-sdk httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3 pypdf==6.21.1 jsonschema==4.26.0
+          /tmp/document-venv/bin/pip install "agent-sandbox-server==0.4.0a2" "agent-sandbox-client==0.4.0a2" httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3 pypdf==6.21.1 jsonschema==4.26.0
       - name: Verify actual document conversion, limits, SDK and external HTTP artifacts
         env:
           E2E_REQUIRE_DOCUMENT: "1"
@@ -137,19 +123,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Resolve immutable Media server source
-        run: echo "SERVER_SDK_SHA=$(python3 scripts/server_sdk_pin.py media-tools)" >> "$GITHUB_ENV"
-      - name: Checkout the public pinned server SDK
-        uses: actions/checkout@v4
-        with:
-          repository: alibaba-agent-sandbox/python-sdk
-          ref: ${{ env.SERVER_SDK_SHA }}
-          path: vendor/python-sdk
-          persist-credentials: false
       - name: Install scoped test dependencies
         run: |
           python3 -m venv /tmp/media-venv
-          /tmp/media-venv/bin/pip install ./vendor/python-sdk/server-sdk ./vendor/python-sdk/client-sdk httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3 jsonschema==4.26.0
+          /tmp/media-venv/bin/pip install "agent-sandbox-server==0.4.0a2" "agent-sandbox-client==0.4.0a2" httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3 jsonschema==4.26.0
       - name: Verify real CPU codecs, limits, descendants and HTTP artifact bytes
         env:
           E2E_REQUIRE_MEDIA: "1"
@@ -171,14 +148,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Checkout the Python SDK
-        uses: actions/checkout@v4
-        with:
-          repository: alibaba-agent-sandbox/python-sdk
-          # Local source smoke requires the merged native string-array contract; image pins stay per-template.
-          ref: fd72d3210b85079d93dcf08e19bfded73643162b
-          path: vendor/python-sdk
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
@@ -198,7 +167,7 @@ jobs:
         run: |
           export PLAYWRIGHT_BROWSERS_PATH="$RUNNER_TEMP/playwright"
           echo "PLAYWRIGHT_BROWSERS_PATH=$PLAYWRIGHT_BROWSERS_PATH" >> "$GITHUB_ENV"
-          python -m pip install ./vendor/python-sdk/server-sdk ./vendor/python-sdk/client-sdk httpx==0.28.1 pyyaml==6.0.3 jsonschema==4.26.0 pytest==9.1.1 playwright==1.58.0 Pillow==11.3.0 pypdf==6.21.1
+          python -m pip install "agent-sandbox-server==0.4.0a2" "agent-sandbox-client==0.4.0a2" httpx==0.28.1 pyyaml==6.0.3 jsonschema==4.26.0 pytest==9.1.1 playwright==1.58.0 Pillow==11.3.0 pypdf==6.21.1
           python -m playwright install --with-deps chromium
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libnss3-tools
@@ -275,7 +244,7 @@ jobs:
         run: |
           python3 scripts/test_local_cleanup.py && python3 scripts/test_spec_tools.py
           python3 scripts/test_public_launch_e2e.py
-          python -m pytest -q scripts/test_prepare_steps.py scripts/test_ci_image.py scripts/test_ci_image_archive.py scripts/test_express_cleanup.py scripts/test_sdk_creation.py scripts/test_step_acceptance.py scripts/test_steps_http.py scripts/test_step_assets.py scripts/test_step_asset_cache.py scripts/test_cursor_assets.py scripts/test_devin_assets.py scripts/test_template_http_acceptance.py scripts/test_source_image_acceptance.py scripts/test_image_e2e_batch.py
+          python -m pytest -q scripts/test_prepare_steps.py scripts/test_ci_image.py scripts/test_ci_image_archive.py scripts/test_express_cleanup.py scripts/test_sdk_creation.py scripts/test_step_acceptance.py scripts/test_steps_http.py scripts/test_step_assets.py scripts/test_step_asset_cache.py scripts/test_cursor_assets.py scripts/test_devin_assets.py scripts/test_template_http_acceptance.py scripts/test_image_e2e_batch.py
           python3 scripts/check_template.py --all
           python scripts/check_managed_catalog.py
           python scripts/sync_workflow_contracts.py --check
