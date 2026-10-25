@@ -92,3 +92,13 @@ def test_actual_https_controller_retains_verification_with_configured_ca(tmp_pat
         server.shutdown()
         server.server_close()
         thread.join(timeout=5)
+
+
+def test_application_token_is_explicit_and_not_borrowed_from_operator(tmp_path, monkeypatch):
+    monkeypatch.setenv('E2E_TOKEN', 'unrelated-operator-token')
+    monkeypatch.setenv('ABX_SERVER_TOKEN', 'unrelated-server-token')
+    source = controller(tmp_path, 'example', "import os\nassert os.environ['E2E_TOKEN']=='owned-application-token'\nassert 'ABX_SERVER_TOKEN' not in os.environ\nprint('[PASS] explicit owned application token')\n")
+    environment = controller_environment(source, {9000: 'http://synthetic.invalid'}, {})
+    assert 'E2E_TOKEN' not in environment
+    proof = run_controller(source, {9000: 'http://synthetic.invalid'}, tmp_path, {}, token='owned-application-token')
+    assert proof['passed'] and proof['pass_count'] == 1

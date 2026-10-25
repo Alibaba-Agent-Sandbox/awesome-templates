@@ -249,7 +249,9 @@ def export_owned_image(entries, alias, source, directory, provenance, runtime_ve
     images = {}
     for entry in entries:
         tag = str(entry.get('correlation_key', ''))
-        if entry.get('kind') != 'image' or alias + '-' not in tag or '/' in tag:
+        if entry.get('kind') != 'image' or alias + '-' not in tag:
+            continue
+        if '/' in tag and not tag.startswith('localhost:5000/'):
             continue
         proc = subprocess.run(['docker', 'image', 'inspect', '--format', '{{.Id}}', tag],
                               capture_output=True, text=True, timeout=30)
@@ -345,6 +347,9 @@ async def verify(args):
         if value == '':
             env.pop(key, None)
     env['ABX_SERVER_TOKEN'] = secrets.token_urlsafe(32)
+    from template_http_acceptance import fixture_environment, run_controller
+    server_fixture, controller_fixture, fixture_proof = fixture_environment(args.template)
+    env.update(server_fixture)
     cli = CLI(args.abx, args.provider, env)
     report = {'result': 'FAIL', 'template': args.template, 'provider': args.provider,
         'scope': 'public CLI source launch + manifest smoke via host CLI, Python and HTTP; no real-model acceptance',
@@ -357,6 +362,7 @@ async def verify(args):
         report['installed_packages'] = installation_provenance(
             env, importlib.metadata.version('agent-sandbox-client'),
             importlib.metadata.version('agent-sandbox-server'))
+    report['test_configuration'] = fixture_proof
     alias = 'public-e2e-' + secrets.token_hex(8)
     report['run_alias'] = alias
     if args.provider == 'opensandbox':
@@ -423,6 +429,16 @@ async def verify(args):
         await sandbox.files.remove(path)
         require(not await sandbox.files.exists(path), 'SDK file deletion readback')
         report['checks'].extend(['runtime source identity', 'SDK exec and file round trip'])
+        if args.application_controller:
+            phase = 'application-controller'
+            urls = {}
+            for port in manifest.get('ports', [9000]):
+                url, port_headers = await sandbox.network.resolve(port)
+                require(not port_headers, 'HTTP controller requires a provider-resolved direct endpoint')
+                urls[port] = url
+            report['http_acceptance'] = await asyncio.to_thread(run_controller, source, urls,
+                cli.private_directory, controller_fixture, token=env['ABX_SERVER_TOKEN'])
+            require(report['http_acceptance']['passed'], 'template application HTTP controller')
         if args.export_image_dir:
             phase = 'export-owned-image'
             require(args.provider == 'opensandbox', 'image export requires the disposable OpenSandbox backend')
@@ -495,6 +511,7 @@ def main():
     parser.add_argument('--abx', default=os.environ.get('ABX_BIN', 'abx'))
     parser.add_argument('--build-timeout', type=int, default=1200)
     parser.add_argument('--output', type=Path)
+    parser.add_argument('--application-controller', action='store_true', help='run the unchanged full template HTTP controller after smoke')
     parser.add_argument('--export-image-dir', type=Path, help='save the exact owned OpenSandbox image before cleanup')
     parser.add_argument('--list', action='store_true', help='list all source templates without cloud operations')
     args = parser.parse_args()

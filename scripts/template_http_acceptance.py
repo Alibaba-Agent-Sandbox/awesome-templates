@@ -36,7 +36,7 @@ def fixture_environment(name: str) -> tuple[dict[str, str], dict[str, str], dict
     return server, controller, proof
 
 
-def controller_environment(source: Path, urls: dict[int, str], fixture: dict[str, str]) -> dict[str, str]:
+def controller_environment(source: Path, urls: dict[int, str], fixture: dict[str, str], *, token: str | None = None) -> dict[str, str]:
     # An allowlist prevents unrelated operator keys/config from reaching tests.
     env = {key: value for key, value in os.environ.items()
            if key in {"PATH", "LANG", "LC_ALL", "SYSTEMROOT", "TMPDIR", "PYTHONPATH",
@@ -59,14 +59,16 @@ def controller_environment(source: Path, urls: dict[int, str], fixture: dict[str
     if set(fixture) - allowed:
         raise ValueError("only owned non-model controller fixtures are accepted")
     env.update(fixture)
+    if token is not None:
+        env["E2E_TOKEN"] = token
     return env
 
 
 def run_controller(source: Path, urls: dict[int, str], private: Path,
-                   fixture: dict[str, str]) -> dict:
+                   fixture: dict[str, str], *, token: str | None = None) -> dict:
     script = source / "e2e_test.py"
     result = run_monitored([sys.executable, str(script)],
-                           env=controller_environment(source, urls, fixture),
+                           env=controller_environment(source, urls, fixture, token=token),
                            idle_timeout=600, wall_timeout=900)
     (private / "http.log").write_text(result.stdout + "\n" + result.stderr)
     lines = (result.stdout + "\n" + result.stderr).splitlines()

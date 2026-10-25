@@ -2,7 +2,10 @@
 
 This runner tests source preparation through the installed `abx template launch`,
 then calls the template's manifest smoke commands through host CLI, Python and
-HTTP. It does not rewrite a Dockerfile, run guest curl or substitute a Docker
+HTTP. The manual workflow also runs each unchanged full HTTP application controller
+with generated owned fixtures and an explicit service token. Controller pass/fail/skip
+counts are recorded separately; skipped real-model or vendor-account paths remain
+unverified. It does not rewrite a Dockerfile, run guest curl or substitute a Docker
 bridge address. Its report distinguishes application success from resource cleanup.
 
 Install the reviewed CLI and matching Python SDK, configure the backend and Docker,
