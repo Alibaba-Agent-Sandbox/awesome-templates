@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Verify provider-managed builtins without replacing or deleting their definitions.
 
-Native SDK and CLI 0.3 syntax. Credentials come from the environment. Each run
+Current public CLI catalog launch and Python SDK. Credentials come from the environment. Each run
 owns only its sandbox, records creation intent privately, and confirms absence.
 """
 from __future__ import annotations
@@ -29,7 +29,9 @@ for n in ['pip','numpy','pandas','matplotlib','jupyter','ipykernel']:
 print(json.dumps(result))"""
 
 async def verify(name: str, output: Path, cli: str | None) -> bool:
-    from agent_sandbox import ProviderSandbox
+    from agent_sandbox import ProviderSandbox as Sandbox
+    from agent_sandbox.models.errors import SandboxNotFoundError
+    from public_launch_e2e import CLI, delete_sandbox
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
     tag = "managed-proof-" + uuid.uuid4().hex
     private = Path(tempfile.mkdtemp(prefix="abx-managed-owned-"))
@@ -42,10 +44,23 @@ async def verify(name: str, output: Path, cli: str | None) -> bool:
     save()
     result = {"template": name, "provider": "alicloud-express", "verification_type": "provider-managed-runtime", "date": stamp, "passed": False, "cleanup_verified": False, "native_interpreter_verified": False, "checks": [], "client_version": importlib.metadata.version("agent-sandbox-client")}
     sb = None
+    sandbox_id = None
+    caller = CLI(cli, "alicloud-express", os.environ.copy()) if cli else None
     try:
-        sb = await ProviderSandbox.create(template=name, timeout=240, metadata={"verification": tag})
-        intent["sandbox_id"] = sb.id
-        save()
+        if caller:
+            result["cli_version"] = caller.run(["--version"], json_output=False)
+            launched = await asyncio.to_thread(caller.run, ["template", "launch", name,
+                "--alias", tag[:42], "--sandbox-timeout", "240", "--yes"])
+            sandbox_id = launched["sandbox_id"]
+            intent["sandbox_id"] = sandbox_id
+            save()
+            sb = await Sandbox.connect(sandbox_id, provider="alicloud-express")
+            result["checks"].append("public catalog bare-name CLI launch")
+        else:
+            sb = await Sandbox.create(template=name, provider="alicloud-express", timeout=240, metadata={"verification": tag})
+            sandbox_id = sb.id
+            intent["sandbox_id"] = sandbox_id
+            save()
         import shlex
         command = "python3 -c " + shlex.quote(INVENTORY)
         observed = await sb.commands.run(command, timeout=60)
@@ -59,41 +74,40 @@ async def verify(name: str, output: Path, cli: str | None) -> bool:
         await sb.files.remove(path)
         assert not await sb.files.exists(path)
         result["checks"].append("SDK file write/read/remove and absence")
-        # This managed workflow selects exec. It makes no unified interpreter claim.
-        result["classification"] = "local-report"
-        result["workflow_id"] = "exec"
-        result["consumer"] = "python-provider"
-        if cli:
-            proc = await asyncio.create_subprocess_exec(cli, "--json", "exec", sb.id, "--", "python3", "-c", "print(6*7)", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            try:
-                stdout, _ = await asyncio.wait_for(proc.communicate(), 90)
-            except BaseException:
-                if proc.returncode is None:
-                    proc.kill()
-                await proc.communicate()
-                raise
-            assert proc.returncode == 0 and "42" in stdout.decode()
-            result["checks"].append("real native CLI exec result 42")
+        # Process/file acceptance makes no persistent interpreter-session claim.
+        result["consumer"] = "public-cli-and-python" if caller else "python-provider"
+        if caller:
+            stdout = await asyncio.to_thread(caller.run, ["exec", sb.id, "--", "python3", "-c", "print(6*7)"], json_output=False)
+            assert stdout.strip() == "42"
+            result["checks"].append("real installed CLI exec result 42")
+        if name == "code-interpreter-v1":
+            code = 'import numpy,matplotlib,pandas as pd; print(pd.DataFrame({"x":[20,22]}).x.sum())'
+            numeric = await sb.commands.run("python3 -c " + shlex.quote(code), timeout=60)
+            assert numeric.exit_code == 0 and numeric.stdout.strip() == "42"
+            result["checks"].append("actual numpy/pandas/matplotlib data processing")
         result["passed"] = True
     except Exception as exc:
         result["failure_type"] = type(exc).__name__
     finally:
         try:
-            if sb:
-                await sb.kill()
-                await sb.close()
-            offset = 0
-            matches = []
-            while True:
-                rows = await ProviderSandbox.list(limit=100, offset=offset)
-                matches.extend(x for x in rows if (x.metadata or {}).get("verification") == tag)
-                if len(rows) < 100:
-                    break
-                offset += len(rows)
-            # A lost create response cannot prove cancellation from empty inventory.
-            result["cleanup_verified"] = sb is not None and not matches
+            if sandbox_id:
+                if caller:
+                    try:
+                        await asyncio.to_thread(caller.run, ["kill", sandbox_id], json_output=False)
+                    except Exception as exc:
+                        result["passed"] = False
+                        result["cli_cleanup_failure_type"] = type(exc).__name__
+                await delete_sandbox(Sandbox, sandbox_id, "alicloud-express", SandboxNotFoundError)
+                result["cleanup_verified"] = True
+                result["checks"].append("independent get-info confirms owned sandbox absent")
         except Exception as exc:
             result["cleanup_failure_type"] = type(exc).__name__
+        if sb:
+            try:
+                await sb.close()
+            except Exception as exc:
+                result["passed"] = False
+                result["client_close_failure_type"] = type(exc).__name__
         result["passed"] = result["passed"] and result["cleanup_verified"]
         intent["cleanup_verified"] = result["cleanup_verified"]
         save()
@@ -111,7 +125,7 @@ async def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("templates", nargs="+", choices=NAMES)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--cli", help="Native CLI executable with --json exec syntax")
+    parser.add_argument("--cli", help="Installed CLI executable (or quoted command), using public catalog launch and standard exec syntax")
     args = parser.parse_args()
     if len(set(args.templates)) != len(args.templates):
         parser.error("select unique template names")

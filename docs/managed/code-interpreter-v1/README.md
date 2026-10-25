@@ -71,6 +71,8 @@ Choose a finite timeout in seconds and delete instances when finished. CPU, memo
 
 ## Verified
 
+[Fresh official npm CLI 0.5.1 / Python client 0.4.0a1 on 2026-10-25](../evidence/public-npm-code-interpreter-v1-2026-10-25T115223Z.json): default public catalog launch, non-root runtime inventory, CLI output 42, Python file write/read/delete, CLI deletion and an independent control-plane absence check. Actual numpy/pandas/matplotlib dataframe processing also returned 42. This is process/file acceptance; no persistent interpreter-session claim.
+
 [2026-10-24 public-package record](../../../.agents/evidence/verify/2026-10-24-managed-public-cli.json): CLI 0.4.16 create/exec yielding `42`/kill; Python 0.3.1a5 file round trip, explicit `ProviderSandbox.run_code` rejection with `E8004`, and independent instance absence. The [2026-10-19 historical record](../evidence/code-interpreter-v1-2026-10-19T154153Z.json) retains its original versions and call paths.
 
 ## Secondary development
