@@ -150,6 +150,8 @@ jobs:
         run: |
           npm install -g --registry https://registry.npmjs.org "@agent-sandbox/cli@$PUBLIC_CLI_VERSION"
           python -m pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-client==$PUBLIC_SDK_VERSION" "agent-sandbox-server==$PUBLIC_SDK_VERSION" -r scripts/requirements-spec.txt
+          python -m pip install --index-url https://pypi.org/simple Pillow==11.3.0 pypdf==6.21.1
+          python -m pip install --require-hashes -r scripts/requirements-native-http.txt
           python -m pip check
           python - <<'PYVERSIONS'
           import importlib.metadata, json, os, subprocess
