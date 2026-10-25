@@ -1,0 +1,90 @@
+{
+  "result": "FAIL",
+  "template": "amp",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch + manifest smoke via host CLI, Python and HTTP; no real-model acceptance",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//amp@389302f5dc9429a4b215801dbd4025d4dba95f7e",
+  "manifest_sha256": "229ff8b35e5925f03debdcf4aad7416141defaf96fac84f66903ab74ab46d2b5",
+  "cli_version": "abx, version 0.5.5",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "amp_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "amp_setup_check",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "installed_packages": {
+    "distribution": "published",
+    "cli": {
+      "name": "@agent-sandbox/cli",
+      "version": "0.5.5",
+      "source_ref": "3f7fa28e16888a5489980dc56c86d6c71c11c4a0",
+      "registry": "https://registry.npmjs.org"
+    },
+    "python_client": {
+      "name": "agent-sandbox-client",
+      "version": "0.4.0a6",
+      "source_ref": "ec3bcf1eb788acb42fea32dec06537ef915e9ba2",
+      "registry": "https://pypi.org/simple"
+    },
+    "python_server": {
+      "name": "agent-sandbox-server",
+      "version": "0.4.0a6",
+      "source_ref": "ec3bcf1eb788acb42fea32dec06537ef915e9ba2",
+      "registry": "https://pypi.org/simple"
+    },
+    "provider_source_ref": "126a50e3c4e4c6792019b9c96674d35a9518d8ad",
+    "template_source_ref": "389302f5dc9429a4b215801dbd4025d4dba95f7e",
+    "template_verifier_ref": "389302f5dc9429a4b215801dbd4025d4dba95f7e"
+  },
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "run_alias": "public-e2e-fa3fe3c81f58aa4b",
+  "endpoint_mode": "direct",
+  "requested_source": "Alibaba-Agent-Sandbox/awesome-templates//amp",
+  "public_source_commit": "389302f5dc9429a4b215801dbd4025d4dba95f7e",
+  "verifier_commit": "389302f5dc9429a4b215801dbd4025d4dba95f7e",
+  "input_receipt": {
+    "manifest_digest": "sha256:229ff8b35e5925f03debdcf4aad7416141defaf96fac84f66903ab74ab46d2b5",
+    "source_digest": "a8fbc83a60b17561275b6cd746f84ca6c1d09701b0f5c3fb98494dcb568f855b",
+    "provider_digest": "sha256:72e27fdd93c4535accbc2e61535841f301b8a76f5d3e4d59d7bfc64a3a94b148",
+    "provider_snapshot_digest": "b5916730551fa464e66f917e5096e73954ac4419d92f04f0d9ac56a9b6c48928",
+    "plan_digest": "fb3e2aa96f5c731ba8db2749907940eab62275b21e1789ef5300cf1e30bcb9b6",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "application_result": "FAIL",
+  "failure_type": "CheckFailed",
+  "failed_phase": "cli-process-and-files",
+  "diagnostics": {},
+  "failed_check": "CLI exec result"
+}

@@ -306,3 +306,5 @@ Current public-package rerun: [decision](notes/proposed/process/2026-10-25-publi
 
 - [Public Express rerun](notes/proposed/process/2026-10-25-public-express-rerun.md) · [verification](evidence/verify/2026-10-25-public-express-rerun.md).
 Current controller authentication: [decision](notes/proposed/process/2026-10-25-current-controller-auth.md) · [verification](evidence/verify/2026-10-25-current-controller-auth.md).
+
+- [CI CLI exec output contract](notes/proposed/process/2026-10-25-ci-cli-exec-output.md) · [verification](evidence/verify/2026-10-25-ci-cli-exec-output.md). Original public source failures remain separate from the repaired verifier.
