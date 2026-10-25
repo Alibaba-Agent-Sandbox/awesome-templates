@@ -59,6 +59,7 @@ jobs:
           PROVIDERS_REF: ${{ inputs.providers_ref }}
           REQUESTED_TEMPLATES: ${{ inputs.templates }}
           REQUESTED_PROVIDER: ${{ inputs.provider }}
+          REQUESTED_DISTRIBUTION: ${{ inputs.distribution }}
         run: |
           python - <<'PY'
           import json, os, re, sys
@@ -69,6 +70,8 @@ jobs:
                   raise SystemExit(key + ' must be an exact reviewed commit')
           if os.environ['REQUESTED_TEMPLATES'] == 'managed' and os.environ['REQUESTED_PROVIDER'] != 'opensandbox':
               raise SystemExit('Managed native journey requires provider opensandbox')
+          if os.environ['REQUESTED_TEMPLATES'] == 'managed' and os.environ['REQUESTED_DISTRIBUTION'] != 'published':
+              raise SystemExit('Managed native journey requires published packages')
           available = source_names()
           managed = os.environ['REQUESTED_TEMPLATES'] == 'managed'
           names = available if os.environ['REQUESTED_TEMPLATES'] == 'all' else (['python-hello'] if managed else os.environ['REQUESTED_TEMPLATES'].split(','))
@@ -228,6 +231,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
   native-managed:
+    needs: plan
     if: inputs.templates == 'managed' && inputs.provider != 'alicloud-express'
     runs-on: ubuntu-latest
     timeout-minutes: 35
