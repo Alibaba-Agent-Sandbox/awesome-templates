@@ -1,6 +1,6 @@
 # Unified launch release documentation verification
 
-Status: PARTIAL — local checks and initial package availability confirmed; CLI 0.5.1 managed-catalog fix publication and follow-up PR gates remain pending.
+Status: PASS for local documentation, preserved matrix receipts and the confirmed public release checks below. Final PR merge remains governed by current-head CI.
 
 ## Scope
 
@@ -32,6 +32,18 @@ The follow-up PR still requires current-head CI and review before merge.
 
 The coordinating public catalog experiment found that CLI 0.5.0 only read source rows under `templates`, while the actual catalog stores native managed entries under `managed_templates`. Bare-name `base` resolution failed before creating a cloud resource. This does not invalidate the recorded 46 source-recipe launches, but CLI 0.5.0 is insufficient for the full current catalog.
 
-Current installation guidance and all managed quick starts therefore target CLI 0.5.1. Publication and a successful public managed-catalog launch at that version are pending; the earlier successful CLI 0.5.0 installation remains a historical fact, not proof that 0.5.1 is available. The documentation follow-up must not merge until the release owner confirms the fixed version. No cloud matrix is repeated for this prose update.
+Current installation guidance and all managed quick starts therefore target CLI 0.5.1. The initial documentation amendment was held until publication and a successful public managed-catalog launch were confirmed. The earlier successful CLI 0.5.0 installation remains a historical fact. No cloud matrix is repeated for this prose update.
 
-The CLI owner tracks the fixed candidate and its separate real `base` lifecycle evidence in [PR 154](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/pull/154). The current documentation amendment passed the 222-document link check and whitespace check; public 0.5.1 installation and final release checks remain pending.
+The CLI owner tracks the fixed candidate and its separate real `base` lifecycle evidence in [PR 154](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/pull/154). The initial documentation amendment passed the 222-document link check and whitespace check; the public-release gate is completed below.
+
+
+## Public CLI 0.5.1 release and base launch
+
+The release coordinator confirmed the following executed checks on 2026-10-25, separately from the source-candidate OpenSandbox matrix:
+
+- PASS: [binary workflow 40184565506](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/actions/runs/40184565506) and [npm workflow 40184777604](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/actions/runs/40184777604).
+- PASS: [release v0.5.1](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/releases/tag/v0.5.1), source commit `8b4d9ad1ebf8b1329039bc292a3fe0ac1a32784f`. The release has 12 assets. Package archive SHA-256 is `3c5bac30cedcb48ecea5b34d9ee3fcb43d2fb069ebff6c54a6bd5ce162ad1efa`; archive/sidecar SHA-256 and npm SHA-512 integrity checks passed.
+- PASS: fresh official npm installation using an empty cache and npmrc, followed by artifact smoke checks. This documentation reviewer independently read official npm version and `latest` metadata; both resolve to 0.5.1. The release tag's annotated Git object resolves to the exact commit above.
+- PASS: real Express `template launch base` through the default public Git catalog, sandbox lifetime 300 seconds, shell execution returning `42`, `kill --yes`, independent GET returning 404 and final reconciliation finding no owned resources.
+
+Python client/server 0.4.0a1 official PyPI installation was separately confirmed by the release coordinator. The successful public `base` test does not certify the other three managed templates, native interpreter/desktop interfaces, model tasks or PTY. Their historical receipts retain their original versions and call paths. The 46-source matrix still records its original source-candidate revisions; it has not been relabeled as a public CLI 0.5.1 matrix.

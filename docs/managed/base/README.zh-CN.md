@@ -16,7 +16,7 @@
 
 ## 快速开始（CLI）
 
-使用 CLI 0.5.1 或更高版本和当前托管目录，按[安装与平台配置说明](../../using-templates.zh-CN.md)准备。下方历史记录验证的是其原 create/exec 接口，不表示已重新验证本次目录启动命令。
+使用 CLI 0.5.1 或更高版本和当前托管目录，按[安装与平台配置说明](../../using-templates.zh-CN.md)准备。
 
 先完成 [CLI 安装和平台配置](../../using-templates.zh-CN.md)，将 `<sandbox-id>` 替换为创建时返回的实例 ID。
 
@@ -70,6 +70,8 @@ asyncio.run(main())
 设置有限的超时时间（秒），结束后删除实例。CPU、内存与镜像更新由平台管理。
 
 ## 已验证
+
+[2026-10-25 公开 CLI 0.5.1 记录](../../../.agents/evidence/verify/2026-10-25-unified-launch-release-docs.md#public-cli-051-release-and-base-launch)：通过默认公开目录执行短名称 `template launch base`，设置 300 秒生命周期，shell 输出 `42`，CLI 删除后独立确认实例不存在。
 
 [2026-10-24 公开包记录](../../../.agents/evidence/verify/2026-10-24-managed-public-cli.json)：CLI 0.4.16 实际创建、执行得到 `42`、删除；Python 0.3.1a5 文件读写删除、`ProviderSandbox.run_code` 明确返回 `E8004`，并独立确认实例已删除。[2026-10-19 历史记录](../evidence/base-2026-10-19T154144Z.json)保留原始版本与调用路径。
 
