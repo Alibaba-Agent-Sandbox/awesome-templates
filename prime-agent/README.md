@@ -91,7 +91,7 @@ See [test results and scope](../docs/using-templates.md#evidence-and-providers).
 python -m pytest -q prime-agent/test_commands.py prime-agent/test_terminal.py
 python scripts/check_template.py prime-agent --strict
 python scripts/check_docs.py
-ABX='abx --native' python scripts/run_steps_e2e.py prime-agent --sandbox-create sdk --http
+python scripts/run_steps_e2e.py prime-agent
 ```
 
 Real-model controller opts in only on an explicitly owned remote target. It repairs seeded existing source, preserves original test bytes, downloads a new report/exact fresh nonce, independently runs original3 plus4held-out cases and issues a fresh post-return ACK. Fixed synthetic protocol fixtures and source-only native skips do not establish a model/cloud pass.

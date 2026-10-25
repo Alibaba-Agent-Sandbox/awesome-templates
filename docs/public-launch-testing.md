@@ -157,3 +157,8 @@ source-mode host SDK checkout does not imply a source-built guest server.
 本机没有 Docker 时，可以消费公开包 OpenSandbox 启动流程导出的原镜像，单独验证极速版镜像注册、真实沙箱及 API。上方 `run_image_e2e_batch.py` 命令只接受成功工作流的未过期产物，并核对公开模板提交、验证器提交、完整内容指纹、实际运行字节与公开包来源；它不代表本机完成了极速版源码构建。镜像注册时不预启动应用，而是复用当前 `template launch` 和原清单的启动命令、服务与环境；CLI、Python 应用客户端及宿主 HTTP 均调用同一个真实服务，不另起测试专用服务。宿主 HTTP 遵循正常代理环境并保留 TLS 校验。临时私有镜像仓库、平台模板和沙箱均按本次唯一标识清理并独立复核，凭据不落盘。
 
 `verify_managed_templates.py base code-interpreter-v1 --cli abx` 从公开目录按原生名称启动极速版内置模板，再验证 Python 进程／文件、CLI 与清理；数据处理镜像另执行实际 DataFrame 运算。不包含持久解释器会话验证，也不把其他平台的原生模板替换成近似镜像。
+
+Current acceptance also executes the published CLI's process command and transfers
+an owned UTF-8 file using `abx upload` and `abx download`. The SDK independently
+reads the same bytes, and CLI stat/removal plus SDK absence confirm the owned file
+round trip. These checks do not imply PTY or native interpreter support.

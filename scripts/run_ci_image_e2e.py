@@ -24,9 +24,8 @@ import uuid
 import secrets
 import time
 import yaml
-from public_launch_e2e import CLI, require, matches, command_url, application_headers, delete_sandbox, json_contains
+from public_launch_e2e import CLI, CLIError, require, matches, command_url, application_headers, delete_sandbox, json_contains, verify_cli_io
 import ci_image_archive as images
-import express_e2e as harness
 from template_http_acceptance import fixture_environment, run_controller
 
 
@@ -48,10 +47,11 @@ def controller_missing_imports(source: Path) -> list[str]:
 
 def check_image_cli() -> None:
     """Reject a missing/renamed CLI surface before archive transfer or cloud writes."""
-    result=harness.default_runner(['template','from-image','--help'],30)
+    result=CLI(os.environ.get('ABX','abx'),'alicloud-express',os.environ.copy()).run(
+        ['template','from-image','--help'],30,native=True,json_output=False)
     required=['--generation','--start-cmd','--ready-cmd','--cpu','--memory',
               '--no-envd-inject','--registry-type','--registry-username','--registry-password']
-    if result.returncode or any(flag not in result.stdout for flag in required):
+    if any(flag not in result for flag in required):
         raise RuntimeError('CLI lacks the native template from-image contract; update ABX before image acceptance')
 
 
@@ -83,6 +83,30 @@ def exact_templates(cli: CLI, alias: str) -> list[str]:
     rows=cli.run(['template','list'],native=True)
     require(isinstance(rows,list),'native template inventory shape')
     return [row['TemplateID'] for row in rows if row.get('Name')==alias]
+
+
+def delete_owned_templates(cli: CLI, alias: str, known_id: str | None, timeout: float=60) -> bool:
+    """Delete exact owned IDs and require per-ID GetTemplate 404 plus empty alias."""
+    ids=set(exact_templates(cli,alias))
+    if known_id:ids.add(known_id)
+    if not ids:return False  # An ambiguous submission cannot be cleared by an empty index.
+    for identifier in ids:
+        try:cli.run(['template','info',identifier],native=True)
+        except CLIError as exc:
+            if exc.diagnostics.get('code')=='E2001':continue
+            raise
+        cli.run(['template','delete',identifier,'--yes'],native=True,json_output=False)
+    deadline=time.monotonic()+timeout
+    for identifier in ids:
+        while True:
+            try:cli.run(['template','info',identifier],native=True)
+            except CLIError as exc:
+                if exc.diagnostics.get('code')=='E2001':
+                    break
+                raise
+            if time.monotonic()>=deadline:return False
+            time.sleep(1)
+    return not exact_templates(cli,alias)
 
 
 def wait_ready(cli: CLI, template_id: str, timeout: int=900) -> None:
@@ -121,7 +145,7 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
         cli_version=cli.run(['--version'],json_output=False),client_version=importlib.metadata.version('agent-sandbox-client'),
         cli_distribution=os.environ.get('PUBLIC_LAUNCH_DISTRIBUTION','published'),cli_source_ref=os.environ.get('PUBLIC_LAUNCH_CLI_REF'),
         prepared_launch_manifest_sha256=hashlib.sha256((runtime/'template.yaml').read_bytes()).hexdigest())
-    journals=Path.home()/'.abx'/'resource-journal'
+    journals=cli.journal_directory
     before=set(journals.glob('*.json'));launch=None;sandbox=None;client=None
     try:
         launch=await asyncio.to_thread(cli.run,['template','launch',str(runtime),'--alias',alias,
@@ -132,6 +156,7 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
         url,gateway_headers=await sandbox.network.resolve(9000)
         headers=application_headers(gateway_headers,environment['ABX_SERVER_TOKEN'])
         commands=[]
+        report['commands']=commands
         async with httpx.AsyncClient(timeout=180) as remote:
             for index,case in enumerate(manifest['smoke']):
                 name,args=case['command'],case.get('args',{})
@@ -157,9 +182,10 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
         require(installed.exit_code == 0 and installed.stdout.strip() == server_version(source),
                 'actual prepared runtime server matches declared public package')
         report['server_package_version'] = installed.stdout.strip()
+        await verify_cli_io(cli, sandbox, alias, private)
         report['commands']=commands
         report['checks']=['current unified launch starts original declared services','CLI/SDK/host HTTP manifest smoke',
-            'actual startup service rejects wrong application token','actual runtime command bytes match source','SDK exec and file round trip']
+            'actual startup service rejects wrong application token','actual runtime command bytes match source','SDK exec and file round trip','CLI exec/stat/upload/download and independent SDK byte/cleanup checks']
         if http:
             urls={};common_headers=None
             for port in manifest.get('ports',[9000]):
@@ -248,10 +274,7 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,private_root:
         if platform_path.exists():
             try:
                 intent=json.loads(platform_path.read_text())
-                ids=set(exact_templates(cli,alias))
-                if intent.get('template_id'):ids.add(intent['template_id'])
-                for identifier in ids:cli.run(['template','delete',identifier,'--yes'],native=True,json_output=False)
-                template_clean=bool(ids) and not exact_templates(cli,alias)
+                template_clean=delete_owned_templates(cli,alias,intent.get('template_id'))
                 intent['template_cleanup_verified']=template_clean;images.save_private(platform_path,intent)
             except Exception as exc:report['template_cleanup_failure_type']=type(exc).__name__
         if journal_path.exists():

@@ -95,7 +95,7 @@ print(await client.commands.run('claude_version'))
 python -m pytest -q claude-code/test_byok.py claude-code/test_adapter.py
 python scripts/check_template.py claude-code --strict
 python scripts/check_docs.py
-ABX='abx --native' python scripts/run_steps_e2e.py claude-code --sandbox-create sdk --http
+python scripts/run_steps_e2e.py claude-code
 ```
 
 保留原包与声明、锁文件与完整性/哈希、显式授权来源、工具环境无真实密钥、拒绝不支持内容、自有后代进程/监听器/私有目录清理。本地仅使用不执行代码的固定协议回复。原生/模型生成代码仅在新建自有云目标运行；原测试字节不变，并独立核对产物和返回后的隐藏测试。

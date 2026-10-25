@@ -93,7 +93,7 @@ python -m pytest -q qm-sandbox/test_runtime.py qm-sandbox/test_commands.py
 python -m pytest -q qm/test_terminal.py
 python scripts/check_template.py qm --strict
 python scripts/check_docs.py
-ABX='abx --native' python scripts/run_steps_e2e.py qm --sandbox-create sdk --http --asset-transport oss
+python scripts/run_steps_e2e.py qm --asset-transport oss
 ```
 
 SDK HTTP fixture先执行 `python qm-sandbox/prepare_sdk_tests.py /tmp/qm-sdk-tests-<unique-run>`，再执行 `ABX_QM_TEST_SDK_ENTRY=/tmp/qm-sdk-tests-<unique-run>/dist/index.js node --test qm-sandbox/test_adapter.mjs`。SDK单元fixture可用Node>=20，真实QM使用固定Node24.16.0；未显式构建原版SDK时这些fixture会跳过，不构成原生/后端通过。

@@ -1,5 +1,4 @@
 """Synthetic source/registration guards; these fixtures are not cloud evidence."""
-from test_express_cleanup import cli_help
 import json
 from pathlib import Path
 import sys
@@ -8,7 +7,6 @@ import pytest
 
 sys.path.insert(0,str(Path(__file__).parent))
 import ci_image
-import express_e2e as h
 
 IMAGE='registry.cn-hangzhou.aliyuncs.com/example/e2e-ci-image-'+'a'*16+':review'
 
@@ -26,7 +24,7 @@ def fixture(tmp_path):
 @pytest.mark.parametrize('key,value',[('artifact_verified',False),('image_non_root',False),('registry_private_repo_verified',False),('server_package_version','e'*40),('template_version','9.0.0'),('github_repository','unreviewed/fork'),('pushed_image_digest','invalid'),('registry_credentials_storage','disk config'),('private_registry_password','not-public')])
 def test_wrong_or_private_proof_fails_before_cloud(tmp_path,key,value):
     source,proof,path=fixture(tmp_path);proof[key]=value;path.write_text(json.dumps(proof))
-    with pytest.raises(SystemExit):h.build_options([str(source),'--build','image','--image-ref',IMAGE,'--image-proof',str(path)])
+    with pytest.raises(ValueError):ci_image.validate_proof(source,proof,IMAGE)
 
 
 def test_mutable_reference_and_changed_runtime_are_rejected(tmp_path):
@@ -44,51 +42,8 @@ def test_any_manifest_change_invalidates_image_identity(tmp_path):
     with pytest.raises(ValueError):ci_image.validate_proof(source,proof,IMAGE)
 
 
-def test_real_image_entry_polls_ready_and_keeps_cli_smoke_cleanup(tmp_path,monkeypatch):
-    source,proof,path=fixture(tmp_path)
-    options=h.build_options([str(source),'--build','image','--image-ref',IMAGE,'--image-proof',str(path),'--sandbox-timeout','900'])
-    monkeypatch.setenv('ABX_IMAGE_REGISTRY_USERNAME','synthetic-user')
-    monkeypatch.setenv('ABX_IMAGE_REGISTRY_PASSWORD','synthetic-private-password')
-    monkeypatch.setattr(h,'image_digest',lambda ref:proof['pushed_image_digest'])
-    calls=[]
-    def run(argv,timeout):
-        if (help_result := cli_help(argv)) is not None: return help_result
-        calls.append(argv)
-        if argv[1:3]==['template','info']:return h.Proc(0,'{"status":{"state":"ready"}}','')
-        if argv == ['template','list','--format','json']:return h.Proc(0,'[]','')
-        if argv[1:3]==['template','from-image']:
-            assert '--no-envd-inject' in argv and '--cpu' in argv and '--memory' in argv
-            assert IMAGE in argv and '--registry-password=synthetic-private-password' in argv
-            assert 'deploy' not in argv and '--build' not in argv
-            return h.Proc(0,'{"TemplateID":"owned-image-template"}','')
-        if argv[1:3]==['template','info']:return h.Proc(0,'{"status":{"state":"ready"}}','')
-        if 'create' in argv:
-            assert argv[-2:]==['--timeout','900']
-            return h.Proc(0,"owned-image-sandbox\n",'')
-        if 'run' in argv:return h.Proc(0,'{"result":"ok"}','')
-        return h.Proc(0,'','')
-    with patch.object(h,'acr_push_lock',side_effect=AssertionError('no controller Docker push')):
-        assert h.execute(options,runner=run,sdk=lambda *_:'ok',verify=lambda *_:True)==0
-    report=json.loads(next((source/'evidence').glob('express-*.json')).read_text())
-    assert report['build_mode']=='image' and report['registration_operation']=='abx template from-image'
-    assert report['image_provenance']['tag_digest_verified_after_runtime'] is True and report['cleanup_verified'] is True
-    assert any(a[1:3]==['template','info'] for a in calls) and any('kill' in a for a in calls)
-    assert 'synthetic-private-password' not in json.dumps(report)
 
 
-def test_failed_image_readiness_never_creates_sandbox_or_receipt(tmp_path,monkeypatch):
-    source,proof,path=fixture(tmp_path)
-    options=h.build_options([str(source),'--build','image','--image-ref',IMAGE,'--image-proof',str(path)])
-    monkeypatch.setenv('ABX_IMAGE_REGISTRY_USERNAME','synthetic-user');monkeypatch.setenv('ABX_IMAGE_REGISTRY_PASSWORD','synthetic-private-password')
-    monkeypatch.setattr(h,'image_digest',lambda ref:proof['pushed_image_digest'])
-    def run(argv,timeout):
-        if (help_result := cli_help(argv)) is not None: return help_result
-        if argv == ['template','list','--format','json']:return h.Proc(0,'[]','')
-        if argv[1:3]==['template','from-image']:return h.Proc(0,'{"TemplateID":"owned-image-template"}','')
-        if 'create' in argv:pytest.fail('sandbox cannot precede image READY')
-        return h.Proc(0,'','')
-    with patch.object(h,'wait_for_steps_ready',return_value=False):assert h.execute(options,runner=run,sdk=lambda *_:'ok',verify=lambda *_:True)==1
-    assert not (source/'evidence').exists()
 
 
 def test_invalid_declared_resources_fail_before_any_artifact_or_cloud_call(tmp_path):
@@ -101,35 +56,8 @@ def test_invalid_declared_resources_fail_before_any_artifact_or_cloud_call(tmp_p
     assert not (tmp_path/'private').exists()
 
 
-def test_tag_changed_before_registration_is_rejected_without_mutation(tmp_path,monkeypatch):
-    source,proof,path=fixture(tmp_path)
-    options=h.build_options([str(source),'--build','image','--image-ref',IMAGE,'--image-proof',str(path)])
-    monkeypatch.setenv('ABX_IMAGE_REGISTRY_USERNAME','synthetic-user');monkeypatch.setenv('ABX_IMAGE_REGISTRY_PASSWORD','synthetic-password')
-    monkeypatch.setattr(h,'image_digest',lambda ref:'sha256:'+'0'*64)
-    def run(argv,timeout):
-        if (help_result := cli_help(argv)) is not None: return help_result
-        if argv == ['template','list','--format','json']:return h.Proc(0,'[]','')
-        pytest.fail('no cloud mutation before digest match')
-    assert h.execute(options,runner=run,sdk=lambda *_:'ok',verify=lambda *_:True)==1
-    assert not (source/'evidence').exists()
 
 
-def test_changed_tag_after_runtime_cannot_publish_even_when_cleanup_succeeds(tmp_path,monkeypatch):
-    source,proof,path=fixture(tmp_path)
-    options=h.build_options([str(source),'--build','image','--image-ref',IMAGE,'--image-proof',str(path)])
-    monkeypatch.setenv('ABX_IMAGE_REGISTRY_USERNAME','synthetic-user');monkeypatch.setenv('ABX_IMAGE_REGISTRY_PASSWORD','synthetic-password')
-    digests=iter([proof['pushed_image_digest'],'sha256:'+'0'*64])
-    monkeypatch.setattr(h,'image_digest',lambda ref:next(digests))
-    def run(argv,timeout):
-        if (help_result := cli_help(argv)) is not None: return help_result
-        if argv[1:3]==['template','info']:return h.Proc(0,'{"status":{"state":"ready"}}','')
-        if argv == ['template','list','--format','json']:return h.Proc(0,'[]','')
-        if argv[1:3]==['template','from-image']:return h.Proc(0,'{"TemplateID":"owned-template"}','')
-        if 'create' in argv:return h.Proc(0,"owned-sandbox\n",'')
-        if 'run' in argv:return h.Proc(0,'{"result":"ok"}','')
-        return h.Proc(0,'','')
-    assert h.execute(options,runner=run,sdk=lambda *_:'ok',verify=lambda *_:True)==1
-    assert not (source/'evidence').exists()
 
 
 def test_proof_requires_the_declared_public_server_package(tmp_path):
@@ -203,7 +131,7 @@ def test_missing_image_cli_contract_blocks_before_archive_or_registry_calls(tmp_
     repo = tmp_path / 'repo'
     repo.mkdir()
     source, _, _ = fixture(repo)
-    monkeypatch.setattr(h, 'default_runner', lambda *args: h.Proc(2, '', 'No such command'))
+    monkeypatch.setattr(runner.CLI, 'run', lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError('native CLI unavailable')))
     monkeypatch.setattr(images, 'download_verified', lambda *args: pytest.fail('CLI preflight must precede downloads/cloud operations'))
     assert runner.run(source, 123, '/unused/crane', http=False, private_root=tmp_path / 'private') == 1
     receipt = json.loads(next((source / 'evidence').glob('image-attempt-*.json')).read_text())

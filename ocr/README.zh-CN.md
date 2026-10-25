@@ -110,7 +110,7 @@ Linux 进程管理通过 `waitid(WNOWAIT)` 保留 leader 身份，持续排空�
 
 ### Agent Sandbox step 构建
 
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py ocr --timeout 1200 --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。公开 runner 执行 CLI/SDK fixture smoke；另一完整 HTTP 控制器在 READY 后通过了全部 19 项断言，见[实际执行步骤](../.agents/evidence/verify/2026-10-20-ocr-step-acceptance.md)。此原生 OCR 任务不需要模型。
+在仓库 checkout 执行 `python scripts/run_steps_e2e.py ocr --timeout 1200`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。公开 runner 执行 CLI/SDK fixture smoke；另一完整 HTTP 控制器在 READY 后通过了全部 19 项断言，见[实际执行步骤](../.agents/evidence/verify/2026-10-20-ocr-step-acceptance.md)。此原生 OCR 任务不需要模型。
 
 ## 贡献
 
