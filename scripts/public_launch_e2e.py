@@ -96,6 +96,7 @@ def cli_diagnostics(output):
     if not isinstance(message, str):
         return details
     for prefix, category in [
+        ('Template cannot launch on this provider: provider-mismatch.', 'provider-mismatch'),
         ('Template startup failed', 'template-startup'),
         ('Sandbox creation/session binding failed', 'sandbox-session-binding'),
         ('Sandbox creation has an uncertain outcome', 'sandbox-creation-uncertain'),
@@ -242,6 +243,46 @@ async def cleanup_prepared(entries, cli, alias, diagnostics=None):
     return done, failures
 
 
+def export_owned_image(entries, alias, source, directory, provenance, runtime_version=None, public_source_commit=None, source_snapshot_digest=None):
+    """Export only the image built by this successful launch, before owned cleanup."""
+    from server_sdk_pin import server_commit
+    require(not directory.exists(), 'image export directory must be fresh')
+    images = {}
+    for entry in entries:
+        tag = str(entry.get('correlation_key', ''))
+        if entry.get('kind') != 'image' or not tag.rsplit(':', 1)[-1].startswith(alias + '-'):
+            continue
+        if '/' in tag and not tag.startswith('localhost:5000/'):
+            continue
+        proc = subprocess.run(['docker', 'image', 'inspect', '--format', '{{.Id}}', tag],
+                              capture_output=True, text=True, timeout=30)
+        require(proc.returncode == 0, 'owned export image exists')
+        images[proc.stdout.strip()] = tag
+    require(len(images) == 1, 'exactly one owned image must be exported')
+    image_id, tag = next(iter(images.items()))
+    require(re.fullmatch(r'sha256:[0-9a-f]{64}', image_id), 'owned export image identity')
+    directory.mkdir(parents=True)
+    archive = directory / (source.name + '-image.tar')
+    subprocess.run(['docker', 'image', 'save', '--output', str(archive), tag],
+                   check=True, capture_output=True, timeout=600)
+    with archive.open('rb') as stream:
+        digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+    (directory / (archive.name + '.sha256')).write_text(digest + '  ' + archive.name + '\n')
+    revision = subprocess.check_output(['git', '-C', str(source), 'rev-parse', 'HEAD'], text=True).strip()
+    metadata = {'format': 'docker-archive', 'origin': 'public-template-launch',
+        'template': source.name, 'repository': 'Alibaba-Agent-Sandbox/awesome-templates',
+        'checkout_commit': public_source_commit or revision, 'source_head_commit': public_source_commit or revision,
+        'verifier_commit': revision, 'public_source_commit': public_source_commit,
+        'source_snapshot_digest': source_snapshot_digest,
+        'workflow_run_id': os.environ.get('GITHUB_RUN_ID'),
+        'server_sdk_commit': server_commit(source), 'local_image_id': image_id,
+        'archive_sha256': digest, 'installed_packages': provenance,
+        'runtime_server_version': runtime_version,
+        'acceptance': 'published CLI launch and manifest smoke on OpenSandbox; no Express or model acceptance'}
+    (directory / (source.name + '-image-metadata.json')).write_text(json.dumps(metadata, indent=2) + '\n')
+    return {'archive_sha256': digest, 'image_config_sha256': image_id.removeprefix('sha256:')}
+
+
 async def cleanup_before_close(release_resources, client, sandbox):
     """Local HTTP close errors must never prevent deleting cloud resources."""
     errors = []
@@ -309,6 +350,9 @@ async def verify(args):
         if value == '':
             env.pop(key, None)
     env['ABX_SERVER_TOKEN'] = secrets.token_urlsafe(32)
+    from template_http_acceptance import fixture_environment, run_controller
+    server_fixture, controller_fixture, fixture_proof = fixture_environment(args.template)
+    env.update(server_fixture)
     cli = CLI(args.abx, args.provider, env)
     report = {'result': 'FAIL', 'template': args.template, 'provider': args.provider,
         'scope': 'public CLI source launch + manifest smoke via host CLI, Python and HTTP; no real-model acceptance',
@@ -321,6 +365,7 @@ async def verify(args):
         report['installed_packages'] = installation_provenance(
             env, importlib.metadata.version('agent-sandbox-client'),
             importlib.metadata.version('agent-sandbox-server'))
+    report['test_configuration'] = fixture_proof
     alias = 'public-e2e-' + secrets.token_hex(8)
     report['run_alias'] = alias
     if args.provider == 'opensandbox':
@@ -330,8 +375,23 @@ async def verify(args):
     launch = None
     sandbox = None
     client = None
-    phase = 'template-launch'
+    phase = 'public-source-resolution'
+    public_source_commit = None
     try:
+        if not args.source:
+            resolved = await asyncio.to_thread(subprocess.run,
+                ['git', 'ls-remote', '--exit-code', 'https://github.com/Alibaba-Agent-Sandbox/awesome-templates.git', 'HEAD'],
+                capture_output=True, text=True, timeout=60, check=True)
+            require(re.fullmatch(r'[0-9a-f]{40}\s+HEAD\s*', resolved.stdout), 'public Git HEAD must resolve to an immutable commit')
+            public_source_commit = resolved.stdout.split()[0]
+            report['requested_source'] = report['source']
+            report['source'] += '@' + public_source_commit
+            report['public_source_commit'] = public_source_commit
+            report['verifier_commit'] = env.get('PUBLIC_LAUNCH_TEMPLATES_REF')
+            if report.get('installed_packages'):
+                report['installed_packages']['template_verifier_ref'] = env.get('PUBLIC_LAUNCH_TEMPLATES_REF')
+                report['installed_packages']['template_source_ref'] = public_source_commit
+        phase = 'template-launch'
         launch = await asyncio.to_thread(cli.run,
             ['template', 'launch', args.source or report['source'],
              '--alias', alias, '--timeout', str(args.build_timeout), '--sandbox-timeout', '1800', '--yes'],
@@ -387,6 +447,37 @@ async def verify(args):
         await sandbox.files.remove(path)
         require(not await sandbox.files.exists(path), 'SDK file deletion readback')
         report['checks'].extend(['runtime source identity', 'SDK exec and file round trip'])
+        if args.application_controller:
+            phase = 'application-controller'
+            urls = {}
+            report['port_endpoint_layout'] = []
+            for port in manifest.get('ports', [9000]):
+                url, port_headers = await sandbox.network.resolve(port)
+                require(port_headers == gateway_headers, 'HTTP controller gateway authentication must match across declared ports')
+                urls[port] = url
+                parts = urllib.parse.urlsplit(url)
+                report['port_endpoint_layout'].append({'port': port, 'scheme': parts.scheme,
+                    'has_path_prefix': bool(parts.path.strip('/')), 'has_query': bool(parts.query),
+                    'gateway_header_count': len(port_headers)})
+            report['http_acceptance'] = await asyncio.to_thread(run_controller, source, urls,
+                cli.private_directory, controller_fixture, token=env['ABX_SERVER_TOKEN'], gateway_headers=gateway_headers)
+            if not report['http_acceptance']['passed']:
+                from opensandbox_template_e2e import safe_label
+                labels = [line for line in (cli.private_directory / 'http.log').read_text().splitlines()
+                          if line.startswith(('[FAIL]', '[SKIP]'))]
+                report['http_diagnostics'] = [safe_label(line, [env['ABX_SERVER_TOKEN'], *server_fixture.values()]) for line in labels[:12]]
+            require(report['http_acceptance']['passed'], 'template application HTTP controller')
+        if args.export_image_dir:
+            phase = 'export-owned-image'
+            require(args.provider == 'opensandbox', 'image export requires the disposable OpenSandbox backend')
+            entries = [entry for path in set(journal_dir.glob('*.json')) - original_journals
+                       for entry in json.loads(path.read_text()).get('entries', [])]
+            version = await sandbox.commands.run('python3 -c "import importlib.metadata; print(importlib.metadata.version(\'agent-sandbox-server\'))"', timeout=30)
+            require(version.exit_code == 0 and re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:a[0-9]+)?', version.stdout.strip()),
+                    'runtime server version is a release version')
+            report['runtime_server_version'] = version.stdout.strip()
+            report['image_export'] = await asyncio.to_thread(export_owned_image, entries, alias, source,
+                args.export_image_dir, report.get('installed_packages'), version.stdout.strip(), public_source_commit, launch.get('source_digest'))
         report['application_result'] = 'PASS'
     except Exception as failure:
         report['application_result'] = 'FAIL'
@@ -448,6 +539,8 @@ def main():
     parser.add_argument('--abx', default=os.environ.get('ABX_BIN', 'abx'))
     parser.add_argument('--build-timeout', type=int, default=1200)
     parser.add_argument('--output', type=Path)
+    parser.add_argument('--application-controller', action='store_true', help='run the unchanged full template HTTP controller after smoke')
+    parser.add_argument('--export-image-dir', type=Path, help='save the exact owned OpenSandbox image before cleanup')
     parser.add_argument('--list', action='store_true', help='list all source templates without cloud operations')
     args = parser.parse_args()
     if args.list:

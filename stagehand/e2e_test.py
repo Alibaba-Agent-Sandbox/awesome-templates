@@ -4,6 +4,13 @@ import os
 import sys
 import httpx
 
+# The host runner passes provider gateway authentication separately from app auth.
+import json as _e2e_json
+_GATEWAY_HEADERS = _e2e_json.loads(os.environ.get("E2E_GATEWAY_HEADERS_JSON", "{}"))
+if not isinstance(_GATEWAY_HEADERS, dict) or any(not isinstance(k, str) or not isinstance(v, str) for k, v in _GATEWAY_HEADERS.items()):
+    raise ValueError("E2E_GATEWAY_HEADERS_JSON must be an object of string headers")
+_APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKEN"]} if os.environ.get("ABX_SERVER_TOKEN") else {}
+
 
 def main():
     failed=0
@@ -14,7 +21,7 @@ def main():
     headers={}
     if os.environ.get('E2E_TOKEN'):headers['X-Access-Token']=os.environ['E2E_TOKEN']
     if os.environ.get('E2E_SERVER_TOKEN'):headers['Authorization']='Bearer '+os.environ['E2E_SERVER_TOKEN']
-    with httpx.Client(base_url=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000').rstrip('/'),headers=headers,timeout=90) as client:
+    with httpx.Client(base_url=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000').rstrip('/'),headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS},timeout=90) as client:
         record(client.get('/health').status_code==200,'health')
         response=client.get('/commands');entries={x['name']:x for x in response.json().get('commands',[])}
         record(response.status_code==200 and set(entries)=={'stagehand','stagehand_version','stagehand_setup_check','stagehand_self_test'},'named command surface')

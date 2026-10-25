@@ -12,6 +12,13 @@ from pathlib import PurePosixPath
 
 import httpx
 
+# The host runner passes provider gateway authentication separately from app auth.
+import json as _e2e_json
+_GATEWAY_HEADERS = _e2e_json.loads(os.environ.get("E2E_GATEWAY_HEADERS_JSON", "{}"))
+if not isinstance(_GATEWAY_HEADERS, dict) or any(not isinstance(k, str) or not isinstance(v, str) for k, v in _GATEWAY_HEADERS.items()):
+    raise ValueError("E2E_GATEWAY_HEADERS_JSON must be an object of string headers")
+_APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKEN"]} if os.environ.get("ABX_SERVER_TOKEN") else {}
+
 
 def main():
     token=os.environ.get('E2E_SERVER_TOKEN','')
@@ -22,7 +29,7 @@ def main():
         nonlocal failures
         failures+=not ok
         print(f"[{'PASS' if ok else 'FAIL'}] {label}",flush=True)
-    with httpx.Client(base_url=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000').rstrip('/'),headers=headers,timeout=90) as client:
+    with httpx.Client(base_url=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000').rstrip('/'),headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS},timeout=90) as client:
         response=client.get('/health');check(response.status_code==200,'server health')
         response=client.get('/commands');body=response.json()
         names={c['name'] for c in body.get('commands',[])}
