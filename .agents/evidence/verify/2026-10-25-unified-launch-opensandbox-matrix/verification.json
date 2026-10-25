@@ -1,0 +1,12 @@
+{
+  "result": "PASS",
+  "cases": 46,
+  "smoke_definitions": 73,
+  "consumer_calls": 219,
+  "manifest_hashes": "46 matched",
+  "cleanup": "46 sandboxes and prepared artifacts independently confirmed absent",
+  "retained": 0,
+  "uncertain": 0,
+  "distribution": "source",
+  "run_url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/40177005215"
+}

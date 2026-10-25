@@ -16,7 +16,7 @@ Run shell commands and work with files without preparing an image.
 
 ## Quick start (CLI)
 
-This direct launch example requires the specification 5 CLI and updated managed catalog. Use the [coordinated source installation](../../using-templates.md) until those releases and catalog updates are published together. The historical verification below covers its recorded create/exec interfaces, not a rerun of this new catalog launch command.
+Use CLI 0.5.0 or later and the current managed catalog; see [installation and provider setup](../../using-templates.md). The historical verification below covers its recorded create/exec interfaces, not a rerun of this catalog launch command.
 
 Install [CLI and provider configuration](../../using-templates.md), then replace `<sandbox-id>` with the ID returned by launch.
 

@@ -1,18 +1,20 @@
 # Engineering records: awesome-templates
 
-## Pending specification 5 delivery (2026-10-25)
+## Specification 5 delivery (2026-10-25)
 
 - [Unified template launch](notes/proposed/architecture/2026-10-25-unified-template-launch.md) · [verification](evidence/verify/2026-10-25-unified-template-launch.md).
 
-Current authoring uses one startup command and all declared services, without workflow selectors. The decision remains proposed until compatible consumers, current-format cloud checks and publication gates complete. Earlier cloud receipts below retain their exact historical scope.
+- [Release installation and durable matrix evidence](notes/proposed/process/2026-10-25-unified-launch-release-docs.md) · [documentation verification](evidence/verify/2026-10-25-unified-launch-release-docs.md) · [complete OpenSandbox matrix](evidence/verify/2026-10-25-unified-launch-opensandbox-matrix.md).
 
-## Current delivery (2026-10-24)
+Current authoring uses one startup command and all declared services, without workflow selectors. The source-candidate OpenSandbox matrix passed 46/46 recipes and 219 consumer calls with independent cleanup. Its receipts preserve exact source provenance; published package installation and managed catalog launch remain separate checks. Current setup targets CLI 0.5.0+ and Python client 0.4.0a1. Earlier cloud receipts below retain their exact historical scope.
+
+## Historical delivery (2026-10-24)
 
 - [Documentation and record synchronization](notes/implemented/process/2026-10-24-current-documentation-sync.md) · [verification](evidence/verify/2026-10-24-current-documentation-sync.md)
 - [Public launch: 46 sources × 2 platforms](evidence/verify/2026-10-24-public-template-matrix.md) · [separate remote Git journeys](evidence/verify/2026-10-24-public-git-journeys.md)
 - [Managed default execution and native upstream sessions](evidence/verify/2026-10-24-managed-template-usage.md) · [bilingual source quick starts](evidence/verify/2026-10-24-source-application-quickstarts.md)
 
-These are dated results at their recorded inputs. CLI 0.4.17 is the current installation recommendation; the 92-case matrix used CLI 0.4.16. Managed entries, model tasks, PTY and desktop behavior do not inherit a source-smoke pass.
+These are dated results at their recorded inputs. CLI 0.4.17 was the installation recommendation at that checkpoint; the 92-case matrix used CLI 0.4.16. Managed entries, model tasks, PTY and desktop behavior do not inherit a source-smoke pass.
 
 The earlier [cloud-steps documentation decision](notes/proposed/process/2026-10-24-developer-journey-docs.md) and its [partial receipt](evidence/verify/2026-10-24-developer-journey-docs.md) retain their pending post-publication rerun scope. The later default source-image matrix does not substitute for that separate no-Docker journey.
 
