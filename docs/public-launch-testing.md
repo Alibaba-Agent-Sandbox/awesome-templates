@@ -126,3 +126,8 @@ Authorization headers fail before the controller starts.
 源码提交和验证程序提交。测试客户端通过受控 JSON 环境变量传递 provider 网关头，
 应用 Bearer 令牌只通过 `ABX_SERVER_TOKEN` 传递，不读取或注入旧变量别名，
 也不借用其他操作员凭据。非法网关头和冲突的 Authorization 会在运行前明确失败。
+
+The Dockerfile installs its exact published server package from the official PyPI
+index, independently of a base image's configured mirror. Actual guest acceptance
+reads back the installed distribution and compares it to that declaration. A
+source-mode host SDK checkout does not imply a source-built guest server.

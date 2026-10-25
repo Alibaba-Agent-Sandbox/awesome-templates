@@ -34,7 +34,7 @@ RUN npm ci --omit=dev --ignore-scripts --no-audit --no-fund \
     && chmod 755 /opt/grok/bin/grok \
     && python3 -c "import hashlib,pathlib; p=pathlib.Path('/opt/grok/bin/grok'); assert hashlib.file_digest(p.open('rb'),'sha256').hexdigest()=='2a46d9e4d7ebd7a9cff7f95716714b19dad5f21dd2a497822400b1fb128969aa'" \
     && npm cache clean --force
-RUN pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
 ENV HOME=/home/user WORKSPACE=/home/user/workspace
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py process.py lifecycle.py UPSTREAM-LICENSE.md THIRD_PARTY_NOTICES.md ./

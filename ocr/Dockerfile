@@ -18,7 +18,7 @@ RUN pip download --no-cache-dir --only-binary=:all: --require-hashes \
     && pip install --no-cache-dir --no-index --no-deps /tmp/ocr-verified-wheels/*.whl \
     && rm -rf /tmp/ocr-verified-wheels /tmp/ocr-requirements.txt
 
-RUN pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py .

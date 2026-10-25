@@ -10,7 +10,7 @@ RUN python3 /tmp/tau2-install.py \
     && python3 -m venv /opt/tau2-venv \
     && /opt/tau2-venv/bin/pip install --no-cache-dir --require-hashes -r /opt/tau2-bootstrap/requirements.lock \
     && /opt/tau2-venv/bin/pip check
-RUN pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
 ENV HOME=/home/user WORKSPACE=/home/user/workspace
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py worker.py process.py lifecycle.py UPSTREAM-LICENSE.md AUDIOOP-LICENSE.txt ./

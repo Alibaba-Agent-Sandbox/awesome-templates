@@ -15,7 +15,7 @@ COPY package.json package-lock.json upstream-LICENSE install_alias.py /opt/apply
 RUN npm ci --prefix /opt/apply-patch --omit=dev --ignore-scripts --no-audit --no-fund
 RUN python3 /opt/apply-patch/install_alias.py --node-modules /opt/apply-patch/node_modules --bin /usr/local/bin
 ENV WORKSPACE=/home/user/app
-RUN pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py .

@@ -10,7 +10,7 @@ RUN cd /opt/gemini && npm ci --omit=optional --ignore-scripts --no-audit --no-fu
 COPY profile.json /opt/gemini/profile.json
 RUN chmod 0644 /opt/gemini/profile.json
 
-RUN pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
 
 ENV HOME=/home/user WORKSPACE=/home/user/app GEMINI_MODEL=gemini-3.1-flash-lite
 WORKDIR /home/user/app

@@ -16,3 +16,9 @@ PASS: `python scripts/check_template.py --all`: all 47 conformant. `python scrip
 The earlier complete public OpenSandbox matrix remains 45 PASS / 1 Chrome FAIL at its own old inputs, with 610 passing assertions, 1 failure and 18 explicit skips. Chrome's narrow fix merged in PR218 and its separate fresh public-source run 40197940825 passed 30 assertions with independent cleanup. The new receipt is copied unchanged to chrome/evidence/public-opensandbox-prefix-2026-10-25.json. Neither run establishes acceptance of these new server pins.
 
 NOT RUN: local Docker image builds (Docker unavailable), new candidate cloud matrix, new public-source post-merge matrix, and current-head remote CI. No new cloud resources or GitHub secrets were created by these local checks. Existing historical receipts were not rewritten. Final merge remains gated on applicable CI/review and real runtime evidence.
+
+## First candidate CI failures and correction
+
+Candidate ecead480736b2791f220d4c3f42fa8a128bacd1a L1 run 40202240809 failed on the base image's configured Alibaba PyPI mirror: its actual version list stopped at 0.4.0a1, so exact a2 installation failed for amp/codex/copilot-cli/crush. Official PyPI already has the package. Current Dockerfiles now explicitly select https://pypi.org/simple for this dependency, without a fallback or an older pin. This is a recipe change, so prior image successes do not qualify the correction.
+
+The same candidate e2e run 40202240853 failed two external-provider boundary tests because it checked out obsolete provider manifests and called retired interpreter execute. Update the fixture checkout to published provider 48f09103380657ad7e5ea97422e50156cb01e1dc, import the public ProviderSandbox, and use current operations/run_code. Actual a2 rerun: both missing-provider-key-before-engine and unsupported-interpreter-before-transport tests PASS (2). Required boundary assertions remain.

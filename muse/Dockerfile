@@ -7,7 +7,7 @@ COPY upstream.json install_runtime.py /tmp/muse-original-installer/
 RUN python3 /tmp/muse-original-installer/install_runtime.py \
     && rm -rf /tmp/muse-original-installer \
     && chmod -R a+rX /opt/muse
-RUN pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
 ENV HOME=/home/user WORKSPACE=/home/user/app
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py relay.py filter_native.py install_runtime.py upstream.json process.py lifecycle.py UPSTREAM-NOTICE.md ./

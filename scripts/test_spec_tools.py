@@ -559,7 +559,7 @@ class ImageBuildContextTest(unittest.TestCase):
                         b"FROM fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
                         b"FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"), original)
                     self.assertFalse(list(context.glob("*.whl")))
-                    self.assertIn(b'pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"', materialized)
+                    self.assertIn(b'pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"', materialized)
 
 
 class ImageReportTest(unittest.TestCase):
