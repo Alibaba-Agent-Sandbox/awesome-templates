@@ -21,7 +21,7 @@ jobs:
           python-version: "3.13"
       - name: Install the current published CLI and verify real parser contracts
         run: |
-          npm install --global --registry https://registry.npmjs.org @agent-sandbox/cli@0.5.5
+          npm install --global --registry https://registry.npmjs.org @agent-sandbox/cli@0.5.6
           python -m pip install -r scripts/requirements-spec.txt
           ABX=abx python scripts/test_express_cli_contract.py
 

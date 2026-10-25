@@ -24,7 +24,7 @@ Changing business commands or Dockerfiles would hide the adapter loss. Copying t
 
 https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/227
 
-The original public input is commit 389302f5dc9429a4b215801dbd4025d4dba95f7e, official CLI 0.5.5 and public client/server 0.4.0a6. The final new matrix awaits normal review/CI/merge and the separately published CLI diagnostic patch.
+The original public input is commit 389302f5dc9429a4b215801dbd4025d4dba95f7e, official CLI 0.5.5 and public client/server 0.4.0a6. CLI 0.5.6 is now formally published; current setup recommendations and the installed-CLI parser gate use it. The final new matrix awaits normal review/CI/merge. Historical receipts keep their original package versions.
 
 ## Test Strategy
 

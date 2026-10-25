@@ -8,10 +8,10 @@ separate check that does not establish image deployment acceptance.
 
 ## Installation
 
-Install the current CLI 0.5.5. The examples below use CLI 0.5.5 and Python client 0.4.0a6; the Python package is a preview and is pinned explicitly. Node 22+ is recommended for terminal support.
+Install the current CLI 0.5.6. The examples below use CLI 0.5.6 and Python client 0.4.0a6; the Python package is a preview and is pinned explicitly. Node 22+ is recommended for terminal support.
 
 ```bash
-npm install -g @agent-sandbox/cli@0.5.5 --registry=https://registry.npmjs.org
+npm install -g @agent-sandbox/cli@0.5.6 --registry=https://registry.npmjs.org
 python3 -m pip install --index-url https://pypi.org/simple 'agent-sandbox-client==0.4.0a6'
 abx --version
 ```
