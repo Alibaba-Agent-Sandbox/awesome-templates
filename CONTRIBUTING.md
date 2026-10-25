@@ -24,7 +24,7 @@ already passes `scripts/check_template.py`. It is not a catalog entry.
 4. Fill `docs/design/<name>.md` from
    [docs/design/_TEMPLATE.md](./docs/design/_TEMPLATE.md).
 5. Write `README.md` and `README.zh-CN.md` with the headings in the spec.
-   The Verified section states the exact workflow evidence scope; historical records do not certify the current manifest.
+   The Verified section states the exact execution evidence scope; historical records do not certify the current manifest.
 6. Add one `awesome-templates.yaml` entry. `official` means maintained by this
    project, `community` means externally maintained, and `experimental` marks
    development in progress. These labels do not certify runtime capabilities.
@@ -60,7 +60,7 @@ Do not commit `__pycache__/`, `.env`, or secret values. Declare secret
 The source directory remains authoritative across providers. Follow
 [provider-owned preparation](docs/provider-preparation.md): each provider owns
 base/image/registration adaptation; cross-cloud IDs are never converted.
-Only requirements of the selected workflow block that path; template-provided Python does not imply a unified interpreter dependency.
+Only the operations needed to launch the template are required; template-provided Python does not imply a unified interpreter dependency.
 Catalog prerequisites and launch hints do not establish native backend acceptance.
 
 Run `python scripts/check_docs.py` for local document links. Add a regression for

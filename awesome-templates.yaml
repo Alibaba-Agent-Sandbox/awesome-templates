@@ -511,22 +511,8 @@ managed_templates:
   documentation: docs/managed/base/README.md
   historical_evidence:
   - docs/managed/evidence/base-2026-10-19T154144Z.json
-  workflow_contract_version: 1
   provides: {}
-  default_workflow: exec
-  workflows:
-    exec:
-      kind: exec
-      input: managed
-      startup: none
-      binding:
-        transport: exec
-        endpoint: provider-native
-        caller: host
-        authentication: provider
-      operation: exec.run
-      required_operations: []
-  spec_version: 4
+  spec_version: 5
 - name: code-interpreter-v1
   provider: alicloud-express
   template_id: code-interpreter-v1
@@ -534,22 +520,8 @@ managed_templates:
   documentation: docs/managed/code-interpreter-v1/README.md
   historical_evidence:
   - docs/managed/evidence/code-interpreter-v1-2026-10-19T154153Z.json
-  workflow_contract_version: 1
   provides: {}
-  default_workflow: exec
-  workflows:
-    exec:
-      kind: exec
-      input: managed
-      startup: none
-      binding:
-        transport: exec
-        endpoint: provider-native
-        caller: host
-        authentication: provider
-      operation: exec.run
-      required_operations: []
-  spec_version: 4
+  spec_version: 5
 - name: desktop
   provider: e2b
   template_id: desktop
@@ -557,22 +529,8 @@ managed_templates:
   documentation: docs/managed/desktop/README.md
   historical_evidence:
   - docs/managed/evidence/verification-desktop-2026-10-21.json
-  workflow_contract_version: 1
   provides: {}
-  default_workflow: exec
-  workflows:
-    exec:
-      kind: exec
-      input: managed
-      startup: none
-      binding:
-        transport: exec
-        endpoint: provider-native
-        caller: host
-        authentication: provider
-      operation: exec.run
-      required_operations: []
-  spec_version: 4
+  spec_version: 5
 - name: opensandbox-code-interpreter
   provider: opensandbox
   template_id: opensandbox/code-interpreter:v1.1.0
@@ -580,19 +538,5 @@ managed_templates:
   documentation: docs/managed/opensandbox-code-interpreter/README.md
   historical_evidence:
   - docs/managed/evidence/verification-opensandbox-code-interpreter-2026-10-21-native-docker.json
-  workflow_contract_version: 1
   provides: {}
-  default_workflow: exec
-  workflows:
-    exec:
-      kind: exec
-      input: managed
-      startup: none
-      binding:
-        transport: exec
-        endpoint: provider-native
-        caller: host
-        authentication: provider
-      operation: exec.run
-      required_operations: []
-  spec_version: 4
+  spec_version: 5

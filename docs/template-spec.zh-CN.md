@@ -54,7 +54,7 @@ version: "1.0.0"
 description: "一句话。"
 author: "github-handle"
 license: Apache-2.0
-spec_version: 4
+spec_version: 5
 
 base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
 generation: 2
@@ -72,24 +72,12 @@ tags: [example]
 priority: P2      # P0、P1 或 P2
 wave: other       # 1、2、3 或 other
 
-workflow_contract_version: 1
 provides:
   app:
     protocol: agent-sandbox-server
     version: 2
     port: 9000
     operations: [commands.list, commands.run]
-default_workflow: application
-workflows:
-  application:
-    kind: application
-    input: source
-    service: app
-    startup: exec
-    binding: {transport: http, endpoint: provider-port, caller: host, authentication: service-token}
-    operation: commands.run
-    required_operations: []
-
 env:
   SOME_API_KEY: ""
 
@@ -104,7 +92,7 @@ smoke:
 |---|---|
 | `name` | 与目录名相同。 |
 | `description`、`version`、`author`、`license` | 非空字符串。 |
-| `spec_version` | 仅支持整数 `4`，旧版及未知版本明确拒绝，不提供兼容模式。 |
+| `spec_version` | 仅支持整数 `5`，旧版及未知版本明确拒绝，不提供兼容模式。 |
 | `base` | 字符串。占位符 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，或钉死的 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:vX.Y.Z`。不是 mapping。 |
 | `generation` | 整数 `2`。 |
 | `start_cmd` | `agent-sandbox-server serve`，并带上镜像里 `commands.py` 的路径。 |
@@ -116,20 +104,20 @@ smoke:
 | `tags` | 非空字符串列表。 |
 | `priority` | `P0`、`P1` 或 `P2`。模板已经在 `docs/template-backlog.json` 里时，与那里的优先级一致。 |
 | `wave` | `1`（整份产品能在极速版跑）、`2`（文中写明的切片）、`3`（工作负载要别的提供方）、或 `other`。 |
-| `provides`, `workflows`, `default_workflow` | 服务提供物、显式调用路径及唯一默认路径；详见[工作流契约](workflows.zh-CN.md)。 |
+| `provides` | 模板提供的全部服务，包含协议、版本、端口与操作；启动时检查全部服务，无需选择工作流。 |
 | `smoke` | `{command, args, expect}` 列表，由 `scripts/public_launch_e2e.py` 执行。`args` 的键是命令参数。可选的字符串 `expect` 在去掉首尾空白后比较；没有 expect 时，成功非空响应只证明调用链。 |
 
-`template launch` 使用所选工作流、`start_cmd` 和 `ready_cmd` 启动并探测当前实例的应用。
-源码配方保留 generation 与启动字段，实际调用必须匹配所选工作流。
+`template launch` 准备模板、创建沙箱、执行 `start_cmd`，检查 `ready_cmd` 和全部声明的服务。
+注册命令和工具在启动后可用；需要业务参数的任务按需调用，不会逐个自动执行。
 从准备好的引用另建实例，不会继承原实例的运行进程。
 
 命名命令不写在 `template.yaml` 里，在 `commands.py` 注册。
 
-## 可选应用部署（规范版本 4）
+## 可选应用部署（规范版本 5）
 
-所有输入使用封闭的 [spec/template-v4.schema.json](../spec/template-v4.schema.json)。
+所有输入使用封闭的 [spec/template-v5.schema.json](../spec/template-v5.schema.json)。
 `application` 可省略；存在时保留原部署拓扑、hooks、持久状态和非空 smoke 期望语义。
-工作流描述沙箱调用路径，application 描述部署拓扑，两者不能互相替代。
+模板启动与 application 应用部署是独立操作，两者不能互相替代。
 未知字段、旧版本和非法拓扑组合检查失败，不提供旧版兼容。
 
 `template.yaml` 是唯一用户配置入口，不增加 `agent-app.yaml`。
@@ -170,7 +158,7 @@ smoke:
 
 使用 `python -m pip install -r scripts/requirements-spec.txt` 安装固定检查依赖，
 然后运行检查器与 `scripts/test_spec_tools.py`。下文 runtime、镜像、提供方与模型验收
-仍独立适用；schema 有效不能认证工作流或提升目录状态。
+仍独立适用；schema 有效不能认证启动或提升目录状态。
 
 ## 阿里云基础镜像
 
@@ -350,7 +338,7 @@ asyncio.run(main())
 
 ## 测试级别
 
-这些保留的证据标签描述测试范围，不是晋升顺序或平台支持等级。仅记录实际执行的检查及准确工作流、绑定和源码输入；旧证据保留历史范围。
+这些保留的证据标签描述测试范围，不是晋升顺序或平台支持等级。仅记录实际执行的检查及准确启动命令、端点和源码输入；旧证据保留历史范围。
 
 | 级别 | 通过的含义 |
 |---|---|
@@ -390,7 +378,7 @@ Verified 表里出现 `alicloud-express` 时，检查器要求存在上述形状
 
 根 README 的目录表有 Verified on 列。单元格链接历史提供方运行；阅读回执中的准确源码、入口、检查和日期，不把它当作当前默认入口通过。空白表示没有匹配记录，不等于不支持。失败尝试不得写入该列或作为提供方资格；脱敏结果可用单独的 attempt 文件名保留，提供方／日期通过文件必须运行及独立清理成功。
 
-模板 README 的 `## 已验证` 明确说明已有证据的准确范围。作者自填通过声明不能证明测试实际执行；静态检查器不接受手填提供方通过表。参见[工作流验证](workflows.zh-CN.md)。
+模板 README 的 `## 已验证` 明确说明已有证据的准确范围。作者自填通过声明不能证明测试实际执行；静态检查器不接受手填提供方通过表。参见[启动验证](workflows.zh-CN.md)。
 
 ## 安全
 
@@ -500,7 +488,7 @@ python3 scripts/check_template.py --all
 
 ## 提供方托管条目
 
-`managed_templates` 是与可安装源码 `templates` 分开的目录命名空间。每条记录只能包含 `name`、`provider`、`template_id`、`kind: provider-managed`、`documentation`、`historical_evidence`、`spec_version: 4`、`workflow_contract_version: 1`、`provides`、`default_workflow` 和 `workflows`。所有工作流使用 `input: managed`。应用工作流必须引用已声明的服务及该服务提供的操作，其他工作流类型不能绑定服务。旧字段直接拒绝，不做转换。
+`managed_templates` 是与可安装源码 `templates` 分开的目录命名空间。每条记录只包含 `name`、`provider`、`template_id`、`kind: provider-managed`、`documentation`、`historical_evidence`、`spec_version: 5` 和 `provides`。平台标识绑定其 Provider；没有应用服务时 `provides` 为 `{}`。无需声明工作流，创建后使用该平台实际支持的接口。
 
 Exec 启动必须有明确的 `start_cmd`。托管记录不包含该字段，因此拒绝
 `startup: exec`。请选择 `none` 或提供方确实支持的原生 `entrypoint` 路径；
@@ -513,6 +501,6 @@ Exec 启动必须有明确的 `start_cmd`。托管记录不包含该字段，因
 含 `application` 的 spec4 清单必须为 smoke 显式填写非 null 的 `expect`，支持字符串、数值、布尔、对象和数组，并使用结构化比较。旧 schema 输入直接拒绝。
 
 
-托管目录通过 `python scripts/check_managed_catalog.py` 检查准确字段、与源码目录不重名、显式工作流 schema 及引用、双语 14 个有序 README 章节，以及本地历史证据身份。`historical_evidence` 只链接原始回执，其内容不授予当前工作流认证。只有完整、输入匹配且来源受独立信任的回执才能认证路径，参见[工作流验证](workflows.zh-CN.md)。托管 ID 仍排除在源码镜像选择／steps 之外。[Desktop](managed/desktop/README.zh-CN.md)和[OpenSandbox 解释器](managed/opensandbox-code-interpreter/README.zh-CN.md)说明各条目的条件、实际证据范围和剩余产品门槛。
+托管目录通过 `python scripts/check_managed_catalog.py` 检查准确字段、与源码目录不重名、服务声明、双语 14 个有序 README 章节，以及本地历史证据身份。`historical_evidence` 只链接原始回执，其内容不授予当前启动认证。只有完整、输入匹配且来源受独立信任的回执才能认证路径，参见[启动验证](workflows.zh-CN.md)。托管 ID 仍排除在源码镜像选择／steps 之外。[Desktop](managed/desktop/README.zh-CN.md)和[OpenSandbox 解释器](managed/opensandbox-code-interpreter/README.zh-CN.md)说明各条目的条件、实际证据范围和剩余产品门槛。
 
 默认 Dockerfile 中的服务器归档提交必须与 `scripts/server_sdk_pin.py`（或显式的 `server-sdk.commit`）一致。检查器拒绝不一致的 fallback，确保默认构建与 CI 注入构建选择同一服务器源码。修改提交后须重新完成对应源码的镜像及工作流验收，原有回执仅作为历史保留。

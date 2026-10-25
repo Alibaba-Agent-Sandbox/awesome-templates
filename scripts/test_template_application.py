@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Observable v4 manifest compatibility and deployment validation regressions."""
+"""Observable v5 manifest compatibility and deployment validation regressions."""
 from __future__ import annotations
 
 import copy
@@ -11,7 +11,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import check_template
-from template_application import SCHEMA_PATH, validate_v4
+from template_application import SCHEMA_PATH, validate_v5
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -51,13 +51,13 @@ class ApplicationContractTest(unittest.TestCase):
         self.template = self.root / "_skeleton"
         shutil.copytree(ROOT / "_skeleton", self.template)
         self.data = check_template.yaml.safe_load((self.template / "template.yaml").read_text())
-        self.data["spec_version"] = 4
+        self.data["spec_version"] = 5
         (self.template / "deploy").mkdir()
         (self.template / "deploy/s.yaml").write_text("edition: 3.0.0\n")
         (self.template / "deploy/toolchain.lock.json").write_text("{}\n")
 
     def check(self, data=None):
-        return validate_v4(data or self.data, self.template)
+        return validate_v5(data or self.data, self.template)
 
     def test_schema_is_valid(self):
         from jsonschema import Draft202012Validator
@@ -68,7 +68,7 @@ class ApplicationContractTest(unittest.TestCase):
             with self.subTest(name=name):
                 source = ROOT / "docs/examples" / name
                 data = check_template.yaml.safe_load((source / "template.yaml").read_text())
-                self.assertEqual(validate_v4(data, source), [])
+                self.assertEqual(validate_v5(data, source), [])
 
     def test_current_default_and_application_without_application(self):
         self.assertEqual(check_template.check_directory(ROOT / "_skeleton"), [])
@@ -76,19 +76,19 @@ class ApplicationContractTest(unittest.TestCase):
         (self.template / "template.yaml").write_text(check_template.yaml.safe_dump(self.data))
         self.assertEqual(check_template.check_directory(self.template), [])
 
-    def test_existing_catalog_expectation_shapes_survive_workflow_adoption(self):
+    def test_existing_catalog_expectation_shapes_survive_launch_simplification(self):
         catalog = check_template.yaml.safe_load((ROOT / "awesome-templates.yaml").read_text())
         for entry in catalog["templates"]:
             source = ROOT / entry["path"]
             data = check_template.yaml.safe_load((source / "template.yaml").read_text())
-            data["spec_version"] = 4
+            data["spec_version"] = 5
             data["smoke"] = [item for item in data["smoke"] if "expect" in item]
             if not data["smoke"]:
                 continue  # V3 explicitly requires expectations; no declared shape to migrate.
             with self.subTest(template=entry["name"]):
-                self.assertEqual(validate_v4(data, source), [])
+                self.assertEqual(validate_v5(data, source), [])
 
-    def test_v4_keeps_required_non_null_expectations(self):
+    def test_v5_keeps_required_non_null_expectations(self):
         self.data["application"] = local_application()
         self.data["smoke"][0].pop("expect")
         self.assertTrue(self.check())
@@ -189,7 +189,7 @@ class ApplicationContractTest(unittest.TestCase):
         del deployment["inline"]["resources"]["dispatcher"]
         self.assertTrue(self.check())
 
-    def test_v4_and_unknown_versions_cannot_bypass_all_mode(self):
+    def test_v5_and_unknown_versions_cannot_bypass_all_mode(self):
         self.data["application"] = external_application()
         self.data["application"]["unknown"] = True
         for version in (2, 3, 999, None, False, "4"):
@@ -202,7 +202,7 @@ class ApplicationContractTest(unittest.TestCase):
         (self.template / "template.yaml").write_text(check_template.yaml.safe_dump(self.data))
         self.assertTrue(any(item.code == "yaml-schema" for item in check_template.check_directory(self.template)))
 
-    def test_v4_retains_design_and_catalog_gates(self):
+    def test_v5_retains_design_and_catalog_gates(self):
         self.data["name"] = "sample"
         self.data["application"] = local_application()
         renamed = self.root / "sample"
@@ -224,7 +224,7 @@ class ApplicationContractTest(unittest.TestCase):
                 self.assertTrue(any(item.code == "yaml-parse" for item in check_template.check_directory(self.template)))
                 self.assertEqual(check_template.main(["--all", "--root", str(self.root)]), 1)
 
-    def test_v4_checker_never_executes_hook_or_cloud(self):
+    def test_v5_checker_never_executes_hook_or_cloud(self):
         self.data["application"] = external_application()
         (self.template / "template.yaml").write_text(check_template.yaml.safe_dump(self.data))
         with patch("subprocess.run", side_effect=AssertionError("must not execute")), patch("subprocess.Popen", side_effect=AssertionError("must not execute")):

@@ -40,7 +40,7 @@ generation 2 沙箱可以在没有 TUI 的情况下运行钉死版本的 Amp CLI
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./amp --workflow application --yes
+abx template launch ./amp --yes
 abx run <sandbox-id> amp_version --json-args '{}'
 ```
 

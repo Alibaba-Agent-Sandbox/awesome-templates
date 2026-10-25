@@ -31,7 +31,7 @@
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./agents-cli --workflow application --yes
+abx template launch ./agents-cli --yes
 abx run <sandbox-id> agents_version --json-args '{}'
 ```
 

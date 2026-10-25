@@ -18,7 +18,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./stagehand --workflow application --yes
+abx template launch ./stagehand --yes
 abx run <sandbox-id> stagehand_version --json-args '{}'
 ```
 

@@ -24,7 +24,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./appworld --workflow application --yes
+abx template launch ./appworld --yes
 abx run <sandbox-id> appworld_native_smoke --json-args '{}'
 ```
 

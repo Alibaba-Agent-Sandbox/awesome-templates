@@ -24,7 +24,7 @@ Python3.13 兼容：原版 SQLAlchemy1.4.54 无对应 wheel，使用其未修改
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./appworld --workflow application --yes
+abx template launch ./appworld --yes
 abx run <sandbox-id> appworld_native_smoke --json-args '{}'
 ```
 

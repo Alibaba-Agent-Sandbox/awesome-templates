@@ -20,7 +20,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./hermes-agent --workflow application --yes
+abx template launch ./hermes-agent --yes
 abx run <sandbox-id> hermes_version --json-args '{}'
 ```
 

@@ -18,7 +18,7 @@
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./claude-code --workflow application --yes
+abx template launch ./claude-code --yes
 abx run <sandbox-id> claude_version --json-args '{}'
 ```
 

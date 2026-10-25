@@ -24,7 +24,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./ocr --workflow application --yes
+abx template launch ./ocr --yes
 abx run <sandbox-id> ocr_smoke --json-args '{}'
 ```
 

@@ -28,7 +28,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./browser-automation --workflow application --yes
+abx template launch ./browser-automation --yes
 abx run <sandbox-id> browse --json-args '{"url": "data:text/html,<title>ABX_E2E_OK</title><h1>ABX_E2E_OK</h1>", "action": "extract"}'
 ```
 

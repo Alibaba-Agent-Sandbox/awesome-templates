@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synchronize exact, committed workflow contracts; validate offline with --check."""
+"""Maintain historical evidence contracts (not current launch requirements); validate offline with --check."""
 from __future__ import annotations
 
 import argparse
@@ -24,11 +24,6 @@ def verify() -> None:
     for name in FILES:
         if hashlib.sha256((TARGET / name).read_bytes()).hexdigest() != lock['files'][name]:
             raise ValueError('contract content differs from lock: ' + name)
-    contract = json.loads((TARGET / 'workflow-v1.json').read_text())
-    schema = json.loads((ROOT / 'spec/template-v4.schema.json').read_text())
-    operations = schema['properties']['workflows']['additionalProperties']['properties']['required_operations']['items']['enum']
-    if operations != list(contract['operations']):
-        raise ValueError('template operation vocabulary differs from shared contract')
 
 
 def main() -> int:

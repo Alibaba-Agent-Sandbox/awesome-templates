@@ -1,5 +1,11 @@
 # Engineering records: awesome-templates
 
+## Pending specification 5 delivery (2026-10-25)
+
+- [Unified template launch](notes/proposed/architecture/2026-10-25-unified-template-launch.md) · [verification](evidence/verify/2026-10-25-unified-template-launch.md).
+
+Current authoring uses one startup command and all declared services, without workflow selectors. The decision remains proposed until compatible consumers, current-format cloud checks and publication gates complete. Earlier cloud receipts below retain their exact historical scope.
+
 ## Current delivery (2026-10-24)
 
 - [Documentation and record synchronization](notes/implemented/process/2026-10-24-current-documentation-sync.md) · [verification](evidence/verify/2026-10-24-current-documentation-sync.md)

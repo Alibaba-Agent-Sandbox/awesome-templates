@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Introduce template specification 5: one startup command and all provided services, with no workflow selector. Migrate all source manifests and managed references, retain every runtime command and recipe, and update launch examples and the public acceptance harness.
+- Require an explicit migration from specification 4 by deleting `workflow_contract_version`, `default_workflow` and `workflows`. A compatible CLI/SDK build is required; earlier cloud receipts remain historical and do not certify specification 5.
+
+### Previous delivery history
+
 - Publish the complete 46-source × Express/OpenSandbox launch evidence with exact public-package inputs, separate remote Git checks and cleanup results. Keep managed entries and real-model/native-interface claims separately scoped.
 - Align source-template quick starts with running application connections, provider selection, gateway authentication and owned cleanup in both languages.
 - Recommend public CLI 0.4.17 and document its application HTTP timeout for long Qwen tasks; use the public Python `ProviderSandbox` entry. Existing cloud receipts retain CLI 0.4.16 and their original inputs.

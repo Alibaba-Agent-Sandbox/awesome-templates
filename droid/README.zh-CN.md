@@ -20,7 +20,7 @@
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./droid --workflow application --yes
+abx template launch ./droid --yes
 abx run <sandbox-id> droid_version --json-args '{}'
 ```
 

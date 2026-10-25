@@ -18,7 +18,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./muse --workflow application --yes
+abx template launch ./muse --yes
 abx run <sandbox-id> muse_version --json-args '{}'
 ```
 

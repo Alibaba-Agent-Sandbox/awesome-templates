@@ -27,7 +27,7 @@ hint和会话配置。本配置选择上游支持的OpenAI兼容服务，不代�
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./goose --workflow application --yes
+abx template launch ./goose --yes
 abx run <sandbox-id> goose_version --json-args '{}'
 ```
 

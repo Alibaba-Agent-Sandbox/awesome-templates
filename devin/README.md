@@ -20,7 +20,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./devin --workflow application --yes
+abx template launch ./devin --yes
 abx run <sandbox-id> devin_version --json-args '{}'
 ```
 

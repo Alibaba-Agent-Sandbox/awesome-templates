@@ -3,7 +3,7 @@ version: 1.1.0
 description: Pinned Next.js and Vite scaffolds with owned preview-server lifecycle.
 author: alibaba-agent-sandbox
 license: Apache-2.0
-spec_version: 4
+spec_version: 5
 base: fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 generation: 2
 start_cmd: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
@@ -33,7 +33,6 @@ smoke:
     vite: 8.3.4
 - command: preview_self_test
   expect: NEXT_VITE_PREVIEW_OK
-workflow_contract_version: 1
 provides:
   app:
     protocol: agent-sandbox-server
@@ -42,17 +41,3 @@ provides:
     operations:
     - commands.list
     - commands.run
-default_workflow: application
-workflows:
-  application:
-    kind: application
-    input: source
-    service: app
-    startup: exec
-    binding:
-      transport: http
-      endpoint: provider-port
-      caller: host
-      authentication: service-token
-    operation: commands.run
-    required_operations: []

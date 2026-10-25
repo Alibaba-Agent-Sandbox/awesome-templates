@@ -20,7 +20,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./grok --workflow application --yes
+abx template launch ./grok --yes
 abx run <sandbox-id> grok_version --json-args '{}'
 ```
 

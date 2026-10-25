@@ -20,7 +20,7 @@ FC v0.0.49、generation2、非root user、Linux x86_64、Python3.13。[requireme
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./browser-use --workflow application --yes
+abx template launch ./browser-use --yes
 abx run <sandbox-id> browser_use_version --json-args '{}'
 ```
 

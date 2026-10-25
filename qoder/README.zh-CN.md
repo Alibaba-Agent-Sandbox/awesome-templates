@@ -20,7 +20,7 @@ Qoder CLI `@qoder-ai/qodercli@1.1.72`; platform Python 3.13 / Node.js 20; Agent 
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./qoder --workflow application --yes
+abx template launch ./qoder --yes
 abx run <sandbox-id> qoder_version --json-args '{}'
 ```
 

@@ -155,9 +155,10 @@ def load_plan(name, root=ROOT):
     cases = manifest.get('smoke') or []
     if not cases or any(not isinstance(case.get('command'), str) for case in cases):
         raise ValueError('public launch acceptance needs named smoke cases')
-    workflow = manifest['workflows'][manifest['default_workflow']]
-    if workflow['input'] != 'source' or workflow['kind'] != 'application':
-        raise ValueError('this runner verifies source application workflows only')
+    from template_application import validate_v5
+    problems = validate_v5(manifest, source)
+    if problems:
+        raise ValueError('invalid template launch manifest: ' + '; '.join(problems))
     return source, manifest, cases
 
 
@@ -273,6 +274,29 @@ async def delete_sandbox(api, sid, provider, not_found, delay=1):
     raise AssertionError('owned sandbox remains after deletion')
 
 
+def installation_provenance(env, client_version, server_version):
+    """Keep source candidates distinct from published-package acceptance."""
+    distribution = env.get('PUBLIC_LAUNCH_DISTRIBUTION') or 'published'
+    if distribution not in {'published', 'source'}:
+        raise ValueError('unknown installation distribution')
+    result = {
+        'distribution': distribution,
+        'cli': {'name': '@agent-sandbox/cli', 'version': env['PUBLIC_CLI_VERSION'],
+                'source_ref': env.get('PUBLIC_LAUNCH_CLI_REF')},
+        'python_client': {'name': 'agent-sandbox-client', 'version': client_version,
+                'source_ref': env.get('PUBLIC_LAUNCH_SDK_REF')},
+        'python_server': {'name': 'agent-sandbox-server', 'version': server_version,
+                'source_ref': env.get('PUBLIC_LAUNCH_SDK_REF')},
+        'provider_source_ref': env.get('PUBLIC_LAUNCH_PROVIDERS_REF'),
+        'template_source_ref': env.get('PUBLIC_LAUNCH_TEMPLATES_REF'),
+    }
+    if distribution == 'published':
+        result['cli']['registry'] = 'https://registry.npmjs.org'
+        for name in ['python_client', 'python_server']:
+            result[name]['registry'] = 'https://pypi.org/simple'
+    return result
+
+
 async def verify(args):
     from agent_sandbox import ProviderSandbox
     from agent_sandbox.models.errors import SandboxNotFoundError
@@ -294,15 +318,9 @@ async def verify(args):
         'python_client_version': importlib.metadata.version('agent-sandbox-client'),
         'checks': [], 'cleanup': {'sandbox': 'not created', 'prepared_artifacts': 'not checked'}}
     if env.get('PUBLIC_CLI_VERSION') and env.get('PUBLIC_SDK_VERSION'):
-        report['installed_packages'] = {
-            'cli': {'name': '@agent-sandbox/cli', 'version': env['PUBLIC_CLI_VERSION'],
-                    'registry': 'https://registry.npmjs.org', 'source_ref': env.get('PUBLIC_LAUNCH_CLI_REF')},
-            'python_client': {'name': 'agent-sandbox-client', 'version': importlib.metadata.version('agent-sandbox-client'),
-                    'registry': 'https://pypi.org/simple', 'source_ref': env.get('PUBLIC_LAUNCH_SDK_REF')},
-            'python_server': {'name': 'agent-sandbox-server', 'version': importlib.metadata.version('agent-sandbox-server'),
-                    'registry': 'https://pypi.org/simple', 'source_ref': env.get('PUBLIC_LAUNCH_SDK_REF')},
-            'provider_source_ref': env.get('PUBLIC_LAUNCH_PROVIDERS_REF'),
-        }
+        report['installed_packages'] = installation_provenance(
+            env, importlib.metadata.version('agent-sandbox-client'),
+            importlib.metadata.version('agent-sandbox-server'))
     alias = 'public-e2e-' + secrets.token_hex(8)
     report['run_alias'] = alias
     if args.provider == 'opensandbox':
@@ -315,7 +333,7 @@ async def verify(args):
     phase = 'template-launch'
     try:
         launch = await asyncio.to_thread(cli.run,
-            ['template', 'launch', args.source or report['source'], '--workflow', manifest['default_workflow'],
+            ['template', 'launch', args.source or report['source'],
              '--alias', alias, '--timeout', str(args.build_timeout), '--sandbox-timeout', '1800', '--yes'],
             args.build_timeout + 300)
         require(launch.get('manifest_digest') == 'sha256:' + report['manifest_sha256'],

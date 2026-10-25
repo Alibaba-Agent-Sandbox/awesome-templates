@@ -279,7 +279,8 @@ jobs:
           python3 scripts/check_template.py --all
           python scripts/check_managed_catalog.py
           python scripts/sync_workflow_contracts.py --check
-          python -m pytest -q scripts/test_managed_catalog.py scripts/test_workflow_contract.py
+          python scripts/sync_launch_contracts.py --check
+          python -m pytest -q scripts/test_managed_catalog.py scripts/test_template_launch_contract.py
 
       - name: Checkout the exact published external-provider contracts
         uses: actions/checkout@v4

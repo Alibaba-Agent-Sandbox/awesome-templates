@@ -31,7 +31,7 @@ Agent Sandbox 里的 OpenCode（`sst/opencode`）。镜像安装 npm 包 `openco
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./opencode --workflow application --yes
+abx template launch ./opencode --yes
 abx run <sandbox-id> opencode_version --json-args '{}'
 ```
 

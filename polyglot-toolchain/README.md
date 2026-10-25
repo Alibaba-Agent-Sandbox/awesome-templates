@@ -18,7 +18,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./polyglot-toolchain --workflow application --yes
+abx template launch ./polyglot-toolchain --yes
 abx run <sandbox-id> toolchain_smoke --json-args '{}'
 ```
 

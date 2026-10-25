@@ -20,7 +20,7 @@ Alibaba 平台基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/bas
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./codex-agent-api --workflow application --yes
+abx template launch ./codex-agent-api --yes
 abx run <sandbox-id> codex_version --json-args '{}'
 ```
 

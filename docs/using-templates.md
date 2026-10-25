@@ -8,10 +8,9 @@ separate check that does not establish image deployment acceptance.
 
 ## Installation
 
-Install the published CLI and preview Python SDK (Node 22+ is recommended for terminal support):
+Current manifests require a CLI build supporting specification 5; CLI 0.4.17 predates this format. Follow the [source installation guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/.github/CONTRIBUTING.md) for the coordinated change until a compatible release is published. Node 22+ is recommended for terminal support. The existing Python client can connect to an already running command service:
 
 ```bash
-npm install -g @agent-sandbox/cli@0.4.17
 python3 -m pip install 'agent-sandbox-client==0.3.1a5'
 abx --version
 ```

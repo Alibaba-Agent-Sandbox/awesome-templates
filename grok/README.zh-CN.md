@@ -20,7 +20,7 @@ Alibaba generation2 basev0.0.49／Python3.13、SHA256 固定 Node24.16.0、npm i
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./grok --workflow application --yes
+abx template launch ./grok --yes
 abx run <sandbox-id> grok_version --json-args '{}'
 ```
 

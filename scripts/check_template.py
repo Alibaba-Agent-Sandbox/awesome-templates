@@ -5,7 +5,7 @@ Exit status:
   0  every checked directory conforms
   1  at least one checked directory violates the supported specification
 
-Every template must declare specification v4 with an explicit default workflow.
+Every template must declare specification v5 with one template startup.
 """
 from __future__ import annotations
 
@@ -493,7 +493,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
     if readme_zh.is_file():
         zh_sections = _check_readme(readme_zh, README_ZH, violations)
 
-    if data.get("spec_version") == 4:
+    if data.get("spec_version") == 5:
         for label, sections, heading in (
             ("README.md", en_sections, "Quick start (HTTP POST)"),
             ("README.zh-CN.md", zh_sections, "快速开始（HTTP POST）"),
@@ -543,8 +543,8 @@ def check_directory(template_dir: Path) -> list[Violation]:
             )
 
     if data:
-        from template_application import validate_v4
-        violations.extend(Violation("yaml-schema", message) for message in validate_v4(data, template_dir))
+        from template_application import validate_v5
+        violations.extend(Violation("yaml-schema", message) for message in validate_v5(data, template_dir))
         if data.get("generation") != 2:
             violations.append(Violation("yaml-generation", "generation must be the integer 2"))
         start = data.get("start_cmd")
@@ -675,7 +675,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
     for provider in sorted(verified_en):
         violations.append(Violation("verified-evidence", f"{provider}: a README table cannot establish trusted workflow certification"))
 
-    if name and name != SKELETON_NAME and data.get("spec_version") == 4:
+    if name and name != SKELETON_NAME and data.get("spec_version") == 5:
         design = template_dir.parent / "docs" / "design" / f"{name}.md"
         if template_dir.parent.name == "docs":
             design = template_dir.parent / "design" / f"{name}.md"
@@ -696,7 +696,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
                     )
 
     if (template_dir.parent / "awesome-templates.yaml").is_file() and name and name != SKELETON_NAME:
-        if data.get("spec_version") == 4:
+        if data.get("spec_version") == 5:
             entries = _index_entries(template_dir.parent) or []
             match = [item for item in entries if item.get("path") == name or item.get("name") == name]
             if not match:

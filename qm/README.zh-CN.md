@@ -18,7 +18,7 @@
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./qm --workflow application --yes
+abx template launch ./qm --yes
 abx run <sandbox-id> qm_version --json-args '{}'
 ```
 

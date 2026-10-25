@@ -54,7 +54,7 @@ version: "1.0.0"
 description: "One sentence."
 author: "github-handle"
 license: Apache-2.0
-spec_version: 4
+spec_version: 5
 
 base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
 generation: 2
@@ -72,24 +72,12 @@ tags: [example]
 priority: P2      # P0, P1, or P2
 wave: other       # 1, 2, 3, or other
 
-workflow_contract_version: 1
 provides:
   app:
     protocol: agent-sandbox-server
     version: 2
     port: 9000
     operations: [commands.list, commands.run]
-default_workflow: application
-workflows:
-  application:
-    kind: application
-    input: source
-    service: app
-    startup: exec
-    binding: {transport: http, endpoint: provider-port, caller: host, authentication: service-token}
-    operation: commands.run
-    required_operations: []
-
 env:
   SOME_API_KEY: ""
 
@@ -104,7 +92,7 @@ smoke:
 |---|---|
 | `name` | Same as the directory. |
 | `description`, `version`, `author`, `license` | Non-empty strings. |
-| `spec_version` | Only integer `4` is accepted. Retired and unknown schemas are rejected without compatibility mode. |
+| `spec_version` | Only integer `5` is accepted. Retired and unknown schemas are rejected without compatibility mode. |
 | `base` | String. Either the placeholder `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` or a pinned `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:vX.Y.Z`. Not a mapping. |
 | `generation` | Integer `2`. |
 | `start_cmd` | `agent-sandbox-server serve` plus the path of `commands.py` inside the image. |
@@ -116,22 +104,23 @@ smoke:
 | `tags` | Non-empty list of strings. |
 | `priority` | `P0`, `P1`, or `P2`, matching `docs/template-backlog.json` when the template is listed there. |
 | `wave` | `1` (whole product on Express), `2` (a stated slice), `3` (needs another provider for the workload), or `other`. |
-| `provides`, `workflows`, `default_workflow` | Provided services, explicit call paths and one default path; see [workflow contracts](workflows.md). |
+| `provides` | All services supplied by the template, with protocol, version, port and operations. Launch checks every service without selecting a workflow. |
 | `smoke` | List of `{command, args, expect}` run by `scripts/public_launch_e2e.py`. `args` keys are the command parameters. An optional `expect` is compared after strip for strings; without it, a successful nonempty result proves only the call path. |
 
-`template launch` uses the selected workflow, `start_cmd` and `ready_cmd` to start
-and probe this instance's application. Preserve the generation and startup fields
-in the source recipe; the runtime path must match the selected workflow. Creating
-another sandbox from a prepared reference does not inherit a running process.
+`template launch` prepares the template, creates its sandbox, executes `start_cmd`,
+and checks `ready_cmd` and every declared service. All installed commands remain
+available. Business tasks and services requiring task arguments are invoked when
+needed; launch does not execute every registered command. Creating another sandbox
+from a prepared reference does not inherit a running process.
 
 Named commands are not listed in `template.yaml`. They are registered in `commands.py`.
 
-## Optional application deployment (spec version 4)
+## Optional application deployment (spec version 5)
 
-Every input uses the closed [spec/template-v4.schema.json](../spec/template-v4.schema.json).
+Every input uses the closed [spec/template-v5.schema.json](../spec/template-v5.schema.json).
 `application` remains optional. When present, its existing deployment topology,
 hooks, durable state and non-null smoke expectations retain their meaning.
-Workflows describe sandbox call paths; application describes deployment topology.
+Template startup and application deployment remain separate operations.
 Unknown fields, retired versions and invalid topology combinations fail without
 compatibility mode.
 
@@ -180,7 +169,7 @@ Hook argv is never interpreted as a shell string by the template checker.
 Install the pinned checker dependencies with
 `python -m pip install -r scripts/requirements-spec.txt`, then run the checker and
 `scripts/test_spec_tools.py`. Runtime/image/provider/model acceptance tiers below
-still apply independently; schema validity cannot certify a workflow or promote catalog status.
+still apply independently; schema validity cannot certify a launch or promote catalog status.
 
 ## Alibaba base image
 
@@ -372,7 +361,7 @@ Use process APIs for running, reconnecting to, and cancelling background tasks.
 
 ## Test levels
 
-These retained evidence labels describe test scope, not promotion or increasing platform support. Record only checks actually run with exact workflow, binding and source inputs. Old evidence retains its historical scope.
+These retained evidence labels describe test scope, not promotion or increasing platform support. Record only checks actually run with exact startup, endpoint and source inputs. Old evidence retains its historical scope.
 
 | Level | Pass means |
 |---|---|
@@ -415,7 +404,7 @@ The checker accepts `alicloud-express` in the Verified table only when a file of
 
 The catalog table in the root README has a Verified on column. A cell links a recorded historical provider run. Read that receipt for its exact source, entry point, checks and date; it does not assert current default-path acceptance. An empty cell means no matching record, not lack of support. Failed attempts never populate this column or qualify a provider. Preserve their sanitized results under distinct attempt filenames; provider/date pass files require successful execution and independent cleanup.
 
-Inside the template README, `## Verified` states the exact scope of the available evidence. An author-written pass claim does not establish an executed test. The static checker rejects hand-written provider pass tables. See [workflow verification](workflows.md).
+Inside the template README, `## Verified` states the exact scope of the available evidence. An author-written pass claim does not establish an executed test. The static checker rejects hand-written provider pass tables. See [launch verification](workflows.md).
 
 ## Security
 
@@ -534,7 +523,7 @@ Never treat a successful recovery as a successful original application attempt.
 
 ## Provider-managed catalog entries
 
-`managed_templates` is a catalog namespace separate from installable source `templates`. Each record contains exactly `name`, `provider`, `template_id`, `kind: provider-managed`, `documentation`, `historical_evidence`, `spec_version: 4`, `workflow_contract_version: 1`, `provides`, `default_workflow` and `workflows`. Every workflow uses `input: managed`. An application workflow names a provided service and an operation declared by that service; other workflow kinds cannot bind a service. Retired fields are rejected without conversion.
+`managed_templates` is a catalog namespace separate from installable source `templates`. Each record contains exactly `name`, `provider`, `template_id`, `kind: provider-managed`, `documentation`, `historical_evidence`, `spec_version: 5` and `provides`. Native template identity stays bound to its provider. Use `provides: {}` when no application service is declared. No workflow is selected; use the provider interfaces after creation.
 
 Exec startup requires an explicit `start_cmd`. Managed records have no such field,
 so they reject `startup: exec`. Select `none` or an actual provider-supported
@@ -547,6 +536,6 @@ When a changed version is verified on the same UTC date, use a distinct express-
 Spec4 manifests containing `application` require an explicit, non-null smoke `expect`, supporting strings, numbers, booleans, objects and arrays with structured comparison. Retired schema inputs are rejected.
 
 
-Managed catalog validation: `python scripts/check_managed_catalog.py` checks exact fields, disjoint names, the explicit workflow schema and references, 14 ordered bilingual README sections, and local historical-evidence identity. `historical_evidence` links original receipts; its contents do not confer current workflow certification. Only complete, input-matching receipts with independently trusted provenance can certify a path; see [workflow verification](workflows.md). Managed IDs remain excluded from source image selection/steps. [Desktop](managed/desktop/README.md) and [OpenSandbox interpreter](managed/opensandbox-code-interpreter/README.md) document each entry’s prerequisites, actual evidence scope and remaining product gates.
+Managed catalog validation: `python scripts/check_managed_catalog.py` checks exact fields, disjoint names, provided-service declarations, 14 ordered bilingual README sections, and local historical-evidence identity. `historical_evidence` links original receipts; its contents do not confer current launch certification. Only complete, input-matching receipts with independently trusted provenance can certify a path; see [launch verification](workflows.md). Managed IDs remain excluded from source image selection/steps. [Desktop](managed/desktop/README.md) and [OpenSandbox interpreter](managed/opensandbox-code-interpreter/README.md) document each entry’s prerequisites, actual evidence scope and remaining product gates.
 
 The default Dockerfile server archive must match `scripts/server_sdk_pin.py` (or the explicit `server-sdk.commit`). The checker rejects a different fallback, so default and CI-injected builds select the same server source. Changing a pin invalidates prior source-specific image/workflow acceptance; preserve those receipts as history.

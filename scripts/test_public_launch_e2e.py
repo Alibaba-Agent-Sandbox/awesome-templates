@@ -4,10 +4,27 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from public_launch_e2e import CLI, CLIError, CheckFailed, safe_failure_label, cli_diagnostics, safe_diagnostics, application_headers, command_url, load_plan, matches, source_names, cleanup_prepared, cleanup_before_close, delete_sandbox
+from public_launch_e2e import installation_provenance, CLI, CLIError, CheckFailed, safe_failure_label, cli_diagnostics, safe_diagnostics, application_headers, command_url, load_plan, matches, source_names, cleanup_prepared, cleanup_before_close, delete_sandbox
 
 
 class PublicLaunchTests(unittest.TestCase):
+    def test_candidate_source_never_claims_published_package_acceptance(self):
+        env = {'PUBLIC_CLI_VERSION': '0.4.17', 'PUBLIC_LAUNCH_DISTRIBUTION': 'source',
+               'PUBLIC_LAUNCH_CLI_REF': 'a' * 40, 'PUBLIC_LAUNCH_SDK_REF': 'b' * 40,
+               'PUBLIC_LAUNCH_PROVIDERS_REF': 'c' * 40, 'PUBLIC_LAUNCH_TEMPLATES_REF': 'd' * 40}
+        source = installation_provenance(env, '0.3.1a5', '0.3.1a5')
+        self.assertEqual(source['distribution'], 'source')
+        self.assertNotIn('registry', source['cli'])
+        self.assertNotIn('registry', source['python_client'])
+        self.assertEqual(source['template_source_ref'], 'd' * 40)
+        env['PUBLIC_LAUNCH_DISTRIBUTION'] = 'published'
+        published = installation_provenance(env, '0.3.1a5', '0.3.1a5')
+        self.assertEqual(published['cli']['registry'], 'https://registry.npmjs.org')
+        self.assertEqual(published['python_server']['registry'], 'https://pypi.org/simple')
+        env['PUBLIC_LAUNCH_DISTRIBUTION'] = 'unknown'
+        with self.assertRaises(ValueError):
+            installation_provenance(env, '0.3.1a5', '0.3.1a5')
+
     def test_all_source_templates_have_named_smoke_cases(self):
         names = source_names()
         self.assertEqual(len(names), 46)

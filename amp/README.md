@@ -40,7 +40,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./amp --workflow application --yes
+abx template launch ./amp --yes
 abx run <sandbox-id> amp_version --json-args '{}'
 ```
 

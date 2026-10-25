@@ -26,7 +26,7 @@ venv 中安装固定 Aider。server 使用源码构建的 wheel，或 Dockerfile
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./aider --workflow application --yes
+abx template launch ./aider --yes
 abx run <sandbox-id> aider_version --json-args '{}'
 ```
 
