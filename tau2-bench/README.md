@@ -46,7 +46,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./tau2-bench --workflow application --yes
+abx template launch ./tau2-bench --yes
 abx run <sandbox-id> tau2_version --json-args '{}'
 ```
 

@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Alibaba-Agent-Sandbox/agent-sandbox
-          ref: 6df41f624249c316654fbd5c6d36c34a7beca0b8
+          ref: 9717236c8169055f318bff3740d2f13b92248c50
           path: vendor/cli-contract
           persist-credentials: false
       - name: Build the actual CLI and verify parser and cleanup without cloud mutation
@@ -279,7 +279,8 @@ jobs:
           python3 scripts/check_template.py --all
           python scripts/check_managed_catalog.py
           python scripts/sync_workflow_contracts.py --check
-          python -m pytest -q scripts/test_managed_catalog.py scripts/test_workflow_contract.py
+          python scripts/sync_launch_contracts.py --check
+          python -m pytest -q scripts/test_managed_catalog.py scripts/test_template_launch_contract.py
 
       - name: Checkout the exact published external-provider contracts
         uses: actions/checkout@v4

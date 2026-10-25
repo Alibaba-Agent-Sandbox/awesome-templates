@@ -20,7 +20,7 @@ NousResearch Hermes Agent v0.22.1, commit `297552a9d646119871391d202509822cd8633
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./hermes-agent --workflow application --yes
+abx template launch ./hermes-agent --yes
 abx run <sandbox-id> hermes_version --json-args '{}'
 ```
 

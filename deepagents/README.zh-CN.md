@@ -20,7 +20,7 @@
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./deepagents --workflow application --yes
+abx template launch ./deepagents --yes
 abx run <sandbox-id> deepagents_version --json-args '{}'
 ```
 

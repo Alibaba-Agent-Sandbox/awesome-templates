@@ -20,7 +20,7 @@ Alibaba generation2 Linuxx86_64基础镜像、Python3.13服务、[固定官方�
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./devin --workflow application --yes
+abx template launch ./devin --yes
 abx run <sandbox-id> devin_version --json-args '{}'
 ```
 

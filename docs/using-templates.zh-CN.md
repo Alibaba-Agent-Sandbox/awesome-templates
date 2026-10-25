@@ -6,11 +6,15 @@
 
 ## 安装
 
-安装已发布的 CLI 和 Python SDK 预览版；需要终端能力时建议 Node 22+：
+当前清单需要支持规范 5 的 CLI 构建，CLI 0.4.17 尚不支持。兼容版本正式发布前，安装以下固定提交的候选源码（CLI 0.5.0、Python client 0.4.0a1）；这不表示对应版本已经发布到包仓库。需要终端能力时建议 Node 22+。
 
 ```bash
-npm install -g @agent-sandbox/cli@0.4.17
-python3 -m pip install 'agent-sandbox-client==0.3.1a5'
+git clone https://github.com/Alibaba-Agent-Sandbox/agent-sandbox.git agent-sandbox-cli
+git -C agent-sandbox-cli checkout 9717236c8169055f318bff3740d2f13b92248c50
+npm ci --prefix agent-sandbox-cli
+npm run build --prefix agent-sandbox-cli
+npm install -g ./agent-sandbox-cli
+python3 -m pip install "agent-sandbox-client @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/66c86f2b6dc7cd33e02c2a53d98dda2125d05236.tar.gz#subdirectory=client-sdk"
 abx --version
 ```
 

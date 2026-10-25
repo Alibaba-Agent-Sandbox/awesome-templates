@@ -20,7 +20,7 @@
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./copilot-cli --workflow application --yes
+abx template launch ./copilot-cli --yes
 abx run <sandbox-id> copilot_version --json-args '{}'
 ```
 

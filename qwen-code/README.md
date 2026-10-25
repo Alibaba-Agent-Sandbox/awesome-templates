@@ -21,7 +21,7 @@ Install the published CLI and Python client and configure Express using the [usa
 ```bash
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
-abx template launch ./qwen-code --workflow application --sandbox-timeout 900 --yes
+abx template launch ./qwen-code --sandbox-timeout 900 --yes
 ```
 
 The launch prepares the template, creates the sandbox and starts its application. Copy the returned sandbox ID into `SANDBOX_ID`, then keep the same application token for all three clients:

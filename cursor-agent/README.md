@@ -20,7 +20,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./cursor-agent --workflow application --yes
+abx template launch ./cursor-agent --yes
 abx run <sandbox-id> agent_version --json-args '{}'
 ```
 

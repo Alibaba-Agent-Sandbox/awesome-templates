@@ -18,7 +18,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./osworld --workflow application --yes
+abx template launch ./osworld --yes
 abx run <sandbox-id> osworld_desktop_smoke --json-args '{}'
 ```
 

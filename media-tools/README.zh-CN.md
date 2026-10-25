@@ -23,7 +23,7 @@ FFmpeg 离线 CPU 媒体转码。[English](README.md)。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./media-tools --workflow application --yes
+abx template launch ./media-tools --yes
 abx run <sandbox-id> media_version --json-args '{}'
 ```
 

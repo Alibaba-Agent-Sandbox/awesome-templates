@@ -18,7 +18,7 @@
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./prime-agent --workflow application --yes
+abx template launch ./prime-agent --yes
 abx run <sandbox-id> prime_agent_version --json-args '{}'
 ```
 

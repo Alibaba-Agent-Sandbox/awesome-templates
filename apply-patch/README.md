@@ -18,7 +18,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./apply-patch --workflow application --yes
+abx template launch ./apply-patch --yes
 abx run <sandbox-id> apply_patch_version --json-args '{}'
 ```
 

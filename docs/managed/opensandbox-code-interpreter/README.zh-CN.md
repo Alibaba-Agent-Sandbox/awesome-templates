@@ -16,12 +16,14 @@
 
 ## 快速开始（CLI）
 
+此直接启动示例需要支持规范 5 的 CLI 和同步更新后的托管目录。兼容版本及目录配套上线前，按[固定源码安装说明](../../using-templates.zh-CN.md)准备。下方历史记录验证的是其原 create/exec 接口，不表示已重新验证本次新的目录启动命令。
+
 安装 [CLI](../../using-templates.zh-CN.md) 和 Node.js 22+，完成下方平台配置，将 `<sandbox-id>` 替换为创建时返回的实例 ID。
 
 ```bash
 abx provider install Alibaba-Agent-Sandbox/awesome-providers//opensandbox --allow-unpinned --yes
 abx provider doctor opensandbox
-abx --provider opensandbox create --template opensandbox/code-interpreter:v1.1.0 --timeout 180 -y
+abx --provider opensandbox template launch opensandbox-code-interpreter --sandbox-timeout 180 --yes
 abx --provider opensandbox exec <sandbox-id> -- python3 -c 'print(6*7)'
 abx --provider opensandbox kill <sandbox-id> -y
 ```

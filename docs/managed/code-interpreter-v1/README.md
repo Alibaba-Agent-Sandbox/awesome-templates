@@ -16,10 +16,12 @@ Run Python data processing with preinstalled numerical packages.
 
 ## Quick start (CLI)
 
-Install [CLI and provider configuration](../../using-templates.md), then replace `<sandbox-id>` with the ID returned by create.
+This direct launch example requires the specification 5 CLI and updated managed catalog. Use the [coordinated source installation](../../using-templates.md) until those releases and catalog updates are published together. The historical verification below covers its recorded create/exec interfaces, not a rerun of this new catalog launch command.
+
+Install [CLI and provider configuration](../../using-templates.md), then replace `<sandbox-id>` with the ID returned by launch.
 
 ```bash
-abx --provider alicloud-express create code-interpreter-v1 --detach --timeout 180
+abx --provider alicloud-express template launch code-interpreter-v1 --sandbox-timeout 180 --yes
 abx --provider alicloud-express exec <sandbox-id> -- python3 -c 'print(6*7)'
 abx --provider alicloud-express kill <sandbox-id>
 ```

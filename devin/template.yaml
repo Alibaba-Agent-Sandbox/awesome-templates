@@ -3,7 +3,7 @@ version: "1.0.1"
 description: "Pinned original Devin CLI with bounded headless named commands and explicit tool permission."
 author: alibaba-agent-sandbox
 license: Apache-2.0
-spec_version: 4
+spec_version: 5
 base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
 generation: 2
 start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
@@ -25,7 +25,6 @@ smoke:
     expect: "devin 3000.11.92 (7f4e64980e22)"
   - command: devin_native_check
     args: {}
-workflow_contract_version: 1
 provides:
   app:
     protocol: agent-sandbox-server
@@ -34,17 +33,3 @@ provides:
     operations:
     - commands.list
     - commands.run
-default_workflow: application
-workflows:
-  application:
-    kind: application
-    input: source
-    service: app
-    startup: exec
-    binding:
-      transport: http
-      endpoint: provider-port
-      caller: host
-      authentication: service-token
-    operation: commands.run
-    required_operations: []

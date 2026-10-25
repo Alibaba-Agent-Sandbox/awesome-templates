@@ -23,7 +23,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./media-tools --workflow application --yes
+abx template launch ./media-tools --yes
 abx run <sandbox-id> media_version --json-args '{}'
 ```
 

@@ -18,7 +18,7 @@
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./gemini --workflow application --yes
+abx template launch ./gemini --yes
 abx run <sandbox-id> gemini_version --json-args '{}'
 ```
 

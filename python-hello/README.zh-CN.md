@@ -23,7 +23,7 @@
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./python-hello --workflow application --yes
+abx template launch ./python-hello --yes
 abx run <sandbox-id> hello --json-args '{"name": "Express"}'
 ```
 
@@ -139,7 +139,7 @@ Apache-2.0，见 [LICENSE](../LICENSE)。
 ### 显式选择通用镜像构建方案
 
 在 OpenSandbox 上使用 `abx template launch` 时，显式传入
-`--workflow application --build-profile portable`。`Dockerfile.portable` 使用
+`--build-profile portable`。`Dockerfile.portable` 使用
 摘要固定的 Python 基础镜像，创建非 root 用户并直接安装固定源码版本的命令服务。
 默认 Dockerfile 保留 Express 平台占位参数；Provider 不会改写构建文件或注入 wheel。
 创建完成后，application 工作流通过 `exec.run` 启动服务。所选构建方案与源码实际

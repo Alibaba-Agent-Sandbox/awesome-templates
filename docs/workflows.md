@@ -1,62 +1,37 @@
-# Template workflows and verification
+# Template launch and verification
 
-A template provides software and services. A provider supplies sandbox operations and endpoint resolution. A CLI or SDK supplies a particular protocol client. A workflow names the complete path through these layers. [中文](workflows.zh-CN.md).
+A template describes the environment to start, its startup command and the services it exposes. Run one command; no workflow selection is required. [中文](workflows.zh-CN.md).
+
+```sh
+abx --provider alicloud-express template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello --yes
+```
 
 ## Current machine contract
 
-Every source and application manifest uses `spec_version: 4` and `workflow_contract_version: 1`; the catalog uses `schema_version: 2`. Earlier schemas and the retired `capabilities`, `tested_on` and `providers` machine fields are rejected. There is no compatibility mode.
+Source manifests and managed catalog entries use `spec_version: 5`; the catalog uses `schema_version: 2`. The source schema is [template-v5.schema.json](../spec/template-v5.schema.json). [Shared launch rules](../spec/contracts/launch-v1.json) are copied from the [Python contract owner](https://github.com/Alibaba-Agent-Sandbox/python-sdk/tree/main/contracts) with an exact source lock; synchronize them through `scripts/sync_launch_contracts.py`. Remove `workflow_contract_version`, `default_workflow` and `workflows` when migrating a version 4 manifest. Old runtime manifests fail with a migration error; launch does not silently select an old path. Upgrade CLI/SDK to a build supporting specification 5 before using these manifests; CLI 0.4.17 predates this format.
 
-The normative schema is [template-v4.schema.json](../spec/template-v4.schema.json). [Shared operation contracts](../spec/contracts/workflow-v1.json), [verification profiles](../spec/contracts/verification-profiles.json) and [receipt schema](../spec/contracts/receipt.schema.json) are offline copies of the [Python contract owner](https://github.com/Alibaba-Agent-Sandbox/python-sdk/tree/main/contracts). Their lock records source revision and content digests. Synchronize them through `scripts/sync_workflow_contracts.py`; do not edit copies manually.
+`provides` lists all exposed services, each with protocol, version, port and operations. `start_cmd` starts the template and `ready_cmd` checks readiness. The command registry remains in `commands.py`. There are no per-operation startup modes or user-written capability plans.
 
-| Field | Meaning |
-| --- | --- |
-| `provides` | Named services with exact protocol/version, port and operations; ordinary Python does not imply an interpreter protocol |
-| `workflows` | Named complete paths with input kind, startup policy, binding, selected operation and additive requirements |
-| `default_workflow` | Exactly one existing workflow ID, explicit even for a single path |
-| `binding` | Transport, endpoint source, caller location and authentication audience; host and guest are different paths |
-| `required_operations` | Additional known shared operations; cannot remove derived create/delete, prepare, startup or endpoint requirements |
+Launch prepares source when required, creates one sandbox, runs the startup command and readiness command, and returns every declared service endpoint. The built-in server v2 protocol additionally receives health checks and command discovery when declared. Other protocols remain extensible: endpoint resolution alone does not establish their protocol readiness; the template readiness command is responsible for its overall readiness. An already prepared image or a provider-bound native template identity supplies the environment without redefining the services. Installing a tool does not imply that its task should run immediately: commands that need a prompt, password or workspace remain callable after startup. For example, the database template exposes `services_start` with its explicit password and data-directory arguments; launch does not invent those inputs.
 
-An application workflow selects a declared service and one operation it provides. An exec workflow selects `exec.run` or `exec.stream`. An interpreter workflow selects an exact code operation, such as stateless `code.execute`, persistent `code.default-context.execute` or `code.context.execute`. Context creation/deletion and real-time streams are separate operations. A buffered callback is not live streaming.
-
-Source inputs require preparation. An image is not an E2B/Cube/container native template ID. Managed inputs bind to their declared provider. The provider's accepted inputs and startup modes are checked before side effects. `startup: exec` requires an explicit startup command and exec; `entrypoint` requires real platform support and must not be silently substituted with exec. External services use their own binding and do not gain cloud lifecycle support.
+A provider owns its registry/upload configuration, native template registration, sandbox creation and endpoint resolution. CLI/SDK check the operations actually needed for creation, preparation, startup and declared services. Python software in an image does not require a provider interpreter API. Calling a provider interpreter remains an independent operation with its own support requirements.
 
 ## Deployment topology
 
-The optional `application` mapping retains external/in-sandbox placement, gateway, deployment adapter, hooks, durable state, bindings and limits. Deployment hooks are host deployment actions. They do not run during template checks, imports, image preparation or sandbox startup. Both documented [local](examples/application-local/template.yaml) and [external](examples/application-external/template.yaml) examples use the current workflow schema without changing this topology.
+The optional `application` mapping retains placement, deployment adapter, hooks, state and limits. It describes an explicit application deployment. Those hooks never run during template installation, source preparation or sandbox startup. Both [local](examples/application-local/template.yaml) and [external](examples/application-external/template.yaml) examples preserve this separation.
 
-## Planning and execution
+## Ownership and evidence
 
-The planner checks the selected workflow and actual consumer: CLI, Python Provider, independent ServerClient or native SDK. Platform-native support does not prove that the project adapter or a language bridge implements it. Application HTTP can work without the unified interpreter; an interpreter failure cannot silently execute a shell script instead.
+Source snapshots and resource journals bind the source, effective configuration and created resources. Cleanup deletes only resources owned by the run and reports retained images or native templates. Keep platform credentials and service tokens separate.
 
-Static outcomes are satisfied, unsupported or unknown. Configuration, authorization, reachability, runtime readiness and protocol mismatches remain distinct. Local preflight must resolve required unknowns before payload execution. A directory page cannot inspect a visitor's credentials or deployment.
+Static validation proves configuration consistency, not cloud execution. A launch verification records exact source/manifest/CLI/SDK/provider revisions, service checks, actual calls and independent cleanup. Missing or skipped required checks are not passes. Model tasks and optional native interfaces require their own tests.
 
-Source preparation preserves Dockerfile FROM, USER, COPY and ENTRYPOINT. Unresolved placeholders fail preflight. The execution snapshot binds source, effective configuration and provider code before use; later edits invalidate the plan. Keep platform API keys, gateway headers and service tokens separate. Endpoint joins preserve proxy prefixes and queries; redirects and unauthenticated retries are refused.
-
-Persist resource intent before push, registration or create, then record returned IDs. Unknown responses need reconciliation, not blind create retries. Only owned resources may be removed. A retained image or template requiring manual deletion is a residual, not complete cleanup.
-
-## Evidence and project certification
-
-Every receipt identifies workflow, binding, consumer/version, contract/profile digest, source/manifest/build/artifact/provider identities, execution time, check IDs and cleanup. A mutable template ID alone is insufficient: updates can change its image/runtime. A source-image guest test cannot certify host HTTP, unified CLI launch or Python Provider invocation.
-
-Normative profiles have stable required checks. Source applications require prepare, create, start, protocol, invoke, endpoint and independent cleanup. Missing, FAIL or required SKIP results cannot pass. Authors may add checks, not remove the profile minimum. Model and external-service scopes remain separate.
-
-Author reports, local reproducible reports and project-recognized CI evidence are different classes. Only independently authenticated, maintainer-approved workflow/runner/revision/artifact provenance can derive project verification. Writing `PASS`, `cleanup_verified: true`, a runner name or a fabricated hash into JSON cannot confer trust. Templates cannot expand the runner allowlist.
-
-Historical receipts remain immutable and retain their original scope. They are not converted to the new schema or reassigned when a default workflow changes. Current README sections therefore do not repeat old provider pass tables as new workflow certification. Managed catalog `historical_evidence` links the original reports without claiming current support.
-
-Provider Beta/Stable maturity remains an independent maintainer decision. A missing unified interpreter operation means that interface is not adapted; it does not mean that a template's Python or application service cannot run.
+Historical receipts are immutable and keep their original workflow, consumer and source scope. Do not rewrite them as specification 5 acceptance. The historical receipt contract files in `spec/contracts` remain available for reading old evidence; they do not impose workflow declarations on current authors. A catalog record does not itself certify a template.
 
 ## Validation
 
-Install `scripts/requirements-spec.txt` with the repository's locked dependency versions. Run `scripts/test_spec_tools.py`, `scripts/check_template.py --all`, `scripts/check_managed_catalog.py`, workflow regressions and `scripts/check_docs.py`. These are local checks; real-backend workflow claims additionally require exact-path execution and independently confirmed cleanup. No current template receives project certification merely from this schema update.
+Install `scripts/requirements-spec.txt`, then run `scripts/test_spec_tools.py`, `scripts/check_template.py --all`, `scripts/check_managed_catalog.py`, the template-launch regressions and `scripts/check_docs.py`. These checks do not substitute for real provider launches and cleanup.
 
 ## Explicit build profiles
 
-A source may declare `build_profiles.<id>: {dockerfile: Dockerfile.<id>, context: "."}`.
-The caller chooses `--build-profile <id>` explicitly; no profile is inferred from a
-provider name. The default Express recipe keeps its platform base and contract.
-A separate profile may use another digest-pinned base while retaining non-root
-execution and pinned runtime dependencies. Every selected file is part of the
-immutable source/build identity. Providers preserve the recipe's FROM, USER, COPY
-and ENTRYPOINT bytes. `python-hello` supplies `portable` as the first such profile.
-A declared profile or a passing source checker is not an image/native acceptance.
+A source may retain a reviewed `build_profiles.<id>: {dockerfile: Dockerfile.<id>, context: "."}`. Choose `--build-profile <id>` only when intentionally changing its build recipe. This does not select different application contents or services. The `python-hello` portable recipe remains separate from the default Express recipe. An image-build or cloud acceptance claim must identify the recipe actually used.

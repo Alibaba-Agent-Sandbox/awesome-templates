@@ -16,10 +16,7 @@ def fixture(tmp_path):
         (doc / name).write_text('# external\n\n' + '\n\n'.join('## ' + heading + '\n\nScoped content.' for heading in headings) + '\n')
     row = {'name': 'external', 'provider': 'e2b', 'template_id': 'desktop', 'kind': 'provider-managed',
            'documentation': 'docs/managed/external/README.md', 'historical_evidence': ['proof.json'],
-           'spec_version': 4, 'workflow_contract_version': 1, 'provides': {}, 'default_workflow': 'exec',
-           'workflows': {'exec': {'kind': 'exec', 'input': 'managed', 'startup': 'none',
-                                  'binding': {'transport': 'exec', 'endpoint': 'provider-native', 'caller': 'host', 'authentication': 'provider'},
-                                  'operation': 'exec.run', 'required_operations': []}}}
+           'spec_version': 5, 'provides': {}}
     proof = {'template': 'external', 'provider': 'e2b', 'template_id': 'desktop', 'passed': False, 'status': 'NOT_VERIFIED'}
     return row, proof
 
@@ -29,7 +26,7 @@ def write(root, row, proof):
     (root / 'proof.json').write_text(json.dumps(proof))
 
 
-def test_managed_workflow_is_not_a_buildable_source(tmp_path):
+def test_managed_reference_is_not_a_buildable_source(tmp_path):
     row, proof = fixture(tmp_path)
     write(tmp_path, row, proof)
     assert check(tmp_path) == []
@@ -39,18 +36,17 @@ def test_managed_workflow_is_not_a_buildable_source(tmp_path):
         select(names, [], requested='external')
 
 
-@pytest.mark.parametrize('change', ['claim', 'provider', 'identity', 'fields', 'docs', 'default', 'source-input', 'unknown-operation', 'old-schema'])
-def test_invalid_workflow_or_retired_claim_is_rejected(tmp_path, change):
+@pytest.mark.parametrize('change', ['claim', 'provider', 'identity', 'fields', 'docs', 'retired-workflow', 'invalid-service', 'old-schema'])
+def test_invalid_reference_or_retired_claim_is_rejected(tmp_path, change):
     row, proof = fixture(tmp_path)
     if change == 'claim': row['native_interpreter_verified'] = True
     elif change == 'provider': row['provider'] = 'unknown'
     elif change == 'identity': proof['template'] = 'another'
     elif change == 'fields': row['path'] = 'external'
     elif change == 'docs': (tmp_path / 'docs/managed/external/README.zh-CN.md').unlink()
-    elif change == 'default': row['default_workflow'] = 'missing'
-    elif change == 'source-input': row['workflows']['exec']['input'] = 'source'
-    elif change == 'unknown-operation': row['workflows']['exec']['required_operations'] = ['code.interpret']
-    elif change == 'old-schema': row['spec_version'] = 3
+    elif change == 'retired-workflow': row['workflows'] = {}
+    elif change == 'invalid-service': row['provides'] = {'app': {'port': 70000}}
+    elif change == 'old-schema': row['spec_version'] = 4
     write(tmp_path, row, proof)
     assert check(tmp_path)
 
@@ -82,37 +78,12 @@ def test_untyped_provider_or_history_cannot_bypass_validation(tmp_path):
     assert check(tmp_path)
 
 
-def test_managed_application_requires_its_selected_service_operation(tmp_path):
+def test_managed_services_are_described_without_selecting_an_operation(tmp_path):
     row, proof = fixture(tmp_path)
     row['provides'] = {'app': {'protocol': 'agent-sandbox-server', 'version': 2,
-                               'port': 9000, 'operations': ['commands.list']}}
-    row['workflows']['exec'] = {
-        'kind': 'application', 'input': 'managed', 'startup': 'none', 'service': 'app',
-        'binding': {'transport': 'http', 'endpoint': 'provider-port',
-                    'caller': 'host', 'authentication': 'service-token'},
-        'operation': 'commands.run', 'required_operations': [],
-    }
-    write(tmp_path, row, proof)
-    assert any('operation is not provided' in problem for problem in check(tmp_path))
-    row['provides']['app']['operations'].append('commands.run')
+                              'port': 9000, 'operations': ['commands.list', 'commands.run']}}
     write(tmp_path, row, proof)
     assert check(tmp_path) == []
-
-
-@pytest.mark.parametrize('kind', ['exec', 'interpreter'])
-def test_managed_non_application_cannot_bind_a_service(tmp_path, kind):
-    row, proof = fixture(tmp_path)
-    workflow = row['workflows']['exec']
-    workflow['service'] = 'app'
-    if kind == 'interpreter':
-        workflow.update(kind='interpreter', operation='code.default-context.execute')
-        workflow['binding']['transport'] = 'http'
+    row['provides']['app']['port'] = 70000
     write(tmp_path, row, proof)
-    assert any('service only applies to application' in problem for problem in check(tmp_path))
-
-
-def test_managed_exec_startup_requires_an_explicit_command(tmp_path):
-    row, proof = fixture(tmp_path)
-    row['workflows']['exec']['startup'] = 'exec'
-    write(tmp_path, row, proof)
-    assert any('exec startup needs an explicit start_cmd' in problem for problem in check(tmp_path))
+    assert check(tmp_path)

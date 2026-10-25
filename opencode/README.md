@@ -34,7 +34,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./opencode --workflow application --yes
+abx template launch ./opencode --yes
 abx run <sandbox-id> opencode_version --json-args '{}'
 ```
 

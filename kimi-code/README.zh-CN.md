@@ -18,7 +18,7 @@
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./kimi-code --workflow application --yes
+abx template launch ./kimi-code --yes
 abx run <sandbox-id> kimi_version --json-args '{}'
 ```
 

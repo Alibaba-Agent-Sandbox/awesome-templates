@@ -16,12 +16,14 @@ Access an existing desktop environment. Shell/files use Agent Sandbox; screensho
 
 ## Quick start (CLI)
 
-Install the [CLI](../../using-templates.md) and Node.js 22+, configure your provider below, and replace `<sandbox-id>` with the ID returned by create.
+This direct launch example requires the specification 5 CLI and updated managed catalog. Use the [coordinated source installation](../../using-templates.md) until those releases and catalog updates are published together. The historical verification below covers its recorded create/exec interfaces, not a rerun of this new catalog launch command.
+
+Install the [CLI](../../using-templates.md) and Node.js 22+, configure your provider below, and replace `<sandbox-id>` with the ID returned by launch.
 
 ```bash
 abx provider install Alibaba-Agent-Sandbox/awesome-providers//e2b --allow-unpinned --yes
 abx provider doctor e2b
-abx --provider e2b create --template desktop --timeout 180 -y
+abx --provider e2b template launch desktop --sandbox-timeout 180 --yes
 abx --provider e2b exec <sandbox-id> -- python3 -c 'print(6*7)'
 abx --provider e2b kill <sandbox-id> -y
 ```

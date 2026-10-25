@@ -24,7 +24,7 @@
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./_skeleton --workflow application --yes
+abx template launch ./_skeleton --yes
 abx run <sandbox-id> hello --json-args '{"name": "Express"}'
 ```
 

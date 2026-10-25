@@ -4,7 +4,7 @@ A source directory is portable input. Native template IDs, image URIs and launch
 
 ## Preparation responsibility
 
-The manifest explicitly declares `provides`, `workflows` and `default_workflow`. The planner checks only the selected path's operations, input kind and startup mode. Provider maturity is separate from verification of that path.
+The manifest declares one startup command and all services in `provides`. The planner derives the required provider operations from that startup and the services; authors do not select workflows. Provider maturity and actual launch verification remain separate.
 
 The selected adapter builds, pushes and registers source through its native protocol. The CLI resolves the official base recipe’s `<region>`/`<tag>` and builds its pinned server wheel in a temporary Docker stage. Application instructions, non-root USER and source files remain unchanged. Other unresolved placeholders fail preflight; a custom base is an explicit build profile. Application deployment hooks still run only through explicit application deployment.
 
@@ -20,4 +20,4 @@ Configuration, authorization, reachability and protocol failures are distinct. P
 
 Persist intent before push/registration/create and record the returned ID afterward. Unknown responses are reconciled rather than retried blindly. Clean only resources owned by this invocation. Where image/native-template deletion is not implemented, report retained resources and manual recovery instead of complete cleanup.
 
-Project verification requires trusted CI receipts bound to exact inputs, workflow, consumer and network position. Author fields cannot certify a path; historical guest/bridge success does not certify unified launch. See [workflow contracts and evidence](workflows.md), [using templates](using-templates.md) and [platform steps](platform-steps.md).
+Project verification requires trusted CI receipts bound to exact inputs, consumer and network position. Author fields cannot certify a path; historical guest/bridge success does not certify unified launch. See [launch contracts and evidence](workflows.md), [using templates](using-templates.md) and [platform steps](platform-steps.md).

@@ -18,7 +18,7 @@ OSWorld 固定源码 `b138d348256078fa634fc3b73567a7337c793e6b`（Apache-2.0）�
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./osworld --workflow application --yes
+abx template launch ./osworld --yes
 abx run <sandbox-id> osworld_desktop_smoke --json-args '{}'
 ```
 

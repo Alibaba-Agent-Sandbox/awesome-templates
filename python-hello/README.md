@@ -23,7 +23,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./python-hello --workflow application --yes
+abx template launch ./python-hello --yes
 abx run <sandbox-id> hello --json-args '{"name": "Express"}'
 ```
 
@@ -140,7 +140,7 @@ Apache-2.0. See [LICENSE](../LICENSE).
 
 ### Explicit portable image profile
 
-For OpenSandbox, select `--workflow application --build-profile portable` with
+For OpenSandbox, select `--build-profile portable` with
 `abx template launch`. `Dockerfile.portable` pins the Python base by digest,
 creates its non-root user and installs the pinned command server directly. The
 default Dockerfile retains its Express platform placeholders; providers do not

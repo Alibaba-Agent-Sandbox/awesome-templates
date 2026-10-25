@@ -16,7 +16,7 @@ Repository maintenance follows the [project standards and definition of done](do
 
 The index in [`awesome-templates.yaml`](./awesome-templates.yaml) is what
 `abx template search` and `abx template install <name>` read.
-**Historical evidence** retains original input and call-path scope. It does not certify the new workflow manifest. The previous table lists a provider only when that template had a passing
+**Historical evidence** retains original input and call-path scope. It does not certify the current specification 5 manifest. The previous table lists a provider only when that template had a passing
 evidence file under `<name>/evidence/`. An empty cell means no passing run
 is recorded.
 
@@ -85,11 +85,11 @@ The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](do
 
 Provider-managed images belong to their own backend; they are separate from this repository's source Dockerfiles. Express `base`/`code-interpreter-v1` and the original OpenSandbox interpreter are documented in the [managed runtime catalog](#provider-managed-runtime-catalog).
 
-For automatic source preparation supported by the installed provider on a provider-capable CLI host, use `abx --provider <provider> template launch Alibaba-Agent-Sandbox/awesome-templates//<name> --yes`. The provider owns its native base/image build, registration and launch reference; selected workflow operations and provider configuration remain required. See the [CLI preparation/launch guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/c8e8ad784323b8903505442cbc77d433a0d0367a/docs/en/guide/template-launch.md). An existing ID or source directory never converts between providers. OpenSandbox keepalive entrypoint configuration is explicit; selected exec startup belongs to the workflow.
+For automatic source preparation supported by the installed provider on a provider-capable CLI host, use `abx --provider <provider> template launch Alibaba-Agent-Sandbox/awesome-templates//<name> --yes`. The provider owns its native base/image build, registration and launch reference; template startup operations and provider configuration remain required. See the [CLI preparation/launch guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/c8e8ad784323b8903505442cbc77d433a0d0367a/docs/en/guide/template-launch.md). An existing ID or source directory never converts between providers. OpenSandbox keepalive entrypoint configuration is explicit; the template start command starts its services.
 
 Catalog provider values are preparation prerequisites, not verification. See
 [provider-owned source preparation](docs/provider-preparation.md) ([中文](docs/provider-preparation.zh-CN.md));
-missing operations block only their selected workflow and provider IDs never convert across clouds.
+missing required operations block template startup and provider IDs never convert across clouds.
 
 The maintained registry website and ingestion code live in the separate
 [registry repository](https://github.com/Alibaba-Agent-Sandbox/registry).
@@ -165,7 +165,7 @@ Apache-2.0. See [LICENSE](./LICENSE).
 
 ## Automatic preparation on another provider
 
-See the [current workflow contract](docs/workflows.md) ([中文](docs/workflows.zh-CN.md)). Source manifests use specification4; historical evidence below does not certify new consumer paths. Unresolved base placeholders fail preflight, and retained preparation artifacts require explicit recovery.
+See the [current template launch contract](docs/workflows.md) ([中文](docs/workflows.zh-CN.md)). Source manifests use specification 5; historical evidence below does not certify new consumer paths. Unresolved base placeholders fail preflight, and retained preparation artifacts require explicit recovery.
 
 Use a CLI build that includes `template launch` and configure the selected provider once. The adapter builds or registers the source and passes its returned ID, name or image directly to sandbox creation:
 
@@ -173,7 +173,7 @@ Use a CLI build that includes `template launch` and configure the selected provi
 abx --provider e2b template launch alibaba-agent-sandbox/awesome-templates//python-hello --yes
 ```
 
-Third-party providers remain Beta. Explicit manifest workflows replace handwritten provider hints. Only the selected workflow is checked before building; an application HTTP path does not require unified code interpretation. Native base images, registry access and cluster requirements belong to each provider. See the [provider preparation guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/guide/template-launch.md). Existing provider/template evidence remains authoritative; no Verified-on claim changes here.
+Third-party providers remain Beta. Template startup requirements replace handwritten provider hints. The startup command and every declared service are checked before building; an application HTTP path does not require unified code interpretation. Native base images, registry access and cluster requirements belong to each provider. See the [provider preparation guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/guide/template-launch.md). Existing provider/template evidence remains authoritative; no Verified-on claim changes here.
 
 ## 在其他提供方上自动准备
 
@@ -183,7 +183,7 @@ Third-party providers remain Beta. Explicit manifest workflows replace handwritt
 abx --provider e2b template launch alibaba-agent-sandbox/awesome-templates//python-hello --yes
 ```
 
-第三方提供方继续为 Beta。清单的显式工作流取代手写提供方提示。构建前仅检查选中路径；应用 HTTP 不依赖统一解释器。原生基础镜像、镜像仓库和集群条件由各提供方维护。见[自动准备指南](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/zh/guide/template-launch.md)。已有验收证据仍为准，本次不修改 Verified-on 声明。
+第三方提供方继续为 Beta。模板的启动要求取代手写提供方提示。构建前检查启动命令和全部声明服务；应用 HTTP 不依赖统一解释器。原生基础镜像、镜像仓库和集群条件由各提供方维护。见[自动准备指南](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/zh/guide/template-launch.md)。已有验收证据仍为准，本次不修改 Verified-on 声明。
 
 [Next.js/Vite preview template](next-app/README.md) · experimental; [alicloud-express1.1.0 SDK image and independent forwarded HTTP](next-app/evidence/express-2026-10-20.json).
 Browser IDE: [code-server](code-server/README.md) (experimental; [alicloud-express1.0.0 SDK image and sdk-local browser](code-server/evidence/express-2026-10-20.json)).

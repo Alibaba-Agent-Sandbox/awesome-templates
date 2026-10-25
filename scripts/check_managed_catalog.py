@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate managed workflow inputs. Historical receipts never confer certification."""
+"""Validate managed template references. Historical receipts never confer certification."""
 from __future__ import annotations
 
 import argparse
@@ -11,11 +11,11 @@ import yaml
 from jsonschema import Draft202012Validator
 
 from check_template import README_EN, README_ZH, PROVIDERS
-from template_application import validate_workflow_references
+
 
 ROOT = Path(__file__).resolve().parents[1]
-WORKFLOW_FIELDS = {'workflow_contract_version', 'provides', 'default_workflow', 'workflows'}
-FIELDS = {'name', 'provider', 'template_id', 'kind', 'documentation', 'historical_evidence', 'spec_version'} | WORKFLOW_FIELDS
+SERVICE_FIELDS = {'provides'}
+FIELDS = {'name', 'provider', 'template_id', 'kind', 'documentation', 'historical_evidence', 'spec_version'} | SERVICE_FIELDS
 
 
 def local_file(root, value):
@@ -38,8 +38,8 @@ def check(root=ROOT):
     rows = catalog.get('managed_templates', [])
     if not isinstance(rows, list):
         return ['managed_templates must be a list']
-    schema = json.loads((ROOT / 'spec/workflow-portion.schema.json').read_text())
-    validator = Draft202012Validator(schema)
+    schema = json.loads((ROOT / 'spec/template-v5.schema.json').read_text())
+    validator = Draft202012Validator(schema['properties']['provides'])
     source_names = {item.get('name') for item in catalog.get('templates', []) if isinstance(item, dict) and isinstance(item.get('name'), str)}
     seen = set()
     for index, row in enumerate(rows):
@@ -47,7 +47,7 @@ def check(root=ROOT):
         def fail(message):
             problems.append(label + ': ' + message)
         if not isinstance(row, dict) or set(row) != FIELDS:
-            fail('managed fields must match the current workflow contract')
+            fail('managed fields must match the current template contract')
             continue
         name, provider = row['name'], row['provider']
         if not isinstance(name, str) or not re.fullmatch('[a-z0-9][a-z0-9-]*', name):
@@ -58,20 +58,12 @@ def check(root=ROOT):
         seen.add(name)
         if not isinstance(provider, str) or provider not in PROVIDERS:
             fail('unknown provider')
-        if row['spec_version'] != 4 or type(row['spec_version']) is not int:
-            fail('managed workflow requires spec_version: 4')
+        if row['spec_version'] != 5 or type(row['spec_version']) is not int:
+            fail('managed template requires spec_version: 5')
         if row['kind'] != 'provider-managed' or not isinstance(row['template_id'], str) or not row['template_id'].strip():
             fail('managed kind/native template ID required')
-        portion = {key: row[key] for key in WORKFLOW_FIELDS}
-        errors = list(validator.iter_errors(portion))
-        for error in errors:
-            fail('workflow: ' + error.message)
-        if not errors:
-            for problem in validate_workflow_references(portion):
-                fail(problem)
-            for workflow_id, workflow in row['workflows'].items():
-                if workflow['input'] != 'managed':
-                    fail(f'{workflow_id}: managed records require managed input')
+        for error in validator.iter_errors(row['provides']):
+            fail('provides: ' + error.message)
         doc = local_file(root, row['documentation'])
         if not doc:
             fail('documentation must be an existing local file')
@@ -110,7 +102,7 @@ def main():
     problems = check(parser.parse_args().root)
     for problem in problems:
         print(problem)
-    print(f'Managed catalog: {len(problems)} violations; historical records do not certify current workflows')
+    print(f'Managed catalog: {len(problems)} violations; historical records do not certify current launches')
     return int(bool(problems))
 
 

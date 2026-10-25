@@ -20,7 +20,7 @@
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./crush --workflow application --yes
+abx template launch ./crush --yes
 abx run <sandbox-id> crush_version --json-args '{}'
 ```
 

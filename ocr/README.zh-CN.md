@@ -20,7 +20,7 @@ Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./ocr --workflow application --yes
+abx template launch ./ocr --yes
 abx run <sandbox-id> ocr_smoke --json-args '{}'
 ```
 

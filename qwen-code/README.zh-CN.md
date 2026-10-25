@@ -21,7 +21,7 @@ Alibaba FC generation 2 基础镜像、平台 Python、固定版本且校验 x86
 ```bash
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
-abx template launch ./qwen-code --workflow application --sandbox-timeout 900 --yes
+abx template launch ./qwen-code --sandbox-timeout 900 --yes
 ```
 
 该命令准备模板、创建沙箱并启动其应用。将返回的沙箱 ID 写入 `SANDBOX_ID`；三个客户端使用同一个应用令牌：

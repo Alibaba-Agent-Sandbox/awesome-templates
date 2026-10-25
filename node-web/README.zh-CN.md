@@ -18,7 +18,7 @@ Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./node-web --workflow application --yes
+abx template launch ./node-web --yes
 abx run <sandbox-id> smoke --json-args '{}'
 ```
 

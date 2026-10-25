@@ -20,7 +20,7 @@
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./next-app --workflow application --yes
+abx template launch ./next-app --yes
 abx run <sandbox-id> toolchain_versions --json-args '{}'
 ```
 

@@ -20,6 +20,11 @@ on:
         default: all
         required: true
         type: string
+      distribution:
+        description: Published packages or reviewed candidate source
+        type: choice
+        options: [published, source]
+        default: published
       provider:
         description: Backend to exercise
         type: choice
@@ -114,7 +119,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Install fixed public CLI and Python packages
+      - name: Resolve reviewed CLI and Python package versions
         run: |
           python - <<'PYVERSIONS'
           import json, os, re, runpy
@@ -128,6 +133,7 @@ jobs:
               output.write(f"PUBLIC_CLI_VERSION={cli['version']}\nPUBLIC_SDK_VERSION={sdk}\n")
           PYVERSIONS
       - name: Install and verify published package versions
+        if: inputs.distribution != 'source'
         run: |
           npm install -g --registry https://registry.npmjs.org "@agent-sandbox/cli@$PUBLIC_CLI_VERSION"
           python -m pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-client==$PUBLIC_SDK_VERSION" "agent-sandbox-server==$PUBLIC_SDK_VERSION" -r scripts/requirements-spec.txt
@@ -140,6 +146,15 @@ jobs:
               assert importlib.metadata.version(name) == os.environ['PUBLIC_SDK_VERSION']
           PYVERSIONS
           abx --version
+      - name: Build and install reviewed candidate source
+        if: inputs.distribution == 'source'
+        run: |
+          npm ci --prefix .launch-fixtures/cli
+          npm run build --prefix .launch-fixtures/cli
+          npm install -g ./.launch-fixtures/cli
+          python -m pip install ./.launch-fixtures/sdk/client-sdk ./.launch-fixtures/sdk/server-sdk -r scripts/requirements-spec.txt
+          python -m pip check
+          abx --version
       - name: Start Docker-backed OpenSandbox and owned image registry
         if: matrix.provider == 'opensandbox'
         run: |
@@ -150,6 +165,8 @@ jobs:
         env:
           TEMPLATE_NAME: ${{ matrix.template }}
           TARGET_PROVIDER: ${{ matrix.provider }}
+          PUBLIC_LAUNCH_DISTRIBUTION: ${{ inputs.distribution }}
+          PUBLIC_LAUNCH_TEMPLATES_REF: ${{ github.sha }}
           PUBLIC_LAUNCH_CLI_REF: ${{ inputs.cli_ref }}
           PUBLIC_LAUNCH_SDK_REF: ${{ inputs.sdk_ref }}
           PUBLIC_LAUNCH_PROVIDERS_REF: ${{ inputs.providers_ref }}

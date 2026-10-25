@@ -1,0 +1,79 @@
+# Unified template launch verification
+
+Status: PARTIAL — local contract checks pass; cross-repository consumer publication, CI and current-format cloud launches remain pending.
+
+## Scope
+
+Base revision: `ac1ac52c3a0b60c59b8e022fbf0b5f26061fca70`. Scoped branch: `refactor/unified-template-launch`. The changes migrate 46 source catalog manifests, one skeleton, two deployment examples and four managed catalog entries to specification 5. Runtime commands, Dockerfiles, dependencies, start/readiness commands and provided services remain unchanged.
+
+Issue: https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/212
+
+## Executed local checks
+
+Environment: Linux, Python 3.13, isolated environment with `scripts/requirements-spec.txt`, pytest 9.1.1 and httpx 0.28.1.
+
+- PASS: `python scripts/test_spec_tools.py` — 58 tests.
+- PASS: `python -m pytest -q scripts/test_managed_catalog.py scripts/test_template_launch_contract.py scripts/test_public_launch_e2e.py scripts/test_template_application.py scripts/test_check_docs.py` — initial run 75 tests and 92 subtests. The subsequent shared-lock check is recorded below after synchronization.
+- PASS: `python scripts/check_template.py --all` — 47 directories, zero claimed-spec failures.
+- PASS: `python scripts/check_docs.py` — initial run 222 documents, zero local-link failures. New records and shared contract links require the final rerun below.
+
+The public launch harness validates the complete specification 5 source manifest and invokes `template launch` without a workflow selector. Local harness tests use synthetic responses; they are not cloud passes.
+
+## Remaining gates
+
+Current-head remote CI, actual new-format provider launches and independent cleanup, compatible CLI/SDK installation provenance, cross-repository merge sequence. Historical 2026-10-24 cloud matrix receipts remain immutable and do not certify these changed manifests.
+
+## Final local contract checks
+
+- PASS: shared launch contract synchronized from Python SDK `283ff91dae79ffaf0e27c5503b1c7788bdc26de7`, checked against its committed bytes and recorded in `spec/contracts/launch-source-lock.json`.
+- PASS: `python scripts/sync_launch_contracts.py --check`; the source schema specification, retired fields and service fields agree with the canonical contract.
+- PASS: `python scripts/sync_workflow_contracts.py --check`; immutable historical receipt contracts remain readable without imposing old workflow authoring fields.
+- PASS: final targeted pytest command above — 76 tests and 92 subtests.
+- PASS: `python scripts/check_managed_catalog.py` — four managed entries, zero violations.
+- PASS: final `python scripts/check_docs.py` — 222 documents, zero local-link failures.
+- PASS: semantic comparison against the base commit — all 49 source/example manifests retain every field except the intentionally migrated specification/workflow fields; all four managed entries retain their native identities and service declarations; source catalog metadata is unchanged.
+- PASS: `git diff --check`.
+
+No cloud deployment was performed by this local verification run. No task resources were created, so cloud cleanup does not apply to these local checks.
+
+## Candidate-source matrix entry
+
+The existing manual public-launch workflow now accepts `distribution=source` for reviewed pre-release consumers; its default remains `published`. Source mode uses lockfile-based CLI installation/build and installs both Python packages from their exact checked-out commit. Reports explicitly record source distribution and exact template/CLI/SDK/provider commits and omit npm/PyPI registry claims. Published mode retains package-version verification.
+
+- PASS: `python -m pytest -q scripts/test_public_launch_e2e.py` — 22 tests, including source-versus-published provenance and unknown distribution rejection.
+- PASS: documentation links and whitespace validation rerun after this addition.
+- NOT RUN locally: Docker-backed cloud matrix; this environment has neither Docker executable/socket nor an OpenSandbox endpoint. The GitHub runner supplies its own Docker-backed OpenSandbox fixture. The workflow retains the original Express secret names. A separate read-only repository API check found no repository Actions secrets, so Express matrix availability is not established. No local credentials were uploaded.
+
+Draft PR: https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/213. Initial candidate commit: `7c02f7f00f2100909d6cdd06748656bf1e397e02`. Remote CI and new-format cloud acceptance remain pending.
+
+## Coordinated candidate installation
+
+Current installation instructions now pin CLI source `ea28f207c8a0016cf798f5a355e3c363c7c936f4` and Python client source `ff073167f8993a5c580c78cccccd5779db1f5836`. Both candidate branches are pushed; instructions do not claim npm/PyPI publication. The CLI contract CI checkout uses the same candidate commit. These source instructions replace the incompatible 0.4.17 recommendation for specification 5.
+
+Cross-owner service validation review confirmed that `operations: []` is valid for a service that exposes an endpoint without named commands. The source schema now matches the shared validator, with a targeted regression; no official service operation lists changed.
+
+Final rerun after service-schema alignment and candidate installation documentation: targeted suite PASS (78 tests, 92 subtests), all source/skeleton manifests PASS (47 directories), shared launch lock PASS, documentation links PASS (222 documents), whitespace PASS.
+
+## Managed catalog quick starts
+
+All four managed entries now show the same `template launch <catalog-name>` CLI entry, with provider selection and a finite sandbox lifetime. Their Python create/process examples remain available. The text explicitly requires the coordinated specification 5 CLI/catalog update and does not reclassify older create/exec evidence as new catalog-launch verification. Managed catalog and documentation checks both passed after this update.
+
+## Real OpenSandbox source-candidate pilot
+
+PASS: [GitHub run 40176791139](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/40176791139), tested template checkout `7c02f7f00f2100909d6cdd06748656bf1e397e02`, CLI `ea28f207c8a0016cf798f5a355e3c363c7c936f4`, Python SDK `ff073167f8993a5c580c78cccccd5779db1f5836`, provider catalog `ebfb1c1554a567585e337f2e68cb3d449d5414b1`. Distribution is **source candidates**, not npm/PyPI publication.
+
+- [python-hello receipt](2026-10-25-unified-template-launch/public-launch-opensandbox-python-hello-40176791139-1.json): `hello` and `run_script` returned expected results via CLI, Python and host HTTP.
+- [agents-cli receipt](2026-10-25-unified-template-launch/public-launch-opensandbox-agents-cli-40176791139-1.json): `agents_version` returned its expected result through the same three consumers.
+- Both passed actual source launch, negative service-token authentication, runtime source identity, SDK exec and file round trip. Nine named-command consumer calls passed in total.
+- Both independently confirmed sandbox and prepared-artifact absence; retained, uncertain and cleanup-failure counts are zero.
+- Downloaded sanitized receipts were checked against current manifest SHA-256 values. They retain the original tested source commit and installation provenance.
+
+This pilot does not establish real-model coding, PTY, native interpreter or other templates. The full 46-source OpenSandbox candidate run [40177005215](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/40177005215) targets checkout `1d2953e16eec96da6c9c8a0a631220e2933c2aaf` with the same consumer/provider commits and is pending; it is not yet a pass.
+
+## Cross-review clarification
+
+The launch docs now distinguish template readiness (`ready_cmd`), built-in server v2 health/discovery checks and generic endpoint resolution. Returning every service URL does not verify an unknown protocol. No new protocol restriction, mandatory readiness field or runtime status was added. The real pilot uses server v2 and retains its actual health/call checks.
+
+The final Python source-install recommendation advances to `66c86f2b6dc7cd33e02c2a53d98dda2125d05236`, which completes Express startup metadata for the SDK launcher. Cloud matrix receipts keep their actually tested `ff073167f8993a5c580c78cccccd5779db1f5836` client connection/call scope; they are not relabeled as SDK TemplateLauncher acceptance.
+
+Final CLI source-install and CLI contract-CI pin: `9717236c8169055f318bff3740d2f13b92248c50` (pushed by the CLI owner). Source matrix receipts continue to record their actual `ea28f207c8a0016cf798f5a355e3c363c7c936f4` inputs. At this final PR documentation update, full run 40177005215 remains in progress; it has not been recorded as a pass. Full-run artifacts will be attached to the PR without changing this release-candidate head.

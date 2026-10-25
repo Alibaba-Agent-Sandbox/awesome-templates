@@ -18,7 +18,7 @@ Alibaba generation2 base v0.0.49、SHA256 固定的 Node24.16.0、npm integrity 
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./stagehand --workflow application --yes
+abx template launch ./stagehand --yes
 abx run <sandbox-id> stagehand_version --json-args '{}'
 ```
 

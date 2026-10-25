@@ -31,7 +31,7 @@ MIT 许可的[固定原版源码](https://github.com/sierra-research/tau2-bench/
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./tau2-bench --workflow application --yes
+abx template launch ./tau2-bench --yes
 abx run <sandbox-id> tau2_version --json-args '{}'
 ```
 

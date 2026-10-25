@@ -20,7 +20,7 @@ Python 3.13; `httpx==0.28.1`; Agent Sandbox server. No third-party agent CLI.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./deepseek-harness --workflow application --yes
+abx template launch ./deepseek-harness --yes
 abx run <sandbox-id> deepseek_tools --json-args '{}'
 ```
 

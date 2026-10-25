@@ -20,7 +20,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./deepseek-harness --workflow application --yes
+abx template launch ./deepseek-harness --yes
 abx run <sandbox-id> deepseek_tools --json-args '{}'
 ```
 

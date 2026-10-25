@@ -26,7 +26,7 @@ Python 的 browse/scrape/fill_form 每次独立创建浏览器；原生MCP调用
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./browser-automation --workflow application --yes
+abx template launch ./browser-automation --yes
 abx run <sandbox-id> browse --json-args '{"url": "data:text/html,<title>ABX_E2E_OK</title><h1>ABX_E2E_OK</h1>", "action": "extract"}'
 ```
 

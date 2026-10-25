@@ -20,7 +20,7 @@ Alibaba generation2 basev0.0.49、Python3.13/Linuxx64；完整 SHA256 校验的�
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./chrome --workflow application --yes
+abx template launch ./chrome --yes
 abx run <sandbox-id> chrome_smoke --json-args '{}'
 ```
 

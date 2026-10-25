@@ -20,7 +20,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./codex-agent-api --workflow application --yes
+abx template launch ./codex-agent-api --yes
 abx run <sandbox-id> codex_version --json-args '{}'
 ```
 

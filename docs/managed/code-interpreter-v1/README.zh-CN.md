@@ -16,10 +16,12 @@
 
 ## 快速开始（CLI）
 
+此直接启动示例需要支持规范 5 的 CLI 和同步更新后的托管目录。兼容版本及目录配套上线前，按[固定源码安装说明](../../using-templates.zh-CN.md)准备。下方历史记录验证的是其原 create/exec 接口，不表示已重新验证本次新的目录启动命令。
+
 先完成 [CLI 安装和平台配置](../../using-templates.zh-CN.md)，将 `<sandbox-id>` 替换为创建时返回的实例 ID。
 
 ```bash
-abx --provider alicloud-express create code-interpreter-v1 --detach --timeout 180
+abx --provider alicloud-express template launch code-interpreter-v1 --sandbox-timeout 180 --yes
 abx --provider alicloud-express exec <sandbox-id> -- python3 -c 'print(6*7)'
 abx --provider alicloud-express kill <sandbox-id>
 ```

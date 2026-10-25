@@ -18,7 +18,7 @@ Alibaba generation2 basev0.0.49／Python3.13、SHA256 固定 Node24.16.0、npm i
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./cline --workflow application --yes
+abx template launch ./cline --yes
 abx run <sandbox-id> cline_version --json-args '{}'
 ```
 
