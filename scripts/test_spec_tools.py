@@ -2,7 +2,6 @@
 """Unit tests for the template checker and the Express harness."""
 from __future__ import annotations
 
-from test_express_cleanup import cli_help
 import json
 import os
 import re
@@ -298,185 +297,12 @@ class CheckerTest(unittest.TestCase):
             self.assertNotIn("readme-client", codes)
 
 
-class HarnessTest(unittest.TestCase):
-    def test_plan_uses_yaml_smoke(self) -> None:
-        code = express_e2e.main([str(SKELETON), "--plan"])
-        self.assertEqual(code, 0)
-
-    def test_blocker_skips_evidence_and_still_cleans_known_ids(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            dest = Path(tmp) / "python-hello"
-            dest.mkdir()
-            (dest / "template.yaml").write_text(
-                "name: python-hello\nversion: '1.0.0'\nbase: python:3.12-slim\n",
-                encoding="utf-8",
-            )
-            calls: list[list[str]] = []
-
-            def runner(args: list[str], timeout: float) -> Proc:
-                if (help_result := cli_help(args)) is not None: return help_result
-                del timeout
-                calls.append(args)
-                if args == ["template", "list", "--format", "json"]:
-                    return Proc(0, "[]", "")
-                if "deploy" in args:
-                    return Proc(1, "", "BuildModeError: base must be a mapping")
-                return Proc(0, "", "")
-
-            options = express_e2e.build_options(
-                [str(dest), "--command", "hello", "--arg", "name=E2E", "--expect", "Hello, E2E!"]
-            )
-            code = express_e2e.execute(options, runner=runner, sdk=lambda *_: "Hello, E2E!", verify=lambda *_: True)
-            self.assertEqual(code, 2)
-            self.assertFalse((dest / "evidence").exists())
-            self.assertTrue(any("deploy" in args for args in calls))
-            self.assertFalse(any(args[:1] == ["kill"] for args in calls))
-
-    def test_pass_writes_evidence_and_deletes(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            dest = Path(tmp) / "python-hello"
-            shutil.copytree(ROOT / "python-hello", dest)
-            shutil.rmtree(dest / "evidence", ignore_errors=True)
-            calls: list[list[str]] = []
-
-            def runner(args: list[str], timeout: float) -> Proc:
-                if (help_result := cli_help(args)) is not None: return help_result
-                del timeout
-                calls.append(list(args))
-                if args == ["template", "list", "--format", "json"]:
-                    return Proc(0, "[]", "")
-                if "deploy" in args:
-                    return Proc(0, json.dumps({"TemplateID": "tmpl-spec", "Status": "ready"}), "")
-                if "create" in args:
-                    return Proc(0, "sb-spec\n", "")
-                if "run" in args:
-                    return Proc(0, json.dumps({"result": "Hello, E2E!"}), "")
-                return Proc(0, "", "")
-
-            options = express_e2e.build_options(
-                [
-                    str(dest),
-                    "--command",
-                    "hello",
-                    "--arg",
-                    "name=E2E",
-                    "--expect",
-                    "Hello, E2E!",
-                    "--start-cmd",
-                    "agent-sandbox-server serve --port 9000 --commands /app/commands.py",
-                    "--ready-cmd",
-                    "agent-sandbox-server healthcheck --port 9000",
-                ]
-            )
-            code = express_e2e.execute(options, runner=runner, sdk=lambda *_args: "Hello, E2E!", verify=lambda *_: True)
-            self.assertEqual(code, 0)
-            evidence = list((dest / "evidence").glob("express-*.json"))
-            self.assertEqual(len(evidence), 1)
-            payload = json.loads(evidence[0].read_text(encoding="utf-8"))
-            self.assertEqual(payload["provider"], "alicloud-express")
-            self.assertTrue(payload["passed"])
-            self.assertNotIn("tmpl-spec", evidence[0].read_text(encoding="utf-8"))
-            self.assertNotIn("sb-spec", evidence[0].read_text(encoding="utf-8"))
-            self.assertTrue(any(args[:2] == ["kill", "sb-spec"] for args in calls))
-            self.assertTrue(any(args[:3] == ["template", "delete", "tmpl-spec"] for args in calls))
-
-    def test_sdk_blocker_still_deletes(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            dest = Path(tmp) / "python-hello"
-            shutil.copytree(ROOT / "python-hello", dest)
-            shutil.rmtree(dest / "evidence", ignore_errors=True)
-            calls: list[list[str]] = []
-
-            def runner(args: list[str], timeout: float) -> Proc:
-                if (help_result := cli_help(args)) is not None: return help_result
-                del timeout
-                calls.append(list(args))
-                if args == ["template", "list", "--format", "json"]:
-                    return Proc(0, "[]", "")
-                if "deploy" in args:
-                    return Proc(0, json.dumps({"TemplateID": "tmpl-spec", "Status": "ready"}), "")
-                if "create" in args:
-                    return Proc(0, "sb-spec\n", "")
-                if "run" in args:
-                    return Proc(0, json.dumps({"result": "Hello, E2E!"}), "")
-                return Proc(0, "", "")
-
-            def sdk(*_args: object) -> str:
-                raise RuntimeError("protocol error: promised 12 bytes in enveloped message")
-
-            options = express_e2e.build_options(
-                [str(dest), "--command", "hello", "--arg", "name=E2E", "--expect", "Hello, E2E!"]
-            )
-            code = express_e2e.execute(options, runner=runner, sdk=sdk, verify=lambda *_: True)
-            self.assertEqual(code, 2)
-            self.assertFalse((dest / "evidence").exists())
-            self.assertTrue(any(args[:1] == ["kill"] for args in calls))
-            self.assertTrue(any("delete" in args for args in calls))
-            self.assertEqual(sum(1 for args in calls if "deploy" in args), 1)
-
-    def test_stalled_push_retries_then_passes(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            dest = Path(tmp) / "python-hello"
-            shutil.copytree(ROOT / "python-hello", dest)
-            shutil.rmtree(dest / "evidence", ignore_errors=True)
-            calls: list[list[str]] = []
-
-            def runner(args: list[str], timeout: float) -> Proc:
-                if (help_result := cli_help(args)) is not None: return help_result
-                del timeout
-                calls.append(list(args))
-                if args == ["template", "list", "--format", "json"]:
-                    return Proc(0, "[]", "")
-                if "deploy" in args:
-                    attempt = sum(1 for item in calls if "deploy" in item)
-                    if attempt < 3:
-                        return Proc(124, "", "no ACR push progress for 180s. Stopped process group 1.")
-                    return Proc(0, json.dumps({"TemplateID": "tmpl-retry", "Status": "ready"}), "")
-                if "create" in args:
-                    return Proc(0, "sb-retry\n", "")
-                if "run" in args:
-                    return Proc(0, json.dumps({"result": "Hello, E2E!"}), "")
-                return Proc(0, "", "")
-
-            options = express_e2e.build_options(
-                [str(dest), "--command", "hello", "--arg", "name=E2E", "--expect", "Hello, E2E!", "--push-retries", "2"]
-            )
-            code = express_e2e.execute(options, runner=runner, sdk=lambda *_args: "Hello, E2E!", verify=lambda *_: True)
-            self.assertEqual(code, 0)
-            self.assertEqual(sum(1 for args in calls if "deploy" in args), 3)
-            deploy_call = next(args for args in calls if "deploy" in args)
-            self.assertIn("--verbose", deploy_call)
-            self.assertIn("--timeout", deploy_call)
-
-    def test_build_failure_is_not_retried(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            dest = Path(tmp) / "python-hello"
-            dest.mkdir()
-            (dest / "template.yaml").write_text("name: python-hello\nversion: '1.0.0'\n", encoding="utf-8")
-            calls: list[list[str]] = []
-
-            def runner(args: list[str], timeout: float) -> Proc:
-                if (help_result := cli_help(args)) is not None: return help_result
-                del timeout
-                calls.append(list(args))
-                if args == ["template", "list", "--format", "json"]:
-                    return Proc(0, "[]", "")
-                return Proc(1, "", "Docker build failed (exit 1)")
-
-            options = express_e2e.build_options(
-                [str(dest), "--command", "hello", "--push-retries", "2"]
-            )
-            code = express_e2e.execute(options, runner=runner, sdk=lambda *_args: "Hello, E2E!", verify=lambda *_: True)
-            self.assertEqual(code, 1)
-            self.assertEqual(sum("deploy" in args for args in calls), 1)
-
-
 class MonitorTest(unittest.TestCase):
     def test_progress_resets_idle_timeout(self) -> None:
-        script = "import time\nfor _ in range(4):\n    print('tick', flush=True)\n    time.sleep(0.2)\n"
+        script = "import time\nfor _ in range(10):\n    print('tick', flush=True)\n    time.sleep(0.2)\n"
         proc = express_e2e.run_monitored(
             [sys.executable, "-c", script],
-            idle_timeout=1.5,
+            idle_timeout=0.5,
             wall_timeout=10,
         )
         self.assertEqual(proc.returncode, 0, proc.stderr)
@@ -504,11 +330,10 @@ class MonitorTest(unittest.TestCase):
                 [sys.executable, "-c", script],
                 idle_timeout=1.0,
                 wall_timeout=10,
-                marker="e2e-monitor-test",
                 env=env,
             )
             self.assertEqual(proc.returncode, 124, proc.stderr)
-            self.assertIn("no ACR push progress", proc.stderr)
+            self.assertIn("no process output progress", proc.stderr)
             self.assertTrue(pidfile.is_file())
             child = int(pidfile.read_text(encoding="utf-8"))
             deadline = time.monotonic() + 3
@@ -526,26 +351,6 @@ class MonitorTest(unittest.TestCase):
         self.assertEqual(proc.returncode, 124, proc.stderr)
         self.assertIn("wall clock", proc.stderr)
 
-    def test_push_lock_is_exclusive(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "push.lock"
-            order: list[str] = []
-            started = threading.Event()
-
-            def hold() -> None:
-                with express_e2e.acr_push_lock(path):
-                    started.set()
-                    order.append("a-in")
-                    time.sleep(0.3)
-                    order.append("a-out")
-
-            thread = threading.Thread(target=hold)
-            thread.start()
-            self.assertTrue(started.wait(3))
-            with express_e2e.acr_push_lock(path):
-                order.append("b-in")
-            thread.join(timeout=5)
-            self.assertEqual(order, ["a-in", "a-out", "b-in"])
 
 
 class ImageBuildContextTest(unittest.TestCase):

@@ -95,7 +95,7 @@ See [test results and scope](../docs/using-templates.md#evidence-and-providers).
 python -m pytest -q gemini/test_byok.py gemini/test_adapter.py gemini/test_controller.py gemini/test_commands.py gemini/test_e2e_protocol.py
 python scripts/check_template.py gemini --strict
 python scripts/check_docs.py
-ABX='abx --native' python scripts/run_steps_e2e.py gemini --sandbox-create sdk --http
+python scripts/run_steps_e2e.py gemini
 ```
 
 Preserve exact original inventory/lock/notices, real-key isolation, strict origin and content refusal, owned process/RPC/private/listener cleanup. Local replies are fixed non-executable fixtures; original native/generated-code acceptance only on fresh explicitly owned cloud. Main e2e dispatches strict current BYOK controller; legacy helpers/regressions remain. Record both dispatch and byok_e2e_test.py hashes. Require changed source, original3test bytes/report/exact nonce/original3+4held-outs/fresh post-returnACK and independent owned absence.

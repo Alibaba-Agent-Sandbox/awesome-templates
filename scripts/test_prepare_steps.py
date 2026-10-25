@@ -9,7 +9,6 @@ from unittest.mock import patch
 
 import pytest
 
-import express_e2e as harness
 import prepare_steps
 from prepare_steps import BASE, ROOT, instructions, prepare
 
@@ -119,35 +118,6 @@ def test_run_uses_declared_path_without_native_env_propagation(tmp_path: Path):
     assert path_step["args"][0] == "PATH"
     assert "${PATH}" not in path_step["args"][1]
     assert path_step["args"][1].startswith(str(binary) + ":")
-
-
-@pytest.mark.parametrize("status", ["ready", {"state": "ready"}, '{"state":"ready"}', "{'state': 'ready'}"])
-def test_ready_status_formats(status):
-    assert harness.template_state({"status": status}) == "ready"
-
-
-def test_submitted_requires_official_ready_readback(tmp_path: Path):
-    options = harness.Options(tmp_path, [], "", "", 2, 20, 20, 20, 0, "owned", build_mode="steps")
-    states = iter(["building", "ready"])
-    calls = []
-    def run(args, timeout):
-        calls.append(args)
-        return harness.Proc(0, json.dumps({"status": {"state": next(states)}}), "")
-    with patch.object(harness.time, "sleep"):
-        assert harness.wait_for_steps_ready("synthetic", options, run)
-    assert len(calls) == 2
-    assert all(args[:3] == ["--json", "template", "info"] and args[-1] == "synthetic" for args in calls)
-
-
-@pytest.mark.parametrize("status", ["error", "unknown", "submitted-with-no-poll", ["ready"]])
-def test_failed_or_unknown_state_cannot_pass(tmp_path: Path, status):
-    options = harness.Options(tmp_path, [], "", "", 2, 20, 20, 20, 0, "owned", build_mode="steps")
-    def run(*args):
-        return harness.Proc(0, json.dumps({"status": status}), "")
-    try:
-        assert not harness.wait_for_steps_ready("synthetic", options, run)
-    except ValueError:
-        assert isinstance(status, list)
 
 
 def test_preparation_binds_every_manifest_field(tmp_path):

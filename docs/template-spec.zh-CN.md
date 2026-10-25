@@ -472,9 +472,10 @@ python3 scripts/check_template.py --all
 
 ## 原生部署维护
 
-旧 `scripts/express_e2e.py` 及其私有 intent 恢复保留给[固定版本原生审查](canonical-express-review.zh-CN.md)。
-其 native 参数和清理范围只针对固定输入。当前贡献及用户验收从[公开源码启动](public-launch-testing.md#中文)进入；
-其中仅 Express 准备资源清理明确采用首位 `--native` 与全局 `--json`。恢复成功不能把原应用失败改成通过。
+原生云准备使用[平台步骤](platform-steps.zh-CN.md)：准备空闲 provider 模板，再保留
+原清单并复用当前完整公开启动消费者。`express_e2e.py` 仅保留外部控制器使用的有界
+进程监控，不再提供第二套部署／创建／恢复 CLI。历史回执保留其原源码范围；清理
+成功不能把原应用失败改成通过。
 
 ## 提供方托管条目
 

@@ -123,7 +123,7 @@ From a repository checkout, `python scripts/run_steps_e2e.py node-web` builds an
 
 ## Contributing
 
-Read [CONTRIBUTING.md](../CONTRIBUTING.md), the [template spec](../docs/template-spec.md), and [design](../docs/design/node-web.md). Run `python3 scripts/check_template.py node-web`, then `python3 scripts/run_local_e2e.py` from the repository root with server SDK, httpx, PyYAML, Node and npm available. The suite runs real processes and asserts outputs, not mocks. With Docker and authorized Express access, run `python3 scripts/express_e2e.py node-web`; only a successful run may add provider evidence. Keep `tested_on` and Verified empty until then. Cross-review process lifecycle and failure cases before merging.
+Read [CONTRIBUTING.md](../CONTRIBUTING.md), the [template spec](../docs/template-spec.md), and [design](../docs/design/node-web.md). Run `python3 scripts/check_template.py node-web`, then `python3 scripts/run_local_e2e.py` from the repository root with server SDK, httpx, PyYAML, Node and npm available. The suite runs real processes and asserts outputs, not mocks. With Docker and authorized Express access, run `python scripts/public_launch_e2e.py node-web --provider alicloud-express --application-controller`; only a successful run may add provider evidence. Keep `tested_on` and Verified empty until then. Cross-review process lifecycle and failure cases before merging.
 
 ## Issues
 

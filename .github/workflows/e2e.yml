@@ -236,7 +236,7 @@ jobs:
         run: |
           python3 scripts/test_local_cleanup.py && python3 scripts/test_spec_tools.py
           python3 scripts/test_public_launch_e2e.py
-          python -m pytest -q scripts/test_prepare_steps.py scripts/test_ci_image.py scripts/test_ci_image_archive.py scripts/test_express_cleanup.py scripts/test_sdk_creation.py scripts/test_step_acceptance.py scripts/test_steps_http.py scripts/test_step_assets.py scripts/test_step_asset_cache.py scripts/test_cursor_assets.py scripts/test_devin_assets.py scripts/test_template_http_acceptance.py scripts/test_image_e2e_batch.py
+          python -m pytest -q scripts/test_prepare_steps.py scripts/test_ci_image.py scripts/test_ci_image_archive.py scripts/test_express_cleanup.py scripts/test_steps_http.py scripts/test_step_assets.py scripts/test_step_asset_cache.py scripts/test_cursor_assets.py scripts/test_devin_assets.py scripts/test_template_http_acceptance.py scripts/test_image_e2e_batch.py
           python3 scripts/check_template.py --all
           python scripts/check_managed_catalog.py
           python scripts/sync_launch_contracts.py --check

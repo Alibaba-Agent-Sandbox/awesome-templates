@@ -495,14 +495,14 @@ python3 scripts/check_template.py --all
 
 Violation codes include `required-file`, `readme-section`, `base-image`, `dockerfile-cmd`, `dockerfile-user`, `yaml-field`, `commands-start`, `verified-evidence`, `pinned-version`, `readme-client`, `secrets`. `pinned-version` fails when a `RUN` has neither allowed server pin above. `readme-client` fails when a spec_version 4 SDK section does not name `agent-sandbox-client`, or when a README tells the reader to `pip install agent-sandbox`.
 
-## Native deployment maintenance
+## Native preparation maintenance
 
-The older `scripts/express_e2e.py` and its private intent recovery remain available
-for the [fixed native review workflow](canonical-express-review.md). Their native
-flags and cleanup scope are tied to those pinned inputs. Current contributor and
-user acceptance starts with [public source launch](public-launch-testing.md), which
-uses explicit native-first `--native --json` only for Express preparation cleanup.
-Never treat a successful recovery as a successful original application attempt.
+Use [platform steps](platform-steps.md) when native cloud preparation is required.
+The step runner prepares an idle provider template, then reuses the current full
+public launch consumer with the original manifest. `express_e2e.py` now contains
+only the bounded process monitor used by external controllers; it does not expose
+an alternate deployment/create/recovery CLI. Preserve dated receipts at their
+recorded source. Cleanup success cannot relabel an original application failure.
 
 ## Provider-managed catalog entries
 

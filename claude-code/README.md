@@ -95,7 +95,7 @@ See [test results and scope](../docs/using-templates.md#evidence-and-providers).
 python -m pytest -q claude-code/test_byok.py claude-code/test_adapter.py
 python scripts/check_template.py claude-code --strict
 python scripts/check_docs.py
-ABX='abx --native' python scripts/run_steps_e2e.py claude-code --sandbox-create sdk --http
+python scripts/run_steps_e2e.py claude-code
 ```
 
 Keep original package and notices, lockfile/integrity/hash, explicit approved origin, no real child key, unsupported-feature refusal and owned descendants/listener/private cleanup. Fixed non-executable protocol replies may run locally. Original native/generated-code verification runs only on a fresh owned cloud target; preserve original tests and independently assert artifacts and post-return held-outs.

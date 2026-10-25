@@ -79,7 +79,7 @@ See [test results and scope](../docs/using-templates.md#evidence-and-providers).
 
 ## Secondary development
 
-Change the official archive/version/hash together and retain upstream licenses. Use [platform steps](../docs/platform-steps.md) with `python scripts/prepare_steps.py polyglot-toolchain --output /tmp/toolchain-steps`. That prepares files only. Real Express acceptance: `python scripts/run_steps_e2e.py polyglot-toolchain --timeout 1800`; Dockerfile acceptance remains `python scripts/express_e2e.py polyglot-toolchain`. Run L0 with `python scripts/run_local_e2e.py`; a host lacking the exact tools reports a skip. Images must compile all three, and local absence cannot certify them.
+Change the official archive/version/hash together and retain upstream licenses. Use [platform steps](../docs/platform-steps.md) with `python scripts/prepare_steps.py polyglot-toolchain --output /tmp/toolchain-steps`. That prepares files only. Real Express acceptance: `python scripts/run_steps_e2e.py polyglot-toolchain --timeout 1800`; Dockerfile acceptance remains `python scripts/public_launch_e2e.py polyglot-toolchain --provider alicloud-express --application-controller`. Run L0 with `python scripts/run_local_e2e.py`; a host lacking the exact tools reports a skip. Images must compile all three, and local absence cannot certify them.
 
 ## Contributing
 

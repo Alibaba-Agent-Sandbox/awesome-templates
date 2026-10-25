@@ -95,7 +95,7 @@ BYOK模块导入时捕获设置，密钥最多8192字符且无控制字符。原
 python -m pytest -q gemini/test_byok.py gemini/test_adapter.py gemini/test_controller.py gemini/test_commands.py gemini/test_e2e_protocol.py
 python scripts/check_template.py gemini --strict
 python scripts/check_docs.py
-ABX='abx --native' python scripts/run_steps_e2e.py gemini --sandbox-create sdk --http
+python scripts/run_steps_e2e.py gemini
 ```
 
 保留原始文件清单/锁/声明、真实密钥隔离、严格来源和内容拒绝、自有进程/RPC/私有目录/监听器清理。本地仅不执行代码的固定回复，原生及模型生成代码只在新建自有云目标执行。主e2e分发到当前严格BYOK controller，旧辅助和回归保留；记录分发与byok_e2e_test.py两者哈希。要求源码变化、原3测试字节不变、报告/精确nonce/原3加4隐藏测试/返回后新ACK和独立自有资源缺席确认。

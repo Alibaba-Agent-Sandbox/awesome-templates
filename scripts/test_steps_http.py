@@ -1,131 +1,169 @@
-"""Exercise real controller subprocess results and credential isolation."""
-from types import SimpleNamespace
-from unittest.mock import patch
-
-import pytest
-
-import express_e2e
-from run_steps_e2e import configure_http_fixture, http_callback
-from prepare_steps import ROOT, prepare
-import hashlib
+"""Native step preparation must use the existing full current launch consumer."""
+from argparse import Namespace
 import json
-import yaml
+from pathlib import Path
+import pytest
+import run_steps_e2e as steps
+import run_ci_image_e2e as current
+from public_launch_e2e import CLI
 
 
-@pytest.mark.parametrize("exit_code,outcome", [(0, "PASS"), (1, "FAIL")])
-def test_controller_runs_once_and_failed_assertions_cannot_pass(tmp_path, monkeypatch, exit_code, outcome):
-    monkeypatch.setenv("ABX_SANDBOX_API_KEY", "synthetic-controller-secret")
-    monkeypatch.setenv("OPENAI_API_KEY", "synthetic-model-secret")
-    (tmp_path / "template.yaml").write_text("ports: [9000]\n")
-    (tmp_path / "e2e_test.py").write_text(
-        "import os\n"
-        "assert 'ABX_SANDBOX_API_KEY' not in os.environ\n"
-        "assert 'OPENAI_API_KEY' not in os.environ\n"
-        "assert os.environ['E2E_BASE_URL'] == 'http://synthetic.invalid'\n"
-        "assert os.environ['E2E_RUN_LLM'] == '0'\n"
-        f"print('[{outcome}] actual-controller-result')\nraise SystemExit({exit_code})\n")
-
-    class Sandbox:
-        network = SimpleNamespace(get_url=lambda port: "http://synthetic.invalid")
-
-        async def close(self):
-            pass
-
-        @classmethod
-        async def connect(cls, sandbox_id):
-            return cls()
-
-    report = {}
-    with patch("agent_sandbox.ProviderSandbox", Sandbox), patch.object(express_e2e, "default_sdk", return_value="smoke"):
-        callback = http_callback(tmp_path, tmp_path, report)
-        if exit_code:
-            with pytest.raises(RuntimeError, match="controller failed"):
-                callback("synthetic", "hello", {})
-            assert report["http_acceptance"]["fail_count"] == 1
-        else:
-            assert callback("synthetic", "hello", {}) == "smoke"
-            (tmp_path / "e2e_test.py").write_text("raise RuntimeError('must never run twice')")
-            assert callback("synthetic", "hello", {}) == "smoke"
-            assert report["http_acceptance"]["pass_count"] == 1
-        assert report["http_acceptance"]["exit_code"] == exit_code
+def config():
+    return Namespace(region='cn-hangzhou',base_tag='v0.0.49',base_path=None,
+                     asset_transport='direct',timeout=60)
 
 
-def test_gateway_fixture_is_generated_after_installers_and_absent_from_public_proof():
-    manifest, proof = prepare(ROOT / "openclaw")
-    original = list(manifest["build"]["steps"])
-    env = configure_http_fixture(ROOT / "openclaw", manifest, proof)
-    steps = manifest["build"]["steps"]
-    assert steps[:-2] + [steps[-1]] == original
-    assert steps[-2] == {"type": "ENV", "args": ["OPENCLAW_GATEWAY_TOKEN", env["OPENCLAW_GATEWAY_TOKEN"]]}
-    assert steps[-1] == {"type": "USER", "args": ["user"]}
-    assert len(env["OPENCLAW_GATEWAY_TOKEN"]) >= 40
-    assert env["OPENCLAW_GATEWAY_TOKEN"] not in json.dumps(proof)
-    assert proof["test_configuration"]["model_credentials_injected"] is False
-    assert proof["generated_manifest_sha256"] == hashlib.sha256(yaml.safe_dump(manifest, sort_keys=False, allow_unicode=True).encode()).hexdigest()
-    assert proof["steps_json_bytes"] <= 15000
+@pytest.fixture
+def prepared(tmp_path,monkeypatch):
+    source=tmp_path/'example';source.mkdir()
+    original={'name':'example','version':'1.0.1','start_cmd':'original start','ready_cmd':'original ready',
+              'services':{'app':{'port':9000}},'env':{'APP_SETTING':'value'}}
+    import yaml
+    (source/'template.yaml').write_text(yaml.safe_dump(original))
+    monkeypatch.setattr(steps,'ROOT',tmp_path)
+    monkeypatch.setattr(current,'controller_missing_imports',lambda _:[])
+    monkeypatch.setattr(steps,'prepare',lambda *a,**k:({**original,'build':{'steps':[]}}, {'build_mode':'steps'}))
+    resources=[];calls=[]
+    def cli(self,args,*a,**kwargs):
+        calls.append((args,kwargs))
+        if args[-1:] == ['--help']:
+            assert kwargs['native'] is True and kwargs['json_output'] is False
+            return '--build --alias --generation --start-cmd --ready-cmd'
+        if args[:2]==['template','list']:
+            return [{'Name':self.env.get('unused',''), 'TemplateID':x} for x in resources]
+        if args[:2]==['template','deploy']:
+            assert kwargs['native'] is True
+            stage=Path(args[2]);staged=yaml.safe_load((stage/'template.yaml').read_text())
+            assert 'start_cmd' not in staged and 'ready_cmd' not in staged
+            assert args[args.index('--start-cmd')+1]==''
+            assert args[args.index('--ready-cmd')+1]==''
+            resources.append('owned-template');return {'TemplateID':'owned-template'}
+        if args[:2]==['template','info']:
+            if args[2] in resources:return {'status':{'state':'ready'}}
+            from public_launch_e2e import CLIError
+            raise CLIError('template',4,json.dumps({'code':'E2001','message':'owned template not found'}))
+        if args[:2]==['template','delete']:
+            assert kwargs['native'] is True
+            resources.remove(args[2]);return {}
+        pytest.fail('unexpected CLI operation '+str(args))
+    monkeypatch.setattr(CLI,'run',cli)
+    monkeypatch.setattr(current,'exact_templates',lambda cli,alias:list(resources))
+    monkeypatch.setattr(current,'wait_ready',lambda *a:None)
+    return source,original,resources,calls
 
 
-def test_controller_fixture_cannot_forward_an_operator_credential(tmp_path):
-    with pytest.raises(ValueError, match="only the generated owned gateway fixture"):
-        http_callback(tmp_path, tmp_path, {}, {"OPENAI_API_KEY": "synthetic-operator-secret"})
+def test_prepare_then_existing_current_launch_and_independent_template_cleanup(prepared,monkeypatch):
+    source,original,resources,calls=prepared
+    async def exercise(selected,reference,private,report,http,journal):
+        assert selected==source and reference=='owned-template' and http is True
+        import yaml
+        assert yaml.safe_load((source/'template.yaml').read_text())==original
+        assert json.loads(journal.read_text())['template_id']=='owned-template'
+        report.update(application_result='PASS',cleanup_verified=True,
+                      commands=[{'name':'hello','via':via,'ok':True} for via in ['cli','sdk','host-http']],
+                      http_acceptance={'passed':True})
+    monkeypatch.setattr(current,'exercise',exercise)
+    report=steps.run_one('example',config())
+    assert report['passed'] and report['template_cleanup_verified'] and not resources
+    assert report['command_calls']==3
+    assert not any(args[:1]==['create'] for args,_ in calls)
 
 
-def test_cursor_native_fixture_never_uses_operator_vendor_or_model_key(monkeypatch):
-    monkeypatch.setenv('CURSOR_API_KEY','synthetic-operator-vendor-secret')
-    monkeypatch.setenv('OPENAI_API_KEY','synthetic-operator-model-secret')
-    manifest={'build':{'steps':[{'type':'USER','args':['user']}]}};proof={}
-    env=configure_http_fixture(ROOT/'cursor-agent',manifest,proof)
-    assert env=={}and manifest['build']['steps'][-1]=={'type':'USER','args':['user']}
-    value=manifest['build']['steps'][-2]['args'][1]
-    assert value.startswith('key_')and value!='synthetic-operator-vendor-secret'
-    assert 'synthetic-operator-'not in json.dumps(manifest)and value not in json.dumps(proof)
-    assert proof['test_configuration']=={'native_authentication_error_path_required':True,'synthetic_invalid_vendor_credential':True,'model_credentials_injected':False}
+def test_current_controller_failure_cannot_publish_pass_but_still_cleans(prepared,monkeypatch):
+    _,_,resources,_=prepared
+    async def failed(*args):
+        args[3].update(cleanup_verified=True)
+        raise RuntimeError('controlled controller failure')
+    monkeypatch.setattr(current,'exercise',failed)
+    report=steps.run_one('example',config())
+    assert not report['passed'] and report['template_cleanup_verified'] and not resources
 
 
-def test_osworld_requires_real_desktop_and_rejects_nonmodel_skip(tmp_path):
-    source=tmp_path/'osworld';source.mkdir();(source/'template.yaml').write_text('ports: [9000]\n')
-    (source/'e2e_test.py').write_text("import os\nassert os.environ['E2E_REQUIRE_DESKTOP']=='1'\nassert os.environ['E2E_RUN_DESKTOP']=='1'\nprint('[PASS] basic HTTP')\nprint('[SKIP] GUI task')\n")
-    proof={};manifest={'build':{'steps':[]}}
-    assert configure_http_fixture(source,manifest,proof)=={}
-    assert proof['test_configuration']['desktop_lifecycle_required'] is True
-    class Sandbox:
-        network=SimpleNamespace(get_url=lambda port:'http://synthetic.invalid')
-        async def close(self):pass
-        @classmethod
-        async def connect(cls,sandbox_id):return cls()
-    report={}
-    with patch('agent_sandbox.ProviderSandbox',Sandbox),patch.object(express_e2e,'default_sdk',return_value='smoke'):
-        callback=http_callback(source,tmp_path,report)
-        with pytest.raises(RuntimeError,match='desktop lifecycle'):callback('synthetic','desktop',{})
-    assert report['http_acceptance']['skip_count']==1
+def test_missing_controller_stops_before_native_write(prepared,monkeypatch):
+    _,_,resources,calls=prepared
+    monkeypatch.setattr(current,'controller_missing_imports',lambda _:['missing_dependency'])
+    report=steps.run_one('example',config())
+    assert not report['passed'] and not report['runtime_attempted'] and not resources and not calls
 
 
-@pytest.mark.parametrize("skip_native", [False, True])
-def test_chrome_controller_receives_all_native_ports_and_requires_gui(tmp_path, skip_native):
-    source=tmp_path/'chrome';source.mkdir()
-    (source/'template.yaml').write_text('ports: [9000,9222,6080]\n')
-    (source/'e2e_test.py').write_text("import os\nassert os.environ['E2E_CHROME_CDP_URL']=='http://synthetic.invalid/9222'\nassert os.environ['E2E_CHROME_VNC_URL']=='http://synthetic.invalid/6080'\nassert os.environ['E2E_REQUIRE_CHROME']=='1'\nassert os.environ['E2E_WORKSPACE']=='/home/user/workspace'\nprint('[PASS] native controller inputs')\n")
-    if skip_native:
-        with (source/'e2e_test.py').open('a') as out:out.write("print('[SKIP] native GUI')\n")
-    class Sandbox:
-        network=SimpleNamespace(get_url=lambda port:'http://synthetic.invalid/'+str(port))
-        async def close(self):pass
-        @classmethod
-        async def connect(cls,sandbox_id):return cls()
-    report={}
-    with patch('agent_sandbox.ProviderSandbox',Sandbox),patch.object(express_e2e,'default_sdk',return_value='smoke'):
-        if skip_native:
-            with pytest.raises(RuntimeError,match='Chrome desktop was skipped'):http_callback(source,tmp_path,report)('synthetic','chrome_smoke',{})
-        else:
-            assert http_callback(source,tmp_path,report)('synthetic','chrome_smoke',{})=='smoke'
-    assert report['http_acceptance']['pass_count']==1
+def test_uncertain_template_cleanup_cannot_become_acceptance(prepared,monkeypatch):
+    _,_,resources,_=prepared
+    async def exercise(*args):args[3].update(application_result='PASS',cleanup_verified=True,commands=[])
+    monkeypatch.setattr(current,'exercise',exercise)
+    original=CLI.run
+    def reject(self,args,*a,**k):
+        if args[:2]==['template','delete']:raise RuntimeError('controlled delete failure')
+        return original(self,args,*a,**k)
+    monkeypatch.setattr(CLI,'run',reject)
+    report=steps.run_one('example',config())
+    assert not report['passed'] and not report['template_cleanup_verified'] and resources==['owned-template']
 
 
-def test_devin_no_account_fixture_never_forwards_credentials(monkeypatch):
-    monkeypatch.setenv('DEVIN_CREDENTIALS_FILE','/private/operator-auth.toml')
-    manifest={'env':{'DEVIN_CREDENTIALS_FILE':''},'build':{'steps':[{'type':'USER','args':['user']}]}};proof={}
-    assert configure_http_fixture(ROOT/'devin',manifest,proof)=={}
-    assert '/private/operator-auth.toml'not in json.dumps(manifest)
-    assert proof['test_configuration']=={'native_authentication_error_path_required':True,'credential_absence_required':True,'model_credentials_injected':False}
-    manifest['env']['DEVIN_CREDENTIALS_FILE']='/unreviewed/auth.toml'
-    with pytest.raises(ValueError,match='cannot configure credentials'):configure_http_fixture(ROOT/'devin',manifest,{})
+def test_known_template_is_deleted_even_if_inventory_temporarily_omits_it(prepared,monkeypatch):
+    _,_,resources,calls=prepared
+    monkeypatch.setattr(current,'exact_templates',lambda *args:[])
+    async def exercise(*args):
+        args[3].update(application_result='PASS',cleanup_verified=True,commands=[],http_acceptance={'passed':True})
+    monkeypatch.setattr(current,'exercise',exercise)
+    report=steps.run_one('example',config())
+    assert report['passed'] and not resources
+    assert any(args[:3]==['template','delete','owned-template'] for args,_ in calls)
+
+
+def test_unknown_owned_cleanup_stops_the_existing_serial_selection(monkeypatch):
+    import sys
+    monkeypatch.setattr(sys,'argv',['run_steps_e2e.py','--all'])
+    monkeypatch.setattr(steps,'catalog_names',lambda:['first','second'])
+    calls=[]
+    def run(name,args):
+        calls.append(name)
+        return {'passed':False,'unresolved_owned_cleanup':True}
+    monkeypatch.setattr(steps,'run_one',run)
+    assert steps.main()==1 and calls==['first']
+
+
+def test_independently_cleaned_failure_does_not_hide_later_templates(monkeypatch):
+    import sys
+    monkeypatch.setattr(sys,'argv',['run_steps_e2e.py','first','second'])
+    monkeypatch.setattr(steps,'catalog_names',lambda:['first','second'])
+    calls=[]
+    def run(name,args):
+        calls.append(name)
+        return {'passed':name=='second','unresolved_owned_cleanup':False}
+    monkeypatch.setattr(steps,'run_one',run)
+    assert steps.main()==1 and calls==['first','second']
+
+
+def test_lost_registration_response_and_empty_inventory_remain_uncertain(prepared,monkeypatch):
+    _,_,resources,_=prepared
+    original=CLI.run;stages=[]
+    def uncertain(self,args,*a,**k):
+        if args[:2]==['template','deploy'] and args[-1:]!=['--help']:
+            stages.append(Path(args[2]))
+            raise TimeoutError('controlled lost registration response')
+        return original(self,args,*a,**k)
+    monkeypatch.setattr(CLI,'run',uncertain)
+    report=steps.run_one('example',config())
+    assert report['preparation_attempted'] and not report['runtime_attempted']
+    assert report['template_cleanup_verified'] is False and report['unresolved_owned_cleanup'] is True
+    assert not report['passed'] and not resources
+    intent=json.loads((stages[0]/'platform-intent.json').read_text())
+    assert intent['registration_attempted'] and not intent.get('template_id')
+    assert intent['template_cleanup_verified'] is False
+
+
+def test_missing_alias_and_successful_delete_cannot_hide_still_present_known_id(prepared,monkeypatch):
+    _,_,resources,_=prepared
+    monkeypatch.setattr(current,'exact_templates',lambda *args:[])
+    original=CLI.run
+    def no_op_delete(self,args,*a,**k):
+        if args[:2]==['template','delete']:return ''
+        return original(self,args,*a,**k)
+    monkeypatch.setattr(CLI,'run',no_op_delete)
+    cleanup=current.delete_owned_templates
+    monkeypatch.setattr(current,'delete_owned_templates',lambda cli,alias,known:cleanup(cli,alias,known,timeout=0))
+    async def exercise(*args):args[3].update(application_result='PASS',cleanup_verified=True,commands=[])
+    monkeypatch.setattr(current,'exercise',exercise)
+    report=steps.run_one('example',config())
+    assert report['passed'] is False and report['template_cleanup_verified'] is False
+    assert report['unresolved_owned_cleanup'] is True and resources==['owned-template']

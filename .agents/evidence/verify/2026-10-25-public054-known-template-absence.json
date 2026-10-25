@@ -1,0 +1,13 @@
+{
+  "cli_version": "abx, version 0.5.4",
+  "source_commit": "f7eb4fe41b9faa1182fc6ec9f5328c12af39b1f0",
+  "case": "previously-owned already-absent known ID",
+  "checks": {
+    "typed_not_found": 3,
+    "info_calls": 3,
+    "delete_calls": 0
+  },
+  "cleanup_verified": true,
+  "new_cloud_resources": 0,
+  "result": "PASS"
+}

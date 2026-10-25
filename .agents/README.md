@@ -4,6 +4,8 @@
 
 - [Current published runtime and canonical command surface](notes/proposed/process/2026-10-25-current-runtime-and-command-surface.md) · [verification](evidence/verify/2026-10-25-current-runtime-and-command-surface.md). Fresh public a4/CLI0.5.4 image/provider matrices remain separate required gates.
 
+- [Current native-step launch](notes/proposed/process/2026-10-25-current-step-launch.md) · [verification](evidence/verify/2026-10-25-current-step-launch.md).
+
 - [Published runtime and current acceptance](notes/proposed/process/2026-10-25-published-server-runtime.md) · [verification](evidence/verify/2026-10-25-published-server-runtime.md). New package pins require new image/cloud evidence; prior matrices retain their exact dated scope.
 
 - [Unified template launch](notes/proposed/architecture/2026-10-25-unified-template-launch.md) · [verification](evidence/verify/2026-10-25-unified-template-launch.md).

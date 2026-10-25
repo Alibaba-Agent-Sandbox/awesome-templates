@@ -91,7 +91,7 @@ python -m pytest -q qm-sandbox/test_runtime.py qm-sandbox/test_commands.py
 python -m pytest -q qm/test_terminal.py
 python scripts/check_template.py qm-sandbox --strict
 python scripts/check_docs.py
-ABX='abx --native' python scripts/run_steps_e2e.py qm-sandbox --sandbox-create sdk --http --asset-transport oss
+python scripts/run_steps_e2e.py qm-sandbox --asset-transport oss
 ```
 
 For original SDK HTTP fixtures, run `python qm-sandbox/prepare_sdk_tests.py /tmp/qm-sdk-tests-<unique-run>`, then `ABX_QM_TEST_SDK_ENTRY=/tmp/qm-sdk-tests-<unique-run>/dist/index.js node --test qm-sandbox/test_adapter.mjs`. Node>=20 suffices for SDK-only unit fixtures; actual original QM requires the pinned Node24.16.0 profile. Without that explicit original SDK build, these HTTP fixture tests are skipped, never a native/backend pass.
