@@ -12,6 +12,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 - 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`abx template deploy` 把 `<region>` 换成 `cn-hangzhou`（或 `ALIBABA_CLOUD_REGION_ID`），把 `<tag>` 换成 `v0.0.49`（或 `ABX_BASE_IMAGE_TAG`）。
 - 镜像自带 Node.js 20 和 Python 3.13。
 - `@openai/codex@0.162.1`（`codex-cli 0.162.1`）。
@@ -110,7 +112,7 @@ print(await client.commands.run('codex_version'))
 | `CODEX_MODEL` | 否 | 空 | 写入 `config.toml` 的 `model`；`codex_exec` 未传 `model` 时使用。 |
 | `CODEX_HOME` | 否 | `/home/user/.codex` | `config.toml` 和会话目录。 |
 | `WORKSPACE` | 否 | `/home/user/workspace` | 默认 `cwd`。镜像里有一份起始 `AGENTS.md`。 |
-| `ABX_SERVER_TOKEN` | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| `ABX_SERVER_TOKEN` | 是 | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 本地 `python3 commands.py` 的端口。 |
 
 在 `template launch` 前安全导出清单中声明为空的秘密变量，让应用启动时读取；不要写入镜像、YAML 或日志。

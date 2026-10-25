@@ -17,6 +17,8 @@ does not remove the upstream CLI's tools.
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 - Alibaba generation-2 base image and its Python; SHA256-verified official Node.js `24.16.0` replaces the base Node 20 to satisfy Qwen Code's Node >=22 requirement.
 - Codex CLI `0.162.1`, Qwen Code CLI `0.23.0`; image build asserts both versions.
 - `agent-sandbox-server` pinned to python-sdk commit
@@ -90,7 +92,7 @@ allowlist. Destroy an owned sandbox to end its server and resources.
 
 | Name | Required | Purpose |
 |---|---|---|
-| `ABX_SERVER_TOKEN` | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
 | `OPENAI_API_KEY` | For compatible model turns | Runtime credential, declared empty; usable by Qwen and compatible Codex setups |
 | `CODEX_API_KEY` | Optional Codex alternative | Declared empty; actual authentication support depends on the chosen upstream provider |
 | `OPENAI_BASE_URL`, `OPENAI_MODEL` | Provider-dependent | Qwen's compatible endpoint/model configuration |

@@ -9,15 +9,15 @@ import yaml
 
 try:
     from .prepare_steps import instructions
-    from .server_sdk_pin import SERVER_COMMIT,server_commit
+    from .server_package import server_version
 except ImportError:
     from prepare_steps import instructions
-    from server_sdk_pin import SERVER_COMMIT,server_commit
+    from server_package import server_version
 
 PUBLIC_PROOF_KEYS = {
     'schema_version','verification_type','template','template_version','github_repository',
     'source_head_commit','checkout_commit','workflow_run_id','artifact_id','archive_sha256',
-    'image_config_sha256','pushed_image_digest','server_sdk_commit','context_sha256',
+    'image_config_sha256','pushed_image_digest','server_package_version','context_sha256',
     'artifact_verified','image_context_verified','image_non_root','registry_push_verified',
     'registry_private_repo_verified','registry_credentials_storage',
     'registration_reference_type','tag_digest_verified_before_registration','tag_digest_verified_after_runtime',
@@ -35,15 +35,12 @@ def context_sha256(source: Path) -> dict[str,str]:
     source=source.resolve()
     dockerfile=(source/'Dockerfile').read_bytes()
     result={'Dockerfile':hashlib.sha256(dockerfile).hexdigest()}
-    if (source/'server-sdk.commit').exists() or (source/'server-sdk.commit').is_symlink():
-        server_commit(source)
-        result['server-sdk.commit']=hashlib.sha256((source/'server-sdk.commit').read_bytes()).hexdigest()
     if (source/'.dockerignore').exists():
         result['.dockerignore']=hashlib.sha256((source/'.dockerignore').read_bytes()).hexdigest()
     manifest=yaml.safe_load((source/'template.yaml').read_text())
     result['template.yaml:contract']=hashlib.sha256(json.dumps(manifest,sort_keys=True,separators=(',',':')).encode()).hexdigest()
     for kind,value in instructions(dockerfile.decode()):
-        if kind!='COPY' or value=='*.whl /tmp/':continue
+        if kind!='COPY':continue
         words=shlex.split(value)
         if words and words[0].startswith('--chown='):words.pop(0)
         if len(words)<2 or any(w.startswith('--') for w in words):raise ValueError('unsupported image COPY profile')
@@ -75,7 +72,7 @@ def validate_proof(source: Path, proof: dict, image_ref: str) -> dict:
     for key in ['archive_sha256','image_config_sha256']:
         if not re.fullmatch(r'[a-f0-9]{64}',str(proof.get(key,''))):raise ValueError('image proof lacks checked bytes')
     if not re.fullmatch(r'sha256:[a-f0-9]{64}',str(proof.get('pushed_image_digest',''))):raise ValueError('image proof lacks a checked registry digest')
-    if proof.get('server_sdk_commit')!=server_commit(source):raise ValueError('image server source differs from reviewed CI pin')
+    if proof.get('server_package_version')!=server_version(source):raise ValueError('image server package differs from declared version')
     for key in ['artifact_verified','image_context_verified','image_non_root','registry_push_verified','registry_private_repo_verified']:
         if proof.get(key) is not True:raise ValueError('required image proof is not verified: '+key)
     if proof.get('registry_credentials_storage')!='anonymous RAM fd':raise ValueError('image credential storage must remain in RAM')

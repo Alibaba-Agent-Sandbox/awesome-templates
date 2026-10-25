@@ -11,6 +11,8 @@ input values internally and returns only a count. It does not submit the form.
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 Alibaba runtime base (default `v0.0.49`, Python 3.13); Playwright `1.58.0` with
 its matching Chromium revision; pinned `agent-sandbox-server` archive in the
 Dockerfile. Browser launches use `--disable-dev-shm-usage` for the Express 64 MB
@@ -112,7 +114,7 @@ PDF execution runs in a private-HOME child with its own1–120second execution d
 |---|---|---|
 | `PLAYWRIGHT_BROWSERS_PATH` | `/opt/playwright` in the image | Shared readable Chromium installation |
 | `WORKSPACE` | `/home/user/app` | Script root and `browser-artifacts/` output root; keep aligned with the server file policy |
-| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | `9000` | Local `python3 commands.py` server port |
 
 Outputs from extraction, screenshots, links and user scripts may contain sensitive

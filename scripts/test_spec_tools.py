@@ -18,7 +18,6 @@ from unittest.mock import patch
 import check_template
 import express_e2e
 import image_size_report
-from server_sdk_pin import SERVER_COMMIT
 from test_template_application import ApplicationContractTest  # include v3 contract regressions
 from express_e2e import Proc
 
@@ -197,43 +196,41 @@ class CheckerTest(unittest.TestCase):
             metadata.write_text(check_template.yaml.safe_dump(data), encoding="utf-8")
             self.assertEqual(check_template.main(["--all", "--root", tmp]), 1)
 
-    def test_git_archive_pin_is_enough(self) -> None:
+    def test_public_server_package_pin_is_required(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             dest = Path(tmp) / "_skeleton"
             shutil.copytree(SKELETON, dest)
-            dockerfile = dest / "Dockerfile"
-            text = dockerfile.read_text(encoding="utf-8")
-            self.assertRegex(text, check_template.SERVER_GIT_ARCHIVE)
-            self.assertEqual([str(item) for item in check_template.check_directory(dest)], [])
+            path = dest / "Dockerfile"
+            text = path.read_text()
+            self.assertIn('agent-sandbox-server==0.4.0a2', text)
+            self.assertEqual(check_template.check_directory(dest), [])
+            path.write_text(text.replace('agent-sandbox-server==0.4.0a2', 'agent-sandbox-server'))
+            self.assertIn('server-package-pin', {item.code for item in check_template.check_directory(dest)})
 
-            short = text.replace(
-                SERVER_COMMIT,
-                "35da216",
-            )
-            dockerfile.write_text(short, encoding="utf-8")
-            codes = {item.code for item in check_template.check_directory(dest)}
-            self.assertIn("pinned-version", codes)
-
-    def test_default_fallback_must_match_ci_source(self) -> None:
+    def test_retired_server_archive_is_not_a_public_package_pin(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             dest = Path(tmp) / "_skeleton"
             shutil.copytree(SKELETON, dest)
-            dockerfile = dest / "Dockerfile"
-            dockerfile.write_text(dockerfile.read_text().replace(SERVER_COMMIT, "a" * 40))
-            self.assertIn("server-sdk-pin", {item.code for item in check_template.check_directory(dest)})
+            path = dest / "Dockerfile"
+            path.write_text(path.read_text().replace('agent-sandbox-server==0.4.0a2', 'agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/' + 'a'*40 + '.tar.gz#subdirectory=server-sdk'))
+            self.assertIn('server-package-pin', {item.code for item in check_template.check_directory(dest)})
 
-    def test_pypi_pin_is_enough(self) -> None:
+    def test_declared_profile_requires_same_published_server_pin(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            dest = Path(tmp) / "_skeleton"
+            dest = Path(tmp) / '_skeleton'
             shutil.copytree(SKELETON, dest)
-            dockerfile = dest / "Dockerfile"
-            text = dockerfile.read_text(encoding="utf-8")
-            text = text.replace(
-                '"agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/35da216a300f1e2e84254a1cf4b4a7ea98681505.tar.gz#subdirectory=server-sdk"',
-                '"agent-sandbox-server==0.3.0"',
-            )
-            dockerfile.write_text(text, encoding="utf-8")
-            self.assertEqual([str(item) for item in check_template.check_directory(dest)], [])
+            metadata = dest / 'template.yaml'
+            data = check_template.yaml.safe_load(metadata.read_text())
+            data['build_profiles'] = {'portable': {'dockerfile': 'Dockerfile.portable', 'context': '.'}}
+            metadata.write_text(check_template.yaml.safe_dump(data))
+            profile = dest / 'Dockerfile.portable'
+            original = (dest / 'Dockerfile').read_text()
+            profile.write_text(original)
+            self.assertEqual(check_template.check_directory(dest), [])
+            for pin in ['agent-sandbox-server', 'agent-sandbox-server==0.4.0a1',
+                        'agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/' + 'a'*40 + '.tar.gz#subdirectory=server-sdk']:
+                profile.write_text(original.replace('agent-sandbox-server==0.4.0a2', pin))
+                self.assertIn('server-package-pin', {v.code for v in check_template.check_directory(dest)})
 
     def test_hash_enforced_local_lock_requires_every_pin_and_hash(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -552,7 +549,7 @@ class MonitorTest(unittest.TestCase):
 
 
 class ImageBuildContextTest(unittest.TestCase):
-    def test_actual_template_contexts_preserve_heredocs_and_sdk_install(self) -> None:
+    def test_actual_contexts_preserve_heredocs_and_public_package_install(self) -> None:
         """Exercise the real context step; no Docker process is mocked or invoked."""
         import contextlib
         import io
@@ -567,14 +564,7 @@ class ImageBuildContextTest(unittest.TestCase):
         self.assertEqual(set(templates), {item["path"] for item in catalog})
         with tempfile.TemporaryDirectory() as folder:
             runner = Path(folder)
-            wheel_dir = runner / "server-wheel"
-            wheel_dir.mkdir()
-            # The prepare step only copies this opaque fixture; it never claims
-            # that these bytes are an installed or executable server wheel.
-            wheel = wheel_dir / "agent_sandbox_server-0.3.0-py3-none-any.whl"
-            wheel.write_bytes(b"context-copy fixture, not an installable package")
-            environment = {"RUNNER_TEMP": folder, "GITHUB_ENV": str(runner / "environment"),
-                           "SERVER_SDK_SHA": "e2cb27e24fde0a67112f82b8d44af463445a5d1a"}
+            environment = {"RUNNER_TEMP": folder, "GITHUB_ENV": str(runner / "environment")}
             for name in templates:
                 with self.subTest(template=name), patch.dict(os.environ, {**environment, "TEMPLATE": str(ROOT / name)}):
                     with contextlib.redirect_stdout(io.StringIO()):
@@ -585,7 +575,8 @@ class ImageBuildContextTest(unittest.TestCase):
                     self.assertEqual(materialized.replace(
                         b"FROM fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
                         b"FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"), original)
-                    self.assertEqual((context / wheel.name).read_bytes(), wheel.read_bytes())
+                    self.assertFalse(list(context.glob("*.whl")))
+                    self.assertIn(b'pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"', materialized)
 
 
 class ImageReportTest(unittest.TestCase):

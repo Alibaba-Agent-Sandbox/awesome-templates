@@ -12,6 +12,8 @@ judge are refused. A single task score does not measure the full benchmark.
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 Original MIT-licensed [source at the pinned revision](https://github.com/sierra-research/tau2-bench/tree/fc0055dc4e0a316c3f83133267fbd6faaa770992),
 Python 3.13, isolated hash-locked dependencies, LiteLLM1.81.11, and Agent Sandbox
 server. [Dockerfile](Dockerfile), [requirements.lock](requirements.lock),
@@ -100,7 +102,7 @@ invalid source/task, reward mismatch or malformed output fails the command.
 | `TAU2_MODEL_BASE_URL` | Required for run; empty | Explicit HTTPS compatible base URL, at most2048 characters; literal local HTTP permitted for synthetic fixtures. No userinfo, query or fragment. |
 | `TAU2_MODEL` | Required for run; empty | Explicit model identifier, at most200 allowed identifier characters. |
 | `WORKSPACE` | `/home/user/workspace` | Existing writable result root. |
-| `ABX_SERVER_TOKEN` | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
 
 Settings are captured at server import. Both native participants receive the same
 explicit `openai/` model and `api_base`; the key is supplied only to the private

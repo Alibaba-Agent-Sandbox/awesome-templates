@@ -6,6 +6,8 @@ Run original official Google Gemini CLI0.64.0 planning and text/file/shell tools
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 Alibaba generation2basev0.0.49/Linuxx64/Python3.13/Node20; original npm0.64.0/SHA512 integrity lock; all449original package files/98597935bytes independently SHA256-pinned in [upstream.json](upstream.json), archive20841287bytes/SHA256891a794e55c8319b6b78f6f8f13d6b8b2782a4709dfd2fcabf3a1f63ae8365e6. `npm ci --omit=optional --ignore-scripts` omits interactive native PTY/keychain add-ons and scripts. Original bundled notices/code remain unchanged. Server34e7e011c5569f77b7f605e65313be7498f6cf02, stdlib authored adapter/process controls. [Dockerfile](Dockerfile), [design](../docs/design/gemini.md), [notice](UPSTREAM-NOTICE.md).
 
 ## Problem solved
@@ -75,7 +77,7 @@ Translate only text and original function declarations/results with exact IDs or
 | GEMINI_API_KEY | empty; legacy only | Existing Google/native-compatible key; BYOK never silently reuses it |
 | GEMINI_MODEL | gemini-3.1-flash-lite; legacy only | Existing legacy default; separate from explicit BYOK selection |
 | WORKSPACE | /home/user/app | Existing caller project root |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
 
 BYOK settings captured at module import; key max8192/no control characters. Native environment has only fresh local adapter token, minimal PATH and private HOME/config/cache; real upstream key is sent only to exact approved Chat origin. Same-user OS access remains; cwd/environment filters are not another tenant boundary. Existing legacy configuration behavior stays separate. No private endpoints/keys/transcripts in results or errors.
 

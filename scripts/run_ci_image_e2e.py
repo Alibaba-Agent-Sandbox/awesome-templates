@@ -152,6 +152,11 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
         filename='/tmp/'+alias+'.txt';await sandbox.files.write(filename,'owned acceptance file\n')
         require(await sandbox.files.read(filename)=='owned acceptance file\n','SDK file readback')
         await sandbox.files.remove(filename);require(not await sandbox.files.exists(filename),'SDK file deletion')
+        from server_package import server_version
+        installed = await sandbox.commands.run('python3 -c "import importlib.metadata; print(importlib.metadata.version(\'agent-sandbox-server\'))"', timeout=30)
+        require(installed.exit_code == 0 and installed.stdout.strip() == server_version(source),
+                'actual prepared runtime server matches declared public package')
+        report['server_package_version'] = installed.stdout.strip()
         report['commands']=commands
         report['checks']=['current unified launch starts original declared services','CLI/SDK/host HTTP manifest smoke',
             'actual startup service rejects wrong application token','actual runtime command bytes match source','SDK exec and file round trip']
@@ -201,7 +206,7 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,private_root:
     journal_path=private/'registry-intent.json';platform_path=private/'platform-intent.json'
     registry_clean=False;template_clean=False
     report={'template':source.name,'provider':'alicloud-express','build_mode':'image',
-        'verification_type':'ci-image-backed-external-http','passed':False,'registry_cleanup_verified':False,
+        'verification_type':'ci-image-backed-external-http' if http else 'ci-image-backed-smoke','passed':False,'registry_cleanup_verified':False,
         'model_acceptance':'NOT_RUN','runtime_attempted':False,'cleanup_verified':False}
     alias='e2e-image-'+source.name[:24]+'-'+uuid.uuid4().hex[:8]
     cli=CLI(os.environ.get('ABX','abx'),'alicloud-express',os.environ.copy())
@@ -253,7 +258,7 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,private_root:
             try:registry_clean=images.owned_registry_cleanup(json.loads(journal_path.read_text()),journal_path)
             except Exception as exc:report['registry_cleanup_error_type']=type(exc).__name__
         report.update(registry_cleanup_verified=registry_clean,template_cleanup_verified=template_clean)
-        report['passed']=report.get('application_result')=='PASS' and report.get('cleanup_verified') is True and template_clean and registry_clean and not report.get('local_close_errors') and (not http or report.get('http_acceptance',{}).get('passed') is True)
+        report['passed']=report.get('application_result')=='PASS' and report.get('cleanup_verified') is True and template_clean and registry_clean and not report.get('local_close_errors') and report.get('image_provenance',{}).get('tag_digest_verified_after_runtime') is True and (not http or report.get('http_acceptance',{}).get('passed') is True)
         report['result']='PASS' if report['passed'] else 'FAIL';images.save_private(private/'result.json',report)
     if report['passed']:
         manifest=yaml.safe_load((source/'template.yaml').read_text())
@@ -272,9 +277,8 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('template',type=Path);parser.add_argument('--artifact-id',type=int,required=True)
     parser.add_argument('--crane',required=True,help='Path to verified upstream crane binary')
-    parser.add_argument('--smoke-only',action='store_true',help='Explicitly omit full HTTP acceptance')
     parser.add_argument('--private-root',type=Path,help='Private archive/recovery staging outside the source checkout; RAM auth remains in the native temporary filesystem')
     args=parser.parse_args()
-    return run(args.template,args.artifact_id,args.crane,http=not args.smoke_only,private_root=args.private_root)
+    return run(args.template,args.artifact_id,args.crane,http=True,private_root=args.private_root)
 
 if __name__=='__main__':raise SystemExit(main())

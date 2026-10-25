@@ -1,5 +1,5 @@
 name: dev-services
-version: 1.1.0
+version: 1.1.1
 description: Pinned non-root PostgreSQL17.11 and Redis8.0.2 without Docker or systemd.
 author: alibaba-agent-sandbox
 license: Apache-2.0

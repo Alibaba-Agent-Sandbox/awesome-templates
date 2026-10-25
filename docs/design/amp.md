@@ -57,7 +57,7 @@ Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (`cn-ha
 Pins in the Dockerfile:
 
 - `@ampcode/cli@0.0.1792022479-ge66e24` (`npm view @ampcode/cli version` on 2026-10-15), installed with `--registry https://registry.npmjs.org`. The base image's npm registry is `registry.npmmirror.com`, which 404s `@ampcode/cli-linux-x64` at this version; without the official registry the wrapper installs and `amp` is a stub. The optional dependency `@ampcode/cli-linux-x64` is the same version. The previous directory pin `0.0.1791964847-g13f24a` still exists and is older.
-- `agent-sandbox-server` from `https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/61c43e0be65a1f57aa09186d578e7b399e48429b.tar.gz#subdirectory=server-sdk`. That commit is python-sdk `main` and is PR #21. The distribution is not on PyPI.
+Install the exact published `agent-sandbox-server==0.4.0a2` distribution from PyPI, as declared in the Dockerfile.
 
 The image sets `AMP_SETTINGS_FILE=/home/user/.config/amp/settings.json` and `AMP_LOG_FILE=/home/user/.cache/amp/logs/cli.log`. Node.js 20 from the base image is only used to run `npm`. The `amp` executable is a glibc ELF.
 

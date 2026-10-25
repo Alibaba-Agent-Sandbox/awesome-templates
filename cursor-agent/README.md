@@ -8,6 +8,8 @@ Run the original Cursor Agent CLI in an owned disposable sandbox through typed n
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 Original official CLI2026.10.19-6bbf2c4 for Linux x86_64, including its original bundled Node/launcher/native modules. The unchanged183,733,394-byte archive has controller-measured SHA256 `cf80cc18d8b33bf33e762353977ca1868cfc45290c92c0ffdcef83bb8b37b44f`; this is not an upstream-published checksum. The460regular-file inventory totals585,886,062bytes. Python3.13 and the Alibaba generation2 base; server source34e7e011c5569f77b7f605e65313be7498f6cf02. See [original metadata](upstream.json), [notice](UPSTREAM-NOTICE.md) and [design](../docs/design/cursor-agent.md).
 
 ## Problem solved
@@ -73,7 +75,7 @@ Fixed original argv: --print --output-format json --disable-auto-update --disabl
 | --- | --- | --- |
 | CURSOR_API_KEY | empty; required for agent | Genuine vendor credential captured when the server imports commands |
 | WORKSPACE | /home/user/app | Contained project root, captured at import |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
 
 Original programs receive a minimal environment with only their explicit vendor key and private HOME/config/data/cache/TMP paths. Updates and project configuration loading are disabled by pinned original flags; OS keychain/persistent native sessions are not used. Per-call native state is removed after success/error/timeout. The server process and native tools share an OS user; these paths are not another tenant boundary. Use a fresh caller-owned disposable sandbox for automatic tools.
 

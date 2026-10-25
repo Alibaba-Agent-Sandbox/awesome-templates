@@ -8,6 +8,8 @@ Runs genuine official xAI `@xai-official/grok@1.0.62` headless coding. The nativ
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 Alibaba generation2 basev0.0.49/Python3.13, SHA256-pinned official Node24.16.0 and npm integrity-locked Grok Build1.0.62 with its unmodified Linuxx64 native Rust binary. Native binary SHA2562a46d9e4d7ebd7a9cff7f95716714b19dad5f21dd2a497822400b1fb128969aa is checked before every native invocation. Server source e2cb27e24fde0a67112f82b8d44af463445a5d1a; non-root user, app/home workspace and port9000. [Dockerfile](Dockerfile), [dependency lock](package-lock.json), [design](../docs/design/grok.md).
 
 ## Problem solved
@@ -73,7 +75,7 @@ Native output is capped256KiB per stream, with whole-process-group/pidfd/unique-
 | GROK_MODEL_BASE_URL | model required; empty | Explicit HTTPS API base, literal localhost HTTP for authored development only; no userinfo/query/fragment; max2048characters |
 | GROK_MODEL | model required; empty | Actual model identifier, max200allowed identifier characters |
 | WORKSPACE | `/home/user/workspace` | Existing workspace root |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
 
 Values are captured when commands.py loads. A private0600 config.toml stores explicit model/base and env_key="ABX_GROK_MODEL_KEY" without the key value. Custom api_backend="chat_completions" prevents selecting a hosted vendor model. Private GROK_HOME/HOME/cache/session state is removed after each call; auto-update, leader, telemetry/trace upload, memory and background workflows are disabled. Native shell_environment_policy inherits core with default secret exclusion; no caller cloud/GitHub/vendor account token is forwarded. Agent tools still have OS authority in the disposable sandbox.
 

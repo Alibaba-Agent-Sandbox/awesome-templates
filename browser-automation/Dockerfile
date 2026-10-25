@@ -9,12 +9,7 @@ RUN pip install --no-cache-dir "playwright==1.58.0"
 RUN python3 -m playwright install-deps chromium
 RUN python3 -m playwright install chromium
 
-COPY *.whl /tmp/
-RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
-        pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
-    else \
-        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/e2cb27e24fde0a67112f82b8d44af463445a5d1a.tar.gz#subdirectory=server-sdk"; \
-    fi
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
 
 COPY package.json package-lock.json /opt/playwright-mcp/
 RUN cd /opt/playwright-mcp && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci --ignore-scripts --omit=dev --no-audit --no-fund

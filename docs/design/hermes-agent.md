@@ -31,8 +31,7 @@ Template1.1.1 explicitly owns /home/user/app as user:user before runtime USER. T
 
 [Dockerfile](../../hermes-agent/Dockerfile) uses the Alibaba generation-2 base, non-root user,
 2048 MB and `/home/user/app`. NousResearch Hermes Agent v0.22.1, commit `297552a9d646119871391d202509822cd86330df`; private Python 3.14.6; `uv==0.12.3`; upstream frozen `uv.lock`; platform Agent Sandbox server.
-The server archive is pinned to python-sdk commit `35da216a300f1e2e84254a1cf4b4a7ea98681505`;
-local wheel injection can override it for review.
+The Dockerfile installs published `agent-sandbox-server==0.4.0a2` directly.
 `start_cmd`: `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`.
 `ready_cmd`: `agent-sandbox-server healthcheck --port 9000`.
 No CMD or ENTRYPOINT.

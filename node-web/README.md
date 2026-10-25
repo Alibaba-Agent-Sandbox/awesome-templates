@@ -6,6 +6,8 @@ Runs one real Node HTTP application per sandbox. `serve` starts a JavaScript ent
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` supplies Node 20 and Python 3.13. Deployment resolves the placeholders to `cn-hangzhou` / `v0.0.49` unless configured otherwise. The server fallback is pinned to python-sdk commit `35da216a300f1e2e84254a1cf4b4a7ea98681505`; a CLI-injected server wheel takes precedence. There are no additional npm dependencies. Work directory `/home/user/app`; non-root `user`; generation 2. Platform `start_cmd` runs the server on 9000 and `ready_cmd` runs its healthcheck; no Docker CMD/ENTRYPOINT is added.
 
 ## Problem solved
@@ -77,7 +79,7 @@ One service can run at a time; a second start fails until `stop`. Readiness test
 | `HOST` | set to `0.0.0.0` by launch | Hint to compatible application servers; application must honor it |
 | `WORKSPACE` | unset | Default application working directory |
 | `ABX_SERVER_PORT` | `9000` | Local command server port |
-| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
 
 No model/cloud key is needed by these commands. Keep secret values out of source, images and logs. Inject them only through authorized runtime configuration; do not log environment variables. App stdout is user controlled and can contain secrets: applications must redact before logging, and logs must not be attached to public issues without review.
 

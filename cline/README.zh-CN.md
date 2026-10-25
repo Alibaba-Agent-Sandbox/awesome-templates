@@ -6,6 +6,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 Alibaba generation2 basev0.0.49／Python3.13、SHA256 固定 Node24.16.0、npm integrity 锁定 Cline3.0.73及原始 Linuxx64/Bun 二进制。每次调用前校验二进制 SHA2561ff8841d17d4d83763134c193d414e4f7fcf2ef56af759e5ebbe96727fc2c8f7。server 固定 e2cb27e24fde0a67112f82b8d44af463445a5d1a，以 user 运行，应用目录／工作区、端口9000。[Dockerfile](Dockerfile)、[依赖锁](package-lock.json)、[设计](../docs/design/cline.md)。
 
 ## 解决的问题
@@ -74,7 +76,7 @@ stdout／stderr 各限256KiB；成功／失败／超时／溢出均清理自有�
 | CLINE_MODEL_BASE_URL | 模型必需，空 | 显式 HTTPS API base；仅固定本地地址可用 HTTP；无用户信息／query／fragment；最多2048字符 |
 | CLINE_MODEL | 模型必需，空 | 实际模型标识，最多200个允许字符 |
 | WORKSPACE | `/home/user/workspace` | 已存在工作区根目录 |
-| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 配置在 commands.py 加载时读取。包装器只向私有0600设置文件写提供方／模型／base元数据，不写模型密钥值；原生密钥按其文档从环境读取。原生状态受私有目录保护并在返回／失败时删除。关闭全局 telemetry／自动更新／运行时文件日志，以及公共／私有模型目录刷新。config／data／team／MCP 路径均每次隔离，不传宿主 GitHub／云密钥、二进制替换配置或 Cline 账号 token，宿主控制端凭据不进入编码进程。
 

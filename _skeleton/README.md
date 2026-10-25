@@ -8,8 +8,9 @@ Registers one named command, `hello`, on `agent-sandbox-server` at port 9000. Th
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 - Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template deploy` replaces `<region>` with `ALIBABA_CLOUD_REGION_ID` or `cn-hangzhou`, and `<tag>` with `ABX_BASE_IMAGE_TAG` or `v0.0.49`.
-- `agent-sandbox-server` from python-sdk commit `35da216a300f1e2e84254a1cf4b4a7ea98681505` when the build context has no wheel: `pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/<40-hex>.tar.gz#subdirectory=server-sdk"`. A wheel injected by `abx template deploy` wins. `agent-sandbox-server==X.Y.Z` is the other allowed pin once that release exists on PyPI. `0.3.0` was not on PyPI on 2026-10-15.
 - Work directory `/home/user/app`. Runtime user `user`.
 - Python 3.13 and Node.js 20 come from the base image.
 - The platform starts the process with `start_cmd`. The Dockerfile stops after `USER` and `EXPOSE`.
@@ -68,7 +69,7 @@ Expected response for this check:
 
 | Name | Required | Default | Purpose |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | no | `9000` | Port `start()` binds for a local `python3 commands.py`. |
 
 Provide secret values before the command server starts; use create-time env only when the provider starts that server with it. See [runtime environment](../docs/runtime-environment.md). Do not write them into the image, the Dockerfile, or a log.

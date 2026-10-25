@@ -8,7 +8,9 @@ Run the original Cognition Devin CLI3000.11.92 through typed bounded named comma
 
 ## Stack
 
-Alibaba generation2 Linuxx86_64 base, Python3.13 server, original fixed [official archive](https://static.devin.ai/cli/3000.11.92/devin-3000.11.92-x86_64-unknown-linux.tar.gz), original234files/200878983bytes, compressed67245544bytes. SHA256 `2d829139682e038cf122510f1170eee3d7060bcc7ebf92445cbc5d28c9fbcfa0` was published by the official platform manifest observed2026-10-21; see [inventory](upstream.json). ServerSDK source is pinned in [server-sdk.commit](server-sdk.commit). Build verifies original archive/per-file hashes without executing it; runtime verifies original root-owned files. Original binaries/docs/manpages retain their own terms.
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
+Alibaba generation2 Linuxx86_64 base, Python3.13 server, original fixed [official archive](https://static.devin.ai/cli/3000.11.92/devin-3000.11.92-x86_64-unknown-linux.tar.gz), original234files/200878983bytes, compressed67245544bytes. SHA256 `2d829139682e038cf122510f1170eee3d7060bcc7ebf92445cbc5d28c9fbcfa0` was published by the official platform manifest observed2026-10-21; see [inventory](upstream.json). The server package is pinned in the Dockerfile. Build verifies original archive/per-file hashes without executing it; runtime verifies original root-owned files. Original binaries/docs/manpages retain their own terms.
 
 ## Problem solved
 
@@ -73,7 +75,7 @@ Success requires original exit0 and nonempty stdout, returning stdout, empty std
 | --- | --- | --- |
 | DEVIN_CREDENTIALS_FILE | empty; optional for diagnostics/error-path, required for account tasks | Authored wrapper input path captured at module import; absolute, outside WORKSPACE, regular nonsymlink owned by root/current UID, no group/other permissions,1..65536bytes valid UTF8TOML |
 | WORKSPACE | /home/user/app | Captured existing project root |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
 
 A missing original account file reaches original print and preserves its explicit login refusal; no interactive login, made-up DEVIN_API_KEY, root model key or fallback planner is used. The subprocess receives minimal private state environment without operator/model/cloud credentials or the source credential path. Known credential TOML string values, server Bearer/private HOME/source path are redacted in returned stdout. Native errors omit raw output. One operation per server process; overlap returns busy.
 

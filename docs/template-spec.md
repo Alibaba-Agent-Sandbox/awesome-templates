@@ -183,11 +183,10 @@ fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 
 The installed CLI stages the official source recipe and resolves its supported
 `<region>` and `<tag>` placeholders using the selected provider's configuration or
-CLI defaults. For OpenSandbox's single-stage official recipe with `COPY *.whl /tmp/`, shared CLI staging
-builds the wheel from the exact SDK archive commit in a Docker builder stage;
-original runtime instructions and non-root execution are preserved. The source
-checkout is unchanged. Other image placeholders are not implicitly resolved and
-portable profiles are selected explicitly. Effective build inputs enter the receipt.
+CLI defaults. The recipe installs its exact published server dependency directly;
+no generated wheel, SDK source archive or host Python checkout is required.
+The source checkout is unchanged. Other image placeholders are not implicitly
+resolved and portable profiles are selected explicitly. Effective build inputs enter the receipt.
 
 The default Express recipe must not replace the platform entrypoint with `CMD`
 or `ENTRYPOINT`. Preserve its generation2 startup/readiness configuration. An
@@ -202,12 +201,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Heavy tools first (one RUN, pinned versions, pip --no-cache-dir, npm cache cleaned).
 # commands.py is the last COPY so a command edit does not rebuild that layer.
-COPY *.whl /tmp/
-RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
-        pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
-    else \
-        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/<40-hex-sha>.tar.gz#subdirectory=server-sdk"; \
-    fi
+RUN pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"
 
 # Pin every other installer the same way: pip name==X.Y.Z, npm package@X.Y.Z.
 WORKDIR /home/user/app
@@ -216,28 +210,15 @@ USER user
 EXPOSE 9000
 ```
 
-### Allowed `agent-sandbox-server` pins
+### Published `agent-sandbox-server` dependency
 
-A `RUN` line must use one of these two forms. The checker accepts either. A comment that only mentions the pin does not count.
+A `RUN` instruction must install one exact, actually published distribution, for example:
 
-| Form | Line |
-|---|---|
-| PyPI | `pip install --no-cache-dir "agent-sandbox-server==X.Y.Z"` |
-| python-sdk git archive | `pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/<40-hex-sha>.tar.gz#subdirectory=server-sdk"` |
+```dockerfile
+RUN pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"
+```
 
-`<40-hex-sha>` is the full immutable `Alibaba-Agent-Sandbox/python-sdk` commit,
-not a short SHA or branch. A PyPI pin must identify an actually published version.
-The image SDK pin belongs to the recipe; it need not change merely because the
-host client gets a compatible bug-fix release.
-
-Express uses its native preparation adapter. For OpenSandbox `template launch`,
-the official wheel recipe is prepared automatically as specified above; a host
-Python source checkout is unnecessary. A raw `docker build`
-that bypasses CLI preparation still needs a matching wheel for `COPY *.whl`, or an
-explicit recipe such as python-hello's portable profile that installs its pinned
-archive directly. Missing COPY inputs are not optional Docker instructions.
-
-Every `pip install` uses `--no-cache-dir`. An npm install deletes the npm cache in the same layer (`npm cache clean --force`).
+A comment does not count as an install. Git-archive and injected-wheel fallbacks are removed from current recipes. The image dependency belongs to the Dockerfile and is verified in the actual image; a host client version alone does not establish the guest server version.
 
 ### Image layers
 
@@ -376,8 +357,8 @@ These retained evidence labels describe test scope, not promotion or increasing 
 The current default acceptance runner is [public source launch](public-launch-testing.md).
 It calls the installed CLI, then host CLI/Python/HTTP, and independently verifies
 sandbox, prepared-template and image cleanup. It records failed attempts separately;
-`PARTIAL` is not a pass. The retained native deployment harness is a
-[pinned maintenance workflow](canonical-express-review.md).
+`PARTIAL` is not a pass. The retired pinned cloud workflow is retained only as
+[historical documentation](canonical-express-review.md).
 
 The following is the legacy dated receipt shape still read by the catalog checker.
 Its original source, calling path and cleanup scope remain historical. It is not
@@ -540,4 +521,4 @@ Spec4 manifests containing `application` require an explicit, non-null smoke `ex
 
 Managed catalog validation: `python scripts/check_managed_catalog.py` checks exact fields, disjoint names, provided-service declarations, 14 ordered bilingual README sections, and local historical-evidence identity. `historical_evidence` links original receipts; its contents do not confer current launch certification. Only complete, input-matching receipts with independently trusted provenance can certify a path; see [launch verification](workflows.md). Managed IDs remain excluded from source image selection/steps. [Desktop](managed/desktop/README.md) and [OpenSandbox interpreter](managed/opensandbox-code-interpreter/README.md) document each entry’s prerequisites, actual evidence scope and remaining product gates.
 
-The default Dockerfile server archive must match `scripts/server_sdk_pin.py` (or the explicit `server-sdk.commit`). The checker rejects a different fallback, so default and CI-injected builds select the same server source. Changing a pin invalidates prior source-specific image/workflow acceptance; preserve those receipts as history.
+The Dockerfile pins an actually published `agent-sandbox-server` version. CI installs that dependency directly and checks the installed version; there is no Git-archive or injected-wheel fallback.

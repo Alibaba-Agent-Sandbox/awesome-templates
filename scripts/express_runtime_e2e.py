@@ -19,7 +19,7 @@ import sys
 from datetime import datetime, timezone
 
 import httpx
-from agent_sandbox.api.sandbox import Sandbox
+from agent_sandbox import ProviderSandbox
 
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
@@ -164,7 +164,7 @@ async def main() -> int:
         print(f'{name}: {"PASS" if ok else "FAIL"}' + (f' {scrub(detail)}' if detail else ''), flush=True)
 
     try:
-        sb = await Sandbox.create(template=ARGS.base_template, timeout=900, request_timeout=45,
+        sb = await ProviderSandbox.create(template=ARGS.base_template, timeout=900, request_timeout=45,
                                   cpu=2, memory=4096 if TEMPLATE in {'qwen-code', 'gemini'} else 2048,
                                   metadata={'purpose': 'agent-sandbox-e2e', 'run': 'source-runtime-' + TEMPLATE + '-' + secrets.token_hex(6)})
         record('owned Express base sandbox', True)

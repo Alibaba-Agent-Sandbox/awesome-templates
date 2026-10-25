@@ -8,6 +8,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 Alibaba generation2 basev0.0.49、Linuxx64/Python3.13；独立[完整哈希依赖锁](requirements.lock)、原版 appworld0.1.3.post1 wheel 和34,280,074字节加密数据。服务端源码 e2cb27e24fde0a67112f82b8d44af463445a5d1a，user 运行、9000端口。[Dockerfile](Dockerfile)、[来源记录](upstream.json)、[设计](../docs/design/appworld.md)。可分发镜像内受保护源码和数据保持加密。
 
 
@@ -76,7 +78,7 @@ print(await client.commands.run('appworld_native_smoke'))
 | APPWORLD_MODEL_BASE_URL | 模型必需；空 | 显式 HTTPS；自编测试仅允许回环 HTTP；无用户信息/查询/片段，最长2048字符 |
 | APPWORLD_MODEL | 模型必需；空 | 实际模型标识，1..200安全字符 |
 | WORKSPACE | /home/user/workspace | 已存在结果根目录，服务启动读取 |
-| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 密钥最长8192字符，不含 CR/LF/NUL。原生子进程不继承操作者云/GitHub/模型令牌；配置由匿名 stdin 传入。保留 AppWorld 原版安全默认值。连接层校验原版 app/API 范围，将 JSON 参数转为 Python 字面量，不接受可执行模型 Python。每回复最多执行16工具调用；17..64项批次逐项反馈拒绝且不执行API，更多则失败。每任务空choices最多3次，回复8192token，最多160原生交互，每交互50API调用，原生执行30秒，模型 HTTP60秒且 SDK 不重试，工具输出有界、模型上下文最大1MiB。
 

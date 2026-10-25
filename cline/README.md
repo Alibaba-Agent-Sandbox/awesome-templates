@@ -6,6 +6,8 @@ Runs genuine official `cline@3.0.73` in bounded headless JSON/yolo mode. The CLI
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 Alibaba generation2 basev0.0.49/Python3.13, SHA256-pinned official Node24.16.0 and npm integrity-locked Cline3.0.73 with its unmodified Linuxx64 native binary/Bun runtime. Native binary SHA2561ff8841d17d4d83763134c193d414e4f7fcf2ef56af759e5ebbe96727fc2c8f7 is checked before every native invocation. Server source e2cb27e24fde0a67112f82b8d44af463445a5d1a; non-root user, app/home workspace and port9000. [Dockerfile](Dockerfile), [dependency lock](package-lock.json), [design](../docs/design/cline.md).
 
 ## Problem solved
@@ -74,7 +76,7 @@ Runtime1.0.2 writes the provider profile at the exact native-resolved private da
 | CLINE_MODEL_BASE_URL | model required; empty | Explicit HTTPS API base, literal localhost HTTP for authored development only; no userinfo/query/fragment; max2048characters |
 | CLINE_MODEL | model required; empty | Actual model identifier, max200allowed identifier characters |
 | WORKSPACE | `/home/user/workspace` | Existing workspace root |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
 
 Values are captured when commands.py loads. The wrapper writes only provider/model/base metadata into private0600settings, not a model key value; native key resolution uses its documented environment support. Native state is private and removed on return/failure. Global telemetry/auto-update and runtime file logging are disabled; public/private model catalog refresh is disabled. Cline config/data/team/MCP paths are per-call and no caller GitHub/cloud keys, alternate binary override or Cline account token is forwarded. Host operator credentials never enter the native coding process.
 

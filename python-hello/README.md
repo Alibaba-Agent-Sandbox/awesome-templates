@@ -8,6 +8,8 @@ A small Python development sandbox that greets callers, executes inline Python o
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 - Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` supplies Python 3.13 and Node.js 20. `abx template deploy` resolves the defaults to `cn-hangzhou` and `v0.0.49`.
 - Server pinned to python-sdk commit `e2cb27e24fde0a67112f82b8d44af463445a5d1a`; an SDK wheel injected during deployment takes precedence.
 - `pytest==8.4.2` is installed in the image for the `test` command.
@@ -73,7 +75,7 @@ All arguments below are strings with no template-defined length limit. Paths may
 
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
 | `WORKSPACE` | No | Directory containing `commands.py` | Existing directory used by all Python subprocesses; override alongside your upload paths. |
 | `ABX_SERVER_BASE_DIR` | No | `/home/user` | File API path boundary; a custom workspace must be inside the configured boundary. This does not restrict arbitrary Python execution. |
 | `ABX_SERVER_PORT` | No | `9000` | Local `python3 commands.py` port; cloud `start_cmd` explicitly uses 9000. |
@@ -144,8 +146,8 @@ For OpenSandbox, select `--build-profile portable` with
 `abx template launch`. `Dockerfile.portable` pins the Python base by digest,
 creates its non-root user and installs the pinned command server directly. The
 default Dockerfile retains its Express platform placeholders; providers do not
-rewrite either recipe or inject a wheel. The application workflow starts the
+rewrite either recipe or inject a wheel. Template launch starts the
 server through `exec.run` after creation. The selected profile and exact source
 bytes form the launch identity. A profile declaration is not a real-backend pass.
 
-The separate `application-image` workflow consumes an already prepared immutable OCI image through Python `launch_workflow`; it does not perform source preparation.
+Python consumes a prepared immutable image with `agent_sandbox.api.template.launch_template(manifest, provider="opensandbox", reference=image_digest, application_token=token)`. Pass the original manifest so its startup, readiness and services remain intact; use the returned session to invoke commands and close it to destroy its owned sandbox. Python does not prepare source images.

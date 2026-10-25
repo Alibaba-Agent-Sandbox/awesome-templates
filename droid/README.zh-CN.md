@@ -8,6 +8,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 官方 npm `@factory/cli@0.241.1` 与 `@factory/cli-linux-x64@0.241.1`、完整 npm integrity [锁文件](package-lock.json)、未修改原生二进制 SHA256 `1f50e238df053573aec1dae7b90b19c8e5afca83ab13a790a00f53ba4e4b9ab1`、阿里云 FC 基础镜像、Python3.13及固定 servere2cb27e。禁用安装 hooks，直接执行固定原生路径，每次原生命令和构建均检查 SHA256。见[来源](upstream.json)、[上游声明](UPSTREAM-NOTICE.md)、[Dockerfile](Dockerfile)。上游标记为私有 `UNLICENSED`，仓库元数据不证明源码公开。非 root `user`、generation2、9000端口。
 
 ## 解决的问题
@@ -76,7 +78,7 @@ print(await client.commands.run('droid_version'))
 | `DROID_MODEL_BASE_URL` | 空；BYOK 必填 | 显式 HTTPS 兼容接口，最多2048字符，无 userinfo/query/fragment；仅本地字面 HTTP 用于合成测试。 |
 | `DROID_MODEL` | 空；BYOK 必填 | 显式1–200字符模型标识。 |
 | `FACTORY_API_KEY` | 空 | 创建时注入的 Factory 账户 API 密钥；仅 `droid` 需要。 |
-| `ABX_SERVER_TOKEN` | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| `ABX_SERVER_TOKEN` | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `WORKSPACE` | `/home/user/app` | 现有项目根目录；显式配置无效目录会报错。 |
 | `FACTORY_DROID_AUTO_UPDATE_ENABLED` | `false` | 子进程强制禁用自动更新，保持固定版本。 |
 

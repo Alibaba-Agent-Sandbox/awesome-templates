@@ -16,7 +16,7 @@ Prompt1..32768UTF8bytes/noNUL; contained existing cwd<=4096bytes; deadline1..600
 
 ## How to build
 
-[Dockerfile](../../cursor-agent/Dockerfile), Alibaba generation2 base and non-root user, Python3.13. Original archive183733394bytes/SHA256cf80cc18d8b33bf33e762353977ca1868cfc45290c92c0ffdcef83bb8b37b44f; immutable official2026.10.19-6bbf2c4 URL. Digest controller-measured, not vendor-published. All460regular files/585886062bytes and notices preserved. Root-owned immutable /opt package, original bundled Node/launcher. Pinned server34e7e011... via server-sdk.commit/wheel or same immutable fallback. Default start/readiness on9000, no CMD/ENTRYPOINT. Native step preparation supports exact public ranges or an owned private OSS cache; unchanged300MiB/15000wire limits. Publish changed source/helper before preparation.
+[Dockerfile](../../cursor-agent/Dockerfile), Alibaba generation2 base and non-root user, Python3.13. Original archive183733394bytes/SHA256cf80cc18d8b33bf33e762353977ca1868cfc45290c92c0ffdcef83bb8b37b44f; immutable official2026.10.19-6bbf2c4 URL. Digest controller-measured, not vendor-published. All460regular files/585886062bytes and notices preserved. Root-owned immutable /opt package, original bundled Node/launcher. Pinned server34e7e011.... Default start/readiness on9000, no CMD/ENTRYPOINT. Native step preparation supports exact public ranges or an owned private OSS cache; unchanged300MiB/15000wire limits. Publish changed source/helper before preparation.
 
 ## Express feasibility
 

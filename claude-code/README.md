@@ -6,6 +6,8 @@ Run unchanged official Claude Code2.0.76 headless planning and Read/Edit/Write/B
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 Alibaba generation2 basev0.0.49/Linuxx64/Python3.13/Node20; original npm package2.0.76 from its SHA512 integrity lock; exact original cli.js SHA256 in [upstream.json](upstream.json). `npm ci --omit=optional --ignore-scripts` excludes optional image codecs and package hooks. Original CLI, embedded tool code and bundled notices remain unchanged. Server source34e7e011c5569f77b7f605e65313be7498f6cf02, authored stdlib adapter/process ownership. [Dockerfile](Dockerfile), [license notice](UPSTREAM-NOTICE.md), [design](../docs/design/claude-code.md).
 
 ## Problem solved
@@ -75,7 +77,7 @@ Text and original tool schemas/results are translated; unsupported image/thinkin
 | CLAUDE_MODEL | empty; required for BYOK | Selected model1..200identifier characters |
 | ANTHROPIC_API_KEY | empty; legacy mode only | Existing Anthropic-compatible legacy configuration; not silently reused by BYOK |
 | WORKSPACE | /home/user/app | Existing project root |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
 
 New settings captured at module import. Key max8192/no control characters; no default provider/model/key fallback. Native/tool environment gets only an ephemeral local adapter token and minimal private HOME/config/cache; real upstream key remains in the parent and is sent only to exact configured Chat origin. Original command results and error messages omit credentials/private endpoints/transcripts. Same-user OS access remains; environment filtering/cwd containment is not another tenant boundary. Legacy resume/settings behavior is retained and outside BYOK isolation claims.
 

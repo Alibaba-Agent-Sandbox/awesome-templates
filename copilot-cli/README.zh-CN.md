@@ -8,6 +8,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 阿里云 FC generation2 基础镜像、Linux x86_64、非 root user。固定 @github/copilot@1.0.100 和必需的 @github/copilot-linux-x64@1.0.100；[lockfile](package-lock.json) 校验完整性，禁用 npm 安装脚本并省略其他架构的可选包。服务端固定 e2cb27e24fde0a67112f82b8d44af463445a5d1a。原生软件使用独立[上游许可证](UPSTREAM-LICENSE.md)。
 
 ## 解决的问题
@@ -72,7 +74,7 @@ print(await client.commands.run('copilot_version'))
 | COPILOT_PROVIDER_API_KEY | 模型请求/空 | 显式端点凭据，最长8192字符，禁止 CR/LF/NUL |
 | COPILOT_MODEL | 模型请求/空 | 显式模型标识，最长200ASCII字符 |
 | WORKSPACE | /home/user/app | cwd 根目录 |
-| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 模型变量在服务启动时读取。固定 type=openai、wire API=completions、transport=http，prompt/output token 上限65536/4096。不转发 key-command、自定义 headers、bearer、GitHub token 或其他主机凭据。上游 secret-env 过滤和包装层替换保护配置的 key。子进程只继承 PATH/可选 CA 路径及独立 HOME/XDG/temp/state。停止自有进程组和带随机标记的脱离子进程后删除临时配置/缓存/日志，项目修改保留。自有云 sandbox 是恶意代码的最终边界。参见[运行环境](../docs/runtime-environment.md)和[官方 BYOK](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/use-byok-models)。
 

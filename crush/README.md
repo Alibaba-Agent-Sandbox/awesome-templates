@@ -8,6 +8,8 @@ Runs the official native Crush0.98.1 terminal agent using an explicitly configur
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 Alibaba FC generation2 CPU/non-root base, pinned SDK e2cb27e. Official GNU Linux x86_64/aarch64 archives are fixed by byte length and SHA256 in [assets.json](assets.json), source [8b1824282eccc78cc62c188c245cf375230a18ce](https://github.com/charmbracelet/crush/tree/8b1824282eccc78cc62c188c245cf375230a18ce). An arm64 pin is not arm64 execution evidence.
 
 ## Problem solved
@@ -70,7 +72,7 @@ Actual argv: crush run --quiet --model owned/ID --small-model owned/ID --cwd DIR
 | CRUSH_BASE_URL | model calls | empty | HTTP(S) endpoint; no userinfo/query/fragment |
 | CRUSH_MODEL | model calls | empty | bounded native model identifier |
 | WORKSPACE | no | /home/user/app | existing caller workspace |
-| ABX_SERVER_TOKEN | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
 | CRUSH_BINARY | diagnostics | image PATH | binary override; actual version still checked |
 
 Private HOME/XDG/CRUSH config/data and correct native disable-default-providers/auto-update flags prevent loading caller global state. Existing .crushrc/crushrc/.crush.json/crush.json between cwd and the nearest Git worktree root are refused before a native run, because upstream automatically loads them. Caller configuration is preserved. With no Git root, upstream checks cwd only. Only PATH/optional CA settings plus private runtime settings enter children; cloud/GitHub/server keys are excluded. The selected key/base URL enter the private0600 config, are never prompt argv, and exact values are redacted from returned diagnostics. Project output can still contain project secrets.

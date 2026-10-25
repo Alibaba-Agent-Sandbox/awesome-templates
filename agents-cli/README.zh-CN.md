@@ -14,6 +14,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 - 阿里云 generation 2 基础镜像及其 Python；安装经 SHA256 校验的官方 Node.js `24.16.0`，替换基础 Node 20，满足 Qwen Code 的 Node >=22 要求。
 - Codex `0.162.1`、Qwen Code `0.23.0`，镜像构建时断言两个实际版本。
 - `agent-sandbox-server` 固定到 python-sdk 提交
@@ -85,7 +87,7 @@ print(await client.commands.run('agents_version'))
 
 | 名称 | 必需 | 用途 |
 |---|---|---|
-| `ABX_SERVER_TOKEN` | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| `ABX_SERVER_TOKEN` | 必填；清单为空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `OPENAI_API_KEY` | 兼容模型调用需要 | Qwen 及兼容 Codex 配置的模型凭据，清单中为空 |
 | `CODEX_API_KEY` | Codex 可选替代项 | 清单中为空；实际支持取决于上游及提供方配置 |
 | `OPENAI_BASE_URL`、`OPENAI_MODEL` | 取决于提供方 | Qwen 兼容端点和模型配置 |

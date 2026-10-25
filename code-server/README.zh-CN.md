@@ -6,6 +6,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 阿里云 FC base v0.0.49；官方 code-server4.141.0 Linux x86_64/aarch64 独立包，包含上游 Node/VS Code 运行时。[assets.json](assets.json) 固定下载地址、准确字节数和官方 SHA256。保留包内许可证。服务端 SDK 固定提交 e2cb27e；generation2，非 root user。
 
 ## 解决的问题

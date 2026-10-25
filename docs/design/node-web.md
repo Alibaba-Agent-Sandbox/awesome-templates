@@ -28,9 +28,9 @@ All parameters are optional; exact ranges and responses are in [the command refe
 
 Template1.1.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
 
-[Dockerfile](../../node-web/Dockerfile) uses `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (default resolved tag v0.0.49), with base-provided Node 20/Python 3.13. Server archive is pinned to full commit `35da216a300f1e2e84254a1cf4b4a7ea98681505`. A wheel injected by the deploy CLI wins. No additional pip/npm dependencies, so no npm lockfile is necessary for the built-in sample. User applications must supply their own lockfile.
+[Dockerfile](../../node-web/Dockerfile) uses `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (default resolved tag v0.0.49), with base-provided Node 20/Python 3.13. The Dockerfile installs published `agent-sandbox-server==0.4.0a2` directly. No additional pip/npm dependencies, so no npm lockfile is necessary for the built-in sample. User applications must supply their own lockfile.
 
-Build context contains Dockerfile, commands.py, index.js and optionally an injected wheel. Runtime is non-root user in `/home/user/app`. Generation 2 starts `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py` and probes `agent-sandbox-server healthcheck --port 9000`. No image CMD/ENTRYPOINT.
+Build context contains Dockerfile, commands.py, index.js. Runtime is non-root user in `/home/user/app`. Generation 2 starts `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py` and probes `agent-sandbox-server healthcheck --port 9000`. No image CMD/ENTRYPOINT.
 
 ## Express feasibility
 

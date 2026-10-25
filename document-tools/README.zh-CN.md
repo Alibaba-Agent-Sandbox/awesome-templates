@@ -8,6 +8,8 @@ Pandoc 离线 Markdown 文档转换。[English](README.md)。
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 - 阿里云基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，通常为 `cn-hangzhou` / `v0.0.49`。
 - Debian 13 固定 `pandoc=3.1.11.1+ds-2`、`pandoc-data=3.1.11.1-3`，二者版本字符串不同是发行包事实；其他系统依赖由 Debian 仓库解析。
 - 注入的 server wheel 或不可变 python-sdk 源码 `e2cb27e24fde0a67112f82b8d44af463445a5d1a`。
@@ -76,7 +78,7 @@ print(await client.commands.run('document_version'))
 
 | 名称 | 必需 | 默认 | 用途 |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| `ABX_SERVER_TOKEN` | 是 | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 本地直接启动端口。 |
 | `WORKSPACE` | 否 | `/home/user/app` | 已存在且属于运行用户的输入/输出目录。 |
 | `DOCUMENT_PANDOC_BINARY` | 否 | `/usr/bin/pandoc` | 运维指定绝对程序路径，仍检查版本。 |

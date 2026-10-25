@@ -8,6 +8,8 @@ Each turn uses `codex exec --json`. New sessions start a fresh Codex thread; lat
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 Alibaba runtime base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (deployment defaults: `cn-hangzhou`, `v0.0.49`), Python 3.13, Node.js 20, Codex 0.162.1, and `agent-sandbox-server` pinned to python-sdk commit `e2cb27e24fde0a67112f82b8d44af463445a5d1a` in [Dockerfile](Dockerfile) (includes the dataclass command-loader fix). Runtime user: `user`. App: `/home/user/app`; workspace: `/home/user/workspace`. No image `CMD` or `ENTRYPOINT`.
 
 ## Problem solved
@@ -97,7 +99,7 @@ Mapped SSE events include `agent.session.created`, `agent.session.turn.started`,
 | `AGENT_MAX_SESSIONS` | `20` |
 | `AGENT_SESSION_TTL` | `1800` seconds; GC checks every 60 seconds |
 | `ABX_SERVER_PORT` | `9000`; server port |
-| `ABX_SERVER_TOKEN` | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | Export an independent application token before the template launch; separate from model and gateway credentials |
 
 The service retains at most 200 saved agent configurations; each session allows 100 turns. Replay and retained item buffers each hold at most 1000 events / 2 MB; a single JSONL line exceeding 256000 bytes fails the turn. stderr is drained continuously and only a bounded, redacted tail can be included in errors. Environment secret values, request-supplied MCP header values and bearer tokens are redacted from returned events/configurations/errors/text artifacts. Artifacts reject `.env`, `.aws`, `.codex`, `.ssh` paths and symlinks outside the workspace. This filtering supplements sandbox isolation; the standard shell/files APIs still require trusted access and server policy.
 

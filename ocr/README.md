@@ -8,6 +8,8 @@ CPU English image recognition with official Tesseract. See [中文说明](README
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 - Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`; deployment defaults are `cn-hangzhou` / `v0.0.49`.
 - Debian 13 Tesseract / libtesseract `5.5.0-1+b1`, English and orientation data `1:4.1.0-2`, Leptonica `1.84.1-4`. Other OS libraries resolve through the base's Debian repositories.
 - Pillow `11.3.0`, downloaded against the committed SHA256 wheel allowlist, then installed offline with --no-index/--no-deps; source distributions are disabled.
@@ -73,7 +75,7 @@ One OCR job runs at a time; another request fails promptly. The actual argv is `
 
 | Name | Required | Default | Purpose |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | no | `9000` | Direct local startup port. |
 | `WORKSPACE` | no | `/home/user/app` | Existing runtime-user-owned input/output root. |
 | `OCR_TESSERACT_BINARY` | no | `/usr/bin/tesseract` | Operator-only absolute executable path; version remains checked. |

@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from public_launch_e2e import export_owned_image, installation_provenance, CLI, CLIError, CheckFailed, safe_failure_label, cli_diagnostics, safe_diagnostics, application_headers, command_url, load_plan, matches, source_names, cleanup_prepared, cleanup_before_close, delete_sandbox
+from public_launch_e2e import export_owned_image, installation_provenance, CLI, CLIError, CheckFailed, safe_failure_label, controller_label, cli_diagnostics, safe_diagnostics, application_headers, command_url, load_plan, matches, source_names, cleanup_prepared, cleanup_before_close, delete_sandbox
 
 
 class PublicLaunchTests(unittest.TestCase):
@@ -100,6 +100,11 @@ class PublicLaunchTests(unittest.TestCase):
         self.assertNotIn('PRIVATE-ID', str(failure))
         self.assertNotIn('secret-value', json.dumps(safe_diagnostics(failure)))
         self.assertEqual(cli_diagnostics(json.dumps({'code': 'private-token', 'message': 'unrecognized secret-value'})), {})
+
+    def test_controller_failure_labels_do_not_import_retired_runner_or_expose_secrets(self):
+        label = controller_label('[FAIL] fixture-value https://host.invalid/private /tmp/private 1234567890abcdef', ['fixture-value'])
+        self.assertEqual(label, '[FAIL] [FIXTURE] [LOCATION] [LOCATION] [ID]')
+        self.assertEqual(len(controller_label('x' * 500)), 300)
 
     def test_native_selection_is_the_first_cli_argument(self):
         from subprocess import CompletedProcess

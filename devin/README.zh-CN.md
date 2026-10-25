@@ -8,7 +8,9 @@
 
 ## 技术栈
 
-Alibaba generation2 Linuxx86_64基础镜像、Python3.13服务、[固定官方原包](https://static.devin.ai/cli/3000.11.92/devin-3000.11.92-x86_64-unknown-linux.tar.gz)。原版234文件／200878983字节，压缩67245544字节；SHA256为2d829139682e038cf122510f1170eee3d7060bcc7ebf92445cbc5d28c9fbcfa0，来自2026-10-21观察的官方平台manifest。[逐文件清单](upstream.json)、[server SDK固定来源](server-sdk.commit)。构建校验原包和文件，不执行原版；运行时检查root持有的原文件身份。厂商程序／文档／man手册保留独立条款。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
+Alibaba generation2 Linuxx86_64基础镜像、Python3.13服务、[固定官方原包](https://static.devin.ai/cli/3000.11.92/devin-3000.11.92-x86_64-unknown-linux.tar.gz)。原版234文件／200878983字节，压缩67245544字节；SHA256为2d829139682e038cf122510f1170eee3d7060bcc7ebf92445cbc5d28c9fbcfa0，来自2026-10-21观察的官方平台manifest。[逐文件清单](upstream.json)、服务包版本固定在 Dockerfile 中。构建校验原包和文件，不执行原版；运行时检查root持有的原文件身份。厂商程序／文档／man手册保留独立条款。
 
 ## 解决的问题
 
@@ -73,7 +75,7 @@ prompt为1..32768UTF8字节、非空且无NUL；cwd最长4096UTF8字节、无NUL
 | --- | --- | --- |
 | DEVIN_CREDENTIALS_FILE | 空；诊断／错误路径可缺，账号任务需要 | 包装层变量，模块导入捕获路径；绝对路径、WORKSPACE外、root或当前UID持有的普通非符号链接、无组／其他权限、1..65536字节合法UTF8TOML |
 | WORKSPACE | /home/user/app | 导入捕获的项目根目录 |
-| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 缺文件时让原版print明确返回登录拒绝；不执行交互登录、不虚构DEVIN_API_KEY、不借用其他模型／云密钥。子进程只收到最小私有状态环境，不继承操作端密钥或源凭证路径。返回stdout脱敏已知TOML字符串、服务Bearer／私有HOME／源文件路径；原生错误隐藏原输出。同一服务最多一个操作，重叠返回busy。
 

@@ -8,6 +8,8 @@ FFmpeg 离线 CPU 媒体转码。[English](README.md)。
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 - 阿里云基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，通常替换为 `cn-hangzhou` / `v0.0.49`。
 - Debian 13 [FFmpeg `7:7.1.5-0+deb13u1`](https://packages.debian.org/trixie/ffmpeg)，FFmpeg ABI 库也固定相同版本；其他系统依赖由 Debian 仓库解析。
 - 注入的 server wheel，或 python-sdk 源码 pin `fd72d3210b85079d93dcf08e19bfded73643162b`。
@@ -76,7 +78,7 @@ print(await client.commands.run('media_version'))
 
 | 名称 | 必需 | 默认 | 用途 |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| `ABX_SERVER_TOKEN` | 是 | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 本地直接启动的端口。 |
 | `WORKSPACE` | 否 | `/home/user/app` | 已存在且属于运行用户的输入/输出目录。 |
 
@@ -125,9 +127,7 @@ HTTP200和实际非零 `exit_code`、有限的 `stdout`/`stderr`，不发布部�
 旧 preset 接口保留原有异常行为。成功时同时返回实际进程结果和产物字段，
 下载后由调用者清理产物。无模型自检命令为 `media_args_smoke`。
 
-`server-sdk.commit` 显式选择支持数组的不可变服务器源码，必须与 Dockerfile
-fallback 一致；镜像 CI、归档及运行证明均核对同一 commit。没有该文件的其他
-模板保留历史共同注入 pin。使用数组前重建1.0镜像；旧服务器会将注解转成字符串。
+已发布的服务包保留原生字符串数组参数。修改声明的服务依赖后，须重新构建镜像。
 
 ## 已验证
 

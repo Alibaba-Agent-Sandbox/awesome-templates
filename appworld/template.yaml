@@ -1,5 +1,5 @@
 name: appworld
-version: "1.0.6"
+version: "1.0.7"
 description: "Original AppWorld0.1.3.post1 engine and evaluator, private protected bundles and explicit compatible-model API bridge."
 author: alibaba-agent-sandbox
 license: Apache-2.0

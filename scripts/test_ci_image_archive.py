@@ -97,7 +97,7 @@ def test_missing_controller_dependency_is_found_before_artifact_or_cloud(tmp_pat
 
 
 def public_export():
-    return {'origin': 'public-template-launch', 'runtime_server_version': '0.3.0',
+    return {'origin': 'public-template-launch', 'server_package_version': '0.4.0a2',
         'public_source_commit': 'a'*40, 'source_head_commit': 'a'*40, 'source_snapshot_digest': 'c'*64,
         'installed_packages': {'distribution': 'published',
             'cli': {'version': '0.5.1', 'registry': 'https://registry.npmjs.org'},
@@ -110,7 +110,7 @@ def test_public_export_requires_matching_workflow_and_observed_runtime():
     images.validate_archive_origin(data, workflow)
     with pytest.raises(ValueError, match='workflow origin'):
         images.validate_archive_origin(data, {'path': '.github/workflows/image-build.yml'})
-    data.pop('runtime_server_version')
+    data.pop('server_package_version')
     with pytest.raises(ValueError, match='observed runtime'):
         images.validate_archive_origin(data, workflow)
 
@@ -127,7 +127,7 @@ def test_public_export_rejects_source_or_unofficial_package_provenance(field):
 
 
 def test_historical_export_is_not_relabelled_public():
-    images.validate_archive_origin({'server_sdk_commit': 'a'*40}, {'path': '.github/workflows/image-build.yml'})
+    images.validate_archive_origin({'origin':'template-image-l1','server_package_version': '0.4.0a2'}, {'path': '.github/workflows/image-build.yml'})
 
 
 def test_public_template_revision_is_distinct_from_verifier_revision():
@@ -189,3 +189,45 @@ def test_native_inventory_matches_only_exact_owned_name():
     cli=SimpleNamespace(run=lambda *args,**kwargs:[{'Name':'owned','TemplateID':'correct'},
         {'Name':'owned-extra','TemplateID':'foreign'},{'Name':'other','TemplateID':'another'}])
     assert review.exact_templates(cli,'owned')==['correct']
+
+
+@pytest.mark.parametrize('observed_digest,expected_status', [('sha256:'+'b'*64,1),('sha256:'+'a'*64,0)])
+def test_runtime_digest_gate_controls_final_result_even_after_application_and_cleanup_pass(tmp_path,monkeypatch,observed_digest,expected_status):
+    import yaml
+    source=tmp_path/'repo'/'example';source.mkdir(parents=True)
+    (source/'template.yaml').write_text(yaml.safe_dump({'name':'example','version':'1.0.1','resources':{'cpu':2,'memory':2048}}))
+    monkeypatch.setattr(review,'controller_missing_imports',lambda _:[])
+    monkeypatch.setattr(review,'check_image_cli',lambda:None)
+    monkeypatch.setattr(images,'download_verified',lambda *args:None)
+    proof={'pushed_image_digest':'sha256:'+'a'*64}
+    def push(stage,selected,crane,journal):
+        images.save_private(journal,{'owned':True})
+        return 'owned-image',dict(proof),None
+    monkeypatch.setattr(images,'push_verified',push)
+    monkeypatch.setattr(images,'temporary_registry_credentials',lambda:('synthetic-user','synthetic-password'))
+    monkeypatch.setattr(images,'owned_registry_cleanup',lambda *args:True)
+    monkeypatch.setattr(images,'crane_call',lambda *args:observed_digest)
+    templates=[]
+    monkeypatch.setattr(review,'exact_templates',lambda cli,alias:list(templates))
+    def cli(self,args,*pos,**kwargs):
+        if args[:2]==['template','from-image']:
+            templates.append('owned-template');return {'TemplateID':'owned-template'}
+        if args[:2]==['template','delete']:
+            templates.remove(args[2]);return ''
+        raise AssertionError('unexpected operation')
+    monkeypatch.setattr(review.CLI,'run',cli)
+    monkeypatch.setattr(review,'wait_ready',lambda *args:None)
+    async def exercise(source,reference,private,report,http,journal):
+        report.update(application_result='PASS',cleanup_verified=True,http_acceptance={'passed':True})
+    monkeypatch.setattr(review,'exercise',exercise)
+    published=[]
+    monkeypatch.setattr(review,'publish',lambda source,receipt,report:published.append(report.copy()))
+    assert review.run(source,123,'verified-crane',private_root=tmp_path/'private')==expected_status
+    assert not templates
+    if expected_status:
+        assert not published
+        report=json.loads(next((source/'evidence').glob('image-attempt-*.json')).read_text())
+        assert report['application_result']=='PASS' and report['cleanup_verified'] is True
+        assert report['passed'] is False and report['failed_check']=='owned image tag digest after runtime'
+    else:
+        assert len(published)==1 and published[0]['passed'] is True

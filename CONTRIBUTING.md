@@ -47,10 +47,9 @@ already passes `scripts/check_template.py`. It is not a catalog entry.
    Use `--provider opensandbox` for that backend. Follow the
    [public launch testing guide](docs/public-launch-testing.md) for installation,
    the two-platform matrix, assertions and independent owned-resource cleanup.
-   Preserve failed attempts and unresolved cleanup; neither is a pass. The older
-   `express_e2e.py` deployment harness belongs to the
-   [pinned maintenance workflow](docs/canonical-express-review.md), not the current
-   default user path. Do not copy its historical native flags into public CLI examples.
+   Preserve failed attempts and unresolved cleanup; neither is a pass. Retired pinned maintenance cloud workflows are documented as history; current
+   acceptance uses the public launch runner above. Do not copy historical native
+   parameters into current CLI examples.
 
 Do not commit `__pycache__/`, `.env`, or secret values. Declare secret
 *names* with empty values in `template.yaml` `env`.

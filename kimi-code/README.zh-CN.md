@@ -6,6 +6,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 阿里云 FC v0.0.49、SHA256 校验的固定 Node.js 24.16.0、MIT 许可的 `@moonshot-ai/kimi-code@2.2.0` 和 Dockerfile 中固定 server SDK 源码。使用现行 Node CLI，不安装旧 Python 发行包。
 
 ## 解决的问题
@@ -69,7 +71,7 @@ print(await client.commands.run('kimi_version'))
 | KIMI_MODEL_BASE_URL | 模型任务需要 | 明确授权的兼容端点，不隐式转发凭据 |
 | KIMI_MODEL_PROVIDER_TYPE | 否 | openai，也可 kimi/anthropic |
 | WORKSPACE | 否 | /home/user/app |
-| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 配置名称已从实际 npm 2.2.0 runtime 核对，另见[官方配置](https://github.com/MoonshotAI/kimi-code/blob/main/docs/en/configuration/providers.md)。每次调用用独有 KIMI_CODE_HOME，保留用户配置，去除无关云端/registry 凭据，响应中脱敏 secret 及 JSON 转义形式。allow_tools=false 拒绝启动，不声称提供只读 prompt 模式。
 

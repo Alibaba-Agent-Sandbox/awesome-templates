@@ -8,6 +8,8 @@ Convert UTF-8 Markdown or bounded text HTML workspace files to actual DOCX, TXT,
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 - Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`, normally `cn-hangzhou` / `v0.0.49`.
 - Exact Debian 13 `pandoc=3.1.11.1+ds-2`, `pandoc-data=3.1.11.1-3`; their different version strings are intentional. Other OS libraries resolve from Debian repositories.
 - Headless LibreOffice writer/core/common `4:25.2.3-2+deb13u8`, DejaVu `2.37-8` and Noto CJK `1:20240730+repack1-1`.
@@ -77,7 +79,7 @@ One conversion runs at a time. Pandoc has 1 GiB address space, a 256 MiB Haskell
 
 | Name | Required | Default | Purpose |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | no | `9000` | Port for direct local startup. |
 | `WORKSPACE` | no | `/home/user/app` | Existing runtime-user-owned input/output directory. |
 | `DOCUMENT_PANDOC_BINARY` | no | `/usr/bin/pandoc` | Operator-only absolute executable path, still version checked. |

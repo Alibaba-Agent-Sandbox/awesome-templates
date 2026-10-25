@@ -1,5 +1,5 @@
 name: crush
-version: 1.0.0
+version: 1.0.1
 description: Official Crush0.98.1 native CLI with explicit compatible provider and
   private configuration.
 author: alibaba-agent-sandbox

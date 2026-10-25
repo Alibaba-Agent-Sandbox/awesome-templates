@@ -8,6 +8,8 @@ Runs actual DeepAgents0.7.25 with a local file/shell backend and explicit OpenAI
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 Alibaba FC base, generation2/non-root, pinned servere2cb27e. [requirements.lock](requirements.lock) fixes every resolved dependency and SHA256, including [DeepAgents0.7.25](https://pypi.org/project/deepagents/0.7.25/) and langchain-openai1.7.2. Generated from [requirements.in](requirements.in) using uv0.11.28 for Python3.13. Image pip verifies hashes and runs pip check. No remote E2B/OpenSandbox backend or model weights.
 
 ## Problem solved
@@ -73,7 +75,7 @@ The graph recursion limit is40 (graph steps, not a promise of40 model turns); ea
 | DEEPAGENTS_MODEL | model calls | empty | explicit model identifier |
 | DEEPAGENTS_PYTHON | no | /opt/deepagents/bin/python | exact native dependency environment, version checked |
 | WORKSPACE | no | /home/user/app | existing owned project directory |
-| ABX_SERVER_TOKEN | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
 
 The selected model settings remain in private stdin only, never inherited as environment by generated shells. Child runtime receives PATH/optional CA plus private HOME/XDG and disabled LangSmith tracing. LocalShellBackend gets only PATH/HOME/locale and the random non-secret process ownership marker, no inherited model/cloud/GitHub/server credentials. No skills/memory/profile files are loaded. The backend's virtual filesystem maps tool paths inside cwd; shell execution still has the sandbox user's full authority and is not restricted by that mapping.
 

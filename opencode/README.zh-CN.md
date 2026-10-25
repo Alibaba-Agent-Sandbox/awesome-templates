@@ -14,6 +14,8 @@ Agent Sandbox 里的 OpenCode（`sst/opencode`）。镜像安装 npm 包 `openco
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 - 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`abx template deploy` 把 `<region>` 换成 `ALIBABA_CLOUD_REGION_ID` 或 `cn-hangzhou`，把 `<tag>` 换成 `ABX_BASE_IMAGE_TAG` 或 `v0.0.49`。Python 3.13 和 Node.js 20 来自该镜像。
 - `opencode-ai@1.19.0`（2026-10-15 的 npm `latest`）。包提供的命令名是 `opencode`。上游是 [sst/opencode](https://github.com/sst/opencode)。
 - 构建上下文里没有 wheel 时，从 python-sdk 提交 `61c43e0be65a1f57aa09186d578e7b399e48429b` 安装 `agent-sandbox-server`。`abx template deploy` 注入的 wheel 优先。PyPI 上的 `agent-sandbox-server==0.3.0` 早于该提交，镜像不安装它。
@@ -110,7 +112,7 @@ print(await client.commands.run('opencode_version'))
 | `OPENCODE_MODEL` | 否 | `dashscope/qwen3.8-flash` | `model` 为空时使用。 |
 | `OPENCODE_API_KEY` | 否 | 空 | `model` 为 `opencode/<id>` 时的 OpenCode Zen 凭证。 |
 | `OPENCODE_SERVER_PASSWORD` | 否 | 空 | `opencode serve` 的基本认证密码。未设置时 CLI 会警告。 |
-| `ABX_SERVER_TOKEN` | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| `ABX_SERVER_TOKEN` | 是 | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `OPENCODE_CONFIG` | 否 | `/home/user/app/opencode.json` | 子进程读取的配置文件。 |
 | `OPENCODE_DISABLE_AUTOUPDATE` | 否 | 镜像里为 `true` | 阻止已钉死的 CLI 自行升级。 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 本地 `python3 commands.py` 时 `start()` 绑定的端口。 |

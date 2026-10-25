@@ -11,19 +11,10 @@ ENV LANG=C.UTF-8
 #   RUN apt-get update && apt-get install -y --no-install-recommends git=<version> \
 #       && rm -rf /var/lib/apt/lists/*
 
-# Allowed server pins (docs/template-spec.md): agent-sandbox-server==X.Y.Z, or the
-# python-sdk archive URL with a 40-hex commit. 0.3.0 is not on PyPI. This archive
-# is python-sdk main 35da216 (includes 61c43e0 / PR #21). A wheel in the build
-# context wins when abx template deploy injects one.
 COPY install_runtime.py assets.json /tmp/code-server-build/
 RUN python3 /tmp/code-server-build/install_runtime.py --check-rootfs && rm -rf /tmp/code-server-build
 ENV PATH="/opt/code-server/current/bin:${PATH}" WORKSPACE=/home/user/app
-COPY *.whl /tmp/
-RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
-        pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
-    else \
-        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/e2cb27e24fde0a67112f82b8d44af463445a5d1a.tar.gz#subdirectory=server-sdk"; \
-    fi
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py .

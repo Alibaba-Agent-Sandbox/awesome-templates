@@ -8,6 +8,8 @@ Create a fresh minimal Next.js or Vite application, serve real source edits, ins
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` resolves to region and defaultv0.0.49. Observed Node20.20.2 meets the verified engine requirements. `npm ci` installs committed package-lock.json integrity pins; runtime never downloads packages. Dependency licenses/notices remain in node_modules. Server fallback: python-sdk commit e2cb27e24fde0a67112f82b8d44af463445a5d1a; deploy-injected wheel wins. Generation2, USER user, /home/user/app, platform-managed start/health commands; no Docker CMD/ENTRYPOINT.
 
 ## Problem solved
@@ -72,7 +74,7 @@ Version1.1.0 adds allowed_host for Vite's exact SDK-forwarded hostname. The defa
 
 | Name | Default | Purpose |
 |---|---|---|
-| ABX_SERVER_TOKEN | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
 | ABX_SERVER_PORT | 9000 | local server port |
 | WORKSPACE | /home/user/app | existing workspace root |
 | NEXT_APP_TOOLCHAIN | /opt/next-app | trusted pinned toolchain; local tests may select the installed source directory |

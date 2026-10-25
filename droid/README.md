@@ -8,6 +8,8 @@ Run Factory Droid 0.241.1 headlessly on an existing project. Named commands expo
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 Official npm `@factory/cli@0.241.1` plus `@factory/cli-linux-x64@0.241.1`, full npm integrity [lock](package-lock.json), unmodified native SHA256 `1f50e238df053573aec1dae7b90b19c8e5afca83ab13a790a00f53ba4e4b9ab1`, Alibaba FC base, Python3.13 and immutable servere2cb27e. Install hooks are disabled; execute the fixed native binary directly. SHA256 is checked at build and every native command. [Provenance](upstream.json), [upstream notice](UPSTREAM-NOTICE.md), [Dockerfile](Dockerfile). Native metadata is proprietary `UNLICENSED`; its repository field does not establish a public source commit. Non-root `user`, generation2, port9000.
 
 ## Problem solved
@@ -76,7 +78,7 @@ This subprocess lifecycle requires Linux. The command closes its owned process g
 | `DROID_MODEL_BASE_URL` | Empty; required for BYOK | Explicit HTTPS compatible base, at most2048 characters, no userinfo/query/fragment; literal local HTTP only for fixtures. |
 | `DROID_MODEL` | Empty; required for BYOK | Explicit1–200-character model identifier. |
 | `FACTORY_API_KEY` | Empty | Factory account API key, injected at creation. Required only for `droid`. |
-| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
 | `WORKSPACE` | `/home/user/app` | Existing project root; an invalid explicit root fails. |
 | `FACTORY_DROID_AUTO_UPDATE_ENABLED` | `false` | Forced off in subprocesses to preserve the pin. |
 

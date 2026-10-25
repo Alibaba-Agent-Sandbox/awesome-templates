@@ -8,9 +8,10 @@ Runs an authenticated OpenClaw WebSocket gateway as an owned background process.
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 - Alibaba FC base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (deployment resolves the placeholders).
 - Node.js `24.16.0`, npm package `openclaw@2026.10.4`. The upstream package requires Node >=24.16.0; the base image Node 20 is insufficient.
-- `agent-sandbox-server` pinned to python-sdk commit `35da216a300f1e2e84254a1cf4b4a7ea98681505`, unless deployment injects a wheel.
 - Non-root `user`, work directory `/home/user/app`, generation 2, HTTP server port 9000 and optional gateway port 18789.
 
 ## Problem solved
@@ -104,7 +105,7 @@ On Linux, each short-lived gateway health RPC drains its output and keeps its le
 |---|---|---|
 | `OPENCLAW_GATEWAY_TOKEN` | empty | Required for gateway start; inject via sandbox environment, never a command parameter. It is passed in the child environment and referenced by name in isolated config, never returned or included in argv. |
 | `OPENCLAW_TRUSTED_PROXIES` | empty | Explicit verified proxy IP/CIDR list for forwarded access; max16/2048bytes, no unrestricted/multicast networks. |
-| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials `/health` does not require the application token. |
+| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the template launch; separate from model and gateway credentials `/health` does not require the application token. |
 | `ABX_SERVER_PORT` | 9000 | Local `python commands.py` HTTP port; cloud start command explicitly uses 9000. |
 | `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` | empty | Optional upstream model credentials; gateway health does not need them. No model call is implemented or validated by these commands. |
 

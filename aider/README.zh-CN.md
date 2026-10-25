@@ -9,6 +9,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 Alibaba FC base `v0.0.49` 的 Python 3.13 server 与 Node 20 保持原状。
 Aider 官方要求 Python `>=3.10,<3.13`，因此单独安装经过 SHA256 校验的
 python-build-standalone **3.12.12 / 20260211**，并在 `/opt/aider` 的独立
@@ -88,7 +90,7 @@ print(await client.commands.run('aider_version'))
 | `AIDER_BASE_URL` | 空；必需 HTTP(S) endpoint，不允许内嵌凭据、query、fragment |
 | `AIDER_MODEL` | 空；必需 model ID，自动加 LiteLLM `openai/` 前缀 |
 | `WORKSPACE` | `/home/user/app`；默认工作目录 |
-| `ABX_SERVER_TOKEN` | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| `ABX_SERVER_TOKEN` | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 在 `template launch` 前导出 `AIDER_API_KEY`、`AIDER_BASE_URL`、`AIDER_MODEL` 和独立应用令牌。当前 launch 路径启动该实例的命名服务，无需另启 9010 服务。修改宿主机环境不会重新配置已运行的应用；更改配置后启动新实例。
 

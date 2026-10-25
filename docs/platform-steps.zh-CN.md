@@ -84,8 +84,7 @@ abx --json template info "$TEMPLATE_ID"  # 应报告 TemplateNotFound/404
 steps 不自动上传 COPY 源文件。生成独立临时 manifest：
 
 ```bash
-python scripts/prepare_steps.py python-hello --output /tmp/python-hello-steps-review \
-  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
+python scripts/prepare_steps.py python-hello --output /tmp/python-hello-steps-review
 ```
 
 输出目录必须全新。可选 server 提交与现有镜像 CI 注入的源码一致并单独记录；省略时
@@ -111,8 +110,7 @@ steps-provenance.json；仅含公共源码，不包含凭据或模型运行设�
 在源码仓库执行完整真实验收：
 
 ```bash
-python scripts/run_steps_e2e.py python-hello \
-  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
+python scripts/run_steps_e2e.py python-hello
 ```
 
 CLI 不在 PATH 时通过 ABX 环境变量指定已验证命令。可以传多个目录，或用 `--all`
@@ -138,7 +136,7 @@ template 不存在。submitted、构建失败、未知状态、smoke 错误、�
 
 OSWorld 的 `--http` 必须运行非模型桌面层：设置两个桌面验收开关、记录 `desktop_lifecycle_required`，原外部控制器必须完成18项且无 GUI 跳过。基础 HTTP 加内部命名冒烟不能代替这层外部检查；审计拒绝桌面跳过或不完整覆盖。其他模板的模型未执行仍单列。
 
-当前源码审计绑定完整 manifest（启动/就绪命令、资源、环境、端口及其他字段），只排除 `tested_on` 资格元数据。新凭证同时记录 `source_manifest_contract_sha256` 与原始 manifest 哈希；同版本运行契约发生变化也不能继承旧通过。旧记录若仅资格元数据变化，必须先从本地不可变 Git 历史找到与记录完整 SHA256 一致的原始字节，再比较规范化契约。已记录源码提交时必须匹配该提交自身；早期内联复制未记录提交时，只对该 manifest 做有界本地历史搜索。浅克隆或历史缺失返回 MISSING，可获取相关公开历史后重跑，不改写旧凭证。显式 `server-sdk.commit` 还必须有对应输入哈希及匹配的实际选中提交。审计不发起网络或云操作。
+当前源码审计绑定完整 manifest（启动/就绪命令、资源、环境、端口及其他字段），只排除 `tested_on` 资格元数据。新凭证同时记录 `source_manifest_contract_sha256` 与原始 manifest 哈希；同版本运行契约发生变化也不能继承旧通过。旧记录若仅资格元数据变化，必须先从本地不可变 Git 历史找到与记录完整 SHA256 一致的原始字节，再比较规范化契约。已记录源码提交时必须匹配该提交自身；早期内联复制未记录提交时，只对该 manifest 做有界本地历史搜索。浅克隆或历史缺失返回 MISSING，可获取相关公开历史后重跑，不改写旧凭证。审计不发起网络或云操作。
 
 批量运行器在原模板 evidence 中保留每次脱敏结果，包括失败、源码哈希、基础镜像和
 server override。完整成功记录包含 build_mode steps、外部调用结果和清理确认。
@@ -210,8 +208,7 @@ Goose、Crush、code-server、Polyglot、Aider、SWE、Hermes 可使用 `--asset
 
 ```bash
 python scripts/run_steps_e2e.py goose --asset-transport parallel --http \
-  --sandbox-create sdk --timeout 3600 \
-  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
+  --sandbox-create sdk --timeout 3600
 python scripts/step_acceptance.py
 ```
 
@@ -221,8 +218,7 @@ python scripts/step_acceptance.py
 
 ```bash
 python scripts/run_steps_e2e.py goose --asset-transport oss --http \
-  --sandbox-create sdk --timeout 3600 \
-  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
+  --sandbox-create sdk --timeout 3600
 ```
 
 默认仍直接下载。OSS 模式覆盖已审查归档、精确 uv0.12.3 引导 wheel，以及 OSWorld 固定 Playwright1.58.0 浏览器归档。原安装器、哈希锁、版本、解包和非 root 运行要求继续执行。临时浏览器镜像仅绑定回环地址，只提供已校验归档路径，构建结束前关闭。浏览器摘要根据上游固定客户端 URL 实测，不标为上游公布的摘要。

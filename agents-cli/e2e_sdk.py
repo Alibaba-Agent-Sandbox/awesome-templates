@@ -293,7 +293,7 @@ def selected_env(root: str, state_dir: str, model: str, token: str, *, adapter: 
 
 async def run(args, *, factory=None) -> dict:
     if factory is None:
-        from agent_sandbox.api.sandbox import Sandbox
+        from agent_sandbox import ProviderSandbox
         factory = Sandbox
     adapter=getattr(args, 'adapter', 'qwen-code')
     require(adapter in {'qwen-code','codex'}, 'unsupported native adapter')

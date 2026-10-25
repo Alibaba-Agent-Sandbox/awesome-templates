@@ -10,12 +10,7 @@ RUN cd /opt/gemini && npm ci --omit=optional --ignore-scripts --no-audit --no-fu
 COPY profile.json /opt/gemini/profile.json
 RUN chmod 0644 /opt/gemini/profile.json
 
-COPY *.whl /tmp/
-RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
-        pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
-    else \
-        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/34e7e011c5569f77b7f605e65313be7498f6cf02.tar.gz#subdirectory=server-sdk"; \
-    fi
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
 
 ENV HOME=/home/user WORKSPACE=/home/user/app GEMINI_MODEL=gemini-3.1-flash-lite
 WORKDIR /home/user/app

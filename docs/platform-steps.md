@@ -92,8 +92,7 @@ Platform steps do not upload local COPY inputs. Generate a standalone staging
 manifest from the selected catalog directory instead of silently dropping source:
 
 ```bash
-python scripts/prepare_steps.py python-hello --output /tmp/python-hello-steps-review \
-  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
+python scripts/prepare_steps.py python-hello --output /tmp/python-hello-steps-review
 ```
 
 Use a new output directory. The optional server commit matches the existing
@@ -129,8 +128,7 @@ Generated source is public code, never credentials or runtime model settings.
 From the source checkout, use the full canonical step acceptance path:
 
 ```bash
-python scripts/run_steps_e2e.py python-hello \
-  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
+python scripts/run_steps_e2e.py python-hello
 ```
 
 Set `ABX` to the verified CLI command in the environment if it is not on PATH.
@@ -161,7 +159,7 @@ not an acceptance receipt.
 
 OSWorld `--http` requires its non-model desktop tier: both desktop opt-ins are set, `desktop_lifecycle_required` is recorded, and the unchanged external controller must complete18checks without a GUI skip. Basic HTTP plus the separate internal named smoke does not qualify that external tier. The audit rejects skipped/incomplete desktop coverage; model omissions in other profiles remain separate.
 
-Current-source auditing binds the full source manifest (launch/readiness, resources, environment, ports and all other fields); only `tested_on` qualification metadata is excluded. New receipts include `source_manifest_contract_sha256` plus the raw manifest hash. A changed same-version contract cannot inherit a previous pass. Legacy metadata-only updates require exact recorded original bytes from local immutable Git history before normalized comparison. A recorded source revision must match its own bytes; older inline-copy receipts without one use a bounded local history search of that manifest only. Missing/shallow history returns MISSING: fetch the relevant public history and rerun, without rewriting receipts. Explicit `server-sdk.commit` requires its hashed input and matching effective selected pin. This audit makes no network/cloud calls.
+Current-source auditing binds the full source manifest (launch/readiness, resources, environment, ports and all other fields); only `tested_on` qualification metadata is excluded. New receipts include `source_manifest_contract_sha256` plus the raw manifest hash. A changed same-version contract cannot inherit a previous pass. Legacy metadata-only updates require exact recorded original bytes from local immutable Git history before normalized comparison. A recorded source revision must match its own bytes; older inline-copy receipts without one use a bounded local history search of that manifest only. Missing/shallow history returns MISSING: fetch the relevant public history and rerun, without rewriting receipts. This audit makes no network/cloud calls.
 
 `run_steps_e2e.py` retains a sanitized per-attempt outcome under the original
 template's evidence directory, including failures, exact copied-input hashes,
@@ -244,8 +242,7 @@ For Goose, Crush, code-server, Polyglot, Aider, SWE and Hermes, `--asset-transpo
 
 ```bash
 python scripts/run_steps_e2e.py goose --asset-transport parallel --http \
-  --sandbox-create sdk --timeout 3600 \
-  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
+  --sandbox-create sdk --timeout 3600
 python scripts/step_acceptance.py
 ```
 
@@ -255,8 +252,7 @@ For the complete heavy-archive path, install the optional local controller SDK w
 
 ```bash
 python scripts/run_steps_e2e.py goose --asset-transport oss --http \
-  --sandbox-create sdk --timeout 3600 \
-  --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a
+  --sandbox-create sdk --timeout 3600
 ```
 
 The original direct mode remains the default. OSS mode supports reviewed archives, the exact uv0.12.3 bootstrap and OSWorld's pinned Playwright1.58.0 browser archives. Original installer, hash-lock, version, extraction and runtime-user requirements remain enforced. Temporary browser serving binds loopback only, exposes verified archive paths only, and closes before the build returns. Browser digests are measured from the upstream pinned-client URLs; they are not labelled upstream-published hashes.

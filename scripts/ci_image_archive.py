@@ -30,9 +30,9 @@ import uuid
 import zipfile
 import yaml
 try:
-    from .ci_image import context_sha256,SERVER_COMMIT,server_commit,validate_resources
+    from .ci_image import context_sha256,server_version,validate_resources
 except ImportError:
-    from ci_image import context_sha256,SERVER_COMMIT,server_commit,validate_resources
+    from ci_image import context_sha256,server_version,validate_resources
 
 GITHUB='https://api.github.com/repos/Alibaba-Agent-Sandbox/awesome-templates'
 REGION='cn-hangzhou'
@@ -138,8 +138,10 @@ def verify_source(source: Path, checkout: str, expected: dict[str,str]) -> None:
 def validate_archive_origin(metadata: dict, workflow: dict) -> None:
     """Accept only the explicit reviewed export paths, retaining public package provenance."""
     origin = metadata.get('origin')
-    if origin is None:
-        return  # Historical exact-source L1 export; never relabel as a public-package journey.
+    if origin == 'template-image-l1' and workflow.get('path') == '.github/workflows/image-build.yml':
+        if not isinstance(metadata.get('server_package_version'), str):
+            raise ValueError('L1 export requires its verified public server package version')
+        return
     if origin != 'public-template-launch' or workflow.get('path') != '.github/workflows/public-template-launch.yml':
         raise ValueError('image export has an unrecognized workflow origin')
     if metadata.get('public_source_commit') != metadata.get('source_head_commit'):
@@ -155,7 +157,7 @@ def validate_archive_origin(metadata: dict, workflow: dict) -> None:
         package = packages.get(key, {})
         if package.get('registry') != registry or not isinstance(package.get('version'), str):
             raise ValueError('public image export lacks official package provenance')
-    if not isinstance(metadata.get('runtime_server_version'), str) or not metadata['runtime_server_version']:
+    if not isinstance(metadata.get('server_package_version'), str) or not metadata['server_package_version']:
         raise ValueError('public image export lacks observed runtime server version')
 
 
@@ -193,7 +195,7 @@ def download_verified(artifact_id: int, source: Path, output: Path) -> dict:
     with (output/archive_name).open('rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
     if digest!=metadata['archive_sha256'] or digest!=(output/(archive_name+'.sha256')).read_text().split()[0]:raise ValueError('Docker archive SHA256 mismatch')
     if metadata.get('format')!='docker-archive' or metadata.get('template')!=name or metadata.get('repository','').lower()!='alibaba-agent-sandbox/awesome-templates':raise ValueError('image identity mismatch')
-    if metadata.get('server_sdk_commit')!=server_commit(source):raise ValueError('CI server SDK pin mismatch')
+    if metadata.get('server_package_version')!=server_version(source):raise ValueError('CI server package version mismatch')
     run=github('/actions/runs/'+str(artifact['workflow_run']['id']))
     if run.get('status')!='completed' or run.get('conclusion')!='success':
         raise ValueError('image CI workflow is not successful')
@@ -206,10 +208,10 @@ def download_verified(artifact_id: int, source: Path, output: Path) -> dict:
     proof={'schema_version':1,'verification_type':'ci-docker-archive','template':name,'template_version':str(template['version']),
         'github_repository':'Alibaba-Agent-Sandbox/awesome-templates','source_head_commit':head,'checkout_commit':checkout,
         'workflow_run_id':str(run['id']),'artifact_id':str(artifact_id),'archive_sha256':digest,'image_config_sha256':config_hash,
-        'server_sdk_commit':server_commit(source),'context_sha256':context,'artifact_verified':True,'image_context_verified':True,'image_non_root':True,
+        'server_package_version':server_version(source),'context_sha256':context,'artifact_verified':True,'image_context_verified':True,'image_non_root':True,
         'registry_push_verified':False,'registry_private_repo_verified':False,'registry_credentials_storage':'anonymous RAM fd'}
     if metadata.get('origin') == 'public-template-launch':
-        origin={key: metadata[key] for key in ('origin','installed_packages','runtime_server_version')}
+        origin={key: metadata[key] for key in ('origin','installed_packages','server_package_version')}
         origin.update({key:metadata[key] for key in ('verifier_commit','public_source_commit','source_snapshot_digest')})
         (output/'public-package-origin.json').write_text(json.dumps(origin,indent=2)+'\n')
     (output/'validated-image.json').write_text(json.dumps(proof,indent=2)+'\n')

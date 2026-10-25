@@ -6,6 +6,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 阿里云generation2基础镜像v0.0.49/Linuxx64/Python3.13/Node20；官方npm0.64.0以SHA512锁文件校验，[upstream.json](upstream.json)固定原449文件/98597935字节各自SHA256。原压缩包20841287字节/SHA256891a794e55c8319b6b78f6f8f13d6b8b2782a4709dfd2fcabf3a1f63ae8365e6。npm ci --omit=optional --ignore-scripts排除可选交互PTY/密钥链组件和安装脚本；保留上游代码和声明。服务端34e7e011c5569f77b7f605e65313be7498f6cf02，适配器/进程管理仅标准库。[Dockerfile](Dockerfile)、[设计](../docs/design/gemini.md)、[声明](UPSTREAM-NOTICE.md)。
 
 ## 解决的问题
@@ -75,7 +77,7 @@ print(await client.commands.run('gemini_version'))
 | GEMINI_API_KEY | 空，仅旧模式 | 原Google/原生兼容密钥，BYOK不隐式复用 |
 | GEMINI_MODEL | gemini-3.1-flash-lite，仅旧模式 | 原有默认值，与显式BYOK模型分离 |
 | WORKSPACE | /home/user/app | 已有项目根目录 |
-| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 BYOK模块导入时捕获设置，密钥最多8192字符且无控制字符。原生环境仅临时本地token、最小PATH、私有HOME/config/cache；真实密钥只发往精确授权Chat来源。同用户OS访问仍存在，cwd与环境过滤不是另一个租户边界。旧配置行为单独保留。结果与错误不包含私有地址、密钥或完整轨迹。
 

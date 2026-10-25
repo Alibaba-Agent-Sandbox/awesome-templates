@@ -6,6 +6,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 阿里云 FC base v0.0.49，generation 2，2 vCPU / 2048 MB，9000 端口运行 agent-sandbox-server。[toolchains.json](toolchains.json) 固定 x86_64/aarch64 官方下载地址及 SHA256。安装独立 rustc、标准库和 Cargo 组件，不安装多版本管理器；GOTOOLCHAIN=local 禁止自动下载其他 Go 版本，GCC 提供链接器。安装后实际根文件系统已用空间超过 8 GiB 即失败。
 
 ## 解决的问题

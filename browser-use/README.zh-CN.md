@@ -8,6 +8,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 FC v0.0.49、generation2、非root user、Linux x86_64、Python3.13。[requirements.lock](requirements.lock)固定browser-use0.13.11及全部传递依赖版本/SHA256，由[requirements.in](requirements.in)通过uv0.11.28生成。该版本依赖CDP-use，并非Python Playwright；显式Playwright1.58.0安装器选定Chromium1208/Google Chrome for Testing145.0.7632.6，--no-shell不再安装第二份headless shell。SDK固定e2cb27e或匹配注入wheel。
 
 ## 解决的问题
@@ -76,7 +78,7 @@ print(await client.commands.run('browser_use_version'))
 | PLAYWRIGHT_BROWSERS_PATH | no | /opt/playwright | installed Chromium1208 cache |
 | BROWSER_USE_BROWSER_BINARY | diagnostics | Chromium1208/chrome-linux64/chrome | executable override; actual145.0.7632.6 still required |
 | WORKSPACE | no | /home/user/app | owned root for new browser-use-artifacts PNGs |
-| ABX_SERVER_TOKEN | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| ABX_SERVER_TOKEN | 是 | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 模型配置只通过私有文件stdin进入，不继承到Chromium。每次独立HOME/XDG/profile/原生文件目录，关闭遥测/云同步/默认扩展/use_cloud，不导入调用者账号或已保存浏览器。CDP启动显式请求回环地址，只公布命令9000。此容器模板显式设置chromium_sandbox=false，使用自有沙箱提供OS隔离，不依赖Docker自动探测。浏览器和模型仍有沙箱用户权限及网络，这不是额外OS隔离。结果和PNG可能含网页私密信息；返回字符串替换模型密钥/地址的完整值。
 

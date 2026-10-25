@@ -8,6 +8,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 固定官方CLI2026.10.19-6bbf2c4、Linux x86_64，原版启动器、内置Node及原生模块保持不变。原包183,733,394字节，控制端实测SHA256为`cf80cc18d8b33bf33e762353977ca1868cfc45290c92c0ffdcef83bb8b37b44f`，并非上游发布的校验和。460个普通文件共585,886,062字节。[完整清单](upstream.json)、[许可说明](UPSTREAM-NOTICE.md)、[设计](../docs/design/cursor-agent.md)。基础镜像为阿里云generation2，Python3.13；服务端源码固定34e7e011c5569f77b7f605e65313be7498f6cf02。
 
 ## 解决的问题
@@ -73,7 +75,7 @@ prompt为1..32768UTF8字节，非空且无NUL。cwd最长4096UTF8字节、无NUL
 | --- | --- | --- |
 | CURSOR_API_KEY | 空；agent必需 | 厂商凭证，命令模块导入时捕获 |
 | WORKSPACE | /home/user/app | 项目根目录，导入时捕获 |
-| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 原生子进程只获得自身显式厂商密钥及私有HOME/config/data/cache/TMP等最小环境。固定原生参数关闭更新和项目配置加载；不使用操作系统钥匙串或原生持久会话。成功／失败／超时后删除每次私有状态。服务和工具共享OS用户，路径不是其他租户的隔离边界；自动工具仅用于自有一次性沙箱。
 

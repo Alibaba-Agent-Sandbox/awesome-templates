@@ -71,8 +71,8 @@ def http_callback(source: Path, stage: Path, result: dict, fixture_env: dict[str
         raise ValueError("only the generated owned gateway fixture may enter the controller")
 
     async def endpoints(sandbox_id):
-        from agent_sandbox.api.sandbox import Sandbox
-        sandbox = await Sandbox.connect(sandbox_id)
+        from agent_sandbox import ProviderSandbox
+        sandbox = await ProviderSandbox.connect(sandbox_id)
         try:
             ports = yaml.safe_load((source / "template.yaml").read_text()).get("ports", [9000])
             return {port: sandbox.network.get_url(port) for port in ports}
@@ -159,7 +159,7 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
             cache = AssetCache(args.region)
             cache_config = cache.prepare(parallel_assets(source))
         manifest, proof = prepare(source, region=args.region, tag=args.base_tag,
-                                  server_commit=args.server_commit, base_path=args.base_path,
+                                  base_path=args.base_path,
                                   asset_transport=args.asset_transport, asset_cache=cache_config)
         fixture_env = configure_http_fixture(source, manifest, proof) if args.http else {}
         (stage / "template.yaml").write_text(yaml.safe_dump(manifest, sort_keys=False, allow_unicode=True))
@@ -232,7 +232,6 @@ def main() -> int:
     parser.add_argument("--region", default="cn-hangzhou")
     parser.add_argument("--base-tag", default="v0.0.49")
     parser.add_argument("--base-path", help="Verified base PATH when selecting a different image tag")
-    parser.add_argument("--server-commit", help="Optional immutable source override, recorded separately")
     parser.add_argument("--timeout", type=int, default=900)
     parser.add_argument("--sandbox-create", choices=("cli", "sdk"), default="cli")
     parser.add_argument("--http", action="store_true", help="Also run the unchanged full external HTTP controller; model cases remain explicitly skipped")

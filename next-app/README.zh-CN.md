@@ -8,6 +8,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 阿里云基础镜像 fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>，默认v0.0.49，已观测 Node20.20.2 满足上游引擎要求。npm ci 使用提交的完整性锁文件，运行时不下载包。服务端固定 python-sdk e2cb27e24fde0a67112f82b8d44af463445a5d1a 作为无注入 wheel 时的回退。generation2、USER user、工作区 /home/user/app、平台 start/health 命令，无 Docker CMD/ENTRYPOINT。依赖许可证随安装保留。
 
 ## 解决的问题
@@ -72,7 +74,7 @@ Next 使用本地 next dev --webpack --hostname0.0.0.0 --port3000；Vite 使用�
 
 | 名称 | 默认值 | 用途 |
 |---|---|---|
-| ABX_SERVER_TOKEN | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| ABX_SERVER_TOKEN | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | ABX_SERVER_PORT | 9000 | 本地命令服务端口 |
 | WORKSPACE | /home/user/app | 已存在工作区 |
 | NEXT_APP_TOOLCHAIN | /opt/next-app | 可信固定工具链；本机测试可指向安装目录 |

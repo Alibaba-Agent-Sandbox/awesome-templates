@@ -8,6 +8,8 @@ Runs the genuine pinned GitHub Copilot CLI with an explicit OpenAI-compatible BY
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 Alibaba FC generation2 base, Linux x86_64, non-root `user`, `@github/copilot@1.0.100` and the required `@github/copilot-linux-x64@1.0.100` native package. [package-lock.json](package-lock.json) pins integrity for the loader/native packages; npm scripts and other optional architectures are omitted. The server source pin is e2cb27e24fde0a67112f82b8d44af463445a5d1a. Native software uses the separate [upstream license](UPSTREAM-LICENSE.md).
 
 ## Problem solved
@@ -72,7 +74,7 @@ The shared server Boolean scalar also accepts true/false/yes/no/1/0 string forms
 | COPILOT_PROVIDER_API_KEY | model calls/empty | explicit endpoint credential, max8192characters/no CR/LF/NUL |
 | COPILOT_MODEL | model calls/empty | explicit model identifier, max200ASCII characters |
 | WORKSPACE | /home/user/app | allowed cwd root |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
 
 The three model settings are captured at server startup. BYOK type=openai, wire API=completions and transport=http are fixed; token limits65536prompt/4096output. No key-command, extra headers, bearer override, GitHub token or unrelated host credential is forwarded. Native secret-env filtering and wrapper redaction mask the exact key. Only PATH/optional CA paths plus private HOME/XDG/temp/state enter the process. Private profile/cache/log state is removed after identity-pinned process group and marked detached descendants stop; project edits remain. The owned cloud sandbox is the final boundary against malicious code. See [runtime environment](../docs/runtime-environment.md) and [official BYOK](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/use-byok-models).
 

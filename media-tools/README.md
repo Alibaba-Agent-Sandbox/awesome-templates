@@ -8,6 +8,8 @@ Inspect uploaded audio/video files and create bounded MP4/H.264, WAV or FLAC art
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 - Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`, normally `cn-hangzhou` / `v0.0.49`.
 - Debian 13 [FFmpeg `7:7.1.5-0+deb13u1`](https://packages.debian.org/trixie/ffmpeg), including the same exact version of its FFmpeg ABI libraries; other operating-system dependencies resolve from Debian repositories.
 - Injected server wheel or python-sdk source pin `fd72d3210b85079d93dcf08e19bfded73643162b`.
@@ -76,7 +78,7 @@ Outputs use a plain filename beginning with an ASCII letter/digit, followed by a
 
 | Name | Required | Default | Purpose |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | no | `9000` | Direct local server startup port. |
 | `WORKSPACE` | no | `/home/user/app` | Existing input/output directory owned by the runtime user. |
 
@@ -130,11 +132,7 @@ conversion keeps its existing failure behavior. Successful argv calls return
 artifact fields alongside actual native process results. Remove outputs after
 download. The model-free native smoke is `media_args_smoke`.
 
-`server-sdk.commit` explicitly opts this template into the immutable string-array
-server source; it must match the Dockerfile fallback. Image CI checks out that
-exact commit, and archive/proof validation checks it again. Existing templates
-without that opt-in retain the historical common injected SDK pin. Rebuild a1.0
-image before using native arrays; an old server can turn `list[str]` into string.
+The published server package preserves native string-array arguments. Rebuild the image after changing its declared server dependency.
 
 ## Verified
 

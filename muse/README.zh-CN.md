@@ -6,6 +6,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 阿里云generation2 basev0.0.49/Linuxx64/Python3.13；root所有的原版ELF384809176字节及官方SHA256，Python标准库代理/进程控制，server固定34e7e011c5569f77b7f605e65313be7498f6cf02，无新增Python/Node依赖。[Dockerfile](Dockerfile)、[来源](upstream.json)、[上游声明](UPSTREAM-NOTICE.md)、[设计](../docs/design/muse.md)。模板源码许可证不重新授权原版上游文件。可将任务自有gzip缓存重新校验后流式上传私有OSS，避免在操作端另占384.8MB原始文件；目标端仍检查未修改的原版字节。
 
 ## 解决的问题
@@ -71,7 +73,7 @@ print(await client.commands.run('muse_version'))
 | MUSE_MODEL_BASE_URL | 空；编码必需 | 显式HTTPS Responses基址，最长2048字符，无userinfo/query/fragment；自编fixture仅可用字面loopback HTTP |
 | MUSE_MODEL | 空；编码必需 | 实际上游模型标识，1..200个允许字符 |
 | WORKSPACE | `/home/user/app` | 调用方已有项目根目录 |
-| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 commands.py导入时捕获配置；存在标志不证明账号有效。key最长8192且无控制字符。原生进程仅通过匿名stdin取得逐次随机本地代理token。父代理只向固定授权Responses端点使用上游密钥，拒绝重定向及错误路由/token/model，不留轨迹。原版工具采用最小环境及私有HOME/缓存/配置，调用方项目产物保留。同一用户仍有OS访问权限，cwd检查和环境过滤不构成额外租户边界；`--yolo`选择自建外层沙箱作为执行边界。
 

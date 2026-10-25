@@ -53,8 +53,7 @@ def test_actual_ranges_reconstruct_exact_bytes(tmp_path):
 
 
 def test_tau2_original_archive_recipe_fits_wire_and_preserves_source():
-    manifest, proof = prepare(ROOT / "tau2-bench", asset_transport="parallel",
-                              server_commit="e2cb27e24fde0a67112f82b8d44af463445a5d1a")
+    manifest, proof = prepare(ROOT / "tau2-bench", asset_transport="parallel")
     assert proof["steps_json_bytes"] <= 15000
     assert len(proof["copy_source_commit"]) == 40
     original = ROOT / "tau2-bench" / "install_source.py"
@@ -128,7 +127,7 @@ def test_osworld_private_transport_keeps_hashes_on_regional_package_mirror():
 
 @pytest.mark.parametrize("name", ["goose", "crush", "code-server", "polyglot-toolchain", "aider", "swe", "hermes-agent", "openclaw"])
 def test_generated_cache_preserves_original_source_and_is_removed_before_runtime(name):
-    manifest, proof = prepare(ROOT / name, asset_transport="parallel", server_commit="e2cb27e24fde0a67112f82b8d44af463445a5d1a")
+    manifest, proof = prepare(ROOT / name, asset_transport="parallel")
     steps = manifest["build"]["steps"]
     assert proof["asset_transport"] == "parallel"
     assert proof["steps_json_bytes"] <= 15000
@@ -158,7 +157,7 @@ def test_generated_cache_preserves_original_source_and_is_removed_before_runtime
 
 @pytest.mark.parametrize("name", ["deepagents", "osworld", "browser-use"])
 def test_parallel_locked_installer_retains_hashes_and_removes_build_tool(name):
-    manifest, proof = prepare(ROOT / name, asset_transport="parallel", server_commit="e2cb27e24fde0a67112f82b8d44af463445a5d1a")
+    manifest, proof = prepare(ROOT / name, asset_transport="parallel")
     commands = [step["args"][0] for step in manifest["build"]["steps"] if step["type"] == "RUN"]
     locked = [command for command in commands if "uv --no-cache pip install" in command and "--require-hashes" in command]
     assert len(locked) == 1 and "--require-hashes" in locked[0]
@@ -192,7 +191,7 @@ def test_loopback_browser_mirror_serves_only_verified_archives(tmp_path, request
 
 
 def test_stagehand_native_browser_recipe_fits_wire_and_uses_exact_immutable_copy():
-    manifest, proof = prepare(ROOT / 'stagehand', asset_transport='parallel', server_commit='e2cb27e24fde0a67112f82b8d44af463445a5d1a')
+    manifest, proof = prepare(ROOT / 'stagehand', asset_transport='parallel')
     assert proof['steps_json_bytes'] <= 15000
     assert proof['copy_source_commit'] and len(proof['copy_source_commit']) == 40
     assert proof['inputs_sha256']['commands.py'] == hashlib.sha256((ROOT/'stagehand/commands.py').read_bytes()).hexdigest()
@@ -219,7 +218,7 @@ def test_appworld_original_data_profile_rejects_unreviewed_identity(tmp_path):
 
 
 def test_appworld_encrypted_data_steps_preserve_exact_source_and_wire_limit():
-    manifest,proof=prepare(ROOT/'appworld',asset_transport='parallel',server_commit='e2cb27e24fde0a67112f82b8d44af463445a5d1a')
+    manifest,proof=prepare(ROOT/'appworld',asset_transport='parallel')
     assert proof['steps_json_bytes']<=15000 and len(proof['copy_source_commit'])==40
     assert proof['inputs_sha256']['worker.py']==hashlib.sha256((ROOT/'appworld/worker.py').read_bytes()).hexdigest()
     assert proof['build_assets']['x86_64'][0]['size']==34280074
@@ -239,7 +238,7 @@ def test_chrome_asset_profile_rejects_changed_official_identity(tmp_path):
 
 
 def test_chrome_steps_preserve_native_archive_and_immutable_wire_budget():
-    manifest,proof=prepare(ROOT/'chrome',asset_transport='parallel',server_commit='e2cb27e24fde0a67112f82b8d44af463445a5d1a')
+    manifest,proof=prepare(ROOT/'chrome',asset_transport='parallel')
     assert proof['steps_json_bytes']<=15000
     assert len(proof['copy_source_commit'])==40
     assert proof['inputs_sha256']['worker.py']==hashlib.sha256((ROOT/'chrome/worker.py').read_bytes()).hexdigest()
@@ -262,7 +261,7 @@ def test_prime_asset_profile_rejects_changed_official_identity(tmp_path):
 
 
 def test_prime_steps_preserve_original_kernel_and_immutable_wire_budget():
-    manifest,proof=prepare(ROOT/'prime-agent',asset_transport='parallel',server_commit='e2cb27e24fde0a67112f82b8d44af463445a5d1a')
+    manifest,proof=prepare(ROOT/'prime-agent',asset_transport='parallel')
     assert proof['steps_json_bytes']<=15000
     assert len(proof['copy_source_commit'])==40
     assert proof['inputs_sha256']['kernel-python']==hashlib.sha256((ROOT/'prime-agent/kernel-python').read_bytes()).hexdigest()
@@ -287,10 +286,7 @@ def test_qm_exact_source_profile_rejects_unreviewed_assets(tmp_path,name):
 
 @pytest.mark.parametrize('name',['qm','qm-sandbox'])
 def test_qm_native_steps_keep_exact_original_inputs_and_wire_budget(name):
-    from server_sdk_pin import server_commit
-    selected=server_commit(ROOT/name)
-    manifest,proof=prepare(ROOT/name,asset_transport='parallel',server_commit=selected)
-    assert proof['template_server_commit']==selected and selected=='34e7e011c5569f77b7f605e65313be7498f6cf02'
+    manifest,proof=prepare(ROOT/name,asset_transport='parallel')
     assert proof['steps_json_bytes']<=15000 and len(proof['copy_source_commit'])==40
     for filename in ['worker.mjs','adapter.mjs','tool_process.py','sdk_exec.py']:
         assert proof['inputs_sha256'][filename]==hashlib.sha256((ROOT/name/filename).read_bytes()).hexdigest()
@@ -312,17 +308,15 @@ def test_muse_only_exact_published_native_asset_has_larger_reviewed_bound(tmp_pa
 
 
 def test_muse_native_steps_preserve_immutable_original_and_wire_budget():
-    from server_sdk_pin import server_commit
-    manifest,proof=prepare(ROOT/'muse',asset_transport='parallel',server_commit=server_commit(ROOT/'muse'))
+    manifest,proof=prepare(ROOT/'muse',asset_transport='parallel')
     assert proof['steps_json_bytes']<=15000 and len(proof['copy_source_commit'])==40
     assert proof['build_assets']['x86_64'][0]['size']==384809176
-    for filename in ['commands.py','relay.py','filter_native.py','install_runtime.py','server-sdk.commit']:
+    for filename in ['commands.py','relay.py','filter_native.py','install_runtime.py']:
         assert proof['inputs_sha256'][filename]==hashlib.sha256((ROOT/'muse'/filename).read_bytes()).hexdigest()
     assert manifest['build']['steps'][-1]=={'type':'USER','args':['user']}
 
 
 def test_muse_installer_runs_through_verified_native_asset_adapter():
-    from server_sdk_pin import server_commit
-    manifest,_=prepare(ROOT/'muse',asset_transport='parallel',server_commit=server_commit(ROOT/'muse'))
+    manifest,_=prepare(ROOT/'muse',asset_transport='parallel')
     commands=[v['args'][0]for v in manifest['build']['steps']if v['type']=='RUN']
     assert any('python3 /tmp/abx-step-assets/step_assets.py run /tmp/muse-original-installer/install_runtime.py'in value for value in commands)

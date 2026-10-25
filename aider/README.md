@@ -10,6 +10,8 @@ copies back selected results. It never auto-commits.
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 Alibaba FC base `v0.0.49`, its Python 3.13 server and Node 20 remain intact.
 Aider requires Python `>=3.10,<3.13`; a separate SHA256-verified official
 python-build-standalone **3.12.12 / 20260211** runs Aider in `/opt/aider`.
@@ -96,7 +98,7 @@ placed in argv; the key is provided in child env.
 | `AIDER_BASE_URL` | empty; required HTTP(S) endpoint, without embedded credentials/query/fragment |
 | `AIDER_MODEL` | empty; required model ID, `openai/` prefix added for LiteLLM |
 | `WORKSPACE` | `/home/user/app`; default working directory |
-| `ABX_SERVER_TOKEN` | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | Export an independent application token before the template launch; separate from model and gateway credentials |
 
 Export `AIDER_API_KEY`, `AIDER_BASE_URL`, `AIDER_MODEL` and the independent application token before `template launch`. This path starts the named server for the instance; no second port-9010 server is needed. Changing the host environment does not reconfigure an existing application; launch a new instance after changing configuration.
 

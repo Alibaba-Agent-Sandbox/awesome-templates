@@ -8,6 +8,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 Alibaba generation2 basev0.0.49／Python3.13、SHA256 固定 Node24.16.0、npm integrity 锁定 Grok Build1.0.62及原始 Linuxx64/Rust 二进制。每次调用前校验二进制 SHA2562a46d9e4d7ebd7a9cff7f95716714b19dad5f21dd2a497822400b1fb128969aa。server 固定 e2cb27e24fde0a67112f82b8d44af463445a5d1a，以 user 运行，应用目录／工作区、端口9000。[Dockerfile](Dockerfile)、[依赖锁](package-lock.json)、[设计](../docs/design/grok.md)。
 
 ## 解决的问题
@@ -73,7 +75,7 @@ stdout／stderr 各限256KiB；成功／失败／超时／溢出均清理自有�
 | GROK_MODEL_BASE_URL | 模型必需，空 | 显式 HTTPS API base；仅固定本地地址可用 HTTP；无用户信息／query／fragment；最多2048字符 |
 | GROK_MODEL | 模型必需，空 | 实际模型标识，最多200个允许字符 |
 | WORKSPACE | `/home/user/workspace` | 已存在工作区根目录 |
-| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 配置在 commands.py 加载时捕获。私有0600 config.toml 仅含显式 model/base 与 env_key="ABX_GROK_MODEL_KEY"，不保存密钥值，固定 chat_completions 后端。每次调用使用并删除私有 GROK_HOME/HOME/cache/session；关闭更新、leader、遥测/trace、记忆及后台 workflow。原生 shell_environment_policy 继承 core 并排除秘密变量；不转发调用者云/GitHub/厂商账号凭据。
 

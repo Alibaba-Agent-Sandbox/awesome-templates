@@ -22,7 +22,7 @@ Two additional commands: `droid_byok(prompt: str, cwd: str="", command_timeout: 
 
 Template1.1.1 explicitly owns /home/user/app as user:user before runtime USER. This repairs actual non-root workspace mkdir/write failures. Earlier provider receipts retain their original source-version scope; this changed profile requires new acceptance.
 
-[Dockerfile](../../droid/Dockerfile) uses Alibaba FC base and immutable servere2cb27e fallback/injected wheel. Full npm0.241.1 lock installs from the official registry with hooks disabled. Execute the fixed Linuxx64 native binary directly; SHA256 is checked at build and every command. Retain [proprietary upstream notice](../../droid/UPSTREAM-NOTICE.md). No public source commit is inferred from package metadata. Rootfs8GiB guard and non-root runtime remain. Version1.2.0 requires fresh image/cloud receipts; historical1.1.1 receipts are unchanged.
+[Dockerfile](../../droid/Dockerfile) uses Alibaba FC base and published server package 0.4.0a2. Full npm0.241.1 lock installs from the official registry with hooks disabled. Execute the fixed Linuxx64 native binary directly; SHA256 is checked at build and every command. Retain [proprietary upstream notice](../../droid/UPSTREAM-NOTICE.md). No public source commit is inferred from package metadata. Rootfs8GiB guard and non-root runtime remain. Version1.2.0 requires fresh image/cloud receipts; historical1.1.1 receipts are unchanged.
 
 Generation 2 starts `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`; ready command is `agent-sandbox-server healthcheck --port 9000`. No image CMD/ENTRYPOINT; runtime user is `user`. [template.yaml](../../droid/template.yaml) declares only empty secret placeholders.
 

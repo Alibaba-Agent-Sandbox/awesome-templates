@@ -10,6 +10,8 @@ Python 的 browse/scrape/fill_form 每次独立创建浏览器；原生MCP调用
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 阿里云 runtime 基础镜像（默认 `v0.0.49`，Python 3.13）、Playwright `1.58.0`
 与其匹配的 Chromium revision，以及 Dockerfile 中精确提交钉住的
 `agent-sandbox-server`。浏览器加 `--disable-dev-shm-usage`，适配极速版 64 MB
@@ -109,7 +111,7 @@ PDF在独立HOME子进程执行，执行时限1–120秒并有有界清理。通
 |---|---|---|
 | `PLAYWRIGHT_BROWSERS_PATH` | 镜像内 `/opt/playwright` | 共享可读 Chromium 安装目录 |
 | `WORKSPACE` | `/home/user/app` | 脚本根和 `browser-artifacts/` 产物根，与服务端文件策略对齐 |
-| `ABX_SERVER_TOKEN` | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| `ABX_SERVER_TOKEN` | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `ABX_SERVER_PORT` | `9000` | 本地 `python3 commands.py` 启动端口 |
 
 正文、截图、链接和用户脚本输出可能包含页面敏感信息。产物应按私有文件处理，

@@ -3,12 +3,7 @@ ENV LANG=C.UTF-8
 RUN python3 -c "import platform,sys; assert platform.machine()=='x86_64' and sys.version_info[:2]==(3,13)" && command -v bash && command -v git
 COPY upstream.json install_runtime.py /tmp/cursor-original-installer/
 RUN python3 /tmp/cursor-original-installer/install_runtime.py && rm -rf /tmp/cursor-original-installer && ln -s /opt/cursor-agent/cursor-agent /usr/local/bin/agent
-COPY *.whl /tmp/
-RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
-        pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
-    else \
-        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/34e7e011c5569f77b7f605e65313be7498f6cf02.tar.gz#subdirectory=server-sdk"; \
-    fi
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
 ENV HOME=/home/user WORKSPACE=/home/user/app
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py runtime.py process.py lifecycle.py upstream.json UPSTREAM-NOTICE.md ./

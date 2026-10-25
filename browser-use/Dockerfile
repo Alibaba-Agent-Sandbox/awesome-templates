@@ -10,12 +10,7 @@ RUN python3 -c "import sys; assert sys.version_info[:2] == (3,13), 'reviewed Pyt
     && /opt/browser-use/bin/python -m pip check \
     && /opt/browser-use/bin/python -c "from importlib.metadata import version; assert version('browser-use') == '0.13.11'" \
     && rm /tmp/browser-use-requirements.lock
-COPY *.whl /tmp/
-RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
-        pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
-    else \
-        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/e2cb27e24fde0a67112f82b8d44af463445a5d1a.tar.gz#subdirectory=server-sdk"; \
-    fi
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
 ENV HOME=/home/user WORKSPACE=/home/user/app BROWSER_USE_PYTHON=/opt/browser-use/bin/python
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py worker.py process.py lifecycle.py .

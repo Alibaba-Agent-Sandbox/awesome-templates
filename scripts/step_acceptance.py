@@ -12,7 +12,6 @@ import yaml
 
 from select_image_templates import ROOT, catalog_names
 from manifest_contract import manifest_contract_sha256
-from server_sdk_pin import server_commit as selected_server_commit
 
 
 
@@ -33,14 +32,7 @@ def inspect_manifest(source: Path, proof: dict) -> tuple[bool,str]:
                 return False,"source manifest contract changed"
         elif hashlib.sha256(current).hexdigest()!=expected:
             return False,"source manifest bytes changed; historical receipts are not upgraded"
-        pin=source/"server-sdk.commit"
-        if pin.exists() or pin.is_symlink():
-            selected=selected_server_commit(source)
-            if hashes.get("server-sdk.commit")!=hashlib.sha256(pin.read_bytes()).hexdigest():
-                return False,"missing or changed required server SDK input"
-            effective=proof.get("server_commit_override") or proof.get("template_server_commit")
-            if effective!=selected:return False,"required server SDK selection differs"
-    except (OSError,ValueError,TypeError):return False,"invalid manifest or required server SDK provenance"
+    except (OSError,ValueError,TypeError):return False,"invalid manifest provenance"
     return True,"complete source manifest contract bound; no compatibility exclusions"
 
 

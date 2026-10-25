@@ -12,10 +12,11 @@ The standalone `apply_patch` binary is a different template (issue #60). The Age
 
 ## Stack
 
+Runtime server: published `agent-sandbox-server==0.4.0a2`, installed directly by the Dockerfile.
+
 - Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template deploy` replaces `<region>` with `cn-hangzhou` (or `ALIBABA_CLOUD_REGION_ID`) and `<tag>` with `v0.0.49` (or `ABX_BASE_IMAGE_TAG`).
 - Node.js 20 and Python 3.13 from that image.
 - `@openai/codex@0.162.1` (`codex-cli 0.162.1`).
-- `agent-sandbox-server==0.3.0` from python-sdk commit `61c43e0be65a1f57aa09186d578e7b399e48429b` when the build context has no wheel.
 - `git`, `ripgrep`, `jq`. System `bubblewrap` is not installed, so Codex uses the `bwrap` shipped inside the npm package.
 - Work directory `/home/user/app`. Workspace `/home/user/workspace`. Runtime user `user`. No image `CMD` or `ENTRYPOINT`.
 
@@ -110,7 +111,7 @@ Expected response for this check:
 | `CODEX_MODEL` | no | empty | `model` written into `config.toml` and used when `codex_exec` omits `model`. |
 | `CODEX_HOME` | no | `/home/user/.codex` | Directory of `config.toml` and sessions. |
 | `WORKSPACE` | no | `/home/user/workspace` | Default `cwd`. A starter `AGENTS.md` is in the image. |
-| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | no | `9000` | Port for a local `python3 commands.py`. |
 
 Before `template launch`, securely export the secret variables declared empty in the manifest so the application reads them at startup. Keep values out of images, YAML and logs.

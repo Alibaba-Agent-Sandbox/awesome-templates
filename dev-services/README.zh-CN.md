@@ -8,6 +8,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 阿里云基础镜像 fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>，默认v0.0.49；Debian PostgreSQL服务端/客户端/libpq5 固定17.11-0+deb13u1，Redis服务端/工具固定5:8.0.2-3+deb13u3。传递系统安全库由当前 Debian 源解析。无注入 wheel 时服务端固定 e2cb27e24fde0a67112f82b8d44af463445a5d1a。generation2、USER user、/home/user/app，标准启动及健康命令，无 CMD/ENTRYPOINT。构建时关闭默认集群及自动启动。
 
 ## 解决的问题
@@ -73,7 +75,7 @@ psql使用 -X、ON_ERROR_STOP；redis-cli使用 -e 将协议错误作为失败�
 
 | 名称 | 默认值 | 用途 |
 |---|---|---|
-| ABX_SERVER_TOKEN | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| ABX_SERVER_TOKEN | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | ABX_SERVER_PORT | 9000 | 本地命令端口 |
 | WORKSPACE | /home/user/app | 已存在工作区 |
 | DEV_SERVICES_PASSWORD | 空 | 可选默认密码，也可每次启动显式传入 |

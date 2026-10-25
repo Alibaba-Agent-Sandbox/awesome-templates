@@ -169,10 +169,9 @@ fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 ```
 
 已安装的 CLI 暂存官方源码配方，按所选 provider 配置或 CLI 默认值解析受支持的
-`<region>`、`<tag>`。对于 OpenSandbox 单阶段官方配方中的 `COPY *.whl /tmp/`，共享 CLI 在 Docker 构建阶段
-从清单配方钉住的准确 SDK 归档提交构建 wheel，保留原运行指令与非 root 身份。
-源码 checkout 不变；不会自动解析其他镜像占位符，也不会偷偷选择 portable profile。
-实际构建输入进入回执。
+`<region>`、`<tag>`。配方直接安装固定的已发布服务包，不要求生成 wheel、
+SDK 源码归档或宿主 Python checkout。源码 checkout 不变；不会自动解析其他镜像占位符，
+portable profile 由调用方显式选择。实际构建输入进入回执。
 
 默认 Express 配方不能用 `CMD` 或 `ENTRYPOINT` 替换平台入口，保留 generation2 的启动与就绪配置。
 显式 portable profile 是单独审查的配方，不是自动回退。
@@ -186,12 +185,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # 重的工具放在前面的一层（一条 RUN，钉死版本，pip --no-cache-dir，清掉 npm cache）。
 # commands.py 是最后一次 COPY，改命令不会重建那一层。
-COPY *.whl /tmp/
-RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
-        pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
-    else \
-        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/<40位hex-sha>.tar.gz#subdirectory=server-sdk"; \
-    fi
+RUN pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"
 
 # 其他安装同样钉死：pip name==X.Y.Z，npm package@X.Y.Z。
 WORKDIR /home/user/app
@@ -200,21 +194,17 @@ USER user
 EXPOSE 9000
 ```
 
-### 允许的 `agent-sandbox-server` 钉法
+### 已发布的 `agent-sandbox-server` 依赖
 
-`RUN` 行必须使用下面两种形式之一。检查器两种都接受。只在注释里提到钉不算。
+`RUN` 必须直接安装一个准确且实际已发布的版本，例如：
 
-| 形式 | 行 |
-|---|---|
-| PyPI | `pip install --no-cache-dir "agent-sandbox-server==X.Y.Z"` |
-| python-sdk git 归档 | `pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/<40位hex-sha>.tar.gz#subdirectory=server-sdk"` |
+```dockerfile
+RUN pip install --no-cache-dir "agent-sandbox-server==0.4.0a2"
+```
 
-`<40位hex-sha>` 是 `Alibaba-Agent-Sandbox/python-sdk` 的完整不可变提交，不是短 SHA 或分支。
-PyPI 钉必须是实际已发布的版本。镜像内 SDK 钉属于配方输入，不因宿主客户端兼容性修复而必须同步变更。
-
-Express 使用其原生准备适配器；OpenSandbox `template launch` 按上文自动准备官方 wheel 配方，无需宿主 Python 源码 checkout。
-绕过 CLI 的原始 `docker build` 仍须为 `COPY *.whl` 提供匹配 wheel，或显式选择
-直接安装固定归档的配方，例如 python-hello 的 portable profile。Docker 不会忽略缺失的 COPY 源。
+不使用 Git 归档回退、注入 wheel 或独立的 `server-sdk.commit`。直接 Docker 构建和
+provider 准备都消费同一声明依赖。检查器验证固定版本声明，镜像和实际运行验收独立
+读回已安装版本；声明本身不证明安装或启动通过。
 
 每次 `pip install` 都加 `--no-cache-dir`。npm 安装在同一层里清掉缓存（`npm cache clean --force`）。
 
@@ -350,7 +340,7 @@ asyncio.run(main())
 
 当前默认验收入口是[公开源码启动](public-launch-testing.md#中文)：先调用已安装 CLI，
 再从宿主 CLI/Python/HTTP 验证应用，并独立核对沙箱、准备的模板及镜像清理。
-失败尝试分开保留，`PARTIAL` 不算通过。旧原生部署运行器属于[固定版本维护流程](canonical-express-review.zh-CN.md)。
+失败尝试分开保留，`PARTIAL` 不算通过。旧固定版本云流程仅保留为[历史说明](canonical-express-review.zh-CN.md)。
 
 以下是目录检查器仍读取的旧版日期回执格式。它保留原源码、调用路径和清理范围，
 不是新的 public-launch 报告格式，也不证明后来的默认入口：
@@ -503,4 +493,4 @@ Exec 启动必须有明确的 `start_cmd`。托管记录不包含该字段，因
 
 托管目录通过 `python scripts/check_managed_catalog.py` 检查准确字段、与源码目录不重名、服务声明、双语 14 个有序 README 章节，以及本地历史证据身份。`historical_evidence` 只链接原始回执，其内容不授予当前启动认证。只有完整、输入匹配且来源受独立信任的回执才能认证路径，参见[启动验证](workflows.zh-CN.md)。托管 ID 仍排除在源码镜像选择／steps 之外。[Desktop](managed/desktop/README.zh-CN.md)和[OpenSandbox 解释器](managed/opensandbox-code-interpreter/README.zh-CN.md)说明各条目的条件、实际证据范围和剩余产品门槛。
 
-默认 Dockerfile 中的服务器归档提交必须与 `scripts/server_sdk_pin.py`（或显式的 `server-sdk.commit`）一致。检查器拒绝不一致的 fallback，确保默认构建与 CI 注入构建选择同一服务器源码。修改提交后须重新完成对应源码的镜像及工作流验收，原有回执仅作为历史保留。
+Dockerfile 固定已发布的 `agent-sandbox-server` 版本；CI 直接安装该依赖并检查实际版本，不再通过 Git 归档或注入 wheel 回退。

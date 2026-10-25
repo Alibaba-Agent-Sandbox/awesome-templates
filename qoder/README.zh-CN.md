@@ -6,6 +6,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 Qoder CLI `@qoder-ai/qodercli@1.1.72`; platform Python 3.13 / Node.js 20; Agent Sandbox server.
 
 [Dockerfile](Dockerfile) · [template.yaml](template.yaml) · [Upstream](https://docs.qoder.com/cli/run-in-scripts)

@@ -6,6 +6,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` 提供 Node 20 和 Python 3.13；部署默认替换为 `cn-hangzhou`、`v0.0.49`。server 的归档安装锁定 python-sdk 提交 `35da216a300f1e2e84254a1cf4b4a7ea98681505`，CLI 注入的 wheel 优先。无额外 npm 依赖。工作目录 `/home/user/app`，以非 root 的 `user` 运行，generation 2。`start_cmd` 在 9000 启动命令服务，`ready_cmd` 做 healthcheck；Dockerfile 无 CMD/ENTRYPOINT。
 
 ## 解决的问题
@@ -77,7 +79,7 @@ print(await client.commands.run('smoke'))
 | `HOST` | 启动时设为 `0.0.0.0` | 兼容应用的监听提示，应用须自行遵循 |
 | `WORKSPACE` | 未设置 | 默认应用目录 |
 | `ABX_SERVER_PORT` | `9000` | 本地命令服务端口 |
-| `ABX_SERVER_TOKEN` | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| `ABX_SERVER_TOKEN` | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 命令无需模型或云密钥。秘密值不得写进源码、镜像、日志。只通过授权运行配置注入，不打印环境变量。应用 stdout 由用户代码决定，可能含敏感信息，应用须自行脱敏，公开 issue 前须审阅日志。
 

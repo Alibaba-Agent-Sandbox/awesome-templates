@@ -4,7 +4,7 @@
 The harness reads ``generation``, ``start_cmd``, ``ready_cmd``, and ``smoke``
 from ``template.yaml``. It deploys with ``abx template deploy`` (generation 2),
 creates one sandbox, calls each smoke command through ``abx run`` and through
-``await Sandbox.connect`` / ``await sb.run``, and always deletes that sandbox and that
+``await ProviderSandbox.connect`` / ``await sb.run``, and always deletes that sandbox and that
 template in a ``finally`` block.
 
 A passing run writes ``<template>/evidence/express-<YYYY-MM-DD>.json`` only after
@@ -587,7 +587,7 @@ def plan_document(options: Options) -> dict[str, Any]:
         "build_mode": options.build_mode,
         "registration_operation": "abx template from-image" if options.build_mode == "image" else "abx template deploy",
         "sandbox_timeout": options.sandbox_timeout,
-        "sandbox_create": "python-sdk-Sandbox.create" if options.sandbox_create == "sdk" else "abx create",
+        "sandbox_create": "python-sdk-ProviderSandbox.create" if options.sandbox_create == "sdk" else "abx create",
         "harness_sha256": HARNESS_SHA256,
         "acr_repo": options.alias if options.build_mode == "dockerfile" else None,
         "acr_tag": OWNED_ACR_TAG if options.build_mode == "dockerfile" else None,
@@ -750,10 +750,10 @@ def image_digest(image_ref: str) -> str:
 def default_sdk_create(template_id: str, timeout: int) -> str:
     """Create through the native Python API, returning the known ID for journaling."""
     import asyncio
-    from agent_sandbox.api.sandbox import Sandbox
+    from agent_sandbox import ProviderSandbox
 
     async def create() -> str:
-        sandbox = await Sandbox.create(template=template_id, timeout=timeout)
+        sandbox = await ProviderSandbox.create(provider="alicloud-express", template=template_id, timeout=timeout)
         sandbox_id = sandbox.id
         try:
             await sandbox.close()
@@ -768,16 +768,20 @@ def default_sdk_create(template_id: str, timeout: int) -> str:
 def default_sdk(sandbox_id: str, command: str, args: dict[str, Any]) -> Any:
     """Call a native named command, then close the borrowed local client.
 
-    The root standard Sandbox is synchronous and does not own named server calls.
+    Use the public provider facade and its application client for named calls.
     """
     import asyncio
 
-    from agent_sandbox.api.sandbox import Sandbox
+    from agent_sandbox import ProviderSandbox
 
     async def _call() -> Any:
-        sandbox = await Sandbox.connect(sandbox_id)
+        sandbox = await ProviderSandbox.connect(sandbox_id)
         try:
-            return await sandbox.run(command, **args)
+            application = await sandbox.application_client(9000, token=os.environ.get("ABX_SERVER_TOKEN"))
+            try:
+                return await application.commands.run(command, **args)
+            finally:
+                await application.aclose()
         finally:
             close = getattr(sandbox, "close", None)
             if callable(close):
@@ -860,13 +864,13 @@ def official_templates(run: Runner, alias: str) -> list[str]:
 def _list_owned_sandboxes(template_ids: set[str], known: set[str]) -> set[str]:
     """Read every page; matching exact recorded IDs/templates is not a prefix scan."""
     import asyncio
-    from agent_sandbox.api.sandbox import Sandbox
+    from agent_sandbox import ProviderSandbox
 
     async def listing() -> set[str]:
         found: set[str] = set()
         offset = 0
         while True:
-            rows = await Sandbox.list(provider="alicloud-express", limit=100, offset=offset)
+            rows = await ProviderSandbox.list(provider="alicloud-express", limit=100, offset=offset)
             for row in rows:
                 if (not isinstance(row.template, str) or not row.template.strip() or
                     not isinstance(row.sandbox_id, str) or not row.sandbox_id.strip()):
@@ -882,12 +886,12 @@ def _list_owned_sandboxes(template_ids: set[str], known: set[str]) -> set[str]:
 
 def _recover_sandboxes(template_ids: set[str], known: set[str]) -> set[str]:
     import asyncio
-    from agent_sandbox.api.sandbox import Sandbox
+    from agent_sandbox import ProviderSandbox
 
     found = _list_owned_sandboxes(template_ids, known)
     async def kill() -> None:
         for sandbox_id in found:
-            await Sandbox.kill_by_id(sandbox_id, provider="alicloud-express")
+            await ProviderSandbox.kill_by_id(sandbox_id, provider="alicloud-express")
     asyncio.run(asyncio.wait_for(kill(), 180))
     if _list_owned_sandboxes(template_ids, known):
         raise RuntimeError("owned sandboxes remain listed after kill")
@@ -1259,7 +1263,7 @@ def _write_evidence(options: Options, results: list[dict[str, Any]]) -> None:
         "sdk_version": _sdk_version(),
         "cli": "abx",
         "build_mode": options.build_mode,
-        "sandbox_create": "python-sdk-Sandbox.create" if options.sandbox_create == "sdk" else "abx create",
+        "sandbox_create": "python-sdk-ProviderSandbox.create" if options.sandbox_create == "sdk" else "abx create",
         "harness_sha256": HARNESS_SHA256,
         "passed": True,
         "cleanup_verified": True,

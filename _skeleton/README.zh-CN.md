@@ -8,8 +8,9 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 - 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`abx template deploy` 把 `<region>` 换成 `ALIBABA_CLOUD_REGION_ID` 或 `cn-hangzhou`，把 `<tag>` 换成 `ABX_BASE_IMAGE_TAG` 或 `v0.0.49`。
-- 构建上下文里没有 wheel 时，从 python-sdk 提交 `35da216a300f1e2e84254a1cf4b4a7ea98681505` 安装 `agent-sandbox-server`：`pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/<40位hex>.tar.gz#subdirectory=server-sdk"`。`abx template deploy` 注入的 wheel 优先。另一个允许的钉是 `agent-sandbox-server==X.Y.Z`，前提是该版本已经在 PyPI 上。2026-10-15 时 `0.3.0` 不在 PyPI。
 - 工作目录 `/home/user/app`。运行用户 `user`。
 - 基础镜像自带 Python 3.13 和 Node.js 20。
 - 平台用 `start_cmd` 启动进程。Dockerfile 在 `USER` 和 `EXPOSE` 之后结束。
@@ -68,7 +69,7 @@ print(await client.commands.run('hello', name='Express'))
 
 | 名称 | 必填 | 默认 | 用途 |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| `ABX_SERVER_TOKEN` | 是 | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 本地执行 `python3 commands.py` 时 `start()` 监听的端口。 |
 
 密钥在命名服务启动前传入；仅在提供方实际使用创建环境启动服务时采用创建时注入。参考[运行环境](../docs/runtime-environment.zh-CN.md)。不要写进镜像、Dockerfile 或日志。

@@ -15,12 +15,7 @@ RUN apt-get update \
     && ffmpeg -version && ffprobe -version \
     && rm -rf /var/lib/apt/lists/*
 
-COPY *.whl /tmp/
-RUN if ls /tmp/*.whl 1>/dev/null 2>&1; then \
-        pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl; \
-    else \
-        pip install --no-cache-dir "agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/fd72d3210b85079d93dcf08e19bfded73643162b.tar.gz#subdirectory=server-sdk"; \
-    fi
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a2"
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py .

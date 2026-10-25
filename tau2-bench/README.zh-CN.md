@@ -8,6 +8,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 MIT 许可的[固定原版源码](https://github.com/sierra-research/tau2-bench/tree/fc0055dc4e0a316c3f83133267fbd6faaa770992)、Python3.13、隔离且按哈希锁定的依赖、LiteLLM1.81.11 与 Agent Sandbox server。
 查看 [Dockerfile](Dockerfile)、[requirements.lock](requirements.lock)、[upstream.json](upstream.json) 和[设计](../docs/design/tau2-bench.md)。官方源码归档为92,081,935字节；固定 SHA256 记录在 `upstream.json`，来自控制端测量，并非上游发布的校验和。固定 `PYTHONPATH=/opt/tau2/src` 从源码运行，不声称 PyPI 已发布 Tau2 包。
 
@@ -82,7 +84,7 @@ print(await client.commands.run('tau2_version'))
 | `TAU2_MODEL_BASE_URL` | 运行任务必填；空 | 显式 HTTPS 兼容接口，最多2048字符；仅本地字面地址允许 HTTP 合成测试；禁止 userinfo、query、fragment。 |
 | `TAU2_MODEL` | 运行任务必填；空 | 明确模型标识，最多200个允许的标识字符。 |
 | `WORKSPACE` | `/home/user/workspace` | 已有且可写的结果根目录。 |
-| `ABX_SERVER_TOKEN` | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| `ABX_SERVER_TOKEN` | 必填；清单为空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 配置在服务导入时捕获。双方原生模型均设置相同 `openai/` 模型和显式 `api_base`，密钥只经匿名 stdin 进入私有工作进程环境，不写入 argv 或配置文件。排除操作端云凭据、GitHub 凭据和二进制覆盖变量。所有路径清理私有 HOME、临时原生日志和子进程；成功轨迹归调用者管理，失败的部分结果删除。轨迹的键和值递归移除实际密钥和接口字符串；重放不携带模型密钥。禁用遥测及模型价格网络刷新；未知价格返回零不代表免费或准确账单。
 

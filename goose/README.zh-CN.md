@@ -9,6 +9,8 @@
 
 ## 技术栈
 
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a2`，由 Dockerfile 直接安装。
+
 阿里云 FC 基础镜像v0.0.49、generation2、非root用户user、SDK源码e2cb27e。
 官方Linux x86_64/aarch64 CPU GNU资产的字节数和SHA256固定在
 [assets.json](assets.json)，对应[源码cd643d2126fffab4c6a6186905211ba868d6a657](https://github.com/block/goose/tree/cd643d2126fffab4c6a6186905211ba868d6a657)。
@@ -82,7 +84,7 @@ quiet文本输出和提供方/模型，工具模式仅加载developer builtin。
 | GOOSE_BASE_URL | 模型调用 | 空 | 显式HTTP(S)地址，无userinfo/query/fragment，映射上游OPENAI_BASE_URL |
 | GOOSE_MODEL | 模型调用 | 空 | 上游真实模型ID |
 | WORKSPACE | 否 | /home/user/app | 自有工作目录 |
-| ABX_SERVER_TOKEN | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| ABX_SERVER_TOKEN | 是 | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | GOOSE_BINARY | 仅操作端诊断 | 镜像PATH中的Goose | 独立安装的二进制，仍检查精确版本 |
 
 私有GOOSE_PATH_ROOT/HOME和XDG目录，关闭keyring、遥测、自动会话命名，

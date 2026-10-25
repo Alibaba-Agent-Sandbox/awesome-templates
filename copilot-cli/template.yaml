@@ -1,5 +1,5 @@
 name: copilot-cli
-version: 1.0.0
+version: 1.0.1
 description: Pinned native GitHub Copilot CLI with explicit OpenAI-compatible BYOK
   and bounded per-call ownership.
 author: alibaba-agent-sandbox
