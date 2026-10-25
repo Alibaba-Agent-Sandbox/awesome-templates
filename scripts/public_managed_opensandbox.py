@@ -53,6 +53,15 @@ async def verify(args):
             sb = await ProviderSandbox.connect(sid, provider='opensandbox')
             phase = 'native-cli-exec'
             result = await asyncio.to_thread(cli.run, ['exec',sid,'--','python3','-c','print(6*7)'], json_output=False)
+            shape = {'exact_expected': result.strip()=='42', 'contains_expected_line': '42' in result.splitlines(), 'character_count': len(result)}
+            try:
+                structured=json.loads(result)
+                shape['json_type']=type(structured).__name__
+                if isinstance(structured,dict):
+                    shape['json_keys']=[key for key in structured if key in {'stdout','stderr','exit_code','execution_time','result','pid'}]
+                    shape['json_stdout_expected']=structured.get('stdout','').strip()=='42' if isinstance(structured.get('stdout'),str) else False
+            except ValueError:pass
+            report['cli_exec_shape']=shape
             require(result.strip()=='42', 'public CLI native exec expected result')
             phase = 'native-sdk-shell-files'
             result = await sb.commands.run("python3 -c 'print(6*7)'", timeout=30)

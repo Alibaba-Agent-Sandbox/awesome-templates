@@ -3,6 +3,13 @@ import asyncio,base64,hashlib,io,json,os,re,shlex,sys,time,uuid
 from pathlib import Path
 from urllib.parse import quote,urlsplit,urlunsplit
 import httpx
+
+# The host runner passes provider gateway authentication separately from app auth.
+import json as _e2e_json
+_GATEWAY_HEADERS = _e2e_json.loads(os.environ.get("E2E_GATEWAY_HEADERS_JSON", "{}"))
+if not isinstance(_GATEWAY_HEADERS, dict) or any(not isinstance(k, str) or not isinstance(v, str) for k, v in _GATEWAY_HEADERS.items()):
+    raise ValueError("E2E_GATEWAY_HEADERS_JSON must be an object of string headers")
+_APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKEN"]} if os.environ.get("ABX_SERVER_TOKEN") else {}
 RESULTS=[]
 
 
@@ -18,7 +25,7 @@ def visible_fixture_matches(image,expected):
 
 async def sdk(base,name,**parameters):
     from agent_sandbox.api.server_client import ServerClient
-    client=ServerClient(base,token=os.environ.get('E2E_SERVER_TOKEN')or None,timeout=150)
+    client=ServerClient(base,token=os.environ.get('E2E_SERVER_TOKEN')or None,timeout=150, headers=_GATEWAY_HEADERS)
     try:return await client.commands.run(name,timeout=150,**parameters)
     finally:await client.aclose()
 
@@ -30,7 +37,7 @@ def target_code(client,code):
     return value.get('stdout','').strip()
 
 
-async def real_desktop(base,client,headers):
+async def real_desktop(base,client,{**headers, **_GATEWAY_HEADERS, **_APPLICATION_HEADERS}):
     from cdp import Page
     from rfb import capture_websocket
     from PIL import Image
@@ -110,7 +117,7 @@ async def real_desktop(base,client,headers):
 def main():
     base=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000').rstrip('/');token=os.environ.get('E2E_SERVER_TOKEN','')
     headers={'Authorization':'Bearer '+token}if token else{}
-    with httpx.Client(base_url=base,headers=headers,timeout=120)as client:
+    with httpx.Client(base_url=base,headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS},timeout=120)as client:
         response=client.get('/health');record(response.status_code==200 and response.json().get('status')=='ok','HTTP health')
         response=client.get('/commands');names={x['name']for x in response.json().get('commands',[])}
         record({'chrome_version','chrome_setup_check','chrome_start','chrome_status','chrome_open','chrome_screenshot','chrome_stop','chrome_smoke'}<=names,'named browser command discovery')
@@ -122,7 +129,7 @@ def main():
             else:print('[SKIP] native headed Chrome/CDP/VNC absent in source-only check',flush=True)
         else:
             response=client.post('/commands/chrome_version',json={});record(response.status_code==200 and response.json().get('result',{}).get('browser_version')=='145.0.7632.6','actual pinned native Chrome version')
-            asyncio.run(real_desktop(base,client,headers))
+            asyncio.run(real_desktop(base,client,{**headers, **_GATEWAY_HEADERS, **_APPLICATION_HEADERS}))
     print('SUMMARY',sum(RESULTS),'PASS,',len(RESULTS)-sum(RESULTS),'FAIL; native omissions explicit',flush=True)
     return 0 if all(RESULTS)else 1
 

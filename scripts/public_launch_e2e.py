@@ -243,14 +243,14 @@ async def cleanup_prepared(entries, cli, alias, diagnostics=None):
     return done, failures
 
 
-def export_owned_image(entries, alias, source, directory, provenance, runtime_version=None):
+def export_owned_image(entries, alias, source, directory, provenance, runtime_version=None, public_source_commit=None, source_snapshot_digest=None):
     """Export only the image built by this successful launch, before owned cleanup."""
     from server_sdk_pin import server_commit
     require(not directory.exists(), 'image export directory must be fresh')
     images = {}
     for entry in entries:
         tag = str(entry.get('correlation_key', ''))
-        if entry.get('kind') != 'image' or alias + '-' not in tag:
+        if entry.get('kind') != 'image' or not tag.rsplit(':', 1)[-1].startswith(alias + '-'):
             continue
         if '/' in tag and not tag.startswith('localhost:5000/'):
             continue
@@ -271,7 +271,9 @@ def export_owned_image(entries, alias, source, directory, provenance, runtime_ve
     revision = subprocess.check_output(['git', '-C', str(source), 'rev-parse', 'HEAD'], text=True).strip()
     metadata = {'format': 'docker-archive', 'origin': 'public-template-launch',
         'template': source.name, 'repository': 'Alibaba-Agent-Sandbox/awesome-templates',
-        'checkout_commit': revision, 'source_head_commit': revision,
+        'checkout_commit': public_source_commit or revision, 'source_head_commit': public_source_commit or revision,
+        'verifier_commit': revision, 'public_source_commit': public_source_commit,
+        'source_snapshot_digest': source_snapshot_digest,
         'workflow_run_id': os.environ.get('GITHUB_RUN_ID'),
         'server_sdk_commit': server_commit(source), 'local_image_id': image_id,
         'archive_sha256': digest, 'installed_packages': provenance,
@@ -373,8 +375,23 @@ async def verify(args):
     launch = None
     sandbox = None
     client = None
-    phase = 'template-launch'
+    phase = 'public-source-resolution'
+    public_source_commit = None
     try:
+        if not args.source:
+            resolved = await asyncio.to_thread(subprocess.run,
+                ['git', 'ls-remote', '--exit-code', 'https://github.com/Alibaba-Agent-Sandbox/awesome-templates.git', 'HEAD'],
+                capture_output=True, text=True, timeout=60, check=True)
+            require(re.fullmatch(r'[0-9a-f]{40}\s+HEAD\s*', resolved.stdout), 'public Git HEAD must resolve to an immutable commit')
+            public_source_commit = resolved.stdout.split()[0]
+            report['requested_source'] = report['source']
+            report['source'] += '@' + public_source_commit
+            report['public_source_commit'] = public_source_commit
+            report['verifier_commit'] = env.get('PUBLIC_LAUNCH_TEMPLATES_REF')
+            if report.get('installed_packages'):
+                report['installed_packages']['template_verifier_ref'] = env.get('PUBLIC_LAUNCH_TEMPLATES_REF')
+                report['installed_packages']['template_source_ref'] = public_source_commit
+        phase = 'template-launch'
         launch = await asyncio.to_thread(cli.run,
             ['template', 'launch', args.source or report['source'],
              '--alias', alias, '--timeout', str(args.build_timeout), '--sandbox-timeout', '1800', '--yes'],
@@ -435,10 +452,10 @@ async def verify(args):
             urls = {}
             for port in manifest.get('ports', [9000]):
                 url, port_headers = await sandbox.network.resolve(port)
-                require(not port_headers, 'HTTP controller requires a provider-resolved direct endpoint')
+                require(port_headers == gateway_headers, 'HTTP controller gateway authentication must match across declared ports')
                 urls[port] = url
             report['http_acceptance'] = await asyncio.to_thread(run_controller, source, urls,
-                cli.private_directory, controller_fixture, token=env['ABX_SERVER_TOKEN'])
+                cli.private_directory, controller_fixture, token=env['ABX_SERVER_TOKEN'], gateway_headers=gateway_headers)
             if not report['http_acceptance']['passed']:
                 from opensandbox_template_e2e import safe_label
                 labels = [line for line in (cli.private_directory / 'http.log').read_text().splitlines()
@@ -455,7 +472,7 @@ async def verify(args):
                     'runtime server version is a release version')
             report['runtime_server_version'] = version.stdout.strip()
             report['image_export'] = await asyncio.to_thread(export_owned_image, entries, alias, source,
-                args.export_image_dir, report.get('installed_packages'), version.stdout.strip())
+                args.export_image_dir, report.get('installed_packages'), version.stdout.strip(), public_source_commit, launch.get('source_digest'))
         report['application_result'] = 'PASS'
     except Exception as failure:
         report['application_result'] = 'FAIL'

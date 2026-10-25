@@ -2,6 +2,13 @@
 import asyncio,base64,hashlib,ipaddress,json,os,re,shlex,uuid
 from urllib.parse import urlsplit
 import httpx
+
+# The host runner passes provider gateway authentication separately from app auth.
+import json as _e2e_json
+_GATEWAY_HEADERS = _e2e_json.loads(os.environ.get("E2E_GATEWAY_HEADERS_JSON", "{}"))
+if not isinstance(_GATEWAY_HEADERS, dict) or any(not isinstance(k, str) or not isinstance(v, str) for k, v in _GATEWAY_HEADERS.items()):
+    raise ValueError("E2E_GATEWAY_HEADERS_JSON must be an object of string headers")
+_APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKEN"]} if os.environ.get("ABX_SERVER_TOKEN") else {}
 RESULTS=[]
 
 
@@ -20,7 +27,7 @@ def local(base):
 
 async def native(base,name,**parameters):
     from agent_sandbox.api.server_client import ServerClient
-    server=ServerClient(base,token=os.environ.get('E2E_SERVER_TOKEN')or None,timeout=1000)
+    server=ServerClient(base,token=os.environ.get('E2E_SERVER_TOKEN')or None,timeout=1000, headers=_GATEWAY_HEADERS)
     try:return await server.commands.run(name,timeout=1000,**parameters)
     finally:await server.aclose()
 
@@ -61,7 +68,7 @@ def model(client,base,workspace):
 
 def main():
     base=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000').rstrip('/');workspace=os.environ.get('E2E_WORKSPACE','/home/user/workspace').rstrip('/');token=os.environ.get('E2E_SERVER_TOKEN','')
-    with httpx.Client(base_url=base,headers={'Authorization':'Bearer '+token}if token else{},timeout=40)as client:
+    with httpx.Client(base_url=base,headers={**({'Authorization':'Bearer '+token}if token else{}), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS},timeout=40)as client:
         response=client.get('/health');record(response.status_code==200 and response.json().get('status')=='ok','HTTP health')
         response=client.get('/commands');names={x['name']for x in response.json().get('commands',[])};record({'tau2_version','tau2_setup_check','tau2_run','tau2_verify_artifact'}.issubset(names),'native named command discovery')
         response=client.post('/commands/tau2_setup_check',json={});record(response.status_code==200 and response.json().get('result',{}).get('mode')=='native-retail-agent-and-user','read-only setup without model request')

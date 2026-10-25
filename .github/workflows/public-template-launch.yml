@@ -67,6 +67,8 @@ jobs:
           for key in ['CLI_REF', 'SDK_REF', 'PROVIDERS_REF']:
               if not re.fullmatch('[0-9a-f]{40}', os.environ[key]):
                   raise SystemExit(key + ' must be an exact reviewed commit')
+          if os.environ['REQUESTED_TEMPLATES'] == 'managed' and os.environ['REQUESTED_PROVIDER'] != 'opensandbox':
+              raise SystemExit('Managed native journey requires provider opensandbox')
           available = source_names()
           managed = os.environ['REQUESTED_TEMPLATES'] == 'managed'
           names = available if os.environ['REQUESTED_TEMPLATES'] == 'all' else (['python-hello'] if managed else os.environ['REQUESTED_TEMPLATES'].split(','))

@@ -17,7 +17,11 @@ python scripts/public_launch_e2e.py python-hello --provider opensandbox --output
 python scripts/public_launch_e2e.py --list
 ```
 
-The default source is the public Git catalog. The launched manifest and runtime
+The default source is the public Git catalog. A new published attempt resolves its
+current public Git HEAD and pins that immutable commit in the requested Git ref.
+The report keeps the original request, resolved source commit and verifier commit
+separate; an exported image names the actual pinned public source, while the
+artifact/run identity names the verifier revision. The launched manifest and runtime
 command source must match this checkout. For a candidate revision use
 `--source ./python-hello`; the report records that this was a local candidate,
 not a public Git template lookup. CLI/SDK package installation is recorded separately. An existing output file is never overwritten.
@@ -106,3 +110,18 @@ provider Git 地址开始，测试内置解释器模板的 CLI 启动、进程/�
 持久上下文、隔离、程序异常和上下文删除；SDK 与 Docker 独立确认资源清理。
 另外三个绑定其他提供方的内置标识会验证明确拒绝和未创建容器，记为
 `NOT_APPLICABLE`，不能算跨平台启动成功。
+
+
+The controller helper accepts provider `gateway_headers` separately from the generated
+application token. It supplies validated string headers through
+`E2E_GATEWAY_HEADERS_JSON` and the application token through the existing
+`E2E_TOKEN`, `ABX_SERVER_TOKEN` and `E2E_SERVER_TOKEN` aliases. Standalone controllers
+merge gateway headers into HTTP and Python application-client requests; application
+Bearer authentication remains separate from gateway access-token headers. Arbitrary
+operator environment keys are not forwarded. Invalid header objects or conflicting
+Authorization headers fail before the controller starts.
+
+中文：公开源码启动前会解析并固定当前 Git HEAD；报告分别记录最初请求、实际固定
+源码提交和验证程序提交。测试客户端通过受控 JSON 环境变量传递 provider 网关头，
+同时保留独立的应用 Bearer 令牌，不借用其他操作员凭据。它支持现有三种测试令牌
+变量名，非法网关头和冲突的 Authorization 会在运行前明确失败。
