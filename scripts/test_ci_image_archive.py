@@ -189,3 +189,45 @@ def test_native_inventory_matches_only_exact_owned_name():
     cli=SimpleNamespace(run=lambda *args,**kwargs:[{'Name':'owned','TemplateID':'correct'},
         {'Name':'owned-extra','TemplateID':'foreign'},{'Name':'other','TemplateID':'another'}])
     assert review.exact_templates(cli,'owned')==['correct']
+
+
+@pytest.mark.parametrize('observed_digest,expected_status', [('sha256:'+'b'*64,1),('sha256:'+'a'*64,0)])
+def test_runtime_digest_gate_controls_final_result_even_after_application_and_cleanup_pass(tmp_path,monkeypatch,observed_digest,expected_status):
+    import yaml
+    source=tmp_path/'repo'/'example';source.mkdir(parents=True)
+    (source/'template.yaml').write_text(yaml.safe_dump({'name':'example','version':'1.0.1','resources':{'cpu':2,'memory':2048}}))
+    monkeypatch.setattr(review,'controller_missing_imports',lambda _:[])
+    monkeypatch.setattr(review,'check_image_cli',lambda:None)
+    monkeypatch.setattr(images,'download_verified',lambda *args:None)
+    proof={'pushed_image_digest':'sha256:'+'a'*64}
+    def push(stage,selected,crane,journal):
+        images.save_private(journal,{'owned':True})
+        return 'owned-image',dict(proof),None
+    monkeypatch.setattr(images,'push_verified',push)
+    monkeypatch.setattr(images,'temporary_registry_credentials',lambda:('synthetic-user','synthetic-password'))
+    monkeypatch.setattr(images,'owned_registry_cleanup',lambda *args:True)
+    monkeypatch.setattr(images,'crane_call',lambda *args:observed_digest)
+    templates=[]
+    monkeypatch.setattr(review,'exact_templates',lambda cli,alias:list(templates))
+    def cli(self,args,*pos,**kwargs):
+        if args[:2]==['template','from-image']:
+            templates.append('owned-template');return {'TemplateID':'owned-template'}
+        if args[:2]==['template','delete']:
+            templates.remove(args[2]);return ''
+        raise AssertionError('unexpected operation')
+    monkeypatch.setattr(review.CLI,'run',cli)
+    monkeypatch.setattr(review,'wait_ready',lambda *args:None)
+    async def exercise(source,reference,private,report,http,journal):
+        report.update(application_result='PASS',cleanup_verified=True,http_acceptance={'passed':True})
+    monkeypatch.setattr(review,'exercise',exercise)
+    published=[]
+    monkeypatch.setattr(review,'publish',lambda source,receipt,report:published.append(report.copy()))
+    assert review.run(source,123,'verified-crane',private_root=tmp_path/'private')==expected_status
+    assert not templates
+    if expected_status:
+        assert not published
+        report=json.loads(next((source/'evidence').glob('image-attempt-*.json')).read_text())
+        assert report['application_result']=='PASS' and report['cleanup_verified'] is True
+        assert report['passed'] is False and report['failed_check']=='owned image tag digest after runtime'
+    else:
+        assert len(published)==1 and published[0]['passed'] is True
