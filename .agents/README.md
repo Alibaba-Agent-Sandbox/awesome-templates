@@ -2,6 +2,8 @@
 
 ## Specification 5 delivery (2026-10-25)
 
+- [Native prepared startup compensation](notes/proposed/process/2026-10-25-native-prepared-startup-environment.md) · [verification](evidence/verify/2026-10-25-native-prepared-startup-environment.md). The earlier manifest-only correction proved insufficient; the failed control and same-instance PATH diagnostic remain preserved.
+
 - [Prepared native runtime environment](notes/proposed/process/2026-10-25-native-prepared-runtime-environment.md) · [verification](evidence/verify/2026-10-25-native-prepared-runtime-environment.md). Original failures and the controlled diagnostic remain separate from the pending new native supplemental matrix.
 
 - [Current published runtime and canonical command surface](notes/proposed/process/2026-10-25-current-runtime-and-command-surface.md) · [verification](evidence/verify/2026-10-25-current-runtime-and-command-surface.md). Fresh public a6/CLI0.5.6 image/provider matrices remain separate required gates.

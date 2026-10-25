@@ -179,6 +179,32 @@ def test_prepared_runtime_environment_preserves_original_launch_contract(tmp_pat
     actual=current.prepared_launch_manifest(tmp_path,'owned-template',
         runtime_env={'PATH':'/opt/tool/bin:/usr/bin','PRIORITY':'docker'})
     assert actual['env']=={'PATH':'/opt/tool/bin:/usr/bin','PRIORITY':'manifest','TOKEN':''}
-    for key in ['start_cmd','ready_cmd','provides']:assert actual[key]==original[key]
+    assert actual['provides']==original['provides']
     assert current.prepared_launch_manifest(tmp_path,'owned-template')['env']==original['env']
+    for key in ['start_cmd','ready_cmd']:
+        assert current.prepared_launch_manifest(tmp_path,'owned-template')[key]==original[key]
+    assert yaml.safe_load((tmp_path/'template.yaml').read_text())==original
+
+
+def test_native_start_and_ready_receive_explicit_environment_without_freezing_empty_secrets(tmp_path):
+    import shlex
+    import subprocess
+    import sys
+    import yaml
+    tools=tmp_path/'installed tools';tools.mkdir()
+    tool=tools/'owned-agent';tool.write_text('#!/bin/sh\nprintf owned-version\n');tool.chmod(0o755)
+    output=tmp_path/'observed.json'
+    code='import json,os,pathlib; pathlib.Path('+repr(str(output))+').write_text(json.dumps({"setting":os.environ["SETTING"],"literal":os.environ["LITERAL"],"secret_matches":os.environ.get("TOKEN")=="inherited-fixture"}))'
+    command='owned-agent && '+shlex.quote(sys.executable)+' -c '+shlex.quote(code)
+    original={'name':'owned','env':{'SETTING':'manifest','TOKEN':''},'start_cmd':command,
+              'ready_cmd':'test "$(owned-agent)" = owned-version','provides':{}}
+    (tmp_path/'template.yaml').write_text(yaml.safe_dump(original))
+    supplied={'PATH':str(tools)+':/usr/bin:/bin','SETTING':'docker','LITERAL':"two words; '$HOME'"}
+    actual=current.prepared_launch_manifest(tmp_path,'owned-template',runtime_env=supplied)
+    environment={'PATH':'/usr/bin:/bin','TOKEN':'inherited-fixture','SETTING':'ambient'}
+    for key in ['start_cmd','ready_cmd']:
+        process=subprocess.run(['/bin/sh','-c',actual[key]],env=environment,capture_output=True,text=True,timeout=10)
+        assert process.returncode==0,process.stderr
+        assert 'TOKEN=' not in actual[key]
+    assert json.loads(output.read_text())=={'setting':'manifest','literal':"two words; '$HOME'",'secret_matches':True}
     assert yaml.safe_load((tmp_path/'template.yaml').read_text())==original
