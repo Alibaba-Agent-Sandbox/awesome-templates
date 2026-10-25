@@ -72,7 +72,7 @@ Calls serialize. Startup readiness budget90seconds; navigation/CDP/VNC operation
 | Name | Default / requirement | Meaning |
 | --- | --- | --- |
 | WORKSPACE | /home/user/workspace; existing directory | Browser screenshot root, captured at command-module startup |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials Also used for CDP relay authentication. |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before launching the template; separate from model and gateway credentials. Also used for CDP relay authentication. |
 
 [Runtime environment](../docs/runtime-environment.md) explains prewarmed processes: create-time env does not reconfigure an already-running server. Each owned session generates a private8-character VNC password and Xauthority cookie; password is returned only to the authorized start caller, never logged or passed in argv. Browser receives a minimal environment without operator cloud/model/GitHub credentials. Session HOME/profile/config/cookies/password files are private and removed on stop. A noVNC connection still needs the VNC password; protect forwarded URLs with provider access controls.
 
@@ -81,6 +81,8 @@ Calls serialize. Startup readiness budget90seconds; navigation/CDP/VNC operation
 Declared2vCPU/2048MB,1024×768 desktop, ports9000/9222/6080, internal9223/5901 and one owned X display. No Docker/KVM/GPU is required. Native Chrome uses --no-sandbox inside the disposable outer sandbox and --disable-dev-shm-usage; it is not an additional OS isolation boundary. Image rootfs guard8GiB. Actual Express /dev/shm was1031241728bytes; v2 cgroup memory/cpu paths were unavailable, so2CPU/2048MB is the declared template profile, not a measured peak or cgroup2limit. Separate actual L1 native image smoke measured64MiB shared memory; its CPU/memory were unrestricted. Rootfs measured1689714688bytes. These are distinct measurements, not a combined2GB/64MiB stress test. One session per server; generated downloads/screenshots consume caller workspace storage.
 
 ## Verified
+
+Version 1.0.6 retains provider-resolved URL paths and query parameters for CDP and noVNC connections. Pass each endpoint returned by the provider unchanged; do not replace it with the native browser host.
 
 See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
 
