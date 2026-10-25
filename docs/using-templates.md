@@ -8,10 +8,10 @@ separate check that does not establish image deployment acceptance.
 
 ## Installation
 
-Current specification 5 templates require CLI 0.5.0 or later. The examples below use CLI 0.5.0 and Python client 0.4.0a1; the Python package is a preview and is pinned explicitly. Node 22+ is recommended for terminal support.
+Using the complete source and provider-managed template catalog requires CLI 0.5.1 or later. The examples below use CLI 0.5.1 and Python client 0.4.0a1; the Python package is a preview and is pinned explicitly. Node 22+ is recommended for terminal support.
 
 ```bash
-npm install -g @agent-sandbox/cli@0.5.0 --registry=https://registry.npmjs.org
+npm install -g @agent-sandbox/cli@0.5.1 --registry=https://registry.npmjs.org
 python3 -m pip install --index-url https://pypi.org/simple 'agent-sandbox-client==0.4.0a1'
 abx --version
 ```

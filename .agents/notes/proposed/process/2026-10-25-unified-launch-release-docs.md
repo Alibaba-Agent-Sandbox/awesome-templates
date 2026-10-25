@@ -8,11 +8,11 @@ The specification 5 migration intentionally retained source-candidate installati
 
 ## Decision
 
-After compatible public packages and the migration are available, recommend CLI 0.5.0+ and explicitly pinned Python client 0.4.0a1. Update both usage languages, shared Python installation, four managed quick starts and current indexes. Preserve all 46 sanitized receipts and the independent verification summary in a new dated directory; retain older evidence unchanged.
+After compatible public packages and the migration are available, recommend CLI 0.5.1+ and explicitly pinned Python client 0.4.0a1. Update both usage languages, shared Python installation, four managed quick starts and current indexes. Preserve all 46 sanitized receipts and the independent verification summary in a new dated directory; retain older evidence unchanged.
 
 ## API Design
 
-No runtime or schema change. Installation uses `npm install -g @agent-sandbox/cli@0.5.0 --registry=https://registry.npmjs.org` and `python3 -m pip install --index-url https://pypi.org/simple 'agent-sandbox-client==0.4.0a1'`. Templates continue to launch through one command. Existing source-matrix receipts do not establish published-package or managed-launch acceptance.
+No runtime or schema change. Installation uses `npm install -g @agent-sandbox/cli@0.5.1 --registry=https://registry.npmjs.org` and `python3 -m pip install --index-url https://pypi.org/simple 'agent-sandbox-client==0.4.0a1'`. Templates continue to launch through one command. Existing source-matrix receipts do not establish published-package or managed-launch acceptance.
 
 ## Alternatives considered
 
@@ -20,7 +20,7 @@ Keeping temporary source installation indefinitely obscures the supported releas
 
 ## Dependencies
 
-[Template migration PR](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/213), [CLI PR](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/pull/152), [Python SDK PR](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/108), and publicly retrievable compatible packages. Refs https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/212.
+[Template migration PR](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/213), [CLI PR](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/pull/152), [Python SDK PR](https://github.com/Alibaba-Agent-Sandbox/python-sdk/pull/108), the [CLI managed-catalog and JSON fix](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/pull/154), and publicly retrievable compatible packages. Refs https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/212.
 
 ## Test Strategy
 
