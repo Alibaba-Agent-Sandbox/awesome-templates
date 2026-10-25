@@ -95,7 +95,8 @@ smoke 必须可重复执行，真实模型业务和完整应用控制器
 ## Native provider-owned catalog entries
 
 Select `templates: managed` and `provider: opensandbox` in the same manual workflow. This native journey installs the
-published npm CLI, paired PyPI client/server 0.4.0a1, the pinned provider from its
+published npm CLI and paired PyPI client/server versions resolved from the selected
+exact CLI/SDK commits, the pinned provider from its
 public Git URL and upstream `opensandbox-code-interpreter==1.1.1`. It launches
 `opensandbox-code-interpreter` through the public catalog, exercises CLI shell and
 Python shell/files, then runs real native persistent/isolated interpreter contexts,

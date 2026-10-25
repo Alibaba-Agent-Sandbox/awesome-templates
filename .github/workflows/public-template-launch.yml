@@ -261,10 +261,12 @@ jobs:
       - name: Resolve exact published CLI version
         run: |
           python - <<'PY'
-          import json,os
+          import json,os,runpy
           from pathlib import Path
           version=json.loads(Path('.launch-fixtures/cli/package.json').read_text())['version']
-          with open(os.environ['GITHUB_ENV'],'a') as stream:stream.write('PUBLIC_CLI_VERSION='+version+'\n')
+          sdk=runpy.run_path('.launch-fixtures/sdk/scripts/check_release.py')['release_version']()
+          with open(os.environ['GITHUB_ENV'],'a') as stream:
+              stream.write('PUBLIC_CLI_VERSION='+version+'\nPUBLIC_SDK_VERSION='+sdk+'\n')
           PY
       - uses: actions/setup-node@v4
         with:
@@ -279,7 +281,7 @@ jobs:
           assert re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+',os.environ['PUBLIC_CLI_VERSION'])
           PY
           npm install -g --registry https://registry.npmjs.org "@agent-sandbox/cli@$PUBLIC_CLI_VERSION"
-          python -m pip install --no-cache-dir --index-url https://pypi.org/simple agent-sandbox-client==0.4.0a1 agent-sandbox-server==0.4.0a1 opensandbox-code-interpreter==1.1.1 -r scripts/requirements-spec.txt
+          python -m pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-client==$PUBLIC_SDK_VERSION" "agent-sandbox-server==$PUBLIC_SDK_VERSION" opensandbox-code-interpreter==1.1.1 -r scripts/requirements-spec.txt
           python -m pip check
           abx --version
           abx provider install Alibaba-Agent-Sandbox/awesome-providers//opensandbox --ref "${{ inputs.providers_ref }}" --yes
