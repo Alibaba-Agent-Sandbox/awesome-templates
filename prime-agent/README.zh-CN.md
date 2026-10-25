@@ -73,7 +73,7 @@ print(await client.commands.run('prime_agent_version'))
 | PRIME_MODEL_BASE_URL | empty; required for coding | Explicit HTTPS base; literal local HTTP for authored fixtures only; no userinfo/query/fragment; max2048characters |
 | PRIME_MODEL | empty; required for coding | Actual model identifier; max200allowed identifier characters |
 | WORKSPACE | `/home/user/workspace` | Existing caller project root |
-| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 配置在commands.py加载时读取。私有0700HOME/0600models.json使用 apiKey="ABX_PRIME_MODEL_KEY" 环境变量引用，不保存key值。不继承操作端云/GitHub/厂商凭据。固定内核入口在启动原版CPython前删除ABX_PRIME_MODEL_KEY；同一用户仍有OS访问权限，这只是环境收敛，不是凭据隔离。返回值脱敏原值及JSON转义的key/base。禁用遥测、trace、refinement、compaction、factory及发现，设置rlmMaxDepth0；原生print模式不传child host，使用NoRlmChildren，不启动委派代理或daemon。自定义模型价格未知，默认0不能理解为免费。
 

@@ -73,7 +73,7 @@ Transparent event filtering preserves original settled NDJSON records unchanged 
 | PRIME_MODEL_BASE_URL | empty; required for coding | Explicit HTTPS base; literal local HTTP for authored fixtures only; no userinfo/query/fragment; max2048characters |
 | PRIME_MODEL | empty; required for coding | Actual model identifier; max200allowed identifier characters |
 | WORKSPACE | `/home/user/workspace` | Existing caller project root |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
 
 Captured when commands.py loads. Private0700HOME/0600models.json uses apiKey="ABX_PRIME_MODEL_KEY", storing an environment reference instead of key bytes. No operator cloud/GitHub/vendor credentials are inherited. The fixed kernel launcher removes ABX_PRIME_MODEL_KEY before original CPython starts; same-user OS access means this is environment minimization, not credential isolation. Literal/JSON-escaped key and base values are redacted from returned output. Telemetry/traces/refinement/compaction/factory and discovery are disabled; rlmMaxDepth0 is set. Original print mode supplies no child host and therefore uses NoRlmChildren: no delegated agent is launched. No daemon mode is started. Custom model pricing is unspecified; zero defaults are not a free-service claim.
 

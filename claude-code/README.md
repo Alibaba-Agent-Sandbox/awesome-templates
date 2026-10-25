@@ -77,7 +77,7 @@ Text and original tool schemas/results are translated; unsupported image/thinkin
 | CLAUDE_MODEL | empty; required for BYOK | Selected model1..200identifier characters |
 | ANTHROPIC_API_KEY | empty; legacy mode only | Existing Anthropic-compatible legacy configuration; not silently reused by BYOK |
 | WORKSPACE | /home/user/app | Existing project root |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
 
 New settings captured at module import. Key max8192/no control characters; no default provider/model/key fallback. Native/tool environment gets only an ephemeral local adapter token and minimal private HOME/config/cache; real upstream key remains in the parent and is sent only to exact configured Chat origin. Original command results and error messages omit credentials/private endpoints/transcripts. Same-user OS access remains; environment filtering/cwd containment is not another tenant boundary. Legacy resume/settings behavior is retained and outside BYOK isolation claims.
 

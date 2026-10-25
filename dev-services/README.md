@@ -75,7 +75,7 @@ Version1.1.0 adds postgres_port:int=0 and redis_port:int=0 to services_start. Ze
 
 | Name | Default | Purpose |
 |---|---|---|
-| ABX_SERVER_TOKEN | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
 | ABX_SERVER_PORT | 9000 | local command API port |
 | WORKSPACE | /home/user/app | existing workspace root |
 | DEV_SERVICES_PASSWORD | empty | optional default password; per-call password also supported |

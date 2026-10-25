@@ -75,7 +75,7 @@ stdout／stderr 各限256KiB；成功／失败／超时／溢出均清理自有�
 | GROK_MODEL_BASE_URL | 模型必需，空 | 显式 HTTPS API base；仅固定本地地址可用 HTTP；无用户信息／query／fragment；最多2048字符 |
 | GROK_MODEL | 模型必需，空 | 实际模型标识，最多200个允许字符 |
 | WORKSPACE | `/home/user/workspace` | 已存在工作区根目录 |
-| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 配置在 commands.py 加载时捕获。私有0600 config.toml 仅含显式 model/base 与 env_key="ABX_GROK_MODEL_KEY"，不保存密钥值，固定 chat_completions 后端。每次调用使用并删除私有 GROK_HOME/HOME/cache/session；关闭更新、leader、遥测/trace、记忆及后台 workflow。原生 shell_environment_policy 继承 core 并排除秘密变量；不转发调用者云/GitHub/厂商账号凭据。
 

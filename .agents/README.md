@@ -10,7 +10,7 @@
 
 - [Release installation and durable matrix evidence](notes/proposed/process/2026-10-25-unified-launch-release-docs.md) · [documentation verification](evidence/verify/2026-10-25-unified-launch-release-docs.md) · [complete OpenSandbox matrix](evidence/verify/2026-10-25-unified-launch-opensandbox-matrix.md).
 
-Current authoring uses one startup command and all declared services, without workflow selectors. The source-candidate OpenSandbox matrix passed 46/46 recipes and 219 consumer calls with independent cleanup. Its receipts preserve exact source provenance; published package installation and managed catalog launch remain separate checks. Current setup targets CLI 0.5.1+ and published Python client 0.4.0a2. The new server pins are pending fresh image/cloud acceptance. Their official installation and a separate public CLI 0.5.1 Express `base` launch/exec/cleanup have passed; this does not extend the other managed or source-matrix scopes. Earlier cloud receipts below retain their exact historical scope.
+Current authoring uses one startup command and all declared services, without workflow selectors. The source-candidate OpenSandbox matrix passed 46/46 recipes and 219 consumer calls with independent cleanup. Its receipts preserve exact source provenance; published package installation and managed catalog launch remain separate checks. Current setup targets published CLI 0.5.3 and published Python client 0.4.0a2. The new server pins are pending fresh image/cloud acceptance. Their official installation and a separate public CLI 0.5.1 Express `base` launch/exec/cleanup have passed; this does not extend the other managed or source-matrix scopes. Earlier cloud receipts below retain their exact historical scope.
 
 ## Historical delivery (2026-10-24)
 
@@ -300,4 +300,5 @@ Source image backend acceptance: [decision](notes/proposed/feature/2026-10-22-so
 Chrome provider-path correction: [decision](notes/implemented/feature/2026-10-25-chrome-provider-prefix.md) · [verification](evidence/verify/2026-10-25-chrome-provider-prefix.md).
 Current public-package rerun: [decision](notes/proposed/process/2026-10-25-public-opensandbox-rerun.md), [verification](evidence/verify/2026-10-25-public-opensandbox-rerun.md).
 
+- [Public Express rerun](notes/proposed/process/2026-10-25-public-express-rerun.md) · [verification](evidence/verify/2026-10-25-public-express-rerun.md).
 Current controller authentication: [decision](notes/proposed/process/2026-10-25-current-controller-auth.md) · [verification](evidence/verify/2026-10-25-current-controller-auth.md).

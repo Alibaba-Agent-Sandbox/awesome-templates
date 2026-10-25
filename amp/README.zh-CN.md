@@ -107,7 +107,7 @@ print(await client.commands.run('amp_version'))
 | `AMP_URL` | 否 | `https://ampcode.com/` | Amp 服务地址。这是 CLI 自己的默认值，镜像不覆盖它。 |
 | `AMP_SETTINGS_FILE` | 否 | 镜像内为 `/home/user/.config/amp/settings.json` | 调用者管理的设置文件，仅作只读检查。 |
 | `AMP_LOG_FILE` | 否 | 镜像内为 `/home/user/.cache/amp/logs/cli.log` | CLI 日志路径。 |
-| `ABX_SERVER_TOKEN` | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| `ABX_SERVER_TOKEN` | 是 | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 本地执行 `python3 commands.py` 时 `start()` 监听的端口。 |
 
 在 `template launch` 前安全导出清单中声明为空的秘密变量，让应用启动时读取；不要写入镜像、YAML 或日志。

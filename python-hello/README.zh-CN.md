@@ -75,7 +75,7 @@ print(await client.commands.run('hello', name='Express'))
 
 | 变量 | 必填 | 默认值 | 用途 |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| `ABX_SERVER_TOKEN` | 是 | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `WORKSPACE` | 否 | `commands.py` 所在目录 | 所有 Python 子进程使用的已有目录，调整时同步修改上传路径。 |
 | `ABX_SERVER_BASE_DIR` | 否 | `/home/user` | 文件 API 路径边界；自定义工作目录需位于该边界内。此设置不限制任意 Python 代码。 |
 | `ABX_SERVER_PORT` | 否 | `9000` | 本地 `python3 commands.py` 监听端口；云端 `start_cmd` 固定指定 9000。 |
@@ -142,9 +142,9 @@ Apache-2.0，见 [LICENSE](../LICENSE)。
 
 在 OpenSandbox 上使用 `abx template launch` 时，显式传入
 `--build-profile portable`。`Dockerfile.portable` 使用
-摘要固定的 Python 基础镜像，创建非 root 用户并直接安装固定源码版本的命令服务。
+摘要固定的 Python 基础镜像，创建非 root 用户并直接安装已发布固定版本的命令服务。
 默认 Dockerfile 保留 Express 平台占位参数；Provider 不会改写构建文件或注入 wheel。
-创建完成后，application 工作流通过 `exec.run` 启动服务。所选构建方案与源码实际
+创建完成后，模板启动通过 `exec.run` 启动服务。所选构建方案与源码实际
 字节都属于启动身份。声明此方案本身不代表已经通过真实后端验收。
 
-独立的 `application-image` 工作流让 Python `launch_workflow` 消费已准备好的不可变 OCI 镜像；它不执行源码准备。
+Python 使用 `agent_sandbox.api.template.launch_template(manifest, provider="opensandbox", reference=image_digest, application_token=token)` 消费准备好的不可变镜像。传入原清单，保留其启动、就绪和全部服务；通过返回会话调用命令，关闭会话销毁本次沙箱。Python 不执行源码镜像准备。

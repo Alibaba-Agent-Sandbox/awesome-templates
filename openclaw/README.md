@@ -105,7 +105,7 @@ On Linux, each short-lived gateway health RPC drains its output and keeps its le
 |---|---|---|
 | `OPENCLAW_GATEWAY_TOKEN` | empty | Required for gateway start; inject via sandbox environment, never a command parameter. It is passed in the child environment and referenced by name in isolated config, never returned or included in argv. |
 | `OPENCLAW_TRUSTED_PROXIES` | empty | Explicit verified proxy IP/CIDR list for forwarded access; max16/2048bytes, no unrestricted/multicast networks. |
-| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials `/health` does not require the application token. |
+| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the template launch; separate from model and gateway credentials `/health` does not require the application token. |
 | `ABX_SERVER_PORT` | 9000 | Local `python commands.py` HTTP port; cloud start command explicitly uses 9000. |
 | `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` | empty | Optional upstream model credentials; gateway health does not need them. No model call is implemented or validated by these commands. |
 

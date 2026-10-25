@@ -114,7 +114,7 @@ A missing `prompt` is HTTP 400. A non-zero CLI exit is HTTP 500 `{"error","type"
 | `OPENCODE_MODEL` | no | `dashscope/qwen3.8-flash` | Used when `model` is empty. |
 | `OPENCODE_API_KEY` | no | empty | OpenCode Zen credential when `model` is `opencode/<id>`. |
 | `OPENCODE_SERVER_PASSWORD` | no | empty | Basic auth password for `opencode serve`. The CLI warns when it is unset. |
-| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
 | `OPENCODE_CONFIG` | no | `/home/user/app/opencode.json` | Config file the child process reads. |
 | `OPENCODE_DISABLE_AUTOUPDATE` | no | `true` in the image | Stops the pinned CLI from upgrading itself. |
 | `ABX_SERVER_PORT` | no | `9000` | Port `start()` binds for a local `python3 commands.py`. |

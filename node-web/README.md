@@ -79,7 +79,7 @@ One service can run at a time; a second start fails until `stop`. Readiness test
 | `HOST` | set to `0.0.0.0` by launch | Hint to compatible application servers; application must honor it |
 | `WORKSPACE` | unset | Default application working directory |
 | `ABX_SERVER_PORT` | `9000` | Local command server port |
-| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
 
 No model/cloud key is needed by these commands. Keep secret values out of source, images and logs. Inject them only through authorized runtime configuration; do not log environment variables. App stdout is user controlled and can contain secrets: applications must redact before logging, and logs must not be attached to public issues without review.
 

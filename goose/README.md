@@ -89,7 +89,7 @@ and base URL, but project stdout may still contain private project content.
 | GOOSE_BASE_URL | model calls | empty | explicit HTTP(S) endpoint; no userinfo/query/fragment; mapped to upstream OPENAI_BASE_URL |
 | GOOSE_MODEL | model calls | empty | actual upstream model ID |
 | WORKSPACE | no | /home/user/app | caller-owned working directory |
-| ABX_SERVER_TOKEN | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
 | GOOSE_BINARY | operator diagnostics only | Goose on image PATH | independently installed binary override, still checks exact version |
 
 A private GOOSE_PATH_ROOT/HOME and XDG dirs, disabled keyring/telemetry/session

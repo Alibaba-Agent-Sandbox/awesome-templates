@@ -71,7 +71,7 @@ The CLI argv is `kimi --prompt PROMPT --output-format stream-json`. Upstream 2.2
 | KIMI_MODEL_BASE_URL | for model turns | explicit authorized compatible endpoint; no implicit credential forwarding |
 | KIMI_MODEL_PROVIDER_TYPE | no | openai; also kimi or anthropic, matching upstream 2.2.0 |
 | WORKSPACE | no | /home/user/app |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
 
 Model variables are verified in the actual npm 2.2.0 runtime and its official [provider documentation](https://github.com/MoonshotAI/kimi-code/blob/main/docs/en/configuration/providers.md). Each invocation sets KIMI_CODE_HOME to an owned temporary directory, leaving caller settings intact, and excludes unrelated cloud/registry credential variables. Secret values and JSON-escaped variants are redacted from returned stdout/stderr. The wrapper does not promise a read-only prompt mode.
 

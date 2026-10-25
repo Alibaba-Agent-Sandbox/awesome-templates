@@ -75,7 +75,7 @@ Native output is capped256KiB per stream, with whole-process-group/pidfd/unique-
 | GROK_MODEL_BASE_URL | model required; empty | Explicit HTTPS API base, literal localhost HTTP for authored development only; no userinfo/query/fragment; max2048characters |
 | GROK_MODEL | model required; empty | Actual model identifier, max200allowed identifier characters |
 | WORKSPACE | `/home/user/workspace` | Existing workspace root |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
 
 Values are captured when commands.py loads. A private0600 config.toml stores explicit model/base and env_key="ABX_GROK_MODEL_KEY" without the key value. Custom api_backend="chat_completions" prevents selecting a hosted vendor model. Private GROK_HOME/HOME/cache/session state is removed after each call; auto-update, leader, telemetry/trace upload, memory and background workflows are disabled. Native shell_environment_policy inherits core with default secret exclusion; no caller cloud/GitHub/vendor account token is forwarded. Agent tools still have OS authority in the disposable sandbox.
 

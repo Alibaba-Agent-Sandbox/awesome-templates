@@ -75,7 +75,7 @@ psql使用 -X、ON_ERROR_STOP；redis-cli使用 -e 将协议错误作为失败�
 
 | 名称 | 默认值 | 用途 |
 |---|---|---|
-| ABX_SERVER_TOKEN | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| ABX_SERVER_TOKEN | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | ABX_SERVER_PORT | 9000 | 本地命令端口 |
 | WORKSPACE | /home/user/app | 已存在工作区 |
 | DEV_SERVICES_PASSWORD | 空 | 可选默认密码，也可每次启动显式传入 |
