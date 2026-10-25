@@ -147,7 +147,7 @@ This Linux runtime drains both output pipes and keeps its session leader unreape
 | `OPENAI_BASE_URL` | Default `https://dashscope.aliyuncs.com/compatible-mode/v1`; edit the manifest default before launch for another compatible endpoint |
 | `OPENAI_MODEL` | Default `qwen3-coder-plus`; explicit command `model` wins |
 | `WORKSPACE` | Default `/home/user/app` |
-| `ABX_SERVER_TOKEN` | Required before application workflow launch; independent of model and gateway credentials |
+| `ABX_SERVER_TOKEN` | Required before template launch; independent of model and gateway credentials |
 
 Diagnostics inspect `~/.qwen/settings.json` and `<workspace>/.qwen/settings.json` without altering contents or permissions. Normal upstream coding may maintain its own runtime cache. Upstream [model-provider configuration](https://github.com/QwenLM/qwen-code/blob/v0.23.0/docs/users/configuration/model-providers.md) and [headless usage](https://github.com/QwenLM/qwen-code/blob/v0.23.0/docs/users/features/headless.md) describe compatibility; each endpoint/model still requires a real acceptance run. Do not enable API logging with secrets in public artifacts.
 

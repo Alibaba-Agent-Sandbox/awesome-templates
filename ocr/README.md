@@ -75,7 +75,7 @@ One OCR job runs at a time; another request fails promptly. The actual argv is `
 
 | Name | Required | Default | Purpose |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | no | `9000` | Direct local startup port. |
 | `WORKSPACE` | no | `/home/user/app` | Existing runtime-user-owned input/output root. |
 | `OCR_TESSERACT_BINARY` | no | `/usr/bin/tesseract` | Operator-only absolute executable path; version remains checked. |

@@ -147,7 +147,7 @@ asyncio.run(main())
 | `OPENAI_BASE_URL` | 默认 `https://dashscope.aliyuncs.com/compatible-mode/v1`，其他兼容端点需在启动前修改清单默认值 |
 | `OPENAI_MODEL` | 默认 `qwen3-coder-plus`，命令参数 `model` 优先 |
 | `WORKSPACE` | 默认 `/home/user/app` |
-| `ABX_SERVER_TOKEN` | 启动 application 工作流前必填；独立于模型和网关凭据 |
+| `ABX_SERVER_TOKEN` | 启动 模板启动前必填；独立于模型和网关凭据 |
 
 诊断只读 `~/.qwen/settings.json` 和 `<workspace>/.qwen/settings.json`，保留内容与权限；正常编码可能产生上游运行缓存。兼容约定见[上游模型提供方配置](https://github.com/QwenLM/qwen-code/blob/v0.23.0/docs/users/configuration/model-providers.md)和[无头模式](https://github.com/QwenLM/qwen-code/blob/v0.23.0/docs/users/features/headless.md)。每个端点/模型仍需真实验收，不把 API 日志中的秘密写入公开产物。
 

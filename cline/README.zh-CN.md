@@ -76,7 +76,7 @@ stdout／stderr 各限256KiB；成功／失败／超时／溢出均清理自有�
 | CLINE_MODEL_BASE_URL | 模型必需，空 | 显式 HTTPS API base；仅固定本地地址可用 HTTP；无用户信息／query／fragment；最多2048字符 |
 | CLINE_MODEL | 模型必需，空 | 实际模型标识，最多200个允许字符 |
 | WORKSPACE | `/home/user/workspace` | 已存在工作区根目录 |
-| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 配置在 commands.py 加载时读取。包装器只向私有0600设置文件写提供方／模型／base元数据，不写模型密钥值；原生密钥按其文档从环境读取。原生状态受私有目录保护并在返回／失败时删除。关闭全局 telemetry／自动更新／运行时文件日志，以及公共／私有模型目录刷新。config／data／team／MCP 路径均每次隔离，不传宿主 GitHub／云密钥、二进制替换配置或 Cline 账号 token，宿主控制端凭据不进入编码进程。
 

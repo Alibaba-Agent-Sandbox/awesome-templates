@@ -111,7 +111,7 @@ Expected response for this check:
 | `CODEX_MODEL` | no | empty | `model` written into `config.toml` and used when `codex_exec` omits `model`. |
 | `CODEX_HOME` | no | `/home/user/.codex` | Directory of `config.toml` and sessions. |
 | `WORKSPACE` | no | `/home/user/workspace` | Default `cwd`. A starter `AGENTS.md` is in the image. |
-| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | no | `9000` | Port for a local `python3 commands.py`. |
 
 Before `template launch`, securely export the secret variables declared empty in the manifest so the application reads them at startup. Keep values out of images, YAML and logs.

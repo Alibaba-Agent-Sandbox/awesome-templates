@@ -69,7 +69,7 @@ Expected response for this check:
 
 | Name | Required | Default | Purpose |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | no | `9000` | Port `start()` binds for a local `python3 commands.py`. |
 
 Provide secret values before the command server starts; use create-time env only when the provider starts that server with it. See [runtime environment](../docs/runtime-environment.md). Do not write them into the image, the Dockerfile, or a log.

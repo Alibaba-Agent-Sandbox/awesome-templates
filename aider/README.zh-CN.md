@@ -90,7 +90,7 @@ print(await client.commands.run('aider_version'))
 | `AIDER_BASE_URL` | 空；必需 HTTP(S) endpoint，不允许内嵌凭据、query、fragment |
 | `AIDER_MODEL` | 空；必需 model ID，自动加 LiteLLM `openai/` 前缀 |
 | `WORKSPACE` | `/home/user/app`；默认工作目录 |
-| `ABX_SERVER_TOKEN` | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| `ABX_SERVER_TOKEN` | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 在 `template launch` 前导出 `AIDER_API_KEY`、`AIDER_BASE_URL`、`AIDER_MODEL` 和独立应用令牌。当前 launch 路径启动该实例的命名服务，无需另启 9010 服务。修改宿主机环境不会重新配置已运行的应用；更改配置后启动新实例。
 

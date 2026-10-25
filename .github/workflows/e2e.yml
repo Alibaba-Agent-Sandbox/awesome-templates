@@ -19,19 +19,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - name: Checkout immutable CLI contract source
-        uses: actions/checkout@v4
-        with:
-          repository: Alibaba-Agent-Sandbox/agent-sandbox
-          ref: 9717236c8169055f318bff3740d2f13b92248c50
-          path: vendor/cli-contract
-          persist-credentials: false
-      - name: Build the actual CLI and verify parser and cleanup without cloud mutation
+      - name: Install the current published CLI and verify real parser contracts
         run: |
-          npm ci --prefix vendor/cli-contract
-          npm run build --prefix vendor/cli-contract
+          npm install --global --registry https://registry.npmjs.org @agent-sandbox/cli@0.5.3
           python -m pip install -r scripts/requirements-spec.txt
-          ABX="node $GITHUB_WORKSPACE/vendor/cli-contract/dist/bin/abx.js" python scripts/test_express_cli_contract.py
+          ABX=abx python scripts/test_express_cli_contract.py
 
   documentation:
     runs-on: ubuntu-24.04

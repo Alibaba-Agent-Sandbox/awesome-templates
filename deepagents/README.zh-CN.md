@@ -75,7 +75,7 @@ print(await client.commands.run('deepagents_version'))
 | DEEPAGENTS_MODEL | model calls | empty | explicit model identifier |
 | DEEPAGENTS_PYTHON | no | /opt/deepagents/bin/python | exact native dependency environment, version checked |
 | WORKSPACE | no | /home/user/app | existing owned project directory |
-| ABX_SERVER_TOKEN | 是 | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| ABX_SERVER_TOKEN | 是 | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 显式模型配置保留在私有stdin，不作为环境传入生成的shell。运行时仅PATH/可选CA、私有HOME/XDG、关闭LangSmith追踪；LocalShellBackend只接收PATH/HOME/locale及随机非秘密进程归属标记，不继承模型/云/GitHub/服务密钥。不加载skills/memory/profile文件。虚拟文件路径映射至cwd，但shell仍有沙箱用户全部权限，该映射不是shell隔离边界。
 

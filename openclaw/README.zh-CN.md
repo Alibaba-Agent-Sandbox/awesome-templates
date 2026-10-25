@@ -97,7 +97,7 @@ Linux 下短生命周期健康检查 RPC 会持续读取输出，并在清理自
 |---|---|---|
 | `OPENCLAW_GATEWAY_TOKEN` | 空 | 启动网关必需，通过沙箱环境注入，不作为命令参数。子进程环境接收值，配置只引用变量名，不返回或加入 argv。 |
 | `OPENCLAW_TRUSTED_PROXIES` | 空 | 端口转发使用的显式已核实代理 IP/CIDR；最多16项/2048字节，拒绝全网和组播。 |
-| `ABX_SERVER_TOKEN` | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 `/health` 不要求应用令牌。 |
+| `ABX_SERVER_TOKEN` | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 `/health` 不要求应用令牌。 |
 | `ABX_SERVER_PORT` | 9000 | 本地 `python commands.py` 的 server 端口；云端 start_cmd 明确使用9000。 |
 | `OPENAI_API_KEY`、`ANTHROPIC_API_KEY` | 空 | 可选上游模型凭据，网关健康不需要。本命令集不实现或验证模型调用。 |
 

@@ -70,7 +70,7 @@ Task and extraction instructions each cap32768UTF-8 bytes; URL caps8192. Return 
 | STAGEHAND_API_KEY | required for model; empty | Approved compatible endpoint credential; never a Browserbase token |
 | STAGEHAND_BASE_URL | required for model; empty | HTTPS API base ending in your endpoint's API prefix; literal localhost HTTP allowed for development; no userinfo/query/fragment; appends `/chat/completions` |
 | STAGEHAND_MODEL | required for model; empty | Actual model identifier, at most200 allowed identifier characters |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the application workflow launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
 | WORKSPACE | `/home/user/app` | Existing artifact root |
 
 The wrapper uses upstream ClientLLM structured generation, maps text/images and requires complete JSON-schema model replies. Requests cap2MiB, replies1MiB, each inference60seconds; no redirects, retries or provider fallback. Model values are captured at server import. Secrets enter the Node consumer via anonymous stdin memory, never argv, browser environment or credential files. Browser subprocesses inherit only selected runtime/certificate variables and new private HOME/cache/profile. Native Chromium sandbox is explicitly disabled inside the outer disposable sandbox; it is not a tenant/security boundary. Pages can reach networks accessible to that sandbox; authenticate/trust named-command callers accordingly.

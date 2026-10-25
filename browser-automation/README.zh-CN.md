@@ -111,7 +111,7 @@ PDF在独立HOME子进程执行，执行时限1–120秒并有有界清理。通
 |---|---|---|
 | `PLAYWRIGHT_BROWSERS_PATH` | 镜像内 `/opt/playwright` | 共享可读 Chromium 安装目录 |
 | `WORKSPACE` | `/home/user/app` | 脚本根和 `browser-artifacts/` 产物根，与服务端文件策略对齐 |
-| `ABX_SERVER_TOKEN` | 空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| `ABX_SERVER_TOKEN` | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `ABX_SERVER_PORT` | `9000` | 本地 `python3 commands.py` 启动端口 |
 
 正文、截图、链接和用户脚本输出可能包含页面敏感信息。产物应按私有文件处理，
