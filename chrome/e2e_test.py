@@ -37,7 +37,7 @@ def target_code(client,code):
     return value.get('stdout','').strip()
 
 
-async def real_desktop(base,client,{**headers, **_GATEWAY_HEADERS, **_APPLICATION_HEADERS}):
+async def real_desktop(base,client,headers):
     from cdp import Page
     from rfb import capture_websocket
     from PIL import Image

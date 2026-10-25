@@ -129,3 +129,12 @@ def test_standalone_controller_refuses_malformed_header_json_without_echoing_val
         result=subprocess.run([sys.executable,'-c','import runpy;runpy.run_path('+repr(str(script))+',run_name="standalone-import")'],env=env,text=True,capture_output=True)
         assert result.returncode!=0 and 'must be an object of string headers' in result.stderr
         assert 'private-synthetic-header' not in result.stdout+result.stderr
+
+
+def test_every_catalog_http_controller_compiles_before_cloud_execution():
+    from pathlib import Path
+    from public_launch_e2e import source_names
+    root=Path(__file__).resolve().parents[1]
+    for name in source_names():
+        script=root/name/'e2e_test.py'
+        compile(script.read_text(),name+'/e2e_test.py','exec')

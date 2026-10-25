@@ -24,7 +24,7 @@ async def verify(args):
               'cli_version': cli.run(['--version'], json_output=False),
               'python_client_version': importlib.metadata.version('agent-sandbox-client'),
               'python_server_version': importlib.metadata.version('agent-sandbox-server'),
-              'managed_catalog': [], 'native_interpreter': None,
+              'managed_catalog': [], 'native_interpreter': None, 'native_sdk_versions': {name: importlib.metadata.version(name) for name in ['opensandbox','opensandbox-code-interpreter']},
               'scope': 'native OpenSandbox catalog launch, shell/files and real persistent interpreter; foreign provider identities explicitly rejected'}
     phase = 'foreign-provider-identities'
     try:
@@ -52,17 +52,17 @@ async def verify(args):
             require(launch['provider']=='opensandbox', 'native catalog selected provider')
             sb = await ProviderSandbox.connect(sid, provider='opensandbox')
             phase = 'native-cli-exec'
-            result = await asyncio.to_thread(cli.run, ['exec',sid,'--','python3','-c','print(6*7)'], json_output=False)
-            shape = {'exact_expected': result.strip()=='42', 'contains_expected_line': '42' in result.splitlines(), 'character_count': len(result)}
-            try:
-                structured=json.loads(result)
-                shape['json_type']=type(structured).__name__
-                if isinstance(structured,dict):
-                    shape['json_keys']=[key for key in structured if key in {'stdout','stderr','exit_code','execution_time','result','pid'}]
-                    shape['json_stdout_expected']=structured.get('stdout','').strip()=='42' if isinstance(structured.get('stdout'),str) else False
-            except ValueError:pass
-            report['cli_exec_shape']=shape
-            require(result.strip()=='42', 'public CLI native exec expected result')
+            result = await asyncio.to_thread(cli.run, ['exec',sid,'--','python3','-c','print(6*7)'])
+            require(result.get('exit_code') == 0 and result.get('stdout','').strip() == '42', 'explicit JSON CLI native exec expected result')
+            # The CLI intentionally selects JSON automatically in CI. Test the
+            # ordinary developer text channel in an explicitly non-CI environment.
+            developer_env = os.environ.copy()
+            for key in ['CI','GITHUB_ACTIONS','GITLAB_CI','JENKINS_URL','TRAVIS','CIRCLECI','BITBUCKET_PIPELINES','TF_BUILD','CODEBUILD_BUILD_ID']:
+                developer_env.pop(key, None)
+            developer_cli = CLI(args.abx, 'opensandbox', developer_env)
+            text = await asyncio.to_thread(developer_cli.run, ['exec',sid,'--','python3','-c','print(6*7)'], json_output=False)
+            require(text.strip() == '42', 'plain developer CLI native exec expected result')
+            report['cli_exec_checks']=['explicit JSON stdout 42 and exit 0','plain non-CI developer stdout 42']
             phase = 'native-sdk-shell-files'
             result = await sb.commands.run("python3 -c 'print(6*7)'", timeout=30)
             require(result.exit_code==0 and result.stdout.strip()=='42', 'public SDK native shell expected result')
