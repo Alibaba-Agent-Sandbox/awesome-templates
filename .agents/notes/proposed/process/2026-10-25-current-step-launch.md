@@ -20,7 +20,7 @@ Keeping SDK/CLI creation switches duplicates the public startup contract and can
 
 ## Dependencies
 
-Candidate native acceptance used published CLI 0.5.3 and Python client/server 0.4.0a2. The stronger per-ID cleanup requires CLI 0.5.4 typed GetTemplate 404, and final matrices wait for public client/server a3. The prepared-template consumer is from https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/220. Runtime package/proof cleanup depends on https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/222. This change follows https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/223.
+Candidate native acceptance used published CLI 0.5.3 and Python client/server 0.4.0a2. The stronger per-ID cleanup was actually verified using the published GitHub CLI 0.5.4 binary with host SDK a4 and the inherited a2 guest. Final runtime matrices require the separately updated public a4 template recipes; this tooling result does not certify them. The prepared-template consumer is from https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/220. Runtime package/proof cleanup depends on https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/222. This change follows https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/223.
 
 ## Test Strategy
 
