@@ -71,6 +71,8 @@ asyncio.run(main())
 
 ## 已验证
 
+[2026-10-25 官方 npm CLI 0.5.1／Python client 0.4.0a1 新安装验证](../evidence/public-npm-code-interpreter-v1-2026-10-25T115223Z.json)：通过默认公开目录启动，检查非 root 运行环境、CLI 输出 42、Python 文件写读删、CLI 删除与独立控制面确认实例不存在。另已实际导入 numpy／pandas／matplotlib 并计算 DataFrame 总和 42。这是进程与文件能力验证，不代表持久解释器会话验收。
+
 [2026-10-24 公开包记录](../../../.agents/evidence/verify/2026-10-24-managed-public-cli.json)：CLI 0.4.16 实际创建、执行得到 `42`、删除；Python 0.3.1a5 文件读写删除、`ProviderSandbox.run_code` 明确返回 `E8004`，并独立确认实例已删除。[2026-10-19 历史记录](../evidence/code-interpreter-v1-2026-10-19T154153Z.json)保留原始版本与调用路径。
 
 ## 二次开发

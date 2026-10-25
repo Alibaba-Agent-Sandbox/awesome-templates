@@ -3,7 +3,7 @@ import asyncio,os
 from pathlib import Path
 from unittest.mock import patch
 import pytest
-from agent_sandbox.api.sandbox import Sandbox
+from agent_sandbox import ProviderSandbox as Sandbox
 from agent_sandbox.models.errors import InvalidCredentialsError,ProviderFeatureNotSupportedError
 from agent_sandbox.providers.engine_provider import EngineProvider,EngineCodeProtocol
 from agent_sandbox.providers.manifest import load_manifest
@@ -31,6 +31,6 @@ def test_actual_sdk_opensandbox_native_interpreter_rejects_before_transport(sour
     provider=EngineProvider(load_manifest(source/'opensandbox'),source/'opensandbox')
     class NoTransport:
         async def call(self,*args,**kwargs):raise AssertionError('unsupported interpreter must not call transport')
-    code=EngineCodeProtocol(NoTransport(),'opensandbox',provider.features)
+    code=EngineCodeProtocol(NoTransport(),'opensandbox',provider.operations)
     with pytest.raises(ProviderFeatureNotSupportedError):
-        asyncio.run(code.execute('engine://owned-fixture',None,code='print(6*7)'))
+        asyncio.run(code.run_code('engine://owned-fixture','',None,code='print(6*7)'))

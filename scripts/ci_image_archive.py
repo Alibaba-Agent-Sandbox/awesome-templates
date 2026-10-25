@@ -135,6 +135,44 @@ def verify_source(source: Path, checkout: str, expected: dict[str,str]) -> None:
         if hashlib.sha256(content).hexdigest()!=digest:raise ValueError('current source differs from the actual CI image checkout: '+filename)
 
 
+def validate_archive_origin(metadata: dict, workflow: dict) -> None:
+    """Accept only the explicit reviewed export paths, retaining public package provenance."""
+    origin = metadata.get('origin')
+    if origin is None:
+        return  # Historical exact-source L1 export; never relabel as a public-package journey.
+    if origin != 'public-template-launch' or workflow.get('path') != '.github/workflows/public-template-launch.yml':
+        raise ValueError('image export has an unrecognized workflow origin')
+    if metadata.get('public_source_commit') != metadata.get('source_head_commit'):
+        raise ValueError('public image export must identify its pinned public input separately from the verifier')
+    if not re.fullmatch(r'[a-f0-9]{64}', str(metadata.get('source_snapshot_digest', ''))):
+        raise ValueError('public image export lacks its observed CLI source snapshot')
+    packages = metadata.get('installed_packages', {})
+    if packages.get('distribution') != 'published':
+        raise ValueError('public image export requires published-package acceptance')
+    for key, registry in [('cli', 'https://registry.npmjs.org'),
+                          ('python_client', 'https://pypi.org/simple'),
+                          ('python_server', 'https://pypi.org/simple')]:
+        package = packages.get(key, {})
+        if package.get('registry') != registry or not isinstance(package.get('version'), str):
+            raise ValueError('public image export lacks official package provenance')
+    if not isinstance(metadata.get('runtime_server_version'), str) or not metadata['runtime_server_version']:
+        raise ValueError('public image export lacks observed runtime server version')
+
+
+def validate_archive_revisions(metadata: dict, workflow: dict, artifact: dict, name: str) -> None:
+    """Keep public template input revisions distinct from verifier workflow revisions."""
+    checkout, head = metadata['checkout_commit'], metadata['source_head_commit']
+    if not all(isinstance(value, str) and re.fullmatch(r'[a-f0-9]{40}', value) for value in (checkout, head)):
+        raise ValueError('image export needs immutable public source revisions')
+    verifier = metadata.get('verifier_commit') if metadata.get('origin') == 'public-template-launch' else head
+    if not isinstance(verifier, str) or not re.fullmatch(r'[a-f0-9]{40}', verifier):
+        raise ValueError('public image export needs a distinct verifier commit')
+    if workflow['event'] != 'workflow_dispatch' or checkout != head or workflow['head_sha'] != verifier or artifact['workflow_run']['head_sha'] != verifier:
+        raise ValueError('use a completed explicit exact-source image export')
+    if str(metadata['workflow_run_id']) != str(workflow['id']) or artifact['name'] != 'image-' + name + '-' + verifier:
+        raise ValueError('CI identity mismatch')
+
+
 def download_verified(artifact_id: int, source: Path, output: Path) -> dict:
     source=source.resolve()
     validate_resources(yaml.safe_load((source/'template.yaml').read_text()))
@@ -157,10 +195,11 @@ def download_verified(artifact_id: int, source: Path, output: Path) -> dict:
     if metadata.get('format')!='docker-archive' or metadata.get('template')!=name or metadata.get('repository','').lower()!='alibaba-agent-sandbox/awesome-templates':raise ValueError('image identity mismatch')
     if metadata.get('server_sdk_commit')!=server_commit(source):raise ValueError('CI server SDK pin mismatch')
     run=github('/actions/runs/'+str(artifact['workflow_run']['id']))
-    if run.get('status')!='completed' or run.get('conclusion')!='success':raise ValueError('image CI workflow is not successful')
+    if run.get('status')!='completed' or run.get('conclusion')!='success':
+        raise ValueError('image CI workflow is not successful')
+    validate_archive_origin(metadata,run)
     checkout=metadata['checkout_commit'];head=metadata['source_head_commit']
-    if run['event']!='workflow_dispatch' or checkout!=head or run['head_sha']!=head or artifact['workflow_run']['head_sha']!=head:raise ValueError('use a completed explicit exact-source image export')
-    if str(metadata['workflow_run_id'])!=str(run['id']) or artifact['name']!='image-'+name+'-'+checkout:raise ValueError('CI identity mismatch')
+    validate_archive_revisions(metadata,run,artifact,name)
     context=context_sha256(source);verify_source(source,checkout,context)
     config_hash,commands=archive_runtime(output/archive_name)
     if metadata['local_image_id']!='sha256:'+config_hash or commands!=(source/'commands.py').read_bytes():raise ValueError('actual image config/runtime bytes mismatch')
@@ -169,6 +208,10 @@ def download_verified(artifact_id: int, source: Path, output: Path) -> dict:
         'workflow_run_id':str(run['id']),'artifact_id':str(artifact_id),'archive_sha256':digest,'image_config_sha256':config_hash,
         'server_sdk_commit':server_commit(source),'context_sha256':context,'artifact_verified':True,'image_context_verified':True,'image_non_root':True,
         'registry_push_verified':False,'registry_private_repo_verified':False,'registry_credentials_storage':'anonymous RAM fd'}
+    if metadata.get('origin') == 'public-template-launch':
+        origin={key: metadata[key] for key in ('origin','installed_packages','runtime_server_version')}
+        origin.update({key:metadata[key] for key in ('verifier_commit','public_source_commit','source_snapshot_digest')})
+        (output/'public-package-origin.json').write_text(json.dumps(origin,indent=2)+'\n')
     (output/'validated-image.json').write_text(json.dumps(proof,indent=2)+'\n')
     return proof
 
