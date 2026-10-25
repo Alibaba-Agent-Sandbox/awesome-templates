@@ -72,7 +72,7 @@ print(await client.commands.run('chrome_smoke'))
 | 变量 | 默认值/要求 | 用途 |
 | --- | --- | --- |
 | WORKSPACE | /home/user/workspace；已存在目录 | 截图根目录，命令模块启动时读取 |
-| ABX_SERVER_TOKEN | 必填；清单为空 | application 工作流启动前必须导出独立应用令牌；与模型及网关凭据分开 也用于 CDP relay 认证。 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | 启动模板前必须导出独立应用令牌；与模型及网关凭据分开。也用于 CDP relay 认证。 |
 
 [运行环境](../docs/runtime-environment.md)说明预热服务：创建沙箱时注入变量不会重配现有进程。每个独占会话生成私有8字符 VNC 密码与 Xauthority cookie；密码仅由授权的 start 调用返回，不进入 argv/日志。浏览器环境不包含操作者云、模型或 GitHub 凭据。停止删除本次 HOME、配置、cookie、密码文件。noVNC 仍需 VNC 密码；转发 URL 应使用提供方访问控制。
 
@@ -81,6 +81,8 @@ print(await client.commands.run('chrome_smoke'))
 声明2vCPU/2048MB、1024×768、端口9000/9222/6080、内部9223/5901及一个独占 X display。无需 Docker/KVM/GPU。Chrome 在一次性外层沙箱内使用 --no-sandbox 与 --disable-dev-shm-usage，不构成额外 OS 隔离。镜像根目录限制8GiB。极速版 /dev/shm 实测1031241728字节，v2 cgroup 路径不可用；2CPU/2048MB 是模板声明，不是实测峰值或 cgroup2 上限。独立 L1 原生镜像 smoke 实测64MiB共享内存，当时 CPU/内存未限制，根目录实测1689714688字节。这些是分开测量，不代表2GB与64MiB组合压力测试。每个服务一个会话；下载/截图占用调用方工作空间。
 
 ## 已验证
+
+1.0.6 保留提供方返回的 CDP 和 noVNC 地址中的路径及查询参数。直接使用提供方返回的各个访问地址，不要替换成浏览器内部地址。
 
 参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
 

@@ -293,4 +293,5 @@ Source image backend acceptance: [decision](notes/proposed/feature/2026-10-22-so
 - [Source application quick starts](notes/implemented/process/2026-10-24-source-application-quickstarts.md) · [verification](evidence/verify/2026-10-24-source-application-quickstarts.md).
 - [Managed template usage and default execution](notes/implemented/process/2026-10-24-managed-template-usage.md) · [verification](evidence/verify/2026-10-24-managed-template-usage.md)
 
+Chrome provider-path correction: [decision](notes/proposed/feature/2026-10-25-chrome-provider-prefix.md) · [verification](evidence/verify/2026-10-25-chrome-provider-prefix.md).
 Current public-package rerun: [decision](notes/proposed/process/2026-10-25-public-opensandbox-rerun.md), [verification](evidence/verify/2026-10-25-public-opensandbox-rerun.md).

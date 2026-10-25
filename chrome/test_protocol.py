@@ -98,3 +98,58 @@ def test_visible_native_fixture_validation_ignores_center_pointer_but_requires_a
     screenshot.putpixel((768,576),(255,255,255))
     assert worker.fixture_frame_matches(screenshot,(10,230,20)) is False
     assert worker.fixture_frame_matches(Image.new('RGB',(1024,768),'white'),(10,230,20)) is False
+
+
+@pytest.mark.parametrize('prefix,query',[('', ''),('/provider/ports/9222','route=owned'),('/provider/ports/9222/','route=owned')])
+def test_cdp_retains_provider_path_query_and_both_authentication_headers(prefix,query):
+    cdp=load('chrome_prefixed_cdp_tests','cdp.py')
+    async def run():
+        import aiohttp
+        from aiohttp import web
+        calls=[]
+        headers={'Authorization':'Bearer synthetic-app','X-Provider-Token':'synthetic-gateway'}
+        async def authenticate(request,handler):
+            assert request.query_string==query
+            assert all(request.headers.get(key)==value for key,value in headers.items())
+            return await handler(request)
+        middleware=web.middleware(authenticate)
+        async def listing(request):
+            calls.append('list')
+            return web.json_response([{'type':'page','id':'owned','webSocketDebuggerUrl':'ws://unreachable.invalid/devtools/page/owned'}])
+        async def websocket(request):
+            calls.append('websocket');ws=web.WebSocketResponse();await ws.prepare(request)
+            async for message in ws:
+                value=message.json();calls.append(value['method'])
+                await ws.send_json({'id':value['id'],'result':{}})
+            return ws
+        app=web.Application(middlewares=[middleware]);route=prefix.rstrip('/')
+        app.router.add_get(route+'/json/list',listing);app.router.add_get(route+'/devtools/page/owned',websocket)
+        runner=web.AppRunner(app);await runner.setup();site=web.TCPSite(runner,'127.0.0.1',0);await site.start()
+        try:
+            base='http://127.0.0.1:'+str(site._server.sockets[0].getsockname()[1])+prefix+('?' + query if query else '')
+            async with cdp.Page(base,headers=headers):pass
+            assert calls==['list','websocket','Page.bringToFront','Page.enable']
+        finally:await runner.cleanup()
+    asyncio.run(run())
+
+
+def test_vnc_websocket_retains_distinct_provider_path_and_fixed_query():
+    cdp=load('chrome_prefixed_vnc_tests','cdp.py')
+    async def run():
+        import aiohttp
+        from aiohttp import web
+        async def websocket(request):
+            assert request.query_string=='route=vnc'
+            assert request.headers.get('Authorization')=='Bearer synthetic-app'
+            assert request.headers.get('X-Provider-Token')=='synthetic-gateway'
+            ws=web.WebSocketResponse();await ws.prepare(request);await ws.send_str('owned-vnc-route');await ws.close();return ws
+        app=web.Application();app.router.add_get('/provider/ports/6080/websockify',websocket)
+        runner=web.AppRunner(app);await runner.setup();site=web.TCPSite(runner,'127.0.0.1',0);await site.start()
+        try:
+            base='http://127.0.0.1:'+str(site._server.sockets[0].getsockname()[1])+'/provider/ports/6080?route=vnc'
+            async with aiohttp.ClientSession()as session:
+                async with session.ws_connect(cdp.endpoint_url(base,'/websockify',websocket=True),headers={'Authorization':'Bearer synthetic-app','X-Provider-Token':'synthetic-gateway'})as ws:
+                    assert (await ws.receive()).data=='owned-vnc-route'
+            assert cdp.endpoint_url('https://provider.invalid/prefix?fixed=1','ws://native.invalid/devtools/page/owned?native=2',websocket=True)=='wss://provider.invalid/prefix/devtools/page/owned?fixed=1&native=2'
+        finally:await runner.cleanup()
+    asyncio.run(run())
