@@ -16,7 +16,7 @@
 
 ## 快速开始（CLI）
 
-使用 CLI 0.5.1 或更高版本和当前托管目录，按[安装与平台配置说明](../../using-templates.zh-CN.md)准备。下方历史记录验证的是其原 create/exec 接口，不表示已重新验证本次目录启动命令。
+使用 CLI 0.5.4 或更高版本和当前托管目录，按[安装与平台配置说明](../../using-templates.zh-CN.md)准备。下方历史记录验证的是其原 create/exec 接口，不表示已重新验证本次目录启动命令。
 
 安装 [CLI](../../using-templates.zh-CN.md) 和 Node.js 22+，完成下方平台配置，将 `<sandbox-id>` 替换为创建时返回的实例 ID。
 

@@ -9,7 +9,7 @@ RUN npm install -g @qoder-ai/qodercli@1.1.72 \
     && qodercli --version \
     && npm cache clean --force
 
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a3"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4"
 
 ENV WORKSPACE=/home/user/app
 WORKDIR /home/user/app

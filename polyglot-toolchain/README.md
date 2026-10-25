@@ -6,7 +6,7 @@ Runs Go 1.25.14, Rust/Cargo 1.90.0 and Eclipse Temurin JDK 21.0.12.1+1 in one no
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a3`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
 
 Alibaba FC base v0.0.49, generation 2, 2 vCPU / 2048 MB, agent-sandbox-server on port 9000. Official upstream archives and SHA256 for x86_64/aarch64 are pinned in [toolchains.json](toolchains.json). No rustup, version manager or runtime automatic Go toolchain download. Rustc, the target standard library and Cargo are installed as individual official components. GCC supplies the system linker. The installer rejects actual rootfs use above 8 GiB.
 

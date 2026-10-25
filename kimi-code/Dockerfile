@@ -41,7 +41,7 @@ NODE
 ENV PATH="/opt/node/current/bin:${PATH}"
 RUN npm install -g @moonshot-ai/kimi-code@2.2.0 && kimi --version && npm cache clean --force
 
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a3"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4"
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py .

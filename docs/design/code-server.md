@@ -14,7 +14,7 @@ code_server_version() -> actual version. code_server_start(password: str="",port
 
 ## How to build
 
-[Dockerfile](../../code-server/Dockerfile), official Linux x86_64/aarch64 standalone assets with fixed SHA256/size, retained upstream notices and8GiB visible-rootfs budget using du -sx. Download bound240s. Alibaba base v0.0.49; published server package 0.4.0a3. generation2 start_cmd `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`, ready_cmd `agent-sandbox-server healthcheck --port 9000`. Final USER user,2vCPU/2048MB,9000/8443; no CMD/ENTRYPOINT.
+[Dockerfile](../../code-server/Dockerfile), official Linux x86_64/aarch64 standalone assets with fixed SHA256/size, retained upstream notices and8GiB visible-rootfs budget using du -sx. Download bound240s. Alibaba base v0.0.49; published server package 0.4.0a4. generation2 start_cmd `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`, ready_cmd `agent-sandbox-server healthcheck --port 9000`. Final USER user,2vCPU/2048MB,9000/8443; no CMD/ENTRYPOINT.
 
 ## Express feasibility
 

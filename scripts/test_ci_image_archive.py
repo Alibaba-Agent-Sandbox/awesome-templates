@@ -97,10 +97,10 @@ def test_missing_controller_dependency_is_found_before_artifact_or_cloud(tmp_pat
 
 
 def public_export():
-    return {'origin': 'public-template-launch', 'server_package_version': '0.4.0a3',
+    return {'origin': 'public-template-launch', 'server_package_version': '0.4.0a4',
         'public_source_commit': 'a'*40, 'source_head_commit': 'a'*40, 'source_snapshot_digest': 'c'*64,
         'installed_packages': {'distribution': 'published',
-            'cli': {'version': '0.5.1', 'registry': 'https://registry.npmjs.org'},
+            'cli': {'version': '0.5.4', 'registry': 'https://registry.npmjs.org'},
             'python_client': {'version': '0.4.0a1', 'registry': 'https://pypi.org/simple'},
             'python_server': {'version': '0.4.0a1', 'registry': 'https://pypi.org/simple'}}}
 
@@ -127,7 +127,7 @@ def test_public_export_rejects_source_or_unofficial_package_provenance(field):
 
 
 def test_historical_export_is_not_relabelled_public():
-    images.validate_archive_origin({'origin':'template-image-l1','server_package_version': '0.4.0a3'}, {'path': '.github/workflows/image-build.yml'})
+    images.validate_archive_origin({'origin':'template-image-l1','server_package_version': '0.4.0a4'}, {'path': '.github/workflows/image-build.yml'})
 
 
 def test_public_template_revision_is_distinct_from_verifier_revision():

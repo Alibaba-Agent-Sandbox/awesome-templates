@@ -20,7 +20,7 @@ RUN npm ci --ignore-scripts --omit=dev --include=optional --no-audit --no-fund -
     && test "$(droid --version)" = "0.241.1" \
     && npm cache clean --force
 
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a3"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4"
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py byok.py process.py lifecycle.py UPSTREAM-NOTICE.md ./

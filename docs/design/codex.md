@@ -145,7 +145,7 @@ Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (`cn-ha
 Pins, in `codex/Dockerfile`:
 
 - `npm install -g @openai/codex@0.162.1` (probed with `npm view` on 2026-10-15; `codex --version` prints `codex-cli 0.162.1`).
-Install the exact published `agent-sandbox-server==0.4.0a3` distribution from PyPI, as declared in the Dockerfile.
+Install the exact published `agent-sandbox-server==0.4.0a4` distribution from PyPI, as declared in the Dockerfile.
 
 Also installed from apt, unpinned distro packages: `git`, `ripgrep`, `jq`, `ca-certificates`. System `bubblewrap` is not installed, so Codex keeps using the `bwrap` bundled under `codex-resources/` instead of a PATH binary that cannot create user namespaces.
 

@@ -6,7 +6,7 @@ Run original official Google Gemini CLI0.64.0 planning and text/file/shell tools
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a3`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
 
 Alibaba generation2basev0.0.49/Linuxx64/Python3.13/Node20; original npm0.64.0/SHA512 integrity lock; all449original package files/98597935bytes independently SHA256-pinned in [upstream.json](upstream.json), archive20841287bytes/SHA256891a794e55c8319b6b78f6f8f13d6b8b2782a4709dfd2fcabf3a1f63ae8365e6. `npm ci --omit=optional --ignore-scripts` omits interactive native PTY/keychain add-ons and scripts. Original bundled notices/code remain unchanged. Published server package, stdlib authored adapter/process controls. [Dockerfile](Dockerfile), [design](../docs/design/gemini.md), [notice](UPSTREAM-NOTICE.md).
 

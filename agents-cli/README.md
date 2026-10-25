@@ -17,7 +17,7 @@ does not remove the upstream CLI's tools.
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a3`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
 
 - Alibaba generation-2 base image and its Python; SHA256-verified official Node.js `24.16.0` replaces the base Node 20 to satisfy Qwen Code's Node >=22 requirement.
 - Codex CLI `0.162.1`, Qwen Code CLI `0.23.0`; image build asserts both versions.

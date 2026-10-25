@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir uv==0.12.3 \
     && .venv/bin/hermes --version \
     && ln -s /opt/hermes/.venv/bin/hermes /usr/local/bin/hermes \
     && uv cache clean
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a3"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4"
 ENV HERMES_HOME=/home/user/.hermes
 ENV WORKSPACE=/home/user/app
 WORKDIR /home/user/app

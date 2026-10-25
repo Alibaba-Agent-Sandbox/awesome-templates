@@ -10,7 +10,7 @@ chat; explicit `allow_tools=true` enables the bundled developer tools.
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a3`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
 
 Alibaba FC base v0.0.49, generation2, non-root `user`, published server package.
 Official CPU GNU Linux x86_64/aarch64 release assets have exact byte lengths and

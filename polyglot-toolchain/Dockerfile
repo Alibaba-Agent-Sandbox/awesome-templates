@@ -17,7 +17,7 @@ COPY install_toolchains.py toolchains.json /tmp/toolchain-build/
 RUN python3 /tmp/toolchain-build/install_toolchains.py && rm -rf /tmp/toolchain-build
 ENV PATH="/opt/toolchains/go/bin:/opt/toolchains/rust/bin:/opt/toolchains/java/bin:${PATH}" JAVA_HOME=/opt/toolchains/java GOTOOLCHAIN=local
 
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a3"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4"
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py .

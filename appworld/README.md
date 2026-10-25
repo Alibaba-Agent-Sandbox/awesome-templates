@@ -8,7 +8,7 @@ Run original AppWorld0.1.3.post1 training worlds, APIs, SQLite state and native 
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a3`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
 
 Alibaba generation2 basev0.0.49/Linuxx64/Python3.13, isolated [full Python hash lock](requirements.lock), original appworld0.1.3.post1 wheel and original34,280,074-byte encrypted dataset. Published server package, user runtime/port9000. [Dockerfile](Dockerfile), [immutable provenance](upstream.json), [design](../docs/design/appworld.md). Protected app source/data stay encrypted in distributable images.
 

@@ -46,13 +46,8 @@ Template2.0.1 explicitly owns /home/user/app as user:user before runtime USER. T
 
 Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` (the platform image already has Python 3.13 and Node.js 20). `npm view opencode-ai version` on 2026-10-15 still resolved `latest` to `1.19.0`; the Dockerfile installs `opencode-ai@1.19.0` and runs `opencode --version`.
 
-Install the exact published `agent-sandbox-server==0.4.0a3` distribution from PyPI, as declared in the Dockerfile.
+Install the exact published `agent-sandbox-server==0.4.0a4` distribution from PyPI, as declared in the Dockerfile.
 
-```text
-Install the exact published `agent-sandbox-server==0.4.0a3` distribution from PyPI, as declared in the Dockerfile.
-```
-
-The PyPI pin `agent-sandbox-server==0.3.0` is recorded in the Dockerfile comment and is not what the image runs. That release predates the Express server fixes.
 
 `start_cmd`: `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`
 

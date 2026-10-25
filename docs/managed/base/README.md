@@ -16,7 +16,7 @@ Run shell commands and work with files without preparing an image.
 
 ## Quick start (CLI)
 
-Use CLI 0.5.1 or later and the current managed catalog; see [installation and provider setup](../../using-templates.md).
+Use CLI 0.5.4 or later and the current managed catalog; see [installation and provider setup](../../using-templates.md).
 
 Install [CLI and provider configuration](../../using-templates.md), then replace `<sandbox-id>` with the ID returned by launch.
 

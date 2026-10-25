@@ -8,7 +8,7 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a3`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a4`，由 Dockerfile 直接安装。
 
 - 阿里云 FC 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，部署工具解析占位符。
 - Node.js `24.16.0`，npm 包 `openclaw@2026.10.4`。该上游包要求 Node >=24.16.0，基础镜像的 Node 20 不满足要求。

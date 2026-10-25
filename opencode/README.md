@@ -15,7 +15,7 @@ requires independent code, artifact and exact-session continuation checks.
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a3`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
 
 - Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template deploy` replaces `<region>` with `ALIBABA_CLOUD_REGION_ID` or `cn-hangzhou`, and `<tag>` with `ABX_BASE_IMAGE_TAG` or `v0.0.49`. Python 3.13 and Node.js 20 come from that image.
 - `opencode-ai@1.19.0` (npm `latest` on 2026-10-15). The package binary is `opencode`. Upstream is [sst/opencode](https://github.com/sst/opencode).

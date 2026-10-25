@@ -12,7 +12,7 @@ RUN mkdir -p /etc/postgresql-common \
     && dpkg-query -W postgresql-17 postgresql-client-17 libpq5 redis-server redis-tools \
     && rm -rf /var/lib/apt/lists/*
 ENV WORKSPACE=/home/user/app DEV_SERVICES_POSTGRES_PORT=5432 DEV_SERVICES_REDIS_PORT=16379
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a3"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4"
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py lifecycle.py .

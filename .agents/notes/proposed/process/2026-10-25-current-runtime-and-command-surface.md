@@ -1,14 +1,14 @@
-# Published a3 runtime and canonical template commands
+# Current published runtime and canonical template commands
 
 Status: proposed
 
 ## Problem
 
-The public a2 SDK's one-shot readiness check could reject a live starting application; the SDK owner fixed this in published client/server 0.4.0a3. Template Dockerfiles must use the corrected package. Many current README/design paragraphs still described retired Git server archives or wheel injection despite the newer direct-PyPI recipes. Four templates retained pre-release command-name forwarding wrappers. QM consumers also pinned an older project Node SDK source that omitted reviewed transport-binding, redirect and error-redaction fixes.
+The public a2 SDK's one-shot readiness check could reject a live starting application; the SDK owner fixed this in published client/server 0.4.0a3. The subsequent published 0.4.0a4 patch corrects stale SDK parameter docstrings without changing runtime behavior. Template Dockerfiles must use the current public package. Many current README/design paragraphs still described retired Git server archives or wheel injection despite the newer direct-PyPI recipes. Four templates retained pre-release command-name forwarding wrappers. QM consumers also pinned an older project Node SDK source that omitted reviewed transport-binding, redirect and error-redaction fixes.
 
 ## Decision
 
-Install exact published agent-sandbox-server==0.4.0a3 from the official PyPI index in all 48 declared Docker recipes (46 public source templates, skeleton, and the Python portable profile), and increment each of the 47 affected manifests by one patch. Keep a single current startup contract. Remove the four verified forwarding names: opencode, amp, codex and OpenClaw gateway; retain opencode_run, amp_execute, codex_exec and gateway_* as their canonical commands. Do not add compatibility or migration modes. Preserve genuinely distinct Codex Agent API one-shot and Qwen Python-script capabilities; correct their misleading compatibility wording.
+Install exact published agent-sandbox-server==0.4.0a4 from the official PyPI index in all 48 declared Docker recipes (46 public source templates, skeleton, and the Python portable profile), and increment each of the 47 affected manifests by one patch. Keep a single current startup contract. Remove the four verified forwarding names: opencode, amp, codex and OpenClaw gateway; retain opencode_run, amp_execute, codex_exec and gateway_* as their canonical commands. Do not add compatibility or migration modes. Preserve genuinely distinct Codex Agent API one-shot and Qwen Python-script capabilities; correct their misleading compatibility wording.
 
 ## API Design
 
@@ -20,7 +20,7 @@ Keeping wrappers for a not-yet-stable interface contradicts the user's requested
 
 ## Dependencies
 
-Published Python SDK a3 corresponds to https://github.com/Alibaba-Agent-Sandbox/python-sdk/commit/a7d6aa3e5e16fcf8cde1d91465f4a5fc53f5a030 (public package installation is independently checked). Current Node source is https://github.com/Alibaba-Agent-Sandbox/nodejs-sdk/commit/63d7cd8ece221b9f968eef51eeb932ea334c90d3. Native step/current shared-consumer cleanup depends on https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/224 and the CLI 0.5.4 typed template-not-found fix. Runtime and acceptance tracking remains https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/221; the native-step contract is tracked in https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/223.
+Published Python SDK a4 corresponds to https://github.com/Alibaba-Agent-Sandbox/python-sdk/commit/100da4661809f91a5d50e2722d1f4a8d4da3b131 (public package installation is independently checked). Current Node source is https://github.com/Alibaba-Agent-Sandbox/nodejs-sdk/commit/63d7cd8ece221b9f968eef51eeb932ea334c90d3. Native step/current shared-consumer cleanup depends on https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/224 and the CLI 0.5.4 typed template-not-found fix. Runtime and acceptance tracking remains https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/221; the native-step contract is tracked in https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/223.
 
 ## Test Strategy
 
@@ -28,7 +28,7 @@ Fresh official-PyPI client/server installation, pip check and imports; actual lo
 
 ## Acceptance criteria
 
-- All 48 declared recipes install exact public a3 through the official index; all 47 manifests increment minimally.
+- All 48 declared recipes install exact public a4 through the official index; all 47 manifests increment minimally.
 - Current docs agree with recipes, and only the four canonical project command surfaces remain.
 - Current Node source/locks/notices are measured and preserved; no fabricated npm fallback is introduced.
 - Actual local regressions and all current-head required CI pass; independent exact owned cleanup remains mandatory for real-provider acceptance.

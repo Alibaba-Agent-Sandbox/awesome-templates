@@ -6,7 +6,7 @@ Runs the unchanged stable Prime Agent0.10.0 native Rust CLI with its original CP
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a3`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
 
 Alibaba generation2 basev0.0.49/Python3.13/Linuxx64; original release archive and executable verified against official manifest SHA256s. Full original sidecars/runtime source0.1.0/protocol3 and licenses retained. Isolated49-package Python hash lock; native supported fixed interpreter skips floating uv/bootstrap. Published server package, non-root user, port9000. [Dockerfile](Dockerfile), [provenance](upstream.json), [lock](requirements.lock), [design](../docs/design/prime-agent.md).
 

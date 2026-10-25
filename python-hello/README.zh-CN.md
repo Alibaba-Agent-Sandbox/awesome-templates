@@ -8,7 +8,7 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a3`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a4`，由 Dockerfile 直接安装。
 
 - Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` 自带 Python 3.13、Node.js 20。部署时默认解析为 `cn-hangzhou` 和 `v0.0.49`。
 - 镜像安装 `pytest==8.4.2`，供 `test` 命令使用。

@@ -6,7 +6,7 @@ Runs the pinned code-server browser IDE with mandatory password authentication, 
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a3`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
 
 Alibaba FC base v0.0.49; official code-server4.141.0 standalone Linux x86_64/aarch64 assets with bundled upstream Node/VS Code runtime. [assets.json](assets.json) fixes URLs, byte lengths and official SHA256. Bundled license notices are preserved. Published server package; generation2/non-root user.
 

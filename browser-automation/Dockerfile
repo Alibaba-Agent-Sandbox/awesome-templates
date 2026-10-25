@@ -9,7 +9,7 @@ RUN pip install --no-cache-dir "playwright==1.58.0"
 RUN python3 -m playwright install-deps chromium
 RUN python3 -m playwright install chromium
 
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a3"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4"
 
 COPY package.json package-lock.json /opt/playwright-mcp/
 RUN cd /opt/playwright-mcp && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci --ignore-scripts --omit=dev --no-audit --no-fund

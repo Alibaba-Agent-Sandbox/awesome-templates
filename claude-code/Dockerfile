@@ -12,7 +12,7 @@ RUN cd /opt/claude-code && npm ci --omit=optional --ignore-scripts --no-audit --
     && mkdir -p /home/user/app && chown user:user /home/user/app
 
 # The deploy CLI may inject a wheel; otherwise use the exact server commit.
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a3"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4"
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py byok.py relay.py process.py lifecycle.py upstream.json .

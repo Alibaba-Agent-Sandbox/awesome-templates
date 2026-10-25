@@ -8,7 +8,7 @@ Run Factory Droid 0.241.1 headlessly on an existing project. Named commands expo
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a3`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
 
 Official npm `@factory/cli@0.241.1` plus `@factory/cli-linux-x64@0.241.1`, full npm integrity [lock](package-lock.json), unmodified native SHA256 `1f50e238df053573aec1dae7b90b19c8e5afca83ab13a790a00f53ba4e4b9ab1`, Alibaba FC base, Python3.13 and published server package. Install hooks are disabled; execute the fixed native binary directly. SHA256 is checked at build and every native command. [Provenance](upstream.json), [upstream notice](UPSTREAM-NOTICE.md), [Dockerfile](Dockerfile). Native metadata is proprietary `UNLICENSED`; its repository field does not establish a public source commit. Non-root `user`, generation2, port9000.
 
@@ -102,7 +102,7 @@ This historical run used the pinned e2cb27e server-source override matching the 
 
 ## Secondary development
 
-Keep the Alibaba base, exact CLI/server pins and non-root user. Extend [commands.py](commands.py) through `@command`; pass argv directly and keep secret redaction, key guards and deadline cleanup. Build with BuildKit; deployment may inject a server wheel. Run:
+Keep the Alibaba base, exact CLI/server pins and non-root user. Extend [commands.py](commands.py) through `@command`; pass argv directly and keep secret redaction, key guards and deadline cleanup. Build with the exact published server package pinned in the Dockerfile. Run:
 
 ```bash
 python3 -m pytest -q droid/test_commands.py droid/test_e2e_protocol.py droid/test_byok.py droid/test_model_controller.py

@@ -21,7 +21,7 @@ jobs:
           python-version: "3.13"
       - name: Install the current published CLI and verify real parser contracts
         run: |
-          npm install --global --registry https://registry.npmjs.org @agent-sandbox/cli@0.5.3
+          npm install --global --registry https://registry.npmjs.org @agent-sandbox/cli@0.5.4
           python -m pip install -r scripts/requirements-spec.txt
           ABX=abx python scripts/test_express_cli_contract.py
 
@@ -59,7 +59,7 @@ jobs:
       - name: Install test dependencies
         run: |
           python3 -m venv /tmp/database-venv
-          /tmp/database-venv/bin/pip install "agent-sandbox-server==0.4.0a3" httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3
+          /tmp/database-venv/bin/pip install --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4" httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3
           chown -R service-test:service-test "$GITHUB_WORKSPACE"
       - name: Exercise actual authenticated engines and HTTP as non-root
         env:
@@ -89,7 +89,7 @@ jobs:
       - name: Install scoped test dependencies
         run: |
           python3 -m venv /tmp/document-venv
-          /tmp/document-venv/bin/pip install "agent-sandbox-server==0.4.0a3" "agent-sandbox-client==0.4.0a3" httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3 pypdf==6.21.1 jsonschema==4.26.0
+          /tmp/document-venv/bin/pip install --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4" "agent-sandbox-client==0.4.0a4" httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3 pypdf==6.21.1 jsonschema==4.26.0
       - name: Verify actual document conversion, limits, SDK and external HTTP artifacts
         env:
           E2E_REQUIRE_DOCUMENT: "1"
@@ -118,7 +118,7 @@ jobs:
       - name: Install scoped test dependencies
         run: |
           python3 -m venv /tmp/media-venv
-          /tmp/media-venv/bin/pip install "agent-sandbox-server==0.4.0a3" "agent-sandbox-client==0.4.0a3" httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3 jsonschema==4.26.0
+          /tmp/media-venv/bin/pip install --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4" "agent-sandbox-client==0.4.0a4" httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3 jsonschema==4.26.0
       - name: Verify real CPU codecs, limits, descendants and HTTP artifact bytes
         env:
           E2E_REQUIRE_MEDIA: "1"
@@ -159,7 +159,7 @@ jobs:
         run: |
           export PLAYWRIGHT_BROWSERS_PATH="$RUNNER_TEMP/playwright"
           echo "PLAYWRIGHT_BROWSERS_PATH=$PLAYWRIGHT_BROWSERS_PATH" >> "$GITHUB_ENV"
-          python -m pip install "agent-sandbox-server==0.4.0a3" "agent-sandbox-client==0.4.0a3" httpx==0.28.1 pyyaml==6.0.3 jsonschema==4.26.0 pytest==9.1.1 playwright==1.58.0 Pillow==11.3.0 pypdf==6.21.1
+          python -m pip install --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4" "agent-sandbox-client==0.4.0a4" httpx==0.28.1 pyyaml==6.0.3 jsonschema==4.26.0 pytest==9.1.1 playwright==1.58.0 Pillow==11.3.0 pypdf==6.21.1
           python -m playwright install --with-deps chromium
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libnss3-tools

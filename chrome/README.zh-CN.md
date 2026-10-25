@@ -8,7 +8,7 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a3`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a4`，由 Dockerfile 直接安装。
 
 Alibaba generation2 basev0.0.49、Python3.13/Linuxx64；完整 SHA256 校验的原版 Chrome ZIP；精确固定的 Debian 桌面/VNC 软件包；独立环境中完整哈希锁定的 aiohttp3.14.5、pycryptodome4.1.0、Pillow11.3.0。[Dockerfile](Dockerfile)、[浏览器来源](browser.json)、[依赖锁](requirements.lock)、[设计](../docs/design/chrome.md)。已发布服务端包。
 

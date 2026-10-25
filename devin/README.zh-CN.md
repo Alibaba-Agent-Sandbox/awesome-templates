@@ -8,7 +8,7 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a3`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a4`，由 Dockerfile 直接安装。
 
 Alibaba generation2 Linuxx86_64基础镜像、Python3.13服务、[固定官方原包](https://static.devin.ai/cli/3000.11.92/devin-3000.11.92-x86_64-unknown-linux.tar.gz)。原版234文件／200878983字节，压缩67245544字节；SHA256为2d829139682e038cf122510f1170eee3d7060bcc7ebf92445cbc5d28c9fbcfa0，来自2026-10-21观察的官方平台manifest。[逐文件清单](upstream.json)、服务包版本固定在 Dockerfile 中。构建校验原包和文件，不执行原版；运行时检查root持有的原文件身份。厂商程序／文档／man手册保留独立条款。
 

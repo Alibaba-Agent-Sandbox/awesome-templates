@@ -14,7 +14,7 @@ Version/setup/native deepagents(task,cwd,allow_tools,command_timeout), structure
 
 ## How to build
 
-[Dockerfile](../../deepagents/Dockerfile), FC generation2/Python3.13, exact hash-locked DeepAgents0.7.25/langchain-openai1.7.2 and transitive dependencies; pip check/version validation. Preserve all installed license notices, published server package 0.4.0a3; writable workspace/non-root, serve/healthcheck9000,8GiB rootfs gate. No CMD/ENTRYPOINT.
+[Dockerfile](../../deepagents/Dockerfile), FC generation2/Python3.13, exact hash-locked DeepAgents0.7.25/langchain-openai1.7.2 and transitive dependencies; pip check/version validation. Preserve all installed license notices, published server package 0.4.0a4; writable workspace/non-root, serve/healthcheck9000,8GiB rootfs gate. No CMD/ENTRYPOINT.
 
 ## Express feasibility
 

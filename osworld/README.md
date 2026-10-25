@@ -6,7 +6,7 @@ A real private Xvfb/Openbox/Chromium desktop with [OSWorld](https://github.com/x
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a3`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
 
 OSWorld source `b138d348256078fa634fc3b73567a7337c793e6b` (Apache-2.0); Playwright 1.58.0 with its Chromium revision; PyAutoGUI 0.9.54; Pillow 11.3.0; Flask 3.1.2; NumPy 2.3.3; lxml 6.0.1; requests 2.32.5. The complete Python dependency graph is [hash locked](requirements.txt). Debian 13 x86_64 critical desktop packages have exact pins; transitive OS dependencies remain repository-resolved. See [Dockerfile](Dockerfile), [source attribution](upstream/source.json) and [design](../docs/design/osworld.md).
 

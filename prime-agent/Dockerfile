@@ -15,7 +15,7 @@ COPY kernel-python /opt/prime-kernel/bin/abx-kernel-python
 RUN chmod 755 /opt/prime-kernel/bin/abx-kernel-python \
     && chmod -R a+rX /opt/prime-agent /opt/prime-kernel \
     && /opt/prime-kernel/bin/abx-kernel-python -c "import rlm,rlm.repl; assert rlm.repl.PROTOCOL_VERSION==3; assert all(callable(getattr(rlm,n,None)) for n in ['spawn','create_session','host_request','progress_note','rename']); import requests,httpx,yaml,tomli,dotenv,pandas,numpy,scipy,bs4,lxml,pydantic,tyro,dill; print('Original Prime CPython runtime protocol3 and locked required imports OK')"
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a3"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4"
 ENV HOME=/home/user WORKSPACE=/home/user/workspace
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py filter_native.py process.py lifecycle.py UPSTREAM-NOTICE.md ./

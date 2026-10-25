@@ -8,7 +8,7 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a3`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a4`，由 Dockerfile 直接安装。
 
 Alibaba 平台基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，部署默认区域 `cn-hangzhou`、版本 `v0.0.49`。沿用镜像 Python 3.13、Node.js 20；Codex 固定 0.162.1；服务端使用 Dockerfile 中固定的已发布包版本，见 [Dockerfile](Dockerfile)。以 `user` 运行，应用目录 `/home/user/app`，工作区 `/home/user/workspace`。Dockerfile 不设置 `CMD` 或 `ENTRYPOINT`。
 

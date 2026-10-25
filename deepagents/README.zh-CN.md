@@ -8,7 +8,7 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a3`，由 Dockerfile 直接安装。
+沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a4`，由 Dockerfile 直接安装。
 
 阿里云FC、generation2、非root user、已发布服务端包。[requirements.lock](requirements.lock)固定全部解析依赖及SHA256，包括[DeepAgents0.7.25](https://pypi.org/project/deepagents/0.7.25/)与langchain-openai1.7.2。由[requirements.in](requirements.in)通过uv0.11.28/Python3.13生成；镜像安装校验哈希并执行pip check。无远程E2B/OpenSandbox后端或模型权重。
 

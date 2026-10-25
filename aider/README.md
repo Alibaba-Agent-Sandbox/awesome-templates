@@ -10,7 +10,7 @@ copies back selected results. It never auto-commits.
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a3`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
 
 Alibaba FC base `v0.0.49`, its Python 3.13 server and Node 20 remain intact.
 Aider requires Python `>=3.10,<3.13`; a separate SHA256-verified official

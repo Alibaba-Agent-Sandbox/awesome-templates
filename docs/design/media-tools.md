@@ -14,7 +14,7 @@ See [the command reference](../../media-tools/README.md#command-reference) for r
 
 ## How to build
 
-[Dockerfile](../../media-tools/Dockerfile) keeps the Alibaba base, generation 2 serve/healthcheck and non-root user. Install Debian FFmpeg and its ABI libraries at exact `7:7.1.5-0+deb13u1`; retain installed distribution license notices. The Dockerfile installs published `agent-sandbox-server==0.4.0a3` directly. No private artifact, model key or GPU package is required. Debian repository resolution is retained for unrelated system libraries. Package/version existence was verified from the official Debian package page and actual installed tools; no image build is inferred.
+[Dockerfile](../../media-tools/Dockerfile) keeps the Alibaba base, generation 2 serve/healthcheck and non-root user. Install Debian FFmpeg and its ABI libraries at exact `7:7.1.5-0+deb13u1`; retain installed distribution license notices. The Dockerfile installs published `agent-sandbox-server==0.4.0a4` directly. No private artifact, model key or GPU package is required. Debian repository resolution is retained for unrelated system libraries. Package/version existence was verified from the official Debian package page and actual installed tools; no image build is inferred.
 
 ## Express feasibility
 

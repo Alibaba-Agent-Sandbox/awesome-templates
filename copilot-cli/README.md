@@ -8,7 +8,7 @@ Runs the genuine pinned GitHub Copilot CLI with an explicit OpenAI-compatible BY
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a3`, installed directly by the Dockerfile.
+Runtime server: published `agent-sandbox-server==0.4.0a4`, installed directly by the Dockerfile.
 
 Alibaba FC generation2 base, Linux x86_64, non-root `user`, `@github/copilot@1.0.100` and the required `@github/copilot-linux-x64@1.0.100` native package. [package-lock.json](package-lock.json) pins integrity for the loader/native packages; npm scripts and other optional architectures are omitted.  Native software uses the separate [upstream license](UPSTREAM-LICENSE.md).
 

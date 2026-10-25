@@ -34,7 +34,7 @@ RUN npm ci --omit=dev --ignore-scripts     && node --input-type=module -e "impor
 COPY patch_sdk.py /tmp/patch-stagehand-sdk.py
 RUN python3 /tmp/patch-stagehand-sdk.py /home/user/app/node_modules/@browserbasehq/stagehand/dist/index.mjs \
     && rm /tmp/patch-stagehand-sdk.py
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a3"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4"
 ENV HOME=/home/user WORKSPACE=/home/user/app
 COPY --chown=user:user commands.py worker.mjs browser.mjs transport.mjs process.py lifecycle.py UPSTREAM-LICENSE.md ./
 RUN chown user:user /home/user/app     && python3 -c "import subprocess; p=subprocess.run(['du','-sx','--block-size=1','/'],capture_output=True,text=True,timeout=120); assert p.returncode==0; n=int(p.stdout.split()[0]); print('image_rootfs_bytes='+str(n)); assert n<=8*1024**3"

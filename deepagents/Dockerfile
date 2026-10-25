@@ -7,7 +7,7 @@ RUN python3 -m venv /opt/deepagents \
     && /opt/deepagents/bin/python -c "from importlib.metadata import version; assert version('deepagents') == '0.7.25'; assert version('langchain-openai') == '1.7.2'" \
     && rm /tmp/deepagents-requirements.lock
 ENV HOME=/home/user WORKSPACE=/home/user/app DEEPAGENTS_PYTHON=/opt/deepagents/bin/python
-RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a3"
+RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a4"
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py worker.py process.py lifecycle.py .
 RUN chown user:user /home/user/app \

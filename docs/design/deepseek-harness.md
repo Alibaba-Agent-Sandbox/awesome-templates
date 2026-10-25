@@ -30,7 +30,7 @@ Template1.1.1 explicitly owns /home/user/app as user:user before runtime USER. T
 
 [Dockerfile](../../deepseek-harness/Dockerfile) uses the Alibaba generation-2 base, non-root user,
 2048 MB and `/home/user/app`. Python 3.13; `httpx==0.28.1`; Agent Sandbox server. No third-party agent CLI.
-The Dockerfile installs published `agent-sandbox-server==0.4.0a3` directly.
+The Dockerfile installs published `agent-sandbox-server==0.4.0a4` directly.
 `start_cmd`: `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`.
 `ready_cmd`: `agent-sandbox-server healthcheck --port 9000`.
 No CMD or ENTRYPOINT.
