@@ -44,7 +44,7 @@ def check(name: str, condition: bool) -> None:
 
 
 def main() -> int:
-    token = os.environ.get("E2E_TOKEN") or os.environ.get("ABX_SERVER_TOKEN", "")
+    token = os.environ.get("ABX_SERVER_TOKEN", "")
     headers = {"Authorization": "Bearer " + token} if token else {}
     with httpx.Client(base_url=BASE_URL, timeout=180, headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS}) as client:
         check("server health", client.get("/health").status_code == 200)

@@ -39,7 +39,7 @@ def final_text(value):
 def native_sdk_command(base,parameters):
     from agent_sandbox.api.server_client import ServerClient
     async def run():
-        server=ServerClient(base,token=os.environ.get('E2E_SERVER_TOKEN') or None,timeout=760, headers=_GATEWAY_HEADERS)
+        server=ServerClient(base,token=os.environ.get('ABX_SERVER_TOKEN') or None,timeout=760, headers=_GATEWAY_HEADERS)
         try:return await server.commands.run('devin',timeout=760,**parameters)
         finally:await server.aclose()
     return asyncio.run(run())
@@ -145,7 +145,7 @@ def native_auth_check(client,workspace,base):
 
 def main():
     base=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000').rstrip('/');workspace=os.environ.get('E2E_WORKSPACE',os.environ.get('E2E_BASE_DIR','/home/user/app')).rstrip('/')
-    token=os.environ.get('E2E_SERVER_TOKEN','');headers={'Authorization':'Bearer '+token}if token else{}
+    token=os.environ.get('ABX_SERVER_TOKEN','');headers={'Authorization':'Bearer '+token}if token else{}
     with httpx.Client(base_url=base,headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS},timeout=180)as client:
         response=client.get('/health');record(response.status_code==200 and response.json().get('status')=='ok','HTTP health')
         response=client.get('/commands');names={x.get('name')for x in response.json().get('commands',[])};record({'devin','devin_version','devin_setup_check','devin_native_check'}<=names,'typed named commands discovery')

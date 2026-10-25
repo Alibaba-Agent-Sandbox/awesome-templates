@@ -36,10 +36,11 @@ def test_actual_sdk_named_command_serialization_and_bearer_separation(monkeypatc
             body=json.dumps({'result':{'native_version':'0.241.1','exit_code':0,'stdout':'authored fixture'}}).encode()
             self.send_response(200);self.send_header('Content-Type','application/json');self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
     server=ThreadingHTTPServer(('127.0.0.1',0),Handler);thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
-    monkeypatch.setenv('E2E_SERVER_TOKEN','synthetic-server-token')
+    monkeypatch.setenv('ABX_SERVER_TOKEN','synthetic-server-token')
+    monkeypatch.setattr(c,'_GATEWAY_HEADERS',{'X-Access-Token':'synthetic-gateway-token'})
     try:
         params={'prompt':'fixed authored fixture','cwd':'/owned/project','command_timeout':30}
         value=c.native_sdk_command('http://127.0.0.1:'+str(server.server_port),params)
         assert value['exit_code']==0
-        assert requests==[('/commands/droid_byok','Bearer synthetic-server-token',None,params)]
+        assert requests==[('/commands/droid_byok','Bearer synthetic-server-token','synthetic-gateway-token',params)]
     finally:server.shutdown();server.server_close();thread.join(timeout=5)

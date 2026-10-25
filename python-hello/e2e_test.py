@@ -30,7 +30,7 @@ _APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKE
 BASE_URL = os.environ.get("E2E_BASE_URL", "http://localhost:9000").rstrip("/")
 WORKSPACE = os.environ.get("E2E_WORKSPACE", "")  # empty → auto-detect
 TIMEOUT = httpx.Timeout(connect=10.0, read=60.0, write=30.0, pool=10.0)
-TOKEN = os.environ.get("E2E_TOKEN", "")
+TOKEN = os.environ.get("ABX_SERVER_TOKEN", "")
 
 RESULTS: list[tuple[str, str, str]] = []  # (status, test, detail)
 

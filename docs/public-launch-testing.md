@@ -116,7 +116,7 @@ provider Git 地址开始，测试内置解释器模板的 CLI 启动、进程/�
 The controller helper accepts provider `gateway_headers` separately from the generated
 application token. It supplies validated string headers through
 `E2E_GATEWAY_HEADERS_JSON` and the application token through the existing
-`E2E_TOKEN`, `ABX_SERVER_TOKEN` and `E2E_SERVER_TOKEN` aliases. Standalone controllers
+single `ABX_SERVER_TOKEN` name. Retired token aliases are not read or injected. Standalone controllers
 merge gateway headers into HTTP and Python application-client requests; application
 Bearer authentication remains separate from gateway access-token headers. Arbitrary
 operator environment keys are not forwarded. Invalid header objects or conflicting

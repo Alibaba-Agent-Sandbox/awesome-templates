@@ -48,7 +48,7 @@ const {once} = require('node:events');
  }).listen(Number(process.env.PORT), '0.0.0.0');
 })();
 '''
-    token = os.environ.get("E2E_TOKEN") or os.environ.get("ABX_SERVER_TOKEN", "")
+    token = os.environ.get("ABX_SERVER_TOKEN", "")
     headers = {"Authorization": "Bearer " + token} if token else {}
     with httpx.Client(base_url=BASE_URL, timeout=45, headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS}) as client:
         def call(name: str, args: dict | None = None, expected: int = 200):

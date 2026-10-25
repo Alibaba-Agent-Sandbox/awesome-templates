@@ -21,7 +21,6 @@ _APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKE
 
 BASE_URL = os.environ.get("E2E_BASE_URL", "http://127.0.0.1:9000").rstrip("/")
 BASE_DIR = os.environ.get("E2E_BASE_DIR", "/home/user").rstrip("/")
-TOKEN = os.environ.get("E2E_TOKEN", "")
 FAILED = 0
 COMMAND_TIMEOUT = int(os.environ.get("E2E_COMMAND_TIMEOUT", "600"))
 if not 1 <= COMMAND_TIMEOUT <= 1800:
@@ -188,7 +187,7 @@ def coding(client: httpx.Client, setup: dict | None = None) -> None:
 
 
 def main() -> int:
-    headers = {"X-Access-Token": TOKEN} if TOKEN else {}
+    headers = dict(_APPLICATION_HEADERS)
     with httpx.Client(base_url=BASE_URL, headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS}, timeout=60) as client:
         record(client.get("/health").status_code == 200, "health")
         response = client.get("/commands")

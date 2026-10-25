@@ -27,12 +27,8 @@ def check(condition, label):
 
 def main():
     headers = {}
-    if os.environ.get("E2E_TOKEN"):
-        headers["X-Access-Token"] = os.environ["E2E_TOKEN"]
     if os.environ.get("ABX_SERVER_TOKEN"):
         headers["Authorization"] = "Bearer " + os.environ["ABX_SERVER_TOKEN"]
-    if os.environ.get("E2E_SERVER_TOKEN"):
-        headers["Authorization"] = "Bearer " + os.environ["E2E_SERVER_TOKEN"]
     with httpx.Client(base_url=os.environ.get("E2E_BASE_URL", "http://127.0.0.1:9000"), headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS}, timeout=150) as client:
         health = client.get("/health")
         check(health.status_code == 200 and health.json().get("status") == "ok", "server health")

@@ -97,7 +97,7 @@ def test_actual_https_controller_retains_verification_with_configured_ca(tmp_pat
 def test_application_token_is_explicit_and_not_borrowed_from_operator(tmp_path, monkeypatch):
     monkeypatch.setenv('E2E_TOKEN', 'unrelated-operator-token')
     monkeypatch.setenv('ABX_SERVER_TOKEN', 'unrelated-server-token')
-    source = controller(tmp_path, 'example', "import os\nassert os.environ['E2E_TOKEN']=='owned-application-token'\nassert os.environ['ABX_SERVER_TOKEN']=='owned-application-token'\nprint('[PASS] explicit owned application token')\n")
+    source = controller(tmp_path, 'example', "import os\nassert 'E2E_TOKEN' not in os.environ and 'E2E_SERVER_TOKEN' not in os.environ\nassert os.environ['ABX_SERVER_TOKEN']=='owned-application-token'\nprint('[PASS] explicit owned application token')\n")
     environment = controller_environment(source, {9000: 'http://synthetic.invalid'}, {})
     assert 'E2E_TOKEN' not in environment
     proof = run_controller(source, {9000: 'http://synthetic.invalid'}, tmp_path, {}, token='owned-application-token')
@@ -112,7 +112,7 @@ def test_gateway_headers_reject_malformed_input_before_child_process(tmp_path, h
 
 def test_gateway_headers_and_application_bearer_remain_separate(tmp_path, monkeypatch):
     monkeypatch.setenv('E2E_GATEWAY_HEADERS_JSON', '{"Unrelated":"operator-secret"}')
-    source=controller(tmp_path,'example', "import json,os\nassert json.loads(os.environ['E2E_GATEWAY_HEADERS_JSON'])=={'X-Access-Token':'owned-gateway'}\nassert os.environ['E2E_TOKEN']==os.environ['ABX_SERVER_TOKEN']==os.environ['E2E_SERVER_TOKEN']=='owned-application'\nprint('[PASS] gateway and application authentication are distinct')\n")
+    source=controller(tmp_path,'example', "import json,os\nassert json.loads(os.environ['E2E_GATEWAY_HEADERS_JSON'])=={'X-Access-Token':'owned-gateway'}\nassert os.environ['ABX_SERVER_TOKEN']=='owned-application'\nassert 'E2E_TOKEN' not in os.environ and 'E2E_SERVER_TOKEN' not in os.environ\nprint('[PASS] gateway and application authentication are distinct')\n")
     proof=run_controller(source,{9000:'http://synthetic.invalid'},tmp_path,{},token='owned-application',gateway_headers={'X-Access-Token':'owned-gateway'})
     assert proof['passed']
     assert 'owned-gateway' not in json.dumps(proof) and 'owned-application' not in json.dumps(proof)

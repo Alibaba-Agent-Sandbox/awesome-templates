@@ -29,9 +29,7 @@ def check(condition, label):
 
 def main():
     headers = {}
-    if os.environ.get("E2E_TOKEN"):
-        headers["X-Access-Token"] = os.environ["E2E_TOKEN"]
-    token = os.environ.get("E2E_SERVER_TOKEN") or os.environ.get("ABX_SERVER_TOKEN")
+    token = os.environ.get("ABX_SERVER_TOKEN")
     if token:
         headers["Authorization"] = "Bearer " + token
     root = (os.environ.get("E2E_WORKSPACE") or os.environ.get("E2E_BASE_DIR") or "/home/user/app").rstrip("/")

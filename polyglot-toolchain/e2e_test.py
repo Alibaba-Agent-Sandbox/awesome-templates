@@ -11,7 +11,7 @@ _APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKE
 
 
 def main():
-    headers = {"Authorization": "Bearer " + os.environ["E2E_TOKEN"]} if os.environ.get("E2E_TOKEN") else {}
+    headers = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKEN"]} if os.environ.get("ABX_SERVER_TOKEN") else {}
     with httpx.Client(base_url=os.environ.get("E2E_BASE_URL", "http://127.0.0.1:9000"),headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS},timeout=180) as client:
         assert client.get("/health").status_code == 200
         response = client.post("/commands/toolchain_versions",json={})

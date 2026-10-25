@@ -29,10 +29,7 @@ def check(ok: bool, label: str) -> None:
 
 def main() -> int:
     headers = {}
-    gateway_token = os.environ.get("E2E_TOKEN", "")
-    server_token = os.environ.get("E2E_SERVER_TOKEN") or os.environ.get("ABX_SERVER_TOKEN", "")
-    if gateway_token:
-        headers["X-Access-Token"] = gateway_token
+    server_token = os.environ.get("ABX_SERVER_TOKEN", "")
     if server_token:
         headers["Authorization"] = "Bearer " + server_token
     workspace = os.environ.get("E2E_WORKSPACE") or os.environ.get("WORKSPACE") or "/home/user/workspace"

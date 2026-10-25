@@ -28,7 +28,7 @@ BASE_URL = os.environ.get("E2E_BASE_URL", "http://127.0.0.1:9000").rstrip("/")
 PINNED_VERSION = "0.0.1792022479-ge66e24"
 MARKER = "ABX_E2E_OK"
 TIMEOUT = httpx.Timeout(connect=10.0, read=30.0, write=30.0, pool=10.0)
-TOKEN = os.environ.get("E2E_TOKEN", "")
+TOKEN = os.environ.get("ABX_SERVER_TOKEN", "")
 LLM_TIMEOUT = float(os.environ.get("E2E_LLM_TIMEOUT", "600"))
 RUN_LLM = os.environ.get("E2E_RUN_LLM", "").strip().lower()
 REQUIRE = os.environ.get("E2E_REQUIRE_LLM", "").strip().lower() in {"1", "true", "yes"}
