@@ -1,0 +1,150 @@
+{
+  "source": "4229b6c4d96675a05bd0bef031fb36d43f138d14",
+  "scope": "one bounded owned native environment inheritance diagnostic; no source mutation or restart",
+  "versions": {
+    "cli": "0.5.6",
+    "sdk": "0.4.0a6"
+  },
+  "nonsecret_marker_added_only_to_temporary_launch_manifest": true,
+  "marker_present_in_actual_launch_manifest": true,
+  "primary_cli_diagnostics": {
+    "code": "E3000"
+  },
+  "default_process": {
+    "marker_matches_create": true,
+    "marker_matches_explicit": false,
+    "application_token_present": true,
+    "application_token_matches": true,
+    "path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "uid": 1000,
+    "path_matches_prepared": false,
+    "actual_server_package_is_a6": true,
+    "commands_match_source": true,
+    "binaries": {
+      "node": {
+        "absolute_lexists": true,
+        "absolute_exists": true,
+        "absolute_executable": true,
+        "executable_mode": "0o755",
+        "lookup_matches_absolute": false,
+        "exit_code": 0,
+        "version": "v24.16.0",
+        "expected_version_matches": true,
+        "stderr_present": false,
+        "realpath": "/opt/node/node-v24.16.0-linux-x64/bin/node"
+      },
+      "codex": {
+        "absolute_lexists": true,
+        "absolute_exists": true,
+        "absolute_executable": true,
+        "executable_mode": "0o755",
+        "lookup_matches_absolute": false,
+        "exit_code": 0,
+        "version": "codex-cli 0.162.1",
+        "expected_version_matches": true,
+        "stderr_present": true,
+        "realpath": "/opt/node/node-v24.16.0-linux-x64/lib/node_modules/@openai/codex/bin/codex.js"
+      },
+      "qwen": {
+        "absolute_lexists": true,
+        "absolute_exists": true,
+        "absolute_executable": true,
+        "executable_mode": "0o755",
+        "lookup_matches_absolute": false,
+        "exit_code": 0,
+        "version": "0.23.0",
+        "expected_version_matches": true,
+        "stderr_present": false,
+        "realpath": "/opt/node/node-v24.16.0-linux-x64/lib/node_modules/@qwen-code/qwen-code/cli-entry.js"
+      }
+    },
+    "unique_owned_application": true,
+    "owned_app_count": 1,
+    "application_read_errors": [],
+    "application_observation_available": true,
+    "application": {
+      "marker_matches_create": true,
+      "marker_matches_explicit": false,
+      "application_token_present": true,
+      "application_token_matches": true,
+      "uid": 1000,
+      "path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+      "path_matches_prepared": false
+    }
+  },
+  "explicit_process_environment": {
+    "marker_matches_create": false,
+    "marker_matches_explicit": true,
+    "application_token_present": true,
+    "application_token_matches": true,
+    "path": "/opt/node/current/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "uid": 1000,
+    "path_matches_prepared": true,
+    "actual_server_package_is_a6": true,
+    "commands_match_source": true,
+    "binaries": {
+      "node": {
+        "absolute_lexists": true,
+        "absolute_exists": true,
+        "absolute_executable": true,
+        "executable_mode": "0o755",
+        "lookup_matches_absolute": true,
+        "exit_code": 0,
+        "version": "v24.16.0",
+        "expected_version_matches": true,
+        "stderr_present": false,
+        "realpath": "/opt/node/node-v24.16.0-linux-x64/bin/node"
+      },
+      "codex": {
+        "absolute_lexists": true,
+        "absolute_exists": true,
+        "absolute_executable": true,
+        "executable_mode": "0o755",
+        "lookup_matches_absolute": true,
+        "exit_code": 0,
+        "version": "codex-cli 0.162.1",
+        "expected_version_matches": true,
+        "stderr_present": true,
+        "realpath": "/opt/node/node-v24.16.0-linux-x64/lib/node_modules/@openai/codex/bin/codex.js"
+      },
+      "qwen": {
+        "absolute_lexists": true,
+        "absolute_exists": true,
+        "absolute_executable": true,
+        "executable_mode": "0o755",
+        "lookup_matches_absolute": true,
+        "exit_code": 0,
+        "version": "0.23.0",
+        "expected_version_matches": true,
+        "stderr_present": false,
+        "realpath": "/opt/node/node-v24.16.0-linux-x64/lib/node_modules/@qwen-code/qwen-code/cli-entry.js"
+      }
+    },
+    "unique_owned_application": true,
+    "owned_app_count": 1,
+    "application_read_errors": [],
+    "application_observation_available": true,
+    "application": {
+      "marker_matches_create": true,
+      "marker_matches_explicit": false,
+      "application_token_present": true,
+      "application_token_matches": true,
+      "uid": 1000,
+      "path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+      "path_matches_prepared": false
+    }
+  },
+  "post_explicit_default_process": {
+    "path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "path_matches_prepared": false,
+    "marker_matches_create": true,
+    "marker_matches_explicit": false
+  },
+  "diagnostic_hook_reached": true,
+  "original_attempt_preserved_as_fail": true,
+  "cleanup": {
+    "cleanup_verified": true,
+    "template_cleanup_verified": true,
+    "unresolved_owned_cleanup": false
+  }
+}

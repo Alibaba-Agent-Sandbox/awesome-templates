@@ -22,6 +22,7 @@ import sys
 import tempfile
 import uuid
 import secrets
+import shlex
 import time
 import yaml
 from public_launch_e2e import CLI, CLIError, require, matches, command_url, application_headers, delete_sandbox, json_contains, verify_cli_io
@@ -76,6 +77,11 @@ def prepared_launch_manifest(source: Path, template_id: str, *, runtime_env: dic
     manifest=yaml.safe_load((source/'template.yaml').read_text())
     if runtime_env:
         manifest['env']={**runtime_env, **manifest.get('env', {})}
+        assignments=' '.join(shlex.quote(key+'='+value) for key,value in manifest['env'].items() if value)
+        if assignments:
+            for key in ['start_cmd','ready_cmd']:
+                if manifest.get(key):
+                    manifest[key]='/usr/bin/env -- '+assignments+' /bin/sh -c '+shlex.quote(manifest[key])
     manifest.update(template_id=template_id,provider='alicloud-express')
     manifest.pop('image',None)
     return manifest
