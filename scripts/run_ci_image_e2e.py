@@ -91,6 +91,10 @@ def delete_owned_templates(cli: CLI, alias: str, known_id: str | None, timeout: 
     if known_id:ids.add(known_id)
     if not ids:return False  # An ambiguous submission cannot be cleared by an empty index.
     for identifier in ids:
+        try:cli.run(['template','info',identifier],native=True)
+        except CLIError as exc:
+            if exc.diagnostics.get('code')=='E2001':continue
+            raise
         cli.run(['template','delete',identifier,'--yes'],native=True,json_output=False)
     deadline=time.monotonic()+timeout
     for identifier in ids:

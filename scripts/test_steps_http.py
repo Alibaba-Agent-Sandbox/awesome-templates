@@ -41,7 +41,7 @@ def prepared(tmp_path,monkeypatch):
         if args[:2]==['template','info']:
             if args[2] in resources:return {'status':{'state':'ready'}}
             from public_launch_e2e import CLIError
-            raise CLIError('template',1,json.dumps({'code':'E2001','message':'owned template not found'}))
+            raise CLIError('template',4,json.dumps({'code':'E2001','message':'owned template not found'}))
         if args[:2]==['template','delete']:
             assert kwargs['native'] is True
             resources.remove(args[2]);return {}

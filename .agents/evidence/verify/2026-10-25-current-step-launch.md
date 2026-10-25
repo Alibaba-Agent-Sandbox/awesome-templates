@@ -47,3 +47,8 @@ Before the per-ID cleanup delta, the integrated suite passed 191 tests plus 2 su
 
 
 After the per-ID cleanup candidate, the relevant current native/process/prepare/archive/public-launch/shared-HTTP/assets/cache/batch/managed/launch-contract suite passed 177 tests. The first command selected a nonexistent old test filename and collected no tests; it was corrected using actual tracked file names before this successful run. Targeted cleanup/public-launch tests passed 64 tests including still-present known ID despite missing inventory, unknown zero-ID registration and E5000/permission rejection; these are local regressions, not public CLI 0.5.4 cloud acceptance.
+
+
+The already-absent owned-ID boundary is also covered: a private known ID that already returns typed E2001 does not trigger another delete. The helper independently reads it again before completing alias absence, accepts no generic delete error, and keeps the zero-ID unknown-submission guard. Focused tests now pass 65; the new E2001 fixtures use the current CLI's nonzero not-found exit (4), while acceptance keys on the typed JSON code rather than the older network-error exit. A real CLI 0.5.4 candidate readback was reported by its owner; public 0.5.4 acceptance remains pending here.
+
+The final relevant suite after that boundary passed 178 tests in 10.33 seconds; document links remained 222/0 and diff whitespace checks passed.

@@ -215,7 +215,7 @@ def test_runtime_digest_gate_controls_final_result_even_after_application_and_cl
         if args[:2]==['template','info']:
             if args[2] in templates:return {'status':{'state':'ready'}}
             from public_launch_e2e import CLIError
-            raise CLIError('template',1,json.dumps({'code':'E2001','message':'owned template not found'}))
+            raise CLIError('template',4,json.dumps({'code':'E2001','message':'owned template not found'}))
         if args[:2]==['template','delete']:
             templates.remove(args[2]);return ''
         raise AssertionError('unexpected operation')
@@ -247,12 +247,15 @@ def test_known_id_absence_is_independent_of_missing_alias_index(monkeypatch,info
         calls.append(args)
         if args[1]=='delete':return ''
         if info_state=='still-present':return {'status':{'state':'ready'}}
-        raise CLIError('template',1,json.dumps({'code':'E2001' if info_state=='deleted' else 'E5000','message':'controlled failure'}))
+        raise CLIError('template',4,json.dumps({'code':'E2001' if info_state=='deleted' else 'E5000','message':'controlled failure'}))
     cli=SimpleNamespace(run=invoke)
     if info_state=='denied':
         with pytest.raises(CLIError):review.delete_owned_templates(cli,'unique-alias','owned-template',timeout=0)
     else:assert review.delete_owned_templates(cli,'unique-alias','owned-template',timeout=0) is expected
-    assert calls==[['template','delete','owned-template','--yes'],['template','info','owned-template']]
+    expected_calls=([['template','info','owned-template']]*2 if info_state=='deleted' else
+        [['template','info','owned-template']] if info_state=='denied' else
+        [['template','info','owned-template'],['template','delete','owned-template','--yes'],['template','info','owned-template']])
+    assert calls==expected_calls
 
 
 def test_unknown_registration_and_empty_alias_cannot_be_declared_absent(monkeypatch):
@@ -260,3 +263,16 @@ def test_unknown_registration_and_empty_alias_cannot_be_declared_absent(monkeypa
     monkeypatch.setattr(review,'exact_templates',lambda *args:[])
     cli=SimpleNamespace(run=lambda *args,**kwargs:pytest.fail('no known resource to inspect'))
     assert review.delete_owned_templates(cli,'unique-alias',None,timeout=0) is False
+
+
+def test_already_absent_known_id_requires_typed_info_and_does_not_attempt_delete(monkeypatch):
+    from types import SimpleNamespace
+    from public_launch_e2e import CLIError
+    monkeypatch.setattr(review,'exact_templates',lambda *args:[])
+    calls=[]
+    def invoke(args,**kwargs):
+        calls.append(args)
+        assert args==['template','info','owned-template']
+        raise CLIError('template',4,json.dumps({'code':'E2001','message':'owned template not found'}))
+    assert review.delete_owned_templates(SimpleNamespace(run=invoke),'unique-alias','owned-template',timeout=0)
+    assert len(calls)==2
