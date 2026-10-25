@@ -104,3 +104,45 @@ def test_known_template_is_deleted_even_if_inventory_temporarily_omits_it(prepar
     report=steps.run_one('example',config())
     assert report['passed'] and not resources
     assert any(args[:3]==['template','delete','owned-template'] for args,_ in calls)
+
+
+def test_unknown_owned_cleanup_stops_the_existing_serial_selection(monkeypatch):
+    import sys
+    monkeypatch.setattr(sys,'argv',['run_steps_e2e.py','--all'])
+    monkeypatch.setattr(steps,'catalog_names',lambda:['first','second'])
+    calls=[]
+    def run(name,args):
+        calls.append(name)
+        return {'passed':False,'unresolved_owned_cleanup':True}
+    monkeypatch.setattr(steps,'run_one',run)
+    assert steps.main()==1 and calls==['first']
+
+
+def test_independently_cleaned_failure_does_not_hide_later_templates(monkeypatch):
+    import sys
+    monkeypatch.setattr(sys,'argv',['run_steps_e2e.py','first','second'])
+    monkeypatch.setattr(steps,'catalog_names',lambda:['first','second'])
+    calls=[]
+    def run(name,args):
+        calls.append(name)
+        return {'passed':name=='second','unresolved_owned_cleanup':False}
+    monkeypatch.setattr(steps,'run_one',run)
+    assert steps.main()==1 and calls==['first','second']
+
+
+def test_lost_registration_response_and_empty_inventory_remain_uncertain(prepared,monkeypatch):
+    _,_,resources,_=prepared
+    original=CLI.run;stages=[]
+    def uncertain(self,args,*a,**k):
+        if args[:2]==['template','deploy'] and args[-1:]!=['--help']:
+            stages.append(Path(args[2]))
+            raise TimeoutError('controlled lost registration response')
+        return original(self,args,*a,**k)
+    monkeypatch.setattr(CLI,'run',uncertain)
+    report=steps.run_one('example',config())
+    assert report['preparation_attempted'] and not report['runtime_attempted']
+    assert report['template_cleanup_verified'] is False and report['unresolved_owned_cleanup'] is True
+    assert not report['passed'] and not resources
+    intent=json.loads((stages[0]/'platform-intent.json').read_text())
+    assert intent['registration_attempted'] and not intent.get('template_id')
+    assert intent['template_cleanup_verified'] is False

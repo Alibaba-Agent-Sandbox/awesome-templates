@@ -35,7 +35,7 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
     stage.chmod(0o700)
     result = {"template": name, "provider": "alicloud-express", "build_mode": "steps",
               "attempt": stamp, "verifier_commit": verifier_commit, "result": "FAIL", "passed": False, "model_acceptance": "NOT_RUN",
-              "runtime_attempted": False, "cleanup_verified": False, "template_cleanup_verified": False}
+              "preparation_attempted": False, "runtime_attempted": False, "cleanup_verified": False, "template_cleanup_verified": False}
     cache = None
     try:
         from run_ci_image_e2e import controller_missing_imports, exercise, exact_templates, wait_ready
@@ -72,6 +72,7 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
         save_private(intent_path, {'alias': alias, 'preflight_absent': True,
                                   'registration_attempted': True, 'sandbox_ids': []})
         try:
+            result["preparation_attempted"] = True
             deployed = cli.run(['template', 'deploy', str(stage), '--build', 'steps',
                 '--generation', '2', '--start-cmd', '', '--ready-cmd', '',
                 '--alias', alias, '--timeout', str(args.timeout), '--yes'], args.timeout + 180, native=True)
@@ -91,7 +92,7 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
                     ids.add(known)
                 for template_id in ids:
                     cli.run(['template', 'delete', template_id, '--yes'], native=True, json_output=False)
-                clean = not exact_templates(cli, alias)
+                clean = bool(ids) and not exact_templates(cli, alias)
             except Exception as failure:
                 clean = False
                 result['template_cleanup_failure_type'] = type(failure).__name__
@@ -116,6 +117,10 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
             except Exception:
                 result.update(passed=False, result="FAIL", reason="asset-cache cleanup requires private owned recovery")
             result["asset_cache"] = cache.public_proof()
+    result['unresolved_owned_cleanup'] = bool(
+        result.get('preparation_attempted') and result.get('template_cleanup_verified') is not True
+        or result.get('runtime_attempted') and result.get('cleanup_verified') is not True
+        or result.get('asset_cache') and result['asset_cache'].get('cleanup_verified') is not True)
     result["duration_s"] = round(time.monotonic() - started, 3)
     evidence = source / "evidence"
     evidence.mkdir(exist_ok=True)
@@ -146,7 +151,13 @@ def main() -> int:
     selected = names if args.all else args.templates
     if not selected or len(set(selected)) != len(selected) or any(name not in names for name in selected):
         parser.error("select unique catalog names or --all")
-    results = [run_one(name, args) for name in selected]
+    results = []
+    for name in selected:
+        row = run_one(name, args)
+        results.append(row)
+        if row.get('unresolved_owned_cleanup'):
+            print('Stopped before starting another template: owned cleanup needs recovery.', flush=True)
+            break
     return int(any(not row["passed"] for row in results))
 
 

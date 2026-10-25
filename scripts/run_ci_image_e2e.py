@@ -121,7 +121,7 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
         cli_version=cli.run(['--version'],json_output=False),client_version=importlib.metadata.version('agent-sandbox-client'),
         cli_distribution=os.environ.get('PUBLIC_LAUNCH_DISTRIBUTION','published'),cli_source_ref=os.environ.get('PUBLIC_LAUNCH_CLI_REF'),
         prepared_launch_manifest_sha256=hashlib.sha256((runtime/'template.yaml').read_bytes()).hexdigest())
-    journals=Path.home()/'.abx'/'resource-journal'
+    journals=cli.journal_directory
     before=set(journals.glob('*.json'));launch=None;sandbox=None;client=None
     try:
         launch=await asyncio.to_thread(cli.run,['template','launch',str(runtime),'--alias',alias,

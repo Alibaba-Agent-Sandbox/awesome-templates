@@ -106,6 +106,11 @@ class PublicLaunchTests(unittest.TestCase):
         self.assertEqual(label, '[FAIL] [FIXTURE] [LOCATION] [LOCATION] [ID]')
         self.assertEqual(len(controller_label('x' * 500)), 300)
 
+    def test_resource_journal_uses_the_cli_home_environment(self):
+        with tempfile.TemporaryDirectory() as directory:
+            cli=CLI('installed-abx','opensandbox',{'HOME':directory})
+            self.assertEqual(cli.journal_directory,Path(directory)/'.abx'/'resource-journal')
+
     def test_native_selection_is_the_first_cli_argument(self):
         from subprocess import CompletedProcess
         with patch('public_launch_e2e.subprocess.run', return_value=CompletedProcess([], 0, '[]', '')) as run:

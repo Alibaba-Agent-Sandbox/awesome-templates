@@ -299,3 +299,15 @@ class CliIoTests(unittest.IsolatedAsyncioTestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+## Real corrected candidate acceptance
+
+Source/verifier 84cd7b1f956e8fef886420c11353cdf9028645e1, fresh owned attempt verification-steps-2026-10-25T152027Z.json: PASS in 27.913 seconds with published CLI 0.5.3 and PyPI client 0.4.0a2. The actual guest reports server 0.4.0a2. Two declared smoke commands passed through CLI/Python/host HTTP (6 calls), complete HTTP controller 21 PASS / 0 FAIL / 0 SKIP, wrong app token rejected, runtime command bytes and SDK file/process checks passed. Real CLI exec returned 42; owned UTF-8 upload/stat/download/removal passed with independent SDK byte comparison and absence. Sandbox and prepared-template absence independently confirmed; no uncertain sandbox intent remains; successful private stage removed.
+
+This is native-step candidate acceptance only, not a public-main run or the default Express Docker developer path. The first failed attempt remains a separate receipt. The existing --all loop now stops before another template when its already-used unresolved_owned_cleanup signal is true, while an independently cleaned application failure retains its FAIL and allows other selected templates to run. No new state, selector or runner was introduced.
+
+## Unknown registration and journal ownership guard
+
+A lost native-registration response with zero known IDs and a temporarily empty alias inventory now keeps template_cleanup_verified false; empty inventory alone cannot prove a pending submission absent. The private registration intent remains, unresolved_owned_cleanup stops another selection, and no foreign or unknown resource is deleted. A known returned ID is still deleted even if inventory omits it. Actual regression covers the lost response/empty-list path and confirms the retained intent and stopped batch; cleaned failures may continue.
+
+Actual candidate subprocess HOME and CLI.env HOME were the same isolated directory, and none of the 46 source manifests declares HOME. Both existing consumers nevertheless now derive the journal location from the CLI's own HOME environment, matching its Node os.homedir contract. A regression passes a distinct CLI HOME and asserts that exact resource-journal directory, avoiding lookup in an unrelated operator home. No recovery framework is added.

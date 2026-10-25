@@ -136,6 +136,10 @@ class CLI:
         self.private_directory = Path(tempfile.mkdtemp(prefix="abx-public-launch-"))
         self.call_count = 0
 
+    @property
+    def journal_directory(self):
+        return Path(self.env.get('HOME') or Path.home()) / '.abx' / 'resource-journal'
+
     def run(self, args, timeout=300, json_output=True, native=False):
         proc = subprocess.run(self.command + (['--native'] if native else []) + ['--provider', self.provider]
             + (['--json'] if json_output else []) + args,
@@ -407,7 +411,7 @@ async def verify(args):
     report['run_alias'] = alias
     if args.provider == 'opensandbox':
         report['endpoint_mode'] = 'server-proxy' if env.get('ABX_OPENSANDBOX_USE_SERVER_PROXY', '').lower() in {'1', 'true', 'yes', 'on'} else 'direct'
-    journal_dir = Path.home() / '.abx' / 'resource-journal'
+    journal_dir = cli.journal_directory
     original_journals = set(journal_dir.glob('*.json'))
     launch = None
     sandbox = None

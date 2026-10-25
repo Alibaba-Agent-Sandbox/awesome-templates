@@ -68,6 +68,8 @@ prepared-template cleanup and optional asset-cache cleanup. Failure retains its
 private staging/journal outside the checkout for owned recovery; public evidence
 contains controlled failure categories, never private URLs, IDs or credentials.
 Real model/vendor-account skips remain unverified and do not inherit a smoke pass.
+A selected matrix stops before creating more resources if owned cleanup is uncertain;
+recover only its exact recorded resources, then explicitly select the remaining templates.
 
 Earlier [44-template native checkpoint](../.agents/evidence/verify/2026-10-21-current-native-http44.json)
 and other dated receipts retain their exact versions and calling paths. They do
