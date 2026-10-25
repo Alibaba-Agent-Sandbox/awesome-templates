@@ -35,7 +35,7 @@ def selection(root: Path, requested: str | None, rerun: bool) -> list[str]:
 
 def exported_artifacts(run_id: int, names: list[str]) -> tuple[str, dict[str, int]]:
     workflow = github('/actions/runs/' + str(run_id))
-    if workflow.get('status') != 'completed' or workflow.get('conclusion') != 'success' or workflow.get('event') != 'workflow_dispatch':
+    if workflow.get('event') != 'workflow_dispatch' or workflow.get('status') != 'completed' or workflow.get('conclusion') != 'success':
         raise ValueError('a completed successful explicit exact-source export is required')
     head = workflow['head_sha']
     artifacts = []
@@ -60,7 +60,7 @@ def worker(source: Path, artifact_id: int, crane: Path, private_root: Path) -> d
     with (private / 'private-worker-console.log').open('w') as output:
         response = subprocess.run([sys.executable, str(ROOT / 'scripts/run_ci_image_e2e.py'),
             str(source), '--artifact-id', str(artifact_id), '--crane', str(crane),
-            '--sandbox-create', 'sdk', '--private-root', str(private)], stdout=output, stderr=output)
+            '--private-root', str(private)], stdout=output, stderr=output)
     added = sorted(set((source / 'evidence').glob('*.json')) - before)
     reports = []
     for path in added:
@@ -75,6 +75,9 @@ def worker(source: Path, artifact_id: int, crane: Path, private_root: Path) -> d
             unresolved = True
     if runtime_started and any(report.get('cleanup_verified') is not True for report in reports):
         unresolved = True
+    for path in private.glob('abx-ci-image-*/platform-intent.json'):
+        if json.loads(path.read_text()).get('template_cleanup_verified') is not True:
+            unresolved = True
     passed = response.returncode == 0 and any(report.get('passed') is True and
         report.get('cleanup_verified') is True and report.get('registry_cleanup_verified') is True
         and report.get('http_acceptance', {}).get('passed') is True for report in reports)
