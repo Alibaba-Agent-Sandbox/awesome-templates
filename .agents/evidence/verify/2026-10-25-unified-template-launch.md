@@ -73,3 +73,7 @@ This pilot does not establish real-model coding, PTY, native interpreter or othe
 ## Cross-review clarification
 
 The launch docs now distinguish template readiness (`ready_cmd`), built-in server v2 health/discovery checks and generic endpoint resolution. Returning every service URL does not verify an unknown protocol. No new protocol restriction, mandatory readiness field or runtime status was added. The real pilot uses server v2 and retains its actual health/call checks.
+
+The final Python source-install recommendation advances to `66c86f2b6dc7cd33e02c2a53d98dda2125d05236`, which completes Express startup metadata for the SDK launcher. Cloud matrix receipts keep their actually tested `ff073167f8993a5c580c78cccccd5779db1f5836` client connection/call scope; they are not relabeled as SDK TemplateLauncher acceptance.
+
+Final CLI source-install and CLI contract-CI pin: `9717236c8169055f318bff3740d2f13b92248c50` (pushed by the CLI owner). Source matrix receipts continue to record their actual `ea28f207c8a0016cf798f5a355e3c363c7c936f4` inputs. At this final PR documentation update, full run 40177005215 remains in progress; it has not been recorded as a pass. Full-run artifacts will be attached to the PR without changing this release-candidate head.

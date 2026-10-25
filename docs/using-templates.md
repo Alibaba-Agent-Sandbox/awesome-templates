@@ -12,11 +12,11 @@ Current manifests require a CLI build supporting specification 5; CLI 0.4.17 pre
 
 ```bash
 git clone https://github.com/Alibaba-Agent-Sandbox/agent-sandbox.git agent-sandbox-cli
-git -C agent-sandbox-cli checkout ea28f207c8a0016cf798f5a355e3c363c7c936f4
+git -C agent-sandbox-cli checkout 9717236c8169055f318bff3740d2f13b92248c50
 npm ci --prefix agent-sandbox-cli
 npm run build --prefix agent-sandbox-cli
 npm install -g ./agent-sandbox-cli
-python3 -m pip install "agent-sandbox-client @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/ff073167f8993a5c580c78cccccd5779db1f5836.tar.gz#subdirectory=client-sdk"
+python3 -m pip install "agent-sandbox-client @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/66c86f2b6dc7cd33e02c2a53d98dda2125d05236.tar.gz#subdirectory=client-sdk"
 abx --version
 ```
 
