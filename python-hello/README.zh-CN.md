@@ -12,7 +12,7 @@
 
 - Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` 自带 Python 3.13、Node.js 20。部署时默认解析为 `cn-hangzhou` 和 `v0.0.49`。
 - 镜像安装 `pytest==8.4.2`，供 `test` 命令使用。
-- 非 root 用户 `user`，工作目录 `/home/user/app`，generation 2。平台执行 YAML 的 `start_cmd` 并用 `ready_cmd` 探测就绪。
+- 非 root 用户 `user`，工作目录 `/home/user/app`，generation 2。`abx template launch` 执行 YAML 的 `start_cmd` 并用 `ready_cmd` 探测就绪。
 
 ## 解决的问题
 

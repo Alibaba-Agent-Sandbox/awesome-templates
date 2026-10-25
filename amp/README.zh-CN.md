@@ -28,7 +28,7 @@ Amp 不接受 DashScope 密钥、`ABX_LLM_API_KEY` 或 OpenAI 兼容的 base URL
 - 基础镜像里的 Node.js 20，只用来跑 `npm`。`amp` 二进制是同版本可选包 `@ampcode/cli-linux-x64` 里的 glibc ELF。
 - `@ampcode/cli@0.0.1792022479-ge66e24`，来自 2026-10-15 的 `npm view @ampcode/cli version`。目录里原来的 pin 是 `0.0.1791964847-g13f24a`。基础镜像把 npm 源设成 `registry.npmmirror.com`，该源对这个版本的 `@ampcode/cli-linux-x64` 返回 404，所以 Dockerfile 从 `https://registry.npmjs.org` 安装。构建时会跑 `amp version`，原生二进制没解出来时构建失败。
 - git 和 ripgrep。
-- 工作目录 `/home/user/app`。运行用户 `user`。平台用 `start_cmd` 启动进程。Dockerfile 没有 `CMD` 或 `ENTRYPOINT`。
+- 工作目录 `/home/user/app`。运行用户 `user`。`abx template launch` 执行模板的 `start_cmd` 启动进程。Dockerfile 没有 `CMD` 或 `ENTRYPOINT`。
 
 ## 解决的问题
 

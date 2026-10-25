@@ -28,7 +28,7 @@ Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by
 - Node.js 20 from that image, used only to run `npm`. The `amp` binary is a glibc ELF from the optional package `@ampcode/cli-linux-x64` at the same version.
 - `@ampcode/cli@0.0.1792022479-ge66e24`, from `npm view @ampcode/cli version` on 2026-10-15. The previous directory pin was `0.0.1791964847-g13f24a`. The base image sets npm's registry to `registry.npmmirror.com`, which returned 404 for `@ampcode/cli-linux-x64` at this version, so the Dockerfile installs from `https://registry.npmjs.org`. `amp version` runs in the image build and fails the build if the native binary was not unpacked.
 - git and ripgrep.
-- Work directory `/home/user/app`. Runtime user `user`. The platform starts `start_cmd`. The Dockerfile has no `CMD` or `ENTRYPOINT`.
+- Work directory `/home/user/app`. Runtime user `user`. `abx template launch` executes the template's `start_cmd`. The Dockerfile has no `CMD` or `ENTRYPOINT`.
 
 ## Problem solved
 

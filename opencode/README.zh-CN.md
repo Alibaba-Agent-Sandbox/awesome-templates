@@ -8,7 +8,7 @@ Agent Sandbox 里的 OpenCode（`sst/opencode`）。镜像安装 npm 包 `openco
 
 `agent-sandbox-server` 监听端口 9000，并注册调用 `opencode` 的命令。`opencode_run` 执行一次非交互的 `opencode run --format json`，返回助手文本、脱敏后的 JSON 事件和会话 id。`opencode_version` 和 `opencode_setup_check` 检查钉死的二进制和 `opencode.json`，不调用模型。
 
-`opencode_serve_start` 在端口 4096 上启动 `opencode serve`，绑定 `0.0.0.0`。该进程是 OpenCode 自己的 HTTP API（`GET /global/health`）。通过 `await sb.network.resolve(4096)` 取得地址，保留返回的网关头及 OpenCode 自身认证。平台的 `start_cmd` 不会启动它。
+`opencode_serve_start` 在端口 4096 上启动 `opencode serve`，绑定 `0.0.0.0`。该进程是 OpenCode 自己的 HTTP API（`GET /global/health`）。通过 `await sb.network.resolve(4096)` 取得地址，保留返回的网关头及 OpenCode 自身认证。模板的 `start_cmd` 不会启动这个可选的 OpenCode 服务。
 
 ## 技术栈
 

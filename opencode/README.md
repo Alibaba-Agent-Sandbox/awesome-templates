@@ -11,7 +11,7 @@ requires independent code, artifact and exact-session continuation checks.
 
 `agent-sandbox-server` listens on port 9000 and registers commands that run `opencode`. `opencode_run` executes one non-interactive `opencode run --format json` and returns the assistant text, sanitized JSON events, and the session id. `opencode_version` and `opencode_setup_check` check the pinned binary and `opencode.json` without calling a model.
 
-`opencode_serve_start` starts `opencode serve` on port 4096 bound to `0.0.0.0`. That process is OpenCode's own HTTP API (`GET /global/health`). Resolve it with `await sb.network.resolve(4096)` and preserve the returned gateway headers alongside OpenCode authentication. The platform `start_cmd` does not start it.
+`opencode_serve_start` starts `opencode serve` on port 4096 bound to `0.0.0.0`. That process is OpenCode's own HTTP API (`GET /global/health`). Resolve it with `await sb.network.resolve(4096)` and preserve the returned gateway headers alongside OpenCode authentication. The template's `start_cmd` does not start this optional OpenCode service.
 
 ## Stack
 
