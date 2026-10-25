@@ -42,4 +42,14 @@ The existing manual public-launch workflow now accepts `distribution=source` for
 
 - PASS: `python -m pytest -q scripts/test_public_launch_e2e.py` — 22 tests, including source-versus-published provenance and unknown distribution rejection.
 - PASS: documentation links and whitespace validation rerun after this addition.
-- NOT RUN locally: Docker-backed cloud matrix; this environment has neither Docker executable/socket nor an OpenSandbox endpoint. The GitHub runner supplies its own Docker-backed OpenSandbox fixture. Existing Express secret configuration is used only by the original workflow; no new credentials were uploaded.
+- NOT RUN locally: Docker-backed cloud matrix; this environment has neither Docker executable/socket nor an OpenSandbox endpoint. The GitHub runner supplies its own Docker-backed OpenSandbox fixture. The workflow retains the original Express secret names. A separate read-only repository API check found no repository Actions secrets, so Express matrix availability is not established. No local credentials were uploaded.
+
+Draft PR: https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/213. Initial candidate commit: `7c02f7f00f2100909d6cdd06748656bf1e397e02`. Remote CI and new-format cloud acceptance remain pending.
+
+## Coordinated candidate installation
+
+Current installation instructions now pin CLI source `ea28f207c8a0016cf798f5a355e3c363c7c936f4` and Python client source `ff073167f8993a5c580c78cccccd5779db1f5836`. Both candidate branches are pushed; instructions do not claim npm/PyPI publication. The CLI contract CI checkout uses the same candidate commit. These source instructions replace the incompatible 0.4.17 recommendation for specification 5.
+
+Cross-owner service validation review confirmed that `operations: []` is valid for a service that exposes an endpoint without named commands. The source schema now matches the shared validator, with a targeted regression; no official service operation lists changed.
+
+Final rerun after service-schema alignment and candidate installation documentation: targeted suite PASS (78 tests, 92 subtests), all source/skeleton manifests PASS (47 directories), shared launch lock PASS, documentation links PASS (222 documents), whitespace PASS.

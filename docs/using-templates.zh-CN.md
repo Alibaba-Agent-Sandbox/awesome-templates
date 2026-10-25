@@ -6,10 +6,15 @@
 
 ## 安装
 
-当前清单需要支持规范 5 的 CLI 构建，CLI 0.4.17 尚不支持。兼容版本正式发布前，请按[源码安装指南](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/.github/CONTRIBUTING.md)安装本次配套变更；需要终端能力时建议 Node 22+。现有 Python 客户端可连接已经运行的命令服务：
+当前清单需要支持规范 5 的 CLI 构建，CLI 0.4.17 尚不支持。兼容版本正式发布前，安装以下固定提交的候选源码（CLI 0.5.0、Python client 0.4.0a1）；这不表示对应版本已经发布到包仓库。需要终端能力时建议 Node 22+。
 
 ```bash
-python3 -m pip install 'agent-sandbox-client==0.3.1a5'
+git clone https://github.com/Alibaba-Agent-Sandbox/agent-sandbox.git agent-sandbox-cli
+git -C agent-sandbox-cli checkout ea28f207c8a0016cf798f5a355e3c363c7c936f4
+npm ci --prefix agent-sandbox-cli
+npm run build --prefix agent-sandbox-cli
+npm install -g ./agent-sandbox-cli
+python3 -m pip install "agent-sandbox-client @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/ff073167f8993a5c580c78cccccd5779db1f5836.tar.gz#subdirectory=client-sdk"
 abx --version
 ```
 

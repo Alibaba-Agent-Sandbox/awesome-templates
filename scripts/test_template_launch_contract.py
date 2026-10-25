@@ -55,6 +55,12 @@ def test_multiple_provided_services_do_not_need_workflow_selection():
     assert any('must be declared in ports' in error for error in validate_v5(data))
 
 
+def test_service_may_expose_an_endpoint_without_named_operations():
+    data = manifest()
+    data['provides']['app']['operations'] = []
+    assert validate_v5(data) == []
+
+
 def test_service_and_startup_changes_change_manifest_identity():
     data = manifest()
     original = manifest_contract_sha256(yaml.safe_dump(data).encode())
