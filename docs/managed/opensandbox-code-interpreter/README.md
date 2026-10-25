@@ -16,7 +16,7 @@ Use shell and files through Agent Sandbox, or native interpreter contexts throug
 
 ## Quick start (CLI)
 
-Use CLI 0.5.5 or later and the current managed catalog; see [installation and provider setup](../../using-templates.md). The historical verification below covers its recorded create/exec interfaces, not a rerun of this catalog launch command.
+Use CLI 0.5.6 or later and the current managed catalog; see [installation and provider setup](../../using-templates.md). The historical verification below covers its recorded create/exec interfaces, not a rerun of this catalog launch command.
 
 Install the [CLI](../../using-templates.md) and Node.js 22+, configure your provider below, and replace `<sandbox-id>` with the ID returned by launch.
 

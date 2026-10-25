@@ -2,7 +2,9 @@
 
 ## Specification 5 delivery (2026-10-25)
 
-- [Current published runtime and canonical command surface](notes/proposed/process/2026-10-25-current-runtime-and-command-surface.md) · [verification](evidence/verify/2026-10-25-current-runtime-and-command-surface.md). Fresh public a6/CLI0.5.5 image/provider matrices remain separate required gates.
+- [Prepared native runtime environment](notes/proposed/process/2026-10-25-native-prepared-runtime-environment.md) · [verification](evidence/verify/2026-10-25-native-prepared-runtime-environment.md). Original failures and the controlled diagnostic remain separate from the pending new native supplemental matrix.
+
+- [Current published runtime and canonical command surface](notes/proposed/process/2026-10-25-current-runtime-and-command-surface.md) · [verification](evidence/verify/2026-10-25-current-runtime-and-command-surface.md). Fresh public a6/CLI0.5.6 image/provider matrices remain separate required gates.
 
 - [Current native-step launch](notes/proposed/process/2026-10-25-current-step-launch.md) · [verification](evidence/verify/2026-10-25-current-step-launch.md).
 
@@ -12,7 +14,7 @@
 
 - [Release installation and durable matrix evidence](notes/proposed/process/2026-10-25-unified-launch-release-docs.md) · [documentation verification](evidence/verify/2026-10-25-unified-launch-release-docs.md) · [complete OpenSandbox matrix](evidence/verify/2026-10-25-unified-launch-opensandbox-matrix.md).
 
-Current authoring uses one startup command and all declared services, without workflow selectors. The source-candidate OpenSandbox matrix passed 46/46 recipes and 219 consumer calls with independent cleanup. Its receipts preserve exact source provenance; published package installation and managed catalog launch remain separate checks. Current setup targets published CLI 0.5.5 and published Python client 0.4.0a6. The new server pins are pending fresh image/cloud acceptance. Their official installation and a separate public CLI 0.5.1 Express `base` launch/exec/cleanup have passed; this does not extend the other managed or source-matrix scopes. Earlier cloud receipts below retain their exact historical scope.
+Current authoring uses one startup command and all declared services, without workflow selectors. The source-candidate OpenSandbox matrix passed 46/46 recipes and 219 consumer calls with independent cleanup. Its receipts preserve exact source provenance; published package installation and managed catalog launch remain separate checks. Current setup targets published CLI 0.5.6 and published Python client 0.4.0a6. The new server pins are pending fresh image/cloud acceptance. Their official installation and a separate public CLI 0.5.1 Express `base` launch/exec/cleanup have passed; this does not extend the other managed or source-matrix scopes. Earlier cloud receipts below retain their exact historical scope.
 
 ## Historical delivery (2026-10-24)
 

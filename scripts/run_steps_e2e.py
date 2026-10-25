@@ -82,7 +82,8 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
             save_private(intent_path, intent)
             wait_ready(cli, template_id, args.timeout)
             result['runtime_attempted'] = True
-            asyncio.run(exercise(source, template_id, stage, result, True, intent_path))
+            asyncio.run(exercise(source, template_id, stage, result, True, intent_path,
+                                 runtime_env=manifest.get('env', {})))
         finally:
             clean = True
             try:

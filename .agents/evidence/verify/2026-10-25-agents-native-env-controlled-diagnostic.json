@@ -1,0 +1,97 @@
+{
+  "source": "389302f5dc9429a4b215801dbd4025d4dba95f7e",
+  "scope": "controlled same-instance native ENV diagnostic; not matrix PASS or default Docker acceptance",
+  "versions": {
+    "cli": "0.5.5",
+    "sdk": "0.4.0a6"
+  },
+  "materialized_runtime_env_keys": [
+    "ABX_SERVER_POLICY_FILE",
+    "DEBIAN_FRONTEND",
+    "LANG",
+    "PATH",
+    "WORKSPACE"
+  ],
+  "observation": {
+    "runtime": {
+      "command_sha256": "58bf1f93f54c53ae1992431b09502e2c5f8a5b820016a993241ab6979bef35bf",
+      "exec_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+      "binaries": {
+        "node": {
+          "which": "/usr/local/bin/node",
+          "exit_code": 0,
+          "version": "v20.20.2",
+          "stderr_present": false
+        },
+        "codex": {
+          "which": null
+        },
+        "qwen": {
+          "which": null
+        }
+      }
+    },
+    "server_count": 1,
+    "servers": [
+      {
+        "path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+        "token_present": true,
+        "token_matches": true
+      }
+    ],
+    "http": {
+      "status": 500,
+      "error_type": "RuntimeError",
+      "error_message": "codex is missing; rebuild the pinned template",
+      "result": null
+    },
+    "sdk_error": {
+      "type": "CommandExecutionError",
+      "message": "[E9000] RuntimeError: codex is missing; rebuild the pinned template\n  Suggestion: The command function raised. error_type names the exception class."
+    }
+  },
+  "causal_retry": {
+    "original_server_stopped_and_port_closed": true,
+    "same_owned_sandbox": true,
+    "only_change": "same original start command with explicitly materialized Docker ENV; original application token retained",
+    "runtime": {
+      "command_sha256": "58bf1f93f54c53ae1992431b09502e2c5f8a5b820016a993241ab6979bef35bf",
+      "exec_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+      "binaries": {
+        "node": {
+          "which": "/usr/local/bin/node",
+          "exit_code": 0,
+          "version": "v20.20.2",
+          "stderr_present": false
+        },
+        "codex": {
+          "which": null
+        },
+        "qwen": {
+          "which": null
+        }
+      }
+    },
+    "server_count": 1,
+    "servers": [
+      {
+        "path": "/opt/node/current/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+        "token_present": true,
+        "token_matches": true
+      }
+    ],
+    "http": {
+      "status": 200,
+      "error_type": null,
+      "error_message": "",
+      "result": "codex 0.162.1; qwen-code 0.23.0"
+    }
+  },
+  "original_attempt_preserved_as_fail": true,
+  "diagnostic_hook_reached": true,
+  "cleanup": {
+    "cleanup_verified": true,
+    "template_cleanup_verified": true,
+    "unresolved_owned_cleanup": false
+  }
+}

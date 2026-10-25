@@ -12,6 +12,8 @@ process environment. No credentials are uploaded to Actions by these commands.
 
 ```bash
 python -m pip install -r scripts/requirements-spec.txt
+python -m pip install --index-url https://pypi.org/simple Pillow==11.3.0 pypdf==6.21.1
+python -m pip install --require-hashes -r scripts/requirements-native-http.txt
 python scripts/run_steps_e2e.py python-hello --timeout 900
 ```
 
@@ -20,6 +22,8 @@ steps from the selected Dockerfile, calls the native provider preparation API,
 waits for the exact owned template to become READY, and invokes the current
 `abx template launch` with a temporary managed manifest containing that prepared
 ID and the original startup, readiness, services and environment declarations.
+Explicit Dockerfile ENV values are runtime defaults; original manifest environment
+entries take precedence. Build-only cache and upload variables are not forwarded.
 It then tests named commands through CLI, Python application client and HTTP,
 checks source identity and files/process operations, and independently destroys
 and reads back absence of its sandbox and prepared template. There is one launch

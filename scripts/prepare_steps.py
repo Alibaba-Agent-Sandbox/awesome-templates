@@ -318,6 +318,7 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
     if base_path is None and tag != "v0.0.49":
         raise ValueError("an unverified base tag requires an explicit verified --base-path")
     build_env = {"PATH": base_path or BASE_PATH}
+    runtime_env = {}
     # Express executes steps as user by default; Docker's build profile installs
     # dependencies as root and explicitly returns to USER user for the runtime.
     steps = [{"type": "USER", "args": ["root"]}]
@@ -459,6 +460,7 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
                 pairs.extend([key, val])
                 updates[key] = val
             build_env.update(updates)
+            runtime_env.update(updates)
             steps.append({"type": kind, "args": pairs})
         elif kind == "USER":
             if value == "user" and workdir == "/home/user/app":
@@ -489,6 +491,7 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
         raise ValueError(f"compressed steps ({wire_bytes} bytes) exceed the provider's 16 KiB limit; use an immutable source archive or Dockerfile mode")
     data["base"] = BASE.replace("<region>", region).replace("<tag>", tag)
     data["build"] = {"mode": "steps", "steps": steps}
+    data["env"] = {**runtime_env, **data.get("env", {})}
     provenance = {"schema_version": 1, "template": source.name,
                   "materializer_sha256": MATERIALIZER_SHA256,
                   "source_manifest_contract_sha256": manifest_contract_sha256((source / "template.yaml").read_bytes()),

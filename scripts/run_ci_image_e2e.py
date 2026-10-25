@@ -71,9 +71,11 @@ def publish(source: Path, receipt: dict, report: dict) -> None:
     with (directory/('image-http-'+stamp+'.json')).open('x') as stream:json.dump(report,stream,indent=2);stream.write('\n')
 
 
-def prepared_launch_manifest(source: Path, template_id: str) -> dict:
-    """Keep original services/startup/env; only replace source preparation with its owned ID."""
+def prepared_launch_manifest(source: Path, template_id: str, *, runtime_env: dict[str, str] | None = None) -> dict:
+    """Keep original launch declarations; apply prepared ENV defaults and its owned ID."""
     manifest=yaml.safe_load((source/'template.yaml').read_text())
+    if runtime_env:
+        manifest['env']={**runtime_env, **manifest.get('env', {})}
     manifest.update(template_id=template_id,provider='alicloud-express')
     manifest.pop('image',None)
     return manifest
@@ -123,11 +125,12 @@ def wait_ready(cli: CLI, template_id: str, timeout: int=900) -> None:
     raise TimeoutError('owned image registration readiness timed out')
 
 
-async def exercise(source: Path, template_id: str, private: Path, report: dict, http: bool, journal_path: Path) -> None:
+async def exercise(source: Path, template_id: str, private: Path, report: dict, http: bool, journal_path: Path,
+                   *, runtime_env: dict[str, str] | None = None) -> None:
     from agent_sandbox import ProviderSandbox
     from agent_sandbox.models.errors import SandboxNotFoundError
     import httpx
-    manifest=prepared_launch_manifest(source,template_id)
+    manifest=prepared_launch_manifest(source,template_id,runtime_env=runtime_env)
     runtime=private/'prepared-template';runtime.mkdir()
     (runtime/'template.yaml').write_text(yaml.safe_dump(manifest,sort_keys=False))
     environment=os.environ.copy()

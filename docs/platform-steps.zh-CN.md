@@ -10,12 +10,15 @@
 
 ```bash
 python -m pip install -r scripts/requirements-spec.txt
+python -m pip install --index-url https://pypi.org/simple Pillow==11.3.0 pypdf==6.21.1
+python -m pip install --require-hashes -r scripts/requirements-native-http.txt
 python scripts/run_steps_e2e.py python-hello --timeout 900
 ```
 
 该命令始终运行完整应用控制器：从选定 Dockerfile 生成原生步骤，调用 provider 原生
 准备接口，等待本次模板 READY，然后将准备好的 ID 和原清单的启动、就绪、服务及环境
-声明写入临时托管清单，调用当前 `abx template launch`。随后通过 CLI、Python 应用
+声明写入临时托管清单，调用当前 `abx template launch`。Dockerfile 显式 ENV 作为运行
+默认值，原清单环境声明优先；仅构建使用的缓存、上传变量不传入运行环境。随后通过 CLI、Python 应用
 客户端及 HTTP 调用命名命令，检查实际源码、文件和进程操作，最后独立销毁并核对
 沙箱及准备模板不存在。只有一条启动路径，没有 CLI／SDK 两种创建选项。
 
