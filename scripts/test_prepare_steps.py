@@ -65,6 +65,24 @@ def test_all_catalog_profiles_generate_with_explicit_pins():
         assert proof["steps_json_bytes"] <= 15000
 
 
+def test_explicit_docker_environment_reaches_runtime_with_manifest_priority(tmp_path):
+    source=fixture(tmp_path,'ENV PATH="/opt/tool/bin:${PATH}" FIRST=docker\n')
+    import yaml
+    data=yaml.safe_load((source/'template.yaml').read_text())
+    data['env']={'FIRST':'manifest','TOKEN':''}
+    (source/'template.yaml').write_text(yaml.safe_dump(data))
+    prepared,_=prepare(source)
+    assert prepared['env']=={'PATH':'/opt/tool/bin:'+prepare_steps.BASE_PATH,
+                             'FIRST':'manifest','SECOND':'two words','TOKEN':''}
+
+
+def test_internal_asset_build_environment_is_not_runtime_environment():
+    prepared,_=prepare(ROOT/'browser-use',asset_transport='parallel')
+    assert 'UV_CACHE_DIR' not in prepared['env']
+    assert 'UV_PYTHON_INSTALL_MIRROR' not in prepared['env']
+    assert any('/tmp/abx-step-installer' in str(step) for step in prepared['build']['steps'])
+
+
 def test_immutable_source_fetch_checks_bytes_before_publication(tmp_path: Path):
     import shlex
     import tarfile

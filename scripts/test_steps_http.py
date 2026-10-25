@@ -54,11 +54,12 @@ def prepared(tmp_path,monkeypatch):
 
 def test_prepare_then_existing_current_launch_and_independent_template_cleanup(prepared,monkeypatch):
     source,original,resources,calls=prepared
-    async def exercise(selected,reference,private,report,http,journal):
+    async def exercise(selected,reference,private,report,http,journal,*,runtime_env):
         assert selected==source and reference=='owned-template' and http is True
         import yaml
         assert yaml.safe_load((source/'template.yaml').read_text())==original
         assert json.loads(journal.read_text())['template_id']=='owned-template'
+        assert runtime_env==original['env']
         report.update(application_result='PASS',cleanup_verified=True,
                       commands=[{'name':'hello','via':via,'ok':True} for via in ['cli','sdk','host-http']],
                       http_acceptance={'passed':True})
@@ -71,7 +72,7 @@ def test_prepare_then_existing_current_launch_and_independent_template_cleanup(p
 
 def test_current_controller_failure_cannot_publish_pass_but_still_cleans(prepared,monkeypatch):
     _,_,resources,_=prepared
-    async def failed(*args):
+    async def failed(*args,**kwargs):
         args[3].update(cleanup_verified=True)
         raise RuntimeError('controlled controller failure')
     monkeypatch.setattr(current,'exercise',failed)
@@ -88,7 +89,7 @@ def test_missing_controller_stops_before_native_write(prepared,monkeypatch):
 
 def test_uncertain_template_cleanup_cannot_become_acceptance(prepared,monkeypatch):
     _,_,resources,_=prepared
-    async def exercise(*args):args[3].update(application_result='PASS',cleanup_verified=True,commands=[])
+    async def exercise(*args,**kwargs):args[3].update(application_result='PASS',cleanup_verified=True,commands=[])
     monkeypatch.setattr(current,'exercise',exercise)
     original=CLI.run
     def reject(self,args,*a,**k):
@@ -102,7 +103,7 @@ def test_uncertain_template_cleanup_cannot_become_acceptance(prepared,monkeypatc
 def test_known_template_is_deleted_even_if_inventory_temporarily_omits_it(prepared,monkeypatch):
     _,_,resources,calls=prepared
     monkeypatch.setattr(current,'exact_templates',lambda *args:[])
-    async def exercise(*args):
+    async def exercise(*args,**kwargs):
         args[3].update(application_result='PASS',cleanup_verified=True,commands=[],http_acceptance={'passed':True})
     monkeypatch.setattr(current,'exercise',exercise)
     report=steps.run_one('example',config())
@@ -162,8 +163,22 @@ def test_missing_alias_and_successful_delete_cannot_hide_still_present_known_id(
     monkeypatch.setattr(CLI,'run',no_op_delete)
     cleanup=current.delete_owned_templates
     monkeypatch.setattr(current,'delete_owned_templates',lambda cli,alias,known:cleanup(cli,alias,known,timeout=0))
-    async def exercise(*args):args[3].update(application_result='PASS',cleanup_verified=True,commands=[])
+    async def exercise(*args,**kwargs):args[3].update(application_result='PASS',cleanup_verified=True,commands=[])
     monkeypatch.setattr(current,'exercise',exercise)
     report=steps.run_one('example',config())
     assert report['passed'] is False and report['template_cleanup_verified'] is False
     assert report['unresolved_owned_cleanup'] is True and resources==['owned-template']
+
+
+def test_prepared_runtime_environment_preserves_original_launch_contract(tmp_path):
+    import yaml
+    original={'name':'owned','env':{'PRIORITY':'manifest','TOKEN':''},
+              'start_cmd':'original start','ready_cmd':'original ready',
+              'provides':{'app':{'port':9000}}}
+    (tmp_path/'template.yaml').write_text(yaml.safe_dump(original))
+    actual=current.prepared_launch_manifest(tmp_path,'owned-template',
+        runtime_env={'PATH':'/opt/tool/bin:/usr/bin','PRIORITY':'docker'})
+    assert actual['env']=={'PATH':'/opt/tool/bin:/usr/bin','PRIORITY':'manifest','TOKEN':''}
+    for key in ['start_cmd','ready_cmd','provides']:assert actual[key]==original[key]
+    assert current.prepared_launch_manifest(tmp_path,'owned-template')['env']==original['env']
+    assert yaml.safe_load((tmp_path/'template.yaml').read_text())==original
