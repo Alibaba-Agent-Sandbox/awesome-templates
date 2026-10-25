@@ -132,6 +132,7 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
         url,gateway_headers=await sandbox.network.resolve(9000)
         headers=application_headers(gateway_headers,environment['ABX_SERVER_TOKEN'])
         commands=[]
+        report['commands']=commands
         async with httpx.AsyncClient(timeout=180) as remote:
             for index,case in enumerate(manifest['smoke']):
                 name,args=case['command'],case.get('args',{})
@@ -152,12 +153,12 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
         filename='/tmp/'+alias+'.txt';await sandbox.files.write(filename,'owned acceptance file\n')
         require(await sandbox.files.read(filename)=='owned acceptance file\n','SDK file readback')
         await sandbox.files.remove(filename);require(not await sandbox.files.exists(filename),'SDK file deletion')
-        await verify_cli_io(cli, sandbox, alias, private)
         from server_package import server_version
         installed = await sandbox.commands.run('python3 -c "import importlib.metadata; print(importlib.metadata.version(\'agent-sandbox-server\'))"', timeout=30)
         require(installed.exit_code == 0 and installed.stdout.strip() == server_version(source),
                 'actual prepared runtime server matches declared public package')
         report['server_package_version'] = installed.stdout.strip()
+        await verify_cli_io(cli, sandbox, alias, private)
         report['commands']=commands
         report['checks']=['current unified launch starts original declared services','CLI/SDK/host HTTP manifest smoke',
             'actual startup service rejects wrong application token','actual runtime command bytes match source','SDK exec and file round trip','CLI exec/stat/upload/download and independent SDK byte/cleanup checks']

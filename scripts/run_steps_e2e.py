@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 import tempfile
 import shutil
+import subprocess
 import time
 import uuid
 
@@ -26,12 +27,14 @@ from select_image_templates import catalog_names
 
 def run_one(name: str, args: argparse.Namespace) -> dict:
     source = ROOT / name
+    verifier_commit = subprocess.check_output(['git', '-C', str(Path(__file__).resolve().parents[1]),
+        'rev-parse', 'HEAD'], text=True).strip()
     started = time.monotonic()
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
     stage = Path(tempfile.mkdtemp(prefix="abx-step-stage-"))
     stage.chmod(0o700)
     result = {"template": name, "provider": "alicloud-express", "build_mode": "steps",
-              "attempt": stamp, "result": "FAIL", "passed": False, "model_acceptance": "NOT_RUN",
+              "attempt": stamp, "verifier_commit": verifier_commit, "result": "FAIL", "passed": False, "model_acceptance": "NOT_RUN",
               "runtime_attempted": False, "cleanup_verified": False, "template_cleanup_verified": False}
     cache = None
     try:
@@ -101,6 +104,10 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
         result.update(result='PASS', passed=True, command_calls=len(result['commands']))
     except Exception as exc:
         result["reason"] = type(exc).__name__ + "; private staging retained"
+        from public_launch_e2e import safe_failure_label, safe_diagnostics
+        result['diagnostics'] = safe_diagnostics(exc)
+        if safe_failure_label(exc):
+            result['failed_check'] = safe_failure_label(exc)
     finally:
         if cache:
             try:

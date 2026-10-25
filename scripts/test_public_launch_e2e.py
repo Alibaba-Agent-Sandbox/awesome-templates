@@ -223,8 +223,6 @@ class CleanupTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(failures, 0)
 
 
-if __name__ == '__main__':
-    unittest.main()
 
 
 class ImageExportTests(unittest.TestCase):
@@ -263,7 +261,8 @@ class CliIoTests(unittest.IsolatedAsyncioTestCase):
             def run(self, args, **kwargs):
                 calls.append(args)
                 if args[0] == 'exec':
-                    return {'stdout':'42\n','exit_code':0}
+                    assert kwargs['json_output'] is False
+                    return '42'
                 if args[0] == 'upload':
                     remote[args[3]] = Path(args[2]).read_bytes()
                     if failed_upload:raise RuntimeError('controlled partial upload failure')
@@ -297,3 +296,6 @@ class CliIoTests(unittest.IsolatedAsyncioTestCase):
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaisesRegex(RuntimeError,'partial upload'):
                 await self.exercise(Path(directory),failed_upload=True)
+
+if __name__ == '__main__':
+    unittest.main()

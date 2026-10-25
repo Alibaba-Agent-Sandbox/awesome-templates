@@ -155,9 +155,8 @@ class CLI:
 
 async def verify_cli_io(cli, sandbox, alias, private):
     """Exercise published CLI process/transfer paths against independent SDK reads."""
-    executed = await asyncio.to_thread(cli.run, ['exec', sandbox.id, '--', 'python3', '-c', 'print(21 * 2)'])
-    require(isinstance(executed, dict) and executed.get('exit_code') == 0
-            and executed.get('stdout', '').strip() == '42', 'CLI exec result')
+    executed = await asyncio.to_thread(cli.run, ['exec', sandbox.id, '--', 'python3', '-c', 'print(21 * 2)'], json_output=False)
+    require(executed.strip() == '42', 'CLI exec result')
     nonce = secrets.token_hex(8)
     remote = '/tmp/' + alias + '-cli-' + nonce + '.txt'
     uploaded = private / ('cli-upload-' + nonce + '.txt')
@@ -485,9 +484,6 @@ async def verify(args):
         await sandbox.files.remove(path)
         require(not await sandbox.files.exists(path), 'SDK file deletion readback')
         report['checks'].extend(['runtime source identity', 'SDK exec and file round trip'])
-        phase = 'cli-process-and-files'
-        await verify_cli_io(cli, sandbox, alias, cli.private_directory)
-        report['checks'].append('CLI exec, stat, upload/download exact bytes and independent SDK file cleanup')
         phase = 'runtime-package'
         version = await sandbox.commands.run('python3 -c "import importlib.metadata; print(importlib.metadata.version(\'agent-sandbox-server\'))"', timeout=30)
         require(version.exit_code == 0 and re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:a[0-9]+)?', version.stdout.strip()),
@@ -495,6 +491,9 @@ async def verify(args):
         from server_package import server_version
         require(version.stdout.strip() == server_version(source), 'runtime server matches declared public package')
         report['server_package_version'] = version.stdout.strip()
+        phase = 'cli-process-and-files'
+        await verify_cli_io(cli, sandbox, alias, cli.private_directory)
+        report['checks'].append('CLI exec, stat, upload/download exact bytes and independent SDK file cleanup')
 
         if args.application_controller:
             phase = 'application-controller'
