@@ -27,7 +27,7 @@ def local(base):
 
 async def native(base,name,**parameters):
     from agent_sandbox.api.server_client import ServerClient
-    server=ServerClient(base,token=os.environ.get('E2E_SERVER_TOKEN')or None,timeout=1000, headers=_GATEWAY_HEADERS)
+    server=ServerClient(base,token=os.environ.get('ABX_SERVER_TOKEN')or None,timeout=1000, headers=_GATEWAY_HEADERS)
     try:return await server.commands.run(name,timeout=1000,**parameters)
     finally:await server.aclose()
 
@@ -67,7 +67,7 @@ def model(client,base,workspace):
 
 
 def main():
-    base=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000').rstrip('/');workspace=os.environ.get('E2E_WORKSPACE','/home/user/workspace').rstrip('/');token=os.environ.get('E2E_SERVER_TOKEN','')
+    base=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000').rstrip('/');workspace=os.environ.get('E2E_WORKSPACE','/home/user/workspace').rstrip('/');token=os.environ.get('ABX_SERVER_TOKEN','')
     with httpx.Client(base_url=base,headers={**({'Authorization':'Bearer '+token}if token else{}), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS},timeout=40)as client:
         response=client.get('/health');record(response.status_code==200 and response.json().get('status')=='ok','HTTP health')
         response=client.get('/commands');names={x['name']for x in response.json().get('commands',[])};record({'tau2_version','tau2_setup_check','tau2_run','tau2_verify_artifact'}.issubset(names),'native named command discovery')

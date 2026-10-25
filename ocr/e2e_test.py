@@ -24,8 +24,7 @@ _APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKE
 
 def main():
     headers={}
-    if os.environ.get('E2E_TOKEN'):headers['X-Access-Token']=os.environ['E2E_TOKEN']
-    if os.environ.get('E2E_SERVER_TOKEN'):headers['Authorization']='Bearer '+os.environ['E2E_SERVER_TOKEN']
+    if os.environ.get('ABX_SERVER_TOKEN'):headers['Authorization']='Bearer '+os.environ['ABX_SERVER_TOKEN']
     failures=0
     def check(ok,label):
         nonlocal failures

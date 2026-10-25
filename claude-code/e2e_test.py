@@ -20,7 +20,7 @@ Usage::
 Environment variables:
 
     E2E_BASE_URL     Server base URL                     (default http://localhost:9000)
-    E2E_TOKEN        X-Access-Token header value          (default: none — local mode)
+    ABX_SERVER_TOKEN        Application Bearer token          (default: none — local mode)
     E2E_BASE_DIR     File-ops root inside the container   (default /home/user/app)
     E2E_TIMEOUT      HTTP read timeout in seconds         (default 60)
     E2E_LLM_TIMEOUT  Timeout for the LLM command call     (default 420)
@@ -64,7 +64,6 @@ _APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKE
 
 TEMPLATE = "claude-code"
 BASE_URL = os.environ.get("E2E_BASE_URL", "http://localhost:9000").rstrip("/")
-TOKEN = os.environ.get("E2E_TOKEN", "")
 BASE_DIR = os.environ.get("E2E_BASE_DIR", "/home/user/app").rstrip("/") or "/home/user/app"
 TIMEOUT = httpx.Timeout(
     connect=10.0,
@@ -113,7 +112,7 @@ def _short(value: object, limit: int = 160) -> str:
 
 def _client() -> httpx.Client:
     """Build an httpx client bound to the server base URL."""
-    headers = {"X-Access-Token": TOKEN} if TOKEN else {}
+    headers = dict(_APPLICATION_HEADERS)
     return httpx.Client(base_url=BASE_URL, timeout=TIMEOUT, headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS})
 
 
@@ -186,7 +185,7 @@ def group_builtin(client: httpx.Client) -> None:
                    f"HTTP {resp.status_code}, enabled: {', '.join(enabled)}")
         elif resp.status_code == 401:
             record("SKIP", "GET /capabilities",
-                   "HTTP 401 (auth configured) — pass E2E_TOKEN to probe groups")
+                   "HTTP 401 (auth configured) — pass ABX_SERVER_TOKEN to probe groups")
         else:
             record("FAIL", "GET /capabilities",
                    f"HTTP {resp.status_code}, {_short(body, 120)}")

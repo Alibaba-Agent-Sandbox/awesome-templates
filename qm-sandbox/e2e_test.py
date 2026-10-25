@@ -17,7 +17,7 @@ def record(ok,label):
 
 async def sdk(base,name,**parameters):
     from agent_sandbox.api.server_client import ServerClient
-    server=ServerClient(base,token=os.environ.get('E2E_SERVER_TOKEN')or None,timeout=230, headers=_GATEWAY_HEADERS)
+    server=ServerClient(base,token=os.environ.get('ABX_SERVER_TOKEN')or None,timeout=230, headers=_GATEWAY_HEADERS)
     try:return await server.commands.run(name,timeout=230,**parameters)
     finally:await server.aclose()
 
@@ -62,7 +62,7 @@ def safe_diagnostic(text):
 
 def main():
     base=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000').rstrip('/');workspace=os.environ.get('E2E_WORKSPACE','/home/user/app').rstrip('/')
-    token=os.environ.get('E2E_SERVER_TOKEN','');headers={'Authorization':'Bearer '+token}if token else{}
+    token=os.environ.get('ABX_SERVER_TOKEN','');headers={'Authorization':'Bearer '+token}if token else{}
     with httpx.Client(base_url=base,headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS},timeout=230)as client:
         response=client.get('/health');record(response.status_code==200 and response.json().get('status')=='ok','HTTP health')
         response=client.get('/commands');names={x['name']for x in response.json().get('commands',[])}

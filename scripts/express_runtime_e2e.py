@@ -325,7 +325,7 @@ async def main() -> int:
         if IS_CODEX:
             child_env['OPENAI_API_KEY'] = VALUES['OPENAI_API_KEY']
         child_env.update({
-            'E2E_BASE_URL': sb.network.get_url(9000), 'E2E_TOKEN': SERVER_TOKEN,
+            'E2E_BASE_URL': sb.network.get_url(9000),
             'ABX_SERVER_TOKEN': SERVER_TOKEN,
             'E2E_WORKSPACE': remote + '/workspace', 'E2E_MODEL': ARGS.model,
             'E2E_RUN_LLM': '1' if MODEL_REQUIRED else '0',

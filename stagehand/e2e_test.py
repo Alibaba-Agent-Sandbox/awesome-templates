@@ -19,8 +19,7 @@ def main():
         failed+=not ok
         print(f"[{'PASS' if ok else 'FAIL'}] {label}",flush=True)
     headers={}
-    if os.environ.get('E2E_TOKEN'):headers['X-Access-Token']=os.environ['E2E_TOKEN']
-    if os.environ.get('E2E_SERVER_TOKEN'):headers['Authorization']='Bearer '+os.environ['E2E_SERVER_TOKEN']
+    if os.environ.get('ABX_SERVER_TOKEN'):headers['Authorization']='Bearer '+os.environ['ABX_SERVER_TOKEN']
     with httpx.Client(base_url=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000').rstrip('/'),headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS},timeout=90) as client:
         record(client.get('/health').status_code==200,'health')
         response=client.get('/commands');entries={x['name']:x for x in response.json().get('commands',[])}

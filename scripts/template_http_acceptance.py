@@ -68,9 +68,7 @@ def controller_environment(source: Path, urls: dict[int, str], fixture: dict[str
     env.update(fixture)
     env["E2E_GATEWAY_HEADERS_JSON"] = json.dumps(gateway_headers or {})
     if token is not None:
-        env["E2E_TOKEN"] = token
         env["ABX_SERVER_TOKEN"] = token
-        env["E2E_SERVER_TOKEN"] = token
     return env
 
 

@@ -107,10 +107,11 @@ def test_actual_sdk_scalar_serialization_and_separate_bearer(monkeypatch):
         def log_message(self,*args):pass
         def do_POST(self):
             value=json.loads(self.rfile.read(int(self.headers['Content-Length'])));received.append((self.path,self.headers.get('Authorization'),self.headers.get('X-Access-Token'),value));body=b'{"result":{"score":0.75}}';self.send_response(200);self.send_header('Content-Type','application/json');self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
-    server=ThreadingHTTPServer(('127.0.0.1',0),Handler);thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start();monkeypatch.setenv('E2E_SERVER_TOKEN','synthetic-server-token')
+    server=ThreadingHTTPServer(('127.0.0.1',0),Handler);thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start();monkeypatch.setenv('ABX_SERVER_TOKEN','synthetic-server-token')
+    monkeypatch.setattr(e,'_GATEWAY_HEADERS',{'X-Access-Token':'synthetic-gateway-token'})
     try:
         value=asyncio.run(e.native('http://127.0.0.1:'+str(server.server_port),'tau2_run',domain='retail',task_id='0',max_steps=30,command_timeout=600));assert value=={'score':0.75}
-        assert received==[('/commands/tau2_run','Bearer synthetic-server-token',None,{'domain':'retail','task_id':'0','max_steps':30,'command_timeout':600})]
+        assert received==[('/commands/tau2_run','Bearer synthetic-server-token','synthetic-gateway-token',{'domain':'retail','task_id':'0','max_steps':30,'command_timeout':600})]
     finally:server.shutdown();server.server_close();thread.join(timeout=5)
 
 

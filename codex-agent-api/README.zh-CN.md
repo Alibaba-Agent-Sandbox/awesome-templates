@@ -114,7 +114,7 @@ SSE 包括 `agent.session.created`、`agent.session.turn.started`、`agent.sessi
 2026-10-16，改动后的源码在自有 Express base 实例中使用固定 Codex 0.162.1 与真实 Responses 兼容模型通过 30 项外部 HTTP 检查。正式 `serve --commands` 入口成功加载含 dataclass 的模块。验收修复已有故障源码，通过控制端持有的六项固定测试，核对新报告，再恢复同一上游线程并独立检查第二产物与报告 SHA-256。自有实例已销毁。[JSON 证据](evidence/runtime-express-2026-10-16.json)与[HTTP 结果](evidence/runtime-express-2026-10-16.log)包含源码、wheel 溯源信息。此结果不等于 Dockerfile L1 或新模板部署 L2，`tested_on` 保持为空；复现步骤见[共享诊断工具](../docs/express-source-runtime.md)。
 
 
-固定测试重跑还要求全部六项真实完成且无跳过/预期失败后，输出本轮控制器独有的随机确认值；伪造 `Ran 6 tests`/`OK` 后提前退出不能通过。这是普通测试完成性检查，不是针对同用户恶意代码的隔离边界。`E2E_SERVER_TOKEN` 单独提供 generation2 Bearer 凭据，不混用旧 E2E_TOKEN 网关头。
+固定测试重跑还要求全部六项真实完成且无跳过/预期失败后，输出本轮控制器独有的随机确认值；伪造 `Ran 6 tests`/`OK` 后提前退出不能通过。这是普通测试完成性检查，不是针对同用户恶意代码的隔离边界。`ABX_SERVER_TOKEN` 提供应用 Bearer 凭据；`E2E_GATEWAY_HEADERS_JSON` 传递独立的 provider 网关头。
 
 ## 二次开发
 

@@ -284,7 +284,7 @@ def test_actual_http_suite_keeps_required_model_gate_closed(tmp_path, required):
     with protocol.running_server(tmp_path, canonical=True) as (client, token):
         env = {k: v for k, v in os.environ.items() if not any(
             part in k.upper() for part in ('KEY', 'TOKEN', 'SECRET', 'PASSWORD', 'CREDENTIAL'))}
-        env.update(E2E_BASE_URL=str(client.base_url).rstrip('/'), E2E_SERVER_TOKEN=token,
+        env.update(E2E_BASE_URL=str(client.base_url).rstrip('/'), ABX_SERVER_TOKEN=token,
                    E2E_RUN_LLM='0', E2E_REQUIRE_LLM='1' if required else '0')
         p = subprocess.run([sys.executable, str(Path(__file__).with_name('e2e_test.py'))],
                            cwd=tmp_path, env=env, capture_output=True, text=True, timeout=30)

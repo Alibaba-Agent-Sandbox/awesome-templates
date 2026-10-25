@@ -13,7 +13,7 @@ _APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKE
 
 
 def main():
-    token=os.environ.get("E2E_TOKEN","")
+    token=os.environ.get("ABX_SERVER_TOKEN","")
     headers={"Authorization":"Bearer "+token} if token else {}
     workspace=os.environ.get("E2E_BASE_DIR","/home/user/app")
     with httpx.Client(base_url=os.environ.get("E2E_BASE_URL","http://localhost:9000"),headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS},timeout=90) as client:
