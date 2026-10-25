@@ -1,0 +1,6 @@
+{
+  "scope": "official public5 binary no credentials/freshHOME; invalid root option is rejected before backend",
+  "exit_code": 1,
+  "stdout": "",
+  "stderr": "error: unknown option '--json'\n"
+}
