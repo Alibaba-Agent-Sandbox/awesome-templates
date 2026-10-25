@@ -1,92 +1,55 @@
-# Configure the process that serves named commands
+# Configure the template application before launch
 
 [中文](runtime-environment.zh-CN.md)
 
-Model and gateway settings must be present in the **named-command server process** before it imports the template. `template.yaml` declares names; it does not provide secret values. A create-time environment mapping cannot change an already running process.
+Use one startup owner: `abx template launch` prepares the template and starts its declared application. Connect the SDK to that running sandbox to call its named commands. Model settings and `ABX_SERVER_TOKEN` must reach the application process before it imports the template; connecting another client does not reconfigure that process.
 
-In an actual Express image review, `Sandbox.create(envs=...)` did not make all required Aider settings visible to the prewarmed server on port 9000. The model command refused to run. Starting the same image's unchanged `commands.py` on port 9010 with explicit `commands.start(env=...)` made all three configuration flags true through SDK, CLI and HTTP. Its real coding suite then passed 21 checks. This is an observed provider/startup boundary, not a claim that every create-time variable is ignored on every provider.
+## Launch once, then connect
 
-## Existing quick starts
+Follow [installation and provider setup](using-templates.md#installation). The example uses the published CLI 0.5.6, Python client 0.4.0a6 and the `python-hello` template. Configure Express and securely set `ABX_SERVER_TOKEN` in your local environment before launching. For a model template, also set the configuration names declared in its README; declaring an empty value in `template.yaml` does not provide a secret.
 
-Create-time key examples in template READMEs apply when the provider starts the command server with that environment. Inspect that template's read-only setup command before calling a model. If settings are missing on a prewarmed server, use an explicitly configured new server as below. Sending a key only to the local HTTP test controller does not configure the remote server.
+```bash
+abx --provider alicloud-express template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello --yes
+```
 
-## Explicit server process
-
-This example uses the installed Qwen template's configuration names and read-only diagnostic. It illustrates the process API; the image-backed verification described above used Aider. Choose the names documented by your template. The matching client/server source installation is described in [Python client installation](python-client-installation.md).
+Copy the returned sandbox ID into the Python example below. Use the same provider and application token as the launch. The application already runs on its declared port 9000; this connection does not start another server.
 
 ```python
 import asyncio
 import os
 
-import httpx
-from agent_sandbox.api.sandbox import Sandbox
+from agent_sandbox import ProviderSandbox
 
 
 async def main():
-    sb = await Sandbox.create(template="<template-id>", timeout=900)
-    stream = None
-    drain = None
+    sb = await ProviderSandbox.connect("<sandbox-id>", provider="alicloud-express")
     try:
-        settings = {name: os.environ[name] for name in
-                    ("OPENAI_API_KEY", "OPENAI_BASE_URL", "OPENAI_MODEL")}
-        settings["ABX_SERVER_BASE_DIR"] = "/home/user/app"
-        stream = await sb.commands.start(
-            "agent-sandbox-server serve --port 9010 "
-            "--commands /home/user/app/commands.py",
-            env=settings, timeout=900)
-        started = asyncio.Event()
-
-        async def discard_output():
-            async for chunk in stream:
-                if chunk.pid:
-                    started.set()
-                # Do not print or retain the server's raw output.
-
-        drain = asyncio.create_task(discard_output())
-        await asyncio.wait_for(started.wait(), timeout=120)
-        async with httpx.AsyncClient(timeout=10) as client:
-            for _ in range(30):
-                try:
-                    response = await client.get(sb.network.get_url(9010) + "/health")
-                    if response.status_code == 200:
-                        break
-                except httpx.HTTPError:
-                    pass
-                await asyncio.sleep(1)
-            else:
-                raise RuntimeError("configured server did not become ready")
-        print(await sb.run("qwen_setup_check", server_port=9010))
-        # After inspecting the setup flags, use server_port=9010 for the task.
-    finally:
+        client = await sb.application_client(9000, token=os.environ["ABX_SERVER_TOKEN"])
         try:
-            await sb.kill()  # Owns the new server and its child processes.
+            print(await client.commands.run("hello", name="Ada"))
         finally:
-            if drain is not None:
-                drain.cancel()
-                await asyncio.gather(drain, return_exceptions=True)
-            if stream is not None:
-                await stream.cancel()
+            await client.aclose()
+    finally:
+        await sb.close()
 
 
 asyncio.run(main())
 ```
 
-This starts a new process from the installed image; it does not replace source, adopt another process or change `HOME`. Consume the process stream as shown. A missing CLI, startup error or failed setup remains a failure. The lifetime is bounded by the process timeout and the owned sandbox's final destruction. For a long task, choose sufficient process/sandbox deadlines and check the template's cancellation contract.
+The expected result is `Hello, Ada!`. For OpenSandbox, use `--provider opensandbox` for launch and `provider="opensandbox"` for the connection, after its [provider setup](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md). Use the selected template's actual service port and command names. For CLI calls, HTTP POST and cleanup, follow [the complete calling example](using-templates.md#cli-sdk-and-http).
 
-All callers must select the same new server:
+`client.aclose()` and `sb.close()` close client resources; they do not delete the sandbox. When finished, the owner deletes that instance with `abx --provider alicloud-express kill <sandbox-id>` and separately removes any exact owned prepared template/image no longer needed. Do not create another sandbox merely to consume this running application's API.
 
-```bash
-abx run <sandbox-id> qwen_setup_check --server-port 9010
-```
+## Startup configuration and authentication
 
-For direct HTTP, use `sb.network.get_url(9010)` and `POST /commands/qwen_setup_check` with `{}`. Preserve any provider-required gateway authentication. Do not put model keys in command arguments, request prompts, image layers or logs.
+Keep the template's startup command and declared services together. If model configuration is missing, inspect the template's documented read-only setup command and launch configuration. Do not start a second command server to work around a failed configuration check. Creating an instance from a prepared reference is an advanced startup path; an already started application must not be started again by another owner. Authors should follow the existing [SDK template-authoring guide](https://github.com/Alibaba-Agent-Sandbox/python-sdk/blob/main/docs/en/guide/authoring-templates.md).
 
-## Server authentication is separate
+`ABX_SERVER_TOKEN` is read at application process startup. A non-empty token protects named-command calls; an unset token allows anonymous application calls. A later create/connect call cannot add authentication to an already running process. `/health` is exempt from the application token, while provider gateway authentication may still apply. Health alone does not verify command authentication or model settings.
 
-`ABX_SERVER_TOKEN` is read when a server starts. A later create call or a new server does not add authentication to the old port-9000 process. If a new server starts with a bearer token, send that token to that server, for example `client = await sb.application_client(9010, token=server_token)`. The current server exempts `/health` from server-token authentication; the provider gateway may still require its own credential. Health alone does not prove authentication or model configuration. This token is separate from the provider gateway credential and the upstream model key.
+The application token, provider gateway credentials and upstream model keys have separate purposes. `application_client(..., token=...)` preserves provider gateway headers and sends the application token using the supported headers. Do not log tokens or place model keys in command arguments, prompts or image layers. See the [authentication specification](template-spec.md#auth-token) for the exact header behavior.
 
-The example above leaves server-token configuration at its existing default. Starting a configured server on a second port does not secure or stop the default service. If all services must require authentication, establish the provider-supported startup configuration before they start and verify each exposed service; do not infer it from a successful `Sandbox.create` request.
+## Verification scope
 
-## Verification boundaries
+This guide follows the current unified launch and public connection API. Its examples receive syntax, installed-import and local-link checks; those checks are not a fresh cloud or model test. Provider acceptance must identify the exact source, packages, calling path and owned cleanup.
 
-The Aider image review used its original image commands, a new explicitly configured server, real model coding, independent tests and verified owned cleanup. It does not establish current unified source-launch acceptance, other providers' environment behavior, or every template's model support. The [Aider review](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/88) records those separate outcomes. Current provider acceptance requires its own exact-input gates and receipts.
+The [historical Aider PR](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/88) retains a separate image/process experiment and real-model result at its recorded inputs. It does not establish the current unified launch, other providers' environment behavior or all templates' model capabilities, and it is not the recommended startup procedure.

@@ -1,35 +1,55 @@
-# 配置实际承载命名命令的服务进程
+# 在启动前配置模板应用
 
 [English](runtime-environment.md)
 
-模型和网关配置必须在**命名命令服务进程**导入模板前进入该进程。`template.yaml` 只声明变量名，不提供密钥值。创建请求中的环境变量不能追溯修改一个已经运行的进程。
+由一个入口负责启动：`abx template launch` 准备模板并启动其声明的应用。SDK 连接这个已运行的沙箱，调用命名命令。模型配置和 `ABX_SERVER_TOKEN` 必须在应用进程导入模板前传入；再连接一个客户端不会重新配置已有进程。
 
-真实 Express 镜像复查中，`Sandbox.create(envs=...)` 后，预热的 9000 服务未获得全部 Aider 必需配置，模型命令在调用模型前拒绝执行。随后使用同一镜像、原始 `commands.py`，通过 `commands.start(env=...)` 在 9010 启动新服务，SDK、CLI、HTTP 三方均确认三项配置标志为 true，真实编码套件 21 项通过。这是该次提供方与启动方式的实测边界，不表示所有提供方都忽略创建环境变量。
+## 启动一次，再连接使用
 
-## 现有快速开始示例
-
-模板 README 中创建时注入密钥的示例，适用于提供方确实使用该环境启动命名服务的情况。调用模型前先查看模板的只读 setup 命令。预热服务缺少配置时，使用显式配置的新服务。只把密钥交给本地 HTTP 测试控制器，不会配置远端服务。
-
-## 显式启动新服务
-
-[英文页的完整 Python 示例](runtime-environment.md#explicit-server-process) 使用已安装 Qwen 模板的变量名与只读诊断演示进程 API；上述真实镜像验证用的是 Aider。按具体模板选择配置名，参考[客户端源码安装](python-client-installation.md)。
-
-步骤为：创建自有沙箱；使用 `sb.commands.start("agent-sandbox-server serve --port 9010 --commands /home/user/app/commands.py", env=settings, timeout=900)` 启动原镜像中的命名服务；持续消费返回的进程流且不打印原始日志；等待新端口 `/health`；调用 `await sb.run("qwen_setup_check", server_port=9010)` 检查配置；最后在 `finally` 销毁自有沙箱并停止消费流。示例不覆盖源码、不接管其他进程、不修改 `HOME`。服务启动、CLI 或配置检查失败仍是失败。长任务需要足够的进程和沙箱期限，并遵守具体模板的取消契约。
-
-所有调用者必须选中同一个新服务：
+先完成[安装和提供方配置](using-templates.zh-CN.md#安装)。以下示例使用已发布的 CLI 0.5.6、Python 客户端 0.4.0a6 和 `python-hello` 模板。配置极速版，并在启动前将 `ABX_SERVER_TOKEN` 安全地设置到本地环境。模型模板还需要按其 README 设置声明的配置项；`template.yaml` 中声明空值并不提供密钥。
 
 ```bash
-abx run <sandbox-id> qwen_setup_check --server-port 9010
+abx --provider alicloud-express template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello --yes
 ```
 
-HTTP 使用 `sb.network.get_url(9010)`，向 `/commands/qwen_setup_check` POST `{}`，保留提供方要求的网关认证。模型密钥只通过明确选择的进程环境传入，不放进命令参数、提示词、镜像或日志。
+将返回的沙箱 ID 填入下面示例，提供方和应用令牌与启动时保持一致。应用已在声明的 9000 端口运行；连接时不会启动另一个服务。
 
-## 服务认证是另一层配置
+```python
+import asyncio
+import os
 
-`ABX_SERVER_TOKEN` 在服务启动时读取。后来的创建请求或第二个服务，不能给原有 9000 进程补上认证。如果新服务启动时设置了 bearer token，客户端向该服务发送匹配令牌，例如 `client = await sb.application_client(9010, token=server_token)`；当前服务的 `/health` 不要求 server token；提供方网关仍可能要求自己的凭据。health 成功本身不证明认证或模型配置正确。它与提供方网关凭据、上游模型密钥各自独立。
+from agent_sandbox import ProviderSandbox
 
-示例没有改变现有的服务认证默认设置。启动第二个服务不会保护或关闭默认服务。若要求所有服务认证，应在它们启动前配置提供方支持的启动环境，并逐一验证实际开放的服务，不能仅从 `Sandbox.create` 成功推断。
 
-## 验证边界
+async def main():
+    sb = await ProviderSandbox.connect("<sandbox-id>", provider="alicloud-express")
+    try:
+        client = await sb.application_client(9000, token=os.environ["ABX_SERVER_TOKEN"])
+        try:
+            print(await client.commands.run("hello", name="Ada"))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
 
-Aider 验收使用原始镜像命令、显式配置的新服务、真实模型编码、独立测试和自有资源清理读回。它不证明当前统一源码启动验证、其他提供方的环境行为或全部模板的模型能力。[Aider PR](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/88) 分开记录这些结果。当前提供方验证结论需要各自准确输入的门禁与实测回执。
+
+asyncio.run(main())
+```
+
+预期结果为 `Hello, Ada!`。使用 OpenSandbox 时，先完成其[提供方配置](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)，启动选择 `--provider opensandbox`，连接选择 `provider="opensandbox"`。其他模板使用其实际服务端口和命令名。CLI 调用、HTTP POST 和清理参见[完整调用示例](using-templates.zh-CN.md)。
+
+`client.aclose()` 和 `sb.close()` 关闭客户端资源，不删除沙箱。使用结束后，资源所有者用 `abx --provider alicloud-express kill <sandbox-id>` 删除该实例，并单独清理不再需要的确切自有准备模板和镜像。消费已运行应用的 API 不需要再创建沙箱。
+
+## 启动配置与认证
+
+模板的启动命令和声明的服务应由同一个入口管理。缺少模型配置时，检查模板文档中的只读配置诊断命令及启动配置，不要为了绕过失败检查再启动第二个命令服务。从已准备引用创建实例属于高级启动路径；已有应用启动后，不应再由另一个入口重复启动。作者按现有 [SDK 模板编写指南](https://github.com/Alibaba-Agent-Sandbox/python-sdk/blob/main/docs/zh/guide/authoring-templates.md) 开发即可。
+
+应用进程启动时读取 `ABX_SERVER_TOKEN`。值非空时保护命名命令调用；未设置时应用允许匿名调用。之后的 create/connect 调用不能为已运行进程补上认证。`/health` 不要求应用令牌，但提供方网关仍可能要求自己的认证。health 成功不证明命令认证或模型配置正确。
+
+应用令牌、提供方网关凭据和上游模型密钥各有用途。`application_client(..., token=...)` 保留提供方网关访问头，并通过支持的请求头发送应用令牌。不要记录令牌，也不要把模型密钥放进命令参数、提示词或镜像层。具体请求头行为见[认证规范](template-spec.zh-CN.md#认证令牌)。
+
+## 验证范围
+
+本指南使用当前统一启动入口和公开连接 API。示例进行语法、已安装包导入和本地链接检查；这些检查不是新的云端或模型实测。提供方验证必须记录确切源码、包版本、调用路径和自有资源清理结果。
+
+[历史 Aider PR](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/88) 保留其记录输入下的独立镜像、进程实验和真实模型结果。它不证明当前统一启动、其他提供方的环境行为或全部模板的模型能力，也不是当前推荐的启动步骤。
