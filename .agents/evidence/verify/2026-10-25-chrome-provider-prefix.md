@@ -11,3 +11,5 @@ Local candidate: `python -m pytest chrome/test_protocol.py chrome/test_commands.
 Run the four new route regressions against the original `chrome/cdp.py`: 3 failed, 1 direct-path control passed. The failures cover both prefixed CDP paths and noVNC construction. Candidate tests use actual local HTTP and WebSocket transports, with synthetic application and gateway header values. They do not establish real browser/cloud acceptance.
 
 Pending: candidate complete native controller, current-head CI, merged public-source rerun and independent cleanup receipts.
+
+`python scripts/check_docs.py`: 222 documents, zero link failures. `python scripts/check_template.py chrome`: conformant. Candidate source and published workflow modes now install the same existing external-controller dependencies after package installation; no public option or dependency version changes.
