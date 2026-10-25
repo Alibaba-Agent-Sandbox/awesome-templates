@@ -104,11 +104,13 @@ smoke:
 | `tags` | Non-empty list of strings. |
 | `priority` | `P0`, `P1`, or `P2`, matching `docs/template-backlog.json` when the template is listed there. |
 | `wave` | `1` (whole product on Express), `2` (a stated slice), `3` (needs another provider for the workload), or `other`. |
-| `provides` | All services supplied by the template, with protocol, version, port and operations. Launch checks every service without selecting a workflow. |
+| `provides` | All services supplied by the template, with protocol, version, port and operations. Launch returns every declared endpoint without selecting a workflow. |
 | `smoke` | List of `{command, args, expect}` run by `scripts/public_launch_e2e.py`. `args` keys are the command parameters. An optional `expect` is compared after strip for strings; without it, a successful nonempty result proves only the call path. |
 
 `template launch` prepares the template, creates its sandbox, executes `start_cmd`,
-and checks `ready_cmd` and every declared service. All installed commands remain
+runs `ready_cmd` and resolves every declared service endpoint. The built-in server v2
+protocol also receives health checks and command discovery when declared. Other protocols are
+exposed as endpoints; resolving a URL does not prove protocol readiness. All installed commands remain
 available. Business tasks and services requiring task arguments are invoked when
 needed; launch does not execute every registered command. Creating another sandbox
 from a prepared reference does not inherit a running process.

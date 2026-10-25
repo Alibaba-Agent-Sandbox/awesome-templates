@@ -69,3 +69,7 @@ PASS: [GitHub run 40176791139](https://github.com/Alibaba-Agent-Sandbox/awesome-
 - Downloaded sanitized receipts were checked against current manifest SHA-256 values. They retain the original tested source commit and installation provenance.
 
 This pilot does not establish real-model coding, PTY, native interpreter or other templates. The full 46-source OpenSandbox candidate run [40177005215](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/40177005215) targets checkout `1d2953e16eec96da6c9c8a0a631220e2933c2aaf` with the same consumer/provider commits and is pending; it is not yet a pass.
+
+## Cross-review clarification
+
+The launch docs now distinguish template readiness (`ready_cmd`), built-in server v2 health/discovery checks and generic endpoint resolution. Returning every service URL does not verify an unknown protocol. No new protocol restriction, mandatory readiness field or runtime status was added. The real pilot uses server v2 and retains its actual health/call checks.

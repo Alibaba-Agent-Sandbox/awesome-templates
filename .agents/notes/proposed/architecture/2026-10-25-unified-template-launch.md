@@ -11,7 +11,7 @@ Use specification 5 with the existing startup/readiness commands and all provide
 
 ## API Design
 
-`abx --provider <provider> template launch <reference>` starts the template once. Consumers prepare source as needed, create a sandbox, run `start_cmd` and check readiness and every declared service. Business commands requiring a password, prompt, dataset or directory remain explicitly callable after startup. Application deployment hooks stay outside sandbox launch. The catalog, source checker and public launch harness no longer require or supply a workflow selector.
+`abx --provider <provider> template launch <reference>` starts the template once. Consumers prepare source as needed, create a sandbox, run `start_cmd` and `ready_cmd`, and resolve every declared service endpoint. The built-in server v2 protocol receives health/discovery checks; endpoint resolution for other protocols does not establish protocol verification. Business commands requiring a password, prompt, dataset or directory remain explicitly callable after startup. Application deployment hooks stay outside sandbox launch. The catalog, source checker and public launch harness no longer require or supply a workflow selector.
 
 ## Alternatives considered
 
