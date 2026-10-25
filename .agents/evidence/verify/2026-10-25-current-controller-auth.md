@@ -12,3 +12,5 @@ Local checks: focused SDK/controller/HTTP suite 127 passed. It exercises real lo
 Pending: current-head CI and final public cloud reruns. The previously passing published matrix uses its original controller hashes and does not certify this later cleanup.
 
 `python scripts/test_spec_tools.py`: 58 tests passed.
+
+After merging the accepted Chrome 1.0.6 correction from public main 2bacceec5161181e1f73f737955ddc8fae250ed9, the combined focused controller/SDK/real HTTP/WebSocket suite passed 153 tests. The latest application-token naming and provider-prefix transport fixes are exercised together. The merge retained both changelog entries and introduced no new runtime contract. This remains local transport/controller evidence, not a public cloud rerun.
