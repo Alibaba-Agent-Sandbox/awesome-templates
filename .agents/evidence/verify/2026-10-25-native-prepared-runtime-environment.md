@@ -28,4 +28,6 @@ The original diagnostic attempt deliberately remained FAIL. Independent sandbox 
 
 ## Remaining gates
 
+The original Chrome attempt stopped before preparation because the host lacked Crypto and aiohttp controller imports; it did not test the template backend. The bilingual maintenance setup now includes the same existing pinned Pillow/pypdf and hash-locked native-controller installation commands already used by the public workflow. No dependency version or lockfile changed. A dry-run resolves eight small missing packages; actual installation is deferred until the original frozen batch finishes so its environment is not changed in flight.
+
 Latest-head repository CI, independent review and the fresh full public-input matrix are pending. The original frozen native batch continues with its original source and retains each failed case; this diagnostic does not turn those failures into passes. The default Express Docker-to-ACR source path remains BLOCKED and is distinct from the native-step supplemental path.

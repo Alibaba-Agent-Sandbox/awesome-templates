@@ -72,7 +72,7 @@ def publish(source: Path, receipt: dict, report: dict) -> None:
 
 
 def prepared_launch_manifest(source: Path, template_id: str, *, runtime_env: dict[str, str] | None = None) -> dict:
-    """Keep original services/startup/env; only replace source preparation with its owned ID."""
+    """Keep original launch declarations; apply prepared ENV defaults and its owned ID."""
     manifest=yaml.safe_load((source/'template.yaml').read_text())
     if runtime_env:
         manifest['env']={**runtime_env, **manifest.get('env', {})}
