@@ -450,10 +450,15 @@ async def verify(args):
         if args.application_controller:
             phase = 'application-controller'
             urls = {}
+            report['port_endpoint_layout'] = []
             for port in manifest.get('ports', [9000]):
                 url, port_headers = await sandbox.network.resolve(port)
                 require(port_headers == gateway_headers, 'HTTP controller gateway authentication must match across declared ports')
                 urls[port] = url
+                parts = urllib.parse.urlsplit(url)
+                report['port_endpoint_layout'].append({'port': port, 'scheme': parts.scheme,
+                    'has_path_prefix': bool(parts.path.strip('/')), 'has_query': bool(parts.query),
+                    'gateway_header_count': len(port_headers)})
             report['http_acceptance'] = await asyncio.to_thread(run_controller, source, urls,
                 cli.private_directory, controller_fixture, token=env['ABX_SERVER_TOKEN'], gateway_headers=gateway_headers)
             if not report['http_acceptance']['passed']:

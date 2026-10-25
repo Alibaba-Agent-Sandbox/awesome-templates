@@ -33,3 +33,8 @@ Native attempt 40191973586 established that the CLI had returned valid JSON whos
 
 
 The cursor-agent and devin invalid-credential/no-account fixtures now honor their existing explicit `E2E_REMOTE_SANDBOX=1` opt-in for a provider-resolved loopback gateway. A localhost forwarded port can route to the real isolated Docker guest, so its address is not evidence of a mock. The separate real-model business guard is preserved. Two focused regressions verify the native authentication fixture is reached only with the explicit opt-in, including loopback endpoints; these are unit checks, not cloud proof. Combined focused suite: 46 passed; all catalog controllers compile.
+
+
+Native follow-up run 40192740450 at 6aa6f2fac8635aa0a82bea266dde603225de920a passed the complete published native journey: JSON and plain developer CLI exec, SDK shell/files, real native interpreter context persistence, isolation, program errors and deletion, with independently confirmed SDK/Docker absence. Three foreign provider IDs remain NOT_APPLICABLE with explicit compatibility rejection, not cross-provider passes.
+
+Chrome follow-up 40192742444 passed 16 assertions through actual headed runtime/noVNC and DevTools HTTP discovery, then failed a native WebSocket handshake. This remains under investigation. Add only controlled numeric HTTP status and provider endpoint structural booleans to aid diagnosis; do not expose addresses, IDs, tokens, remote content or raw exception messages.

@@ -136,4 +136,8 @@ def main():
 
 if __name__=='__main__':
     try:raise SystemExit(main())
-    except Exception as exc:print('[FAIL] native Chrome controller aborted ('+type(exc).__name__+'); private content omitted',flush=True);raise SystemExit(1)
+    except Exception as exc:
+        status=getattr(exc,'status',None)
+        diagnostic='; HTTP status='+str(status) if type(status)is int and 100<=status<=599 else ''
+        print('[FAIL] native Chrome controller aborted ('+type(exc).__name__+diagnostic+'); private content omitted',flush=True)
+        raise SystemExit(1)
