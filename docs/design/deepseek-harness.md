@@ -53,7 +53,7 @@ Secrets are declared with empty values. Error/output paths redact known secret e
 
 - L0: `python3 scripts/check_template.py deepseek-harness`; `python3 -m pytest -q deepseek-harness/test_commands.py`; local HTTP `e2e_test.py`, model disabled.
 - L1: image build and pinned upstream version/dependency output; Docker is required.
-- L2: `python3 scripts/express_e2e.py deepseek-harness` invokes declared no-key smoke through external CLI and SDK. Only passing runs become provider evidence.
+- L2: `python scripts/public_launch_e2e.py deepseek-harness --provider alicloud-express --application-controller` invokes declared no-key smoke through external CLI and SDK. Only passing runs become provider evidence.
 - L3: target diagnostics must report compatible credentials. Repair seeded `calculator.py`, preserve the seeded test, create REPORT.md and acceptance.txt with an exact ABX_E2E_OK marker, retrieve via remote files API, execute independent unittest and held-out tests. Required mode fails on missing credentials.
 - L4: no provider claim until a real run.
 

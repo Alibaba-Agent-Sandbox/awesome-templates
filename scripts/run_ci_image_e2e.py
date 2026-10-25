@@ -26,7 +26,6 @@ import time
 import yaml
 from public_launch_e2e import CLI, require, matches, command_url, application_headers, delete_sandbox, json_contains
 import ci_image_archive as images
-import express_e2e as harness
 from template_http_acceptance import fixture_environment, run_controller
 
 
@@ -48,10 +47,11 @@ def controller_missing_imports(source: Path) -> list[str]:
 
 def check_image_cli() -> None:
     """Reject a missing/renamed CLI surface before archive transfer or cloud writes."""
-    result=harness.default_runner(['template','from-image','--help'],30)
+    result=CLI(os.environ.get('ABX','abx'),'alicloud-express',os.environ.copy()).run(
+        ['template','from-image','--help'],30,native=True,json_output=False)
     required=['--generation','--start-cmd','--ready-cmd','--cpu','--memory',
               '--no-envd-inject','--registry-type','--registry-username','--registry-password']
-    if result.returncode or any(flag not in result.stdout for flag in required):
+    if any(flag not in result for flag in required):
         raise RuntimeError('CLI lacks the native template from-image contract; update ABX before image acceptance')
 
 

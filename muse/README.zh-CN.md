@@ -91,7 +91,7 @@ commands.py导入时捕获配置；存在标志不证明账号有效。key最长
 python -m pytest -q muse/test_commands.py muse/test_relay.py muse/test_terminal.py
 python scripts/check_template.py muse --strict
 python scripts/check_docs.py
-ABX='abx --native' python scripts/run_steps_e2e.py muse --sandbox-create sdk --http --asset-transport oss
+python scripts/run_steps_e2e.py muse --asset-transport oss
 ```
 
 本地代理/解析器fixture仅用固定不可执行回复；原版及生成代码验收只在全新且明确自建的云端目标运行。保留原版二进制与声明、精确边界、重定向拒绝、匿名输入及进程/代理清理。正式编码检查须有源码修改、原测试字节、新报告/精确nonce、原3项及4项新增用例/返回后新ACK，独立确认自建资源不存在。

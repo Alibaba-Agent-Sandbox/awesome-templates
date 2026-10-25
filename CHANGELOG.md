@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Use one current launch consumer after native step preparation; remove old creation modes, duplicate recovery/HTTP harnesses and unused qualification audit. Fix idle monitoring of actual small ongoing controller logs and preserve owned process-group cleanup.
+
 - Install published server 0.4.0a2 directly in all source recipes and increment their patch versions. Remove pre-release archive/wheel fallbacks and duplicate historical cloud runners; retain keyless image gates and full current public-launch acceptance with actual guest package readback. Selected image batches always rerun.
 
 - Remove retired E2E application-token aliases from current template controllers and use only ABX_SERVER_TOKEN, keeping provider gateway headers separate. Use the current OpenSandbox credential name in managed examples.

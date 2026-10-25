@@ -91,7 +91,7 @@ print(await client.commands.run('prime_agent_version'))
 python -m pytest -q prime-agent/test_commands.py prime-agent/test_terminal.py
 python scripts/check_template.py prime-agent --strict
 python scripts/check_docs.py
-ABX='abx --native' python scripts/run_steps_e2e.py prime-agent --sandbox-create sdk --http
+python scripts/run_steps_e2e.py prime-agent
 ```
 
 真实模型控制器仅允许显式拥有的远程目标：修改预置源文件、保持原测试字节不变、下载新报告和精确随机nonce、独立运行原始3项加4项隐藏用例，并执行返回后的新ACK。固定合成协议fixture及源码模式原生跳过不构成模型/云端通过。

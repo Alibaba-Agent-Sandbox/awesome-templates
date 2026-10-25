@@ -1,234 +1,59 @@
-# 使用 Agent Sandbox step 构建模板
+# 用原生平台步骤构建并测试模板
 
-2026-10-21最新检查点：[44/44原生运行与必需HTTP通过](../.agents/evidence/verify/2026-10-21-current-native-http44.json)，新增原版Meta Muse Code/miniswe、真实SDK steps、兼容Responses编码/产物及独立清理。[Muse证明与失败](../.agents/evidence/verify/2026-10-21-muse-native-final.md)。保留原43项快照，不声明所有模型/镜像/提供方或全部64个Issue完成。
+[English](platform-steps.md)。该维护入口在阿里云极速版准备模板，不需要本地 Docker。
+常规公开启动见[模板使用指南](using-templates.zh-CN.md)。步骤构建与 Docker 镜像
+构建是不同的验证范围。
 
-2026-10-21此前验收：[43/43原生运行与完整HTTP通过](../.agents/evidence/verify/2026-10-21-current-native-http43.json)，包含原版QM/Pi编码和实际SDK支持的QM Sandbox。[QM记录](../.agents/evidence/verify/2026-10-21-qm-native-final.md)保留精确源码、先前失败及独立清理；此检查点不代表所有模型/镜像/提供方或全部64个Issue完成。
-
-`abx template deploy --build steps` 向阿里云极速版发送基础镜像和有序步骤，
-不需要本地 Docker 或 ACR 上传。[English](platform-steps.md)。
-
-## 前置条件和模式
-
-使用已发布的 `abx` CLI（本流程以 0.4.11 验证）、Python 3.10+ 与 Git。
-按[安装指南](using-templates.zh-CN.md)配置已有授权的 Express API 和阿里云控制面凭据。
-当前公开入口是 `abx`，不添加已经退役的 `--native` 参数。
-
-auto 有 Dockerfile 时选 Dockerfile；显式 steps 使用 manifest 步骤。不与
-`--acr-namespace` 混用；创建 sandbox 不选择构建模式。
-CLI 的[模式契约](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/design/template-build-modes.md)
-说明发送形式，提供方仍需实际验证。Express ENV 参数是交替键值，例如
-`{type: ENV, args: [LANG, C.UTF-8]}`；2026-10-19 真实试验拒绝了单参数
-`LANG=C.UTF-8`，失败记录保留。
-
-
-## 无 Docker 运行 python-hello
-
-此路径把目录中的源码准备成云端 steps，不在本机构建 Docker 镜像。请使用新的工作目录；
-它会创建计费云资源。凭据保存在已有环境中，不放进模板目录。
+按[安装指南](using-templates.zh-CN.md)安装当前已发布 CLI 和 Python client/server，
+再安装本仓库检查器及对应控制器依赖。通过进程环境提供已有极速版账号；这些命令
+不会把凭据上传到 Actions。
 
 ```bash
-git clone https://github.com/Alibaba-Agent-Sandbox/awesome-templates.git
-cd awesome-templates
-git rev-parse HEAD  # 将此源码提交保存在本次验证记录中
-python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install "PyYAML==6.0.3"
-python scripts/prepare_steps.py python-hello --output ./python-hello-steps
-abx --json template deploy ./python-hello-steps --build steps \
-  --alias "python-hello-$(date +%s)" -y
+python -m pip install -r scripts/requirements-spec.txt
+python scripts/run_steps_e2e.py python-hello --timeout 900
 ```
 
-将输出的 `TemplateID` 私下保存为 `TEMPLATE_ID`。部署结果可能是 `submitted`：只表示注册
-请求已受理，不表示已经可以创建沙箱。继续查询该精确模板，直到状态为 `ready`；构建失败或
-超过自行设定的期限（例如 15 分钟）则停止：
+该命令始终运行完整应用控制器：从选定 Dockerfile 生成原生步骤，调用 provider 原生
+准备接口，等待本次模板 READY，然后将准备好的 ID 和原清单的启动、就绪、服务及环境
+声明写入临时托管清单，调用当前 `abx template launch`。随后通过 CLI、Python 应用
+客户端及 HTTP 调用命名命令，检查实际源码、文件和进程操作，最后独立销毁并核对
+沙箱及准备模板不存在。只有一条启动路径，没有 CLI／SDK 两种创建选项。
+
+内部 `template deploy --build steps` 只负责准备，不预先启动另一套应用，也不替代
+公开启动。原生状态必须是实际 JSON 字符串或对象，不接受 Python repr 字符串。
+公开 `template launch` 不增加 `--build steps` 参数。
+
+## 不创建云资源，只检查准备结果
 
 ```bash
-export TEMPLATE_ID="<部署输出的 TemplateID>"
-abx --json template info "$TEMPLATE_ID"
+python scripts/prepare_steps.py python-hello --output /tmp/python-hello-steps
 ```
 
-CLI 0.4.11 的 `status` 是 `{'state': 'ready'}` 这样的字符串，不是嵌套 JSON 对象。
-自动化时先解析外层 JSON，再用 Python `ast.literal_eval` 解析该字符串，不使用 `eval`。
-状态仍为 `building` 时不要创建沙箱。
+输出目录必须是新目录。转换保留 RUN、ENV、WORKDIR、USER 的顺序及 heredoc／续行；
+仅传输明确的公开 COPY 输入，并核对哈希和文件模式。缺失、私有或越界输入在云端
+提交前失败。较大配方从不可变公开提交获取源码归档并核对全部字节；先公开准确提交，
+再执行云端构建。原 Dockerfile 直接从官方 PyPI 安装已发布 server 0.4.0a2，没有
+注入 wheel、Git 服务端回退或服务端源码选择器。
 
-就绪后创建，将输出的 ID 保存为 `SANDBOX_ID`：
+默认基础镜像解析为 `cn-hangzhou`、`v0.0.49`。只有主动选择其他基础镜像时才设置
+`--region`／`--base-tag`；基础 PATH 变化必须通过已验证的 `--base-path` 明确提供。
+运行身份保留非 root `user`，仅原安装步骤需要时在准备中使用 root。
 
-```bash
-abx create "$TEMPLATE_ID" --detach --timeout 600
-export SANDBOX_ID="<create 输出的 ID>"
-abx info "$SANDBOX_ID" --format json
-abx run "$SANDBOX_ID" hello --arg name=Ada
-abx run "$SANDBOX_ID" run_script --json-args '{"code":"print(21 * 2)"}'
-abx exec "$SANDBOX_ID" -- python3 --version
-```
+## 较大公开资产
 
-命名命令应分别返回 `Hello, Ada!` 和 `42`。[模板 README](../python-hello/README.zh-CN.md)
-还有文件传输、pytest 与外部 HTTP POST 示例。标准 `info` 使用 `--format json`；
-项目扩展仅在各自帮助支持时使用 `--json`。
+`--asset-transport parallel` 对已审查上游归档进行有界并行请求；`--asset-transport oss`
+使用临时私有同账号缓存，需要可选本地 SDK。两者核对声明的大小和哈希，保留原有
+15,000 字节 provider 传输限制，不放宽归档大小、原厂软件或凭据边界。仅已审查的
+Muse 资产保留其准确大小例外。OSS 缓存也必须独立核对不存在才能 PASS。
+`ABX_STEP_LOCAL_ARCHIVE_DIR` 的本地复用仍须通过全部原始大小／哈希检查。
 
-检查失败时也要清理自己创建的精确 ID：
+## 证据与失败
 
-```bash
-abx kill "$SANDBOX_ID"
-abx info "$SANDBOX_ID"  # 应报告不存在，退出非零
-abx template delete "$TEMPLATE_ID" -y
-abx --json template info "$TEMPLATE_ID"  # 应报告 TemplateNotFound/404
-```
+每次尝试写入不同的 `evidence/verification-steps-<timestamp>.json`。通过必须同时满足
+应用控制器、沙箱清理、准备模板清理及可选资产缓存清理。失败在 checkout 外保留
+私有 staging／journal 供恢复本次资源；公开回执只含受控失败类别，不含私有 URL、ID
+或凭据。真实模型／原厂账号跳过仍表示未验证，不能继承冒烟结果。
 
-若构建失败、尚未创建沙箱，只删除记录的模板。列表为空不能证明某个资源已删除。
-准备工具保留原命令字节、固定服务端依赖、运行用户、启动与就绪命令，
-并将转换来源记录在 `steps-provenance.json`。
-
-## 准备真实模板
-
-steps 不自动上传 COPY 源文件。生成独立临时 manifest：
-
-```bash
-python scripts/prepare_steps.py python-hello --output /tmp/python-hello-steps-review
-```
-
-输出目录必须全新。可选 server 提交与现有镜像 CI 注入的源码一致并单独记录；省略时
-使用 Dockerfile 固定 fallback。转换器保留 RUN/ENV/WORKDIR/USER 顺序、heredoc 和
-续行，仅传输明确 COPY 的公共源码及哈希和权限。优先压缩内嵌；较大配方下载已发布
-checkout 精确提交的归档，并在写入前逐文件验证，临时网络错误有界重试。构建阶段显式
-选择 root 安装 Docker profile 的依赖，最后恢复 USER user。云端构建前先发布不可变提交。
-可选本地 wheel 分支替换为
-固定源码安装。保留 USER user，EXPOSE 由 manifest ports 表达。
-
-仅接受单 stage 阿里云 FC profile；未知指令、未审查的 wheel 分支、目录外/符号链接/
-通配符/secret 命名的 COPY、过大文件、浮动提交和重复输出目录均拒绝。它是当前目录
-profile 的适配器，不是通用 Dockerfile 解释器。Express 的 steps 序列化上限为 16 KiB；
-RUN/源码压缩，超过保守的 15,000 字节预算在云调用前拒绝，记录实际大小及源码提交。
-原生 ENV 未一致传给后续 RUN，因此转换器对 RUN 显式导出构建环境与工作目录，
-并按真实独有 base 探针的 v0.0.49 PATH 展开运行 PATH。其他 tag 需传入独立验证的
---base-path，不使用控制器本机 PATH。
-部署前检查生成 manifest 和
-steps-provenance.json；仅含公共源码，不包含凭据或模型运行设置。
-
-## 部署与调用
-
-在源码仓库执行完整真实验收：
-
-```bash
-python scripts/run_steps_e2e.py python-hello
-```
-
-CLI 不在 PATH 时通过 ABX 环境变量指定已验证命令。可以传多个目录，或用 `--all`
-顺序验证全部模板。命令会产生真实云端费用，使用唯一自有资源，私有恢复记录留在
-checkout 外，不上传 Actions 凭据。
-
-已准备目录的底层等价命令为：
-
-```bash
-python scripts/express_e2e.py /tmp/python-hello-steps-review --build steps --push-retries 0
-```
-
-运行器执行真实 CLI deploy，先私有记录返回 ID，再轮询官方 GetTemplate 到 READY，
-创建新实例，通过外部 CLI 和 SDK 调用全部 smoke，清理后独立读回确认 sandbox 和
-template 不存在。submitted、构建失败、未知状态、smoke 错误、超时或不确定清理不能
-写 pass。恢复沿用精确所有权的 `--recover-intent`。
-
-手动操作可用 `abx template deploy /tmp/python-hello-steps-review --build steps -y`，
-等官方 READY 后使用原模板 README 的 CLI/SDK/HTTP 调用，结束时只删除本次资源。
-提交成功本身不是验收记录。
-
-## 证据与限制
-
-OSWorld 的 `--http` 必须运行非模型桌面层：设置两个桌面验收开关、记录 `desktop_lifecycle_required`，原外部控制器必须完成18项且无 GUI 跳过。基础 HTTP 加内部命名冒烟不能代替这层外部检查；审计拒绝桌面跳过或不完整覆盖。其他模板的模型未执行仍单列。
-
-当前源码审计绑定完整 manifest（启动/就绪命令、资源、环境、端口及其他字段），只排除 `tested_on` 资格元数据。新凭证同时记录 `source_manifest_contract_sha256` 与原始 manifest 哈希；同版本运行契约发生变化也不能继承旧通过。旧记录若仅资格元数据变化，必须先从本地不可变 Git 历史找到与记录完整 SHA256 一致的原始字节，再比较规范化契约。已记录源码提交时必须匹配该提交自身；早期内联复制未记录提交时，只对该 manifest 做有界本地历史搜索。浅克隆或历史缺失返回 MISSING，可获取相关公开历史后重跑，不改写旧凭证。审计不发起网络或云操作。
-
-批量运行器在原模板 evidence 中保留每次脱敏结果，包括失败、源码哈希、基础镜像和
-server override。完整成功记录包含 build_mode steps、外部调用结果和清理确认。
-旧记录不覆盖，原始云日志与资源 ID 不进入仓库。
-
-当前全部 Dockerfile profile 可以本地转换；这不代表全部真实构建通过。step 通过仅
-证明记录哈希的生成配方，不证明本地 Docker 构建、未实测依赖、未运行模型 L3 或其他
-提供方通过。以每模板本轮记录及[分级规范](template-spec.zh-CN.md)为准。
-
-## 本次实测的原生 CLI 配方
-
-下面固定的是本次实际运行的 Linux x86_64 原生入口，与现有标准入口并存。控制器使用 Node22.22.2/npm；独立二进制本身需要下列两个精确版本的阿里云 SDK 外部模块。来源、SHA256 和模块组合已经实际使用，不能仅凭显示版本号替换接口。该步骤只下载公开工具，不创建云资源。
-
-```bash
-ABX_NATIVE_DIR="$(mktemp -d /tmp/abx-native-review.XXXXXX)"
-curl --fail --location --max-time 120 \
-  --output "$ABX_NATIVE_DIR/abx" \
-  https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/releases/download/v0.3.0/abx-0.3.0-linux-x64
-printf '%s  %s\n' \
-  e6d1c46626fd3f48e86b23bc99b0b8d565dfadd3f61a42ea352a27cb637d9cdd \
-  "$ABX_NATIVE_DIR/abx" | sha256sum --check
-chmod 700 "$ABX_NATIVE_DIR/abx"
-npm install --prefix "$ABX_NATIVE_DIR/modules" --ignore-scripts --no-audit --no-fund \
-  --save-exact @alicloud/fcsandbox20260509@1.5.1 @alicloud/openapi-core@1.0.8
-export ABX="$ABX_NATIVE_DIR/abx"
-export NODE_PATH="$ABX_NATIVE_DIR/modules/node_modules"
-"$ABX" template deploy --help
-```
-
-随后按上文配置进程环境中的极速版账号，并使用固定服务端提交的构建命令。脚本通过 ABX/NODE_PATH 使用该独立工具目录。不要把标准入口的参数与原生验收入口混用。清理本次沙箱、模板和日志后，再删除自己创建的工具目录。
-
-大型资产也可使用独立记录的 [CI 镜像验收路径](ci-image-acceptance.zh-CN.md)，
-通过真实 Dockerfile CI 导出及原生镜像注册运行，保留独立来源信息。
-
-## 实测的大资产传输限制
-
-2026-10-19 的真实构建步骤诊断下载8MiB时，所选 code-server/Rust 资产分别耗时
-385/398秒，Go/Hermes 源码样本则不到2秒。这是实测，不是固定带宽承诺。
-浏览器安装曾在306.777秒遇到 RUN 流截止，但后续成功诊断说明它不是统一的
-300秒执行上限。应拆分构建阶段、限制下载并保留错误；超时不是验收通过。
-重型模板仍需自己的当前配置成功回执，部分网络探针、本机安装和单独CI构建
-均不能代替。
-
-运行用户切换前，生成的步骤显式将 /home/user/app 归属设为 user:user。真实完整 Python/Node HTTP 验证发现原生 WORKDIR 的 root 归属导致文件写入失败；仅设置 COPY 文件归属不足。基础版本冒烟不能代替工作区文件往返测试。旧失败与基础冒烟回执保留各自范围。
-
-### 选择真实 Python SDK 创建
-
-验收要求实际执行 `agent_sandbox.api.sandbox.Sandbox.create` 时，为 step 或已验证
-镜像 runner 添加 `--sandbox-create sdk`。默认 `cli` 保留已有 `abx create` 行为。
-两种入口均先等待自有模板 READY，再通过 CLI 与 SDK 执行命名 smoke，最后执行
-同样的 sandbox/template 清理和独立不存在检查。
-
-例如 `python scripts/run_steps_e2e.py python-hello --sandbox-create sdk` 真实构建
-平台 step，并通过 Python 创建其沙箱。已核验镜像路径则在
-`scripts/run_ci_image_e2e.py` 已有的 artifact ID、已验证 crane 参数外添加
-`--sandbox-create sdk`。回执 `sandbox_create` 明确记录
-`python-sdk-Sandbox.create` 或 `abx create`；较早回执不能证明未记录的 SDK 创建。
-SDK timeout 表示沙箱生命周期，与构建 READY 等待和请求时限分别配置。创建响应
-丢失时保留私有恢复记录，不能发布验收。关闭本地客户端不删除云沙箱；runner
-随后销毁自有资源并独立确认不存在。
-
-## 审计当前版本的全量 step 验收
-
-运行 `python scripts/step_acceptance.py` 检查当前目录中的每个模板；缺少当前版本的原生 step 回执时退出非零。审计要求记录中的 Dockerfile/运行输入哈希未变、当前每个 CLI/SDK 冒烟调用成功，以及独立确认资源不存在。旧版本和仅镜像成功不能通过。该命令不会创建云资源，也不证明 Docker 或模型验收。
-
-为 `scripts/run_steps_e2e.py` 添加 `--http`，在规范流程拥有的沙箱中运行原有完整外部 HTTP 控制器。回执分别记录控制器哈希、通过/失败/跳过数量和退出码。模型调用保持关闭并标为 NOT_RUN；模型跳过不算 L3。控制器本地依赖缺失时，在创建云资源前拒绝运行。
-
-Goose、Crush、code-server、Polyglot、Aider、SWE、Hermes 可使用 `--asset-transport parallel`，对固定官方归档执行有界并发分段下载。每次响应必须匹配请求的 Content-Range，完整文件必须匹配固定大小/预算及 SHA256，原有未修改安装器继续检查完整性、版本和解包规则。临时 root 专用缓存及进程内 Python URL 适配器在 USER user 前删除。Hermes 使用 uv 官方支持的本地文件镜像，保留 Python3.14.6/uv0.12.3 固定版本，并记录通用 GNU 架构资产和官方元数据来源；原有复合安装按顺序拆分为有界阶段。DeepAgents、OSWorld 和 browser-use 使用临时 uv0.12.3 安装未改变且带哈希锁的 Python 依赖图，并拆分原有安装阶段；此构建工具及缓存在运行前删除。其他模板继续直接下载。公开区域 PyPI 传输保留原有版本和哈希校验，不引入替代资产或操作者凭据。转换回执记录助手哈希及精确资产元数据；分段不支持、校验失败或下载失败均不能生成通过证据。
-
-```bash
-python scripts/run_steps_e2e.py goose --asset-transport parallel --http \
-  --sandbox-create sdk --timeout 3600
-python scripts/step_acceptance.py
-```
-
-### 临时私有 OSS 传输
-
-使用 `python -m pip install -r scripts/requirements-steps-cache.txt` 安装可选本地控制器 SDK，再选择 `--asset-transport oss`。它在同一阿里云地域/账户创建唯一拥有的私有 bucket，在上传前和构建下载后验证官方归档哈希；私有执行配方中仅传入短期 GET 授权。公开源码/回执和 Actions 不包含签名 URL 或操作者密钥。bucket/对象保持私有，不修改账户策略。沙箱/模板及精确拥有的对象/bucket 都独立确认不存在后才发布通过证据。创建响应未知时保留私有恢复记录，不能以暂时不存在证明已取消。缓存创建、上传、下载、删除都是真实云操作。
-
-```bash
-python scripts/run_steps_e2e.py goose --asset-transport oss --http \
-  --sandbox-create sdk --timeout 3600
-```
-
-默认仍直接下载。OSS 模式覆盖已审查归档、精确 uv0.12.3 引导 wheel，以及 OSWorld 固定 Playwright1.58.0 浏览器归档。原安装器、哈希锁、版本、解包和非 root 运行要求继续执行。临时浏览器镜像仅绑定回环地址，只提供已校验归档路径，构建结束前关闭。浏览器摘要根据上游固定客户端 URL 实测，不标为上游公布的摘要。
-
-云端执行前必须发布精确适配器源码提交。较大配方下载公开不可变助手并校验 SHA256，从而保留原有 wire 大小门禁；不支持或未发布的配方拒绝运行。可选 `ABX_STEP_LOCAL_ARCHIVE_DIR` 复用按 SHA256 命名的控制器本地归档，上传前仍逐字节校验原固定大小/哈希；不读取调用者凭据文件，也不改变运行时依赖要求。
-
-[当前源码完整矩阵](../.agents/evidence/verify/2026-10-20-complete-platform-steps-matrix.json)记录最新限定范围 step 检查点；目录或源码变化后须重新运行审计。Hermes 最终路径还缓存其不可变上游提交源码包，SHA256为控制器实测；OSWorld 的 OSS profile 使用区域公共 PyPI 镜像，同时保留原版本、--require-hashes 和 --no-build-isolation，browser-use 保留原 Python3.13、哈希锁、Chromium --no-shell 及8GiB根文件系统断言，公开 PyPI／引导／浏览器传输仅用于构建；仅改变传输。模型 SKIP 仍是 NOT_RUN，已有镜像／模型回执不改范围。
-
-完整验收使用 `python scripts/step_acceptance.py --require-http`：除真实 step READY／CLI／SDK及独立清理，还必须有每个当前模板完整 e2e_test.py 的匹配哈希、成功退出及通过／失败计数。省略 --require-http 仅检查较窄的 smoke 范围；镜像或 smoke 不能替代完整 HTTP。模型跳过继续单独记录，不计为 L3。
-
-OpenClaw 的完整 HTTP 必须运行真实认证网关生命周期。运行器在全部安装 RUN 之后、USER user 之前，将独有随机测试令牌写入私有最终 ENV；原控制器只接收这一生成令牌，不使用操作者／模型凭据。公开回执仅含配置布尔值和哈希。--require-http 拒绝缺少配置／实际网关覆盖的回执；模型跳过继续单列。--asset-transport oss 可复用源码安装器已固定的 Node24.16.0 归档，原 SHA256、解包和版本逻辑不变。
-
-较新的[34模板精确当前快照](../.agents/evidence/verify/2026-10-20-current-native-http34.json)包含已合并 Copilot、必需的 OSWorld 外部桌面和当前 OpenClaw SDK 重跑。它是定时点只读分类，不是34次新部署或模型资格；源码/目录变化后应重跑。
+历史[44 模板原生检查点](../.agents/evidence/verify/2026-10-21-current-native-http44.json)
+及其他日期回执保留其准确版本和调用入口，不认证当前服务包固定版本或迁移后的启动
+消费者；新云端及镜像结果分别记录。

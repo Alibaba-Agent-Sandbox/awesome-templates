@@ -91,7 +91,7 @@ See [test results and scope](../docs/using-templates.md#evidence-and-providers).
 python -m pytest -q muse/test_commands.py muse/test_relay.py muse/test_terminal.py
 python scripts/check_template.py muse --strict
 python scripts/check_docs.py
-ABX='abx --native' python scripts/run_steps_e2e.py muse --sandbox-create sdk --http --asset-transport oss
+python scripts/run_steps_e2e.py muse --asset-transport oss
 ```
 
 Use fixed non-executable replies for local relay/parser fixtures. Native/generated-code acceptance runs only on a fresh explicitly owned cloud target. Preserve original binary and notices, exact bounds, redirect refusal, anonymous input and process/relay cleanup. Formal coding checks require changed source, original test bytes, new report/exact nonce, original3plus4held-outs/fresh post-return ACK and independent owned absence.

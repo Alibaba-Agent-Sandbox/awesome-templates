@@ -81,7 +81,7 @@ also attempts bounded atexit cleanup. This is intentionally an ephemeral runtime
   stopped status and failed health after cleanup. Without the token report SKIP.
 - L1: build Docker image and verify Node24.16.0/OpenClaw2026.10.4/non-root startup.
   Not executed without Docker; do not call local npm installation an image pass.
-- L2: `python3 scripts/express_e2e.py openclaw`; smoke `gateway_status` must return
+- L2: `python scripts/public_launch_e2e.py openclaw --provider alicloud-express --application-controller`; smoke `gateway_status` must return
   `{running:false,owned:false,url:null}`. Then perform authenticated gateway
   lifecycle with an injected random token. No provider pass has been recorded.
 - L3: no model command in this patch. A later coding acceptance must configure

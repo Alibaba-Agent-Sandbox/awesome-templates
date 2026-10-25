@@ -114,7 +114,7 @@ The Linux runner keeps its process leader unreaped with `waitid(WNOWAIT)`, drain
 
 ### Agent Sandbox platform steps
 
-From a repository checkout, `python scripts/run_steps_e2e.py ocr --timeout 1200 --server-commit e2cb27e24fde0a67112f82b8d44af463445a5d1a` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). The public runner performs CLI/SDK fixture smoke. The separate full-HTTP controller also passed all 19 assertions after READY; see the [executed procedure](../.agents/evidence/verify/2026-10-20-ocr-step-acceptance.md). No model is required for this native OCR task.
+From a repository checkout, `python scripts/run_steps_e2e.py ocr --timeout 1200` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). The public runner performs CLI/SDK fixture smoke. The separate full-HTTP controller also passed all 19 assertions after READY; see the [executed procedure](../.agents/evidence/verify/2026-10-20-ocr-step-acceptance.md). No model is required for this native OCR task.
 
 ## Contributing
 

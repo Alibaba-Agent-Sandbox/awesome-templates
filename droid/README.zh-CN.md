@@ -108,7 +108,7 @@ Factory 凭据在 [Factory API 密钥设置](https://app.factory.ai/settings/api
 python3 -m pytest -q droid/test_commands.py droid/test_e2e_protocol.py droid/test_byok.py droid/test_model_controller.py
 python3 scripts/check_template.py droid
 python3 scripts/run_local_e2e.py
-python3 scripts/express_e2e.py droid
+python scripts/public_launch_e2e.py droid --provider alicloud-express --application-controller
 ```
 
 源码本地执行明确跳过缺失的原生版本，不能据此认证提供商。L1 实际构建 Dockerfile 并检查原生 SHA/版本；L2 要求真实 SDK 创建、标准步骤、完整 HTTP 及独立所属清理。L3 设置 `E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 E2E_REMOTE_SANDBOX=1`，在新建自有云服务配置 BYOK，执行 [e2e_test.py](e2e_test.py)：原生成功 JSON、正数 turns、精确新鲜最终 nonce、修改已有源码、生成产物、原测试字节不变、独立完整原测试和隐藏用例、返回后新鲜 ACK 及项目不存在。生成代码不在操作端运行。旧 Factory 控制器保留于 [factory_e2e.py](factory_e2e.py)，需真实 Factory 密钥，不声明该模式当前模型已通过。
