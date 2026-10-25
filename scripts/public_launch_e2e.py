@@ -242,6 +242,42 @@ async def cleanup_prepared(entries, cli, alias, diagnostics=None):
     return done, failures
 
 
+def export_owned_image(entries, alias, source, directory, provenance, runtime_version=None):
+    """Export only the image built by this successful launch, before owned cleanup."""
+    from server_sdk_pin import server_commit
+    require(not directory.exists(), 'image export directory must be fresh')
+    images = {}
+    for entry in entries:
+        tag = str(entry.get('correlation_key', ''))
+        if entry.get('kind') != 'image' or alias + '-' not in tag or '/' in tag:
+            continue
+        proc = subprocess.run(['docker', 'image', 'inspect', '--format', '{{.Id}}', tag],
+                              capture_output=True, text=True, timeout=30)
+        require(proc.returncode == 0, 'owned export image exists')
+        images[proc.stdout.strip()] = tag
+    require(len(images) == 1, 'exactly one owned image must be exported')
+    image_id, tag = next(iter(images.items()))
+    require(re.fullmatch(r'sha256:[0-9a-f]{64}', image_id), 'owned export image identity')
+    directory.mkdir(parents=True)
+    archive = directory / (source.name + '-image.tar')
+    subprocess.run(['docker', 'image', 'save', '--output', str(archive), tag],
+                   check=True, capture_output=True, timeout=600)
+    with archive.open('rb') as stream:
+        digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+    (directory / (archive.name + '.sha256')).write_text(digest + '  ' + archive.name + '\n')
+    revision = subprocess.check_output(['git', '-C', str(source), 'rev-parse', 'HEAD'], text=True).strip()
+    metadata = {'format': 'docker-archive', 'origin': 'public-template-launch',
+        'template': source.name, 'repository': 'Alibaba-Agent-Sandbox/awesome-templates',
+        'checkout_commit': revision, 'source_head_commit': revision,
+        'workflow_run_id': os.environ.get('GITHUB_RUN_ID'),
+        'server_sdk_commit': server_commit(source), 'local_image_id': image_id,
+        'archive_sha256': digest, 'installed_packages': provenance,
+        'runtime_server_version': runtime_version,
+        'acceptance': 'published CLI launch and manifest smoke on OpenSandbox; no Express or model acceptance'}
+    (directory / (source.name + '-image-metadata.json')).write_text(json.dumps(metadata, indent=2) + '\n')
+    return {'archive_sha256': digest, 'image_config_sha256': image_id.removeprefix('sha256:')}
+
+
 async def cleanup_before_close(release_resources, client, sandbox):
     """Local HTTP close errors must never prevent deleting cloud resources."""
     errors = []
@@ -387,6 +423,17 @@ async def verify(args):
         await sandbox.files.remove(path)
         require(not await sandbox.files.exists(path), 'SDK file deletion readback')
         report['checks'].extend(['runtime source identity', 'SDK exec and file round trip'])
+        if args.export_image_dir:
+            phase = 'export-owned-image'
+            require(args.provider == 'opensandbox', 'image export requires the disposable OpenSandbox backend')
+            entries = [entry for path in set(journal_dir.glob('*.json')) - original_journals
+                       for entry in json.loads(path.read_text()).get('entries', [])]
+            version = await sandbox.commands.run('python3 -c "import importlib.metadata; print(importlib.metadata.version(\'agent-sandbox-server\'))"', timeout=30)
+            require(version.exit_code == 0 and re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:a[0-9]+)?', version.stdout.strip()),
+                    'runtime server version is a release version')
+            report['runtime_server_version'] = version.stdout.strip()
+            report['image_export'] = await asyncio.to_thread(export_owned_image, entries, alias, source,
+                args.export_image_dir, report.get('installed_packages'), version.stdout.strip())
         report['application_result'] = 'PASS'
     except Exception as failure:
         report['application_result'] = 'FAIL'
@@ -448,6 +495,7 @@ def main():
     parser.add_argument('--abx', default=os.environ.get('ABX_BIN', 'abx'))
     parser.add_argument('--build-timeout', type=int, default=1200)
     parser.add_argument('--output', type=Path)
+    parser.add_argument('--export-image-dir', type=Path, help='save the exact owned OpenSandbox image before cleanup')
     parser.add_argument('--list', action='store_true', help='list all source templates without cloud operations')
     args = parser.parse_args()
     if args.list:

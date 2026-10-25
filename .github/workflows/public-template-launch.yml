@@ -20,6 +20,10 @@ on:
         default: all
         required: true
         type: string
+      export_images:
+        description: Export successful owned OpenSandbox images for a separate verified backend run
+        default: false
+        type: boolean
       distribution:
         description: Published packages or reviewed candidate source
         type: choice
@@ -160,11 +164,13 @@ jobs:
         run: |
           bash .launch-fixtures/sdk/e2e/opensandbox/local-up.sh up
           docker run -d --name abx-public-launch-registry -p 5000:5000 -e REGISTRY_STORAGE_DELETE_ENABLED=true registry:2.8.3
-          abx provider install ./.launch-fixtures/providers/opensandbox --yes
-      - name: Launch unchanged candidate source and call its API from the host
+          abx provider install Alibaba-Agent-Sandbox/awesome-providers//opensandbox --ref "${{ inputs.providers_ref }}" --yes
+          abx provider doctor opensandbox
+      - name: Launch documented public source and call its API from the host
         env:
           TEMPLATE_NAME: ${{ matrix.template }}
           TARGET_PROVIDER: ${{ matrix.provider }}
+          EXPORT_IMAGES: ${{ inputs.export_images }}
           PUBLIC_LAUNCH_DISTRIBUTION: ${{ inputs.distribution }}
           PUBLIC_LAUNCH_TEMPLATES_REF: ${{ github.sha }}
           PUBLIC_LAUNCH_CLI_REF: ${{ inputs.cli_ref }}
@@ -178,7 +184,23 @@ jobs:
           ACR_NAMESPACE: ${{ matrix.provider == 'alicloud-express' && secrets.PUBLIC_LAUNCH_ACR_NAMESPACE || '' }}
           ALIBABA_CLOUD_REGION_ID: cn-hangzhou
         run: |
-          python scripts/public_launch_e2e.py "$TEMPLATE_NAME" --provider "$TARGET_PROVIDER" --source "./$TEMPLATE_NAME" --build-timeout 3600 --output "$RUNNER_TEMP/public-launch.json"
+          options=()
+          if [ "$PUBLIC_LAUNCH_DISTRIBUTION" = 'source' ]; then
+            options+=(--source "./$TEMPLATE_NAME")
+          fi
+          if [ "$EXPORT_IMAGES" = 'true' ] && [ "$TARGET_PROVIDER" = 'opensandbox' ]; then
+            options+=(--export-image-dir "$RUNNER_TEMP/export-image")
+          fi
+          python scripts/public_launch_e2e.py "$TEMPLATE_NAME" --provider "$TARGET_PROVIDER" --build-timeout 3600 --output "$RUNNER_TEMP/public-launch.json" "${options[@]}"
+      - name: Retain the exact successful public-launch image for one day
+        if: success() && inputs.export_images && matrix.provider == 'opensandbox'
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-${{ matrix.template }}-${{ github.sha }}
+          path: ${{ runner.temp }}/export-image/*
+          retention-days: 1
+          compression-level: 1
+          if-no-files-found: error
       - name: Stop only this disposable backend and registry
         if: always() && matrix.provider == 'opensandbox'
         run: |

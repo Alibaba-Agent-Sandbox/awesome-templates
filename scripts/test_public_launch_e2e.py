@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from public_launch_e2e import installation_provenance, CLI, CLIError, CheckFailed, safe_failure_label, cli_diagnostics, safe_diagnostics, application_headers, command_url, load_plan, matches, source_names, cleanup_prepared, cleanup_before_close, delete_sandbox
+from public_launch_e2e import export_owned_image, installation_provenance, CLI, CLIError, CheckFailed, safe_failure_label, cli_diagnostics, safe_diagnostics, application_headers, command_url, load_plan, matches, source_names, cleanup_prepared, cleanup_before_close, delete_sandbox
 
 
 class PublicLaunchTests(unittest.TestCase):
@@ -220,3 +220,22 @@ class CleanupTests(unittest.IsolatedAsyncioTestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class ImageExportTests(unittest.TestCase):
+    def test_foreign_or_ambiguous_images_are_never_exported(self):
+        from subprocess import CompletedProcess
+        with tempfile.TemporaryDirectory() as temp:
+            target = Path(temp) / 'export'
+            with patch('public_launch_e2e.subprocess.run') as run:
+                with self.assertRaisesRegex(CheckFailed, 'exactly one owned'):
+                    export_owned_image([{'kind': 'image', 'correlation_key': 'foreign-build'}],
+                                       'public-e2e-owned', Path(temp) / 'python-hello', target, {})
+                run.assert_not_called()
+            entries = [{'kind': 'image', 'correlation_key': 'public-e2e-owned-' + x} for x in ('one', 'two')]
+            results = [CompletedProcess([], 0, 'sha256:' + x * 64, '') for x in ('a', 'b')]
+            with patch('public_launch_e2e.subprocess.run', side_effect=results) as run:
+                with self.assertRaisesRegex(CheckFailed, 'exactly one owned'):
+                    export_owned_image(entries, 'public-e2e-owned', Path(temp) / 'python-hello', target, {})
+                self.assertTrue(all(call.args[0][1:3] == ['image', 'inspect'] for call in run.call_args_list))
+            self.assertFalse(target.exists())

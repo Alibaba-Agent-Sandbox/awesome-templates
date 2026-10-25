@@ -24,11 +24,18 @@ CLI, SDK and provider commits, a comma-separated selection or `all`, and either
 backend or both, plus `distribution: published` (the default) or `source`.
 Published mode reads the release versions from those exact CLI/SDK commits,
 installs the fixed published npm/PyPI packages, and verifies installed versions.
-The SDK checkout supplies the Docker backend fixture; the provider installs from
-the exact selected checkout. Template source uses this workflow checkout unchanged.
+The SDK checkout supplies the Docker backend fixture. The provider is installed
+from the public Git URL at the exact selected commit. Templates are resolved through
+the default public Git catalog; their manifest and runtime source must match the
+workflow checkout unchanged.
 Published mode fails if a selected version has not been published. Source mode builds the exact CLI checkout with `npm ci` and installs both Python packages from the exact SDK checkout; it is pre-release candidate validation, not published-package acceptance. Reports include the installation distribution and exact CLI/SDK/provider/template commits. `all` currently selects 46 source templates, with at most four
 independent runners active at once. OpenSandbox uses
 its real Docker server, provider-resolved direct endpoint and an owned local registry.
+An optional `export_images: true` saves the exact successful launch-owned image,
+archive SHA256 and package/source provenance before cleanup. The one-day image
+artifact supports a separately labelled prepared-image backend test; it does not
+prove another backend's source preparation path. Export refuses foreign or
+ambiguous images.
 The workflow explicitly selects the provider default `use_server_proxy=false`; it
 does not silently fall back from proxy mode. Proxy authentication is a separate probe.
 Express uses the `PUBLIC_LAUNCH_*` credentials explicitly configured for that
@@ -62,7 +69,7 @@ Docker bridge 地址。默认读取公开 Git 目录；测试候选输入可明�
 `--source`。启动清单与实际运行命令源码都须和本地验证输入一致。
 
 手动矩阵工作流接受准确的 CLI、SDK、provider 提交、模板选择和平台，以及 `distribution: published`（默认）或 `source`。
-从这些精确提交读取版本，安装固定版本的 npm/PyPI 公开包并核对安装结果；SDK 源码只提供本地后端 fixture，provider 安装精确 checkout，模板仍使用本次工作流的原始源码。published 模式下未发布的版本会安装失败。source 模式使用 `npm ci` 构建精确 CLI checkout，并从精确 SDK checkout 安装两个 Python 包；这是发布前候选验证，不是公开包验收。报告记录安装来源和 CLI、SDK、provider、模板的精确提交。
+从这些精确提交读取版本，安装固定版本的 npm/PyPI 公开包并核对安装结果；SDK 源码只提供本地后端 fixture，provider 从公开 Git 地址安装精确提交；模板通过默认公开 Git 目录解析，并与本次工作流清单和运行源码逐字节核对。published 模式下未发布的版本会安装失败。source 模式使用 `npm ci` 构建精确 CLI checkout，并从精确 SDK checkout 安装两个 Python 包；这是发布前候选验证，不是公开包验收。报告记录安装来源和 CLI、SDK、provider、模板的精确提交。
 `all` 当前为 46 个源码模板，最多同时运行四个独立 runner。OpenSandbox 使用真实 Docker 服务及 provider 返回的直连端点（明确选择默认的 `use_server_proxy=false`）；
 Express 使用该工作流配置的凭据。缺凭据不能算通过。
 
@@ -74,3 +81,5 @@ smoke 必须可重复执行，真实模型业务和完整应用控制器
 应用结果与资源清理分开记录。仅删除启动记录中确切属于本次的资源，并独立回查。
 不认识的镜像仓库和不明确的提交保留为待处理，不能推定删除成功。`PARTIAL` 返回
 非零退出码；原始失败不被之后的清理或重跑覆盖。
+
+可选 `export_images: true` 会在清理前保存本次成功启动实际构建的唯一镜像、SHA256 和包/源码来源，保留一天，供另一个明确标记的已有镜像后端实验使用；它不能证明另一平台的源码准备路径。非本次或不唯一的镜像会拒绝导出。
