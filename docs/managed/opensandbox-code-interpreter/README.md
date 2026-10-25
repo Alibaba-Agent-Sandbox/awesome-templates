@@ -16,7 +16,7 @@ Use shell and files through Agent Sandbox, or native interpreter contexts throug
 
 ## Quick start (CLI)
 
-This direct launch example requires the specification 5 CLI and updated managed catalog. Use the [coordinated source installation](../../using-templates.md) until those releases and catalog updates are published together. The historical verification below covers its recorded create/exec interfaces, not a rerun of this new catalog launch command.
+Use CLI 0.5.1 or later and the current managed catalog; see [installation and provider setup](../../using-templates.md). The historical verification below covers its recorded create/exec interfaces, not a rerun of this catalog launch command.
 
 Install the [CLI](../../using-templates.md) and Node.js 22+, configure your provider below, and replace `<sandbox-id>` with the ID returned by launch.
 

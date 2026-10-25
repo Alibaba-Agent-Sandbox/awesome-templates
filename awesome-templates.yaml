@@ -1,4 +1,4 @@
-# Source manifests own workflow declarations. Managed inputs declare their workflows inline.
+# Source manifests own runtime declarations. Managed entries declare their native identity inline.
 # Historical receipts do not certify current input identities or project consumer paths.
 schema_version: 2
 templates:

@@ -1,0 +1,75 @@
+{
+  "result": "PASS",
+  "template": "qm-sandbox",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch + manifest smoke via host CLI, Python and HTTP; no real-model acceptance",
+  "source": "local-candidate/qm-sandbox",
+  "manifest_sha256": "4977bc1715cef0647d450ea4c0509e7382bb30c4e06eace10a88c06536e94c69",
+  "cli_version": "abx, version 0.5.0",
+  "python_client_version": "0.4.0a1",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "qm_sandbox_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "qm_sandbox_native_check",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "installed_packages": {
+    "distribution": "source",
+    "cli": {
+      "name": "@agent-sandbox/cli",
+      "version": "0.5.0",
+      "source_ref": "ea28f207c8a0016cf798f5a355e3c363c7c936f4"
+    },
+    "python_client": {
+      "name": "agent-sandbox-client",
+      "version": "0.4.0a1",
+      "source_ref": "ff073167f8993a5c580c78cccccd5779db1f5836"
+    },
+    "python_server": {
+      "name": "agent-sandbox-server",
+      "version": "0.4.0a1",
+      "source_ref": "ff073167f8993a5c580c78cccccd5779db1f5836"
+    },
+    "provider_source_ref": "ebfb1c1554a567585e337f2e68cb3d449d5414b1",
+    "template_source_ref": "1d2953e16eec96da6c9c8a0a631220e2933c2aaf"
+  },
+  "run_alias": "public-e2e-3105223745f6326f",
+  "endpoint_mode": "direct",
+  "input_receipt": {
+    "manifest_digest": "sha256:4977bc1715cef0647d450ea4c0509e7382bb30c4e06eace10a88c06536e94c69",
+    "source_digest": "622a9686e9596e309d21ccdf4e3bba7b5a697743a7f0af4e658a3c3db5d02b8e",
+    "provider_digest": "sha256:11ca22e2824255ec1d5540ab557a01c70d66fa9e3313d89bd29a613bd00e7777",
+    "provider_snapshot_digest": "79f089c85ca66538208bd5916a9322f4a6474b4a8eda0e15f5a8627c726695bb",
+    "plan_digest": "b5a72755270e66d326009aea373ba33995519d10e5e3f348a8978e96107b51f6",
+    "build_profile": null
+  },
+  "application_result": "PASS"
+}

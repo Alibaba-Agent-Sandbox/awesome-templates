@@ -1,0 +1,646 @@
+[
+  {
+    "file": "public-launch-opensandbox-swe-40177005215-1.json",
+    "result": "PASS",
+    "template": "swe",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-tau2-bench-40177005215-1.json",
+    "result": "PASS",
+    "template": "tau2-bench",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-qwen-code-40177005215-1.json",
+    "result": "PASS",
+    "template": "qwen-code",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-osworld-40177005215-1.json",
+    "result": "PASS",
+    "template": "osworld",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-prime-agent-40177005215-1.json",
+    "result": "PASS",
+    "template": "prime-agent",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-stagehand-40177005215-1.json",
+    "result": "PASS",
+    "template": "stagehand",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-document-tools-40177005215-1.json",
+    "result": "PASS",
+    "template": "document-tools",
+    "consumer_calls": 12,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-node-web-40177005215-1.json",
+    "result": "PASS",
+    "template": "node-web",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-opencode-40177005215-1.json",
+    "result": "PASS",
+    "template": "opencode",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-dev-services-40177005215-1.json",
+    "result": "PASS",
+    "template": "dev-services",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-copilot-cli-40177005215-1.json",
+    "result": "PASS",
+    "template": "copilot-cli",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-qm-sandbox-40177005215-1.json",
+    "result": "PASS",
+    "template": "qm-sandbox",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-codex-agent-api-40177005215-1.json",
+    "result": "PASS",
+    "template": "codex-agent-api",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-deepseek-harness-40177005215-1.json",
+    "result": "PASS",
+    "template": "deepseek-harness",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-deepagents-40177005215-1.json",
+    "result": "PASS",
+    "template": "deepagents",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-goose-40177005215-1.json",
+    "result": "PASS",
+    "template": "goose",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-hermes-agent-40177005215-1.json",
+    "result": "PASS",
+    "template": "hermes-agent",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-devin-40177005215-1.json",
+    "result": "PASS",
+    "template": "devin",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-aider-40177005215-1.json",
+    "result": "PASS",
+    "template": "aider",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-appworld-40177005215-1.json",
+    "result": "PASS",
+    "template": "appworld",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-droid-40177005215-1.json",
+    "result": "PASS",
+    "template": "droid",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-gemini-40177005215-1.json",
+    "result": "PASS",
+    "template": "gemini",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-next-app-40177005215-1.json",
+    "result": "PASS",
+    "template": "next-app",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-browser-use-40177005215-1.json",
+    "result": "PASS",
+    "template": "browser-use",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-crush-40177005215-1.json",
+    "result": "PASS",
+    "template": "crush",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-media-tools-40177005215-1.json",
+    "result": "PASS",
+    "template": "media-tools",
+    "consumer_calls": 12,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-amp-40177005215-1.json",
+    "result": "PASS",
+    "template": "amp",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-claude-code-40177005215-1.json",
+    "result": "PASS",
+    "template": "claude-code",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-kimi-code-40177005215-1.json",
+    "result": "PASS",
+    "template": "kimi-code",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-codex-40177005215-1.json",
+    "result": "PASS",
+    "template": "codex",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-agents-cli-40177005215-1.json",
+    "result": "PASS",
+    "template": "agents-cli",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-chrome-40177005215-1.json",
+    "result": "PASS",
+    "template": "chrome",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-qm-40177005215-1.json",
+    "result": "PASS",
+    "template": "qm",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-browser-automation-40177005215-1.json",
+    "result": "PASS",
+    "template": "browser-automation",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-qoder-40177005215-1.json",
+    "result": "PASS",
+    "template": "qoder",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-apply-patch-40177005215-1.json",
+    "result": "PASS",
+    "template": "apply-patch",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-pi-40177005215-1.json",
+    "result": "PASS",
+    "template": "pi",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-grok-40177005215-1.json",
+    "result": "PASS",
+    "template": "grok",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-ocr-40177005215-1.json",
+    "result": "PASS",
+    "template": "ocr",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-code-server-40177005215-1.json",
+    "result": "PASS",
+    "template": "code-server",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-cline-40177005215-1.json",
+    "result": "PASS",
+    "template": "cline",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-polyglot-toolchain-40177005215-1.json",
+    "result": "PASS",
+    "template": "polyglot-toolchain",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-openclaw-40177005215-1.json",
+    "result": "PASS",
+    "template": "openclaw",
+    "consumer_calls": 3,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-python-hello-40177005215-1.json",
+    "result": "PASS",
+    "template": "python-hello",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-cursor-agent-40177005215-1.json",
+    "result": "PASS",
+    "template": "cursor-agent",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  },
+  {
+    "file": "public-launch-opensandbox-muse-40177005215-1.json",
+    "result": "PASS",
+    "template": "muse",
+    "consumer_calls": 6,
+    "cleanup": {
+      "sandbox": "confirmed absent",
+      "prepared_artifacts": "confirmed absent",
+      "diagnostics": [],
+      "artifact_cleanup_failures": 0,
+      "retained_artifact_count": 0,
+      "uncertain_count": 0
+    }
+  }
+]

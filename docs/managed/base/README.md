@@ -16,7 +16,7 @@ Run shell commands and work with files without preparing an image.
 
 ## Quick start (CLI)
 
-This direct launch example requires the specification 5 CLI and updated managed catalog. Use the [coordinated source installation](../../using-templates.md) until those releases and catalog updates are published together. The historical verification below covers its recorded create/exec interfaces, not a rerun of this new catalog launch command.
+Use CLI 0.5.1 or later and the current managed catalog; see [installation and provider setup](../../using-templates.md).
 
 Install [CLI and provider configuration](../../using-templates.md), then replace `<sandbox-id>` with the ID returned by launch.
 
@@ -70,6 +70,8 @@ Use the Express account settings in the [usage guide](../../using-templates.md).
 Choose a finite timeout in seconds and delete instances when finished. CPU, memory and image updates are managed by the provider.
 
 ## Verified
+
+[2026-10-25 public CLI 0.5.1 record](../../../.agents/evidence/verify/2026-10-25-unified-launch-release-docs.md#public-cli-051-release-and-base-launch): bare-name `template launch base` through the default public catalog, a 300-second lifetime, shell output `42`, CLI deletion and independently confirmed absence.
 
 [2026-10-24 public-package record](../../../.agents/evidence/verify/2026-10-24-managed-public-cli.json): CLI 0.4.16 create/exec yielding `42`/kill; Python 0.3.1a5 file round trip, explicit `ProviderSandbox.run_code` rejection with `E8004`, and independent instance absence. The [2026-10-19 historical record](../evidence/base-2026-10-19T154144Z.json) retains its original versions and call paths.
 
