@@ -262,7 +262,7 @@ if __name__ == "__main__":
 
 `/health` 不要求 server token；提供方网关仍可能认证该请求。health 成功不证明命名命令认证或模型配置正确。
 
-进程启动时读取 `ABX_SERVER_TOKEN`。变量非空时，受保护的请求需要带 `Authorization: Bearer <token>` 或 `X-Access-Token: <token>`。在 `env` 里声明这个名字，值为空字符串。真正的值必须在服务进程启动前传入。创建时注入（`abx create --env` 或 `ProviderSandbox.create(envs=...)`）仅适用于提供方实际使用这些值启动服务的情况，不能重新配置预热进程。参考[运行环境配置](runtime-environment.zh-CN.md)，检查实际服务并选中已配置端口。
+进程启动时读取 `ABX_SERVER_TOKEN`。变量非空时，受保护的请求需要带 `Authorization: Bearer <token>` 或 `X-Access-Token: <token>`。在 `env` 里声明这个名字，值为空字符串。真正的值必须在服务进程启动前传入。创建时注入（`abx create --env` 或 `ProviderSandbox.create(envs=...)`）仅适用于提供方实际使用这些值启动服务的情况，不能重新配置预热进程。使用统一模板启动入口配置并启动声明的服务，再用 SDK 连接已运行的应用；参见[运行环境配置](runtime-environment.zh-CN.md)。
 
 变量未设置时应用允许匿名调用；提供方网关认证仍单独处理。客户端保留提供方的网关访问头，把显式应用令牌放入 `Authorization: Bearer <token>`，并在同名头未被占用时补充已有应用 `X-Access-Token` 头。认证失败会直接返回，不会自动匿名重试。设置 `ABX_SERVER_TOKEN` 的模板必须说明：项目 Python API 使用 `await sb.application_client(port, token=...)`，CLI 命名命令使用 `ABX_SERVER_TOKEN`。
 
