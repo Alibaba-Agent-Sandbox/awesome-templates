@@ -295,3 +295,5 @@ Source image backend acceptance: [decision](notes/proposed/feature/2026-10-22-so
 
 Chrome provider-path correction: [decision](notes/proposed/feature/2026-10-25-chrome-provider-prefix.md) · [verification](evidence/verify/2026-10-25-chrome-provider-prefix.md).
 Current public-package rerun: [decision](notes/proposed/process/2026-10-25-public-opensandbox-rerun.md), [verification](evidence/verify/2026-10-25-public-opensandbox-rerun.md).
+
+Current controller authentication: [decision](notes/proposed/process/2026-10-25-current-controller-auth.md) · [verification](evidence/verify/2026-10-25-current-controller-auth.md).

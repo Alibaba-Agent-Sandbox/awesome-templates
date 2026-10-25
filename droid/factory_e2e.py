@@ -121,7 +121,7 @@ def check_model_call(client: httpx.Client, setup: dict) -> None:
 
 
 def main() -> int:
-    token = os.environ.get("E2E_TOKEN") or os.environ.get("ABX_SERVER_TOKEN", "")
+    token = os.environ.get("ABX_SERVER_TOKEN", "")
     headers = {"Authorization": "Bearer " + token} if token else {}
     with httpx.Client(base_url=BASE_URL, headers=headers, timeout=40) as client:
         health = client.get("/health")

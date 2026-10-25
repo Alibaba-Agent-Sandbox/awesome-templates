@@ -131,23 +131,18 @@ def test_fake_remote_coding_acceptance_rejects_false_success(monkeypatch, tmp_pa
         assert "L3 independently verified resume artifact" in failed
 
 
-def test_require_llm_cannot_skip_and_token_aliases(monkeypatch):
+def test_require_llm_cannot_skip(monkeypatch):
     monkeypatch.setenv("E2E_REQUIRE_LLM", "1")
     monkeypatch.setenv("E2E_RUN_LLM", "0")
     checks = []
     with httpx.Client(transport=httpx.MockTransport(lambda request: pytest.fail("No remote request expected"))) as client:
         e2e._coding_acceptance(client, lambda name, ok: checks.append((name, ok)))
     assert checks == [("L3 real coding task required", False)]
-    monkeypatch.setenv("ABX_SERVER_TOKEN", "synthetic-fallback-token")
-    monkeypatch.delenv("E2E_TOKEN", raising=False)
-    assert e2e._headers() == {"X-Access-Token": "synthetic-fallback-token"}
-    monkeypatch.setenv("E2E_TOKEN", "synthetic-preferred-token")
-    assert e2e._headers() == {"X-Access-Token": "synthetic-preferred-token"}
 
 
-def test_new_server_bearer_token_is_separate_from_legacy_gateway_header(monkeypatch):
-    monkeypatch.setenv('E2E_SERVER_TOKEN','synthetic-server-token')
-    monkeypatch.delenv('E2E_TOKEN',raising=False);monkeypatch.delenv('ABX_SERVER_TOKEN',raising=False)
-    assert e2e._headers()=={'Authorization':'Bearer synthetic-server-token'}
-    monkeypatch.setenv('E2E_TOKEN','synthetic-gateway-token')
-    assert e2e._headers()=={'Authorization':'Bearer synthetic-server-token','X-Access-Token':'synthetic-gateway-token'}
+def test_application_bearer_and_provider_gateway_headers_are_separate(monkeypatch):
+    monkeypatch.setenv("ABX_SERVER_TOKEN", "synthetic-app-token")
+    monkeypatch.setenv("E2E_TOKEN", "retired-token-must-not-be-used")
+    monkeypatch.setenv("E2E_SERVER_TOKEN", "retired-server-token-must-not-be-used")
+    monkeypatch.setattr(e2e, "_GATEWAY_HEADERS", {"X-Access-Token": "synthetic-gateway-token"})
+    assert e2e._headers() == {"Authorization": "Bearer synthetic-app-token", "X-Access-Token": "synthetic-gateway-token"}

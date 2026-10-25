@@ -20,8 +20,7 @@ _APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKE
 
 BASE_URL = os.environ.get("E2E_BASE_URL", "http://127.0.0.1:9000").rstrip("/")
 BASE_DIR = os.environ.get("E2E_BASE_DIR", "/home/user/app").rstrip("/")
-TOKEN = os.environ.get("E2E_TOKEN", "")
-SERVER_TOKEN = os.environ.get("E2E_SERVER_TOKEN", "")
+SERVER_TOKEN = os.environ.get("ABX_SERVER_TOKEN", "")
 FAILED = 0
 
 
@@ -130,7 +129,7 @@ def coding(client: httpx.Client, setup: dict | None = None) -> None:
 
 
 def legacy_main() -> int:
-    headers = {"X-Access-Token": TOKEN} if TOKEN else {}
+    headers = dict(_APPLICATION_HEADERS)
     if SERVER_TOKEN:
         headers["Authorization"] = "Bearer " + SERVER_TOKEN
     with httpx.Client(base_url=BASE_URL, headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS}, timeout=60) as client:

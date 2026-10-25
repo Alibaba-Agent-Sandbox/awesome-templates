@@ -85,7 +85,7 @@ def acceptance(client):
 
 
 def main():
-    token=os.environ.get('E2E_TOKEN','');headers={'Authorization':'Bearer '+token} if token else {}
+    token=os.environ.get('ABX_SERVER_TOKEN','');headers={'Authorization':'Bearer '+token} if token else {}
     with httpx.Client(base_url=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000'),headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS},timeout=30) as client:
         response=client.get('/health');record(response.status_code==200,'health')
         response=client.post('/commands/swe_run_agent',json={'run_id':'0'*32})

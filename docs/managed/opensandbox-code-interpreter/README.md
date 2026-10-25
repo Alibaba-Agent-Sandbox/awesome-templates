@@ -76,7 +76,7 @@ async def main():
     try:
         url = urlsplit(os.environ.get("ABX_OPENSANDBOX_BASE_URL", "http://127.0.0.1:8080"))
         config = ConnectionConfig(domain=url.netloc, protocol=url.scheme,
-            api_key=os.environ.get("ABX_OPENSANDBOX_API_KEY") or os.environ.get("OPEN_SANDBOX_API_KEY"),
+            api_key=os.environ["ABX_OPENSANDBOX_API_KEY"],
             use_server_proxy=True, request_timeout=timedelta(seconds=60))
         native = await NativeSandbox.connect(sid, connection_config=config)
         try:

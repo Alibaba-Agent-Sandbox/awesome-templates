@@ -174,7 +174,7 @@ HTTP 检查全部 16 项通过，本次沙箱已删除。源码和运行包的�
 
 在仓库根目录执行 `python3 -m unittest discover -s codex -p test_commands.py -v`、`python3 scripts/check_template.py codex` 和 `python3 scripts/run_local_e2e.py`。单元测试覆盖显式权限、自动回退、结果脱敏和误判成功的 marker。L0 检查 HTTP 命令契约并可能跳过模型任务，不代表 L1 镜像构建、L2 云端执行或 L3 Agent 验收已通过。
 
-对于本地或远程模板服务，双方进程已配置获授权的模型环境后，执行 `E2E_BASE_URL=http://127.0.0.1:9000 E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 E2E_MODEL=<model> python3 codex/e2e_test.py` 做 L3。控制器先写入有错误的现有 Fibonacci 实现及原始测试，并确认预期失败的基线。Agent 必须修复该实现，逐字节保留原始测试，补充 unittest 及 `REPORT.md`，成功执行工具命令并写出内容准确的 `acceptance.txt`。测试要求最后的助手消息为 marker，核验源码变更及产物，独立断言 Fibonacci 结果和负数拒绝行为，并重跑原始测试与生成的测试。独立验证器使用隔离的 Python 进程，直接编译实际源码，要求测试完整成功，并核对在 Agent 退出后才生成的完成确认。提前退出、跳过或预期失败的测试、同名 unittest 模块及旧字节码都无法提供通过凭据。这用于确认任务完成，不是针对具有相同操作系统权限的恶意代码的隔离边界。只聊天或在工具事件里回显 marker 均不通过。产物通过远程文件 API 读取，独立断言和测试通过远程 shell API 执行。`E2E_WORKSPACE` 应设为服务端文件根目录内可写的目录（默认 `/home/user/workspace`），服务要求认证时还应设置 `E2E_TOKEN`。每次使用唯一目录，清理时只删除该目录。只记录真实通过的 provider evidence，单独报告模型跳过。
+对于本地或远程模板服务，双方进程已配置获授权的模型环境后，执行 `E2E_BASE_URL=http://127.0.0.1:9000 E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 E2E_MODEL=<model> python3 codex/e2e_test.py` 做 L3。控制器先写入有错误的现有 Fibonacci 实现及原始测试，并确认预期失败的基线。Agent 必须修复该实现，逐字节保留原始测试，补充 unittest 及 `REPORT.md`，成功执行工具命令并写出内容准确的 `acceptance.txt`。测试要求最后的助手消息为 marker，核验源码变更及产物，独立断言 Fibonacci 结果和负数拒绝行为，并重跑原始测试与生成的测试。独立验证器使用隔离的 Python 进程，直接编译实际源码，要求测试完整成功，并核对在 Agent 退出后才生成的完成确认。提前退出、跳过或预期失败的测试、同名 unittest 模块及旧字节码都无法提供通过凭据。这用于确认任务完成，不是针对具有相同操作系统权限的恶意代码的隔离边界。只聊天或在工具事件里回显 marker 均不通过。产物通过远程文件 API 读取，独立断言和测试通过远程 shell API 执行。`E2E_WORKSPACE` 应设为服务端文件根目录内可写的目录（默认 `/home/user/workspace`），服务要求认证时还应设置 `ABX_SERVER_TOKEN`。每次使用唯一目录，清理时只删除该目录。只记录真实通过的 provider evidence，单独报告模型跳过。
 
 ## 问题反馈
 

@@ -37,7 +37,7 @@ def final_text(value):
 def native_sdk_command(base,parameters):
     from agent_sandbox.api.server_client import ServerClient
     async def run():
-        server=ServerClient(base,token=os.environ.get('E2E_SERVER_TOKEN') or None,timeout=900)
+        server=ServerClient(base,token=os.environ.get('ABX_SERVER_TOKEN') or None,timeout=900)
         try:return await server.commands.run('claude_byok',timeout=900,**parameters)
         finally:await server.aclose()
     return asyncio.run(run())
@@ -121,7 +121,7 @@ def safe_diagnostic(text):
 
 def main():
     base=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000').rstrip('/');workspace=os.environ.get('E2E_WORKSPACE','/home/user/app').rstrip('/')
-    token=os.environ.get('E2E_SERVER_TOKEN','');headers={'Authorization':'Bearer '+token} if token else {}
+    token=os.environ.get('ABX_SERVER_TOKEN','');headers={'Authorization':'Bearer '+token} if token else {}
     with httpx.Client(base_url=base,headers=headers,timeout=220) as client:
         r=client.get('/health');record(r.status_code==200 and r.json().get('status')=='ok','HTTP health')
         r=client.get('/commands');names={x.get('name') for x in r.json().get('commands',[])};record(r.status_code==200 and {'claude','claude_byok','claude_version','claude_setup_check','claude_native_check'}.issubset(names),'named commands discovery')

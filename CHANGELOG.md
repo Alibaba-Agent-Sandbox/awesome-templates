@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Remove retired E2E application-token aliases from current template controllers and use only ABX_SERVER_TOKEN, keeping provider gateway headers separate. Use the current OpenSandbox credential name in managed examples.
 - Fix Chrome 1.0.6 CDP and noVNC connections through provider endpoints with a path prefix or fixed query. Preserve existing gateway and application authentication.
 
 - Introduce template specification 5: one startup command and all provided services, with no workflow selector. Migrate all source manifests and managed references, retain every runtime command and recipe, and update launch examples and the public acceptance harness.

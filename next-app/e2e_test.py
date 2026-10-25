@@ -12,7 +12,7 @@ _APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKE
 
 
 def main():
-    base=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000');token=os.environ.get('E2E_TOKEN','')
+    base=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000');token=os.environ.get('ABX_SERVER_TOKEN','')
     headers={'Authorization':'Bearer '+token} if token else {}
     with httpx.Client(base_url=base,headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS},timeout=200) as client:
         def run(name,args=None):

@@ -25,7 +25,7 @@ def visible_fixture_matches(image,expected):
 
 async def sdk(base,name,**parameters):
     from agent_sandbox.api.server_client import ServerClient
-    client=ServerClient(base,token=os.environ.get('E2E_SERVER_TOKEN')or None,timeout=150, headers=_GATEWAY_HEADERS)
+    client=ServerClient(base,token=os.environ.get('ABX_SERVER_TOKEN')or None,timeout=150, headers=_GATEWAY_HEADERS)
     try:return await client.commands.run(name,timeout=150,**parameters)
     finally:await client.aclose()
 
@@ -115,7 +115,7 @@ async def real_desktop(base,client,headers):
 
 
 def main():
-    base=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000').rstrip('/');token=os.environ.get('E2E_SERVER_TOKEN','')
+    base=os.environ.get('E2E_BASE_URL','http://127.0.0.1:9000').rstrip('/');token=os.environ.get('ABX_SERVER_TOKEN','')
     headers={'Authorization':'Bearer '+token}if token else{}
     with httpx.Client(base_url=base,headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS},timeout=120)as client:
         response=client.get('/health');record(response.status_code==200 and response.json().get('status')=='ok','HTTP health')

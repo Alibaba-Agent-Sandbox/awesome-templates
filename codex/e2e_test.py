@@ -31,7 +31,6 @@ RUN_LLM = os.environ.get("E2E_RUN_LLM", "").strip().lower()
 REQUIRE = os.environ.get("E2E_REQUIRE_LLM", "").strip().lower() in {"1", "true", "yes"}
 MODEL = os.environ.get("E2E_MODEL", "").strip()
 MARKER = "ABX_E2E_OK"
-TOKEN = os.environ.get("E2E_TOKEN", "")
 PROBE_ROOT = os.path.join(WORK, "abx_e2e_codex_" + uuid.uuid4().hex)
 KEY_ENVS = ("OPENAI_API_KEY", "CODEX_API_KEY", "ABX_LLM_API_KEY")
 BASELINE_SOURCE = "def fib(n):\n    return n\n"
@@ -64,7 +63,7 @@ def _exists(client: httpx.Client, path: str) -> bool:
 
 
 def main() -> int:
-    headers = {"X-Access-Token": TOKEN} if TOKEN else {}
+    headers = dict(_APPLICATION_HEADERS)
     with httpx.Client(base_url=BASE_URL, timeout=TIMEOUT, headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS}) as client:
         status = 1
         try:

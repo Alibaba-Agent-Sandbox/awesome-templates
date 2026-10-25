@@ -311,7 +311,7 @@ def check_model_call(client: httpx.Client) -> None:
 
 def main() -> int:
     headers = {}
-    token = os.environ.get("E2E_TOKEN") or os.environ.get("ABX_SERVER_TOKEN", "")
+    token = os.environ.get("ABX_SERVER_TOKEN", "")
     if token:
         headers["Authorization"] = "Bearer " + token
     with httpx.Client(base_url=BASE_URL, headers={**(headers), **_GATEWAY_HEADERS, **_APPLICATION_HEADERS}, timeout=40) as client:

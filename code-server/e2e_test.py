@@ -12,7 +12,7 @@ _APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKE
 
 
 def main():
-    token=os.environ.get('E2E_TOKEN','')
+    token=os.environ.get('ABX_SERVER_TOKEN','')
     headers={'Authorization':'Bearer '+token} if token else {}
     base=os.environ.get('E2E_BASE_URL','http://localhost:9000')
     web=os.environ.get('E2E_CODE_SERVER_URL','http://127.0.0.1:8443')

@@ -95,7 +95,7 @@ python3 -m pytest -q pi/test_commands.py pi/test_e2e_protocol.py pi/test_cli_pro
 python3 scripts/run_local_e2e.py
 ```
 
-Local checks default to no model. Set `E2E_REQUIRE_CLI=1` to require the pin; `E2E_REQUIRE_LLM=1` forces real coding acceptance using the target's configuration. The verifier seeds failing source/tests, invokes Pi with writable tools, downloads changed source and new artifacts, checks original tests are intact, then independently reruns isolated unittest and held-out inputs. A response marker alone fails. `E2E_COMMAND_TIMEOUT` controls the model deadline; `E2E_SERVER_TOKEN` is the optional server bearer credential and `E2E_TOKEN` is the gateway token.
+Local checks default to no model. Set `E2E_REQUIRE_CLI=1` to require the pin; `E2E_REQUIRE_LLM=1` forces real coding acceptance using the target's configuration. The verifier seeds failing source/tests, invokes Pi with writable tools, downloads changed source and new artifacts, checks original tests are intact, then independently reruns isolated unittest and held-out inputs. A response marker alone fails. `E2E_COMMAND_TIMEOUT` controls the model deadline; `ABX_SERVER_TOKEN` is the application Bearer credential; `E2E_GATEWAY_HEADERS_JSON` contains provider gateway headers.
 
 ### Agent Sandbox platform steps
 

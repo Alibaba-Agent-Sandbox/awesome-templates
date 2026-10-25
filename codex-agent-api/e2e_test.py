@@ -60,11 +60,8 @@ if (result.testsRun != 6 or not result.wasSuccessful() or result.skipped
 
 
 def _headers() -> dict:
-    token = os.environ.get("E2E_TOKEN") or os.environ.get("ABX_SERVER_TOKEN", "")
-    headers={"X-Access-Token": token} if token else {}
-    server_token=os.environ.get("E2E_SERVER_TOKEN", "")
-    if server_token:headers["Authorization"]="Bearer "+server_token
-    return headers
+    token = os.environ.get("ABX_SERVER_TOKEN", "")
+    return {**_GATEWAY_HEADERS, **({"Authorization": "Bearer " + token} if token else {})}
 
 
 def _read_file(client: httpx.Client, path: str) -> str:

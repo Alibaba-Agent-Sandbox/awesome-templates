@@ -95,7 +95,7 @@ python3 -m pytest -q pi/test_commands.py pi/test_e2e_protocol.py pi/test_cli_pro
 python3 scripts/run_local_e2e.py
 ```
 
-默认本地检查不调用模型。`E2E_REQUIRE_CLI=1` 要求实际固定版本；`E2E_REQUIRE_LLM=1` 使用目标配置强制真实编程验收。验证器先创建失败源码和测试，明确允许 Pi 写入，再下载改动源码、新产物，确认原测试未修改，最后独立运行隔离 unittest 和 held-out 输入；仅返回 marker 会失败。`E2E_COMMAND_TIMEOUT` 控制模型期限；`E2E_SERVER_TOKEN` 是可选 server bearer token，`E2E_TOKEN` 是网关 token。
+默认本地检查不调用模型。`E2E_REQUIRE_CLI=1` 要求实际固定版本；`E2E_REQUIRE_LLM=1` 使用目标配置强制真实编程验收。验证器先创建失败源码和测试，明确允许 Pi 写入，再下载改动源码、新产物，确认原测试未修改，最后独立运行隔离 unittest 和 held-out 输入；仅返回 marker 会失败。`E2E_COMMAND_TIMEOUT` 控制模型期限；`ABX_SERVER_TOKEN` 是应用 Bearer 令牌；`E2E_GATEWAY_HEADERS_JSON` 传递 provider 网关头。
 
 ### Agent Sandbox step 构建
 
