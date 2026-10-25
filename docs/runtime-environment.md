@@ -89,4 +89,4 @@ The example above leaves server-token configuration at its existing default. Sta
 
 ## Verification boundaries
 
-The Aider image review used its original image commands, a new explicitly configured server, real model coding, independent tests and verified owned cleanup. It does not establish canonical `abx template deploy` acceptance, other providers' environment behavior, or every template's model support. The [Aider review](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/88) records those separate outcomes. Keep `tested_on` and provider evidence unchanged until their own required gates pass.
+The Aider image review used its original image commands, a new explicitly configured server, real model coding, independent tests and verified owned cleanup. It does not establish current unified source-launch acceptance, other providers' environment behavior, or every template's model support. The [Aider review](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/88) records those separate outcomes. Current provider acceptance requires its own exact-input gates and receipts.

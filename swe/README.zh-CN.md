@@ -105,7 +105,7 @@ L0 可以跳过缺失的上游运行时/模型前置，这不证明代理运行�
 
 ## 贡献
 
-执行 `python -m pytest -q swe/test_commands.py swe/test_e2e_protocol.py`、`python3 scripts/check_template.py swe`、`python3 scripts/test_spec_tools.py` 与 `python3 scripts/run_local_e2e.py`。构建真实镜像，跑[标准 Express 部署](../scripts/express_e2e.py)，再配置兼容模型后执行 `E2E_REQUIRE_LLM=1 E2E_RUN_LLM=1 E2E_BASE_URL=<已配置服务> python swe/e2e_test.py`。保留失败/跳过，记录准确版本、测试身份、补丁读取与自有资源清理。不要提交原始 trajectory、凭据或私有资源 ID。
+执行 `python -m pytest -q swe/test_commands.py swe/test_e2e_protocol.py`、`python3 scripts/check_template.py swe`、`python3 scripts/test_spec_tools.py` 与 `python3 scripts/run_local_e2e.py`。构建真实镜像，跑[当前 Express 源码启动验证](../docs/public-launch-testing.md)，再配置兼容模型后执行 `E2E_REQUIRE_LLM=1 E2E_RUN_LLM=1 E2E_BASE_URL=<已配置服务> python swe/e2e_test.py`。保留失败/跳过，记录准确版本、测试身份、补丁读取与自有资源清理。不要提交原始 trajectory、凭据或私有资源 ID。
 
 ## 问题反馈
 

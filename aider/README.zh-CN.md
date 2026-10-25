@@ -130,8 +130,8 @@ analytics-disabled 状态可能保留在该专用沙箱原生 `.aider`，随实�
 七项自有资源清理检查和单独的官方模板严格缺席回查均通过；旧记录保留，
 其真实模型结果发生在这次完成性校验加固之前。
 
-目录仍是 experimental，`tested_on: []`：canonical
-`scripts/express_e2e.py` → `abx template deploy` 的 L2 wrapper 尚未通过。
+目录维护标签仍是 experimental。上述日期的镜像与模型结果不证明当前
+[源码启动路径](../docs/public-launch-testing.md)已通过。
 其他 provider 未验。参见[设计](../docs/design/aider.md)。
 
 ## 二次开发

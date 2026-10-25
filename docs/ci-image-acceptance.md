@@ -23,16 +23,15 @@ ID before its one-day retention expires. Fetch that source commit locally.
 The controller verifies repository/run/artifact identity, successful explicit
 workflow, ZIP/TAR hashes, current public Dockerfile/COPY/manifest contract,
 actual final image command bytes, pinned server SDK, Linux amd64, non-root user
-and working directory. Only `tested_on` metadata can change without invalidating
-that contract. Changed runtime bytes require a new CI export.
+and working directory. The complete manifest and declared build inputs must match
+the verified source. Changed inputs require a new CI export.
 
 ## Run real acceptance
 
 Provide existing account configuration through process environment:
 `ALICLOUD_ACCESS_KEY_ID`, `ALICLOUD_ACCESS_KEY_SECRET`, `ACR_NAMESPACE`,
 `ABX_SANDBOX_API_KEY`, `ABX_SANDBOX_BASE_URL`, `ABX_SANDBOX_DOMAIN`, and
-`GH_TOKEN` or `GITHUB_TOKEN` for artifact retrieval. `ABX` selects the native CLI;
-`NODE_PATH` supplies its documented dependencies. Never paste values into a
+`GH_TOKEN` or `GITHUB_TOKEN` for artifact retrieval. `ABX` selects the installed CLI executable. Never paste values into a
 command, checked-in file or CI workflow.
 
 ```bash

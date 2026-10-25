@@ -121,7 +121,7 @@ fixture 检查非零退出和可识别失败。测试仅使用自有临时 npm c
 
 ## 贡献
 
-阅读 [CONTRIBUTING.md](../CONTRIBUTING.md)、[模板规范](../docs/template-spec.zh-CN.md)与[设计分析](../docs/design/node-web.md)。在仓库根运行 `python3 scripts/check_template.py node-web`，再运行 `python3 scripts/run_local_e2e.py`；需 server SDK、httpx、PyYAML、Node 与 npm。测试运行真实进程并断言结果。具备 Docker 与已授权 Express 配置时运行 `python scripts/public_launch_e2e.py node-web --provider alicloud-express --application-controller`，仅通过后添加提供方证据。在此之前保持 tested_on 与提供方验证列表为空。合并前交叉审查进程生命周期与失败路径。
+阅读 [CONTRIBUTING.md](../CONTRIBUTING.md)、[模板规范](../docs/template-spec.zh-CN.md)与[设计分析](../docs/design/node-web.md)。在仓库根运行 `python3 scripts/check_template.py node-web`，再运行 `python3 scripts/run_local_e2e.py`；需 server SDK、httpx、PyYAML、Node 与 npm。测试运行真实进程并断言结果。具备 Docker 与已授权 Express 配置时运行 `python scripts/public_launch_e2e.py node-web --provider alicloud-express --application-controller --source ./node-web --output node-web-attempt-1.json`，仅通过后添加提供方证据。提供方验证结论以已完成的准确输入实测为准。合并前交叉审查进程生命周期与失败路径。
 
 ## 问题反馈
 

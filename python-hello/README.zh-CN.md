@@ -116,7 +116,7 @@ print(await client.commands.run('hello', name='Express'))
 python3 scripts/check_template.py python-hello
 python3 -m pytest python-hello/test_command_errors.py -q
 python3 scripts/run_local_e2e.py
-python scripts/public_launch_e2e.py python-hello --provider alicloud-express --application-controller
+python scripts/public_launch_e2e.py python-hello --provider alicloud-express --application-controller --source ./python-hello --output python-hello-attempt-1.json
 ```
 
 本地 runner 启动真实 HTTP 服务和工作目录，测试文件上传/下载/列表/删除、上传脚本执行、pytest 成功和故意失败的用例。文件错误视为失败，不再 SKIP。Express harness 需要已配置凭据和 Docker，仅在 CLI/SDK smoke 全部通过后写入证据，并清理本次创建的资源。Express smoke 通过不代表所有本地回归都已在云端执行。

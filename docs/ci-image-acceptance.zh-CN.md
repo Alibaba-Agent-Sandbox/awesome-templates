@@ -18,15 +18,15 @@
 
 控制器验证仓库、工作流、产物身份、手动触发及成功状态、ZIP/TAR 哈希、当前
 Dockerfile/COPY/清单契约、最终镜像的 commands.py 字节、固定服务端 SDK、
-Linux amd64、非 root 用户及工作目录。仅 `tested_on` 元数据变化不要求重建，
-运行源码变化必须重新导出。
+Linux amd64、非 root 用户及工作目录。完整清单和声明的构建输入都必须与
+已验证源码匹配；输入变化必须重新导出。
 
 ## 执行真实验收
 
 在进程环境中提供已有的 `ALICLOUD_ACCESS_KEY_ID`、
 `ALICLOUD_ACCESS_KEY_SECRET`、`ACR_NAMESPACE`、`ABX_SANDBOX_API_KEY`、
 `ABX_SANDBOX_BASE_URL`、`ABX_SANDBOX_DOMAIN`，以及读取产物用的
-`GH_TOKEN` 或 `GITHUB_TOKEN`。`ABX` 指定原生 CLI，`NODE_PATH` 提供其依赖。
+`GH_TOKEN` 或 `GITHUB_TOKEN`。`ABX` 指定已安装的 CLI 可执行文件。
 凭据值不可写入命令、版本文件或 Actions。
 
 ```bash

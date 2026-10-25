@@ -108,7 +108,7 @@ Keep the Alibaba base, exact CLI/server pins and non-root user. Extend [commands
 python3 -m pytest -q droid/test_commands.py droid/test_e2e_protocol.py droid/test_byok.py droid/test_model_controller.py
 python3 scripts/check_template.py droid
 python3 scripts/run_local_e2e.py
-python scripts/public_launch_e2e.py droid --provider alicloud-express --application-controller
+python scripts/public_launch_e2e.py droid --provider alicloud-express --application-controller --source ./droid --output droid-attempt-1.json
 ```
 
 Source-only local execution explicitly skips the missing native version; it cannot qualify the provider. L1 builds the actual Dockerfile and checks the real native SHA/version. Required L2 uses actual SDK creation, canonical steps, full HTTP and independent owned cleanup. L3 `E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 E2E_REMOTE_SANDBOX=1` runs [e2e_test.py](e2e_test.py) on a fresh owned cloud server configured for BYOK: real native successful JSON with positive turns, exact fresh final nonce, existing source edit, new artifacts, byte-identical original tests, complete independent original and held-out post-return checks with fresh ACKs, and owned project absence. Generated code never runs on the operator. Legacy Factory controller is retained separately as [factory_e2e.py](factory_e2e.py), requiring a genuine Factory key; no such current model pass is claimed.

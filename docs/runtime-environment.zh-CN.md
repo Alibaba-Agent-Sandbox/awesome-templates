@@ -32,4 +32,4 @@ HTTP 使用 `sb.network.get_url(9010)`，向 `/commands/qwen_setup_check` POST `
 
 ## 验证边界
 
-Aider 验收使用原始镜像命令、显式配置的新服务、真实模型编码、独立测试和自有资源清理读回。它不证明 canonical `abx template deploy` 验收、其他提供方的环境行为或全部模板的模型能力。[Aider PR](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/88) 分开记录这些结果。各自门禁通过之前不填写 `tested_on` 或提供方通过记录。
+Aider 验收使用原始镜像命令、显式配置的新服务、真实模型编码、独立测试和自有资源清理读回。它不证明当前统一源码启动验证、其他提供方的环境行为或全部模板的模型能力。[Aider PR](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/88) 分开记录这些结果。当前提供方验证结论需要各自准确输入的门禁与实测回执。

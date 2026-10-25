@@ -79,7 +79,7 @@ print(await client.commands.run('toolchain_smoke'))
 
 ## 二次开发
 
-修改版本时同步更新官方地址和哈希，并保留许可证。参阅 [steps 操作](../docs/platform-steps.zh-CN.md)：`python scripts/prepare_steps.py polyglot-toolchain --output /tmp/toolchain-steps` 仅生成文件。极速版实测：`python scripts/run_steps_e2e.py polyglot-toolchain --timeout 1800`；Dockerfile 路径：`python scripts/public_launch_e2e.py polyglot-toolchain --provider alicloud-express --application-controller`。`python scripts/run_local_e2e.py` 在本机缺少工具时明确跳过编译；镜像验证必须真实编译三个语言，本机跳过不能证明镜像通过。
+修改版本时同步更新官方地址和哈希，并保留许可证。参阅 [steps 操作](../docs/platform-steps.zh-CN.md)：`python scripts/prepare_steps.py polyglot-toolchain --output /tmp/toolchain-steps` 仅生成文件。极速版实测：`python scripts/run_steps_e2e.py polyglot-toolchain --timeout 1800`；Dockerfile 路径：`python scripts/public_launch_e2e.py polyglot-toolchain --provider alicloud-express --application-controller --source ./polyglot-toolchain --output polyglot-toolchain-attempt-1.json`。`python scripts/run_local_e2e.py` 在本机缺少工具时明确跳过编译；镜像验证必须真实编译三个语言，本机跳过不能证明镜像通过。
 
 ## 贡献
 

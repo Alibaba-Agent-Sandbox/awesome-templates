@@ -105,7 +105,7 @@ From a repository checkout, `python scripts/run_steps_e2e.py swe` builds and ver
 
 ## Contributing
 
-Run `python -m pytest -q swe/test_commands.py swe/test_e2e_protocol.py`, `python3 scripts/check_template.py swe`, `python3 scripts/test_spec_tools.py`, and `python3 scripts/run_local_e2e.py`. Build the actual image, run the [canonical Express deployment](../scripts/express_e2e.py), and run `E2E_REQUIRE_LLM=1 E2E_RUN_LLM=1 E2E_BASE_URL=<configured server> python swe/e2e_test.py` with a compatible model. Preserve failures/skips and record exact source revisions, test identities, patch retrieval and owned resource cleanup. Never submit raw trajectories, credentials or private resource IDs.
+Run `python -m pytest -q swe/test_commands.py swe/test_e2e_protocol.py`, `python3 scripts/check_template.py swe`, `python3 scripts/test_spec_tools.py`, and `python3 scripts/run_local_e2e.py`. Build the actual image, run the [current Express source-launch acceptance](../docs/public-launch-testing.md), and run `E2E_REQUIRE_LLM=1 E2E_RUN_LLM=1 E2E_BASE_URL=<configured server> python swe/e2e_test.py` with a compatible model. Preserve failures/skips and record exact source revisions, test identities, patch retrieval and owned resource cleanup. Never submit raw trajectories, credentials or private resource IDs.
 
 ## Issues
 

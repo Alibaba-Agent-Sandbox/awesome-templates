@@ -145,7 +145,7 @@ From a repository checkout, `python scripts/run_steps_e2e.py openclaw` builds an
 
 ## Contributing
 
-Follow [CONTRIBUTING.md](../CONTRIBUTING.md) and [template spec](../docs/template-spec.md). Run `python3 scripts/check_template.py openclaw` and `python3 -m pytest openclaw/test_commands.py`. For local HTTP smoke, start `python3 openclaw/commands.py` and run `python3 openclaw/e2e_test.py` with matching `E2E_BASE_URL`, server auth and gateway token. A synthetic random gateway token suffices for a real local gateway test; a model key is unnecessary. Keep `tested_on: []` until provider evidence passes. Required image/cloud acceptance must remain explicit if unavailable.
+Follow [CONTRIBUTING.md](../CONTRIBUTING.md) and [template spec](../docs/template-spec.md). Run `python3 scripts/check_template.py openclaw` and `python3 -m pytest openclaw/test_commands.py`. For local HTTP smoke, start `python3 openclaw/commands.py` and run `python3 openclaw/e2e_test.py` with matching `E2E_BASE_URL`, server auth and gateway token. A synthetic random gateway token suffices for a real local gateway test; a model key is unnecessary. Require independent exact-input provider evidence before claiming provider acceptance. Required image/cloud acceptance must remain explicit if unavailable.
 
 ## Issues
 

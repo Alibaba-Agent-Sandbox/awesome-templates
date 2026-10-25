@@ -118,7 +118,7 @@ From the repository root with the development server, `httpx`, pytest and PyYAML
 python3 scripts/check_template.py python-hello
 python3 -m pytest python-hello/test_command_errors.py -q
 python3 scripts/run_local_e2e.py
-python scripts/public_launch_e2e.py python-hello --provider alicloud-express --application-controller
+python scripts/public_launch_e2e.py python-hello --provider alicloud-express --application-controller --source ./python-hello --output python-hello-attempt-1.json
 ```
 
 The local runner starts the server with a real workspace and exercises file upload/download/list/delete, uploaded scripts, a passing pytest case and a deliberately failing pytest case. File failures fail acceptance instead of being skipped. The Express harness requires configured credentials plus Docker, writes evidence only after successful CLI/SDK smoke cases, and cleans up the sandbox/template it creates. An Express smoke pass alone does not run every local regression remotely.

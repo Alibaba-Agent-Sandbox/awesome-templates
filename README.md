@@ -22,7 +22,7 @@ is recorded.
 
 ## Templates
 
-Start with [Using templates](docs/using-templates.md) ([中文](docs/using-templates.zh-CN.md)). The catalog contains 46 source recipes and four provider-managed entries; the latter use their own backend and are not portable source builds. On 2026-10-25, the [specification 5 OpenSandbox source-candidate matrix](.agents/evidence/verify/2026-10-25-unified-launch-opensandbox-matrix.md) passed all 46 source recipes: 73 smoke definitions, 219 CLI/Python/HTTP calls and independently confirmed sandbox/artifact cleanup. All 46 manifest hashes match the migrated inputs. This verifies the recorded CLI source launch and SDK consumption, not published-package installation, managed catalog launch or latest SDK `TemplateLauncher`.
+Start with [Using templates](docs/using-templates.md) ([中文](docs/using-templates.zh-CN.md)). The catalog contains 46 source recipes and four provider-managed entries; the latter use their own backend and are not portable source builds. On 2026-10-25, the [specification 5 OpenSandbox source-candidate matrix](.agents/evidence/verify/2026-10-25-unified-launch-opensandbox-matrix.md) passed all 46 source recipes: 73 smoke definitions, 219 CLI/Python/HTTP calls and independently confirmed sandbox/artifact cleanup. All 46 manifest hashes match the migrated inputs. This verifies the recorded CLI source launch and SDK consumption, not published-package installation, managed catalog launch or the Python `launch_template` entry point.
 
 Historical 2026-10-24 results: the [public launch matrix](.agents/evidence/verify/2026-10-24-public-template-matrix.md) passed all 46 sources on Express and default direct OpenSandbox: 92 cases, 438 CLI/Python/HTTP smoke calls and independently confirmed owned cleanup. Inputs were public CLI 0.4.16, host Python packages 0.3.1a5 and fixed template/provider checkouts. [Remote Git journeys](.agents/evidence/verify/2026-10-24-public-git-journeys.md) and [managed runtime checks](.agents/evidence/verify/2026-10-24-managed-template-usage.md) have separate scope. This is dated smoke evidence, not certification of real-model tasks, PTY or every interpreter/desktop interface.
 
@@ -87,7 +87,7 @@ The [2026-10-18 acceptance review](docs/verification-2026-10-18.md) ([中文](do
 
 Provider-managed images belong to their own backend; they are separate from this repository's source Dockerfiles. Express `base`/`code-interpreter-v1` and the original OpenSandbox interpreter are documented in the [managed runtime catalog](#provider-managed-runtime-catalog).
 
-For automatic source preparation supported by the installed provider on a provider-capable CLI host, use `abx --provider <provider> template launch Alibaba-Agent-Sandbox/awesome-templates//<name> --yes`. The provider owns its native base/image build, registration and launch reference; template startup operations and provider configuration remain required. See the [CLI preparation/launch guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/c8e8ad784323b8903505442cbc77d433a0d0367a/docs/en/guide/template-launch.md). An existing ID or source directory never converts between providers. OpenSandbox keepalive entrypoint configuration is explicit; the template start command starts its services.
+For automatic source preparation supported by the installed provider on a provider-capable CLI host, use `abx --provider <provider> template launch Alibaba-Agent-Sandbox/awesome-templates//<name> --yes`. The provider owns its native base/image build, registration and launch reference; template startup operations and provider configuration remain required. See the [CLI preparation/launch guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/v0.5.4/docs/en/guide/template-launch.md). An existing ID or source directory never converts between providers. OpenSandbox keepalive entrypoint configuration is explicit; the template start command starts its services.
 
 Catalog provider values are preparation prerequisites, not verification. See
 [provider-owned source preparation](docs/provider-preparation.md) ([中文](docs/provider-preparation.zh-CN.md));
@@ -109,27 +109,28 @@ CLI, Python SDK and HTTP POST examples plus command/authentication/error details
 
 Install the CLI and paired Python packages using the [source-aware setup guide](docs/using-templates.md#installation), then configure the selected provider.
 
-Install from this index (builds and registers the template):
+Launch the complete source template on the configured provider:
 
 ```bash
-abx template install python-hello
-abx template install alibaba-agent-sandbox/awesome-templates//codex@052051411a5f78743083d68467ba952a4e71e08b
+abx --provider alicloud-express template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello --yes
 ```
 
-Publish the template in the current directory:
+For OpenSandbox, select `--provider opensandbox`. From this checkout, use
+`template launch ./python-hello`; the template's startup command starts all
+declared services. Source preparation requires the selected provider's build
+prerequisites. See [the complete calling flow](docs/using-templates.md#cli-sdk-and-http)
+for named commands, Python/HTTP clients and owned cleanup.
+
+To download an editable copy without building or creating cloud resources:
 
 ```bash
-abx deploy
+abx template install python-hello --download-only --dir ./python-hello
 ```
 
-`abx template install ./<name> --registry-type local --download-only` only
-fills the local cache (`~/.abx/templates/`) and does not build an image.
-Search the index with `abx template search python` or
-`abx template search ai-agent --status official`.
-
-Top-level shortcuts are `create`, `list`, `info`, `kill`, `exec`, `connect`,
-`upload`, `download`, `run`, and `deploy`. Scaffold and install a template
-with `abx template init` and `abx template install`.
+Search with `abx template search python` or
+`abx template search ai-agent --status official`. Registration and source launch
+are separate from `abx create`, which accepts an already registered platform ID
+or alias.
 
 ## Local end-to-end tests
 
@@ -144,16 +145,17 @@ python3 scripts/run_local_e2e.py
 `run_local_e2e.py` starts `python3 commands.py` for every template directory
 that has `commands.py` and `e2e_test.py`, on an ephemeral port, sets
 `E2E_BASE_URL`, runs that directory's `e2e_test.py`, and stops the process.
-It also runs the checker. Every template's e2e must exit 0. A
-`spec_version: 2` template that fails the checker fails this script.
-Directories that predate the spec are listed and do not fail it.
+It also runs the checker. Every template's e2e must exit 0. The checker requires
+current `spec_version: 5` manifests; older schemas and nonconformant current
+templates fail the suite.
 `E2E_RUN_LLM=0` makes the model call a SKIP. That skip is not acceptance of
 the agent. The same script is
 [`.github/workflows/e2e.yml`](./.github/workflows/e2e.yml).
 
-Express (L2) is `python3 scripts/express_e2e.py <name>`. Credentials and
-exit codes are in the spec. It deletes the sandbox and the template it
-created.
+For Express source acceptance, run `python scripts/public_launch_e2e.py <name> --provider alicloud-express --source ./<name> --application-controller --output attempt-1.json`.
+Use a new output filename for each attempt; existing evidence is never overwritten.
+The [public launch guide](docs/public-launch-testing.md) defines installation,
+provider prerequisites, exact evidence scope and independently verified owned cleanup.
 
 ## Contributing
 

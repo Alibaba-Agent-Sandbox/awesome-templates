@@ -145,8 +145,8 @@ early-exit and stale-cache false positives. Seven owned-resource cleanup checks
 and a separate strict official template-absence readback passed. Earlier evidence
 is preserved and predates this completion guard.
 
-The catalog remains experimental with `tested_on: []`: the canonical
-`scripts/express_e2e.py` → `abx template deploy` L2 wrapper has not passed.
+The catalog maintenance label remains experimental. These dated image/model
+results do not certify the current [source-launch path](../docs/public-launch-testing.md).
 Other providers remain unverified. See [design](../docs/design/aider.md).
 
 ## Secondary development
