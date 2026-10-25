@@ -115,8 +115,8 @@ provider Git 地址开始，测试内置解释器模板的 CLI 启动、进程/�
 
 The controller helper accepts provider `gateway_headers` separately from the generated
 application token. It supplies validated string headers through
-`E2E_GATEWAY_HEADERS_JSON` and the application token through the existing
-single `ABX_SERVER_TOKEN` name. Retired token aliases are not read or injected. Standalone controllers
+`E2E_GATEWAY_HEADERS_JSON` and the application token only through
+`ABX_SERVER_TOKEN`. Retired token aliases are not read or injected. Standalone controllers
 merge gateway headers into HTTP and Python application-client requests; application
 Bearer authentication remains separate from gateway access-token headers. Arbitrary
 operator environment keys are not forwarded. Invalid header objects or conflicting
@@ -124,5 +124,5 @@ Authorization headers fail before the controller starts.
 
 中文：公开源码启动前会解析并固定当前 Git HEAD；报告分别记录最初请求、实际固定
 源码提交和验证程序提交。测试客户端通过受控 JSON 环境变量传递 provider 网关头，
-同时保留独立的应用 Bearer 令牌，不借用其他操作员凭据。它支持现有三种测试令牌
-变量名，非法网关头和冲突的 Authorization 会在运行前明确失败。
+应用 Bearer 令牌只通过 `ABX_SERVER_TOKEN` 传递，不读取或注入旧变量别名，
+也不借用其他操作员凭据。非法网关头和冲突的 Authorization 会在运行前明确失败。
