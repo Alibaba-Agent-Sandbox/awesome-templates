@@ -138,3 +138,36 @@ def test_every_catalog_http_controller_compiles_before_cloud_execution():
     for name in source_names():
         script=root/name/'e2e_test.py'
         compile(script.read_text(),name+'/e2e_test.py','exec')
+
+
+@pytest.mark.parametrize('name', ['cursor-agent','devin'])
+def test_explicit_owned_loopback_gateway_reaches_native_auth_fixture(name, monkeypatch):
+    import base64,runpy
+    from pathlib import Path
+    namespace=runpy.run_path(str(Path(__file__).resolve().parents[1]/name/'e2e_test.py'),run_name='controller-import')
+    observations=[]
+    def record(value,label):observations.append(value)
+    def refused(*args):raise RuntimeError('category=authentication_refused')
+    method=namespace['native_auth_check']
+    method.__globals__.update(record=record,native_sdk_command=refused)
+    class Response:
+        def __init__(self,status,data):self.status_code,self.data=status,data
+        def json(self):return self.data
+        def raise_for_status(self):assert self.status_code==200
+    class Client:
+        def __init__(self):self.calls=[]
+        def post(self,path,json):
+            self.calls.append(path)
+            if path=='/shell':return Response(200,{'exit_code':0,'stdout':'OWNED_AUTH_CLEAN\n'})
+            return Response(500,{'error':'category=authentication_refused'})
+        def get(self,*args,**kwargs):
+            self.calls.append('/files/download-stream')
+            return Response(200,{'content_base64':base64.b64encode(b'OWNED_AUTH_FIXTURE').decode()})
+    client=Client()
+    monkeypatch.setenv('E2E_REMOTE_SANDBOX','1')
+    method(client,'/owned-fixture','http://127.0.0.1:43210')
+    assert client.calls and observations and all(observations)
+    client.calls.clear();observations.clear()
+    monkeypatch.delenv('E2E_REMOTE_SANDBOX')
+    method(client,'/owned-fixture','http://127.0.0.1:43210')
+    assert not client.calls and observations==[False]

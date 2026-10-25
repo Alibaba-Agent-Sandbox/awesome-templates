@@ -120,8 +120,8 @@ def safe_diagnostic(text):
     return value
 
 def native_auth_check(client,workspace,base):
-    if os.environ.get('E2E_REMOTE_SANDBOX')!='1'or local_target(base):
-        record(False,'original native authentication fixture requires an explicitly owned cloud target');return
+    if os.environ.get('E2E_REMOTE_SANDBOX')!='1':
+        record(False,'original native authentication fixture requires an explicitly owned sandbox target');return
     import uuid
     project=workspace+'/.cursor-auth-'+uuid.uuid4().hex
     payload={'prompt':'Return OWNED_NATIVE_AUTH_CHECK without reading or changing files.','cwd':project,'command_timeout':40,'allow_unsafe_tools':True}
