@@ -248,3 +248,52 @@ class ImageExportTests(unittest.TestCase):
 
 def test_foreign_managed_identity_has_controlled_compatibility_diagnostic():
     assert cli_diagnostics(json.dumps({'code':'E8002', 'message':'Template cannot launch on this provider: provider-mismatch.'})) == {'code':'E8002','category':'provider-mismatch'}
+
+
+class CliIoTests(unittest.IsolatedAsyncioTestCase):
+    async def exercise(self, directory, *, corrupt=False, failed_upload=False):
+        from types import SimpleNamespace
+        from public_launch_e2e import verify_cli_io
+        remote = {};calls = []
+        class Files:
+            async def read(self, path):return remote[path].decode('utf-8')
+            async def exists(self, path):return path in remote
+            async def remove(self, path):del remote[path]
+        class Adapter:
+            def run(self, args, **kwargs):
+                calls.append(args)
+                if args[0] == 'exec':
+                    return {'stdout':'42\n','exit_code':0}
+                if args[0] == 'upload':
+                    remote[args[3]] = Path(args[2]).read_bytes()
+                    if failed_upload:raise RuntimeError('controlled partial upload failure')
+                elif args[0] == 'download':
+                    Path(args[3]).write_bytes(b'wrong' if corrupt else remote[args[2]])
+                elif args[:3] == ['sandbox','files','rm']:
+                    del remote[args[args.index('--path')+1]]
+                elif args[:3] != ['sandbox','files','stat']:
+                    raise AssertionError('unexpected current CLI operation')
+        sandbox=SimpleNamespace(id='owned-fixture',files=Files())
+        try:
+            await verify_cli_io(Adapter(), sandbox, 'owned-run', directory)
+        finally:
+            self.assertEqual(remote,{})
+            self.assertEqual(list(directory.iterdir()),[])
+        return calls
+
+    async def test_current_cli_roundtrip_independently_reads_same_unicode_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            calls=await self.exercise(Path(directory))
+        self.assertEqual([args[0] for args in calls],['exec','upload','sandbox','download','sandbox'])
+        self.assertEqual(calls[0],['exec','owned-fixture','--','python3','-c','print(21 * 2)'])
+        self.assertTrue(calls[1][3].startswith('/tmp/owned-run-cli-'))
+
+    async def test_changed_download_bytes_fail_and_owned_file_is_removed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(CheckFailed,'CLI download preserves'):
+                await self.exercise(Path(directory),corrupt=True)
+
+    async def test_partial_upload_failure_keeps_failure_and_sdk_cleans_owned_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(RuntimeError,'partial upload'):
+                await self.exercise(Path(directory),failed_upload=True)

@@ -153,6 +153,34 @@ class CLI:
         return json.loads(proc.stdout) if json_output else proc.stdout.strip()
 
 
+async def verify_cli_io(cli, sandbox, alias, private):
+    """Exercise published CLI process/transfer paths against independent SDK reads."""
+    executed = await asyncio.to_thread(cli.run, ['exec', sandbox.id, '--', 'python3', '-c', 'print(21 * 2)'])
+    require(isinstance(executed, dict) and executed.get('exit_code') == 0
+            and executed.get('stdout', '').strip() == '42', 'CLI exec result')
+    nonce = secrets.token_hex(8)
+    remote = '/tmp/' + alias + '-cli-' + nonce + '.txt'
+    uploaded = private / ('cli-upload-' + nonce + '.txt')
+    downloaded = private / ('cli-download-' + nonce + '.txt')
+    payload = ('owned CLI transfer\n中文 snowman ☃\n' + nonce + '\n').encode('utf-8')
+    with uploaded.open('xb') as stream:
+        stream.write(payload)
+    try:
+        await asyncio.to_thread(cli.run, ['upload', sandbox.id, str(uploaded), remote], json_output=False)
+        require((await sandbox.files.read(remote)).encode('utf-8') == payload, 'SDK reads exact CLI uploaded bytes')
+        await asyncio.to_thread(cli.run, ['sandbox', 'files', 'stat', sandbox.id, '--path', remote], json_output=False)
+        await asyncio.to_thread(cli.run, ['download', sandbox.id, remote, str(downloaded)], json_output=False)
+        require(downloaded.read_bytes() == payload, 'CLI download preserves uploaded bytes')
+        await asyncio.to_thread(cli.run, ['sandbox', 'files', 'rm', sandbox.id, '--path', remote, '--yes'], json_output=False)
+        require(not await sandbox.files.exists(remote), 'SDK confirms CLI file deletion')
+    finally:
+        if await sandbox.files.exists(remote):
+            await sandbox.files.remove(remote)
+        uploaded.unlink(missing_ok=True)
+        downloaded.unlink(missing_ok=True)
+    require(not await sandbox.files.exists(remote), 'owned CLI transfer file cleanup')
+
+
 def source_names(root=ROOT):
     return [name for name in catalog_names(root)
             if (root / name / 'Dockerfile').is_file()]
@@ -457,6 +485,9 @@ async def verify(args):
         await sandbox.files.remove(path)
         require(not await sandbox.files.exists(path), 'SDK file deletion readback')
         report['checks'].extend(['runtime source identity', 'SDK exec and file round trip'])
+        phase = 'cli-process-and-files'
+        await verify_cli_io(cli, sandbox, alias, cli.private_directory)
+        report['checks'].append('CLI exec, stat, upload/download exact bytes and independent SDK file cleanup')
         phase = 'runtime-package'
         version = await sandbox.commands.run('python3 -c "import importlib.metadata; print(importlib.metadata.version(\'agent-sandbox-server\'))"', timeout=30)
         require(version.exit_code == 0 and re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:a[0-9]+)?', version.stdout.strip()),

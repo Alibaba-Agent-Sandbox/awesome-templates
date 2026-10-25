@@ -24,7 +24,7 @@ import uuid
 import secrets
 import time
 import yaml
-from public_launch_e2e import CLI, require, matches, command_url, application_headers, delete_sandbox, json_contains
+from public_launch_e2e import CLI, require, matches, command_url, application_headers, delete_sandbox, json_contains, verify_cli_io
 import ci_image_archive as images
 from template_http_acceptance import fixture_environment, run_controller
 
@@ -152,6 +152,7 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
         filename='/tmp/'+alias+'.txt';await sandbox.files.write(filename,'owned acceptance file\n')
         require(await sandbox.files.read(filename)=='owned acceptance file\n','SDK file readback')
         await sandbox.files.remove(filename);require(not await sandbox.files.exists(filename),'SDK file deletion')
+        await verify_cli_io(cli, sandbox, alias, private)
         from server_package import server_version
         installed = await sandbox.commands.run('python3 -c "import importlib.metadata; print(importlib.metadata.version(\'agent-sandbox-server\'))"', timeout=30)
         require(installed.exit_code == 0 and installed.stdout.strip() == server_version(source),
@@ -159,7 +160,7 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
         report['server_package_version'] = installed.stdout.strip()
         report['commands']=commands
         report['checks']=['current unified launch starts original declared services','CLI/SDK/host HTTP manifest smoke',
-            'actual startup service rejects wrong application token','actual runtime command bytes match source','SDK exec and file round trip']
+            'actual startup service rejects wrong application token','actual runtime command bytes match source','SDK exec and file round trip','CLI exec/stat/upload/download and independent SDK byte/cleanup checks']
         if http:
             urls={};common_headers=None
             for port in manifest.get('ports',[9000]):
