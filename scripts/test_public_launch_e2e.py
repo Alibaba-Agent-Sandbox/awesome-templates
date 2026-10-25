@@ -254,7 +254,8 @@ def test_foreign_managed_identity_has_controlled_compatibility_diagnostic():
 
 
 class CliIoTests(unittest.IsolatedAsyncioTestCase):
-    async def exercise(self, directory, *, corrupt=False, failed_upload=False):
+    async def exercise(self, directory, *, corrupt=False, failed_upload=False,
+                       ci=False, exec_exit=0, exec_stdout='42\n'):
         from types import SimpleNamespace
         from public_launch_e2e import verify_cli_io
         remote = {};calls = []
@@ -263,11 +264,11 @@ class CliIoTests(unittest.IsolatedAsyncioTestCase):
             async def exists(self, path):return path in remote
             async def remove(self, path):del remote[path]
         class Adapter:
-            def run(self, args, **kwargs):
+            def run(self, args, json_output=True, **kwargs):
                 calls.append(args)
                 if args[0] == 'exec':
-                    assert kwargs['json_output'] is False
-                    return '42'
+                    result={'stdout':exec_stdout,'stderr':'','exit_code':exec_exit}
+                    return result if json_output else (json.dumps(result) if ci else exec_stdout.strip())
                 if args[0] == 'upload':
                     remote[args[3]] = Path(args[2]).read_bytes()
                     if failed_upload:raise RuntimeError('controlled partial upload failure')
@@ -296,6 +297,20 @@ class CliIoTests(unittest.IsolatedAsyncioTestCase):
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaisesRegex(CheckFailed,'CLI download preserves'):
                 await self.exercise(Path(directory),corrupt=True)
+
+    async def test_ci_automatic_json_does_not_change_exec_or_file_acceptance(self):
+        with tempfile.TemporaryDirectory() as directory:
+            await self.exercise(Path(directory),ci=True)
+
+    async def test_nonzero_exec_cannot_pass_with_expected_stdout(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(CheckFailed,'CLI exec'):
+                await self.exercise(Path(directory),ci=True,exec_exit=1)
+
+    async def test_wrong_exec_stdout_cannot_pass(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(CheckFailed,'CLI exec'):
+                await self.exercise(Path(directory),ci=True,exec_stdout='43\n')
 
     async def test_partial_upload_failure_keeps_failure_and_sdk_cleans_owned_file(self):
         with tempfile.TemporaryDirectory() as directory:

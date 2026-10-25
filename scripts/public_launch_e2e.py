@@ -159,8 +159,10 @@ class CLI:
 
 async def verify_cli_io(cli, sandbox, alias, private):
     """Exercise published CLI process/transfer paths against independent SDK reads."""
-    executed = await asyncio.to_thread(cli.run, ['exec', sandbox.id, '--', 'python3', '-c', 'print(21 * 2)'], json_output=False)
-    require(executed.strip() == '42', 'CLI exec result')
+    executed = await asyncio.to_thread(cli.run, ['exec', sandbox.id, '--', 'python3', '-c', 'print(21 * 2)'])
+    require(isinstance(executed, dict) and executed.get('exit_code') == 0
+            and isinstance(executed.get('stdout'), str) and executed['stdout'].strip() == '42',
+            'CLI exec JSON result')
     nonce = secrets.token_hex(8)
     remote = '/tmp/' + alias + '-cli-' + nonce + '.txt'
     uploaded = private / ('cli-upload-' + nonce + '.txt')
