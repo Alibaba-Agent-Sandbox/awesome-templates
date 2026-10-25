@@ -53,3 +53,7 @@ Current installation instructions now pin CLI source `ea28f207c8a0016cf798f5a355
 Cross-owner service validation review confirmed that `operations: []` is valid for a service that exposes an endpoint without named commands. The source schema now matches the shared validator, with a targeted regression; no official service operation lists changed.
 
 Final rerun after service-schema alignment and candidate installation documentation: targeted suite PASS (78 tests, 92 subtests), all source/skeleton manifests PASS (47 directories), shared launch lock PASS, documentation links PASS (222 documents), whitespace PASS.
+
+## Managed catalog quick starts
+
+All four managed entries now show the same `template launch <catalog-name>` CLI entry, with provider selection and a finite sandbox lifetime. Their Python create/process examples remain available. The text explicitly requires the coordinated specification 5 CLI/catalog update and does not reclassify older create/exec evidence as new catalog-launch verification. Managed catalog and documentation checks both passed after this update.

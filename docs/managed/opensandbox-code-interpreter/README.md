@@ -16,12 +16,14 @@ Use shell and files through Agent Sandbox, or native interpreter contexts throug
 
 ## Quick start (CLI)
 
-Install the [CLI](../../using-templates.md) and Node.js 22+, configure your provider below, and replace `<sandbox-id>` with the ID returned by create.
+This direct launch example requires the specification 5 CLI and updated managed catalog. Use the [coordinated source installation](../../using-templates.md) until those releases and catalog updates are published together. The historical verification below covers its recorded create/exec interfaces, not a rerun of this new catalog launch command.
+
+Install the [CLI](../../using-templates.md) and Node.js 22+, configure your provider below, and replace `<sandbox-id>` with the ID returned by launch.
 
 ```bash
 abx provider install Alibaba-Agent-Sandbox/awesome-providers//opensandbox --allow-unpinned --yes
 abx provider doctor opensandbox
-abx --provider opensandbox create --template opensandbox/code-interpreter:v1.1.0 --timeout 180 -y
+abx --provider opensandbox template launch opensandbox-code-interpreter --sandbox-timeout 180 --yes
 abx --provider opensandbox exec <sandbox-id> -- python3 -c 'print(6*7)'
 abx --provider opensandbox kill <sandbox-id> -y
 ```
