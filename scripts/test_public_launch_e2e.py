@@ -255,7 +255,7 @@ def test_foreign_managed_identity_has_controlled_compatibility_diagnostic():
 
 class CliIoTests(unittest.IsolatedAsyncioTestCase):
     async def exercise(self, directory, *, corrupt=False, failed_upload=False,
-                       ci=False, exec_exit=0, exec_stdout='42\n'):
+                       ci=False, exec_exit=0, exec_stdout='42\n', provider='opensandbox'):
         from types import SimpleNamespace
         from public_launch_e2e import verify_cli_io
         remote = {};calls = []
@@ -267,6 +267,10 @@ class CliIoTests(unittest.IsolatedAsyncioTestCase):
             def run(self, args, json_output=True, **kwargs):
                 calls.append(args)
                 if args[0] == 'exec':
+                    if self.provider == 'alicloud-express':
+                        if json_output:raise CLIError('exec',1,"error: unknown option '--json'")
+                        if exec_exit:raise CLIError('exec',exec_exit,'')
+                        return exec_stdout.strip()
                     result={'stdout':exec_stdout,'stderr':'','exit_code':exec_exit}
                     return result if json_output else (json.dumps(result) if ci else exec_stdout.strip())
                 if args[0] == 'upload':
@@ -279,8 +283,9 @@ class CliIoTests(unittest.IsolatedAsyncioTestCase):
                 elif args[:3] != ['sandbox','files','stat']:
                     raise AssertionError('unexpected current CLI operation')
         sandbox=SimpleNamespace(id='owned-fixture',files=Files())
+        caller=Adapter();caller.provider=provider
         try:
-            await verify_cli_io(Adapter(), sandbox, 'owned-run', directory)
+            await verify_cli_io(caller, sandbox, 'owned-run', directory)
         finally:
             self.assertEqual(remote,{})
             self.assertEqual(list(directory.iterdir()),[])
@@ -301,6 +306,15 @@ class CliIoTests(unittest.IsolatedAsyncioTestCase):
     async def test_ci_automatic_json_does_not_change_exec_or_file_acceptance(self):
         with tempfile.TemporaryDirectory() as directory:
             await self.exercise(Path(directory),ci=True)
+
+    async def test_express_standard_exec_retains_text_route_in_ci(self):
+        with tempfile.TemporaryDirectory() as directory:
+            await self.exercise(Path(directory),ci=True,provider='alicloud-express')
+
+    async def test_express_standard_exec_rejects_failed_process(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaises(CLIError):
+                await self.exercise(Path(directory),ci=True,exec_exit=1,provider='alicloud-express')
 
     async def test_nonzero_exec_cannot_pass_with_expected_stdout(self):
         with tempfile.TemporaryDirectory() as directory:
