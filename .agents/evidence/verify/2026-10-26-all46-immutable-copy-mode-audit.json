@@ -1,0 +1,2190 @@
+{
+  "scope": "Static all46 declared immutable Git COPY audit; force existing archive branch without cloud submission; not extra cloud PASS",
+  "old_source": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "candidate_source": "3db65881372352f8cc390d54e3550b2d4ea8b6f4",
+  "template_count": 46,
+  "COPY_files": 232,
+  "changed_file_modes": 232,
+  "all_candidate_modes_match_exact_Git": true,
+  "all_input_bytes_and_runtime_env_unchanged": true,
+  "rows": [
+    {
+      "template": "agents-cli",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "agents-cli/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "agents-cli/server-policy.json",
+          "git_mode": "100644",
+          "target": "/home/user/app/server-policy.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "aider",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "aider/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "amp",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "amp/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "amp/settings.json",
+          "git_mode": "100644",
+          "target": "/home/user/.config/amp/settings.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "apply-patch",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "apply-patch/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "apply-patch/install_alias.py",
+          "git_mode": "100644",
+          "target": "/opt/apply-patch/install_alias.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "apply-patch/package-lock.json",
+          "git_mode": "100644",
+          "target": "/opt/apply-patch/package-lock.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "apply-patch/package.json",
+          "git_mode": "100644",
+          "target": "/opt/apply-patch/package.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "apply-patch/upstream-LICENSE",
+          "git_mode": "100644",
+          "target": "/opt/apply-patch/upstream-LICENSE",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "appworld",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "appworld/UPSTREAM-NOTICE.md",
+          "git_mode": "100644",
+          "target": "/home/user/app/UPSTREAM-NOTICE.md",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "appworld/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "appworld/install_data.py",
+          "git_mode": "100644",
+          "target": "/tmp/appworld-install-data.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "appworld/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "appworld/process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "appworld/requirements-build.lock",
+          "git_mode": "100644",
+          "target": "/tmp/appworld-build.lock",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "appworld/requirements.lock",
+          "git_mode": "100644",
+          "target": "/tmp/appworld-requirements.lock",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "appworld/upstream.json",
+          "git_mode": "100644",
+          "target": "/opt/appworld-bootstrap/upstream.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "appworld/worker.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/worker.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "browser-automation",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "browser-automation/browser_process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/browser_process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "browser-automation/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "browser-automation/mcp_process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/mcp_process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "browser-automation/mcp_runtime.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/mcp_runtime.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "browser-automation/package-lock.json",
+          "git_mode": "100644",
+          "target": "/opt/playwright-mcp/package-lock.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "browser-automation/package.json",
+          "git_mode": "100644",
+          "target": "/opt/playwright-mcp/package.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "browser-automation/pdf_worker.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/pdf_worker.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "browser-use",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "browser-use/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "browser-use/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "browser-use/process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "browser-use/requirements.lock",
+          "git_mode": "100644",
+          "target": "/tmp/browser-use-requirements.lock",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "browser-use/worker.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/worker.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "chrome",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "chrome/UPSTREAM-NOTICE.md",
+          "git_mode": "100644",
+          "target": "/home/user/app/UPSTREAM-NOTICE.md",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "chrome/browser.json",
+          "git_mode": "100644",
+          "target": "/opt/chrome/browser.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "chrome/cdp.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/cdp.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "chrome/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "chrome/install_browser.py",
+          "git_mode": "100644",
+          "target": "/tmp/chrome-install.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "chrome/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "chrome/native.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/native.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "chrome/process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "chrome/relay.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/relay.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "chrome/requirements.lock",
+          "git_mode": "100644",
+          "target": "/tmp/chrome-requirements.lock",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "chrome/rfb.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/rfb.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "chrome/worker.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/worker.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "claude-code",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "claude-code/byok.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/byok.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "claude-code/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "claude-code/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "claude-code/package-lock.json",
+          "git_mode": "100644",
+          "target": "/opt/claude-code/package-lock.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "claude-code/package.json",
+          "git_mode": "100644",
+          "target": "/opt/claude-code/package.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "claude-code/process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "claude-code/relay.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/relay.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "claude-code/upstream.json",
+          "git_mode": "100644",
+          "target": "/home/user/app/upstream.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "cline",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "cline/UPSTREAM-LICENSE.md",
+          "git_mode": "100644",
+          "target": "/home/user/app/UPSTREAM-LICENSE.md",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "cline/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "cline/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "cline/package-lock.json",
+          "git_mode": "100644",
+          "target": "/opt/cline/package-lock.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "cline/package.json",
+          "git_mode": "100644",
+          "target": "/opt/cline/package.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "cline/process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "code-server",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "code-server/assets.json",
+          "git_mode": "100644",
+          "target": "/tmp/code-server-build/assets.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "code-server/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "code-server/install_runtime.py",
+          "git_mode": "100644",
+          "target": "/tmp/code-server-build/install_runtime.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "codex",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "codex/AGENTS.md",
+          "git_mode": "100644",
+          "target": "/home/user/app/AGENTS.md",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "codex/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "codex-agent-api",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "codex-agent-api/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "copilot-cli",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "copilot-cli/UPSTREAM-LICENSE.md",
+          "git_mode": "100644",
+          "target": "/home/user/app/UPSTREAM-LICENSE.md",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "copilot-cli/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "copilot-cli/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "copilot-cli/package-lock.json",
+          "git_mode": "100644",
+          "target": "/opt/copilot/package-lock.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "copilot-cli/package.json",
+          "git_mode": "100644",
+          "target": "/opt/copilot/package.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "copilot-cli/process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "crush",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "crush/assets.json",
+          "git_mode": "100644",
+          "target": "/tmp/crush-build/assets.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "crush/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "crush/install_runtime.py",
+          "git_mode": "100644",
+          "target": "/tmp/crush-build/install_runtime.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "crush/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "crush/process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "crush/upstream-LICENSE.md",
+          "git_mode": "100644",
+          "target": "/tmp/crush-build/upstream-LICENSE.md",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "cursor-agent",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "cursor-agent/UPSTREAM-NOTICE.md",
+          "git_mode": "100644",
+          "target": "/home/user/app/UPSTREAM-NOTICE.md",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "cursor-agent/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "cursor-agent/install_runtime.py",
+          "git_mode": "100644",
+          "target": "/tmp/cursor-original-installer/install_runtime.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "cursor-agent/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "cursor-agent/process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "cursor-agent/runtime.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/runtime.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "cursor-agent/upstream.json",
+          "git_mode": "100644",
+          "target": "/tmp/cursor-original-installer/upstream.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "deepagents",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "deepagents/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "deepagents/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "deepagents/process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "deepagents/requirements.lock",
+          "git_mode": "100644",
+          "target": "/tmp/deepagents-requirements.lock",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "deepagents/worker.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/worker.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "deepseek-harness",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "deepseek-harness/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "dev-services",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "dev-services/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "dev-services/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "devin",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "devin/UPSTREAM-NOTICE.md",
+          "git_mode": "100644",
+          "target": "/home/user/app/UPSTREAM-NOTICE.md",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "devin/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "devin/install_runtime.py",
+          "git_mode": "100644",
+          "target": "/tmp/devin-original-installer/install_runtime.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "devin/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "devin/process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "devin/runtime.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/runtime.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "devin/upstream.json",
+          "git_mode": "100644",
+          "target": "/tmp/devin-original-installer/upstream.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "document-tools",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "document-tools/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "droid",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "droid/UPSTREAM-NOTICE.md",
+          "git_mode": "100644",
+          "target": "/home/user/app/UPSTREAM-NOTICE.md",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "droid/byok.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/byok.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "droid/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "droid/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "droid/package-lock.json",
+          "git_mode": "100644",
+          "target": "/opt/droid/package-lock.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "droid/package.json",
+          "git_mode": "100644",
+          "target": "/opt/droid/package.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "droid/process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "gemini",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "gemini/byok.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/byok.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "gemini/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "gemini/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "gemini/package-lock.json",
+          "git_mode": "100644",
+          "target": "/opt/gemini/package-lock.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "gemini/package.json",
+          "git_mode": "100644",
+          "target": "/opt/gemini/package.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "gemini/process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "gemini/profile.json",
+          "git_mode": "100644",
+          "target": "/opt/gemini/profile.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "gemini/relay.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/relay.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "gemini/upstream.json",
+          "git_mode": "100644",
+          "target": "/home/user/app/upstream.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "goose",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "goose/assets.json",
+          "git_mode": "100644",
+          "target": "/tmp/goose-build/assets.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "goose/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "goose/install_runtime.py",
+          "git_mode": "100644",
+          "target": "/tmp/goose-build/install_runtime.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "goose/upstream-LICENSE",
+          "git_mode": "100644",
+          "target": "/tmp/goose-build/upstream-LICENSE",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "grok",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "grok/THIRD_PARTY_NOTICES.md",
+          "git_mode": "100644",
+          "target": "/home/user/app/THIRD_PARTY_NOTICES.md",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "grok/UPSTREAM-LICENSE.md",
+          "git_mode": "100644",
+          "target": "/home/user/app/UPSTREAM-LICENSE.md",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "grok/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "grok/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "grok/package-lock.json",
+          "git_mode": "100644",
+          "target": "/opt/grok/package-lock.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "grok/package.json",
+          "git_mode": "100644",
+          "target": "/opt/grok/package.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "grok/process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "hermes-agent",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "hermes-agent/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "kimi-code",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "kimi-code/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "media-tools",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "media-tools/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "muse",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "muse/UPSTREAM-NOTICE.md",
+          "git_mode": "100644",
+          "target": "/home/user/app/UPSTREAM-NOTICE.md",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "muse/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "muse/filter_native.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/filter_native.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "muse/install_runtime.py",
+          "git_mode": "100644",
+          "target": "/tmp/muse-original-installer/install_runtime.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "muse/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "muse/process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "muse/relay.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/relay.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "muse/upstream.json",
+          "git_mode": "100644",
+          "target": "/tmp/muse-original-installer/upstream.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "next-app",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "next-app/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "next-app/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "next-app/package-lock.json",
+          "git_mode": "100644",
+          "target": "/opt/next-app/package-lock.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "next-app/package.json",
+          "git_mode": "100644",
+          "target": "/opt/next-app/package.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "node-web",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "node-web/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "node-web/index.js",
+          "git_mode": "100644",
+          "target": "/home/user/app/index.js",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "ocr",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "ocr/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "ocr/fixtures/sample.json",
+          "git_mode": "100644",
+          "target": "/home/user/app/fixtures/sample.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "ocr/fixtures/sample.png",
+          "git_mode": "100644",
+          "target": "/home/user/app/fixtures/sample.png",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "ocr/requirements.txt",
+          "git_mode": "100644",
+          "target": "/tmp/ocr-requirements.txt",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "openclaw",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "openclaw/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "opencode",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "opencode/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "opencode/opencode.json",
+          "git_mode": "100644",
+          "target": "/home/user/app/opencode.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "osworld",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "osworld/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "osworld/requirements.txt",
+          "git_mode": "100644",
+          "target": "/opt/osworld/requirements.txt",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "osworld/runtime.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/runtime.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "osworld/upstream/.gitattributes",
+          "git_mode": "100644",
+          "target": "/home/user/app/upstream/.gitattributes",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "osworld/upstream/LICENSE",
+          "git_mode": "100644",
+          "target": "/home/user/app/upstream/LICENSE",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "osworld/upstream/getters_misc.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/upstream/getters_misc.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "osworld/upstream/main.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/upstream/main.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "osworld/upstream/metrics_general.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/upstream/metrics_general.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "osworld/upstream/pyxcursor.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/upstream/pyxcursor.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "osworld/upstream/source.json",
+          "git_mode": "100644",
+          "target": "/home/user/app/upstream/source.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "pi",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "pi/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "pi/install_tools.py",
+          "git_mode": "100644",
+          "target": "/tmp/pi-install-tools.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "pi/package-lock.json",
+          "git_mode": "100644",
+          "target": "/opt/pi-cli/package-lock.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "pi/package.json",
+          "git_mode": "100644",
+          "target": "/opt/pi-cli/package.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "pi/tools_smoke.mjs",
+          "git_mode": "100644",
+          "target": "/home/user/app/tools_smoke.mjs",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "polyglot-toolchain",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "polyglot-toolchain/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "polyglot-toolchain/install_toolchains.py",
+          "git_mode": "100644",
+          "target": "/tmp/toolchain-build/install_toolchains.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "polyglot-toolchain/toolchains.json",
+          "git_mode": "100644",
+          "target": "/tmp/toolchain-build/toolchains.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "prime-agent",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "prime-agent/UPSTREAM-NOTICE.md",
+          "git_mode": "100644",
+          "target": "/home/user/app/UPSTREAM-NOTICE.md",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "prime-agent/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "prime-agent/filter_native.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/filter_native.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "prime-agent/install_native.py",
+          "git_mode": "100644",
+          "target": "/tmp/prime-native-install.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "prime-agent/kernel-python",
+          "git_mode": "100644",
+          "target": "/opt/prime-kernel/bin/abx-kernel-python",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "prime-agent/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "prime-agent/process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "prime-agent/requirements.lock",
+          "git_mode": "100644",
+          "target": "/tmp/prime-kernel.lock",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "prime-agent/upstream.json",
+          "git_mode": "100644",
+          "target": "/opt/prime-bootstrap/upstream.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "python-hello",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "python-hello/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "qm",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "qm/UPSTREAM-NOTICE.md",
+          "git_mode": "100644",
+          "target": "/home/user/app/UPSTREAM-NOTICE.md",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm/adapter.mjs",
+          "git_mode": "100644",
+          "target": "/home/user/app/adapter.mjs",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm/install_runtime.py",
+          "git_mode": "100644",
+          "target": "/tmp/qm-original-install.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm/package-lock.json",
+          "git_mode": "100644",
+          "target": "/tmp/qm-review-locks/package-lock.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm/package.json",
+          "git_mode": "100644",
+          "target": "/tmp/qm-review-locks/package.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm/process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm/sdk-package-lock.json",
+          "git_mode": "100644",
+          "target": "/tmp/qm-review-locks/sdk-package-lock.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm/sdk-package.json",
+          "git_mode": "100644",
+          "target": "/tmp/qm-review-locks/sdk-package.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm/sdk_exec.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/sdk_exec.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm/sdk_path.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/sdk_path.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm/tool_process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/tool_process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm/upstream.json",
+          "git_mode": "100644",
+          "target": "/opt/qm-bootstrap/upstream.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm/worker.mjs",
+          "git_mode": "100644",
+          "target": "/home/user/app/worker.mjs",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "qm-sandbox",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "qm-sandbox/UPSTREAM-NOTICE.md",
+          "git_mode": "100644",
+          "target": "/home/user/app/UPSTREAM-NOTICE.md",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm-sandbox/adapter.mjs",
+          "git_mode": "100644",
+          "target": "/home/user/app/adapter.mjs",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm-sandbox/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm-sandbox/install_runtime.py",
+          "git_mode": "100644",
+          "target": "/tmp/qm-original-install.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm-sandbox/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm-sandbox/package-lock.json",
+          "git_mode": "100644",
+          "target": "/tmp/qm-review-locks/package-lock.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm-sandbox/package.json",
+          "git_mode": "100644",
+          "target": "/tmp/qm-review-locks/package.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm-sandbox/process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm-sandbox/sdk-package-lock.json",
+          "git_mode": "100644",
+          "target": "/tmp/qm-review-locks/sdk-package-lock.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm-sandbox/sdk-package.json",
+          "git_mode": "100644",
+          "target": "/tmp/qm-review-locks/sdk-package.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm-sandbox/sdk_exec.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/sdk_exec.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm-sandbox/sdk_path.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/sdk_path.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm-sandbox/tool_process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/tool_process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm-sandbox/upstream.json",
+          "git_mode": "100644",
+          "target": "/opt/qm-bootstrap/upstream.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "qm-sandbox/worker.mjs",
+          "git_mode": "100644",
+          "target": "/home/user/app/worker.mjs",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "qoder",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "qoder/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "qwen-code",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "qwen-code/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "stagehand",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "stagehand/UPSTREAM-LICENSE.md",
+          "git_mode": "100644",
+          "target": "/home/user/app/UPSTREAM-LICENSE.md",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "stagehand/browser.mjs",
+          "git_mode": "100644",
+          "target": "/home/user/app/browser.mjs",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "stagehand/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "stagehand/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "stagehand/package-lock.json",
+          "git_mode": "100644",
+          "target": "/home/user/app/package-lock.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "stagehand/package.json",
+          "git_mode": "100644",
+          "target": "/home/user/app/package.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "stagehand/patch_sdk.py",
+          "git_mode": "100644",
+          "target": "/tmp/patch-stagehand-sdk.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "stagehand/process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "stagehand/transport.mjs",
+          "git_mode": "100644",
+          "target": "/home/user/app/transport.mjs",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "stagehand/worker.mjs",
+          "git_mode": "100644",
+          "target": "/home/user/app/worker.mjs",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "swe",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "swe/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "swe/instance.json",
+          "git_mode": "100644",
+          "target": "/home/user/app/instance.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "swe/swe_environment.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/swe_environment.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "swe/swe_process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/swe_process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    },
+    {
+      "template": "tau2-bench",
+      "unchanged_input_bytes": true,
+      "unchanged_runtime_env": true,
+      "immutable_COPY_files": [
+        {
+          "source_path": "tau2-bench/AUDIOOP-LICENSE.txt",
+          "git_mode": "100644",
+          "target": "/home/user/app/AUDIOOP-LICENSE.txt",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "tau2-bench/UPSTREAM-LICENSE.md",
+          "git_mode": "100644",
+          "target": "/home/user/app/UPSTREAM-LICENSE.md",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "tau2-bench/commands.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/commands.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "tau2-bench/install_source.py",
+          "git_mode": "100644",
+          "target": "/tmp/tau2-install.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "tau2-bench/lifecycle.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/lifecycle.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "tau2-bench/process.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/process.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "tau2-bench/requirements.lock",
+          "git_mode": "100644",
+          "target": "/opt/tau2-bootstrap/requirements.lock",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "tau2-bench/upstream.json",
+          "git_mode": "100644",
+          "target": "/opt/tau2-bootstrap/upstream.json",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        },
+        {
+          "source_path": "tau2-bench/worker.py",
+          "git_mode": "100644",
+          "target": "/home/user/app/worker.py",
+          "old_mode": "0o600",
+          "candidate_mode": "0o644",
+          "changed": true
+        }
+      ]
+    }
+  ]
+}
