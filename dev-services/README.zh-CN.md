@@ -1,6 +1,6 @@
 # dev-services
 
-[English](README.md)。固定 PostgreSQL17.11 与 Redis8.0.2，非 root、无 Docker/systemd 的开发数据库。
+[English](README.md)
 
 ## 做什么
 
@@ -18,41 +18,96 @@
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任务。示例可能写入文件、创建项目或启动服务；不要在未清理前对同一实例重复执行整段示例。
+
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，并完成所选平台配置。平台 API Key 用于创建沙箱，`ABX_SERVER_TOKEN` 是独立的模板应用访问口令。以下命令在自己的终端执行，不需要克隆本仓库。
+
+本模板的这些命令不需要模型、模型 endpoint 或模型 API Key。
+
+将口令占位符换成16–128 个 URL-safe ASCII 字符的独立口令。该口令不替代 `ABX_SERVER_TOKEN`。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./dev-services --yes
-abx run <sandbox-id> services_versions --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export DEV_SERVICES_PASSWORD='<choose-a-long-unique-password>'
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//dev-services --sandbox-timeout 1800 --yes
+# 将启动输出中的沙箱 ID 填到这里
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+```bash
+abx run "$SANDBOX_ID" services_start --json-args '{}'
+abx run "$SANDBOX_ID" services_sql --json-args '{"sql":"CREATE TABLE usage_demo (amount integer); INSERT INTO usage_demo VALUES (5130); SELECT sum(amount) AS total_cents FROM usage_demo;"}'
+```
+
+返回 PostgreSQL 查询输出，合计 `5130` 分；会在此沙箱数据库中创建表。
+
+数据库默认只监听沙箱回环地址；通过 `services_sql` / `services_redis` 操作，不需要在本机登录数据库。外部客户端必须显式 `expose=true`、配置正确端口转发并使用独立数据库口令；不要暴露无认证端口。数据库文件位于工作区 `service-data/`。
+
+`--sandbox-timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
+
+OpenSandbox 用户将 `ABX_PROVIDER` 改为 `opensandbox`，并按[提供方指南](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)配置；后续 CLI 和 Python 必须继续选择同一个平台。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
+
+在完成上述 CLI 启动、设置 `SANDBOX_ID` 后，将以下保存为 `use_template.py`，执行 `python3 use_template.py`。它连接同一实例，不另建沙箱。对于需要输入的示例，先在本机准备上面的文件。
 
 ```python
-print(await client.commands.run('services_versions'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            await client.commands.run('services_start')
+            result = await client.commands.run('services_sql', sql='CREATE TABLE usage_demo (amount integer); INSERT INTO usage_demo VALUES (5130); SELECT sum(amount) AS total_cents FROM usage_demo;')
+            print(result)
+        finally:
+            try:
+                await client.commands.run('services_stop')
+            finally:
+                await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。关闭连接不会删除沙箱。
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/services_versions`，`Content-Type: application/json`，直接发送以下参数对象：
+按[HTTP 调用示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析同一实例的 9000 端口，保留网关头、URL 路径和查询，再添加独立应用认证。
+
+先按顺序调用：
+
+- `POST /commands/services_start` with `{}`.
+
+`POST /commands/services_sql`
 
 ```json
-{}
+{
+  "sql": "CREATE TABLE usage_demo (amount integer); INSERT INTO usage_demo VALUES (5130); SELECT sum(amount) AS total_cents FROM usage_demo;"
+}
 ```
 
-该检查的预期响应：
+请求头包括 `Content-Type: application/json` 和按共享指南设置的应用认证；请求体是参数对象本身，不套 `args`。成功响应为 `{"result": ...}`，其中结果含义同上。 HTTP 等待时间设为 450 秒；它独立于命令内部的执行时限。结果为缓冲响应，不是事件流。400 为参数错误，401 为认证失败，404 为命令不存在，500 为执行错误。
 
-```json
-{"result": {"postgres": "17.11", "redis": "8.0.2"}}
-```
+使用完成后调用：
 
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+- `POST /commands/services_stop` with `{}`.
 
 ## 命令参考
 
@@ -85,21 +140,22 @@ psql使用 -X、ON_ERROR_STOP；redis-cli使用 -e 将协议错误作为失败�
 
 预热服务使用[显式进程配置](../docs/runtime-environment.md)。子进程环境仅有PATH、私有HOME、语言及所有权标记，不继承云端/模型密钥。expose=True才主动监听0.0.0.0并增加PostgreSQL SCRAM主机规则，鉴权仍强制。平台外部TCP端口转发尚未认证，不可自行拼接访问URL。
 
+工作目录为 `/home/user/app`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
+
+```bash
+abx run "$SANDBOX_ID" services_stop --json-args '{}'
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
+
 ## 资源
 
 2vCPU、2048MB、约10GiB根文件系统，端口9000/5432/16379。无Docker/KVM/root/显示器；依赖Linux pidfd/procfs。停止先TERM后有界KILL，强制退出后PostgreSQL可能恢复；Redis appendonly/everysec是开发持久化，不承诺零丢失。需要长期保存时在删除沙箱前备份数据。
 
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 二次开发
-
-新增命令保持参数/输出/执行边界与鉴权。参考[PostgreSQL initdb](https://www.postgresql.org/docs/17/app-initdb.html)、[Redis安全](https://redis.io/docs/latest/operate/oss_and_stack/management/security/)及upstream-pins.json官方包来源。复制原始数据前停止两个引擎。调用方SQL和应用源码的隔离由沙箱提供，包装不构成额外安全边界。
-
 ## 贡献
 
-阅读[贡献指南](../CONTRIBUTING.md)、[规范](../docs/template-spec.zh-CN.md)、[设计](../docs/design/dev-services.md)。完成本机/HTTP、真实镜像、极速版和独立清理验收后再标记对应提供方通过；保留失败记录。
+改进模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)、[模板规范](../docs/template-spec.zh-CN.md)和[设计说明](../docs/design/dev-services.md)。
 
 ## 问题反馈
 
@@ -108,7 +164,3 @@ psql使用 -X、ON_ERROR_STOP；redis-cli使用 -e 将协议错误作为失败�
 ## 许可证
 
 包装源码Apache-2.0，见[LICENSE](../LICENSE)。PostgreSQL为PostgreSQL License，Redis8可选择AGPLv3许可，不能描述成旧版Redis的BSD协议。保留安装的Debian版权及源码引用；分发或修改时遵循上游及传递依赖条款。
-
-### 当前版本新增平台 step 验收
-
-[真实原生 step](evidence/express-2026-10-20T130648Z.json)：官方 READY、Python SDK 创建、当前 CLI/SDK 冒烟，以及独立确认所拥有沙箱/模板已清理。[完整外部 HTTP](evidence/full-http-steps-2026-10-20T130648Z.json)：6 通过、0 失败、0 跳过。

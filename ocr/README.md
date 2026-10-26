@@ -1,6 +1,6 @@
 # OCR
 
-CPU English image recognition with official Tesseract. See [中文说明](README.zh-CN.md).
+[中文](README.zh-CN.md)
 
 ## What it does
 
@@ -21,41 +21,81 @@ Extract searchable English text and word coordinates from an uploaded image with
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+CLI, SDK and HTTP are alternative ways to use the same application. Choose one for the task. Examples may write files, create projects or start services; do not repeat the full example on the same instance without cleaning its previous outputs.
+
+Install the CLI/Python SDK and configure your platform with the [usage guide](../docs/using-templates.md#installation). The platform API key creates sandboxes; `ABX_SERVER_TOKEN` independently protects this template application. Run the following in your own terminal; cloning this repository is unnecessary.
+
+These template commands require no model, model endpoint or model API key.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./ocr --yes
-abx run <sandbox-id> ocr_smoke --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//ocr --sandbox-timeout 1800 --yes
+# Paste the sandbox ID from the launch output
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+```bash
+abx run "$SANDBOX_ID" ocr --json-args '{"image_path":"fixtures/sample.png"}'
+```
+
+Recognizes the bundled sample; `text` contains SANDBOX, OCR and 314159. Returns TXT/TSV paths and hashes for export.
+
+For your own image, upload it with `abx upload "$SANDBOX_ID" ./scan.png /home/user/app/scan.png`, then change `image_path` to `scan.png`. Only English `eng` data is bundled; this is not a multimodal model or a claim of Chinese OCR support.
+
+`--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
+
+For OpenSandbox, set `ABX_PROVIDER=opensandbox` and configure its [provider guide](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md). Keep the same provider selected for subsequent CLI and Python calls.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+
+After launching above and setting `SANDBOX_ID`, save this as `use_template.py` and run `python3 use_template.py`. It connects to the same instance instead of creating another sandbox. Prepare any input file locally as shown above.
 
 ```python
-print(await client.commands.run('ocr_smoke'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            result = await client.commands.run('ocr', image_path='fixtures/sample.png')
+            print(result)
+            Path('recognized.txt').write_bytes(await sb.files.read_bytes(result['text_path']))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+The SDK returns the command value; it unwraps the HTTP `result` envelope. Closing the client does not delete the sandbox.
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/ocr_smoke`, with `Content-Type: application/json` and this direct argument object:
+Resolve port 9000 on the same instance with the [HTTP calling example](../docs/using-templates.md#cli-sdk-and-http). Preserve gateway headers, URL path and query before adding the independent application authentication.
+
+`POST /commands/ocr`
 
 ```json
-{}
+{
+  "image_path": "fixtures/sample.png"
+}
 ```
 
-Expected response for this check:
-
-```json
-{"result": "Tesseract image/text/TSV artifacts OK"}
-```
-
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Use `Content-Type: application/json` and application authentication as described in the shared guide. The request body is the direct argument object, without an `args` wrapper. Success returns `{"result": ...}` with the value described above. Set the HTTP client wait to 450 seconds, separately from the command execution deadline. Responses are buffered, not event streams. Errors: 400 invalid arguments, 401 authentication, 404 unknown command, 500 execution failure.
 
 ## Command reference
 
@@ -82,6 +122,16 @@ One OCR job runs at a time; another request fails promptly. The actual argv is `
 
 The last two settings support native diagnostics; they are not command parameters. The child receives only original HOME/PATH/optional library path and fixed locale/thread settings. No cloud or model credentials are forwarded. Keep untrusted callers away from general server shell/files APIs and operator configuration.
 
+The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
+
+```bash
+# Replace <returned-path> with text_path from the result
+abx download "$SANDBOX_ID" '<returned-path>' ./recognized.txt
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+
 ## Resources
 
 | Resource | Value |
@@ -91,33 +141,9 @@ The last two settings support native diagnostics; they are not command parameter
 | Port | 9000 |
 | Disk | Platform rootfs; callers must remove retained result directories |
 
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Historical verification
-
-| Provider | Scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | Actual CI image, official READY, CLI/SDK, full HTTP19 PASS/0 SKIP and independent sandbox/template/registry cleanup | [2026-10-19](evidence/express-2026-10-19.json) |
-
-The corrected1vCPU/1024MB profile passed genuine Express full OCR: random-digit pixels, original-image bytes, independently downloaded TXT/TSV/hash/confidence/bounds, blank negative control and owned artifact cleanup. [Full receipt](evidence/image-http-2026-10-19T181012Z.json). Earlier resource rejection and missing local Pillow controller attempts remain failures.
-
-Source tests: 27 passed with actual Tesseract 5.5.0 / Pillow 11.3.0. Source HTTP verification: 19 passed, zero failed, zero skipped, including a newly generated random-digit image, independently downloaded TXT/TSV, confidence/bounds checks and a blank-image negative control. These are source-runtime results. Actual image L1 and supplemental changed-image Express verification are pending; canonical `abx template deploy` / `scripts/express_e2e.py` L2 is not run. `tested_on` stays empty and catalog status remains experimental. See [verification](../.agents/evidence/verify/2026-10-16-ocr-runtime.md).
-
-## Secondary development
-
-Run `python3 scripts/check_template.py ocr --strict`, the scoped pytest files and `ocr/e2e_test.py`. Set `E2E_REQUIRE_OCR=1` for real acceptance so unavailable native dependencies fail rather than skip. `OCR_TEST_REAL=1` enables the real-engine pytest case. Keep artifact verification independent of the command result, and retain the original input/blank control. Additional languages, batch/PDF and alternative segmentation modes require their own explicit contracts and tests. See [design](../docs/design/ocr.md).
-
-The Linux runner keeps its process leader unreaped with `waitid(WNOWAIT)`, drains bounded pipes, then stops the owned process group before reaping on success, nonzero exit, timeout or Python cancellation. Deliberate `setsid` escapes are outside that group boundary; killing the server with SIGKILL cannot execute Python cleanup. Sandbox destruction remains the final isolation boundary.
-
-### Agent Sandbox platform steps
-
-From a repository checkout, `python scripts/run_steps_e2e.py ocr --timeout 1200` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). The public runner performs CLI/SDK fixture smoke. The separate full-HTTP controller also passed all 19 assertions after READY; see the [executed procedure](../.agents/evidence/verify/2026-10-20-ocr-step-acceptance.md). No model is required for this native OCR task.
-
 ## Contributing
 
-[CONTRIBUTING.md](../CONTRIBUTING.md), [template specification](../docs/template-spec.md), [Issue 57](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/57).
+To improve this template, see the [contribution guide](../CONTRIBUTING.md), [template specification](../docs/template-spec.md) and [design notes](../docs/design/ocr.md).
 
 ## Issues
 

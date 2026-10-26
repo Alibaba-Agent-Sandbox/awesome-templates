@@ -1,5 +1,7 @@
 # code-server
 
+[English](README.md)
+
 ## 做什么
 
 在沙箱里运行固定版 code-server 浏览器 IDE。必须密码认证，支持独立启动、状态和停止；配置、用户数据和扩展目录均隔离，不修改调用者原有 IDE 配置。
@@ -16,41 +18,91 @@
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任务。示例可能写入文件、创建项目或启动服务；不要在未清理前对同一实例重复执行整段示例。
+
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，并完成所选平台配置。平台 API Key 用于创建沙箱，`ABX_SERVER_TOKEN` 是独立的模板应用访问口令。以下命令在自己的终端执行，不需要克隆本仓库。
+
+本模板的这些命令不需要模型、模型 endpoint 或模型 API Key。
+
+将口令占位符换成至少 12 字节的独立口令。该口令不替代 `ABX_SERVER_TOKEN`。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./code-server --yes
-abx run <sandbox-id> code_server_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export CODE_SERVER_PASSWORD='<choose-a-long-unique-password>'
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//code-server --sandbox-timeout 1800 --yes
+# 将启动输出中的沙箱 ID 填到这里
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+```bash
+abx run "$SANDBOX_ID" code_server_start --json-args '{"port":8443,"timeout_s":60}'
+```
+
+返回 `running: true`、`port: 8443`、`auth: password`。解析 8443 端口地址后，使用 `CODE_SERVER_PASSWORD` 登录 IDE。
+
+IDE 的入口不是 9000 命令 API。用 SDK `await sb.network.resolve(8443)` 获取访问地址和网关头，按[预览指南](../docs/preview-proxy.md)打开；不要丢失网关认证。扩展市场、Git 远程仓库等账号需单独登录，不继承本机凭据。IDE 文件根为 `/home/user/app`，停止 IDE 后文件仍在，删除沙箱后消失。
+
+`--sandbox-timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
+
+OpenSandbox 用户将 `ABX_PROVIDER` 改为 `opensandbox`，并按[提供方指南](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)配置；后续 CLI 和 Python 必须继续选择同一个平台。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
+
+在完成上述 CLI 启动、设置 `SANDBOX_ID` 后，将以下保存为 `use_template.py`，执行 `python3 use_template.py`。它连接同一实例，不另建沙箱。对于需要输入的示例，先在本机准备上面的文件。
 
 ```python
-print(await client.commands.run('code_server_version'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            result = await client.commands.run('code_server_start', port=8443, timeout_s=60)
+            print(result)
+        finally:
+            try:
+                await client.commands.run('code_server_stop')
+            finally:
+                await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。关闭连接不会删除沙箱。
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/code_server_version`，`Content-Type: application/json`，直接发送以下参数对象：
+按[HTTP 调用示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析同一实例的 9000 端口，保留网关头、URL 路径和查询，再添加独立应用认证。
+
+`POST /commands/code_server_start`
 
 ```json
-{}
+{
+  "port": 8443,
+  "timeout_s": 60
+}
 ```
 
-该检查的预期响应：
+请求头包括 `Content-Type: application/json` 和按共享指南设置的应用认证；请求体是参数对象本身，不套 `args`。成功响应为 `{"result": ...}`，其中结果含义同上。 HTTP 等待时间设为 450 秒；它独立于命令内部的执行时限。结果为缓冲响应，不是事件流。400 为参数错误，401 为认证失败，404 为命令不存在，500 为执行错误。
 
-```json
-{"result": "4.141.0"}
-```
+使用完成后调用：
 
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+- `POST /commands/code_server_stop` with `{}`.
 
 ## 命令参考
 
@@ -71,21 +123,22 @@ print(await client.commands.run('code_server_version'))
 
 WORKSPACE 默认 /home/user/app。CODE_SERVER_PASSWORD、ABX_SERVER_TOKEN 都是空占位符；前者也可逐次传 password 参数，后者只保护9000命令 API，不替代8443的 IDE 密码。预热服务的环境设置见[运行环境](../docs/runtime-environment.md)。配置文件权限0600，私有目录0700；不把云或模型密钥传入 IDE 进程。服务端关闭更新检查与遥测。
 
+工作目录为 `/home/user/app`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
+
+```bash
+abx run "$SANDBOX_ID" code_server_stop --json-args '{}'
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
+
 ## 资源
 
 2vCPU、2048MB；9000 为命令 API，8443 为 IDE。其他自选端口只保证本地监听，外部暴露需提供方配置。安装时以 du -sx 检查镜像可见根文件系统不超过8GiB；下载最多240秒，单包大小严格匹配。启动最多120秒；检查、子进程与输出均有界。停止清理本次 IDE 的配置/用户数据/扩展，工作区文件保留。
 
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 二次开发
-
-本地验证可把 install_runtime.py 的 --prefix 指向自己的工具目录；镜像构建显式启用 --check-rootfs，以免把 Docker 宿主机的 statvfs 使用量误当成镜像大小。部署可用[平台 steps](../docs/platform-steps.zh-CN.md)：`python scripts/prepare_steps.py code-server --output /tmp/ide-steps`，真实验收 `python scripts/run_steps_e2e.py code-server`。修改版本时同步资产哈希、实际版本检查与双语文档。WebSocket/终端交互须单独记录，认证页面成功不能推断它们通过。
-
 ## 贡献
 
-遵循[贡献规范](../CONTRIBUTING.zh-CN.md)、[模板规范](../docs/template-spec.zh-CN.md)与[设计](../docs/design/code-server.md)。用真实密码会话、错误密码、跨请求状态和内核/进程回查测试，不接受空端口 TCP 连接成功作为监听证明。
+改进模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)、[模板规范](../docs/template-spec.zh-CN.md)和[设计说明](../docs/design/code-server.md)。
 
 ## 问题反馈
 
@@ -94,7 +147,3 @@ WORKSPACE 默认 /home/user/app。CODE_SERVER_PASSWORD、ABX_SERVER_TOKEN 都是
 ## 许可证
 
 模板：Apache-2.0；code-server：MIT。保留官方发行包中的 LICENSE 和第三方声明，包括随包 VS Code/Node 组件的声明。用户安装的扩展各自遵守许可证。上游：[coder/code-server](https://github.com/coder/code-server/releases/tag/v4.141.0)。
-
-### 当前版本新增平台 step 验收
-
-[真实 step](evidence/express-2026-10-20T135352Z.json) 与 [外部 HTTP 尝试](evidence/verification-steps-2026-10-20T135352Z.json)：官方 READY、Python SDK 创建、CLI/SDK 冒烟，HTTP 5 通过、0 失败、0 跳过。本回执模型调用仍为 NOT_RUN；沙箱/模板及同账户私有资产缓存对象/bucket 都独立确认清理后才发布。既有镜像/模型回执保留其独立范围。

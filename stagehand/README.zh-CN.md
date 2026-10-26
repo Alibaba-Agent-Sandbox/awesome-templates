@@ -1,5 +1,7 @@
 # stagehand
 
+[English](README.md)
+
 ## 做什么
 
 使用真实 Node.js `@browserbasehq/stagehand@4.3.0` SDK、随包浏览器扩展和私有本地 Chromium。每次有界调用执行一条上游 `act` 指令，可选原生 `extract` 提取 `{text: string}`，并生成新 PNG。这里只提供本地浏览器切片，不承诺 Browserbase 托管会话、持久登录、完整自主规划或任意提取 schema。
@@ -16,41 +18,89 @@ Alibaba generation2 base v0.0.49、SHA256 固定的 Node24.16.0、npm integrity 
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任务。示例可能写入文件、创建项目或启动服务；不要在未清理前对同一实例重复执行整段示例。
+
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，并完成所选平台配置。平台 API Key 用于创建沙箱，`ABX_SERVER_TOKEN` 是独立的模板应用访问口令。以下命令在自己的终端执行，不需要克隆本仓库。
+
+启动前填写下列模型配置：API Key、接入点、模型 ID 必须属于同一个模型服务与地域。`https://model.example.invalid/v1` 是占位符，请替换为供应商给出的 API base，不要填写网页聊天地址。模型 ID 使用该端点实际支持的名称。
+
+此入口使用模型 API Key，无需运行浏览器 OAuth 登录，也不会继承你本机已登录的账号。模型接入要求见“配置”；本模板使用 **Chat Completions**，不能只凭“OpenAI 兼容”字样推断接口可用。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./stagehand --yes
-abx run <sandbox-id> stagehand_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export STAGEHAND_API_KEY='<your-model-api-key>'
+export STAGEHAND_BASE_URL='https://model.example.invalid/v1'
+export STAGEHAND_MODEL='<your-model-id>'
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//stagehand --sandbox-timeout 1800 --yes
+# 将启动输出中的沙箱 ID 填到这里
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+```bash
+abx run "$SANDBOX_ID" stagehand --json-args '{"task":"Click the More information link.","url":"https://example.com","extract_instruction":"Return the visible heading.","command_timeout":180}'
+```
+
+返回原生 `action`、`extracted`、最终 URL 和新的 `screenshot_path`；请检查 `action.success`，模型可能未完成操作。
+
+浏览器使用沙箱内的新私有 profile，不会导入本机登录或 cookies。需要登录的网站应在相应远端浏览器会话中处理；browser-use/Stagehand 的单次调用结束即删除私有会话，不提供账号会话持久化承诺。示例访问公网，需要沙箱能够出网。
+
+`--sandbox-timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
+
+OpenSandbox 用户将 `ABX_PROVIDER` 改为 `opensandbox`，并按[提供方指南](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)配置；后续 CLI 和 Python 必须继续选择同一个平台。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
+
+在完成上述 CLI 启动、设置 `SANDBOX_ID` 后，将以下保存为 `use_template.py`，执行 `python3 use_template.py`。它连接同一实例，不另建沙箱。对于需要输入的示例，先在本机准备上面的文件。
 
 ```python
-print(await client.commands.run('stagehand_version'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            result = await client.commands.run('stagehand', task='Click the More information link.', url='https://example.com', extract_instruction='Return the visible heading.', command_timeout=180)
+            print(result)
+            Path('stagehand.png').write_bytes(await sb.files.read_bytes(result['screenshot_path']))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。关闭连接不会删除沙箱。
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/stagehand_version`，`Content-Type: application/json`，直接发送以下参数对象：
+按[HTTP 调用示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析同一实例的 9000 端口，保留网关头、URL 路径和查询，再添加独立应用认证。
+
+`POST /commands/stagehand`
 
 ```json
-{}
+{
+  "task": "Click the More information link.",
+  "url": "https://example.com",
+  "extract_instruction": "Return the visible heading.",
+  "command_timeout": 180
+}
 ```
 
-该检查的预期响应：
-
-```json
-{"result": "4.3.0"}
-```
-
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+请求头包括 `Content-Type: application/json` 和按共享指南设置的应用认证；请求体是参数对象本身，不套 `args`。成功响应为 `{"result": ...}`，其中结果含义同上。 HTTP 等待时间设为 450 秒；它独立于命令内部的执行时限。结果为缓冲响应，不是事件流。400 为参数错误，401 为认证失败，404 为命令不存在，500 为执行错误。
 
 ## 命令参考
 
@@ -65,6 +115,8 @@ task／提取指令各最多32768 UTF-8字节，URL最多8192。结果含 `versi
 
 ## 配置
 
+此入口调用兼容 Chat Completions API，base 包含供应商要求的前缀（常见 `/v1`），不要额外添加 `/chat/completions`。模型须能返回符合 JSON schema 的结构化结果，并支持原生流程实际发送的图像内容。
+
 | 环境变量 | 必需／默认 | 含义 |
 | --- | --- | --- |
 | STAGEHAND_API_KEY | 模型必需，空 | 授权兼容模型端点密钥，不是 Browserbase token |
@@ -78,33 +130,23 @@ task／提取指令各最多32768 UTF-8字节，URL最多8192。结果含 `versi
 
 固定兼容配置：SDK4.3.0 的 local connect schema 接受 extensionId，但工厂未转发。[patch_sdk.py](patch_sdk.py) 强制校验原始源码 SHA25638ec56a2a1af1fb72c3e361a66b256def8e3665cca527e0d337f8a76a8308bd1，只改一处转发。自有 Chrome 只预加载原 npm 包随附、未修改的扩展，观察真实 service-worker ID，再使用原生 localBrowser.connect／Stagehand.create／act／extract。运行时与独立控制器强制校验补丁后 SDK SHA256bdf3cd62126c1529e8a889cae17fd098303e24e962e491a4b20786de72c369e0。这是明确披露的上游补丁发行配置。失败诊断仅返回允许的阶段／HTTP状态／调用次数，不返回上游响应正文、私有端点或密钥。
 
+工作目录为 `/home/user/app`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
+
+```bash
+# 把 <returned-path> 换成结果中的 screenshot_path
+abx download "$SANDBOX_ID" '<returned-path>' ./stagehand.png
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
+
 ## 资源
 
 2vCPU、4096MB、端口9000、Express约10GiB rootfs。沙箱内不需要 Docker／KVM／GPU，镜像校验8GiB rootfs预算。需要本地浏览器／扩展以及兼容结构化输出的模型。无需、也未验证 Browserbase 云服务／缓存／托管浏览器。
 
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 历史验收
-
-1.0.0 的原生工厂尝试通过调试端口调用 Extensions.loadUnpacked，固定 Chromium 返回 code-32000 Method not available；实际云端与 L1 自检失败记录保留。1.1.0 修复扩展连接后通过 L1／浏览器／HTTP，但首次独立真实模型仍失败，具体模型失败根因未认定。1.1.1 仅增加安全诊断，未放宽请求 schema、模型／浏览器断言或清理要求；新一轮真实模型通过不能据此推断旧模型失败原因。全部旧失败轮次均独立清理自有资源。
-
-## 二次开发
-
-```bash
-npm ci --prefix stagehand --ignore-scripts --registry=https://registry.npmjs.org
-node --test stagehand/test_transport.mjs
-python -m pytest -q stagehand/test_commands.py
-python scripts/check_template.py stagehand --strict
-python scripts/check_docs.py
-```
-
-本地固定回调／子进程测试只验证传输和守卫。未设置 E2E_REQUIRE_CLI=1时，HTTP e2e 对缺失原生环境标记 SKIP；E2E_REQUIRE_LLM 不允许静默跳过，真实模型使用单独自有 SDK 控制器。更新时维护固定版本、私有资源归属、期限、双语及历史通过／失败记录。[steps 指南](../docs/platform-steps.zh-CN.md)说明源码哈希、传输和清理。
-
 ## 贡献
 
-阅读 [CONTRIBUTING](../CONTRIBUTING.md)、[项目规范](../docs/project-standards.zh-CN.md)、[模板规范](../docs/template-spec.zh-CN.md)。SDK／CLI 问题归对应仓库。
+改进模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)、[模板规范](../docs/template-spec.zh-CN.md)和[设计说明](../docs/design/stagehand.md)。
 
 ## 问题反馈
 

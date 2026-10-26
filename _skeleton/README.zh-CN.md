@@ -21,19 +21,20 @@
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；将该 ID 填入下面的 `ABX_SANDBOX_ID`。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./_skeleton --yes
-abx run <sandbox-id> hello --json-args '{"name": "Express"}'
+abx template launch ./_skeleton --sandbox-timeout 1800 --yes
+export ABX_SANDBOX_ID="<returned-sandbox-id>"
+abx run "$ABX_SANDBOX_ID" hello --json-args '{"name": "Express"}'
 ```
 
 `template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+在虚拟环境安装 `agent-sandbox-client==0.4.0a6`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
 
 ```python
 print(await client.commands.run('hello', name='Express'))
@@ -82,18 +83,6 @@ print(await client.commands.run('hello', name='Express'))
 | memory | 2048 MB |
 | 端口 | 9000 |
 | 磁盘 | 平台 rootfs，极速版大约 10G |
-
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 历史验收
-
-尚未记录任何通过的提供方测试。
-
-## 二次开发
-
-把 `_skeleton` 复制成符合 `^[a-z0-9][a-z0-9-]*$` 的目录名。`template.yaml` 的 `name` 与目录名相同。用真正调用上游程序的命令换掉 `hello`，并在 Dockerfile 里钉住每个安装版本。按 [docs/design/_TEMPLATE.md](../docs/design/_TEMPLATE.md) 写 `docs/design/<name>.md`。在 `awesome-templates.yaml` 加一条。运行 `python3 scripts/check_template.py <dir>`。
 
 ## 贡献
 

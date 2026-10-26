@@ -1,0 +1,61 @@
+{
+  "scope": "Executed actual current bilingual documentation HTTP snippets with installed SDK0.4.0a6/httpx0.28.1; provider connect and network mocked, HTTP MockTransport local only. No cloud/model acceptance.",
+  "cases": [
+    {
+      "language": "en",
+      "case": "bare",
+      "result": "PASS",
+      "requests": 1,
+      "closed": true
+    },
+    {
+      "language": "en",
+      "case": "gateway_authorization",
+      "result": "PASS",
+      "requests": 1,
+      "closed": true
+    },
+    {
+      "language": "en",
+      "case": "gateway_x_access",
+      "result": "PASS",
+      "requests": 1,
+      "closed": true
+    },
+    {
+      "language": "en",
+      "case": "gateway_both",
+      "result": "PASS",
+      "requests": 0,
+      "closed": true
+    },
+    {
+      "language": "zh",
+      "case": "bare",
+      "result": "PASS",
+      "requests": 1,
+      "closed": true
+    },
+    {
+      "language": "zh",
+      "case": "gateway_authorization",
+      "result": "PASS",
+      "requests": 1,
+      "closed": true
+    },
+    {
+      "language": "zh",
+      "case": "gateway_x_access",
+      "result": "PASS",
+      "requests": 1,
+      "closed": true
+    },
+    {
+      "language": "zh",
+      "case": "gateway_both",
+      "result": "PASS",
+      "requests": 0,
+      "closed": true
+    }
+  ]
+}

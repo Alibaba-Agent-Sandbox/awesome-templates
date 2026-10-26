@@ -1,6 +1,6 @@
 # Document tools
 
-Pandoc 离线 Markdown 文档转换。[English](README.md)。
+[English](README.md)
 
 ## 做什么
 
@@ -20,41 +20,92 @@ Pandoc 离线 Markdown 文档转换。[English](README.md)。
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任务。示例可能写入文件、创建项目或启动服务；不要在未清理前对同一实例重复执行整段示例。
+
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，并完成所选平台配置。平台 API Key 用于创建沙箱，`ABX_SERVER_TOKEN` 是独立的模板应用访问口令。以下命令在自己的终端执行，不需要克隆本仓库。
+
+本模板的这些命令不需要模型、模型 endpoint 或模型 API Key。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./document-tools --yes
-abx run <sandbox-id> document_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//document-tools --sandbox-timeout 1800 --yes
+# 将启动输出中的沙箱 ID 填到这里
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+在本机准备输入文件后上传：
+
+```bash
+printf '# Quarterly report\n\nRevenue: 51.30.\n' > report.md
+```
+
+```bash
+abx upload "$SANDBOX_ID" ./report.md /home/user/app/report.md
+```
+
+```bash
+abx run "$SANDBOX_ID" convert --json-args '{"input_path":"report.md","output_name":"report.docx","output_format":"docx"}'
+```
+
+返回 `output_path`、`output_format: docx`、`bytes` 和 `sha256`；DOCX 会保留供下载。
+
+`--sandbox-timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
+
+OpenSandbox 用户将 `ABX_PROVIDER` 改为 `opensandbox`，并按[提供方指南](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)配置；后续 CLI 和 Python 必须继续选择同一个平台。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
+
+在完成上述 CLI 启动、设置 `SANDBOX_ID` 后，将以下保存为 `use_template.py`，执行 `python3 use_template.py`。它连接同一实例，不另建沙箱。对于需要输入的示例，先在本机准备上面的文件。
 
 ```python
-print(await client.commands.run('document_version'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            await sb.files.write('/home/user/app/report.md', Path('report.md').read_bytes())
+            result = await client.commands.run('convert', input_path='report.md', output_name='report.docx', output_format='docx')
+            print(result)
+            Path('report.docx').write_bytes(await sb.files.read_bytes(result['output_path']))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。关闭连接不会删除沙箱。
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/document_version`，`Content-Type: application/json`，直接发送以下参数对象：
+按[HTTP 调用示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析同一实例的 9000 端口，保留网关头、URL 路径和查询，再添加独立应用认证。
+
+`POST /commands/convert`
 
 ```json
-{}
+{
+  "input_path": "report.md",
+  "output_name": "report.docx",
+  "output_format": "docx"
+}
 ```
 
-该检查的预期响应：
-
-```json
-{"result": "pandoc 3.1.11.1"}
-```
-
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+请求头包括 `Content-Type: application/json` 和按共享指南设置的应用认证；请求体是参数对象本身，不套 `args`。成功响应为 `{"result": ...}`，其中结果含义同上。 HTTP 等待时间设为 450 秒；它独立于命令内部的执行时限。结果为缓冲响应，不是事件流。400 为参数错误，401 为认证失败，404 为命令不存在，500 为执行错误。
 
 ## 命令参考
 
@@ -85,6 +136,16 @@ print(await client.commands.run('document_version'))
 
 预热 server 早于后续 shell 环境更改读取进程配置。命名命令的路径限制不限制已授权共享 shell/files API。后两个参数用于原生诊断，不是命名命令参数。
 
+工作目录为 `/home/user/app`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
+
+```bash
+# 把 <returned-path> 换成结果中的 output_path
+abx download "$SANDBOX_ID" '<returned-path>' ./report.docx
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
+
 ## 资源
 
 | 资源 | 数值 |
@@ -94,34 +155,9 @@ print(await client.commands.run('document_version'))
 | 端口 | 9000 |
 | 磁盘 | 平台 rootfs；输入 1 MiB、产物 8 MiB；调用方删除保留产物 |
 
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 1.0历史验证
-
-
-| 提供方 | 已执行范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
-
-该历史记录采用 e2cb27e 服务端来源覆盖，与当时的镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
-
-## 二次开发
-
-阅读[设计](../docs/design/document-tools.md)，运行 `python3 scripts/check_template.py document-tools`、`python3 -m pytest -q document-tools/test_commands.py document-tools/test_http.py` 及本地 E2E runner。测试需要实际固定 Debian 程序/数据。`E2E_REQUIRE_DOCUMENT=1` 使缺少原生依赖时失败，不能 SKIP。外部控制器上传包含随机 nonce/中文的 Markdown，下载完整产物核对哈希，独立解析 DOCX 标题、加粗及文本和 TXT，再清理。
-
-原生清理通过 `waitid(WNOWAIT)` 保持 leader 未 reap，先终止 owned 进程组，覆盖成功、非零退出及重定向后代。主动 `setsid` 脱离和 server 被 SIGKILL 不在此保证内；销毁沙箱是最终隔离边界。
-
-运行时工作目录的文件系统必须支持硬链接，才能原子且不覆盖地发布产物。部分托管源码挂载拒绝该调用；可在普通可写 Linux 文件系统中运行字节一致的本地测试副本，或在进程启动前设置合适工作目录。硬链接失败会拒绝转换，不退回覆盖已有文件的实现。
-
-### Agent Sandbox step 构建
-
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py document-tools`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
-
 ## 贡献
 
-[CONTRIBUTING.md](../CONTRIBUTING.md)、[模板规范](../docs/template-spec.md)、[Issue 55](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/55)。
+改进模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)、[模板规范](../docs/template-spec.zh-CN.md)和[设计说明](../docs/design/document-tools.md)。
 
 ## 问题反馈
 

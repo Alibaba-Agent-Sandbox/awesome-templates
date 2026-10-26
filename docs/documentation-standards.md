@@ -9,7 +9,7 @@ The [template specification](template-spec.md) owns exact README/design headings
 Write the task and observable result first. Put reusable usage in `docs/`,
 template-specific arguments in that template's README, design rationale in
 `docs/design/`, and executed verification in `.agents/` or template-local evidence.
-Link to the authority rather than copying contracts that will drift. Separate
+Keep validation reports, historical acceptance, secondary-development instructions and test-tier narratives out of template user READMEs; retain the original evidence in its existing engineering location. Link to the authority rather than copying contracts that will drift. Separate
 current instructions from dated research and historical verification. Date
 availability/feasibility observations and link the source or executed check.
 
@@ -33,8 +33,9 @@ another repository beside this one. Cross-repository links use absolute GitHub U
 Every template documents the same useful task through CLI, Python SDK and HTTP
 POST. Include installation provenance, provider setup, deploy/create, command
 discovery, arguments, expected response and owned cleanup. Use commands verified
-against actual help/source. Examples must say whether they were executed or only
-syntax checked. Do not imply a snippet is a real cloud pass.
+against actual help/source. Record whether examples were executed or only syntax checked in the engineering verification record. Do not imply a snippet is a real cloud pass.
+
+Before launch, show required configuration with actual names and defaults: separate platform credentials, application tokens and model credentials. Explain the model ID, endpoint, API key and any product login required by the pinned upstream tool. State supported authentication and endpoint restrictions rather than mapping every tool to common environment variables.
 
 Name the client distribution `agent-sandbox-client`, import the SDK entry point
 appropriate to the pinned version, and install `agent-sandbox-server` inside the

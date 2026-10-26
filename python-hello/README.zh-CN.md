@@ -1,6 +1,6 @@
 # python-hello
 
-[English](./README.md)
+[English](README.md)
 
 ## 做什么
 
@@ -20,41 +20,79 @@
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任务。示例可能写入文件、创建项目或启动服务；不要在未清理前对同一实例重复执行整段示例。
+
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，并完成所选平台配置。平台 API Key 用于创建沙箱，`ABX_SERVER_TOKEN` 是独立的模板应用访问口令。以下命令在自己的终端执行，不需要克隆本仓库。
+
+本模板的这些命令不需要模型、模型 endpoint 或模型 API Key。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./python-hello --yes
-abx run <sandbox-id> hello --json-args '{"name": "Express"}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello --sandbox-timeout 1800 --yes
+# 将启动输出中的沙箱 ID 填到这里
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+```bash
+abx run "$SANDBOX_ID" run_script --json-args '{"code":"from pathlib import Path\nrows = [12.50, 18.80, 20.00]\ntotal = sum(rows)\nPath(\"summary.txt\").write_text(f\"total={total:.2f}\\n\")\nprint(f\"total={total:.2f}\")"}'
+```
+
+返回 stdout `total=51.30`，并生成可下载的 `summary.txt`。
+
+`--sandbox-timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
+
+OpenSandbox 用户将 `ABX_PROVIDER` 改为 `opensandbox`，并按[提供方指南](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)配置；后续 CLI 和 Python 必须继续选择同一个平台。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
+
+在完成上述 CLI 启动、设置 `SANDBOX_ID` 后，将以下保存为 `use_template.py`，执行 `python3 use_template.py`。它连接同一实例，不另建沙箱。对于需要输入的示例，先在本机准备上面的文件。
 
 ```python
-print(await client.commands.run('hello', name='Express'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            result = await client.commands.run('run_script', code='from pathlib import Path\nrows = [12.50, 18.80, 20.00]\ntotal = sum(rows)\nPath("summary.txt").write_text(f"total={total:.2f}\\n")\nprint(f"total={total:.2f}")')
+            print(result)
+            Path('summary.txt').write_bytes(await sb.files.read_bytes('/home/user/app/summary.txt'))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。关闭连接不会删除沙箱。
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/hello`，`Content-Type: application/json`，直接发送以下参数对象：
+按[HTTP 调用示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析同一实例的 9000 端口，保留网关头、URL 路径和查询，再添加独立应用认证。
+
+`POST /commands/run_script`
 
 ```json
-{"name": "Express"}
+{
+  "code": "from pathlib import Path\nrows = [12.50, 18.80, 20.00]\ntotal = sum(rows)\nPath(\"summary.txt\").write_text(f\"total={total:.2f}\\n\")\nprint(f\"total={total:.2f}\")"
+}
 ```
 
-该检查的预期响应：
-
-```json
-{"result": "Hello, Express!"}
-```
-
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+请求头包括 `Content-Type: application/json` 和按共享指南设置的应用认证；请求体是参数对象本身，不套 `args`。成功响应为 `{"result": ...}`，其中结果含义同上。 HTTP 等待时间设为 450 秒；它独立于命令内部的执行时限。结果为缓冲响应，不是事件流。400 为参数错误，401 为认证失败，404 为命令不存在，500 为执行错误。
 
 ## 命令参考
 
@@ -82,60 +120,14 @@ print(await client.commands.run('hello', name='Express'))
 
 在 `template launch` 前安全导出清单中声明为空的秘密变量，让应用启动时读取；不要写入镜像、YAML 或日志。
 
-## 资源
-
-2 vCPU、2048 MB 内存、9000 端口，使用 provider 根文件系统（Express 约 10G）。无需 GPU、Docker、KVM 或模型 API key。大任务可能超出内存或执行期限，应选择合适的进程 API/provider。
-
-## 源码运行验证
-
-2026-10-16，当前命令源码和 pytest 8.4.2 在 `alicloud-express` 完成外部 HTTP
-测试（20 条 PASS、无失败），包括真实脚本/pytest 执行和远端文件传输。本次沙箱已删除。
-[运行证据](evidence/runtime-express-2026-10-16.json)记录源码/包哈希，另有
-[检查日志](evidence/runtime-express-2026-10-16.log)。本次在平台基础沙箱内运行时安装依赖，
-不等同于此版本 Dockerfile 镜像构建或新模板部署通过。
-
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 历史验收
-
-| 提供方 | 已执行范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
-
-该历史记录采用 e2cb27e 服务端来源覆盖，与当时的镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
-
-## 二次开发
-
-在 `commands.py` 新增带类型签名的 `@command("name")` 函数，`start()` 保留在 main guard 中。返回 JSON 可序列化值，子进程失败应抛异常，参数使用 argv 列表。新增依赖固定版本并放在 Docker 前面的安装层，最后复制命令文件以复用依赖层。同步维护中英文文档、YAML smoke 和[设计说明](../docs/design/python-hello.md)。
-
-仓库根目录安装开发服务端、`httpx`、pytest、PyYAML 后：
+工作目录为 `/home/user/app`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
 
 ```bash
-python3 scripts/check_template.py python-hello
-python3 -m pytest python-hello/test_command_errors.py -q
-python3 scripts/run_local_e2e.py
-python scripts/public_launch_e2e.py python-hello --provider alicloud-express --application-controller --source ./python-hello --output python-hello-attempt-1.json
+abx download "$SANDBOX_ID" /home/user/app/summary.txt ./summary.txt
+abx kill "$SANDBOX_ID"
 ```
 
-本地 runner 启动真实 HTTP 服务和工作目录，测试文件上传/下载/列表/删除、上传脚本执行、pytest 成功和故意失败的用例。文件错误视为失败，不再 SKIP。Express harness 需要已配置凭据和 Docker，仅在 CLI/SDK smoke 全部通过后写入证据，并清理本次创建的资源。Express smoke 通过不代表所有本地回归都已在云端执行。
-
-### Agent Sandbox step 构建
-
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py python-hello`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
-
-## 贡献
-
-遵守 [CONTRIBUTING.md](../CONTRIBUTING.md) 和[模板规范](../docs/template-spec.zh-CN.md)，分别报告本地、构建、云端结果，保留历史证据。
-
-## 问题反馈
-
-模板跟踪：[awesome-templates#21](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/21)。模板问题提交到 [awesome-templates](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues)，Python 客户端/服务端问题到 [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues)，CLI 问题到 [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues)。SDK/CLI 标题使用 `[templates]`，提供无秘密的复现、provider、generation 和源码版本。
-
-## 许可证
-
-Apache-2.0，见 [LICENSE](../LICENSE)。
+`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
 
 ### 显式选择通用镜像构建方案
 
@@ -144,6 +136,22 @@ Apache-2.0，见 [LICENSE](../LICENSE)。
 摘要固定的 Python 基础镜像，创建非 root 用户并直接安装已发布固定版本的命令服务。
 默认 Dockerfile 保留 Express 平台占位参数；Provider 不会改写构建文件或注入 wheel。
 创建完成后，模板启动通过 `exec.run` 启动服务。所选构建方案与源码实际
-字节都属于启动身份。声明此方案本身不代表已经通过真实后端验收。
+字节都属于启动身份。默认启动仍使用原始模板方案。
 
 Python 使用 `agent_sandbox.api.template.launch_template(manifest, provider="opensandbox", reference=image_digest, application_token=token)` 消费准备好的不可变镜像。传入原清单，保留其启动、就绪和全部服务；通过返回会话调用命令，关闭会话销毁本次沙箱。Python 不执行源码镜像准备。
+
+## 资源
+
+2 vCPU、2048 MB 内存、9000 端口，使用 provider 根文件系统（Express 约 10G）。无需 GPU、Docker、KVM 或模型 API key。大任务可能超出内存或执行期限，应选择合适的进程 API/provider。
+
+## 贡献
+
+改进模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)、[模板规范](../docs/template-spec.zh-CN.md)和[设计说明](../docs/design/python-hello.md)。
+
+## 问题反馈
+
+模板跟踪：[awesome-templates#21](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/21)。模板问题提交到 [awesome-templates](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues)，Python 客户端/服务端问题到 [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues)，CLI 问题到 [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues)。SDK/CLI 标题使用 `[templates]`，提供无秘密的复现、provider、generation 和源码版本。
+
+## 许可证
+
+Apache-2.0，见 [LICENSE](../LICENSE)。

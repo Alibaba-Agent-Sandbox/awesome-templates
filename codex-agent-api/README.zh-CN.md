@@ -8,51 +8,99 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
+默认配方使用 Alibaba FC generation-2 基础镜像，以非 root `user` 运行，服务端固定安装已发布的 `agent-sandbox-server==0.4.0a6`。
 
-Alibaba 平台基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，部署默认区域 `cn-hangzhou`、版本 `v0.0.49`。沿用镜像 Python 3.13、Node.js 20；Codex 固定 0.162.1；服务端使用 Dockerfile 中固定的已发布包版本，见 [Dockerfile](Dockerfile)。以 `user` 运行，应用目录 `/home/user/app`，工作区 `/home/user/workspace`。Dockerfile 不设置 `CMD` 或 `ENTRYPOINT`。
+官方 Codex CLI `0.162.1`、Node.js 20，以及 9000 端口上的模板会话 API。
+
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml)
 
 ## 解决的问题
 
-围绕真实 Codex 提供 HTTP 会话管理、JSONL 到 SSE 映射、用量统计和确切线程恢复。模型推理、工具执行仍由 Codex 完成。会话和已保存的 agent 配置只在内存中保存，重启即丢失。同一部署的会话共享工作区和身份；互不信任的客户端应使用独立沙箱。
+在隔离沙箱中使用已经安装的工具，通过 CLI、Python 或 HTTP 提交工作，再导出文件；模型账号与云沙箱账号分别配置。
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，配置选择的平台（沙箱 API Key、连接地址及构建镜像仓库），再配置下面独立的模型/应用凭据。无需 clone 仓库即可启动公共模板。
+
+模型服务必须实现 HTTP Responses，仅提供 Chat Completions 不够。`ABX_LLM_API_KEY` 用作自定义服务密钥；启动环境不要同时保留冲突的 `OPENAI_BASE_URL`，本模板该 URL 优先。API Key 方式无需交互登录。`CODEX_SANDBOX` 默认为 `workspace-write`；只有平台不支持内层 Codex 沙箱且你接受外层沙箱为隔离边界时，才使用现有 `bypass` 选项。
+
+编码前须确认平台能运行 Codex 内层 Linux 沙箱。平台拒绝时，公共配方中固定的 `CODEX_SANDBOX=workspace-write` 不能通过 host export 修改。如果你明确选择以外层沙箱作为隔离边界，clone 仓库，将 `codex-agent-api/template.yaml` 的 `env.CODEX_SANDBOX` 改为 `bypass`，使用 `abx template launch ./codex-agent-api --sandbox-timeout 1800 --yes` 替换下面的公共配方命令。
+
+所有 `<...>` 都是需要你替换的占位值，模型名必须使用服务商实际提供的 ID。密钥在你自己的终端或 secret manager 中设置，不要放入镜像、YAML 或公开日志。以下变量要在 launch **之前**设置；之后改变 host 环境不会更新运行中的应用。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./codex-agent-api --yes
-abx run <sandbox-id> codex_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export ABX_LLM_API_KEY='<your-model-or-vendor-key>'
+export ABX_LLM_BASE_URL='https://api.openai.com/v1'
+export CODEX_MODEL='<model-id-from-your-Responses-provider>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//codex-agent-api --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+`--sandbox-timeout 1800` 是沙箱生存时间（秒），`command_timeout`/`timeout_s` 是单次任务执行期限，`ABX_HTTP_TIMEOUT`/SDK `timeout` 是客户端等待时间，三者分别设置。
+
+launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
+
+```bash
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" codex --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","timeout_s":300}'
+```
+
+任务要求在 `/home/user/workspace` 写出 `generated_hello.py` 和 `GENERATED_REPORT.md`。示例显式开放所需的编辑/工具权限，只在自己拥有的可丢弃沙箱中使用。下面的 SDK 和 HTTP 是同一任务的替代调用方式，选择一种即可。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
 
 ```python
-print(await client.commands.run('codex_version'))
-```
+import asyncio
+import os
+from agent_sandbox import ProviderSandbox
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=420
+        )
+        try:
+            print(await client.commands.run('codex', prompt='Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.', timeout_s=300))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/codex_version`，`Content-Type: application/json`，直接发送以下参数对象：
+使用[直接 HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析 endpoint，保留网关 headers、URL path/query 和独立应用 token。请求 `POST /commands/codex`，`Content-Type: application/json`，body 是下面的直接参数对象，不加 `args` 包装：
 
 ```json
-{}
+{
+  "prompt": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.",
+  "timeout_s": 300
+}
 ```
 
-该检查的预期响应：
+响应为 `{"result": ...}`：内容格式见下方命令参考；模型生成的文字每次不同。HTTP 等待时间至少设为 420 秒，命令执行期限是另一个设置；断开客户端不会保证终止远端任务。认证失败为 401，参数类型错误为 400，执行失败为错误响应；返回对象包含 `exit_code` 时还应检查它是否为 0。
 
-```json
-{"result": "0.162.1"}
+### 导出产物与清理
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
 ```
 
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+程序预期输出 `Hello from the sandbox`。先读取产物并检查再使用；模型回答成功不代表文件一定存在。文件不会自动回写模板或你的本机，释放沙箱前必须导出。
+
+`close()`/`aclose()` 仅关闭客户端连接，不释放沙箱。launch 日志中的已构建模板和镜像可能保留用于复用，不再需要时仅删除自己创建的那些资源。
 
 ## 命令参考
 
@@ -61,8 +109,6 @@ print(await client.commands.run('codex_version'))
 | `codex_version` | 无 | 版本字符串 | `codex --version` |
 | `agent_status` | 无 | 包含会话 id/status/model 的 JSON 字符串 | 无 |
 | `codex` | `prompt` str 必填；`model` str `""`；`timeout_s` int `300`，范围 1–3600 | `{thread_id, events, status, events_truncated}`；上游失败抛 RuntimeError | `codex exec --json --color never --skip-git-repo-check [提供方/隔离/模型配置] -- <prompt>` |
-
-以下是本项目的 HTTP 约定。成功 CRUD 返回 HTTP 200；对象不存在 404，参数错误 400，已有活动轮次 409，超出容量 429。
 
 | 方法与路径 | 参数 / 行为 |
 |---|---|
@@ -82,9 +128,7 @@ print(await client.commands.run('codex_version'))
 | `GET /v1/agents/sessions/{id}/artifacts/{artifact_id}` | 最大 1 MB 的 UTF-8 文本文件；id 为工作区相对路径的 URL-safe base64 |
 | `DELETE /v1/agents/sessions/{id}/artifacts/{artifact_id}` | 删除工作区内文件 |
 
-内容数组只使用首个 `input_text`，不实现图片/音频输入。工具只接受 URL 型 MCP：`{type:"mcp",server_label:"name",server_url:"https://host/mcp",headers:{...}}`，也支持嵌套 `transport` 的 URL/headers。函数工具、托管 connector、HTTP 审批、webhook、持久化及每会话独立文件系统不在当前约定内。MCP 通过 `-c mcp_servers.<label>.*` 交给 Codex，秘密只应由受信任的运行时配置注入。
-
-SSE 包括 `agent.session.created`、`agent.session.turn.started`、`agent.session.turn.completed`、`agent.session.turn.failed`、`agent.session.output_item.added`、`agent.session.output_item.done`。未知类型使用 `agent.session.<type>` 前缀。`agent.session.events.truncated` 表示旧回放记录已丢弃。token 用量仅从上游 `turn.completed` 累加一次，不随订阅者数量重复。
+命令响应为缓冲结果，不是流式事件。`cwd` 必须指向已存在且符合本模板路径约束的目录；允许编辑/工具执行时，模型可按沙箱用户权限修改文件或运行程序。超时只限制相应调用，客户端断连不能作为取消机制。
 
 ## 配置
 
@@ -98,37 +142,17 @@ SSE 包括 `agent.session.created`、`agent.session.turn.started`、`agent.sessi
 | `WORKSPACE` | `/home/user/workspace` |
 | `AGENT_MAX_SESSIONS` | `20` |
 | `AGENT_SESSION_TTL` | `1800` 秒；每 60 秒 GC |
-| `ABX_SERVER_PORT` | `9000`；服务端口 |
 | `ABX_SERVER_TOKEN` | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
 服务最多保留 200 个 agent 配置，每会话最多 100 轮。回放及保留 item 缓冲各限制为 1000 个事件 / 2 MB；单行 JSONL 超过 256000 字节时轮次失败。stderr 始终消费，只将有界且脱敏的尾部用于错误提示。环境秘密值、请求提供的 MCP header 值与 bearer token 从返回事件、配置、错误和文本 artifact 中脱敏。Artifact 拒绝 `.env`、`.aws`、`.codex`、`.ssh` 路径及指向工作区外的符号链接。标准 shell/files 接口仍需要受信任访问及 server policy；这些过滤不是租户隔离。
 
 ## 资源
 
-2 vCPU、4096 MB；每个活动会话一个 CLI，受会话容量限制。模型和工具调用均计入期限。不要求容器内 Docker、KVM、额外权限或第二个 HTTP 服务。
-
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## Express 源码运行验证
-
-2026-10-16，改动后的源码在自有 Express base 实例中使用固定 Codex 0.162.1 与真实 Responses 兼容模型通过 30 项外部 HTTP 检查。正式 `serve --commands` 入口成功加载含 dataclass 的模块。验收修复已有故障源码，通过控制端持有的六项固定测试，核对新报告，再恢复同一上游线程并独立检查第二产物与报告 SHA-256。自有实例已销毁。[JSON 证据](evidence/runtime-express-2026-10-16.json)与[HTTP 结果](evidence/runtime-express-2026-10-16.log)包含源码、wheel 溯源信息。此结果不等于 Dockerfile L1 或新模板部署 L2，`tested_on` 保持为空；复现步骤见[共享诊断工具](../docs/express-source-runtime.md)。
-
-
-固定测试重跑还要求全部六项真实完成且无跳过/预期失败后，输出本轮控制器独有的随机确认值；伪造 `Ran 6 tests`/`OK` 后提前退出不能通过。这是普通测试完成性检查，不是针对同用户恶意代码的隔离边界。`ABX_SERVER_TOKEN` 提供应用 Bearer 凭据；`E2E_GATEWAY_HEADERS_JSON` 传递独立的 provider 网关头。
-
-## 二次开发
-
-先读[设计说明](../docs/design/codex-agent-api.md)、[贡献规范](../CONTRIBUTING.md)和[模板规范](../docs/template-spec.zh-CN.md)。围绕 Codex JSONL 扩展适配，不另写 agent 循环。CLI pin 与 `codex` 保持一致。[OpenAI 官方 CLI 文档](https://developers.openai.com/codex/cli/reference/)。
-
-### Agent Sandbox step 构建
-
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py codex-agent-api`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+2 vCPU，4096 MB 内存，应用端口 9000，非 root `user`。工作目录 `/home/user/workspace`；磁盘容量和最长生存时间由所选平台配置。模型任务需要访问配置的模型服务，模型调用费用由对应服务商计费。
 
 ## 贡献
 
-评审前运行 checker 和本地回归，在 PR 中准确说明 L1/L2/L3 的真实结果和限制。仅保存通过的提供方 evidence。禁止提交 `.env`、认证头、秘密值或生成的凭据/配置文件。
+开发模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)和[设计说明](../docs/design/codex-agent-api.md)。
 
 ## 问题反馈
 
@@ -137,7 +161,3 @@ SSE 包括 `agent.session.created`、`agent.session.turn.started`、`agent.sessi
 ## 许可证
 
 Apache-2.0。Codex 和依赖沿用各自上游许可证。
-
-### 2026-10-20完整 step 检查点：模板2.0.0
-
-[真实对应版本 step](evidence/express-2026-10-20.json)及[完整外部 HTTP 控制器](evidence/verification-steps-2026-10-20T154830Z.json)通过：官方 READY、真实 Python SDK 创建、全部 CLI/SDK smoke，18 PASS/0 FAIL/1 SKIP；自有沙箱／模板均独立确认清理。本回执模型验收仍为 NOT_RUN，不改变旧镜像／模型范围。复现及精确服务端／控制器来源见[step 指南](../docs/platform-steps.zh-CN.md)。

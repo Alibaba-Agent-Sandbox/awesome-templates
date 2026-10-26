@@ -8,51 +8,101 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
+默认配方使用 Alibaba FC generation-2 基础镜像，以非 root `user` 运行，服务端固定安装已发布的 `agent-sandbox-server==0.4.0a6`。
 
-阿里云FC、generation2、非root user、已发布服务端包。[requirements.lock](requirements.lock)固定全部解析依赖及SHA256，包括[DeepAgents0.7.25](https://pypi.org/project/deepagents/0.7.25/)与langchain-openai1.7.2。由[requirements.in](requirements.in)通过uv0.11.28/Python3.13生成；镜像安装校验哈希并执行pip check。无远程E2B/OpenSandbox后端或模型权重。
+官方 DeepAgents `0.7.25` 和 langchain-openai `1.7.2`，安装于固定依赖及哈希的 Python 环境。
+
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml)
 
 ## 解决的问题
 
-让真实LangChain Deep Agent在自有沙箱中执行文件/shell操作，不额外创建远程沙箱。采用已验证Python API短驱动，不假设存在控制台入口。每次独立进程、模型、profile及HOME/数据，保留调用者状态。
+在隔离沙箱中使用已经安装的工具，通过 CLI、Python 或 HTTP 提交工作，再导出文件；模型账号与云沙箱账号分别配置。
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，配置选择的平台（沙箱 API Key、连接地址及构建镜像仓库），再配置下面独立的模型/应用凭据。无需 clone 仓库即可启动公共模板。
+
+此无交互路径使用下方三个显式模型配置，不启动浏览器/OAuth 登录。endpoint 必须支持兼容 OpenAI 的 Chat Completions 及工具调用。从对应服务商取得 Key 和准确模型 ID，云沙箱 API Key 是另一种凭据。下方以百炼公共兼容接入点为例，必须使用同地域有权限的 Key 和模型；换服务时三个值一起替换。
+
+使用下方的百炼接入点时，在[百炼 API Key 页面](https://help.aliyun.com/zh/model-studio/get-api-key)选择北京地域创建 Key，并填写该账号可用模型 ID；其他地域或 Coding Plan 使用其对应的 Key/endpoint，不能混用。
+
+所有 `<...>` 都是需要你替换的占位值，模型名必须使用服务商实际提供的 ID。密钥在你自己的终端或 secret manager 中设置，不要放入镜像、YAML 或公开日志。以下变量要在 launch **之前**设置；之后改变 host 环境不会更新运行中的应用。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./deepagents --yes
-abx run <sandbox-id> deepagents_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export DEEPAGENTS_API_KEY='<your-model-or-vendor-key>'
+export DEEPAGENTS_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
+export DEEPAGENTS_MODEL='<model-id-from-your-provider>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//deepagents --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+`--sandbox-timeout 1800` 是沙箱生存时间（秒），`command_timeout`/`timeout_s` 是单次任务执行期限，`ABX_HTTP_TIMEOUT`/SDK `timeout` 是客户端等待时间，三者分别设置。
+
+launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
+
+```bash
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" deepagents --json-args '{"task":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","allow_tools":true,"cwd":"/home/user/app","command_timeout":300}'
+```
+
+任务要求在 `/home/user/app` 写出 `generated_hello.py` 和 `GENERATED_REPORT.md`。示例显式开放所需的编辑/工具权限，只在自己拥有的可丢弃沙箱中使用。下面的 SDK 和 HTTP 是同一任务的替代调用方式，选择一种即可。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
 
 ```python
-print(await client.commands.run('deepagents_version'))
-```
+import asyncio
+import os
+from agent_sandbox import ProviderSandbox
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=420
+        )
+        try:
+            print(await client.commands.run('deepagents', task='Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.', allow_tools=True, cwd='/home/user/app', command_timeout=300))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/deepagents_version`，`Content-Type: application/json`，直接发送以下参数对象：
+使用[直接 HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析 endpoint，保留网关 headers、URL path/query 和独立应用 token。请求 `POST /commands/deepagents`，`Content-Type: application/json`，body 是下面的直接参数对象，不加 `args` 包装：
 
 ```json
-{}
+{
+  "task": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.",
+  "allow_tools": true,
+  "cwd": "/home/user/app",
+  "command_timeout": 300
+}
 ```
 
-该检查的预期响应：
+响应为 `{"result": ...}`：内容格式见下方命令参考；模型生成的文字每次不同。HTTP 等待时间至少设为 420 秒，命令执行期限是另一个设置；断开客户端不会保证终止远端任务。认证失败为 401，参数类型错误为 400，执行失败为错误响应；返回对象包含 `exit_code` 时还应检查它是否为 0。
 
-```json
-{"result": "0.7.25"}
+### 导出产物与清理
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
 ```
 
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+程序预期输出 `Hello from the sandbox`。先读取产物并检查再使用；模型回答成功不代表文件一定存在。文件不会自动回写模板或你的本机，释放沙箱前必须导出。
+
+`close()`/`aclose()` 仅关闭客户端连接，不释放沙箱。launch 日志中的已构建模板和镜像可能保留用于复用，不再需要时仅删除自己创建的那些资源。
 
 ## 命令参考
 
@@ -62,9 +112,7 @@ print(await client.commands.run('deepagents_version'))
 | deepagents_setup_check | none | installed/version/api_key_set/base_url_set/model_set flags; read-only |
 | deepagents | task:str required, nonempty/no NUL/max256KiB UTF-8; cwd:str="" existing inside WORKSPACE; allow_tools:bool=false; command_timeout:int=600,1..1800seconds | {stdout:str,stderr:str,exit_code:int} |
 
-实际[驱动](worker.py)显式构造ChatOpenAI(use_responses_api=False)、LocalShellBackend(inherit_env=False)，不传自定义或子Agent，GeneralPurposeSubagentProfile(enabled=False)。默认排除八项工具。上游profile注册会累加排除集合，因此每次使用新进程；许可工具也不能启用委派。任务/模型配置仅通过私有文件stdin进入。
-
-图递归上限40表示图步骤，不等于40次模型调用。单模型请求60秒、零重试、最多8192输出token；单shell期限min(command_timeout,120)、原生shell输出100000字节为捕获后截断，不是峰值内存限制；外层期限1..1800秒及每路输出256KiB。原生非零码保留。超时/输出溢出500，普通结构化非零结果仍为HTTP200。返回替换配置密钥和地址完整值，项目输出仍可能私密。
+命令响应为缓冲结果，不是流式事件。`cwd` 必须指向已存在且符合本模板路径约束的目录；允许编辑/工具执行时，模型可按沙箱用户权限修改文件或运行程序。超时只限制相应调用，客户端断连不能作为取消机制。
 
 ## 配置
 
@@ -81,21 +129,11 @@ print(await client.commands.run('deepagents_version'))
 
 ## 资源
 
-2vCPU/2048MB，服务9000及可选显式9010；CPU Linux Python3.13，依赖虚拟环境/opt/deepagents，镜像8GiB根文件系统门禁。任务256KiB，每路输出256KiB，期限1..1800秒另加有限进程组/身份固定子进程清理。每次删除私有配置/会话，项目修改由调用者清理；同用户恶意代码或服务被中断时仍以销毁自有沙箱为最终边界。
-
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 二次开发
-
-python -m venv <new-prefix>后，用<new-prefix>/bin/python -m pip install --require-hashes -r deepagents/requirements.lock及pip check恢复。DEEPAGENTS_PYTHON指向虚拟环境Python，保留该路径，不解析其可执行文件符号链接。运行python -m pytest -q deepagents/test_commands.py deepagents/test_controller.py。真实DeepAgents配合人工HTTP/写文件工具及固定进程夹具，不在操作者主机运行真实模型生成命令。
-
-[step指南](../docs/platform-steps.zh-CN.md)：python scripts/prepare_steps.py deepagents --output /tmp/deepagents-steps仅准备；python scripts/run_steps_e2e.py deepagents --timeout 1200实际执行。严格模型测试设置E2E_REQUIRE_LLM=1/E2E_REQUIRE_CLI=1。生成步骤或静态标记不是验收通过。
+2 vCPU，2048 MB 内存，应用端口 9000，非 root `user`。工作目录 `/home/user/app`；磁盘容量和最长生存时间由所选平台配置。模型任务需要访问配置的模型服务，模型调用费用由对应服务商计费。
 
 ## 贡献
 
-遵循[CONTRIBUTING](../CONTRIBUTING.md)、[规范](../docs/template-spec.md)、[设计](../docs/design/deepagents.md)，保持双语、依赖哈希、上游声明及不可变验证记录一致。
+开发模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)和[设计说明](../docs/design/deepagents.md)。
 
 ## 问题反馈
 
@@ -104,7 +142,3 @@ python -m venv <new-prefix>后，用<new-prefix>/bin/python -m pip install --req
 ## 许可证
 
 封装代码为[Apache-2.0](../LICENSE)。DeepAgents及langchain-openai为MIT，保留[DeepAgents原许可](upstream-LICENSE)与[集成库原许可](langchain-openai-LICENSE)。其余哈希固定依赖按各自许可证保留pip安装声明，不能统一重标Apache-2.0。
-
-### 当前平台 step 验收
-
-后续[当前版本真实 step 回执](evidence/express-2026-10-20T141151Z.json)及[完整外部 HTTP 结果](evidence/verification-steps-2026-10-20T141151Z.json)已通过：官方 READY、真实 Python SDK 创建和 CLI/SDK smoke，耗时 586.639 秒；9 HTTP PASS / 0 FAIL / 1 explicit model SKIP。自有沙箱、模板和临时私有缓存已独立确认清理。此前失败记录保留；本次未运行模型，既有镜像／模型回执保持原范围。

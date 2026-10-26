@@ -16,7 +16,16 @@
 
 ## 快速开始（CLI）
 
-使用 CLI 0.5.6 或更高版本和当前托管目录，按[安装与平台配置说明](../../using-templates.zh-CN.md)准备。下方历史记录验证的是其原 create/exec 接口，不表示已重新验证本次目录启动命令。
+运行下面命令前，先配置本机可访问的 OpenSandbox 服务：
+
+```bash
+export ABX_OPENSANDBOX_BASE_URL='http://127.0.0.1:8080'
+export ABX_OPENSANDBOX_API_KEY='<server-api-key>'
+```
+
+上面的地址用于本机服务；远端部署时替换为实际服务根地址。Key 使用该服务配置的密钥；只有服务不要求认证时才可不设置该变量。本例不需要交互登录、模型 API Key、模型 endpoint 或应用令牌；服务端需要能获取该原生镜像。
+
+使用 CLI 0.5.6 或更高版本和当前托管目录，按[安装与平台配置说明](../../using-templates.zh-CN.md)准备。
 
 安装 [CLI](../../using-templates.zh-CN.md) 和 Node.js 22+，完成下方平台配置，将 `<sandbox-id>` 替换为创建时返回的实例 ID。
 
@@ -24,8 +33,9 @@
 abx provider install Alibaba-Agent-Sandbox/awesome-providers//opensandbox --allow-unpinned --yes
 abx provider doctor opensandbox
 abx --provider opensandbox template launch opensandbox-code-interpreter --sandbox-timeout 180 --yes
-abx --provider opensandbox exec <sandbox-id> -- python3 -c 'print(6*7)'
-abx --provider opensandbox kill <sandbox-id> -y
+export ABX_SANDBOX_ID="<返回的沙箱ID>"
+abx --provider opensandbox exec "$ABX_SANDBOX_ID" -- python3 -c 'print(6*7)'
+abx --provider opensandbox kill "$ABX_SANDBOX_ID" -y
 ```
 
 ## 快速开始（Python SDK）
@@ -55,7 +65,18 @@ asyncio.run(main())
 
 ### 使用原生解释器 SDK
 
-持久 Python 上下文使用上游 OpenSandbox SDK。按[复现工作流](../../../.github/workflows/managed-opensandbox.yml)中的命令和锁文件安装固定的上游 SDK 依赖，并安装[公开 Python 客户端](../../python-client-installation.md)。下面显式启动镜像内的原生解释器服务，并让上游 SDK 连接同一个实例。
+持久 Python 上下文使用上游 OpenSandbox SDK。在独立目录执行以下命令；上游锁文件固定原生客户端依赖，PATH 中仍需有已安装的提供商插件和 Node.js。
+
+```bash
+python3 -m pip install 'uv==0.9.5'
+git clone https://github.com/opensandbox-group/OpenSandbox.git opensandbox-sdk
+git -C opensandbox-sdk checkout 30348cbdfe4b9cfd49e0963617aed357a8f1ac4c
+uv sync --project opensandbox-sdk/sdks/code-interpreter/python --frozen --no-dev --python 3.12
+uv pip install --python opensandbox-sdk/sdks/code-interpreter/python/.venv/bin/python 'agent-sandbox-client==0.4.0a6'
+```
+
+将下面 Python 示例保存为 `native_example.py`，在同一目录执行 `opensandbox-sdk/sdks/code-interpreter/python/.venv/bin/python native_example.py`。它显式启动镜像内的原生解释器服务，让上游 SDK 连接同一个实例；输出先为 `37`，再为 `42`，第二次调用复用同一个 Python 上下文。
+
 
 ```python
 import asyncio, os
@@ -76,7 +97,7 @@ async def main():
     try:
         url = urlsplit(os.environ.get("ABX_OPENSANDBOX_BASE_URL", "http://127.0.0.1:8080"))
         config = ConnectionConfig(domain=url.netloc, protocol=url.scheme,
-            api_key=os.environ["ABX_OPENSANDBOX_API_KEY"],
+            api_key=os.environ.get("ABX_OPENSANDBOX_API_KEY"),
             use_server_proxy=True, request_timeout=timedelta(seconds=60))
         native = await NativeSandbox.connect(sid, connection_config=config)
         try:
@@ -120,14 +141,6 @@ asyncio.run(main())
 ## 资源
 
 超时单位为秒。CPU、内存和镜像可用性取决于部署配置；用完后删除实例。
-
-## 已验证
-
-[2026-10-24 运行记录](../../../.agents/evidence/verify/2026-10-24-managed-native-pass.json)分别验证了默认实例创建和执行，以及显式启动原生解释器后的 Jupyter 健康、Python 持久/隔离上下文、程序异常和删除清理。两类实例均独立确认已删除。原始依赖版本与镜像摘要保留在记录中；[2026-10-21 历史记录](../evidence/verification-opensandbox-code-interpreter-2026-10-21-native-docker.json)也原样保留。
-
-## 二次开发
-
-定制上游镜像，或从[源码模板](../../../_skeleton/README.zh-CN.md)构建项目命令服务；原生解释器服务需要明确指定启动入口。
 
 ## 贡献
 

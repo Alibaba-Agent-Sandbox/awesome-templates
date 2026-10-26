@@ -8,7 +8,7 @@ Alibaba Express manages the `base` template and its image. Create an instance di
 
 ## Stack
 
-The [2026-10-19 inventory](../evidence/base-2026-10-19T154144Z.json) observed Python 3.13 and Node.js 20. The provider can update this image; query installed versions when your application needs specific dependencies.
+The managed image supplies Python 3.13 and Node.js 20. The provider can update this image; query installed versions when your application needs specific dependencies.
 
 ## Problem solved
 
@@ -16,14 +16,25 @@ Run shell commands and work with files without preparing an image.
 
 ## Quick start (CLI)
 
+Before either CLI launch or Python creation, set the following in your local terminal. Obtain all three values for the **same region** from the Alibaba Express console; the API key must have access to the managed template.
+
+```bash
+export ABX_SANDBOX_API_KEY='<sandbox-api-key>'
+export ABX_SANDBOX_BASE_URL='<sandbox-api-url>'
+export ABX_SANDBOX_DOMAIN='<sandbox-domain>'
+```
+
+Replace the three placeholders with your Sandbox API key, API URL and sandbox domain; the domain is a hostname, not a URL. These are platform credentials, not an LLM API key. This managed-image example needs no model, model endpoint, model key, application token or interactive login. Creating this existing image does not require Docker, an ACR namespace or image-build AccessKeys. Use the [provider setup guide](../../using-templates.md) if your account settings differ.
+
 Use CLI 0.5.6 or later and the current managed catalog; see [installation and provider setup](../../using-templates.md).
 
 Install [CLI and provider configuration](../../using-templates.md), then replace `<sandbox-id>` with the ID returned by launch.
 
 ```bash
 abx --provider alicloud-express template launch base --sandbox-timeout 180 --yes
-abx --provider alicloud-express exec <sandbox-id> -- python3 -c 'print(6*7)'
-abx --provider alicloud-express kill <sandbox-id>
+export ABX_SANDBOX_ID="<returned-sandbox-id>"
+abx --provider alicloud-express exec "$ABX_SANDBOX_ID" -- python3 -c 'print(6*7)'
+abx --provider alicloud-express kill "$ABX_SANDBOX_ID"
 ```
 
 ## Quick start (Python SDK)
@@ -68,18 +79,6 @@ Use the Express account settings in the [usage guide](../../using-templates.md).
 ## Resources
 
 Choose a finite timeout in seconds and delete instances when finished. CPU, memory and image updates are managed by the provider.
-
-## Verified
-
-[Fresh official npm CLI 0.5.1 / Python client 0.4.0a1 on 2026-10-25](../evidence/public-npm-base-2026-10-25T115215Z.json): default public catalog launch, non-root runtime inventory, CLI output 42, Python file write/read/delete, CLI deletion and an independent control-plane absence check. This is process/file acceptance; no persistent interpreter-session claim.
-
-[2026-10-25 public CLI 0.5.1 record](../../../.agents/evidence/verify/2026-10-25-unified-launch-release-docs.md#public-cli-051-release-and-base-launch): bare-name `template launch base` through the default public catalog, a 300-second lifetime, shell output `42`, CLI deletion and independently confirmed absence.
-
-[2026-10-24 public-package record](../../../.agents/evidence/verify/2026-10-24-managed-public-cli.json): CLI 0.4.16 create/exec yielding `42`/kill; Python 0.3.1a5 file round trip, explicit `ProviderSandbox.run_code` rejection with `E8004`, and independent instance absence. The [2026-10-19 historical record](../evidence/base-2026-10-19T154144Z.json) retains its original versions and call paths.
-
-## Secondary development
-
-For additional dependencies or a custom command service, start from the [source skeleton](../../../_skeleton/README.md); it produces a separate template.
 
 ## Contributing
 

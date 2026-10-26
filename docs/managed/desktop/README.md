@@ -16,7 +16,15 @@ Access an existing desktop environment. Shell/files use Agent Sandbox; screensho
 
 ## Quick start (CLI)
 
-Use CLI 0.5.6 or later and the current managed catalog; see [installation and provider setup](../../using-templates.md). The historical verification below covers its recorded create/exec interfaces, not a rerun of this catalog launch command.
+Before the commands below, obtain an API key from your E2B account and export it locally:
+
+```bash
+export ABX_E2B_API_KEY='<e2b-api-key>'
+```
+
+Use a key with access to the `desktop` template. This is E2B platform authentication; no interactive sandbox login, model API key, model endpoint or application token is needed for shell/files/desktop access. Custom E2B deployments can additionally require `ABX_E2B_BASE_URL` and `ABX_E2B_DOMAIN`; use their deployment values instead of Alibaba Express credentials.
+
+Use CLI 0.5.6 or later and the current managed catalog; see [installation and provider setup](../../using-templates.md).
 
 Install the [CLI](../../using-templates.md) and Node.js 22+, configure your provider below, and replace `<sandbox-id>` with the ID returned by launch.
 
@@ -24,8 +32,9 @@ Install the [CLI](../../using-templates.md) and Node.js 22+, configure your prov
 abx provider install Alibaba-Agent-Sandbox/awesome-providers//e2b --allow-unpinned --yes
 abx provider doctor e2b
 abx --provider e2b template launch desktop --sandbox-timeout 180 --yes
-abx --provider e2b exec <sandbox-id> -- python3 -c 'print(6*7)'
-abx --provider e2b kill <sandbox-id> -y
+export ABX_SANDBOX_ID="<returned-sandbox-id>"
+abx --provider e2b exec "$ABX_SANDBOX_ID" -- python3 -c 'print(6*7)'
+abx --provider e2b kill "$ABX_SANDBOX_ID" -y
 ```
 
 ## Quick start (Python SDK)
@@ -68,14 +77,6 @@ Set `ABX_E2B_API_KEY` to your E2B account credential. Set `ABX_E2B_BASE_URL` and
 ## Resources
 
 The timeout is in seconds. CPU, memory and image availability depend on your deployment. Delete instances after use.
-
-## Verified
-
-The CLI/SDK examples have been checked against their interfaces; there is no recorded live E2B desktop run. See the [2026-10-21 review](../evidence/verification-desktop-2026-10-21.json).
-
-## Secondary development
-
-Use the upstream E2B Desktop project for desktop customization. The separate [OSWorld source template](../../../osworld/README.md) is available for an Express-based workflow.
 
 ## Contributing
 

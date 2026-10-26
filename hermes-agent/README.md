@@ -6,57 +6,99 @@ Run the actual upstream Hermes Agent CLI with its local terminal and file toolse
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
+The default recipe uses the Alibaba FC generation-2 base, non-root `user`, and the published `agent-sandbox-server==0.4.0a6` package.
 
-NousResearch Hermes Agent v0.22.1, commit `297552a9d646119871391d202509822cd86330df`; private Python 3.14.6; `uv==0.12.3`; upstream frozen `uv.lock`; platform Agent Sandbox server.
+NousResearch Hermes Agent `0.22.1` at commit `297552a9d646119871391d202509822cd86330df`, private Python `3.14.6`, and the upstream frozen dependency lock.
 
-[Dockerfile](Dockerfile) · [template.yaml](template.yaml) · [Upstream](https://github.com/NousResearch/hermes-agent/tree/297552a9d646119871391d202509822cd86330df)
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml)
 
 ## Problem solved
 
-Expose the real Hermes headless CLI through a typed named command with a bounded CLI wait; inject model credentials at sandbox creation. Accepted gateway work has a separate lifecycle.
+Use an installed tool in an isolated sandbox, submit work through CLI, Python or HTTP, then export the files. Configure model and cloud-sandbox credentials separately.
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
+
+The default `openrouter` provider uses `OPENROUTER_API_KEY` and a model ID from your OpenRouter account. No interactive setup/login occurs. For a custom Chat-compatible service instead, export the declared `OPENAI_API_KEY` and `OPENAI_BASE_URL` before launch, and pass `provider="custom"` plus `model="<your-model-id>"` on every `hermes` call. `HERMES_PROVIDER` has a nonempty manifest default, so exporting that name alone does not switch the public recipe.
+
+Replace every `<...>` placeholder with your own value; use an exact model ID available to your account. Set secrets in your own terminal or secret manager, never in the image, YAML or public logs. Configure these variables **before** launch; later host changes do not reconfigure the running application.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./hermes-agent --yes
-abx run <sandbox-id> hermes_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export OPENROUTER_API_KEY='<your-model-or-vendor-key>'
+export HERMES_MODEL='<model-id-from-your-provider>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//hermes-agent --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+`--sandbox-timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
+
+Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
+
+```bash
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" hermes --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","cwd":"/home/user/app","command_timeout":300}'
+```
+
+The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/app`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
 
 ```python
-print(await client.commands.run('hermes_version'))
-```
+import asyncio
+import os
+from agent_sandbox import ProviderSandbox
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=420
+        )
+        try:
+            print(await client.commands.run('hermes', prompt='Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.', cwd='/home/user/app', command_timeout=300))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/hermes_version`, with `Content-Type: application/json` and this direct argument object:
+Use the [direct HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserving gateway headers, URL path/query and the independent application token. Send `POST /commands/hermes` with `Content-Type: application/json` and this direct argument object, without an `args` wrapper:
 
 ```json
-{}
+{
+  "prompt": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.",
+  "cwd": "/home/user/app",
+  "command_timeout": 300
+}
 ```
 
-Expected response for this check:
+The response is `{"result": ...}`; see the command reference for its actual content type. Model text varies. Set the HTTP wait to at least 420 seconds; the command execution deadline is separate, and disconnecting does not guarantee remote cancellation. Authentication failures return 401, invalid argument types 400, and execution errors an error response. If a result includes `exit_code`, also check that it is zero.
 
-```json
-{"result": "<command result>"}
+### Export files and cleanup
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
 ```
 
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
+
+`close()`/`aclose()` only close client connections; they do not delete the sandbox. Prepared templates/images in the launch journal can remain for reuse; remove only your own exact resources when no longer needed.
 
 ## Command reference
-
-`hermes` → buffered string.
 
 | Parameter | Type | Required/default | Meaning |
 |---|---|---|---|
@@ -73,6 +115,8 @@ Expected response for this check:
 | hermes_setup_check | none | Read-only CLI/version/provider-key diagnostic. |
 | run | script: string = main.py | Local Python stdout (compatibility). |
 
+Named-command results are buffered rather than streamed. `cwd` must be an existing directory satisfying the template's path constraints. Editing/tool permission allows model actions with the sandbox user's authority. Client disconnect is not a cancellation mechanism.
+
 ## Configuration
 
 `WORKSPACE=/home/user/app`; `HERMES_HOME=/home/user/.hermes`; `HERMES_PROVIDER=openrouter`. Supply `HERMES_MODEL` or the model argument. OpenRouter requires `OPENROUTER_API_KEY`; openai-api/custom require `OPENAI_API_KEY`. Custom also requires `OPENAI_BASE_URL`. The command uses `-Q --yolo`, terminal/file toolsets and the local terminal backend. It ignores user config and rules, does not run interactive setup, and kills the owned process group on timeout. Hermes may persist session/memory state under HERMES_HOME. Its CLI auto-starts the canonical gateway when needed; that detached authority exits after upstream idle conditions are satisfied. Killing the CLI does not cancel an accepted gateway turn. Messaging adapters are not configured, while the internal canonical gateway is part of this upstream CLI execution path.
@@ -83,39 +127,11 @@ Hermes runs through its private Python 3.14 shebang. The image exposes only its 
 
 ## Resources
 
-2 vCPU · 2048 MB · port 9000 · `/home/user/app` · non-root `user`.
-
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Historical verification
-
-Historical1.1.0 image acceptance on2026-10-19: CLI-created sandbox, full image/provenance/HTTP plus17 real compatible-model assertions and independently verified owned sandbox/template/registry cleanup. These receipts retain the original version/controller and do not qualify1.1.1. [image](evidence/express-2026-10-19.json) · [HTTP](evidence/image-http-2026-10-19T175057Z.json) · [model](evidence/model-image-2026-10-19T175057Z.json).
-
-
-
-The current coding controller imports trusted standard-library code under `python3 -I`, compiles the actual calculator and original-test source bytes, and requires exactly all three original tests to succeed without skips, expected failures or unexpected successes. Each test/held-out process must return a fresh completion acknowledgment generated after the model response; it is never included in the model prompt. Premature `SystemExit`, `os._exit(0)`, a static `INDEPENDENT_OK` string and stale bytecode cannot supply that acknowledgment. This protects ordinary acceptance against premature exits; it is not a security boundary against hostile Python with the same OS authority. Historical model runs retain their original controller hashes and do not prove this new gate; record a separate actual model run at the new controller revision on the reviewed image. Canonical deployment/provider qualification remains a separate required gate.
-
-No provider has a passing run recorded for this template.
-
-## Secondary development
-
-```bash
-python3 scripts/check_template.py hermes-agent
-python3 -m pytest -q hermes-agent/test_commands.py
-python3 scripts/run_local_e2e.py
-```
-
-`E2E_COMMAND_TIMEOUT` controls the model acceptance command budget (default 600 seconds, range 1–1800). L0 does not call a model. `E2E_REQUIRE_LLM=1` forces real coding acceptance. L3 uses target setup diagnostics, seeds failing source/tests, verifies changed source/new artifacts/unchanged tests through target file APIs, then independently executes unittest and held-out calculations. A missing key is not acceptance.
-
-### Agent Sandbox platform steps
-
-From a repository checkout, `python scripts/run_steps_e2e.py hermes-agent` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+2 vCPU, 2048 MB RAM, application port 9000, non-root `user`. Working directory: `/home/user/app`. Disk capacity and lifetime depend on the selected platform. Model tasks require outbound access to the configured model service and incur that service's charges.
 
 ## Contributing
 
-[CONTRIBUTING.md](../CONTRIBUTING.md) · [spec](../docs/template-spec.md) · [design](../docs/design/hermes-agent.md).
+To develop the template, read [CONTRIBUTING](../CONTRIBUTING.md) and the [design](../docs/design/hermes-agent.md).
 
 ## Issues
 
@@ -124,7 +140,3 @@ From a repository checkout, `python scripts/run_steps_e2e.py hermes-agent` build
 ## License
 
 Apache-2.0 template code. Upstream tools retain their own licenses and attribution. See [LICENSE](../LICENSE).
-
-### Current platform-step acceptance
-
-[Current-version genuine steps](evidence/express-2026-10-20T151019Z.json) and [full external HTTP result](evidence/verification-steps-2026-10-20T151019Z.json): official READY, actual Python SDK creation, CLI/SDK smoke and 9 PASS / 0 FAIL / 1 model SKIP; 319.815 seconds. Independent owned sandbox/template and private asset-cache cleanup passed. Earlier failed step attempts remain historical failures; this receipt is model-free and does not extend prior image/model scope.

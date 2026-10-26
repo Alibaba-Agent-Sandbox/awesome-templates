@@ -362,13 +362,13 @@ asyncio.run(main())
 }
 ```
 
-Verified 表里出现 `alicloud-express` 时，检查器要求存在上述形状的文件（文件名 `evidence/express-<date>.json` 或 `evidence/alicloud-express-<date>.json`），并且 `via` 同时有 `cli` 和 `sdk`，且 `ok` 都为 true。其他提供方使用 `evidence/<provider>-<date>.json`。
+Express 历史回执使用 `evidence/express-<date>.json` 或 `evidence/alicloud-express-<date>.json`；其他提供方使用 `evidence/<provider>-<date>.json`。静态检查器不会根据本地提交的回执认证提供方，即使其中字段声明成功。
 
 ### Verified on
 
 根 README 的目录表有 Verified on 列。单元格链接历史提供方运行；阅读回执中的准确源码、入口、检查和日期，不把它当作当前默认入口通过。空白表示没有匹配记录，不等于不支持。失败尝试不得写入该列或作为提供方资格；脱敏结果可用单独的 attempt 文件名保留，提供方／日期通过文件必须运行及独立清理成功。
 
-模板 README 的 `## 已验证` 明确说明已有证据的准确范围。作者自填通过声明不能证明测试实际执行；静态检查器不接受手填提供方通过表。参见[启动验证](workflows.zh-CN.md)。
+模板 README 面向使用者；验证报告、历史验收、开发说明和测试分层叙述放在工程记录、设计或贡献指南中，不是 README 必需章节。原始证据及上述验收门禁保持不变。作者自填通过声明不能证明测试实际执行；静态检查器仍拒绝手填提供方通过表。参见[启动验证](workflows.zh-CN.md)。
 
 ## 安全
 
@@ -392,11 +392,11 @@ Verified 表里出现 `alicloud-express` 时，检查器要求存在上述形状
 | Command reference | 命令参考 |
 | Configuration | 配置 |
 | Resources | 资源 |
-| Verified | 已验证 |
-| Secondary development | 二次开发 |
 | Contributing | 贡献 |
 | Issues | 问题反馈 |
 | License | 许可证 |
+
+启动前区分所需平台凭据、应用令牌和模型凭据，并写清模板实际读取的模型、endpoint、API Key 或产品登录配置；不臆造通用于所有上游工具的变量映射。
 
 CLI 一节要有 `abx run` 示例。SDK 一节导入 `ProviderSandbox`，通过 `application_client` 获取应用客户端，并调用 `client.commands.run`。命令参考是带参数的表。非阿里云基础镜像再加 `## Base image` / `## 基础镜像`。
 
@@ -492,6 +492,6 @@ Exec 启动必须有明确的 `start_cmd`。托管记录不包含该字段，因
 含 `application` 的 spec4 清单必须为 smoke 显式填写非 null 的 `expect`，支持字符串、数值、布尔、对象和数组，并使用结构化比较。旧 schema 输入直接拒绝。
 
 
-托管目录通过 `python scripts/check_managed_catalog.py` 检查准确字段、与源码目录不重名、服务声明、双语 14 个有序 README 章节，以及本地历史证据身份。`historical_evidence` 只链接原始回执，其内容不授予当前启动认证。只有完整、输入匹配且来源受独立信任的回执才能认证路径，参见[启动验证](workflows.zh-CN.md)。托管 ID 仍排除在源码镜像选择／steps 之外。[Desktop](managed/desktop/README.zh-CN.md)和[OpenSandbox 解释器](managed/opensandbox-code-interpreter/README.zh-CN.md)说明各条目的条件、实际证据范围和剩余产品门槛。
+托管目录通过 `python scripts/check_managed_catalog.py` 检查准确字段、与源码目录不重名、服务声明、双语 12 个有序 README 章节，以及本地历史证据身份。`historical_evidence` 只链接原始回执，其内容不授予当前启动认证。只有完整、输入匹配且来源受独立信任的回执才能认证路径，参见[启动验证](workflows.zh-CN.md)。托管 ID 仍排除在源码镜像选择／steps 之外。[Desktop](managed/desktop/README.zh-CN.md)和[OpenSandbox 解释器](managed/opensandbox-code-interpreter/README.zh-CN.md)说明各条目的条件、可用接口及运行限制。
 
 Dockerfile 固定已发布的 `agent-sandbox-server` 版本；CI 直接安装该依赖并检查实际版本，不再通过 Git 归档或注入 wheel 回退。

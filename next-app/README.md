@@ -1,6 +1,6 @@
 # next-app
 
-Pinned Next.js16.4.2, React/React DOM19.3.1 and Vite8.3.4 frontend scaffolds and preview servers.
+[中文](README.zh-CN.md)
 
 ## What it does
 
@@ -18,41 +18,95 @@ Provide concrete front-end scaffolds and persistent previews beyond generic Node
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+CLI, SDK and HTTP are alternative ways to use the same application. Choose one for the task. Examples may write files, create projects or start services; do not repeat the full example on the same instance without cleaning its previous outputs.
+
+Install the CLI/Python SDK and configure your platform with the [usage guide](../docs/using-templates.md#installation). The platform API key creates sandboxes; `ABX_SERVER_TOKEN` independently protects this template application. Run the following in your own terminal; cloning this repository is unnecessary.
+
+These template commands require no model, model endpoint or model API key.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./next-app --yes
-abx run <sandbox-id> toolchain_versions --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//next-app --sandbox-timeout 1800 --yes
+# Paste the sandbox ID from the launch output
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+```bash
+abx run "$SANDBOX_ID" scaffold --json-args '{"kind":"next","path":"preview-app"}'
+abx run "$SANDBOX_ID" dev_start --json-args '{"kind":"next","path":"preview-app","timeout_s":120}'
+```
+
+Returns `running: true`, `port: 3000`. Resolve port 3000 to view `ABX_NEXT_PREVIEW`; source files remain in `preview-app/`.
+
+Resolve the Next.js preview with `await sb.network.resolve(3000)`, preserving its path, query and gateway headers; use the [preview guide](../docs/preview-proxy.md) when needed. The app has no built-in login; use provider access controls. Vite uses `kind="vite"` and port 5173; if Host validation rejects the gateway, pass that exact gateway hostname as `allowed_host`, not a wildcard.
+
+`--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
+
+For OpenSandbox, set `ABX_PROVIDER=opensandbox` and configure its [provider guide](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md). Keep the same provider selected for subsequent CLI and Python calls.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+
+After launching above and setting `SANDBOX_ID`, save this as `use_template.py` and run `python3 use_template.py`. It connects to the same instance instead of creating another sandbox. Prepare any input file locally as shown above.
 
 ```python
-print(await client.commands.run('toolchain_versions'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            await client.commands.run('scaffold', kind='next', path='preview-app')
+            result = await client.commands.run('dev_start', kind='next', path='preview-app', timeout_s=120)
+            print(result)
+        finally:
+            try:
+                await client.commands.run('dev_stop')
+            finally:
+                await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+The SDK returns the command value; it unwraps the HTTP `result` envelope. Closing the client does not delete the sandbox.
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/toolchain_versions`, with `Content-Type: application/json` and this direct argument object:
+Resolve port 9000 on the same instance with the [HTTP calling example](../docs/using-templates.md#cli-sdk-and-http). Preserve gateway headers, URL path and query before adding the independent application authentication.
+
+First call, in order:
+
+- `POST /commands/scaffold` with `{"kind": "next", "path": "preview-app"}`.
+
+`POST /commands/dev_start`
 
 ```json
-{}
+{
+  "kind": "next",
+  "path": "preview-app",
+  "timeout_s": 120
+}
 ```
 
-Expected response for this check:
+Use `Content-Type: application/json` and application authentication as described in the shared guide. The request body is the direct argument object, without an `args` wrapper. Success returns `{"result": ...}` with the value described above. Set the HTTP client wait to 450 seconds, separately from the command execution deadline. Responses are buffered, not event streams. Errors: 400 invalid arguments, 401 authentication, 404 unknown command, 500 execution failure.
 
-```json
-{"result": {"next": "16.4.2", "react": "19.3.1", "react-dom": "19.3.1", "vite": "8.3.4"}}
-```
+After use, call:
 
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+- `POST /commands/dev_stop` with `{}`.
 
 ## Command reference
 
@@ -68,7 +122,7 @@ Expected response for this check:
 
 Next uses local next dev --webpack --hostname0.0.0.0 --port3000. Vite uses local vite --host0.0.0.0 --port5173 --strictPort. Literal argv; no shell interpolation. Existing directories and symlink/traversal paths are rejected. The controlled node_modules symlink points to the immutable preinstalled toolchain. Project source/build cache remain after stop; remove them explicitly when no longer needed.
 
-Version1.1.0 adds allowed_host for Vite's exact SDK-forwarded hostname. The default empty value preserves localhost-only host authorization; pass urlsplit((await sb.network.resolve(5173))[0]).hostname from the SDK. It sets only the upstream-supported __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS, verified in pinned Vite8.3.4 source and [official server options](https://vite.dev/config/server-options#server-allowedhosts). Wildcards, leading-dot suffixes, schemes, ports, credentials, commas and empty DNS labels are refused. Next does not accept this Vite-only setting. Runtime1.0.0's actual forwarded Vite403 attempt remains a failure;the completed1.1.0 image/forwarded acceptance is linked below. No Host rewrite or global allow-all mode is used.
+Use allowed_host for Vite's exact SDK-forwarded hostname. The default empty value preserves localhost-only host authorization; pass urlsplit((await sb.network.resolve(5173))[0]).hostname from the SDK. It sets only the upstream-supported __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS, verified in pinned Vite8.3.4 source and [official server options](https://vite.dev/config/server-options#server-allowedhosts). Wildcards, leading-dot suffixes, schemes, ports, credentials, commas and empty DNS labels are refused. Next does not accept this Vite-only setting. No Host rewrite or global allow-all mode is used.
 
 ## Configuration
 
@@ -81,21 +135,22 @@ Version1.1.0 adds allowed_host for Vite's exact SDK-forwarded hostname. The defa
 
 Development server environment contains only Node PATH, isolated temporary HOME, locale, telemetry opt-out and ownership marker. No cloud/model keys are inherited. The preview application itself has no password authentication; use provider access controls. Logs can include application output: do not publish raw log tails containing private data.
 
+The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
+
+```bash
+abx run "$SANDBOX_ID" dev_stop --json-args '{}'
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+
 ## Resources
 
 2vCPU,2048MB; platform rootfs about10GiB; ports9000/3000/5173. No Docker/KVM/display required. Commands require Linux pidfds and procfs for identity-safe cleanup. Owner-marked detached workers and the unreaped process group are stopped; kernel listener absence is checked before cleanup succeeds.
 
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Secondary development
-
-Edit generated source through SDK files. Keep framework packages pinned and regenerate the lockfile when intentionally upgrading. See [official Next installation](https://nextjs.org/docs/app/getting-started/installation) and [Vite guide](https://vite.dev/guide/). Development servers execute application code; this wrapper is not an additional sandbox security boundary.
-
 ## Contributing
 
-[CONTRIBUTING.md](../CONTRIBUTING.md), [template spec](../docs/template-spec.md), and [design](../docs/design/next-app.md). Run targeted real-process tests, complete HTTP L0, actual image L1 and cloud L2 before provider qualification. Preserve failed attempts and independent owned cleanup evidence.
+To improve this template, see the [contribution guide](../CONTRIBUTING.md), [template specification](../docs/template-spec.md) and [design notes](../docs/design/next-app.md).
 
 ## Issues
 
@@ -106,7 +161,3 @@ Edit generated source through SDK files. Keep framework packages pinned and rege
 Repository code Apache-2.0: [LICENSE](../LICENSE). Next, React and Vite are MIT; retained package notices and upstream-pins.json record the installed sources. Transitive license notices remain installed.
 
 For operator browser preview when FC serves HTML as an attachment, use the [SDK local relay](../docs/preview-proxy.md) after starting the owned app: python scripts/preview_proxy.py --sandbox-id <owned-sandbox-id> --remote-port 3000 (Next) or --remote-port 5173 (Vite). Keep the exact Vite allowed_host above. The relay borrows that sandbox; stop the relay and explicitly stop/kill owned app resources. This documented Next/Vite browser route is source checked; its browser/HMR behavior has not been separately qualified.
-
-### Additional current-version platform-step acceptance
-
-[Actual native steps](evidence/express-2026-10-20T130712Z.json): official READY, Python SDK creation, current CLI/SDK smoke and independently confirmed owned sandbox/template cleanup. [Full external HTTP](evidence/full-http-steps-2026-10-20T130712Z.json): 6 PASS / 0 FAIL / 0 SKIP.

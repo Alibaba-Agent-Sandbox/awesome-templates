@@ -1,5 +1,7 @@
 # SWE 本地评测切片
 
+[English](README.md)
+
 ## 做什么
 
 使用官方 `mini-swe-agent==2.4.6` 修复真正的 SWE-bench Verified 题目 `pallets__flask-5014`。准备固定 Flask base commit 和原始测试补丁，重现 1 个失败与 59 个通过；显式授权后由代理改源码，在另一个全新检出目录和 venv 中评测，交回源码补丁及 JSON 报告。
@@ -18,41 +20,111 @@
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任务。示例可能写入文件、创建项目或启动服务；不要在未清理前对同一实例重复执行整段示例。
+
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，并完成所选平台配置。平台 API Key 用于创建沙箱，`ABX_SERVER_TOKEN` 是独立的模板应用访问口令。以下命令在自己的终端执行，不需要克隆本仓库。
+
+启动前填写下列模型配置：API Key、接入点、模型 ID 必须属于同一个模型服务与地域。`https://model.example.invalid/v1` 是占位符，请替换为供应商给出的 API base，不要填写网页聊天地址。模型 ID 使用该端点实际支持的名称。
+
+此入口使用模型 API Key，无需运行浏览器 OAuth 登录，也不会继承你本机已登录的账号。模型接入要求见“配置”；本模板使用 **Chat Completions**，不能只凭“OpenAI 兼容”字样推断接口可用。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./swe --yes
-abx run <sandbox-id> swe_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export SWE_API_KEY='<your-model-api-key>'
+export SWE_BASE_URL='https://model.example.invalid/v1'
+export SWE_MODEL='<your-model-id>'
+export ABX_HTTP_TIMEOUT=1200
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//swe --sandbox-timeout 1800 --yes
+# 将启动输出中的沙箱 ID 填到这里
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+```bash
+abx run "$SANDBOX_ID" swe_prepare --json-args '{}'
+```
+
+返回 `pallets__flask-5014` 的 `run_id` 和失败基线，请保留该 ID 用于后续编码和评测。
+
+`--sandbox-timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
+
+OpenSandbox 用户将 `ABX_PROVIDER` 改为 `opensandbox`，并按[提供方指南](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)配置；后续 CLI 和 Python 必须继续选择同一个平台。
+
+准备后复制 `run_id` 到 `RUN_ID`；只在同意模型执行 shell 时使用 `allow_execution:true`。以下执行模型修复、在全新副本评测、下载报告/补丁，然后删除该 run。模型效果不保证成功；检查返回的测试状态，而非把任何 200 当修复成功。
+
+```bash
+export RUN_ID='paste-run-id'
+abx run "$SANDBOX_ID" swe_run_agent --json-args "{\"run_id\":\"$RUN_ID\",\"allow_execution\":true,\"max_steps\":30,\"command_timeout\":600}"
+abx run "$SANDBOX_ID" swe_evaluate --arg run_id="$RUN_ID"
+abx run "$SANDBOX_ID" swe_report --arg run_id="$RUN_ID"
+# 把返回的报告/补丁路径分别下载到本机，再清理
+abx download "$SANDBOX_ID" '<returned-report-path>' ./report.json
+abx download "$SANDBOX_ID" '<returned-patch-path>' ./repair.patch
+abx run "$SANDBOX_ID" swe_cleanup --arg run_id="$RUN_ID"
+```
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
+
+以下是 CLI 修复流程的完整 SDK 写法。先启动实例、设置 `SANDBOX_ID`，然后保存为 `use_template.py` 并执行 `python3 use_template.py`。`allow_execution=True` 明确授权模型执行 shell；脚本在本机保存报告与补丁，最终删除该 run 并关闭连接；外层沙箱仍需按后文释放。
 
 ```python
-print(await client.commands.run('swe_version'))
-```
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=1200
+        )
+        try:
+            prepared = await client.commands.run("swe_prepare")
+            print(prepared)
+            run_id = prepared["run_id"]
+            try:
+                print(await client.commands.run("swe_run_agent", run_id=run_id,
+                    allow_execution=True, max_steps=30, command_timeout=600))
+                report = await client.commands.run("swe_evaluate", run_id=run_id)
+                print(report)
+                Path("report.json").write_bytes(
+                    await sb.files.read_bytes(report["report_path"]))
+                Path("repair.patch").write_bytes(
+                    await sb.files.read_bytes(report["patch_path"]))
+            finally:
+                await client.commands.run("swe_cleanup", run_id=run_id)
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/swe_version`，`Content-Type: application/json`，直接发送以下参数对象：
+按[HTTP 调用示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析同一实例的 9000 端口，保留网关头、URL 路径和查询，再添加独立应用认证。
+
+`POST /commands/swe_prepare`
 
 ```json
 {}
 ```
 
-该检查的预期响应：
+请求头包括 `Content-Type: application/json` 和按共享指南设置的应用认证；请求体是参数对象本身，不套 `args`。成功响应为 `{"result": ...}`，其中结果含义同上。 HTTP 等待时间设为 1200 秒；它独立于命令内部的执行时限。结果为缓冲响应，不是事件流。400 为参数错误，401 为认证失败，404 为命令不存在，500 为执行错误。
 
-```json
-{"result": "mini-swe-agent 2.4.6"}
-```
+后续按顺序请求：
 
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+- `POST /commands/swe_run_agent`: `{"run_id":"<returned-run-id>","allow_execution":true,"max_steps":30,"command_timeout":600}`
+- `POST /commands/swe_evaluate`: `{"run_id":"<returned-run-id>"}`
+- `POST /commands/swe_report`: `{"run_id":"<returned-run-id>"}`
+- `POST /commands/swe_cleanup`: `{"run_id":"<returned-run-id>"}`
 
 ## 命令参考
 
@@ -70,42 +142,35 @@ print(await client.commands.run('swe_version'))
 
 ## 配置
 
-实测实例工作流显式允许30步和600秒，HTTP时限660秒。公开API默认值仍为12步/300秒；较早尝试中，所用模型未在该保守预算内完成。另一次自有云沙箱诊断在25次调用后提交，并由独立评测器通过原有全部60个测试身份。随后使用该预算的严格重跑仍未提交；诊断成功不能作为模板验收。版本1.1.0新增上游原生 bash 工具调用协议：启动配置服务时设置 `SWE_MODEL_PROTOCOL=toolcall`，选择官方 `mini.yaml` 和 LiteLLM 原生函数调用。默认 `text` 保留原有 `default.yaml` 文本协议；未知取值在运行前拒绝。诊断返回 `native_tool_calls`，严格验收要求其为真。原始测试身份、全新评测器和评分断言保持原样。新构建1.1.0镜像的真实云端/模型验收已通过，见下方回执。
+此入口调用兼容 Chat Completions API，base 包含供应商要求的前缀（常见 `/v1`），不要额外添加 `/chat/completions`。默认 text 协议要求模型按上游格式返回 bash 操作与提交，不会自动改为原生 toolcall。
 
+| 变量 | 要求 / 默认值 | 含义 |
+| --- | --- | --- |
+| `SWE_API_KEY` | 模型执行必需 | 兼容模型服务的 API Key。 |
+| `SWE_BASE_URL` | 模型执行必需 | Chat Completions API base，例如供应商 HTTPS `/v1` 接入点。 |
+| `SWE_MODEL` | 模型执行必需 | 端点实际模型 ID；包装层自行添加 LiteLLM `openai/` 前缀。 |
+| `SWE_MODEL_PROTOCOL` | 当前模板固定默认 `text` | `toolcall` 使用上游原生 bash function calls，要求模型/端点支持工具；`text` 使用上游文本协议。 |
+| `ABX_SERVER_TOKEN` | 必需 | 独立的应用访问口令。 |
 
-YAML 声明空的 `SWE_API_KEY`、`SWE_BASE_URL`、`SWE_MODEL`，必须明确注入服务进程。模型 key 只传给代理进程环境，不进入模型 shell action 的环境。凭据不放 argv、配置 JSON、返回错误或持久报告。私有 trajectory/config 目录由 finally 删除。这是进程卫生措施，不能防止同用户恶意代码读取其他进程。
+`SWE_MODEL_PROTOCOL` 在当前 manifest 中是非空 `text`。CLI 直接启动此模板时，主机上的 `export SWE_MODEL_PROTOCOL=toolcall` 不会覆盖它；如要使用原生工具协议，请复制为自己的模板，显式修改该字段后按[本地源码用法](../docs/using-templates.zh-CN.md)启动。模型 API Key、base、model 三个字段为空，按上面的 export 填入即可。
 
-保留 HOME 原值。官方 `MSWEA_GLOBAL_CONFIG_DIR` 指向新的私有目录，`MSWEA_CONFIGURED=true` 禁交互 setup，禁 dotenv，并使用已安装包中 default config 的绝对路径。不继承模型、提供方、代理和 Git 环境覆盖项。上游默认 local backend 每个 action 自建 session；这里通过其公开环境扩展接口，让普通子代继承一个代理所属进程组，退出/超时清理整个组。主动 setsid/daemonize 脱组的恶意进程不在该保证内。
+模型生成的 shell 命令拥有沙箱用户的文件与网络权限，应使用一次性沙箱和可信任务。当前只提供内置 Flask 实例，评测切片不是完整官方 Docker benchmark。启动前导出模型设置；在本机稍后修改变量不会重配已启动应用。
 
-只对可信任务和模型使用一次性沙箱：mini 会以当前用户文件/网络权限执行模型生成的 bash。限定补丁只限制评测输入，不限制运行中的代理写入位置。最终销毁整个自有沙箱才是清理边界。run_id 不是认证机制。
+工作目录为 `/home/user/app`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
+
+```bash
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
 
 ## 资源
 
-2 vCPU、2048 MiB。默认 9000 端口；显式配置示例使用 9010。固定 Flask 压缩包为 692792 字节，只带一道题。代理与 Python 3.11.10 评测依赖分别装入 venv，避免包冲突；每次任务及独立评测再复制固定评测 venv。显式 cleanup 释放任务文件，之后销毁沙箱。
-
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 历史验收
-
-尚未记录任何通过的提供方测试。
-
-L0 可以跳过缺失的上游运行时/模型前置，这不证明代理运行。L1/L2/L3 结果以 PR 和 owner evidence 为准。首版 Python3.13 真实镜像因上游把 pkgutil.get_loader 弃用视为错误，得到 2PASS/58ERROR；保留原测试和 warning filter，现固定原题 Python3.11.10，真实 CI 镜像已通过准确1FAIL59PASS基线、实际mini/Qwen3.8-flash修复、全新环境60PASS与远端补丁/报告读取（14PASS/0FAIL/0SKIP）。10项自有资源清理和额外严格不存在性回查均通过，见[实际镜像证据](./evidence/image-runtime-2026-10-16-configured.json)和[严格回查](./evidence/image-runtime-2026-10-16-strict-readback.json)。完整本地abx template deploy尚未运行，因此正式提供方验证仍为空。官方完整 Docker harness 与其他提供方未验证；不要把本报告发表为 benchmark 分数。
-
-## 二次开发
-
-阅读[设计](../docs/design/swe.md)与[规范](../docs/template-spec.md)。新增题目前核对固定源归档、许可证、原始测试补丁、精确 FAIL_TO_PASS/PASS_TO_PASS、兼容的固定依赖及独立失败/通过结果。不要通过 API 暴露任意 shell 测试命令、URL 下载或调用者自带补丁。manifest 故意不包含上游标准答案补丁。
-
-### Agent Sandbox step 构建
-实际1.1.0 step尝试在1200秒内未独立确认READY，保留为[失败](evidence/verification-steps-2026-10-20T091943Z.json)，并有[单独清理回查](evidence/steps-cleanup-2026-10-20.json)。不认定step构建通过；当前镜像/模型通过回执独立保留。
-
-
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py swe`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+2 vCPU、2048 MB，命令端口 9000。只内置一个固定 Flask 实例；Agent 与 Python 3.11.10 评测环境独立。每个 run 及独立评测复制自己的环境，运行文件持续占用磁盘直到 `swe_cleanup` 或删除沙箱。
 
 ## 贡献
 
-执行 `python -m pytest -q swe/test_commands.py swe/test_e2e_protocol.py`、`python3 scripts/check_template.py swe`、`python3 scripts/test_spec_tools.py` 与 `python3 scripts/run_local_e2e.py`。构建真实镜像，跑[当前 Express 源码启动验证](../docs/public-launch-testing.md)，再配置兼容模型后执行 `E2E_REQUIRE_LLM=1 E2E_RUN_LLM=1 E2E_BASE_URL=<已配置服务> python swe/e2e_test.py`。保留失败/跳过，记录准确版本、测试身份、补丁读取与自有资源清理。不要提交原始 trajectory、凭据或私有资源 ID。
+改进模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)、[模板规范](../docs/template-spec.zh-CN.md)和[设计说明](../docs/design/swe.md)。
 
 ## 问题反馈
 
@@ -116,7 +181,3 @@ L0 可以跳过缺失的上游运行时/模型前置，这不证明代理运行�
 Wrapper 为 Apache-2.0；mini-swe-agent 2.4.6 为 MIT；Flask 为 BSD-3-Clause；SWE-bench Verified 元数据和测试补丁遵循数据集 MIT 许可证。随附 CPython 保留其 distribution 许可证文件。来源和许可证链接见 [NOTICE](./NOTICE.md)，原始源码归档保留自己的许可证文件。
 
 CLI 安装、SDK 源码安装、HTTP 认证与资源所有权见[模板使用指南](../docs/using-templates.zh-CN.md)。
-
-### 当前平台 step 验收
-
-后续[当前版本真实 step 回执](evidence/express-2026-10-20T143844Z.json)及[完整外部 HTTP 结果](evidence/verification-steps-2026-10-20T143844Z.json)已通过：官方 READY、真实 Python SDK 创建和 CLI/SDK smoke，耗时 1090.426 秒；5 HTTP PASS / 0 FAIL / 1 explicit model SKIP。自有沙箱、模板和临时私有缓存已独立确认清理。此前失败记录保留；本次未运行模型，既有镜像／模型回执保持原范围。
