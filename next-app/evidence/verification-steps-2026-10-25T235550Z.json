@@ -1,0 +1,55 @@
+{
+  "template": "next-app",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-25T235550Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": true,
+  "runtime_attempted": true,
+  "cleanup_verified": true,
+  "template_cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "next-app",
+    "materializer_sha256": "4a681c6d1824601d2fcfbd99ec66abca62617eb18a6d896b5b01054f37cd2b19",
+    "source_manifest_contract_sha256": "a5b0c6ee62cbc96bf6c1a6316529527f6940cbc383e0ac2e20fa46612f039008",
+    "template_version": "1.1.2",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+    "asset_transport": "direct",
+    "steps_json_bytes": 4907,
+    "inputs_sha256": {
+      "Dockerfile": "37d920cad57ca6c41c9acbbdd9c17fc5fed5ee724269898c072a50913eb3fa20",
+      "template.yaml": "faf6e753841699056f179a8f537f19b9416c26ddd0c58397e923ab372de07d94",
+      "package.json": "7b4167f73dad78551f7e21d460da5050ed9a2824611ce382def7cd00ec13cbf8",
+      "package-lock.json": "c41bed7b4d4623040121df3887f8dae84f879a6d5d570c916d2706604cd154eb",
+      "commands.py": "f6a04a667527b053ac10d496f042a4ef5d05bdde43ac8bc877c7f0a513ce2c70",
+      "lifecycle.py": "f49febcfe879c0b363c5ff7a55a8760bd2a8edded2a3d02b8277710e0a13cdf1"
+    },
+    "generated_manifest_sha256": "344239fa278c5d4e81cd188848740d40c19b668ca40ad8589e0d6bd6dee20bd4"
+  },
+  "template_version": "1.1.2",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "sandbox_create": "abx template launch",
+  "cli_version": "abx, version 0.5.6",
+  "client_version": "0.4.0a6",
+  "cli_distribution": "published",
+  "cli_source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "prepared_launch_manifest_sha256": "3568ccd19c49bdcd2bd9ec6db99c5b6388c13a72a3744d288bacfaf120100230",
+  "commands": [],
+  "uncertain_sandbox_intent": false,
+  "reason": "CLIError; private staging retained",
+  "diagnostics": {
+    "code": "E3000"
+  },
+  "failed_check": "CLI run failed (exit 1)",
+  "unresolved_owned_cleanup": false,
+  "duration_s": 57.939
+}
