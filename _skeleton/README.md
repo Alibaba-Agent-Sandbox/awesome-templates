@@ -21,19 +21,20 @@ Gives a new template one directory that already satisfies [docs/template-spec.md
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Save that ID in `ABX_SANDBOX_ID` below.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./_skeleton --yes
-abx run <sandbox-id> hello --json-args '{"name": "Express"}'
+abx template launch ./_skeleton --sandbox-timeout 1800 --yes
+export ABX_SANDBOX_ID="<returned-sandbox-id>"
+abx run "$ABX_SANDBOX_ID" hello --json-args '{"name": "Express"}'
 ```
 
 `template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+Install `agent-sandbox-client==0.4.0a6` in a virtual environment and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
 
 ```python
 print(await client.commands.run('hello', name='Express'))
@@ -82,18 +83,6 @@ Provide secret values before the command server starts; use create-time env only
 | memory | 2048 MB |
 | port | 9000 |
 | disk | platform rootfs, about 10G on Express |
-
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Historical verification
-
-No provider has a passing run recorded for this template.
-
-## Secondary development
-
-Copy `_skeleton` to a kebab-case directory whose name matches `^[a-z0-9][a-z0-9-]*$`. Set `template.yaml` `name` to that directory name. Replace `hello` with commands that call the upstream program, and pin every installed version in the Dockerfile. Fill `docs/design/<name>.md` from [docs/design/_TEMPLATE.md](../docs/design/_TEMPLATE.md). Add one `awesome-templates.yaml` entry. Run `python3 scripts/check_template.py <dir>`.
 
 ## Contributing
 

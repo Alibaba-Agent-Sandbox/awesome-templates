@@ -1,5 +1,7 @@
 # browser-automation
 
+[English](README.md)
+
 ## 做什么
 
 Python 的 browse/scrape/fill_form 每次独立创建浏览器；原生MCP调用有意共享一个自有浏览器会话，直到停止或空闲关闭。mcp_stop删除其私有配置和输出。
@@ -24,41 +26,81 @@ Python 的 browse/scrape/fill_form 每次独立创建浏览器；原生MCP调用
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任务。示例可能写入文件、创建项目或启动服务；不要在未清理前对同一实例重复执行整段示例。
+
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，并完成所选平台配置。平台 API Key 用于创建沙箱，`ABX_SERVER_TOKEN` 是独立的模板应用访问口令。以下命令在自己的终端执行，不需要克隆本仓库。
+
+本模板的这些命令不需要模型、模型 endpoint 或模型 API Key。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./browser-automation --yes
-abx run <sandbox-id> browse --json-args '{"url": "data:text/html,<title>ABX_E2E_OK</title><h1>ABX_E2E_OK</h1>", "action": "extract"}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//browser-automation --sandbox-timeout 1800 --yes
+# 将启动输出中的沙箱 ID 填到这里
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+```bash
+abx run "$SANDBOX_ID" browse --json-args '{"url":"data:text/html,<title>Invoice</title><h1>Total: 51.30</h1>","action":"extract"}'
+```
+
+返回 `action: extract`、`title: Invoice`，以及包含 `Total: 51.30` 的可见文本。
+
+浏览器使用沙箱内的新私有 profile，不会导入本机登录或 cookies。需要登录的网站应在相应远端浏览器会话中处理；browser-use/Stagehand 的单次调用结束即删除私有会话，不提供账号会话持久化承诺。示例访问公网，需要沙箱能够出网。
+
+`--sandbox-timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
+
+OpenSandbox 用户将 `ABX_PROVIDER` 改为 `opensandbox`，并按[提供方指南](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)配置；后续 CLI 和 Python 必须继续选择同一个平台。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
+
+在完成上述 CLI 启动、设置 `SANDBOX_ID` 后，将以下保存为 `use_template.py`，执行 `python3 use_template.py`。它连接同一实例，不另建沙箱。对于需要输入的示例，先在本机准备上面的文件。
 
 ```python
-print(await client.commands.run('browse', url='data:text/html,<title>ABX_E2E_OK</title><h1>ABX_E2E_OK</h1>', action='extract'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            result = await client.commands.run('browse', url='data:text/html,<title>Invoice</title><h1>Total: 51.30</h1>', action='extract')
+            print(result)
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。关闭连接不会删除沙箱。
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/browse`，`Content-Type: application/json`，直接发送以下参数对象：
+按[HTTP 调用示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析同一实例的 9000 端口，保留网关头、URL 路径和查询，再添加独立应用认证。
+
+`POST /commands/browse`
 
 ```json
-{"url": "data:text/html,<title>ABX_E2E_OK</title><h1>ABX_E2E_OK</h1>", "action": "extract"}
+{
+  "url": "data:text/html,<title>Invoice</title><h1>Total: 51.30</h1>",
+  "action": "extract"
+}
 ```
 
-该检查的预期响应：
-
-```json
-{"result": {"action": "extract", "title": "ABX_E2E_OK", "text": "ABX_E2E_OK"}}
-```
-
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+请求头包括 `Content-Type: application/json` 和按共享指南设置的应用认证；请求体是参数对象本身，不套 `args`。成功响应为 `{"result": ...}`，其中结果含义同上。 HTTP 等待时间设为 450 秒；它独立于命令内部的执行时限。结果为缓冲响应，不是事件流。400 为参数错误，401 为认证失败，404 为命令不存在，500 为执行错误。
 
 ## 命令参考
 
@@ -85,7 +127,7 @@ print(await client.commands.run('browse', url='data:text/html,<title>ABX_E2E_OK<
 
 ### 原生 Playwright MCP
 
-版本2.1.0加入官方 `@playwright/mcp@0.0.83` 和 lockfile 固定的 JavaScript Playwright1.64.0-alpha-1790635538000，复用现有 Chromium1208，不再安装第二份浏览器或模型凭据。原 Python API 继续使用 Playwright1.58.0；两个驱动组合都要真实验收，npm 版本号不能证明浏览器行为。
+镜像包含官方 `@playwright/mcp@0.0.83` 和 lockfile 固定的 JavaScript Playwright1.64.0-alpha-1790635538000，复用现有 Chromium1208，不再安装第二份浏览器或模型凭据。原 Python API 继续使用 Playwright1.58.0；
 
 | 命令 | 参数 | 结果 |
 | --- | --- | --- |
@@ -118,71 +160,22 @@ PDF在独立HOME子进程执行，执行时限1–120秒并有有界清理。通
 不要输出到共享日志。禁止把凭据写入镜像或 YAML。填表成功与错误响应都不回显
 输入值；用户脚本自行保证 stdout 安全。
 
+工作目录为 `/home/user/app`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
+
+```bash
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
+
 ## 资源
 
 2 vCPU、2048 MB 内存、9000端口。Chromium 用 `/tmp` 替代小容量 `/dev/shm`。
 并发请求增加内存占用，通过文件 API 删除旧 `browser-artifacts/` 释放根文件系统。
 
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 2.1.0 历史验收
-
-
-版本2.1.0通过真实阿里云极速版原生step构建、Python SDK Sandbox.create、CLI/SDK浏览器及原生MCP冒烟，以及完整远程HTTP29 PASS/0 FAIL/0 SKIP。真实MCP工具发现、导航、快照、点击及截图复用Chromium1208，独立计数器与PNG检查通过。自有沙箱/模板删除及独立不存在性回查通过；其他提供方及其余上游工具动作未认证。
-
-| Version | Provider | Evidence |
-| --- | --- | --- |
-| 2.1.0 | alicloud-express | [SDK-created steps](evidence/express-2026-10-20T094547Z.json), [full HTTP29](evidence/full-http-steps-2026-10-20T094547Z.json) |
-
-## 2.0.2 历史验收
-
-版本 2.0.2 已通过真实 CI 镜像登记、官方 READY、CLI/SDK，以及完整 Chromium 截图/PDF/独立产物 HTTP 检查 24 通过、0 失败、0 跳过。独立确认 sandbox/template/registry 清理。状态仍为 experimental；其他提供方未验证。
-
-| 提供方 | 范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | 精确当前版本、真实镜像和独立清理 | [正式回执](evidence/express-2026-10-20.json)、[HTTP](evidence/image-http-2026-10-20T060053Z.json) |
-
-
-另一平台 step 尝试在 1200 秒内未达到 READY，官方最后状态为 building；[失败记录](evidence/full-http-steps-2026-10-20T062809Z.json)保留，不作为 step 通过证据。
-
-## 历史验收
-
-尚未记录任何通过的提供方测试。
-
-静态符合性和本地浏览器验收可以独立执行，不代表云端提供方验收。L1 要求真实镜像
-构建，L2 要求 READY 沙箱及外部 CLI、SDK 调用。缺失 Chromium 时 L0 失败，跳过
-浏览器测试不能算作验收。
-
-## 二次开发
-
-2.0.2 将 Python 包、系统依赖、Chromium 下载拆为三个构建 RUN，避免
-一次真实构建流截止。后续成功诊断超过300秒，不能推断极速版统一单步时限。Playwright 版本及完整 Chromium 不变；旧版本证据保留。
-
-
-在本目录运行 `abx template deploy` 或上述安装命令。提供方解析阿里云 region/tag
-占位符；Dockerfile 直接安装精确的已发布服务端包。
-重型安装放前层，`COPY commands.py` 放最后。Dockerfile 无 CMD/ENTRYPOINT，
-generation 2 使用 YAML 的 `start_cmd`、`ready_cmd`，以 `user` 运行。
-
-本地安装钉住的 Playwright 与对应 Chromium 到可写缓存，安装和运行时设置一致的
-`PLAYWRIGHT_BROWSERS_PATH`。将 `WORKSPACE` 与 `ABX_SERVER_BASE_DIR` 指向
-同一可写目录后启动 `python3 commands.py`，再运行
-`E2E_BASE_URL=http://127.0.0.1:9000 python3 e2e_test.py`。测试导航内联页面、
-通过服务端文件 API 下载真实 PNG、检查表单脱敏及并发隔离，缺浏览器退出非零。
-
-### Agent Sandbox step 构建
-
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py browser-automation`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
-
 ## 贡献
 
-遵守 [CONTRIBUTING.md](../CONTRIBUTING.md)、
-[模板规范](../docs/template-spec.zh-CN.md) 和
-[设计文档](../docs/design/browser-automation.md)。从仓库根运行
-`python3 scripts/check_template.py browser-automation` 与
-`python3 scripts/run_local_e2e.py`。只记录真实通过级别，未满足验收前保持 experimental。
+改进模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)、[模板规范](../docs/template-spec.zh-CN.md)和[设计说明](../docs/design/browser-automation.md)。
 
 ## 问题反馈
 

@@ -10,58 +10,109 @@ copies back selected results. It never auto-commits.
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
+The default recipe uses the Alibaba FC generation-2 base, non-root `user`, and the published `agent-sandbox-server==0.4.0a6` package.
 
-Alibaba FC base `v0.0.49`, its Python 3.13 server and Node 20 remain intact.
-Aider requires Python `>=3.10,<3.13`; a separate SHA256-verified official
-python-build-standalone **3.12.12 / 20260211** runs Aider in `/opt/aider`.
+Official `aider-chat==0.86.2` in a separate Python `3.12.12` environment under `/opt/aider`; the server uses the platform Python.
 
-No browser, Node upgrade or additional HTTP server is installed.
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml)
 
 ## Problem solved
 
-Run a reproducible code review or bounded edit without installing Aider into the
-caller's environment, mixing its pinned Python dependencies with the server, or
-sending the entire repository/configuration to a model by default. This is a
-selected-file workflow, not a general replacement for interactive Aider.
+Use an installed tool in an isolated sandbox, submit work through CLI, Python or HTTP, then export the files. Configure model and cloud-sandbox credentials separately.
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
+
+This headless path uses the three explicit model settings below; it does not run browser/OAuth login. The endpoint must support OpenAI-compatible Chat Completions and accept this adapter's `enable_thinking=false` setting. Aider uses whole-file text edits here; native tool-calling support is not required. Obtain the key and exact model ID from that endpoint's provider; a cloud Sandbox API key is a different credential. The example below uses DashScope's public compatible base as an example: use a key and model authorized for that same region, or replace all three together.
+
+For the DashScope base below, create a Beijing-region key following [Model Studio API-key setup](https://www.alibabacloud.com/help/en/model-studio/get-api-key) and use a model allowed for that account. Other regions and Coding Plans use their matching keys/endpoints.
+
+Replace every `<...>` placeholder with your own value; use an exact model ID available to your account. Set secrets in your own terminal or secret manager, never in the image, YAML or public logs. Configure these variables **before** launch; later host changes do not reconfigure the running application.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./aider --yes
-abx run <sandbox-id> aider_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export AIDER_API_KEY='<your-model-or-vendor-key>'
+export AIDER_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
+export AIDER_MODEL='<model-id-from-your-provider>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//aider --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+`--sandbox-timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
+
+Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
+
+```bash
+abx exec "$SANDBOX_ID" -- git -C /home/user/app init -q
+```
+
+```bash
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" aider --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","files":"[\"generated_hello.py\",\"GENERATED_REPORT.md\"]","allow_write":true,"cwd":"/home/user/app","command_timeout":300}'
+```
+
+The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/app`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
 
 ```python
-print(await client.commands.run('aider_version'))
-```
+import asyncio
+import os
+from agent_sandbox import ProviderSandbox
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        await sb.commands.run("git -C /home/user/app init -q")
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=420
+        )
+        try:
+            print(await client.commands.run('aider', prompt='Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.', files='["generated_hello.py","GENERATED_REPORT.md"]', allow_write=True, cwd='/home/user/app', command_timeout=300))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/aider_version`, with `Content-Type: application/json` and this direct argument object:
+Every entry requires a Git worktree. Before this request, run the `abx exec ... git ... init -q` preparation above.
+
+Use the [direct HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserving gateway headers, URL path/query and the independent application token. Send `POST /commands/aider` with `Content-Type: application/json` and this direct argument object, without an `args` wrapper:
 
 ```json
-{}
+{
+  "prompt": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.",
+  "files": "[\"generated_hello.py\",\"GENERATED_REPORT.md\"]",
+  "allow_write": true,
+  "cwd": "/home/user/app",
+  "command_timeout": 300
+}
 ```
 
-Expected response for this check:
+The response is `{"result": ...}`; see the command reference for its actual content type. Model text varies. Set the HTTP wait to at least 420 seconds; the command execution deadline is separate, and disconnecting does not guarantee remote cancellation. Authentication failures return 401, invalid argument types 400, and execution errors an error response. If a result includes `exit_code`, also check that it is zero.
 
-```json
-{"result": "aider 0.86.2"}
+### Export files and cleanup
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
 ```
 
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
+
+`close()`/`aclose()` only close client connections; they do not delete the sandbox. Prepared templates/images in the launch journal can remain for reuse; remove only your own exact resources when no longer needed.
 
 ## Command reference
 
@@ -71,24 +122,7 @@ Expected response for this check:
 | `aider_setup_check` | none | booleans for installed/configured/home-blocked, pin and workspace; no secret/endpoint values |
 | `aider` | required `prompt: string` (1–100000 chars); `cwd: string=""`; `files: string="[]"` containing a JSON list of at most 32 relative paths; `allow_write: boolean=false`; `command_timeout: integer=600` (1–1800) | dictionary with redacted stdout/stderr, exit code and selected changed paths |
 
-Each file is at most 1 MiB. `cwd` must exist inside a git working tree. Existing
-file symlinks, symlink parents, traversal, absolute paths, duplicates and `.git`,
-`.env` or `.aider` paths are rejected. Missing selected names are new artifacts.
-Non-selected staged output is discarded. Automatic confirmation is explicitly
-disabled (`yes-always: false`), and the owned stdin feeder continually answers
-`n` until process exit, so upstream refuses creation or editing of paths that
-were not added to the selected stage. In this pinned version config false alone
-leaves confirmation unset, and EOF would accept the default Yes. Detected concurrent source changes reject
-writeback; this is not an isolation boundary against hostile concurrent writers.
-Writes are atomic per file, preserve an existing file's permission bits and are
-not an all-files transaction. Ask mode never copies staged edits back.
-
-The upstream argv uses `--chat-mode ask|whole`, `--message-file`, the selected
-paths, explicit model/base/settings, and disables commits, lint/test execution,
-shell suggestions, URL detection, browser use, analytics and update checks.
-A fixed text prefix keeps prompts beginning with `/` or `!` as model input,
-preventing upstream slash/bang command dispatch. Prompts and API keys are not
-placed in argv; the key is provided in child env.
+Named-command results are buffered rather than streamed. `cwd` must be an existing directory satisfying the template's path constraints. Editing/tool permission allows model actions with the sandbox user's authority. Client disconnect is not a cancellation mechanism.
 
 ## Configuration
 
@@ -103,8 +137,7 @@ placed in argv; the key is provided in child env.
 Export `AIDER_API_KEY`, `AIDER_BASE_URL`, `AIDER_MODEL` and the independent application token before `template launch`. This path starts the named server for the instance; no second port-9010 server is needed. Changing the host environment does not reconfigure an existing application; launch a new instance after changing configuration.
 
 The compatible-model settings disable thinking with `extra_body.enable_thinking=false`.
-This was chosen for the verified Qwen-compatible route; adjust and retest this
-setting when extending another backend. Credentials are not written to stage
+Your model endpoint must accept this request parameter. Credentials are not written to stage
 files. Model input still leaves the sandbox for your configured endpoint.
 
 **Native-home limitation:** fixed upstream Aider and configargparse always search
@@ -118,57 +151,11 @@ until that sandbox is destroyed. Do not run real calls on a shared host home.
 
 ## Resources
 
-2 vCPU, 2048 MiB, port 9000. A dependency-only metadata resolution found 108
-compatible distributions / 118 MiB compressed Linux x86-64 wheels on Python 3.11;
-this is not an installed-image size. The separate Python 3.12 archive adds about
-32 MiB compressed on x86-64. Actual image acceptance is recorded separately.
-
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Historical verification
-
-[Express supplemental image/runtime acceptance](evidence/image-runtime-2026-10-16-configured.json)
-passed against the actual CI-built image: official READY, exact source/server
-provenance, SDK/HTTP/CLI version and configured-target checks, actual CLI guards,
-and qwen3.8-flash coding with 21 checks, independent tests and retrieved artifacts.
-The configured model server runs on 9010; the prewarmed 9000 server is separate.
-All owned helper/instances/template/registry resources were cleaned and read back.
-The [earlier failed run](evidence/image-runtime-2026-10-16-attempt1.json) is retained.
-
-[Hardened-controller image recheck](evidence/image-runtime-hardened-2026-10-16.json)
-subsequently passed 21 genuine model checks with no failures or skips, using
-controller `f76687e` against the same immutable image. Actual source compilation,
-complete original-test execution and fresh completion acknowledgements now reject
-early-exit and stale-cache false positives. Seven owned-resource cleanup checks
-and a separate strict official template-absence readback passed. Earlier evidence
-is preserved and predates this completion guard.
-
-The catalog maintenance label remains experimental. These dated image/model
-results do not certify the current [source-launch path](../docs/public-launch-testing.md).
-Other providers remain unverified. See [design](../docs/design/aider.md).
-
-## Secondary development
-
-Edit `commands.py`, add a guarded named command, extend the API table and both
-languages, and add positive/negative tests. Preserve the selected-file boundary,
-process-group cleanup and original-file checks. Upgrade Python/Aider pins only
-with official metadata, actual help/version and a new image/model run. Keep
-upstream licenses in installed distributions and standalone Python archives.
-
-### Agent Sandbox platform steps
-
-From a repository checkout, `python scripts/run_steps_e2e.py aider` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+2 vCPU, 2048 MB RAM, application port 9000, non-root `user`. Working directory: `/home/user/app`. Disk capacity and lifetime depend on the selected platform. Model tasks require outbound access to the configured model service and incur that service's charges.
 
 ## Contributing
 
-See [repository contribution rules](../CONTRIBUTING.md). Run
-`python3 scripts/check_template.py aider`, `python3 -m pytest aider -q`, and
-`python3 scripts/run_local_e2e.py`.
-Local keyless checks are L0 only; real coding requires `E2E_REQUIRE_LLM=1` on a
-fresh dedicated sandbox and independent tests plus artifact retrieval. Do not
-edit old evidence or commit keys/raw model logs.
+To develop the template, read [CONTRIBUTING](../CONTRIBUTING.md) and the [design](../docs/design/aider.md).
 
 ## Issues
 
@@ -182,28 +169,3 @@ Template glue is Apache-2.0. [Aider](https://github.com/Aider-AI/aider) is Apach
 its installed dependencies and [python-build-standalone](https://github.com/astral-sh/python-build-standalone)
 retain their respective notices. See [official installation](https://aider.chat/docs/install.html)
 and [compatible API guidance](https://aider.chat/docs/llms/openai-compat.html).
-
-Actual installed-CLI guard check (fresh dedicated sandbox only):
-
-```bash
-python3 aider/verify_upstream_guards.py
-```
-
-This uses a deterministic loopback model to verify slash/bang and unselected-path
-refusals. It is separate from real-model coding and image deployment acceptance.
-
-### Independent test completion
-
-The coding controller verifies all three unchanged original tests in an isolated
-Python process, compiles actual source bytes, rejects skipped/expected-failing or
-incomplete tests, and requires fresh acknowledgements chosen after the agent
-exits. Held-out calculations have a separate acknowledgement. Static marker output,
-premature exit and cached bytecode do not establish a pass. These are completion
-checks within the disposable sandbox, not an OS security boundary. Earlier real
-model evidence is retained separately; the hardened verifier needs its own run.
-
-For CLI setup, SDK installation, HTTP authentication and resource ownership, see [Using templates](../docs/using-templates.md).
-
-### Additional current-version platform-step acceptance
-
-[Actual steps](evidence/express-2026-10-20T135354Z.json) and [external HTTP attempt](evidence/verification-steps-2026-10-20T135354Z.json): official READY, Python SDK creation, CLI/SDK smoke and 9 HTTP PASS / 0 FAIL / 1 SKIP. Model calls remain NOT_RUN in this receipt. Independent sandbox/template and private same-account asset-cache object/bucket cleanup passed before publication. Earlier image/model receipts retain their own scope.

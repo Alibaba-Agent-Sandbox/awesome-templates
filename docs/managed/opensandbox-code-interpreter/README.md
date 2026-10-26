@@ -16,7 +16,16 @@ Use shell and files through Agent Sandbox, or native interpreter contexts throug
 
 ## Quick start (CLI)
 
-Use CLI 0.5.6 or later and the current managed catalog; see [installation and provider setup](../../using-templates.md). The historical verification below covers its recorded create/exec interfaces, not a rerun of this catalog launch command.
+Before the commands below, configure a running OpenSandbox server reachable from your machine:
+
+```bash
+export ABX_OPENSANDBOX_BASE_URL='http://127.0.0.1:8080'
+export ABX_OPENSANDBOX_API_KEY='<server-api-key>'
+```
+
+The URL above is for a server running locally; replace it with your actual server root. Replace the key with that server’s configured key, or leave the variable unset only if the server does not require authentication. No interactive login, model API key, model endpoint or application token is needed. The server must be able to obtain the native image.
+
+Use CLI 0.5.6 or later and the current managed catalog; see [installation and provider setup](../../using-templates.md).
 
 Install the [CLI](../../using-templates.md) and Node.js 22+, configure your provider below, and replace `<sandbox-id>` with the ID returned by launch.
 
@@ -24,8 +33,9 @@ Install the [CLI](../../using-templates.md) and Node.js 22+, configure your prov
 abx provider install Alibaba-Agent-Sandbox/awesome-providers//opensandbox --allow-unpinned --yes
 abx provider doctor opensandbox
 abx --provider opensandbox template launch opensandbox-code-interpreter --sandbox-timeout 180 --yes
-abx --provider opensandbox exec <sandbox-id> -- python3 -c 'print(6*7)'
-abx --provider opensandbox kill <sandbox-id> -y
+export ABX_SANDBOX_ID="<returned-sandbox-id>"
+abx --provider opensandbox exec "$ABX_SANDBOX_ID" -- python3 -c 'print(6*7)'
+abx --provider opensandbox kill "$ABX_SANDBOX_ID" -y
 ```
 
 ## Quick start (Python SDK)
@@ -55,7 +65,18 @@ asyncio.run(main())
 
 ### Use the native interpreter SDK
 
-Persistent Python contexts use the upstream OpenSandbox SDK. Install its pinned native SDK dependencies with the commands and lockfiles in the [reproduction workflow](../../../.github/workflows/managed-opensandbox.yml), alongside the [public Python client](../../python-client-installation.md). This example explicitly starts the image's native interpreter service and connects the upstream SDK to the same instance.
+Persistent Python contexts use the upstream OpenSandbox SDK. Install the following in a separate directory; the upstream lockfile fixes its native client dependencies. Keep the provider plugin and Node.js available on PATH.
+
+```bash
+python3 -m pip install 'uv==0.9.5'
+git clone https://github.com/opensandbox-group/OpenSandbox.git opensandbox-sdk
+git -C opensandbox-sdk checkout 30348cbdfe4b9cfd49e0963617aed357a8f1ac4c
+uv sync --project opensandbox-sdk/sdks/code-interpreter/python --frozen --no-dev --python 3.12
+uv pip install --python opensandbox-sdk/sdks/code-interpreter/python/.venv/bin/python 'agent-sandbox-client==0.4.0a6'
+```
+
+Save the Python example below as `native_example.py`, then run `opensandbox-sdk/sdks/code-interpreter/python/.venv/bin/python native_example.py` from the same directory. It explicitly starts the image's native interpreter service and connects the upstream SDK to that same instance. It prints `37`, then `42`, proving that the second call reuses the Python context.
+
 
 ```python
 import asyncio, os
@@ -76,7 +97,7 @@ async def main():
     try:
         url = urlsplit(os.environ.get("ABX_OPENSANDBOX_BASE_URL", "http://127.0.0.1:8080"))
         config = ConnectionConfig(domain=url.netloc, protocol=url.scheme,
-            api_key=os.environ["ABX_OPENSANDBOX_API_KEY"],
+            api_key=os.environ.get("ABX_OPENSANDBOX_API_KEY"),
             use_server_proxy=True, request_timeout=timedelta(seconds=60))
         native = await NativeSandbox.connect(sid, connection_config=config)
         try:
@@ -120,14 +141,6 @@ This provider requires execd with `argv` request support. The [reproduction work
 ## Resources
 
 The timeout is in seconds. CPU, memory and image availability depend on your deployment. Delete instances after use.
-
-## Verified
-
-The [2026-10-24 run](../../../.agents/evidence/verify/2026-10-24-managed-native-pass.json) separately verifies default instance create/exec and an explicitly started native interpreter: Jupyter health, persistent/isolated Python contexts, program errors and deletion. Both instances were independently confirmed absent. Exact dependencies and image digests are recorded; the [2026-10-21 historical record](../evidence/verification-opensandbox-code-interpreter-2026-10-21-native-docker.json) remains unchanged.
-
-## Secondary development
-
-Customize the upstream image or use a [source template](../../../_skeleton/README.md) for a project command service. Keep the native interpreter service entrypoint explicit.
 
 ## Contributing
 

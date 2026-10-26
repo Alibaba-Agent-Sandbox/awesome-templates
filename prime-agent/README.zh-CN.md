@@ -6,51 +6,100 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
+默认配方使用 Alibaba FC generation-2 基础镜像，以非 root `user` 运行，服务端固定安装已发布的 `agent-sandbox-server==0.4.0a6`。
 
-阿里云 generation2 basev0.0.49/Python3.13/Linuxx64；发行归档和可执行文件均校验官方 manifest 发布的 SHA256。保留完整原版 sidecar、runtime源码0.1.0/protocol3及许可证。独立49包 Python 哈希锁；通过原生解释器覆盖跳过浮动 uv/bootstrap。已发布服务端包，非root user，9000端口。[Dockerfile](Dockerfile)、[来源](upstream.json)、[锁文件](requirements.lock)、[设计](../docs/design/prime-agent.md)。
+原版 Prime Agent `0.10.0`、原版 CPython REPL 后端，以及固定的本地内核解释器/依赖环境。
+
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml) · [upstream notice](UPSTREAM-NOTICE.md)
 
 ## 解决的问题
 
-通过 Agent Sandbox 调用真实原生编码能力，避免交互登录和共享开发配置。原生 provider 解析、CPython 协议、终态事件和所属资源清理分别验证；安装或版本输出不能证明编码成功。模型生成代码只在新建的自有云端沙箱执行。
+在隔离沙箱中使用已经安装的工具，通过 CLI、Python 或 HTTP 提交工作，再导出文件；模型账号与云沙箱账号分别配置。
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，配置选择的平台（沙箱 API Key、连接地址及构建镜像仓库），再配置下面独立的模型/应用凭据。无需 clone 仓库即可启动公共模板。
+
+示例使用显式 Chat Completions 模型和原版本地 CPython REPL 后端，不需要 Prime 订阅或交互登录。Agent 可以执行 Python 并修改项目文件；该配置禁用嵌套/委派 Agent。
+
+使用下方的百炼接入点时，在[百炼 API Key 页面](https://help.aliyun.com/zh/model-studio/get-api-key)选择北京地域创建 Key，并填写该账号可用模型 ID；其他地域或 Coding Plan 使用其对应的 Key/endpoint，不能混用。
+
+所有 `<...>` 都是需要你替换的占位值，模型名必须使用服务商实际提供的 ID。密钥在你自己的终端或 secret manager 中设置，不要放入镜像、YAML 或公开日志。以下变量要在 launch **之前**设置；之后改变 host 环境不会更新运行中的应用。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./prime-agent --yes
-abx run <sandbox-id> prime_agent_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export PRIME_MODEL_API_KEY='<your-model-or-vendor-key>'
+export PRIME_MODEL_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
+export PRIME_MODEL='<model-id-from-your-provider>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//prime-agent --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+`--sandbox-timeout 1800` 是沙箱生存时间（秒），`command_timeout`/`timeout_s` 是单次任务执行期限，`ABX_HTTP_TIMEOUT`/SDK `timeout` 是客户端等待时间，三者分别设置。
+
+launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
+
+```bash
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" prime_agent --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","cwd":"/home/user/workspace","command_timeout":300}'
+```
+
+任务要求在 `/home/user/workspace` 写出 `generated_hello.py` 和 `GENERATED_REPORT.md`。示例显式开放所需的编辑/工具权限，只在自己拥有的可丢弃沙箱中使用。下面的 SDK 和 HTTP 是同一任务的替代调用方式，选择一种即可。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
 
 ```python
-print(await client.commands.run('prime_agent_version'))
-```
+import asyncio
+import os
+from agent_sandbox import ProviderSandbox
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=420
+        )
+        try:
+            print(await client.commands.run('prime_agent', prompt='Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.', cwd='/home/user/workspace', command_timeout=300))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/prime_agent_version`，`Content-Type: application/json`，直接发送以下参数对象：
+使用[直接 HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析 endpoint，保留网关 headers、URL path/query 和独立应用 token。请求 `POST /commands/prime_agent`，`Content-Type: application/json`，body 是下面的直接参数对象，不加 `args` 包装：
 
 ```json
-{}
+{
+  "prompt": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.",
+  "cwd": "/home/user/workspace",
+  "command_timeout": 300
+}
 ```
 
-该检查的预期响应：
+响应为 `{"result": ...}`：内容格式见下方命令参考；模型生成的文字每次不同。HTTP 等待时间至少设为 420 秒，命令执行期限是另一个设置；断开客户端不会保证终止远端任务。认证失败为 401，参数类型错误为 400，执行失败为错误响应；返回对象包含 `exit_code` 时还应检查它是否为 0。
 
-```json
-{"result": {"native_version": "0.10.0"}}
+### 导出产物与清理
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
 ```
 
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+程序预期输出 `Hello from the sandbox`。先读取产物并检查再使用；模型回答成功不代表文件一定存在。文件不会自动回写模板或你的本机，释放沙箱前必须导出。
+
+`close()`/`aclose()` 仅关闭客户端连接，不释放沙箱。launch 日志中的已构建模板和镜像可能保留用于复用，不再需要时仅删除自己创建的那些资源。
 
 ## 命令参考
 
@@ -61,9 +110,7 @@ print(await client.commands.run('prime_agent_version'))
 | prime_agent_setup_check | none | mode `original-native-prime-cpython-repl`; subscription_required:false; api_key_set/base_url_set/model_set booleans; read-only |
 | prime_agent | prompt: required nonempty string1..32768UTF-8 bytes/no NUL; cwd: optional string default empty, max4096bytes, existing directory resolved inside WORKSPACE; command_timeout: integer1..600seconds default300 | `{stdout:string,stderr:string,exit_code:int,native_version:"0.10.0",native_completed:bool}`; real original native tools may modify files |
 
-固定参数：--offline --mode json --provider abx-approved --model <configured-model> --thinking off --no-session --no-skills --no-prompt-templates --no-themes --no-context-files --cwd <private-git-root> --print。提示经匿名stdin传入，含选定项目绝对路径。原生cwd使用私有Git根，防止调用方项目配置覆盖显式provider。原生 ipython 工具执行原版CPython代码，工具具有外层一次性沙箱用户的OS权限；cwd检查不是额外OS隔离。
-
-透明事件过滤器保留原版已完成NDJSON行，仅丢弃增量重复事件：原始stdout16MiB、单行1MiB、保留stdout256KiB、stderr256KiB；保留原生退出码和信号。native_completed要求exit0、原生turn_end/agent_end和最终assistant stopReason=stop；编码验收还要求原生ipython成功结果及独立原始/隐藏测试。调用串行，重叠请求返回busy。超时、超量和失败均清理本次进程组、nonce标记后代及私有HOME/配置/缓存/内核状态。
+命令响应为缓冲结果，不是流式事件。`cwd` 必须指向已存在且符合本模板路径约束的目录；允许编辑/工具执行时，模型可按沙箱用户权限修改文件或运行程序。超时只限制相应调用，客户端断连不能作为取消机制。
 
 ## 配置
 
@@ -79,30 +126,15 @@ print(await client.commands.run('prime_agent_version'))
 
 ## 资源
 
-仅Linuxx64，声明2vCPU/2048MB、9000端口，强制8GiB rootfs预算。无需嵌套Docker/KVM/GPU。编码需模型工具调用、显式API授权和网络出口；尚未测量任务峰值内存或容量。
-
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 二次开发
-
-```bash
-python -m pytest -q prime-agent/test_commands.py prime-agent/test_terminal.py
-python scripts/check_template.py prime-agent --strict
-python scripts/check_docs.py
-python scripts/run_steps_e2e.py prime-agent
-```
-
-真实模型控制器仅允许显式拥有的远程目标：修改预置源文件、保持原测试字节不变、下载新报告和精确随机nonce、独立运行原始3项加4项隐藏用例，并执行返回后的新ACK。固定合成协议fixture及源码模式原生跳过不构成模型/云端通过。
+2 vCPU，2048 MB 内存，应用端口 9000，非 root `user`。工作目录 `/home/user/workspace`；磁盘容量和最长生存时间由所选平台配置。模型任务需要访问配置的模型服务，模型调用费用由对应服务商计费。 当前固定安装支持 Linux x86_64。
 
 ## 贡献
 
-遵循[贡献规范](../CONTRIBUTING.zh-CN.md)、项目/文档规范及不可变证据规则。保留原版许可证和完整sidecar；双语README、设计、manifest、目录和工程记录一起更新。
+开发模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)和[设计说明](../docs/design/prime-agent.md)。
 
 ## 问题反馈
 
-跟踪[Issue69](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/69)。报告脱敏后的可复现问题、源码版本及测试层级；禁止附私钥、私有端点或原始提示/模型输出。
+跟踪[Issue69](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/69)。报告脱敏后的可复现问题、源码版本；禁止附私钥、私有端点或原始提示/模型输出。
 
 SDK/server: [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues). CLI: [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues).
 

@@ -36,8 +36,6 @@ README_EN = (
     "Command reference",
     "Configuration",
     "Resources",
-    "Verified",
-    "Secondary development",
     "Contributing",
     "Issues",
     "License",
@@ -52,8 +50,6 @@ README_ZH = (
     "命令参考",
     "配置",
     "资源",
-    "已验证",
-    "二次开发",
     "贡献",
     "问题反馈",
     "许可证",
@@ -91,10 +87,6 @@ PROVIDERS = {
     "e2b": ("e2b",),
     "opensandbox": ("opensandbox",),
 }
-EMPTY_VERIFIED = (
-    "No provider has a passing run recorded for this template.",
-    "尚未记录任何通过的提供方测试。",
-)
 REQUIRED_FILES = (
     "template.yaml",
     "Dockerfile",

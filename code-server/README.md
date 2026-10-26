@@ -1,5 +1,7 @@
 # code-server
 
+[中文](README.zh-CN.md)
+
 ## What it does
 
 Runs the pinned code-server browser IDE with mandatory password authentication, owned start/status/stop and isolated configuration, user data and extensions. Caller IDE settings stay intact.
@@ -16,41 +18,91 @@ A real browser IDE for editing sandbox workspaces without local Docker, KVM, des
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+CLI, SDK and HTTP are alternative ways to use the same application. Choose one for the task. Examples may write files, create projects or start services; do not repeat the full example on the same instance without cleaning its previous outputs.
+
+Install the CLI/Python SDK and configure your platform with the [usage guide](../docs/using-templates.md#installation). The platform API key creates sandboxes; `ABX_SERVER_TOKEN` independently protects this template application. Run the following in your own terminal; cloning this repository is unnecessary.
+
+These template commands require no model, model endpoint or model API key.
+
+Replace the password placeholder with a unique password of at least 12 bytes. It does not replace `ABX_SERVER_TOKEN`.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./code-server --yes
-abx run <sandbox-id> code_server_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export CODE_SERVER_PASSWORD='<choose-a-long-unique-password>'
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//code-server --sandbox-timeout 1800 --yes
+# Paste the sandbox ID from the launch output
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+```bash
+abx run "$SANDBOX_ID" code_server_start --json-args '{"port":8443,"timeout_s":60}'
+```
+
+Returns `running: true`, `port: 8443`, `auth: password`. Resolve port 8443 and log in to the IDE with `CODE_SERVER_PASSWORD`.
+
+The IDE is separate from the port 9000 command API. Resolve it with `await sb.network.resolve(8443)` and open it through the [preview guide](../docs/preview-proxy.md), preserving gateway authentication. Extension marketplace/Git remote accounts require their own login; local credentials are not inherited. IDE files live under `/home/user/app`; they survive IDE stop and disappear when the sandbox is deleted.
+
+`--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
+
+For OpenSandbox, set `ABX_PROVIDER=opensandbox` and configure its [provider guide](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md). Keep the same provider selected for subsequent CLI and Python calls.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+
+After launching above and setting `SANDBOX_ID`, save this as `use_template.py` and run `python3 use_template.py`. It connects to the same instance instead of creating another sandbox. Prepare any input file locally as shown above.
 
 ```python
-print(await client.commands.run('code_server_version'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            result = await client.commands.run('code_server_start', port=8443, timeout_s=60)
+            print(result)
+        finally:
+            try:
+                await client.commands.run('code_server_stop')
+            finally:
+                await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+The SDK returns the command value; it unwraps the HTTP `result` envelope. Closing the client does not delete the sandbox.
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/code_server_version`, with `Content-Type: application/json` and this direct argument object:
+Resolve port 9000 on the same instance with the [HTTP calling example](../docs/using-templates.md#cli-sdk-and-http). Preserve gateway headers, URL path and query before adding the independent application authentication.
+
+`POST /commands/code_server_start`
 
 ```json
-{}
+{
+  "port": 8443,
+  "timeout_s": 60
+}
 ```
 
-Expected response for this check:
+Use `Content-Type: application/json` and application authentication as described in the shared guide. The request body is the direct argument object, without an `args` wrapper. Success returns `{"result": ...}` with the value described above. Set the HTTP client wait to 450 seconds, separately from the command execution deadline. Responses are buffered, not event streams. Errors: 400 invalid arguments, 401 authentication, 404 unknown command, 500 execution failure.
 
-```json
-{"result": "4.141.0"}
-```
+After use, call:
 
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+- `POST /commands/code_server_stop` with `{}`.
 
 ## Command reference
 
@@ -66,26 +118,27 @@ Passwords require12..256 UTF-8 bytes without NUL. Occupied ports and duplicate s
 
 ## Configuration
 
-For an operator-local SDK preview that preserves upstream TLS, see the [local preview operation](../docs/preview-proxy.md). Direct-domain and sdk-local controller results are recorded separately.
+For an operator-local SDK preview that preserves upstream TLS, see the [local preview operation](../docs/preview-proxy.md).
 
 
 WORKSPACE defaults to /home/user/app. CODE_SERVER_PASSWORD and ABX_SERVER_TOKEN are empty manifest placeholders. The former can be supplied per call; the latter protects the9000 command API and does not replace IDE authentication on8443. See [prewarmed environment](../docs/runtime-environment.md). Private directories/config are0700/0600. Cloud/model keys are not inherited by the IDE. Update checks and telemetry are disabled.
+
+The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
+
+```bash
+abx run "$SANDBOX_ID" code_server_stop --json-args '{}'
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
 ## Resources
 
 2vCPU/2048MB; command API9000 and IDE8443. Other port choices require separate provider forwarding. Image build enforces at most8GiB visible rootfs with du -sx; download budget240seconds and exact asset lengths. Startup is bounded to120seconds, inspection/child output are bounded. Stop removes this IDE instance's config/user data/extensions; workspace files remain.
 
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Secondary development
-
-For local tools use install_runtime.py --prefix in your own directory. Image builds explicitly enable --check-rootfs; Docker host statvfs usage is not image size. Prepare [platform steps](../docs/platform-steps.md): `python scripts/prepare_steps.py code-server --output /tmp/ide-steps`; actual acceptance: `python scripts/run_steps_e2e.py code-server`. Update asset/version assertions and both docs together. WebSocket/terminal interaction needs its own recorded test; authenticated HTML alone does not certify it.
-
 ## Contributing
 
-Follow [CONTRIBUTING.md](../CONTRIBUTING.md), [spec](../docs/template-spec.md) and [design](../docs/design/code-server.md). Test real authentication, wrong passwords, cross-request state and kernel/process readback. A successful TCP connect to an empty proxied port is not a listener proof.
+To improve this template, see the [contribution guide](../CONTRIBUTING.md), [template specification](../docs/template-spec.md) and [design notes](../docs/design/code-server.md).
 
 ## Issues
 
@@ -94,7 +147,3 @@ Follow [CONTRIBUTING.md](../CONTRIBUTING.md), [spec](../docs/template-spec.md) a
 ## License
 
 Template: Apache-2.0; code-server: MIT. Preserve official bundled LICENSE/third-party notices, including VS Code/Node components. User-installed extensions retain their own licenses. [Upstream release](https://github.com/coder/code-server/releases/tag/v4.141.0).
-
-### Additional current-version platform-step acceptance
-
-[Actual steps](evidence/express-2026-10-20T135352Z.json) and [external HTTP attempt](evidence/verification-steps-2026-10-20T135352Z.json): official READY, Python SDK creation, CLI/SDK smoke and 5 HTTP PASS / 0 FAIL / 0 SKIP. Model calls remain NOT_RUN in this receipt. Independent sandbox/template and private same-account asset-cache object/bucket cleanup passed before publication. Earlier image/model receipts retain their own scope.

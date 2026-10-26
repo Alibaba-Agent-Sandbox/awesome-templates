@@ -381,13 +381,13 @@ the new public-launch report format and does not prove a later entry point:
 }
 ```
 
-The checker accepts `alicloud-express` in the Verified table only when a file of that shape exists (filename `evidence/express-<date>.json` or `evidence/alicloud-express-<date>.json`) and both `via` values are present with `ok: true`. Other providers use `evidence/<provider>-<date>.json`.
+Historical Express receipts use `evidence/express-<date>.json` or `evidence/alicloud-express-<date>.json`; other providers use `evidence/<provider>-<date>.json`. The static checker does not certify a provider from locally supplied receipts, even if their fields claim success.
 
 ### Verified on
 
 The catalog table in the root README has a Verified on column. A cell links a recorded historical provider run. Read that receipt for its exact source, entry point, checks and date; it does not assert current default-path acceptance. An empty cell means no matching record, not lack of support. Failed attempts never populate this column or qualify a provider. Preserve their sanitized results under distinct attempt filenames; provider/date pass files require successful execution and independent cleanup.
 
-Inside the template README, `## Verified` states the exact scope of the available evidence. An author-written pass claim does not establish an executed test. The static checker rejects hand-written provider pass tables. See [launch verification](workflows.md).
+Template READMEs are usage guides: keep validation reports, historical acceptance, development instructions and test-level narratives in engineering records, design documents or contributor guides. They are not required README sections. Preserve all original evidence and the acceptance gates above. An author-written pass claim does not establish an executed test; the static checker continues to reject hand-written provider pass tables. See [launch verification](workflows.md).
 
 ## Security
 
@@ -411,11 +411,11 @@ Inside the template README, `## Verified` states the exact scope of the availabl
 | Command reference | 命令参考 |
 | Configuration | 配置 |
 | Resources | 资源 |
-| Verified | 已验证 |
-| Secondary development | 二次开发 |
 | Contributing | 贡献 |
 | Issues | 问题反馈 |
 | License | 许可证 |
+
+Before launch, explain required provider credentials separately from application and model credentials, and document the actual model, endpoint, API-key or product-login configuration consumed by the template. Do not invent a universal variable mapping for upstream tools.
 
 The CLI section contains an `abx run` example. The SDK section imports `ProviderSandbox`, resolves its application client with `application_client`, and calls `client.commands.run`. The command reference is a table with the parameters. A non-Alibaba base adds `## Base image` / `## 基础镜像`.
 
@@ -519,6 +519,6 @@ When a changed version is verified on the same UTC date, use a distinct express-
 Spec4 manifests containing `application` require an explicit, non-null smoke `expect`, supporting strings, numbers, booleans, objects and arrays with structured comparison. Retired schema inputs are rejected.
 
 
-Managed catalog validation: `python scripts/check_managed_catalog.py` checks exact fields, disjoint names, provided-service declarations, 14 ordered bilingual README sections, and local historical-evidence identity. `historical_evidence` links original receipts; its contents do not confer current launch certification. Only complete, input-matching receipts with independently trusted provenance can certify a path; see [launch verification](workflows.md). Managed IDs remain excluded from source image selection/steps. [Desktop](managed/desktop/README.md) and [OpenSandbox interpreter](managed/opensandbox-code-interpreter/README.md) document each entry’s prerequisites, actual evidence scope and remaining product gates.
+Managed catalog validation: `python scripts/check_managed_catalog.py` checks exact fields, disjoint names, provided-service declarations, 12 ordered bilingual README sections, and local historical-evidence identity. `historical_evidence` links original receipts; its contents do not confer current launch certification. Only complete, input-matching receipts with independently trusted provenance can certify a path; see [launch verification](workflows.md). Managed IDs remain excluded from source image selection/steps. [Desktop](managed/desktop/README.md) and [OpenSandbox interpreter](managed/opensandbox-code-interpreter/README.md) document each entry’s prerequisites, usable interfaces and runtime limitations.
 
 The Dockerfile pins an actually published `agent-sandbox-server` version. CI installs that dependency directly and checks the installed version; there is no Git-archive or injected-wheel fallback.

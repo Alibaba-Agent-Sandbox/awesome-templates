@@ -6,57 +6,98 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
+默认配方使用 Alibaba FC generation-2 基础镜像，以非 root `user` 运行，服务端固定安装已发布的 `agent-sandbox-server==0.4.0a6`。
 
-Python 3.13; `httpx==0.28.1`; Agent Sandbox server. No third-party agent CLI.
+Python `3.13`、`httpx==0.28.1` 及模板自带的有界文件/shell 工具循环，不安装第三方 Agent CLI。
 
-[Dockerfile](Dockerfile) · [template.yaml](template.yaml) · [Upstream](https://api-docs.deepseek.com/guides/tool_calls/)
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml)
 
 ## 解决的问题
 
-通过命名命令提供有执行期限的代码任务，返回完整缓冲输出；模型凭据在创建沙箱时注入。
+在隔离沙箱中使用已经安装的工具，通过 CLI、Python 或 HTTP 提交工作，再导出文件；模型账号与云沙箱账号分别配置。
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，配置选择的平台（沙箱 API Key、连接地址及构建镜像仓库），再配置下面独立的模型/应用凭据。无需 clone 仓库即可启动公共模板。
+
+设置真正的 DeepSeek API Key（或已声明的 `OPENAI_API_KEY` 后备值）。模板自带 endpoint `https://api.deepseek.com`、模型 `deepseek-flash`，账号必须有该模型权限；不需要浏览器登录。endpoint/model 为 manifest 非空默认值，使用其他服务时先 clone 仓库，修改 `deepseek-harness/template.yaml` 中 `env.DEEPSEEK_BASE_URL`、`env.DEEPSEEK_MODEL`，再启动 `./deepseek-harness`。命令的可选 `model` 只覆盖该次模型，不修改 endpoint。
+
+所有 `<...>` 都是需要你替换的占位值，模型名必须使用服务商实际提供的 ID。密钥在你自己的终端或 secret manager 中设置，不要放入镜像、YAML 或公开日志。以下变量要在 launch **之前**设置；之后改变 host 环境不会更新运行中的应用。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./deepseek-harness --yes
-abx run <sandbox-id> deepseek_tools --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export DEEPSEEK_API_KEY='<your-model-or-vendor-key>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//deepseek-harness --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+`--sandbox-timeout 1800` 是沙箱生存时间（秒），`command_timeout`/`timeout_s` 是单次任务执行期限，`ABX_HTTP_TIMEOUT`/SDK `timeout` 是客户端等待时间，三者分别设置。
+
+launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
+
+```bash
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" deepseek --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","cwd":"/home/user/app","command_timeout":300}'
+```
+
+任务要求在 `/home/user/app` 写出 `generated_hello.py` 和 `GENERATED_REPORT.md`。示例显式开放所需的编辑/工具权限，只在自己拥有的可丢弃沙箱中使用。下面的 SDK 和 HTTP 是同一任务的替代调用方式，选择一种即可。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
 
 ```python
-print(await client.commands.run('deepseek_tools'))
-```
+import asyncio
+import os
+from agent_sandbox import ProviderSandbox
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=420
+        )
+        try:
+            print(await client.commands.run('deepseek', prompt='Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.', cwd='/home/user/app', command_timeout=300))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/deepseek_tools`，`Content-Type: application/json`，直接发送以下参数对象：
+使用[直接 HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析 endpoint，保留网关 headers、URL path/query 和独立应用 token。请求 `POST /commands/deepseek`，`Content-Type: application/json`，body 是下面的直接参数对象，不加 `args` 包装：
 
 ```json
-{}
+{
+  "prompt": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.",
+  "cwd": "/home/user/app",
+  "command_timeout": 300
+}
 ```
 
-该检查的预期响应：
+响应为 `{"result": ...}`：内容格式见下方命令参考；模型生成的文字每次不同。HTTP 等待时间至少设为 420 秒，命令执行期限是另一个设置；断开客户端不会保证终止远端任务。认证失败为 401，参数类型错误为 400，执行失败为错误响应；返回对象包含 `exit_code` 时还应检查它是否为 0。
 
-```json
-{"result": "list_files,read_file,run_shell,write_file"}
+### 导出产物与清理
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
 ```
 
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+程序预期输出 `Hello from the sandbox`。先读取产物并检查再使用；模型回答成功不代表文件一定存在。文件不会自动回写模板或你的本机，释放沙箱前必须导出。
+
+`close()`/`aclose()` 仅关闭客户端连接，不释放沙箱。launch 日志中的已构建模板和镜像可能保留用于复用，不再需要时仅删除自己创建的那些资源。
 
 ## 命令参考
-
-`deepseek` → buffered string.
 
 | Parameter | Type | Required/default | Meaning |
 |---|---|---|---|
@@ -72,45 +113,21 @@ print(await client.commands.run('deepseek_tools'))
 | deepseek_tools | none | Comma-separated registered tool names; no API call. |
 | run | script: string = main.py | Local Python stdout (compatibility). |
 
+命令响应为缓冲结果，不是流式事件。`cwd` 必须指向已存在且符合本模板路径约束的目录；允许编辑/工具执行时，模型可按沙箱用户权限修改文件或运行程序。超时只限制相应调用，客户端断连不能作为取消机制。
+
 ## 配置
 
-默认 `DEEPSEEK_BASE_URL=https://api.deepseek.com`、`DEEPSEEK_MODEL=deepseek-flash`、`WORKSPACE=/home/user/app`。`DEEPSEEK_API_KEY` 缺失时使用 `OPENAI_API_KEY`。兼容服务必须显式指定端点和模型，验收与原生 DeepSeek 分开记录。shell 子进程不继承环境凭据。文件工具拒绝 cwd 外路径及符号链接逃逸，单次读写上限 128 KiB，shell 每个输出流保留最后 64 KiB。shell 具有沙箱用户权限，不受文件工具的路径检查约束。
+默认 `DEEPSEEK_BASE_URL=https://api.deepseek.com`、`DEEPSEEK_MODEL=deepseek-flash`、`WORKSPACE=/home/user/app`。`DEEPSEEK_API_KEY` 缺失时使用 `OPENAI_API_KEY`。兼容服务必须显式指定端点和模型。shell 子进程不继承环境凭据。文件工具拒绝 cwd 外路径及符号链接逃逸，单次读写上限 128 KiB，shell 每个输出流保留最后 64 KiB。shell 具有沙箱用户权限，不受文件工具的路径检查约束。
 
 所有密钥在 template.yaml 中为空值；不要复制到镜像或日志。
 
 ## 资源
 
-2 vCPU · 2048 MB · port 9000 · `/home/user/app` · non-root `user`.
-
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 历史验收
-
-| 提供方 | 已执行范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
-
-该历史记录采用 e2cb27e 服务端来源覆盖，与当时的镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
-
-## 二次开发
-
-```bash
-python3 scripts/check_template.py deepseek-harness
-python3 -m pytest -q deepseek-harness/test_commands.py
-python3 scripts/run_local_e2e.py
-```
-
-`E2E_COMMAND_TIMEOUT` 控制模型验收执行期限，默认 600 秒，范围 1–1800。L0 不调用真实模型；`E2E_REQUIRE_LLM=1` 强制真实代码验收。L3 从目标端只读诊断检查密钥，种入必失败的源码与测试，经目标文件 API 验证源码修改、新产物、原测试未修改，并独立执行 unittest 和隐藏输入计算。缺密钥不能视为验收。
-
-### Agent Sandbox step 构建
-
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py deepseek-harness`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+2 vCPU，2048 MB 内存，应用端口 9000，非 root `user`。工作目录 `/home/user/app`；磁盘容量和最长生存时间由所选平台配置。模型任务需要访问配置的模型服务，模型调用费用由对应服务商计费。
 
 ## 贡献
 
-[CONTRIBUTING.md](../CONTRIBUTING.md) · [spec](../docs/template-spec.md) · [design](../docs/design/deepseek-harness.md).
+开发模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)和[设计说明](../docs/design/deepseek-harness.md)。
 
 ## 问题反馈
 
@@ -119,7 +136,3 @@ python3 scripts/run_local_e2e.py
 ## 许可证
 
 Apache-2.0 template code. Upstream tools retain their own licenses and attribution. See [LICENSE](../LICENSE).
-
-### 2026-10-20完整 step 检查点：模板1.1.1
-
-[真实对应版本 step](evidence/express-2026-10-20T154957Z.json)及[完整外部 HTTP 控制器](evidence/verification-steps-2026-10-20T154957Z.json)通过：官方 READY、真实 Python SDK 创建、全部 CLI/SDK smoke，9 PASS/0 FAIL/1 SKIP；自有沙箱／模板均独立确认清理。本回执模型验收仍为 NOT_RUN，不改变旧镜像／模型范围。复现及精确服务端／控制器来源见[step 指南](../docs/platform-steps.zh-CN.md)。

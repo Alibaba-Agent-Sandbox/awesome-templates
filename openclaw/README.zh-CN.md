@@ -8,53 +8,97 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
+默认配方使用 Alibaba FC generation-2 基础镜像，以非 root `user` 运行，服务端固定安装已发布的 `agent-sandbox-server==0.4.0a6`。
 
-- 阿里云 FC 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，部署工具解析占位符。
-- Node.js `24.16.0`，npm 包 `openclaw@2026.10.4`。该上游包要求 Node >=24.16.0，基础镜像的 Node 20 不满足要求。
-- 非 root `user`，目录 `/home/user/app`，generation 2；HTTP server 9000，网关默认 18789。
+OpenClaw `2026.10.4`、Node.js `24.16.0`、应用端口 9000 和可选网关端口 18789。
+
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml)
 
 ## 解决的问题
 
-网关是常驻服务。同步执行 `openclaw start` 既不是正确的网关命令，也无法提供可用的命名命令生命周期。本模板运行 `openclaw gateway run`，等待认证 WebSocket health RPC 后返回并持有子进程对象。不读取 PID 文件，也不使用可能终止其他进程的 `--force`。
+通过命名命令启动、检查并停止带认证的网关，不需要在沙箱内安装 systemd 服务。
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，配置选择的平台（沙箱 API Key、连接地址及构建镜像仓库），再配置下面独立的模型/应用凭据。无需 clone 仓库即可启动公共模板。
+
+此模板只暴露网关生命周期，没有模型对话/编码命令，也没有完成模型/channel 的接入流程。单独填写 `OPENAI_API_KEY`/`ANTHROPIC_API_KEY` 不会得到可用的 Agent。示例需要独立 `OPENCLAW_GATEWAY_TOKEN`，无需模型账号登录。内部 health 使用 `bind="loopback"`；转发访问需要 `bind="lan"`，并在 launch 前配置独立确认的 `OPENCLAW_TRUSTED_PROXIES`。
+
+所有 `<...>` 都是需要你替换的占位值，模型名必须使用服务商实际提供的 ID。密钥在你自己的终端或 secret manager 中设置，不要放入镜像、YAML 或公开日志。以下变量要在 launch **之前**设置；之后改变 host 环境不会更新运行中的应用。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./openclaw --yes
-abx run <sandbox-id> gateway_status --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export OPENCLAW_GATEWAY_TOKEN='<your-gateway-token>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//openclaw --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+`--sandbox-timeout 1800` 是沙箱生存时间（秒），`command_timeout`/`timeout_s` 是单次任务执行期限，`ABX_HTTP_TIMEOUT`/SDK `timeout` 是客户端等待时间，三者分别设置。
+
+launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
+
+```bash
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" gateway_start --json-args '{"bind":"loopback","command_timeout":60}'
+abx run "$SANDBOX_ID" gateway_health
+abx run "$SANDBOX_ID" gateway_status
+abx run "$SANDBOX_ID" gateway_stop
+```
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
 
 ```python
-print(await client.commands.run('gateway_status'))
-```
+import asyncio
+import os
+from agent_sandbox import ProviderSandbox
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=420
+        )
+        try:
+            print(await client.commands.run('gateway_start', bind='loopback', command_timeout=60))
+            print(await client.commands.run("gateway_health"))
+        finally:
+            try:
+                await client.commands.run("gateway_stop")
+            finally:
+                await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/gateway_status`，`Content-Type: application/json`，直接发送以下参数对象：
+使用[直接 HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析 endpoint，保留网关 headers、URL path/query 和独立应用 token。请求 `POST /commands/gateway_start`，`Content-Type: application/json`，body 是下面的直接参数对象，不加 `args` 包装：
 
 ```json
-{}
+{
+  "bind": "loopback",
+  "command_timeout": 60
+}
 ```
 
-该检查的预期响应：
+响应为 `{"result": ...}`：内容格式见下方命令参考；模型生成的文字每次不同。HTTP 等待时间至少设为 420 秒，命令执行期限是另一个设置；断开客户端不会保证终止远端任务。认证失败为 401，参数类型错误为 400，执行失败为错误响应；返回对象包含 `exit_code` 时还应检查它是否为 0。
 
-```json
-{"result": {"running": false, "owned": false, "url": null}}
+### 导出产物与清理
+
+HTTP 启动后用相同认证 `POST /commands/gateway_health`（`{}`）检查，然后 `POST /commands/gateway_stop`（`{}`）停止。最后删除沙箱：
+
+```bash
+abx kill "$SANDBOX_ID"
 ```
 
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+`close()`/`aclose()` 仅关闭客户端连接，不释放沙箱。launch 日志中的已构建模板和镜像可能保留用于复用，不再需要时仅删除自己创建的那些资源。
 
 ## 命令参考
 
@@ -65,27 +109,7 @@ print(await client.commands.run('gateway_status'))
 | `gateway_health` | `command_timeout: int=20`（1..120秒） | 以隔离配置及 token 环境执行 `openclaw gateway health --json --timeout <毫秒>`，认证成功返回 `{healthy:true,url}`，否则异常。 |
 | `gateway_stop` | `command_timeout: int=10`（1..120秒） | 对拥有的进程组先 TERM，超时 KILL，最多再等5秒回收。返回 `{running:false,owned:false}`，重复调用安全。 |
 
-健康探针在执行截止后还需要有界的组终止、进程回收及管道读取清理时间；启动失败也会清理自己创建的网关。一个 server 只拥有一个网关。不安装 systemd 服务。server 意外死亡后内存 handle 丢失；重启不会接管或误杀未知进程。销毁沙箱负责清理其进程。stop 删除临时状态；需要持久化会话时应独立设计上游 Agent 配置，不能假定此运行时保存会话。
-
-### 2.1版显式代理与 SDK 验收
-
-普通回环网关仍无需代理配置。若要通过提供方转发的端口访问网关，显式选择 `bind="lan"`，
-并在命名命令服务器启动前设置 `OPENCLAW_TRUSTED_PROXIES`：最多16个逗号分隔的明确IP/CIDR，
-最多2048UTF-8字节。拒绝空条目、无效地址、全网及组播配置；重复地址归一化并去重。
-这些地址应来自已核实的提供方代理配置，不能使用请求的 X-Forwarded-For 内容作为信任依据。
-空值保留上游默认策略；不会自动信任所有代理。令牌认证仍强制启用。
-
-实际2.0.1原生认证健康RPC和转发 `/healthz` 已通过，但 `/readyz` 经提供方代理返回403。
-固定上游版本会拒绝来源不受信任的转发头。因此2.1仅把显式配置写入自有临时网关配置，
-不修改用户全局配置，不绕过上游来源检查。`/healthz` 应为HTTP200且 `ok=true`，
-`/readyz` 应为HTTP200且 `ready=true`；启动阶段可以503，验收保持有界等待。
-
-CLI 示例在仓库根目录运行配套 SDK 控制器。它借用全新自有沙箱，在9012启动短暂的随机路径探针，
-从内核连接地址观察该次已知入口，给自有9010服务器显式传入准确 `/32` 或 `/128` 测试配置，
-再通过真实 SDK 启停认证网关并独立访问18789的存活/就绪接口。不会信任转发头提供的地址，
-不会返回令牌/原始代理地址，不会销毁调用者沙箱；仅清理自己的进程、监听和临时状态目录。
-CLI 调用结束后，仍由调用者执行最终沙箱删除。无需模型密钥，也不声称模型或频道已通过。
-SDK 示例显式启动9010服务器，避免把 create-time 环境误当成预热9000进程的配置。
+同一应用只拥有一个网关；使用 `gateway_stop` 停止自己启动的进程。loopback 网关只供沙箱内部使用。转发访问使用 lan，必须事先显式配置可信代理；不能从 X-Forwarded-For 推断信任。
 
 ## 配置
 
@@ -96,47 +120,17 @@ Linux 下短生命周期健康检查 RPC 会持续读取输出，并在清理自
 | `OPENCLAW_GATEWAY_TOKEN` | 空 | 启动网关必需，通过沙箱环境注入，不作为命令参数。子进程环境接收值，配置只引用变量名，不返回或加入 argv。 |
 | `OPENCLAW_TRUSTED_PROXIES` | 空 | 端口转发使用的显式已核实代理 IP/CIDR；最多16项/2048字节，拒绝全网和组播。 |
 | `ABX_SERVER_TOKEN` | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 `/health` 不要求应用令牌。 |
-| `ABX_SERVER_PORT` | 9000 | 本地 `python commands.py` 的 server 端口；云端 start_cmd 明确使用9000。 |
 | `OPENAI_API_KEY`、`ANTHROPIC_API_KEY` | 空 | 可选上游模型凭据，网关健康不需要。本命令集不实现或验证模型调用。 |
 
 网关使用私有临时配置与状态目录，关闭 browser/control UI、跳过channels，不修改用户已有 OpenClaw 配置。网关输出丢弃，避免上游原始日志将秘密带入命令接口。需要诊断上游配置时，在受控会话单独执行，不公开原始日志。
 
 ## 资源
 
-2 vCPU、4096 MB RAM；Express约10G rootfs。网关本身无需 Docker 或额外能力。依赖 Docker 的嵌套 Agent 沙箱不属于已验证范围。
-
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 2.0.1历史验证
-
-
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 2.0.1; steps构建、官方READY、CLI/SDK基础冒烟、独立清理；当前版本真实模型尚未执行 | [2026-10-19](evidence/express-2026-10-19T183726Z.json) |
-
-新版本的目录归属已在真实生成步骤中验证。旧版本回执保持历史范围；基础冒烟不能推断完整模型验收。
-
-## 历史验收
-
-| 提供方 | 已执行范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
-
-该历史记录采用 e2cb27e 服务端来源覆盖，与当时的镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
-
-## 二次开发
-
-阅读[设计文档](../docs/design/openclaw.md)。固定上游版本，argv使用列表，token放环境，保留拥有的进程对象，不使用PID文件。生命周期变更应增加行为回归并同步双语文档。新增Agent/模型命令需要独立契约和真实模型验收。
-
-### Agent Sandbox step 构建
-
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py openclaw`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+2 vCPU，4096 MB 内存，应用端口 9000，非 root `user`。工作目录 `/home/user/app`；磁盘容量和最长生存时间由所选平台配置。网关内部健康检查不需要模型服务。
 
 ## 贡献
 
-遵循[贡献指南](../CONTRIBUTING.md)和[模板规范](../docs/template-spec.md)。执行 `python3 scripts/check_template.py openclaw`、`python3 -m pytest openclaw/test_commands.py`。本地HTTP验收先启动 `python3 openclaw/commands.py`，再用一致的 `E2E_BASE_URL`、server认证、网关token执行 `python3 openclaw/e2e_test.py`。随机合成token足以验收真实本地网关，无需模型key。提供方通过声明必须有独立的准确输入证据；缺少镜像或云端门禁时明确记录。
+开发模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)和[设计说明](../docs/design/openclaw.md)。
 
 ## 问题反馈
 
@@ -145,11 +139,3 @@ Linux 下短生命周期健康检查 RPC 会持续读取输出，并在清理自
 ## 许可证
 
 [Apache-2.0](../LICENSE)。保留 OpenClaw 自身许可证及署名。
-
-### 2026-10-20真实认证网关完整 step 检查点
-
-[真实2.0.1 step](evidence/express-2026-10-20T161954Z.json)及[原完整 HTTP 控制器](evidence/verification-steps-2026-10-20T161954Z.json)已通过官方 READY、Python SDK 创建、全部 CLI/SDK smoke，以及11项 HTTP PASS/0 FAIL/1模型 SKIP，耗时703.799秒。独有测试令牌仅在私有配方安装步骤之后注入，实际验证认证就绪／健康、持续运行状态、自有停止及停止后的健康失败。沙箱、模板和精确私有 Node 缓存对象／bucket均独立确认清理；未使用操作者／模型凭据，公开回执无令牌值。早期6/0/2回执仅保留较窄范围，不算网关生命周期通过。[严格审计和复现](../docs/platform-steps.zh-CN.md)。
-
-### 当前2.1.0完整 HTTP step 复测
-
-集成显式代理配置及4GiB资源后，[当前2.1.0 step 回执](evidence/express-2026-10-20T165241Z.json)和[未改变的完整 HTTP 控制器](evidence/verification-steps-2026-10-20T165241Z.json)在525.594秒内通过11/0/1（模型 SKIP）：官方 READY、真实 CLI/Python SDK、认证网关生命周期及沙箱／模板／私有缓存独立清理。当前完整 manifest 绑定的严格审计接受此源码；旧2.0.1完整回执仍为历史。上方当前原生 SDK／转发健康及镜像证明独立保留。

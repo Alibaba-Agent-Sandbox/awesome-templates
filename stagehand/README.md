@@ -1,5 +1,7 @@
 # stagehand
 
+[中文](README.zh-CN.md)
+
 ## What it does
 
 Runs the genuine Node.js `@browserbasehq/stagehand@4.3.0` SDK and its bundled browser extension against a private local Chromium. A bounded call performs one upstream `act` instruction, optionally extracts a `{text: string}` result with native `extract`, and writes a fresh PNG. It is a local browser slice; Browserbase hosted sessions, login persistence, full autonomous planning and arbitrary extraction schemas are outside this template's contract.
@@ -16,41 +18,89 @@ Expose real Stagehand semantic browser actions through the Agent Sandbox named-c
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+CLI, SDK and HTTP are alternative ways to use the same application. Choose one for the task. Examples may write files, create projects or start services; do not repeat the full example on the same instance without cleaning its previous outputs.
+
+Install the CLI/Python SDK and configure your platform with the [usage guide](../docs/using-templates.md#installation). The platform API key creates sandboxes; `ABX_SERVER_TOKEN` independently protects this template application. Run the following in your own terminal; cloning this repository is unnecessary.
+
+Fill in model settings before launch: the API key, endpoint and model ID must belong to the same model service and region. `https://model.example.invalid/v1` is a placeholder; replace it with your vendor API base, not a web chat URL. Use a model ID actually available at that endpoint.
+
+This entry uses a model API key: no browser OAuth login is required, and your local logged-in account is not imported. See Configuration for protocol requirements. This template uses **Chat Completions**; an “OpenAI-compatible” label alone does not establish support for that API.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./stagehand --yes
-abx run <sandbox-id> stagehand_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export STAGEHAND_API_KEY='<your-model-api-key>'
+export STAGEHAND_BASE_URL='https://model.example.invalid/v1'
+export STAGEHAND_MODEL='<your-model-id>'
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//stagehand --sandbox-timeout 1800 --yes
+# Paste the sandbox ID from the launch output
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+```bash
+abx run "$SANDBOX_ID" stagehand --json-args '{"task":"Click the More information link.","url":"https://example.com","extract_instruction":"Return the visible heading.","command_timeout":180}'
+```
+
+Returns native `action`, `extracted`, final URL and a fresh `screenshot_path`. Inspect `action.success`; the model may fail to complete its instruction.
+
+The browser uses a fresh private in-sandbox profile, without local login state or cookies. Handle website login within the relevant remote browser session. browser-use/Stagehand remove private sessions after each call; they do not promise persistent account sessions. The public-page example requires outbound network access.
+
+`--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
+
+For OpenSandbox, set `ABX_PROVIDER=opensandbox` and configure its [provider guide](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md). Keep the same provider selected for subsequent CLI and Python calls.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+
+After launching above and setting `SANDBOX_ID`, save this as `use_template.py` and run `python3 use_template.py`. It connects to the same instance instead of creating another sandbox. Prepare any input file locally as shown above.
 
 ```python
-print(await client.commands.run('stagehand_version'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            result = await client.commands.run('stagehand', task='Click the More information link.', url='https://example.com', extract_instruction='Return the visible heading.', command_timeout=180)
+            print(result)
+            Path('stagehand.png').write_bytes(await sb.files.read_bytes(result['screenshot_path']))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+The SDK returns the command value; it unwraps the HTTP `result` envelope. Closing the client does not delete the sandbox.
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/stagehand_version`, with `Content-Type: application/json` and this direct argument object:
+Resolve port 9000 on the same instance with the [HTTP calling example](../docs/using-templates.md#cli-sdk-and-http). Preserve gateway headers, URL path and query before adding the independent application authentication.
+
+`POST /commands/stagehand`
 
 ```json
-{}
+{
+  "task": "Click the More information link.",
+  "url": "https://example.com",
+  "extract_instruction": "Return the visible heading.",
+  "command_timeout": 180
+}
 ```
 
-Expected response for this check:
-
-```json
-{"result": "4.3.0"}
-```
-
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Use `Content-Type: application/json` and application authentication as described in the shared guide. The request body is the direct argument object, without an `args` wrapper. Success returns `{"result": ...}` with the value described above. Set the HTTP client wait to 450 seconds, separately from the command execution deadline. Responses are buffered, not event streams. Errors: 400 invalid arguments, 401 authentication, 404 unknown command, 500 execution failure.
 
 ## Command reference
 
@@ -65,6 +115,8 @@ Task and extraction instructions each cap32768UTF-8 bytes; URL caps8192. Return 
 
 ## Configuration
 
+This entry calls compatible Chat Completions. Include the vendor API prefix (often `/v1`) in the base; do not append `/chat/completions`. The model must return JSON-schema structured output and support image content sent by the native flow.
+
 | Variable | Required / default | Meaning |
 | --- | --- | --- |
 | STAGEHAND_API_KEY | required for model; empty | Approved compatible endpoint credential; never a Browserbase token |
@@ -78,33 +130,23 @@ The wrapper uses upstream ClientLLM structured generation, maps text/images and 
 
 Pinned compatibility profile: SDK4.3.0 accepts extensionId in its local connect schema but drops it in the factory. [patch_sdk.py](patch_sdk.py) requires pristine SDK SHA25638ec56a2a1af1fb72c3e361a66b256def8e3665cca527e0d337f8a76a8308bd1 and changes one forwarding site. The owned Chrome launcher preloads only the unchanged bundled extension, observes its actual service-worker ID and uses native localBrowser.connect/Stagehand.create/act/extract. Runtime and independent controller require patched SDK SHA256bdf3cd62126c1529e8a889cae17fd098303e24e962e491a4b20786de72c369e0. This is a disclosed patched upstream distribution. Bounded failure diagnostics expose only allowlisted phase/status/call count, never upstream response bodies, private endpoints or key values.
 
-## Resources
-
-2vCPU,4096MB RAM, port9000, about10GiB Express rootfs. No Docker/KVM/GPU needed inside the sandbox. The image enforces an8GiB rootfs budget. Local browser/extension startup and compatible model structured output are required. Browserbase cloud/cache/services are not required or verified.
-
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Historical verification
-
-Version1.0.0 tried Extensions.loadUnpacked over a debugging port; fixed Chromium returned code-32000 Method not available, and real cloud/L1 self-tests failed. Immutable failures remain. Version1.1.0 fixed extension connection and passed L1/native browser/HTTP, but its first separate actual model failed with unproven model root cause. Version1.1.1 adds safe diagnostics only; schema, native/browser/model oracles and cleanup were not weakened. The later genuine pass does not establish why the earlier model failed. All failed runs independently cleaned their owned resources.
-
-## Secondary development
+The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
 
 ```bash
-npm ci --prefix stagehand --ignore-scripts --registry=https://registry.npmjs.org
-node --test stagehand/test_transport.mjs
-python -m pytest -q stagehand/test_commands.py
-python scripts/check_template.py stagehand --strict
-python scripts/check_docs.py
+# Replace <returned-path> with screenshot_path from the result
+abx download "$SANDBOX_ID" '<returned-path>' ./stagehand.png
+abx kill "$SANDBOX_ID"
 ```
 
-Local authored callbacks/process tests verify transport and guards only. The HTTP e2e reports native absence as SKIP unless E2E_REQUIRE_CLI=1; E2E_REQUIRE_LLM cannot silently skip a requested real model. Actual model behavior uses the separate owned SDK controller. Preserve pins, private ownership, deadlines, translations and old pass/fail records on updates. [Platform steps](../docs/platform-steps.md) explains source hashes, transport and cleanup.
+`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+
+## Resources
+
+2vCPU,4096MB RAM, port9000, about10GiB Express rootfs. No Docker/KVM/GPU needed inside the sandbox. The image enforces an8GiB rootfs budget. Local browser/extension startup and compatible model structured output are required. Browserbase cloud/cache/services are not used by this entry.
 
 ## Contributing
 
-Read [CONTRIBUTING](../CONTRIBUTING.md), [project standards](../docs/project-standards.md) and [template spec](../docs/template-spec.md). Change only this template's contract; SDK/CLI defects belong to their owners.
+To improve this template, see the [contribution guide](../CONTRIBUTING.md), [template specification](../docs/template-spec.md) and [design notes](../docs/design/stagehand.md).
 
 ## Issues
 

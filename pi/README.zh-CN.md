@@ -6,51 +6,101 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
+默认配方使用 Alibaba FC generation-2 基础镜像，以非 root `user` 运行，服务端固定安装已发布的 `agent-sandbox-server==0.4.0a6`。
 
-`@earendil-works/pi-coding-agent@1.3.0`（MIT）、校验 SHA256 的 Node.js 24.16.0、平台 Python 3.13 和 Agent Sandbox server。提交的 package-lock 冻结全部 118 个 npm 依赖，使用 `npm ci --ignore-scripts --omit=dev` 安装；fd 10.5.0 与 ripgrep 15.2.0 官方 musl 归档也校验 SHA256。[Dockerfile](Dockerfile) · [template.yaml](template.yaml)。
+官方 `@earendil-works/pi-coding-agent@1.3.0`、Node.js `24.16.0`、fd `10.5.0` 和 ripgrep `15.2.0`。
+
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml)
 
 ## 解决的问题
 
-通过带类型的命名命令运行 Pi，限定执行时间、隔离模型配置，并要求调用方明确允许修改沙箱文件。
+在隔离沙箱中使用已经安装的工具，通过 CLI、Python 或 HTTP 提交工作，再导出文件；模型账号与云沙箱账号分别配置。
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，配置选择的平台（沙箱 API Key、连接地址及构建镜像仓库），再配置下面独立的模型/应用凭据。无需 clone 仓库即可启动公共模板。
+
+此无交互路径使用下方三个显式模型配置，不启动浏览器/OAuth 登录。endpoint 必须支持兼容 OpenAI 的 Chat Completions 及工具调用。从对应服务商取得 Key 和准确模型 ID，云沙箱 API Key 是另一种凭据。下方以百炼公共兼容接入点为例，必须使用同地域有权限的 Key 和模型；换服务时三个值一起替换。
+
+使用下方的百炼接入点时，在[百炼 API Key 页面](https://help.aliyun.com/zh/model-studio/get-api-key)选择北京地域创建 Key，并填写该账号可用模型 ID；其他地域或 Coding Plan 使用其对应的 Key/endpoint，不能混用。
+
+所有 `<...>` 都是需要你替换的占位值，模型名必须使用服务商实际提供的 ID。密钥在你自己的终端或 secret manager 中设置，不要放入镜像、YAML 或公开日志。以下变量要在 launch **之前**设置；之后改变 host 环境不会更新运行中的应用。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./pi --yes
-abx run <sandbox-id> pi_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export PI_API_KEY='<your-model-or-vendor-key>'
+export PI_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
+export PI_MODEL='<model-id-from-your-provider>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//pi --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+`--sandbox-timeout 1800` 是沙箱生存时间（秒），`command_timeout`/`timeout_s` 是单次任务执行期限，`ABX_HTTP_TIMEOUT`/SDK `timeout` 是客户端等待时间，三者分别设置。
+
+launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
+
+```bash
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" pi --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","allow_tools":true,"cwd":"/home/user/app","command_timeout":300}'
+```
+
+任务要求在 `/home/user/app` 写出 `generated_hello.py` 和 `GENERATED_REPORT.md`。示例显式开放所需的编辑/工具权限，只在自己拥有的可丢弃沙箱中使用。下面的 SDK 和 HTTP 是同一任务的替代调用方式，选择一种即可。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
 
 ```python
-print(await client.commands.run('pi_version'))
-```
+import asyncio
+import os
+from agent_sandbox import ProviderSandbox
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=420
+        )
+        try:
+            print(await client.commands.run('pi', prompt='Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.', allow_tools=True, cwd='/home/user/app', command_timeout=300))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/pi_version`，`Content-Type: application/json`，直接发送以下参数对象：
+使用[直接 HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析 endpoint，保留网关 headers、URL path/query 和独立应用 token。请求 `POST /commands/pi`，`Content-Type: application/json`，body 是下面的直接参数对象，不加 `args` 包装：
 
 ```json
-{}
+{
+  "prompt": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.",
+  "allow_tools": true,
+  "cwd": "/home/user/app",
+  "command_timeout": 300
+}
 ```
 
-该检查的预期响应：
+响应为 `{"result": ...}`：内容格式见下方命令参考；模型生成的文字每次不同。HTTP 等待时间至少设为 420 秒，命令执行期限是另一个设置；断开客户端不会保证终止远端任务。认证失败为 401，参数类型错误为 400，执行失败为错误响应；返回对象包含 `exit_code` 时还应检查它是否为 0。
 
-```json
-{"result": "1.3.0"}
+### 导出产物与清理
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
 ```
 
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+程序预期输出 `Hello from the sandbox`。先读取产物并检查再使用；模型回答成功不代表文件一定存在。文件不会自动回写模板或你的本机，释放沙箱前必须导出。
+
+`close()`/`aclose()` 仅关闭客户端连接，不释放沙箱。launch 日志中的已构建模板和镜像可能保留用于复用，不再需要时仅删除自己创建的那些资源。
 
 ## 命令参考
 
@@ -61,7 +111,7 @@ print(await client.commands.run('pi_version'))
 | pi_setup_check | 无 | 安装状态、版本、固定版本、key/端点/模型是否配置的布尔值、工作目录；不返回凭证或端点值。 |
 | pi | prompt: string 必填；cwd: string = ""；allow_tools: boolean = false；command_timeout: integer = 600 | 脱敏后的缓冲文本；期限范围 1–1800 秒。 |
 
-`cwd` 必须存在，相对路径基于 `WORKSPACE`；它不是文件访问隔离边界。提示词通过 stdin 输入，不经过 shell 插值，也不放在 argv 中。
+命令响应为缓冲结果，不是流式事件。`cwd` 必须指向已存在且符合本模板路径约束的目录；允许编辑/工具执行时，模型可按沙箱用户权限修改文件或运行程序。超时只限制相应调用，客户端断连不能作为取消机制。
 
 ## 配置
 
@@ -77,35 +127,11 @@ Linux 下每次调用拥有独立进程组，并发排空 stdout/stderr；成功
 
 ## 资源
 
-2 vCPU · 2048 MB · 9000 端口 · `/home/user/app` · 非 root `user`。不需要 Docker、KVM 或额外权限。本命令面不包括 RPC 持久会话、交互 TUI 或扩展安装。
-
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 历史验收
-
-当前编程验收器通过 `python3 -I` 先导入可信标准库，再直接编译计算器与原测试的实际源码字节，要求原有三个测试全部成功，拒绝跳过、预期失败和意外成功。每个原测试/保留输入进程必须返回模型响应结束后才生成的随机完成确认，确认值不会进入模型提示词。提前 `SystemExit`、`os._exit(0)`、固定 `INDEPENDENT_OK` 文本和陈旧字节码都不能提供该确认。这是防止提前退出的验收检查，不是抵抗同一操作系统权限下恶意 Python 的安全边界。历史模型运行保留原验收器哈希，不能证明新门槛；必须单独记录新验收器版本在已审镜像上的真实模型复验。规范要求的完整部署与提供方认证仍是独立门槛。
-
-尚无本模板的镜像云部署通过记录。先前 b2857609735c1da8529ba8ecf3d065076cdfb542 的源码服务使用官方 Pi 1.3.0 与 `qwen3.8-flash`，通过独立源码、测试和产物验收；后续离线工具/lock 修复需要自己的镜像与云验证，不能沿用该次结果宣称云 L2 或镜像 L3。参见[验证记录](../.agents/evidence/verify/2026-10-16-pi-runtime.md)。
-
-## 二次开发
-
-```bash
-python3 scripts/check_template.py pi
-python3 -m pytest -q pi/test_commands.py pi/test_e2e_protocol.py pi/test_cli_protocol.py pi/test_install_tools.py
-python3 scripts/run_local_e2e.py
-```
-
-默认本地检查不调用模型。`E2E_REQUIRE_CLI=1` 要求实际固定版本；`E2E_REQUIRE_LLM=1` 使用目标配置强制真实编程验收。验证器先创建失败源码和测试，明确允许 Pi 写入，再下载改动源码、新产物，确认原测试未修改，最后独立运行隔离 unittest 和 held-out 输入；仅返回 marker 会失败。`E2E_COMMAND_TIMEOUT` 控制模型期限；`ABX_SERVER_TOKEN` 是应用 Bearer 令牌；`E2E_GATEWAY_HEADERS_JSON` 传递 provider 网关头。
-
-### Agent Sandbox step 构建
-
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py pi`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+2 vCPU，2048 MB 内存，应用端口 9000，非 root `user`。工作目录 `/home/user/app`；磁盘容量和最长生存时间由所选平台配置。模型任务需要访问配置的模型服务，模型调用费用由对应服务商计费。
 
 ## 贡献
 
-[贡献规范](../CONTRIBUTING.md) · [模板规范](../docs/template-spec.zh-CN.md) · [设计](../docs/design/pi.md)。
+开发模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)和[设计说明](../docs/design/pi.md)。
 
 ## 问题反馈
 
@@ -114,11 +140,3 @@ python3 scripts/run_local_e2e.py
 ## 许可证
 
 模板代码采用 Apache-2.0，Pi 上游采用 MIT；fd 官方归档的 LICENSE-MIT、LICENSE-APACHE，以及 ripgrep 的 LICENSE-MIT、UNLICENSE、COPYING（MIT/Unlicense）随完整解包目录保留在 `/opt/pi-tools/`，npm 依赖也保留各自许可文件。[LICENSE](../LICENSE)。
-
-### 当前版本新增平台 step 验收
-
-[真实原生 step](evidence/express-2026-10-20T130320Z.json)：官方 READY、Python SDK 创建、当前 CLI/SDK 冒烟，以及独立确认所拥有沙箱/模板已清理。本 step 回执覆盖版本/工具冒烟；独立的镜像/模型回执保留其原始范围。
-
-### 2026-10-20完整 step 检查点：模板1.0.1
-
-[真实对应版本 step](evidence/express-2026-10-20T155246Z.json)及[完整外部 HTTP 控制器](evidence/verification-steps-2026-10-20T155246Z.json)通过：官方 READY、真实 Python SDK 创建、全部 CLI/SDK smoke，10 PASS/0 FAIL/1 SKIP；自有沙箱／模板均独立确认清理。本回执模型验收仍为 NOT_RUN，不改变旧镜像／模型范围。复现及精确服务端／控制器来源见[step 指南](../docs/platform-steps.zh-CN.md)。

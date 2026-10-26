@@ -8,7 +8,7 @@
 
 ## 技术栈
 
-[2026-10-19 清单](../evidence/code-interpreter-v1-2026-10-19T154153Z.json)记录了 Python 3.13、Node.js 20，以及 numpy、pandas、matplotlib。提供方会更新镜像；业务依赖特定版本时，请查询实例内的实际版本。
+托管镜像提供 Python 3.13、Node.js 20，以及 numpy、pandas、matplotlib。提供方会更新镜像；业务依赖特定版本时，请查询实例内的实际版本。
 
 ## 解决的问题
 
@@ -16,14 +16,25 @@
 
 ## 快速开始（CLI）
 
-使用 CLI 0.5.6 或更高版本和当前托管目录，按[安装与平台配置说明](../../using-templates.zh-CN.md)准备。下方历史记录验证的是其原 create/exec 接口，不表示已重新验证本次目录启动命令。
+执行 CLI 启动或 Python 创建前，先在本地终端配置以下变量。三项值从阿里云极速版控制台取得，必须属于**同一地域**，API Key 需要有目标托管模板的访问权限。
+
+```bash
+export ABX_SANDBOX_API_KEY='<sandbox-api-key>'
+export ABX_SANDBOX_BASE_URL='<sandbox-api-url>'
+export ABX_SANDBOX_DOMAIN='<sandbox-domain>'
+```
+
+三个占位符分别替换为 Sandbox API Key、API URL 和沙箱域名；域名填主机名，不填 URL。这些是平台凭据，不是模型 API Key。本例不需要模型、模型 endpoint、模型密钥、应用令牌或交互登录。直接创建已有托管镜像，无需 Docker、ACR namespace 或镜像构建 AccessKey。账号配置差异见[平台配置指南](../../using-templates.zh-CN.md)。
+
+使用 CLI 0.5.6 或更高版本和当前托管目录，按[安装与平台配置说明](../../using-templates.zh-CN.md)准备。
 
 先完成 [CLI 安装和平台配置](../../using-templates.zh-CN.md)，将 `<sandbox-id>` 替换为创建时返回的实例 ID。
 
 ```bash
 abx --provider alicloud-express template launch code-interpreter-v1 --sandbox-timeout 180 --yes
-abx --provider alicloud-express exec <sandbox-id> -- python3 -c 'print(6*7)'
-abx --provider alicloud-express kill <sandbox-id>
+export ABX_SANDBOX_ID="<返回的沙箱ID>"
+abx --provider alicloud-express exec "$ABX_SANDBOX_ID" -- python3 -c 'import pandas as pd; print(int(pd.DataFrame({"amount": [12, 30]})["amount"].sum()))'
+abx --provider alicloud-express kill "$ABX_SANDBOX_ID"
 ```
 
 ## 快速开始（Python SDK）
@@ -37,7 +48,10 @@ from agent_sandbox import ProviderSandbox
 async def main():
     sb = await ProviderSandbox.create(provider="alicloud-express", template="code-interpreter-v1", timeout=180)
     try:
-        result = await sb.commands.run("python3 -c 'print(6*7)'", timeout=30)
+        result = await sb.commands.run(
+            "python3 -c 'import pandas as pd; print(int(pd.DataFrame({\"amount\": [12, 30]})[\"amount\"].sum()))'",
+            timeout=30,
+        )
         print(result.stdout)  # 42
         await sb.files.write("/tmp/example.txt", "hello")
         print(await sb.files.read("/tmp/example.txt"))
@@ -68,16 +82,6 @@ asyncio.run(main())
 ## 资源
 
 设置有限的超时时间（秒），结束后删除实例。CPU、内存与镜像更新由平台管理。
-
-## 已验证
-
-[2026-10-25 官方 npm CLI 0.5.1／Python client 0.4.0a1 新安装验证](../evidence/public-npm-code-interpreter-v1-2026-10-25T115223Z.json)：通过默认公开目录启动，检查非 root 运行环境、CLI 输出 42、Python 文件写读删、CLI 删除与独立控制面确认实例不存在。另已实际导入 numpy／pandas／matplotlib 并计算 DataFrame 总和 42。这是进程与文件能力验证，不代表持久解释器会话验收。
-
-[2026-10-24 公开包记录](../../../.agents/evidence/verify/2026-10-24-managed-public-cli.json)：CLI 0.4.16 实际创建、执行得到 `42`、删除；Python 0.3.1a5 文件读写删除、`ProviderSandbox.run_code` 明确返回 `E8004`，并独立确认实例已删除。[2026-10-19 历史记录](../evidence/code-interpreter-v1-2026-10-19T154153Z.json)保留原始版本与调用路径。
-
-## 二次开发
-
-需要额外依赖或自定义命令服务时，从[源码骨架](../../../_skeleton/README.zh-CN.md)创建独立模板。
 
 ## 贡献
 

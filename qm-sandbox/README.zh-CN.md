@@ -1,5 +1,7 @@
 # qm-sandbox
 
+[English](README.md)
+
 ## 做什么
 
 为一台已拥有的极速版计算机实现原版 QM Sandbox 接口后端，使用真实 Agent Sandbox Node.js HTTP SDK。原版 QM 工具上下文完成真实文件和命令操作，无需模型账号。 不启动或验证完整多人核心、web/Slack、Postgres 持久化、cron 或订阅功能，不使用原版 Docker 默认后端。本模板是原版库的有界集成；没有冒充名为 qm 的系统命令，也没有替换原版代理引擎。 [固定原版源码](https://github.com/yc-software/qm/tree/deef9b8b1e2b85bd4166dd833604bb31bcb8e255)。
@@ -12,45 +14,85 @@
 
 ## 解决的问题
 
-在不嵌套Docker、不向模型工具传入云凭据的情况下运行真实QM导出功能和SDK后端。原版包/源码/导入检查、真实SDK往返和模型任务分别验收。Node SDK仅提供沙箱内HTTP客户端；外层创建/销毁由调用方Python Sandbox SDK负责。每个后端绑定一个调用方项目；attach/provision不会新建另一台云机器。
+在不嵌套 Docker、不向工具进程传入云凭据的情况下运行 QM 原始工具和 SDK 后端。Node SDK仅提供沙箱内HTTP客户端；外层创建/销毁由调用方Python Sandbox SDK负责。每个后端绑定一个调用方项目；attach/provision不会新建另一台云机器。
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任务。示例可能写入文件、创建项目或启动服务；不要在未清理前对同一实例重复执行整段示例。
+
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，并完成所选平台配置。平台 API Key 用于创建沙箱，`ABX_SERVER_TOKEN` 是独立的模板应用访问口令。以下命令在自己的终端执行，不需要克隆本仓库。
+
+本模板的这些命令不需要模型、模型 endpoint 或模型 API Key。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./qm-sandbox --yes
-abx run <sandbox-id> qm_sandbox_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//qm-sandbox --sandbox-timeout 1800 --yes
+# 将启动输出中的沙箱 ID 填到这里
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+```bash
+abx run "$SANDBOX_ID" qm_sandbox_file --json-args '{"action":"write","path":"note.txt","text":"Hello from QM tools\n"}'
+```
+
+返回 `result: true`、`sdk_calls` 和 `original_qm_tools: true`；文本写入 `note.txt`。
+
+`--sandbox-timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
+
+OpenSandbox 用户将 `ABX_PROVIDER` 改为 `opensandbox`，并按[提供方指南](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)配置；后续 CLI 和 Python 必须继续选择同一个平台。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
+
+在完成上述 CLI 启动、设置 `SANDBOX_ID` 后，将以下保存为 `use_template.py`，执行 `python3 use_template.py`。它连接同一实例，不另建沙箱。对于需要输入的示例，先在本机准备上面的文件。
 
 ```python
-print(await client.commands.run('qm_sandbox_version'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            result = await client.commands.run('qm_sandbox_file', action='write', path='note.txt', text='Hello from QM tools\n')
+            print(result)
+            Path('note.txt').write_bytes(await sb.files.read_bytes('/home/user/app/note.txt'))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。关闭连接不会删除沙箱。
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/qm_sandbox_version`，`Content-Type: application/json`，直接发送以下参数对象：
+按[HTTP 调用示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析同一实例的 9000 端口，保留网关头、URL 路径和查询，再添加独立应用认证。
+
+`POST /commands/qm_sandbox_file`
 
 ```json
-{}
+{
+  "action": "write",
+  "path": "note.txt",
+  "text": "Hello from QM tools\n"
+}
 ```
 
-该检查的预期响应：
-
-```json
-{"result": {"qm_version": "0.1.0", "node_version": "24.16.0", "sdk_version": "0.1.0"}}
-```
-
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+请求头包括 `Content-Type: application/json` 和按共享指南设置的应用认证；请求体是参数对象本身，不套 `args`。成功响应为 `{"result": ...}`，其中结果含义同上。 HTTP 等待时间设为 450 秒；它独立于命令内部的执行时限。结果为缓冲响应，不是事件流。400 为参数错误，401 为认证失败，404 为命令不存在，500 为执行错误。
 
 ## 命令参考
 
@@ -67,6 +109,8 @@ print(await client.commands.run('qm_sandbox_version'))
 
 ## 配置
 
+这是 QM 原始工具与 SDK 后端切片，不运行模型；无需模型 endpoint、API Key 或 QM 登录。`QM_SANDBOX_BASE_URL` 是同一个沙箱内的 SDK 数据面地址，不是模型地址。
+
 | Name | Default / requirement | Meaning |
 | --- | --- | --- |
 | WORKSPACE | /home/user/app | Existing caller project root, captured at startup |
@@ -76,31 +120,22 @@ print(await client.commands.run('qm_sandbox_version'))
 
 commands.py加载时捕获配置；存在性不证明连通。SDK token最长8192且不含CR/LF/NUL，模型key最长8192且无控制字符。Node工作进程仅通过匿名stdin接收配置，不在环境继承模型/云/GitHub凭据；工具Bash另用最小环境和私有HOME，同一用户仍有OS访问权限。每次调用删除私有HOME/缓存/配置/模型目录/临时workspace镜像。返回文本脱敏密钥、base、token及JSON转义值。原版QM禁用Pi默认内置工具，使用原版QM工具；不加载扩展、skill、上下文文件或子会话，只批准execute/files读写，不启动委派、Slack/邮件或控制服务。调用方项目/产物保留到调用方删除或销毁外层沙箱。
 
-## 资源
-
-声明2vCPU/2048MB/Linuxx64、9000端口、强制8GiB rootfs预算；无需Docker/KVM/GPU/额外root能力。实际依赖与有界Express流程通过下方验收；未测量峰值内存，声明内存不是负载测量。需下载包/源码及访问SDK服务；编码另需授权模型工具调用和出口。不声明其他提供方或完整多人持久化。
-
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 二次开发
+工作目录为 `/home/user/app`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
 
 ```bash
-python -m pytest -q qm-sandbox/test_runtime.py qm-sandbox/test_commands.py
-python -m pytest -q qm/test_terminal.py
-python scripts/check_template.py qm-sandbox --strict
-python scripts/check_docs.py
-python scripts/run_steps_e2e.py qm-sandbox --asset-transport oss
+abx download "$SANDBOX_ID" /home/user/app/note.txt ./note.txt
+abx kill "$SANDBOX_ID"
 ```
 
-SDK HTTP fixture先执行 `python qm-sandbox/prepare_sdk_tests.py /tmp/qm-sdk-tests-<unique-run>`，再执行 `ABX_QM_TEST_SDK_ENTRY=/tmp/qm-sdk-tests-<unique-run>/dist/index.js node --test qm-sandbox/test_adapter.mjs`。SDK单元fixture可用Node>=20，真实QM使用固定Node24.16.0；未显式构建原版SDK时这些fixture会跳过，不构成原生/后端通过。
+`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
 
-以原版源码/锁/声明为准。原生实际验收仅在新建自有一次性云端目标执行；源码模式明确跳过缺失原生环境，不默认调用模型。编码控制器要求原版模型/工具正计数和完成的SDK操作、原测试字节不变、源文件修改、新报告/精确nonce、返回后原始3项加4项隐藏用例及新ACK。标记、配置或版本本身不算通过。后端验收另检查原版工具上下文/真实SDK及独立目标字节和清理。
+## 资源
+
+2 vCPU、2048 MB，Linux x64，命令端口 9000。运行时不需要嵌套 Docker、KVM、GPU 或 root 能力；镜像构建限制 rootfs 为 8 GiB。本地 SDK 服务必须可达，工作区与产物随外层沙箱生命周期保留。
 
 ## 贡献
 
-遵守[贡献规范](../CONTRIBUTING.zh-CN.md)、项目/文档规范和源码绑定证据规则，双语README、设计、目录、API、不可变版本及工程索引一同维护，保留全部失败和独立恢复记录。
+改进模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)、[模板规范](../docs/template-spec.zh-CN.md)和[设计说明](../docs/design/qm-sandbox.md)。
 
 ## 问题反馈
 

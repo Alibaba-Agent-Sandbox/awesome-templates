@@ -24,7 +24,7 @@ already passes `scripts/check_template.py`. It is not a catalog entry.
 4. Fill `docs/design/<name>.md` from
    [docs/design/_TEMPLATE.md](./docs/design/_TEMPLATE.md).
 5. Write `README.md` and `README.zh-CN.md` with the headings in the spec.
-   The Verified section states the exact execution evidence scope; historical records do not certify the current manifest.
+   Keep the README focused on installation, configuration, useful tasks, outputs and cleanup. Put test results, historical acceptance and development instructions in engineering records, design documents or contributor guides; preserve their original evidence. Required real-provider/model acceptance is unchanged.
 6. Add one `awesome-templates.yaml` entry. `official` means maintained by this
    project, `community` means externally maintained, and `experimental` marks
    development in progress. These labels do not certify runtime capabilities.

@@ -1,5 +1,7 @@
 # apply-patch
 
+[中文](README.zh-CN.md)
+
 ## What it does
 
 Runs the actual official Codex *** Begin Patch dialect: add, update, move and delete. Patch bytes enter native stdin through a private temporary file, without a shell or patch text in argv.
@@ -16,41 +18,79 @@ Supplies the real Codex file tool without a model account, Rust compiler, Docker
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+CLI, SDK and HTTP are alternative ways to use the same application. Choose one for the task. Examples may write files, create projects or start services; do not repeat the full example on the same instance without cleaning its previous outputs.
+
+Install the CLI/Python SDK and configure your platform with the [usage guide](../docs/using-templates.md#installation). The platform API key creates sandboxes; `ABX_SERVER_TOKEN` independently protects this template application. Run the following in your own terminal; cloning this repository is unnecessary.
+
+These template commands require no model, model endpoint or model API key.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./apply-patch --yes
-abx run <sandbox-id> apply_patch_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//apply-patch --sandbox-timeout 1800 --yes
+# Paste the sandbox ID from the launch output
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+```bash
+abx run "$SANDBOX_ID" apply_patch --json-args '{"patch_text":"*** Begin Patch\n*** Add File: hello.txt\n+Hello from a patch\n*** End Patch\n"}'
+```
+
+Creates `hello.txt`; inspect `exit_code == 0` and the actual file.
+
+`--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
+
+For OpenSandbox, set `ABX_PROVIDER=opensandbox` and configure its [provider guide](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md). Keep the same provider selected for subsequent CLI and Python calls.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+
+After launching above and setting `SANDBOX_ID`, save this as `use_template.py` and run `python3 use_template.py`. It connects to the same instance instead of creating another sandbox. Prepare any input file locally as shown above.
 
 ```python
-print(await client.commands.run('apply_patch_version'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            result = await client.commands.run('apply_patch', patch_text='*** Begin Patch\n*** Add File: hello.txt\n+Hello from a patch\n*** End Patch\n')
+            print(result)
+            Path('hello.txt').write_bytes(await sb.files.read_bytes('/home/user/app/hello.txt'))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+The SDK returns the command value; it unwraps the HTTP `result` envelope. Closing the client does not delete the sandbox.
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/apply_patch_version`, with `Content-Type: application/json` and this direct argument object:
+Resolve port 9000 on the same instance with the [HTTP calling example](../docs/using-templates.md#cli-sdk-and-http). Preserve gateway headers, URL path and query before adding the independent application authentication.
+
+`POST /commands/apply_patch`
 
 ```json
-{}
+{
+  "patch_text": "*** Begin Patch\n*** Add File: hello.txt\n+Hello from a patch\n*** End Patch\n"
+}
 ```
 
-Expected response for this check:
-
-```json
-{"result": "codex-cli 0.162.1"}
-```
-
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Use `Content-Type: application/json` and application authentication as described in the shared guide. The request body is the direct argument object, without an `args` wrapper. Success returns `{"result": ...}` with the value described above. Set the HTTP client wait to 450 seconds, separately from the command execution deadline. Responses are buffered, not event streams. Errors: 400 invalid arguments, 401 authentication, 404 unknown command, 500 execution failure.
 
 ## Command reference
 
@@ -66,21 +106,22 @@ Upstream failures retain nonzero exit_code; HTTP200 means the invocation complet
 
 No model key. WORKSPACE defaults to /home/user/app. Export ABX_SERVER_TOKEN before application launch; see [runtime environment](../docs/runtime-environment.md). Native patch subprocesses receive only PATH and LANG, without model/cloud credentials.
 
+The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
+
+```bash
+abx download "$SANDBOX_ID" /home/user/app/hello.txt ./hello.txt
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+
 ## Resources
 
 2vCPU,2048MB,port9000. Each patch has a30-second deadline and256KiB per-output-stream limit. Owned process groups are stopped before reaping the original leader. Temporary patch files close automatically; caller modifications persist. Path preflight is not an OS isolation boundary against concurrent same-user rename/symlink races.
 
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Secondary development
-
-Prepare [platform steps](../docs/platform-steps.md): `python scripts/prepare_steps.py apply-patch --output /tmp/patch-steps`; real acceptance: `python scripts/run_steps_e2e.py apply-patch`. For local runs use `npm ci --prefix apply-patch --ignore-scripts`, run install_alias.py into a separate bin directory, and put it on PATH before tests. Update lockfile, native version, release source and notices together; retain historical evidence.
-
 ## Contributing
 
-Follow [CONTRIBUTING.md](../CONTRIBUTING.md), [spec](../docs/template-spec.md) and [design](../docs/design/apply-patch.md).
+To improve this template, see the [contribution guide](../CONTRIBUTING.md), [template specification](../docs/template-spec.md) and [design notes](../docs/design/apply-patch.md).
 
 ## Issues
 
@@ -89,7 +130,3 @@ Follow [CONTRIBUTING.md](../CONTRIBUTING.md), [spec](../docs/template-spec.md) a
 ## License
 
 Template and Codex: Apache-2.0. Retain pinned-source [upstream-LICENSE](upstream-LICENSE) and official native npm metadata/notices.
-
-### 2026-10-20 full step checkpoint: template1.0.0
-
-[Real current-version steps](evidence/express-2026-10-20.json) and [complete external HTTP controller](evidence/verification-steps-2026-10-20T154625Z.json): official READY, actual Python SDK creation, all CLI/SDK smoke and 5 PASS/0 FAIL/0 SKIP; independent owned sandbox/template cleanup passed. Model acceptance remains NOT_RUN in this receipt; it does not relabel earlier image/model scope. Reproduction and exact server/controller provenance: [step guide](../docs/platform-steps.md).

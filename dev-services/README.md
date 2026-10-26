@@ -1,6 +1,6 @@
 # dev-services
 
-Pinned PostgreSQL17.11 and Redis8.0.2 for application development, running as the sandbox user without Docker Compose or systemd.
+[中文](README.zh-CN.md)
 
 ## What it does
 
@@ -18,41 +18,96 @@ Provide real databases for sandboxed apps without privileged Docker, mounts or s
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+CLI, SDK and HTTP are alternative ways to use the same application. Choose one for the task. Examples may write files, create projects or start services; do not repeat the full example on the same instance without cleaning its previous outputs.
+
+Install the CLI/Python SDK and configure your platform with the [usage guide](../docs/using-templates.md#installation). The platform API key creates sandboxes; `ABX_SERVER_TOKEN` independently protects this template application. Run the following in your own terminal; cloning this repository is unnecessary.
+
+These template commands require no model, model endpoint or model API key.
+
+Replace the password placeholder with a unique password of 16–128 URL-safe ASCII characters. It does not replace `ABX_SERVER_TOKEN`.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./dev-services --yes
-abx run <sandbox-id> services_versions --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export DEV_SERVICES_PASSWORD='<choose-a-long-unique-password>'
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//dev-services --sandbox-timeout 1800 --yes
+# Paste the sandbox ID from the launch output
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+```bash
+abx run "$SANDBOX_ID" services_start --json-args '{}'
+abx run "$SANDBOX_ID" services_sql --json-args '{"sql":"CREATE TABLE usage_demo (amount integer); INSERT INTO usage_demo VALUES (5130); SELECT sum(amount) AS total_cents FROM usage_demo;"}'
+```
+
+Returns PostgreSQL query output containing total `5130` cents; it creates a table in this sandbox database.
+
+Databases listen on sandbox loopback by default. Use `services_sql` / `services_redis` without a local database login. External clients require explicit `expose=true`, appropriate port forwarding and the independent database password. Data lives in workspace `service-data/`.
+
+`--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
+
+For OpenSandbox, set `ABX_PROVIDER=opensandbox` and configure its [provider guide](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md). Keep the same provider selected for subsequent CLI and Python calls.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+
+After launching above and setting `SANDBOX_ID`, save this as `use_template.py` and run `python3 use_template.py`. It connects to the same instance instead of creating another sandbox. Prepare any input file locally as shown above.
 
 ```python
-print(await client.commands.run('services_versions'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            await client.commands.run('services_start')
+            result = await client.commands.run('services_sql', sql='CREATE TABLE usage_demo (amount integer); INSERT INTO usage_demo VALUES (5130); SELECT sum(amount) AS total_cents FROM usage_demo;')
+            print(result)
+        finally:
+            try:
+                await client.commands.run('services_stop')
+            finally:
+                await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+The SDK returns the command value; it unwraps the HTTP `result` envelope. Closing the client does not delete the sandbox.
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/services_versions`, with `Content-Type: application/json` and this direct argument object:
+Resolve port 9000 on the same instance with the [HTTP calling example](../docs/using-templates.md#cli-sdk-and-http). Preserve gateway headers, URL path and query before adding the independent application authentication.
+
+First call, in order:
+
+- `POST /commands/services_start` with `{}`.
+
+`POST /commands/services_sql`
 
 ```json
-{}
+{
+  "sql": "CREATE TABLE usage_demo (amount integer); INSERT INTO usage_demo VALUES (5130); SELECT sum(amount) AS total_cents FROM usage_demo;"
+}
 ```
 
-Expected response for this check:
+Use `Content-Type: application/json` and application authentication as described in the shared guide. The request body is the direct argument object, without an `args` wrapper. Success returns `{"result": ...}` with the value described above. Set the HTTP client wait to 450 seconds, separately from the command execution deadline. Responses are buffered, not event streams. Errors: 400 invalid arguments, 401 authentication, 404 unknown command, 500 execution failure.
 
-```json
-{"result": {"postgres": "17.11", "redis": "8.0.2"}}
-```
+After use, call:
 
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+- `POST /commands/services_stop` with `{}`.
 
 ## Command reference
 
@@ -85,21 +140,22 @@ Version1.1.0 adds postgres_port:int=0 and redis_port:int=0 to services_start. Ze
 
 Prewarmed command servers need [explicit process configuration](../docs/runtime-environment.md). Database children get filtered PATH/HOME/locale and ownership marker, without cloud/model keys. Loopback is default; expose=True deliberately adds PostgreSQL SCRAM host authorization and0.0.0.0 listeners with authentication. Caller data/passwords must be handled as private content.
 
+The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
+
+```bash
+abx run "$SANDBOX_ID" services_stop --json-args '{}'
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+
 ## Resources
 
 2vCPU,2048MB, about10GiB rootfs; ports9000/5432/16379. No Docker/KVM/root/display. Linux pidfds/procfs required for worker identity and independent kernel LISTEN absence. Stop sends TERM then bounded KILL; a forced stop may require PostgreSQL recovery. Redis appendonly/everysec is development durability, not a zero-loss promise. Keep backups outside ephemeral sandbox disk when needed.
 
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Secondary development
-
-Add explicitly bounded database commands and preserve authentication and no-overwrite behavior. Read [PostgreSQL initdb](https://www.postgresql.org/docs/17/app-initdb.html), [Redis security](https://redis.io/docs/latest/operate/oss_and_stack/management/security/) and package source links in upstream-pins.json. Stop both engines before copying raw data files. The wrapper is not an extra isolation boundary around caller SQL/application code.
-
 ## Contributing
 
-[CONTRIBUTING.md](../CONTRIBUTING.md), [spec](../docs/template-spec.md), [design](../docs/design/dev-services.md). Run actual local/HTTP tests and keyless image smoke, then real cloud/cleanup acceptance before provider qualification. Never relabel an unrun or failed database test as a pass.
+To improve this template, see the [contribution guide](../CONTRIBUTING.md), [template specification](../docs/template-spec.md) and [design notes](../docs/design/dev-services.md).
 
 ## Issues
 
@@ -108,7 +164,3 @@ Add explicitly bounded database commands and preserve authentication and no-over
 ## License
 
 Wrapper Apache-2.0: [LICENSE](../LICENSE). PostgreSQL uses PostgreSQL License. Redis8 supports an AGPLv3 licensing option; do not describe it as the older BSD Redis release. Installed Debian copyright and source references are retained. Review upstream/transitive notices for redistribution or modifications.
-
-### Additional current-version platform-step acceptance
-
-[Actual native steps](evidence/express-2026-10-20T130648Z.json): official READY, Python SDK creation, current CLI/SDK smoke and independently confirmed owned sandbox/template cleanup. [Full external HTTP](evidence/full-http-steps-2026-10-20T130648Z.json): 6 PASS / 0 FAIL / 0 SKIP.

@@ -1,0 +1,39 @@
+{
+  "at": "2026-10-26T09:21:38.883550+00:00",
+  "scope": "Actual local published server/client a6 and pinned OpenCode1.19.0; actual configured model task through SDK and HTTP. No Docker/provider/template-cloud acceptance.",
+  "result": "PASS",
+  "selected_model_source": "explicit template default; not inherited agent OPENAI_MODEL",
+  "model_selector_sha256": "653605e497565050c40f053e8d85e2d1844284218bdc071986dbc93610a45d43",
+  "credential_values_or_endpoint_saved": false,
+  "cloud_resources_created": 0,
+  "checks": [
+    {
+      "check": "wrong application token",
+      "status": 401
+    },
+    {
+      "check": "actual upstream version",
+      "passed": true
+    },
+    {
+      "check": "template setup/config",
+      "passed": true
+    },
+    {
+      "check": "actual model edits file and independent Python execution",
+      "passed": true,
+      "artifact_sha256": "4a10a8178f9153c6fa7bdaf3107f2729adba617a24d8cc6a642acc4337357828",
+      "returned_session_present": true
+    },
+    {
+      "check": "actual HTTP model call",
+      "status": 200
+    },
+    {
+      "check": "HTTP model artifact independently executable",
+      "passed": true,
+      "artifact_sha256": "a97167ae1450b58b6c9bc588a9e4e18c3ac3213e2fc3222e0ec921d65c075d6d"
+    }
+  ],
+  "owned_server_process_exited": true
+}

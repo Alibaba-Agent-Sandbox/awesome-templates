@@ -1,66 +1,105 @@
-# opencode
+# OpenCode 沙箱
 
-`text` 包含中间步骤的说明；严格最终回复验收从 `stdout` 读取同一会话最后一个以 `stop` 完成的步骤，并继续执行独立代码、产物和会话续接检查。
+[English](README.md)
 
-Agent Sandbox 里的 OpenCode（`sst/opencode`）。镜像安装 npm 包 `opencode-ai@1.19.0`。命名命令调用这个 CLI。主调用是无头的 `opencode run`。`opencode serve` 是端口 4096 上的另一套 HTTP 服务。
+在隔离工作目录中运行 OpenCode 编码任务，通过 CLI、Python 或 HTTP 调用，并下载生成的文件。
 
 ## 做什么
 
-`agent-sandbox-server` 监听端口 9000，并注册调用 `opencode` 的命令。`opencode_run` 执行一次非交互的 `opencode run --format json`，返回助手文本、脱敏后的 JSON 事件和会话 id。`opencode_version` 和 `opencode_setup_check` 检查钉死的二进制和 `opencode.json`，不调用模型。
-
-`opencode_serve_start` 在端口 4096 上启动 `opencode serve`，绑定 `0.0.0.0`。该进程是 OpenCode 自己的 HTTP API（`GET /global/health`）。通过 `await sb.network.resolve(4096)` 取得地址，保留返回的网关头及 OpenCode 自身认证。模板的 `start_cmd` 不会启动这个可选的 OpenCode 服务。
+`opencode_run` 以非交互方式调用沙箱内的 OpenCode，完成代码编写、修改与重构，返回文本、JSON 事件和会话 ID。后续传入该 ID 可以继续同一任务。`opencode_serve_start` 可按需启动 OpenCode 自身的 HTTP 服务，普通编码任务不需要额外启动它。
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
-
-- 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`abx template deploy` 把 `<region>` 换成 `ALIBABA_CLOUD_REGION_ID` 或 `cn-hangzhou`，把 `<tag>` 换成 `ABX_BASE_IMAGE_TAG` 或 `v0.0.49`。Python 3.13 和 Node.js 20 来自该镜像。
-- `opencode-ai@1.19.0`（2026-10-15 的 npm `latest`）。包提供的命令名是 `opencode`。上游是 [sst/opencode](https://github.com/sst/opencode)。
-- git 和 ripgrep。
-- 工作目录 `/home/user/app`。运行用户 `user`。镜像没有 `CMD` 或 `ENTRYPOINT`。
-- Generation 2。`start_cmd` 是 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`。`ready_cmd` 是 `agent-sandbox-server healthcheck --port 9000`。
+- OpenCode `opencode-ai@1.19.0`、Git、ripgrep。
+- 平台基础镜像提供 Python 3.13、Node.js 20 和 Bash。
+- 模板命令应用使用 9000 端口；可选 OpenCode 原生服务使用 4096。
+- 默认非 root 用户为 `user`；模板文件位于 `/home/user/app`，任务文件写入自己创建的工作目录。
 
 ## 解决的问题
 
-在沙箱里提供钉死版本的 OpenCode CLI：一条 JSON 命令完成一次无头对话，并可选地在沙箱端口上打开 OpenCode 自己的 HTTP 服务。供应商配置指向 OpenAI 兼容端点。本环境使用的密钥是 `ABX_LLM_API_KEY` 和 `ABX_LLM_BASE_URL`（DashScope 兼容模式）。镜像里不写入这些值。
+无需在本机安装编码 CLI，即可让 Agent 修改项目、生成可运行文件，并在释放沙箱前导出产物。下面的例子在 `/home/user/workspace` 创建 `hello.py`，运行后打印 `Hello from OpenCode`。
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+先按[安装与平台配置](../docs/using-templates.zh-CN.md#安装)安装工具、配置沙箱平台。极速版源码构建还需要 Docker、ACR 和对应平台凭据。平台 API Key 与模型服务 API Key 是两种不同的凭据。
+
+在**启动模板之前**设置应用配置。下面使用百炼国内主站的 OpenAI 兼容端点；请使用该端点接受的模型 API Key，不要填沙箱平台 API Key。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./opencode --yes
-abx run <sandbox-id> opencode_version --json-args '{}'
+export ABX_SERVER_TOKEN="<独立的应用访问令牌>"
+export ABX_LLM_API_KEY="<模型服务APIKey>"
+export ABX_LLM_BASE_URL="https://dashscope.aliyuncs.com/compatible-mode/v1"
+export ABX_HTTP_TIMEOUT=660
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//opencode --sandbox-timeout 1800 --yes
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+把返回的沙箱 ID 填入下一条变量。如果使用 OpenSandbox，先完成该平台配置，并在后续所有示例中统一使用 `ABX_PROVIDER=opensandbox`。
+
+```bash
+export ABX_SANDBOX_ID="<返回的沙箱ID>"
+abx exec "$ABX_SANDBOX_ID" -- mkdir -p /home/user/workspace
+abx run "$ABX_SANDBOX_ID" opencode_version
+abx run "$ABX_SANDBOX_ID" opencode_setup_check
+abx run "$ABX_SANDBOX_ID" opencode_run --json-args '{"prompt":"在当前目录创建 hello.py，运行后打印 Hello from OpenCode，然后运行它。","model":"dashscope/qwen3.8-flash","cwd":"/home/user/workspace"}'
+abx download "$ABX_SANDBOX_ID" /home/user/workspace/hello.py ./hello.py
+```
+
+任务返回 `text`、`stdout`、`session_id`、`model`、`agent`、`cwd`。模型说明文字每次可能不同；下载后的 Python 文件运行时应打印 `Hello from OpenCode`。CLI、SDK、HTTP 是同一任务的三种调用方式，任选一种即可，无需为它们分别创建沙箱。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+在自己的虚拟环境安装 `agent-sandbox-client==0.4.0a6`。保留上面的环境变量，连接**已经由 CLI 启动的应用**。将以下完整代码保存为 `quickstart.py`：
 
 ```python
-print(await client.commands.run('opencode_version'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["ABX_SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        await sb.commands.run("mkdir -p /home/user/workspace")
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=660
+        )
+        try:
+            result = await client.commands.run(
+                "opencode_run",
+                prompt="在当前目录创建 hello.py，运行后打印 Hello from OpenCode，然后运行它。",
+                model="dashscope/qwen3.8-flash",
+                cwd="/home/user/workspace",
+            )
+            print(result["text"])
+            Path("hello.py").write_bytes(
+                await sb.files.read_bytes("/home/user/workspace/hello.py")
+            )
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+执行 `python quickstart.py`。关闭客户端不会删除沙箱；导出所需文件后按下方步骤清理。`sb.commands.run` 执行进程命令，`client.commands.run` 调用模板注册的命名命令。
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/opencode_version`，`Content-Type: application/json`，直接发送以下参数对象：
+请求头设置 `Content-Type: application/json`。
+
+请求 `POST /commands/opencode_run`，JSON 参数直接放在请求体中，不额外套 `arguments`：
 
 ```json
-{}
+{"prompt":"在当前目录创建 hello.py，运行后打印 Hello from OpenCode，然后运行它。","model":"dashscope/qwen3.8-flash","cwd":"/home/user/workspace"}
 ```
 
-该检查的预期响应：
+[完整 HTTP 调用示例](../docs/using-templates.zh-CN.md#clisdk-与-http)说明如何解析提供方端点、保留网关头及 URL 路径／查询参数，再添加应用令牌。将示例的命令路径换成 `/commands/opencode_run`，请求体换成上面的对象，并设置 `httpx.AsyncClient(timeout=660)`。先执行上面的 CLI 命令创建工作目录。
 
-```json
-{"result": "1.19.0"}
-```
-
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+响应形状为 `{"result": {"text": "...", "stdout": "...", "session_id": "...", "model": "dashscope/qwen3.8-flash", "agent": "", "cwd": "/home/user/workspace"}}`。它是等待完成后返回的 JSON，不是逐 token 流。参数错误、认证失败和命令执行失败会返回错误；HTTP 客户端断开不代表模型子进程一定取消。
 
 ## 命令参考
 
@@ -101,99 +140,46 @@ print(await client.commands.run('opencode_version'))
 
 ## 配置
 
-| 名称 | 必填 | 默认 | 作用 |
-|---|---|---|---|
-| `ABX_LLM_API_KEY` | 调用 DashScope 时需要 | 空 | `opencode.json` 里的 `{env:ABX_LLM_API_KEY}`。创建沙箱时注入。 |
-| `ABX_LLM_BASE_URL` | 调用 DashScope 时需要 | 空 | OpenAI 兼容的 base URL，包含 `/v1` 路径。`{env:ABX_LLM_BASE_URL}`。 |
-| `OPENCODE_MODEL` | 否 | `dashscope/qwen3.8-flash` | `model` 为空时使用。 |
-| `OPENCODE_API_KEY` | 否 | 空 | `model` 为 `opencode/<id>` 时的 OpenCode Zen 凭证。 |
-| `OPENCODE_SERVER_PASSWORD` | 否 | 空 | `opencode serve` 的基本认证密码。未设置时 CLI 会警告。 |
-| `ABX_SERVER_TOKEN` | 是 | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
-| `OPENCODE_CONFIG` | 否 | `/home/user/app/opencode.json` | 子进程读取的配置文件。 |
-| `OPENCODE_DISABLE_AUTOUPDATE` | 否 | 镜像里为 `true` | 阻止已钉死的 CLI 自行升级。 |
-| `ABX_SERVER_PORT` | 否 | `9000` | 本地 `python3 commands.py` 时 `start()` 绑定的端口。 |
+| 设置 | 必填／默认值 | 配置方法 |
+|---|---|---|
+| `ABX_LLM_API_KEY` | 调用 `dashscope/*` 必填 | 在本机启动模板前导出，应用进程启动时读取。 |
+| `ABX_LLM_BASE_URL` | 调用 `dashscope/*` 必填 | 完整 OpenAI 兼容端点，包含 `/v1`；见上面的可复制示例。Key、地域及账号权限应与端点匹配。 |
+| 命令参数 `model` | 可选，默认 `dashscope/qwen3.8-flash` | 填 `dashscope/<模型ID>`；模板会为该次调用补入配置里尚未列出的 DashScope 模型 ID。 |
+| `ABX_SERVER_TOKEN` | 源码启动前必填 | 独立应用访问令牌，CLI／SDK／HTTP 调用方使用同一个值。 |
+| `OPENCODE_API_KEY` | 仅 `opencode/*` Zen 模型需要 | 对应服务的模型凭据，不能代替百炼 Key。 |
+| `OPENCODE_SERVER_PASSWORD` | 可选 | 可选 `opencode serve` 服务的 Basic Auth 密码；暴露该服务时在启动前设置。 |
+| `ABX_HTTP_TIMEOUT` | 示例设为 660 秒 | CLI 等待 HTTP 的时长；编码子进程本身上限为 600 秒。SDK 和直接 HTTP 客户端分别设置等待时间。 |
 
-`opencode.json` 定义供应商 `dashscope`，npm 包是 `@ai-sdk/openai-compatible`。文件里带的模型 id 是 `qwen3.8-flash` 和 `qwen3.8-max`。`dashscope/` 下的其他 id 会在那一次 `opencode_run` 里写进临时配置。其他供应商的模型沿用现有配置文件；把该供应商写进 `opencode.json`，或传入文件已经允许的 `model`。
+**如何登录：** 上面的百炼路径使用 API Key，无需网页登录。你的本机 OpenCode 登录态和配置不会自动复制进沙箱。模板自带 `/home/user/app/opencode.json`，已把自定义供应商 `dashscope` 的端点与 Key 映射到 `ABX_LLM_BASE_URL`、`ABX_LLM_API_KEY`，此路径无需修改镜像或执行 `opencode auth login`。OpenCode 原生全局配置目录是 `~/.config/opencode`，认证／会话数据位于 `~/.local/share/opencode`，与沙箱平台账号不同。
 
-在 `template launch` 前安全导出清单中声明为空的秘密变量，让应用启动时读取；不要写入镜像、YAML 或日志。
+**更换端点或模型：** 继续使用这个自定义兼容供应商的 `dashscope/` 前缀，在启动前修改 `ABX_LLM_BASE_URL`，调用时通过 `model` 指定端点上可用的模型 ID。示例中的模型名称不代表你的账号一定有权限。模板清单已固定 `OPENCODE_MODEL` 的默认值，在 CLI 0.5.6 中只导出同名主机变量不能覆盖它，应使用命令参数选择模型。
+
+**其他上游供应商：** OpenCode 支持其他供应商配置，但模板不会把所有凭据自动转换成 `ABX_LLM_*`。保留现有 DashScope 配置，按 [OpenCode 配置文档](https://opencode.ai/docs/config/)与[供应商文档](https://opencode.ai/docs/providers/)添加相应配置，再指定 `provider/model`。配置文件或登录态必须在该沙箱内准备，不能假设继承主机凭据；非 OpenAI 兼容接口应采用对应供应商支持的配置。
+
+启动后修改本机 export 不会重配既有应用。需要新模型配置时重新启动实例，不要另起第二个模板命令服务。
 
 ## 资源
 
-| 资源 | 值 |
-|---|---|
-| cpu | 2 vCPU |
-| memory | 2048 MB |
-| 端口 | 9000（命令服务），4096（`opencode serve`，仅在 `opencode_serve_start` 之后） |
-| 磁盘 | 平台 rootfs，极速版大约 10G |
+清单请求 2 vCPU、2048 MB 内存；磁盘容量与最长实例寿命由所选平台决定。模型服务需要出网，可能另行计费。4096 端口仅在调用 `opencode_serve_start` 后使用，应通过提供方解析端点，并保留网关和 OpenCode 两层认证。
 
-## 已验证
+模板调用固定启用 `--auto`，自动批准 OpenCode 工具执行。`cwd` 选择项目目录，不是文件系统权限边界；模型可执行命令并修改 `user` 可写的文件。只放入任务需要的凭据与文件。
 
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
+OpenCode 以命令的 `cwd` 为项目目录。示例显式创建工作目录，避免修改模板应用文件。释放前导出代码、会话数据及其他所需产物；沙箱内修改不会更新原始模板。
 
-## 历史2.0.1镜像／模型验收
+```bash
+abx kill "$ABX_SANDBOX_ID"
+```
 
-| Provider | Current version and scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | 2.0.1；实际 SDK 创建的镜像沙箱、CLI/SDK 命令、28 项严格真实模型断言、独立沙箱/模板/仓库清理 | [2026-10-20](evidence/express-2026-10-20.json) · [模型](evidence/model-image-2026-10-20T142001Z.json) |
-
-本次使用逐项核验源码和归档哈希的真实 CI 镜像。模型实际修改已有源码、生成新产物，并通过未改动的原始测试、独立断言和准确 session 延续。当时的运行时代码另有[真实平台 step 基础验证](evidence/verification-steps-2026-10-19T184023Z.json)，该记录本身不声称模型通过。该历史镜像注入的 server 为 e2cb27e；当时独立 Docker fallback 是另一条构建路径。完整来源、限制和历史失败见[验收记录](../.agents/evidence/verify/2026-10-20-native-coding-sdk-acceptance.md)。
-
-## 历史验收
-
-| 提供方 | 已执行范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
-
-该历史记录采用 e2cb27e 服务端来源覆盖，与当时的镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
-
-## 二次开发
-
-命令实现在 `commands.py`。`opencode_run` 组装 argv 列表；提示词和模型 id 保持为列表元素。新的安装步骤在 Dockerfile 里钉死版本（`npm install -g name@version` 或 `pip install name==version`）。
-
-要改默认模型，编辑 `template.yaml` 里的 `OPENCODE_MODEL` 和 `opencode.json` 的 `model`。供应商是 `dashscope` 时，把 id 加到 `provider.dashscope.models`。该 id 必须存在于 `ABX_LLM_BASE_URL` 指向的端点。
-
-只有在做另一个模板时才复制 `_skeleton`。本目录就是 OpenCode 条目。改动对照 [docs/template-spec.zh-CN.md](../docs/template-spec.zh-CN.md) 和 [docs/design/opencode.md](../docs/design/opencode.md)。
-
-### Agent Sandbox step 构建
-
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py opencode`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+不再复用准备的模板／镜像时，还应根据启动返回的记录清理本次确切拥有的资源，见[资源清理](../docs/using-templates.zh-CN.md#clisdk-与-http)。不要把 Key 或登录态写进可复用镜像。
 
 ## 贡献
 
-[CONTRIBUTING.md](../CONTRIBUTING.md) 和 [docs/template-spec.zh-CN.md](../docs/template-spec.zh-CN.md)。
+模板编写参见 [CONTRIBUTING](../CONTRIBUTING.zh-CN.md)及 [OpenCode 设计说明](../docs/design/opencode.md)。
 
 ## 问题反馈
 
-| 主题 | 仓库 |
-|---|---|
-| 本模板、规范、检查器 | [awesome-templates](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues) |
-| Python SDK 或 `agent-sandbox-server` | [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues)，标题前缀 `[templates]` |
-| `abx` CLI | [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues)，标题前缀 `[templates]` |
+模板问题提交到 [awesome-templates](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues)，客户端／服务端问题到 [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues)，CLI 问题到 [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues)。请移除 Key 与私有项目数据。
 
 ## 许可证
 
-Apache-2.0，与本仓库相同。见 [LICENSE](../LICENSE)。OpenCode CLI 是构建时安装的上游软件。
-
-## 本地验收与模型验收
-
-回归测试：`python3 -m pytest opencode/test_commands.py opencode/test_e2e_protocol.py -q`。真实 HTTP L0 要求服务端安装固定的 `opencode-ai@1.19.0`，然后运行 `E2E_BASE_URL=<目标地址> E2E_WORKSPACE=<目标工作目录> E2E_RUN_LLM=0 python3 opencode/e2e_test.py`。缺少 CLI 或版本不符直接失败，不依据测试机的 PATH 或密钥跳过核心能力。测试通过目标 `/shell` 执行真实 Python，并下载生成文件；OpenCode serve 的健康、版本与认证检查在目标内部执行，测试机不误探测自己的 localhost。setup_check 只读取配置并查询版本，不写配置或启动服务。
-
-CLI 失败输出整体省略，避免在错误响应中暴露提示词、工具参数与凭据；成功 JSON 事件会对已知环境秘密值脱敏，包括短值与 JSON 转义值。serve 不保存原始日志。提示词在 `--` 后作为位置参数传递，`session` 与 `continue_session` 不能同时使用。serve 状态新增 `version`，健康检查支持配置的 Basic Auth 密码且要求固定版本。
-
-L0 成功不能替代模型验收。默认明确输出 L3 NOT RUN。模型配置已注入服务端时，设置 `E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1` 才执行 L3：先通过远端文件 API 上传有缺陷的既有 calc.py 与固定 test_calc.py，运行并复现失败；要求 agent 修改源码、保持测试文件不变，并新建 report.txt 与 acceptance.txt。随后下载源码、测试及产物，校验测试字节未变、源码确已修改，再通过远端 /shell 显式指定项目 cwd 独立运行全部三个测试与额外隐藏断言。
-
-首次编码检查全部通过后，验收器再次调用 `opencode_run`，把首次返回的确切 `session_id` 显式传入 `session`，不用全局 `continue_session`。该轮必须读取已有报告及源码，新建此前不存在的 resume.json，包含原报告真实字节的 SHA-256，以及通过现有 `add` 函数计算的额外结果。控制端独立计算预期摘要和加法结果，不在提示词提供答案；下载新产物后校验返回会话 ID 一致、原源码/测试/报告/acceptance 字节未变，并在远端重新执行隐藏断言。错误会话、缺失或错误的续会话产物、篡改原文件都会导致验收失败，最后只清理自建的唯一项目目录。仅回复 marker 或生成新文件不能通过验收。不要求测试机持有模型密钥；应用 Bearer 认证使用 `ABX_SERVER_TOKEN`；provider 网关头使用 `E2E_GATEWAY_HEADERS_JSON`。`/code/run` 属于 SDK 可选的 dev-tools 端点，capabilities 元数据本身不会启用它。这些源码运行时检查不等于 Dockerfile L1 或模板部署 L2 验收。
-
-访问外部目标的 HTTP 客户端遵循环境代理配置；仅 sandbox 内部的 loopback serve 健康探测直连自身进程。fake-remote 协议回归通过真实本地子进程验证编码与确切会话恢复，包括拒绝错误会话、摘要或计算结果及原文件篡改；它不构成真实模型/云端验收证据。
-
-2026-10-16 的 Express 源码运行态验证使用真实 `dashscope/qwen3.8-flash` 模型，28 项 HTTP 检查全部通过，覆盖上述精确 session 续接以及项目目录、沙箱清理。本次向已有 base 沙箱上传源码和配置，并单独安装固定版本依赖。镜像构建 L1 与新模板部署 L2 仍未验证，`tested_on` 保持为空。详见[验证记录](../.agents/evidence/verify/2026-10-16-opencode-session-resume-clean-wheel.md)。
-
-独立测试与隐藏断言使用隔离 Python，预加载标准库后直接编译实际源码字节。
-原始三个测试必须全部成功执行，不允许跳过或预期失败。每次 agent 完成后的校验，
-包括确切会话恢复后的复验，都需要新生成的完成确认值；静态文本、提前零退出和
-旧字节码不能替代检查完成。这不是对同用户权限恶意代码的操作系统隔离保证。
-既有真实模型记录早于此次加固；新验收器须单独完成实际镜像/模型复验才能声明通过。
-
-### 模板2.0.2运行目录属主
-
-2.0.1真实非 root step 中版本／setup 通过，但原生 serve 启动、状态及幂等检查失败；独立沙箱诊断复现 ~/.local/share/opencode/log/opencode.log 的 PermissionDenied。首次 HOME 属主交接发生在 root 安装／版本探测之前，最后仅修复 app。2.0.2在安装后递归交接模板自己的 app／.local／.config 给 user，保留 USER user 和 OpenCode1.19.0。只读 setup 检查不可写的原生状态，不读取日志或创建文件。[Issue156](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/156)记录回归与复测。既有2.0.1镜像／模型回执保持历史范围，不算2.0.2通过；新2.0.2真实 step／完整 HTTP已通过15/0/0，耗时100.59秒，见[回执](evidence/verification-steps-2026-10-20T160725Z.json)。
+Apache-2.0，见 [LICENSE](../LICENSE)。OpenCode 通过固定版本的上游包安装，保留其上游许可证。

@@ -1,6 +1,6 @@
 # Browser-use
 
-[中文](README.zh-CN.md).
+[中文](README.zh-CN.md)
 
 ## What it does
 
@@ -18,41 +18,89 @@ Give a real model a local browser inside an owned sandbox, with independent arti
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+CLI, SDK and HTTP are alternative ways to use the same application. Choose one for the task. Examples may write files, create projects or start services; do not repeat the full example on the same instance without cleaning its previous outputs.
+
+Install the CLI/Python SDK and configure your platform with the [usage guide](../docs/using-templates.md#installation). The platform API key creates sandboxes; `ABX_SERVER_TOKEN` independently protects this template application. Run the following in your own terminal; cloning this repository is unnecessary.
+
+Fill in model settings before launch: the API key, endpoint and model ID must belong to the same model service and region. `https://model.example.invalid/v1` is a placeholder; replace it with your vendor API base, not a web chat URL. Use a model ID actually available at that endpoint.
+
+This entry uses a model API key: no browser OAuth login is required, and your local logged-in account is not imported. See Configuration for protocol requirements. This template uses **Chat Completions**; an “OpenAI-compatible” label alone does not establish support for that API.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./browser-use --yes
-abx run <sandbox-id> browser_use_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export BROWSER_USE_API_KEY='<your-model-api-key>'
+export BROWSER_USE_BASE_URL='https://model.example.invalid/v1'
+export BROWSER_USE_MODEL='<your-model-id>'
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//browser-use --sandbox-timeout 1800 --yes
+# Paste the sandbox ID from the launch output
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+```bash
+abx run "$SANDBOX_ID" browser_use --json-args '{"task":"Read the heading of this page and return it.","url":"https://example.com","max_steps":8,"command_timeout":300}'
+```
+
+Returns the agent result, `done`, `success` and a fresh `screenshot_path`. Inspect completion flags; text alone is not a success indicator.
+
+The browser uses a fresh private in-sandbox profile, without local login state or cookies. Handle website login within the relevant remote browser session. browser-use/Stagehand remove private sessions after each call; they do not promise persistent account sessions. The public-page example requires outbound network access.
+
+`--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
+
+For OpenSandbox, set `ABX_PROVIDER=opensandbox` and configure its [provider guide](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md). Keep the same provider selected for subsequent CLI and Python calls.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+
+After launching above and setting `SANDBOX_ID`, save this as `use_template.py` and run `python3 use_template.py`. It connects to the same instance instead of creating another sandbox. Prepare any input file locally as shown above.
 
 ```python
-print(await client.commands.run('browser_use_version'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            result = await client.commands.run('browser_use', task='Read the heading of this page and return it.', url='https://example.com', max_steps=8, command_timeout=300)
+            print(result)
+            Path('browser-use.png').write_bytes(await sb.files.read_bytes(result['screenshot_path']))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+The SDK returns the command value; it unwraps the HTTP `result` envelope. Closing the client does not delete the sandbox.
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/browser_use_version`, with `Content-Type: application/json` and this direct argument object:
+Resolve port 9000 on the same instance with the [HTTP calling example](../docs/using-templates.md#cli-sdk-and-http). Preserve gateway headers, URL path and query before adding the independent application authentication.
+
+`POST /commands/browser_use`
 
 ```json
-{}
+{
+  "task": "Read the heading of this page and return it.",
+  "url": "https://example.com",
+  "max_steps": 8,
+  "command_timeout": 300
+}
 ```
 
-Expected response for this check:
-
-```json
-{"result": "0.13.11"}
-```
-
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Use `Content-Type: application/json` and application authentication as described in the shared guide. The request body is the direct argument object, without an `args` wrapper. Success returns `{"result": ...}` with the value described above. Set the HTTP client wait to 450 seconds, separately from the command execution deadline. Responses are buffered, not event streams. Errors: 400 invalid arguments, 401 authentication, 404 unknown command, 500 execution failure.
 
 ## Command reference
 
@@ -69,6 +117,8 @@ Exactly15 native actions are enabled: done/navigate/click/input/scroll/wait/go_b
 
 ## Configuration
 
+This entry calls compatible Chat Completions. Include the vendor API prefix (often `/v1`) in the base; do not append `/chat/completions`. This entry uses text DOM and requires structured JSON according to the native prompt. It does not use a Browser Use Cloud account.
+
 | Name | Required | Default | Purpose |
 | --- | --- | --- | --- |
 | BROWSER_USE_API_KEY | model turns | empty | explicitly supplied compatible-model credential, not Browser Use Cloud |
@@ -82,23 +132,23 @@ Exactly15 native actions are enabled: done/navigate/click/input/scroll/wait/go_b
 
 Model settings enter private file stdin only; they are not inherited into Chromium. Every call has fresh HOME/XDG/profile/native file-system state. Disable native telemetry/cloud sync/default extensions and use_cloud; no caller profile or saved browser account is imported. CDP launch requests loopback binding and only command9000 is advertised. This container-only profile explicitly sets chromium_sandbox=false instead of relying on Docker detection; the owned sandbox supplies OS isolation. The browser and model still have sandbox-user authority and network access; these action restrictions are not another OS isolation boundary. Returned result/PNG can contain private webpage information; exact configured model key/base values are redacted from result strings.
 
+The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
+
+```bash
+# Replace <returned-path> with screenshot_path from the result
+abx download "$SANDBOX_ID" '<returned-path>' ./browser-use.png
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+
 ## Resources
 
-2vCPU/2048MB, named-command9000, optional explicit model server9010; the separate SDK verification fixture uses9011. --disable-dev-shm-usage avoids relying on a large /dev/shm. One browser operation per server; concurrent heavy calls fail busy500. max_steps1..20; max3 actions/step; model90seconds/0retry/4096tokens; native action30/step120/LLM100second guards; outer command1..900seconds plus bounded cleanup. Each captured stream256KiB. Private browser/config/files/processes removed on ordinary success/failure/deadline; the PNG remains caller-owned. Sandbox deletion is the final boundary after abrupt server loss or hostile same-user code. Image rootfs has an8GiB build gate.
-
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Secondary development
-
-Restore the locked dependency venv with python -m venv <new-prefix>, then <new-prefix>/bin/python -m pip install --require-hashes -r browser-use/requirements.lock and pip check. Set BROWSER_USE_PYTHON to the venv path without resolving its Python symlink; provide the actual pinned browser cache/path. Run python -m pytest -q browser-use/test_commands.py browser-use/test_model_controller.py. Fixtures are authored responses/programs, never real generated shell on the operator host.
-
-[Platform steps](../docs/platform-steps.md): python scripts/prepare_steps.py browser-use --output /tmp/browser-use-steps prepares; python scripts/run_steps_e2e.py browser-use --timeout 1200 executes. Preparation is not a provider pass. The full HTTP controller is model-off; real model acceptance is a separate SDK command: python browser-use/model_e2e_test.py --sandbox-id <owned-fresh-sandbox-id>. It requires pinned client/httpx/Pillow plus the three BROWSER_USE model variables and free9010/9011, owns only its fixture/server/files, independently checks counter3/submitted nonce/PNG and listener/file absence, and preserves the caller sandbox. Destroy that owned sandbox separately after export.
+2vCPU/2048MB, named-command port9000. --disable-dev-shm-usage avoids relying on a large /dev/shm. One browser operation per server; concurrent heavy calls fail busy500. max_steps1..20; max3 actions/step; model90seconds/0retry/4096tokens; native action30/step120/LLM100second guards; outer command1..900seconds plus bounded cleanup. Each captured stream256KiB. Private browser/config/files/processes removed on ordinary success/failure/deadline; the PNG remains caller-owned. Sandbox deletion is the final boundary after abrupt server loss or hostile same-user code. Image rootfs has an8GiB build gate.
 
 ## Contributing
 
-Follow [CONTRIBUTING](../CONTRIBUTING.md), [spec](../docs/template-spec.md), [design](../docs/design/browser-use.md) and both language API/limit/evidence contracts. Shared strict SHA256-lock support depends on [PR146](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/146) landing first.
+To improve this template, see the [contribution guide](../CONTRIBUTING.md), [template specification](../docs/template-spec.md) and [design notes](../docs/design/browser-use.md).
 
 ## Issues
 
@@ -108,8 +158,4 @@ Follow [CONTRIBUTING](../CONTRIBUTING.md), [spec](../docs/template-spec.md), [de
 
 Wrapper code is [Apache-2.0](../LICENSE). Browser-use is MIT; preserve the [unchanged upstream license](upstream-LICENSE). The unmodified Playwright-distributed Chrome for Testing build retains its bundled license/notices; Playwright is Apache-2.0. Every hash-locked dependency keeps its installed upstream notices; do not relabel the full image as Apache-2.0. No model weights or cloud service account is included.
 
-Failed native steps include at most20 error summaries, each truncated to1024 UTF-8 bytes after exact configured model-key/endpoint redaction. The SDK controller retains safe failure/cleanup facts before asserting acceptance.
-
-### Current platform-step acceptance
-
-[Real1.0.0 steps](evidence/express-2026-10-20T153859Z.json) and [original full HTTP controller](evidence/verification-steps-2026-10-20T153859Z.json): official READY, actual Python SDK creation, every CLI/SDK smoke, native CDP navigation/title/PNG self-test and11 HTTP PASS/0 FAIL/1 model SKIP;224.94s. The executable was the actual freshly website-installed CLI0.4.1 with first-root --native and NODE_PATH unset; no external SDK module injection. Independent sandbox/template and exact private-cache cleanup passed. Python3.13, package/hash locks, pinned Chromium --no-shell, non-root runtime and8GiB rootfs assertions remain unchanged. Earlier failed steps remain historical failures; this receipt does not relabel the separate image/model result.
+Failed native steps include at most20 error summaries, each truncated to1024 UTF-8 bytes after exact configured model-key/endpoint redaction.

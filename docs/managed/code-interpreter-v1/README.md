@@ -8,7 +8,7 @@ Alibaba Express manages the `code-interpreter-v1` template and its image. Create
 
 ## Stack
 
-The [2026-10-19 inventory](../evidence/code-interpreter-v1-2026-10-19T154153Z.json) observed Python 3.13 and Node.js 20, with numpy, pandas and matplotlib. The provider can update this image; query installed versions when your application needs specific dependencies.
+The managed image supplies Python 3.13 and Node.js 20, with numpy, pandas and matplotlib. The provider can update this image; query installed versions when your application needs specific dependencies.
 
 ## Problem solved
 
@@ -16,14 +16,25 @@ Run Python data processing with preinstalled numerical packages.
 
 ## Quick start (CLI)
 
-Use CLI 0.5.6 or later and the current managed catalog; see [installation and provider setup](../../using-templates.md). The historical verification below covers its recorded create/exec interfaces, not a rerun of this catalog launch command.
+Before either CLI launch or Python creation, set the following in your local terminal. Obtain all three values for the **same region** from the Alibaba Express console; the API key must have access to the managed template.
+
+```bash
+export ABX_SANDBOX_API_KEY='<sandbox-api-key>'
+export ABX_SANDBOX_BASE_URL='<sandbox-api-url>'
+export ABX_SANDBOX_DOMAIN='<sandbox-domain>'
+```
+
+Replace the three placeholders with your Sandbox API key, API URL and sandbox domain; the domain is a hostname, not a URL. These are platform credentials, not an LLM API key. This managed-image example needs no model, model endpoint, model key, application token or interactive login. Creating this existing image does not require Docker, an ACR namespace or image-build AccessKeys. Use the [provider setup guide](../../using-templates.md) if your account settings differ.
+
+Use CLI 0.5.6 or later and the current managed catalog; see [installation and provider setup](../../using-templates.md).
 
 Install [CLI and provider configuration](../../using-templates.md), then replace `<sandbox-id>` with the ID returned by launch.
 
 ```bash
 abx --provider alicloud-express template launch code-interpreter-v1 --sandbox-timeout 180 --yes
-abx --provider alicloud-express exec <sandbox-id> -- python3 -c 'print(6*7)'
-abx --provider alicloud-express kill <sandbox-id>
+export ABX_SANDBOX_ID="<returned-sandbox-id>"
+abx --provider alicloud-express exec "$ABX_SANDBOX_ID" -- python3 -c 'import pandas as pd; print(int(pd.DataFrame({"amount": [12, 30]})["amount"].sum()))'
+abx --provider alicloud-express kill "$ABX_SANDBOX_ID"
 ```
 
 ## Quick start (Python SDK)
@@ -37,7 +48,10 @@ from agent_sandbox import ProviderSandbox
 async def main():
     sb = await ProviderSandbox.create(provider="alicloud-express", template="code-interpreter-v1", timeout=180)
     try:
-        result = await sb.commands.run("python3 -c 'print(6*7)'", timeout=30)
+        result = await sb.commands.run(
+            "python3 -c 'import pandas as pd; print(int(pd.DataFrame({\"amount\": [12, 30]})[\"amount\"].sum()))'",
+            timeout=30,
+        )
         print(result.stdout)  # 42
         await sb.files.write("/tmp/example.txt", "hello")
         print(await sb.files.read("/tmp/example.txt"))
@@ -68,16 +82,6 @@ Use the Express account settings in the [usage guide](../../using-templates.md).
 ## Resources
 
 Choose a finite timeout in seconds and delete instances when finished. CPU, memory and image updates are managed by the provider.
-
-## Verified
-
-[Fresh official npm CLI 0.5.1 / Python client 0.4.0a1 on 2026-10-25](../evidence/public-npm-code-interpreter-v1-2026-10-25T115223Z.json): default public catalog launch, non-root runtime inventory, CLI output 42, Python file write/read/delete, CLI deletion and an independent control-plane absence check. Actual numpy/pandas/matplotlib dataframe processing also returned 42. This is process/file acceptance; no persistent interpreter-session claim.
-
-[2026-10-24 public-package record](../../../.agents/evidence/verify/2026-10-24-managed-public-cli.json): CLI 0.4.16 create/exec yielding `42`/kill; Python 0.3.1a5 file round trip, explicit `ProviderSandbox.run_code` rejection with `E8004`, and independent instance absence. The [2026-10-19 historical record](../evidence/code-interpreter-v1-2026-10-19T154153Z.json) retains its original versions and call paths.
-
-## Secondary development
-
-For additional dependencies or a custom command service, start from the [source skeleton](../../../_skeleton/README.md); it produces a separate template.
 
 ## Contributing
 

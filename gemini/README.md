@@ -6,51 +6,101 @@ Run original official Google Gemini CLI0.64.0 planning and text/file/shell tools
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
+The default recipe uses the Alibaba FC generation-2 base, non-root `user`, and the published `agent-sandbox-server==0.4.0a6` package.
 
-Alibaba generation2basev0.0.49/Linuxx64/Python3.13/Node20; original npm0.64.0/SHA512 integrity lock; all449original package files/98597935bytes independently SHA256-pinned in [upstream.json](upstream.json), archive20841287bytes/SHA256891a794e55c8319b6b78f6f8f13d6b8b2782a4709dfd2fcabf3a1f63ae8365e6. `npm ci --omit=optional --ignore-scripts` omits interactive native PTY/keychain add-ons and scripts. Original bundled notices/code remain unchanged. Published server package, stdlib authored adapter/process controls. [Dockerfile](Dockerfile), [design](../docs/design/gemini.md), [notice](UPSTREAM-NOTICE.md).
+Original Gemini CLI `0.64.0`, Node.js 20, and the template text/tool protocol adapter for the explicit BYOK command.
+
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml) · [upstream notice](UPSTREAM-NOTICE.md)
 
 ## Problem solved
 
-Give an explicitly approved Chat gateway access to original Gemini text/tool planning without sending its key to a default Google endpoint. The adapter translates original function schemas, arguments and correlated results; it does not execute tools or replace the native planner. Native API environment variables select only the owned local adapter, with a fresh token and no real child key.
+Use an installed tool in an isolated sandbox, submit work through CLI, Python or HTTP, then export the files. Configure model and cloud-sandbox credentials separately.
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
+
+The example uses `gemini_byok`: the original Gemini CLI with the template's explicit text/tool adapter to Chat Completions. Supply the three `GEMINI_BYOK_*` settings; Google login and `GEMINI_API_KEY` are not required for that path. The separate `gemini` command uses the native Google authentication/model settings. A compatible-model key does not become a Google account credential.
+
+For the DashScope base below, create a Beijing-region key following [Model Studio API-key setup](https://www.alibabacloud.com/help/en/model-studio/get-api-key) and use a model allowed for that account. Other regions and Coding Plans use their matching keys/endpoints.
+
+Replace every `<...>` placeholder with your own value; use an exact model ID available to your account. Set secrets in your own terminal or secret manager, never in the image, YAML or public logs. Configure these variables **before** launch; later host changes do not reconfigure the running application.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./gemini --yes
-abx run <sandbox-id> gemini_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export GEMINI_BYOK_API_KEY='<your-model-or-vendor-key>'
+export GEMINI_BYOK_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
+export GEMINI_BYOK_MODEL='<model-id-from-your-provider>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//gemini --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+`--sandbox-timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
+
+Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
+
+```bash
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" gemini_byok --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","allow_unsafe_tools":true,"cwd":"/home/user/app","command_timeout":300}'
+```
+
+The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/app`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
 
 ```python
-print(await client.commands.run('gemini_version'))
-```
+import asyncio
+import os
+from agent_sandbox import ProviderSandbox
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=420
+        )
+        try:
+            print(await client.commands.run('gemini_byok', prompt='Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.', allow_unsafe_tools=True, cwd='/home/user/app', command_timeout=300))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/gemini_version`, with `Content-Type: application/json` and this direct argument object:
+Use the [direct HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserving gateway headers, URL path/query and the independent application token. Send `POST /commands/gemini_byok` with `Content-Type: application/json` and this direct argument object, without an `args` wrapper:
 
 ```json
-{}
+{
+  "prompt": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.",
+  "allow_unsafe_tools": true,
+  "cwd": "/home/user/app",
+  "command_timeout": 300
+}
 ```
 
-Expected response for this check:
+The response is `{"result": ...}`; see the command reference for its actual content type. Model text varies. Set the HTTP wait to at least 420 seconds; the command execution deadline is separate, and disconnecting does not guarantee remote cancellation. Authentication failures return 401, invalid argument types 400, and execution errors an error response. If a result includes `exit_code`, also check that it is zero.
 
-```json
-{"result": "0.64.0"}
+### Export files and cleanup
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
 ```
 
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
+
+`close()`/`aclose()` only close client connections; they do not delete the sandbox. Prepared templates/images in the launch journal can remain for reuse; remove only your own exact resources when no longer needed.
 
 ## Command reference
 
@@ -61,11 +111,9 @@ Expected response for this check:
 | gemini_byok_setup_check | none | mode/model_key_set/model_base_set/model_set, vendor_account_verified:false/provider_default_fallback:false/requires_unsafe_optin:true; no values/network |
 | gemini_byok | prompt required nonempty1..32768UTF8bytes/noNUL; cwd default empty string/max4096bytes/existing resolved directory within WORKSPACE; command_timeout integer1..600seconds/default300/no bool; allow_unsafe_tools booleanFalse, must explicitly be True on an owned disposable sandbox | stdout/exit_code0/native_completed/permission_profile:explicit-owned-sandbox-bypass/native_version/archive_sha256/model/protocol/model_calls/native_tool_results/relay_calls; native tools modify caller project; no raw transcript |
 | gemini_setup_check | none | Legacy installed/version/pinned_version/key/model presence/workspace/settings path/existence/JSON-validity inspection; no changes/authentication |
-| gemini | prompt required nonempty string; model default empty string then GEMINI_MODEL then gemini-3.1-flash-lite; cwd default empty/contained existing directory; command_timeout integer600/range1..1800seconds; yolo booleanFalse | Legacy original buffered JSON string. yoloFalse selects plan, True explicitly permits tool execution. Requires GEMINI_API_KEY, no implicit OpenAI-key/OAuth fallback. New BYOK isolation guarantees do not certify legacy mode |
+| gemini | prompt required nonempty string; model default empty string then GEMINI_MODEL then gemini-3.1-flash-lite; cwd default empty/contained existing directory; command_timeout integer600/range1..1800seconds; yolo booleanFalse | Legacy original buffered JSON string. yoloFalse selects plan, True explicitly permits tool execution. Requires GEMINI_API_KEY, no implicit OpenAI-key/OAuth fallback. New BYOK isolation guarantees do not certify native provider mode |
 
-New fixed profile: --prompt/--model/--output-format json/--approval-mode yolo/--include-directories <contained-project>. Launch cwd is a fresh private directory; prompt includes absolute project path. Hash-pinned root-owned /opt/gemini/profile.json system settings force gemini-api-key auth,16model session turns, hooks/skills/subagents/update/telemetry disabled, no configured MCP/installed extensions. Original core tools are read_file/write_file/replace/run_shell_command/list_directory/glob/grep_search. No delegation tool. Native original file/tool code executes only on an owned disposable sandbox; project instructions remain untrusted input.
-
-Translate only text and original function declarations/results with exact IDs or deterministic same-history name correlation when native IDs are absent. Google schema type case/nullability is mapped explicitly. Unsupported images/thinking/content/tool types, mismatched results, truncated replies, wrong model path/token and redirects are refused. Upstream Chat is buffered and emitted as original GenerateContent SSE; actual usage comes from upstream.32requests/2MiBrequest/4MiBresponse/16native turns,256KiB each stdout/stderr; command deadline plus up to90seconds owned cleanup, client timeout at least command_timeout+120. Concurrent BYOK returns busy. Completion requires original successful nonempty response, completed upstream requests and no failed responses; coding also requires positive native tool results and independent artifacts/tests.
+Named-command results are buffered rather than streamed. `cwd` must be an existing directory satisfying the template's path constraints. Editing/tool permission allows model actions with the sandbox user's authority. Client disconnect is not a cancellation mechanism. Model calls are serialized; overlapping requests fail busy. Cleanup can extend response time; the examples leave an HTTP waiting margin.
 
 ## Configuration
 
@@ -79,30 +127,15 @@ Translate only text and original function declarations/results with exact IDs or
 | WORKSPACE | /home/user/app | Existing caller project root |
 | ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
 
-BYOK settings captured at module import; key max8192/no control characters. Native environment has only fresh local adapter token, minimal PATH and private HOME/config/cache; real upstream key is sent only to exact approved Chat origin. Same-user OS access remains; cwd/environment filters are not another tenant boundary. Existing legacy configuration behavior stays separate. No private endpoints/keys/transcripts in results or errors.
+BYOK settings captured at module import; key max8192/no control characters. Native environment has only fresh local adapter token, minimal PATH and private HOME/config/cache; real upstream key is sent only to exact approved Chat origin. Same-user OS access remains; cwd/environment filters are not another tenant boundary. Existing native provider configuration behavior stays separate. No private endpoints/keys/transcripts in results or errors.
 
 ## Resources
 
-Declared2vCPU4096MB/Linuxx64/port9000/8GiBrootfs budget; no KVM/nested Docker/GPU/display. Original package98.6MB, Node20 already in base; optional interactive add-ons omitted. Approved model egress required. Peak memory, image cloud deployment, other providers, Google OAuth/subscription, full interactive/resume/PTY/image/thinking/MCP/plugin/delegation product not certified.
-
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Secondary development
-
-```bash
-python -m pytest -q gemini/test_byok.py gemini/test_adapter.py gemini/test_controller.py gemini/test_commands.py gemini/test_e2e_protocol.py
-python scripts/check_template.py gemini --strict
-python scripts/check_docs.py
-python scripts/run_steps_e2e.py gemini
-```
-
-Preserve exact original inventory/lock/notices, real-key isolation, strict origin and content refusal, owned process/RPC/private/listener cleanup. Local replies are fixed non-executable fixtures; original native/generated-code acceptance only on fresh explicitly owned cloud. Main e2e dispatches strict current BYOK controller; legacy helpers/regressions remain. Record both dispatch and byok_e2e_test.py hashes. Require changed source, original3test bytes/report/exact nonce/original3+4held-outs/fresh post-returnACK and independent owned absence.
+2 vCPU, 4096 MB RAM, application port 9000, non-root `user`. Working directory: `/home/user/app`. Disk capacity and lifetime depend on the selected platform. Model tasks require outbound access to the configured model service and incur that service's charges. This pinned installation targets Linux x86_64.
 
 ## Contributing
 
-Read [CONTRIBUTING](../CONTRIBUTING.md), [project standards](../docs/project-standards.md), [documentation standards](../docs/documentation-standards.md) and [template spec](../docs/template-spec.md). Include owner note/evidence, bilingual contracts, latest-head review/checks and normal merge.
+To develop the template, read [CONTRIBUTING](../CONTRIBUTING.md) and the [design](../docs/design/gemini.md).
 
 ## Issues
 
@@ -111,7 +144,3 @@ Read [CONTRIBUTING](../CONTRIBUTING.md), [project standards](../docs/project-sta
 ## License
 
 Authored template/adapter and original Gemini CLI are Apache-2.0 under their respective original [licenses/notices](UPSTREAM-NOTICE.md); retain bundled third-party terms. [Repository license](../LICENSE). No Google endorsement or hosted model access claim.
-
-The text/tool adapter accepts only the original CLI fixed `skip_thought_signature_validator` placeholder on function calls and removes that metadata during translation. Other thought signatures and thinking content remain unsupported and rejected.
-
-Current2.2.0 requires explicit `allow_unsafe_tools=True` (`true` in JSON) before configuration/native/model execution; missing/false/nonboolean values are refused. This matches setup_check.requires_unsafe_optin. Earlier2.1.4 actual native/API/model/image passes are historical for the changed permission profile; current2.2.0 actual native/API/model acceptance is recorded above.

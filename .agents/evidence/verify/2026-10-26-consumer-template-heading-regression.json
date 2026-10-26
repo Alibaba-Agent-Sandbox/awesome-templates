@@ -1,0 +1,22 @@
+{
+  "before_original_HEAD_checker": {
+    "violations": [
+      "readme-section: README.md: missing section '## Verified'",
+      "readme-section: README.md: missing section '## Secondary development'",
+      "readme-section: README.zh-CN.md: missing section '## 已验证'",
+      "readme-section: README.zh-CN.md: missing section '## 二次开发'"
+    ],
+    "result": "FAIL"
+  },
+  "after_current_checker_same_docs": {
+    "violations": [],
+    "result": "PASS"
+  },
+  "author_invented_pass_table_current_checker": {
+    "violations": [
+      "verified-evidence: alicloud-express: a README table cannot establish trusted workflow certification"
+    ],
+    "result": "REJECTED"
+  },
+  "no_cloud_or_network": true
+}

@@ -1,6 +1,6 @@
 # Document tools
 
-Offline text conversion with Pandoc and headless Writer. [中文说明](README.zh-CN.md).
+[中文](README.zh-CN.md)
 
 ## What it does
 
@@ -21,41 +21,92 @@ Deliver the bounded text conversion requested by [Issue 55](https://github.com/A
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+CLI, SDK and HTTP are alternative ways to use the same application. Choose one for the task. Examples may write files, create projects or start services; do not repeat the full example on the same instance without cleaning its previous outputs.
+
+Install the CLI/Python SDK and configure your platform with the [usage guide](../docs/using-templates.md#installation). The platform API key creates sandboxes; `ABX_SERVER_TOKEN` independently protects this template application. Run the following in your own terminal; cloning this repository is unnecessary.
+
+These template commands require no model, model endpoint or model API key.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./document-tools --yes
-abx run <sandbox-id> document_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//document-tools --sandbox-timeout 1800 --yes
+# Paste the sandbox ID from the launch output
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+Prepare the input locally and upload it:
+
+```bash
+printf '# Quarterly report\n\nRevenue: 51.30.\n' > report.md
+```
+
+```bash
+abx upload "$SANDBOX_ID" ./report.md /home/user/app/report.md
+```
+
+```bash
+abx run "$SANDBOX_ID" convert --json-args '{"input_path":"report.md","output_name":"report.docx","output_format":"docx"}'
+```
+
+Returns `output_path`, `output_format: docx`, `bytes` and `sha256`. The DOCX is retained for download.
+
+`--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
+
+For OpenSandbox, set `ABX_PROVIDER=opensandbox` and configure its [provider guide](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md). Keep the same provider selected for subsequent CLI and Python calls.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+
+After launching above and setting `SANDBOX_ID`, save this as `use_template.py` and run `python3 use_template.py`. It connects to the same instance instead of creating another sandbox. Prepare any input file locally as shown above.
 
 ```python
-print(await client.commands.run('document_version'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            await sb.files.write('/home/user/app/report.md', Path('report.md').read_bytes())
+            result = await client.commands.run('convert', input_path='report.md', output_name='report.docx', output_format='docx')
+            print(result)
+            Path('report.docx').write_bytes(await sb.files.read_bytes(result['output_path']))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+The SDK returns the command value; it unwraps the HTTP `result` envelope. Closing the client does not delete the sandbox.
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/document_version`, with `Content-Type: application/json` and this direct argument object:
+Resolve port 9000 on the same instance with the [HTTP calling example](../docs/using-templates.md#cli-sdk-and-http). Preserve gateway headers, URL path and query before adding the independent application authentication.
+
+`POST /commands/convert`
 
 ```json
-{}
+{
+  "input_path": "report.md",
+  "output_name": "report.docx",
+  "output_format": "docx"
+}
 ```
 
-Expected response for this check:
-
-```json
-{"result": "pandoc 3.1.11.1"}
-```
-
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Use `Content-Type: application/json` and application authentication as described in the shared guide. The request body is the direct argument object, without an `args` wrapper. Success returns `{"result": ...}` with the value described above. Set the HTTP client wait to 450 seconds, separately from the command execution deadline. Responses are buffered, not event streams. Errors: 400 invalid arguments, 401 authentication, 404 unknown command, 500 execution failure.
 
 ## Command reference
 
@@ -86,6 +137,16 @@ One conversion runs at a time. Pandoc has 1 GiB address space, a 256 MiB Haskell
 
 Prewarmed servers read their process-start configuration before subsequent shell environment changes. The named path policy does not constrain the shared authenticated shell/files APIs. Native source diagnostics can use the final two settings; they are not command parameters.
 
+The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
+
+```bash
+# Replace <returned-path> with output_path from the result
+abx download "$SANDBOX_ID" '<returned-path>' ./report.docx
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+
 ## Resources
 
 | Resource | Value |
@@ -95,34 +156,9 @@ Prewarmed servers read their process-start configuration before subsequent shell
 | Port | 9000 |
 | Disk | Platform rootfs; 1 MiB input, 8 MiB output; callers remove retained artifacts |
 
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Historical 1.0 verification
-
-
-| Provider | Executed scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
-
-This historical run used the pinned e2cb27e server-source override matching the then-current image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
-
-## Secondary development
-
-Read [the design](../docs/design/document-tools.md), then run `python3 scripts/check_template.py document-tools`, `python3 -m pytest -q document-tools/test_commands.py document-tools/test_http.py`, and the local E2E runner. Tests require the actual pinned Debian engine/data. `E2E_REQUIRE_DOCUMENT=1` makes missing native dependencies fail instead of recording SKIP. The external controller uploads fresh nonce/Unicode Markdown, downloads full artifacts, verifies hashes and independently parses DOCX heading/bold/content plus TXT before cleanup.
-
-Native cleanup keeps the leader unreaped via `waitid(WNOWAIT)` until killing its owned group, including success/nonzero leaders and redirected descendants. Deliberate `setsid` escapes and server SIGKILL are outside that guarantee. Sandbox destruction remains the final isolation boundary.
-
-The runtime workspace must permit hardlinks for atomic no-clobber publication. Some managed source mounts reject this syscall; run a byte-identical local test context on an ordinary writable Linux filesystem, or set an appropriate process-start workspace before startup. A rejected hardlink fails conversion and does not fall back to overwriting files.
-
-### Agent Sandbox platform steps
-
-From a repository checkout, `python scripts/run_steps_e2e.py document-tools` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
-
 ## Contributing
 
-[CONTRIBUTING.md](../CONTRIBUTING.md), [template specification](../docs/template-spec.md), [Issue 55](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/55).
+To improve this template, see the [contribution guide](../CONTRIBUTING.md), [template specification](../docs/template-spec.md) and [design notes](../docs/design/document-tools.md).
 
 ## Issues
 

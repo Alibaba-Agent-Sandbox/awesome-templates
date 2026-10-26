@@ -10,59 +10,101 @@ chat; explicit `allow_tools=true` enables the bundled developer tools.
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
+The default recipe uses the Alibaba FC generation-2 base, non-root `user`, and the published `agent-sandbox-server==0.4.0a6` package.
 
-Alibaba FC base v0.0.49, generation2, non-root `user`, published server package.
-Official CPU GNU Linux x86_64/aarch64 release assets have exact byte lengths and
-SHA256 in [assets.json](assets.json), tied to source commit
-[cd643d2126fffab4c6a6186905211ba868d6a657](https://github.com/block/goose/tree/cd643d2126fffab4c6a6186905211ba868d6a657).
-No GPU, Docker daemon, desktop or floating installer is required. Linux x86_64 is
-the current local test profile; an arm64 asset pin is not arm64 provider evidence.
+Official Goose `1.54.0`; the Dockerfile selects a checksum-pinned GNU Linux x86_64/aarch64 release archive.
+
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml)
 
 ## Problem solved
 
-Use the real Goose agent to perform terminal/file work in an owned sandbox,
-without importing a caller's saved providers, extensions, hints or session history.
-This profile selects the supported OpenAI-compatible provider, not every upstream
-provider or the Goose desktop application.
+Use an installed tool in an isolated sandbox, submit work through CLI, Python or HTTP, then export the files. Configure model and cloud-sandbox credentials separately.
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
+
+This headless path uses the three explicit model settings below; it does not run browser/OAuth login. The endpoint must support OpenAI-compatible Chat Completions and tool calls. Obtain the key and exact model ID from that endpoint's provider; a cloud Sandbox API key is a different credential. The example below uses DashScope's public compatible base as an example: use a key and model authorized for that same region, or replace all three together.
+
+For the DashScope base below, create a Beijing-region key following [Model Studio API-key setup](https://www.alibabacloud.com/help/en/model-studio/get-api-key) and use a model allowed for that account. Other regions and Coding Plans use their matching keys/endpoints.
+
+Replace every `<...>` placeholder with your own value; use an exact model ID available to your account. Set secrets in your own terminal or secret manager, never in the image, YAML or public logs. Configure these variables **before** launch; later host changes do not reconfigure the running application.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./goose --yes
-abx run <sandbox-id> goose_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export GOOSE_API_KEY='<your-model-or-vendor-key>'
+export GOOSE_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
+export GOOSE_MODEL='<model-id-from-your-provider>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//goose --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+`--sandbox-timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
+
+Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
+
+```bash
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" goose --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","allow_tools":true,"cwd":"/home/user/app","command_timeout":300}'
+```
+
+The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/app`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
 
 ```python
-print(await client.commands.run('goose_version'))
-```
+import asyncio
+import os
+from agent_sandbox import ProviderSandbox
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=420
+        )
+        try:
+            print(await client.commands.run('goose', prompt='Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.', allow_tools=True, cwd='/home/user/app', command_timeout=300))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/goose_version`, with `Content-Type: application/json` and this direct argument object:
+Use the [direct HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserving gateway headers, URL path/query and the independent application token. Send `POST /commands/goose` with `Content-Type: application/json` and this direct argument object, without an `args` wrapper:
 
 ```json
-{}
+{
+  "prompt": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.",
+  "allow_tools": true,
+  "cwd": "/home/user/app",
+  "command_timeout": 300
+}
 ```
 
-Expected response for this check:
+The response is `{"result": ...}`; see the command reference for its actual content type. Model text varies. Set the HTTP wait to at least 420 seconds; the command execution deadline is separate, and disconnecting does not guarantee remote cancellation. Authentication failures return 401, invalid argument types 400, and execution errors an error response. If a result includes `exit_code`, also check that it is zero.
 
-```json
-{"result": "1.54.0"}
+### Export files and cleanup
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
 ```
 
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
+
+`close()`/`aclose()` only close client connections; they do not delete the sandbox. Prepared templates/images in the launch journal can remain for reuse; remove only your own exact resources when no longer needed.
 
 ## Command reference
 
@@ -72,14 +114,7 @@ Expected response for this check:
 | goose_setup_check | none | installed/version and api_key_set/base_url_set/model_set flags; never configures/logs in |
 | goose | required prompt:str, nonempty UTF-8/no NUL/256KiB max; cwd:str="", existing directory inside WORKSPACE; allow_tools:bool=false; command_timeout:int=600,1..1800 | {stdout:str,stderr:str,exit_code:int} |
 
-The actual CLI uses `run --instructions - --no-session --no-profile --max-turns 20`
-plus quiet text output, explicit provider/model and only the selected developer
-builtin in tool mode. Default chat advertises no tools. Input is a private file
-on stdin, never shell interpolation or prompt argv. Each output stream is capped
-at256KiB. Timeout/overflow kills the unreaped owned group before leader reap.
-Every turn removes its private Goose config/data; project changes remain until
-caller cleanup or sandbox deletion. Returned diagnostics redact configured key
-and base URL, but project stdout may still contain private project content.
+Named-command results are buffered rather than streamed. `cwd` must be an existing directory satisfying the template's path constraints. Editing/tool permission allows model actions with the sandbox user's authority. Client disconnect is not a cancellation mechanism.
 
 ## Configuration
 
@@ -90,49 +125,19 @@ and base URL, but project stdout may still contain private project content.
 | GOOSE_MODEL | model calls | empty | actual upstream model ID |
 | WORKSPACE | no | /home/user/app | caller-owned working directory |
 | ABX_SERVER_TOKEN | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
-| GOOSE_BINARY | operator diagnostics only | Goose on image PATH | independently installed binary override, still checks exact version |
 
 A private GOOSE_PATH_ROOT/HOME and XDG dirs, disabled keyring/telemetry/session
 naming, `CONTEXT_FILE_NAMES=[]` and `--no-profile` preserve caller state. Native
 children receive only PATH/optional CA settings plus private runtime/model
 settings; cloud, GitHub and command-server credentials are not forwarded.
 
-When starting a secondary server, preserve the image PATH; an explicit replacement must include `/opt/goose`. The diagnostic reports the binary visible to that server process.
-
 ## Resources
 
-2vCPU/2048MB; command API9000, optional explicitly started9010. Shared memory has
-no browser dependency. Installer uses an exact ~81MB compressed CPU asset, a
-240-second download budget with30-second socket timeout, a400MiB executable bound
-and a separate `du -sx`8GiB image-rootfs check. Local prefix installation does not
-scan the operator filesystem. Each turn is at most20 model turns and its declared
-wall deadline; cleanup follows. Detached setsid children or server SIGKILL remain
-outside group cleanup; destroying the sandbox is the final boundary.
-
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Secondary development
-
-Use `python goose/install_runtime.py --prefix <new-private-prefix>` for local
-installation. Actual local CLI/protocol/process tests:
-`python -m pytest -q goose/test_commands.py`. Synthetic local HTTP fixtures prove
-native protocol and tool-selection behavior, not real models or provider support.
-The source HTTP controller checks real model source edits, new report, unchanged
-original tests and isolated held-out values when E2E_REQUIRE_LLM=1; no static
-marker alone passes. E2E_REQUIRE_CLI=1 requires the actual binary.
-
-Prepare [platform steps](../docs/platform-steps.md) with
-`python scripts/prepare_steps.py goose --output /tmp/goose-steps`; this only
-prepares source. Actual basic step acceptance is
-`python scripts/run_steps_e2e.py goose --timeout 1200`. Keep build-mode receipts,
-real model checks and independent owned-resource cleanup separate.
+2 vCPU, 2048 MB RAM, application port 9000, non-root `user`. Working directory: `/home/user/app`. Disk capacity and lifetime depend on the selected platform. Model tasks require outbound access to the configured model service and incur that service's charges.
 
 ## Contributing
 
-[CONTRIBUTING](../CONTRIBUTING.md), [spec](../docs/template-spec.md) and
-[design](../docs/design/goose.md). Keep both languages/pins/argv/evidence aligned.
+To develop the template, read [CONTRIBUTING](../CONTRIBUTING.md) and the [design](../docs/design/goose.md).
 
 ## Issues
 
@@ -147,7 +152,3 @@ Template code is [Apache-2.0](../LICENSE). Official Goose is Apache-2.0; its
 [unchanged license](upstream-LICENSE) is installed with the unmodified official
 binary. Upstream dependencies keep their own notices. No upstream desktop,
 Vulkan/CUDA asset, proprietary account or model weights are redistributed.
-
-### Additional current-version platform-step acceptance
-
-[Actual steps](evidence/express-2026-10-20T135350Z.json) and [external HTTP attempt](evidence/verification-steps-2026-10-20T135350Z.json): official READY, Python SDK creation, CLI/SDK smoke and 9 HTTP PASS / 0 FAIL / 1 SKIP. Model calls remain NOT_RUN in this receipt. Independent sandbox/template and private same-account asset-cache object/bucket cleanup passed before publication. Earlier image/model receipts retain their own scope.

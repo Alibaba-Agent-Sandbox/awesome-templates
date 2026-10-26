@@ -1,6 +1,6 @@
 # Tau2 retail benchmark
 
-[中文](README.zh-CN.md).
+[中文](README.zh-CN.md)
 
 ## What it does
 
@@ -40,45 +40,91 @@ Provides bounded, reproducible access to an original benchmark task and its nati
 evaluation, with a separately downloadable trajectory and independent strict
 replay. Both agent and simulated user use the explicitly configured model service.
 Text communication uses the original native default `enforce_communication_protocol=False`;
-all completion, source, score and strict replay acceptance gates remain required.
+task completion and native replay are reported separately.
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+CLI, SDK and HTTP are alternative ways to use the same application. Choose one for the task. Examples may write files, create projects or start services; do not repeat the full example on the same instance without cleaning its previous outputs.
+
+Install the CLI/Python SDK and configure your platform with the [usage guide](../docs/using-templates.md#installation). The platform API key creates sandboxes; `ABX_SERVER_TOKEN` independently protects this template application. Run the following in your own terminal; cloning this repository is unnecessary.
+
+Fill in model settings before launch: the API key, endpoint and model ID must belong to the same model service and region. `https://model.example.invalid/v1` is a placeholder; replace it with your vendor API base, not a web chat URL. Use a model ID actually available at that endpoint.
+
+This entry uses a model API key: no browser OAuth login is required, and your local logged-in account is not imported. See Configuration for protocol requirements. This template uses **Chat Completions**; an “OpenAI-compatible” label alone does not establish support for that API.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./tau2-bench --yes
-abx run <sandbox-id> tau2_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export TAU2_MODEL_API_KEY='<your-model-api-key>'
+export TAU2_MODEL_BASE_URL='https://model.example.invalid/v1'
+export TAU2_MODEL='<your-model-id>'
+export ABX_HTTP_TIMEOUT=750
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//tau2-bench --sandbox-timeout 1800 --yes
+# Paste the sandbox ID from the launch output
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+```bash
+abx run "$SANDBOX_ID" tau2_run --json-args '{"domain":"retail","task_id":"0","max_steps":30,"command_timeout":600}'
+```
+
+Returns native `score`, termination reason and sanitized trajectory `artifact_path`. Both the agent and simulated user make billable model calls; reward 1 is not guaranteed.
+
+`--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
+
+For OpenSandbox, set `ABX_PROVIDER=opensandbox` and configure its [provider guide](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md). Keep the same provider selected for subsequent CLI and Python calls.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+
+After launching above and setting `SANDBOX_ID`, save this as `use_template.py` and run `python3 use_template.py`. It connects to the same instance instead of creating another sandbox. Prepare any input file locally as shown above.
 
 ```python
-print(await client.commands.run('tau2_version'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=750
+        )
+        try:
+            result = await client.commands.run('tau2_run', domain='retail', task_id='0', max_steps=30, command_timeout=600)
+            print(result)
+            Path('tau2-trajectory.json').write_bytes(await sb.files.read_bytes(result['artifact_path']))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+The SDK returns the command value; it unwraps the HTTP `result` envelope. Closing the client does not delete the sandbox.
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/tau2_version`, with `Content-Type: application/json` and this direct argument object:
+Resolve port 9000 on the same instance with the [HTTP calling example](../docs/using-templates.md#cli-sdk-and-http). Preserve gateway headers, URL path and query before adding the independent application authentication.
+
+`POST /commands/tau2_run`
 
 ```json
-{}
+{
+  "domain": "retail",
+  "task_id": "0",
+  "max_steps": 30,
+  "command_timeout": 600
+}
 ```
 
-Expected response for this check:
-
-```json
-{"result": {"native_version": "1.0.1", "domain": "retail", "task_count": 114}}
-```
-
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Use `Content-Type: application/json` and application authentication as described in the shared guide. The request body is the direct argument object, without an `args` wrapper. Success returns `{"result": ...}` with the value described above. Set the HTTP client wait to 750 seconds, separately from the command execution deadline. Responses are buffered, not event streams. Errors: 400 invalid arguments, 401 authentication, 404 unknown command, 500 execution failure.
 
 ## Command reference
 
@@ -95,6 +141,8 @@ group, nonce and pidfd cleanup. Deadline, nonzero exit, incomplete trajectory,
 invalid source/task, reward mismatch or malformed output fails the command.
 
 ## Configuration
+
+This entry calls compatible Chat Completions. Include the vendor API prefix (often `/v1`) in the base; do not append `/chat/completions`. The agent and user simulator share these settings; the endpoint must support tool calls.
 
 | Variable | Required/default | Meaning |
 | --- | --- | --- |
@@ -114,6 +162,16 @@ recursively scrubbed from trajectory keys and values. Replay has no model key.
 Telemetry and model-price network refresh are disabled; unknown native price
 metadata returning zero is not a billing estimate or proof of free execution.
 
+The working directory is `/home/user/workspace`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
+
+```bash
+# Replace <returned-path> with artifact_path from the result
+abx download "$SANDBOX_ID" '<returned-path>' ./tau2-trajectory.json
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+
 ## Resources
 
 2 vCPU,2048MiB RAM, port9000, non-root `user`; no Docker daemon, KVM, GPU or extra
@@ -125,30 +183,9 @@ trajectory of at most8MiB remains in its exclusive `abx_tau2_result_<nonce>`
 directory; remove only that directory after reading it. Failed partial results
 are deleted. Kill and independently confirm absence of your outer cloud resources.
 
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Secondary development
-
-Run `python -m pytest -q tau2-bench/test_runtime.py`,
-`python scripts/check_template.py tau2-bench`, and `python scripts/check_docs.py`.
-The external `e2e_test.py` checks discovery, version, configuration and invalid
-inputs. Set `E2E_REQUIRE_CLI=1` to require real native execution. Real model checks
-require `E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 E2E_REMOTE_SANDBOX=1` against a fresh cloud
-server: original retail task0 must complete with reward1.0, actual agent/user/tool
-messages, independently downloaded bytes/SHA, separate original strict replay,
-fresh post-return acknowledgement and owned artifact cleanup. Generated/runtime
-code executes only inside the cloud sandbox. Do not infer full-benchmark accuracy.
-Dependency, source, data or task changes require fresh image and cloud receipts.
-
 ## Contributing
 
-Follow [CONTRIBUTING](../CONTRIBUTING.md), the
-[project standard](../docs/project-standards.md) and
-[documentation standard](../docs/documentation-standards.md). Preserve the frozen
-upstream lock and both licenses. Update translations, design, manifest and catalog
-together; record real versus synthetic checks and owned cleanup separately.
+To improve this template, see the [contribution guide](../CONTRIBUTING.md), [template specification](../docs/template-spec.md) and [design notes](../docs/design/tau2-bench.md).
 
 ## Issues
 

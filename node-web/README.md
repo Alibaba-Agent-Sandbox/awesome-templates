@@ -1,5 +1,7 @@
 # node-web
 
+[中文](README.zh-CN.md)
+
 ## What it does
 
 Runs one real Node HTTP application per sandbox. `serve` starts a JavaScript entry point; `start` and `dev` run package scripts in the background. Readiness requires HTTP 2xx/3xx from the owned child. `status`, `request`, `logs`, and `stop` inspect and manage that service. A dependency-free `index.js` is included for a first request.
@@ -16,41 +18,91 @@ A successful spawn or open TCP port does not prove an application works. This te
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+CLI, SDK and HTTP are alternative ways to use the same application. Choose one for the task. Examples may write files, create projects or start services; do not repeat the full example on the same instance without cleaning its previous outputs.
+
+Install the CLI/Python SDK and configure your platform with the [usage guide](../docs/using-templates.md#installation). The platform API key creates sandboxes; `ABX_SERVER_TOKEN` independently protects this template application. Run the following in your own terminal; cloning this repository is unnecessary.
+
+These template commands require no model, model endpoint or model API key.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./node-web --yes
-abx run <sandbox-id> smoke --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//node-web --sandbox-timeout 1800 --yes
+# Paste the sandbox ID from the launch output
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+```bash
+abx run "$SANDBOX_ID" serve --json-args '{"entry":"index.js","port":3000}'
+abx run "$SANDBOX_ID" request --json-args '{"path":"/"}'
+```
+
+Returns the sample application HTTP status and body containing `node-web ready`.
+
+`--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
+
+For OpenSandbox, set `ABX_PROVIDER=opensandbox` and configure its [provider guide](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md). Keep the same provider selected for subsequent CLI and Python calls.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+
+After launching above and setting `SANDBOX_ID`, save this as `use_template.py` and run `python3 use_template.py`. It connects to the same instance instead of creating another sandbox. Prepare any input file locally as shown above.
 
 ```python
-print(await client.commands.run('smoke'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            await client.commands.run('serve', entry='index.js', port=3000)
+            result = await client.commands.run('request', path='/')
+            print(result)
+        finally:
+            try:
+                await client.commands.run('stop')
+            finally:
+                await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+The SDK returns the command value; it unwraps the HTTP `result` envelope. Closing the client does not delete the sandbox.
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/smoke`, with `Content-Type: application/json` and this direct argument object:
+Resolve port 9000 on the same instance with the [HTTP calling example](../docs/using-templates.md#cli-sdk-and-http). Preserve gateway headers, URL path and query before adding the independent application authentication.
+
+First call, in order:
+
+- `POST /commands/serve` with `{"entry": "index.js", "port": 3000}`.
+
+`POST /commands/request`
 
 ```json
-{}
+{
+  "path": "/"
+}
 ```
 
-Expected response for this check:
+Use `Content-Type: application/json` and application authentication as described in the shared guide. The request body is the direct argument object, without an `args` wrapper. Success returns `{"result": ...}` with the value described above. Set the HTTP client wait to 450 seconds, separately from the command execution deadline. Responses are buffered, not event streams. Errors: 400 invalid arguments, 401 authentication, 404 unknown command, 500 execution failure.
 
-```json
-{"result": "node-web ready"}
-```
+After use, call:
 
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+- `POST /commands/stop` with `{}`.
 
 ## Command reference
 
@@ -74,7 +126,7 @@ One service can run at a time; a second start fails until `stop`. Readiness test
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `NODE_ENV` | `production` | Passed to application processes; set at sandbox creation for development |
+| `NODE_ENV` | `production` | Passed to application processes; shipped recipe selects production |
 | `PORT` | `3000` | Sample default; each launch overrides with the `port` argument |
 | `HOST` | set to `0.0.0.0` by launch | Hint to compatible application servers; application must honor it |
 | `WORKSPACE` | unset | Default application working directory |
@@ -83,47 +135,22 @@ One service can run at a time; a second start fails until `stop`. Readiness test
 
 No model/cloud key is needed by these commands. Keep secret values out of source, images and logs. Inject them only through authorized runtime configuration; do not log environment variables. App stdout is user controlled and can contain secrets: applications must redact before logging, and logs must not be attached to public issues without review.
 
+The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
+
+```bash
+abx run "$SANDBOX_ID" stop --json-args '{}'
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+
 ## Resources
 
 2 vCPU, 2048 MB memory. Port 9000 is the command API; 3000 is the sample service. Custom ports need provider gateway support. No privileged operations, Docker-in-sandbox, GPU, KVM, or browser. Application dependencies and artifacts consume the provider's rootfs budget (about 10 GB on Express).
 
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Historical verification
-
-| Provider | Executed scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
-
-This historical run used the pinned e2cb27e server-source override matching the then-current image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
-
-## Express source-runtime verification
-
-On 2026-10-16, all 60 external HTTP assertions passed against the patched source on an owned Express base sandbox with its actual Node.js 20 runtime. The run covers bundled smoke, uploaded application build/start/dev, HTTP readiness, bounded logs, shutdown, port reuse and cleanup. The owned instance was destroyed. [JSON evidence](evidence/runtime-express-2026-10-16.json) records source/config/fixture/wheel hashes; [HTTP results](evidence/runtime-express-2026-10-16.log) record the assertions. This does not establish a Dockerfile build or deployment of a new template image; `tested_on` remains empty. See [the runner](../docs/express-source-runtime.md).
-
-## Secondary development
-
-The HTTP acceptance script emits one `[PASS]` or `[FAIL]` line per assertion.
-Acceptance consumers require exit0, no failures and a positive pass count; exit0
-with zero recognized assertions is rejected. Run
-`python -m pytest --import-mode=importlib -q node-web/test_http_output.py` to exercise
-the actual local server/Node/npm full60-assertion suite and the same strict result
-counter. A separate real HTTP503 fixture checks nonzero/countable failure. Tests
-use an owned temporary npm cache and keep the original HOME; no installation or
-model call is required. The earlier unbracketed-output run remains rejected by
-the image acceptance counter and is not retroactively relabeled as a pass.
-
-Upload a project beneath `/home/user/app`, include its dependency lockfile, and install exact versions when building a derivative image (`npm ci` against the committed lockfile). Keep package installs before the final `COPY commands.py`, remove the npm cache in the same image layer, retain the pinned server, Alibaba base, non-root user and generation-2 start/ready commands. Do not add Docker CMD/ENTRYPOINT. Express/Fastify applications use `serve`, or define `start`/`dev`/`build` scripts. This template does not install a framework or generate a Next/Vite project.
-
-### Agent Sandbox platform steps
-
-From a repository checkout, `python scripts/run_steps_e2e.py node-web` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
-
 ## Contributing
 
-Read [CONTRIBUTING.md](../CONTRIBUTING.md), the [template spec](../docs/template-spec.md), and [design](../docs/design/node-web.md). Run `python3 scripts/check_template.py node-web`, then `python3 scripts/run_local_e2e.py` from the repository root with server SDK, httpx, PyYAML, Node and npm available. The suite runs real processes and asserts outputs, not mocks. With Docker and authorized Express access, run `python scripts/public_launch_e2e.py node-web --provider alicloud-express --application-controller --source ./node-web --output node-web-attempt-1.json`; only a successful run may add provider evidence. Only completed exact-input verification establishes provider acceptance. Cross-review process lifecycle and failure cases before merging.
+To improve this template, see the [contribution guide](../CONTRIBUTING.md), [template specification](../docs/template-spec.md) and [design notes](../docs/design/node-web.md).
 
 ## Issues
 

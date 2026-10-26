@@ -6,51 +6,101 @@ Run official Kimi Code 2.2.0 for one headless prompt in an existing sandbox dire
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
+The default recipe uses the Alibaba FC generation-2 base, non-root `user`, and the published `agent-sandbox-server==0.4.0a6` package.
 
-Alibaba FC base v0.0.49, pinned Node.js 24.16.0 (architecture-specific SHA256 verified), npm `@moonshot-ai/kimi-code@2.2.0` (MIT), and the exact public server SDK source in Dockerfile. This uses the current Node CLI, not the unrelated/older Python distribution.
+Official Node CLI `@moonshot-ai/kimi-code@2.2.0` and Node.js `24.16.0`.
+
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml)
 
 ## Problem solved
 
-Give callers a reproducible Moonshot CLI inside one Express sandbox, with compatible-model configuration, typed commands, no interactive account login and explicit bounded tool execution.
+Use an installed tool in an isolated sandbox, submit work through CLI, Python or HTTP, then export the files. Configure model and cloud-sandbox credentials separately.
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
+
+The default provider type is `openai`: use an authorized OpenAI-compatible base/key/model, without interactive Kimi login. The native CLI also supports its documented `kimi` and `anthropic` provider types, but changing the nonempty `KIMI_MODEL_PROVIDER_TYPE` manifest value requires your own source recipe; the base, model and key must all match that protocol.
+
+For the DashScope base below, create a Beijing-region key following [Model Studio API-key setup](https://www.alibabacloud.com/help/en/model-studio/get-api-key) and use a model allowed for that account. Other regions and Coding Plans use their matching keys/endpoints.
+
+Replace every `<...>` placeholder with your own value; use an exact model ID available to your account. Set secrets in your own terminal or secret manager, never in the image, YAML or public logs. Configure these variables **before** launch; later host changes do not reconfigure the running application.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./kimi-code --yes
-abx run <sandbox-id> kimi_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export KIMI_MODEL_API_KEY='<your-model-or-vendor-key>'
+export KIMI_MODEL_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
+export KIMI_MODEL_NAME='<model-id-from-your-provider>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//kimi-code --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+`--sandbox-timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
+
+Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
+
+```bash
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" kimi --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","allow_tools":true,"cwd":"/home/user/app","command_timeout":300}'
+```
+
+The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/app`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
 
 ```python
-print(await client.commands.run('kimi_version'))
-```
+import asyncio
+import os
+from agent_sandbox import ProviderSandbox
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=420
+        )
+        try:
+            print(await client.commands.run('kimi', prompt='Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.', allow_tools=True, cwd='/home/user/app', command_timeout=300))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/kimi_version`, with `Content-Type: application/json` and this direct argument object:
+Use the [direct HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserving gateway headers, URL path/query and the independent application token. Send `POST /commands/kimi` with `Content-Type: application/json` and this direct argument object, without an `args` wrapper:
 
 ```json
-{}
+{
+  "prompt": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.",
+  "allow_tools": true,
+  "cwd": "/home/user/app",
+  "command_timeout": 300
+}
 ```
 
-Expected response for this check:
+The response is `{"result": ...}`; see the command reference for its actual content type. Model text varies. Set the HTTP wait to at least 420 seconds; the command execution deadline is separate, and disconnecting does not guarantee remote cancellation. Authentication failures return 401, invalid argument types 400, and execution errors an error response. If a result includes `exit_code`, also check that it is zero.
 
-```json
-{"result": "2.2.0"}
+### Export files and cleanup
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
 ```
 
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
+
+`close()`/`aclose()` only close client connections; they do not delete the sandbox. Prepared templates/images in the launch journal can remain for reuse; remove only your own exact resources when no longer needed.
 
 ## Command reference
 
@@ -60,7 +110,7 @@ Expected response for this check:
 | kimi_setup_check | none | installed/version/pinned_version, model/key/base flags and workspace; no credential values |
 | kimi | prompt: required string, 1..65536 UTF-8 bytes; cwd: string, default configured workspace, must exist; command_timeout: integer, default 600, 1..1800 seconds; allow_tools: boolean, default false (must explicitly be true to launch upstream prompt mode) | buffered stream-JSON string; upstream nonzero exit, timeout or over-8-MiB output raises an error |
 
-The CLI argv is `kimi --prompt PROMPT --output-format stream-json`. Upstream 2.2.0 rejects --prompt combined with --auto/--yolo and internally forces automatic tool permission; allow_tools must therefore be true or the wrapper refuses the turn. Values are separate argv elements. Kimi inherits filesystem/network authority of sandbox user; auto mode can edit files and execute commands. Do not grant it to untrusted tasks without reviewing that authority.
+Named-command results are buffered rather than streamed. `cwd` must be an existing directory satisfying the template's path constraints. Editing/tool permission allows model actions with the sandbox user's authority. Client disconnect is not a cancellation mechanism.
 
 ## Configuration
 
@@ -77,19 +127,11 @@ Model variables are verified in the actual npm 2.2.0 runtime and its official [p
 
 ## Resources
 
-2 vCPU, 2048 MiB, platform rootfs, port 9000. No KVM, Docker daemon, display or GPU is required. Node >=22.19 is required upstream and provided by the pinned build. No model key is baked into the image.
-
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Secondary development
-
-Preserve the upstream CLI rather than replacing it with an HTTP completion imitation. Keep argv, environment, version and both languages consistent. Run `python scripts/check_template.py kimi-code`, its unit tests and local HTTP verifier. Real model acceptance requires actual existing-source edits, a new report/exact artifact, unchanged original tests and fresh independent held-out acknowledgments. A version check is not model acceptance. Use [platform steps](../docs/platform-steps.md) with `python scripts/run_steps_e2e.py kimi-code` for real Express deployment.
+2 vCPU, 2048 MB RAM, application port 9000, non-root `user`. Working directory: `/home/user/app`. Disk capacity and lifetime depend on the selected platform. Model tasks require outbound access to the configured model service and incur that service's charges.
 
 ## Contributing
 
-See [contribution rules](../CONTRIBUTING.md) and [design](../docs/design/kimi-code.md). Update records and regression evidence in the same PR.
+To develop the template, read [CONTRIBUTING](../CONTRIBUTING.md) and the [design](../docs/design/kimi-code.md).
 
 ## Issues
 
@@ -98,7 +140,3 @@ Template issues belong to [awesome-templates](https://github.com/Alibaba-Agent-S
 ## License
 
 Template wrapper: Apache-2.0, see [LICENSE](../LICENSE). Upstream Kimi Code: MIT, distributed through the pinned official npm package with its license retained.
-
-### 2026-10-20 full step checkpoint: template1.0.0
-
-[Real current-version steps](evidence/express-2026-10-20.json) and [complete external HTTP controller](evidence/verification-steps-2026-10-20T155159Z.json): official READY, actual Python SDK creation, all CLI/SDK smoke and 9 PASS/0 FAIL/1 SKIP; independent owned sandbox/template cleanup passed. Model acceptance remains NOT_RUN in this receipt; it does not relabel earlier image/model scope. Reproduction and exact server/controller provenance: [step guide](../docs/platform-steps.md).

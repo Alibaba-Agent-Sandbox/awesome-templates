@@ -8,60 +8,48 @@ Runs the pinned Qwen Code CLI as a non-interactive coding agent, with named HTTP
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
+The default recipe uses the Alibaba FC generation-2 base, non-root `user`, and the published `agent-sandbox-server==0.4.0a6` package.
 
-Alibaba FC generation-2 base, Python from the platform, Node.js 24.16.0 (fixed release and SHA256 for x86_64/aarch64), `@qwen-code/qwen-code@0.23.0`, and the pinned in-sandbox server in [Dockerfile](Dockerfile). No extra DashScope or OpenAI Python library is needed by the CLI.
+Official `@qwen-code/qwen-code@0.23.0` and Node.js `24.16.0`; the CLI needs no extra OpenAI/DashScope Python package.
+
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml)
 
 ## Problem solved
 
-Provides a reproducible headless CLI rather than requiring browser OAuth or configuring each sandbox by hand. The wrapper explicitly selects OpenAI-compatible authentication and rejects a missing key before starting the agent.
+Use an installed tool in an isolated sandbox, submit work through CLI, Python or HTTP, then export the files. Configure model and cloud-sandbox credentials separately.
 
 ## Quick start (CLI)
 
-Install the published CLI and Python client and configure Express using the [usage guide](../docs/using-templates.md#installation). Run from this repository's root with Docker and the provider's image registry configured. Generate an independent application token in your current shell:
+Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
+
+This path selects OpenAI-compatible API-key authentication and disables interactive OAuth. Use your DashScope key as `OPENAI_API_KEY` (or the declared fallback `DASHSCOPE_API_KEY`). The shipped endpoint is `https://dashscope.aliyuncs.com/compatible-mode/v1` and model is `qwen3-coder-plus`. The key, endpoint region and model entitlement must match. For a different model at the same endpoint, pass `model="<your-model-id>"` to `qwen` (include it in the JSON/SDK arguments below). Those endpoint/model manifest defaults are nonempty: host exports do not replace them. To change endpoint, clone this repository, edit `qwen-code/template.yaml` `env.OPENAI_BASE_URL` and `env.OPENAI_MODEL`, then launch `./qwen-code` from that checkout. Do not put the key in YAML.
+
+For the DashScope base below, create a Beijing-region key following [Model Studio API-key setup](https://www.alibabacloud.com/help/en/model-studio/get-api-key) and use a model allowed for that account. Other regions and Coding Plans use their matching keys/endpoints.
+
+Replace every `<...>` placeholder with your own value; use an exact model ID available to your account. Set secrets in your own terminal or secret manager, never in the image, YAML or public logs. Configure these variables **before** launch; later host changes do not reconfigure the running application.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
-abx template launch ./qwen-code --sandbox-timeout 900 --yes
-```
-
-The launch prepares the template, creates the sandbox and starts its application. Copy the returned sandbox ID into `SANDBOX_ID`, then keep the same application token for all three clients:
-
-```bash
-export SANDBOX_ID='<sandbox-id>'
+export OPENAI_API_KEY='<your-model-or-vendor-key>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//qwen-code --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
-abx run "$SANDBOX_ID" qwen_version
-abx run "$SANDBOX_ID" qwen_setup_check
 ```
 
-`qwen_version` returns `0.23.0`. The setup result reports installation and configuration presence without exposing credentials. Neither command needs a model key; these checks do not execute a coding task. For OpenSandbox, follow its setup in the [calling guide](../docs/using-templates.md#cli-sdk-and-http), set `ABX_PROVIDER=opensandbox` before launch and use `provider="opensandbox"` in Python below.
+`--sandbox-timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
 
-### Run a coding task
-
-Before launching a **new** instance, configure `OPENAI_API_KEY` securely in the launching shell (or `DASHSCOPE_API_KEY` as fallback). The empty key declarations in `template.yaml` inherit those values at launch. The default endpoint/model are DashScope and `qwen3-coder-plus`; edit nonempty `env` defaults in `template.yaml` before launching if your endpoint or workspace differs. Exporting a value later does not reconfigure the running application. The `model` command argument can override the selected model for an individual call.
-
-With a keyed instance's ID and token selected, upload your existing calculator and test files, then ask Qwen to fix it:
+Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
 
 ```bash
-abx upload "$SANDBOX_ID" ./calculator.py /home/user/app/calculator.py
-abx upload "$SANDBOX_ID" ./test_calculator.py /home/user/app/test_calculator.py
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" qwen --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","yolo":true,"cwd":"/home/user/app","command_timeout":300}'
 ```
 
-Run the coding call described in the Python SDK section below, then execute independent tests and download the report. For a longer coding task, CLI 0.4.17 supports `ABX_HTTP_TIMEOUT=330 abx run ...`; Python/HTTP clients use explicit `timeout=330`. `command_timeout` bounds server execution separately. CLI 0.4.16 named calls retain their 30-second wait; upgrade before using the CLI timeout setting. A client timeout does not cancel the remote task.
-
-```bash
-abx exec "$SANDBOX_ID" -- python3 -m unittest discover -s /home/user/app -p test_calculator.py
-abx download "$SANDBOX_ID" /home/user/app/REPORT.md ./REPORT.md
-```
-
-Replace the local filenames with your own project files before uploading. `yolo=true` approves all agent tool actions; use it only for a project you intend the agent to modify. It defaults to `false`. The result is buffered Qwen JSON text. Inspect the report and independent test result; a version/setup check does not establish model compatibility or a successful code change.
-
-After finishing the CLI, Python and HTTP examples, delete your owned instance with `abx kill "$SANDBOX_ID"`. The launch journal identifies any prepared template/image retained for reuse; remove those exact owned resources separately when no longer needed.
+The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/app`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` as shown in the [usage guide](../docs/using-templates.md#installation). Connect to the instance launched above; creating another instance does not inherit its running application.
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
 
 ```python
 import asyncio
@@ -69,12 +57,15 @@ import os
 from agent_sandbox import ProviderSandbox
 
 async def main():
-    sb = await ProviderSandbox.connect(os.environ["SANDBOX_ID"], provider="alicloud-express")
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
     try:
-        client = await sb.application_client(9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=330)
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=420
+        )
         try:
-            print(await client.commands.run("qwen_version"))
-            print(await client.commands.run("qwen_setup_check"))
+            print(await client.commands.run('qwen', prompt='Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.', yolo=True, cwd='/home/user/app', command_timeout=300))
         finally:
             await client.aclose()
     finally:
@@ -83,47 +74,33 @@ async def main():
 asyncio.run(main())
 ```
 
-For a keyed instance with your files uploaded, call `await client.commands.run("qwen", prompt="Fix calculator.py and write REPORT.md; preserve and run its tests", max_turns=20, yolo=True, command_timeout=300)` inside the same `try` block. `timeout=330` sets the HTTP wait; `command_timeout=300` bounds the agent process group. Client timeout alone does not cancel work. Closing a borrowed connection does not delete the sandbox.
-
 ## Quick start (HTTP POST)
 
-Resolve the endpoint and gateway headers from the same instance. This example preserves gateway authentication, URL path prefixes and query parameters. The application token remains independent:
-
-```python
-import asyncio
-import os
-import httpx
-from agent_sandbox import ProviderSandbox
-
-async def main():
-    sb = await ProviderSandbox.connect(os.environ["SANDBOX_ID"], provider="alicloud-express")
-    try:
-        endpoint, gateway_headers = await sb.network.resolve(9000)
-        headers = dict(gateway_headers)
-        if any(key.lower() == "authorization" for key in headers):
-            raise ValueError("Keep gateway Authorization; do not replace it with an application token")
-        token = os.environ["ABX_SERVER_TOKEN"]
-        headers["Authorization"] = "Bearer " + token
-        if not any(key.lower() == "x-access-token" for key in headers):
-            headers["X-Access-Token"] = token
-        base = httpx.URL(endpoint)
-        async with httpx.AsyncClient(timeout=330) as http:
-            for name in ("qwen_version", "qwen_setup_check"):
-                url = base.copy_with(path=base.path.rstrip("/") + "/commands/" + name)
-                response = await http.post(url, headers=headers, json={})
-                response.raise_for_status()
-                print(response.json())
-    finally:
-        await sb.close()
-
-asyncio.run(main())
-```
-
-`POST /commands/qwen_version` sends `{}` with `Content-Type: application/json` and returns `{"result":"0.23.0"}`. Setup returns an object inside `result`. For a configured coding task, use `POST /commands/qwen` with the direct object below, without an `args` wrapper; its response is `{"result":"<buffered Qwen JSON output>"}`. Missing/mistyped arguments return 400, authentication failure 401, unknown commands 404, and command validation, missing keys/CLI, upstream failures or execution deadlines 500. Errors carry `{"error":"...","type":"RuntimeError"}` or `ValueError`; known secret values are redacted.
+Use the [direct HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserving gateway headers, URL path/query and the independent application token. Send `POST /commands/qwen` with `Content-Type: application/json` and this direct argument object, without an `args` wrapper:
 
 ```json
-{"prompt":"Fix calculator.py, preserve test_calculator.py, write REPORT.md and run tests","max_turns":20,"yolo":true,"command_timeout":300}
+{
+  "prompt": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.",
+  "yolo": true,
+  "cwd": "/home/user/app",
+  "command_timeout": 300
+}
 ```
+
+The response is `{"result": ...}`; see the command reference for its actual content type. Model text varies. Set the HTTP wait to at least 420 seconds; the command execution deadline is separate, and disconnecting does not guarantee remote cancellation. Authentication failures return 401, invalid argument types 400, and execution errors an error response. If a result includes `exit_code`, also check that it is zero.
+
+### Export files and cleanup
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
+```
+
+Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
+
+`close()`/`aclose()` only close client connections; they do not delete the sandbox. Prepared templates/images in the launch journal can remain for reuse; remove only your own exact resources when no longer needed.
 
 ## Command reference
 
@@ -132,11 +109,9 @@ asyncio.run(main())
 | `qwen` | `prompt: str` required, nonempty; `max_turns: int=100` (1–1000); `model: str=""` uses `OPENAI_MODEL`; `cwd: str=""` uses workspace; `command_timeout: int=600` (1–1800 seconds); `yolo: bool=false` | String from `qwen -p PROMPT --auth-type openai --output-format json --max-session-turns N --max-wall-time SECONDS --no-chat-recording`; adds `--model MODEL`, `--yolo` when supplied |
 | `qwen_version` | None | Real `qwen --version` string, no key needed |
 | `qwen_setup_check` | None | Object with installed/version, pin, key/model/base-url presence and settings-file existence/JSON validity; never returns settings values or writes files |
-| `run` | `script: str="main.py"` | Python stdout; compatibility command with 120-second deadline |
+| `run` | `script: str="main.py"` | Python stdout; native command with 120-second deadline |
 
-`cwd` can be absolute or relative to `WORKSPACE` and must exist. Named commands use argv lists without shell interpolation. Coding can change files and run shell commands through the upstream agent.
-
-This Linux runtime drains both output pipes and keeps its session leader unreaped until owned process-group cleanup. Success, nonzero exit and deadline paths all stop that group before returning.
+Named-command results are buffered rather than streamed. `cwd` must be an existing directory satisfying the template's path constraints. Editing/tool permission allows model actions with the sandbox user's authority. Client disconnect is not a cancellation mechanism.
 
 ## Configuration
 
@@ -149,33 +124,15 @@ This Linux runtime drains both output pipes and keeps its session leader unreape
 | `WORKSPACE` | Default `/home/user/app` |
 | `ABX_SERVER_TOKEN` | Required before template launch; independent of model and gateway credentials |
 
-Diagnostics inspect `~/.qwen/settings.json` and `<workspace>/.qwen/settings.json` without altering contents or permissions. Normal upstream coding may maintain its own runtime cache. Upstream [model-provider configuration](https://github.com/QwenLM/qwen-code/blob/v0.23.0/docs/users/configuration/model-providers.md) and [headless usage](https://github.com/QwenLM/qwen-code/blob/v0.23.0/docs/users/features/headless.md) describe compatibility; each endpoint/model still requires a real acceptance run. Do not enable API logging with secrets in public artifacts.
+Diagnostics inspect `~/.qwen/settings.json` and `<workspace>/.qwen/settings.json` without altering contents or permissions. Normal upstream coding may maintain its own runtime cache. Upstream [model-provider configuration](https://github.com/QwenLM/qwen-code/blob/v0.23.0/docs/users/configuration/model-providers.md) and [headless usage](https://github.com/QwenLM/qwen-code/blob/v0.23.0/docs/users/features/headless.md) describe compatibility; confirm that your account and model support the required tool calling. Do not enable API logging with secrets in public artifacts.
 
 ## Resources
 
-2 vCPU, 4096 MB RAM, port 9000; outbound access to the selected model service. Generation 2 runs as non-root `user`. No Docker-in-Docker or elevated capabilities are required by Qwen.
-
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Historical verification
-
-| Provider | Executed scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
-
-This historical run used the pinned e2cb27e server-source override matching the then-current image CI injection; the receipt records exact versions, input hashes and build mode. This historical smoke does not establish a real-model task or the current launch path.
-
-## Secondary development
-
-Extend `commands.py` with typed `@command` functions; keep `start()` under the main guard. Preserve the `qwen` and `run` names and document new arguments in both languages. Pin CLI/server versions. Inspect [design](../docs/design/qwen-code.md) before changing runtime behavior.
-
-For current source-launch checks, use the [public launch testing guide](../docs/public-launch-testing.md). Historical steps below retain their original inputs and calling paths.
+2 vCPU, 4096 MB RAM, application port 9000, non-root `user`. Working directory: `/home/user/app`. Disk capacity and lifetime depend on the selected platform. Model tasks require outbound access to the configured model service and incur that service's charges.
 
 ## Contributing
 
-Read [contributor instructions](../CONTRIBUTING.md) and [specification](../docs/template-spec.md). Run `python3 scripts/check_template.py qwen-code`, `python3 -m pytest -q qwen-code/test_commands.py`, and `python3 scripts/run_local_e2e.py`. Local checks skip a missing CLI unless `E2E_REQUIRE_CLI=1`; a skip never proves runtime acceptance. For coding acceptance run the server with compatible key/base URL/model, then `E2E_REQUIRE_CLI=1 E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 python3 qwen-code/e2e_test.py`. The test changes existing source, retrieves a new report and exact artifact via files APIs, then runs independent tests and held-out calculations through the target shell API. It removes only its unique test project. Preserve engineering records; do not commit secrets or failed provider-pass JSON.
+To develop the template, read [CONTRIBUTING](../CONTRIBUTING.md) and the [design](../docs/design/qwen-code.md).
 
 ## Issues
 
@@ -184,7 +141,3 @@ Track template work in [issue #26](https://github.com/Alibaba-Agent-Sandbox/awes
 ## License
 
 Apache-2.0 for this template. Qwen Code retains its [upstream license](https://github.com/QwenLM/qwen-code/blob/v0.23.0/LICENSE).
-
-### 2026-10-20 full step checkpoint: template2.1.1
-
-[Real current-version steps](evidence/express-2026-10-20T155502Z.json) and [complete external HTTP controller](evidence/verification-steps-2026-10-20T155502Z.json): official READY, actual Python SDK creation, all CLI/SDK smoke and 9 PASS/0 FAIL/1 SKIP; independent owned sandbox/template cleanup passed. Model acceptance remains NOT_RUN in this receipt; it does not relabel earlier image/model scope. Reproduction and exact server/controller provenance: [step guide](../docs/platform-steps.md).

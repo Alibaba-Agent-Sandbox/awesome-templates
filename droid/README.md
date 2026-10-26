@@ -2,57 +2,106 @@
 
 ## What it does
 
-Template1.2.0 adds `droid_byok`: the genuine fixed CLI uses an explicit compatible provider without a Factory account. The existing `droid` Factory-account command remains available. Both use private per-call state and bounded owned process cleanup. Current1.2 native SDK/Express/BYOK acceptance passed as recorded below; older receipts retain historical scope.
+Run a pinned Factory Droid CLI. `droid_byok` uses an explicit compatible model, while `droid` uses a Factory account; both are headless commands.
 
 Run Factory Droid 0.241.1 headlessly on an existing project. Named commands expose a bounded coding call, the installed version, and a setup inspection without calling a model.
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
+The default recipe uses the Alibaba FC generation-2 base, non-root `user`, and the published `agent-sandbox-server==0.4.0a6` package.
 
-Official npm `@factory/cli@0.241.1` plus `@factory/cli-linux-x64@0.241.1`, full npm integrity [lock](package-lock.json), unmodified native SHA256 `1f50e238df053573aec1dae7b90b19c8e5afca83ab13a790a00f53ba4e4b9ab1`, Alibaba FC base, Python3.13 and published server package. Install hooks are disabled; execute the fixed native binary directly. SHA256 is checked at build and every native command. [Provenance](upstream.json), [upstream notice](UPSTREAM-NOTICE.md), [Dockerfile](Dockerfile). Native metadata is proprietary `UNLICENSED`; its repository field does not establish a public source commit. Non-root `user`, generation2, port9000.
+Original `@factory/cli@0.241.1` with its matching Linux x86_64 native package.
+
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml) · [upstream notice](UPSTREAM-NOTICE.md)
 
 ## Problem solved
 
-An automation can upload a project, ask Droid to edit it, inspect files, and run independent tests through Agent Sandbox. Legacy Factory mode refuses missing account credentials before launching login; BYOK requires its separate compatible settings. `WORKSPACE` controls the project root; success and error text redact configured secret values.
+Use an installed tool in an isolated sandbox, submit work through CLI, Python or HTTP, then export the files. Configure model and cloud-sandbox credentials separately.
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
+
+The example uses `droid_byok` with an explicit compatible Chat Completions custom model; no Factory account or browser login is needed. Its allowed tools edit/read files, so run the generated Python program separately. The separate `droid` command requires a genuine `FACTORY_API_KEY` from [Factory settings](https://app.factory.ai/settings/api-keys); model keys cannot replace it.
+
+For the DashScope base below, create a Beijing-region key following [Model Studio API-key setup](https://www.alibabacloud.com/help/en/model-studio/get-api-key) and use a model allowed for that account. Other regions and Coding Plans use their matching keys/endpoints.
+
+Replace every `<...>` placeholder with your own value; use an exact model ID available to your account. Set secrets in your own terminal or secret manager, never in the image, YAML or public logs. Configure these variables **before** launch; later host changes do not reconfigure the running application.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./droid --yes
-abx run <sandbox-id> droid_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export DROID_MODEL_API_KEY='<your-model-or-vendor-key>'
+export DROID_MODEL_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
+export DROID_MODEL='<model-id-from-your-provider>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//droid --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+`--sandbox-timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
+
+Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
+
+```bash
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" droid_byok --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","cwd":"/home/user/app","command_timeout":300}'
+```
+
+The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/app`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
 
 ```python
-print(await client.commands.run('droid_version'))
-```
+import asyncio
+import os
+from agent_sandbox import ProviderSandbox
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=420
+        )
+        try:
+            print(await client.commands.run('droid_byok', prompt='Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.', cwd='/home/user/app', command_timeout=300))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/droid_version`, with `Content-Type: application/json` and this direct argument object:
+Use the [direct HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserving gateway headers, URL path/query and the independent application token. Send `POST /commands/droid_byok` with `Content-Type: application/json` and this direct argument object, without an `args` wrapper:
 
 ```json
-{}
+{
+  "prompt": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.",
+  "cwd": "/home/user/app",
+  "command_timeout": 300
+}
 ```
 
-Expected response for this check:
+The response is `{"result": ...}`; see the command reference for its actual content type. Model text varies. Set the HTTP wait to at least 420 seconds; the command execution deadline is separate, and disconnecting does not guarantee remote cancellation. Authentication failures return 401, invalid argument types 400, and execution errors an error response. If a result includes `exit_code`, also check that it is zero.
 
-```json
-{"result": "0.241.1"}
+### Export files and cleanup
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
 ```
 
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
+
+`close()`/`aclose()` only close client connections; they do not delete the sandbox. Prepared templates/images in the launch journal can remain for reuse; remove only your own exact resources when no longer needed.
 
 ## Command reference
 
@@ -64,9 +113,7 @@ Expected response for this check:
 | `droid_setup_check` | None | Object with `installed` (bool), `package`, `version`, `expected_version` (strings), `api_key_set`, `workspace_exists`, `auto_update_enabled` (bool). No model call; no key values returned. |
 | `droid` | `prompt`: required nonempty string; `auto`: string, default `low`, one of `""`, `low`, `medium`, `high`; `cwd`: string, default `""`, existing directory within `WORKSPACE`; `command_timeout`: integer, default 300, range 1–600 seconds | Buffered stdout string from `droid exec [--auto LEVEL] -- PROMPT`. Nonzero exit or timeout raises a sanitized execution error. |
 
-Relative `cwd` resolves from `WORKSPACE`. Absolute paths must remain inside that root after symlink resolution. `auto=""` omits the flag and uses upstream read-only mode; `low` allows project edits, `medium` also allows development commands, and `high` allows riskier operations. The template never passes `--skip-permissions-unsafe`. **Compatibility:** 1.1.0 uses `/home/user/app` instead of `/app` and defaults the coding command to explicit `--auto low`; use `auto=""` for the previous read-only behavior.
-
-Version1.2.0 adds BYOK without changing legacy arguments. Native paths are fixed and SHA256-checked; output is limited256KiB per stream. Both modes exclude operator cloud/GitHub credentials, use private HOME and identity-pinned group/nonce/pidfd cleanup on success, failure, overflow and timeout. BYOK always uses low autonomy and does not enable unsafe permission bypass. The native process starts in a private temporary Git root; anonymous task context identifies the selected project by absolute path. This prevents project `.factory` settings from affecting model routing; target project native configuration is not loaded automatically. Pass private runtime settings with the pinned `--settings` flag. Only original native file tools Read/Edit/Create/Grep/Glob/LS are enabled; no Execute, subagent or MCP tools. Project files remain caller-owned; cwd selection is not an OS security boundary.
+Named-command results are buffered rather than streamed. `cwd` must be an existing directory satisfying the template's path constraints. Editing/tool permission allows model actions with the sandbox user's authority. Client disconnect is not a cancellation mechanism.
 
 ## Configuration
 
@@ -82,44 +129,15 @@ This subprocess lifecycle requires Linux. The command closes its owned process g
 | `WORKSPACE` | `/home/user/app` | Existing project root; an invalid explicit root fails. |
 | `FACTORY_DROID_AUTO_UPDATE_ENABLED` | `false` | Forced off in subprocesses to preserve the pin. |
 
-Factory credentials are obtained from [Factory API key settings](https://app.factory.ai/settings/api-keys). A DashScope or OpenAI key is not a replacement for `FACTORY_API_KEY`. `droid_byok` instead uses a private native `customModels` entry, provider `generic-chat-completion-api`, explicit model/base and `apiKey: "${ABX_DROID_MODEL_KEY}"`. The real key is not written into settings or argv. Native selection uses the configured custom model; no Factory key, interactive login or alternate binary is injected. Key/base values are redacted from native output; private state is deleted. [Official BYOK docs](https://docs.factory.com/model-independence/byok); exact0.241.1 behavior was checked with a synthetic-only fixed response, not a real-model acceptance. Upstream behavior is documented in [Droid Exec](https://docs.factory.com/droid-exec/overview); the exact pinned CLI help is the authority for flags. Redaction covers raw and JSON-escaped configured secret values in stdout and error messages. Agent-written project files still require normal secret hygiene. The cwd constraint selects the project and is not an operating-system security boundary.
+Factory credentials are obtained from [Factory API key settings](https://app.factory.ai/settings/api-keys). A DashScope or OpenAI key is not a replacement for `FACTORY_API_KEY`. `droid_byok` instead uses a private native `customModels` entry, provider `generic-chat-completion-api`, explicit model/base and `apiKey: "${ABX_DROID_MODEL_KEY}"`. The real key is not written into settings or argv. Native selection uses the configured custom model; no Factory key, interactive login or alternate binary is injected. Key/base values are redacted from native output; private state is deleted. [Official BYOK docs](https://docs.factory.com/model-independence/byok). Upstream behavior is documented in [Droid Exec](https://docs.factory.com/droid-exec/overview); the exact pinned CLI help is the authority for flags. Redaction covers raw and JSON-escaped configured secret values in stdout and error messages. Agent-written project files still require normal secret hygiene. The cwd constraint selects the project and is not an operating-system security boundary.
 
 ## Resources
 
-Default: 2 vCPU, 2048 MB RAM, port 9000. BYOK calls require your configured model service; legacy Factory calls require external Factory access. The platform starts `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py` and probes `agent-sandbox-server healthcheck --port 9000`.
-
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Historical verification
-
-| Provider | Executed scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
-
-This historical run used the pinned e2cb27e server-source override matching the then-current image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
-
-## Secondary development
-
-Keep the Alibaba base, exact CLI/server pins and non-root user. Extend [commands.py](commands.py) through `@command`; pass argv directly and keep secret redaction, key guards and deadline cleanup. Build with the exact published server package pinned in the Dockerfile. Run:
-
-```bash
-python3 -m pytest -q droid/test_commands.py droid/test_e2e_protocol.py droid/test_byok.py droid/test_model_controller.py
-python3 scripts/check_template.py droid
-python3 scripts/run_local_e2e.py
-python scripts/public_launch_e2e.py droid --provider alicloud-express --application-controller --source ./droid --output droid-attempt-1.json
-```
-
-Source-only local execution explicitly skips the missing native version; it cannot qualify the provider. L1 builds the actual Dockerfile and checks the real native SHA/version. Required L2 uses actual SDK creation, canonical steps, full HTTP and independent owned cleanup. L3 `E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 E2E_REMOTE_SANDBOX=1` runs [e2e_test.py](e2e_test.py) on a fresh owned cloud server configured for BYOK: real native successful JSON with positive turns, exact fresh final nonce, existing source edit, new artifacts, byte-identical original tests, complete independent original and held-out post-return checks with fresh ACKs, and owned project absence. Generated code never runs on the operator. Legacy Factory controller is retained separately as [factory_e2e.py](factory_e2e.py), requiring a genuine Factory key; no such current model pass is claimed.
-
-### Agent Sandbox platform steps
-
-From a repository checkout, `python scripts/run_steps_e2e.py droid` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+2 vCPU, 2048 MB RAM, application port 9000, non-root `user`. Working directory: `/home/user/app`. Disk capacity and lifetime depend on the selected platform. Model tasks require outbound access to the configured model service and incur that service's charges.
 
 ## Contributing
 
-Read [CONTRIBUTING.md](../CONTRIBUTING.md), the [template spec](../docs/template-spec.md), and the [design](../docs/design/droid.md). Keep this README and [Chinese README](README.zh-CN.md) synchronized; include regression tests, engineering records and actual evidence with a scoped PR. Keep the catalog experimental until required acceptance passes.
+To develop the template, read [CONTRIBUTING](../CONTRIBUTING.md) and the [design](../docs/design/droid.md).
 
 ## Issues
 
@@ -128,9 +146,3 @@ Continue [Droid issue #19](https://github.com/Alibaba-Agent-Sandbox/awesome-temp
 ## License
 
 Template source: [Apache-2.0](../LICENSE). Factory Droid is distributed separately under its upstream terms; installing the CLI does not relicense it.
-
-### 2026-10-20 full step checkpoint: template1.1.1
-
-[Real current-version steps](evidence/express-2026-10-20.json) and [complete external HTTP controller](evidence/verification-steps-2026-10-20T155022Z.json): official READY, actual Python SDK creation, all CLI/SDK smoke and 9 PASS/0 FAIL/0 SKIP; independent owned sandbox/template cleanup passed. Model acceptance remains NOT_RUN in this receipt; it does not relabel earlier image/model scope. Reproduction and exact server/controller provenance: [step guide](../docs/platform-steps.md).
-
-The changed runtime retains the proprietary [upstream notice](UPSTREAM-NOTICE.md).

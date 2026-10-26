@@ -1,5 +1,9 @@
 # Engineering records: awesome-templates
 
+## Consumer documentation (2026-10-26)
+
+- [Template configuration and practical examples](notes/proposed/process/2026-10-26-consumer-template-documentation.md) · [verification](evidence/verify/2026-10-26-consumer-template-documentation.md). All 50 catalog entries, with historical records preserved separately.
+
 ## Specification 5 delivery (2026-10-25)
 
 - [Published CLI 0.5.6 / SDK 0.4.0a6 template acceptance](notes/proposed/process/2026-10-25-public056-template-acceptance.md) · [dated verification](evidence/verify/2026-10-25-public056-template-acceptance.md). Default: 49 PASS / 46 BLOCKED / 5 NOT_APPLICABLE; frozen native: 44 PASS / 2 FAIL; focused corrections and optional OSS results remain separate.
