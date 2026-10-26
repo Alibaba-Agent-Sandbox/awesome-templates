@@ -1,0 +1,77 @@
+[
+  {
+    "template": "deepseek-harness",
+    "status": "pass",
+    "detail": "actual local HTTP process passed"
+  },
+  {
+    "template": "hermes-agent",
+    "status": "pass",
+    "detail": "actual local HTTP process passed"
+  },
+  {
+    "template": "openclaw",
+    "status": "pass",
+    "detail": "actual local HTTP process passed"
+  },
+  {
+    "template": "pi",
+    "status": "pass",
+    "detail": "actual local HTTP process passed"
+  },
+  {
+    "template": "qoder",
+    "status": "fail",
+    "detail": "e2e_test.py exited 1"
+  },
+  {
+    "template": "qwen-code",
+    "status": "fail",
+    "detail": "e2e_test.py exited 1"
+  },
+  {
+    "template": "amp",
+    "status": "pass",
+    "detail": "actual local HTTP process passed"
+  },
+  {
+    "template": "gemini",
+    "status": "pass",
+    "detail": "actual local HTTP process passed"
+  },
+  {
+    "template": "apply-patch",
+    "status": "pass",
+    "detail": "actual local HTTP process passed"
+  },
+  {
+    "template": "code-server",
+    "status": "pass",
+    "detail": "actual local HTTP process passed"
+  },
+  {
+    "template": "goose",
+    "status": "pass",
+    "detail": "actual local HTTP process passed"
+  },
+  {
+    "template": "kimi-code",
+    "status": "pass",
+    "detail": "actual local HTTP process passed"
+  },
+  {
+    "template": "aider",
+    "status": "pass",
+    "detail": "actual local HTTP process passed"
+  },
+  {
+    "template": "qm",
+    "status": "pass",
+    "detail": "actual local HTTP process passed"
+  },
+  {
+    "template": "qm-sandbox",
+    "status": "pass",
+    "detail": "actual local HTTP process passed"
+  }
+]

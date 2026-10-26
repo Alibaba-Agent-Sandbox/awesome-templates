@@ -81,3 +81,6 @@ HTTP body 直接是参数对象，响应是 result envelope。进程启动配置
 产品 Agent Sandbox；CLI abx；npm `@agent-sandbox/cli`；客户端 distribution
 `agent-sandbox-client`（Python namespace `agent_sandbox`）；镜像 server 包
 `agent-sandbox-server`。不要安装同名无关项目 `agent-sandbox`。
+
+
+进程管理及 QM 调用辅助函数的公共源码位于 `scripts/process_runners/`。修改公共源码后运行 `python scripts/sync_process_runners.py`，并检查受影响模板的具体政策。CI 使用 `python scripts/sync_process_runners.py --check` 检测漂移；生成后的 commands.py 仍可独立使用。

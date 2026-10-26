@@ -69,6 +69,7 @@ def runtime():
     return str(binary),str(Path(__file__).with_name('worker.mjs'))
 
 
+# Generated from scripts/process_runners/qm_invoke.py; update with scripts/sync_process_runners.py.
 def invoke(operation,data,timeout):
     if not LOCK.acquire(blocking=False):raise RuntimeError('another original QM operation is active')
     try:
