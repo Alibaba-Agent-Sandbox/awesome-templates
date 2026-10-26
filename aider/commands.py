@@ -68,6 +68,7 @@ def _environment() -> dict[str, str]:
     return env
 
 
+# Generated from scripts/process_runners/confirmations.py; update with scripts/sync_process_runners.py.
 def _run_process(argv: list[str], *, cwd: str, timeout: int | float,
                  env: dict | None = None, input_text: str | None = None,
                  reject_confirmations: bool = False) -> tuple[int, str, str]:

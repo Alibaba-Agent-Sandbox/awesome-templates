@@ -320,3 +320,5 @@ Current public-package rerun: [decision](notes/proposed/process/2026-10-25-publi
 Current controller authentication: [decision](notes/proposed/process/2026-10-25-current-controller-auth.md) · [verification](evidence/verify/2026-10-25-current-controller-auth.md).
 
 - [CI CLI exec output contract](notes/proposed/process/2026-10-25-ci-cli-exec-output.md) · [verification](evidence/verify/2026-10-25-ci-cli-exec-output.md). Original public source failures remain separate from the repaired verifier.
+
+- [Canonical runtime helper sources](notes/proposed/architecture/2026-10-26-runtime-helper-sources.md) · [verification](evidence/verify/2026-10-26-runtime-helper-sources.md).

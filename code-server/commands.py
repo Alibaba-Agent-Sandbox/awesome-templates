@@ -22,6 +22,7 @@ _LOCK=threading.RLock()
 _STATE={}
 
 
+# Generated from scripts/process_runners/file.py; update with scripts/sync_process_runners.py.
 def _run_process(argv: list[str], *, cwd: str, timeout: int | float,
                  env: dict | None = None, input_file=None) -> tuple[int, str, str]:
     """Keep the Linux session leader unreaped until its owned group is stopped."""

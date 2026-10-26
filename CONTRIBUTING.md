@@ -116,3 +116,6 @@ In-image package `agent-sandbox-server`
 (`agent_sandbox.server`). GitHub `alibaba-agent-sandbox/awesome-templates`,
 `alibaba-agent-sandbox/python-sdk`, and `alibaba-agent-sandbox/agent-sandbox`.
 npm `@agent-sandbox/cli`.
+
+
+Owned-process and QM invocation helpers have canonical sources under `scripts/process_runners/`. Edit the canonical source, run `python scripts/sync_process_runners.py`, and review the affected template policies. CI runs `python scripts/sync_process_runners.py --check`; every generated commands.py remains usable alone.
