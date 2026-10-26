@@ -39,6 +39,68 @@ def test_copy_step_recreates_exact_bytes_and_mode(tmp_path: Path):
     assert {"type": "ENV", "args": ["FIRST", "one", "SECOND", "two words"]} in manifest["build"]["steps"]
 
 
+@pytest.mark.parametrize("git_mode,checkout_mode", [(0o644,0o600),(0o755,0o700)])
+def test_immutable_copy_uses_committed_mode_not_private_checkout(tmp_path,git_mode,checkout_mode):
+    import shlex
+    import tarfile
+    import urllib.request
+    repository=tmp_path/'repository';repository.mkdir()
+    source=fixture(repository)
+    original=source/'commands.py';original.chmod(git_mode)
+    subprocess.run(['git','init','-q',str(repository)],check=True)
+    subprocess.run(['git','add','.'],cwd=repository,check=True)
+    subprocess.run(['git','-c','user.name=Fixture','-c','user.email=fixture@example.invalid',
+                    'commit','-qm','fixture'],cwd=repository,check=True)
+    commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=repository,text=True).strip()
+    original.chmod(checkout_mode)
+    target=tmp_path/'restored.py'
+    command,_=prepare_steps._copy(source,'commands.py '+str(target),'/',commit)
+    archive=io.BytesIO()
+    with tarfile.open(fileobj=archive,mode='w:gz')as tar:
+        entry=tarfile.TarInfo('awesome-templates-'+commit+'/source/commands.py')
+        entry.size=len(original.read_bytes());entry.mode=git_mode
+        tar.addfile(entry,io.BytesIO(original.read_bytes()))
+    code=shlex.split(command)[2].replace('/tmp/abx-step-source-',str(tmp_path/'source-cache-'))
+    with patch.object(urllib.request,'urlopen',return_value=io.BytesIO(archive.getvalue())):
+        exec(code,{})
+    assert target.read_bytes()==original.read_bytes()
+    assert target.stat().st_mode&0o777==git_mode
+    assert original.stat().st_mode&0o777==checkout_mode
+
+
+@pytest.mark.parametrize('changed',[False,True])
+def test_untracked_or_changed_copy_keeps_local_mode(tmp_path,changed):
+    import shlex
+    repository=tmp_path/'repository';repository.mkdir()
+    source=fixture(repository)
+    subprocess.run(['git','init','-q',str(repository)],check=True)
+    subprocess.run(['git','add','.'],cwd=repository,check=True)
+    subprocess.run(['git','-c','user.name=Fixture','-c','user.email=fixture@example.invalid',
+                    'commit','-qm','fixture'],cwd=repository,check=True)
+    commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=repository,text=True).strip()
+    original=source/('commands.py'if changed else 'untracked.py')
+    original.write_text('# local input differs from immutable source\n');original.chmod(0o640)
+    target=tmp_path/'restored.py'
+    command,_=prepare_steps._copy(source,original.name+' '+str(target),'/',commit)
+    exec(shlex.split(command)[2],{})
+    assert target.read_bytes()==original.read_bytes()
+    assert target.stat().st_mode&0o777==0o640
+
+
+def test_immutable_copy_rejects_git_symlink_even_if_local_bytes_match(tmp_path):
+    repository=tmp_path/'repository';repository.mkdir()
+    source=fixture(repository)
+    original=source/'commands.py';original.unlink();original.symlink_to('target')
+    subprocess.run(['git','init','-q',str(repository)],check=True)
+    subprocess.run(['git','add','.'],cwd=repository,check=True)
+    subprocess.run(['git','-c','user.name=Fixture','-c','user.email=fixture@example.invalid',
+                    'commit','-qm','fixture'],cwd=repository,check=True)
+    commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=repository,text=True).strip()
+    original.unlink();original.write_text('target')
+    with pytest.raises(ValueError,match='regular Git file mode'):
+        prepare_steps._copy(source,'commands.py '+str(tmp_path/'restored.py'),'/',commit)
+
+
 def test_heredoc_and_continuation_remain_executable():
     rows = instructions("RUN python3 - <<'PY'\nprint('hello')\nPY\nRUN echo one \\\n+ && echo two\nUSER user\n")
     assert rows[0] == ("RUN", "python3 - <<'PY'\nprint('hello')\nPY")
@@ -91,7 +153,11 @@ def test_immutable_source_fetch_checks_bytes_before_publication(tmp_path: Path):
     source = fixture(tmp_path)
     data = (source / "commands.py").read_bytes()
     target = tmp_path / "restored.py"
-    with patch.object(prepare_steps.subprocess, "run", return_value=SimpleNamespace(returncode=0, stdout=data)):
+    def git_result(args, **kwargs):
+        assert args[1] in ['show', 'ls-tree']
+        return SimpleNamespace(returncode=0, stdout=data if args[1]=='show'
+                               else b'100644 blob '+b'a'*40+b'\tsource/commands.py\n')
+    with patch.object(prepare_steps.subprocess, "run", side_effect=git_result):
         command, _ = prepare_steps._copy(source, "commands.py " + str(target), "/", "a" * 40)
     code = shlex.split(command)[2]
     code = code.replace("/tmp/abx-step-source-", str(tmp_path / "source-cache-"))

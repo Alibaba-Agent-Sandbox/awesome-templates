@@ -1,0 +1,41 @@
+{
+  "source": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "filesystem_git_mode_observation": [
+    {
+      "file": "next-app/package.json",
+      "filesystem_mode": "0o600",
+      "git_mode": "100644"
+    },
+    {
+      "file": "next-app/package-lock.json",
+      "filesystem_mode": "0o600",
+      "git_mode": "100644"
+    },
+    {
+      "file": "next-app/commands.py",
+      "filesystem_mode": "0o600",
+      "git_mode": "100644"
+    }
+  ],
+  "actual_generated_copy_modes": [
+    {
+      "path": "/opt/next-app/package.json",
+      "source_path": "next-app/package.json",
+      "mode": "0o600",
+      "immutable_fetch": true
+    },
+    {
+      "path": "/opt/next-app/package-lock.json",
+      "source_path": "next-app/package-lock.json",
+      "mode": "0o600",
+      "immutable_fetch": true
+    }
+  ],
+  "actual_error": {
+    "code": "E3000",
+    "type": "PermissionError",
+    "errno": 13,
+    "public_static_path": "/opt/next-app/package.json"
+  },
+  "scope": "Read-only source/stat/generated-step and actualCLIerror; no newcloud/sourcechanges"
+}

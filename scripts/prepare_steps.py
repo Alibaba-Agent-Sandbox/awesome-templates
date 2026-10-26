@@ -252,6 +252,14 @@ def _copy(source: Path, value: str, workdir: str, source_commit: str | None = No
                                           cwd=source, capture_output=True)
                 can_fetch = previous.returncode == 0 and previous.stdout == data
             if can_fetch:
+                record = subprocess.run(["git", "ls-tree", "--full-tree", source_commit, "--", remote_path],
+                                        cwd=source, capture_output=True, check=True)
+                fields = record.stdout.split(maxsplit=1)
+                git_mode = fields[0] if fields else b""
+                modes = {b"100644": 0o644, b"100755": 0o755}
+                if git_mode not in modes:
+                    raise ValueError("immutable COPY requires a regular Git file mode")
+                mode = modes[git_mode]
                 fetched.append([str(target), remote_path, digest, mode])
             else:
                 files.append([str(target), base64.b64encode(data).decode(), mode])

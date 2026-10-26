@@ -2,6 +2,8 @@
 
 ## Specification 5 delivery (2026-10-25)
 
+- [Immutable COPY source permissions](notes/proposed/process/2026-10-26-immutable-copy-source-mode.md) · [verification](evidence/verify/2026-10-26-immutable-copy-source-mode.md). Pinned Git archive permissions remain separate from private checkout modes; the original next-app failure is preserved.
+
 - [Native prepared startup compensation](notes/proposed/process/2026-10-25-native-prepared-startup-environment.md) · [verification](evidence/verify/2026-10-25-native-prepared-startup-environment.md). The earlier manifest-only correction proved insufficient; the failed control and same-instance PATH diagnostic remain preserved.
 
 - [One application startup owner](notes/proposed/process/2026-10-25-single-runtime-server.md) · [documentation verification](evidence/verify/2026-10-25-single-runtime-server.md). Current public connection API; historical Aider evidence remains separate.
