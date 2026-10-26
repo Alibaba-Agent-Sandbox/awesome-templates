@@ -22,41 +22,85 @@ Evaluate genuine AppWorld tasks on a disposable sandbox without nested Docker or
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+CLI, SDK and HTTP are alternative ways to use the same application. Choose one for the task. Examples may write files, create projects or start services; do not repeat the full example on the same instance without cleaning its previous outputs.
+
+Install the CLI/Python SDK and configure your platform with the [usage guide](../docs/using-templates.md#installation). The platform API key creates sandboxes; `ABX_SERVER_TOKEN` independently protects this template application. Run the following in your own terminal; cloning this repository is unnecessary.
+
+Fill in model settings before launch: the API key, endpoint and model ID must belong to the same model service and region. `https://model.example.invalid/v1` is a placeholder; replace it with your vendor API base, not a web chat URL. Use a model ID actually available at that endpoint.
+
+This entry uses a model API key: no browser OAuth login is required, and your local logged-in account is not imported. See Configuration for protocol requirements. This template uses **Chat Completions**; an “OpenAI-compatible” label alone does not establish support for that API.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./appworld --yes
-abx run <sandbox-id> appworld_native_smoke --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export APPWORLD_MODEL_API_KEY='<your-model-api-key>'
+export APPWORLD_MODEL_BASE_URL='https://model.example.invalid/v1'
+export APPWORLD_MODEL='<your-model-id>'
+export ABX_HTTP_TIMEOUT=750
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//appworld --sandbox-timeout 1800 --yes
+# Paste the sandbox ID from the launch output
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+```bash
+abx run "$SANDBOX_ID" appworld_run --json-args '{"max_steps":30,"command_timeout":600}'
+```
+
+Returns the selected training task, native `score`, `success` and encrypted `artifact_path`; a model is not guaranteed to solve a task.
+
+`--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
+
+For OpenSandbox, set `ABX_PROVIDER=opensandbox` and configure its [provider guide](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md). Keep the same provider selected for subsequent CLI and Python calls.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+
+After launching above and setting `SANDBOX_ID`, save this as `use_template.py` and run `python3 use_template.py`. It connects to the same instance instead of creating another sandbox. Prepare any input file locally as shown above.
 
 ```python
-print(await client.commands.run('appworld_native_smoke'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=750
+        )
+        try:
+            result = await client.commands.run('appworld_run', max_steps=30, command_timeout=600)
+            print(result)
+            Path('appworld-result.zip').write_bytes(await sb.files.read_bytes(result['artifact_path']))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+The SDK returns the command value; it unwraps the HTTP `result` envelope. Closing the client does not delete the sandbox.
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/appworld_native_smoke`, with `Content-Type: application/json` and this direct argument object:
+Resolve port 9000 on the same instance with the [HTTP calling example](../docs/using-templates.md#cli-sdk-and-http). Preserve gateway headers, URL path and query before adding the independent application authentication.
+
+`POST /commands/appworld_run`
 
 ```json
-{}
+{
+  "max_steps": 30,
+  "command_timeout": 600
+}
 ```
 
-Expected response for this check:
-
-```json
-{"result": "original AppWorld0.1.3.post1 native API and private cleanup OK"}
-```
-
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Use `Content-Type: application/json` and application authentication as described in the shared guide. The request body is the direct argument object, without an `args` wrapper. Success returns `{"result": ...}` with the value described above. Set the HTTP client wait to 750 seconds, separately from the command execution deadline. Responses are buffered, not event streams. Errors: 400 invalid arguments, 401 authentication, 404 unknown command, 500 execution failure.
 
 ## Command reference
 
@@ -72,6 +116,8 @@ Native operations serialize and reject overlap. Requests at most32KiB; native st
 
 ## Configuration
 
+This entry calls compatible Chat Completions. Include the vendor API prefix (often `/v1`) in the base; do not append `/chat/completions`. The model and endpoint must support Chat Completions tool calls.
+
 | Name | Requirement / default | Meaning |
 | --- | --- | --- |
 | APPWORLD_MODEL_API_KEY | model required; empty | Approved compatible endpoint key, anonymous stdin to native worker, never argv or child environment |
@@ -82,21 +128,23 @@ Native operations serialize and reject overlap. Requests at most32KiB; native st
 
 Configuration is captured at command-server startup. Key max8192characters/noCRLF/NUL. Worker environment excludes operator cloud/GitHub/model tokens; model settings travel via anonymous stdin into private memory. Original model execution guards remain enabled. Bridge validates allowed original app/API identifiers and renders JSON arguments as Python literals; it does not accept executable model Python. At most16tool calls execute per response;17..64calls receive complete rejection feedback without API execution and larger batches fail. At most3empty-choice responses across a task,8192response tokens,160native interactions,50API calls/interaction,30seconds/native execution,60seconds/model HTTP without SDK retries. Native inspect/API tool output is bounded; model context at most1MiB.
 
+The working directory is `/home/user/workspace`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
+
+```bash
+# Replace <returned-path> with artifact_path from the result
+abx download "$SANDBOX_ID" '<returned-path>' ./appworld-result.zip
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+
 ## Resources
 
-Declared2vCPU/2048MB/Linuxx64, port9000 and enforced image rootfs8GiB budget. No Docker/KVM/GPU. Private runtime copies and unpacks original protected code/data per call; no plaintext protected app/data is exported in the distributable image. Actual image/native dependencies and one original Express task pass below; workload peak memory remains unmeasured. Model calling requires authorized compatible Chat Completions/tool calling and network egress; no other provider or all-task qualification.
-
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Secondary development
-
-Keep original wheel/encrypted bundle/data hashes, runtime version, manifest and native evaluator consistent. Public source tag66ad8099e12188ece0d3fe45e661dbc01880813b is version correspondence, not proof of reproducible wheel construction. Training-only scope avoids held-out benchmark contamination. Every new model/task/profile requires real native evaluation. Preserve original protected licenses and encrypted distribution; result bundles use the original format and public upstream decryption mechanism, so they are not a confidentiality guarantee.
+2 vCPU, 2048 MB, Linux x64, port 9000. No Docker, KVM or GPU required. Each call initializes a private runtime; model tasks require the external compatible model service and egress. Training-task slice only; no full benchmark leaderboard result is implied.
 
 ## Contributing
 
-Follow [CONTRIBUTING](../CONTRIBUTING.md), [project standards](../docs/project-standards.md), [documentation standards](../docs/documentation-standards.md) and [design](../docs/design/appworld.md). Preserve immutable pass/fail receipts and independently confirmed owned cleanup.
+To improve this template, see the [contribution guide](../CONTRIBUTING.md), [template specification](../docs/template-spec.md) and [design notes](../docs/design/appworld.md).
 
 ## Issues
 

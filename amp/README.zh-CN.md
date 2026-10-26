@@ -14,7 +14,7 @@ Agent Sandbox 里的 Sourcegraph Amp CLI。镜像钉住 `@ampcode/cli`，在端�
 
 `stream_json` 为 true 时，`amp_execute` 加上 `--stream-json`。HTTP 响应是进程退出后的完整标准输出，不是实时流。
 
-`amp_execute` 在启动 CLI 之前检查 `AMP_API_KEY`。变量缺失或只有空白时，命令返回的错误里写明 `AMP_API_KEY`，并说明 CLI 自己会进入设备登录并等待。2026-10-15 实测：不带密钥执行 `amp -x` 会打印设备登录 URL 并一直等待。这个命令不会走那条路径。
+`amp_execute` 在启动 CLI 之前检查 `AMP_API_KEY`。变量缺失或只有空白时，命令返回的错误里写明 `AMP_API_KEY`，并说明 CLI 自己会进入设备登录并等待。
 
 Amp 不接受 DashScope 密钥、`ABX_LLM_API_KEY` 或 OpenAI 兼容的 base URL。令牌是 Amp 自己的访问令牌，在 [ampcode.com 设置](https://ampcode.com/settings/security#access-token) 创建。
 
@@ -22,55 +22,95 @@ Amp 不接受 DashScope 密钥、`ABX_LLM_API_KEY` 或 OpenAI 兼容的 base URL
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
+默认配方使用 Alibaba FC generation-2 基础镜像，以非 root `user` 运行，服务端固定安装已发布的 `agent-sandbox-server==0.4.0a6`。
 
-- 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`abx template deploy` 把 `<region>` 换成 `ALIBABA_CLOUD_REGION_ID` 或 `cn-hangzhou`，把 `<tag>` 换成 `ABX_BASE_IMAGE_TAG` 或 `v0.0.49`。
-- 基础镜像里的 Node.js 20，只用来跑 `npm`。`amp` 二进制是同版本可选包 `@ampcode/cli-linux-x64` 里的 glibc ELF。
-- `@ampcode/cli@0.0.1792022479-ge66e24`，来自 2026-10-15 的 `npm view @ampcode/cli version`。目录里原来的 pin 是 `0.0.1791964847-g13f24a`。基础镜像把 npm 源设成 `registry.npmmirror.com`，该源对这个版本的 `@ampcode/cli-linux-x64` 返回 404，所以 Dockerfile 从 `https://registry.npmjs.org` 安装。构建时会跑 `amp version`，原生二进制没解出来时构建失败。
-- git 和 ripgrep。
-- 工作目录 `/home/user/app`。运行用户 `user`。`abx template launch` 执行模板的 `start_cmd` 启动进程。Dockerfile 没有 `CMD` 或 `ENTRYPOINT`。
+官方 `@ampcode/cli@0.0.1792022479-ge66e24` Linux x86_64 CLI、平台 Node.js 20、Git 和 ripgrep。
+
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml)
 
 ## 解决的问题
 
-generation 2 沙箱可以在没有 TUI 的情况下运行钉死版本的 Amp CLI；不带密钥就能只读检查版本和已有设置文件；`AMP_API_KEY` 缺失时拒绝执行，而不是堵在设备登录上。
+在隔离沙箱中使用已经安装的工具，通过 CLI、Python 或 HTTP 提交工作，再导出文件；模型账号与云沙箱账号分别配置。
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，配置选择的平台（沙箱 API Key、连接地址及构建镜像仓库），再配置下面独立的模型/应用凭据。无需 clone 仓库即可启动公共模板。
+
+先按 [Amp 登录说明](https://ampcode.com/docs/cli)取得 Amp 账号密钥。命名命令使用 `AMP_API_KEY`，不会启动浏览器登录。模型和后端由 Amp 选择，本包装没有通用 OpenAI endpoint/model 参数；`AMP_URL` 是 Amp 服务地址，不是模型接口。
+
+所有 `<...>` 都是需要你替换的占位值，模型名必须使用服务商实际提供的 ID。密钥在你自己的终端或 secret manager 中设置，不要放入镜像、YAML 或公开日志。以下变量要在 launch **之前**设置；之后改变 host 环境不会更新运行中的应用。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./amp --yes
-abx run <sandbox-id> amp_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export AMP_API_KEY='<your-model-or-vendor-key>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//amp --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+`--sandbox-timeout 1800` 是沙箱生存时间（秒），`command_timeout`/`timeout_s` 是单次任务执行期限，`ABX_HTTP_TIMEOUT`/SDK `timeout` 是客户端等待时间，三者分别设置。
+
+launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
+
+```bash
+ABX_HTTP_TIMEOUT=720 abx run "$SANDBOX_ID" amp_execute --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","dangerously_allow_all":true}'
+```
+
+任务要求在 `/home/user/app` 写出 `generated_hello.py` 和 `GENERATED_REPORT.md`。示例显式开放所需的编辑/工具权限，只在自己拥有的可丢弃沙箱中使用。下面的 SDK 和 HTTP 是同一任务的替代调用方式，选择一种即可。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
 
 ```python
-print(await client.commands.run('amp_version'))
-```
+import asyncio
+import os
+from agent_sandbox import ProviderSandbox
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=720
+        )
+        try:
+            print(await client.commands.run('amp_execute', prompt='Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.', dangerously_allow_all=True))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/amp_version`，`Content-Type: application/json`，直接发送以下参数对象：
+使用[直接 HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析 endpoint，保留网关 headers、URL path/query 和独立应用 token。请求 `POST /commands/amp_execute`，`Content-Type: application/json`，body 是下面的直接参数对象，不加 `args` 包装：
 
 ```json
-{}
+{
+  "prompt": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.",
+  "dangerously_allow_all": true
+}
 ```
 
-该检查的预期响应：
+响应为 `{"result": ...}`：内容格式见下方命令参考；模型生成的文字每次不同。HTTP 等待时间至少设为 720 秒，命令执行期限是另一个设置；断开客户端不会保证终止远端任务。认证失败为 401，参数类型错误为 400，执行失败为错误响应；返回对象包含 `exit_code` 时还应检查它是否为 0。
 
-```json
-{"result": "0.0.1792022479-ge66e24"}
+### 导出产物与清理
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
 ```
 
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+程序预期输出 `Hello from the sandbox`。先读取产物并检查再使用；模型回答成功不代表文件一定存在。文件不会自动回写模板或你的本机，释放沙箱前必须导出。
+
+`close()`/`aclose()` 仅关闭客户端连接，不释放沙箱。launch 日志中的已构建模板和镜像可能保留用于复用，不再需要时仅删除自己创建的那些资源。
 
 ## 命令参考
 
@@ -80,19 +120,7 @@ print(await client.commands.run('amp_version'))
 | `amp_setup_check` | 无 | 对象 | `installed`、`package`、`version`、`api_key_set`、`settings_path`、`settings_exists`、`dangerously_allow_all`、`updates_mode`。不写文件；文件缺失时报告 false 和 `default`。 |
 | `amp_execute` | `prompt` 字符串，必填。`stream_json` 布尔，可选，默认 `false`；`dangerously_allow_all` 布尔，可选，默认 `false`。 | 字符串 | `amp -x` 的标准输出。`stream_json` 为 true 时加上 `--stream-json`。 |
 
-`POST /commands/amp_execute`，请求体 `{"prompt":"hi"}`，CLI 退出码为 0 时响应 `{"result":"<stdout>"}`。缺少 `prompt` 是 HTTP 400。缺少 `AMP_API_KEY`、找不到二进制，或 `amp` 非零退出，是 HTTP 500，响应体含 `error` 和 `type`。`api_key_set` 只是布尔值，不返回密钥。成功与错误输出均会替换环境中配置的秘密值，包括 JSON 转义形式。命令超过 600 秒后会终止自己创建的进程组；客户端超时不等于取消。
-
-镜像预置以下 JSON；检查和执行命令均不创建或覆盖设置：
-
-```json
-{
-  "amp.dangerouslyAllowAll": false,
-  "amp.updates.mode": "disabled",
-  "amp.notifications.enabled": false
-}
-```
-
-路径优先用 `AMP_SETTINGS_FILE`；设置了 `WORKSPACE` 时用 `$WORKSPACE/.e2e_amp/settings.json`；`HOME` 为 `/home/user` 时用 `/home/user/.config/amp/settings.json`。镜像里设置了 `AMP_SETTINGS_FILE=/home/user/.config/amp/settings.json`。
+命令响应为缓冲结果，不是流式事件。`cwd` 必须指向已存在且符合本模板路径约束的目录；允许编辑/工具执行时，模型可按沙箱用户权限修改文件或运行程序。超时只限制相应调用，客户端断连不能作为取消机制。
 
 ## 配置
 
@@ -105,42 +133,17 @@ print(await client.commands.run('amp_version'))
 | `AMP_SETTINGS_FILE` | 否 | 镜像内为 `/home/user/.config/amp/settings.json` | 调用者管理的设置文件，仅作只读检查。 |
 | `AMP_LOG_FILE` | 否 | 镜像内为 `/home/user/.cache/amp/logs/cli.log` | CLI 日志路径。 |
 | `ABX_SERVER_TOKEN` | 是 | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
-| `ABX_SERVER_PORT` | 否 | `9000` | 本地执行 `python3 commands.py` 时 `start()` 监听的端口。 |
 
 在 `template launch` 前安全导出清单中声明为空的秘密变量，让应用启动时读取；不要写入镜像、YAML 或日志。
 
-在镜像外启动 `commands.py` 之前请设置 `AMP_SETTINGS_FILE` 或 `WORKSPACE`。否则当 `HOME` 不是 `/home/user` 时，进程会检查当前目录的 `.e2e_amp/settings.json`，不会创建目录。
 
 ## 资源
 
-| 资源 | 值 |
-|---|---|
-| cpu | 2 vCPU |
-| memory | 2048 MB |
-| 端口 | 9000 |
-| 磁盘 | 平台 rootfs，极速版大约 10G |
-
-带工具的真实 agent 回合没有测过内存。不需要密钥的命令（`amp_version`、`amp_setup_check`）在这个规格下可以跑。`amp` 二进制大约 130 MB。
-
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 二次开发
-
-版本钉在 Dockerfile 的 `AMP_CLI_VERSION`（`@ampcode/cli@0.0.1792022479-ge66e24`）和 `template.yaml` 里 `amp_version` 的 smoke 期望值。跑过 `npm view @ampcode/cli version` 之后，同时改这两处，以及 `e2e_test.py` 里的 `PINNED_VERSION`，再跑一次 `amp version`，让 smoke 字符串等于输出的第一个字段。
-
-`amp_execute` 用参数数组调用 CLI。不要把 prompt 拼进 shell 字符串。`AMP_API_KEY` 检查必须放在 `subprocess` 之前，避免缺密钥时堵在设备登录。检查必须只读，权限绕过只能显式启用。在仓库根目录运行 `python -m pytest amp/test_commands.py` 和 `python scripts/run_local_e2e.py` 验证本地行为；本地通过不等于模型验收。目标具有兼容密钥时，设置 `E2E_BASE_URL`、`E2E_WORKSPACE` 并运行 `E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 python amp/e2e_test.py`：先证明源码测试失败，再验证真实文件修改、新建产物、原测试未改动，以及隔离 Python 测试和独立额外断言。该显式验收允许工具修改唯一的临时项目并在结束后清理；回复标记本身不能通过。
-
-要加命令，再注册一个用参数数组调用 `amp` 的 `@command`。`start()` 只放在 `if __name__ == "__main__"` 下面。
-
-### Agent Sandbox step 构建
-
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py amp`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+2 vCPU，2048 MB 内存，应用端口 9000，非 root `user`。工作目录 `/home/user/app`；磁盘容量和最长生存时间由所选平台配置。模型任务需要访问配置的模型服务，模型调用费用由对应服务商计费。
 
 ## 贡献
 
-见 [CONTRIBUTING.md](../CONTRIBUTING.md) 和 [docs/template-spec.zh-CN.md](../docs/template-spec.zh-CN.md)。设计说明在 [docs/design/amp.md](../docs/design/amp.md)。
+开发模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)和[设计说明](../docs/design/amp.md)。
 
 ## 问题反馈
 
@@ -153,7 +156,3 @@ print(await client.commands.run('amp_version'))
 ## 许可证
 
 Apache-2.0，与本仓库相同。见 [LICENSE](../LICENSE)。
-
-### 2026-10-20完整 step 检查点：模板1.2.0
-
-[真实对应版本 step](evidence/express-2026-10-20.json)及[完整外部 HTTP 控制器](evidence/verification-steps-2026-10-20T154625Z.json)通过：官方 READY、真实 Python SDK 创建、全部 CLI/SDK smoke，7 PASS/0 FAIL/1 SKIP；自有沙箱／模板均独立确认清理。本回执模型验收仍为 NOT_RUN，不改变旧镜像／模型范围。复现及精确服务端／控制器来源见[step 指南](../docs/platform-steps.zh-CN.md)。

@@ -1,5 +1,7 @@
 # node-web
 
+[English](README.md)
+
 ## 做什么
 
 每个沙箱管理一个真实 Node HTTP 应用。`serve` 启动 JavaScript 入口，`start` 和 `dev` 在后台运行 npm 脚本。只有子进程存活并返回 HTTP 2xx/3xx，启动才成功。`status`、`request`、`logs`、`stop` 提供状态、真实请求、日志和停止。内置无第三方依赖的 `index.js`，可直接验证 HTTP 服务。
@@ -16,41 +18,91 @@ Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任务。示例可能写入文件、创建项目或启动服务；不要在未清理前对同一实例重复执行整段示例。
+
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，并完成所选平台配置。平台 API Key 用于创建沙箱，`ABX_SERVER_TOKEN` 是独立的模板应用访问口令。以下命令在自己的终端执行，不需要克隆本仓库。
+
+本模板的这些命令不需要模型、模型 endpoint 或模型 API Key。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./node-web --yes
-abx run <sandbox-id> smoke --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//node-web --sandbox-timeout 1800 --yes
+# 将启动输出中的沙箱 ID 填到这里
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+```bash
+abx run "$SANDBOX_ID" serve --json-args '{"entry":"index.js","port":3000}'
+abx run "$SANDBOX_ID" request --json-args '{"path":"/"}'
+```
+
+返回示例应用的 HTTP 状态和包含 `node-web ready` 的响应正文。
+
+`--sandbox-timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
+
+OpenSandbox 用户将 `ABX_PROVIDER` 改为 `opensandbox`，并按[提供方指南](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)配置；后续 CLI 和 Python 必须继续选择同一个平台。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
+
+在完成上述 CLI 启动、设置 `SANDBOX_ID` 后，将以下保存为 `use_template.py`，执行 `python3 use_template.py`。它连接同一实例，不另建沙箱。对于需要输入的示例，先在本机准备上面的文件。
 
 ```python
-print(await client.commands.run('smoke'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            await client.commands.run('serve', entry='index.js', port=3000)
+            result = await client.commands.run('request', path='/')
+            print(result)
+        finally:
+            try:
+                await client.commands.run('stop')
+            finally:
+                await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。关闭连接不会删除沙箱。
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/smoke`，`Content-Type: application/json`，直接发送以下参数对象：
+按[HTTP 调用示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析同一实例的 9000 端口，保留网关头、URL 路径和查询，再添加独立应用认证。
+
+先按顺序调用：
+
+- `POST /commands/serve` with `{"entry": "index.js", "port": 3000}`.
+
+`POST /commands/request`
 
 ```json
-{}
+{
+  "path": "/"
+}
 ```
 
-该检查的预期响应：
+请求头包括 `Content-Type: application/json` 和按共享指南设置的应用认证；请求体是参数对象本身，不套 `args`。成功响应为 `{"result": ...}`，其中结果含义同上。 HTTP 等待时间设为 450 秒；它独立于命令内部的执行时限。结果为缓冲响应，不是事件流。400 为参数错误，401 为认证失败，404 为命令不存在，500 为执行错误。
 
-```json
-{"result": "node-web ready"}
-```
+使用完成后调用：
 
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+- `POST /commands/stop` with `{}`.
 
 ## 命令参考
 
@@ -83,45 +135,22 @@ print(await client.commands.run('smoke'))
 
 命令无需模型或云密钥。秘密值不得写进源码、镜像、日志。只通过授权运行配置注入，不打印环境变量。应用 stdout 由用户代码决定，可能含敏感信息，应用须自行脱敏，公开 issue 前须审阅日志。
 
+工作目录为 `/home/user/app`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
+
+```bash
+abx run "$SANDBOX_ID" stop --json-args '{}'
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
+
 ## 资源
 
 2 vCPU、2048 MB 内存。9000 为命令 API，3000 为样例服务；其他端口需网关支持。无需特权、沙箱内 Docker、GPU、KVM、浏览器。应用依赖与产物共享提供方根文件系统预算（Express 约 10 GB）。
 
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 历史验收
-
-| 提供方 | 已执行范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
-
-该历史记录采用 e2cb27e 服务端来源覆盖，与当时的镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
-
-## Express 源码运行验证
-
-2026-10-16，改动后的源码在自有 Express base 的真实 Node.js 20 中通过全部 60 项外部 HTTP 断言，覆盖样例 smoke、上传应用的构建/start/dev、HTTP 就绪、日志边界、退出、端口复用及清理。自有实例已销毁。[JSON 证据](evidence/runtime-express-2026-10-16.json)记录源码、配置、fixture 和 wheel 哈希，[HTTP 结果](evidence/runtime-express-2026-10-16.log)记录断言。此结果不等于 Dockerfile 构建或新模板镜像部署，`tested_on` 保持为空；见[共享工具](../docs/express-source-runtime.md)。
-
-## 二次开发
-
-HTTP 验收脚本为每项断言输出 `[PASS]` 或 `[FAIL]` 行。外层验收要求退出0、无失败
-且通过计数大于0；即使退出0，识别到零项断言也会被拒。运行
-`python -m pytest --import-mode=importlib -q node-web/test_http_output.py`，可执行真实
-本地 server/Node/npm 的完整60项套件，再使用相同严格计数器检查；另用真实 HTTP503
-fixture 检查非零退出和可识别失败。测试仅使用自有临时 npm cache，保留原 HOME，
-无需安装依赖或调用模型。此前无方括号输出的云验收仍保留为计数协议不兼容而被拒收，
-不会追改为通过。
-
-把项目上传至 `/home/user/app` 下并提交依赖锁文件。衍生镜像用 `npm ci` 从锁文件安装精确版本；依赖安装放在最终 `COPY commands.py` 之前，npm 缓存在同层清理。保留锁定 server、Alibaba 基础镜像、非 root 用户、generation 2 的启动/就绪命令，无 Docker CMD/ENTRYPOINT。Express/Fastify 可用 serve，或提供 start/dev/build 脚本。模板不预装框架，不创建 Next/Vite 项目。
-
-### Agent Sandbox step 构建
-
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py node-web`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
-
 ## 贡献
 
-阅读 [CONTRIBUTING.md](../CONTRIBUTING.md)、[模板规范](../docs/template-spec.zh-CN.md)与[设计分析](../docs/design/node-web.md)。在仓库根运行 `python3 scripts/check_template.py node-web`，再运行 `python3 scripts/run_local_e2e.py`；需 server SDK、httpx、PyYAML、Node 与 npm。测试运行真实进程并断言结果。具备 Docker 与已授权 Express 配置时运行 `python scripts/public_launch_e2e.py node-web --provider alicloud-express --application-controller --source ./node-web --output node-web-attempt-1.json`，仅通过后添加提供方证据。提供方验证结论以已完成的准确输入实测为准。合并前交叉审查进程生命周期与失败路径。
+改进模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)、[模板规范](../docs/template-spec.zh-CN.md)和[设计说明](../docs/design/node-web.md)。
 
 ## 问题反馈
 

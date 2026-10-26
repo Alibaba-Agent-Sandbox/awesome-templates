@@ -14,54 +14,181 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
+默认配方使用 Alibaba FC generation-2 基础镜像，以非 root `user` 运行，服务端固定安装已发布的 `agent-sandbox-server==0.4.0a6`。
 
-- 阿里云 generation 2 基础镜像及其 Python；安装经 SHA256 校验的官方 Node.js `24.16.0`，替换基础 Node 20，满足 Qwen Code 的 Node >=22 要求。
-- Codex `0.162.1`、Qwen Code `0.23.0`，镜像构建时断言两个实际版本。
-- 非 root 用户 `user`；程序 `/home/user/app`，工作区 `/home/user/workspace`，端口 9000。
+Codex CLI `0.162.1`、Qwen Code `0.23.0`、Node.js `24.16.0` 及受限的本地 Agents API 策略。
+
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml)
 
 ## 解决的问题
 
-用一套 HTTP 会话接口选择两个已安装的编码 CLI，同时保持通用沙箱接口关闭。
-版本检查调用真实 CLI；关闭模型测试时不会自动换成模拟程序。
+在隔离沙箱中使用已经安装的工具，通过 CLI、Python 或 HTTP 提交工作，再导出文件；模型账号与云沙箱账号分别配置。
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，配置选择的平台（沙箱 API Key、连接地址及构建镜像仓库），再配置下面独立的模型/应用凭据。无需 clone 仓库即可启动公共模板。
+
+会话示例选择真实 `qwen-code` adapter。为授权的兼容 Chat 服务填写 `OPENAI_API_KEY`、`OPENAI_BASE_URL`、`OPENAI_MODEL` 三个值，不启动交互 OAuth。切换 Codex 需要 Responses 兼容服务及原生 `CODEX_HOME/config.toml`，此受限模板不会仅靠 `OPENAI_BASE_URL` 自动建立该配置；完整可配置的 Codex 命令流程可使用专门的 `codex` 模板。
+
+使用下方的百炼接入点时，在[百炼 API Key 页面](https://help.aliyun.com/zh/model-studio/get-api-key)选择北京地域创建 Key，并填写该账号可用模型 ID；其他地域或 Coding Plan 使用其对应的 Key/endpoint，不能混用。
+
+所有 `<...>` 都是需要你替换的占位值，模型名必须使用服务商实际提供的 ID。密钥在你自己的终端或 secret manager 中设置，不要放入镜像、YAML 或公开日志。以下变量要在 launch **之前**设置；之后改变 host 环境不会更新运行中的应用。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./agents-cli --yes
-abx run <sandbox-id> agents_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export OPENAI_API_KEY='<your-model-or-vendor-key>'
+export OPENAI_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
+export OPENAI_MODEL='<model-id-from-your-provider>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//agents-cli --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+`--sandbox-timeout 1800` 是沙箱生存时间（秒），`command_timeout`/`timeout_s` 是单次任务执行期限，`ABX_HTTP_TIMEOUT`/SDK `timeout` 是客户端等待时间，三者分别设置。
+
+launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
+
+命名命令只提供版本诊断，真实编码使用后面的会话 API；不要把版本响应当成编码结果。
+
+```bash
+abx run "$SANDBOX_ID" agents_version
+```
+
+任务要求在 `/home/user/workspace` 写出 `generated_hello.py` 和 `GENERATED_REPORT.md`。示例显式开放所需的编辑/工具权限，只在自己拥有的可丢弃沙箱中使用。下面的 SDK 和 HTTP 是同一任务的替代调用方式，选择一种即可。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
+
+连接 launch 已启动的应用，并通过 SDK 解析真实网关地址；以下 Python 发起同一个编码任务，再有界轮询会话输出。应用的受限策略没有普通文件/shell HTTP 路由，最终产物通过提供方的 `abx exec`/`download` 检查。
 
 ```python
-print(await client.commands.run('agents_version'))
-```
+import asyncio
+import os
+import time
+import httpx
+from agent_sandbox import ProviderSandbox
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        endpoint, gateway_headers = await sb.network.resolve(9000)
+        headers = dict(gateway_headers)
+        occupied = {key.lower() for key in headers}
+        token = os.environ["ABX_SERVER_TOKEN"]
+        if "authorization" not in occupied:
+            headers["Authorization"] = "Bearer " + token
+        if "x-access-token" not in occupied:
+            headers["X-Access-Token"] = token
+        if {"authorization", "x-access-token"}.issubset(occupied):
+            raise ValueError("Gateway occupies both application authentication headers")
+        base = httpx.URL(endpoint)
+        def url(path):
+            return base.copy_with(path=base.path.rstrip("/") + path)
+        async with httpx.AsyncClient(headers=headers, timeout=60) as http:
+            response = await http.post(url("/v1/agents/sessions"), json={
+                "adapter": "qwen-code",
+                "agent": {"model": os.environ["OPENAI_MODEL"]},
+                "environment": {"type": "self_hosted",
+                                "workspace_directory": "/home/user/workspace"},
+            })
+            response.raise_for_status()
+            session = response.json()["id"]
+            path = "/v1/agents/sessions/" + session
+            response = await http.post(url(path + "/events"), json={
+                "events": [{"type": "agent.session.input.message", "input": [
+                    {"role": "user", "content": [{"type": "input_text", "text":
+                     "Create generated_hello.py that prints exactly Hello from the sandbox, "
+                     "and GENERATED_REPORT.md explaining the program. Preserve unrelated files."}]}]}]
+            })
+            response.raise_for_status()
+            deadline = time.monotonic() + 420
+            while time.monotonic() < deadline:
+                response = await http.get(url(path))
+                response.raise_for_status()
+                state = response.json()
+                if state.get("error") or state.get("status") == "failed":
+                    raise RuntimeError("Agent session failed; inspect private diagnostics")
+                response = await http.get(url(path + "/items"))
+                response.raise_for_status()
+                items = response.json()["data"]
+                if state.get("status") == "idle" and items:
+                    print(items)
+                    break
+                await asyncio.sleep(1)
+            else:
+                raise TimeoutError("Destroy your owned sandbox to stop the task")
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/agents_version`，`Content-Type: application/json`，直接发送以下参数对象：
+命名命令的只读诊断是 `POST /commands/agents_version`，请求体 `{}`，响应 `{"result":"codex 0.162.1; qwen-code 0.23.0"}`。实际编码使用下面的 Agents 会话 API；它不是虚构的编码命名命令。
+
+请求头设置 `Content-Type: application/json`。
+
+按照[直接 HTTP 连接流程](../docs/using-templates.zh-CN.md#clisdk-与-http)解析 9000 endpoint，保留网关 headers、URL path/query，并添加独立应用 token。下面是同一个任务的完整会话请求：
+
+1. `POST /v1/agents/sessions`:
 
 ```json
-{}
+{
+  "adapter": "qwen-code",
+  "agent": {
+    "model": "<same-model-as-OPENAI_MODEL>"
+  },
+  "environment": {
+    "type": "self_hosted",
+    "workspace_directory": "/home/user/workspace"
+  }
+}
 ```
 
-该检查的预期响应：
+返回 `200`，保存响应 `id` 为 `<session-id>`。
+
+2. `POST /v1/agents/sessions/<session-id>/events`:
 
 ```json
-{"result": "codex 0.162.1; qwen-code 0.23.0"}
+{
+  "events": [
+    {
+      "type": "agent.session.input.message",
+      "input": [
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "input_text",
+              "text": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 ```
 
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+返回 `202` 表示入队，尚未完成。轮询 `GET /v1/agents/sessions/<session-id>` 及 `GET /v1/agents/sessions/<session-id>/items?limit=100&order=asc`，最多等待 420 秒；发现 `error`/`failed` 立即停止。输出记录出现且状态回到 `idle` 后，仍应按下方命令检查真实产物；`idle` 本身不是文件成功保证。会话不支持取消/删除路由，结束或超时需销毁自己的沙箱。
+
+### 导出产物与清理
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
+```
+
+程序预期输出 `Hello from the sandbox`。先读取产物并检查再使用；模型回答成功不代表文件一定存在。文件不会自动回写模板或你的本机，释放沙箱前必须导出。
+
+`close()`/`aclose()` 仅关闭客户端连接，不释放沙箱。launch 日志中的已构建模板和镜像可能保留用于复用，不再需要时仅删除自己创建的那些资源。
 
 ## 命令参考
 
@@ -78,8 +205,7 @@ print(await client.commands.run('agents_version'))
 | `GET /v1/agents/sessions/{id}/items` | 轮询输出 |
 | `GET /v1/agents/runtimes` | 检查声明、实现及已安装的运行时 |
 
-会话记录和输出在服务进程内保存，重启后丢失。删除/取消/更新/SSE，以及通用 shell/
-文件接口均不在 allowlist 中。销毁自己创建的沙箱可结束其中的服务及资源。
+命令响应为缓冲结果，不是流式事件。`cwd` 必须指向已存在且符合本模板路径约束的目录；允许编辑/工具执行时，模型可按沙箱用户权限修改文件或运行程序。超时只限制相应调用，客户端断连不能作为取消机制。
 
 ## 配置
 
@@ -94,50 +220,14 @@ print(await client.commands.run('agents_version'))
 | `ABX_SERVER_POLICY_FILE` | 镜像已设置 | 随附策略文件路径；canonical start_cmd 还显式传入 `--policy` |
 
 修改策略会改变 HTTP 接口范围；本模板契约基于随附 allowlist。
-`E2E_RUN_LLM=0` 仅控制测试，不修改生产 PATH，也不安装 fixture。
 
 ## 资源
 
-2 vCPU、4096 MB 内存、端口 9000。Express rootfs 约 10 GB。
-尚未测量模型/工具任务的内存和时延，也未声称镜像大小验收。
-
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 历史验收
-
-| 提供方 | 已执行范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
-
-该历史记录采用 e2cb27e 服务端来源覆盖，与当时的镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
-
-## 二次开发
-
-保持 Dockerfile、commands.py、smoke 和 fixture 的固定版本一致。在仓库根目录运行：
-
-```bash
-python -m pytest --import-mode=importlib -q agents-cli/test_protocol.py
-python scripts/check_template.py agents-cli
-python scripts/run_local_e2e.py
-```
-
-协议测试仅给自己的子进程显式设置 `e2e-bin` PATH，覆盖两种启动方式、认证、关闭接口
-及每个 adapter 的两轮任务。Dockerfile 不复制这些 fixture。默认 e2e 要求真实 CLI，
-不提交模型任务。设置 `E2E_REQUIRE_LLM=1` 或 `E2E_RUN_LLM=1` 时仍退出非零，并提示运行
-`e2e_sdk.py`，不会信任外部回执或任意 verifier hook。无网络负控可运行
-`python -m pytest --import-mode=importlib -q agents-cli/test_sdk_verifier.py`；它们与实际
-模型/提供方验收分别记录。
-
-### Agent Sandbox step 构建
-
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py agents-cli`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
+2 vCPU，4096 MB 内存，应用端口 9000，非 root `user`。工作目录 `/home/user/workspace`；磁盘容量和最长生存时间由所选平台配置。模型任务需要访问配置的模型服务，模型调用费用由对应服务商计费。
 
 ## 贡献
 
-阅读 [CONTRIBUTING.md](../CONTRIBUTING.md)、[规范](../docs/template-spec.md)和
-[设计](../docs/design/agents-cli.md)。工作关联 [Issue #25](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/25)。
+开发模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)和[设计说明](../docs/design/agents-cli.md)。
 
 ## 问题反馈
 
@@ -148,7 +238,3 @@ CLI 部署：[agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sand
 ## 许可证
 
 Apache-2.0，见 [LICENSE](../LICENSE)。上游 CLI 保留各自许可证。
-
-### 2026-10-20完整 step 检查点：模板2.0.1
-
-[真实对应版本 step](evidence/express-2026-10-20.json)及[完整外部 HTTP 控制器](evidence/verification-steps-2026-10-20T154625Z.json)通过：官方 READY、真实 Python SDK 创建、全部 CLI/SDK smoke，18 PASS/0 FAIL/1 SKIP；自有沙箱／模板均独立确认清理。本回执模型验收仍为 NOT_RUN，不改变旧镜像／模型范围。复现及精确服务端／控制器来源见[step 指南](../docs/platform-steps.zh-CN.md)。

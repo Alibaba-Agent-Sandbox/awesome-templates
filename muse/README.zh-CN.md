@@ -1,5 +1,7 @@
 # muse
 
+[English](README.md)
+
 ## 做什么
 
 在一个自建Express计算机中运行官方原版Meta Muse Code1.4.11-R6667.1无头agent、原版miniswe工具与原生运行记录。编码显式选择兼容Responses模型。自编本地代理补充所选模型目录，将上游密钥留在父进程，原样转发Responses请求与流；使用原版二进制。[官方文档](https://dev.meta.ai/docs/muse-code)。
@@ -8,7 +10,7 @@
 
 沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
-阿里云generation2 basev0.0.49/Linuxx64/Python3.13；root所有的原版ELF384809176字节及官方SHA256，Python标准库代理/进程控制，已发布服务端包，无新增Python/Node依赖。[Dockerfile](Dockerfile)、[来源](upstream.json)、[上游声明](UPSTREAM-NOTICE.md)、[设计](../docs/design/muse.md)。模板源码许可证不重新授权原版上游文件。可将任务自有gzip缓存重新校验后流式上传私有OSS，避免在操作端另占384.8MB原始文件；目标端仍检查未修改的原版字节。
+阿里云generation2 basev0.0.49/Linuxx64/Python3.13；root所有的原版ELF384809176字节及官方SHA256，Python标准库代理/进程控制，已发布服务端包，无新增Python/Node依赖。[Dockerfile](Dockerfile)、[来源](upstream.json)、[上游声明](UPSTREAM-NOTICE.md)、[设计](../docs/design/muse.md)。模板源码许可证不重新授权原版上游文件。
 
 ## 解决的问题
 
@@ -16,41 +18,85 @@
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任务。示例可能写入文件、创建项目或启动服务；不要在未清理前对同一实例重复执行整段示例。
+
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，并完成所选平台配置。平台 API Key 用于创建沙箱，`ABX_SERVER_TOKEN` 是独立的模板应用访问口令。以下命令在自己的终端执行，不需要克隆本仓库。
+
+启动前填写下列模型配置：API Key、接入点、模型 ID 必须属于同一个模型服务与地域。`https://model.example.invalid/v1` 是占位符，请替换为供应商给出的 API base，不要填写网页聊天地址。模型 ID 使用该端点实际支持的名称。
+
+此入口使用模型 API Key，无需运行浏览器 OAuth 登录，也不会继承你本机已登录的账号。模型接入要求见“配置”；本模板使用 **Responses**，不能只凭“OpenAI 兼容”字样推断接口可用。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./muse --yes
-abx run <sandbox-id> muse_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export MUSE_MODEL_API_KEY='<your-model-api-key>'
+export MUSE_MODEL_BASE_URL='https://model.example.invalid/v1'
+export MUSE_MODEL='<your-model-id>'
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//muse --sandbox-timeout 1800 --yes
+# 将启动输出中的沙箱 ID 填到这里
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+```bash
+abx run "$SANDBOX_ID" muse --json-args '{"prompt":"Create hello.py in the current directory. It must print Hello from Muse. Run it and report the output.","command_timeout":300}'
+```
+
+返回原生完成状态、模型/工具调用计数和缓冲输出；请独立读取生成的 `hello.py`。
+
+`--sandbox-timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
+
+OpenSandbox 用户将 `ABX_PROVIDER` 改为 `opensandbox`，并按[提供方指南](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)配置；后续 CLI 和 Python 必须继续选择同一个平台。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
+
+在完成上述 CLI 启动、设置 `SANDBOX_ID` 后，将以下保存为 `use_template.py`，执行 `python3 use_template.py`。它连接同一实例，不另建沙箱。对于需要输入的示例，先在本机准备上面的文件。
 
 ```python
-print(await client.commands.run('muse_version'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            result = await client.commands.run('muse', prompt='Create hello.py in the current directory. It must print Hello from Muse. Run it and report the output.', command_timeout=300)
+            print(result)
+            Path('hello.py').write_bytes(await sb.files.read_bytes('/home/user/app/hello.py'))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。关闭连接不会删除沙箱。
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/muse_version`，`Content-Type: application/json`，直接发送以下参数对象：
+按[HTTP 调用示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析同一实例的 9000 端口，保留网关头、URL 路径和查询，再添加独立应用认证。
+
+`POST /commands/muse`
 
 ```json
-{}
+{
+  "prompt": "Create hello.py in the current directory. It must print Hello from Muse. Run it and report the output.",
+  "command_timeout": 300
+}
 ```
 
-该检查的预期响应：
-
-```json
-{"result": "Muse Code 1.4.11 (1.4.11-R6667.1)"}
-```
-
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+请求头包括 `Content-Type: application/json` 和按共享指南设置的应用认证；请求体是参数对象本身，不套 `args`。成功响应为 `{"result": ...}`，其中结果含义同上。 HTTP 等待时间设为 450 秒；它独立于命令内部的执行时限。结果为缓冲响应，不是事件流。400 为参数错误，401 为认证失败，404 为命令不存在，500 为执行错误。
 
 ## 命令参考
 
@@ -63,9 +109,11 @@ print(await client.commands.run('muse_version'))
 
 固定原版argv：`exec --json --api-key-stdin --provider meta --model <configured> --preset miniswe --reasoning-effort minimal --max-model-steps16 --no-session-log --disable-reminders --no-foreign-personal-context --disable-web-tools --yolo --workspace <contained-project>`。逐次私有配置包含schema_version1、endpoint_transport base_url/auth bearer和agents.execution_capacity1。原版miniswe没有可用subagent_spawn，不选择委派模型/工具树。显式信任后可能加载调用方项目指令。
 
-完成判定要求原版模型/usage/终态记录精确关联，完成模型调用数为正，无失败/取消/子调用，最终文本非空。编码验收还要求原版工具结果为正和独立产物/测试。代理最多32个模型请求，每请求2MiB、每响应4MiB，原版最多16模型步；原生stdout/stderr各256KiB。已发代理请求须排空后才判完成。自建关闭/进程清理最多额外50秒，SDK timeout建议至少command_timeout+80。并发模型调用返回busy。
+完成判定要求原版模型/usage/终态记录精确关联，完成模型调用数为正，无失败/取消/子调用，最终文本非空。使用模型修改前请独立检查生成文件。代理最多32个模型请求，每请求2MiB、每响应4MiB，原版最多16模型步；原生stdout/stderr各256KiB。已发代理请求须排空后才判完成。自建关闭/进程清理最多额外50秒，SDK timeout建议至少command_timeout+80。并发模型调用返回busy。
 
 ## 配置
+
+Muse 要求支持流式 Responses API 的模型服务，base 后由代码追加 `/responses`；只提供 `/chat/completions` 的网关不能用于这个入口。
 
 | 变量 | 默认与要求 | 含义 |
 | --- | --- | --- |
@@ -77,28 +125,22 @@ print(await client.commands.run('muse_version'))
 
 commands.py导入时捕获配置；存在标志不证明账号有效。key最长8192且无控制字符。原生进程仅通过匿名stdin取得逐次随机本地代理token。父代理只向固定授权Responses端点使用上游密钥，拒绝重定向及错误路由/token/model，不留轨迹。原版工具采用最小环境及私有HOME/缓存/配置，调用方项目产物保留。同一用户仍有OS访问权限，cwd检查和环境过滤不构成额外租户边界；`--yolo`选择自建外层沙箱作为执行边界。
 
-## 资源
-
-声明2vCPU/2048MB/Linuxx64、9000端口、8GiB镜像rootfs预算，无KVM/Docker/GPU/额外权限。原版下载384.8MB；模型需授权出口。下方有界镜像/steps/完整HTTP/模型流程实际通过，未测量峰值内存。其他提供方、交互/保留会话恢复、voice/本地权重、MCP/plugin服务与Meta托管订阅不在本流程内。
-
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 二次开发
+工作目录为 `/home/user/app`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
 
 ```bash
-python -m pytest -q muse/test_commands.py muse/test_relay.py muse/test_terminal.py
-python scripts/check_template.py muse --strict
-python scripts/check_docs.py
-python scripts/run_steps_e2e.py muse --asset-transport oss
+abx download "$SANDBOX_ID" /home/user/app/hello.py ./hello.py
+abx kill "$SANDBOX_ID"
 ```
 
-本地代理/解析器fixture仅用固定不可执行回复；原版及生成代码验收只在全新且明确自建的云端目标运行。保留原版二进制与声明、精确边界、重定向拒绝、匿名输入及进程/代理清理。正式编码检查须有源码修改、原测试字节、新报告/精确nonce、原3项及4项新增用例/返回后新ACK，独立确认自建资源不存在。
+`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
+
+## 资源
+
+声明2vCPU/2048MB/Linuxx64、9000端口、8GiB镜像rootfs预算，无KVM/Docker/GPU/额外权限。原版下载384.8MB；模型需授权出口。内存占用取决于任务。其他提供方、交互/保留会话恢复、voice/本地权重、MCP/plugin服务与Meta托管订阅不在本流程内。
 
 ## 贡献
 
-遵循[CONTRIBUTING](../CONTRIBUTING.md)、[项目规范](../docs/project-standards.md)、[文档规范](../docs/documentation-standards.md)、[模板规范](../docs/template-spec.md)。同一变更包含本仓库笔记/实际证据与双语README；真实必需检查和review通过后才合并。
+改进模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)、[模板规范](../docs/template-spec.zh-CN.md)和[设计说明](../docs/design/muse.md)。
 
 ## 问题反馈
 

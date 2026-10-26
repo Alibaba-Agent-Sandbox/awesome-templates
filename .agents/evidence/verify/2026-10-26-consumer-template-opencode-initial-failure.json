@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-26T09:14:52.250491+00:00",
+  "scope": "Actual local published server/client a6 and pinned OpenCode1.19.0; actual configured model task through SDK and HTTP. No Docker/provider/template-cloud acceptance.",
+  "result": "FAIL",
+  "model_selector_sha256": "8679abc2556324b948719fc76f4c42e5eaa83b0d25d00bf711dd413d48ea24aa",
+  "credential_values_or_endpoint_saved": false,
+  "cloud_resources_created": 0,
+  "checks": [
+    {
+      "check": "wrong application token",
+      "status": 401
+    },
+    {
+      "check": "actual upstream version",
+      "passed": true
+    },
+    {
+      "check": "template setup/config",
+      "passed": true
+    }
+  ],
+  "failure_type": "CommandExecutionError",
+  "owned_server_process_exited": true
+}

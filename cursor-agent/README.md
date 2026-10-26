@@ -8,51 +8,97 @@ Run the original Cursor Agent CLI in an owned disposable sandbox through typed n
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
+The default recipe uses the Alibaba FC generation-2 base, non-root `user`, and the published `agent-sandbox-server==0.4.0a6` package.
 
-Original official CLI2026.10.19-6bbf2c4 for Linux x86_64, including its original bundled Node/launcher/native modules. The unchanged183,733,394-byte archive has controller-measured SHA256 `cf80cc18d8b33bf33e762353977ca1868cfc45290c92c0ffdcef83bb8b37b44f`; this is not an upstream-published checksum. The460regular-file inventory totals585,886,062bytes. Python3.13 and the Alibaba generation2 base; published server package. See [original metadata](upstream.json), [notice](UPSTREAM-NOTICE.md) and [design](../docs/design/cursor-agent.md).
+Original Cursor Agent CLI `2026.10.19-6bbf2c4` for Linux x86_64, including its bundled Node runtime.
+
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml) · [upstream notice](UPSTREAM-NOTICE.md)
 
 ## Problem solved
 
-Provide a reproducible headless Cursor installation, a scalar SDK/HTTP interface and bounded execution with owned process/private-state cleanup. This is a local CLI profile; it does not provision Cursor Cloud Agents or an enterprise machine scheduler. Authenticated coding/model behavior remains unverified until a genuine vendor-key run exists.
+Use an installed tool in an isolated sandbox, submit work through CLI, Python or HTTP, then export the files. Configure model and cloud-sandbox credentials separately.
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
+
+Create a personal User API Key in Cursor Dashboard → API Keys/Integrations, then follow [Cursor CLI authentication](https://cursor.com/help/integrations/cli). This headless wrapper uses `CURSOR_API_KEY`, not browser login or an OpenAI key. The optional command `model` selects a model available to that Cursor account; arbitrary model API endpoints are not exposed.
+
+Replace every `<...>` placeholder with your own value; use an exact model ID available to your account. Set secrets in your own terminal or secret manager, never in the image, YAML or public logs. Configure these variables **before** launch; later host changes do not reconfigure the running application.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./cursor-agent --yes
-abx run <sandbox-id> agent_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export CURSOR_API_KEY='<your-model-or-vendor-key>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//cursor-agent --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+`--sandbox-timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
+
+Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
+
+```bash
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" agent --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","allow_unsafe_tools":true,"cwd":"/home/user/app","command_timeout":300}'
+```
+
+The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/app`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
 
 ```python
-print(await client.commands.run('agent_version'))
-```
+import asyncio
+import os
+from agent_sandbox import ProviderSandbox
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=420
+        )
+        try:
+            print(await client.commands.run('agent', prompt='Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.', allow_unsafe_tools=True, cwd='/home/user/app', command_timeout=300))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/agent_version`, with `Content-Type: application/json` and this direct argument object:
+Use the [direct HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserving gateway headers, URL path/query and the independent application token. Send `POST /commands/agent` with `Content-Type: application/json` and this direct argument object, without an `args` wrapper:
 
 ```json
-{}
+{
+  "prompt": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.",
+  "allow_unsafe_tools": true,
+  "cwd": "/home/user/app",
+  "command_timeout": 300
+}
 ```
 
-Expected response for this check:
+The response is `{"result": ...}`; see the command reference for its actual content type. Model text varies. Set the HTTP wait to at least 420 seconds; the command execution deadline is separate, and disconnecting does not guarantee remote cancellation. Authentication failures return 401, invalid argument types 400, and execution errors an error response. If a result includes `exit_code`, also check that it is zero.
 
-```json
-{"result": "2026.10.19-6bbf2c4"}
+### Export files and cleanup
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
 ```
 
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
+
+`close()`/`aclose()` only close client connections; they do not delete the sandbox. Prepared templates/images in the launch journal can remain for reuse; remove only your own exact resources when no longer needed.
 
 ## Command reference
 
@@ -63,11 +109,7 @@ Expected response for this check:
 | agent_setup_check | none | mode/installed/pinned_version/api_key_set/requires_unsafe_optin/vendor_authentication_verified/compatible_model_fallback; presence only, no values/network |
 | agent | prompt required string; cwd string default empty; command_timeout integer300; allow_unsafe_tools booleanFalse; model string default empty | Buffered original final; may read/write/run tools only after explicit opt-in |
 
-`prompt`:1..32768UTF8bytes, nonempty/no NUL. `cwd`: existing resolved directory inside WORKSPACE, max4096UTF8bytes/no NUL; empty selects WORKSPACE. `command_timeout`:1..600seconds, booleans rejected. `allow_unsafe_tools`: only exactTrue proceeds. `model`: empty retains the vendor-selected default; otherwise max200ASCII identifier characters `[A-Za-z0-9_.:/-]`, beginning alphanumeric; no model availability claim.
-
-Successful `agent` returns stdout:string, stderr:empty string, exit_code:0, native_completed:true, native_version, archive_sha256, permission_profile:explicit-owned-sandbox-bypass and requested_model. Original native JSON must be type=result/subtype=success/is_error=false with nonempty final. Nonzero, malformed/incomplete output, timeout or overflow raises an error; no partial-success string is returned. Actual selected-model behavior and coding artifacts require their separate test.
-
-Fixed original argv: --print --output-format json --disable-auto-update --disable-project-configs --sandbox disabled --trust --force --workspace <contained-project>, optional --model, literal prompt. The external owned sandbox supplies isolation; original nested sandboxing is disabled for this explicit profile. All arguments are passed as argv. No arbitrary flags, authentication bypass, default operator credential fallback or replacement planner is exposed.
+Named-command results are buffered rather than streamed. `cwd` must be an existing directory satisfying the template's path constraints. Editing/tool permission allows model actions with the sandbox user's authority. Client disconnect is not a cancellation mechanism. Model calls are serialized; overlapping requests fail busy. Cleanup can extend response time; the examples leave an HTTP waiting margin.
 
 ## Configuration
 
@@ -83,25 +125,11 @@ At most one agent operation per server process; concurrent calls fail busy. Stdo
 
 ## Resources
 
-Linux x86_64 only;2vCPU/4096MB/port9000, non-root user, WORKSPACE=/home/user/app,8GiB rootfs ceiling checked during build. Original bundle585.9MB; archive183.7MB. No nested Docker, KVM, GPU or desktop requirement is claimed. Vendor egress/account are required for model tasks; peak RSS and authenticated throughput are unmeasured. Other architectures/providers, interactive/resume/MCP/plugins/delegation/cloud-agent features are not certified.
-
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Secondary development
-
-```bash
-python -m pytest -q cursor-agent/test_commands.py cursor-agent/test_controller.py cursor-agent/test_install.py
-python scripts/check_template.py cursor-agent --strict
-python scripts/check_docs.py
-```
-
-Preserve original file hashes/notices, explicit permission, private state and owned cleanup. Publish all changed COPY/helper sources before immutable step preparation; retain15000wire bytes and the generic300MiB archive limit. The full external controller requires actual original HTTP and SDK invalid-key refusal; install/version-only receipts cannot qualify. With a genuine vendor key, explicitly opt into the owned-remote coding controller: existing source edit, unchanged original3tests, report/exact nonce,3original+4held-outs/fresh post-return ACK. Generated code never runs on the operator.
+2 vCPU, 4096 MB RAM, application port 9000, non-root `user`. Working directory: `/home/user/app`. Disk capacity and lifetime depend on the selected platform. Model tasks require outbound access to the configured model service and incur that service's charges. This pinned installation targets Linux x86_64.
 
 ## Contributing
 
-Read [CONTRIBUTING](../CONTRIBUTING.md), [project standards](../docs/project-standards.md), [documentation standards](../docs/documentation-standards.md) and [spec](../docs/template-spec.md). Keep the standalone profile, typed contracts, bilingual docs/design/catalog, owner records and current-source evidence together. Use latest-head CI/review and normal pinned merge.
+To develop the template, read [CONTRIBUTING](../CONTRIBUTING.md) and the [design](../docs/design/cursor-agent.md).
 
 ## Issues
 

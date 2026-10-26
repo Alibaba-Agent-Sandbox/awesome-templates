@@ -1,0 +1,294 @@
+{
+  "checked_utc": "2026-10-26T09:23:00.953500+00:00",
+  "scope": "Current uncommitted working tree: static documentation/spec/checker and explicitly listed local tests. No new Docker build, cloud/provider or real-model acceptance.",
+  "harness_first_attempt": {
+    "result": "HARNESS_ERROR",
+    "reason": "Operator initially assumed root README.zh-CN.md existed; corrected enumeration covers actual104 nonroot READMEs plus existing root README.md, total105. No product/source changes made."
+  },
+  "base_commit": "1a8c81f59d22fe10b987ffe5f9b59d15b5ed0ded",
+  "checks": [
+    {
+      "check": "markdown-links",
+      "command": [
+        "python",
+        "scripts/check_docs.py"
+      ],
+      "exit_code": 0,
+      "result": "PASS",
+      "seconds": 0.258,
+      "summary": [
+        "Markdown links: 222 documents; 0 failures (no network/cloud calls)"
+      ]
+    },
+    {
+      "check": "all-template-spec",
+      "command": [
+        "python",
+        "scripts/check_template.py",
+        "--all"
+      ],
+      "exit_code": 0,
+      "result": "PASS",
+      "seconds": 2.005,
+      "summary": [
+        "claimed spec failures: 0"
+      ]
+    },
+    {
+      "check": "managed-catalog",
+      "command": [
+        "python",
+        "scripts/check_managed_catalog.py"
+      ],
+      "exit_code": 0,
+      "result": "PASS",
+      "seconds": 0.151,
+      "summary": [
+        "Managed catalog: 0 violations; historical records do not certify current launches"
+      ]
+    },
+    {
+      "check": "spec-unittest",
+      "command": [
+        "python",
+        "scripts/test_spec_tools.py"
+      ],
+      "exit_code": 0,
+      "result": "PASS",
+      "seconds": 13.303,
+      "summary": [
+        "claimed spec failures: 1",
+        "claimed spec failures: 1",
+        "claimed spec failures: 1",
+        "claimed spec failures: 1",
+        "Ran 39 tests in 13.112s",
+        "OK"
+      ]
+    },
+    {
+      "check": "affected-pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "-q",
+        "scripts/test_spec_tools.py",
+        "scripts/test_managed_catalog.py",
+        "scripts/test_template_launch_contract.py",
+        "scripts/test_check_docs.py",
+        "scripts/test_canonical_express_review.py",
+        "scripts/test_select_image_templates.py"
+      ],
+      "exit_code": 0,
+      "result": "PASS",
+      "seconds": 11.496,
+      "summary": [
+        "113 passed, 170 subtests passed in 11.16s"
+      ]
+    },
+    {
+      "check": "published-cli-help",
+      "command": [
+        "python",
+        "scripts/test_express_cli_contract.py"
+      ],
+      "exit_code": 0,
+      "result": "PASS",
+      "seconds": 2.383,
+      "summary": [
+        "Ran 2 tests in 2.309s",
+        "OK"
+      ]
+    }
+  ],
+  "all_readme_fences": {
+    "counts": {
+      "readmes": 105,
+      "python": 107,
+      "json": 104,
+      "bash": 315,
+      "python_complete_compiled": 105,
+      "python_context_fragments": 2
+    },
+    "failures": [],
+    "bash_validation": "Every bash/sh/shell fence was passed as a whole to bash -n; commands were not executed.",
+    "python_validation": "All Python fences AST parsed; full blocks compiled. Await/return context fragments compiled under a wrapper and counted separately.",
+    "json_validation": "Every JSON fence parsed by json.loads.",
+    "requested_104_nonroot_readmes": {
+      "readmes": 104,
+      "python": 107,
+      "json": 104,
+      "bash": 310
+    },
+    "additional_existing_root_readme": {
+      "readmes": 1,
+      "python": 0,
+      "json": 0,
+      "bash": 5
+    }
+  },
+  "readme_sha256": {
+    "README.md": "c53c25777fa74e59783ae2e73d3d0f247e9eb241d8749c023753fa625c769eef",
+    "_skeleton/README.md": "f9befa6478a10569e7d9735b5358b966941e84b93258cfb9812f726beb9a75e5",
+    "_skeleton/README.zh-CN.md": "65ada34bd6c9f4d3ffe9b2eb3edae0a9451fd983e7fc02813343b321276e5334",
+    "agents-cli/README.md": "95b14e02d96c2417e4becb9e1993845078727ebe50f11f46824c17a01f6b2212",
+    "agents-cli/README.zh-CN.md": "c6007466911e4956092c39612b0c9dbf340d0d66cb5de8821e89f6f47ba7077c",
+    "aider/README.md": "d9242cced18f3919f06940b5178b0b15c092a8799d1e3664d5c62dbe50be3560",
+    "aider/README.zh-CN.md": "01998a0d6eca65a56ed1bea24175f6128591125228574ec04eb52759504a3d3b",
+    "amp/README.md": "1622e2a8514fb321e050740b467810570a207b3ae3919b7c8344c423fc24cbb9",
+    "amp/README.zh-CN.md": "d2a151f81e9ff07aced31c4cc749d5abe5b370610a4f2b60ce54cf60af830c3b",
+    "apply-patch/README.md": "2313699efe2206bd0cac69e346f31bcff9d978b9d55f36b10875562ebe3463f7",
+    "apply-patch/README.zh-CN.md": "b6042a8046267d844d688a1bc967d24130c2e77115044fdaf1b6d244e9bb9a8d",
+    "appworld/README.md": "79df3e4f79287dcd4faec1777a5060b8915032250ef8099fc3a3767f7c09f111",
+    "appworld/README.zh-CN.md": "8f37f1920acfdddad7dfa8c229fed6d011e85b3557e652927aa683bfb21a6e2a",
+    "browser-automation/README.md": "3c30cb36af89222cac8db5bb03c6ccab190220bb967537ae756cf5f52572bc65",
+    "browser-automation/README.zh-CN.md": "847d9289c475884cf74d26995a449d3acf7f4acd64ac3350111349d9ca172110",
+    "browser-use/README.md": "c01fb45b6322b61e0fe6d0e591f803f09d6d4cdc5e98a4426c8c2d36e8b5ad74",
+    "browser-use/README.zh-CN.md": "5aa8482c70c4ab405cd3b97ee19ead01bfab3e826dfb00ee6b95170fc6f33d69",
+    "chrome/README.md": "b40c659b20c7853a7d302ba218a2af723f1632c6fc473edf27ff492cca9bde86",
+    "chrome/README.zh-CN.md": "9967b11e2c20189aa63707c59c7b24838cc5c931670fb6cecc49a0114f103f30",
+    "claude-code/README.md": "cb034f9b674c407b61ee4f0568061d39921d612985b43409bec517906634cabc",
+    "claude-code/README.zh-CN.md": "2e2bf000f2b1af67016f69f5e9c80101e6b8421865493ab1bd8b4310248d986a",
+    "cline/README.md": "a10c8dfb2d66ad5da6ca34ce1ca633bbf8d85031b5b4e09f7dbf240bec635edf",
+    "cline/README.zh-CN.md": "2b02f52e54574b3a7974ab1fb041a293742fd687592b21e7d0cb64ff5571d757",
+    "code-server/README.md": "c5262d840511f5280b52e2f5e10a613dc9583550b86c4be53bd9b06637b18dbf",
+    "code-server/README.zh-CN.md": "44fc962c5153cfec3775b2685a6c479a4d26a4809c69d9ba6301045b1844c9e1",
+    "codex/README.md": "c54da0bddf09b590657c88e28d27305c94e4a7bf264ec1115641bd815b611a82",
+    "codex/README.zh-CN.md": "2eb047d88bd7eeb3052bffbb14e3b9ae257ffb7fc1ca249e17984481d6a39dff",
+    "codex-agent-api/README.md": "eec7af08d29096f4361a6630dd4fa333e77c4b954c8dbffbc795817cdc0ab4c5",
+    "codex-agent-api/README.zh-CN.md": "41903848efbd264cf69a1e19ed5a70d7758aaeea885c62355461758cb1f34865",
+    "copilot-cli/README.md": "b06eeb169240dd7d1570274a12db8f4c6d49a3c4554de31c0964684c5d35ecca",
+    "copilot-cli/README.zh-CN.md": "8943997ab40ae5c6269a3394baee356ed3d93e42af418bf42520eeffca4f133f",
+    "crush/README.md": "4c3930d86c6f5a4c6349ec8e022317249f474c69c3baa94fe3a561ecb6a3ae89",
+    "crush/README.zh-CN.md": "45998500b283d052b85e37920ec46c8192c33fb7c1fc3f6a001699df81f9770d",
+    "cursor-agent/README.md": "ea6f8b285593777ef092579a8364fc302181f5c5903161f1d00a9a25dbb43663",
+    "cursor-agent/README.zh-CN.md": "1aae6899df42b8c4c02d894646ecc93c35e1893f598796eea7e1ccbe9ed25f05",
+    "deepagents/README.md": "2edeccbf47f77cde7637ed6e45b72c98afea01d5b170face039c3bdd0ebbda93",
+    "deepagents/README.zh-CN.md": "fcc51e4f745e132d3cb4a0063a269bc7f6c01f8abe52fd5251c674ba5ecc76fd",
+    "deepseek-harness/README.md": "2021251eaf8045e24bc4ef0943877b9feccfff5a4407c134575da17a4584e56f",
+    "deepseek-harness/README.zh-CN.md": "9da13f4617401f3f7ff9c5d093d273aa8a98f3cd3878badd3bbd5835fda7c548",
+    "dev-services/README.md": "68e657feb942198f09135a0c7e4d92b3ebd2c567d9af29aae88a344856b91534",
+    "dev-services/README.zh-CN.md": "52f5fb50a9ffc04e0578ce1cf1d5f4092b43cd9c9da3e02a36a3024ac7e045f9",
+    "devin/README.md": "d2818fba893616d57bef897e8c5ce6e2d3c0c5ac4818cb4a1cc4635f2b1e57dc",
+    "devin/README.zh-CN.md": "9ca87453c47036530523d5d44d1aaf3929fc39cce835d918ef5dd104cd712e8c",
+    "docs/feasibility/README.md": "9e580ba201c180473e4d19c4c891c7a697ccaa70a9a50f3360f89695e95f80c7",
+    "docs/feasibility/README.zh-CN.md": "75340eaa88552505fa0c23432a5c331d4aa5428296493f77176b748f56517111",
+    "docs/managed/base/README.md": "51489752e34972396ed4630a39e64725a29575dbbb677e78d96677b0962b3f02",
+    "docs/managed/base/README.zh-CN.md": "5d1c79b1f1b77960c8ab66ed463c941f18071c0df2dc20164cc4b78889ad04b4",
+    "docs/managed/code-interpreter-v1/README.md": "d20a1f0d2a8b9654376b897ff2f4ec9d34bda5592121738eb255c017f3a6cc05",
+    "docs/managed/code-interpreter-v1/README.zh-CN.md": "c04bc139e5de216b90f4566f93f4cd7831de403cadd8ac104136c298aa562cf6",
+    "docs/managed/desktop/README.md": "ffefc07596dee1aa76342c4223d40677a3c699c0a4df0439a4778cb47438df60",
+    "docs/managed/desktop/README.zh-CN.md": "53e041c0c23e469d1c897f2ac9aba6ba6735b94007d45b62e9e27caef8de9f32",
+    "docs/managed/opensandbox-code-interpreter/README.md": "2cd32bcfd028834b07b41bb27c05ec14f89dcf1d849c72ecb331b5c22cf1c8a9",
+    "docs/managed/opensandbox-code-interpreter/README.zh-CN.md": "08767f9b1707e8facc0d38d93d7f1ceab27907fa1bd9d31d1d949f9079632137",
+    "document-tools/README.md": "831f1d9a2d599515b204f2cdde58e74ef7393929b8ce54016ebabff0368f1e89",
+    "document-tools/README.zh-CN.md": "fe6f83fae2b381183e5a0d21418a2e0098e7fa3b26925e166e2f4085082a1fdc",
+    "droid/README.md": "796c0495a175d22f7dc7277058bee942412de54632291ef5552302582b0d8d47",
+    "droid/README.zh-CN.md": "82ab57785b2dc3370a41be0e43055e23a2da2f79c8ad40c27382550862936ab5",
+    "gemini/README.md": "ee54bdd56c0c09d48fad134e13872a0d839a8af019ccaf1a748c53b519883087",
+    "gemini/README.zh-CN.md": "9b3c8ff272e0e0dd3b931e8d6c189a34b4542550a0b0587ab6ebad2b0cce7b97",
+    "goose/README.md": "8f792b875a5c00a1c7f353272725d21d8b7378126e7476d50b69e2929af622b9",
+    "goose/README.zh-CN.md": "d07c9e72eec27f56d5370cda51471be6cf4e6db7d67bf82ce4af68f9dcac25dd",
+    "grok/README.md": "00da5a718d1caf13a61f136db30fce6ff1fa5340dd4e9c2b9114b578a6eac4a7",
+    "grok/README.zh-CN.md": "0bea92b73c215814cba65b8372ae39d8cfdb72289764088b58cefbaf539806ef",
+    "hermes-agent/README.md": "48b756673af795051a442c8d20ad1553b7c33423133722ed7b92333aa0e4da06",
+    "hermes-agent/README.zh-CN.md": "c9805439341c97019e640bfb99f8ca94a71ea4dcad4c504d95391e1fda6e6199",
+    "kimi-code/README.md": "95f763371c784f6d1f73640237e1ec55ea46e26240fdfbb08aa5fcd1d5b84255",
+    "kimi-code/README.zh-CN.md": "16e343ee5c1c5da6352b3f43b208a4fadfd30f6d5cb2bde91c4eb360f93bff1b",
+    "media-tools/README.md": "d5d1d5f9ab573c378122b6f4afd9936b77f692fd7c03d90370c62952c0c89f67",
+    "media-tools/README.zh-CN.md": "25b1aa033f9147685747a7f23deb433af8f789843f18b2876e93626e028a87e2",
+    "muse/README.md": "33b846ec45b86710d5c4f459d759d37138aa8fbbc1715009738a016ade0a02c3",
+    "muse/README.zh-CN.md": "67d2e7583ebf67cb54554ba4ca588cfd33e6037b728fea83fd5388c50005fad5",
+    "next-app/README.md": "e907f67dfd3bc7cd0542581ae9fbd587f8c46929607e17d9a5b17e6aae5c5718",
+    "next-app/README.zh-CN.md": "0f702ee90598a54d98bac2ce1da3c78c39bd26e3b3edffc9a781ea0f14a2b7a4",
+    "node-web/README.md": "57aba5f1b592ffc1afaa1d8e99a9befddebdb32015edba17d10700fbd663189f",
+    "node-web/README.zh-CN.md": "dd2609c4ac3dcc9d859e87be1afcc9464fb4c7f4b5e6a941522f09d4900dc30e",
+    "ocr/README.md": "a2dbd6704ecdc09f14f4a35a11a2eead8c8e0a302ce318ae137bb30153172617",
+    "ocr/README.zh-CN.md": "840af0b1c60416a7f3a2e138ce5bf76c8abf16220c343f4b3aefaa7569883313",
+    "openclaw/README.md": "4c3c52c4d7970dbd36290ab32260687186e88df19ed288f6716bd9825434e11b",
+    "openclaw/README.zh-CN.md": "95bfe7901840d05de5fd11c04d44a8b65adb7ad52ac29fb567f38945af7bb42e",
+    "opencode/README.md": "7a2e62bb0ce2014dbfd438dfe66bbd28ed1aea5c5f98dc4fb79f7b995e7ac7b6",
+    "opencode/README.zh-CN.md": "1c814503c8e2849727ad1af3624d748484311155240635b942cab4a469566452",
+    "osworld/README.md": "0f86efe97bb00756a036d0ad4f9b45e0bb28d44335ca4af8aaf5d844e9007d7c",
+    "osworld/README.zh-CN.md": "d6132d3d1c6d59941840e7c8d4f7f4113c4965301189540a2e95ebf24de33209",
+    "pi/README.md": "11a2ec665b0c30db9b9d6e04e54a7e721fc01c28ce4c7b4d9a1de3cf5c8a0349",
+    "pi/README.zh-CN.md": "d34bce34a0475017ce3b06cfcd90e65cbcc72d799b9ad2bada1d94ce23ee82fd",
+    "polyglot-toolchain/README.md": "8e42cf38bcb39d803289b07e84cdf70b79cb6a13996ee3d32b3dba87bfab034a",
+    "polyglot-toolchain/README.zh-CN.md": "bdffc940ceed21ef484533d5e0b7e724590351dd25afa4bbd3cc3646219f0548",
+    "prime-agent/README.md": "c4a033ed3874a8d623c24855cff71a8f98b67591f30a59d1ae8c99efd7723581",
+    "prime-agent/README.zh-CN.md": "72525e9626009bcc9408bce34d55e501030f9fd5c5ae6d59263a3b1c1eb78397",
+    "python-hello/README.md": "077e35a32882ed629ea3c7d0089b1c69a6739df7fc73e0a3c1a75debaedff32e",
+    "python-hello/README.zh-CN.md": "904d29fabd555da862e57c0e02977395a24847abc99e981d3a0a69a4c8cd57f0",
+    "qm/README.md": "9433928b4b8164dab26c7aca4acff48c90da34afebd4ad9cd35527eecee6907f",
+    "qm/README.zh-CN.md": "8ed348b9223fb3de5d9b6fb65a99f964d8f995e29e37a58d04b6473ee9b82de0",
+    "qm-sandbox/README.md": "cff33d12674fb665c70cd0560b3dee79ad3e85da43c1ebb243965f0d9cf4c36c",
+    "qm-sandbox/README.zh-CN.md": "33a70a6e75d910b030b64ae436092a6c24259dfb0ebbd745fffe9eaddd63a7f8",
+    "qoder/README.md": "f6f9bcc3c9cfa340bfb580b2712f98376b7926f3eb9f6df84a37ebfd06cac63b",
+    "qoder/README.zh-CN.md": "ffa01aa1e13d4a9bccdb5d69b94588e1a26dbb85cf2b9b1f25b756cd7b1660e6",
+    "qwen-code/README.md": "88c13cff3b2702f72df8d3c8638d8772cb794ebb93a089aa265277793ab53500",
+    "qwen-code/README.zh-CN.md": "837e18c23692927d062903554af8bd5baa64a3a9c81c94f72b55a2b5850688ec",
+    "stagehand/README.md": "9fac32ad7f0f9a98b13d5571bf131f2f6ca487b7f3336a068b566d5688f49cfd",
+    "stagehand/README.zh-CN.md": "295623127e0fe136d8cf89167cd4801480571d95165a8370c42630af18f193b2",
+    "swe/README.md": "a31d2b56a8ca2f95df807785b0def33e6d8fd39b8d5bd8b93a8186fc2e68eed9",
+    "swe/README.zh-CN.md": "1e4ee08114d2dd012e2340b9984e302ffe566a6b122ab6f30aee07dc5c9d63bf",
+    "tau2-bench/README.md": "30c7b80dc1cafcfdc4241e5ce2c7642bfa2b3ee66f5b2e6f4f5ca5f88eb807f0",
+    "tau2-bench/README.zh-CN.md": "1c67db15368bc7ea0c20bd9d2d8efa8f97dd1e109a6065b648cbc48bad460d36"
+  },
+  "git_diff_check": {
+    "result": "PASS",
+    "exit_code": 0
+  },
+  "workflow_gates": [
+    {
+      "workflow": ".github/workflows/e2e.yml",
+      "jobs": [
+        "express-cli-contract",
+        "documentation",
+        "dev-services-offline",
+        "document-tools-offline",
+        "media-tools-offline",
+        "local-e2e"
+      ],
+      "trigger": "Every PR and main push; no docs-only filter",
+      "locally_feasible": "Published CLI parser/help, documentation, spec/managed, affected pytest run here. Full local-e2e additionally installs pinned native CLIs/browser runtimes and system packages; offline container jobs need exact database/document/media system dependencies and non-root profiles. Their entire CI jobs were not reproduced by this static run."
+    },
+    {
+      "workflow": ".github/workflows/image-build.yml",
+      "jobs": [
+        "plan",
+        "image-build (conditional selected matrix)"
+      ],
+      "trigger": "Every PR and main push",
+      "working_tree_pr_selected_templates": [],
+      "main_push_note": "Existing selector unconditionally selects all source images on main push, even for docs/checker-only changes. No local Docker image build performed.",
+      "locally_feasible": "Pure changed-file selector and its tests only; actual image matrix requires working Docker and CI prerequisites."
+    },
+    {
+      "workflow": ".github/workflows/canonical-express-review.yml",
+      "jobs": [
+        "authorization"
+      ],
+      "trigger": "PR opened/synchronize/reopened/edited or manual dispatch",
+      "locally_feasible": "Authorization unit tests can run without cloud. Remote exact-SHA authorization plan remains CI-owned; no secret changes or cloud dispatch performed."
+    },
+    {
+      "workflow": ".github/workflows/managed-opensandbox.yml",
+      "jobs": [
+        "native-opensandbox"
+      ],
+      "trigger": "Only workflow/native test source paths; current README/checker/docs paths do not trigger it",
+      "locally_feasible": "Not required by current path filter; no native Docker execution performed."
+    },
+    {
+      "workflow": ".github/workflows/public-template-launch.yml",
+      "trigger": "Manual dispatch only",
+      "locally_feasible": "Not automatically required by prose/checker patch; no new cloud/model tests dispatched."
+    }
+  ],
+  "remote_required_status_contexts": "Not queried from branch-protection API; workflow applicability is not a claim about configured required-review/status rules. Root must inspect latest-head remote gates before merge.",
+  "pending": "Remote latest-head CI/merge/public sync recorded separately; these results cover the scoped local source files.",
+  "result": "PASS",
+  "expected_negative_fixture_output_note": "The spec-unittest script intentionally prints rejection diagnostics for malformed synthetic fixtures (including claimed spec failures:1). Its actual process exit is0 and unittest39 ends OK. The separate all-template-spec check has zero real repository violations.",
+  "post_checkpoint_prose_only_changes": [],
+  "post_checkpoint_review": "Amp historical probe and Prime test-tier wording removed, final independent content report hashes checked. Code fences unchanged."
+}

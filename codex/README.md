@@ -12,55 +12,99 @@ The standalone `apply_patch` binary is a different template (issue #60). The Age
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
+The default recipe uses the Alibaba FC generation-2 base, non-root `user`, and the published `agent-sandbox-server==0.4.0a6` package.
 
-- Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template deploy` replaces `<region>` with `cn-hangzhou` (or `ALIBABA_CLOUD_REGION_ID`) and `<tag>` with `v0.0.49` (or `ABX_BASE_IMAGE_TAG`).
-- Node.js 20 and Python 3.13 from that image.
-- `@openai/codex@0.162.1` (`codex-cli 0.162.1`).
-- `git`, `ripgrep`, `jq`. System `bubblewrap` is not installed, so Codex uses the `bwrap` shipped inside the npm package.
-- Work directory `/home/user/app`. Workspace `/home/user/workspace`. Runtime user `user`. No image `CMD` or `ENTRYPOINT`.
+Official `@openai/codex@0.162.1`, Node.js 20, Git, ripgrep and jq. The CLI package includes its own Linux sandbox helper.
+
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml)
 
 ## Problem solved
 
-Gives a sandbox a pinned, non-interactive Codex CLI: JSON events, an explicit working directory, resume, a generated provider config for DashScope-style OpenAI-compatible endpoints, and a sandbox probe that does not assume landlock or user namespaces exist. Callers use `abx run` or `client.commands.run` instead of embedding CLI flags in a shell string.
+Use an installed tool in an isolated sandbox, submit work through CLI, Python or HTTP, then export the files. Configure model and cloud-sandbox credentials separately.
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
+
+The custom provider requires the HTTP Responses API (`/responses`), not only Chat Completions (`/chat/completions`). Use the endpoint and model offered by your Responses provider; a DashScope Chat endpoint is not automatically compatible. The wrapper writes the provider configuration under `CODEX_HOME`; `ABX_LLM_API_KEY` is its explicit key. No interactive ChatGPT login is needed for this API-key path. Default `sandbox="auto"` may select bypass when nested Linux sandboxing is unavailable: use an owned disposable outer sandbox.
+
+Replace every `<...>` placeholder with your own value; use an exact model ID available to your account. Set secrets in your own terminal or secret manager, never in the image, YAML or public logs. Configure these variables **before** launch; later host changes do not reconfigure the running application.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./codex --yes
-abx run <sandbox-id> codex_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export ABX_LLM_API_KEY='<your-model-or-vendor-key>'
+export ABX_LLM_BASE_URL='https://api.openai.com/v1'
+export CODEX_MODEL='<model-id-from-your-Responses-provider>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//codex --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+`--sandbox-timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
+
+Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
+
+```bash
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" codex_exec --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","sandbox":"auto","cwd":"/home/user/workspace","timeout_s":300}'
+```
+
+The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/workspace`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
 
 ```python
-print(await client.commands.run('codex_version'))
-```
+import asyncio
+import os
+from agent_sandbox import ProviderSandbox
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=420
+        )
+        try:
+            print(await client.commands.run('codex_exec', prompt='Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.', sandbox='auto', cwd='/home/user/workspace', timeout_s=300))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/codex_version`, with `Content-Type: application/json` and this direct argument object:
+Use the [direct HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserving gateway headers, URL path/query and the independent application token. Send `POST /commands/codex_exec` with `Content-Type: application/json` and this direct argument object, without an `args` wrapper:
 
 ```json
-{}
+{
+  "prompt": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.",
+  "sandbox": "auto",
+  "cwd": "/home/user/workspace",
+  "timeout_s": 300
+}
 ```
 
-Expected response for this check:
+The response is `{"result": ...}`; see the command reference for its actual content type. Model text varies. Set the HTTP wait to at least 420 seconds; the command execution deadline is separate, and disconnecting does not guarantee remote cancellation. Authentication failures return 401, invalid argument types 400, and execution errors an error response. If a result includes `exit_code`, also check that it is zero.
 
-```json
-{"result": "0.162.1"}
+### Export files and cleanup
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
 ```
 
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
+
+`close()`/`aclose()` only close client connections; they do not delete the sandbox. Prepared templates/images in the launch journal can remain for reuse; remove only your own exact resources when no longer needed.
 
 ## Command reference
 
@@ -71,8 +115,6 @@ Expected response for this check:
 | `codex_exec` | see the table below | object, events and last message |
 | `codex_config_write` | `base_url`, `provider`, `env_key`, `model`, `wire_api`, `codex_home` | object, path and toml |
 | `codex_agents_write` | `content` (required), `cwd` | object, `path` and `bytes` |
-
-`codex_exec` parameters:
 
 | Name | Type | Required | Default | Meaning |
 |---|---|---|---|---|
@@ -90,13 +132,7 @@ Expected response for this check:
 | `agents_md` | string | no | empty | Written to `cwd/AGENTS.md` before exec. |
 | `timeout_s` | integer | no | 300 | Process timeout, 1–3600 seconds. |
 
-`POST /commands/codex_exec` with `{"prompt":"hi"}` returns `{"result": { ... }}`. A missing `prompt` is HTTP 400. A bad `sandbox` value or a non-zero `codex` exit is HTTP 500 `{"error","type"}`.
-
-`codex_config_write` refuses `wire_api` other than `responses`, and refuses provider ids `openai`, `ollama`, and `lmstudio`. The file sets `supports_websockets = false` so a compatible endpoint is called over HTTPS.
-
-`sandbox=auto` uses `workspace-write` when the probe succeeds and falls back to `--dangerously-bypass-approvals-and-sandbox` when it fails. `sandbox=bypass` explicitly selects that flag. It skips Codex's bubblewrap/seccomp sandbox and approval prompts; isolation then comes from the Express container. An explicit `read-only`, `workspace-write`, or `danger-full-access` request is rejected when the Linux sandbox probe fails, before workspace, git, provider config, or `AGENTS.md` writes. Explicit requests never silently become bypass. The probe itself may create its isolated `sandbox-probe` state directory.
-
-`codex_config_write` accepts `base_url` (default `ABX_LLM_BASE_URL`, then `OPENAI_BASE_URL`), `provider` (default `compatible`), `env_key` (a variable name), `model`, `wire_api` (only `responses`), and `codex_home` (default `CODEX_HOME` or `~/.codex`). It overwrites `config.toml` with mode `0600`. `codex_agents_write` accepts required `content` and optional `cwd`; it overwrites `cwd/AGENTS.md`.
+Named-command results are buffered rather than streamed. `cwd` must be an existing directory satisfying the template's path constraints. Editing/tool permission allows model actions with the sandbox user's authority. Client disconnect is not a cancellation mechanism.
 
 ## Configuration
 
@@ -111,7 +147,6 @@ Expected response for this check:
 | `CODEX_HOME` | no | `/home/user/.codex` | Directory of `config.toml` and sessions. |
 | `WORKSPACE` | no | `/home/user/workspace` | Default `cwd`. A starter `AGENTS.md` is in the image. |
 | `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
-| `ABX_SERVER_PORT` | no | `9000` | Port for a local `python3 commands.py`. |
 
 Before `template launch`, securely export the secret variables declared empty in the manifest so the application reads them at startup. Keep values out of images, YAML and logs.
 
@@ -119,67 +154,11 @@ Before `template launch`, securely export the secret variables declared empty in
 
 ## Resources
 
-| Resource | Value |
-|---|---|
-| cpu | 2 vCPU |
-| memory | 2048 MB |
-| port | 9000 |
-| disk | platform rootfs, about 10G on Express |
-
-Long agent runs can use more memory than this request. The platform may ignore the memory field and apply its own size.
-
-## Runtime verification
-
-On 2026-10-16, patched command source with pinned Codex 0.162.1 passed a real
-model coding task on `alicloud-express`: remote code/artifact retrieval, independent
-Fibonacci assertions, and a separate unittest run. All 16 HTTP checks passed, and
-the owned sandbox was deleted. The source and runtime package hashes are in
-[evidence](evidence/runtime-express-2026-10-16.json), with the [check log](evidence/runtime-express-2026-10-16.log).
-This used an existing platform base sandbox with runtime-installed dependencies;
-that source-only run did not verify the Dockerfile image or new-template deployment.
-
-A later reviewed-image run used the hardened public controller at `06071e4` and
-passed 17 real-model HTTP checks without failures or skips. It verified an existing
-source correction, unchanged original tests, exact artifacts and trusted independent
-test completion. Its owned sandbox and officially registered template were confirmed
-absent afterward; the shared image registry remains owned by the ongoing review batch.
-See the [sanitized image evidence](evidence/image-runtime-hardened-2026-10-16.json).
-The full `abx template deploy` runner remains unrun; this is supplemental component evidence.
-
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Historical step verification
-
-
-| Provider | Executed scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
-
-This historical run used the pinned e2cb27e server-source override matching the then-current image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
-
-## Secondary development
-
-Bump the CLI in three places together: the `npm install -g @openai/codex@X.Y.Z` line in the Dockerfile, `PINNED_VERSION` in `commands.py`, and the `codex_version` smoke expect in `template.yaml`. Re-run `codex exec --help` before assuming flags. `--full-auto` and `--output-format` were already gone at 0.162.1.
-
-Add a named command in `commands.py` with `@command`. Pass the upstream argv as a list. Keep `start()` under `if __name__ == "__main__"`.
-
-To point Codex at another OpenAI-compatible Responses endpoint, call `codex_config_write` or set `OPENAI_BASE_URL` / `ABX_LLM_BASE_URL` before the first `codex_exec`. Put project rules in `AGENTS.md` via `codex_agents_write` or by writing the file under the workspace.
-
-The nested sandbox probe is `sandbox_status()` in `commands.py`. Do not apt-install `bubblewrap` unless you have confirmed Codex will use that `bwrap`: the CLI prefers a `bwrap` on `PATH` over the bundled helper.
-
-### Agent Sandbox platform steps
-
-From a repository checkout, `python scripts/run_steps_e2e.py codex` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+2 vCPU, 2048 MB RAM, application port 9000, non-root `user`. Working directory: `/home/user/workspace`. Disk capacity and lifetime depend on the selected platform. Model tasks require outbound access to the configured model service and incur that service's charges.
 
 ## Contributing
 
-[CONTRIBUTING.md](../CONTRIBUTING.md) and [docs/template-spec.md](../docs/template-spec.md). Design notes: [docs/design/codex.md](../docs/design/codex.md).
-
-From the repository root, run `python3 -m unittest discover -s codex -p test_commands.py -v`, `python3 scripts/check_template.py codex`, and `python3 scripts/run_local_e2e.py`. The unit suite checks explicit permissions, automatic fallback, result redaction, and false agent-success markers. L0 checks HTTP command contracts and may skip the model task; it does not establish L1 image builds, L2 cloud execution, or L3 agent acceptance.
-
-For L3 against a local or remote template server, run `E2E_BASE_URL=http://127.0.0.1:9000 E2E_RUN_LLM=1 E2E_REQUIRE_LLM=1 E2E_MODEL=<model> python3 codex/e2e_test.py` with authorized model configuration already supplied to both processes. The controller seeds an incorrect existing Fibonacci implementation and original tests, and verifies the expected failing baseline. The agent must fix that implementation, preserve the original tests byte for byte, add unittest coverage and `REPORT.md`, execute a command successfully, and write exact `acceptance.txt` content. The test requires the final assistant marker, checks the changed source and artifacts, independently asserts Fibonacci results and negative-input rejection, and reruns both the original and generated tests. The independent verifiers use isolated Python, compile actual source bytes, require complete successful test results, and require fresh completion acknowledgements chosen after the agent exits. Early process exit, skipped or expected-failing tests, shadowed unittest modules and stale bytecode cannot supply a passing receipt. This checks completion; it is not an isolation boundary against hostile code with the same operating-system authority. A chat reply or an echoed marker in tool events fails. Artifact reads use the remote files API, and independent assertions/tests run through the remote shell API. Set `E2E_WORKSPACE` to a writable directory inside the server file root (default `/home/user/workspace`) and `ABX_SERVER_TOKEN` if the server requires authentication. Each run uses a unique directory and deletes only that directory. Record only actual passing provider evidence, and report model skips separately.
+To develop the template, read [CONTRIBUTING](../CONTRIBUTING.md) and the [design](../docs/design/codex.md).
 
 ## Issues
 
@@ -192,7 +171,3 @@ For L3 against a local or remote template server, run `E2E_BASE_URL=http://127.0
 ## License
 
 Apache-2.0, the same license as this repository. See [LICENSE](../LICENSE).
-
-### 2026-10-20 full step checkpoint: template2.0.0
-
-[Real current-version steps](evidence/express-2026-10-20T154825Z.json) and [complete external HTTP controller](evidence/verification-steps-2026-10-20T154825Z.json): official READY, actual Python SDK creation, all CLI/SDK smoke and 13 PASS/0 FAIL/1 SKIP; independent owned sandbox/template cleanup passed. Model acceptance remains NOT_RUN in this receipt; it does not relabel earlier image/model scope. Reproduction and exact server/controller provenance: [step guide](../docs/platform-steps.md).

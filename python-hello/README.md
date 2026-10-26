@@ -1,6 +1,6 @@
 # python-hello
 
-[中文](./README.zh-CN.md)
+[中文](README.zh-CN.md)
 
 ## What it does
 
@@ -20,41 +20,79 @@ Use this template to learn the named-command contract or to upload a Python prog
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+CLI, SDK and HTTP are alternative ways to use the same application. Choose one for the task. Examples may write files, create projects or start services; do not repeat the full example on the same instance without cleaning its previous outputs.
+
+Install the CLI/Python SDK and configure your platform with the [usage guide](../docs/using-templates.md#installation). The platform API key creates sandboxes; `ABX_SERVER_TOKEN` independently protects this template application. Run the following in your own terminal; cloning this repository is unnecessary.
+
+These template commands require no model, model endpoint or model API key.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./python-hello --yes
-abx run <sandbox-id> hello --json-args '{"name": "Express"}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello --sandbox-timeout 1800 --yes
+# Paste the sandbox ID from the launch output
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+```bash
+abx run "$SANDBOX_ID" run_script --json-args '{"code":"from pathlib import Path\nrows = [12.50, 18.80, 20.00]\ntotal = sum(rows)\nPath(\"summary.txt\").write_text(f\"total={total:.2f}\\n\")\nprint(f\"total={total:.2f}\")"}'
+```
+
+Returns stdout `total=51.30` and creates `summary.txt` for download.
+
+`--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
+
+For OpenSandbox, set `ABX_PROVIDER=opensandbox` and configure its [provider guide](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md). Keep the same provider selected for subsequent CLI and Python calls.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+
+After launching above and setting `SANDBOX_ID`, save this as `use_template.py` and run `python3 use_template.py`. It connects to the same instance instead of creating another sandbox. Prepare any input file locally as shown above.
 
 ```python
-print(await client.commands.run('hello', name='Express'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            result = await client.commands.run('run_script', code='from pathlib import Path\nrows = [12.50, 18.80, 20.00]\ntotal = sum(rows)\nPath("summary.txt").write_text(f"total={total:.2f}\\n")\nprint(f"total={total:.2f}")')
+            print(result)
+            Path('summary.txt').write_bytes(await sb.files.read_bytes('/home/user/app/summary.txt'))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+The SDK returns the command value; it unwraps the HTTP `result` envelope. Closing the client does not delete the sandbox.
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/hello`, with `Content-Type: application/json` and this direct argument object:
+Resolve port 9000 on the same instance with the [HTTP calling example](../docs/using-templates.md#cli-sdk-and-http). Preserve gateway headers, URL path and query before adding the independent application authentication.
+
+`POST /commands/run_script`
 
 ```json
-{"name": "Express"}
+{
+  "code": "from pathlib import Path\nrows = [12.50, 18.80, 20.00]\ntotal = sum(rows)\nPath(\"summary.txt\").write_text(f\"total={total:.2f}\\n\")\nprint(f\"total={total:.2f}\")"
+}
 ```
 
-Expected response for this check:
-
-```json
-{"result": "Hello, Express!"}
-```
-
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Use `Content-Type: application/json` and application authentication as described in the shared guide. The request body is the direct argument object, without an `args` wrapper. Success returns `{"result": ...}` with the value described above. Set the HTTP client wait to 450 seconds, separately from the command execution deadline. Responses are buffered, not event streams. Errors: 400 invalid arguments, 401 authentication, 404 unknown command, 500 execution failure.
 
 ## Command reference
 
@@ -82,62 +120,14 @@ All arguments below are strings with no template-defined length limit. Paths may
 
 Before `template launch`, securely export the secret variables declared empty in the manifest so the application reads them at startup. Keep values out of images, YAML and logs.
 
-## Resources
-
-2 vCPU, 2048 MB RAM, port 9000, and the provider's root filesystem (about 10G on Express). No GPU, Docker, KVM or model API key is needed. Large jobs can exceed memory or the command deadline; use a suitable process API/provider for those jobs.
-
-## Runtime verification
-
-On 2026-10-16, the current command source with pytest 8.4.2 passed the external
-HTTP suite (20 PASS lines, no failures) on `alicloud-express`, including actual
-script/pytest execution and remote file transfer. The owned sandbox was deleted.
-[Runtime evidence](evidence/runtime-express-2026-10-16.json) records source/package
-hashes; the [check log](evidence/runtime-express-2026-10-16.log) records assertions.
-This uses runtime-installed dependencies in the platform base sandbox and does
-not verify this revision's Dockerfile build or newly deployed template.
-
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Historical verification
-
-| Provider | Executed scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
-
-This historical run used the pinned e2cb27e server-source override matching the then-current image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
-
-## Secondary development
-
-Add a typed function with `@command("name")` in `commands.py` and keep `start()` under the main guard. Return a JSON-serializable value and raise on failed subprocesses. Keep tool arguments in an argv list. Pin new dependencies in the early Docker install layer and copy commands last so code edits reuse installed packages. Update both READMEs, YAML smoke cases and [design](../docs/design/python-hello.md) together.
-
-From the repository root with the development server, `httpx`, pytest and PyYAML installed:
+The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
 
 ```bash
-python3 scripts/check_template.py python-hello
-python3 -m pytest python-hello/test_command_errors.py -q
-python3 scripts/run_local_e2e.py
-python scripts/public_launch_e2e.py python-hello --provider alicloud-express --application-controller --source ./python-hello --output python-hello-attempt-1.json
+abx download "$SANDBOX_ID" /home/user/app/summary.txt ./summary.txt
+abx kill "$SANDBOX_ID"
 ```
 
-The local runner starts the server with a real workspace and exercises file upload/download/list/delete, uploaded scripts, a passing pytest case and a deliberately failing pytest case. File failures fail acceptance instead of being skipped. The Express harness requires configured credentials plus Docker, writes evidence only after successful CLI/SDK smoke cases, and cleans up the sandbox/template it creates. An Express smoke pass alone does not run every local regression remotely.
-
-### Agent Sandbox platform steps
-
-From a repository checkout, `python scripts/run_steps_e2e.py python-hello` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
-
-## Contributing
-
-Follow [CONTRIBUTING.md](../CONTRIBUTING.md) and the [template specification](../docs/template-spec.md). Record image-build, cloud and local results separately; keep historical evidence unchanged.
-
-## Issues
-
-Template issue: [awesome-templates#21](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/21). File template bugs in [awesome-templates](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues), Python client/server bugs in [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues), and CLI bugs in [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues). Use `[templates]` for SDK/CLI issue titles and include a secret-free repro, provider, generation and source revision.
-
-## License
-
-Apache-2.0. See [LICENSE](../LICENSE).
+`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
 ### Explicit portable image profile
 
@@ -150,3 +140,19 @@ server through `exec.run` after creation. The selected profile and exact source
 bytes form the launch identity. A profile declaration is not a real-backend pass.
 
 Python consumes a prepared immutable image with `agent_sandbox.api.template.launch_template(manifest, provider="opensandbox", reference=image_digest, application_token=token)`. Pass the original manifest so its startup, readiness and services remain intact; use the returned session to invoke commands and close it to destroy its owned sandbox. Python does not prepare source images.
+
+## Resources
+
+2 vCPU, 2048 MB RAM, port 9000, and the provider's root filesystem (about 10G on Express). No GPU, Docker, KVM or model API key is needed. Large jobs can exceed memory or the command deadline; use a suitable process API/provider for those jobs.
+
+## Contributing
+
+To improve this template, see the [contribution guide](../CONTRIBUTING.md), [template specification](../docs/template-spec.md) and [design notes](../docs/design/python-hello.md).
+
+## Issues
+
+Template issue: [awesome-templates#21](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/21). File template bugs in [awesome-templates](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues), Python client/server bugs in [python-sdk](https://github.com/Alibaba-Agent-Sandbox/python-sdk/issues), and CLI bugs in [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/issues). Use `[templates]` for SDK/CLI issue titles and include a secret-free repro, provider, generation and source revision.
+
+## License
+
+Apache-2.0. See [LICENSE](../LICENSE).

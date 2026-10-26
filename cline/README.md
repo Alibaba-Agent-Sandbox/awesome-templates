@@ -6,51 +6,100 @@ Runs genuine official `cline@3.0.73` in bounded headless JSON/yolo mode. The CLI
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
+The default recipe uses the Alibaba FC generation-2 base, non-root `user`, and the published `agent-sandbox-server==0.4.0a6` package.
 
-Alibaba generation2 basev0.0.49/Python3.13, SHA256-pinned official Node24.16.0 and npm integrity-locked Cline3.0.73 with its unmodified Linuxx64 native binary/Bun runtime. Native binary SHA2561ff8841d17d4d83763134c193d414e4f7fcf2ef56af759e5ebbe96727fc2c8f7 is checked before every native invocation. Published server package; non-root user, app/home workspace and port9000. [Dockerfile](Dockerfile), [dependency lock](package-lock.json), [design](../docs/design/cline.md).
+Official Cline CLI `3.0.73`, its Linux x86_64 native runtime, and Node.js `24.16.0`.
+
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml) · [upstream license](UPSTREAM-LICENSE.md)
 
 ## Problem solved
 
-Make the real Cline coding agent available through named commands without interactive login, shared developer config or a host-installed CLI. The actual package/help/source tag were inspected; no assumed CLI flags or substitute agent is used. The selected provider/base/model remain explicit and model-generated code runs only inside the caller's newly owned disposable sandbox during acceptance.
+Use an installed tool in an isolated sandbox, submit work through CLI, Python or HTTP, then export the files. Configure model and cloud-sandbox credentials separately.
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
+
+This configured BYOK path speaks Chat Completions using your explicit key/base/model. A Cline account, GitHub token and interactive login are not required. The upstream agent runs in `--yolo` mode; file and shell tools can act with the sandbox user's permissions.
+
+For the DashScope base below, create a Beijing-region key following [Model Studio API-key setup](https://www.alibabacloud.com/help/en/model-studio/get-api-key) and use a model allowed for that account. Other regions and Coding Plans use their matching keys/endpoints.
+
+Replace every `<...>` placeholder with your own value; use an exact model ID available to your account. Set secrets in your own terminal or secret manager, never in the image, YAML or public logs. Configure these variables **before** launch; later host changes do not reconfigure the running application.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./cline --yes
-abx run <sandbox-id> cline_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export CLINE_MODEL_API_KEY='<your-model-or-vendor-key>'
+export CLINE_MODEL_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
+export CLINE_MODEL='<model-id-from-your-provider>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//cline --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+`--sandbox-timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
+
+Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
+
+```bash
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" cline --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","cwd":"/home/user/workspace","command_timeout":300}'
+```
+
+The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/workspace`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
 
 ```python
-print(await client.commands.run('cline_version'))
-```
+import asyncio
+import os
+from agent_sandbox import ProviderSandbox
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=420
+        )
+        try:
+            print(await client.commands.run('cline', prompt='Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.', cwd='/home/user/workspace', command_timeout=300))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/cline_version`, with `Content-Type: application/json` and this direct argument object:
+Use the [direct HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserving gateway headers, URL path/query and the independent application token. Send `POST /commands/cline` with `Content-Type: application/json` and this direct argument object, without an `args` wrapper:
 
 ```json
-{}
+{
+  "prompt": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.",
+  "cwd": "/home/user/workspace",
+  "command_timeout": 300
+}
 ```
 
-Expected response for this check:
+The response is `{"result": ...}`; see the command reference for its actual content type. Model text varies. Set the HTTP wait to at least 420 seconds; the command execution deadline is separate, and disconnecting does not guarantee remote cancellation. Authentication failures return 401, invalid argument types 400, and execution errors an error response. If a result includes `exit_code`, also check that it is zero.
 
-```json
-{"result": {"native_version": "3.0.73"}}
+### Export files and cleanup
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
 ```
 
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
+
+`close()`/`aclose()` only close client connections; they do not delete the sandbox. Prepared templates/images in the launch journal can remain for reuse; remove only your own exact resources when no longer needed.
 
 ## Command reference
 
@@ -60,13 +109,7 @@ Expected response for this check:
 | cline_setup_check | none | mode `openai-compatible-byok`; base_url_set/api_key_set/model_set booleans; cline_account_required:false; no network/secret values |
 | cline | prompt: required nonempty string1..32768UTF-8 bytes, no NUL; cwd: optional string default empty, max4096bytes, existing directory resolved inside WORKSPACE; command_timeout: integer1..600seconds default300 | `{stdout:string,stderr:string,exit_code:int,native_version:"3.0.73"}`; native tool execution and workspace file changes |
 
-The native argv fixes `--json --yolo --provider openai-compatible --model <configured> --cwd <resolved> --compaction off --retries 2 --timeout <seconds>`, plus per-call private `--config` and `--data-dir`. Prompt text enters anonymous stdin, never flags or a shell. Yolo is an unsupervised native act profile with tool auto-approval; native spawn/team tools are disabled by that upstream profile. It is not read-only or a filesystem/tenant boundary. Use trusted callers and a new disposable sandbox without valuable files/other credentials. Argument cwd containment does not remove the native agent's OS authority. Existing caller files may change; no rollback is promised.
-
-Native output is capped256KiB per stream, with whole-process-group/pidfd/unique-owner descendant cleanup on success/failure/timeout/overflow. Calls serialize; overlap fails busy. The caller's original HOME is not used. Explicit model key/base values and JSON-escaped variants are redacted before returning output. Retain only the requested workspace artifacts; owned runtime HOME/config/cache/session/team files are removed after the call.
-
-Pinned3.0.73 checks JSON mode before reading piped input. A fixed, non-secret positional sentence enables that preflight; the actual task still arrives only through anonymous stdin and is appended by upstream. Runtime1.0.1 corrects the real1.0.0 cloud failure; no user prompt or credential is placed in argv.
-
-Runtime1.0.2 writes the provider profile at the exact native-resolved private data/settings/providers.json path: --data-dir overrides CLINE_PROVIDER_SETTINGS_PATH before native startup. Earlier1.0.1 was stopped after independent inspection found its intended base absent from the native-resolved profile. Routing is not qualified until a fresh synthetic-key native wire check confirms the exact owned endpoint before any approved real-model key is provided.
+Named-command results are buffered rather than streamed. `cwd` must be an existing directory satisfying the template's path constraints. Editing/tool permission allows model actions with the sandbox user's authority. Client disconnect is not a cancellation mechanism.
 
 ## Configuration
 
@@ -82,25 +125,11 @@ Values are captured when commands.py loads. The wrapper writes only provider/mod
 
 ## Resources
 
-Linuxx64 only,2vCPU,4096MB, port9000, about10GiB Express rootfs;8GiB image budget enforced. No nested Docker/KVM/GPU is required for this CLI slice. Compatible model tool calling and authorized network egress are required for coding. No hosted Cline/extension/other-provider acceptance or workload memory estimate is claimed.
-
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Secondary development
-
-```bash
-python -m pytest -q cline/test_commands.py cline/test_model_controller.py
-python scripts/check_template.py cline --strict
-python scripts/check_docs.py
-```
-
-Pinned source `cli-v3.0.73`, commitc718573538d76310f464541617ab665108a6c999, defines actual JSON `run_result` with completed finishReason/iterations/text. The external controller invokes the actual paired Python SDK ServerClient.commands.run for the model command and uses independent HTTP files/shell verification. It requires that native terminal event, seeds existing buggy source, preserves original test bytes, downloads fresh report/nonce artifact, reruns complete controller-owned original tests and held-out cases with fresh post-return ACKs, and checks exact owned project absence. Generated source execution is refused on operator loopback and requires explicit owned-cloud opt-in. Required real-model execution never silently skips. Local authored process/NDJSON/credential fixtures prove verifier boundaries only. [Steps guide](../docs/platform-steps.md) covers exact source transfer and resource recovery.
+2 vCPU, 4096 MB RAM, application port 9000, non-root `user`. Working directory: `/home/user/workspace`. Disk capacity and lifetime depend on the selected platform. Model tasks require outbound access to the configured model service and incur that service's charges. This pinned installation targets Linux x86_64.
 
 ## Contributing
 
-Read [CONTRIBUTING](../CONTRIBUTING.md), [project standards](../docs/project-standards.md) and [template spec](../docs/template-spec.md). Keep source pins, contract version, translations and immutable acceptance records consistent.
+To develop the template, read [CONTRIBUTING](../CONTRIBUTING.md) and the [design](../docs/design/cline.md).
 
 ## Issues
 

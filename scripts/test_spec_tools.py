@@ -82,9 +82,8 @@ class CheckerTest(unittest.TestCase):
                 "providers": {"alicloud-express": "provider-preparation-required"}}]}
             (root / "awesome-templates.yaml").write_text(check_template.yaml.safe_dump(index))
             path = dest / "README.md"
-            path.write_text(re.sub(r"(?ms)^## Verified\n.*?(?=^## |\Z)",
-                "## Verified\n\n| Provider | Date | Level |\n|---|---|---|\n| alicloud-express | 2026-10-19 | L2 |\n\n",
-                path.read_text()))
+            path.write_text(path.read_text() +
+                "\n## Verified\n\n| Provider | Date | Level |\n|---|---|---|\n| alicloud-express | 2026-10-19 | L2 |\n")
             violations = check_template.check_directory(dest)
             self.assertTrue(any(v.code == "verified-evidence" for v in violations))
             self.assertFalse(check_template._evidence_passes(dest, "alicloud-express"))
@@ -120,6 +119,22 @@ class CheckerTest(unittest.TestCase):
                     self.assertTrue(any(v.code == "readme-http" and filename in v.message for v in violations))
                     readme.write_text(original, encoding="utf-8")
 
+    def test_consumer_readme_does_not_require_engineering_sections(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp) / "_skeleton"
+            shutil.copytree(SKELETON, dest)
+            for filename, headings in (
+                ("README.md", ("Verified", "Historical verification", "Secondary development")),
+                ("README.zh-CN.md", ("已验证", "历史验收", "二次开发")),
+            ):
+                readme = dest / filename
+                text = readme.read_text(encoding="utf-8")
+                for heading in headings:
+                    text = re.sub(r"(?ms)^## " + re.escape(heading) + r"\n.*?(?=^## |\Z)", "", text)
+                readme.write_text(text, encoding="utf-8")
+            self.assertEqual(check_template.check_directory(dest), [])
+            self.assertFalse(check_template._evidence_passes(dest, "alicloud-express"))
+
     def test_skeleton_conforms(self) -> None:
         violations = check_template.check_directory(SKELETON)
         self.assertEqual([str(item) for item in violations], [])
@@ -130,17 +145,12 @@ class CheckerTest(unittest.TestCase):
             shutil.copytree(SKELETON, dest)
             readme = dest / "README.md"
             text = readme.read_text(encoding="utf-8")
-            text = re.sub(r"(?ms)^## Verified\n.*?(?=^## |\Z)",
-                "## Verified\n\n| Provider | Date | Level | Evidence |\n|---|---|---|---|\n| alicloud-express | 2026-10-15 | L2 | evidence/express-2026-10-15.json |\n\n", text)
+            text += "\n## Verified\n\n| Provider | Date | Level | Evidence |\n|---|---|---|---|\n| alicloud-express | 2026-10-15 | L2 | evidence/express-2026-10-15.json |\n"
             readme.write_text(text, encoding="utf-8")
             zh = dest / "README.zh-CN.md"
             zh_text = zh.read_text(encoding="utf-8")
-            zh_text = re.sub(r"(?ms)^## 已验证\n.*?(?=^## |\Z)",
-                "## 已验证\n\n| Provider | Date | Level | Evidence |\n|---|---|---|---|\n| alicloud-express | 2026-10-15 | L2 | evidence/express-2026-10-15.json |\n\n", zh_text)
+            zh_text += "\n## 已验证\n\n| Provider | Date | Level | Evidence |\n|---|---|---|---|\n| alicloud-express | 2026-10-15 | L2 | evidence/express-2026-10-15.json |\n"
             zh.write_text(zh_text, encoding="utf-8")
-            yaml_path = dest / "template.yaml"
-            yaml_text = yaml_path.read_text(encoding="utf-8").replace("tested_on: []", "tested_on: [alicloud-express]")
-            yaml_path.write_text(yaml_text, encoding="utf-8")
             codes = {item.code for item in check_template.check_directory(dest)}
             self.assertIn("verified-evidence", codes)
 

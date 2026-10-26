@@ -8,51 +8,97 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
+默认配方使用 Alibaba FC generation-2 基础镜像，以非 root `user` 运行，服务端固定安装已发布的 `agent-sandbox-server==0.4.0a6`。
 
-固定官方CLI2026.10.19-6bbf2c4、Linux x86_64，原版启动器、内置Node及原生模块保持不变。原包183,733,394字节，控制端实测SHA256为`cf80cc18d8b33bf33e762353977ca1868cfc45290c92c0ffdcef83bb8b37b44f`，并非上游发布的校验和。460个普通文件共585,886,062字节。[完整清单](upstream.json)、[许可说明](UPSTREAM-NOTICE.md)、[设计](../docs/design/cursor-agent.md)。基础镜像为阿里云generation2，Python3.13；已发布服务端包。
+原版 Cursor Agent CLI `2026.10.19-6bbf2c4` Linux x86_64 发行包及其自带 Node 运行时。
+
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml) · [upstream notice](UPSTREAM-NOTICE.md)
 
 ## 解决的问题
 
-提供可复现安装、标量SDK/HTTP接口，以及有界执行和进程／私有状态清理。此模板是本地CLI运行环境；Cursor Cloud Agents及企业机器调度器不在认证范围内。真实厂商账号下的模型与代码行为，需要独立的真实凭证验收。
+在隔离沙箱中使用已经安装的工具，通过 CLI、Python 或 HTTP 提交工作，再导出文件；模型账号与云沙箱账号分别配置。
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，配置选择的平台（沙箱 API Key、连接地址及构建镜像仓库），再配置下面独立的模型/应用凭据。无需 clone 仓库即可启动公共模板。
+
+在 Cursor Dashboard 的 API Keys/Integrations 中创建个人 User API Key，按 [Cursor CLI 认证说明](https://cursor.com/help/integrations/cli)取得真正的 Cursor 账号 API Key。本无交互包装使用 `CURSOR_API_KEY`，不使用浏览器登录，也不接受 OpenAI Key 代替。命令可选 `model` 选择该 Cursor 账号可用模型；未提供任意模型 endpoint 配置。
+
+所有 `<...>` 都是需要你替换的占位值，模型名必须使用服务商实际提供的 ID。密钥在你自己的终端或 secret manager 中设置，不要放入镜像、YAML 或公开日志。以下变量要在 launch **之前**设置；之后改变 host 环境不会更新运行中的应用。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./cursor-agent --yes
-abx run <sandbox-id> agent_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export CURSOR_API_KEY='<your-model-or-vendor-key>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//cursor-agent --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+`--sandbox-timeout 1800` 是沙箱生存时间（秒），`command_timeout`/`timeout_s` 是单次任务执行期限，`ABX_HTTP_TIMEOUT`/SDK `timeout` 是客户端等待时间，三者分别设置。
+
+launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
+
+```bash
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" agent --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","allow_unsafe_tools":true,"cwd":"/home/user/app","command_timeout":300}'
+```
+
+任务要求在 `/home/user/app` 写出 `generated_hello.py` 和 `GENERATED_REPORT.md`。示例显式开放所需的编辑/工具权限，只在自己拥有的可丢弃沙箱中使用。下面的 SDK 和 HTTP 是同一任务的替代调用方式，选择一种即可。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
 
 ```python
-print(await client.commands.run('agent_version'))
-```
+import asyncio
+import os
+from agent_sandbox import ProviderSandbox
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=420
+        )
+        try:
+            print(await client.commands.run('agent', prompt='Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.', allow_unsafe_tools=True, cwd='/home/user/app', command_timeout=300))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/agent_version`，`Content-Type: application/json`，直接发送以下参数对象：
+使用[直接 HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析 endpoint，保留网关 headers、URL path/query 和独立应用 token。请求 `POST /commands/agent`，`Content-Type: application/json`，body 是下面的直接参数对象，不加 `args` 包装：
 
 ```json
-{}
+{
+  "prompt": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.",
+  "allow_unsafe_tools": true,
+  "cwd": "/home/user/app",
+  "command_timeout": 300
+}
 ```
 
-该检查的预期响应：
+响应为 `{"result": ...}`：内容格式见下方命令参考；模型生成的文字每次不同。HTTP 等待时间至少设为 420 秒，命令执行期限是另一个设置；断开客户端不会保证终止远端任务。认证失败为 401，参数类型错误为 400，执行失败为错误响应；返回对象包含 `exit_code` 时还应检查它是否为 0。
 
-```json
-{"result": "2026.10.19-6bbf2c4"}
+### 导出产物与清理
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
 ```
 
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+程序预期输出 `Hello from the sandbox`。先读取产物并检查再使用；模型回答成功不代表文件一定存在。文件不会自动回写模板或你的本机，释放沙箱前必须导出。
+
+`close()`/`aclose()` 仅关闭客户端连接，不释放沙箱。launch 日志中的已构建模板和镜像可能保留用于复用，不再需要时仅删除自己创建的那些资源。
 
 ## 命令参考
 
@@ -63,11 +109,7 @@ print(await client.commands.run('agent_version'))
 | agent_setup_check | 无 | mode/installed/pinned_version/api_key_set/requires_unsafe_optin/vendor_authentication_verified/compatible_model_fallback；仅状态，无值或网络 |
 | agent | prompt必填字符串；cwd字符串默认空；command_timeout整数300；allow_unsafe_tools布尔False；model字符串默认空 | 缓冲原生最终响应；明确授权后可读写文件和执行工具 |
 
-prompt为1..32768UTF8字节，非空且无NUL。cwd最长4096UTF8字节、无NUL，必须解析为WORKSPACE内已存在目录；空值选根目录。command_timeout为1..600秒，布尔值拒绝。allow_unsafe_tools必须精确为True。model为空时使用厂商默认选择；非空最多200个ASCII标识字符[A-Za-z0-9_.:/-]且字母数字开头，不声明模型可用性。
-
-成功结果包含stdout字符串、stderr空字符串、exit_code:0、native_completed:true、native_version、archive_sha256、permission_profile:explicit-owned-sandbox-bypass、requested_model。原生JSON必须type=result/subtype=success/is_error=false且最终文本非空。非零、格式错误、未完成、超时或超量均抛错，不返回部分成功。实际模型与代码产物另行验收。
-
-固定原生argv为--print --output-format json --disable-auto-update --disable-project-configs --sandbox disabled --trust --force --workspace <受限项目>，可选--model及原样prompt。该显式模式使用外层自有沙箱隔离，禁用原生嵌套沙箱。参数通过argv传递；不暴露任意参数、认证绕过、操作端其他密钥兜底或替代规划器。
+命令响应为缓冲结果，不是流式事件。`cwd` 必须指向已存在且符合本模板路径约束的目录；允许编辑/工具执行时，模型可按沙箱用户权限修改文件或运行程序。超时只限制相应调用，客户端断连不能作为取消机制。 模型调用串行执行；并发请求会返回 busy。清理可能延长响应时间，示例为此保留 HTTP 等待余量。
 
 ## 配置
 
@@ -83,25 +125,11 @@ prompt为1..32768UTF8字节，非空且无NUL。cwd最长4096UTF8字节、无NUL
 
 ## 资源
 
-仅Linux x86_64，2vCPU/4096MB/9000端口，非root用户，WORKSPACE为/home/user/app；构建检查8GiB根盘上限。原包解压585.9MB，压缩183.7MB。无需声明嵌套Docker、KVM、GPU或桌面能力。模型任务需要厂商出口与账号；峰值RSS和认证吞吐未测。其他架构／提供商、交互／恢复／MCP／插件／委派／云Agent功能未认证。
-
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 二次开发
-
-```bash
-python -m pytest -q cursor-agent/test_commands.py cursor-agent/test_controller.py cursor-agent/test_install.py
-python scripts/check_template.py cursor-agent --strict
-python scripts/check_docs.py
-```
-
-保留原文件摘要与许可、显式权限、私有状态和进程清理。变更的COPY／辅助源码必须先发布，再准备不可变steps；保持15000字节wire和通用300MiB原包限制。完整外部控制器必须执行真实原版HTTP及SDK无效密钥拒绝，安装／版本回执不能代替。有真实厂商凭证时，显式选择自有远程代码控制器：既有源码修复、原始3项测试字节不变、报告／精确随机标记、原始3项加独立4项断言、返回后新ACK。生成代码不在操作端运行。
+2 vCPU，4096 MB 内存，应用端口 9000，非 root `user`。工作目录 `/home/user/app`；磁盘容量和最长生存时间由所选平台配置。模型任务需要访问配置的模型服务，模型调用费用由对应服务商计费。 当前固定安装支持 Linux x86_64。
 
 ## 贡献
 
-阅读[贡献指南](../CONTRIBUTING.md)、[项目标准](../docs/project-standards.md)、[文档标准](../docs/documentation-standards.md)及[模板规范](../docs/template-spec.md)。独立模板、类型契约、双语文档、设计、目录、工程记录与当前源证据一起提交；完成最新CI／review后正常合并。
+开发模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)和[设计说明](../docs/design/cursor-agent.md)。
 
 ## 问题反馈
 

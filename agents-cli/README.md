@@ -17,55 +17,181 @@ does not remove the upstream CLI's tools.
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
+The default recipe uses the Alibaba FC generation-2 base, non-root `user`, and the published `agent-sandbox-server==0.4.0a6` package.
 
-- Alibaba generation-2 base image and its Python; SHA256-verified official Node.js `24.16.0` replaces the base Node 20 to satisfy Qwen Code's Node >=22 requirement.
-- Codex CLI `0.162.1`, Qwen Code CLI `0.23.0`; image build asserts both versions.
-- Non-root `user`, app `/home/user/app`, workspace `/home/user/workspace`, port 9000.
+Codex CLI `0.162.1`, Qwen Code `0.23.0`, Node.js `24.16.0`, and the restricted local Agents API policy.
+
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml)
 
 ## Problem solved
 
-Provides one HTTP session surface for selecting either installed coding CLI while
-keeping the general sandbox shell/files surface closed. Diagnostic checks run the
-actual CLIs; disabling model tests never substitutes synthetic programs.
+Use an installed tool in an isolated sandbox, submit work through CLI, Python or HTTP, then export the files. Configure model and cloud-sandbox credentials separately.
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
+
+The session example selects the actual `qwen-code` adapter. Set all three `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL` values for an authorized Chat-compatible provider; no interactive OAuth is started. Selecting Codex instead requires a Responses-compatible provider AND its native `CODEX_HOME/config.toml`; setting `OPENAI_BASE_URL` alone does not construct that profile in this restricted template. Use the dedicated `codex` template for the complete configurable Codex command flow.
+
+For the DashScope base below, create a Beijing-region key following [Model Studio API-key setup](https://www.alibabacloud.com/help/en/model-studio/get-api-key) and use a model allowed for that account. Other regions and Coding Plans use their matching keys/endpoints.
+
+Replace every `<...>` placeholder with your own value; use an exact model ID available to your account. Set secrets in your own terminal or secret manager, never in the image, YAML or public logs. Configure these variables **before** launch; later host changes do not reconfigure the running application.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./agents-cli --yes
-abx run <sandbox-id> agents_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export OPENAI_API_KEY='<your-model-or-vendor-key>'
+export OPENAI_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
+export OPENAI_MODEL='<model-id-from-your-provider>'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//agents-cli --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+`--sandbox-timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
+
+Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
+
+The only named command is a version diagnostic. Use the session API below for an actual coding task; a version response is not a coding result.
+
+```bash
+abx run "$SANDBOX_ID" agents_version
+```
+
+The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/workspace`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+
+Connect to the application started by launch and resolve its gateway with the SDK. This Python example submits the same coding task and polls output within a bounded wait. The restricted application policy has no generic file/shell HTTP routes; inspect the files afterward through provider `abx exec`/`download`.
 
 ```python
-print(await client.commands.run('agents_version'))
-```
+import asyncio
+import os
+import time
+import httpx
+from agent_sandbox import ProviderSandbox
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        endpoint, gateway_headers = await sb.network.resolve(9000)
+        headers = dict(gateway_headers)
+        occupied = {key.lower() for key in headers}
+        token = os.environ["ABX_SERVER_TOKEN"]
+        if "authorization" not in occupied:
+            headers["Authorization"] = "Bearer " + token
+        if "x-access-token" not in occupied:
+            headers["X-Access-Token"] = token
+        if {"authorization", "x-access-token"}.issubset(occupied):
+            raise ValueError("Gateway occupies both application authentication headers")
+        base = httpx.URL(endpoint)
+        def url(path):
+            return base.copy_with(path=base.path.rstrip("/") + path)
+        async with httpx.AsyncClient(headers=headers, timeout=60) as http:
+            response = await http.post(url("/v1/agents/sessions"), json={
+                "adapter": "qwen-code",
+                "agent": {"model": os.environ["OPENAI_MODEL"]},
+                "environment": {"type": "self_hosted",
+                                "workspace_directory": "/home/user/workspace"},
+            })
+            response.raise_for_status()
+            session = response.json()["id"]
+            path = "/v1/agents/sessions/" + session
+            response = await http.post(url(path + "/events"), json={
+                "events": [{"type": "agent.session.input.message", "input": [
+                    {"role": "user", "content": [{"type": "input_text", "text":
+                     "Create generated_hello.py that prints exactly Hello from the sandbox, "
+                     "and GENERATED_REPORT.md explaining the program. Preserve unrelated files."}]}]}]
+            })
+            response.raise_for_status()
+            deadline = time.monotonic() + 420
+            while time.monotonic() < deadline:
+                response = await http.get(url(path))
+                response.raise_for_status()
+                state = response.json()
+                if state.get("error") or state.get("status") == "failed":
+                    raise RuntimeError("Agent session failed; inspect private diagnostics")
+                response = await http.get(url(path + "/items"))
+                response.raise_for_status()
+                items = response.json()["data"]
+                if state.get("status") == "idle" and items:
+                    print(items)
+                    break
+                await asyncio.sleep(1)
+            else:
+                raise TimeoutError("Destroy your owned sandbox to stop the task")
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/agents_version`, with `Content-Type: application/json` and this direct argument object:
+The read-only named diagnostic is `POST /commands/agents_version`, with body `{}` and response `{"result":"codex 0.162.1; qwen-code 0.23.0"}`. Actual coding uses the Agents session API below, rather than an invented named coding command.
+
+Set `Content-Type: application/json`.
+
+Resolve the port-9000 endpoint using the [direct HTTP flow](../docs/using-templates.md#cli-sdk-and-http), preserving gateway headers and URL path/query, and add the independent application token. Submit the same task with these session requests:
+
+1. `POST /v1/agents/sessions`:
 
 ```json
-{}
+{
+  "adapter": "qwen-code",
+  "agent": {
+    "model": "<same-model-as-OPENAI_MODEL>"
+  },
+  "environment": {
+    "type": "self_hosted",
+    "workspace_directory": "/home/user/workspace"
+  }
+}
 ```
 
-Expected response for this check:
+Expect `200`; save response `id` as `<session-id>`.
+
+2. `POST /v1/agents/sessions/<session-id>/events`:
 
 ```json
-{"result": "codex 0.162.1; qwen-code 0.23.0"}
+{
+  "events": [
+    {
+      "type": "agent.session.input.message",
+      "input": [
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "input_text",
+              "text": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 ```
 
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Expect `202` for queued work, not completion. Poll `GET /v1/agents/sessions/<session-id>` and `GET /v1/agents/sessions/<session-id>/items?limit=100&order=asc` with a bounded 420-second wait; stop on `error`/`failed`. Once output exists and status returns to `idle`, check the actual files below; `idle` alone does not prove successful edits. Cancel/delete routes are disabled; destroy your owned sandbox to stop work or end the session.
+
+### Export files and cleanup
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
+```
+
+Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
+
+`close()`/`aclose()` only close client connections; they do not delete the sandbox. Prepared templates/images in the launch journal can remain for reuse; remove only your own exact resources when no longer needed.
 
 ## Command reference
 
@@ -82,9 +208,7 @@ Expected response for this check:
 | `GET /v1/agents/sessions/{id}/items` | Poll output items |
 | `GET /v1/agents/runtimes` | Inspect declared, implemented and installed runtimes |
 
-Session records and output are process-local and are lost when this server is
-restarted. Delete/cancel/update/SSE and generic shell/files routes are outside this
-allowlist. Destroy an owned sandbox to end its server and resources.
+Named-command results are buffered rather than streamed. `cwd` must be an existing directory satisfying the template's path constraints. Editing/tool permission allows model actions with the sandbox user's authority. Client disconnect is not a cancellation mechanism.
 
 ## Configuration
 
@@ -99,54 +223,15 @@ allowlist. Destroy an owned sandbox to end its server and resources.
 | `ABX_SERVER_POLICY_FILE` | Set in image | Path to the shipped policy; the canonical start command also passes `--policy` explicitly |
 
 Changing the policy deliberately changes the public HTTP surface. Keep the shipped
-allowlist for this template's documented contract. `E2E_RUN_LLM=0` controls tests
-only and never rewrites production PATH or installs fixtures.
+allowlist for this template's documented contract.
 
 ## Resources
 
-2 vCPU, 4096 MB RAM, port 9000. Express has about 10 GB rootfs. Model/tool workload
-memory and latency have not been measured; no image-size acceptance is claimed.
-
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Historical verification
-
-| Provider | Executed scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
-
-This historical run used the pinned e2cb27e server-source override matching the then-current image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
-
-## Secondary development
-
-Keep both version pins in Dockerfile, `commands.py`, smoke metadata and fixtures
-consistent. From the repository root:
-
-```bash
-python -m pytest --import-mode=importlib -q agents-cli/test_protocol.py
-python scripts/check_template.py agents-cli
-python scripts/run_local_e2e.py
-```
-
-Protocol tests explicitly put `e2e-bin` on only their child process PATH and test
-both startup forms, authentication, disabled routes and two turns of each adapter.
-The Dockerfile does not copy those fixtures. Default HTTP e2e requires actual
-installed CLIs and submits no model turn. `E2E_REQUIRE_LLM=1` or `E2E_RUN_LLM=1`
-still exits nonzero and directs callers to `e2e_sdk.py`. It never trusts an external
-receipt or arbitrary verifier hook. Run
-`python -m pytest --import-mode=importlib -q agents-cli/test_sdk_verifier.py` for
-no-network negative controls; those are separate from actual model/provider runs.
-
-### Agent Sandbox platform steps
-
-From a repository checkout, `python scripts/run_steps_e2e.py agents-cli` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
+2 vCPU, 4096 MB RAM, application port 9000, non-root `user`. Working directory: `/home/user/workspace`. Disk capacity and lifetime depend on the selected platform. Model tasks require outbound access to the configured model service and incur that service's charges.
 
 ## Contributing
 
-Read [CONTRIBUTING.md](../CONTRIBUTING.md), the [template spec](../docs/template-spec.md)
-and [design](../docs/design/agents-cli.md). Track this work in [Issue #25](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/25).
+To develop the template, read [CONTRIBUTING](../CONTRIBUTING.md) and the [design](../docs/design/agents-cli.md).
 
 ## Issues
 
@@ -157,7 +242,3 @@ CLI deployment defects: [agent-sandbox](https://github.com/Alibaba-Agent-Sandbox
 ## License
 
 Apache-2.0; see [LICENSE](../LICENSE). Upstream CLIs retain their own licenses.
-
-### 2026-10-20 full step checkpoint: template2.0.1
-
-[Real current-version steps](evidence/express-2026-10-20.json) and [complete external HTTP controller](evidence/verification-steps-2026-10-20T154625Z.json): official READY, actual Python SDK creation, all CLI/SDK smoke and 18 PASS/0 FAIL/1 SKIP; independent owned sandbox/template cleanup passed. Model acceptance remains NOT_RUN in this receipt; it does not relabel earlier image/model scope. Reproduction and exact server/controller provenance: [step guide](../docs/platform-steps.md).

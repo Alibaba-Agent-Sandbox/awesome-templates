@@ -47,9 +47,3 @@ Keep the template's startup command and declared services together. If model con
 `ABX_SERVER_TOKEN` is read at application process startup. A non-empty token protects named-command calls; an unset token allows anonymous application calls. A later create/connect call cannot add authentication to an already running process. `/health` is exempt from the application token, while provider gateway authentication may still apply. Health alone does not verify command authentication or model settings.
 
 The application token, provider gateway credentials and upstream model keys have separate purposes. `application_client(..., token=...)` preserves provider gateway headers and sends the application token using the supported headers. Do not log tokens or place model keys in command arguments, prompts or image layers. See the [authentication specification](template-spec.md#auth-token) for the exact header behavior.
-
-## Verification scope
-
-This guide follows the current unified launch and public connection API. Its examples receive syntax, installed-import and local-link checks; those checks are not a fresh cloud or model test. Provider acceptance must identify the exact source, packages, calling path and owned cleanup.
-
-The [historical Aider PR](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/88) retains a separate image/process experiment and real-model result at its recorded inputs. It does not establish the current unified launch, other providers' environment behavior or all templates' model capabilities, and it is not the recommended startup procedure.

@@ -1,6 +1,6 @@
 # Media tools
 
-Offline CPU media conversion with FFmpeg. [中文说明](README.zh-CN.md).
+[中文](README.zh-CN.md)
 
 ## What it does
 
@@ -20,41 +20,101 @@ Give media workflows a small, predictable CPU conversion interface with independ
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+CLI, SDK and HTTP are alternative ways to use the same application. Choose one for the task. Examples may write files, create projects or start services; do not repeat the full example on the same instance without cleaning its previous outputs.
+
+Install the CLI/Python SDK and configure your platform with the [usage guide](../docs/using-templates.md#installation). The platform API key creates sandboxes; `ABX_SERVER_TOKEN` independently protects this template application. Run the following in your own terminal; cloning this repository is unnecessary.
+
+These template commands require no model, model endpoint or model API key.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./media-tools --yes
-abx run <sandbox-id> media_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//media-tools --sandbox-timeout 1800 --yes
+# Paste the sandbox ID from the launch output
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+Prepare the input locally and upload it:
+
+Use your own short `sample.wav`, or generate one second of silence locally with the Python standard library:
+
+```python
+import wave
+with wave.open("sample.wav", "wb") as f:
+    f.setnchannels(1)
+    f.setsampwidth(2)
+    f.setframerate(16000)
+    f.writeframes(b"\x00\x00" * 16000)
+```
+
+```bash
+abx upload "$SANDBOX_ID" ./sample.wav /home/user/app/sample.wav
+```
+
+```bash
+abx run "$SANDBOX_ID" transcode --json-args '{"input_path":"sample.wav","output_name":"sample.flac","preset":"flac","max_seconds":5,"command_timeout":60}'
+```
+
+Returns `output_path`, duration, streams, `bytes` and `sha256` for the converted FLAC.
+
+`--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
+
+For OpenSandbox, set `ABX_PROVIDER=opensandbox` and configure its [provider guide](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md). Keep the same provider selected for subsequent CLI and Python calls.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+
+After launching above and setting `SANDBOX_ID`, save this as `use_template.py` and run `python3 use_template.py`. It connects to the same instance instead of creating another sandbox. Prepare any input file locally as shown above.
 
 ```python
-print(await client.commands.run('media_version'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            await sb.files.write('/home/user/app/sample.wav', Path('sample.wav').read_bytes())
+            result = await client.commands.run('transcode', input_path='sample.wav', output_name='sample.flac', preset='flac', max_seconds=5, command_timeout=60)
+            print(result)
+            Path('sample.flac').write_bytes(await sb.files.read_bytes(result['output_path']))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+The SDK returns the command value; it unwraps the HTTP `result` envelope. Closing the client does not delete the sandbox.
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/media_version`, with `Content-Type: application/json` and this direct argument object:
+Resolve port 9000 on the same instance with the [HTTP calling example](../docs/using-templates.md#cli-sdk-and-http). Preserve gateway headers, URL path and query before adding the independent application authentication.
+
+`POST /commands/transcode`
 
 ```json
-{}
+{
+  "input_path": "sample.wav",
+  "output_name": "sample.flac",
+  "preset": "flac",
+  "max_seconds": 5,
+  "command_timeout": 60
+}
 ```
 
-Expected response for this check:
-
-```json
-{"result": "FFmpeg 7.1.5-0+deb13u1"}
-```
-
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Use `Content-Type: application/json` and application authentication as described in the shared guide. The request body is the direct argument object, without an `args` wrapper. Success returns `{"result": ...}` with the value described above. Set the HTTP client wait to 450 seconds, separately from the command execution deadline. Responses are buffered, not event streams. Errors: 400 invalid arguments, 401 authentication, 404 unknown command, 500 execution failure.
 
 ## Command reference
 
@@ -73,30 +133,9 @@ Inputs are regular files of at most 64 MiB with relative paths beneath `WORKSPAC
 
 Outputs use a plain filename beginning with an ASCII letter/digit, followed by at most 119 letters/digits/underscores/dots/hyphens, and the preset extension. Existing files and symlinks are never overwritten. Output metadata/chapters are stripped; the size must be below 64 MiB. One conversion/probe runs at a time; a concurrent request fails promptly. Native children receive only HOME/PATH/optional library path plus fixed locale/thread settings, have 1 GiB address space, CPU soft/hard limits of 120/121 seconds, 64 MiB per-file output limits and no core dumps. Diagnostics are capped at 1 MiB per stream and omitted from failure messages. The operation shares one wall deadline across probe, conversion and output probe, with cleanup afterward.
 
-## Configuration
-
-| Name | Required | Default | Purpose |
-|---|---|---|---|
-| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
-| `ABX_SERVER_PORT` | no | `9000` | Direct local server startup port. |
-| `WORKSPACE` | no | `/home/user/app` | Existing input/output directory owned by the runtime user. |
-
-Set server process configuration before startup. A prewarmed command server may already be running before create-time shell environment is applied; see [the process-start configuration guide](../docs/python-client-installation.md). The named-command path policy does not constrain other authenticated shell/files APIs.
-
-## Resources
-
-| Resource | Value |
-|---|---|
-| CPU | 2 vCPU, two codec/filter threads |
-| Memory | 2048 MB sandbox; 1 GiB native address-space limit |
-| Port | 9000 |
-| Disk | Platform rootfs; 64 MiB input and per-output limits; remove retained artifacts |
-
-
 ### Native argv interface
 
-Use `transcode_args` for the survey's `args: list[str]` API while retaining the
-published `transcode(input_path, output_name, preset, ...)` contract.
+Use `transcode_args` when you need an explicit `args: list[str]` vector rather than a named preset.
 The list starts with `-i`, one relative workspace input, then output options,
 and ends with one plain `.mp4`, `.wav` or `.flac` filename. It contains3–64
 nonempty strings and at most8192 UTF-8 bytes. Strings containing spaces stay
@@ -112,56 +151,56 @@ Unlisted flags, extra inputs, arbitrary filters, protocols and output paths are
 refused. Final thread/duration/size/no-overwrite/metadata limits are enforced
 by the wrapper and cannot be replaced with user flags.
 
-Using the `client` bound in the Python quick start above:
+Using the uploaded `sample.wav`:
 
-```python
-result = await client.commands.run("transcode_args", args=["-i", "literal file.wav", "-c:a", "flac", "result.flac"])
-assert result["exit_code"] == 0
+```bash
+abx run "$SANDBOX_ID" transcode_args --json-args '{"args":["-i","sample.wav","-c:a","flac","argv-result.flac"],"max_seconds":5}'
 ```
 
 ```json
-{"args":["-i","uploaded.wav","-c:a","flac","result.flac"],"max_seconds":5}
+{"args":["-i","sample.wav","-c:a","flac","argv-result.flac"],"max_seconds":5}
 ```
 
 POST that direct object to `/commands/transcode_args`. Accepted FFmpeg failures
 return200 with its actual nonzero `exit_code`, bounded `stdout` and `stderr`,
 and no published partial artifact. Guard, probe, timeout and output-limit
-failures remain500; invalid argument types/missing args return400. Preset
-conversion keeps its existing failure behavior. Successful argv calls return
+failures remain500; invalid argument types/missing args return400. Preset conversion raises an execution error on FFmpeg failure. Successful argv calls return
 artifact fields alongside actual native process results. Remove outputs after
 download. The model-free native smoke is `media_args_smoke`.
 
-The published server package preserves native string-array arguments. Rebuild the image after changing its declared server dependency.
+## Configuration
 
-## Verified
+| Name | Required | Default | Purpose |
+|---|---|---|---|
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
+| `ABX_SERVER_PORT` | no | `9000` | Direct local server startup port. |
+| `WORKSPACE` | no | `/home/user/app` | Existing input/output directory owned by the runtime user. |
 
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
+Set server process configuration before startup. A prewarmed command server may already be running before create-time shell environment is applied; see [the process-start configuration guide](../docs/python-client-installation.md). The named-command path policy does not constrain other authenticated shell/files APIs.
 
-## Historical1.0 verification
+The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
 
-Additional exact-version real steps passed on2026-10-20 using actual Python `Sandbox.create`, CLI/SDK named smoke and independently confirmed sandbox/template cleanup: [SDK-created step receipt](evidence/express-2026-10-20.json). This separately establishes the creation route; the complete workflow receipts below keep their original scope.
+```bash
+# Replace <returned-path> with output_path from the result
+abx download "$SANDBOX_ID" '<returned-path>' ./sample.flac
+abx kill "$SANDBOX_ID"
+```
 
+`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
-| Provider | Executed scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | steps build, official READY, CLI + SDK smoke, independent owned cleanup readback | [2026-10-19](evidence/express-2026-10-19.json) |
-| alicloud-express | complete media HTTP21 assertions, actual steps READY/CLI/SDK and independent cleanup | [full run](evidence/full-http-steps-2026-10-19T184323Z.json), [provenance](evidence/steps-full-http-2026-10-19T184323Z.json) |
+## Resources
 
-This historical run used the pinned e2cb27e server-source override matching the then-current image CI injection; the receipt records exact versions, input hashes and build mode. Only verification metadata changes here; the template stays experimental. Dockerfile L1, full product and real-model acceptance are assessed by their separate records and cannot be inferred from basic smoke.
+| Resource | Value |
+|---|---|
+| CPU | 2 vCPU, two codec/filter threads |
+| Memory | 2048 MB sandbox; 1 GiB native address-space limit |
+| Port | 9000 |
+| Disk | Platform rootfs; 64 MiB input and per-output limits; remove retained artifacts |
 
-## Secondary development
-
-Read [the design](../docs/design/media-tools.md), run `python3 scripts/check_template.py media-tools`, `python3 -m pytest -q media-tools/test_commands.py media-tools/test_http.py`, and the repository local E2E runner. The codec regressions require the actual pinned Debian tools and do not mock native execution. `E2E_REQUIRE_MEDIA=1` makes the HTTP suite fail if the pinned engine is unavailable; otherwise absence is explicitly SKIP and does not prove media functionality. It uploads random PCM, downloads converted artifacts, checks full hashes, independently parses the WAV roundtrip and compares every sample, then deletes its own files.
-
-The Linux process runner uses `waitid(WNOWAIT)` to keep its owned group identity until group kill and leader reap, including successful and nonzero leaders with redirected descendants. A deliberately detached `setsid` process or server SIGKILL is outside this cleanup guarantee; destroying the sandbox is the final isolation boundary.
-
-### Agent Sandbox platform steps
-
-From a repository checkout, `python scripts/run_steps_e2e.py media-tools` builds and verifies this template through real Express platform steps. See [preparation, credentials, exact build provenance and cleanup](../docs/platform-steps.md). A model-free step smoke does not establish L3.
 
 ## Contributing
 
-[CONTRIBUTING.md](../CONTRIBUTING.md), [template specification](../docs/template-spec.md), [Issue 58](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/58).
+To improve this template, see the [contribution guide](../CONTRIBUTING.md), [template specification](../docs/template-spec.md) and [design notes](../docs/design/media-tools.md).
 
 ## Issues
 

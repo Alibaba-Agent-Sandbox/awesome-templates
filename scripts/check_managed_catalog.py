@@ -74,7 +74,7 @@ def check(root=ROOT):
                     continue
                 actual = [line[3:].strip() for line in file.read_text().splitlines() if line.startswith('## ')]
                 if tuple(actual) != headings:
-                    fail('managed README requires the ordered 14 sections')
+                    fail('managed README requires the ordered 12 consumer sections')
         history = row['historical_evidence']
         if not isinstance(history, list) or not history or not all(isinstance(item, str) for item in history):
             fail('historical_evidence must list original receipt paths')

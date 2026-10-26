@@ -1,36 +1,68 @@
-# Using and verifying templates
+# Using templates
 
-Read this page for setup and the calling contract, then use the selected
-template's README for its exact command names, arguments, runtime limits and
-examples. The [specification](template-spec.md) owns development and acceptance
-rules; [source-runtime diagnostics](express-source-runtime.md) explain a
-separate check that does not establish image deployment acceptance.
+[中文](using-templates.zh-CN.md)
+
+Choose a template, configure the sandbox platform and any model service it needs, launch once, then call its named commands. Each template README supplies its exact parameters, model/authentication setup and a useful task through CLI, Python and HTTP.
 
 ## Installation
 
-Install the current CLI 0.5.6. The examples below use CLI 0.5.6 and Python client 0.4.0a6; the Python package is a preview and is pinned explicitly. Node 22+ is recommended for terminal support.
+Install published CLI 0.5.6 and Python client 0.4.0a6. Use a virtual environment for Python. The Python distribution is a preview, so the version is explicit. Node 20+ is required for npm installation; Node 22+ is recommended for terminal support.
 
 ```bash
 npm install -g @agent-sandbox/cli@0.5.6 --registry=https://registry.npmjs.org
+python3 -m venv .venv
+. .venv/bin/activate
 python3 -m pip install --index-url https://pypi.org/simple 'agent-sandbox-client==0.4.0a6'
 abx --version
 ```
 
-For standalone binaries, follow the [CLI installation guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/guide/binary-installation.md). Docker and a writable image registry are needed to build source templates. Configure the selected provider using its guide; keep credentials in environment variables or the provider configuration.
+For the standalone binary, use the [CLI installation guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/guide/binary-installation.md). If `abx` is not on PATH, apply the PATH instruction printed by the installer.
+
+### Configure the sandbox platform
+
+For an Express **source** template, prepare Docker, an ACR namespace and the build account permissions, then configure:
+
+```bash
+export ABX_PROVIDER=alicloud-express
+export ABX_SANDBOX_API_KEY="<sandbox-platform-api-key>"
+export ALIBABA_CLOUD_REGION_ID=cn-hangzhou
+export ALICLOUD_ACCESS_KEY_ID="<build-access-key-id>"
+export ALICLOUD_ACCESS_KEY_SECRET="<build-access-key-secret>"
+export ACR_NAMESPACE="<your-acr-namespace>"
+```
+
+The default control-plane URL and data-plane domain are derived from the selected region. Override `ABX_SANDBOX_BASE_URL` and `ABX_SANDBOX_DOMAIN` only when the platform's instructions require a different endpoint or gateway. The Sandbox API key must match that platform/region. See the [CLI configuration reference](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/reference/configuration.md) for the exact account and ACR settings. These are platform credentials, not model credentials.
+
+For OpenSandbox, first follow its [provider setup](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md), then set `ABX_PROVIDER=opensandbox` for both launch and every later operation. Its server/container registry prerequisites differ from Express. The four managed entries have their own README and backend; starting an existing platform template does not require rebuilding a source recipe.
+
+### Configure the application and model
+
+Set `ABX_SERVER_TOKEN` to an independent private application token before source launch. Set the chosen template's documented model API key, endpoint, model selector and any required account login at the same time. A sandbox API key cannot authenticate a model API, and a model key cannot authenticate the sandbox platform.
+
+Templates use different upstream configuration. Do not assume every tool consumes `ABX_LLM_*`, supports arbitrary OpenAI-compatible endpoints, or inherits a login from your machine. Non-model tools do not need a model key. Commercial account login, API-key login and optional web-service passwords are described in the applicable README.
+
+In CLI 0.5.6, declared **empty** template env values can be filled from the host environment. A non-empty manifest value wins over a same-name host export. Use a command's documented model argument to select another model; when a setting has no runtime argument, edit the configuration in your own local template and launch that directory. Only declared runtime settings are carried through this path. Changing exports after launch does not reconfigure an already running process.
 
 ## CLI, SDK and HTTP
 
-For Express, configure its Sandbox API key, base URL/domain, control-plane credentials and ACR namespace. Set `ABX_SERVER_TOKEN` securely before launching the application:
+The `python-hello` template below needs no model service. The example's credential and ID placeholders must be replaced before use; set `ABX_PROVIDER` consistently as described above.
 
 ```bash
-abx --provider alicloud-express template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello --yes
-abx sandbox command list <sandbox-id>
-abx run <sandbox-id> hello --arg name=Ada
+export ABX_SERVER_TOKEN="<independent-application-token>"
+export ABX_HTTP_TIMEOUT=660
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello --sandbox-timeout 1800 --yes
+export ABX_SANDBOX_ID="<returned-sandbox-id>"
+abx sandbox command list "$ABX_SANDBOX_ID"
+abx run "$ABX_SANDBOX_ID" hello --arg name=Ada
 ```
 
-Launch returns the sandbox ID and prepared template reference. The CLI starts the application for this instance. `abx run` calls a named template command; `abx exec` runs a process. Use `--json-args` for numeric/boolean arguments.
+Expected result: `Hello, Ada!`. Launch prepares the template and starts its declared application; it returns the sandbox ID and references to retained prepared resources. `abx run` calls named commands, while `abx exec` executes a process. Numeric and boolean named-command arguments use `--json-args`.
 
-Connect the Python SDK to that running instance. Creating another instance from its template reference requires its own application startup; it does not inherit the first instance's running process.
+The three timeout controls serve different purposes: `--timeout` is the build deadline; `--sandbox-timeout` is the instance lifetime; `ABX_HTTP_TIMEOUT` is the CLI HTTP wait. A model command's own execution limit is separate. For a 600-second coding task, an 1800-second instance and a 660-second client wait avoid the default 300-second instance/30-second SDK wait expiring first.
+
+### Python SDK
+
+Save and run this complete example in the configured Python environment. Connect to the already running sandbox; do not create a second instance and expect the first instance's application to be present.
 
 ```python
 import asyncio
@@ -38,9 +70,13 @@ import os
 from agent_sandbox import ProviderSandbox
 
 async def main():
-    sb = await ProviderSandbox.connect("<sandbox-id>", provider="alicloud-express")
+    sb = await ProviderSandbox.connect(
+        os.environ["ABX_SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
     try:
-        client = await sb.application_client(9000, token=os.environ["ABX_SERVER_TOKEN"])
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=660
+        )
         try:
             print(await client.commands.run("hello", name="Ada"))
         finally:
@@ -51,7 +87,11 @@ async def main():
 asyncio.run(main())
 ```
 
-For a direct HTTP POST, resolve the provider endpoint and its gateway headers through the SDK. This keeps any gateway path and query parameters:
+`client.commands.run` calls the template application. `sb.commands.run` executes a process. Both `client.aclose()` and `sb.close()` release client resources; neither deletes the sandbox. Use the selected template's actual command, parameters, port and client wait.
+
+### HTTP POST
+
+Save and run this example to call `POST /commands/hello` directly. It resolves the provider URL and gateway headers rather than assuming that every platform exposes a bare host/port:
 
 ```python
 import asyncio
@@ -60,90 +100,58 @@ import httpx
 from agent_sandbox import ProviderSandbox
 
 async def main():
-    sb = await ProviderSandbox.connect("<sandbox-id>", provider="alicloud-express")
+    sb = await ProviderSandbox.connect(
+        os.environ["ABX_SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
     try:
         endpoint, gateway_headers = await sb.network.resolve(9000)
         headers = dict(gateway_headers)
-        if any(key.lower() == "authorization" for key in headers):
-            raise ValueError("Keep the gateway Authorization header; do not replace it")
+        occupied = {key.lower() for key in headers}
         token = os.environ["ABX_SERVER_TOKEN"]
-        headers["Authorization"] = "Bearer " + token
-        if not any(key.lower() == "x-access-token" for key in headers):
+        if "authorization" not in occupied:
+            headers["Authorization"] = "Bearer " + token
+        if "x-access-token" not in occupied:
             headers["X-Access-Token"] = token
+        if {"authorization", "x-access-token"}.issubset(occupied):
+            raise ValueError("Gateway occupies both application authentication headers")
         url = httpx.URL(endpoint)
         url = url.copy_with(path=url.path.rstrip("/") + "/commands/hello")
-        async with httpx.AsyncClient(timeout=180) as http:
+        async with httpx.AsyncClient(timeout=660) as http:
             response = await http.post(url, headers=headers, json={"name": "Ada"})
             response.raise_for_status()
-            print(response.json())  # {"result": "Hello, Ada!"}
+            print(response.json())
     finally:
         await sb.close()
 
 asyncio.run(main())
 ```
 
-Arguments are the direct JSON body. The existing application `X-Access-Token` header also works through the OpenSandbox server proxy, which strips Bearer authorization. The CLI and Python application client add it automatically when that header is unoccupied. A provider gateway may require its own headers: preserve those values, including an existing gateway `X-Access-Token`. A failed authentication is an error, never a reason to retry anonymously.
+Expected response: `{"result":"Hello, Ada!"}`. The command arguments are the direct JSON body. Preserve gateway headers and any URL path/query. The application's `X-Access-Token` header also works through OpenSandbox's proxy, which removes Bearer authorization. If the gateway already uses Authorization, the example keeps it and uses the free application token header. A gateway occupying both supported application-authentication headers needs a compatible route; never replace its credentials or retry anonymously.
 
-When finished, delete the instance with `abx kill <sandbox-id>`. The launch journal identifies the prepared template and image retained for reuse. Delete those exact owned resources separately when they are no longer needed. Connecting a client does not transfer ownership or automatically delete the instance.
+For another template, change the command path and JSON arguments to its documented task. Set the client wait long enough for that task. A client timeout is not proof that the remote task stopped.
 
-For OpenSandbox, install/configure the [provider](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md) and select `--provider opensandbox` on every CLI call and `provider="opensandbox"` when connecting Python. The CLI prepares the default source recipe directly. A template with a declared portable profile may also be built with explicit `--build-profile portable`.
+### Export files and clean up
+
+Use `abx download "$ABX_SANDBOX_ID" /remote/path ./local-file` or `await sb.files.read_bytes("/remote/path")` before removing the sandbox. Only delete the instance owned by your task:
+
+```bash
+abx kill "$ABX_SANDBOX_ID"
+```
+
+Prepared templates/images may remain for reuse. When no longer needed, remove the exact owned resources reported by launch using the selected platform's management tools. Do not delete shared base templates or other users' resources.
 
 ## Evidence and providers
 
-[Current published CLI 0.5.6 / SDK 0.4.0a6 acceptance](../.agents/evidence/verify/2026-10-25-public056-template-acceptance.md) records 46 OpenSandbox source passes and three applicable managed passes. It keeps 46 blocked default Express source paths, five foreign-managed NOT_APPLICABLE cells, the frozen native 44 PASS / 2 FAIL batch and focused controls separate. Historical results below retain their original scope.
-
-| Evidence | What it proves | What it cannot prove |
-|---|---|---|
-| Static checks | YAML, index and documentation conformance | Executable product behavior |
-| L0 local HTTP | Started server and command assertions | Image pins, cloud deploy or a skipped model call |
-| L1 actual image build | Build and declared keyless image checks | Production CLI deploy wrapper or real cloud |
-| Source-runtime cloud diagnostic | Exact uploaded source/dependencies on an existing base | Changed Dockerfile or template deployment |
-| L2 canonical deploy | Docker/ACR deploy, READY, new sandbox, external CLI/SDK smoke and owned cleanup | Every HTTP command or real-model coding unless explicitly tested |
-| L3 product/model | The recorded task and independently checked result | A different template source/version or all upstream product behavior |
-| L4 another provider | The actual recorded provider and workload | Unconfigured vendors |
-
-The [2026-10-22 matrix](../.agents/evidence/verify/2026-10-22-source-image-backend-matrix.json) records 46 source templates passing Express image/HTTP and OpenSandbox image/HTTP checks. [Steps results](../.agents/evidence/verify/2026-10-22-current-steps-after-backend-qualification.json) record the separate Express steps route. These are real historical tests, with the original inputs and calling paths. OpenSandbox used sandbox-local/bridge HTTP; those results do not certify later host `template launch` changes or unrun model tasks.
-
-The [2026-10-24 public launch matrix](../.agents/evidence/verify/2026-10-24-public-template-matrix.md) passed all 46 source templates on Express and default direct OpenSandbox (92 cases, 438 CLI/Python/HTTP smoke calls), with owned cleanup. It used public CLI 0.4.16 and host Python packages 0.3.1a5 with fixed template/provider checkouts; it is not a rerun on CLI 0.4.17. [Remote Git journeys](../.agents/evidence/verify/2026-10-24-public-git-journeys.md) were tested separately. These smoke results do not certify real-model tasks, PTY or native interpreter sessions. The four managed catalog entries are separate from the 46 source recipes; their [default execution and upstream native-session evidence](../.agents/evidence/verify/2026-10-24-managed-template-usage.md) states the exact tested paths.
-
-A missing record means no matching test record, not an unsupported platform. Read the date, template input, provider, build method and executed checks; do not infer terminal or interpreter coverage from a command API pass. Historical receipts remain unchanged.
+Maintainer test procedures and dated results live in [public launch testing](public-launch-testing.md) and the [engineering index](../.agents/README.md), rather than user template READMEs. A historical run describes its recorded inputs; it does not promise every model, terminal or interpreter feature.
 
 ## Documentation and catalog ownership
 
-- Each template README: CLI/SDK/HTTP examples, parameters, configuration,
-  limitations, verified evidence and extension instructions.
-- `docs/design/<name>.md`: design rationale and feasibility.
-- `template-spec.md`: normative development/acceptance rules.
-- `python-client-installation.md`: published client installation and its paired server dependency.
-- `.agents/`: engineering decisions and dated verification, not user API docs.
-- `awesome-templates.yaml`: template source catalog, consumed by CLI and the
-  [registry repository](https://github.com/Alibaba-Agent-Sandbox/registry).
-
-The old `registry/index.html` and `registry/catalog.json` in this repository had
-no CLI, SDK, registry-ingestion or CI consumer and carried stale provider
-claims. They are retired. Website UI originates in the
-[website repository](https://github.com/Alibaba-Agent-Sandbox/website), while
-registry builds its public catalog from source repositories. Do not copy either
-frontend or generated catalog back here.
-
-[中文](using-templates.zh-CN.md)
-
-Local acceptance cleanup preserves Python verifier sources, including `e2e_sdk.py`, while removing generated artifacts and caches. The SDK controller must remain available for subsequent acceptance.
-
+- Template READMEs: tasks, installation, configuration, command parameters, limitations, output and cleanup.
+- `docs/design/<name>.md` and [CONTRIBUTING](../CONTRIBUTING.md): implementation and authoring.
+- `template-spec.md`: normative development rules.
+- `.agents/` and template-local evidence: engineering decisions and dated verification.
+- `awesome-templates.yaml`: the source catalog consumed by the CLI and [Registry](https://github.com/Alibaba-Agent-Sandbox/registry).
 
 ## Client entry compatibility
 
-Use the public `from agent_sandbox import ProviderSandbox` entry for the provider
-and application examples on this page. Its asynchronous `application_client`
-connects to an already running service. The standard `Sandbox` / `AsyncSandbox`
-interfaces are separate; see the [SDK entry-point guide](https://github.com/Alibaba-Agent-Sandbox/python-sdk/blob/main/README.md).
-
-The current Express entry takes a positional template. This guide and template README examples use the published CLI installed above. Older native builds have different flags; consult the help shipped with that revision.
-
-| Operation | Current Express entry |
-| --- | --- |
-| Scripted create | `abx create <template-id> --detach` |
-| Shell | `abx exec --cwd /tmp <sandbox-id> sh -c 'echo hello'` |
-| Owned cleanup | `abx kill <sandbox-id>` |
-
-Template deploy, named commands through `abx run`, upload and download remain project extensions. Standard create without `--detach` opens a PTY. These documentation corrections do not change template sources or provider acceptance tiers.
+These provider/application examples use `ProviderSandbox`. Standard `Sandbox` / `AsyncSandbox` interpreter interfaces are separate; follow the selected template's instructions and the [SDK entry-point guide](https://github.com/Alibaba-Agent-Sandbox/python-sdk/blob/main/README.md). `abx create <platform-template-id>` selects an existing platform template, whereas source templates use `abx template launch <source-reference>`.

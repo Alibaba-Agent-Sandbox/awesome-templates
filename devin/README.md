@@ -8,51 +8,108 @@ Run the original Cognition Devin CLI3000.11.92 through typed bounded named comma
 
 ## Stack
 
-Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
+The default recipe uses the Alibaba FC generation-2 base, non-root `user`, and the published `agent-sandbox-server==0.4.0a6` package.
 
-Alibaba generation2 Linuxx86_64 base, Python3.13 server, original fixed [official archive](https://static.devin.ai/cli/3000.11.92/devin-3000.11.92-x86_64-unknown-linux.tar.gz), original234files/200878983bytes, compressed67245544bytes. SHA256 `2d829139682e038cf122510f1170eee3d7060bcc7ebf92445cbc5d28c9fbcfa0` was published by the official platform manifest observed2026-10-21; see [inventory](upstream.json). The server package is pinned in the Dockerfile. Build verifies original archive/per-file hashes without executing it; runtime verifies original root-owned files. Original binaries/docs/manpages retain their own terms.
+Original Devin CLI `3000.11.92` for Linux x86_64, with its bundled binaries and notices.
+
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml) · [upstream notice](UPSTREAM-NOTICE.md)
 
 ## Problem solved
 
-Use the real headless program with deterministic installation, explicit permission, private per-call state, bounded output/deadline and owned process cleanup. The historical interactive-login obstacle is handled using the vendor-documented credentials file copied between the user's own machines. That integration is available but authenticated execution is unverified without an account.
+Use an installed tool in an isolated sandbox, submit work through CLI, Python or HTTP, then export the files. Configure model and cloud-sandbox credentials separately.
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
+
+Authenticated coding requires a genuine original Devin `credentials.toml`, created by signing in with the original CLI on a trusted machine. See [Devin CLI](https://docs.devin.ai/work-with-devin/devin-cli) for account setup. There is no invented `DEVIN_API_KEY` or generic model endpoint. `DEVIN_CREDENTIALS_FILE` must name a private file INSIDE the sandbox, outside `WORKSPACE`; a local host pathname is not uploaded automatically. The file is read when a task runs, so upload it after launch using the steps below. Without an authorized account file, setup/version works but coding fails with the native login refusal.
+
+First install the original CLI on your trusted machine following the linked official instructions, then run `devin auth login`. Your Devin Enterprise role must permit CLI access. The [official authentication guide](https://docs.devin.ai/cli/enterprise/devin-auth) places the file at `$XDG_DATA_HOME/devin/credentials.toml`, or `~/.local/share/devin/credentials.toml` when XDG_DATA_HOME is unset, on macOS/Linux; Windows uses `%APPDATA%\devin\credentials.toml`.
+
+Replace every `<...>` placeholder with your own value; use an exact model ID available to your account. Set secrets in your own terminal or secret manager, never in the image, YAML or public logs. Configure these variables **before** launch; later host changes do not reconfigure the running application.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./devin --yes
-abx run <sandbox-id> devin_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export DEVIN_CREDENTIALS_FILE='/home/user/devin-private/credentials.toml'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//devin --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+`--sandbox-timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
+
+Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
+
+After native login on your trusted machine, replace the local pathname below with your own generated credentials.toml; do not print its content:
+
+```bash
+abx exec "$SANDBOX_ID" -- mkdir -p /home/user/devin-private
+abx exec "$SANDBOX_ID" -- chmod 700 /home/user/devin-private
+abx upload "$SANDBOX_ID" "<local-credentials.toml>" /home/user/devin-private/credentials.toml
+abx exec "$SANDBOX_ID" -- chmod 600 /home/user/devin-private/credentials.toml
+```
+
+```bash
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" devin --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","allow_unsafe_tools":true,"cwd":"/home/user/app","command_timeout":300}'
+```
+
+The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/app`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
 
 ```python
-print(await client.commands.run('devin_version'))
-```
+import asyncio
+import os
+from agent_sandbox import ProviderSandbox
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=420
+        )
+        try:
+            print(await client.commands.run('devin', prompt='Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.', allow_unsafe_tools=True, cwd='/home/user/app', command_timeout=300))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/devin_version`, with `Content-Type: application/json` and this direct argument object:
+Use the [direct HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserving gateway headers, URL path/query and the independent application token. Send `POST /commands/devin` with `Content-Type: application/json` and this direct argument object, without an `args` wrapper:
 
 ```json
-{}
+{
+  "prompt": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.",
+  "allow_unsafe_tools": true,
+  "cwd": "/home/user/app",
+  "command_timeout": 300
+}
 ```
 
-Expected response for this check:
+The response is `{"result": ...}`; see the command reference for its actual content type. Model text varies. Set the HTTP wait to at least 420 seconds; the command execution deadline is separate, and disconnecting does not guarantee remote cancellation. Authentication failures return 401, invalid argument types 400, and execution errors an error response. If a result includes `exit_code`, also check that it is zero.
 
-```json
-{"result": "devin 3000.11.92 (7f4e64980e22)"}
+### Export files and cleanup
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
 ```
 
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
+
+`close()`/`aclose()` only close client connections; they do not delete the sandbox. Prepared templates/images in the launch journal can remain for reuse; remove only your own exact resources when no longer needed.
 
 ## Command reference
 
@@ -63,11 +120,7 @@ Expected response for this check:
 | devin_setup_check | none | mode/installed/pinned_version/credentials_file_set/requires_unsafe_optin/vendor_authentication_verified/compatible_model_fallback; presence only |
 | devin | prompt:string required; cwd:string empty; command_timeout:int300; allow_unsafe_tools:boolFalse; model:string empty | Buffered original final stdout; explicit opt-in permits native file/tool actions |
 
-prompt:1..32768UTF8bytes, nonblank/noNUL. cwd:existing resolved directory inside WORKSPACE, at most4096UTF8bytes/noNUL; empty chooses root. command_timeout:integer1..600seconds, booleans rejected. allow_unsafe_tools must be exactTrue. model:empty uses vendor default; otherwise up to200ASCII `[A-Za-z0-9_.:/-]` characters starting alphanumeric. No model availability is inferred. Native `.devin` directories/symlinks in cwd or ancestors are refused unchanged so project config cannot replace the fixed private profile.
-
-Fixed original argv: `--config <private-json> --permission-mode dangerous --respect-workspace-trust false [--model <model>] --print <literal-prompt>`, with project cwd. Config disables updates/subagents/imports from other agents; private HOME/config/data/cache/TMP isolates user state. Original dangerous mode uses the owned outer sandbox; no nested sandbox/auth-bypass/cloud mode is enabled.
-
-Success requires original exit0 and nonempty stdout, returning stdout, empty stderr, exit_code0, native_completed:true, native_version, archive_sha256, permission_profile:explicit-owned-sandbox-bypass and requested_model. This original version's print mode is plain text, so native_completed records process completion only; an actual code/artifact/model result needs the independent remote controller. Nonzero/empty/timeout/overflow is an error; no partial success. No arbitrary extra argv or subprocess shell interpolation.
+Named-command results are buffered rather than streamed. `cwd` must be an existing directory satisfying the template's path constraints. Editing/tool permission allows model actions with the sandbox user's authority. Client disconnect is not a cancellation mechanism. Model calls are serialized; overlapping requests fail busy. Cleanup can extend response time; the examples leave an HTTP waiting margin.
 
 ## Configuration
 
@@ -83,25 +136,11 @@ Each stdout/stderr stream is bounded256KiB; command1..600seconds plus up to90sec
 
 ## Resources
 
-Linuxx86_64 only, nonroot user,2vCPU/4096MB/port9000; build enforces rootfs<=8GiB. Original package200.9MB, compressed67.3MB. No KVM/Docker/GPU/desktop requirement is claimed. Account execution needs authorized vendor egress/account/CLI role. PeakRSS/authenticated throughput, other architectures/providers, interactive/resume/cloud/ACP/MCP/plugins/delegation remain unverified.
-
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Secondary development
-
-```bash
-python -m pytest -q devin/test_commands.py devin/test_controller.py devin/test_install.py
-python scripts/check_template.py devin --strict
-python scripts/check_docs.py
-```
-
-Keep original bytes/notices, exact manifest digest, explicit permissions, input credential isolation and cleanup. Publish all changed COPY/helper source before immutable step preparation; generic300MiB and15000wire limits remain. Full external controller requires actual original no-account HTTP+SDK refusal. With a genuine account, explicitly opt into the owned-remote coding controller: existing source edit, unchanged original3tests, report/exact nonce,3original+4held-outs/fresh post-return ACK. Generated code never executes on the operator.
+2 vCPU, 4096 MB RAM, application port 9000, non-root `user`. Working directory: `/home/user/app`. Disk capacity and lifetime depend on the selected platform. Model tasks require outbound access to the configured model service and incur that service's charges. This pinned installation targets Linux x86_64.
 
 ## Contributing
 
-Follow [CONTRIBUTING](../CONTRIBUTING.md), [project standards](../docs/project-standards.md), [documentation standard](../docs/documentation-standards.md) and [specification](../docs/template-spec.md). Keep standalone source, typed contract, bilingual docs/design/catalog and indexed actual evidence consistent. Required latest-head CI/review and normal pinned merge apply.
+To develop the template, read [CONTRIBUTING](../CONTRIBUTING.md) and the [design](../docs/design/devin.md).
 
 ## Issues
 

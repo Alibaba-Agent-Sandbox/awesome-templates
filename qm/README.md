@@ -1,5 +1,7 @@
 # qm
 
+[中文](README.zh-CN.md)
+
 ## What it does
 
 Run unchanged original QM0.1.0 exported Pi harness and original tool context on one owned Express computer, using an authored backend built on the real Agent Sandbox Node.js HTTP SDK. Coding uses an explicitly approved compatible model. Original full multiplayer core/web/Slack/Postgres durability/cron/subscription features are not started or qualified. Original default Docker backend is not used. This is a bounded original-library integration, not a shell program named qm or a replacement agent. [Original source](https://github.com/yc-software/qm/tree/deef9b8b1e2b85bd4166dd833604bb31bcb8e255).
@@ -12,45 +14,89 @@ Alibaba generation2 basev0.0.49/Linuxx64/Python3.13. SHA256-pinned original Node
 
 ## Problem solved
 
-Run genuine exported original QM functionality with actual SDK-backed tools without nested Docker or cloud credentials in model tools. Native package/source/import checks, SDK round trips and actual model file/task acceptance are separate gates. The Node SDK is an in-sandbox HTTP client; outer creation/kill belongs to the caller's Python Sandbox SDK. One caller project per backend; attach/provision does not create another cloud VM.
+Run genuine exported original QM functionality with SDK-backed tools without nested Docker or cloud credentials in model tools. The Node SDK is an in-sandbox HTTP client; outer creation/kill belongs to the caller's Python Sandbox SDK. One caller project per backend; attach/provision does not create another cloud VM.
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+CLI, SDK and HTTP are alternative ways to use the same application. Choose one for the task. Examples may write files, create projects or start services; do not repeat the full example on the same instance without cleaning its previous outputs.
+
+Install the CLI/Python SDK and configure your platform with the [usage guide](../docs/using-templates.md#installation). The platform API key creates sandboxes; `ABX_SERVER_TOKEN` independently protects this template application. Run the following in your own terminal; cloning this repository is unnecessary.
+
+Fill in model settings before launch: the API key, endpoint and model ID must belong to the same model service and region. `https://model.example.invalid/v1` is a placeholder; replace it with your vendor API base, not a web chat URL. Use a model ID actually available at that endpoint.
+
+This entry uses a model API key: no browser OAuth login is required, and your local logged-in account is not imported. See Configuration for protocol requirements. This template uses **Chat Completions**; an “OpenAI-compatible” label alone does not establish support for that API.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./qm --yes
-abx run <sandbox-id> qm_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export QM_MODEL_API_KEY='<your-model-api-key>'
+export QM_MODEL_BASE_URL='https://model.example.invalid/v1'
+export QM_MODEL='<your-model-id>'
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//qm --sandbox-timeout 1800 --yes
+# Paste the sandbox ID from the launch output
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+```bash
+abx run "$SANDBOX_ID" qm --json-args '{"prompt":"Create hello.py in the current project. It must print Hello from QM. Run it and report the output.","command_timeout":300}'
+```
+
+Returns the original QM agent result and real SDK tool-call counters. Read `hello.py` independently to inspect the work.
+
+`--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
+
+For OpenSandbox, set `ABX_PROVIDER=opensandbox` and configure its [provider guide](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md). Keep the same provider selected for subsequent CLI and Python calls.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+
+After launching above and setting `SANDBOX_ID`, save this as `use_template.py` and run `python3 use_template.py`. It connects to the same instance instead of creating another sandbox. Prepare any input file locally as shown above.
 
 ```python
-print(await client.commands.run('qm_version'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            result = await client.commands.run('qm', prompt='Create hello.py in the current project. It must print Hello from QM. Run it and report the output.', command_timeout=300)
+            print(result)
+            Path('hello.py').write_bytes(await sb.files.read_bytes('/home/user/app/hello.py'))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+The SDK returns the command value; it unwraps the HTTP `result` envelope. Closing the client does not delete the sandbox.
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/qm_version`, with `Content-Type: application/json` and this direct argument object:
+Resolve port 9000 on the same instance with the [HTTP calling example](../docs/using-templates.md#cli-sdk-and-http). Preserve gateway headers, URL path and query before adding the independent application authentication.
+
+`POST /commands/qm`
 
 ```json
-{}
+{
+  "prompt": "Create hello.py in the current project. It must print Hello from QM. Run it and report the output.",
+  "command_timeout": 300
+}
 ```
 
-Expected response for this check:
-
-```json
-{"result": {"qm_version": "0.1.0", "node_version": "24.16.0", "sdk_version": "0.1.0"}}
-```
-
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Use `Content-Type: application/json` and application authentication as described in the shared guide. The request body is the direct argument object, without an `args` wrapper. Success returns `{"result": ...}` with the value described above. Set the HTTP client wait to 450 seconds, separately from the command execution deadline. Responses are buffered, not event streams. Errors: 400 invalid arguments, 401 authentication, 404 unknown command, 500 execution failure.
 
 ## Command reference
 
@@ -66,6 +112,8 @@ Requests serialize; overlap fails busy. Native process stdout/stderr256KiB each 
 
 ## Configuration
 
+This entry calls compatible Chat Completions. Include the vendor API prefix (often `/v1`) in the base; do not append `/chat/completions`. The model and endpoint must support the original QM tool-calling flow.
+
 | Name | Default / requirement | Meaning |
 | --- | --- | --- |
 | WORKSPACE | /home/user/app | Existing caller project root, captured at startup |
@@ -78,31 +126,22 @@ Requests serialize; overlap fails busy. Native process stdout/stderr256KiB each 
 
 Captured when commands.py loads; read-only setup flags do not prove connectivity. SDK token max8192/noCRLF/NUL; model key max8192/no control characters. Node worker receives configuration by anonymous stdin and no model/cloud/GitHub credentials in its environment. Model/tool child Bash gets a separate minimal environment and private HOME; same-user OS access remains. Private native HOME/cache/settings/model-catalog/temporary workspace mirrors are removed after every call. Literal and JSON-escaped configured keys/bases/tokens are redacted from returned strings. Original QM native Pi builtins are disabled in favor of its original QM tools; no extensions/skills/context files or session children are loaded. Only execute/files read/write approval identities are enabled; no delegation, Slack/email delivery or control service. Caller project/artifacts persist until caller removes them or kills the outer sandbox.
 
-## Resources
-
-Declared2vCPU/2048MB/Linuxx64, port9000, enforced8GiB image rootfs budget. No Docker/KVM/GPU/root capabilities. Actual native dependencies and the bounded Express profile pass below; peak memory was not measured and declared memory is not a workload estimate. Package/source download and SDK endpoint access are needed; coding additionally requires approved model tool calling/egress. No other provider or full multiplayer durability is claimed.
-
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Secondary development
+The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
 
 ```bash
-python -m pytest -q qm-sandbox/test_runtime.py qm-sandbox/test_commands.py
-python -m pytest -q qm/test_terminal.py
-python scripts/check_template.py qm --strict
-python scripts/check_docs.py
-python scripts/run_steps_e2e.py qm --asset-transport oss
+abx download "$SANDBOX_ID" /home/user/app/hello.py ./hello.py
+abx kill "$SANDBOX_ID"
 ```
 
-For original SDK HTTP fixtures, run `python qm-sandbox/prepare_sdk_tests.py /tmp/qm-sdk-tests-<unique-run>`, then `ABX_QM_TEST_SDK_ENTRY=/tmp/qm-sdk-tests-<unique-run>/dist/index.js node --test qm-sandbox/test_adapter.mjs`. Node>=20 suffices for SDK-only unit fixtures; actual original QM requires the pinned Node24.16.0 profile. Without that explicit original SDK build, these HTTP fixture tests are skipped, never a native/backend pass.
+`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
-Original sources/locks/notices remain authoritative. Native workers execute only on a newly owned disposable target for actual acceptance; source-only checks explicitly skip missing native runtime and never opt in to a model. The coding controller requires positive original model/tool and completed SDK counts, preserved original tests, changed source, new report/exact nonce, complete original3plus4held-out post-return cases and fresh ACK. A marker/configuration/version alone is insufficient. Backend acceptance separately checks original tool context/real SDK file/execution and independent target bytes/absence.
+## Resources
+
+2 vCPU, 2048 MB, Linux x64, command port 9000. Runtime needs no nested Docker, KVM, GPU or root capabilities. The image build enforces an 8 GiB rootfs limit. The local SDK service must be reachable; project files and artifacts last for the outer sandbox lifetime. Model execution additionally needs the configured external service and egress.
 
 ## Contributing
 
-Follow [CONTRIBUTING](../CONTRIBUTING.md), project/documentation standards and source-bound evidence rules. Keep both README languages, design, catalog, API, immutable pins and indexed engineering records consistent. Preserve every failure and independently verified resource recovery.
+To improve this template, see the [contribution guide](../CONTRIBUTING.md), [template specification](../docs/template-spec.md) and [design notes](../docs/design/qm.md).
 
 ## Issues
 

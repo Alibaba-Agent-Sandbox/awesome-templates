@@ -22,41 +22,85 @@ Python3.13 兼容：原版 SQLAlchemy1.4.54 无对应 wheel，使用其未修改
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任务。示例可能写入文件、创建项目或启动服务；不要在未清理前对同一实例重复执行整段示例。
+
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，并完成所选平台配置。平台 API Key 用于创建沙箱，`ABX_SERVER_TOKEN` 是独立的模板应用访问口令。以下命令在自己的终端执行，不需要克隆本仓库。
+
+启动前填写下列模型配置：API Key、接入点、模型 ID 必须属于同一个模型服务与地域。`https://model.example.invalid/v1` 是占位符，请替换为供应商给出的 API base，不要填写网页聊天地址。模型 ID 使用该端点实际支持的名称。
+
+此入口使用模型 API Key，无需运行浏览器 OAuth 登录，也不会继承你本机已登录的账号。模型接入要求见“配置”；本模板使用 **Chat Completions**，不能只凭“OpenAI 兼容”字样推断接口可用。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./appworld --yes
-abx run <sandbox-id> appworld_native_smoke --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export APPWORLD_MODEL_API_KEY='<your-model-api-key>'
+export APPWORLD_MODEL_BASE_URL='https://model.example.invalid/v1'
+export APPWORLD_MODEL='<your-model-id>'
+export ABX_HTTP_TIMEOUT=750
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//appworld --sandbox-timeout 1800 --yes
+# 将启动输出中的沙箱 ID 填到这里
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+```bash
+abx run "$SANDBOX_ID" appworld_run --json-args '{"max_steps":30,"command_timeout":600}'
+```
+
+返回选中的训练任务、原生 `score`、`success` 和加密的 `artifact_path`；模型不保证解题成功。
+
+`--sandbox-timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
+
+OpenSandbox 用户将 `ABX_PROVIDER` 改为 `opensandbox`，并按[提供方指南](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)配置；后续 CLI 和 Python 必须继续选择同一个平台。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
+
+在完成上述 CLI 启动、设置 `SANDBOX_ID` 后，将以下保存为 `use_template.py`，执行 `python3 use_template.py`。它连接同一实例，不另建沙箱。对于需要输入的示例，先在本机准备上面的文件。
 
 ```python
-print(await client.commands.run('appworld_native_smoke'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=750
+        )
+        try:
+            result = await client.commands.run('appworld_run', max_steps=30, command_timeout=600)
+            print(result)
+            Path('appworld-result.zip').write_bytes(await sb.files.read_bytes(result['artifact_path']))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。关闭连接不会删除沙箱。
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/appworld_native_smoke`，`Content-Type: application/json`，直接发送以下参数对象：
+按[HTTP 调用示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析同一实例的 9000 端口，保留网关头、URL 路径和查询，再添加独立应用认证。
+
+`POST /commands/appworld_run`
 
 ```json
-{}
+{
+  "max_steps": 30,
+  "command_timeout": 600
+}
 ```
 
-该检查的预期响应：
-
-```json
-{"result": "original AppWorld0.1.3.post1 native API and private cleanup OK"}
-```
-
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+请求头包括 `Content-Type: application/json` 和按共享指南设置的应用认证；请求体是参数对象本身，不套 `args`。成功响应为 `{"result": ...}`，其中结果含义同上。 HTTP 等待时间设为 750 秒；它独立于命令内部的执行时限。结果为缓冲响应，不是事件流。400 为参数错误，401 为认证失败，404 为命令不存在，500 为执行错误。
 
 ## 命令参考
 
@@ -72,6 +116,8 @@ print(await client.commands.run('appworld_native_smoke'))
 
 ## 配置
 
+此入口调用兼容 Chat Completions API，base 包含供应商要求的前缀（常见 `/v1`），不要额外添加 `/chat/completions`。模型和端点须支持 Chat Completions 的 tool calls。
+
 | 变量 | 要求/默认值 | 用途 |
 | --- | --- | --- |
 | APPWORLD_MODEL_API_KEY | 模型必需；空 | 兼容地址密钥，通过匿名 stdin 进入私有内存，不进入 argv/子进程环境 |
@@ -82,21 +128,23 @@ print(await client.commands.run('appworld_native_smoke'))
 
 密钥最长8192字符，不含 CR/LF/NUL。原生子进程不继承操作者云/GitHub/模型令牌；配置由匿名 stdin 传入。保留 AppWorld 原版安全默认值。连接层校验原版 app/API 范围，将 JSON 参数转为 Python 字面量，不接受可执行模型 Python。每回复最多执行16工具调用；17..64项批次逐项反馈拒绝且不执行API，更多则失败。每任务空choices最多3次，回复8192token，最多160原生交互，每交互50API调用，原生执行30秒，模型 HTTP60秒且 SDK 不重试，工具输出有界、模型上下文最大1MiB。
 
+工作目录为 `/home/user/workspace`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
+
+```bash
+# 把 <returned-path> 换成结果中的 artifact_path
+abx download "$SANDBOX_ID" '<returned-path>' ./appworld-result.zip
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
+
 ## 资源
 
-声明2vCPU/2048MB、Linuxx64、9000端口，镜像根目录限制8GiB；无需 Docker/KVM/GPU。每次调用在私有环境复制并解密原版受保护内容，可分发镜像不包含解密的受保护 app/数据。实际依赖及一个原版极速版任务已通过，任务峰值内存尚未测量。模型需要已授权的兼容 Chat Completions/工具调用和网络访问；不声明其他提供方或全任务通过。
-
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 二次开发
-
-同步维护原版 wheel、加密 bundle/数据哈希、版本、manifest 和原版评分器。公开源码 tag66ad8099e12188ece0d3fe45e661dbc01880813b 只表明版本对应，不证明 wheel 可复现构建。只开放训练任务，避免污染保留评测集。新增模型/任务/资源配置均需真实验收。结果使用原版加密格式及上游公开解密机制，不代表保密能力。
+2 vCPU、2048 MB，Linux x64、端口 9000。不需要 Docker、KVM 或 GPU。每次调用初始化私有运行环境；模型任务需要外部兼容服务及网络。仅支持训练任务切片，未提供全 benchmark 排行榜含义。
 
 ## 贡献
 
-遵守[贡献规范](../CONTRIBUTING.md)、[项目规范](../docs/project-standards.md)、[文档规范](../docs/documentation-standards.md)和[设计](../docs/design/appworld.md)，保留历史成功/失败收据和独立清理证据。
+改进模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)、[模板规范](../docs/template-spec.zh-CN.md)和[设计说明](../docs/design/appworld.md)。
 
 ## 问题反馈
 

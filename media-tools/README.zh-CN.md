@@ -1,6 +1,6 @@
 # Media tools
 
-FFmpeg 离线 CPU 媒体转码。[English](README.md)。
+[English](README.md)
 
 ## 做什么
 
@@ -20,41 +20,101 @@ FFmpeg 离线 CPU 媒体转码。[English](README.md)。
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任务。示例可能写入文件、创建项目或启动服务；不要在未清理前对同一实例重复执行整段示例。
+
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，并完成所选平台配置。平台 API Key 用于创建沙箱，`ABX_SERVER_TOKEN` 是独立的模板应用访问口令。以下命令在自己的终端执行，不需要克隆本仓库。
+
+本模板的这些命令不需要模型、模型 endpoint 或模型 API Key。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./media-tools --yes
-abx run <sandbox-id> media_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//media-tools --sandbox-timeout 1800 --yes
+# 将启动输出中的沙箱 ID 填到这里
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+在本机准备输入文件后上传：
+
+`sample.wav` 使用自己的短音频，或在本机用 Python 标准库生成一秒静音：
+
+```python
+import wave
+with wave.open("sample.wav", "wb") as f:
+    f.setnchannels(1)
+    f.setsampwidth(2)
+    f.setframerate(16000)
+    f.writeframes(b"\x00\x00" * 16000)
+```
+
+```bash
+abx upload "$SANDBOX_ID" ./sample.wav /home/user/app/sample.wav
+```
+
+```bash
+abx run "$SANDBOX_ID" transcode --json-args '{"input_path":"sample.wav","output_name":"sample.flac","preset":"flac","max_seconds":5,"command_timeout":60}'
+```
+
+返回转码后 FLAC 的 `output_path`、时长、流信息、`bytes` 和 `sha256`。
+
+`--sandbox-timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
+
+OpenSandbox 用户将 `ABX_PROVIDER` 改为 `opensandbox`，并按[提供方指南](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)配置；后续 CLI 和 Python 必须继续选择同一个平台。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
+
+在完成上述 CLI 启动、设置 `SANDBOX_ID` 后，将以下保存为 `use_template.py`，执行 `python3 use_template.py`。它连接同一实例，不另建沙箱。对于需要输入的示例，先在本机准备上面的文件。
 
 ```python
-print(await client.commands.run('media_version'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            await sb.files.write('/home/user/app/sample.wav', Path('sample.wav').read_bytes())
+            result = await client.commands.run('transcode', input_path='sample.wav', output_name='sample.flac', preset='flac', max_seconds=5, command_timeout=60)
+            print(result)
+            Path('sample.flac').write_bytes(await sb.files.read_bytes(result['output_path']))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。关闭连接不会删除沙箱。
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/media_version`，`Content-Type: application/json`，直接发送以下参数对象：
+按[HTTP 调用示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析同一实例的 9000 端口，保留网关头、URL 路径和查询，再添加独立应用认证。
+
+`POST /commands/transcode`
 
 ```json
-{}
+{
+  "input_path": "sample.wav",
+  "output_name": "sample.flac",
+  "preset": "flac",
+  "max_seconds": 5,
+  "command_timeout": 60
+}
 ```
 
-该检查的预期响应：
-
-```json
-{"result": "FFmpeg 7.1.5-0+deb13u1"}
-```
-
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+请求头包括 `Content-Type: application/json` 和按共享指南设置的应用认证；请求体是参数对象本身，不套 `args`。成功响应为 `{"result": ...}`，其中结果含义同上。 HTTP 等待时间设为 450 秒；它独立于命令内部的执行时限。结果为缓冲响应，不是事件流。400 为参数错误，401 为认证失败，404 为命令不存在，500 为执行错误。
 
 ## 命令参考
 
@@ -73,30 +133,9 @@ print(await client.commands.run('media_version'))
 
 输出为普通文件名：ASCII 字母/数字开头，后接最多 119 个字母/数字/下划线/点/连字符，再接 preset 扩展名。不会覆盖现有文件或软链接。删除输出元数据和章节；产物小于 64 MiB。一次运行一个 probe/转码，并发请求立即失败。子进程只接收 HOME/PATH/可选库路径和固定语言/线程变量；地址空间限制 1 GiB，CPU 软/硬限制 120/121 秒，单文件限制 64 MiB，禁止 core dump。每路诊断最多 1 MiB，错误中不回显原始诊断。输入检查、转码与输出检查共享一个操作 deadline，随后完成清理。
 
-## 配置
-
-| 名称 | 必需 | 默认 | 用途 |
-|---|---|---|---|
-| `ABX_SERVER_TOKEN` | 是 | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
-| `ABX_SERVER_PORT` | 否 | `9000` | 本地直接启动的端口。 |
-| `WORKSPACE` | 否 | `/home/user/app` | 已存在且属于运行用户的输入/输出目录。 |
-
-进程配置需在启动前生效。预热的命令 server 可能先于 create-time shell 环境启动；参见[客户端配置说明](../docs/python-client-installation.md)。命名命令路径限制不会限制其他已授权 shell/files API。
-
-## 资源
-
-| 资源 | 数值 |
-|---|---|
-| CPU | 2 vCPU，编解码/滤镜各限制两线程 |
-| 内存 | 沙箱 2048 MB，原生工具地址空间上限 1 GiB |
-| 端口 | 9000 |
-| 磁盘 | 平台 rootfs，输入及每个产物限 64 MiB；调用方删除保留产物 |
-
-
 ### 原生 argv 接口
 
-调研要求的 `args: list[str]` 通过新增 `transcode_args` 提供，保留已发布的
-`transcode(input_path, output_name, preset, ...)` 兼容接口。
+需要显式 `args: list[str]` 参数向量而非命名预设时，使用 `transcode_args`。
 列表以 `-i`、一个相对工作区输入开头，随后为输出选项，以单个普通
 `.mp4`、`.wav` 或 `.flac` 文件名结尾。共3–64个非空字符串、最多8192个 UTF-8
 字节；含空格的元素保留为一个参数。JSON 编码字符串不是数组，执行前返回400。
@@ -109,54 +148,55 @@ print(await client.commands.run('media_version'))
 成对选项必须带值。拒绝未列出的参数、多输入、任意滤镜、协议及输出路径；
 最终线程、时长、大小、禁止覆盖与元数据限制由 wrapper 强制追加。
 
-使用上面 Python 快启已绑定的 `client`：
+使用已上传的 `sample.wav`：
 
-```python
-result = await client.commands.run("transcode_args", args=["-i", "literal file.wav", "-c:a", "flac", "result.flac"])
-assert result["exit_code"] == 0
+```bash
+abx run "$SANDBOX_ID" transcode_args --json-args '{"args":["-i","sample.wav","-c:a","flac","argv-result.flac"],"max_seconds":5}'
 ```
 
 ```json
-{"args":["-i","uploaded.wav","-c:a","flac","result.flac"],"max_seconds":5}
+{"args":["-i","sample.wav","-c:a","flac","argv-result.flac"],"max_seconds":5}
 ```
 
 将此对象直接 POST 到 `/commands/transcode_args`。已接受的 FFmpeg 原生失败返回
 HTTP200和实际非零 `exit_code`、有限的 `stdout`/`stderr`，不发布部分产物。
 路径、探测、时间和输出限制失败仍返回500；错误参数类型和缺少 args 返回400。
-旧 preset 接口保留原有异常行为。成功时同时返回实际进程结果和产物字段，
+preset 转码在 FFmpeg 失败时返回执行错误。成功时同时返回实际进程结果和产物字段，
 下载后由调用者清理产物。无模型自检命令为 `media_args_smoke`。
 
-已发布的服务包保留原生字符串数组参数。修改声明的服务依赖后，须重新构建镜像。
+## 配置
 
-## 已验证
+| 名称 | 必需 | 默认 | 用途 |
+|---|---|---|---|
+| `ABX_SERVER_TOKEN` | 是 | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| `ABX_SERVER_PORT` | 否 | `9000` | 本地直接启动的端口。 |
+| `WORKSPACE` | 否 | `/home/user/app` | 已存在且属于运行用户的输入/输出目录。 |
 
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
+进程配置需在启动前生效。预热的命令 server 可能先于 create-time shell 环境启动；参见[客户端配置说明](../docs/python-client-installation.md)。命名命令路径限制不会限制其他已授权 shell/files API。
 
-## 1.0历史验证
+工作目录为 `/home/user/app`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
 
-2026-10-20 同版本追加真实 step 复验，实际使用 Python `Sandbox.create`，通过 CLI/SDK 命名 smoke，并独立确认 sandbox/template 清理：[SDK 创建 step 回执](evidence/express-2026-10-20.json)。此记录单独证明创建入口；下方完整工作流回执保留原有范围。
+```bash
+# 把 <returned-path> 换成结果中的 output_path
+abx download "$SANDBOX_ID" '<returned-path>' ./sample.flac
+abx kill "$SANDBOX_ID"
+```
 
+`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
 
-| 提供方 | 已执行范围 | 证据 |
-| --- | --- | --- |
-| alicloud-express | steps 构建、官方 READY、CLI 与 SDK smoke、独立资源清理回查 | [2026-10-19](evidence/express-2026-10-19.json) |
-| alicloud-express | 完整媒体 HTTP21 项断言，真实 steps READY/CLI/SDK 及独立清理确认 | [完整检查](evidence/full-http-steps-2026-10-19T184323Z.json)、[构建证据](evidence/steps-full-http-2026-10-19T184323Z.json) |
+## 资源
 
-该历史记录采用 e2cb27e 服务端来源覆盖，与当时的镜像 CI 注入版本一致；精确版本、输入哈希和构建模式在回执中。这里只更新验证元数据，模板仍为 experimental。Dockerfile L1、完整产品和真实模型验收按各自记录判断，不能从基础 smoke 推断。
+| 资源 | 数值 |
+|---|---|
+| CPU | 2 vCPU，编解码/滤镜各限制两线程 |
+| 内存 | 沙箱 2048 MB，原生工具地址空间上限 1 GiB |
+| 端口 | 9000 |
+| 磁盘 | 平台 rootfs，输入及每个产物限 64 MiB；调用方删除保留产物 |
 
-## 二次开发
-
-阅读[设计](../docs/design/media-tools.md)，运行 `python3 scripts/check_template.py media-tools`、`python3 -m pytest -q media-tools/test_commands.py media-tools/test_http.py` 及仓库本地 E2E runner。codec 回归实际运行固定 Debian 工具，不模拟原生进程。HTTP 验收设置 `E2E_REQUIRE_MEDIA=1`，缺少固定工具就失败；未要求时显式 SKIP，不算媒体功能通过。验收上传随机 PCM、下载产物核对完整哈希，再独立解析 WAV 往返产物并逐样本比对，最后删除自有文件。
-
-Linux runner 使用 `waitid(WNOWAIT)` 固定 owned group 身份，先终止进程组再 reap leader，覆盖成功、非零退出和重定向后代进程。主动 `setsid` 脱离及 server 被 SIGKILL 不在该清理保证内；沙箱销毁是最终隔离边界。
-
-### Agent Sandbox step 构建
-
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py media-tools`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
 
 ## 贡献
 
-[CONTRIBUTING.md](../CONTRIBUTING.md)、[模板规范](../docs/template-spec.md)、[Issue 58](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/58)。
+改进模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)、[模板规范](../docs/template-spec.zh-CN.md)和[设计说明](../docs/design/media-tools.md)。
 
 ## 问题反馈
 

@@ -11,7 +11,7 @@
 2. 默认 Express 构建文件保留阿里云基础镜像、generation 2、start_cmd、ready_cmd、固定依赖和 USER user，不添加 CMD/ENTRYPOINT。独立声明的显式构建方案可采用其他固定基础镜像，但保留原构建文件与非 root 运行契约，由调用方按名称选择，不由 Provider 自动改写。
 3. 在 commands.py 用 server SDK 的 `@command` 注册命令；只在 main guard 内调用 start。
 4. 根据 [设计骨架](docs/design/_TEMPLATE.md) 完成 `docs/design/<name>.md`。
-5. 双语 README 使用规范要求的标题，参数、默认值、错误、CLI/SDK/HTTP 示例和限制一致。
+5. 双语 README 使用规范要求的标题，参数、默认值、错误、CLI/SDK/HTTP 示例和限制一致。README 聚焦安装、配置、有用任务、输出和清理；测试结果、历史验收及开发说明放在工程记录、设计或贡献指南，保留原始证据，真实提供方／模型验收要求不变。
 6. 在 awesome-templates.yaml 添加条目。official 表示本项目维护，community 表示外部维护，experimental 标记开发中；这些标签不认证运行能力。适用组件测试及准确的提供方／入口证据仍是必需，模型功能声明必须有真实模型测试。
 7. 安装已发布的固定 server/client 0.4.0a6 和测试依赖（`python -m pip install -r scripts/requirements-spec.txt`）后，从仓库执行：
 

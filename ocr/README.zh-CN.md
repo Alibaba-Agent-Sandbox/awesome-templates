@@ -1,6 +1,6 @@
 # OCR
 
-使用官方 Tesseract 在 CPU 上识别英文图片。参见 [English](README.md)。
+[English](README.md)
 
 ## 做什么
 
@@ -18,41 +18,81 @@ Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任务。示例可能写入文件、创建项目或启动服务；不要在未清理前对同一实例重复执行整段示例。
+
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，并完成所选平台配置。平台 API Key 用于创建沙箱，`ABX_SERVER_TOKEN` 是独立的模板应用访问口令。以下命令在自己的终端执行，不需要克隆本仓库。
+
+本模板的这些命令不需要模型、模型 endpoint 或模型 API Key。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./ocr --yes
-abx run <sandbox-id> ocr_smoke --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//ocr --sandbox-timeout 1800 --yes
+# 将启动输出中的沙箱 ID 填到这里
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+```bash
+abx run "$SANDBOX_ID" ocr --json-args '{"image_path":"fixtures/sample.png"}'
+```
+
+识别内置样例，`text` 包含 SANDBOX、OCR 和 314159，并返回可导出的 TXT/TSV 路径及哈希。
+
+处理自己的图片时，先 `abx upload "$SANDBOX_ID" ./scan.png /home/user/app/scan.png`，再把 `image_path` 改为 `scan.png`。仅内置英文 `eng` 识别，不是多模态模型，也不声称支持中文 OCR。
+
+`--sandbox-timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
+
+OpenSandbox 用户将 `ABX_PROVIDER` 改为 `opensandbox`，并按[提供方指南](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)配置；后续 CLI 和 Python 必须继续选择同一个平台。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
+
+在完成上述 CLI 启动、设置 `SANDBOX_ID` 后，将以下保存为 `use_template.py`，执行 `python3 use_template.py`。它连接同一实例，不另建沙箱。对于需要输入的示例，先在本机准备上面的文件。
 
 ```python
-print(await client.commands.run('ocr_smoke'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            result = await client.commands.run('ocr', image_path='fixtures/sample.png')
+            print(result)
+            Path('recognized.txt').write_bytes(await sb.files.read_bytes(result['text_path']))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。关闭连接不会删除沙箱。
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/ocr_smoke`，`Content-Type: application/json`，直接发送以下参数对象：
+按[HTTP 调用示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析同一实例的 9000 端口，保留网关头、URL 路径和查询，再添加独立应用认证。
+
+`POST /commands/ocr`
 
 ```json
-{}
+{
+  "image_path": "fixtures/sample.png"
+}
 ```
 
-该检查的预期响应：
-
-```json
-{"result": "Tesseract image/text/TSV artifacts OK"}
-```
-
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+请求头包括 `Content-Type: application/json` 和按共享指南设置的应用认证；请求体是参数对象本身，不套 `args`。成功响应为 `{"result": ...}`，其中结果含义同上。 HTTP 等待时间设为 450 秒；它独立于命令内部的执行时限。结果为缓冲响应，不是事件流。400 为参数错误，401 为认证失败，404 为命令不存在，500 为执行错误。
 
 ## 命令参考
 
@@ -79,6 +119,16 @@ print(await client.commands.run('ocr_smoke'))
 
 后两项仅用于本机诊断，不是命令参数。子进程只接收原 HOME/PATH、可选动态库路径和固定 locale/线程设置，不转发云端或模型凭据。通用 shell/files API 和运维配置需要独立控制访问。
 
+工作目录为 `/home/user/app`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
+
+```bash
+# 把 <returned-path> 换成结果中的 text_path
+abx download "$SANDBOX_ID" '<returned-path>' ./recognized.txt
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
+
 ## 资源
 
 | 资源 | 值 |
@@ -88,33 +138,9 @@ print(await client.commands.run('ocr_smoke'))
 | 端口 | 9000 |
 | 磁盘 | 平台 rootfs；调用者清理保留的结果目录 |
 
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 历史验收
-
-| Provider | Scope | Evidence |
-| --- | --- | --- |
-| alicloud-express | Actual CI image, official READY, CLI/SDK, full HTTP19 PASS/0 SKIP and independent sandbox/template/registry cleanup | [2026-10-19](evidence/express-2026-10-19.json) |
-
-当前1vCPU/1024MB配置已通过真实极速版完整验收，包括随机数字图片、原图字节不变、TXT/TSV下载及独立内容/哈希/像素边界检查、空白负例和所有权清理。[完整记录](evidence/image-http-2026-10-19T181012Z.json)。较早2vCPU/1GB配置被平台拒绝及本机控制器缺少Pillow的失败保留，均不重标为通过。
-
-源码回归实际使用 Tesseract 5.5.0 / Pillow 11.3.0，27 项通过。source HTTP 验证 19 通过、0 失败、0 跳过，包括独立随机数字图片、下载 TXT/TSV 后核对哈希/文字/置信度/坐标，以及空白图片负控。这些是源码运行结果。实际镜像 L1、补充 changed-image Express 验证仍待执行；正式 `abx template deploy` / `scripts/express_e2e.py` L2 未执行。`tested_on` 保持空，目录状态为 experimental。详见[验证记录](../.agents/evidence/verify/2026-10-16-ocr-runtime.md)。
-
-## 二次开发
-
-运行 `python3 scripts/check_template.py ocr --strict` 和本目录两个 pytest 文件。`OCR_TEST_REAL=1` 开启真实引擎回归；实际验收必须设置 `E2E_REQUIRE_OCR=1`，缺失依赖应失败而非跳过。修改时保留独立 artifact 下载验证、原图不变和空白负控。语言、PDF、批量和分段模式扩展需独立设计与测试。见[设计](../docs/design/ocr.md)。
-
-Linux 进程管理通过 `waitid(WNOWAIT)` 保留 leader 身份，持续排空有界管道，在成功、非零退出、超时或 Python 取消后先杀自有进程组再 reap。主动 `setsid` 逃离不在该进程组保证内；服务器被 SIGKILL 时无法执行 Python 清理。最终隔离边界是整个沙箱销毁。
-
-### Agent Sandbox step 构建
-
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py ocr --timeout 1200`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。公开 runner 执行 CLI/SDK fixture smoke；另一完整 HTTP 控制器在 READY 后通过了全部 19 项断言，见[实际执行步骤](../.agents/evidence/verify/2026-10-20-ocr-step-acceptance.md)。此原生 OCR 任务不需要模型。
-
 ## 贡献
 
-[贡献指南](../CONTRIBUTING.md)、[模板规范](../docs/template-spec.md)、[Issue 57](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/57)。
+改进模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)、[模板规范](../docs/template-spec.zh-CN.md)和[设计说明](../docs/design/ocr.md)。
 
 ## 问题反馈
 

@@ -1,5 +1,7 @@
 # muse
 
+[中文](README.zh-CN.md)
+
 ## What it does
 
 Run the unchanged official Meta Muse Code1.4.11-R6667.1 native headless agent, original miniswe tools and native runtime records on one owned Express computer. Coding uses an explicitly configured compatible Responses model. The authored local relay supplies the selected model catalogue and keeps the upstream key out of native/tool environments; Responses requests and streams pass unchanged. This is the original Muse binary, not a same-named substitute. [Original documentation](https://dev.meta.ai/docs/muse-code).
@@ -8,7 +10,7 @@ Run the unchanged official Meta Muse Code1.4.11-R6667.1 native headless agent, o
 
 Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
-Alibaba generation2 basev0.0.49/Linuxx64/Python3.13, root-owned original native ELF384809176bytes with its published SHA256, Python stdlib relay/process controls, published server package 0.4.0a6. No new Python/Node dependencies. [Dockerfile](Dockerfile), [provenance](upstream.json), [upstream notice](UPSTREAM-NOTICE.md), [design](../docs/design/muse.md). The template source license does not relicense the original upstream artifact. A task-owned local gzip cache can be rehashed and streamed to private OSS without a second384.8MB operator disk copy; the target still checks unchanged original bytes.
+Alibaba generation2 basev0.0.49/Linuxx64/Python3.13, root-owned original native ELF384809176bytes with its published SHA256, Python stdlib relay/process controls, published server package 0.4.0a6. No new Python/Node dependencies. [Dockerfile](Dockerfile), [provenance](upstream.json), [upstream notice](UPSTREAM-NOTICE.md), [design](../docs/design/muse.md). The template source license does not relicense the original upstream artifact.
 
 ## Problem solved
 
@@ -16,41 +18,85 @@ Provide genuine original Muse file/tool execution through named SDK/HTTP command
 
 ## Quick start (CLI)
 
-Follow the [usage guide](../docs/using-templates.md#installation) to install the clients, configure the provider and set an independent `ABX_SERVER_TOKEN`. From this repository's root, launch the application and retain its sandbox ID. Replace `<sandbox-id>` below with that ID.
+CLI, SDK and HTTP are alternative ways to use the same application. Choose one for the task. Examples may write files, create projects or start services; do not repeat the full example on the same instance without cleaning its previous outputs.
+
+Install the CLI/Python SDK and configure your platform with the [usage guide](../docs/using-templates.md#installation). The platform API key creates sandboxes; `ABX_SERVER_TOKEN` independently protects this template application. Run the following in your own terminal; cloning this repository is unnecessary.
+
+Fill in model settings before launch: the API key, endpoint and model ID must belong to the same model service and region. `https://model.example.invalid/v1` is a placeholder; replace it with your vendor API base, not a web chat URL. Use a model ID actually available at that endpoint.
+
+This entry uses a model API key: no browser OAuth login is required, and your local logged-in account is not imported. See Configuration for protocol requirements. This template uses **Responses**; an “OpenAI-compatible” label alone does not establish support for that API.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./muse --yes
-abx run <sandbox-id> muse_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export MUSE_MODEL_API_KEY='<your-model-api-key>'
+export MUSE_MODEL_BASE_URL='https://model.example.invalid/v1'
+export MUSE_MODEL='<your-model-id>'
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//muse --sandbox-timeout 1800 --yes
+# Paste the sandbox ID from the launch output
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+```bash
+abx run "$SANDBOX_ID" muse --json-args '{"prompt":"Create hello.py in the current directory. It must print Hello from Muse. Run it and report the output.","command_timeout":300}'
+```
+
+Returns native completion status, model/tool call counts and buffered output; inspect the generated `hello.py` independently.
+
+`--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
+
+For OpenSandbox, set `ABX_PROVIDER=opensandbox` and configure its [provider guide](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md). Keep the same provider selected for subsequent CLI and Python calls.
 
 ## Quick start (Python SDK)
 
-Install `agent-sandbox-client` and follow the [Python connection example](../docs/using-templates.md#cli-sdk-and-http), using `ProviderSandbox.connect` and `application_client` with the independent application token. Replace the command call inside that example's `try` block with:
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+
+After launching above and setting `SANDBOX_ID`, save this as `use_template.py` and run `python3 use_template.py`. It connects to the same instance instead of creating another sandbox. Prepare any input file locally as shown above.
 
 ```python
-print(await client.commands.run('muse_version'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            result = await client.commands.run('muse', prompt='Create hello.py in the current directory. It must print Hello from Muse. Run it and report the output.', command_timeout=300)
+            print(result)
+            Path('hello.py').write_bytes(await sb.files.read_bytes('/home/user/app/hello.py'))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-Keep the guide's connection and close steps. `sb.commands.run` executes a process; `client.commands.run` calls this template's named commands. Business commands, arguments and limits are listed in the command reference below.
+The SDK returns the command value; it unwraps the HTTP `result` envelope. Closing the client does not delete the sandbox.
 
 ## Quick start (HTTP POST)
 
-Follow the [HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserve gateway headers, path and query parameters, and set the independent application token. Change the request to `POST /commands/muse_version`, with `Content-Type: application/json` and this direct argument object:
+Resolve port 9000 on the same instance with the [HTTP calling example](../docs/using-templates.md#cli-sdk-and-http). Preserve gateway headers, URL path and query before adding the independent application authentication.
+
+`POST /commands/muse`
 
 ```json
-{}
+{
+  "prompt": "Create hello.py in the current directory. It must print Hello from Muse. Run it and report the output.",
+  "command_timeout": 300
+}
 ```
 
-Expected response for this check:
-
-```json
-{"result": "Muse Code 1.4.11 (1.4.11-R6667.1)"}
-```
-
-`result` is buffered, not an event stream. Missing or mistyped arguments return 400, failed authentication 401, unknown commands 404, and execution errors 500. Set the HTTP wait and command deadline separately; a client timeout does not guarantee cancellation.
+Use `Content-Type: application/json` and application authentication as described in the shared guide. The request body is the direct argument object, without an `args` wrapper. Success returns `{"result": ...}` with the value described above. Set the HTTP client wait to 450 seconds, separately from the command execution deadline. Responses are buffered, not event streams. Errors: 400 invalid arguments, 401 authentication, 404 unknown command, 500 execution failure.
 
 ## Command reference
 
@@ -63,9 +109,11 @@ Expected response for this check:
 
 Fixed original argv: `exec --json --api-key-stdin --provider meta --model <configured> --preset miniswe --reasoning-effort minimal --max-model-steps16 --no-session-log --disable-reminders --no-foreign-personal-context --disable-web-tools --yolo --workspace <contained-project>`. Original settings schema_version1, endpoint_transport base_url/auth bearer and agents.execution_capacity1 are private per call. Original miniswe has no available subagent_spawn; no delegated model/tool tree is selected. Caller project instructions may load after the explicit trust flag.
 
-Native completion requires exact correlated original model/usage/terminal records, positive completed model calls, no failed/cancelled/child calls and nonempty final text. Coding acceptance additionally requires positive original tool results and independent artifacts/tests. Model requests32maximum,2MiB each,4MiB per response,16native model steps; native stdout/stderr256KiB each. Issued relay requests drain before completion. Owned close/process cleanup may add up to50seconds; SDK timeout should be at least command_timeout+80. Concurrent model calls fail busy.
+Native completion requires exact correlated original model/usage/terminal records, positive completed model calls, no failed/cancelled/child calls and nonempty final text. Inspect generated files independently before using model edits. Model requests32maximum,2MiB each,4MiB per response,16native model steps; native stdout/stderr256KiB each. Issued relay requests drain before completion. Owned close/process cleanup may add up to50seconds; SDK timeout should be at least command_timeout+80. Concurrent model calls fail busy.
 
 ## Configuration
+
+Muse requires streaming Responses API support; the code appends `/responses` to the base. A gateway exposing only `/chat/completions` cannot serve this entry.
 
 | Name | Default / requirement | Meaning |
 | --- | --- | --- |
@@ -77,28 +125,22 @@ Native completion requires exact correlated original model/usage/terminal record
 
 Captured at commands.py import; presence flags do not prove authentication. Key max8192/no control characters. Native receives only a fresh per-call local relay token by anonymous stdin. The parent relay uses the upstream key only for the exact approved Responses endpoint, rejects redirects and wrong route/token/model, and retains no transcript. Native/tools use a minimal environment and private HOME/cache/config; caller project artifacts persist. Same-user OS access remains; cwd containment and environment filtering are not another tenant boundary. `--yolo` selects the disposable outer sandbox as the execution boundary.
 
-## Resources
-
-Declared2vCPU/2048MB/Linuxx64, port9000,8GiB image rootfs budget, no KVM/Docker/GPU or extra privileges. Original artifact downloads384.8MB; model requests need approved egress. The bounded actual image/step/fullHTTP/model slice passes below; peak memory was not measured. Other providers, interactive sessions, retained resume, voice/local weights, MCP/plugin services and Meta-hosted subscriptions are outside this profile.
-
-## Verified
-
-See [test results and scope](../docs/using-templates.md#evidence-and-providers). The dated records below identify the tested input and entry point.
-
-## Secondary development
+The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
 
 ```bash
-python -m pytest -q muse/test_commands.py muse/test_relay.py muse/test_terminal.py
-python scripts/check_template.py muse --strict
-python scripts/check_docs.py
-python scripts/run_steps_e2e.py muse --asset-transport oss
+abx download "$SANDBOX_ID" /home/user/app/hello.py ./hello.py
+abx kill "$SANDBOX_ID"
 ```
 
-Use fixed non-executable replies for local relay/parser fixtures. Native/generated-code acceptance runs only on a fresh explicitly owned cloud target. Preserve original binary and notices, exact bounds, redirect refusal, anonymous input and process/relay cleanup. Formal coding checks require changed source, original test bytes, new report/exact nonce, original3plus4held-outs/fresh post-return ACK and independent owned absence.
+`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+
+## Resources
+
+Declared2vCPU/2048MB/Linuxx64, port9000,8GiB image rootfs budget, no KVM/Docker/GPU or extra privileges. Original artifact downloads384.8MB; model requests need approved egress. Memory usage depends on the task. Other providers, interactive sessions, retained resume, voice/local weights, MCP/plugin services and Meta-hosted subscriptions are outside this profile.
 
 ## Contributing
 
-Follow [CONTRIBUTING](../CONTRIBUTING.md), [project standards](../docs/project-standards.md), [documentation standards](../docs/documentation-standards.md) and [template spec](../docs/template-spec.md). Include owner note/evidence and both README languages; merge only after actual required checks/review pass.
+To improve this template, see the [contribution guide](../CONTRIBUTING.md), [template specification](../docs/template-spec.md) and [design notes](../docs/design/muse.md).
 
 ## Issues
 

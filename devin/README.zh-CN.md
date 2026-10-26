@@ -8,51 +8,108 @@
 
 ## 技术栈
 
-沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
+默认配方使用 Alibaba FC generation-2 基础镜像，以非 root `user` 运行，服务端固定安装已发布的 `agent-sandbox-server==0.4.0a6`。
 
-Alibaba generation2 Linuxx86_64基础镜像、Python3.13服务、[固定官方原包](https://static.devin.ai/cli/3000.11.92/devin-3000.11.92-x86_64-unknown-linux.tar.gz)。原版234文件／200878983字节，压缩67245544字节；SHA256为2d829139682e038cf122510f1170eee3d7060bcc7ebf92445cbc5d28c9fbcfa0，来自2026-10-21观察的官方平台manifest。[逐文件清单](upstream.json)、服务包版本固定在 Dockerfile 中。构建校验原包和文件，不执行原版；运行时检查root持有的原文件身份。厂商程序／文档／man手册保留独立条款。
+原版 Devin CLI `3000.11.92` Linux x86_64 发行包，保留自带二进制和声明。
+
+[Dockerfile](Dockerfile) · [template.yaml](template.yaml) · [upstream notice](UPSTREAM-NOTICE.md)
 
 ## 解决的问题
 
-提供可复现安装、明确权限、每次私有状态、输入输出／期限约束和自有进程清理。上游允许在用户自己的机器间复制原credentials.toml，因此无需把首次交互登录放入API流程；这条账号接入已实现，但没有账号时不宣称认证成功。
+在隔离沙箱中使用已经安装的工具，通过 CLI、Python 或 HTTP 提交工作，再导出文件；模型账号与云沙箱账号分别配置。
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，配置选择的平台（沙箱 API Key、连接地址及构建镜像仓库），再配置下面独立的模型/应用凭据。无需 clone 仓库即可启动公共模板。
+
+真正的编码需要在可信机器上使用原版 Devin CLI 登录后得到的原版 `credentials.toml`，账号设置见 [Devin CLI](https://docs.devin.ai/work-with-devin/devin-cli)。没有自创 `DEVIN_API_KEY` 或通用模型 endpoint。`DEVIN_CREDENTIALS_FILE` 必须指向沙箱内部、`WORKSPACE` 之外的私有文件；host 本地路径不会自动上传。文件在任务调用时读取，可按下方流程在 launch 后上传。没有授权账号文件时，setup/version 可用，编码会返回原版登录拒绝。
+
+先按上游指南在可信机器安装原版 CLI，运行 `devin auth login`，账号的 Devin Enterprise 角色须允许 CLI 访问。[官方认证说明](https://docs.devin.ai/cli/enterprise/devin-auth)规定 macOS/Linux 文件位于 `$XDG_DATA_HOME/devin/credentials.toml`；未设置 XDG_DATA_HOME 时为 `~/.local/share/devin/credentials.toml`；Windows 为 `%APPDATA%\devin\credentials.toml`。
+
+所有 `<...>` 都是需要你替换的占位值，模型名必须使用服务商实际提供的 ID。密钥在你自己的终端或 secret manager 中设置，不要放入镜像、YAML 或公开日志。以下变量要在 launch **之前**设置；之后改变 host 环境不会更新运行中的应用。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./devin --yes
-abx run <sandbox-id> devin_version --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export DEVIN_CREDENTIALS_FILE='/home/user/devin-private/credentials.toml'
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//devin --sandbox-timeout 1800 --yes
+export SANDBOX_ID='<sandbox-id-returned-by-launch>'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+`--sandbox-timeout 1800` 是沙箱生存时间（秒），`command_timeout`/`timeout_s` 是单次任务执行期限，`ABX_HTTP_TIMEOUT`/SDK `timeout` 是客户端等待时间，三者分别设置。
+
+launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
+
+在可信机器完成原版登录后，把你自己实际生成的 credentials.toml 路径填入下面占位符；不要打印文件内容：
+
+```bash
+abx exec "$SANDBOX_ID" -- mkdir -p /home/user/devin-private
+abx exec "$SANDBOX_ID" -- chmod 700 /home/user/devin-private
+abx upload "$SANDBOX_ID" "<local-credentials.toml>" /home/user/devin-private/credentials.toml
+abx exec "$SANDBOX_ID" -- chmod 600 /home/user/devin-private/credentials.toml
+```
+
+```bash
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" devin --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","allow_unsafe_tools":true,"cwd":"/home/user/app","command_timeout":300}'
+```
+
+任务要求在 `/home/user/app` 写出 `generated_hello.py` 和 `GENERATED_REPORT.md`。示例显式开放所需的编辑/工具权限，只在自己拥有的可丢弃沙箱中使用。下面的 SDK 和 HTTP 是同一任务的替代调用方式，选择一种即可。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
 
 ```python
-print(await client.commands.run('devin_version'))
-```
+import asyncio
+import os
+from agent_sandbox import ProviderSandbox
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=420
+        )
+        try:
+            print(await client.commands.run('devin', prompt='Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.', allow_unsafe_tools=True, cwd='/home/user/app', command_timeout=300))
+        finally:
+            await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
+```
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/devin_version`，`Content-Type: application/json`，直接发送以下参数对象：
+使用[直接 HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析 endpoint，保留网关 headers、URL path/query 和独立应用 token。请求 `POST /commands/devin`，`Content-Type: application/json`，body 是下面的直接参数对象，不加 `args` 包装：
 
 ```json
-{}
+{
+  "prompt": "Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.",
+  "allow_unsafe_tools": true,
+  "cwd": "/home/user/app",
+  "command_timeout": 300
+}
 ```
 
-该检查的预期响应：
+响应为 `{"result": ...}`：内容格式见下方命令参考；模型生成的文字每次不同。HTTP 等待时间至少设为 420 秒，命令执行期限是另一个设置；断开客户端不会保证终止远端任务。认证失败为 401，参数类型错误为 400，执行失败为错误响应；返回对象包含 `exit_code` 时还应检查它是否为 0。
 
-```json
-{"result": "devin 3000.11.92 (7f4e64980e22)"}
+### 导出产物与清理
+
+```bash
+abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx kill "$SANDBOX_ID"
 ```
 
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+程序预期输出 `Hello from the sandbox`。先读取产物并检查再使用；模型回答成功不代表文件一定存在。文件不会自动回写模板或你的本机，释放沙箱前必须导出。
+
+`close()`/`aclose()` 仅关闭客户端连接，不释放沙箱。launch 日志中的已构建模板和镜像可能保留用于复用，不再需要时仅删除自己创建的那些资源。
 
 ## 命令参考
 
@@ -63,11 +120,7 @@ print(await client.commands.run('devin_version'))
 | devin_setup_check | 无 | mode/installed/pinned_version/credentials_file_set/requires_unsafe_optin/vendor_authentication_verified/compatible_model_fallback；仅状态 |
 | devin | prompt必填字符串；cwd字符串默认空；command_timeout整数300；allow_unsafe_tools布尔False；model字符串默认空 | 缓冲原版最终stdout；明确授权后可执行文件／工具动作 |
 
-prompt为1..32768UTF8字节、非空且无NUL；cwd最长4096UTF8字节、无NUL，必须解析为WORKSPACE内已有目录，空选择根目录。command_timeout整数1..600秒，布尔拒绝；allow_unsafe_tools必须精确True。model为空使用厂商默认，非空最多200ASCII字符[A-Za-z0-9_.:/-]、字母数字开头，不声明可用模型。cwd及祖先出现原生.devin目录／符号链接时原样拒绝，以保留固定私有配置。
-
-固定argv为--config <私有JSON> --permission-mode dangerous --respect-workspace-trust false，可选--model，再加--print及原样prompt；cwd为受限项目。配置关闭更新／subagents／其他agent配置导入，私有HOME/config/data/cache/TMP隔离用户状态。原生dangerous模式使用外层自有沙箱，不启用嵌套sandbox、认证绕过或cloud模式。
-
-原版退出0且stdout非空才返回stdout、stderr空、exit_code0、native_completed:true、native_version、archive_sha256、permission_profile:explicit-owned-sandbox-bypass、requested_model。此固定原版print是纯文本，native_completed只表示进程完成；真实代码／产物／模型结果仍需独立远程控制器验收。非零／空输出／超时／超量均报错，不返回部分成功。无任意额外argv或shell拼接。
+命令响应为缓冲结果，不是流式事件。`cwd` 必须指向已存在且符合本模板路径约束的目录；允许编辑/工具执行时，模型可按沙箱用户权限修改文件或运行程序。超时只限制相应调用，客户端断连不能作为取消机制。 模型调用串行执行；并发请求会返回 busy。清理可能延长响应时间，示例为此保留 HTTP 等待余量。
 
 ## 配置
 
@@ -83,25 +136,11 @@ stdout和stderr各限256KiB；命令1..600秒，加最多90秒自有后代清理
 
 ## 资源
 
-仅Linuxx86_64，非root用户，2vCPU／4096MB／9000端口，构建限制根盘8GiB。原包展开200.9MB／压缩67.3MB。不声明KVM／Docker／GPU／桌面要求。账号任务需要厂商出口／授权账号／CLI角色。峰值RSS、认证吞吐、其他架构／提供商、交互／恢复／cloud／ACP／MCP／插件／委派均未认证。
-
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 二次开发
-
-```bash
-python -m pytest -q devin/test_commands.py devin/test_controller.py devin/test_install.py
-python scripts/check_template.py devin --strict
-python scripts/check_docs.py
-```
-
-保留原字节／条款、官方固定哈希、显式权限、凭证输入隔离与清理。先发布COPY／helper源码再生成不可变steps，通用300MiB／15000线传限制不变。完整外部控制器必须真实执行原版无账号HTTP／SDK拒绝。取得真实账号后只在显式自有远程目标运行编码控制器：修改已有源码、原3项测试不变、报告／精确nonce、3原始和4held-out／返回后新ACK。生成代码不在操作端执行。
+2 vCPU，4096 MB 内存，应用端口 9000，非 root `user`。工作目录 `/home/user/app`；磁盘容量和最长生存时间由所选平台配置。模型任务需要访问配置的模型服务，模型调用费用由对应服务商计费。 当前固定安装支持 Linux x86_64。
 
 ## 贡献
 
-遵守[CONTRIBUTING](../CONTRIBUTING.md)、[项目规范](../docs/project-standards.zh-CN.md)、[文档规范](../docs/documentation-standards.zh-CN.md)及[模板规范](../docs/template-spec.zh-CN.md)。独立源码、类型契约、双语文档／设计／目录和索引证据保持一致，最终head检查／review及普通固定SHA合并必需。
+开发模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)和[设计说明](../docs/design/devin.md)。
 
 ## 问题反馈
 

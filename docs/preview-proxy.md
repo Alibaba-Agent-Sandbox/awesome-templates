@@ -64,5 +64,6 @@ edits/saves it through Monaco and independently reads bytes through the files
 SDK. It then stops its IDE, removes its own file and closes the local relay.
 The caller still owns sandbox destruction. Default --preview-mode direct keeps
 the direct-domain test; forced HTML download remains a failure in that mode.
-Results explicitly identify the preview mode, upstream TLS and cleanup. Current
-cloud outcomes belong to the template's [Verified section](../code-server/README.md#verified).
+Results explicitly identify the preview mode, upstream TLS and cleanup. The
+[2026-10-20 browser run](../code-server/evidence/browser-ui-2026-10-20T091440Z.json)
+records the executed SDK-local preview and its original versions; it does not certify later inputs.

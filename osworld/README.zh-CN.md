@@ -1,5 +1,7 @@
 # OSWorld Linux 浏览器切片
 
+[English](README.md)
+
 ## 做什么
 
 运行真实的私有 Xvfb/Openbox/Chromium 桌面，提供 [OSWorld](https://github.com/xlang-ai/OSWorld) 截图、Linux AT-SPI、原生鼠标键盘操作与私有剪贴板 Unicode 粘贴和明确的任务评估子集。这是独立的 Alibaba 模板。完整 OSWorld benchmark、VM 快照、Office 和模型 agent 不在此浏览器切片内；[Issue 36](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/36) 保持开放。
@@ -16,41 +18,89 @@ OSWorld 固定源码 `b138d348256078fa634fc3b73567a7337c793e6b`（Apache-2.0）�
 
 ## 快速开始（CLI）
 
-先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装客户端、配置提供方及独立的 `ABX_SERVER_TOKEN`。在本仓库根目录启动应用，保留输出的沙箱 ID；以下 `<sandbox-id>` 均替换为该 ID。
+CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任务。示例可能写入文件、创建项目或启动服务；不要在未清理前对同一实例重复执行整段示例。
+
+先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，并完成所选平台配置。平台 API Key 用于创建沙箱，`ABX_SERVER_TOKEN` 是独立的模板应用访问口令。以下命令在自己的终端执行，不需要克隆本仓库。
+
+本模板的这些命令不需要模型、模型 endpoint 或模型 API Key。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./osworld --yes
-abx run <sandbox-id> osworld_desktop_smoke --json-args '{}'
+export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export ABX_HTTP_TIMEOUT=450
+abx template launch Alibaba-Agent-Sandbox/awesome-templates//osworld --sandbox-timeout 1800 --yes
+# 将启动输出中的沙箱 ID 填到这里
+export SANDBOX_ID='paste-id-from-launch-output'
+abx sandbox command list "$SANDBOX_ID"
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+```bash
+abx run "$SANDBOX_ID" desktop_start --json-args '{}'
+abx run "$SANDBOX_ID" a11y_tree --json-args '{}'
+```
+
+返回实时桌面的无障碍 XML；可继续对同一会话调用 `screenshot`、`click`、`type` 和 `hotkey`。
+
+`--sandbox-timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
+
+OpenSandbox 用户将 `ABX_PROVIDER` 改为 `opensandbox`，并按[提供方指南](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)配置；后续 CLI 和 Python 必须继续选择同一个平台。
 
 ## 快速开始（Python SDK）
 
-安装 `agent-sandbox-client`，按[Python 连接示例](../docs/using-templates.zh-CN.md#clisdk-与-http)使用 `ProviderSandbox.connect` 和带独立应用令牌的 `application_client`。在该示例的 `try` 块内，将命令调用替换为：
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
+
+在完成上述 CLI 启动、设置 `SANDBOX_ID` 后，将以下保存为 `use_template.py`，执行 `python3 use_template.py`。它连接同一实例，不另建沙箱。对于需要输入的示例，先在本机准备上面的文件。
 
 ```python
-print(await client.commands.run('osworld_desktop_smoke'))
+import asyncio
+import os
+from pathlib import Path
+from agent_sandbox import ProviderSandbox
+
+async def main():
+    sb = await ProviderSandbox.connect(
+        os.environ["SANDBOX_ID"], provider=os.environ["ABX_PROVIDER"]
+    )
+    try:
+        client = await sb.application_client(
+            9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
+        )
+        try:
+            await client.commands.run('desktop_start')
+            result = await client.commands.run('a11y_tree')
+            print(result)
+        finally:
+            try:
+                await client.commands.run('desktop_stop')
+            finally:
+                await client.aclose()
+    finally:
+        await sb.close()
+
+asyncio.run(main())
 ```
 
-复用指南中的连接与关闭流程；`sb.commands.run` 执行进程，`client.commands.run` 调用本模板命名命令。业务命令、参数与限制见下方命令参考。
+SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。关闭连接不会删除沙箱。
 
 ## 快速开始（HTTP POST）
 
-按[HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)获取端点并保留提供方网关头、路径及查询参数，配置独立应用令牌。将请求路径改为 `POST /commands/osworld_desktop_smoke`，`Content-Type: application/json`，直接发送以下参数对象：
+按[HTTP 调用示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析同一实例的 9000 端口，保留网关头、URL 路径和查询，再添加独立应用认证。
+
+先按顺序调用：
+
+- `POST /commands/desktop_start` with `{}`.
+
+`POST /commands/a11y_tree`
 
 ```json
 {}
 ```
 
-该检查的预期响应：
+请求头包括 `Content-Type: application/json` 和按共享指南设置的应用认证；请求体是参数对象本身，不套 `args`。成功响应为 `{"result": ...}`，其中结果含义同上。 HTTP 等待时间设为 450 秒；它独立于命令内部的执行时限。结果为缓冲响应，不是事件流。400 为参数错误，401 为认证失败，404 为命令不存在，500 为执行错误。
 
-```json
-{"result": "desktop screenshot/click/type/hotkey/AT-SPI/evaluation OK"}
-```
+使用完成后调用：
 
-`result` 是缓冲结果，不是事件流。缺参或类型错误为 400，认证失败为 401，未知命令为 404，执行错误为 500。请求等待时间与命令执行期限分别设置；客户端超时不保证任务取消。
+- `POST /commands/desktop_stop` with `{}`.
 
 ## 命令参考
 
@@ -69,6 +119,8 @@ print(await client.commands.run('osworld_desktop_smoke'))
 | osworld_desktop_smoke | 无 | 真实离线任务及清理；不允许已有会话。 |
 
 ## 配置
+
+此模板不需要模型账号；当前命令只操作一个 Linux 浏览器桌面切片，不提供完整 OSWorld 虚拟机、Office、任意任务或自动规划 Agent。若接入外部 Agent，模型与账号由调用方另行配置。
 
 观察、操作或任务前先启动桌面。一个锁串行执行操作。普通操作限时 30 秒，输入、启动与一次性 smoke 限时 60 秒。输入使用原生剪贴板粘贴，60 秒上限包含剪贴板就绪与清理。超时、worker 失败、Python 取消或不支持的任务会停止 owned 会话，需要显式重启。HTTP 断连不取消执行。请求最多 32 KiB，响应最多 8 MiB。主动 setsid 脱离组的子进程超出 Linux 进程组边界。
 
@@ -90,33 +142,24 @@ print(await client.commands.run('osworld_desktop_smoke'))
 }
 ```
 
-用该文件的 `task_path` 调用 `run_task_config` 和 `evaluate`。setup 只支持 1..4 个 HTTP(S) 或 workspace 文件 URL，以及 0..5 秒的 `sleep`，最多 8 步。evaluator 只支持 `check_include_exclude`（非空 include 列表）或 `exact_match`、真实 `accessibility_tree` getter 和 `rule` expected。未知字段/步骤、launch/shell/VM/Office/proxy、postconfig、不支持的 metric 均在 setup 前失败，跳过步骤不会获得分数。从提交的固定源码执行未改动的 getter/metric 定义，不导入云/proxy/Office registry。无 LibreOffice 时向上游浏览器可访问性 handler 表达版本未知，不伪造二进制或版本。Unicode 粘贴全文在浏览器 DOM 中独立验证；native 任务试验中 astral emoji 的可访问性观察不稳定，验收任务使用 ASCII 和 CJK。返回真实上游 XML，不伪造缺失字符或评分。
+用该文件的 `task_path` 调用 `run_task_config` 和 `evaluate`。setup 只支持 1..4 个 HTTP(S) 或 workspace 文件 URL，以及 0..5 秒的 `sleep`，最多 8 步。evaluator 只支持 `check_include_exclude`（非空 include 列表）或 `exact_match`、真实 `accessibility_tree` getter 和 `rule` expected。未知字段/步骤、launch/shell/VM/Office/proxy、postconfig、不支持的 metric 均在 setup 前失败，跳过步骤不会获得分数。从提交的固定源码执行未改动的 getter/metric 定义，不导入云/proxy/Office registry。无 LibreOffice 时向上游浏览器可访问性 handler 表达版本未知，不伪造二进制或版本。剪贴板粘贴支持 Unicode，但上游无障碍树可能遗漏部分 astral emoji。返回真实上游 XML，不伪造缺失字符或评分。
+
+工作目录为 `/home/user/app`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
+
+```bash
+abx run "$SANDBOX_ID" desktop_stop --json-args '{}'
+abx kill "$SANDBOX_ID"
+```
+
+`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
 
 ## 资源
 
 2 vCPU / 2048 MB，generation 2，非 root `user`，9000 端口。不需要 KVM、GPU、Docker daemon 或额外 capability。镜像包含浏览器和系统库，运行时不下载 GUI。worker 显式保留镜像的 `PLAYWRIGHT_BROWSERS_PATH=/opt/osworld-browser`，从安装路径查找固定浏览器。用一次性 sandbox 访问不可信页面。
 
-## 已验证
-
-参见[测试结果与范围](../docs/using-templates.zh-CN.md#验收与厂商)。下面的日期记录标明实测输入与入口。
-
-## 二次开发
-
-```bash
-python scripts/check_template.py osworld
-python -m pytest -q osworld/test_commands.py osworld/test_tasks.py osworld/test_http.py
-E2E_BASE_URL=http://127.0.0.1:9000 E2E_REQUIRE_DESKTOP=1 E2E_RUN_DESKTOP=1 python osworld/e2e_test.py
-```
-
-required GUI 模式缺依赖即失败。默认本地 HTTP 检查只报告 GUI SKIP，不声明桌面通过。真实镜像 smoke 验证 PNG/树、基线分数 0、原生操作、独立浏览器状态、最终分数 1、像素变化和清理；marker 不参与评分。镜像smoke另用私有剪贴板粘贴4096个含emoji的Unicode字符，并独立读取完整DOM值；任务评分使用ASCII/CJK，emoji的可访问性表示不计通过。
-
-### Agent Sandbox step 构建
-
-在仓库 checkout 执行 `python scripts/run_steps_e2e.py osworld`，通过真实极速版 step 构建并验收此模板。前置配置、源码来源和清理见 [step 指南](../docs/platform-steps.zh-CN.md)。无模型 smoke 不能代替 L3。
-
 ## 贡献
 
-遵循[贡献指南](../CONTRIBUTING.md)与[模板规范](../docs/template-spec.zh-CN.md)，保持固定源码/许可证、翻译、支持范围和证据准确。
+改进模板请阅读[贡献指南](../CONTRIBUTING.zh-CN.md)、[模板规范](../docs/template-spec.zh-CN.md)和[设计说明](../docs/design/osworld.md)。
 
 ## 问题反馈
 
@@ -131,11 +174,3 @@ Apache-2.0。保留原 OSWorld 文件、完整[上游许可证](upstream/LICENSE
 镜像显式将 `/home/user/app` 目录归属运行用户，使上传的任务文件和一次性 smoke fixture 可以在非 root 身份下写入；仅给 `COPY` 文件设置 owner 并不会自动修正 WORKDIR 本身。
 
 CLI 安装、SDK 源码安装、HTTP 认证与资源所有权见[模板使用指南](../docs/using-templates.zh-CN.md)。
-
-### 当前平台 step 验收
-
-[当前版本真实 step](evidence/express-2026-10-20.json)与[基础外部 HTTP 结果](evidence/verification-steps-2026-10-20T151021Z.json)已通过：官方 READY、真实 Python SDK 创建、CLI/SDK smoke，6 PASS / 0 FAIL / 1 GUI SKIP，耗时 346.984 秒。自有沙箱、模板及私有缓存已独立确认清理。早期失败保留为历史记录；本次未运行模型，不扩大已有镜像／模型验收范围。
-
-跳过的是外部桌面检查，并非模型检查；内部命名桌面 smoke 已单独通过。完整外部桌面验收必须启用两个桌面开关，18 项全部通过且无跳过，下述真实 SDK 创建复测已完成该层验收。
-
-[当前必选外部桌面结果](evidence/verification-steps-2026-10-20T171144Z.json)与[规范 CLI/SDK 回执](evidence/express-2026-10-20T171144Z.json)：真实 SDK 创建原生 steps，274.783 秒，18 PASS/0 FAIL/0 SKIP。原控制器验证真实 PNG、点击、Unicode 输入、快捷键、AT-SPI、上游评分0→1及像素变化，随后清理桌面和任务文件，并独立确认沙箱、模板、私有缓存均不存在。两个桌面必选开关均已记录；本次完成浏览器切片的外部桌面层，不扩大到完整 benchmark、模型或 VM 重置能力。
