@@ -26,6 +26,10 @@
 - `pytest scripts/test_check_docs.py -q` — PASS, 4 tests.
 - Existing run_local_e2e._run_one over all 15 affected templates, with isolated pinned-tool paths — PASS: 15 actual local HTTP/server processes. Model-dependent and original external QM SDK environment scenarios report explicit SKIP; those tiers are not claimed.
 
+## Integration with current main
+
+Merged c6b59325cfa7c0f4b7f425c3489ebef5e2889740 (consumer setup guide update), preserving both CHANGELOG entries. Source helpers remain identical; spec/catalog validation and all 39 specification-tool regressions pass. An intermediate docs check traversed freshly installed untracked node_modules and reported 8 upstream-package links; generated install files were removed and the clean repository check was rerun. Latest-head PR checks are evaluated separately.
+
 ## Cleanup
 
 Process tests stop their owned descendants. No cloud build, deployment or model request was performed.
