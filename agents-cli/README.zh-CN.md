@@ -77,12 +77,14 @@ async def main():
     try:
         endpoint, gateway_headers = await sb.network.resolve(9000)
         headers = dict(gateway_headers)
-        if any(key.lower() == "authorization" for key in headers):
-            raise ValueError("Preserve gateway Authorization; use the shared guide")
+        occupied = {key.lower() for key in headers}
         token = os.environ["ABX_SERVER_TOKEN"]
-        headers["Authorization"] = "Bearer " + token
-        if not any(key.lower() == "x-access-token" for key in headers):
+        if "authorization" not in occupied:
+            headers["Authorization"] = "Bearer " + token
+        if "x-access-token" not in occupied:
             headers["X-Access-Token"] = token
+        if {"authorization", "x-access-token"}.issubset(occupied):
+            raise ValueError("Gateway occupies both application authentication headers")
         base = httpx.URL(endpoint)
         def url(path):
             return base.copy_with(path=base.path.rstrip("/") + path)

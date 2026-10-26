@@ -1,0 +1,379 @@
+{
+  "scope": "Execute actual bilingual agents-cli README SDK snippets with installed SDK0.4.0a6, mocked provider connection/network, real httpx AsyncClient+MockTransport. Local only: no cloud/model/Docker task.",
+  "before": {
+    "readme_sha256": {
+      "agents-cli/README.md": "95b14e02d96c2417e4becb9e1993845078727ebe50f11f46824c17a01f6b2212",
+      "agents-cli/README.zh-CN.md": "c6007466911e4956092c39612b0c9dbf340d0d66cb5de8821e89f6f47ba7077c"
+    },
+    "cases": [
+      {
+        "language": "en",
+        "gateway_case": "bare",
+        "expected": "create/events/get/items with gateway headers preserved",
+        "result": "PASS",
+        "requests": [
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions"
+          },
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/events"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/items"
+          }
+        ],
+        "local_client_closed": true,
+        "error_class": null
+      },
+      {
+        "language": "en",
+        "gateway_case": "gateway_authorization",
+        "expected": "create/events/get/items with gateway headers preserved",
+        "result": "FAIL",
+        "requests": [],
+        "local_client_closed": true,
+        "error_class": "ValueError"
+      },
+      {
+        "language": "en",
+        "gateway_case": "gateway_x_access",
+        "expected": "create/events/get/items with gateway headers preserved",
+        "result": "PASS",
+        "requests": [
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions"
+          },
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/events"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/items"
+          }
+        ],
+        "local_client_closed": true,
+        "error_class": null
+      },
+      {
+        "language": "en",
+        "gateway_case": "gateway_both",
+        "expected": "reject before request and close",
+        "result": "PASS",
+        "requests": [],
+        "local_client_closed": true,
+        "error_class": "ValueError"
+      },
+      {
+        "language": "zh",
+        "gateway_case": "bare",
+        "expected": "create/events/get/items with gateway headers preserved",
+        "result": "PASS",
+        "requests": [
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions"
+          },
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/events"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/items"
+          }
+        ],
+        "local_client_closed": true,
+        "error_class": null
+      },
+      {
+        "language": "zh",
+        "gateway_case": "gateway_authorization",
+        "expected": "create/events/get/items with gateway headers preserved",
+        "result": "FAIL",
+        "requests": [],
+        "local_client_closed": true,
+        "error_class": "ValueError"
+      },
+      {
+        "language": "zh",
+        "gateway_case": "gateway_x_access",
+        "expected": "create/events/get/items with gateway headers preserved",
+        "result": "PASS",
+        "requests": [
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions"
+          },
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/events"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/items"
+          }
+        ],
+        "local_client_closed": true,
+        "error_class": null
+      },
+      {
+        "language": "zh",
+        "gateway_case": "gateway_both",
+        "expected": "reject before request and close",
+        "result": "PASS",
+        "requests": [],
+        "local_client_closed": true,
+        "error_class": "ValueError"
+      }
+    ],
+    "passed": 6,
+    "failed": 2
+  },
+  "after": {
+    "readme_sha256": {
+      "agents-cli/README.md": "e0f4fde35bda331a39a84ceeba41486eaffaebe6c6072b8d174462b3899fad8e",
+      "agents-cli/README.zh-CN.md": "0e75192b1ceaa5b3fd195861c15573342b796787625a89cf86bad2d88920ad11"
+    },
+    "cases": [
+      {
+        "language": "en",
+        "gateway_case": "bare",
+        "expected": "create/events/get/items with gateway headers preserved",
+        "result": "PASS",
+        "requests": [
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions"
+          },
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/events"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/items"
+          }
+        ],
+        "local_client_closed": true,
+        "error_class": null
+      },
+      {
+        "language": "en",
+        "gateway_case": "gateway_authorization",
+        "expected": "create/events/get/items with gateway headers preserved",
+        "result": "PASS",
+        "requests": [
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions"
+          },
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/events"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/items"
+          }
+        ],
+        "local_client_closed": true,
+        "error_class": null
+      },
+      {
+        "language": "en",
+        "gateway_case": "gateway_x_access",
+        "expected": "create/events/get/items with gateway headers preserved",
+        "result": "PASS",
+        "requests": [
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions"
+          },
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/events"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/items"
+          }
+        ],
+        "local_client_closed": true,
+        "error_class": null
+      },
+      {
+        "language": "en",
+        "gateway_case": "gateway_both",
+        "expected": "reject before request and close",
+        "result": "PASS",
+        "requests": [],
+        "local_client_closed": true,
+        "error_class": "ValueError"
+      },
+      {
+        "language": "zh",
+        "gateway_case": "bare",
+        "expected": "create/events/get/items with gateway headers preserved",
+        "result": "PASS",
+        "requests": [
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions"
+          },
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/events"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/items"
+          }
+        ],
+        "local_client_closed": true,
+        "error_class": null
+      },
+      {
+        "language": "zh",
+        "gateway_case": "gateway_authorization",
+        "expected": "create/events/get/items with gateway headers preserved",
+        "result": "PASS",
+        "requests": [
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions"
+          },
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/events"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/items"
+          }
+        ],
+        "local_client_closed": true,
+        "error_class": null
+      },
+      {
+        "language": "zh",
+        "gateway_case": "gateway_x_access",
+        "expected": "create/events/get/items with gateway headers preserved",
+        "result": "PASS",
+        "requests": [
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions"
+          },
+          {
+            "method": "POST",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/events"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture"
+          },
+          {
+            "method": "GET",
+            "route": "/v1/agents/sessions/agsess_documentation_fixture/items"
+          }
+        ],
+        "local_client_closed": true,
+        "error_class": null
+      },
+      {
+        "language": "zh",
+        "gateway_case": "gateway_both",
+        "expected": "reject before request and close",
+        "result": "PASS",
+        "requests": [],
+        "local_client_closed": true,
+        "error_class": "ValueError"
+      }
+    ],
+    "passed": 8,
+    "failed": 0
+  },
+  "result": "PASS",
+  "manual_contract_and_postchecks": {
+    "result": "PASS",
+    "contract": "Reviewed installed SDK6 server/runtime.py authenticate: application authentication accepts a matching Bearer or X-Access-Token candidate. Both README header blocks now byte-match current shared-guide logic. Preserve gateway-owned headers, fill free application headers, reject when both occupied; no runtime changes.",
+    "checks": {
+      "actual_bilingual_sdk_snippets_before": {
+        "pass": 6,
+        "fail": 2,
+        "failure": "gateway Authorization occupied is incorrectly rejected"
+      },
+      "actual_bilingual_sdk_snippets_after": {
+        "pass": 8,
+        "fail": 0,
+        "covered_routes": [
+          "POST sessions",
+          "POST events",
+          "GET session",
+          "GET items"
+        ],
+        "other_assertions": [
+          "gateway headers preserved",
+          "gateway path and query preserved",
+          "client close on success and rejection",
+          "both occupied rejects before any request"
+        ]
+      },
+      "changed_readme_syntax": {
+        "python_blocks": 2,
+        "json_blocks": 4,
+        "whole_bash_blocks": 6,
+        "failures": 0
+      },
+      "markdown_links": {
+        "documents": 222,
+        "failures": 0
+      },
+      "git_diff_check": "PASS"
+    },
+    "cloud_model_docker": "NOT_RUN",
+    "regression_artifact": "/tmp/template-consumer-docs/agents-sdk-gateway-regression.json",
+    "reviewed_utc": "2026-10-26T09:32:02.418383+00:00"
+  }
+}
