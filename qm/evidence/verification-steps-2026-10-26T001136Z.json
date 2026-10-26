@@ -1,0 +1,123 @@
+{
+  "template": "qm",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-26T001136Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": true,
+  "runtime_attempted": true,
+  "cleanup_verified": true,
+  "template_cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "qm",
+    "materializer_sha256": "4a681c6d1824601d2fcfbd99ec66abca62617eb18a6d896b5b01054f37cd2b19",
+    "source_manifest_contract_sha256": "07b6ee52c170fffd242e552b7badd47711c17d14706ff1c28e710b370546b3a9",
+    "template_version": "1.0.3",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+    "asset_transport": "direct",
+    "steps_json_bytes": 10514,
+    "inputs_sha256": {
+      "Dockerfile": "a66a8e1df24879f6d55af2dea74c9185b7539cb9005c7e4b26085b768e462e0c",
+      "template.yaml": "8cb8b02f5f9763076838cd0b1a53903737a36c8e1e80156bfd350fa78001b65a",
+      "upstream.json": "d5281ff55611b1d457a73b40ac848e6dd7b47c387a37dd1f6608b98ab19d7cb8",
+      "install_runtime.py": "fa5e14aabadb7e1177783c3aed509ac100ff17c641412300478b3897995d2b95",
+      "package.json": "8057d73aebf1e9cd6c6b86a0e0961f0e1104741b1206d2a56be0c4ec70f51f03",
+      "package-lock.json": "8866bbf2879fa5219970188aa632190c66148e2bc031c6dd4590d6807f06e454",
+      "sdk-package.json": "daa89f8d72229bf72a1227030b2e1ffd907eed5041bd766b3accf6353340d49b",
+      "sdk-package-lock.json": "deb3039932292903aad4a15351dcfc118fd349c16822f55b9d2be9c9b7fc66a4",
+      "commands.py": "866e5d28cef8ea844aa4e17b78e409d28492d32ac798531080f5a515fe455cf7",
+      "worker.mjs": "488a8cd61de890b52cf74422d18af702d157ba819e530de8889b722f691640a7",
+      "adapter.mjs": "0dfa1efd82b59be00cf3783033a944340f65832b8e44fe9d2981bdb81b0ae8a9",
+      "sdk_path.py": "8e3958dc517dcef45218636b748c4ad6bd0d090ecd3237e483fd141cc5d4f419",
+      "sdk_exec.py": "da0b47dd9a18a6c4b5707d6a3f7392516da7ce2f708a251ce45f0624564bdcc1",
+      "process.py": "0ed29df96e4baf19237464ab0b39957d7d085c45d509d0aadf5dc7f0fc61e94a",
+      "tool_process.py": "6e6f2d6a22cee621c6c974774b800eecfcdb5efa50315e6dc62dcc28d024d5e1",
+      "lifecycle.py": "93da0bbfd48b838b6721d127a740ee345a2a040418a553a4ecf00230380f9d58",
+      "UPSTREAM-NOTICE.md": "120bc85fafcb9e2582b695eaeda54785ada63d1a20cf7aa2db5a3cf573f0b458"
+    },
+    "generated_manifest_sha256": "006659ca29ab9f433d8faa02f9012eb5c4f6321be4d3e26ce6d75e535a701905"
+  },
+  "template_version": "1.0.3",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "sandbox_create": "abx template launch",
+  "cli_version": "abx, version 0.5.6",
+  "client_version": "0.4.0a6",
+  "cli_distribution": "published",
+  "cli_source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "prepared_launch_manifest_sha256": "d5db13c129b17f096c8617ebe9871120b69ed1ff2b42040cb3c3054b77916912",
+  "commands": [
+    {
+      "index": 0,
+      "name": "qm_version",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "qm_version",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "qm_version",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 1,
+      "name": "qm_native_check",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 1,
+      "name": "qm_native_check",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 1,
+      "name": "qm_native_check",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "server_package_version": "0.4.0a6",
+  "checks": [
+    "current unified launch starts original declared services",
+    "CLI/SDK/host HTTP manifest smoke",
+    "actual startup service rejects wrong application token",
+    "actual runtime command bytes match source",
+    "SDK exec and file round trip",
+    "CLI exec/stat/upload/download and independent SDK byte/cleanup checks"
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 10,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "2377c7fc67b0af6d119d872b403c222b746989f9e6650e233120fc42734bd024",
+    "passed": true
+  },
+  "application_result": "PASS",
+  "uncertain_sandbox_intent": false,
+  "command_calls": 6,
+  "unresolved_owned_cleanup": false,
+  "duration_s": 130.33
+}

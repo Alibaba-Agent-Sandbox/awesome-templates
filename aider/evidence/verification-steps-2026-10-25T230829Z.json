@@ -1,0 +1,88 @@
+{
+  "template": "aider",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-25T230829Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": true,
+  "runtime_attempted": true,
+  "cleanup_verified": true,
+  "template_cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "aider",
+    "materializer_sha256": "4a681c6d1824601d2fcfbd99ec66abca62617eb18a6d896b5b01054f37cd2b19",
+    "source_manifest_contract_sha256": "2e525640c80f2e586dbdd07956442bbf5a2cf97a63bcf69a9e115fe24de72371",
+    "template_version": "1.0.3",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+    "asset_transport": "direct",
+    "steps_json_bytes": 4832,
+    "inputs_sha256": {
+      "Dockerfile": "93e88441a4c61797861e779e4877db8e42a1954293d33bd8e83b478cfaaa2371",
+      "template.yaml": "df29eeef536e3e5c1e90bb598724416060bce4816339956969a1dab04ed0efc1",
+      "commands.py": "bc11b5eda480d25554ae2ee61ace873eaf978cdaa3bcc67ad808c88749019684"
+    },
+    "generated_manifest_sha256": "73c86c1bc920dc1a7b185bb1b2f9c46fa5bab8d90c0445a65d14b551f52f082d"
+  },
+  "template_version": "1.0.3",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "sandbox_create": "abx template launch",
+  "cli_version": "abx, version 0.5.6",
+  "client_version": "0.4.0a6",
+  "cli_distribution": "published",
+  "cli_source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "prepared_launch_manifest_sha256": "366fdad3ae0a56d75d9b7d7c1096c3907cf6a3561dc57e17a410fbf8dfe7187b",
+  "commands": [
+    {
+      "index": 0,
+      "name": "aider_version",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "aider_version",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "aider_version",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "server_package_version": "0.4.0a6",
+  "checks": [
+    "current unified launch starts original declared services",
+    "CLI/SDK/host HTTP manifest smoke",
+    "actual startup service rejects wrong application token",
+    "actual runtime command bytes match source",
+    "SDK exec and file round trip",
+    "CLI exec/stat/upload/download and independent SDK byte/cleanup checks"
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 9,
+    "fail_count": 0,
+    "skip_count": 1,
+    "verifier_sha256": "5b17b6ea577eb40e9dc666fff484eb6a48e51f4a100c6d03cb857cd6263f59ea",
+    "passed": true
+  },
+  "application_result": "PASS",
+  "uncertain_sandbox_intent": false,
+  "command_calls": 3,
+  "unresolved_owned_cleanup": false,
+  "duration_s": 183.124
+}

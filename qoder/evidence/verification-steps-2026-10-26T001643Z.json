@@ -1,0 +1,88 @@
+{
+  "template": "qoder",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-26T001643Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": true,
+  "runtime_attempted": true,
+  "cleanup_verified": true,
+  "template_cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "qoder",
+    "materializer_sha256": "4a681c6d1824601d2fcfbd99ec66abca62617eb18a6d896b5b01054f37cd2b19",
+    "source_manifest_contract_sha256": "e5cc54b1dc2b9caf70640decd70cbd5e19b1a0c35c2c30b14918d4a4653407a7",
+    "template_version": "1.1.4",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "asset_transport": "direct",
+    "steps_json_bytes": 7363,
+    "inputs_sha256": {
+      "Dockerfile": "72f6a07707d36618afe95d2044ee43670f11b0fa74292faf72ab129e91b06500",
+      "template.yaml": "0ef9372802eb9bd24ca1e5ec16d1d6ce9f5dc45dc6d816de28d25ada2026e0bd",
+      "commands.py": "67f4ecdd8ca63cb20cd401345fdd9359982ea708086907b51ef05112c5c40a90"
+    },
+    "generated_manifest_sha256": "e5b4cc23c556b119c265e6155a74d273291f872ad98fc4a865c2b27cf5880673"
+  },
+  "template_version": "1.1.4",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "sandbox_create": "abx template launch",
+  "cli_version": "abx, version 0.5.6",
+  "client_version": "0.4.0a6",
+  "cli_distribution": "published",
+  "cli_source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "prepared_launch_manifest_sha256": "dba30c7caecc1af0d78e405cb622c89fd61d03da5a8ed72f22b6058415714a59",
+  "commands": [
+    {
+      "index": 0,
+      "name": "qoder_version",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "qoder_version",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "qoder_version",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "server_package_version": "0.4.0a6",
+  "checks": [
+    "current unified launch starts original declared services",
+    "CLI/SDK/host HTTP manifest smoke",
+    "actual startup service rejects wrong application token",
+    "actual runtime command bytes match source",
+    "SDK exec and file round trip",
+    "CLI exec/stat/upload/download and independent SDK byte/cleanup checks"
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 9,
+    "fail_count": 0,
+    "skip_count": 1,
+    "verifier_sha256": "75cf0ad4568484faff54ca20801778429e7594c208fa7e23188e1f33256f6bc1",
+    "passed": true
+  },
+  "application_result": "PASS",
+  "uncertain_sandbox_intent": false,
+  "command_calls": 3,
+  "unresolved_owned_cleanup": false,
+  "duration_s": 31.878
+}

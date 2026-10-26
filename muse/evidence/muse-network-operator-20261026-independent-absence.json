@@ -1,0 +1,10 @@
+{
+  "date": "2026-10-26",
+  "scope": "Independent publicCLI6 lookup of exactknownowneddeletedtemplate after ONEprobe, no create/delete",
+  "owned_template_count": 1,
+  "exit_code": 4,
+  "typed_error": "E2001",
+  "sandbox_count": 0,
+  "lookup_absence_confirmed": true,
+  "recovery_deletes": 0
+}

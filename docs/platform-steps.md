@@ -55,6 +55,14 @@ base PATH requires an explicitly verified `--base-path`. Runtime remains non-roo
 
 ## Large public assets
 
+For optional `--asset-transport oss` only, install the existing local controller dependency before running the command:
+
+```bash
+python -m pip install --index-url https://pypi.org/simple -r scripts/requirements-steps-cache.txt
+```
+
+This installs the OSS client locally; it does not change a template image or replace the required account configuration.
+
 `--asset-transport parallel` uses bounded independent requests for reviewed
 upstream archives. `--asset-transport oss` uses a temporary private same-account
 asset cache and requires its optional local SDK. Both verify declared sizes and

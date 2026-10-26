@@ -1,0 +1,111 @@
+{
+  "template": "code-server",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-25T232813Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": true,
+  "runtime_attempted": true,
+  "cleanup_verified": true,
+  "template_cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "code-server",
+    "materializer_sha256": "4a681c6d1824601d2fcfbd99ec66abca62617eb18a6d896b5b01054f37cd2b19",
+    "source_manifest_contract_sha256": "aaedda414cc20ff8467fd9cc58e7d182fe4856d1c4f98ac5d6ddb3cd3a0d5cf3",
+    "template_version": "1.0.2",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+    "asset_transport": "direct",
+    "steps_json_bytes": 5021,
+    "inputs_sha256": {
+      "Dockerfile": "9ed3f9371eaa5f8afa5946293d4461cb2862660f2cb9ddf494dbe466ea670187",
+      "template.yaml": "e19d9da0be33a2149bd04144a715d8282836d09de69625c49d161a27b1de2f40",
+      "install_runtime.py": "a2ce94dd992c2fe20f8d945f279b433eba1e48c152f062f92385c77a2267fe90",
+      "assets.json": "8bf7ed8f384e3a70e2423098a38dedf721ee660782d0b348ade39634593191a2",
+      "commands.py": "2deeabd3a697c3ba6d5f41a4b42c17c298f72bb5441cde5487701ce923d462a0"
+    },
+    "generated_manifest_sha256": "bc6a6733e7808e17c40edb2a44731c02f96dcb7af2b1bef3e4c43aac20361ec0"
+  },
+  "template_version": "1.0.2",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "sandbox_create": "abx template launch",
+  "cli_version": "abx, version 0.5.6",
+  "client_version": "0.4.0a6",
+  "cli_distribution": "published",
+  "cli_source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "prepared_launch_manifest_sha256": "25a32b236d72406b22d650da1733bd2c13b275277c50a5b7aaae8c6becef41dd",
+  "commands": [
+    {
+      "index": 0,
+      "name": "code_server_version",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "code_server_version",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "code_server_version",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 1,
+      "name": "code_server_self_test",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 1,
+      "name": "code_server_self_test",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 1,
+      "name": "code_server_self_test",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "server_package_version": "0.4.0a6",
+  "checks": [
+    "current unified launch starts original declared services",
+    "CLI/SDK/host HTTP manifest smoke",
+    "actual startup service rejects wrong application token",
+    "actual runtime command bytes match source",
+    "SDK exec and file round trip",
+    "CLI exec/stat/upload/download and independent SDK byte/cleanup checks"
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 5,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "fbee3199c5e056cbb17f1f3f420f5c53a39a9b397008bdc001aa5b18e362a788",
+    "passed": true
+  },
+  "application_result": "PASS",
+  "uncertain_sandbox_intent": false,
+  "command_calls": 6,
+  "unresolved_owned_cleanup": false,
+  "duration_s": 98.374
+}

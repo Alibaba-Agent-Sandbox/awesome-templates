@@ -1,0 +1,886 @@
+{
+  "scope": "Published CLI0.5.6/SDK0.4.0a6 default two-platform acceptance; native preparation is a separate supplement",
+  "source_and_verifier": "4229b6c4d96675a05bd0bef031fb36d43f138d14",
+  "cli_source": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "provider_source": "188b04ce98c6b71da0ba4145845fbd925051b03a",
+  "sdk_workflow_fixture_checkout": "676ef0483706a2b1af717db8d6d08f19acd8d804",
+  "published_cli": "0.5.6",
+  "published_client_and_guest_server": "0.4.0a6",
+  "default": {
+    "catalog_entries": 50,
+    "cells": 100,
+    "pass": 49,
+    "blocked": 46,
+    "not_applicable": 5,
+    "blocked_reason": "The documented Express source Docker-to-ACR path could not run without the required local Docker environment; native preparation does not substitute for that default path."
+  },
+  "opensandbox_sources": {
+    "run_id": 40239893681,
+    "pass": 46,
+    "controller_pass": 628,
+    "controller_fail": 0,
+    "controller_skip": 18,
+    "manifest_command_calls": 219,
+    "wrong_application_token_rejected": 46,
+    "sandbox_absent": 46,
+    "prepared_artifacts_absent": 46,
+    "uncertain_cleanup": 0
+  },
+  "managed": {
+    "applicable_pass": 3,
+    "foreign_not_applicable": 5,
+    "opensandbox_run_id": 40242123498,
+    "opensandbox_native_checks": 17,
+    "express_persistent_interpreter_verified": false
+  },
+  "native_supplement": {
+    "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+    "attempts": 46,
+    "passed": 44,
+    "failed": [
+      "muse",
+      "next-app"
+    ],
+    "controller_pass": 611,
+    "controller_fail": 0,
+    "controller_skip": 18,
+    "successful_named_consumer_calls": 207,
+    "prepared_templates_independently_absent": 46,
+    "runtime_attempts": 45,
+    "sandboxes_independently_absent": 45,
+    "guest_server_a6_readback": 44,
+    "guest_version_not_read": 2,
+    "unresolved_owned_cleanup": 0,
+    "transport": "direct",
+    "controls": [
+      "muse/evidence/verification-steps-2026-10-25T225635Z.json",
+      "muse/evidence/verification-steps-2026-10-25T230230Z.json",
+      "muse/evidence/verification-steps-2026-10-25T230409Z.json",
+      "agents-cli/evidence/verification-steps-2026-10-25T231923Z.json"
+    ],
+    "scope": "Frozen reviewed candidate receipts; separate from the default Docker journey. Focused repairs/alternate transport do not replace either original failure."
+  },
+  "receipts": [
+    {
+      "path": "agents-cli/evidence/public-launch-opensandbox-agents-cli-40239893681-1-public-launch.json",
+      "sha256": "48c57aa7ba1e2276e48679647dfe982a311bae55a226132b095ad1b40e9e26a3",
+      "template": "agents-cli",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "aider/evidence/public-launch-opensandbox-aider-40239893681-1-public-launch.json",
+      "sha256": "923c499b424d46ee6e630cd7e9312071c9b246940736e414e2b9ccf6add622fe",
+      "template": "aider",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "amp/evidence/public-launch-opensandbox-amp-40239893681-1-public-launch.json",
+      "sha256": "10d79eaa481de39ad9192b6a0c69374e45813787d98113fdbf2db2d0d96cb74d",
+      "template": "amp",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "apply-patch/evidence/public-launch-opensandbox-apply-patch-40239893681-1-public-launch.json",
+      "sha256": "5dfc45e6c8b0ccc2f7ca2b02923e5eb0e89e553297058b6b2838772781f9d5b2",
+      "template": "apply-patch",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "appworld/evidence/public-launch-opensandbox-appworld-40239893681-1-public-launch.json",
+      "sha256": "b95e43e34a4eef197dd9bbc2e4388990349be1ba46771d36ba692262cf071a9f",
+      "template": "appworld",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "browser-automation/evidence/public-launch-opensandbox-browser-automation-40239893681-1-public-launch.json",
+      "sha256": "4bdd9db192cf4091085b9f0e2bd717037d3b9ca181090de77fd1223f4a72f3ce",
+      "template": "browser-automation",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "browser-use/evidence/public-launch-opensandbox-browser-use-40239893681-1-public-launch.json",
+      "sha256": "5fab133fc7d2332d9b40ded63038771292f76aa9b791e76bec4d8218c43a787c",
+      "template": "browser-use",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "chrome/evidence/public-launch-opensandbox-chrome-40239893681-1-public-launch.json",
+      "sha256": "800bfad6594363ae8431c0faae9ebe11e65eeeccc15ea24043ac3784bd97eae8",
+      "template": "chrome",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "claude-code/evidence/public-launch-opensandbox-claude-code-40239893681-1-public-launch.json",
+      "sha256": "2dca15a5e15af01ad3ac94bd3d7b0ab7f75bd58ffdac3852d5893a2ae41b6051",
+      "template": "claude-code",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "cline/evidence/public-launch-opensandbox-cline-40239893681-1-public-launch.json",
+      "sha256": "f56013f25d4288d1a014374e3736169a7d99f0e4cb1ee2f8d0f9f27663f6ada3",
+      "template": "cline",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "code-server/evidence/public-launch-opensandbox-code-server-40239893681-1-public-launch.json",
+      "sha256": "0531d79ff4681a7b2896b27b1b3cb39c539ce20b9272af8553d87760a02e1373",
+      "template": "code-server",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "codex/evidence/public-launch-opensandbox-codex-40239893681-1-public-launch.json",
+      "sha256": "0609033eba2ac8a418e3d7ac47809557dca7ee3ad25acfac3d2b769eb7e99bae",
+      "template": "codex",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "codex-agent-api/evidence/public-launch-opensandbox-codex-agent-api-40239893681-1-public-launch.json",
+      "sha256": "fcdf2930e2ece382c394922fd1b1b531ddb57ffd2abe03be84fb105958c72a7b",
+      "template": "codex-agent-api",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "copilot-cli/evidence/public-launch-opensandbox-copilot-cli-40239893681-1-public-launch.json",
+      "sha256": "4ed60bc939b0dee1ebd0071d1a105f0493799de51155ce4ac52ae0e6f42a098a",
+      "template": "copilot-cli",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "crush/evidence/public-launch-opensandbox-crush-40239893681-1-public-launch.json",
+      "sha256": "00da4a59adb4e25a8c15873e23f50d19291e0cf6248969964b54bd8e8949edbe",
+      "template": "crush",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "cursor-agent/evidence/public-launch-opensandbox-cursor-agent-40239893681-1-public-launch.json",
+      "sha256": "37876d7a0263fda7bfaad68a308067e994f484f2019402ffec43b0f9ec7d0bd2",
+      "template": "cursor-agent",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "deepagents/evidence/public-launch-opensandbox-deepagents-40239893681-1-public-launch.json",
+      "sha256": "1edf2744dd2f1a97b4a1a13dea5d093d32f7bc2cb81d0fd03da9108a755a24e1",
+      "template": "deepagents",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "deepseek-harness/evidence/public-launch-opensandbox-deepseek-harness-40239893681-1-public-launch.json",
+      "sha256": "4158407eb82cc45473dce2f00353652f0135da1feecc036de5ec9ab8d7ddf0cd",
+      "template": "deepseek-harness",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "dev-services/evidence/public-launch-opensandbox-dev-services-40239893681-1-public-launch.json",
+      "sha256": "34d0c35825eaf2056a5e79c768981d52ea31e89eb422cbff782b99e99bf45e3f",
+      "template": "dev-services",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "devin/evidence/public-launch-opensandbox-devin-40239893681-1-public-launch.json",
+      "sha256": "e1609bda64c463d72fd3f784d056672d906fc4a352055f7433748de479dd2110",
+      "template": "devin",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "document-tools/evidence/public-launch-opensandbox-document-tools-40239893681-1-public-launch.json",
+      "sha256": "1d152e600ca70d5b87b3e623b29e7f3bd1e6b7969c38e96259f004a09b45cc14",
+      "template": "document-tools",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "droid/evidence/public-launch-opensandbox-droid-40239893681-1-public-launch.json",
+      "sha256": "a388076bf521830e2e86dbdc8353563b1a7ca224b5066b28e654846a36dc4869",
+      "template": "droid",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "gemini/evidence/public-launch-opensandbox-gemini-40239893681-1-public-launch.json",
+      "sha256": "9220c224884d89043d219dc3e22e9702d76b91169486bc14848e38a9540fd425",
+      "template": "gemini",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "goose/evidence/public-launch-opensandbox-goose-40239893681-1-public-launch.json",
+      "sha256": "85ac3ef25a899f8965b274cfb69a9d2344ad51653a9a2c42e4008c041715840f",
+      "template": "goose",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "grok/evidence/public-launch-opensandbox-grok-40239893681-1-public-launch.json",
+      "sha256": "bcb5673a3e3979dd237ca4409860c76a66ea6fa151a6809a19eb84f6471120b6",
+      "template": "grok",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "hermes-agent/evidence/public-launch-opensandbox-hermes-agent-40239893681-1-public-launch.json",
+      "sha256": "5f6fd149d3cf5d02b54b8737674dff4714b4ff02ff5b55dbdba09dbcfde96f62",
+      "template": "hermes-agent",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "kimi-code/evidence/public-launch-opensandbox-kimi-code-40239893681-1-public-launch.json",
+      "sha256": "50af119f420314c438c6dc421d2289949619015762048ca4fca8a8bcd1d6e480",
+      "template": "kimi-code",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "media-tools/evidence/public-launch-opensandbox-media-tools-40239893681-1-public-launch.json",
+      "sha256": "86db5c1f84919d839df846a29cbf36cae41ce2a522b9dfdae23dd674515c410a",
+      "template": "media-tools",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "muse/evidence/public-launch-opensandbox-muse-40239893681-1-public-launch.json",
+      "sha256": "cdb0f6f5c680873b9fbbbf159c6955480e7e25ced41f78a1b6d3c215524457bd",
+      "template": "muse",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "next-app/evidence/public-launch-opensandbox-next-app-40239893681-1-public-launch.json",
+      "sha256": "dc1d4b6aff0674d8d5aadf17322aaf57b9713c1d00b10d1e7df2504c0e200b25",
+      "template": "next-app",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "node-web/evidence/public-launch-opensandbox-node-web-40239893681-1-public-launch.json",
+      "sha256": "a434e7e738124199c539bd102cee8e6d8d77be46ca9e6da7c7b7dfbd535d21d2",
+      "template": "node-web",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "ocr/evidence/public-launch-opensandbox-ocr-40239893681-1-public-launch.json",
+      "sha256": "5f774edca88733505b44ecf689ea5f2a84dda815a34adb7ce1ffe27ab85cf572",
+      "template": "ocr",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "openclaw/evidence/public-launch-opensandbox-openclaw-40239893681-1-public-launch.json",
+      "sha256": "3405b2fee930f97dfc2778802df38a322dce26ec72cd13be48974a6b5d87b6af",
+      "template": "openclaw",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "opencode/evidence/public-launch-opensandbox-opencode-40239893681-1-public-launch.json",
+      "sha256": "69cbfec0de769fcd39770e0ac3f1af8df4f9766831ea69897796fc5de9613912",
+      "template": "opencode",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "osworld/evidence/public-launch-opensandbox-osworld-40239893681-1-public-launch.json",
+      "sha256": "8095d751e2131fece3ed080a4e23b512d2c687e37533c9d40b6beefc1026cc61",
+      "template": "osworld",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "pi/evidence/public-launch-opensandbox-pi-40239893681-1-public-launch.json",
+      "sha256": "1dbae5be2314dd16e0328950bea6a1a8aca5f80994ba2de510d7e04eba255759",
+      "template": "pi",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "polyglot-toolchain/evidence/public-launch-opensandbox-polyglot-toolchain-40239893681-1-public-launch.json",
+      "sha256": "5016a6af490bea42f86952c694895c1a11b25fe775411f92164b1326e8f0d0b5",
+      "template": "polyglot-toolchain",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "prime-agent/evidence/public-launch-opensandbox-prime-agent-40239893681-1-public-launch.json",
+      "sha256": "8c9cd8eabe20364884690f7cf53777bd4660c9c86a4eea1928a6c839a02b4fd1",
+      "template": "prime-agent",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "python-hello/evidence/public-launch-opensandbox-python-hello-40239893681-1-public-launch.json",
+      "sha256": "b9a4d7493dcc20a14cd209ac2ae61bc6ce31ff9a4ccd251cd2ade7f1bb9e299c",
+      "template": "python-hello",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "qm/evidence/public-launch-opensandbox-qm-40239893681-1-public-launch.json",
+      "sha256": "b935ded277319ce2cd134097c18e0f65208f158619e050eecea1b5fc6ef28c9c",
+      "template": "qm",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "qm-sandbox/evidence/public-launch-opensandbox-qm-sandbox-40239893681-1-public-launch.json",
+      "sha256": "6c41c41e5b194d5d366908c600fe24c9995d386a2edc9244309322a6d7c92153",
+      "template": "qm-sandbox",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "qoder/evidence/public-launch-opensandbox-qoder-40239893681-1-public-launch.json",
+      "sha256": "0b0649a1a1e601e3ddc9feb294e22fcae7d49438e68455c71007702a08933db6",
+      "template": "qoder",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "qwen-code/evidence/public-launch-opensandbox-qwen-code-40239893681-1-public-launch.json",
+      "sha256": "7695eb27e74392292da50a57578bb3f28440b9f458deb486b7c68d4867ba67af",
+      "template": "qwen-code",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "stagehand/evidence/public-launch-opensandbox-stagehand-40239893681-1-public-launch.json",
+      "sha256": "41aded21cc1c145977a9d4c39a8e33dd633d858188b7412ef0e34f6d3e7f17b8",
+      "template": "stagehand",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "swe/evidence/public-launch-opensandbox-swe-40239893681-1-public-launch.json",
+      "sha256": "1d69e71957065cacb17bc354d120191db870feda552a97163ed2bbc84216d1fe",
+      "template": "swe",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "tau2-bench/evidence/public-launch-opensandbox-tau2-bench-40239893681-1-public-launch.json",
+      "sha256": "6efe6ad92e80064515449923963bd1b77ccb484b158a39d361052cd7fd8d965d",
+      "template": "tau2-bench",
+      "provider": "opensandbox",
+      "kind": "source"
+    },
+    {
+      "path": "docs/managed/evidence/base-2026-10-25T225517Z.json",
+      "sha256": "601a72fc2d77ec71ba8431f56b46a765582129b4afb552db55022d2e26ceb302",
+      "kind": "managed-or-foreign-preflight"
+    },
+    {
+      "path": "docs/managed/evidence/code-interpreter-v1-2026-10-25T225524Z.json",
+      "sha256": "2c1cfb0a2697eaab5765070e255f079c05df90f60f01b66bad65bf3c9578e8f1",
+      "kind": "managed-or-foreign-preflight"
+    },
+    {
+      "path": "docs/managed/evidence/managed-opensandbox-public-40242123498-1-managed-public.json",
+      "sha256": "9b074cf4bdbeef8bb9c3663f933ed4ba93699d8587973071ddd6b0930b6c05f8",
+      "kind": "managed-or-foreign-preflight"
+    },
+    {
+      "path": "docs/managed/evidence/public056-sdk6-express-foreign-preflight.json",
+      "sha256": "b838f27005173c376d4ede8b524a2d9308fd9bad05a90b7ef1b8642c529b6710",
+      "kind": "managed-or-foreign-preflight"
+    },
+    {
+      "path": "muse/evidence/verification-steps-2026-10-25T225635Z.json",
+      "sha256": "f03948951d3f654de42ce394837ed3896eb37ed667e9d9df3b7fe32cc9438fe3",
+      "template": "muse",
+      "provider": "alicloud-express",
+      "kind": "native-control",
+      "result": "FAIL",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "muse/evidence/verification-steps-2026-10-25T230230Z.json",
+      "sha256": "525bdf739c99c3a96a0adb1974effe941182c2b7d402b64a97ae4e7af9a53bc6",
+      "template": "muse",
+      "provider": "alicloud-express",
+      "kind": "native-control",
+      "result": "FAIL",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "muse/evidence/verification-steps-2026-10-25T230409Z.json",
+      "sha256": "be5214d4e74219dbe7c6233a1c48ab3032567f6b0a668d3de52fd4c700ef15bf",
+      "template": "muse",
+      "provider": "alicloud-express",
+      "kind": "native-control",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "agents-cli/evidence/verification-steps-2026-10-25T231923Z.json",
+      "sha256": "68f8fc64eef256b09c487167d5ce17ad10d2174526305879c5ea8aa19ab9d71e",
+      "template": "agents-cli",
+      "provider": "alicloud-express",
+      "kind": "native-control",
+      "result": "PASS",
+      "verifier_commit": "c8bc3b19576fe92fee248a380346f51cba94236f"
+    },
+    {
+      "path": "agents-cli/evidence/verification-steps-2026-10-25T230801Z.json",
+      "sha256": "957696bb458e8b75dcc0e496dec0de07fb31490a24522284de1a9e9504439b65",
+      "template": "agents-cli",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "aider/evidence/verification-steps-2026-10-25T230829Z.json",
+      "sha256": "1a31cd7c14b1a02f70930b76ae04da16713ca0122d00010adf85a2db0642c5f5",
+      "template": "aider",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "amp/evidence/verification-steps-2026-10-25T231132Z.json",
+      "sha256": "fb467ce2be5e5a3cdc72ba80d3ef9d7c2afd5423c8de4ee50a5b95c550c9ff68",
+      "template": "amp",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "apply-patch/evidence/verification-steps-2026-10-25T231205Z.json",
+      "sha256": "f482aef156d338c0cb9ce0e825c32225a1d308a410d42e0238d5537aa3c93c66",
+      "template": "apply-patch",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "appworld/evidence/verification-steps-2026-10-25T231339Z.json",
+      "sha256": "a39b20886fcf246fd1cdf9c652e46d1818eb8f10d833954a1929fa7456c1c935",
+      "template": "appworld",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "browser-automation/evidence/verification-steps-2026-10-25T231631Z.json",
+      "sha256": "8a3c8df7b3707974771f3bd9ce5dc4703f26d582ab515f15e72669c9c49f8c69",
+      "template": "browser-automation",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "browser-use/evidence/verification-steps-2026-10-25T231922Z.json",
+      "sha256": "0f14af326a4400d31d3c9e427a4e5130bdc08d30dd1a0ba364e000d2c65b3817",
+      "template": "browser-use",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "chrome/evidence/verification-steps-2026-10-25T232232Z.json",
+      "sha256": "27f6b75003242e8ccac557bf6f567ed5d704d3aa47cae5a06fc4356b636f0eda",
+      "template": "chrome",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "claude-code/evidence/verification-steps-2026-10-25T232517Z.json",
+      "sha256": "eec3faada480207736c4b57239b45f6d59a7c5b5e02afa195668f0e7cc9efaaf",
+      "template": "claude-code",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "cline/evidence/verification-steps-2026-10-25T232640Z.json",
+      "sha256": "4da4dd584f32997449508f82389e9dfcbbf645bb14f9f25fb4fd78dbf32f39e5",
+      "template": "cline",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "code-server/evidence/verification-steps-2026-10-25T232813Z.json",
+      "sha256": "92656515cfa74c2adec3a0293003c0b96760972e7322cb5a3eec6650b97d9fc2",
+      "template": "code-server",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "codex/evidence/verification-steps-2026-10-25T232952Z.json",
+      "sha256": "dae0d845c2ca2b125ed3de6f0820908a76b467433666d47cb6f5dfd06714f351",
+      "template": "codex",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "codex-agent-api/evidence/verification-steps-2026-10-25T233127Z.json",
+      "sha256": "6c3eeb2264f1543e581c69fcf1a39abab760e3e34b74e1f2463ab35e23fb2ca8",
+      "template": "codex-agent-api",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "copilot-cli/evidence/verification-steps-2026-10-25T233301Z.json",
+      "sha256": "11e2ad76d355ca360c1203bae6a5d3ef1a2a73caf317be44271d4b4222e8a013",
+      "template": "copilot-cli",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "crush/evidence/verification-steps-2026-10-25T233429Z.json",
+      "sha256": "c8dd06159b8829ddf3e5a3bcc7b2ffade05a261ef696966f48a259e2007115af",
+      "template": "crush",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "cursor-agent/evidence/verification-steps-2026-10-25T233538Z.json",
+      "sha256": "32c1df7b89e7c178042f7bf1db4853fb47468e4170d90e20bebf2feb7b68c6a3",
+      "template": "cursor-agent",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "deepagents/evidence/verification-steps-2026-10-25T233716Z.json",
+      "sha256": "1f4439f0c90dd50138405b314da2b2772baa0ce49208b498405bac1b49c0b703",
+      "template": "deepagents",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "deepseek-harness/evidence/verification-steps-2026-10-25T233855Z.json",
+      "sha256": "d0505c8cb9ae7b393bd89ac707cf5f1966227975e607e2572eb5a02c728e3a28",
+      "template": "deepseek-harness",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "dev-services/evidence/verification-steps-2026-10-25T233920Z.json",
+      "sha256": "ce22be0deb45c2edefe6a6418cacce4c900f5e18c3b71498d6a946a47fd4c815",
+      "template": "dev-services",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "devin/evidence/verification-steps-2026-10-25T234056Z.json",
+      "sha256": "64c1340ff62ea208c714a4303a81b62ce2018e898d61dab64855d107b09b7619",
+      "template": "devin",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "document-tools/evidence/verification-steps-2026-10-25T234223Z.json",
+      "sha256": "a3c95c53fea0ac23765e077b10950a6d5bbb70e9e65b497384beb0b70bd71cac",
+      "template": "document-tools",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "droid/evidence/verification-steps-2026-10-25T234405Z.json",
+      "sha256": "6d91572d775ee1642e2642f34997ea8b3352312eda6e2bbfb53937877b3ef7cd",
+      "template": "droid",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "gemini/evidence/verification-steps-2026-10-25T234541Z.json",
+      "sha256": "7d196f28ede33209ca17d1e2791bf54bd0115a3839f1dc38e03d0cb8d4f9c08f",
+      "template": "gemini",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "goose/evidence/verification-steps-2026-10-25T234714Z.json",
+      "sha256": "e2db812b5e21f555f05cd1edee5a9199c29996153b4186f62adb308ba287f274",
+      "template": "goose",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "grok/evidence/verification-steps-2026-10-25T234853Z.json",
+      "sha256": "9de8411aacf7681563d5420a4a7cbcd7adfaabe3cede2a55549f885409ad6867",
+      "template": "grok",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "hermes-agent/evidence/verification-steps-2026-10-25T235026Z.json",
+      "sha256": "cd3a37df8391b0b3b7d1837e046bdd46585e1e1f48a62bd64daa29fb389db36e",
+      "template": "hermes-agent",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "kimi-code/evidence/verification-steps-2026-10-25T235051Z.json",
+      "sha256": "67cc5e201649790c2f02fc6eba719dd807e66bdd23db76e6815f423136c53412",
+      "template": "kimi-code",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "media-tools/evidence/verification-steps-2026-10-25T235128Z.json",
+      "sha256": "f0176f8ae09e37f189d10cd7edfc483db73c59bd390f55861d4ed0c5aff9af9b",
+      "template": "media-tools",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "muse/evidence/verification-steps-2026-10-25T235301Z.json",
+      "sha256": "08e654866e3472481fe08532e6996aeeee078fc6d99fccdc583411aa8a709eb1",
+      "template": "muse",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "FAIL",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "next-app/evidence/verification-steps-2026-10-25T235550Z.json",
+      "sha256": "d63fc1155947f1f34e32df7abe357dd6f17767ea71728cfefb4389c624bf81a9",
+      "template": "next-app",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "FAIL",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "node-web/evidence/verification-steps-2026-10-25T235648Z.json",
+      "sha256": "ffa0677122a3583e8f28920d4cad6c99b65849b7d9f24576fec91d27b2d10f65",
+      "template": "node-web",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "ocr/evidence/verification-steps-2026-10-25T235723Z.json",
+      "sha256": "87c734825265975e7dedf9e2317ffd95012e3bf4f6e88330ce11e0813f63e320",
+      "template": "ocr",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "openclaw/evidence/verification-steps-2026-10-25T235857Z.json",
+      "sha256": "3830dc49c57ac1bb1dd7d4d5d88a1d76a4b0b1b8f3e8fd4310ec5a27dd12415c",
+      "template": "openclaw",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "opencode/evidence/verification-steps-2026-10-25T235950Z.json",
+      "sha256": "1edc3f5508ab5835e46d73cdf2e5ea879d1fa7185eaa71b6abbb6dc3f4511f6b",
+      "template": "opencode",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "osworld/evidence/verification-steps-2026-10-26T000120Z.json",
+      "sha256": "05b06076e04c0cacea2e9088079e4ba0924e19d56f096284968f4d5fd112b1f9",
+      "template": "osworld",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "pi/evidence/verification-steps-2026-10-26T000541Z.json",
+      "sha256": "804d2accbd58c559773734d6a595ea9197890d80d12bf1de02a66ee909160605",
+      "template": "pi",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "polyglot-toolchain/evidence/verification-steps-2026-10-26T000718Z.json",
+      "sha256": "61d71a20df893b9555b23b8a5c664de36016b204e99fbd74caaaa51c20703ab0",
+      "template": "polyglot-toolchain",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "prime-agent/evidence/verification-steps-2026-10-26T000820Z.json",
+      "sha256": "f1cc1ff9c0abdfcc124187af99bd2f340cfd9a5ed8f936215f47bb2791f3d5b4",
+      "template": "prime-agent",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "python-hello/evidence/verification-steps-2026-10-26T001106Z.json",
+      "sha256": "d2e0af581bdc3a19433ab802a258570aea288f8e110c4f27a7349994f2493f2e",
+      "template": "python-hello",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "qm/evidence/verification-steps-2026-10-26T001136Z.json",
+      "sha256": "b64cc82bee1f8a537f3526393734a134273f87a844d7fb1ac92ddd6c42fadd67",
+      "template": "qm",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "qm-sandbox/evidence/verification-steps-2026-10-26T001346Z.json",
+      "sha256": "05403b588ab5ae9f2a9fdfe8720023cb0b351082abfa9faa3d7e66c7f510e131",
+      "template": "qm-sandbox",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "qoder/evidence/verification-steps-2026-10-26T001643Z.json",
+      "sha256": "2d265543683ca51319925907276262dbccc9a13f2f2943d464c24746c5207220",
+      "template": "qoder",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "qwen-code/evidence/verification-steps-2026-10-26T001715Z.json",
+      "sha256": "a035b408c35b1e8120c3dc7fa5d28905910a7a01c48870cc13bfb1adcc3c9de5",
+      "template": "qwen-code",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "stagehand/evidence/verification-steps-2026-10-26T001743Z.json",
+      "sha256": "e1a5557b289c29789b571725f91f8bf5d671860287ea67fd0ad06d936cd39b41",
+      "template": "stagehand",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "swe/evidence/verification-steps-2026-10-26T002027Z.json",
+      "sha256": "4567230c9db58840a936069cd89b35d651e7b603f1ca1e95e464b5d9e2b31d94",
+      "template": "swe",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    },
+    {
+      "path": "tau2-bench/evidence/verification-steps-2026-10-26T002448Z.json",
+      "sha256": "57516595e197324bc9c9edc704d1dd1ddbc28beec8b7d2c8cbd480a6f806703a",
+      "template": "tau2-bench",
+      "provider": "alicloud-express",
+      "kind": "frozen-native-supplement",
+      "result": "PASS",
+      "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7"
+    }
+  ],
+  "record_base": "01279335dd4ecd8b252413344c67a42e59935e4f",
+  "window": "2026-10-25 through 2026-10-26 UTC",
+  "related_receipts": [
+    {
+      "path": "next-app/evidence/verification-steps-2026-10-26T001520Z.json",
+      "sha256": "4e7209eb7e6b6fc08bb36a9bca85e618f5388c9ed0ba5194021e966146c0819c",
+      "owner_pull_request": 233,
+      "kind": "focused-next-app-candidate-control",
+      "verifier_commit": "3db65881372352f8cc390d54e3550b2d4ea8b6f4",
+      "already_tracked_in_base": true
+    }
+  ],
+  "muse_operator_diagnostic": {
+    "scope": "One bounded diagnostic, not template acceptance or established network causality",
+    "execution_original_sha256": "722520d0333d4ea16fb4f4556c35686f2f83760ceffc992e6fbc031034dd6b6a",
+    "execution_receipt_not_published": "Private original contains a machine-local operator path; retained separately unchanged. This object is a derived safe summary.",
+    "elapsed_seconds": 49.615,
+    "exit_code": 1,
+    "diagnostic_collected": false,
+    "expected_build_failure_observed": true,
+    "owned_template_count": 1,
+    "sandbox_count": 0,
+    "cleanup_verified": true,
+    "independent_absence_receipt": {
+      "path": "muse/evidence/muse-network-operator-20261026-independent-absence.json",
+      "sha256": "be9a0ea99598b72a61cc41ffe43474e48186469961b4f62b45cef4a1eba97855"
+    },
+    "root_cause": "UNKNOWN"
+  }
+}

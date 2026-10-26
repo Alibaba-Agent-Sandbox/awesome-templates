@@ -1,0 +1,93 @@
+{
+  "template": "crush",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-25T233429Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": true,
+  "runtime_attempted": true,
+  "cleanup_verified": true,
+  "template_cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "crush",
+    "materializer_sha256": "4a681c6d1824601d2fcfbd99ec66abca62617eb18a6d896b5b01054f37cd2b19",
+    "source_manifest_contract_sha256": "aa6d0419880e635892ffa8e970c724d888b07fb466784f9f4597eb48c1b8d259",
+    "template_version": "1.0.2",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+    "asset_transport": "direct",
+    "steps_json_bytes": 5437,
+    "inputs_sha256": {
+      "Dockerfile": "4c2fd333ca65c262c286732d5b5dd2aff1d6e143266b609760a829b0214f62e8",
+      "template.yaml": "1cc75e899cdee05cd281ad4ba4df01391663d8ac49dbc26c49540bbd34138730",
+      "install_runtime.py": "2ed2608cd4e8516a6786654ebdfabeaa0024ea8746671bd3da9af993442fcdd1",
+      "assets.json": "75f2b7e4bb885a32705e5478c2646aab1afddf542596f35496a7adda7bcfeafd",
+      "upstream-LICENSE.md": "3faa5d4f3a51f07e4963b993f27af4b9344d7c509fa20aa856dd878788ba5f18",
+      "commands.py": "151afe22b54717a3494b3976a3a371c07823bf8455fbcacbb2a1ac2c05100d09",
+      "process.py": "95806ee40c68bbfb97d824933ede83b7e15d8aa5048eb393a3e06e2b4e12fe52",
+      "lifecycle.py": "c8c7f2e6778711769d276d41adc226e56151b07d5ac61e795088057e334cdf36"
+    },
+    "generated_manifest_sha256": "f92b82bb37aa097baddc81f6ab04b47bc198eb6e72b1549c69cdcec978fd435e"
+  },
+  "template_version": "1.0.2",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "sandbox_create": "abx template launch",
+  "cli_version": "abx, version 0.5.6",
+  "client_version": "0.4.0a6",
+  "cli_distribution": "published",
+  "cli_source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "prepared_launch_manifest_sha256": "60e2c4af067da711daa7b0e1572c7eec4d0ccd5684cc988a0c02bfcbfe5cf1ae",
+  "commands": [
+    {
+      "index": 0,
+      "name": "crush_version",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "crush_version",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "crush_version",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "server_package_version": "0.4.0a6",
+  "checks": [
+    "current unified launch starts original declared services",
+    "CLI/SDK/host HTTP manifest smoke",
+    "actual startup service rejects wrong application token",
+    "actual runtime command bytes match source",
+    "SDK exec and file round trip",
+    "CLI exec/stat/upload/download and independent SDK byte/cleanup checks"
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 9,
+    "fail_count": 0,
+    "skip_count": 1,
+    "verifier_sha256": "ee125bf40b40b3477ba1c7bb34a61dae483792fdf0189ff2f642604dfbc1527e",
+    "passed": true
+  },
+  "application_result": "PASS",
+  "uncertain_sandbox_intent": false,
+  "command_calls": 3,
+  "unresolved_owned_cleanup": false,
+  "duration_s": 68.647
+}

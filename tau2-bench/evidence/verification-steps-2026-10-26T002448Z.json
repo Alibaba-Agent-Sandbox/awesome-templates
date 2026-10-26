@@ -1,0 +1,96 @@
+{
+  "template": "tau2-bench",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-26T002448Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": true,
+  "runtime_attempted": true,
+  "cleanup_verified": true,
+  "template_cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "tau2-bench",
+    "materializer_sha256": "4a681c6d1824601d2fcfbd99ec66abca62617eb18a6d896b5b01054f37cd2b19",
+    "source_manifest_contract_sha256": "e7366654ea9206180745670b34a1d2e27ebbbb52bd2bbf10e5888821a02a33ea",
+    "template_version": "1.0.6",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+    "asset_transport": "direct",
+    "steps_json_bytes": 9234,
+    "inputs_sha256": {
+      "Dockerfile": "dd42cc5079d43d6fdb45a4f380b41325c5de72bd500c94a2799cee8c76703c2e",
+      "template.yaml": "d522c02e22f1d41d6d3ff018423e0bafdf3e41002d5799e6089ef026a201b280",
+      "upstream.json": "6c3ecbb8bafde46348aaffcd17fb541c3e17bf1fd0bf0a091a4669ff3c134a26",
+      "requirements.lock": "a95db46ca744f832ca3b03c7c4cc46bca510f5ca447415cd5e18c26e47972061",
+      "install_source.py": "ba33af9250679236b76e28c3fa945affcc5cdee38a838b6017dfbdf2c2e4a88a",
+      "commands.py": "bc1aa520d538c9092a7ef54d1a9eb82490083ea7cdd09fc35289e28868c4be1b",
+      "worker.py": "29c0de52f200808f73ff31dc6eec13828a81cd6c83a5b9bba414b05deb9b9917",
+      "process.py": "9d842feeaab9ec6929afa53d3cebf693fbaaf8453fee50870403ac107141568a",
+      "lifecycle.py": "6ca358fb55f42d147e89b0d00ebaa94c94ae7705fec9c8616155915136e12339",
+      "UPSTREAM-LICENSE.md": "e67c5aa0074dfcaefd3c3a1aedb94cb539234aecd15d5a972574e3200e6252fe",
+      "AUDIOOP-LICENSE.txt": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf"
+    },
+    "generated_manifest_sha256": "357fddda12f706e57648bdeec721ff36885f2dc300944568b34207e65651692c"
+  },
+  "template_version": "1.0.6",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "sandbox_create": "abx template launch",
+  "cli_version": "abx, version 0.5.6",
+  "client_version": "0.4.0a6",
+  "cli_distribution": "published",
+  "cli_source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "prepared_launch_manifest_sha256": "57de8385739d4a0432b95f727a3f6f1f6648c771b70efc6f52b143eec8b879c4",
+  "commands": [
+    {
+      "index": 0,
+      "name": "tau2_version",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "tau2_version",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "tau2_version",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "server_package_version": "0.4.0a6",
+  "checks": [
+    "current unified launch starts original declared services",
+    "CLI/SDK/host HTTP manifest smoke",
+    "actual startup service rejects wrong application token",
+    "actual runtime command bytes match source",
+    "SDK exec and file round trip",
+    "CLI exec/stat/upload/download and independent SDK byte/cleanup checks"
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 8,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "a2fabfbf17d277f10941c51b403f0b079dd5951829d34a119af265fc39242694",
+    "passed": true
+  },
+  "application_result": "PASS",
+  "uncertain_sandbox_intent": false,
+  "command_calls": 3,
+  "unresolved_owned_cleanup": false,
+  "duration_s": 162.057
+}

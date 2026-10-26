@@ -1,0 +1,94 @@
+{
+  "result": "PASS",
+  "template": "droid",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch + manifest smoke via host CLI, Python and HTTP; no real-model acceptance",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//droid@4229b6c4d96675a05bd0bef031fb36d43f138d14",
+  "manifest_sha256": "94d33ae85284dc5781ece1ea1f361dcbd6014aef606f480ddfc23e701a47c432",
+  "cli_version": "abx, version 0.5.6",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "droid_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "installed_packages": {
+    "distribution": "published",
+    "cli": {
+      "name": "@agent-sandbox/cli",
+      "version": "0.5.6",
+      "source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+      "registry": "https://registry.npmjs.org"
+    },
+    "python_client": {
+      "name": "agent-sandbox-client",
+      "version": "0.4.0a6",
+      "source_ref": "676ef0483706a2b1af717db8d6d08f19acd8d804",
+      "registry": "https://pypi.org/simple"
+    },
+    "python_server": {
+      "name": "agent-sandbox-server",
+      "version": "0.4.0a6",
+      "source_ref": "676ef0483706a2b1af717db8d6d08f19acd8d804",
+      "registry": "https://pypi.org/simple"
+    },
+    "provider_source_ref": "188b04ce98c6b71da0ba4145845fbd925051b03a",
+    "template_source_ref": "4229b6c4d96675a05bd0bef031fb36d43f138d14",
+    "template_verifier_ref": "4229b6c4d96675a05bd0bef031fb36d43f138d14"
+  },
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "run_alias": "public-e2e-43142501aa5a0cb2",
+  "endpoint_mode": "direct",
+  "requested_source": "Alibaba-Agent-Sandbox/awesome-templates//droid",
+  "public_source_commit": "4229b6c4d96675a05bd0bef031fb36d43f138d14",
+  "verifier_commit": "4229b6c4d96675a05bd0bef031fb36d43f138d14",
+  "input_receipt": {
+    "manifest_digest": "sha256:94d33ae85284dc5781ece1ea1f361dcbd6014aef606f480ddfc23e701a47c432",
+    "source_digest": "7eedcf38f03c5f37e3716e401a4e1499c4e4730fab6f4370f2955bc8e8cf9b5e",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "550ba04bba77bb81a50ffddbd353b6ef567577aa1cdb93ef31ef4ca08f56adbd",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 8,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "4ff954d6312b698971c103396bd4c23871802d248dc998354d6d5dd0d084e533",
+    "passed": true
+  },
+  "application_result": "PASS"
+}

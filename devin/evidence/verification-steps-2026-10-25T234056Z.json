@@ -1,0 +1,117 @@
+{
+  "template": "devin",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-25T234056Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": true,
+  "runtime_attempted": true,
+  "cleanup_verified": true,
+  "template_cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "devin",
+    "materializer_sha256": "4a681c6d1824601d2fcfbd99ec66abca62617eb18a6d896b5b01054f37cd2b19",
+    "source_manifest_contract_sha256": "cd723a74a3d451840a6568143a588645241fa738a3a8f41ca703d0eebe76d699",
+    "template_version": "1.0.3",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+    "asset_transport": "direct",
+    "steps_json_bytes": 5588,
+    "inputs_sha256": {
+      "Dockerfile": "d1e7f24fea0e781beafe52487354d83eab5c499b1a70f261a1fce5344e4c7fd3",
+      "template.yaml": "97c7d0e5277769aa50d380036961c2c160c9e49abb507ac251c6e163821f72fb",
+      "upstream.json": "a02f01031fa54417d1f1192d7a95031bce7e8dd75a8d518a6ce5e85ead6327ad",
+      "install_runtime.py": "d87eabd0c2c3f01218ac829e48491b70db40283e1c7ccaa3444ed52907dfd951",
+      "commands.py": "63137ca6f7203b1768d507fec2cc1e4d0afce77ecc491c3f3c0a24748f3cc354",
+      "runtime.py": "6e1f7554d980d9a2f4220a7bc462a65a89a97a082b4f23b434cce7916b524950",
+      "process.py": "27a56ddf8263ff02cb94734517a9205be604a686ef67952ecd0581965f10fbae",
+      "lifecycle.py": "09e03610370987f67d2c9c018d9d34565655295125c41114113eeb1baf3557d3",
+      "UPSTREAM-NOTICE.md": "577fe49fb511af1a3a509a202f1f780d573cad4b7ac4a73e6f07cf1285f4bda3"
+    },
+    "generated_manifest_sha256": "fc34f325c1ff60ac6d8e8737800d9ab4883f285b2679ec705201413fa66ec79b"
+  },
+  "template_version": "1.0.3",
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "native_authentication_error_path_required": true,
+    "credential_absence_required": true
+  },
+  "sandbox_create": "abx template launch",
+  "cli_version": "abx, version 0.5.6",
+  "client_version": "0.4.0a6",
+  "cli_distribution": "published",
+  "cli_source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "prepared_launch_manifest_sha256": "a1a73e6b4d25ac1bea158e035db42a983e4fdae650f45fa800e74da540ebcb39",
+  "commands": [
+    {
+      "index": 0,
+      "name": "devin_version",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "devin_version",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "devin_version",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 1,
+      "name": "devin_native_check",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 1,
+      "name": "devin_native_check",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 1,
+      "name": "devin_native_check",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "server_package_version": "0.4.0a6",
+  "checks": [
+    "current unified launch starts original declared services",
+    "CLI/SDK/host HTTP manifest smoke",
+    "actual startup service rejects wrong application token",
+    "actual runtime command bytes match source",
+    "SDK exec and file round trip",
+    "CLI exec/stat/upload/download and independent SDK byte/cleanup checks"
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 16,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "bc9722150d5d2476561984886a7e6175a7d72b45e1498be48129b347ed1d3c12",
+    "passed": true
+  },
+  "application_result": "PASS",
+  "uncertain_sandbox_intent": false,
+  "command_calls": 6,
+  "unresolved_owned_cleanup": false,
+  "duration_s": 87.462
+}

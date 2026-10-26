@@ -1,0 +1,90 @@
+{
+  "template": "openclaw",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-25T235857Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": true,
+  "runtime_attempted": true,
+  "cleanup_verified": true,
+  "template_cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "openclaw",
+    "materializer_sha256": "4a681c6d1824601d2fcfbd99ec66abca62617eb18a6d896b5b01054f37cd2b19",
+    "source_manifest_contract_sha256": "1ec6bb0c997d5f5d4451c30e361a3a327888d6202a9ecf07db816ddeb23df374",
+    "template_version": "2.1.3",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "asset_transport": "direct",
+    "steps_json_bytes": 11289,
+    "inputs_sha256": {
+      "Dockerfile": "b38f82b4fee081210b9a51c1b259505685456b1f916ea508688f161625376b99",
+      "template.yaml": "92cd063417cf58b690927472768cdfc5c7a295643793e05a96e703b21010b1c3",
+      "commands.py": "62ec032d918e95831e49f1b8d6b81a9fe5064cdc482013caca20d914c84a4674"
+    },
+    "generated_manifest_sha256": "35840aab5d42820aab68b71042630de711a5514b57c4ef9a88c035f90b2ccc21"
+  },
+  "template_version": "2.1.3",
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "gateway_lifecycle_required": true,
+    "generated_test_token": true
+  },
+  "sandbox_create": "abx template launch",
+  "cli_version": "abx, version 0.5.6",
+  "client_version": "0.4.0a6",
+  "cli_distribution": "published",
+  "cli_source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "prepared_launch_manifest_sha256": "84e494552b12d9f212d259fd9e97321225967924ef053ae7d6094457bd8422c9",
+  "commands": [
+    {
+      "index": 0,
+      "name": "gateway_status",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "gateway_status",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "gateway_status",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "server_package_version": "0.4.0a6",
+  "checks": [
+    "current unified launch starts original declared services",
+    "CLI/SDK/host HTTP manifest smoke",
+    "actual startup service rejects wrong application token",
+    "actual runtime command bytes match source",
+    "SDK exec and file round trip",
+    "CLI exec/stat/upload/download and independent SDK byte/cleanup checks"
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 12,
+    "fail_count": 0,
+    "skip_count": 1,
+    "verifier_sha256": "d6c9ea560d4028f4942501136b1dd4b34e04b4eeb4ba87bce81bb15cfff8f5ea",
+    "passed": true
+  },
+  "application_result": "PASS",
+  "uncertain_sandbox_intent": false,
+  "command_calls": 3,
+  "unresolved_owned_cleanup": false,
+  "duration_s": 53.224
+}
