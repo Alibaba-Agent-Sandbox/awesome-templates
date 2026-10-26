@@ -1,0 +1,109 @@
+{
+  "template": "python-hello",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-26T001106Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": true,
+  "runtime_attempted": true,
+  "cleanup_verified": true,
+  "template_cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "python-hello",
+    "materializer_sha256": "4a681c6d1824601d2fcfbd99ec66abca62617eb18a6d896b5b01054f37cd2b19",
+    "source_manifest_contract_sha256": "7ac3144bbf682f2793292e844cd7056ee08cc2df35d4705ec201cb0f96759137",
+    "template_version": "1.1.4",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "asset_transport": "direct",
+    "steps_json_bytes": 4516,
+    "inputs_sha256": {
+      "Dockerfile": "cf6f86472162a08540e50722ffa2ca32a9e194b4ea1d3709722803208fb1b52c",
+      "template.yaml": "6628b46aef9a5f4a9e63eb675e420d71fca2d11315d43fb2e8f8c54c3ffd2789",
+      "commands.py": "819dd5d91a67edc9d681b01dc44caac479c6d693d947f1818d5a1253cc9b9ceb"
+    },
+    "generated_manifest_sha256": "2b3fb71cf67e58a863a77def9cc6456716c2145dab79e07f0639194762b8008c"
+  },
+  "template_version": "1.1.4",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "sandbox_create": "abx template launch",
+  "cli_version": "abx, version 0.5.6",
+  "client_version": "0.4.0a6",
+  "cli_distribution": "published",
+  "cli_source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "prepared_launch_manifest_sha256": "9293d80f770dfd00859c3d5c6a7be5716e947f445f6b8d2c58031975873be647",
+  "commands": [
+    {
+      "index": 0,
+      "name": "hello",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "a44537a171fce24cf880c1dbc9a3366aa1de467a377944c4f2294b15b2255be8"
+    },
+    {
+      "index": 0,
+      "name": "hello",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "a44537a171fce24cf880c1dbc9a3366aa1de467a377944c4f2294b15b2255be8"
+    },
+    {
+      "index": 0,
+      "name": "hello",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "a44537a171fce24cf880c1dbc9a3366aa1de467a377944c4f2294b15b2255be8"
+    },
+    {
+      "index": 1,
+      "name": "run_script",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "6216c25214444a32c22d13688c1e60fd69f4de2ace13fcacd3856cadf7906016"
+    },
+    {
+      "index": 1,
+      "name": "run_script",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "6216c25214444a32c22d13688c1e60fd69f4de2ace13fcacd3856cadf7906016"
+    },
+    {
+      "index": 1,
+      "name": "run_script",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "6216c25214444a32c22d13688c1e60fd69f4de2ace13fcacd3856cadf7906016"
+    }
+  ],
+  "server_package_version": "0.4.0a6",
+  "checks": [
+    "current unified launch starts original declared services",
+    "CLI/SDK/host HTTP manifest smoke",
+    "actual startup service rejects wrong application token",
+    "actual runtime command bytes match source",
+    "SDK exec and file round trip",
+    "CLI exec/stat/upload/download and independent SDK byte/cleanup checks"
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 21,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "6afa1e02408550eb8e4e768c418f958b3871b718d93de3d50ce98da97e654b90",
+    "passed": true
+  },
+  "application_result": "PASS",
+  "uncertain_sandbox_intent": false,
+  "command_calls": 6,
+  "unresolved_owned_cleanup": false,
+  "duration_s": 30.186
+}

@@ -1,0 +1,94 @@
+{
+  "result": "PASS",
+  "template": "hermes-agent",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch + manifest smoke via host CLI, Python and HTTP; no real-model acceptance",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//hermes-agent@4229b6c4d96675a05bd0bef031fb36d43f138d14",
+  "manifest_sha256": "0bc5c59cb0adad4795a282ab450182b656e8172feada1dadbe32b90f5a5867ce",
+  "cli_version": "abx, version 0.5.6",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "hermes_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": false
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "installed_packages": {
+    "distribution": "published",
+    "cli": {
+      "name": "@agent-sandbox/cli",
+      "version": "0.5.6",
+      "source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+      "registry": "https://registry.npmjs.org"
+    },
+    "python_client": {
+      "name": "agent-sandbox-client",
+      "version": "0.4.0a6",
+      "source_ref": "676ef0483706a2b1af717db8d6d08f19acd8d804",
+      "registry": "https://pypi.org/simple"
+    },
+    "python_server": {
+      "name": "agent-sandbox-server",
+      "version": "0.4.0a6",
+      "source_ref": "676ef0483706a2b1af717db8d6d08f19acd8d804",
+      "registry": "https://pypi.org/simple"
+    },
+    "provider_source_ref": "188b04ce98c6b71da0ba4145845fbd925051b03a",
+    "template_source_ref": "4229b6c4d96675a05bd0bef031fb36d43f138d14",
+    "template_verifier_ref": "4229b6c4d96675a05bd0bef031fb36d43f138d14"
+  },
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "run_alias": "public-e2e-c7b96366e731c306",
+  "endpoint_mode": "direct",
+  "requested_source": "Alibaba-Agent-Sandbox/awesome-templates//hermes-agent",
+  "public_source_commit": "4229b6c4d96675a05bd0bef031fb36d43f138d14",
+  "verifier_commit": "4229b6c4d96675a05bd0bef031fb36d43f138d14",
+  "input_receipt": {
+    "manifest_digest": "sha256:0bc5c59cb0adad4795a282ab450182b656e8172feada1dadbe32b90f5a5867ce",
+    "source_digest": "9e885a5c8533f411091e0c35356eb98e47c34bb59e974ad817a3a11f9983f2a6",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "3e02b47d21b9ee3182504b6dc417f55f54a5e52f617b09e250bf42879f7a128a",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 9,
+    "fail_count": 0,
+    "skip_count": 1,
+    "verifier_sha256": "cce655e609f9d23f4c64edbb60f9f1a402c560264f57f9d04469639ce95b154d",
+    "passed": true
+  },
+  "application_result": "PASS"
+}

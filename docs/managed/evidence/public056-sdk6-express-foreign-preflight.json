@@ -1,0 +1,33 @@
+{
+  "source_main": "4229b6c4d96675a05bd0bef031fb36d43f138d14",
+  "cli_version": "abx, version 0.5.6",
+  "documented_provider_configuration_supplied": true,
+  "fresh_home": true,
+  "scope": "Actual formal6 CLI catalog template launch rejects foreign provider identities before resource intent; N/A cells are not launch PASS",
+  "rows": [
+    {
+      "template": "desktop",
+      "declared_provider": "e2b",
+      "selected_provider": "alicloud-express",
+      "result": "NOT_APPLICABLE",
+      "rejection_verified": true,
+      "diagnostics": {
+        "code": "E8002",
+        "category": "provider-mismatch"
+      },
+      "new_resource_journals": 0
+    },
+    {
+      "template": "opensandbox-code-interpreter",
+      "declared_provider": "opensandbox",
+      "selected_provider": "alicloud-express",
+      "result": "NOT_APPLICABLE",
+      "rejection_verified": true,
+      "diagnostics": {
+        "code": "E8002",
+        "category": "provider-mismatch"
+      },
+      "new_resource_journals": 0
+    }
+  ]
+}

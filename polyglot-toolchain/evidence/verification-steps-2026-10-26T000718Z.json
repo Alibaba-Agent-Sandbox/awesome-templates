@@ -1,0 +1,90 @@
+{
+  "template": "polyglot-toolchain",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-26T000718Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": true,
+  "runtime_attempted": true,
+  "cleanup_verified": true,
+  "template_cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "polyglot-toolchain",
+    "materializer_sha256": "4a681c6d1824601d2fcfbd99ec66abca62617eb18a6d896b5b01054f37cd2b19",
+    "source_manifest_contract_sha256": "480c4ac607cf33f73043dc56e2f4cb862c79e45ab369577741008bcaf4605bb2",
+    "template_version": "1.0.4",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": null,
+    "asset_transport": "direct",
+    "steps_json_bytes": 13039,
+    "inputs_sha256": {
+      "Dockerfile": "d57f162e4843d8886da0dc18d46d4a483422df9e708c84c349fdf2ee2aece2ce",
+      "template.yaml": "e06afbb88c5d06d11d4440f43c6276841cf3eedbcc504c5b7436d14214cb61cd",
+      "install_toolchains.py": "78dab45dcf021e72677f1e15d9be9b7a14fac05091ae57b02dc16119f6d5421e",
+      "toolchains.json": "65a4317e40b9e6c59136cebdcd9b16bcd46160f5c7dc2c39f710bc5594b06571",
+      "commands.py": "ca108dc52ebec951710e1ce3694457eb1e3078a4ab1c974216095094da9ce7e9"
+    },
+    "generated_manifest_sha256": "f56e24ec1324765ce6aaeed8c3261bfbf54f529c3376431957ebe7a0d8787c40"
+  },
+  "template_version": "1.0.4",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "sandbox_create": "abx template launch",
+  "cli_version": "abx, version 0.5.6",
+  "client_version": "0.4.0a6",
+  "cli_distribution": "published",
+  "cli_source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "prepared_launch_manifest_sha256": "64b66eaf62dcbc1d1c69002bf11949aa19f449676aa421c1b5e0f4c9d7530408",
+  "commands": [
+    {
+      "index": 0,
+      "name": "toolchain_smoke",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "toolchain_smoke",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "toolchain_smoke",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "server_package_version": "0.4.0a6",
+  "checks": [
+    "current unified launch starts original declared services",
+    "CLI/SDK/host HTTP manifest smoke",
+    "actual startup service rejects wrong application token",
+    "actual runtime command bytes match source",
+    "SDK exec and file round trip",
+    "CLI exec/stat/upload/download and independent SDK byte/cleanup checks"
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 1,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "c0d5bfd64efaed9be9c007e3a49655278fb61a42b5e17d483d170d12ff145d0e",
+    "passed": true
+  },
+  "application_result": "PASS",
+  "uncertain_sandbox_intent": false,
+  "command_calls": 3,
+  "unresolved_owned_cleanup": false,
+  "duration_s": 61.961
+}

@@ -88,6 +88,8 @@ OpenSandbox 先安装配置 [provider](https://github.com/Alibaba-Agent-Sandbox/
 
 ## 验收与厂商
 
+[当前公开0.5.6/a6验证](../.agents/evidence/verify/2026-10-25-public056-template-acceptance.md)分别记录默认 OpenSandbox46通过、适用托管条目3通过、默认极速版源码46受阻、跨提供方托管5不适用，以及冻结原生补充批次的44通过／2失败与单独的局部补测。下方历史结果保留当时范围。
+
 | 证据 | 能证明 | 不能证明 |
 |---|---|---|
 | 静态检查 | YAML、索引、文档符合规范 | 产品实际可运行 |
@@ -109,7 +111,7 @@ OpenSandbox 先安装配置 [provider](https://github.com/Alibaba-Agent-Sandbox/
 - 模板 README：CLI/SDK/HTTP 示例、参数、配置、限制、验收和二次开发。
 - `docs/design/<name>.md`：设计理由与可行性。
 - `template-spec.md`：开发和验收的规范来源。
-- `python-client-installation.md`：唯一的配套源码安装步骤。
+- `python-client-installation.md`：公开客户端安装及配对的服务端依赖。
 - `.agents/`：工程决策与日期化验证，不是用户 API 文档。
 - `awesome-templates.yaml`：CLI 和[registry 仓库](https://github.com/Alibaba-Agent-Sandbox/registry)
   消费的模板源目录。

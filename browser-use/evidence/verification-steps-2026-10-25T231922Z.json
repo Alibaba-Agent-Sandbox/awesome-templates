@@ -1,0 +1,113 @@
+{
+  "template": "browser-use",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-25T231922Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": true,
+  "runtime_attempted": true,
+  "cleanup_verified": true,
+  "template_cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "browser-use",
+    "materializer_sha256": "4a681c6d1824601d2fcfbd99ec66abca62617eb18a6d896b5b01054f37cd2b19",
+    "source_manifest_contract_sha256": "28b608d409b8bc5735ce46877b69a040969a6a121286657ee0064e20a5b0ee1e",
+    "template_version": "1.0.2",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+    "asset_transport": "direct",
+    "steps_json_bytes": 7136,
+    "inputs_sha256": {
+      "Dockerfile": "40a06bbb48561dc8158f670607549aa028da142484b0bcfa1a35d216c2f0fda6",
+      "template.yaml": "e648d7a3624ec16fc9531f94741213cb3dfcdb41bfe956df3897c511ad98b6ad",
+      "requirements.lock": "eab344f68905d35c1e24a2bdda0a908596b0c8a13ecdb9e04cfad8441a736304",
+      "commands.py": "167e60a89161d4116c0167f0ccc46979635746fcc9f024a1af8cf46ca304e282",
+      "worker.py": "084b9fd1f51c64ef533f2afcdf15bd1cf6120d729a2c73695f02b7109f7991f6",
+      "process.py": "41c34a391fb159ecde1d56f80451c684a4ee55a450acbcb6d9fb3762f01d86e5",
+      "lifecycle.py": "9e10da8d450e0c6ec1aa16cc0c07ba81684608bfb6c3a708213bd88d293c81ea"
+    },
+    "generated_manifest_sha256": "08c2038175a2abaacb52dbc74c01e8b3152d282f7678755751cd072555fd6ee1"
+  },
+  "template_version": "1.0.2",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "sandbox_create": "abx template launch",
+  "cli_version": "abx, version 0.5.6",
+  "client_version": "0.4.0a6",
+  "cli_distribution": "published",
+  "cli_source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "prepared_launch_manifest_sha256": "3bd45a18f616b28e860a016a5395d935967f636aa06f1fe13fd008e453b1faaf",
+  "commands": [
+    {
+      "index": 0,
+      "name": "browser_use_version",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "browser_use_version",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "browser_use_version",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 1,
+      "name": "browser_use_self_test",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 1,
+      "name": "browser_use_self_test",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 1,
+      "name": "browser_use_self_test",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "server_package_version": "0.4.0a6",
+  "checks": [
+    "current unified launch starts original declared services",
+    "CLI/SDK/host HTTP manifest smoke",
+    "actual startup service rejects wrong application token",
+    "actual runtime command bytes match source",
+    "SDK exec and file round trip",
+    "CLI exec/stat/upload/download and independent SDK byte/cleanup checks"
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 11,
+    "fail_count": 0,
+    "skip_count": 1,
+    "verifier_sha256": "02ad6d418adfb533fbd580e8fd6b0a6ff40eea88e02d22d4e0e41c20d1dae9ed",
+    "passed": true
+  },
+  "application_result": "PASS",
+  "uncertain_sandbox_intent": false,
+  "command_calls": 6,
+  "unresolved_owned_cleanup": false,
+  "duration_s": 190.08
+}

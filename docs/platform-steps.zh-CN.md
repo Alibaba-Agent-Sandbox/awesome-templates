@@ -44,6 +44,14 @@ python scripts/prepare_steps.py python-hello --output /tmp/python-hello-steps
 
 ## 较大公开资产
 
+仅使用可选的 `--asset-transport oss` 时，先安装已有的本地控制器依赖：
+
+```bash
+python -m pip install --index-url https://pypi.org/simple -r scripts/requirements-steps-cache.txt
+```
+
+该命令在本地安装 OSS 客户端，不修改模板镜像，也不代替所需账号配置。
+
 `--asset-transport parallel` 对已审查上游归档进行有界并行请求；`--asset-transport oss`
 使用临时私有同账号缓存，需要可选本地 SDK。两者核对声明的大小和哈希，保留原有
 15,000 字节 provider 传输限制，不放宽归档大小、原厂软件或凭据边界。仅已审查的

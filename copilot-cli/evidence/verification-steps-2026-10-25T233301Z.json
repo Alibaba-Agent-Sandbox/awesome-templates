@@ -1,0 +1,114 @@
+{
+  "template": "copilot-cli",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-25T233301Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": true,
+  "runtime_attempted": true,
+  "cleanup_verified": true,
+  "template_cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "copilot-cli",
+    "materializer_sha256": "4a681c6d1824601d2fcfbd99ec66abca62617eb18a6d896b5b01054f37cd2b19",
+    "source_manifest_contract_sha256": "6f07dc416376748070c1c14a26aa3c8ce4ba151b81008dd4429d37cb13431f2a",
+    "template_version": "1.0.2",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+    "asset_transport": "direct",
+    "steps_json_bytes": 5615,
+    "inputs_sha256": {
+      "Dockerfile": "e6b78a634bc216cc9bf107ea011e707c937b8edccb3cfeb6f944f4d2393a1526",
+      "template.yaml": "4f1f1f935f3f8a5703295cd49e4510d8f77687f6dc1a9fb1f3aff76c4dee1ebc",
+      "package.json": "bc460b6f827d34f2d09d3ee1166f1064db9e32701738f6bc55c3e416d1cffb35",
+      "package-lock.json": "14320e1284c987f3946d591d4959d7230c85527998f330beb34bc9e6a8bf1261",
+      "commands.py": "46017ccc1bbb4ffa183b84a7d367bb47c7e73e2137acc1363b63c7bc2248a5fb",
+      "process.py": "41b26e16d1480c351d2c8b5c721bfccd6b3d6d2422f17683c79e85d2ac689669",
+      "lifecycle.py": "7deecbddcd11beb8e15bd32c9cef83781b3e5bc7ca53bdf3a4c30742d67445fd",
+      "UPSTREAM-LICENSE.md": "b9680937e10425bf19862908856c16ed274e6b81a1368bd62be7a757eab21628"
+    },
+    "generated_manifest_sha256": "313385cbdb7d3316d7fd954d0819e8ac8ca57b149af3836a110e0da0c02f73ca"
+  },
+  "template_version": "1.0.2",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "sandbox_create": "abx template launch",
+  "cli_version": "abx, version 0.5.6",
+  "client_version": "0.4.0a6",
+  "cli_distribution": "published",
+  "cli_source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "prepared_launch_manifest_sha256": "ec83d87bc22dd8b76f1ab475c84150783a4aa6ed0855abcdd0a884995255ef82",
+  "commands": [
+    {
+      "index": 0,
+      "name": "copilot_version",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "copilot_version",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "copilot_version",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 1,
+      "name": "copilot_setup_check",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 1,
+      "name": "copilot_setup_check",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 1,
+      "name": "copilot_setup_check",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "server_package_version": "0.4.0a6",
+  "checks": [
+    "current unified launch starts original declared services",
+    "CLI/SDK/host HTTP manifest smoke",
+    "actual startup service rejects wrong application token",
+    "actual runtime command bytes match source",
+    "SDK exec and file round trip",
+    "CLI exec/stat/upload/download and independent SDK byte/cleanup checks"
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 8,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "63e1a6ba76f1b9b595c8a447875cf339123f2116a5f18bed0105b2ccfdaf170c",
+    "passed": true
+  },
+  "application_result": "PASS",
+  "uncertain_sandbox_intent": false,
+  "command_calls": 6,
+  "unresolved_owned_cleanup": false,
+  "duration_s": 88.076
+}

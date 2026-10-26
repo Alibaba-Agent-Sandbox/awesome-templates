@@ -1,0 +1,95 @@
+{
+  "template": "claude-code",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-25T232517Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": true,
+  "runtime_attempted": true,
+  "cleanup_verified": true,
+  "template_cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "claude-code",
+    "materializer_sha256": "4a681c6d1824601d2fcfbd99ec66abca62617eb18a6d896b5b01054f37cd2b19",
+    "source_manifest_contract_sha256": "2f8478a439ff86559c29efd17e2328d87639f1de22c8660d2fb071713bfdb869",
+    "template_version": "1.3.3",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+    "asset_transport": "direct",
+    "steps_json_bytes": 5425,
+    "inputs_sha256": {
+      "Dockerfile": "29d130c2e20d389592d21c652abf12412219a576b298c1ff102aed1332f5044f",
+      "template.yaml": "9ea3a56f9be4b5dd78a5c41b91157aa49db925768d07d97503e6d618fd2f5ba1",
+      "package.json": "19b88d8194ebdfa13c341f4af7edf271c419cf70b7b6ef4d15632564413579eb",
+      "package-lock.json": "ad6f89967f973580e07be967fe3ac17b50b4896849d170e414fba45c13a77b3f",
+      "commands.py": "094610662d59e19748530de3f2f3de51b1a117dc7acfe994c7b7437567784228",
+      "byok.py": "93a76367a72cc1d5af137fbb1ed27840464abbb2002ec6e8c200293b628ab267",
+      "relay.py": "4ccd14b6a86b42b23c9394b31023f4b90afc26f74ee3ad13d1044fff6f9ce8b9",
+      "process.py": "2105455cab5d7fdfd9188d1894b6d5b6097c3ff9b11383d866bcc0bfb284b3f2",
+      "lifecycle.py": "8e18aa3f5e85ee9a69ffe2b7d38f3ddf8300d7634d2211d614a8033744e4f269",
+      "upstream.json": "3dd32d6a13438f7a0c89856f6dd0a82353261c0521d39adbb7d4f0e03ae86ca6"
+    },
+    "generated_manifest_sha256": "b2b633734b86fc9379bd5941736b7f5d27c580aa4965bb1c9e536d8f616fe592"
+  },
+  "template_version": "1.3.3",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "sandbox_create": "abx template launch",
+  "cli_version": "abx, version 0.5.6",
+  "client_version": "0.4.0a6",
+  "cli_distribution": "published",
+  "cli_source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "prepared_launch_manifest_sha256": "a97b6f54764f5cabb9fba81dc2333a3a604acd566682c269b70010f1b74e4eb6",
+  "commands": [
+    {
+      "index": 0,
+      "name": "claude_version",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "claude_version",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "claude_version",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "server_package_version": "0.4.0a6",
+  "checks": [
+    "current unified launch starts original declared services",
+    "CLI/SDK/host HTTP manifest smoke",
+    "actual startup service rejects wrong application token",
+    "actual runtime command bytes match source",
+    "SDK exec and file round trip",
+    "CLI exec/stat/upload/download and independent SDK byte/cleanup checks"
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 10,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "42c6abf66218dc123f216b1cb80cba13c4a04a768e0366a4216090139fd3385f",
+    "passed": true
+  },
+  "application_result": "PASS",
+  "uncertain_sandbox_intent": false,
+  "command_calls": 3,
+  "unresolved_owned_cleanup": false,
+  "duration_s": 82.956
+}

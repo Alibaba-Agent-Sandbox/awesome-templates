@@ -1,0 +1,98 @@
+{
+  "template": "osworld",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-26T000120Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": true,
+  "runtime_attempted": true,
+  "cleanup_verified": true,
+  "template_cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "osworld",
+    "materializer_sha256": "4a681c6d1824601d2fcfbd99ec66abca62617eb18a6d896b5b01054f37cd2b19",
+    "source_manifest_contract_sha256": "20ce2a4981ef05239092f16ac7c75445345db3717d9ec0c43591725428198d17",
+    "template_version": "1.0.2",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+    "asset_transport": "direct",
+    "steps_json_bytes": 8522,
+    "inputs_sha256": {
+      "Dockerfile": "e6deb6d4173a2ffcdf840c09cc7f036b7d6b83d42ece3346018e880084f3a6fd",
+      "template.yaml": "b4098f4279506094e3dfa7cc2059869efbdebe02689540579f9ba7a3cf6c0e64",
+      "requirements.txt": "fd84ae81836222430641fbfb510b5678476cb61ade21c8cd064f8fc185e435eb",
+      "upstream/.gitattributes": "4cfb1277503d26a1eab817f1bb92376ca23e80a0bf4852f5463ed9b09ed8c972",
+      "upstream/LICENSE": "a8d1d88a0f9cce3cdbff73b03a80dc5e5d69e3ba2443946c268815a550c9e0ec",
+      "upstream/getters_misc.py": "573fa6bf7ab627a1f69f7696efe41759c5d06e3109269b0e999bfc703620bb10",
+      "upstream/main.py": "3034c869ca18dd3da5e870c66bdd7d68596501938ff69f7bc3265b79b760d3ba",
+      "upstream/metrics_general.py": "22cafba4a4b49a2c478a6266cfd98c6eb54e1bad4691d243b5113ba8896e41d7",
+      "upstream/pyxcursor.py": "87d09a465bf87c3766ac3b8584f80c3288890e874b45d9a56b811b0a4268e840",
+      "upstream/source.json": "727433e414239a0f6f738f2288e94c65f8b5609e82837611d534037fb35f5475",
+      "commands.py": "22f7814416e0dc52cb0c0b04deae8323467a785db6601d8b36603abcb396a78d",
+      "runtime.py": "a74944f97f6f3ee48057190dccbe2d2aee49305679f50c3a283bdd4ccf03bc55"
+    },
+    "generated_manifest_sha256": "57564fe74239d7c5dfcde698ac9544e6f5088a891dee4381de07d93db956f934"
+  },
+  "template_version": "1.0.2",
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "desktop_lifecycle_required": true
+  },
+  "sandbox_create": "abx template launch",
+  "cli_version": "abx, version 0.5.6",
+  "client_version": "0.4.0a6",
+  "cli_distribution": "published",
+  "cli_source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "prepared_launch_manifest_sha256": "5228f784b20a4a8394262df24dfb39683b280324c2cec127ec29821afc35bfd5",
+  "commands": [
+    {
+      "index": 0,
+      "name": "osworld_desktop_smoke",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "osworld_desktop_smoke",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "osworld_desktop_smoke",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "server_package_version": "0.4.0a6",
+  "checks": [
+    "current unified launch starts original declared services",
+    "CLI/SDK/host HTTP manifest smoke",
+    "actual startup service rejects wrong application token",
+    "actual runtime command bytes match source",
+    "SDK exec and file round trip",
+    "CLI exec/stat/upload/download and independent SDK byte/cleanup checks"
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 18,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "06658eec827f1ef65ed7503ccc493ea391307d4a89236d6c799c9214525c9782",
+    "passed": true
+  },
+  "application_result": "PASS",
+  "uncertain_sandbox_intent": false,
+  "command_calls": 3,
+  "unresolved_owned_cleanup": false,
+  "duration_s": 260.928
+}

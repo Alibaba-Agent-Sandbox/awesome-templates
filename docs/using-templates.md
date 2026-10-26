@@ -90,6 +90,8 @@ For OpenSandbox, install/configure the [provider](https://github.com/Alibaba-Age
 
 ## Evidence and providers
 
+[Current published CLI 0.5.6 / SDK 0.4.0a6 acceptance](../.agents/evidence/verify/2026-10-25-public056-template-acceptance.md) records 46 OpenSandbox source passes and three applicable managed passes. It keeps 46 blocked default Express source paths, five foreign-managed NOT_APPLICABLE cells, the frozen native 44 PASS / 2 FAIL batch and focused controls separate. Historical results below retain their original scope.
+
 | Evidence | What it proves | What it cannot prove |
 |---|---|---|
 | Static checks | YAML, index and documentation conformance | Executable product behavior |
@@ -112,7 +114,7 @@ A missing record means no matching test record, not an unsupported platform. Rea
   limitations, verified evidence and extension instructions.
 - `docs/design/<name>.md`: design rationale and feasibility.
 - `template-spec.md`: normative development/acceptance rules.
-- `python-client-installation.md`: one paired source-install recipe.
+- `python-client-installation.md`: published client installation and its paired server dependency.
 - `.agents/`: engineering decisions and dated verification, not user API docs.
 - `awesome-templates.yaml`: template source catalog, consumed by CLI and the
   [registry repository](https://github.com/Alibaba-Agent-Sandbox/registry).

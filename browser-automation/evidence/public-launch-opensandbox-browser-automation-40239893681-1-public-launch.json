@@ -1,0 +1,104 @@
+{
+  "result": "PASS",
+  "template": "browser-automation",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch + manifest smoke via host CLI, Python and HTTP; no real-model acceptance",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//browser-automation@4229b6c4d96675a05bd0bef031fb36d43f138d14",
+  "manifest_sha256": "8f01e854b136f5c1fb02c2bacd2eaf1272fe09c3bcd8529569cd59289c5c0a6a",
+  "cli_version": "abx, version 0.5.6",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "browse",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "mcp_self_test",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "installed_packages": {
+    "distribution": "published",
+    "cli": {
+      "name": "@agent-sandbox/cli",
+      "version": "0.5.6",
+      "source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+      "registry": "https://registry.npmjs.org"
+    },
+    "python_client": {
+      "name": "agent-sandbox-client",
+      "version": "0.4.0a6",
+      "source_ref": "676ef0483706a2b1af717db8d6d08f19acd8d804",
+      "registry": "https://pypi.org/simple"
+    },
+    "python_server": {
+      "name": "agent-sandbox-server",
+      "version": "0.4.0a6",
+      "source_ref": "676ef0483706a2b1af717db8d6d08f19acd8d804",
+      "registry": "https://pypi.org/simple"
+    },
+    "provider_source_ref": "188b04ce98c6b71da0ba4145845fbd925051b03a",
+    "template_source_ref": "4229b6c4d96675a05bd0bef031fb36d43f138d14",
+    "template_verifier_ref": "4229b6c4d96675a05bd0bef031fb36d43f138d14"
+  },
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "run_alias": "public-e2e-a8842c27d7fefbe6",
+  "endpoint_mode": "direct",
+  "requested_source": "Alibaba-Agent-Sandbox/awesome-templates//browser-automation",
+  "public_source_commit": "4229b6c4d96675a05bd0bef031fb36d43f138d14",
+  "verifier_commit": "4229b6c4d96675a05bd0bef031fb36d43f138d14",
+  "input_receipt": {
+    "manifest_digest": "sha256:8f01e854b136f5c1fb02c2bacd2eaf1272fe09c3bcd8529569cd59289c5c0a6a",
+    "source_digest": "5d8b9371a0b74d545442d40de7b631146d5032b1627aadeae40b6b03682a6c6c",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "ce3c8be3600c58ea41047c8cfbbf03fe82936eea87b29822f648d8eda61acc92",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 37,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "66d52a46a99f919b6eb731652e05426d61cd76e516af478f5e4bf8c310bb0559",
+    "passed": true
+  },
+  "application_result": "PASS"
+}

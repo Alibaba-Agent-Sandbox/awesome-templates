@@ -1,0 +1,117 @@
+{
+  "template": "prime-agent",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-26T000820Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": true,
+  "runtime_attempted": true,
+  "cleanup_verified": true,
+  "template_cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "prime-agent",
+    "materializer_sha256": "4a681c6d1824601d2fcfbd99ec66abca62617eb18a6d896b5b01054f37cd2b19",
+    "source_manifest_contract_sha256": "040075b7f902d1af27329813ff7c2ca13f24f8942ce20e4366c8509f12346eb7",
+    "template_version": "1.0.2",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+    "asset_transport": "direct",
+    "steps_json_bytes": 11474,
+    "inputs_sha256": {
+      "Dockerfile": "47fdf27ad02736350a8f8637899f860c5743646ba565146689e3c52816b4b718",
+      "template.yaml": "98774e8e504bc48c041f30f13b1dffd93aa99acbe0895bce26b524ab3268de2f",
+      "requirements.lock": "6174df63688f30be9e6c522e0e2c0ce3d352cce87d76a044cb13a914824301d0",
+      "upstream.json": "193db771cf95966b3fb59776f3ba75c884ce7f6edfd4986edc35917a29c566fa",
+      "install_native.py": "09e5ad8790b95495a7c1a4f6fdc964f7915ca15c1877c774f2f86ccefefe7838",
+      "kernel-python": "b4f6920a6ee21f595a71dcf84497e6fadc1960e97afb0a949d1e9608579b08a7",
+      "commands.py": "b5a2128e9a7de316781cd0fbe4f5ae5b295a38972f16ca8e4c4a1300655fe9be",
+      "filter_native.py": "25bd18629892968895bc75d458558c561849de0460bf4bae5f0d5dc56a599410",
+      "process.py": "db2f81ee4c9a2b0537eab00a690dcbc7d1b67555d2ac131635c3b2ca9698d126",
+      "lifecycle.py": "1ba7328cc89ad53bf7f179c8f12a9f48e534d3c8d19d13d27fae8fb2b877833a",
+      "UPSTREAM-NOTICE.md": "7b93fbca6f0f51a516c07ff20f66b95a1cf09593847abb19653d9056063ecea8"
+    },
+    "generated_manifest_sha256": "3cce7ba909b68c67ef6b14dd69cf2c826941fab1ce65ac479755a3a8d30c1fc3"
+  },
+  "template_version": "1.0.2",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "sandbox_create": "abx template launch",
+  "cli_version": "abx, version 0.5.6",
+  "client_version": "0.4.0a6",
+  "cli_distribution": "published",
+  "cli_source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "prepared_launch_manifest_sha256": "830021f688c06cab9f4f7967f6468a485dd5bd4117ef1f2f01f5ac113dcbc2b1",
+  "commands": [
+    {
+      "index": 0,
+      "name": "prime_agent_version",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "prime_agent_version",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "prime_agent_version",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 1,
+      "name": "prime_agent_kernel_check",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 1,
+      "name": "prime_agent_kernel_check",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 1,
+      "name": "prime_agent_kernel_check",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "server_package_version": "0.4.0a6",
+  "checks": [
+    "current unified launch starts original declared services",
+    "CLI/SDK/host HTTP manifest smoke",
+    "actual startup service rejects wrong application token",
+    "actual runtime command bytes match source",
+    "SDK exec and file round trip",
+    "CLI exec/stat/upload/download and independent SDK byte/cleanup checks"
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 9,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "3a6cb63dd52201035d139e054abb2fabf97ac38fe5ad27305d2407234dbe7392",
+    "passed": true
+  },
+  "application_result": "PASS",
+  "uncertain_sandbox_intent": false,
+  "command_calls": 6,
+  "unresolved_owned_cleanup": false,
+  "duration_s": 165.543
+}

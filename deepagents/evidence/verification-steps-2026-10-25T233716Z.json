@@ -1,0 +1,92 @@
+{
+  "template": "deepagents",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-25T233716Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": true,
+  "runtime_attempted": true,
+  "cleanup_verified": true,
+  "template_cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "deepagents",
+    "materializer_sha256": "4a681c6d1824601d2fcfbd99ec66abca62617eb18a6d896b5b01054f37cd2b19",
+    "source_manifest_contract_sha256": "f6e056e56bbf989923d659c2be7bd4d0e8d5358143e3eed600df3364e17d3d83",
+    "template_version": "1.0.2",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+    "asset_transport": "direct",
+    "steps_json_bytes": 5747,
+    "inputs_sha256": {
+      "Dockerfile": "a5cf4479d18264174bf7b2573449e4fccaf972d2c636521fb086bf79e5a45983",
+      "template.yaml": "db61bf87e4386e8c6ff9e118cf6c59416356359f8ed25c8c562434f89d8341d0",
+      "requirements.lock": "ed2a428c23627b7d0983d16f0108441666b55f0a89600f322f5f27aed4cfebaf",
+      "commands.py": "7da6bed07b5b4c86c3dee77cb1b5107aad8e4d73784bdfd3bc821290af5ccba0",
+      "worker.py": "a6a2e4474d958249262506234898fd622f1a61e2ae0b4ddb4571c29d12b072bf",
+      "process.py": "06da10c73d86b173f92b7bb621b13ee7e9b380b6f7d8054d94dd2c469e653e86",
+      "lifecycle.py": "ce510b429663eb1b74f053426aa5ea14cd816c5c4e2256df1e6f5a09c84fb69e"
+    },
+    "generated_manifest_sha256": "65c3449886a4f5bc6d70820b95454624a30f5b743b95afcce845997439377685"
+  },
+  "template_version": "1.0.2",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "sandbox_create": "abx template launch",
+  "cli_version": "abx, version 0.5.6",
+  "client_version": "0.4.0a6",
+  "cli_distribution": "published",
+  "cli_source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "prepared_launch_manifest_sha256": "04d3b63f9a5a9ca78f54939b34bd5d8fe86306f15921eb4ab510ea3c2f4f8d21",
+  "commands": [
+    {
+      "index": 0,
+      "name": "deepagents_version",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "deepagents_version",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "deepagents_version",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "server_package_version": "0.4.0a6",
+  "checks": [
+    "current unified launch starts original declared services",
+    "CLI/SDK/host HTTP manifest smoke",
+    "actual startup service rejects wrong application token",
+    "actual runtime command bytes match source",
+    "SDK exec and file round trip",
+    "CLI exec/stat/upload/download and independent SDK byte/cleanup checks"
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 9,
+    "fail_count": 0,
+    "skip_count": 1,
+    "verifier_sha256": "3dd9c05392667102883bc9b6970f0d56cc566fa8616d5da30754c7aae8da3808",
+    "passed": true
+  },
+  "application_result": "PASS",
+  "uncertain_sandbox_intent": false,
+  "command_calls": 3,
+  "unresolved_owned_cleanup": false,
+  "duration_s": 98.954
+}

@@ -1,0 +1,96 @@
+{
+  "template": "appworld",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-25T231339Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": true,
+  "runtime_attempted": true,
+  "cleanup_verified": true,
+  "template_cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "appworld",
+    "materializer_sha256": "4a681c6d1824601d2fcfbd99ec66abca62617eb18a6d896b5b01054f37cd2b19",
+    "source_manifest_contract_sha256": "a24accfd3de612d2746a3d87aa304916108e1192c2a86dbc3001ade3f5099cbf",
+    "template_version": "1.0.8",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+    "asset_transport": "direct",
+    "steps_json_bytes": 11126,
+    "inputs_sha256": {
+      "Dockerfile": "5f0fa5d7364ab913b40298d70e5ff3f9657ca201cba4d32534b0e04b60bf4294",
+      "template.yaml": "9e2c7a944b3def04446411b812e170c4e284b029fb9019b7a83e4eaa717121f5",
+      "requirements-build.lock": "53615811dc1d1f22b94617262702e9d02d56d5d8a0a180227344c700fcddae60",
+      "requirements.lock": "4c3a2a379b5cef53282dcc1ae115aae5a1dc221f923694e5c2d7601f823b1c65",
+      "upstream.json": "e79ff84717f4192d639be7879d5eedf16929544a8a4e8da30be59a440fb6486b",
+      "install_data.py": "62400075fa1a1cb89e50a2aa696aca39d0f509a34723b267c5c512e5c9c4ee8b",
+      "commands.py": "d6761cb23b9c16d8cb188ed0476c4aabcc6c5da883a86fa74fd218f3e20ccdff",
+      "worker.py": "cbd024cea1425afb1c89470f2d8f010c7ac6ea3418c7f7c2087e9a602bca4acf",
+      "process.py": "64017ad17eb43927173ca56bb01bd5f2c6e0cf9f79e5d042c529ffa0cd139121",
+      "lifecycle.py": "eb2054cea22ad6dbfd10bc6d90cf920693f50e057d87bb7d82ccb8a1d38306f1",
+      "UPSTREAM-NOTICE.md": "64c8cedc4524edc07db2d7434911828254d5c6e829e2d93182915c7505962a66"
+    },
+    "generated_manifest_sha256": "ef1c8e341fedc1bb6839719d9e665d3d6bb9e1529ebb0dbe5e8c7dd21ecdea85"
+  },
+  "template_version": "1.0.8",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "sandbox_create": "abx template launch",
+  "cli_version": "abx, version 0.5.6",
+  "client_version": "0.4.0a6",
+  "cli_distribution": "published",
+  "cli_source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "prepared_launch_manifest_sha256": "758043b80fcc77975c68f665a3a9abeba1858e3861b8eca000d56c10e7ca3277",
+  "commands": [
+    {
+      "index": 0,
+      "name": "appworld_native_smoke",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "appworld_native_smoke",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "appworld_native_smoke",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "server_package_version": "0.4.0a6",
+  "checks": [
+    "current unified launch starts original declared services",
+    "CLI/SDK/host HTTP manifest smoke",
+    "actual startup service rejects wrong application token",
+    "actual runtime command bytes match source",
+    "SDK exec and file round trip",
+    "CLI exec/stat/upload/download and independent SDK byte/cleanup checks"
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 9,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "f02190f6757d817175d8f20bf41b5799fc8c5b55604bd10558da0a54e340e5af",
+    "passed": true
+  },
+  "application_result": "PASS",
+  "uncertain_sandbox_intent": false,
+  "command_calls": 3,
+  "unresolved_owned_cleanup": false,
+  "duration_s": 172.327
+}

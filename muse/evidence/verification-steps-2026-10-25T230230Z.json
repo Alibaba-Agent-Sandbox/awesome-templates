@@ -1,0 +1,18 @@
+{
+  "template": "muse",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-25T230230Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "FAIL",
+  "passed": false,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": false,
+  "runtime_attempted": false,
+  "cleanup_verified": false,
+  "template_cleanup_verified": false,
+  "reason": "ModuleNotFoundError; private staging retained",
+  "diagnostics": {},
+  "unresolved_owned_cleanup": false,
+  "duration_s": 0.341
+}

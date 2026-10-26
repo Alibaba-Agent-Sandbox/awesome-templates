@@ -1,0 +1,94 @@
+{
+  "template": "droid",
+  "provider": "alicloud-express",
+  "build_mode": "steps",
+  "attempt": "2026-10-25T234405Z",
+  "verifier_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+  "result": "PASS",
+  "passed": true,
+  "model_acceptance": "NOT_RUN",
+  "preparation_attempted": true,
+  "runtime_attempted": true,
+  "cleanup_verified": true,
+  "template_cleanup_verified": true,
+  "build_provenance": {
+    "schema_version": 1,
+    "template": "droid",
+    "materializer_sha256": "4a681c6d1824601d2fcfbd99ec66abca62617eb18a6d896b5b01054f37cd2b19",
+    "source_manifest_contract_sha256": "5e71199c8ed46ad5515e08748aedce874e4bcfa043eb8270b2edf6d8975a36d9",
+    "template_version": "1.2.2",
+    "build_mode": "steps",
+    "base_image": "fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
+    "verified_base_path": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/.fce2b",
+    "copy_source_commit": "a9362a8ca988aaed33cd0b19e3ed8ecb4cd88af7",
+    "asset_transport": "direct",
+    "steps_json_bytes": 7424,
+    "inputs_sha256": {
+      "Dockerfile": "695319b85d8d679a4f568a245072b2ad2677f90bb288b4b68d17cdc7660abe54",
+      "template.yaml": "94d33ae85284dc5781ece1ea1f361dcbd6014aef606f480ddfc23e701a47c432",
+      "package.json": "d292a30310d48d8ccb20791b567fbc03bcbcfc5478e7424c6c80f9158d5596a6",
+      "package-lock.json": "9871fb71fa7638deeeda7bf1d8be058416bf8726cb0fd376a6d40c033b13a576",
+      "commands.py": "e006ae0d9d73b45ad8d0a2b7bb97d2aec0a7fea8ae10fa0502d0df01ff46ea47",
+      "byok.py": "bcfe4dc5a19b2c8b1ab7811626393bf9c5f5ed0e39db6ef320797aa8e940ee26",
+      "process.py": "d56623fa3bdd73ba7d2338fe472b21ea7b4f4a3d8a2e731887df6ea69126fabe",
+      "lifecycle.py": "a547b32d65cd7e4c12aab6412f59fedf3e394b05c3d853318c16e52f37c8b6b1",
+      "UPSTREAM-NOTICE.md": "cc8e6858c8495f0486f926f58bd4a293ff98dddde6f4a8b0376571c8726eafe5"
+    },
+    "generated_manifest_sha256": "04a3389a57289ae57c7d9ae1f14cefdb811f183e3b3e0c6ecd02306ccc88edc1"
+  },
+  "template_version": "1.2.2",
+  "test_configuration": {
+    "model_credentials_injected": false
+  },
+  "sandbox_create": "abx template launch",
+  "cli_version": "abx, version 0.5.6",
+  "client_version": "0.4.0a6",
+  "cli_distribution": "published",
+  "cli_source_ref": "1ea3eabd679c3cf26c824492a60fe2a8aea43f62",
+  "prepared_launch_manifest_sha256": "2d8d0e08109d742ad6a37883514d16ecccc2ec49104b7c2562000fe5f025a9d3",
+  "commands": [
+    {
+      "index": 0,
+      "name": "droid_version",
+      "via": "cli",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "droid_version",
+      "via": "sdk",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "index": 0,
+      "name": "droid_version",
+      "via": "host-http",
+      "ok": true,
+      "args_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "server_package_version": "0.4.0a6",
+  "checks": [
+    "current unified launch starts original declared services",
+    "CLI/SDK/host HTTP manifest smoke",
+    "actual startup service rejects wrong application token",
+    "actual runtime command bytes match source",
+    "SDK exec and file round trip",
+    "CLI exec/stat/upload/download and independent SDK byte/cleanup checks"
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 8,
+    "fail_count": 0,
+    "skip_count": 0,
+    "verifier_sha256": "4ff954d6312b698971c103396bd4c23871802d248dc998354d6d5dd0d084e533",
+    "passed": true
+  },
+  "application_result": "PASS",
+  "uncertain_sandbox_intent": false,
+  "command_calls": 3,
+  "unresolved_owned_cleanup": false,
+  "duration_s": 96.833
+}
