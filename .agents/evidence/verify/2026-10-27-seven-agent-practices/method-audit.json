@@ -1,0 +1,116 @@
+[
+  {
+    "template": "goose",
+    "named_methods": [
+      "goose",
+      "goose_setup_check",
+      "goose_version"
+    ],
+    "core_assertions": 17,
+    "documented_checks": 12,
+    "core_documented_runtime_inputs_match": true,
+    "models": [
+      "qwen3.8-flash",
+      "qwen3.8-max"
+    ],
+    "independent_cleanup": "PASS"
+  },
+  {
+    "template": "pi",
+    "named_methods": [
+      "pi",
+      "pi_setup_check",
+      "pi_tools_check",
+      "pi_version"
+    ],
+    "core_assertions": 18,
+    "documented_checks": 11,
+    "core_documented_runtime_inputs_match": true,
+    "models": [
+      "qwen3.8-flash",
+      "qwen3.8-max"
+    ],
+    "independent_cleanup": "PASS"
+  },
+  {
+    "template": "deepagents",
+    "named_methods": [
+      "deepagents",
+      "deepagents_setup_check",
+      "deepagents_version"
+    ],
+    "core_assertions": 17,
+    "documented_checks": 14,
+    "core_documented_runtime_inputs_match": true,
+    "models": [
+      "qwen3.8-flash",
+      "qwen3.8-max"
+    ],
+    "independent_cleanup": "PASS"
+  },
+  {
+    "template": "kimi-code",
+    "named_methods": [
+      "kimi",
+      "kimi_setup_check",
+      "kimi_version"
+    ],
+    "core_assertions": 17,
+    "documented_checks": 11,
+    "core_documented_runtime_inputs_match": true,
+    "models": [
+      "qwen3.8-flash",
+      "qwen3.8-max"
+    ],
+    "independent_cleanup": "PASS"
+  },
+  {
+    "template": "grok",
+    "named_methods": [
+      "grok",
+      "grok_setup_check",
+      "grok_version"
+    ],
+    "core_assertions": 17,
+    "documented_checks": 14,
+    "core_documented_runtime_inputs_match": true,
+    "models": [
+      "qwen3.8-flash",
+      "qwen3.8-max"
+    ],
+    "independent_cleanup": "PASS"
+  },
+  {
+    "template": "cline",
+    "named_methods": [
+      "cline",
+      "cline_setup_check",
+      "cline_version"
+    ],
+    "core_assertions": 17,
+    "documented_checks": 12,
+    "core_documented_runtime_inputs_match": true,
+    "models": [
+      "qwen3.8-flash",
+      "qwen3.8-max"
+    ],
+    "independent_cleanup": "PASS"
+  },
+  {
+    "template": "prime-agent",
+    "named_methods": [
+      "prime_agent",
+      "prime_agent_kernel_check",
+      "prime_agent_setup_check",
+      "prime_agent_version"
+    ],
+    "core_assertions": 18,
+    "documented_checks": 12,
+    "core_documented_runtime_inputs_match": true,
+    "models": [
+      "qwen3.8-flash",
+      "qwen3.8-max"
+    ],
+    "independent_cleanup": "PASS"
+  }
+]

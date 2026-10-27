@@ -1,0 +1,139 @@
+{
+  "result": "FAIL",
+  "template": "kimi-code",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//kimi-code@a63f0f8f8996fd772116c570aa21e927dcc1aea0",
+  "manifest_sha256": "5c198c6003730399f776bb5ca4e4fd85d52df9f56be30432e3a0e631419e9abd",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "kimi_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "kimi_setup_check",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": false
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "KIMI_MODEL_API_KEY",
+      "KIMI_MODEL_BASE_URL",
+      "KIMI_MODEL_NAME"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:5c198c6003730399f776bb5ca4e4fd85d52df9f56be30432e3a0e631419e9abd",
+    "source_digest": "bdf5a1dba43fe257d4e7faddd2a8f0198d3cd640dfde82b952f80043278a2566",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "12c76df2eda148dff7e86d43e2948f454f65c20466be88d8f5d7733d9eebe117",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "passed": false,
+    "scope": "fresh literal documentation tasks; canonical full-method/model assertions are in the pinned preceding core receipt",
+    "core_receipt_sha256": "d296fa2486198b82efdb2345bec13e7257b7cf8feaccb357a98550278c09d594",
+    "documented_case": {
+      "template": "kimi-code",
+      "provider": "alicloud-express",
+      "result": "FAIL",
+      "checks": [
+        {
+          "id": "literal README CLI business request",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI generated report independently downloaded",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI output independently absent before SDK task",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README Python example",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "SDK generated report independently downloaded",
+          "result": "PASS"
+        },
+        {
+          "id": "previous SDK output independently absent before HTTP task",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP business request",
+          "result": "PASS"
+        }
+      ],
+      "core_receipt_sha256": "d296fa2486198b82efdb2345bec13e7257b7cf8feaccb357a98550278c09d594",
+      "configured_model": "qwen3.8-max",
+      "failure_type": "AssertionError",
+      "failure_stack": [
+        [
+          "documented_case.py",
+          "execute_docs",
+          153
+        ],
+        [
+          "documented_case.py",
+          "validate_file",
+          113
+        ]
+      ]
+    }
+  },
+  "application_result": "FAIL",
+  "failure_type": "FileNotFoundError",
+  "failed_phase": "application-controller",
+  "diagnostics": {}
+}

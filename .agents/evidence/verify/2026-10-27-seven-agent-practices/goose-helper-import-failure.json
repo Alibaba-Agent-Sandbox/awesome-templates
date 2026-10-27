@@ -1,0 +1,101 @@
+{
+  "result": "FAIL",
+  "template": "goose",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//goose@a63f0f8f8996fd772116c570aa21e927dcc1aea0",
+  "manifest_sha256": "48bfbd26ba9dac82c1a1411b687e7da713e802666fbd379a252936c69b4d341a",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "goose_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "GOOSE_API_KEY",
+      "GOOSE_BASE_URL",
+      "GOOSE_MODEL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:48bfbd26ba9dac82c1a1411b687e7da713e802666fbd379a252936c69b4d341a",
+    "source_digest": "2bd1a1e118f84b8e986505feee654096e72c09eadfd1fbbcf3890b8dcee275c7",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "30fa704a8e41cdda97f6540acbe7bd0f880d68a58911569b867589454233d5f2",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "passed": false,
+    "scope": "fresh literal documentation tasks; canonical full-method/model assertions are in the pinned preceding core receipt",
+    "core_receipt_sha256": "b5720b957c62923374dca80649a5999bcd02a7491ca11f47e1fff3962ede5708",
+    "documented_case": {
+      "template": "goose",
+      "provider": "alicloud-express",
+      "result": "FAIL",
+      "checks": [
+        {
+          "id": "literal README CLI business request",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI business process exit zero",
+          "result": "PASS"
+        }
+      ],
+      "core_receipt_sha256": "b5720b957c62923374dca80649a5999bcd02a7491ca11f47e1fff3962ede5708",
+      "configured_model": "qwen3.8-max",
+      "failure_type": "AssertionError",
+      "failure_stack": [
+        [
+          "documented_case.py",
+          "execute_docs",
+          130
+        ],
+        [
+          "documented_case.py",
+          "validate_file",
+          113
+        ]
+      ]
+    }
+  },
+  "application_result": "FAIL",
+  "failure_type": "FileNotFoundError",
+  "failed_phase": "application-controller",
+  "diagnostics": {}
+}

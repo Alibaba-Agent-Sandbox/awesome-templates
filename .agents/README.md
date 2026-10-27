@@ -328,6 +328,8 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 - [Canonical runtime helper sources](notes/proposed/architecture/2026-10-26-runtime-helper-sources.md) · [verification](evidence/verify/2026-10-26-runtime-helper-sources.md).
 
 - [Documented template usage](notes/proposed/feature/2026-10-27-documented-template-usage.md) · [verification](evidence/verify/2026-10-27-documented-template-usage.md).
+
+- [Seven native agent experiences](notes/proposed/feature/2026-10-27-seven-agent-practices.md) · [verification](evidence/verify/2026-10-27-seven-agent-practices.md).
 - [Unused-code cleanup](notes/implemented/process/2026-10-27-dead-code-cleanup.md) · [verification](evidence/verify/2026-10-27-dead-code-cleanup.md).
 
 - [Unused-code cleanup acceptance](evidence/verify/2026-10-27-dead-code-cleanup-acceptance.md).

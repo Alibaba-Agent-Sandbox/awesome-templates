@@ -1,0 +1,122 @@
+{
+  "result": "FAIL",
+  "template": "deepagents",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//deepagents@a63f0f8f8996fd772116c570aa21e927dcc1aea0",
+  "manifest_sha256": "db61bf87e4386e8c6ff9e118cf6c59416356359f8ed25c8c562434f89d8341d0",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "deepagents_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "DEEPAGENTS_API_KEY",
+      "DEEPAGENTS_BASE_URL",
+      "DEEPAGENTS_MODEL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:db61bf87e4386e8c6ff9e118cf6c59416356359f8ed25c8c562434f89d8341d0",
+    "source_digest": "0f2d090dc49965c5ccd63ba20f01486cc9e28f87ce1bbfc046c5ef0523291441",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "1b46b5751e104dc71a4559c1b2cb0848c3d2bf7e1ac61f231283589e1bf56f74",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "passed": false,
+    "scope": "fresh literal documentation tasks; canonical full-method/model assertions are in the pinned preceding core receipt",
+    "core_receipt_sha256": "36346c006e533f3d794c39bf110536f582a3773d85c76a667ea55f0212f3466d",
+    "documented_case": {
+      "template": "deepagents",
+      "provider": "alicloud-express",
+      "result": "FAIL",
+      "checks": [
+        {
+          "id": "literal README CLI business request",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI business process exit zero",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI generated report independently downloaded",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI output independently absent before SDK task",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README Python example",
+          "result": "PASS"
+        }
+      ],
+      "core_receipt_sha256": "36346c006e533f3d794c39bf110536f582a3773d85c76a667ea55f0212f3466d",
+      "configured_model": "qwen3.8-max",
+      "failure_type": "CLIError",
+      "failure_stack": [
+        [
+          "documented_case.py",
+          "execute_docs",
+          141
+        ],
+        [
+          "documented_case.py",
+          "run",
+          62
+        ],
+        [
+          "public_launch_e2e.py",
+          "run",
+          155
+        ]
+      ]
+    }
+  },
+  "application_result": "FAIL",
+  "failure_type": "FileNotFoundError",
+  "failed_phase": "application-controller",
+  "diagnostics": {}
+}
