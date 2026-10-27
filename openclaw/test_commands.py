@@ -1,7 +1,6 @@
 """Gateway ownership, bounded execution and argument regressions."""
 import importlib.util
 import json
-import os
 from pathlib import Path
 import subprocess
 import socket

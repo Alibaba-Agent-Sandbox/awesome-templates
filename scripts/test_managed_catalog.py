@@ -1,5 +1,4 @@
 """Managed inputs keep historical evidence without manufacturing current certification."""
-import copy
 import json
 
 import pytest

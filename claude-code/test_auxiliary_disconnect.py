@@ -1,5 +1,5 @@
 """Real socket disconnects with fixed authored HTTP data, no native/model execution."""
-import hashlib,importlib.util,json,socket,struct,threading,http.client,time,select
+import hashlib,importlib.util,json,socket,struct,threading,http.client,select
 from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 from pathlib import Path
 import pytest

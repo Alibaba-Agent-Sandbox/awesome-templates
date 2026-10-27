@@ -101,7 +101,6 @@ def test_timeout_kills_owned_descendants_and_omits_private_argv(monkeypatch, tmp
 
 @pytest.mark.parametrize("exit_code", [0, 7])
 def test_leader_exit_cleans_owned_descendants(monkeypatch, tmp_path, exit_code):
-    import subprocess
     import time
     monkeypatch.setenv("WORKSPACE", str(tmp_path))
     marker = tmp_path / "escaped-cleanup"

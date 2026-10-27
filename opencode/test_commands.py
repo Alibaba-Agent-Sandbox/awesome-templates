@@ -118,7 +118,6 @@ def test_timeout_traceback_never_discloses_prompt(monkeypatch, tmp_path):
 
 
 def test_stale_pid_file_cannot_signal_unrelated_child(monkeypatch, tmp_path):
-    import os
     import sys
     unrelated = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"],
                                  start_new_session=True)
@@ -158,7 +157,6 @@ def test_nonmatching_interpreter_ownership_refuses_signal(monkeypatch):
 
 def test_concurrent_start_owns_one_child_and_stop_reaps_it(monkeypatch):
     from concurrent.futures import ThreadPoolExecutor
-    import os
     import sys
     import threading
     original_popen = subprocess.Popen

@@ -1,10 +1,8 @@
 """Authored native-process substitutes exercise boundaries; these are not L3."""
 import importlib.util
 import json
-import os
 from pathlib import Path
 import sys
-import tempfile
 
 import pytest
 
@@ -91,7 +89,7 @@ def test_nonzero_status_redaction_private_cleanup_with_authored_process(configur
 
 
 def test_timeout_cleans_detached_authored_child_and_preserves_unrelated_process(configured,tmp_path,monkeypatch):
-    import subprocess,time,signal
+    import subprocess
     unrelated=subprocess.Popen([sys.executable,'-c','import time;time.sleep(30)'])
     binary=tmp_path/'copilot';pidfile=tmp_path/'owned-child.pid'
     binary.write_text('#!'+sys.executable+'\nimport subprocess,sys,time,pathlib\n'

@@ -1,6 +1,5 @@
 """Exact artifact/ordinary-client transport boundaries; no vendor or cloud call."""
 import json
-from pathlib import Path
 import pytest
 from prepare_steps import ROOT,parallel_assets
 from step_assets import DEVIN_NATIVE,MAX_BYTES,reviewed_asset_limit,reviewed_devin_native,reviewed_download_headers

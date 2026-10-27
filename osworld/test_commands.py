@@ -1,12 +1,10 @@
 """Real process ownership regressions; fixture workers are not desktop evidence."""
 import importlib.util
-import json
 import os
 from pathlib import Path
 import signal
 import subprocess
 import sys
-import time
 
 import pytest
 

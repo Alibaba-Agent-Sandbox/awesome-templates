@@ -10,22 +10,19 @@ import ast
 import importlib.util
 import importlib.metadata
 import asyncio
-import contextlib
 from datetime import datetime,timezone
 import hashlib
 import json
 import os
 from pathlib import Path
 import shutil
-import subprocess
-import sys
 import tempfile
 import uuid
 import secrets
 import shlex
 import time
 import yaml
-from public_launch_e2e import CLI, CLIError, require, matches, command_url, application_headers, delete_sandbox, json_contains, verify_cli_io
+from public_launch_e2e import CLI, CLIError, require, matches, command_url, application_headers, delete_sandbox, verify_cli_io
 import ci_image_archive as images
 from template_http_acceptance import fixture_environment, run_controller
 

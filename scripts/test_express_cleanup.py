@@ -1,7 +1,5 @@
 """Actual process descendants must be stopped after their leader exits."""
-import os
 from pathlib import Path
-import signal
 import sys
 import tempfile
 import time

@@ -1,5 +1,5 @@
 """Authored fixed workers only; original native/model code never runs here."""
-import importlib.util,json,os,subprocess,sys,threading,time
+import importlib.util,json,subprocess,sys
 from pathlib import Path
 import pytest
 
