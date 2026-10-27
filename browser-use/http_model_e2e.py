@@ -34,6 +34,11 @@ def verify(client,record,kind):
         spec=importlib.util.spec_from_file_location('actual_browser_validation',root/'model_e2e_test.py');module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
         diagnostic={'native_done':value.get('done'),'native_success':value.get('success'),'steps':value.get('steps'),'counter':observed.get('count'),'code_matches':observed.get('code')==expected,'final_url_matches':value.get('final_url')==local,'png_bytes':len(png),'timeout_reported':any('timed out'in str(x).lower()or'timeout'in str(x).lower()for x in value.get('error_summary',[]))}
         print('BROWSER_MODEL_DIAGNOSTIC '+json.dumps(diagnostic,sort_keys=True),flush=True)
+        if os.environ.get('E2E_DEBUG_BROWSER_RESULT')=='1':
+            # Opt-in operator diagnostics stay in the runner's private HTTP log.
+            # The worker redacts its model key/base from native errors.
+            print('BROWSER_PRIVATE_RESULT '+json.dumps({'result':value.get('result','')[:2048],
+                'errors':value.get('error_summary',[])},ensure_ascii=False),flush=True)
         proof=module.validate(value,observed,png,local,expected)
         record(True,'actual configured native model, fresh exact browser interactions and independently decoded PNG')
         print('BROWSER_MODEL_PROOF '+json.dumps(proof,sort_keys=True),flush=True)
