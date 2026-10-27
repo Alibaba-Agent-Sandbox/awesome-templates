@@ -1,0 +1,38 @@
+{
+  "template": "code-interpreter-v1",
+  "provider": "alicloud-express",
+  "result": "PASS",
+  "checks": [
+    "literal CLI launch and process result42",
+    "actual SDK file write/read/remove and independently absent",
+    "actual uploaded CSV and Python process produce independently downloaded exact JSON",
+    "process API retains actual nonzero exit code7",
+    "unchanged complete README SDK creation/process/file/kill/close"
+  ],
+  "cleanup": {
+    "business_files": "independently confirmed absent",
+    "sdk_sandbox": "independently confirmed absent",
+    "cli_sandbox": "confirmed absent"
+  },
+  "launch_input_receipt": {
+    "manifest_digest": "sha256:3527ef5de7db2217855345d5e81eee48efe6248c747c377cd38725045b887044",
+    "source_digest": null,
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "65546e19e895e7d2c21090fea65fabea29d2d47162a6b63f036d7910dbfb4eed"
+  },
+  "business_artifact": {
+    "file": "summary.json",
+    "sha256": "9dc4f5b5770237884e83a5b3f0bb4e0e0bf54816293b54a3604d0cee45c6ea6c",
+    "value": {
+      "count": 3,
+      "total": "51.30"
+    }
+  },
+  "python_runtime_version": "Python 3.13.13",
+  "executed_at": "2026-10-27T11:58:31.240178+00:00",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "documentation_sha256": "d20a1f0d2a8b9654376b897ff2f4ec9d34bda5592121738eb255c017f3a6cc05",
+  "original_receipt_sha256": "7d1bb79f8c389e636b9f9422f213b37637f2d624f9447cc9dc23f3f93888d094"
+}

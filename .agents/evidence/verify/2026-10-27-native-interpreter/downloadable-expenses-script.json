@@ -1,0 +1,13 @@
+{
+  "template": "code-interpreter-v1",
+  "provider": "alicloud-express",
+  "result": "PASS",
+  "scope": "unchanged downloadable pandas/plot practical script; does not qualify known interpreter exception replay defect",
+  "artifacts": {
+    "expenses-summary.json": "ee7eda13bab376bc1a7d051445f1b00339579d8ee227a618d48910598ff06c22",
+    "expenses.png": "42dc3d2176d392eafbf0e484ff34f98f88dd2c54ee48ea4ab13f4dd87cf4afd6"
+  },
+  "script_sha256": "2e3e71bdc63e26a61a92a383f3d1422fdc99bbf01ff2b33a8da7c289c5ed109c",
+  "cleanup": "all owned instances independently absent",
+  "original_receipt_sha256": "361ae48ec37c393abd64ddc9cafcf38470286ca6d5eba2f6039e0cc596983646"
+}
