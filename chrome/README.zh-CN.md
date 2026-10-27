@@ -42,7 +42,7 @@ abx run "$SANDBOX_ID" chrome_screenshot --json-args '{}'
 
 返回实际浏览器标题和最终 URL；随后可截图保存同一会话。
 
-`chrome_start` 返回会话专用 VNC 密码。解析 6080 端口后打开 noVNC，使用这个密码登录；CDP 使用 9222 端口和应用口令。必须原样保留提供方返回 URL 的路径、查询和网关头。浏览器网站账号需要在这个远端会话里单独登录，不继承本机 cookies。
+`chrome_start` 返回会话专用 VNC 密码。解析 6080 端口后打开 noVNC，使用这个密码登录；CDP 使用 9222 端口和应用口令。必须原样保留提供方返回 URL 的路径、查询和网关头。直接调用 CDP HTTP/WebSocket 时，在网关头之后同时加入 `Authorization: Bearer <应用令牌>` 和 `X-Access-Token: <应用令牌>`；提供方代理移除 Authorization 时使用后者。显式错误的 Authorization 仍被拒绝。noVNC 继续使用原版生成的 VNC 密码认证。浏览器网站账号需要在这个远端会话里单独登录，不继承本机 cookies。
 
 `--sandbox-timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
 
