@@ -60,6 +60,7 @@ def main():
                       'evaluator':{'func':'check_include_exclude','result':{'type':'accessibility_tree'},'expected':{'type':'rule','rules':{'include':['Completed external-雪'],'exclude':['Awaiting external input']}}}}
                 upload(html_path,html);upload(task_path,json.dumps(task))
                 check(call('desktop_start')['running'] is True,'external controller starts a real desktop')
+                check(isinstance(call('a11y_tree'),str),'observe initial desktop before task navigation')
                 applied=call('run_task_config',task_path=task_path)
                 check(applied['applied']==1,'uploaded OSWorld task setup applies')
                 geometry=applied['browser_geometry']

@@ -174,3 +174,5 @@ Apache-2.0。保留原 OSWorld 文件、完整[上游许可证](upstream/LICENSE
 镜像显式将 `/home/user/app` 目录归属运行用户，使上传的任务文件和一次性 smoke fixture 可以在非 root 身份下写入；仅给 `COPY` 文件设置 owner 并不会自动修正 WORKDIR 本身。
 
 CLI 安装、SDK 源码安装、HTTP 认证与资源所有权见[模板使用指南](../docs/using-templates.zh-CN.md)。
+
+原生 AT-SPI 观察使用桌面无缓存策略，先读取初始页面再导航到其他任务时仍查询实时内容；保留原版无障碍树处理器和评分器。

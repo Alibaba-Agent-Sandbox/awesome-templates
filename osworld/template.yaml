@@ -1,5 +1,5 @@
 name: osworld
-version: "1.0.2"
+version: "1.0.3"
 description: "Pinned OSWorld Linux browser slice with real X11 input, screenshots, AT-SPI and selected task evaluators."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0

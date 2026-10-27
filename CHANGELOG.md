@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+- OSWorld1.0.3 queries live uncached AT-SPI observations across initial inspection/task navigation and reports bounded numeric worker-exit diagnostics; upstream tree/evaluator remain unchanged.
+
 - Maintain 15 standalone process-runner placements from canonical source snippets, with a CI drift check. Preserve executable ASTs and template-specific policies; no new runtime dependency. / 15 处独立模板进程封装改用公共源码维护并由 CI 检查漂移；保持执行逻辑及模板策略，不增加运行依赖。
 - Rewrite all 50 template guides in English and Chinese with actual model/authentication setup and useful CLI, SDK and HTTP examples. Remove historical acceptance and maintainer sections from consumer READMEs and stop requiring those sections in the authoring checks; retain original engineering evidence.
 
