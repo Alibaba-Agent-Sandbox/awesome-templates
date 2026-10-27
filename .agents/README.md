@@ -363,3 +363,4 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 - [Additional provider practices and preview resolution](notes/proposed/feature/2026-10-27-more-provider-practices.md) · [verification](evidence/verify/2026-10-27-more-provider-practices.md). Original failures and compatible-only scope remain explicit.
 
 - [Created-sandbox controller gateway binding](notes/proposed/feature/2026-10-27-owned-controller-gateways.md) · [verification](evidence/verify/2026-10-27-owned-controller-gateways.md). Eight current-source dual-provider reruns required.
+- [Chrome proxy application authentication](notes/proposed/feature/2026-10-27-chrome-proxy-auth.md) · [verification](evidence/verify/2026-10-27-chrome-proxy-auth.md). Actual reruns required before provider qualification.
