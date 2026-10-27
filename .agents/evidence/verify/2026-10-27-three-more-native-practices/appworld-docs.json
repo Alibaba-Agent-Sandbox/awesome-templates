@@ -1,0 +1,139 @@
+{
+  "result": "PASS",
+  "template": "appworld",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//appworld@6bd63f81edd6d909cb7df929dcfb31bd0e5d7393",
+  "manifest_sha256": "9e2c7a944b3def04446411b812e170c4e284b029fb9019b7a83e4eaa717121f5",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "appworld_native_smoke",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "APPWORLD_MODEL",
+      "APPWORLD_MODEL_API_KEY",
+      "APPWORLD_MODEL_BASE_URL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:9e2c7a944b3def04446411b812e170c4e284b029fb9019b7a83e4eaa717121f5",
+    "source_digest": "42f67255b39b7e09fb8ef8d57497c5a7b2af63776b0e806cc807f3bce048aed4",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "f6cb9117967a86c587c6bed28a0aadbce718b9b7ce81b084c9c761ced58e8e95",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "passed": true,
+    "scope": "fresh literal documentation tasks; canonical full-method/model assertions are in the pinned preceding core receipt",
+    "core_receipt_sha256": "b0d3a970dc335770d6e59977b94b894528cef9c9592c1784bf09b78d78003a27",
+    "documented_case": {
+      "template": "appworld",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "cli actual original task, downloaded exact artifact and keyless native replay",
+          "result": "PASS"
+        },
+        {
+          "id": "cli owned result directory independently absent",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README SDK program",
+          "result": "PASS"
+        },
+        {
+          "id": "sdk actual original task, downloaded exact artifact and keyless native replay",
+          "result": "PASS"
+        },
+        {
+          "id": "sdk owned result directory independently absent",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP task",
+          "result": "PASS"
+        },
+        {
+          "id": "http actual original task, downloaded exact artifact and keyless native replay",
+          "result": "PASS"
+        },
+        {
+          "id": "http owned result directory independently absent",
+          "result": "PASS"
+        }
+      ],
+      "core_receipt_sha256": "b0d3a970dc335770d6e59977b94b894528cef9c9592c1784bf09b78d78003a27",
+      "runs": {
+        "cli": {
+          "score": 1,
+          "artifact_bytes": 11278,
+          "artifact_sha256": "fb8c36aa4dd1cc4d969e4e894b0d128a678bc7c27dc5a7a9f0f95cc28f53816d",
+          "native_replay_score": 1.0
+        },
+        "sdk": {
+          "score": 1.0,
+          "artifact_bytes": 12522,
+          "artifact_sha256": "e83988a036d9ec29b04a15cdab9180c76b84ca4c68276216b7b109318bae8228",
+          "native_replay_score": 1.0
+        },
+        "http": {
+          "score": 1.0,
+          "artifact_bytes": 11646,
+          "artifact_sha256": "0cd68d29b9c123effefc6145a12346814d352a9e20796e88a3fc2797b066594c",
+          "native_replay_score": 1.0
+        }
+      },
+      "configured_model": "qwen3.8-max"
+    }
+  },
+  "application_result": "PASS",
+  "original_result": "FAIL",
+  "original_receipt_sha256": "a2286cdb4022d382294cbc6a5d30edbeb3cd92445034d627088b198bf445e2e2",
+  "cleanup_reconciliation": {
+    "scope": "new independent cleanup observation only; original completed business and immutable failed receipt retained",
+    "sandbox_count": 1,
+    "template_count": 1,
+    "image_entry_count": 2,
+    "new_business_or_model_calls": 0
+  },
+  "original_private_receipt_sha256": "6081f772eda243c3627d6f5becdbf775f441307202d04fff1c8478f2c09f667c"
+}
