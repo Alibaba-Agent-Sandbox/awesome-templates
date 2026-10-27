@@ -5,7 +5,7 @@ same machine as the paired native Python SDK. The Alibaba default FC domain can
 mark HTML as an attachment; the [official FC behavior](https://www.alibabacloud.com/help/en/functioncompute/web-functions)
 explains that restriction. A configured custom preview domain remains available
 for direct mode. This local operation uses the actual remote application and
-verified upstream HTTPS, then relays HTTP/WebSockets through a loopback listener.
+verified upstream HTTPS (or a configured loopback HTTP OpenSandbox endpoint), then relays HTTP/WebSockets through a loopback listener.
 
 ## Install and open
 
@@ -29,7 +29,7 @@ The initial URL carries a random local entry capability, exchanged locally by a3
 an HttpOnly SameSite=Strict local cookie. Host and Origin checks accept only the
 actual loopback origin. Application cookies stay in a per-relay RAM jar; unrelated
 browser/local-port cookies are not sent upstream. The target is always the SDK's
-fixed selected endpoint. SDK authentication query values are retained and cannot
+fixed selected endpoint resolved with `await sandbox.network.resolve(port)`. SDK gateway headers remain only in the relay and override browser-supplied values for those names. They are preserved for both HTTP and WebSockets. SDK authentication query values are retained and cannot
 be replaced by browser query parameters. Operator proxy settings are respected
 without automatic netrc credential loading. Keep the printed local URL private.
 
@@ -43,7 +43,7 @@ Binary/text WebSocket frames and the selected subprotocol are relayed. Redirects
 outside the fixed owned endpoint are rejected. This is a local preview operation,
 not a public hosting service or a claim that the default FC domain renders HTML.
 
-Upstream HTTPS certificate and hostname validation remain required. The local
+Upstream HTTPS certificate and hostname validation remain required. An explicitly configured HTTP SDK endpoint is accepted only on literal loopback IPs or localhost, for a local OpenSandbox server; arbitrary remote cleartext endpoints remain rejected. The local
 browser uses HTTP on127.0.0.1; no browser response interception or replacement
 page is used. The relay and its dependencies are operator-side utilities and do
 not change a template's image/runtime or remove application authentication.

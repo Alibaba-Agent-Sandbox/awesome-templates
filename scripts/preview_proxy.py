@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import ipaddress
 from contextlib import asynccontextmanager
 import secrets
 import ssl
@@ -24,12 +25,24 @@ _HOP = {'connection', 'keep-alive', 'proxy-authenticate', 'proxy-authorization',
 class PreviewRelay:
     """One fixed upstream, loopback binding and an ephemeral entry capability."""
 
-    def __init__(self, upstream_url: str, *, _test_http: bool = False,
+    def __init__(self, upstream_url: str, *, gateway_headers: dict[str, str] | None = None,
+                 allow_loopback_http: bool = False, _test_http: bool = False,
                  _ssl_context: ssl.SSLContext | None = None):
         parsed = urlsplit(upstream_url)
-        if (parsed.scheme != 'https' and not (_test_http and parsed.scheme == 'http')
+        try:
+            loopback = parsed.hostname == 'localhost' or ipaddress.ip_address(parsed.hostname or '').is_loopback
+        except ValueError:
+            loopback = False
+        if (parsed.scheme != 'https' and not (parsed.scheme == 'http' and (_test_http or allow_loopback_http and loopback))
                 or not parsed.hostname or parsed.username or parsed.password or parsed.fragment):
             raise ValueError('preview requires a verified HTTPS SDK endpoint')
+        if gateway_headers is not None and (not isinstance(gateway_headers, dict) or any(
+                not isinstance(key, str) or not key or not isinstance(value, str)
+                or '\r' in key + value or '\n' in key + value
+                or key.lower() in _HOP | {'host', 'cookie', 'content-length', 'content-encoding'}
+                for key, value in gateway_headers.items())):
+            raise ValueError('gateway_headers must contain valid end-to-end SDK headers')
+        self.gateway_headers = dict(gateway_headers or {})
         self.upstream = parsed
         self.proxy = None if parsed.hostname in ('127.0.0.1', 'localhost', '::1') or proxy_bypass(parsed.hostname) else getproxies().get(parsed.scheme)
         self.ssl_context = _ssl_context or ssl.create_default_context()
@@ -113,6 +126,9 @@ class PreviewRelay:
                               if key.lower() not in excluded and not key.lower().startswith('sec-websocket-'))
         if 'Origin' in headers:
             headers['Origin'] = self.upstream.scheme + '://' + self.upstream.netloc
+        # Only SDK resolution supplies gateway authentication. A local browser
+        # must not replace it, including through a differently cased header.
+        headers.update(self.gateway_headers)
         return headers
 
     async def _handle(self, request):
@@ -202,7 +218,8 @@ class PreviewRelay:
 async def sdk_preview(sandbox, *, remote_port: int = 8443):
     if type(remote_port) is not int or not 1 <= remote_port <= 65535:
         raise ValueError('remote_port must be an integer from1 to65535')
-    async with PreviewRelay(sandbox.network.get_url(remote_port)) as relay:
+    endpoint, headers = await sandbox.network.resolve(remote_port)
+    async with PreviewRelay(endpoint, gateway_headers=dict(headers), allow_loopback_http=True) as relay:
         yield relay
 
 

@@ -167,3 +167,45 @@ def test_private_entry_redirects_to_canonical_app_path_before_login():
                     assert response.status==200 and await response.read()==html
                     assert seen==['/login']
     asyncio.run(run())
+
+
+def test_sdk_preview_uses_resolved_provider_headers_and_loopback_http_for_http_and_ws():
+    from types import SimpleNamespace
+    async def run():
+        seen=[]
+        async def handler(request):
+            assert request.headers.get('X-Provider-Key')=='synthetic-provider-key'
+            seen.append((request.path,dict(request.query)))
+            if request.headers.get('Upgrade','').lower()=='websocket':
+                ws=web.WebSocketResponse();await ws.prepare(request)
+                async for message in ws:
+                    await ws.send_str(message.data)
+                return ws
+            return web.Response(text='owned preview')
+        app=web.Application();app.router.add_route('*','/{path:.*}',handler);runner=web.AppRunner(app,access_log=None);await runner.setup();site=web.TCPSite(runner,'127.0.0.1',0);await site.start();port=runner.addresses[0][1]
+        class Network:
+            def get_url(self,port):raise AssertionError('synchronous URL drops required gateway headers')
+            async def resolve(self,selected):
+                assert selected==3000
+                return 'http://127.0.0.1:'+str(port)+'/provider/proxy?fixed=owned',{'X-Provider-Key':'synthetic-provider-key'}
+        try:
+            async with relay_module.sdk_preview(SimpleNamespace(network=Network()),remote_port=3000)as relay:
+                async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar(unsafe=True))as client:
+                    response=await client.get(relay.url,headers={'X-Provider-Key':'browser-spoof'});assert response.status==200 and await response.text()=='owned preview'
+                    assert 'synthetic-provider-key'not in str(response.headers)
+                    async with client.ws_connect(relay.origin+'/ws?fixed=spoof',headers={'X-Provider-Key':'browser-spoof'})as ws:
+                        await ws.send_str('native socket');assert(await ws.receive()).data=='native socket'
+            assert seen==[('/provider/proxy/',{'fixed':'owned'}),('/provider/proxy/ws',{'fixed':'owned'})]
+        finally:await runner.cleanup()
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize('headers',[{'Host':'spoof.invalid'},{'Cookie':'spoof=1'},{'X-Key':'bad\r\nInjected: yes'},{'':'value'}])
+def test_resolved_gateway_headers_cannot_inject_hop_host_or_browser_cookie(headers):
+    with pytest.raises(ValueError,match='gateway_headers'):
+        PreviewRelay('https://approved.example.invalid',gateway_headers=headers)
+
+
+def test_loopback_http_exception_does_not_allow_remote_cleartext():
+    with pytest.raises(ValueError):
+        PreviewRelay('http://example.invalid',allow_loopback_http=True)

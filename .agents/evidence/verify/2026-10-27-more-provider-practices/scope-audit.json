@@ -1,0 +1,84 @@
+{
+  "node-web": {
+    "provider": "opensandbox",
+    "scope": "complete-native-methods-and-fresh-literal-cli-full-sdk-http-business",
+    "result": "PASS",
+    "native_assertions": 60,
+    "documented_checks": 7,
+    "runtime_folder_unchanged": true
+  },
+  "dev-services": {
+    "provider": "opensandbox",
+    "scope": "complete-native-methods-and-fresh-literal-cli-full-sdk-http-business",
+    "result": "PASS",
+    "native_assertions": 6,
+    "documented_checks": 7,
+    "runtime_folder_unchanged": true
+  },
+  "media-tools": {
+    "provider": "opensandbox",
+    "scope": "complete-native-methods-and-fresh-literal-cli-full-sdk-http-business",
+    "result": "PASS",
+    "native_assertions": 28,
+    "documented_checks": 7,
+    "runtime_folder_unchanged": true
+  },
+  "ocr": {
+    "provider": "opensandbox",
+    "scope": "complete-native-methods-and-fresh-literal-cli-full-sdk-http-business",
+    "result": "PASS",
+    "native_assertions": 19,
+    "documented_checks": 7,
+    "runtime_folder_unchanged": true
+  },
+  "document-tools": {
+    "provider": "opensandbox",
+    "scope": "complete-native-methods-and-fresh-literal-cli-full-sdk-http-business",
+    "result": "PASS",
+    "native_assertions": 36,
+    "documented_checks": 7,
+    "runtime_folder_unchanged": true
+  },
+  "browser-automation": {
+    "provider": "opensandbox",
+    "scope": "original-native-or-documentation-attempt",
+    "result": "FAIL",
+    "reviewed_provider_qualification": false,
+    "native_assertions": 36,
+    "failure_preserved": true
+  },
+  "next-app": {
+    "provider": "opensandbox",
+    "scope": "original-native-or-documentation-attempt",
+    "result": "FAIL",
+    "reviewed_provider_qualification": false,
+    "native_assertions": 6,
+    "failure_preserved": true
+  },
+  "claude-code": {
+    "provider": "alicloud-express",
+    "result": "PARTIAL",
+    "scope": "actual-original-cli-explicit-authored-compatible-protocol-adapter-only",
+    "native_assertions": 19,
+    "documented_checks": 14,
+    "unverified_public_methods": [
+      "claude"
+    ],
+    "blocker": "native vendor credentials unavailable; compatible model key is not sent to vendor default endpoint",
+    "whole_template_qualification": false,
+    "runtime_folder_unchanged": true
+  },
+  "gemini": {
+    "provider": "alicloud-express",
+    "result": "PARTIAL",
+    "scope": "actual-original-cli-explicit-authored-compatible-protocol-adapter-only",
+    "native_assertions": 19,
+    "documented_checks": 14,
+    "unverified_public_methods": [
+      "gemini"
+    ],
+    "blocker": "native vendor credentials unavailable; compatible model key is not sent to vendor default endpoint",
+    "whole_template_qualification": false,
+    "runtime_folder_unchanged": true
+  }
+}

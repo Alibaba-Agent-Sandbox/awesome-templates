@@ -44,15 +44,17 @@ def application_fallback(base_url: str, token: str):
 def main():
     target = Path(sys.argv[1]).resolve()
     fallback = application_fallback(os.environ["E2E_BASE_URL"], os.environ.get("ABX_SERVER_TOKEN", ""))
-    original = httpx.Client
+    original_init = httpx.Client.__init__
 
-    class ApplicationClient(original):
-        def __init__(self, *args, **kwargs):
-            hooks = dict(kwargs.pop("event_hooks", None) or {})
-            hooks["request"] = [*hooks.get("request", []), fallback]
-            super().__init__(*args, event_hooks=hooks, **kwargs)
+    def application_init(self, *args, **kwargs):
+        hooks = dict(kwargs.pop("event_hooks", None) or {})
+        hooks["request"] = [*hooks.get("request", []), fallback]
+        original_init(self, *args, event_hooks=hooks, **kwargs)
 
-    httpx.Client = ApplicationClient
+    # Convenience functions retain their original Client class reference.
+    # Updating the public constructor covers them as well as explicit clients,
+    # while retaining caller hooks before the scoped authentication fallback.
+    httpx.Client.__init__ = application_init
     sys.argv = [str(target), *sys.argv[2:]]
     sys.path.insert(0, str(target.parent))
     runpy.run_path(str(target), run_name="__main__")
