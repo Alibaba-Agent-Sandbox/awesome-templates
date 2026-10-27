@@ -337,4 +337,5 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 - [Default SWE tool protocol](notes/proposed/feature/2026-10-27-swe-default-tool-protocol.md) · [verification](evidence/verify/2026-10-27-swe-default-tool-protocol.md).
 - [Native interpreter practical boundary](notes/proposed/feature/2026-10-27-native-interpreter-practice.md) · [verification](evidence/verify/2026-10-27-native-interpreter-practice.md).
 
+- [Readable preview toolchain](notes/proposed/feature/2026-10-27-next-app-readable-toolchain.md) · [verification](evidence/verify/2026-10-27-next-app-readable-toolchain.md).
 - [Compatible-agent documented use](notes/proposed/feature/2026-10-27-compatible-agent-usage.md) · [verification](evidence/verify/2026-10-27-compatible-agent-usage.md).

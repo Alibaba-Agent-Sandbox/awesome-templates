@@ -1,0 +1,14 @@
+{
+  "README.md": {
+    "executed_revision_sha256": "e907f67dfd3bc7cd0542581ae9fbd587f8c46929607e17d9a5b17e6aae5c5718",
+    "reviewed_revision_sha256": "12ecadb19fd0fe9c63b1bbb6906413c63b6e0ccbc70ed49f0630ad3b2842c283",
+    "runnable_blocks_unchanged": true,
+    "runnable_blocks_sha256": "06ac22d21bd4bf78f05e81f0d6800521454360d4e4eb6bd443da652da15c0d4a"
+  },
+  "README.zh-CN.md": {
+    "executed_revision_sha256": "0f702ee90598a54d98bac2ce1da3c78c39bd26e3b3edffc9a781ea0f14a2b7a4",
+    "reviewed_revision_sha256": "25f08d859ed0e6cc655005696f291e8913936853d0fb9a4c4fda5e4d4c0fb9f0",
+    "runnable_blocks_unchanged": true,
+    "runnable_blocks_sha256": "154abbd95dbf3d254c02e679b9d20c3bd934f9e81bfbfc02474e197c2f34a7ff"
+  }
+}
