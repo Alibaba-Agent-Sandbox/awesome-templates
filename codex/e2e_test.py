@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """HTTP smoke and optional real coding acceptance against E2E_BASE_URL.
 
-Express runs go through scripts/express_e2e.py. This file does not create a
-cloud sandbox. A model call is SKIP unless E2E_RUN_LLM=1 and a key is visible
-in this process (the server process needs the same key).
+Use the public launch runner with --real-usage for owned provider acceptance.
+This controller creates no sandbox and reads only target configuration booleans;
+model credentials stay on the target server.
 """
 from __future__ import annotations
 
@@ -32,7 +32,6 @@ REQUIRE = os.environ.get("E2E_REQUIRE_LLM", "").strip().lower() in {"1", "true",
 MODEL = os.environ.get("E2E_MODEL", "").strip()
 MARKER = "ABX_E2E_OK"
 PROBE_ROOT = os.path.join(WORK, "abx_e2e_codex_" + uuid.uuid4().hex)
-KEY_ENVS = ("OPENAI_API_KEY", "CODEX_API_KEY", "ABX_LLM_API_KEY")
 BASELINE_SOURCE = "def fib(n):\n    return n\n"
 ORIGINAL_TESTS = (
     "import unittest\nfrom fibonacci import fib\n"
@@ -315,14 +314,22 @@ def _llm(client: httpx.Client, check) -> None:
     test = "codex_exec real coding task"
     forced_off = RUN_LLM in {"0", "false", "no"}
     enabled = RUN_LLM in {"1", "true", "yes"} or REQUIRE
-    has_key = any(os.environ.get(name, "").strip() for name in KEY_ENVS)
     if REQUIRE and forced_off:
         check(test, False, "E2E_REQUIRE_LLM=1 conflicts with E2E_RUN_LLM=0")
         return
-    if forced_off or not enabled or not has_key:
+    if forced_off or not enabled:
         print(f"[SKIP] {test}", flush=True)
         if REQUIRE or RUN_LLM in {"1", "true", "yes"}:
             check(test, False, "model key or E2E_RUN_LLM is missing")
+        return
+    setup_response = client.post("/commands/codex_setup_check", json={})
+    setup_body = setup_response.json() if setup_response.status_code == 200 else {}
+    setup = setup_body.get("result", {})
+    keys = setup.get("api_key_present", {}) if isinstance(setup, dict) else {}
+    if not isinstance(keys, dict) or not any(
+        keys.get(name) is True for name in ("OPENAI_API_KEY", "CODEX_API_KEY", "ABX_LLM_API_KEY")
+    ):
+        check(test, False, "target model configuration is unavailable")
         return
     task = os.path.join(PROBE_ROOT, "agent-task")
     shell_prefix = "env -i PATH=/usr/local/bin:/usr/bin:/bin python3 "

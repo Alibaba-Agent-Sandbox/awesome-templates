@@ -1,0 +1,94 @@
+{
+  "result": "FAIL",
+  "template": "codex",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//codex@26f9cee590cffdd2b41c0b9845fa1d63e11b1a79",
+  "manifest_sha256": "34cf82f44445f776af04cbe1dfdc9f3ac83f9b9ed2f86a5a8aa12a914126cd2e",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "codex_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "codex_setup_check",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": false
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "ABX_LLM_API_KEY",
+      "ABX_LLM_BASE_URL",
+      "CODEX_MODEL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:34cf82f44445f776af04cbe1dfdc9f3ac83f9b9ed2f86a5a8aa12a914126cd2e",
+    "source_digest": "cbd4620d742d472dc89c03ed30c369cf0d215cf6c30bea1867a7c9e881de803e",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "ef76b02514a5f88d676ddd2385f25fbe494b317bc71431a4b97f3ac6e21dd719",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 1,
+    "pass_count": 14,
+    "fail_count": 1,
+    "skip_count": 1,
+    "not_run_count": 0,
+    "verifier_sha256": "b8a4b05008c5e8a64e0348eacf72c23d609a326579d1184549a5f7656635f4dc",
+    "transport_adapter_sha256": "f3f71110b6f623042d8f3b1b280cd0cd704f43b94291364ca60bb2e9691be80a",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": false
+  },
+  "http_diagnostics": [
+    "[SKIP] codex_exec real coding task",
+    "[FAIL] codex_exec real coding task \u2014 model key or E2E_RUN_LLM is missing"
+  ],
+  "application_result": "FAIL",
+  "failure_type": "CheckFailed",
+  "failed_phase": "application-controller",
+  "diagnostics": {},
+  "failed_check": "template application HTTP controller",
+  "original_receipt_sha256": "76f7dbd8e7c6a0cc5d38992e8d8483f1791aa1d280b1377f20596eafb9bf534b"
+}

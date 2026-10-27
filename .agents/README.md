@@ -337,3 +337,5 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 - [Native interpreter practical boundary](notes/proposed/feature/2026-10-27-native-interpreter-practice.md) · [verification](evidence/verify/2026-10-27-native-interpreter-practice.md).
 
 - [Compatible-agent documented use](notes/proposed/feature/2026-10-27-compatible-agent-usage.md) · [verification](evidence/verify/2026-10-27-compatible-agent-usage.md).
+
+- [Codex target-only model prerequisite](notes/proposed/process/2026-10-27-codex-target-model.md) · [verification](evidence/verify/2026-10-27-codex-target-model.md).

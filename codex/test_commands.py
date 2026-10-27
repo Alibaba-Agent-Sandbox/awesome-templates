@@ -134,6 +134,18 @@ class AgentAcceptanceTests(unittest.TestCase):
         }}
         self.assertTrue(e2e._agent_result_ok({"last_message": e2e.MARKER, "events": [completed]}))
 
+    def test_host_key_cannot_substitute_missing_target_configuration(self):
+        requests = []
+        def handle(request):
+            requests.append(request.url.path)
+            self.assertEqual(request.url.path, "/commands/codex_setup_check")
+            return httpx.Response(200, json={"result": {"api_key_present": {"ABX_LLM_API_KEY": False}}})
+        checks = []
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "synthetic-host-only"}, clear=True), patch.object(e2e, "RUN_LLM", "1"), httpx.Client(transport=httpx.MockTransport(handle), base_url="http://test") as client:
+            e2e._llm(client, lambda label, ok, *detail: checks.append((label, ok)))
+        self.assertEqual(checks, [("codex_exec real coding task", False)])
+        self.assertEqual(requests, ["/commands/codex_setup_check"])
+
     def run_remote_acceptance(self, tamper=None):
         # A fake model creates a real project on the fake remote server. Its
         # shell handler follows the real server's shlex.split + shell=False
@@ -145,6 +157,8 @@ class AgentAcceptanceTests(unittest.TestCase):
             def handle(request):
                 nonlocal project
                 requests.append(request)
+                if request.url.path == "/commands/codex_setup_check":
+                    return httpx.Response(200, json={"result": {"api_key_present": {"ABX_LLM_API_KEY": True}}})
                 if request.url.path == "/commands/codex_exec":
                     project = Path(storage) / "seed"
                     (project / "fibonacci.py").write_text(
@@ -250,7 +264,7 @@ class AgentAcceptanceTests(unittest.TestCase):
                     })
                 raise AssertionError(request.url.path)
             checks = []
-            with patch.dict(os.environ, {"OPENAI_API_KEY": "synthetic"}, clear=True), patch.object(
+            with patch.dict(os.environ, {}, clear=True), patch.object(
                 e2e, "RUN_LLM", "1"
             ), patch.object(e2e, "PROBE_ROOT", remote), httpx.Client(
                 transport=httpx.MockTransport(handle), base_url="http://test"
