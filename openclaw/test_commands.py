@@ -14,30 +14,16 @@ commands = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(commands)
 
 
-def test_restart_after_real_tcp_time_wait_preserves_foreign_listener(monkeypatch):
+def test_foreign_reusable_listener_is_not_adopted_or_stopped(monkeypatch):
     monkeypatch.setenv('OPENCLAW_GATEWAY_TOKEN', 'synthetic-unit-test-token')
-    monkeypatch.setattr(commands, '_binary', lambda: sys.executable)
-    monkeypatch.setattr(commands, '_probe', lambda timeout: True)
-    original = subprocess.Popen
-    monkeypatch.setattr(commands.subprocess, 'Popen', lambda *a, **kw:
-        original([sys.executable, '-c', 'import time;time.sleep(30)'], **kw))
     with socket.socket() as listener:
         listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         listener.bind(('127.0.0.1', 0)); listener.listen()
         port = listener.getsockname()[1]
         with pytest.raises(RuntimeError, match='already occupied'):
             commands.gateway_start(port=port)
-        with socket.create_connection(('127.0.0.1', port)) as client:
-            peer, _ = listener.accept()
-            peer.close()  # server closes first, leaving server-side TIME_WAIT
-            assert client.recv(1) == b''
-    with socket.socket() as non_reusable:
-        with pytest.raises(OSError):
-            non_reusable.bind(('127.0.0.1', port))
-    try:
-        assert commands.gateway_start(port=port)['healthy'] is True
-    finally:
-        commands.gateway_stop(command_timeout=1)
+        assert listener.getsockname()[1] == port
+        assert commands._PROCESS is None
 
 
 def test_partial_model_configuration_never_calls_gateway(monkeypatch):

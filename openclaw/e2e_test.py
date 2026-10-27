@@ -65,6 +65,10 @@ def main():
             finally:
                 response = client.post("/commands/gateway_stop", json={"command_timeout": 10})
                 check(response.status_code == 200 and response.json()['result'].get('running') is False, "owned gateway cleanup")
+            response = client.post("/commands/gateway_start", json={"command_timeout": 90})
+            check(response.status_code == 200 and response.json()['result']['healthy'] is True, "immediate owned restart tolerates previous TCP TIME_WAIT")
+            response = client.post("/commands/gateway_stop", json={})
+            check(response.status_code == 200 and response.json()['result']['running'] is False, "restarted gateway independently stopped")
             response = client.post("/commands/gateway_health", json={"command_timeout": 1})
             check(response.status_code == 500 and response.json().get('type') == 'RuntimeError', "stopped gateway cannot pass health")
         else:
