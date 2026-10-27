@@ -1,0 +1,85 @@
+{
+  "result": "PASS",
+  "template": "codex",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//codex@22168cd80bfe143960e439ab59778301eb580f70",
+  "manifest_sha256": "34cf82f44445f776af04cbe1dfdc9f3ac83f9b9ed2f86a5a8aa12a914126cd2e",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "codex_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "codex_setup_check",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": false
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "ABX_LLM_API_KEY",
+      "ABX_LLM_BASE_URL",
+      "CODEX_MODEL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:34cf82f44445f776af04cbe1dfdc9f3ac83f9b9ed2f86a5a8aa12a914126cd2e",
+    "source_digest": "aaab47dfe8ab3f9fa348a6486f695f9517d2983e380db20bac0ddfc59dab09e1",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "0fe3aa5ece21d19695e301e9a5968fe9d78e2f07ff4d7ff78ee8e8fc54fe0633",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 18,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "bbefc722ffa1262292c0373aa0d1f1a29e60ea2f4538c2467b2cd4a20e5f9b84",
+    "transport_adapter_sha256": "f3f71110b6f623042d8f3b1b280cd0cd704f43b94291364ca60bb2e9691be80a",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true
+  },
+  "application_result": "PASS"
+}

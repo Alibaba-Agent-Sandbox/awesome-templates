@@ -1,0 +1,141 @@
+{
+  "result": "PASS",
+  "template": "document-tools",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//document-tools@54dc3e137013af4a97de0267b4e4006f6ab8a877",
+  "manifest_sha256": "08d1bbc89595901bf22135d6ca5b30a6ce61518c2c82b6690248c19e001cf289",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "document_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "document_smoke",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 2,
+      "command": "office_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 3,
+      "command": "document_extended_smoke",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": []
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:08d1bbc89595901bf22135d6ca5b30a6ce61518c2c82b6690248c19e001cf289",
+    "source_digest": "8286240d0a8a7e2131ebbbbf67189a3db28c553d61c4a65ac977fd3c4385e707",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "872dd5cf154b95f15e7ebeb13de2f7ac779cb2351f5d6ed6caebcd3ab4b2697b",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 36,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "36da0acd46618775d58a79ac538ad0489359b2615b175b939fd84ff0aa29d8ca",
+    "transport_adapter_sha256": "f3f71110b6f623042d8f3b1b280cd0cd704f43b94291364ca60bb2e9691be80a",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "document-tools",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "cli actual documented output independently verified",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI outputs independently absent before SDK",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README SDK program",
+          "result": "PASS"
+        },
+        {
+          "id": "sdk actual documented output independently verified",
+          "result": "PASS"
+        },
+        {
+          "id": "previous SDK outputs independently absent before HTTP",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP request",
+          "result": "PASS"
+        },
+        {
+          "id": "http actual documented output independently verified",
+          "result": "PASS"
+        }
+      ],
+      "artifacts": {
+        "cli-report.docx": "sha256:659c3c5da540acd1e98a3ed9fdadc5c06549d48e0c613ce463476fb6b989eb0d",
+        "report.docx": "sha256:c92dbdf0c87b61717cde1e5e4ee4fb9f4b29ff98dcd760860be5b78812ffa4b0",
+        "http-report.docx": "sha256:0e7b4e4cf6a9d0adcfe24c4597e9fb047fcf5138d3ecc5eb29fa949fc5d00b4a"
+      }
+    }
+  },
+  "application_result": "PASS"
+}
