@@ -403,11 +403,11 @@ async def verify(args):
     env = os.environ.copy()
     # This is a generated application credential for this run, never a model key.
     for key, value in manifest.get('env', {}).items():
-        if value == '':
+        if value == '' and not args.real_usage:
             env.pop(key, None)
     env['ABX_SERVER_TOKEN'] = secrets.token_urlsafe(32)
     from template_http_acceptance import fixture_environment, run_controller
-    server_fixture, controller_fixture, fixture_proof = fixture_environment(args.template)
+    server_fixture, controller_fixture, fixture_proof = fixture_environment(args.template, real_usage=args.real_usage)
     env.update(server_fixture)
     cli = CLI(args.abx, args.provider, env)
     report = {'result': 'FAIL', 'template': args.template, 'provider': args.provider,
@@ -422,6 +422,12 @@ async def verify(args):
             env, importlib.metadata.version('agent-sandbox-client'),
             importlib.metadata.version('agent-sandbox-server'))
     report['test_configuration'] = fixture_proof
+    if args.real_usage:
+        report['scope'] = 'public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification'
+        report['test_configuration']['real_usage_required'] = True
+        report['test_configuration']['explicit_manifest_environment'] = sorted(
+            key for key, default in manifest.get('env', {}).items()
+            if default == '' and env.get(key) and key != 'ABX_SERVER_TOKEN')
     alias = 'public-e2e-' + secrets.token_hex(8)
     report['run_alias'] = alias
     if args.provider == 'opensandbox':
@@ -527,7 +533,7 @@ async def verify(args):
                     'has_path_prefix': bool(parts.path.strip('/')), 'has_query': bool(parts.query),
                     'gateway_header_count': len(port_headers)})
             report['http_acceptance'] = await asyncio.to_thread(run_controller, source, urls,
-                cli.private_directory, controller_fixture, token=env['ABX_SERVER_TOKEN'], gateway_headers=gateway_headers)
+                cli.private_directory, controller_fixture, token=env['ABX_SERVER_TOKEN'], gateway_headers=gateway_headers, real_usage=args.real_usage)
             if not report['http_acceptance']['passed']:
                 labels = [line for line in (cli.private_directory / 'http.log').read_text().splitlines()
                           if line.startswith(('[FAIL]', '[SKIP]'))]
@@ -602,9 +608,12 @@ def main():
     parser.add_argument('--build-timeout', type=int, default=1200)
     parser.add_argument('--output', type=Path)
     parser.add_argument('--application-controller', action='store_true', help='run the unchanged full template HTTP controller after smoke')
+    parser.add_argument('--real-usage', action='store_true', help='retain explicitly configured manifest environment, require real model/business controller and reject all skips; may call paid APIs')
     parser.add_argument('--export-image-dir', type=Path, help='save the exact owned OpenSandbox image before cleanup')
     parser.add_argument('--list', action='store_true', help='list all source templates without cloud operations')
     args = parser.parse_args()
+    if args.real_usage and not args.application_controller:
+        parser.error('--real-usage requires --application-controller')
     if args.list:
         print(json.dumps(source_names()))
         return 0

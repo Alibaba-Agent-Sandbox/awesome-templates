@@ -8,6 +8,14 @@ from public_launch_e2e import export_owned_image, installation_provenance, CLI, 
 
 
 class PublicLaunchTests(unittest.TestCase):
+    def test_real_usage_requires_controller_before_cloud_operations(self):
+        import subprocess
+        import sys
+        result = subprocess.run([sys.executable, str(Path(__file__).with_name('public_launch_e2e.py')),
+                                 '--real-usage'], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn('--real-usage requires --application-controller', result.stderr)
+
     def test_candidate_source_never_claims_published_package_acceptance(self):
         env = {'PUBLIC_CLI_VERSION': '0.4.17', 'PUBLIC_LAUNCH_DISTRIBUTION': 'source',
                'PUBLIC_LAUNCH_CLI_REF': 'a' * 40, 'PUBLIC_LAUNCH_SDK_REF': 'b' * 40,

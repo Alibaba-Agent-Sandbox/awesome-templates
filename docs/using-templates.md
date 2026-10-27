@@ -6,10 +6,10 @@ Choose a template, configure the sandbox platform and any model service it needs
 
 ## Installation
 
-Install published CLI 0.5.6 and Python client 0.4.0a6. Use a virtual environment for Python. The Python distribution is a preview, so the version is explicit. Node 20+ is required for npm installation; Node 22+ is recommended for terminal support.
+Install published CLI 0.5.7 and Python client 0.4.0a6. Use a virtual environment for Python. The Python distribution is a preview, so the version is explicit. Node 20+ is required for npm installation; Node 22+ is recommended for terminal support.
 
 ```bash
-npm install -g @agent-sandbox/cli@0.5.6 --registry=https://registry.npmjs.org
+npm install -g @agent-sandbox/cli@0.5.7 --registry=https://registry.npmjs.org
 python3 -m venv .venv
 . .venv/bin/activate
 python3 -m pip install --index-url https://pypi.org/simple 'agent-sandbox-client==0.4.0a6'
@@ -41,7 +41,7 @@ Set `ABX_SERVER_TOKEN` to an independent private application token before source
 
 Templates use different upstream configuration. Do not assume every tool consumes `ABX_LLM_*`, supports arbitrary OpenAI-compatible endpoints, or inherits a login from your machine. Non-model tools do not need a model key. Commercial account login, API-key login and optional web-service passwords are described in the applicable README.
 
-In CLI 0.5.6, declared **empty** template env values can be filled from the host environment. A non-empty manifest value wins over a same-name host export. Use a command's documented model argument to select another model; when a setting has no runtime argument, edit the configuration in your own local template and launch that directory. Only declared runtime settings are carried through this path. Changing exports after launch does not reconfigure an already running process.
+In CLI 0.5.7, declared **empty** template env values can be filled from the host environment. A non-empty manifest value wins over a same-name host export. Use a command's documented model argument to select another model; when a setting has no runtime argument, edit the configuration in your own local template and launch that directory. Only declared runtime settings are carried through this path. Changing exports after launch does not reconfigure an already running process.
 
 ## CLI, SDK and HTTP
 

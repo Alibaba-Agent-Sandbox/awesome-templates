@@ -1,0 +1,2078 @@
+{
+  "source_commit": "961959470411c3375a8346eb43755fa183129c22",
+  "scope": "Static candidate inventory; live discovery and successful business execution still required",
+  "templates": [
+    {
+      "name": "python-hello",
+      "version": "1.1.4",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "hello",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "run_script",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "run",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "test",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "_debug_info",
+          "hidden": true
+        },
+        {
+          "kind": "http_route",
+          "method": "GET",
+          "path": "/hello/{name}"
+        }
+      ],
+      "environment_variables": [
+        "LANG",
+        "ABX_SERVER_TOKEN"
+      ],
+      "readmes": [
+        "python-hello/README.md",
+        "python-hello/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PASS: alicloud-express",
+      "blog_slug": "template-practice-python-hello",
+      "evidence": "python-hello-express.json"
+    },
+    {
+      "name": "browser-use",
+      "version": "1.0.2",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "browser_use_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "browser_use_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "browser_use_self_test",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "browser_use",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "PLAYWRIGHT_BROWSERS_PATH",
+        "BROWSER_USE_PYTHON",
+        "BROWSER_USE_API_KEY",
+        "BROWSER_USE_BASE_URL",
+        "BROWSER_USE_MODEL"
+      ],
+      "readmes": [
+        "browser-use/README.md",
+        "browser-use/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-browser-use"
+    },
+    {
+      "name": "browser-automation",
+      "version": "2.2.2",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "browse",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "scrape",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "fill_form",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "run",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "pdf",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "mcp_start",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "mcp_status",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "mcp_call",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "mcp_stop",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "mcp_self_test",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "PLAYWRIGHT_BROWSERS_PATH",
+        "ABX_SERVER_TOKEN"
+      ],
+      "readmes": [
+        "browser-automation/README.md",
+        "browser-automation/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-browser-automation"
+    },
+    {
+      "name": "claude-code",
+      "version": "1.3.3",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "claude_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "claude",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "claude_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "claude_native_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "claude_byok",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ANTHROPIC_API_KEY",
+        "CLAUDE_MODEL_API_KEY",
+        "CLAUDE_MODEL_BASE_URL",
+        "CLAUDE_MODEL",
+        "ABX_SERVER_TOKEN",
+        "WORKSPACE"
+      ],
+      "readmes": [
+        "claude-code/README.md",
+        "claude-code/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-claude-code"
+    },
+    {
+      "name": "copilot-cli",
+      "version": "1.0.2",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "copilot_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "copilot_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "copilot",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "COPILOT_PROVIDER_BASE_URL",
+        "COPILOT_PROVIDER_API_KEY",
+        "COPILOT_MODEL"
+      ],
+      "readmes": [
+        "copilot-cli/README.md",
+        "copilot-cli/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-copilot-cli"
+    },
+    {
+      "name": "codex",
+      "version": "2.0.3",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "codex_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "codex_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "codex_config_write",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "codex_agents_write",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "codex_exec",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "OPENAI_API_KEY",
+        "CODEX_API_KEY",
+        "ABX_LLM_API_KEY",
+        "OPENAI_BASE_URL",
+        "ABX_LLM_BASE_URL",
+        "CODEX_MODEL",
+        "CODEX_HOME",
+        "WORKSPACE",
+        "ABX_SERVER_TOKEN"
+      ],
+      "readmes": [
+        "codex/README.md",
+        "codex/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-codex"
+    },
+    {
+      "name": "codex-agent-api",
+      "version": "2.0.2",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "codex_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "codex",
+          "hidden": false
+        },
+        {
+          "kind": "http_route",
+          "method": "POST",
+          "path": "/v1/agents/sessions"
+        },
+        {
+          "kind": "http_route",
+          "method": "GET",
+          "path": "/v1/agents/sessions"
+        },
+        {
+          "kind": "http_route",
+          "method": "GET",
+          "path": "/v1/agents/sessions/{session_id}"
+        },
+        {
+          "kind": "http_route",
+          "method": "POST",
+          "path": "/v1/agents/sessions/{session_id}"
+        },
+        {
+          "kind": "http_route",
+          "method": "DELETE",
+          "path": "/v1/agents/sessions/{session_id}"
+        },
+        {
+          "kind": "http_route",
+          "method": "POST",
+          "path": "/v1/agents/sessions/{session_id}/events"
+        },
+        {
+          "kind": "http_route",
+          "method": "GET",
+          "path": "/v1/agents/sessions/{session_id}/events"
+        },
+        {
+          "kind": "http_route",
+          "method": "GET",
+          "path": "/v1/agents/sessions/{session_id}/items"
+        },
+        {
+          "kind": "http_route",
+          "method": "GET",
+          "path": "/v1/agents/sessions/{session_id}/artifacts/{artifact_id}"
+        },
+        {
+          "kind": "http_route",
+          "method": "DELETE",
+          "path": "/v1/agents/sessions/{session_id}/artifacts/{artifact_id}"
+        },
+        {
+          "kind": "http_route",
+          "method": "POST",
+          "path": "/v1/agents"
+        },
+        {
+          "kind": "http_route",
+          "method": "GET",
+          "path": "/v1/agents"
+        },
+        {
+          "kind": "http_route",
+          "method": "GET",
+          "path": "/v1/agents/{agent_id}"
+        },
+        {
+          "kind": "http_route",
+          "method": "POST",
+          "path": "/v1/agents/{agent_id}"
+        },
+        {
+          "kind": "http_route",
+          "method": "DELETE",
+          "path": "/v1/agents/{agent_id}"
+        },
+        {
+          "kind": "command",
+          "name": "agent_status",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "OPENAI_API_KEY",
+        "CODEX_API_KEY",
+        "ABX_LLM_API_KEY",
+        "OPENAI_BASE_URL",
+        "ABX_LLM_BASE_URL",
+        "CODEX_MODEL",
+        "CODEX_HOME",
+        "CODEX_SANDBOX",
+        "AGENT_MAX_SESSIONS",
+        "AGENT_SESSION_TTL",
+        "WORKSPACE",
+        "ABX_SERVER_TOKEN"
+      ],
+      "readmes": [
+        "codex-agent-api/README.md",
+        "codex-agent-api/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-codex-agent-api"
+    },
+    {
+      "name": "qoder",
+      "version": "1.1.4",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "qoder_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "qoder_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "qoder",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "qoder_run",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "WORKSPACE",
+        "ABX_SERVER_TOKEN",
+        "QODER_PERSONAL_ACCESS_TOKEN"
+      ],
+      "readmes": [
+        "qoder/README.md",
+        "qoder/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-qoder"
+    },
+    {
+      "name": "agents-cli",
+      "version": "2.0.3",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "agents_version",
+          "hidden": false
+        },
+        {
+          "kind": "policy_endpoint",
+          "name": "agents_sessions_create"
+        },
+        {
+          "kind": "policy_endpoint",
+          "name": "agents_sessions_get"
+        },
+        {
+          "kind": "policy_endpoint",
+          "name": "agents_sessions_list"
+        },
+        {
+          "kind": "policy_endpoint",
+          "name": "agents_sessions_events_create"
+        },
+        {
+          "kind": "policy_endpoint",
+          "name": "agents_sessions_items_list"
+        },
+        {
+          "kind": "policy_endpoint",
+          "name": "agents_runtimes_list"
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "OPENAI_API_KEY",
+        "CODEX_API_KEY",
+        "OPENAI_BASE_URL",
+        "OPENAI_MODEL",
+        "CODEX_HOME",
+        "ABX_SERVER_POLICY_FILE",
+        "WORKSPACE"
+      ],
+      "readmes": [
+        "agents-cli/README.md",
+        "agents-cli/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-agents-cli"
+    },
+    {
+      "name": "qwen-code",
+      "version": "2.1.4",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "qwen_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "qwen_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "qwen",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "run",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "OPENAI_API_KEY",
+        "DASHSCOPE_API_KEY",
+        "WORKSPACE",
+        "OPENAI_BASE_URL",
+        "OPENAI_MODEL"
+      ],
+      "readmes": [
+        "qwen-code/README.md",
+        "qwen-code/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-qwen-code"
+    },
+    {
+      "name": "deepagents",
+      "version": "1.0.2",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "deepagents_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "deepagents_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "deepagents",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "DEEPAGENTS_API_KEY",
+        "DEEPAGENTS_BASE_URL",
+        "DEEPAGENTS_MODEL",
+        "DEEPAGENTS_PYTHON"
+      ],
+      "readmes": [
+        "deepagents/README.md",
+        "deepagents/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-deepagents"
+    },
+    {
+      "name": "deepseek-harness",
+      "version": "1.1.4",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "deepseek_tools",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "deepseek_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "deepseek",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "run",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "WORKSPACE",
+        "ABX_SERVER_TOKEN",
+        "DEEPSEEK_API_KEY",
+        "OPENAI_API_KEY",
+        "DEEPSEEK_BASE_URL",
+        "DEEPSEEK_MODEL"
+      ],
+      "readmes": [
+        "deepseek-harness/README.md",
+        "deepseek-harness/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-deepseek-harness"
+    },
+    {
+      "name": "hermes-agent",
+      "version": "1.1.4",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "hermes_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "hermes_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "hermes",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "run",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "WORKSPACE",
+        "ABX_SERVER_TOKEN",
+        "OPENROUTER_API_KEY",
+        "OPENAI_API_KEY",
+        "OPENAI_BASE_URL",
+        "HERMES_MODEL",
+        "HERMES_PROVIDER"
+      ],
+      "readmes": [
+        "hermes-agent/README.md",
+        "hermes-agent/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-hermes-agent"
+    },
+    {
+      "name": "node-web",
+      "version": "1.1.4",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "serve",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "start",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "dev",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "status",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "stop",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "logs",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "request",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "build",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "smoke",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "NODE_ENV",
+        "PORT",
+        "ABX_SERVER_TOKEN"
+      ],
+      "readmes": [
+        "node-web/README.md",
+        "node-web/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-node-web"
+    },
+    {
+      "name": "openclaw",
+      "version": "2.1.3",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "gateway_start",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "gateway_status",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "gateway_health",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "gateway_stop",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "OPENCLAW_GATEWAY_TOKEN",
+        "OPENCLAW_TRUSTED_PROXIES",
+        "ANTHROPIC_API_KEY",
+        "OPENAI_API_KEY"
+      ],
+      "readmes": [
+        "openclaw/README.md",
+        "openclaw/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-openclaw"
+    },
+    {
+      "name": "opencode",
+      "version": "2.0.5",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "opencode_run",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "opencode_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "opencode_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "opencode_serve_start",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "opencode_serve_status",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "opencode_serve_stop",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_LLM_API_KEY",
+        "ABX_LLM_BASE_URL",
+        "OPENCODE_API_KEY",
+        "OPENCODE_MODEL",
+        "OPENCODE_SERVER_PASSWORD",
+        "ABX_SERVER_TOKEN"
+      ],
+      "readmes": [
+        "opencode/README.md",
+        "opencode/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PASS: alicloud-express",
+      "blog_slug": "template-practice-opencode",
+      "evidence": "opencode-express.json"
+    },
+    {
+      "name": "amp",
+      "version": "1.2.3",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "amp_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "amp_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "amp_execute",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "AMP_API_KEY",
+        "ABX_SERVER_TOKEN"
+      ],
+      "readmes": [
+        "amp/README.md",
+        "amp/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-amp"
+    },
+    {
+      "name": "droid",
+      "version": "1.2.2",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "droid_byok_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "droid_byok",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "droid_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "droid_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "droid",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "FACTORY_API_KEY",
+        "DROID_MODEL_API_KEY",
+        "DROID_MODEL_BASE_URL",
+        "DROID_MODEL",
+        "ABX_SERVER_TOKEN",
+        "WORKSPACE"
+      ],
+      "readmes": [
+        "droid/README.md",
+        "droid/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-droid"
+    },
+    {
+      "name": "gemini",
+      "version": "2.2.2",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "gemini_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "gemini_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "gemini",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "gemini_byok_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "gemini_native_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "gemini_byok",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "GEMINI_API_KEY",
+        "GEMINI_BYOK_API_KEY",
+        "GEMINI_BYOK_BASE_URL",
+        "GEMINI_BYOK_MODEL",
+        "GEMINI_MODEL",
+        "WORKSPACE"
+      ],
+      "readmes": [
+        "gemini/README.md",
+        "gemini/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-gemini"
+    },
+    {
+      "name": "document-tools",
+      "version": "1.1.2",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "document_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "document_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "convert",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "office_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "document_smoke",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "document_extended_smoke",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN"
+      ],
+      "readmes": [
+        "document-tools/README.md",
+        "document-tools/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-document-tools"
+    },
+    {
+      "name": "media-tools",
+      "version": "1.1.2",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "media_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "media_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "media_probe",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "transcode",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "transcode_args",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "media_smoke",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "media_args_smoke",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "media_video_smoke",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN"
+      ],
+      "readmes": [
+        "media-tools/README.md",
+        "media-tools/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-media-tools"
+    },
+    {
+      "name": "pi",
+      "version": "1.0.3",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "pi_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "pi_tools_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "pi_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "pi",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "PI_API_KEY",
+        "PI_BASE_URL",
+        "PI_MODEL"
+      ],
+      "readmes": [
+        "pi/README.md",
+        "pi/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-pi"
+    },
+    {
+      "name": "ocr",
+      "version": "1.0.3",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "ocr_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "ocr_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "ocr",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "ocr_smoke",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN"
+      ],
+      "readmes": [
+        "ocr/README.md",
+        "ocr/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-ocr"
+    },
+    {
+      "name": "aider",
+      "version": "1.0.3",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "aider_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "aider_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "aider",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "AIDER_API_KEY",
+        "AIDER_BASE_URL",
+        "AIDER_MODEL"
+      ],
+      "readmes": [
+        "aider/README.md",
+        "aider/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-aider"
+    },
+    {
+      "name": "swe",
+      "version": "1.1.2",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "swe_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "swe_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "swe_prepare",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "swe_run_agent",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "swe_evaluate",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "swe_report",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "swe_cleanup",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "SWE_API_KEY",
+        "SWE_BASE_URL",
+        "SWE_MODEL",
+        "SWE_MODEL_PROTOCOL"
+      ],
+      "readmes": [
+        "swe/README.md",
+        "swe/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-swe"
+    },
+    {
+      "name": "osworld",
+      "version": "1.0.2",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "osworld_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "desktop_start",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "desktop_stop",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "screenshot",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "click",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "type",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "hotkey",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "a11y_tree",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "run_task_config",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "evaluate",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "osworld_desktop_smoke",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN"
+      ],
+      "readmes": [
+        "osworld/README.md",
+        "osworld/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-osworld"
+    },
+    {
+      "name": "polyglot-toolchain",
+      "version": "1.0.4",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "toolchain_versions",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "toolchain_smoke",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN"
+      ],
+      "readmes": [
+        "polyglot-toolchain/README.md",
+        "polyglot-toolchain/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-polyglot-toolchain"
+    },
+    {
+      "name": "kimi-code",
+      "version": "1.0.3",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "kimi_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "kimi_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "kimi",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "WORKSPACE",
+        "KIMI_MODEL_NAME",
+        "KIMI_MODEL_API_KEY",
+        "KIMI_MODEL_BASE_URL",
+        "KIMI_MODEL_PROVIDER_TYPE",
+        "ABX_SERVER_TOKEN"
+      ],
+      "readmes": [
+        "kimi-code/README.md",
+        "kimi-code/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-kimi-code"
+    },
+    {
+      "name": "apply-patch",
+      "version": "1.0.3",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "apply_patch",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "apply_patch_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "apply_patch_smoke",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN"
+      ],
+      "readmes": [
+        "apply-patch/README.md",
+        "apply-patch/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-apply-patch"
+    },
+    {
+      "name": "goose",
+      "version": "1.0.2",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "goose_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "goose_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "goose",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "GOOSE_API_KEY",
+        "GOOSE_BASE_URL",
+        "GOOSE_MODEL"
+      ],
+      "readmes": [
+        "goose/README.md",
+        "goose/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-goose"
+    },
+    {
+      "name": "code-server",
+      "version": "1.0.2",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "code_server_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "code_server_start",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "code_server_status",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "code_server_stop",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "code_server_self_test",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "CODE_SERVER_PASSWORD"
+      ],
+      "readmes": [
+        "code-server/README.md",
+        "code-server/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-code-server"
+    },
+    {
+      "name": "dev-services",
+      "version": "1.1.2",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "services_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "services_versions",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "services_start",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "services_status",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "services_sql",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "services_redis",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "services_stop",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "services_self_test",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "DEV_SERVICES_PASSWORD",
+        "DEV_SERVICES_REDIS_PORT",
+        "DEV_SERVICES_POSTGRES_PORT"
+      ],
+      "readmes": [
+        "dev-services/README.md",
+        "dev-services/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-dev-services"
+    },
+    {
+      "name": "next-app",
+      "version": "1.1.2",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "toolchain_versions",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "scaffold",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "dev_start",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "dev_status",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "dev_logs",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "dev_stop",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "preview_self_test",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN"
+      ],
+      "readmes": [
+        "next-app/README.md",
+        "next-app/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-next-app"
+    },
+    {
+      "name": "crush",
+      "version": "1.0.2",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "crush_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "crush_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "crush",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "CRUSH_API_KEY",
+        "CRUSH_BASE_URL",
+        "CRUSH_MODEL"
+      ],
+      "readmes": [
+        "crush/README.md",
+        "crush/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-crush"
+    },
+    {
+      "name": "stagehand",
+      "version": "1.1.3",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "stagehand_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "stagehand_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "stagehand_self_test",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "stagehand",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "STAGEHAND_API_KEY",
+        "STAGEHAND_BASE_URL",
+        "STAGEHAND_MODEL",
+        "WORKSPACE"
+      ],
+      "readmes": [
+        "stagehand/README.md",
+        "stagehand/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-stagehand"
+    },
+    {
+      "name": "grok",
+      "version": "1.0.3",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "grok_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "grok_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "grok",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "GROK_MODEL_API_KEY",
+        "GROK_MODEL_BASE_URL",
+        "GROK_MODEL",
+        "WORKSPACE"
+      ],
+      "readmes": [
+        "grok/README.md",
+        "grok/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-grok"
+    },
+    {
+      "name": "cline",
+      "version": "1.0.4",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "cline_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "cline_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "cline",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "CLINE_MODEL_API_KEY",
+        "CLINE_MODEL_BASE_URL",
+        "CLINE_MODEL",
+        "WORKSPACE"
+      ],
+      "readmes": [
+        "cline/README.md",
+        "cline/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-cline"
+    },
+    {
+      "name": "tau2-bench",
+      "version": "1.0.6",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "tau2_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "tau2_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "tau2_run",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "tau2_verify_artifact",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "TAU2_MODEL_API_KEY",
+        "TAU2_MODEL_BASE_URL",
+        "TAU2_MODEL",
+        "WORKSPACE"
+      ],
+      "readmes": [
+        "tau2-bench/README.md",
+        "tau2-bench/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-tau2-bench"
+    },
+    {
+      "name": "chrome",
+      "version": "1.0.8",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "chrome_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "chrome_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "chrome_start",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "chrome_status",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "chrome_open",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "chrome_screenshot",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "chrome_stop",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "chrome_smoke",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "WORKSPACE"
+      ],
+      "readmes": [
+        "chrome/README.md",
+        "chrome/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-chrome"
+    },
+    {
+      "name": "prime-agent",
+      "version": "1.0.2",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "prime_agent_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "prime_agent_kernel_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "prime_agent_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "prime_agent",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "PRIME_MODEL_API_KEY",
+        "PRIME_MODEL_BASE_URL",
+        "PRIME_MODEL",
+        "WORKSPACE"
+      ],
+      "readmes": [
+        "prime-agent/README.md",
+        "prime-agent/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-prime-agent"
+    },
+    {
+      "name": "appworld",
+      "version": "1.0.8",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "appworld_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "appworld_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "appworld_native_smoke",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "appworld_run",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "appworld_verify_artifact",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "APPWORLD_MODEL_API_KEY",
+        "APPWORLD_MODEL_BASE_URL",
+        "APPWORLD_MODEL",
+        "WORKSPACE"
+      ],
+      "readmes": [
+        "appworld/README.md",
+        "appworld/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-appworld"
+    },
+    {
+      "name": "qm-sandbox",
+      "version": "1.0.3",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "qm_sandbox_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "qm_sandbox_native_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "qm_sandbox_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "qm_sandbox_sdk_smoke",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "qm_sandbox_exec",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "qm_sandbox_file",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "QM_SANDBOX_BASE_URL",
+        "QM_SANDBOX_TOKEN",
+        "WORKSPACE"
+      ],
+      "readmes": [
+        "qm-sandbox/README.md",
+        "qm-sandbox/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-qm-sandbox"
+    },
+    {
+      "name": "qm",
+      "version": "1.0.3",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "qm_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "qm_native_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "qm_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "qm_sdk_smoke",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "qm",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "QM_SANDBOX_BASE_URL",
+        "QM_SANDBOX_TOKEN",
+        "WORKSPACE",
+        "QM_MODEL_API_KEY",
+        "QM_MODEL_BASE_URL",
+        "QM_MODEL"
+      ],
+      "readmes": [
+        "qm/README.md",
+        "qm/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-qm"
+    },
+    {
+      "name": "muse",
+      "version": "1.0.3",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "muse_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "muse_native_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "muse_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "muse",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "MUSE_MODEL_API_KEY",
+        "MUSE_MODEL_BASE_URL",
+        "MUSE_MODEL",
+        "ABX_SERVER_TOKEN",
+        "WORKSPACE"
+      ],
+      "readmes": [
+        "muse/README.md",
+        "muse/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-muse"
+    },
+    {
+      "name": "cursor-agent",
+      "version": "1.0.2",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "agent_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "agent_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "agent_native_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "agent",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "CURSOR_API_KEY",
+        "WORKSPACE"
+      ],
+      "readmes": [
+        "cursor-agent/README.md",
+        "cursor-agent/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-cursor-agent"
+    },
+    {
+      "name": "devin",
+      "version": "1.0.3",
+      "methods": [
+        {
+          "kind": "command",
+          "name": "devin_version",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "devin_setup_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "devin_native_check",
+          "hidden": false
+        },
+        {
+          "kind": "command",
+          "name": "devin",
+          "hidden": false
+        }
+      ],
+      "environment_variables": [
+        "ABX_SERVER_TOKEN",
+        "DEVIN_CREDENTIALS_FILE",
+        "WORKSPACE"
+      ],
+      "readmes": [
+        "devin/README.md",
+        "devin/README.zh-CN.md"
+      ],
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-devin"
+    },
+    {
+      "name": "base",
+      "native_provider": "alicloud-express",
+      "documentation": "docs/managed/base/README.md",
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-base"
+    },
+    {
+      "name": "code-interpreter-v1",
+      "native_provider": "alicloud-express",
+      "documentation": "docs/managed/code-interpreter-v1/README.md",
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-code-interpreter-v1"
+    },
+    {
+      "name": "desktop",
+      "native_provider": "e2b",
+      "documentation": "docs/managed/desktop/README.md",
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-desktop"
+    },
+    {
+      "name": "opensandbox-code-interpreter",
+      "native_provider": "opensandbox",
+      "documentation": "docs/managed/opensandbox-code-interpreter/README.md",
+      "complete_usage_acceptance": "PENDING",
+      "blog_slug": "template-practice-opensandbox-code-interpreter"
+    }
+  ]
+}

@@ -21,6 +21,36 @@ def test_operator_credentials_cannot_reach_actual_controller(tmp_path, monkeypat
     assert proof["passed"] and proof["pass_count"] == 1
 
 
+def test_real_usage_enables_business_calls_without_leaking_operator_secrets(tmp_path, monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "synthetic-operator-secret")
+    monkeypatch.setenv("E2E_MODEL", "selected-model")
+    source = controller(tmp_path, "example", "import os\nassert 'OPENAI_API_KEY' not in os.environ\nassert os.environ['E2E_RUN_LLM']==os.environ['E2E_REQUIRE_LLM']=='1'\nassert os.environ['E2E_REQUIRE_MEDIA']==os.environ['E2E_REQUIRE_DOCUMENT']=='1'\nassert os.environ['E2E_MODEL']=='selected-model'\nprint('[PASS] explicit real usage mode')\n")
+    proof = run_controller(source, {9000: "http://synthetic.invalid"}, tmp_path, {}, real_usage=True)
+    assert proof["passed"] and proof["real_usage_required"]
+
+
+@pytest.mark.parametrize("label", ["[SKIP] actual model task", "[NOT RUN] actual model task"])
+def test_real_usage_rejects_zero_exit_with_missing_business_calls(tmp_path, label):
+    source = controller(tmp_path, "example", "print('[PASS] version')\nprint(" + repr(label) + ")\n")
+    assert not run_controller(source, {9000: "http://synthetic.invalid"}, tmp_path, {}, real_usage=True)["passed"]
+
+
+@pytest.mark.parametrize("name", ["cursor-agent", "devin"])
+def test_real_usage_does_not_substitute_invalid_or_missing_vendor_accounts(name):
+    server, fixture, proof = fixture_environment(name, real_usage=True)
+    assert not server and not fixture
+    assert not proof.get("synthetic_invalid_vendor_credential")
+    assert not proof.get("credential_absence_required")
+
+
+def test_controller_uses_the_template_runtime_workspace(tmp_path):
+    source = controller(tmp_path, "example", "print('[PASS] example')\n")
+    (source / "template.yaml").write_text('env:\n  WORKSPACE: /home/user/workspace\n')
+    environment = controller_environment(source, {9000: "http://synthetic.invalid"}, {}, real_usage=True)
+    assert environment["E2E_WORKSPACE"] == "/home/user/workspace"
+    assert environment["E2E_REMOTE_SANDBOX"] == "1"
+
+
 @pytest.mark.parametrize("name,output", [
     ("openclaw", "[PASS] health\n[SKIP] real gateway lifecycle"),
     ("osworld", "[PASS] version\n[SKIP] desktop"),
