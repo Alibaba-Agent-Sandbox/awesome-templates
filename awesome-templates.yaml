@@ -331,7 +331,7 @@ templates:
   author: alibaba-agent-sandbox
   status: experimental
 - name: code-server
-  description: Pinned authenticated browser IDE with private configuration and owned process lifecycle.
+  description: Pinned password-authenticated browser IDE with private configuration, cookie-preserving endpoints and owned lifecycle.
   repo: https://github.com/alibaba-agent-sandbox/awesome-templates
   path: code-server
   tags:

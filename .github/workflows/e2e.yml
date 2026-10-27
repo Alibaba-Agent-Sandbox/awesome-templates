@@ -265,7 +265,7 @@ jobs:
           python -m pytest -q browser-use/test_commands.py browser-use/test_model_controller.py browser-use/test_http_model_controller.py
           python -m pytest -q stagehand/test_commands.py stagehand/test_model_controller.py stagehand/test_http_model_controller.py stagehand/test_sdk_connect.py
           node --test stagehand/test_transport.mjs
-          python -m pytest -q code-server/test_commands.py code-server/test_browser_local.py scripts/test_preview_proxy.py
+          python -m pytest -q code-server/test_commands.py code-server/test_http_controller.py code-server/test_browser_local.py scripts/test_preview_proxy.py
           python -m pytest -q polyglot-toolchain/test_commands.py
           python -m pytest -q apply-patch/test_commands.py
           python -m pytest -q deepagents/test_commands.py deepagents/test_controller.py

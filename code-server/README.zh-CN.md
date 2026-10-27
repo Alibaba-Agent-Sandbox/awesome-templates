@@ -47,7 +47,14 @@ IDE 的入口不是 9000 命令 API。用 SDK `await sb.network.resolve(8443)` �
 
 `--sandbox-timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
 
-OpenSandbox 用户将 `ABX_PROVIDER` 改为 `opensandbox`，并按[提供方指南](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)配置；后续 CLI 和 Python 必须继续选择同一个平台。
+OpenSandbox 先按[提供方指南](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)配置，再在创建前选择直连端点：
+
+```bash
+export ABX_PROVIDER=opensandbox
+export ABX_OPENSANDBOX_USE_SERVER_PROXY=false
+```
+
+后续 CLI 与 Python 保留这些设置，客户端必须能访问 SDK 解析出的端点。OpenSandbox1.1.1 的服务代理会剥离 Cookie，无法承载此 IDE 的已登录浏览器会话；看到登录页或工作台外壳不代表连接成功。使用解析出的直连端点和上文的私有本地预览，保留网关头、原生密码与会话 Cookie 认证；不要关闭认证或 HTTPS 证书校验。
 
 ## 快速开始（Python SDK）
 
