@@ -333,3 +333,5 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 - [Unused-code cleanup acceptance](evidence/verify/2026-10-27-dead-code-cleanup-acceptance.md).
 
 - [OpenSandbox controller and business acceptance](notes/proposed/feature/2026-10-27-opensandbox-controller-acceptance.md) · [verification](evidence/verify/2026-10-27-opensandbox-controller-acceptance.md).
+
+- [Native interpreter practical boundary](notes/proposed/feature/2026-10-27-native-interpreter-practice.md) · [verification](evidence/verify/2026-10-27-native-interpreter-practice.md).

@@ -1,0 +1,36 @@
+{
+  "template": "code-interpreter-v1",
+  "provider": "alicloud-express",
+  "result": "FAIL",
+  "checks": [
+    "actual default Python context persists across calls",
+    "actual context creation/listing and state isolation",
+    "removed context independently absent",
+    "native pandas numpy matplotlib imports execute",
+    "native interpreter pandas summary and actual saved plot independently downloaded/decoded",
+    "actual stdout stderr and rich-result callbacks"
+  ],
+  "chart_artifact": {
+    "sha256": "42dc3d2176d392eafbf0e484ff34f98f88dd2c54ee48ea4ab13f4dd87cf4afd6",
+    "format": "PNG",
+    "width": 600,
+    "height": 300
+  },
+  "business_summary": {
+    "rows": 3,
+    "total": "51.30",
+    "total_cents": 5130
+  },
+  "failure_type": "AssertionError",
+  "failure_stack": [
+    [
+      "standard_interpreter_case.py",
+      "run",
+      52
+    ]
+  ],
+  "diagnostic": "",
+  "cleanup": "independently confirmed absent",
+  "executed_at": "2026-10-27T11:53:22.830652+00:00",
+  "original_receipt_sha256": "51a468c6531ea6c64148f66d2a63113991b89305a90fefafa60ead80c16473a6"
+}

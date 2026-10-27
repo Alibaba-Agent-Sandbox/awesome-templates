@@ -65,6 +65,42 @@ async def main():
 asyncio.run(main())
 ```
 
+### Persistent Python, data frames and charts
+
+For a persistent Python context, use the separate public
+`agent_sandbox.code_interpreter.AsyncSandbox` entry point. The Express-compatible
+API key, API URL and domain are passed explicitly in [expenses.py](expenses.py),
+so the script uses the same region/account as the CLI. This entry creates its own
+instance; it does not attach to the instance already deleted by the CLI example.
+
+Download [expenses.py](expenses.py) beside your terminal's working directory, then
+run `python expenses.py` in the installed client environment. It uses pandas to
+summarize three monthly amounts, downloads `expenses-summary.json` and a 600×300
+`expenses.png`, and deletes the instance in `finally`. Expected summary:
+`{"rows": 3, "total": "51.30", "total_cents": 5130}`. No local pandas or
+matplotlib installation is required; processing happens in the managed instance.
+
+On an `AsyncSandbox` instance named `sb`, `await sb.run_code("value = 41")`
+followed by `await sb.run_code("value + 1")` preserves state and returns text
+`42`. Use `context = await sb.create_code_context(language="python")`, then pass
+`context=context` to `run_code` for isolated state. `list_code_contexts()` lists
+contexts; `remove_code_context(context)` deletes an owned context. Inspect
+`execution.error` after each call before consuming `execution.text` or files.
+Callbacks `on_stdout`, `on_stderr`, `on_result` and `on_error` receive output,
+results and failures; output messages expose their text as `.line`.
+
+Use matplotlib's `Agg` backend and `savefig`, then download via `files.read(...,
+format="bytes")`. Do not depend on `plt.show()` returning an inline PNG or IPython
+magics. This managed service currently reports a raised Python exception with
+name `ExecutionError`, with the original exception in `.value`; inspect that
+content rather than assuming `.name == "ValueError"`.
+
+The managed persistent interpreter currently re-executes code after a Python
+exception. A file increment followed by `raise ValueError(...)` increments twice.
+Keep side effects out of code that can raise; for jobs requiring single execution,
+use the `ProviderSandbox.commands.run` process example above and check its exit
+code. This provider defect prevents complete interpreter qualification.
+
 ## Quick start (HTTP POST)
 
 This managed image does not supply the project `/commands/*` application server. Use the process and file APIs above. For custom HTTP commands, create a [source template](../../../_skeleton/README.md).
@@ -73,7 +109,7 @@ This managed image does not supply the project `/commands/*` application server.
 
 `ProviderSandbox.create(provider=..., template=..., timeout=...)` creates an instance; `commands.run` returns `exit_code`, `stdout` and `stderr`; `files.write/read/remove` operate on sandbox paths. `kill` deletes the instance and `close` releases local connections.
 
-The current Express provider does not implement `ProviderSandbox.run_code` (`E8004`). Use `commands.run` for Python processes as above. A persistent kernel or interpreter session requires its own supported interface.
+The current Express provider does not implement `ProviderSandbox.run_code` (`E8004`). Use `commands.run` for independent processes, or the separate `agent_sandbox.code_interpreter.AsyncSandbox` API above for persistent Python contexts. These are distinct client interfaces.
 
 ## Configuration
 
