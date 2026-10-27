@@ -1,0 +1,47 @@
+{
+  "code-server": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/code_server_version",
+      "POST /commands/code_server_start",
+      "POST /commands/code_server_status",
+      "POST /commands/code_server_stop",
+      "POST /commands/code_server_self_test"
+    ],
+    "core_checks": 5,
+    "docs_checks": 10,
+    "runtime_folders_unchanged": true,
+    "readme_sha256": "c5262d840511f5280b52e2f5e10a613dc9583550b86c4be53bd9b06637b18dbf"
+  },
+  "qm": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/qm_version",
+      "POST /commands/qm_native_check",
+      "POST /commands/qm_setup_check",
+      "POST /commands/qm_sdk_smoke",
+      "POST /commands/qm"
+    ],
+    "core_checks": 19,
+    "docs_checks": 11,
+    "runtime_folders_unchanged": true,
+    "readme_sha256": "9433928b4b8164dab26c7aca4acff48c90da34afebd4ad9cd35527eecee6907f"
+  },
+  "appworld": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/appworld_version",
+      "POST /commands/appworld_setup_check",
+      "POST /commands/appworld_native_smoke",
+      "POST /commands/appworld_run",
+      "POST /commands/appworld_verify_artifact"
+    ],
+    "core_checks": 17,
+    "docs_checks": 8,
+    "runtime_folders_unchanged": true,
+    "readme_sha256": "79df3e4f79287dcd4faec1777a5060b8915032250ef8099fc3a3767f7c09f111"
+  }
+}
