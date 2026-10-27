@@ -125,12 +125,13 @@
   },
   "application_result": "PASS",
   "original_result": "FAIL",
-  "original_receipt_sha256": "2499158e8e03cda7cc70a2f80a1b79c7b9bc75756f0af3ff037cfef8bdbe60ad",
+  "original_receipt_sha256": "7613cc54d9cba302fcd5959f714bc84e07792ffea4823b265d7b37ee4a64c5b9",
   "cleanup_reconciliation": {
     "scope": "new independent cleanup observation only; original completed business and immutable failed receipt retained",
     "sandbox_count": 1,
     "template_count": 1,
     "image_entry_count": 2,
     "new_business_or_model_calls": 0
-  }
+  },
+  "original_private_receipt_sha256": "2499158e8e03cda7cc70a2f80a1b79c7b9bc75756f0af3ff037cfef8bdbe60ad"
 }
