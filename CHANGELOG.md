@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+- OpenClaw2.2.0 adds explicit compatible-model key/base/model configuration and native gateway conversations with per-thread continuation. Preserve gateway-only startup and owned cleanup; allow immediate owned restart after TCP TIME_WAIT while refusing foreign listeners.
+
 - Maintain 15 standalone process-runner placements from canonical source snippets, with a CI drift check. Preserve executable ASTs and template-specific policies; no new runtime dependency. / 15 处独立模板进程封装改用公共源码维护并由 CI 检查漂移；保持执行逻辑及模板策略，不增加运行依赖。
 - Rewrite all 50 template guides in English and Chinese with actual model/authentication setup and useful CLI, SDK and HTTP examples. Remove historical acceptance and maintainer sections from consumer READMEs and stop requiring those sections in the authoring checks; retain original engineering evidence.
 
