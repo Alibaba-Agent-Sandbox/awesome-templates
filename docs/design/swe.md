@@ -35,3 +35,10 @@ mini executes bash, so explicit `allow_execution=true` grants normal user filesy
 L0: scoped command and HTTP-harness regressions (real Linux process cleanup, locks/path/type/permission negatives, missing/duplicate/skipped test identity and missing target model configuration negatives) plus scoped HTTP contract smoke. L1: actual image CI must build with installed mini2.4.6 and the declared server package version. L2: canonical Express deploy→READY→SDK/CLI named smoke→owned cleanup remains a distinct gate. Supplemental source-runtime/actual-image runs must keep separate provenance and cleanup records. L3: real compatible Qwen model; baseline1FAIL59PASS→actual mini source edit→fresh evaluator60PASS→SDK files patch/report retrieval; no marker-only success. L4: none claimed. Full official Docker evaluation and other providers remain unverified.
 
 The1.1.0 process-start setting `SWE_MODEL_PROTOCOL` defaults to legacy `text` (official2.4.6 default.yaml/litellm_textbased); explicit `toolcall` uses official mini.yaml/litellm native bash-function calls. Invalid modes fail before run mutation. The strict required-model controller requires the setup flag native_tool_calls and explicitly requests30 steps/600 seconds. Earlier1.0.1 budget-only failure remains historical; no current1.1.0 provider qualification is implied.
+
+
+Version1.2.0 changes the shipped manifest default to toolcall, aligning the public
+launch with the strict native-tool acceptance gate. Existing1.1.2 receipts remain
+historical. Legacy text remains supported by an explicit local manifest copy;
+host exports do not override nonempty manifest settings. New actual acceptance is
+required for this changed contract.

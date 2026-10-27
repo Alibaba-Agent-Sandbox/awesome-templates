@@ -142,17 +142,17 @@ Malformed types/unknown arguments return HTTP 400. Invalid instance/run ID, miss
 
 ## Configuration
 
-This entry calls compatible Chat Completions. Include the vendor API prefix (often `/v1`) in the base; do not append `/chat/completions`. The default text protocol requires upstream-formatted bash actions and submission; it does not automatically switch to native tool calls.
+This entry calls compatible Chat Completions. Include the vendor API prefix (often `/v1`) in the base; do not append `/chat/completions`. Version1.2.0 defaults to upstream native bash tool calls, so the endpoint and model must support Chat Completions tool calling. Earlier1.1.2 used the text action protocol; keep a reviewed local template copy with `SWE_MODEL_PROTOCOL: text` if that protocol is required.
 
 | Variable | Requirement / default | Meaning |
 | --- | --- | --- |
 | `SWE_API_KEY` | Required for model execution | Your compatible model-service API key. |
 | `SWE_BASE_URL` | Required for model execution | Chat Completions API base, for example your vendor HTTPS `/v1` endpoint. |
 | `SWE_MODEL` | Required for model execution | Bare model ID at that endpoint; wrapper supplies the LiteLLM `openai/` prefix. |
-| `SWE_MODEL_PROTOCOL` | `text` in the shipped manifest | `toolcall` uses upstream native bash function calls; endpoint/model must support tools. `text` uses the upstream text protocol. |
+| `SWE_MODEL_PROTOCOL` | `toolcall` in the shipped manifest | `toolcall` uses upstream native bash function calls; endpoint/model must support tools. `text` uses the upstream text protocol. |
 | `ABX_SERVER_TOKEN` | Required | Independent application token. |
 
-`SWE_MODEL_PROTOCOL` is nonempty `text` in the shipped manifest. When launching this template directly, a host `export SWE_MODEL_PROTOCOL=toolcall` does not override it. To use the native tool protocol, make your own template copy and change that field explicitly before following the [local-source guide](../docs/using-templates.md). The model key, base and model fields are empty and accept the exports shown above.
+`SWE_MODEL_PROTOCOL` is nonempty `toolcall` in the shipped manifest. When launching this template directly, a host `export SWE_MODEL_PROTOCOL=toolcall` does not override it. To use the native tool protocol, make your own template copy and change that field explicitly before following the [local-source guide](../docs/using-templates.md). The model key, base and model fields are empty and accept the exports shown above.
 
 Model-generated shell commands have sandbox-user filesystem and network authority. Use a disposable sandbox and trusted tasks. The agent is limited to the bundled Flask instance; the evaluation slice is not the full official Docker benchmark. Export model settings before launch; a later local export does not reconfigure the running application.
 
