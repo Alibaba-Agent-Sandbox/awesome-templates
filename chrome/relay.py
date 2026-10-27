@@ -9,8 +9,10 @@ TOKEN=os.environ.get('ABX_SERVER_TOKEN','')
 
 
 def authorized(request):
-    if TOKEN and not hmac.compare_digest(request.headers.get('Authorization',''),'Bearer '+TOKEN):
-        raise web.HTTPUnauthorized()
+    if TOKEN:
+        authorization=request.headers.get('Authorization')
+        supplied=authorization if authorization is not None else 'Bearer '+request.headers.get('X-Access-Token','')
+        if not hmac.compare_digest(supplied,'Bearer '+TOKEN):raise web.HTTPUnauthorized()
 
 
 async def cdp_http(request):
