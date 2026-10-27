@@ -15,7 +15,7 @@ controllers. Never copy model/cloud credentials into host verification or fixtur
 environments. Keep explicit remote ownership and exact process identity cleanup.
 
 ## API Design
-No runtime/public command changes. E2E_REQUIRE_LLM now requires actual configured
+Public command signatures unchanged. Browser-use template2.1.0 raises bounded native model/recovery budgets after actual truncation/timeout; strict completion/state gates remain. E2E_REQUIRE_LLM now requires actual configured
 public browser operations. The general controller hashes additional verifier/
 validator/fixture files before running and rejects any dependency changed afterward.
 All existing authentication, no-skip and real usage requirements remain intact.
