@@ -43,3 +43,7 @@ all native/method/documentation use and owned cleanup on both providers remain.
 Local scoped checks, final-head CI with correct pinned native IDE, real current
 Express/direct OpenSandbox full use, Registry receipts and published documentation.
 No default server-proxy IDE qualification or full50 completion claim.
+
+Fresh actual Express/OpenSandbox workflows are now complete: see the dated evidence
+and per-provider JSON. Template folder trees match immutable combined source4c4d1a7.
+Registry receipts, practical article updates and public readback remain required.
