@@ -19,5 +19,10 @@ Date: 2026-10-27. Harness-only change from d1f03cc17853b46ebb73586d02f9916f1656f
   journal entries after actual owned cloud provisioning, excluded active push/build
   arguments, removed exact local tags without force and independently inspected
   absence. Remote resources stayed under normal own-resource cleanup.
-- Document links/diff/configured-secret checks pending at record creation;
-  current-head CI pending. The full50-template task remains incomplete.
+- Document links: PASS224/zero failures; diff and configured-secret scans PASS.
+  Current-head CI pending. The full50-template task remains incomplete.
+
+[Original Hermes cleanup failure](2026-10-27-idempotent-owned-local-cleanup/hermes-original-failed-cleanup.json)
+and [independent supplement](2026-10-27-idempotent-owned-local-cleanup/hermes-independent-cleanup-supplement.json)
+are distinct immutable records. The supplement binds both the sanitized public
+original bytes and the private operator input digest; no alias/credential is published.
