@@ -1,0 +1,25 @@
+{
+  "declared": [
+    "GET /health",
+    "GET /commands",
+    "POST /commands/agents_version",
+    "POST /commands/agents_configure_codex",
+    "GET /v1/agents/runtimes",
+    "POST /v1/agents/sessions",
+    "GET /v1/agents/sessions",
+    "GET /v1/agents/sessions/{id}",
+    "POST /v1/agents/sessions/{id}/events",
+    "GET /v1/agents/sessions/{id}/items"
+  ],
+  "native_assertions": 27,
+  "documented_checks": 9,
+  "adapters": [
+    "qwen-code",
+    "codex"
+  ],
+  "native_core_turns_per_adapter": 2,
+  "independent_generated_programs": 6,
+  "native_core_model": "qwen3.8-flash",
+  "sdk_http_model": "qwen3.8-max",
+  "runtime_folder_unchanged": true
+}

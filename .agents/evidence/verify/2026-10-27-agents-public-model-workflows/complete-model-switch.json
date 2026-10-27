@@ -1,0 +1,127 @@
+{
+  "result": "PASS",
+  "template": "agents-cli",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//agents-cli@56e4683",
+  "manifest_sha256": "64958a6da61412e3e87032ca8b2daeb97a978f5be19dd2b29d930cbdf09fec22",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "agents_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "OPENAI_API_KEY",
+      "OPENAI_BASE_URL",
+      "OPENAI_MODEL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:64958a6da61412e3e87032ca8b2daeb97a978f5be19dd2b29d930cbdf09fec22",
+    "source_digest": "7888c96ec74fd17d57ca8ffc08f745d9bb8b190ebb49b864cb37d48d3060b8f9",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "aa9cd924d7192073c77840e747ec1ddacf0e4f66cca49b2e7975492ae1fc61a9",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 27,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "01b05d2265b3d68b93b7d5fbc887883281f20c91b3fa268c94e197132c8ab821",
+    "transport_adapter_sha256": "f3f71110b6f623042d8f3b1b280cd0cd704f43b94291364ca60bb2e9691be80a",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "agents-cli",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "qwen-code native two completed persisted turns; independent generated source execution/context file/report and owned absence",
+          "result": "PASS"
+        },
+        {
+          "id": "codex native two completed persisted turns; independent generated source execution/context file/report and owned absence",
+          "result": "PASS"
+        },
+        {
+          "id": "literal CLI both named methods; explicit profile idempotence",
+          "result": "PASS"
+        },
+        {
+          "id": "qwen-code unchanged complete README SDK session program",
+          "result": "PASS"
+        },
+        {
+          "id": "qwen-code-sdk new generated source/report independently downloaded and readonly networkless Python execution",
+          "result": "PASS"
+        },
+        {
+          "id": "codex unchanged complete README SDK session program",
+          "result": "PASS"
+        },
+        {
+          "id": "codex-sdk new generated source/report independently downloaded and readonly networkless Python execution",
+          "result": "PASS"
+        },
+        {
+          "id": "qwen-code-http new generated source/report independently downloaded and readonly networkless Python execution",
+          "result": "PASS"
+        },
+        {
+          "id": "codex-http new generated source/report independently downloaded and readonly networkless Python execution",
+          "result": "PASS"
+        }
+      ],
+      "readme_sha256": "69fe8014bcec47e173e075b175c735b6f913527c946d33738979f2ffc2f02049",
+      "native_core_model": "qwen3.8-flash",
+      "configured_model": "qwen3.8-max",
+      "adapters": [
+        "qwen-code",
+        "codex"
+      ],
+      "native_core_turns_per_adapter": 2,
+      "independent_generated_programs": 6
+    }
+  },
+  "application_result": "PASS"
+}
