@@ -42,3 +42,7 @@ native/GUI/CLI/full SDK/direct HTTP on both providers and cleanup are still pend
 Current source must pass both actual provider workflows, all methods and actual
 CDP/VNC/PNG browser tasks, owned cleanup, final-head CI/review, source/Registry/docs
 publication. No full50 completion or current OpenSandbox qualification claim yet.
+
+Fresh actual Express/OpenSandbox workflows are now complete: see the dated evidence
+and per-provider JSON. Template folder trees match immutable combined source4c4d1a7.
+Registry receipts, practical article updates and public readback remain required.

@@ -1,0 +1,46 @@
+{
+  "alicloud-express": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/chrome_version",
+      "POST /commands/chrome_setup_check",
+      "POST /commands/chrome_start",
+      "POST /commands/chrome_status",
+      "POST /commands/chrome_open",
+      "POST /commands/chrome_screenshot",
+      "POST /commands/chrome_stop",
+      "POST /commands/chrome_smoke"
+    ],
+    "native_assertions": 30,
+    "documented_checks": 9,
+    "runtime_folder_tree_matches_individual_pr": true,
+    "source_revision": "4c4d1a700b76135333d8a85f32008f59745cc926",
+    "endpoint_mode": "provider-resolved",
+    "cleanup_verified": true,
+    "result": "PASS",
+    "qualification": "Separate Registry source-bound review required"
+  },
+  "opensandbox": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/chrome_version",
+      "POST /commands/chrome_setup_check",
+      "POST /commands/chrome_start",
+      "POST /commands/chrome_status",
+      "POST /commands/chrome_open",
+      "POST /commands/chrome_screenshot",
+      "POST /commands/chrome_stop",
+      "POST /commands/chrome_smoke"
+    ],
+    "native_assertions": 30,
+    "documented_checks": 9,
+    "runtime_folder_tree_matches_individual_pr": true,
+    "source_revision": "4c4d1a700b76135333d8a85f32008f59745cc926",
+    "endpoint_mode": "server-proxy",
+    "cleanup_verified": true,
+    "result": "PASS",
+    "qualification": "Separate Registry source-bound review required"
+  }
+}
