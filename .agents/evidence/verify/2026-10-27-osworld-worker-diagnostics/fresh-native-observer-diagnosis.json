@@ -1,0 +1,15 @@
+{
+  "result": "FAIL",
+  "scope": "diagnostic-only fresh original upstream observer on the already-owned desktop",
+  "http_status": 200,
+  "expected_actual_form_text_present": false,
+  "web_document_count": 0,
+  "native_warning_categories": [
+    "AttributeError",
+    "Error",
+    "Error",
+    "Error"
+  ],
+  "nullable_attributes_error_observed": true,
+  "raw_diagnostic_sha256": "004c18ed7286184ae884d6b57b17871317a414aace0c7ba878ebe24223d2d417"
+}

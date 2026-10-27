@@ -63,3 +63,26 @@ Screen and viewport are independent: the PNG remains 1024×768, while startup wa
 The Dockerfile explicitly assigns `/home/user/app` itself to the runtime user. File-level `COPY --chown` does not grant write access to a root-created WORKDIR. The real non-root smoke must create and remove its file-backed task there.
 
 Current1.0.0 canonical native steps now pass official READY, actual Python SDK creation, CLI/SDK full native desktop smoke and required external GUI18/0/0 with independent owned sandbox/template/private-asset-cache cleanup. Exact current L1 build39462497032 also passes. [Final current-source verification](../../.agents/evidence/verify/2026-10-20-osworld-sdk-desktop-final.md) keeps historical image/smoke/GUI-skipped scopes distinct.
+
+Template1.0.3 normalizes only a None native Accessible.get_attributes result to an
+empty mapping in the owned worker. Actual fresh-observer diagnostics reproduced
+the upstream .items AttributeError and omitted web subtree; earlier cache-refresh
+hypotheses did not repair it and are removed. Nonempty mappings and native
+exceptions retain their original behavior. Vendored upstream bytes remain unchanged;
+no synthetic accessibility tree or second command server is used. Fresh provider
+core and expense business verification remain required.
+
+The next controlled candidate starts on an actual owned welcome document instead
+of the special about:blank document. Original before-navigation observation order
+remains mandatory, followed by actual external task input/native evaluator score.
+This is a proposed browser-lifecycle control, not an established cure: the nullable
+mapping repair alone still failed17/19 actual external checks and stays unqualified.
+
+The actual same-desktop control now confirms both fresh original observers see the
+real expense document (two web nodes/no native warnings) while the long-lived
+worker still returns no document before and after them. This establishes a
+per-client observation-state problem without claiming an unproven thread cause.
+Use a single-thread one-shot native observer per tree/evaluation,20s deadline,
+2MiB XML bound, filtered environment, same owned display/buses/upstream bytes.
+No listening server, synthetic XML or alternate evaluator. Remove the unsuccessful
+welcome-page candidate and retain initial observation before actual task navigation.

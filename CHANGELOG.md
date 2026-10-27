@@ -6,6 +6,7 @@
 
 ## Unreleased
 
+- OSWorld1.0.3 reads each accessibility snapshot through a bounded fresh original observer, normalizes nullable AT-SPI attributes, and reports numeric worker exits; vendored upstream handler/evaluator bytes remain unchanged.
 - Next-app1.1.4 scaffolds allow the exact loopback SDK relay development origin so native Next HMR can operate behind a local OpenSandbox gateway.
 
 - Preserve asynchronous SDK preview endpoint resolution and gateway headers for HTTP/WebSockets; cover module-level concurrent HTTP requests with scoped controller authentication.

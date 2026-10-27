@@ -118,3 +118,15 @@ def test_task_paths_cannot_escape_workspace_or_follow_external_symlink(monkeypat
     monkeypatch.setenv('WORKSPACE',str(root))
     for path in ('../outside.json','escape.json'):
         with pytest.raises(ValueError):commands._task_path(path)
+
+
+def test_unexpected_worker_exit_reports_only_numeric_status_and_cleans_owned_group():
+    child = subprocess.Popen([sys.executable, '-c', 'raise SystemExit(7)'],
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE, start_new_session=True)
+    commands._PROCESS = child
+    try:
+        with pytest.raises(RuntimeError, match=r'desktop worker exited unexpectedly \(code=1, status=7\)'):
+            commands._response(3)
+        assert commands._PROCESS is None and child.returncode == 7
+    finally:
+        commands._stop()

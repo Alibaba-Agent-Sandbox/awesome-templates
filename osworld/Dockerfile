@@ -27,7 +27,7 @@ RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbo
 
 WORKDIR /home/user/app
 COPY --chown=user:user upstream ./upstream
-COPY --chown=user:user commands.py runtime.py .
+COPY --chown=user:user commands.py runtime.py accessibility_observer.py .
 RUN chown user:user /home/user/app
 USER user
 EXPOSE 9000

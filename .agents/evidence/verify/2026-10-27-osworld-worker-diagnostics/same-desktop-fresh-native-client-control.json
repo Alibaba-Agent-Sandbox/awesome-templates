@@ -1,0 +1,23 @@
+{
+  "scope": "diagnostic-only same-owned-desktop; not provider qualification",
+  "parent_before": {
+    "expected_form_text_present": false
+  },
+  "parent_after": {
+    "expected_form_text_present": false
+  },
+  "fresh_threaded_original_handler": {
+    "http_status": 200,
+    "expected_form_text_present": true,
+    "web_document_count": 2,
+    "native_warning_count": 0,
+    "private_raw_sha256": "a1f901f8a70e6789826002ed4a0aeffe3f2c1ab4a3a98a51da79d7f00ab70341"
+  },
+  "fresh_single_thread_original_handler": {
+    "http_status": 200,
+    "expected_form_text_present": true,
+    "web_document_count": 2,
+    "native_warning_count": 0,
+    "private_raw_sha256": "a1f901f8a70e6789826002ed4a0aeffe3f2c1ab4a3a98a51da79d7f00ab70341"
+  }
+}

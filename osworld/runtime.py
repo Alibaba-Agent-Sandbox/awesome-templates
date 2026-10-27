@@ -20,7 +20,6 @@ import secrets
 import shutil
 import subprocess
 import sys
-import threading
 import time
 from types import SimpleNamespace
 from urllib.parse import unquote, urlsplit
@@ -120,13 +119,23 @@ def validate_url(url: str) -> str:
     raise ValueError("only HTTP(S) URLs and files inside WORKSPACE are supported")
 
 
+def normalize_nullable_attributes(accessible_type):
+    """Adapt an empty native GI hash table without fabricating attributes or nodes."""
+    original = accessible_type.get_attributes
+
+    def get_attributes(node):
+        value = original(node)
+        return {} if value is None else value
+
+    accessible_type.get_attributes = get_attributes
+
+
 class Desktop:
     def __init__(self, directory: Path):
         self.directory = directory
         self.children = []
         self.playwright = None
         self.browser = None
-        self.accessibility_thread = None
         self.stage = "initialization"
         try:
             self.start()
@@ -204,9 +213,6 @@ class Desktop:
         spec = importlib.util.spec_from_file_location("osworld_desktop_server", upstream / "main.py")
         self.server = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(self.server)
-        self.accessibility_thread = threading.Thread(target=self.server.pyatspi.Registry.start,
-                                                       kwargs={"gil": True}, daemon=True)
-        self.accessibility_thread.start()
         # Upstream probes LibreOffice before every Linux accessibility request.
         # This browser-only image has no Office. Unknown version is the empty
         # tuple; no executable/version is fabricated. Office tasks are rejected.
@@ -281,12 +287,30 @@ class Desktop:
             connection.close()
 
     def tree(self):
-        response = self.client.get("/accessibility")
-        if response.status_code != 200:
-            raise RuntimeError("upstream AT-SPI observation failed")
-        result = response.get_json()["AT"]
-        if len(result.encode()) > 2 * 1024 * 1024:
-            raise RuntimeError("accessibility tree exceeds 2 MiB")
+        # A fresh native client avoids stale/hung per-client AT-SPI state after
+        # navigation. The one-shot observer calls the unchanged upstream handler.
+        allowed = {"HOME", "PATH", "LANG", "LC_ALL", "LD_LIBRARY_PATH", "GI_TYPELIB_PATH",
+                   "PYTHONPATH", "XDG_DATA_DIRS", "XDG_CONFIG_HOME", "XDG_CACHE_HOME",
+                   "XDG_RUNTIME_DIR", "DISPLAY", "XAUTHORITY", "DBUS_SESSION_BUS_ADDRESS",
+                   "AT_SPI_BUS_ADDRESS", "NO_AT_BRIDGE", "ACCESSIBILITY_ENABLED"}
+        environment = {key: value for key, value in os.environ.items() if key in allowed}
+        environment.update(PYTHONDONTWRITEBYTECODE="1", PYTHONNOUSERSITE="1")
+        try:
+            observed = subprocess.run(
+                [sys.executable, str(Path(__file__).with_name("accessibility_observer.py")),
+                 str(self.directory / "upstream")], stdin=subprocess.DEVNULL,
+                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, env=environment,
+                timeout=20, check=False)
+        except subprocess.TimeoutExpired:
+            raise RuntimeError("native accessibility observation timed out") from None
+        if observed.returncode != 0 or len(observed.stdout) > 4 * 1024 * 1024:
+            raise RuntimeError("native accessibility observation failed")
+        try:
+            result = json.loads(observed.stdout)["tree"]
+        except (ValueError, KeyError, TypeError):
+            raise RuntimeError("invalid native accessibility observation") from None
+        if not isinstance(result, str) or len(result.encode()) > 2 * 1024 * 1024:
+            raise RuntimeError("invalid bounded accessibility tree")
         return result
 
     def screen(self):
@@ -462,9 +486,6 @@ class Desktop:
         if self.playwright is not None:
             with contextlib.suppress(Exception):
                 self.playwright.stop()
-        if self.accessibility_thread is not None:
-            self.server.pyatspi.Registry.stop()
-            self.accessibility_thread.join(timeout=1)
 
 
 def main():

@@ -1,0 +1,114 @@
+{
+  "result": "PASS",
+  "template": "osworld",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//osworld@f7a42361fc65fed9af8f5fcafc55411cbe418d61",
+  "manifest_sha256": "0bffb711ec212c8af6c297612e2451b83043c8e29dd65f057d4b38b6db963301",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "osworld_desktop_smoke",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "desktop_lifecycle_required": true,
+    "real_usage_required": true,
+    "explicit_manifest_environment": []
+  },
+  "endpoint_mode": "server-proxy",
+  "input_receipt": {
+    "manifest_digest": "sha256:0bffb711ec212c8af6c297612e2451b83043c8e29dd65f057d4b38b6db963301",
+    "source_digest": "c15dea9c7e8837fa17185beaec584dedf9ddb13da0b674917555780944de62db",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "322e04efed9fed0eebccc6f75fcd3d73c8533764c4d9bab8c79ca00a36bb66b1",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 19,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "487b3498a7b7558a6cfa08b17886843cd76794a8cf8a4ac4bf480759b1d86839",
+    "transport_adapter_sha256": "f3f71110b6f623042d8f3b1b280cd0cd704f43b94291364ca60bb2e9691be80a",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "osworld",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "literal CLI returns actual live accessibility XML",
+          "result": "PASS"
+        },
+        {
+          "id": "actual desktop click Unicode-capable typing/hotkey/save, native evaluator0to1, independent XML and changed PNG",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI owned desktop stopped and task/input files independently absent",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README SDK desktop/accessibility/stop program",
+          "result": "PASS"
+        },
+        {
+          "id": "actual SDK accessibility XML and independent stopped state",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README direct HTTP actual accessibility XML",
+          "result": "PASS"
+        },
+        {
+          "id": "HTTP desktop independently stopped",
+          "result": "PASS"
+        }
+      ],
+      "readme_sha256": "0f86efe97bb00756a036d0ad4f9b45e0bb28d44335ca4af8aaf5d844e9007d7c",
+      "business_result": {
+        "amount": "51.30",
+        "native_score": 1,
+        "png_sha256": "91a0a4664143ea89c50893ddf23fc035b84d826d92cd52b78a52a53fa09bd1eb"
+      }
+    }
+  },
+  "application_result": "PASS"
+}

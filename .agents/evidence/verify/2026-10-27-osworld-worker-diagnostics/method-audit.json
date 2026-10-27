@@ -1,0 +1,30 @@
+{
+  "declared": [
+    "GET /health",
+    "GET /commands",
+    "POST /commands/osworld_setup_check",
+    "POST /commands/desktop_start",
+    "POST /commands/desktop_stop",
+    "POST /commands/screenshot",
+    "POST /commands/click",
+    "POST /commands/type",
+    "POST /commands/hotkey",
+    "POST /commands/a11y_tree",
+    "POST /commands/run_task_config",
+    "POST /commands/evaluate",
+    "POST /commands/osworld_desktop_smoke"
+  ],
+  "native_assertions": 19,
+  "documented_checks": 7,
+  "business_result": {
+    "amount": "51.30",
+    "native_score_before": 0,
+    "native_score_after": 1
+  },
+  "runtime_folder_unchanged": true,
+  "upstream_files_unchanged": true,
+  "complete_providers": [
+    "alicloud-express",
+    "opensandbox"
+  ]
+}

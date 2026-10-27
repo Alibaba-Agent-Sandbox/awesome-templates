@@ -1,0 +1,80 @@
+{
+  "result": "FAIL",
+  "template": "osworld",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//osworld@c5a4aeae9519097c897c8c5b6baec695a0af4656",
+  "manifest_sha256": "0bffb711ec212c8af6c297612e2451b83043c8e29dd65f057d4b38b6db963301",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "osworld_desktop_smoke",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "desktop_lifecycle_required": true,
+    "real_usage_required": true,
+    "explicit_manifest_environment": []
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:0bffb711ec212c8af6c297612e2451b83043c8e29dd65f057d4b38b6db963301",
+    "source_digest": "78b21982cf045d40e950963e99ff6d154e391e2d2372bb3f8a730ea3c25a8589",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "38d6746571f7fe28cf3e2cdfe79c7d3652b05ba7a3035a45bd74cf44aa91bf5f",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 1,
+    "pass_count": 17,
+    "fail_count": 2,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "9d701a2866d0ef7d3945cbada7789fc21804c2ae2a8adffca3ae602c6bc1b01e",
+    "transport_adapter_sha256": "f3f71110b6f623042d8f3b1b280cd0cd704f43b94291364ca60bb2e9691be80a",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": false
+  },
+  "http_diagnostics": [
+    "[FAIL] external GUI actions produce an upstream task score of one",
+    "[FAIL] fresh real accessibility observation contains the completed state"
+  ],
+  "application_result": "FAIL",
+  "failure_type": "CheckFailed",
+  "failed_phase": "application-controller",
+  "diagnostics": {},
+  "failed_check": "template application HTTP controller"
+}

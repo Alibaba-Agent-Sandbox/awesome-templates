@@ -1,0 +1,91 @@
+{
+  "result": "FAIL",
+  "template": "osworld",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//osworld@caf261a",
+  "manifest_sha256": "b4098f4279506094e3dfa7cc2059869efbdebe02689540579f9ba7a3cf6c0e64",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "osworld_desktop_smoke",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "desktop_lifecycle_required": true,
+    "real_usage_required": true,
+    "explicit_manifest_environment": []
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:b4098f4279506094e3dfa7cc2059869efbdebe02689540579f9ba7a3cf6c0e64",
+    "source_digest": "13b5ee9d11c7f613272d815c8a1ed20474c682712a050b4d139934fed0d9737a",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "23d85933d449c0927277cae8d6f1ba4a5d6bb0dd6e7dbec103a615e652d5bf9d",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "passed": false,
+    "scope": "fresh literal documentation tasks; canonical full-method/model assertions are in the pinned preceding core receipt",
+    "core_receipt_sha256": "fcc632677af6e062b6b3c95b2ff70085aaeb63cd0563fde418412b2c56011033",
+    "documented_case": {
+      "template": "osworld",
+      "provider": "alicloud-express",
+      "result": "FAIL",
+      "checks": [
+        {
+          "id": "literal CLI returns actual live accessibility XML",
+          "result": "PASS"
+        }
+      ],
+      "core_receipt_sha256": "fcc632677af6e062b6b3c95b2ff70085aaeb63cd0563fde418412b2c56011033",
+      "readme_sha256": "0f86efe97bb00756a036d0ad4f9b45e0bb28d44335ca4af8aaf5d844e9007d7c",
+      "failure_type": "AssertionError",
+      "failure_stack": [
+        [
+          "documented_osworld_tasks.py",
+          "execute",
+          28
+        ]
+      ]
+    }
+  },
+  "http_diagnostics": [],
+  "application_result": "FAIL",
+  "failure_type": "CheckFailed",
+  "failed_phase": "application-controller",
+  "diagnostics": {},
+  "failed_check": "template application HTTP controller"
+}
