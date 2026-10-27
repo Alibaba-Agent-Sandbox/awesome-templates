@@ -474,6 +474,15 @@ async def verify(args):
         report['checks'].append('unchanged source launched by installed CLI')
         phase = 'sdk-connect'
         sandbox = await ProviderSandbox.connect(launch['sandbox_id'], provider=args.provider)
+        phase = 'command-discovery'
+        discovered = await asyncio.to_thread(cli.run, ['sandbox', 'command', 'list', sandbox.id])
+        require(isinstance(discovered, list) and bool(discovered) and all(
+            isinstance(item, dict) and isinstance(item.get('name'), str) and item['name']
+            for item in discovered), 'literal documented CLI command discovery returns registered methods')
+        names = [item['name'] for item in discovered]
+        require(len(names) == len(set(names)), 'command discovery names must be unique')
+        report['public_command_inventory'] = sorted(names)
+        report['checks'].append('literal documented CLI command discovery')
         phase = 'application-client'
         client = await sandbox.application_client(9000, token=env['ABX_SERVER_TOKEN'], timeout=180)
         phase = 'endpoint-resolution'

@@ -27,3 +27,13 @@ compiler stage is explicitly SKIP because host pins are absent; this is not imag
 acceptance. Initial L0 operator invocation used the system python3 child instead
 of the installed SDK venv and failed startup; adding the venv to child PATH fixes
 that environment mistake. Both runs stop their owned server; no cloud calls here.
+
+Broader coverage review: SWE/apply-patch/IDE/database/Next native scripts also omit
+explicit discovery. SWE version and report, plus Next self-test, are positively
+exercised by existing smoke/README layers, so they are not missing named business
+methods. The common source-launch runner now executes the actual literal CLI
+command-list step and validates nonempty unique registered names. This covers
+future templates even when a native controller groups its own checks differently.
+Fresh full workflows for both providers of four native utility/service families
+and Express SWE are queued; pending OpenSandbox SWE already has the actual CLI
+callback. These are full native/business/README reruns, not metadata-only promotion.

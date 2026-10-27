@@ -1,4 +1,4 @@
-# Decision: Exercise Polyglot public command discovery
+# Decision: Exercise public command discovery in every source launch
 
 Status: proposed
 
@@ -39,3 +39,12 @@ native compilers and literal CLI/full SDK/direct HTTP tasks with independent cle
 Both actual provider workflows, all four public endpoints, independent owned
 cleanup, source/current-head gates, reviewed Registry identities and public readback
 pass. Preserve original evidence and never infer full50-template completion.
+
+Further whole-catalog review found the same omitted discovery call in standalone
+SWE/apply-patch/IDE/database/Next native controllers. Their named methods are
+covered across smoke/native/README business flows (SWE report and Next self-test
+are in those other layers). Require the literal documented CLI command-list step
+in the common public launch runner, retaining every original native/business gate.
+Fresh complete workflows are queued for both providers for the four non-model
+families and Express SWE; the pending direct OpenSandbox SWE workflow already
+executes the explicit CLI discovery callback. No model/user-output gate is reduced.
