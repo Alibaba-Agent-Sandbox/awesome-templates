@@ -104,7 +104,7 @@ async def main():
                 response.raise_for_status()
             response = await http.post(url("/v1/agents/sessions"), json={
                 "adapter": adapter,
-                "agent": {"model": os.environ["OPENAI_MODEL"], "permissions": "full_access"},
+                "agent": {"model": os.environ["OPENAI_MODEL"]},
                 "environment": {"type": "self_hosted",
                                 "workspace_directory": "/home/user/workspace"},
             })
@@ -156,8 +156,7 @@ asyncio.run(main())
 {
   "adapter": "qwen-code",
   "agent": {
-    "model": "<same-model-as-OPENAI_MODEL>",
-    "permissions": "full_access"
+    "model": "<same-model-as-OPENAI_MODEL>"
   },
   "environment": {
     "type": "self_hosted",

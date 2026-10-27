@@ -61,7 +61,7 @@ export AGENTS_ADAPTER=qwen-code
 # Or: export AGENTS_ADAPTER=codex
 ```
 
-The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/workspace`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.
+The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/workspace`. Native adapters run with the sandbox user's workspace permissions; use an owned disposable sandbox. The closed HTTP policy does not remove native CLI file/process tools. The SDK and HTTP examples are alternative ways to submit the same task; choose one.
 
 ## Quick start (Python SDK)
 
@@ -104,7 +104,7 @@ async def main():
                 response.raise_for_status()
             response = await http.post(url("/v1/agents/sessions"), json={
                 "adapter": adapter,
-                "agent": {"model": os.environ["OPENAI_MODEL"], "permissions": "full_access"},
+                "agent": {"model": os.environ["OPENAI_MODEL"]},
                 "environment": {"type": "self_hosted",
                                 "workspace_directory": "/home/user/workspace"},
             })
@@ -158,8 +158,7 @@ For Codex, first send `POST /commands/agents_configure_codex` with `{}`; expect 
 {
   "adapter": "qwen-code",
   "agent": {
-    "model": "<same-model-as-OPENAI_MODEL>",
-    "permissions": "full_access"
+    "model": "<same-model-as-OPENAI_MODEL>"
   },
   "environment": {
     "type": "self_hosted",

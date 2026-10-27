@@ -92,7 +92,7 @@ def main() -> int:
             for adapter in ('qwen-code','codex'):
                 nonce=secrets.token_hex(16);root=workspace+'/abx_agents_model_'+nonce
                 expected='Hello agents '+nonce
-                response=client.post('/v1/agents/sessions',json={'adapter':adapter,'agent':{'model':model,'permissions':'full_access'},'environment':{'type':'self_hosted','workspace_directory':workspace}})
+                response=client.post('/v1/agents/sessions',json={'adapter':adapter,'agent':{'model':model},'environment':{'type':'self_hosted','workspace_directory':workspace}})
                 check(response.status_code==200,adapter+' native model session created')
                 session=response.json()['id'];path='/v1/agents/sessions/'+session
                 for index,prompt in enumerate([
