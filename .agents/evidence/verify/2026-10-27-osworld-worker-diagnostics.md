@@ -37,3 +37,17 @@ walker first raises on None, then retains the real child after normalization.
 Targeted actual tests:45 PASS, zero skips,2.84s; CI pins lxml6.0.2 for that regression.
 No synthetic XML or second command server. New candidate full native/core/docs/
 GUI expense task and provider acceptance remain pending; OSWorld stays Beta.
+
+Actual nullable-mapping candidate0def50d remains FAIL17 native/2 failed, zero
+skips: external GUI task score and completed accessibility state both failed.
+Diagnostic-only repeat retains original failed core and also fails documented
+expense flow; no provider qualification. Fresh original observer now reports native
+AT-SPI getText/get_attributes hung errors. Read-only independent CDP confirms the
+actual visible expense page, viewport712 vs screen768, empty input/Awaiting amount
+before GUI actions. GIL thread semantics verified against original pyatspi2.46.1;
+no unsupported cache/GIL/Chrome-feature claim is made.
+
+Next controlled candidate starts on an actual owned local welcome document rather
+than about:blank. Keep initial observation and full external task/result gates;
+require real welcome XML before navigation. All candidates remain unmerged/Beta
+until actual complete method/business proof. No synthetic accessibility XML.

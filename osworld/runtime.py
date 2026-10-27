@@ -232,10 +232,13 @@ class Desktop:
         if not Path(binary).is_file():
             raise RuntimeError("the pinned browser is missing")
         self.stage = "browser-startup"
+        welcome = self.directory / "welcome.html"
+        welcome.write_text('<!doctype html><html lang="en"><meta charset="utf-8"><title>Sandbox desktop</title><body><h1>Sandbox desktop ready</h1><p>Open your own task with run_task_config.</p></body></html>', encoding="utf-8")
+        welcome.chmod(0o600)
         self.browser_process = self.spawn([binary, "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--no-first-run",
                     "--no-default-browser-check", "--password-store=basic", "--force-renderer-accessibility",
                     "--remote-debugging-address=127.0.0.1", "--remote-debugging-port=0", "--kiosk",
-                    "--user-data-dir=" + str(self.directory / "browser"), "about:blank"])
+                    "--user-data-dir=" + str(self.directory / "browser"), welcome.as_uri()])
         port_file = self.directory / "browser" / "DevToolsActivePort"
         for _ in range(200):
             if port_file.exists():
@@ -248,6 +251,7 @@ class Desktop:
         self.browser = self.playwright.chromium.connect_over_cdp(f"http://127.0.0.1:{port}")
         self.context = self.browser.contexts[0]
         self.page = self.context.pages[0]
+        self.page.wait_for_url(welcome.as_uri(), timeout=10000)
         self.stage = "browser-viewport"
         self.page.wait_for_function("document.visibilityState === 'visible' && innerWidth > 0 && innerHeight > 0",
                                     timeout=10000, polling=50)

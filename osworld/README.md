@@ -174,3 +174,5 @@ The 1024×768 PNG/Xvfb screen and the browser page viewport are separate measure
 For CLI setup, SDK installation, HTTP authentication and resource ownership, see [Using templates](../docs/using-templates.md).
 
 An empty native AT-SPI attribute hash table is read as an empty mapping so the upstream XML traversal can retain its real child nodes. No accessibility nodes or attributes are fabricated; native errors still propagate and vendored upstream handler/evaluator bytes remain unchanged.
+
+desktop_start opens an owned local welcome page before task navigation; a11y_tree reads the actual current desktop. The welcome page is removed with the owned desktop state.

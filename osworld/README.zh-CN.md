@@ -176,3 +176,5 @@ Apache-2.0。保留原 OSWorld 文件、完整[上游许可证](upstream/LICENSE
 CLI 安装、SDK 源码安装、HTTP 认证与资源所有权见[模板使用指南](../docs/using-templates.zh-CN.md)。
 
 原生 AT-SPI 的空属性哈希表按空字典读取，避免上游 XML 遍历在 `.items()` 处中断并丢弃真实子节点。不会生成或替换可访问性节点；原生错误继续传播，上游处理器与评分源码保持原始字节。
+
+desktop_start 先打开本次私有会话中的本地欢迎页面，再接收任务导航；a11y_tree 读取实际桌面。欢迎页随本次桌面状态一起清理。

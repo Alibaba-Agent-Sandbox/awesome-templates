@@ -71,3 +71,9 @@ hypotheses did not repair it and are removed. Nonempty mappings and native
 exceptions retain their original behavior. Vendored upstream bytes remain unchanged;
 no synthetic accessibility tree or second command server is used. Fresh provider
 core and expense business verification remain required.
+
+The next controlled candidate starts on an actual owned welcome document instead
+of the special about:blank document. Original before-navigation observation order
+remains mandatory, followed by actual external task input/native evaluator score.
+This is a proposed browser-lifecycle control, not an established cure: the nullable
+mapping repair alone still failed17/19 actual external checks and stays unqualified.
