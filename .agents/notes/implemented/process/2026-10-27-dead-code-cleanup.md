@@ -1,6 +1,6 @@
 # Decision: Remove verified unused code and record candidate dispositions
 
-Status: proposed
+Status: implemented
 
 ## Problem
 
@@ -46,3 +46,9 @@ The wider scan has 55 additional F401 import findings in runtime/support files a
 ## Evidence
 
 - [Verification](../../../evidence/verify/2026-10-27-dead-code-cleanup.md)
+
+## Implementation
+
+The scoped implementation merged through https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/242 at `c6ecddbf99a82c85439de589799f9f7e28c3958b`. The original verification checkpoint is preserved as history; the acceptance receipt below records the actual remote result.
+
+- [Acceptance receipt](../../../evidence/verify/2026-10-27-dead-code-cleanup-acceptance.md)
