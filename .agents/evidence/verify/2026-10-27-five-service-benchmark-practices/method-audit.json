@@ -1,0 +1,82 @@
+{
+  "node-web": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/serve",
+      "POST /commands/start",
+      "POST /commands/dev",
+      "POST /commands/status",
+      "POST /commands/stop",
+      "POST /commands/logs",
+      "POST /commands/request",
+      "POST /commands/build",
+      "POST /commands/smoke"
+    ],
+    "core_checks": 60,
+    "docs_checks": 7,
+    "folders_unchanged": true
+  },
+  "dev-services": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/services_setup_check",
+      "POST /commands/services_versions",
+      "POST /commands/services_start",
+      "POST /commands/services_status",
+      "POST /commands/services_sql",
+      "POST /commands/services_redis",
+      "POST /commands/services_stop",
+      "POST /commands/services_self_test"
+    ],
+    "core_checks": 6,
+    "docs_checks": 7,
+    "folders_unchanged": true
+  },
+  "chrome": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/chrome_version",
+      "POST /commands/chrome_setup_check",
+      "POST /commands/chrome_start",
+      "POST /commands/chrome_status",
+      "POST /commands/chrome_open",
+      "POST /commands/chrome_screenshot",
+      "POST /commands/chrome_stop",
+      "POST /commands/chrome_smoke"
+    ],
+    "core_checks": 30,
+    "docs_checks": 9,
+    "folders_unchanged": true
+  },
+  "tau2-bench": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/tau2_version",
+      "POST /commands/tau2_setup_check",
+      "POST /commands/tau2_run",
+      "POST /commands/tau2_verify_artifact"
+    ],
+    "core_checks": 17,
+    "docs_checks": 8,
+    "folders_unchanged": true
+  },
+  "qm-sandbox": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/qm_sandbox_version",
+      "POST /commands/qm_sandbox_native_check",
+      "POST /commands/qm_sandbox_setup_check",
+      "POST /commands/qm_sandbox_sdk_smoke",
+      "POST /commands/qm_sandbox_exec",
+      "POST /commands/qm_sandbox_file"
+    ],
+    "core_checks": 18,
+    "docs_checks": 8,
+    "folders_unchanged": true
+  }
+}
