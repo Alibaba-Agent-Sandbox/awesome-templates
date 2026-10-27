@@ -21,8 +21,8 @@ Copying model credentials into the host controller, accepting a host-only key,
 removing strict model requirements or accepting a skip would defeat isolation.
 
 ## Dependencies
-Refs https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/244 and the
-focused Codex target-configuration defect. Public CLI0.5.7/client-server0.4.0a6.
+Refs https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/244 and
+https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/258. Public CLI0.5.7/client-server0.4.0a6.
 
 ## Test Strategy
 A target-only key must reach actual source verification with no host key. A host
