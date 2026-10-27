@@ -32,7 +32,6 @@ Codex CLI `0.162.1`、Qwen Code `0.23.0`、Node.js `24.16.0` 及受限的本地 
 先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，配置选择的平台（沙箱 API Key、连接地址及构建镜像仓库），再配置下面独立的模型/应用凭据。无需 clone 仓库即可启动公共模板。
 
 
-使用下方的百炼接入点时，在[百炼 API Key 页面](https://help.aliyun.com/zh/model-studio/get-api-key)选择北京地域创建 Key，并填写该账号可用模型 ID；其他地域或 Coding Plan 使用其对应的 Key/endpoint，不能混用。
 
 所有 `<...>` 都是需要你替换的占位值，模型名必须使用服务商实际提供的 ID。密钥在你自己的终端或 secret manager 中设置，不要放入镜像、YAML 或公开日志。以下变量要在 launch **之前**设置；之后改变 host 环境不会更新运行中的应用。
 
@@ -51,7 +50,7 @@ abx sandbox command list "$SANDBOX_ID"
 
 launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
 
-命名命令只提供版本诊断，真实编码使用后面的会话 API；不要把版本响应当成编码结果。
+命名命令提供版本诊断和显式 Codex 配置准备；真实编码使用后面的会话 API，配置完成或版本响应本身都不是编码结果。
 
 ```bash
 abx run "$SANDBOX_ID" agents_version
@@ -237,7 +236,7 @@ HTTP 使用 Codex 前，先 `POST /commands/agents_configure_codex`，body 为 `
 | `ABX_SERVER_TOKEN` | 必填；清单为空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 | `OPENAI_API_KEY` | 兼容模型调用需要 | Qwen 及兼容 Codex 配置的模型凭据，清单中为空 |
 | `CODEX_API_KEY` | Codex 可选替代项 | 清单中为空；实际支持取决于上游及提供方配置 |
-| `OPENAI_BASE_URL`、`OPENAI_MODEL` | 取决于提供方 | Qwen 兼容端点和模型配置 |
+| `OPENAI_BASE_URL`、`OPENAI_MODEL` | 取决于提供方 | 显式模型端点和模型 ID；Qwen 使用 Chat Completions，Codex 准备 profile 后使用 Responses |
 | `ABX_AGENTS_STATE_DIR` | 否 | 原生本地会话存储目录 `/home/user/.agent-sandbox/agents`，随实例删除 |
 | `CODEX_HOME` | 否 | Codex 状态目录，默认 `/home/user/.codex` |
 | `WORKSPACE` | 否 | `/home/user/workspace`；会话请求应显式指定目标目录 |
