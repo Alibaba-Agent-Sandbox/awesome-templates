@@ -104,7 +104,14 @@ def _response(timeout: int) -> object:
                 raise RuntimeError("desktop operation timed out")
             chunk = os.read(_PROCESS.stdout.fileno(), 65536)
             if not chunk:
-                raise RuntimeError("desktop worker exited unexpectedly")
+                status = os.waitid(os.P_PID, _PROCESS.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+                for _ in range(50):
+                    if status is not None:
+                        break
+                    time.sleep(.01)
+                    status = os.waitid(os.P_PID, _PROCESS.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+                detail = f" (code={status.si_code}, status={status.si_status})" if status else ""
+                raise RuntimeError("desktop worker exited unexpectedly" + detail)
             _BUFFER += chunk
             if len(_BUFFER) > 8 * 1024 * 1024:
                 raise RuntimeError("desktop response exceeds 8 MiB")
