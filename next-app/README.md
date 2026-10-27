@@ -41,6 +41,8 @@ abx run "$SANDBOX_ID" dev_start --json-args '{"kind":"next","path":"preview-app"
 
 Returns `running: true`, `port: 3000`. Resolve port 3000 to view `ABX_NEXT_PREVIEW`; source files remain in `preview-app/`.
 
+Next scaffolds include `next.config.mjs` with the exact loopback `allowedDevOrigins: ['127.0.0.1']` required by the local SDK relay. Other development origins are not added. When extending an existing project, configure that exact origin yourself before starting Next; keep your own project's configuration and avoid wildcard origins.
+
 Resolve the Next.js preview with `await sb.network.resolve(3000)`, preserving its path, query and gateway headers; use the [preview guide](../docs/preview-proxy.md) when needed. The app has no built-in login; use provider access controls. Vite uses `kind="vite"` and port 5173; if Host validation rejects the gateway, pass that exact gateway hostname as `allowed_host`, not a wildcard.
 
 `--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.

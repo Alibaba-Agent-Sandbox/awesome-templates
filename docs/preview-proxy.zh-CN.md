@@ -3,7 +3,7 @@
 [English](preview-proxy.md)。此工具运行在与浏览器同一台电脑上的配套原生 Python
 SDK 环境中。阿里云默认 FC 域名可能把 HTML 标为附件，见[官方说明](https://www.alibabacloud.com/help/en/functioncompute/web-functions)。
 已有自定义预览域名仍可使用直接模式。本地方式访问真实远端应用，保留上游 HTTPS
-证书验证，并通过只监听回环地址的客户端转发 HTTP/WebSocket。
+证书验证，也支持明确配置的本机 OpenSandbox 回环 HTTP 地址；通过只监听回环地址的客户端转发 HTTP/WebSocket。
 
 ## 安装与打开
 
@@ -22,7 +22,7 @@ python scripts/preview_proxy.py --sandbox-id <owned-sandbox-id> --remote-port 84
 初始 URL 含随机本地访问能力，后续请求需 HttpOnly、SameSite=Strict 的本地 cookie。
 Host、Origin 仅接受当前回环来源。应用 cookie 单独保存在本次代理的内存中，不向
 上游发送浏览器或其他本地端口的 cookie。目标始终为 SDK 返回的固定端点；浏览器
-query 不能覆盖 SDK 的认证 query。保留操作端代理设置，不自动加载 netrc 凭据。
+query 不能覆盖 SDK 的认证 query。端点通过 `await sandbox.network.resolve(port)` 解析；网关认证头仅在代理内部发给上游，HTTP 和 WebSocket 均保留，浏览器同名头不能覆盖它们。保留操作端代理设置，不自动加载 netrc 凭据。
 请保持输出的本地 URL 私有。
 
 ## HTTP、WebSocket 与限制
@@ -33,7 +33,7 @@ query 不能覆盖 SDK 的认证 query。保留操作端代理设置，不自动
 到固定自有端点以外。这是本机预览操作，不是公共托管服务，也不证明默认 FC 域名
 能直接渲染 HTML。
 
-上游始终验证 HTTPS 证书和主机名。本机浏览器通过127.0.0.1上的 HTTP 访问，不做
+上游 HTTPS 始终验证证书和主机名。明确配置的本机 OpenSandbox HTTP 端点仅接受回环 IP 或 localhost，不接受任意远端明文地址。本机浏览器通过127.0.0.1上的 HTTP 访问，不做
 浏览器响应拦截或页面替换。工具和依赖只在操作端使用，不修改模板镜像/运行时，
 也不移除应用认证。
 

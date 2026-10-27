@@ -1,0 +1,32 @@
+{
+  "result": "FAIL",
+  "template": "browser-automation",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//browser-automation@e8d44eb5b1b8f656efdd1100036f9dcda146bee1",
+  "manifest_sha256": "8f01e854b136f5c1fb02c2bacd2eaf1272fe09c3bcd8529569cd59289c5c0a6a",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [],
+  "cleanup": {
+    "sandbox": "not observed",
+    "prepared_artifacts": "none observed",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": []
+  },
+  "endpoint_mode": "server-proxy",
+  "application_result": "FAIL",
+  "failure_type": "CLIError",
+  "failed_phase": "template-launch",
+  "diagnostics": {
+    "code": "E2001"
+  },
+  "failed_check": "CLI template failed (exit 4)"
+}

@@ -1,0 +1,191 @@
+{
+  "node-web": {
+    "provider": "opensandbox",
+    "scope": "complete-native-methods-and-fresh-literal-cli-full-sdk-http-business",
+    "result": "PASS",
+    "native_assertions": 60,
+    "documented_checks": 7,
+    "runtime_folder_unchanged": true,
+    "public_methods": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/serve",
+      "POST /commands/start",
+      "POST /commands/dev",
+      "POST /commands/status",
+      "POST /commands/stop",
+      "POST /commands/logs",
+      "POST /commands/request",
+      "POST /commands/build",
+      "POST /commands/smoke"
+    ]
+  },
+  "dev-services": {
+    "provider": "opensandbox",
+    "scope": "complete-native-methods-and-fresh-literal-cli-full-sdk-http-business",
+    "result": "PASS",
+    "native_assertions": 6,
+    "documented_checks": 7,
+    "runtime_folder_unchanged": true,
+    "public_methods": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/services_setup_check",
+      "POST /commands/services_versions",
+      "POST /commands/services_start",
+      "POST /commands/services_status",
+      "POST /commands/services_sql",
+      "POST /commands/services_redis",
+      "POST /commands/services_stop",
+      "POST /commands/services_self_test"
+    ]
+  },
+  "media-tools": {
+    "provider": "opensandbox",
+    "scope": "complete-native-methods-and-fresh-literal-cli-full-sdk-http-business",
+    "result": "PASS",
+    "native_assertions": 28,
+    "documented_checks": 7,
+    "runtime_folder_unchanged": true,
+    "public_methods": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/media_version",
+      "POST /commands/media_setup_check",
+      "POST /commands/media_probe",
+      "POST /commands/transcode",
+      "POST /commands/transcode_args",
+      "POST /commands/media_smoke",
+      "POST /commands/media_args_smoke",
+      "POST /commands/media_video_smoke"
+    ]
+  },
+  "ocr": {
+    "provider": "opensandbox",
+    "scope": "complete-native-methods-and-fresh-literal-cli-full-sdk-http-business",
+    "result": "PASS",
+    "native_assertions": 19,
+    "documented_checks": 7,
+    "runtime_folder_unchanged": true,
+    "public_methods": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/ocr_version",
+      "POST /commands/ocr_setup_check",
+      "POST /commands/ocr",
+      "POST /commands/ocr_smoke"
+    ]
+  },
+  "document-tools": {
+    "provider": "opensandbox",
+    "scope": "complete-native-methods-and-fresh-literal-cli-full-sdk-http-business",
+    "result": "PASS",
+    "native_assertions": 36,
+    "documented_checks": 7,
+    "runtime_folder_unchanged": true,
+    "public_methods": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/document_version",
+      "POST /commands/document_setup_check",
+      "POST /commands/convert",
+      "POST /commands/office_version",
+      "POST /commands/document_smoke",
+      "POST /commands/document_extended_smoke"
+    ]
+  },
+  "browser-automation": {
+    "provider": "opensandbox",
+    "result": "PASS",
+    "scope": "complete-original-native-methods-plus-fresh-literal-cli-full-sdk-direct-http-business",
+    "native_assertions": 37,
+    "documented_checks": 7,
+    "original_failure_preserved": true,
+    "reviewed_registry_promotion": "PENDING",
+    "public_methods": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/browse",
+      "POST /commands/scrape",
+      "POST /commands/fill_form",
+      "POST /commands/run",
+      "POST /commands/pdf",
+      "POST /commands/mcp_start",
+      "POST /commands/mcp_status",
+      "POST /commands/mcp_call",
+      "POST /commands/mcp_stop",
+      "POST /commands/mcp_self_test"
+    ]
+  },
+  "next-app": {
+    "result": "PASS",
+    "scope": "Next1.1.4-new-source-complete-native-methods-and-fresh-cli-full-sdk-direct-http-plus-real-Next-Vite-HMR",
+    "providers": [
+      "opensandbox",
+      "alicloud-express"
+    ],
+    "native_assertions_per_provider": 6,
+    "documented_checks_per_provider": 10,
+    "original_failures_preserved": true,
+    "template_version": "1.1.4",
+    "reviewed_registry_promotion": "PENDING",
+    "public_methods": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/toolchain_versions",
+      "POST /commands/scaffold",
+      "POST /commands/dev_start",
+      "POST /commands/dev_status",
+      "POST /commands/dev_logs",
+      "POST /commands/dev_stop",
+      "POST /commands/preview_self_test",
+      "GET :3000/ (Next preview)",
+      "GET :5173/ (Vite preview)"
+    ]
+  },
+  "claude-code": {
+    "provider": "alicloud-express",
+    "result": "PARTIAL",
+    "scope": "actual-original-cli-explicit-authored-compatible-protocol-adapter-only",
+    "native_assertions": 19,
+    "documented_checks": 14,
+    "unverified_public_methods": [
+      "claude"
+    ],
+    "blocker": "native vendor credentials unavailable; compatible model key is not sent to vendor default endpoint",
+    "whole_template_qualification": false,
+    "runtime_folder_unchanged": true
+  },
+  "gemini": {
+    "provider": "alicloud-express",
+    "result": "PARTIAL",
+    "scope": "actual-original-cli-explicit-authored-compatible-protocol-adapter-only",
+    "native_assertions": 19,
+    "documented_checks": 14,
+    "unverified_public_methods": [
+      "gemini"
+    ],
+    "blocker": "native vendor credentials unavailable; compatible model key is not sent to vendor default endpoint",
+    "whole_template_qualification": false,
+    "runtime_folder_unchanged": true
+  },
+  "droid": {
+    "provider": "alicloud-express",
+    "result": "PARTIAL",
+    "scope": "original-Factory-Droid-native-BYOK-custom-model-coding",
+    "native_assertions": 17,
+    "documented_checks": 16,
+    "unverified_public_methods": [
+      "droid"
+    ],
+    "passed_named_methods": [
+      "droid_byok",
+      "droid_byok_setup_check",
+      "droid_version",
+      "droid_setup_check"
+    ],
+    "whole_template_qualification": false,
+    "native_account_credentials_verified": false,
+    "runtime_folder_unchanged": true
+  }
+}

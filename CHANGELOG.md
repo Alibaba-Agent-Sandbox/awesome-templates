@@ -6,7 +6,11 @@
 
 ## Unreleased
 
-- OSWorld1.0.3 normalizes nullable native AT-SPI attribute mappings and reports bounded numeric worker-exit diagnostics; vendored upstream handler/evaluator bytes remain unchanged.
+- OSWorld1.0.3 reads each accessibility snapshot through a bounded fresh original observer, normalizes nullable AT-SPI attributes, and reports numeric worker exits; vendored upstream handler/evaluator bytes remain unchanged.
+- Next-app1.1.4 scaffolds allow the exact loopback SDK relay development origin so native Next HMR can operate behind a local OpenSandbox gateway.
+
+- Preserve asynchronous SDK preview endpoint resolution and gateway headers for HTTP/WebSockets; cover module-level concurrent HTTP requests with scoped controller authentication.
+
 - Agents CLI2.1.0 adds explicit native Codex Responses profile preparation without key serialization or overwriting caller configuration. Both native adapters use the original restricted public application; complete guides cover session coding/continuation, model changes and independent file export. Repair the standalone verifier default ProviderSandbox factory.
 - OpenClaw2.2.0 adds explicit compatible-model key/base/model configuration and native gateway conversations with per-thread continuation. Preserve gateway-only startup and owned cleanup; allow immediate owned restart after TCP TIME_WAIT while refusing foreign listeners.
 - Browser-use2.1.0 permits bounded recovery from truncated model replies, with8192-token output,120-second request wait and at most3 consecutive native failures. Public browser-use/Stagehand acceptance runs the actual launched application; both guides use current IANA pages and retain strict native completion/state/PNG checks.

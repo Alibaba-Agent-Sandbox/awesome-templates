@@ -1,0 +1,157 @@
+{
+  "result": "PASS",
+  "template": "next-app",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//next-app@93688d908604d3d5644e53713f94e585a5992687",
+  "manifest_sha256": "ff02dcdb568b5ba4e977e79933845c48bcbe1991ffa4d9e8dd30347cb315385c",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "toolchain_versions",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "preview_self_test",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": []
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:ff02dcdb568b5ba4e977e79933845c48bcbe1991ffa4d9e8dd30347cb315385c",
+    "source_digest": "6f214d2c86f2193a09e130fd30e0200f03c00b9c6ba51a635ae96ca9082f983d",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "d1f5eda8a8d081161471ec33b4f10448064753a44c404e2013778de09ea32a92",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    },
+    {
+      "port": 3000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    },
+    {
+      "port": 5173,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 6,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "3d85d8758349eda543931867c867802eba8225dd9596d9d55be2696ebd291d89",
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "next-app",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "actual external preview 3000 contains expected rendered HTML",
+          "result": "PASS"
+        },
+        {
+          "id": "real next browser DOM and edit appears through HMR without manual reload",
+          "result": "PASS"
+        },
+        {
+          "id": "owned next local relay listener independently absent by original socket identity",
+          "result": "PASS"
+        },
+        {
+          "id": "literal CLI lifecycle and project independently cleaned before SDK alternative",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete SDK program plus read-only actual external-page observer",
+          "result": "PASS"
+        },
+        {
+          "id": "SDK stopped preview and own project independently removed before HTTP",
+          "result": "PASS"
+        },
+        {
+          "id": "actual external preview 3000 contains expected rendered HTML",
+          "result": "PASS"
+        },
+        {
+          "id": "actual external preview 5173 contains expected rendered HTML",
+          "result": "PASS"
+        },
+        {
+          "id": "real vite browser DOM and edit appears through HMR without manual reload",
+          "result": "PASS"
+        },
+        {
+          "id": "owned vite local relay listener independently absent by original socket identity",
+          "result": "PASS"
+        }
+      ],
+      "readme_sha256": "4ee589a65f99a1acbbe0f37f80c98404b49aa4e6d7a367c1ce71d33764d9346a",
+      "relay_cleanup": {
+        "next": {
+          "site_count_after_close": 0,
+          "owned_listening_inodes_remaining": 0
+        },
+        "vite": {
+          "site_count_after_close": 0,
+          "owned_listening_inodes_remaining": 0
+        }
+      },
+      "artifacts": {
+        "next-expenses.png": "sha256:6cccfc61ecb050486ef0e25aa61691487ab1fdc8a4b6242347bad17d3d653fab",
+        "vite-expenses.png": "sha256:8c5f4fa5e6556cee163df10a10549949789179be6d7bf86ac333083515f883fe"
+      }
+    }
+  },
+  "application_result": "PASS"
+}

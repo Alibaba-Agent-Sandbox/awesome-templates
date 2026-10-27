@@ -1,8 +1,12 @@
 # OSWorld worker diagnosis
 
-Result: PARTIAL (diagnosis only; no provider qualification)
+Result: PASS for final runtime on both providers; publication/Registry gates pending
 
-Date: 2026-10-27. Prior actual Express attempt01 completed18 native controller
+Date: 2026-10-27. Final source f7a42361fc65fed9af8f5fcafc55411cbe418d61 passes
+19 native assertions and seven fresh documented checks per provider, zero omissions.
+Current outcome is recorded at the end; the failed controls below remain history.
+
+Prior actual Express attempt01 completed18 native controller
 assertions but the expense form did not reach expected saved state. Attempts02/03
 failed canonical smoke with worker EOF. All original owned cloud/image resources
 independently absent. Raw diagnostic logs stay private.

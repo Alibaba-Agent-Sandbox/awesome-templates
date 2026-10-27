@@ -53,11 +53,12 @@ def scaffold(kind: str='next',path: str='preview-app') -> dict:
     _kind(kind);project=_project(path);tools=_tools()
     project.mkdir(mode=0o700)
     try:
-        files={'.abx-next-app.json':json.dumps({'kind':kind,'template_version':'1.1.0'}),
+        files={'.abx-next-app.json':json.dumps({'kind':kind,'template_version':'1.1.4'}),
             'package.json':json.dumps({'name':'sandbox-preview','version':'1.0.0','private':True,'type':'module',
                 'dependencies':json.loads((tools/'package.json').read_text())['dependencies']})}
         if kind=='next':
-            files.update({'app/layout.js':'export default function Layout({children}) { return <html><body>{children}</body></html>; }\n',
+            files.update({'next.config.mjs':"export default {allowedDevOrigins: ['127.0.0.1']};\n",
+                'app/layout.js':'export default function Layout({children}) { return <html><body>{children}</body></html>; }\n',
                 'app/page.js':'export default function Page() { return <h1>ABX_NEXT_PREVIEW</h1>; }\n'})
         else:files['index.html']='<!doctype html><html><body><h1>ABX_VITE_PREVIEW</h1><script type="module" src="/main.js"></script></body></html>\n';files['main.js']='document.body.dataset.loaded="yes";\n'
         for name,content in files.items():

@@ -1,0 +1,116 @@
+{
+  "result": "PASS",
+  "template": "node-web",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//node-web@f3706cc",
+  "manifest_sha256": "e32062a9dafe46e0cc9c4aae4d095bcb9ac8473faaeebed0de60cbfba96278ef",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "smoke",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": []
+  },
+  "endpoint_mode": "server-proxy",
+  "input_receipt": {
+    "manifest_digest": "sha256:e32062a9dafe46e0cc9c4aae4d095bcb9ac8473faaeebed0de60cbfba96278ef",
+    "source_digest": "7b0db3173d81533436372408c2ff32734ddc3beb2a673575cf2d91a39b01942d",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "6402018a525de5a640027b62a8ecd750c13b25b679f1f55aa506004f1730ee4a",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 3000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    },
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 60,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "dfb52459e9a330c7ef9f536382e3a0e1d2027c66ec6e7e0baa711169cbc84d8b",
+    "transport_adapter_sha256": "f3f71110b6f623042d8f3b1b280cd0cd704f43b94291364ca60bb2e9691be80a",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "node-web",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "cli actual documented business result",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI owned service independently stopped before SDK",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README SDK program",
+          "result": "PASS"
+        },
+        {
+          "id": "sdk actual documented business result",
+          "result": "PASS"
+        },
+        {
+          "id": "SDK owned service independently stopped before HTTP",
+          "result": "PASS"
+        },
+        {
+          "id": "http actual documented business result",
+          "result": "PASS"
+        },
+        {
+          "id": "HTTP owned service independently stopped",
+          "result": "PASS"
+        }
+      ],
+      "readme_sha256": "57aba5f1b592ffc1afaa1d8e99a9befddebdb32015edba17d10700fbd663189f",
+      "artifacts": {}
+    }
+  },
+  "application_result": "PASS"
+}
