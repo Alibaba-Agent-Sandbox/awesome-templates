@@ -51,3 +51,20 @@ Next controlled candidate starts on an actual owned local welcome document rathe
 than about:blank. Keep initial observation and full external task/result gates;
 require real welcome XML before navigation. All candidates remain unmerged/Beta
 until actual complete method/business proof. No synthetic accessibility XML.
+
+Same owned desktop control17 now establishes stale/hung per-client observation
+state: parent before/after lacks actual expense text; both fresh original native
+handlers (threaded and single-thread) return actual text, two web documents and no
+warnings. This does not establish the event thread as the root cause. Control17
+explicitly omits canonical native core for diagnosis and reports NOT_RUN1/FAIL;
+it cannot qualify a provider. Raw XML remains private; sanitized comparison hashes
+and original failed controls preserved.
+
+Final next candidate uses a fresh single-thread, one-shot original native observer
+per a11y_tree/evaluate,20s deadline,2MiB tree/4MiB protocol bounds, no host model/cloud
+credentials, no server listener and no synthetic nodes. Helper inherits the owned
+worker group; completed/timeout child is reaped. Remove unsuccessful welcome and
+unused parent event loop.47 local tests PASS4.03s include two real distinct observer
+PIDs, no retained module counter/host key, sanitized child failure and unchanged
+original XML/evaluator byte hashes. Actual complete source/provider/core/docs/GUI
+expense acceptance remains pending; OSWorld stays Beta.

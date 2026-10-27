@@ -116,3 +116,23 @@ def test_unchanged_original_xml_walker_keeps_children_after_empty_native_attribu
     assert tree.tag=='document-web'and tree.xpath('.//paragraph/@name')==['Awaiting amount']
     assert child.get_attributes()is values
     with pytest.raises(RuntimeError,match='native refusal'):Accessible('refused',RuntimeError('native refusal')).get_attributes()
+
+
+def test_real_observer_subprocess_is_fresh_and_filters_host_credentials(tmp_path,monkeypatch):
+    import os
+    root=tmp_path/'upstream';root.mkdir()
+    (root/'main.py').write_text("import os\ncount=0\nclass Accessible:\n def get_attributes(self):return None\nclass Response:\n status_code=200\n def get_json(self):\n  global count;count+=1\n  return {'AT':f\"<desktop pid='{os.getpid()}' count='{count}' secret_present='{str('OPENAI_API_KEY' in os.environ)}'/>\"}\nclass App:\n def test_client(self):return self\n def get(self,path):return Response()\napp=App()\n")
+    monkeypatch.setenv('OPENAI_API_KEY','synthetic-not-for-native-observer')
+    desktop=runtime.Desktop.__new__(runtime.Desktop);desktop.directory=tmp_path
+    import xml.etree.ElementTree as ET
+    first,second=[ET.fromstring(desktop.tree())for _ in range(2)]
+    assert first.attrib['pid']!=second.attrib['pid']
+    assert first.attrib['count']==second.attrib['count']=='1'
+    assert first.attrib['secret_present']==second.attrib['secret_present']=='False'
+
+
+def test_observer_error_does_not_reflect_upstream_private_details(tmp_path):
+    root=tmp_path/'upstream';root.mkdir();(root/'main.py').write_text("raise RuntimeError('synthetic-private-native-task-content')\n")
+    desktop=runtime.Desktop.__new__(runtime.Desktop);desktop.directory=tmp_path
+    with pytest.raises(RuntimeError,match='native accessibility observation failed')as error:desktop.tree()
+    assert 'synthetic-private'not in str(error.value)

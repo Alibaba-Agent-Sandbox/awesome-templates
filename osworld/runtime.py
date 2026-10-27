@@ -20,7 +20,6 @@ import secrets
 import shutil
 import subprocess
 import sys
-import threading
 import time
 from types import SimpleNamespace
 from urllib.parse import unquote, urlsplit
@@ -137,7 +136,6 @@ class Desktop:
         self.children = []
         self.playwright = None
         self.browser = None
-        self.accessibility_thread = None
         self.stage = "initialization"
         try:
             self.start()
@@ -215,10 +213,6 @@ class Desktop:
         spec = importlib.util.spec_from_file_location("osworld_desktop_server", upstream / "main.py")
         self.server = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(self.server)
-        normalize_nullable_attributes(self.server.Accessible)
-        self.accessibility_thread = threading.Thread(target=self.server.pyatspi.Registry.start,
-                                                       kwargs={"gil": True}, daemon=True)
-        self.accessibility_thread.start()
         # Upstream probes LibreOffice before every Linux accessibility request.
         # This browser-only image has no Office. Unknown version is the empty
         # tuple; no executable/version is fabricated. Office tasks are rejected.
@@ -232,13 +226,10 @@ class Desktop:
         if not Path(binary).is_file():
             raise RuntimeError("the pinned browser is missing")
         self.stage = "browser-startup"
-        welcome = self.directory / "welcome.html"
-        welcome.write_text('<!doctype html><html lang="en"><meta charset="utf-8"><title>Sandbox desktop</title><body><h1>Sandbox desktop ready</h1><p>Open your own task with run_task_config.</p></body></html>', encoding="utf-8")
-        welcome.chmod(0o600)
         self.browser_process = self.spawn([binary, "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--no-first-run",
                     "--no-default-browser-check", "--password-store=basic", "--force-renderer-accessibility",
                     "--remote-debugging-address=127.0.0.1", "--remote-debugging-port=0", "--kiosk",
-                    "--user-data-dir=" + str(self.directory / "browser"), welcome.as_uri()])
+                    "--user-data-dir=" + str(self.directory / "browser"), "about:blank"])
         port_file = self.directory / "browser" / "DevToolsActivePort"
         for _ in range(200):
             if port_file.exists():
@@ -251,7 +242,6 @@ class Desktop:
         self.browser = self.playwright.chromium.connect_over_cdp(f"http://127.0.0.1:{port}")
         self.context = self.browser.contexts[0]
         self.page = self.context.pages[0]
-        self.page.wait_for_url(welcome.as_uri(), timeout=10000)
         self.stage = "browser-viewport"
         self.page.wait_for_function("document.visibilityState === 'visible' && innerWidth > 0 && innerHeight > 0",
                                     timeout=10000, polling=50)
@@ -297,12 +287,30 @@ class Desktop:
             connection.close()
 
     def tree(self):
-        response = self.client.get("/accessibility")
-        if response.status_code != 200:
-            raise RuntimeError("upstream AT-SPI observation failed")
-        result = response.get_json()["AT"]
-        if len(result.encode()) > 2 * 1024 * 1024:
-            raise RuntimeError("accessibility tree exceeds 2 MiB")
+        # A fresh native client avoids stale/hung per-client AT-SPI state after
+        # navigation. The one-shot observer calls the unchanged upstream handler.
+        allowed = {"HOME", "PATH", "LANG", "LC_ALL", "LD_LIBRARY_PATH", "GI_TYPELIB_PATH",
+                   "PYTHONPATH", "XDG_DATA_DIRS", "XDG_CONFIG_HOME", "XDG_CACHE_HOME",
+                   "XDG_RUNTIME_DIR", "DISPLAY", "XAUTHORITY", "DBUS_SESSION_BUS_ADDRESS",
+                   "AT_SPI_BUS_ADDRESS", "NO_AT_BRIDGE", "ACCESSIBILITY_ENABLED"}
+        environment = {key: value for key, value in os.environ.items() if key in allowed}
+        environment.update(PYTHONDONTWRITEBYTECODE="1", PYTHONNOUSERSITE="1")
+        try:
+            observed = subprocess.run(
+                [sys.executable, str(Path(__file__).with_name("accessibility_observer.py")),
+                 str(self.directory / "upstream")], stdin=subprocess.DEVNULL,
+                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, env=environment,
+                timeout=20, check=False)
+        except subprocess.TimeoutExpired:
+            raise RuntimeError("native accessibility observation timed out") from None
+        if observed.returncode != 0 or len(observed.stdout) > 4 * 1024 * 1024:
+            raise RuntimeError("native accessibility observation failed")
+        try:
+            result = json.loads(observed.stdout)["tree"]
+        except (ValueError, KeyError, TypeError):
+            raise RuntimeError("invalid native accessibility observation") from None
+        if not isinstance(result, str) or len(result.encode()) > 2 * 1024 * 1024:
+            raise RuntimeError("invalid bounded accessibility tree")
         return result
 
     def screen(self):
@@ -478,9 +486,6 @@ class Desktop:
         if self.playwright is not None:
             with contextlib.suppress(Exception):
                 self.playwright.stop()
-        if self.accessibility_thread is not None:
-            self.server.pyatspi.Registry.stop()
-            self.accessibility_thread.join(timeout=1)
 
 
 def main():

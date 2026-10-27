@@ -77,3 +77,12 @@ of the special about:blank document. Original before-navigation observation orde
 remains mandatory, followed by actual external task input/native evaluator score.
 This is a proposed browser-lifecycle control, not an established cure: the nullable
 mapping repair alone still failed17/19 actual external checks and stays unqualified.
+
+The actual same-desktop control now confirms both fresh original observers see the
+real expense document (two web nodes/no native warnings) while the long-lived
+worker still returns no document before and after them. This establishes a
+per-client observation-state problem without claiming an unproven thread cause.
+Use a single-thread one-shot native observer per tree/evaluation,20s deadline,
+2MiB XML bound, filtered environment, same owned display/buses/upstream bytes.
+No listening server, synthetic XML or alternate evaluator. Remove the unsuccessful
+welcome-page candidate and retain initial observation before actual task navigation.

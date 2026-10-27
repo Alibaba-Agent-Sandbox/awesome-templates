@@ -172,7 +172,3 @@ Apache-2.0. The original OSWorld files, full [upstream license](upstream/LICENSE
 The 1024×768 PNG/Xvfb screen and the browser page viewport are separate measurements. Browser initialization requires a visible, nonzero viewport; it does not resize/emulate a page to force screen equality. `desktop_start` and `run_task_config` return `browser_geometry` with numeric screen, outer-window, viewport and content-offset fields. The disposable smoke prints only these numeric fields for image diagnostics. Native click coordinates remain screen coordinates. The smoke uses the actual content offset and DOM rectangle, and still requires real input, upstream score 0→1, changed PNG pixels and complete 4096-character destination readback. See the [viewport follow-up](../.agents/evidence/verify/2026-10-16-osworld-viewport.md).
 
 For CLI setup, SDK installation, HTTP authentication and resource ownership, see [Using templates](../docs/using-templates.md).
-
-An empty native AT-SPI attribute hash table is read as an empty mapping so the upstream XML traversal can retain its real child nodes. No accessibility nodes or attributes are fabricated; native errors still propagate and vendored upstream handler/evaluator bytes remain unchanged.
-
-desktop_start opens an owned local welcome page before task navigation; a11y_tree reads the actual current desktop. The welcome page is removed with the owned desktop state.
