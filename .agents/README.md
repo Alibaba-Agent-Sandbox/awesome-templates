@@ -205,6 +205,8 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Native Stagehand4 local browser](notes/proposed/feature/2026-10-20-stagehand-native-local.md) · [verification](evidence/verify/2026-10-20-stagehand-native-local.md)
 - [Codex API final SDK/model acceptance](evidence/verify/2026-10-20-codex-api-sdk-model-final.md)
+
+- [Codex target-only model prerequisite](notes/proposed/process/2026-10-27-codex-target-model.md) · [verification](evidence/verify/2026-10-27-codex-target-model.md).
 - [Both native Agents CLI adapters: final acceptance](evidence/verify/2026-10-20-agents-cli-both-native-sdk-final.md)
 
 - [Native Cline CLI](notes/proposed/feature/2026-10-20-cline-native-cli.md) · [verification](evidence/verify/2026-10-20-cline-native-cli.md)
@@ -338,4 +340,3 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 
 - [Compatible-agent documented use](notes/proposed/feature/2026-10-27-compatible-agent-usage.md) · [verification](evidence/verify/2026-10-27-compatible-agent-usage.md).
 
-- [Codex target-only model prerequisite](notes/proposed/process/2026-10-27-codex-target-model.md) · [verification](evidence/verify/2026-10-27-codex-target-model.md).
