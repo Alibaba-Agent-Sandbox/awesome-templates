@@ -65,6 +65,40 @@ async def main():
 asyncio.run(main())
 ```
 
+### 持久 Python、数据表与图表
+
+持久 Python context 使用独立的公开入口
+`agent_sandbox.code_interpreter.AsyncSandbox`。[expenses.py](expenses.py)
+显式传入极速版兼容 API Key、API URL 和域名，与 CLI 使用相同地域和账号。
+脚本会创建自己的实例，不会连接 CLI 示例中已经删除的实例。
+
+将 [expenses.py](expenses.py) 下载到终端当前目录，在已安装客户端的环境运行
+`python expenses.py`。它通过 pandas 汇总三个月的金额，下载
+`expenses-summary.json` 和 600×300 的 `expenses.png`，最后在 `finally` 中删除实例。
+预期汇总：`{"rows": 3, "total": "51.30", "total_cents": 5130}`。
+本机无需安装 pandas 或 matplotlib，计算发生在托管实例内。
+
+对于名为 `sb` 的 `AsyncSandbox` 实例，先执行
+`await sb.run_code("value = 41")`，再执行 `await sb.run_code("value + 1")`，
+状态会保留，返回文本 `42`。使用
+`context = await sb.create_code_context(language="python")` 创建隔离状态，
+调用 `run_code` 时传入 `context=context`。`list_code_contexts()` 列出 context；
+`remove_code_context(context)` 删除本次创建的 context。
+每次调用后先检查 `execution.error`，再使用 `execution.text` 或生成文件。
+`on_stdout`、`on_stderr`、`on_result`、`on_error` 回调分别接收输出、结果和错误；
+输出消息的文本位于 `.line`。
+
+图表使用 matplotlib 的 `Agg` 后端和 `savefig`，随后通过
+`files.read(..., format="bytes")` 下载。不要依赖 `plt.show()` 返回内联 PNG，
+也不要使用 IPython 魔法命令。当前托管服务将 Python 异常的名称报告为
+`ExecutionError`，原始异常保存在 `.value`；读取该内容，不要假定
+`.name == "ValueError"`。
+
+当前托管持久解释器在 Python 异常后会再次执行代码：先递增文件计数再
+`raise ValueError(...)`，会递增两次。不要在可能抛异常的代码中进行业务写入；
+需要只执行一次的任务使用上面的 `ProviderSandbox.commands.run` 进程入口，
+并检查退出码。此平台缺陷尚未满足完整解释器验收条件。
+
 ## 快速开始（HTTP POST）
 
 该托管镜像不提供项目的 `/commands/*` 应用服务。使用上面的进程和文件 API；需要自定义 HTTP 命令时，从[源码模板](../../../_skeleton/README.zh-CN.md)开始。
@@ -73,7 +107,7 @@ asyncio.run(main())
 
 `ProviderSandbox.create(provider=..., template=..., timeout=...)` 创建实例；`commands.run` 返回 `exit_code`、`stdout`、`stderr`；`files.write/read/remove` 操作沙箱内文件。`kill` 删除实例，`close` 释放本地连接。
 
-当前极速版提供商未实现 `ProviderSandbox.run_code`（`E8004`）。运行 Python 进程请使用上面的 `commands.run`；持久内核或解释器会话需要对应的已接入接口。
+当前极速版提供商未实现 `ProviderSandbox.run_code`（`E8004`）。独立进程使用 `commands.run`；持久 Python context 使用上述独立的 `agent_sandbox.code_interpreter.AsyncSandbox` API。这是两个不同的客户端接口。
 
 ## 配置
 

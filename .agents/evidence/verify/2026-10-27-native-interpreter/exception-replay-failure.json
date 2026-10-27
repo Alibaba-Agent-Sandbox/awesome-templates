@@ -1,0 +1,20 @@
+{
+  "template": "code-interpreter-v1",
+  "provider": "alicloud-express",
+  "result": "FAIL",
+  "checks": [],
+  "observed_execution_count": 2,
+  "error_name": "ExecutionError",
+  "failure_type": "AssertionError",
+  "failure_stack": [
+    [
+      "interpreter_error_probe.py",
+      "run",
+      26
+    ]
+  ],
+  "diagnostic": "failing code must execute once",
+  "cleanup": "independently confirmed absent",
+  "executed_at": "2026-10-27T11:58:53.394111+00:00",
+  "original_receipt_sha256": "296e6bf5901bfea90b3c1c80c5f6c10627b0919a09c40a40397d7f09f28c47aa"
+}

@@ -1,0 +1,131 @@
+{
+  "result": "PASS",
+  "template": "crush",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//crush@a63f0f8f8996fd772116c570aa21e927dcc1aea0",
+  "manifest_sha256": "1cc75e899cdee05cd281ad4ba4df01391663d8ac49dbc26c49540bbd34138730",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "crush_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "CRUSH_API_KEY",
+      "CRUSH_BASE_URL",
+      "CRUSH_MODEL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:1cc75e899cdee05cd281ad4ba4df01391663d8ac49dbc26c49540bbd34138730",
+    "source_digest": "7363d7ead40f99ba05487bcec2c84f3057e52c2b0a37a17a0bc65bc430cf9eb3",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "d26f3dd7d893630e1b6aa7e5fee0ef2dffa6adb2e40580e27ab05a90429906b3",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "passed": true,
+    "scope": "fresh literal documentation tasks; canonical full-method/model assertions are in the pinned preceding core receipt",
+    "core_receipt_sha256": "639e44d511ff6ef0a391bc232f86b745896b380eca00e86e33cc5a8dbb2803a0",
+    "documented_case": {
+      "template": "crush",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "literal README CLI business request",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI business process exit zero",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI generated report independently downloaded",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI output independently absent before SDK task",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README Python example",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "SDK generated report independently downloaded",
+          "result": "PASS"
+        },
+        {
+          "id": "previous SDK output independently absent before HTTP task",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP business request",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "HTTP generated report independently downloaded",
+          "result": "PASS"
+        }
+      ],
+      "core_receipt_sha256": "639e44d511ff6ef0a391bc232f86b745896b380eca00e86e33cc5a8dbb2803a0",
+      "configured_model": "qwen3.8-max",
+      "artifact": {
+        "file": "generated_hello.py",
+        "sha256": "bef5d52082fc48aa45a460aec4ec5d98605ef1d35735b4729ea07bb100595e03",
+        "observed_stdout": "Hello from the sandbox"
+      }
+    }
+  },
+  "application_result": "PASS",
+  "original_receipt_sha256": "d96b0c934da73e54f3e249e460c5a3cfb91e24acfd5be8bf85d35cccac5352e1"
+}

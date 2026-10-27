@@ -1,0 +1,145 @@
+{
+  "result": "PASS",
+  "template": "opencode",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//opencode@a63f0f8f8996fd772116c570aa21e927dcc1aea0",
+  "manifest_sha256": "cbb5436b705c6f8f345e03bf5fb79e77c0a6f79a966b36170acb3c1fa6a46422",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "opencode_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "opencode_setup_check",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "ABX_LLM_API_KEY",
+      "ABX_LLM_BASE_URL"
+    ]
+  },
+  "endpoint_mode": "server-proxy",
+  "input_receipt": {
+    "manifest_digest": "sha256:cbb5436b705c6f8f345e03bf5fb79e77c0a6f79a966b36170acb3c1fa6a46422",
+    "source_digest": "d1bcaa62222519cb5f1f5707ae114f3994b564cffce5fb43453f58ba47a632a5",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "4987e131388ab892389f7395e46f87276eb35e33a018b0117966b5082935eea7",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    },
+    {
+      "port": 4096,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 29,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "a967f64e87e4cfc5a92806c778096fc25dd7a9bf3972c1a6e0297ee8e32dcac8",
+    "transport_adapter_sha256": "f3f71110b6f623042d8f3b1b280cd0cd704f43b94291364ca60bb2e9691be80a",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "opencode",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "literal README CLI business request",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI output independently absent before SDK task",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README Python example",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "previous SDK output independently absent before HTTP task",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP business request",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "second supported model completes actual tool task",
+          "result": "PASS"
+        },
+        {
+          "id": "second model generated independently downloaded artifact",
+          "result": "PASS"
+        }
+      ],
+      "artifact": {
+        "file": "hello.py",
+        "sha256": "4a10a8178f9153c6fa7bdaf3107f2729adba617a24d8cc6a642acc4337357828",
+        "observed_stdout": "Hello from OpenCode"
+      }
+    }
+  },
+  "application_result": "PASS",
+  "original_receipt_sha256": "a4be720c89232e977ba9fad49e9f77ad39fbd5331238004d57507a183b2497c7"
+}
