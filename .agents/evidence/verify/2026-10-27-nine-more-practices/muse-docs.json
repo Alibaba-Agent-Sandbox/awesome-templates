@@ -1,0 +1,136 @@
+{
+  "result": "PASS",
+  "template": "muse",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//muse@a12add43ccd7029dd4b500d8c9a9404dc2f4796f",
+  "manifest_sha256": "eaa123cc8399cdcbccb84f598b9d27d06ce70f1ac138b56fb1babf39b36a478e",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "muse_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "muse_native_check",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "MUSE_MODEL",
+      "MUSE_MODEL_API_KEY",
+      "MUSE_MODEL_BASE_URL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:eaa123cc8399cdcbccb84f598b9d27d06ce70f1ac138b56fb1babf39b36a478e",
+    "source_digest": "0df16a31f79a2f3dcc1a39094a1328c1c83c3b6a234f5469d59ad9749bdd5292",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "7aa3f39613969d6e2449645ad29c31228713dc8db787a640f02d3b628aa972d6",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "passed": true,
+    "scope": "fresh literal documentation tasks; canonical full-method/model assertions are in the pinned preceding core receipt",
+    "core_receipt_sha256": "0d01eb5937e2f6e094423cd5e23a6b5d09a0ef824a347533a56afacb04ae3ee7",
+    "documented_case": {
+      "template": "muse",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "literal README CLI business request",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI business process exit zero",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI output independently absent before SDK task",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README Python example",
+          "result": "PASS"
+        },
+        {
+          "id": "SDK business process exit zero",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "previous SDK output independently absent before HTTP task",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP business request",
+          "result": "PASS"
+        },
+        {
+          "id": "HTTP business process exit zero",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        }
+      ],
+      "core_receipt_sha256": "0d01eb5937e2f6e094423cd5e23a6b5d09a0ef824a347533a56afacb04ae3ee7",
+      "configured_model": "qwen3.8-max",
+      "artifact": {
+        "file": "hello.py",
+        "sha256": "55dee29966e79f01fd8d9b0e7c881fd795251385713dbed30ffe6737b25dd22a",
+        "observed_stdout": "Hello from Muse"
+      }
+    }
+  },
+  "application_result": "PASS"
+}

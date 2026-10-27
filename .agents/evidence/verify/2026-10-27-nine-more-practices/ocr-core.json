@@ -1,0 +1,114 @@
+{
+  "result": "PASS",
+  "template": "ocr",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//ocr@54dc3e137013af4a97de0267b4e4006f6ab8a877",
+  "manifest_sha256": "cb352c3053970b7af51d053a70aba5ffdb42ec099608c8b7cb31d247ab02e1e7",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "ocr_smoke",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": []
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:cb352c3053970b7af51d053a70aba5ffdb42ec099608c8b7cb31d247ab02e1e7",
+    "source_digest": "d842de1aa325d8d5f2f175d499f8b7f7854b2a0c8d4d5ee768aaf340796c13e1",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "e0ca0abfe91a0e6b25cd12306f174d685a62f3dbf1667f6a6d8bfda68eed1661",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 19,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "d45181b38a16ef40c7c87fb531c3e1ab1194eac9b3fa1bb54b6bffde85d1cb05",
+    "transport_adapter_sha256": "f3f71110b6f623042d8f3b1b280cd0cd704f43b94291364ca60bb2e9691be80a",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "ocr",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "cli actual documented output independently verified",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI outputs independently absent before SDK",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README SDK program",
+          "result": "PASS"
+        },
+        {
+          "id": "sdk actual documented output independently verified",
+          "result": "PASS"
+        },
+        {
+          "id": "previous SDK outputs independently absent before HTTP",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP request",
+          "result": "PASS"
+        },
+        {
+          "id": "http actual documented output independently verified",
+          "result": "PASS"
+        }
+      ],
+      "artifacts": {
+        "cli-recognized.txt": "sha256:91c731d77ead80d29c044d88d73811eaf9befdd71a53dcad4008d4fdddebdbda",
+        "recognized.txt": "sha256:91c731d77ead80d29c044d88d73811eaf9befdd71a53dcad4008d4fdddebdbda",
+        "http-recognized.txt": "sha256:91c731d77ead80d29c044d88d73811eaf9befdd71a53dcad4008d4fdddebdbda"
+      },
+      "business_result": {
+        "text": "SANDBOX OCR 314159\nALPHA BETA\n"
+      }
+    }
+  },
+  "application_result": "PASS"
+}

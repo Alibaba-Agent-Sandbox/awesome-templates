@@ -344,3 +344,5 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 - [Readable preview toolchain](notes/proposed/feature/2026-10-27-next-app-readable-toolchain.md) · [verification](evidence/verify/2026-10-27-next-app-readable-toolchain.md).
 - [Compatible-agent documented use](notes/proposed/feature/2026-10-27-compatible-agent-usage.md) · [verification](evidence/verify/2026-10-27-compatible-agent-usage.md).
 
+
+- [Nine additional practical experiences](notes/proposed/feature/2026-10-27-nine-more-practices.md) · [verification](evidence/verify/2026-10-27-nine-more-practices.md). Complete individual method/task receipts and three further OpenSandbox experiences; broader catalog pending.
