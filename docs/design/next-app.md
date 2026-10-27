@@ -27,3 +27,9 @@ Development preview has no app authentication; provider access control is requir
 ## Test plan
 
 Actual pinned Next and Vite GET, source edit reflected, original caller files retained, process/listener absence, unrelated listener preservation, traversal/symlink/overwrite rejection. L0 full HTTP checks; L1 installed pins and real local preview self-test; L2 real image READY/CLI/SDK/full HTTP and external forwarded preview; HMR/WebSocket separate gate.
+
+Version1.1.3 normalizes read/traverse permission on the public root-owned toolchain
+after npm ci. Restrictive0600 source context metadata must remain readable by
+runtime user; write permission is unchanged. The optional actual image regression
+uses explicit NEXT_APP_TEST_BASE_IMAGE, copies inputs0600, builds the real recipe,
+requires non-root toolchain_versions and independently confirms its own tag absent.
