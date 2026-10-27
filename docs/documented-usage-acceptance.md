@@ -43,6 +43,22 @@ Run OpenSandbox with its documented provider configuration and the template's
 explicit portable build profile where required; do not silently change providers
 or image recipes. Native managed entries require their owning provider.
 
+For OpenSandbox server-proxy routes, preserve the resolved URL and gateway
+headers. Its proxy removes Bearer Authorization; the public calling guide also
+sends the application token in an unused `X-Access-Token` header. The controller
+transport uses that same fallback only for the selected service and only when
+the request already carries the correct app token. Wrong credentials remain
+unauthorized. Bodyless application DELETE requests need explicit
+`Content-Length: 0` (for example, `httpx.request(..., content=b"")`), because the
+proxy streams DELETE bodies and the bounded app server rejects chunked framing.
+Do not replace gateway headers or rewrite an explicitly supplied request body.
+
+Public Python0.4.0a6 with standalone CLI0.5.7 can expose a generic SandboxError
+with stable code E2009 for an absent OpenSandbox. Cleanup recognizes that exact
+not-found code as well as the typed exception, then independently reads back
+absence; other codes still fail. This compatibility handling does not fix or
+claim a corrected published exception class.
+
 Preserve each attempt as new dated sanitized engineering evidence. Record exact
 inputs, installed packages, provider, full interface coverage, task outcome,
 failures/skips and independently confirmed cleanup. A current complete pass on

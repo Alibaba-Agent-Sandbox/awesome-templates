@@ -1,0 +1,121 @@
+{
+  "result": "PASS",
+  "template": "apply-patch",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//apply-patch@50d7e38cd5837042acb756aad66d8f97050f11dd",
+  "manifest_sha256": "24db5e49e73f3a85b8b4225fa255e8a088009191e66f38d8637b03b9069b47c7",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "apply_patch_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "apply_patch_smoke",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": []
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:24db5e49e73f3a85b8b4225fa255e8a088009191e66f38d8637b03b9069b47c7",
+    "source_digest": "f4c0557ea35cffa07818909035b73995c106c5399a578105c2367922e899a695",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "1c871d1a188c8fc2cfbfe0a3595c4e45838579ef24fea23f1e270832c774af2a",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "passed": true,
+    "scope": "fresh literal documentation tasks; canonical full-method/model assertions are in the pinned preceding core receipt",
+    "core_receipt_sha256": "436448b1b772b7cb8f861e0be406127ff69620c188b24b4aa8c21978b23a5f17",
+    "documented_case": {
+      "template": "apply-patch",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "literal README CLI business request",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded exact documented artifact bytes",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI output independently absent before SDK task",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README Python example",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded exact documented artifact bytes",
+          "result": "PASS"
+        },
+        {
+          "id": "previous SDK output independently absent before HTTP task",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP business request",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded exact documented artifact bytes",
+          "result": "PASS"
+        }
+      ],
+      "core_receipt_sha256": "436448b1b772b7cb8f861e0be406127ff69620c188b24b4aa8c21978b23a5f17",
+      "artifact": {
+        "file": "hello.txt",
+        "sha256": "61f9b4faacffe9a97898b6e3edb9d2d0e9b5691771c9533df1eb45d9ce157388",
+        "observed_stdout": "Hello from a patch"
+      }
+    }
+  },
+  "application_result": "PASS",
+  "original_private_receipt_sha256": "cb646318dae18360932044996e9bbe5156b64b3f1c0c3a5ef27baaa393b7c686",
+  "executed_at": "2026-10-27T10:44:16.510237Z"
+}

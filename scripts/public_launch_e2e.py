@@ -357,15 +357,22 @@ async def cleanup_before_close(release_resources, client, sandbox):
 
 
 async def delete_sandbox(api, sid, provider, not_found, delay=1):
+    def absent(failure):
+        # Published standalone engines can lose the exception's class name while
+        # preserving the stable public error code. Never accept other errors.
+        return isinstance(failure, not_found) or getattr(failure, 'code', None) == 'E2009'
     try:
         await api.kill_by_id(sid, provider=provider)
-    except not_found:
-        pass
+    except Exception as failure:
+        if not absent(failure):
+            raise
     for attempt in range(10):
         try:
             await api.get_info_by_id(sid, provider=provider)
-        except not_found:
-            return
+        except Exception as failure:
+            if absent(failure):
+                return
+            raise
         if attempt < 9:
             await asyncio.sleep(delay)
     raise AssertionError('owned sandbox remains after deletion')

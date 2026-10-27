@@ -158,6 +158,40 @@ class CleanupTests(unittest.IsolatedAsyncioTestCase):
         await delete_sandbox(API, 'owned', 'opensandbox', NotFound, delay=0)
         self.assertEqual(events, ['delete', 'get', 'get', 'get'])
 
+    async def test_stable_not_found_code_still_requires_independent_readback(self):
+        class NotFound(Exception):
+            pass
+        class EngineError(Exception):
+            code = 'E2009'
+        events = []
+        class API:
+            @staticmethod
+            async def kill_by_id(sid, **kwargs):
+                events.append('delete')
+                raise EngineError()
+            @staticmethod
+            async def get_info_by_id(sid, **kwargs):
+                events.append('get')
+                if events.count('get') == 2:
+                    raise EngineError()
+        await delete_sandbox(API, 'owned', 'opensandbox', NotFound, delay=0)
+        self.assertEqual(events, ['delete', 'get', 'get'])
+
+    async def test_other_error_codes_never_establish_cleanup(self):
+        class NotFound(Exception):
+            pass
+        class EngineError(Exception):
+            code = 'E5000'
+        class API:
+            @staticmethod
+            async def kill_by_id(sid, **kwargs):
+                return None
+            @staticmethod
+            async def get_info_by_id(sid, **kwargs):
+                raise EngineError()
+        with self.assertRaises(EngineError):
+            await delete_sandbox(API, 'owned', 'opensandbox', NotFound, delay=0)
+
     async def test_unknown_registry_and_uncertain_intents_are_retained(self):
         entries = [
             {'intent_id': 'one', 'kind': 'image', 'state': 'retained', 'id': 'unfamiliar.invalid/team/image@sha256:' + 'a' * 64,

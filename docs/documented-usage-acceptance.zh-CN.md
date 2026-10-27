@@ -33,6 +33,18 @@ Cursor/Devin 的无效 Key、缺账号模拟配置在此模式下关闭，必须
 OpenSandbox 使用其 provider 文档的配置；需要时显式选择模板的 portable
 构建方案，不暗中切换平台或镜像配方。原生托管条目使用各自所属 provider。
 
+OpenSandbox 的 server-proxy 路由需要保留解析后的 URL 和网关头。代理会移除
+Bearer Authorization；公开调用指南同时通过未被网关占用的 `X-Access-Token`
+发送应用令牌。控制器对同一服务、已携带正确应用 Bearer 令牌的请求采用相同适配，
+错误令牌仍然拒绝。无请求体的应用 DELETE 需要显式 `Content-Length: 0`
+（例如 `httpx.request(..., content=b"")`）；代理以流转发 DELETE，应用服务器则
+按约定拒绝 chunked 请求。不能覆盖网关头或改写显式提供的请求体。
+
+公开 Python0.4.0a6 配合独立 CLI0.5.7，查询不存在的 OpenSandbox 时，可能得到
+带稳定错误码 E2009 的通用 SandboxError。清理程序同时识别这个准确的不存在错误码
+和对应异常类，再独立回读确认不存在；其他错误继续失败。这是调用方兼容处理，
+不表示已修正公开版本的异常类。
+
 每次运行保留新的有日期、脱敏工程证据，记录精确输入、已安装包、provider、
 完整接口覆盖、业务结果、失败/跳过及独立确认的清理结果。当前版本至少一个
 provider 完整通过后，可由 Registry 审阅并移除模板 Beta；历史或部分通过不能

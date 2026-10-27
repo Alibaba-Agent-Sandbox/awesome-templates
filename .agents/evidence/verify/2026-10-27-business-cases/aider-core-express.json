@@ -1,0 +1,75 @@
+{
+  "result": "PASS",
+  "template": "aider",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//aider@50d7e38cd5837042acb756aad66d8f97050f11dd",
+  "manifest_sha256": "df29eeef536e3e5c1e90bb598724416060bce4816339956969a1dab04ed0efc1",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "aider_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "AIDER_API_KEY",
+      "AIDER_BASE_URL",
+      "AIDER_MODEL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:df29eeef536e3e5c1e90bb598724416060bce4816339956969a1dab04ed0efc1",
+    "source_digest": "a7e3b098a29368a9a1a0b6ff3d69a7d30975252233b63ff3f427a96cc9d93e58",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "1a766b69d8f7ab70328607710ff9faf5c0312ad62cda8c895ac0eecbbf69f441",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 21,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "5b17b6ea577eb40e9dc666fff484eb6a48e51f4a100c6d03cb857cd6263f59ea",
+    "real_usage_required": true,
+    "passed": true
+  },
+  "application_result": "PASS",
+  "original_private_receipt_sha256": "b21b785156c78a2c32b3526ca597e83cdc33b195d48d4df94da7bcde8fa9f1d3",
+  "executed_at": "2026-10-27T10:34:35.208492Z"
+}

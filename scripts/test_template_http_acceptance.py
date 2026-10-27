@@ -51,6 +51,65 @@ def test_controller_uses_the_template_runtime_workspace(tmp_path):
     assert environment["E2E_REMOTE_SANDBOX"] == "1"
 
 
+def test_documented_fallback_survives_bearer_stripping_without_authenticating_negative_controls(tmp_path):
+    source = controller(tmp_path, "example", '''import os,httpx
+def respond(request):
+    # Model a proxy removing Authorization before the application checks auth.
+    ok=request.headers.get('X-Access-Token')=='owned-application'
+    if request.method=='DELETE' and request.headers.get('Content-Length')!='0':
+        return httpx.Response(400)
+    return httpx.Response(200 if ok else 401)
+with httpx.Client(base_url=os.environ['E2E_BASE_URL'],headers={'Authorization':'Bearer owned-application'},transport=httpx.MockTransport(respond)) as client:
+    assert client.post('/commands/task').status_code==200
+    assert client.post('/commands/task',headers={'Authorization':'Bearer wrong'}).status_code==401
+    assert client.delete('/files',params={'path':'/owned.txt'}).status_code==200
+print('[PASS] correct app token survives proxy; wrong token stays unauthorized')
+''')
+    proof = run_controller(source, {9000: "http://synthetic.invalid/proxy/9000"}, tmp_path, {}, token="owned-application")
+    assert proof["passed"] and proof["transport_adapter_sha256"]
+
+
+def test_fallback_does_not_replace_gateway_headers_or_leak_to_other_routes():
+    import httpx
+    from template_controller_transport import application_fallback
+    apply = application_fallback("https://example.invalid/proxy/9000", "owned-app")
+    for url, headers in [
+        ("https://foreign.invalid/proxy/9000/task", {"Authorization": "Bearer owned-app"}),
+        ("https://example.invalid/proxy/9001/task", {"Authorization": "Bearer owned-app"}),
+        ("https://example.invalid/proxy/9000/task", {"Authorization": "Bearer wrong"}),
+        ("https://example.invalid/proxy/9000/task", {"Authorization": "Bearer gateway"}),
+        ("https://example.invalid/proxy/9000/task", {"Authorization": "Bearer owned-app", "X-Access-Token": "gateway"}),
+    ]:
+        request = httpx.Request("POST", url, headers=headers)
+        before = dict(request.headers)
+        apply(request)
+        assert dict(request.headers) == before
+
+
+def test_bodyless_delete_framing_preserves_explicit_bodies_and_other_endpoints():
+    import httpx
+    from template_controller_transport import application_fallback
+    apply = application_fallback("https://example.invalid/proxy/9000", "")
+    request = httpx.Request("DELETE", "https://example.invalid/proxy/9000/files")
+    apply(request)
+    assert request.headers["Content-Length"] == "0"
+    for request in [
+        httpx.Request("DELETE", "https://foreign.invalid/files"),
+        httpx.Request("DELETE", "https://example.invalid/proxy/9000/files", content=b"body"),
+        httpx.Request("DELETE", "https://example.invalid/proxy/9000/files", headers={"Transfer-Encoding": "chunked"}),
+        httpx.Request("DELETE", "https://example.invalid/proxy/9000/files", headers={"Content-Length": "7"}),
+    ]:
+        before = dict(request.headers)
+        apply(request)
+        assert dict(request.headers) == before
+
+
+def test_changed_controller_input_cannot_be_reported_as_a_pass(tmp_path):
+    source = controller(tmp_path, "example", "from pathlib import Path\nPath(__file__).write_text('# changed input\\n')\nprint('[PASS] operation')\n")
+    proof = run_controller(source, {9000: "http://synthetic.invalid"}, tmp_path, {})
+    assert not proof["passed"] and not proof["verifier_inputs_unchanged"]
+
+
 @pytest.mark.parametrize("name,output", [
     ("openclaw", "[PASS] health\n[SKIP] real gateway lifecycle"),
     ("osworld", "[PASS] version\n[SKIP] desktop"),

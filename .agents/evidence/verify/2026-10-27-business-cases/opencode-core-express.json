@@ -1,0 +1,137 @@
+{
+  "result": "PASS",
+  "template": "opencode",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//opencode@50d7e38",
+  "manifest_sha256": "cbb5436b705c6f8f345e03bf5fb79e77c0a6f79a966b36170acb3c1fa6a46422",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "opencode_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "opencode_setup_check",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "ABX_LLM_API_KEY",
+      "ABX_LLM_BASE_URL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:cbb5436b705c6f8f345e03bf5fb79e77c0a6f79a966b36170acb3c1fa6a46422",
+    "source_digest": "c5a5f562d665a100da70119dfb78a86feee435db161e98d2403ac0e24fd882ab",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "9675241632267eeb66c430f5304c733240d3b9c23d6a0d1032784425882b7ac1",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    },
+    {
+      "port": 4096,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 29,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "a967f64e87e4cfc5a92806c778096fc25dd7a9bf3972c1a6e0297ee8e32dcac8",
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "opencode",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "literal README CLI business request",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README Python example",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP business request",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "second supported model completes actual tool task",
+          "result": "PASS"
+        },
+        {
+          "id": "second model generated independently downloaded artifact",
+          "result": "PASS"
+        }
+      ],
+      "artifact": {
+        "file": "hello.py",
+        "sha256": "4a10a8178f9153c6fa7bdaf3107f2729adba617a24d8cc6a642acc4337357828",
+        "observed_stdout": "Hello from OpenCode"
+      }
+    }
+  },
+  "application_result": "PASS",
+  "original_private_receipt_sha256": "4728dba1695b6374ec4a4f080f517fbef94be71ce3ae79b0711d0f07d22b6765",
+  "executed_at": "2026-10-27T10:36:32.416070Z",
+  "resolved_source_commit": "50d7e38cd5837042acb756aad66d8f97050f11dd",
+  "resolution_proof": "Immutable staged source digest matches the subsequent full-reference documentation run."
+}
