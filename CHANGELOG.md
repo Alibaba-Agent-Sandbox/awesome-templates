@@ -8,6 +8,8 @@
 
 - Hermes-agent1.2.1 bounds transient source-download retries and verifies the fixed archive before extraction, including cached canonical builds.
 
+- Chrome1.0.9 supports explicit CDP application-token fallback through Authorization-stripping gateways while preserving wrong-Bearer rejection and native VNC authentication.
+
 - Code-server1.0.3 rejects login pages in workbench acceptance and documents a cookie-preserving OpenSandbox direct endpoint for real browser sessions.
 
 - OSWorld1.0.3 reads each accessibility snapshot through a bounded fresh original observer, normalizes nullable AT-SPI attributes, and reports numeric worker exits; vendored upstream handler/evaluator bytes remain unchanged.
