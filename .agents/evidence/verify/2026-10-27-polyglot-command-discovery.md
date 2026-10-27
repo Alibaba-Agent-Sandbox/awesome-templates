@@ -37,3 +37,14 @@ future templates even when a native controller groups its own checks differently
 Fresh full workflows for both providers of four native utility/service families
 and Express SWE are queued; pending OpenSandbox SWE already has the actual CLI
 callback. These are full native/business/README reruns, not metadata-only promotion.
+
+The same review found original OpenSandbox Qwen/DeepSeek controllers list the
+legacy Python run method but do not execute it; earlier Express supplements remain
+separate positive evidence. The common launch runner now executes that entry for
+Qwen/DeepSeek/Hermes through CLI/SDK/HTTP, changing trusted nonce program bytes
+between consumers and independently removing the owned script even on failure.
+No template runtime or dependency changes. The actual listed names exclude hidden
+registrations; they cannot replace the full source-owned public-method inventory.
+Fresh full OpenSandbox Qwen/DeepSeek workflows are added; upcoming current-source
+Hermes workflows also execute the explicit compatibility callback. Native/private
+model outputs and original deadlines remain unchanged.

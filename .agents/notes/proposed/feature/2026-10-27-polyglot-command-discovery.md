@@ -48,3 +48,14 @@ in the common public launch runner, retaining every original native/business gat
 Fresh complete workflows are queued for both providers for the four non-model
 families and Express SWE; the pending direct OpenSandbox SWE workflow already
 executes the explicit CLI discovery callback. No model/user-output gate is reduced.
+
+The same review found original OpenSandbox Qwen/DeepSeek controllers list the
+legacy Python run method but do not execute it; earlier Express supplements remain
+separate positive evidence. The common launch runner now executes that entry for
+Qwen/DeepSeek/Hermes through CLI/SDK/HTTP, changing trusted nonce program bytes
+between consumers and independently removing the owned script even on failure.
+No template runtime or dependency changes. The actual listed names exclude hidden
+registrations; they cannot replace the full source-owned public-method inventory.
+Fresh full OpenSandbox Qwen/DeepSeek workflows are added; upcoming current-source
+Hermes workflows also execute the explicit compatibility callback. Native/private
+model outputs and original deadlines remain unchanged.
