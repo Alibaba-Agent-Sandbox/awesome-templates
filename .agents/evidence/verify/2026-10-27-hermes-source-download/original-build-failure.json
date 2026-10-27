@@ -1,0 +1,38 @@
+{
+  "result": "FAIL",
+  "template": "hermes-agent",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//hermes-agent@46b7c1ccc01eae9cf41292dde89ab32411ed5f79",
+  "manifest_sha256": "0773599f43277991badd7a68cb4a8d5ea1cfca5a0bcf537e6ab634799c5a450a",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [],
+  "cleanup": {
+    "sandbox": "not observed",
+    "prepared_artifacts": "retained in private CLI journal",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 1,
+    "uncertain_count": 1
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "HERMES_MODEL",
+      "HERMES_PROVIDER",
+      "OPENAI_API_KEY",
+      "OPENAI_BASE_URL"
+    ]
+  },
+  "endpoint_mode": "server-proxy",
+  "application_result": "FAIL",
+  "failure_type": "CLIError",
+  "failed_phase": "template-launch",
+  "diagnostics": {
+    "code": "E8002"
+  },
+  "failed_check": "CLI template failed (exit 2)",
+  "original_private_receipt_sha256": "032c17c11deddfff92a73073bda2fbbb9ce50ee36070b915a5dc1c9b1770d61b"
+}

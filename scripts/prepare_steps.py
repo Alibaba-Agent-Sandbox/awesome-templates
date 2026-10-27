@@ -169,6 +169,13 @@ def parallel_assets(source: Path) -> dict:
             "size": 83225459,
             "digest_basis": "controller measured immutable upstream commit archive; not an upstream-published SHA256",
         }
+        source_metadata = source / "source.json"
+        if source_metadata.is_file():
+            source_archive = json.loads(source_metadata.read_text())
+            if any(source_archive.get(key) != upstream[key] for key in ("url", "size", "sha256")):
+                raise ValueError("Hermes source archive must match the reviewed immutable transport")
+        elif "curl -fsSL " + upstream["url"] not in text:
+            raise ValueError("Hermes source archive requires reviewed transport metadata")
         return {arch: [item, wheels[arch], upstream] for arch, item in metadata["assets"].items()}
     if source.name in {"deepagents", "osworld", "browser-use", "stagehand"}:
         metadata = json.loads(Path(__file__).with_name("step_uv_bootstrap.json").read_text())
@@ -428,6 +435,10 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
                             archive = next(item for item in next(iter(assets.values()))
                                            if item["url"].startswith("https://codeload.github.com/"))
                             part = f"tar -xz --strip-components=1 -C /opt/hermes -f {asset_root}/" + archive["sha256"]
+                        if part == "python3 /opt/hermes-build/download_source.py --output /tmp/hermes-source.tar.gz":
+                            archive = next(item for item in next(iter(assets.values()))
+                                           if item["url"].startswith("https://codeload.github.com/"))
+                            part = "python3 /opt/hermes-build/download_source.py --archive " + asset_root + "/" + archive["sha256"] + " --output /tmp/hermes-source.tar.gz"
                         steps.append(run_step("cd " + shlex.quote(directory) + " && " + part))
                 continue
             if temporary_uv and ("--require-hashes" in value or source.name == "swe" and re.search(r"/opt/swe-(agent|eval)/bin/pip install", value)):
