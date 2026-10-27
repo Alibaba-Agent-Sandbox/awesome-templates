@@ -32,6 +32,8 @@ def verify(client,record,kind):
         assert re.fullmatch('/home/user/app/'+kind+'-artifacts/[0-9a-f]{32}\\.png',candidate)
         artifact=candidate;r=client.get('/files/download-stream',params={'path':artifact});r.raise_for_status();png=base64.b64decode(r.json()['content_base64']);observed=state()
         spec=importlib.util.spec_from_file_location('actual_browser_validation',root/'model_e2e_test.py');module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        diagnostic={'native_done':value.get('done'),'native_success':value.get('success'),'steps':value.get('steps'),'counter':observed.get('count'),'code_matches':observed.get('code')==expected,'final_url_matches':value.get('final_url')==local,'png_bytes':len(png),'timeout_reported':any('timed out'in str(x).lower()or'timeout'in str(x).lower()for x in value.get('error_summary',[]))}
+        print('BROWSER_MODEL_DIAGNOSTIC '+json.dumps(diagnostic,sort_keys=True),flush=True)
         proof=module.validate(value,observed,png,local,expected)
         record(True,'actual configured native model, fresh exact browser interactions and independently decoded PNG')
         print('BROWSER_MODEL_PROOF '+json.dumps(proof,sort_keys=True),flush=True)
