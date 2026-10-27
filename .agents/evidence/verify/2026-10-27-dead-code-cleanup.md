@@ -29,9 +29,11 @@ The ten L0 failures were agents-cli (installed version pins), apply-patch (Codex
 
 ## Scope and further analysis
 
-Runtime implementations, Dockerfiles, manifests, dependency pins and generated runners are unchanged. Remaining wider candidates comprise 55 runtime/support F401 findings and four F841 findings. Generated `process.py` copies must be changed through `scripts/process_runners`. The four assignments perform private package copying, URL-port validation, image access and a Git fixture read respectively; removing the call/property access could change behavior. The imported ApplicationContractTest is dynamically discovered by unittest and remains. Ruff 0.17.3 misparses a semicolon followed by the variable name `match`; Python AST/compilation accepts it, so no source syntax fix is justified.
+Runtime implementations, Dockerfiles, manifests, dependency pins and generated runners are unchanged. Remaining wider candidates comprise 55 runtime/support F401 findings and four F841 findings. The `scripts/process_runners` synchronizer owns functions in 15 `commands.py` files. Separate `process.py`/`tool_process.py` helpers are not in that mapping; their provenance must be verified independently. The four assignments perform private package copying, URL-port validation, image access and a Git fixture read respectively; removing the call/property access could change behavior. The imported ApplicationContractTest is dynamically discovered by unittest and remains. Ruff 0.17.3 misparses a semicolon followed by the variable name `match`; Python AST/compilation accepts it, so no source syntax fix is justified.
 
 An isolated AST-prefix probe of the default agents-cli SDK factory raises `NameError: Sandbox` with zero network calls. The original main imports ProviderSandbox but assigns an undefined Sandbox. This pre-existing defect is tracked separately: https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/241.
+
+Remote E2E at code head `6eecd648955b6b8ac6681355163fb17a0496105e` passed all six jobs, including exact browser/database/native prerequisites in the workflow. The selected image builds are still pending; this result does not establish image qualification.
 
 ## Cleanup and remaining gates
 
