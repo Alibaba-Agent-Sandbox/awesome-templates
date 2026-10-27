@@ -151,6 +151,9 @@ def coding(client: httpx.Client, setup: dict | None = None) -> None:
         record(response.status_code == 200 and isinstance(response.json().get("result"), str), "real headless CLI completes")
         if response.status_code != 200:
             return
+        events = _e2e_json.loads(response.json()["result"])
+        selected = [e.get("model") for e in events if isinstance(e, dict) and e.get("type") == "system" and e.get("subtype") == "init"]
+        record(not os.environ.get("E2E_MODEL") or selected == [os.environ["E2E_MODEL"]], "actual native initialization uses the requested model")
         updated = read(client, project + "/calculator.py")
         record(updated != source, "existing source changed via target files API")
         record(read(client, project + "/test_calculator.py") == tests, "original test file preserved")
