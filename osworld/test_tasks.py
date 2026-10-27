@@ -1,10 +1,8 @@
 """Actual pinned evaluator definitions and strict task capability boundaries."""
-import copy
 import hashlib
 import importlib.util
 import json
 from pathlib import Path
-import sys
 from types import SimpleNamespace
 
 import pytest

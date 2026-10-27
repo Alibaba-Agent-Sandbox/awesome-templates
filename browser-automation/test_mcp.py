@@ -3,7 +3,6 @@ import importlib.util
 import os
 from pathlib import Path
 import socket
-import time
 
 import pytest
 

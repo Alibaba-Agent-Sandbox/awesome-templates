@@ -3,7 +3,6 @@ import importlib.util
 import json
 from pathlib import Path
 import sys
-from types import SimpleNamespace
 
 import httpx
 import pytest
@@ -115,7 +114,6 @@ def test_worker_deadline_kills_descendants_without_prompt_in_error(monkeypatch, 
 
 @pytest.mark.parametrize("exit_code", [0, 7])
 def test_leader_exit_cleans_owned_descendants(monkeypatch, tmp_path, exit_code):
-    import subprocess
     import time
     monkeypatch.setenv("WORKSPACE", str(tmp_path))
     marker = tmp_path / "escaped-cleanup"

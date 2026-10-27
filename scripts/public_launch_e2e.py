@@ -19,7 +19,6 @@ import secrets
 import shlex
 import subprocess
 import tempfile
-import sys
 import urllib.parse
 
 import yaml

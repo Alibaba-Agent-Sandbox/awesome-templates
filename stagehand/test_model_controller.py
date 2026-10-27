@@ -1,5 +1,4 @@
 """Independent authored negative oracles; no native or real model execution."""
-import copy
 import importlib.util
 import io
 from pathlib import Path

@@ -1,11 +1,6 @@
-import importlib.util
-import json
 import os
 from pathlib import Path
-import signal
-import subprocess
 import sys
-import threading
 import time
 import xml.etree.ElementTree as ET
 import pytest

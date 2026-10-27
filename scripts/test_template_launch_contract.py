@@ -1,5 +1,4 @@
 """One template startup keeps every service and rejects retired workflow selectors."""
-import json
 from pathlib import Path
 
 import pytest

@@ -80,7 +80,6 @@ def test_missing_or_conflicting_public_server_pins_are_rejected(tmp_path,pin):
 
 
 def test_private_archive_staging_keeps_registry_auth_on_native_temp_filesystem(tmp_path, monkeypatch):
-    import os
     import subprocess
     import tempfile
     import ci_image_archive as images

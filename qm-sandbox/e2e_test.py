@@ -1,5 +1,5 @@
 """Original QM tool context and actual SDK backend HTTP acceptance; no model required."""
-import asyncio,base64,hashlib,json,os,shlex,uuid
+import asyncio,base64,json,os,shlex,uuid
 import httpx
 
 # The host runner passes provider gateway authentication separately from app auth.

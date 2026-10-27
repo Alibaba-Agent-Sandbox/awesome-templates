@@ -3,7 +3,6 @@
 This regression suite does not certify Codex/model/provider execution. It tests
 background routing, cancellation and SSE against actual server/child processes.
 """
-import json
 import os
 from pathlib import Path
 import socket

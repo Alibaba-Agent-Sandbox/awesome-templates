@@ -4,7 +4,6 @@ import json
 import os
 from pathlib import Path
 import sys
-import threading
 import pytest
 
 s=importlib.util.spec_from_file_location('stagehand_commands_fixture',Path(__file__).with_name('commands.py'))

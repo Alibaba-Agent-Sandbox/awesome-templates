@@ -1,5 +1,4 @@
 """Real process/resource boundaries and synthetic protocol fixtures; real OCR is explicit."""
-import csv
 import hashlib
 import importlib.util
 import io
@@ -7,7 +6,6 @@ import json
 import os
 from pathlib import Path
 import signal
-import stat
 import struct
 import subprocess
 import sys
