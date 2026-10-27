@@ -1,0 +1,31 @@
+{
+  "scope": "synthetic protocol fixture only; no installed compiler claim",
+  "result": "PASS",
+  "checks": [
+    {
+      "controller": "original",
+      "fixture_discovery": "missing",
+      "exit_code": 0,
+      "discovery_requested": false
+    },
+    {
+      "controller": "fixed",
+      "fixture_discovery": "missing",
+      "exit_code": 1,
+      "discovery_requested": true
+    },
+    {
+      "controller": "fixed",
+      "fixture_discovery": "partial",
+      "exit_code": 1,
+      "discovery_requested": true
+    },
+    {
+      "controller": "fixed",
+      "fixture_discovery": "complete",
+      "exit_code": 0,
+      "discovery_requested": true
+    }
+  ],
+  "fixture_listener": "confirmed stopped"
+}
