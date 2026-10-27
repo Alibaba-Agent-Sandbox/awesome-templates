@@ -1,0 +1,30 @@
+{
+  "browser-use": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/browser_use_version",
+      "POST /commands/browser_use_setup_check",
+      "POST /commands/browser_use_self_test",
+      "POST /commands/browser_use"
+    ],
+    "core_assertions": 13,
+    "documented_checks": 8,
+    "input_identities_match": true,
+    "runtime_folder_unchanged": true
+  },
+  "stagehand": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/stagehand_version",
+      "POST /commands/stagehand_setup_check",
+      "POST /commands/stagehand_self_test",
+      "POST /commands/stagehand"
+    ],
+    "core_assertions": 15,
+    "documented_checks": 8,
+    "input_identities_match": true,
+    "runtime_folder_unchanged": true
+  }
+}

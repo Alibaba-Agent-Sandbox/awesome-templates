@@ -110,6 +110,8 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 
 ## Current review
 
+- [Public browser model controller](notes/proposed/feature/2026-10-27-public-browser-model-controller.md) · [verification](evidence/verify/2026-10-27-public-browser-model-controller.md). Native public application model proof and documented journeys are recorded separately.
+
 - [Complete public-template launch evidence](notes/implemented/process/2026-10-24-public-template-matrix.md) · [92-case matrix](evidence/verify/2026-10-24-public-template-matrix.md) · [public-install pilot](evidence/verify/2026-10-24-public-install-pilot-2.md) · [public Git journeys](evidence/verify/2026-10-24-public-git-journeys.md)
 
 - [Final verification overview](notes/proposed/process/2026-10-21-final-acceptance-overview.md) · [verification](evidence/verify/2026-10-21-final-acceptance-overview.md)

@@ -40,7 +40,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" browser_use --json-args '{"task":"Read the heading of this page and return it.","url":"https://example.com","max_steps":8,"command_timeout":300}'
+abx run "$SANDBOX_ID" browser_use --json-args '{"task":"Read the heading of this page and return it.","url":"https://www.iana.org/help/example-domains","max_steps":8,"command_timeout":300}'
 ```
 
 返回 Agent 结果、`done`、`success` 和新的 `screenshot_path`。请检查完成标志，不能仅凭文本判断成功。
@@ -72,7 +72,7 @@ async def main():
             9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
         )
         try:
-            result = await client.commands.run('browser_use', task='Read the heading of this page and return it.', url='https://example.com', max_steps=8, command_timeout=300)
+            result = await client.commands.run('browser_use', task='Read the heading of this page and return it.', url='https://www.iana.org/help/example-domains', max_steps=8, command_timeout=300)
             print(result)
             Path('browser-use.png').write_bytes(await sb.files.read_bytes(result['screenshot_path']))
         finally:
@@ -94,7 +94,7 @@ SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。�
 ```json
 {
   "task": "Read the heading of this page and return it.",
-  "url": "https://example.com",
+  "url": "https://www.iana.org/help/example-domains",
   "max_steps": 8,
   "command_timeout": 300
 }
@@ -144,7 +144,7 @@ abx kill "$SANDBOX_ID"
 
 ## 资源
 
-2vCPU/2048MB，命令端口9000。--disable-dev-shm-usage避免依赖大/dev/shm。每个服务只运行一个浏览器任务，并发重操作返回busy500。max_steps1..20，每步最多3动作；模型90秒/零重试/4096 token，原生动作30秒/步骤120秒/LLM100秒门禁；外层1..900秒另加有限清理。每路输出256KiB，PNG16MiB渲染后检查。正常成功/失败/期限均删除私有浏览器配置/文件并清理自有进程，PNG交由调用者保存。服务突然丢失或同用户恶意代码仍以删除自有沙箱为最终边界。镜像根文件系统8GiB构建门禁。
+2vCPU/2048MB，命令端口9000。--disable-dev-shm-usage避免依赖大/dev/shm。每个服务只运行一个浏览器任务，并发重操作返回busy500。max_steps1..20，每步最多3动作；模型120秒/零HTTP重试/8192 token，最多3次连续原生Agent失败，原生动作30秒/步骤180秒/LLM130秒门禁；外层1..900秒另加有限清理。每路输出256KiB，PNG16MiB渲染后检查。正常成功/失败/期限均删除私有浏览器配置/文件并清理自有进程，PNG交由调用者保存。服务突然丢失或同用户恶意代码仍以删除自有沙箱为最终边界。镜像根文件系统8GiB构建门禁。
 
 ## 贡献
 
@@ -159,3 +159,8 @@ abx kill "$SANDBOX_ID"
 封装代码[Apache-2.0](../LICENSE)。Browser-use为MIT，保留[上游原许可](upstream-LICENSE)。保留Playwright发行的未修改Chrome for Testing二进制及捆绑许可/声明；Playwright为Apache-2.0。哈希固定依赖保留各自安装声明，不能把整个镜像统一重标Apache-2.0。不包含模型权重或云服务账号。
 
 原生步骤失败时最多返回20条错误摘要，配置的模型密钥和端点精确脱敏后，每条限制为1024个 UTF-8 字节。
+
+
+## 验证入口
+
+必选业务验证：`E2E_REQUIRE_LLM=1` 对已经启动并配置好的公开应用提交独立 nonce 页面任务，随后独立检查实际页面状态与下载 PNG；不启动第二个命令服务器，也不把模型 Key 复制给 host 控制器。原生 SDK 模型脚本仍可作为独立借用实例的检查。

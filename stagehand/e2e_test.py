@@ -43,7 +43,12 @@ def main():
         if not all(state.get(x)for x in ['api_key_set','base_url_set','model_set']):
             missing=client.post('/commands/stagehand',json={'task':'x','url':'https://example.invalid'})
             record(missing.status_code==500 and 'required' in missing.json().get('error',''),'missing model fails explicitly')
-        if os.environ.get('E2E_REQUIRE_LLM')=='1':record(False,'required real model needs separate SDK model controller')
+        if os.environ.get('E2E_REQUIRE_LLM')=='1':
+            if all(state.get(x)for x in ['api_key_set','base_url_set','model_set']):
+                sys.path.insert(0,os.path.dirname(__file__))
+                from http_model_e2e import verify
+                verify(client,record,'stagehand')
+            else:record(False,'required actual model configuration missing on target')
         else:print('[SKIP] real model; separate owned SDK controller required',flush=True)
     return int(bool(failed))
 

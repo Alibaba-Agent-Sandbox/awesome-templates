@@ -40,7 +40,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" browser_use --json-args '{"task":"Read the heading of this page and return it.","url":"https://example.com","max_steps":8,"command_timeout":300}'
+abx run "$SANDBOX_ID" browser_use --json-args '{"task":"Read the heading of this page and return it.","url":"https://www.iana.org/help/example-domains","max_steps":8,"command_timeout":300}'
 ```
 
 Returns the agent result, `done`, `success` and a fresh `screenshot_path`. Inspect completion flags; text alone is not a success indicator.
@@ -72,7 +72,7 @@ async def main():
             9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
         )
         try:
-            result = await client.commands.run('browser_use', task='Read the heading of this page and return it.', url='https://example.com', max_steps=8, command_timeout=300)
+            result = await client.commands.run('browser_use', task='Read the heading of this page and return it.', url='https://www.iana.org/help/example-domains', max_steps=8, command_timeout=300)
             print(result)
             Path('browser-use.png').write_bytes(await sb.files.read_bytes(result['screenshot_path']))
         finally:
@@ -94,7 +94,7 @@ Resolve port 9000 on the same instance with the [HTTP calling example](../docs/u
 ```json
 {
   "task": "Read the heading of this page and return it.",
-  "url": "https://example.com",
+  "url": "https://www.iana.org/help/example-domains",
   "max_steps": 8,
   "command_timeout": 300
 }
@@ -144,7 +144,7 @@ abx kill "$SANDBOX_ID"
 
 ## Resources
 
-2vCPU/2048MB, named-command port9000. --disable-dev-shm-usage avoids relying on a large /dev/shm. One browser operation per server; concurrent heavy calls fail busy500. max_steps1..20; max3 actions/step; model90seconds/0retry/4096tokens; native action30/step120/LLM100second guards; outer command1..900seconds plus bounded cleanup. Each captured stream256KiB. Private browser/config/files/processes removed on ordinary success/failure/deadline; the PNG remains caller-owned. Sandbox deletion is the final boundary after abrupt server loss or hostile same-user code. Image rootfs has an8GiB build gate.
+2vCPU/2048MB, named-command port9000. --disable-dev-shm-usage avoids relying on a large /dev/shm. One browser operation per server; concurrent heavy calls fail busy500. max_steps1..20; max3 actions/step; model120seconds/0HTTPretry/8192tokens; at most3 consecutive native agent failures; native action30/step180/LLM130second guards; outer command1..900seconds plus bounded cleanup. Each captured stream256KiB. Private browser/config/files/processes removed on ordinary success/failure/deadline; the PNG remains caller-owned. Sandbox deletion is the final boundary after abrupt server loss or hostile same-user code. Image rootfs has an8GiB build gate.
 
 ## Contributing
 
@@ -159,3 +159,8 @@ To improve this template, see the [contribution guide](../CONTRIBUTING.md), [tem
 Wrapper code is [Apache-2.0](../LICENSE). Browser-use is MIT; preserve the [unchanged upstream license](upstream-LICENSE). The unmodified Playwright-distributed Chrome for Testing build retains its bundled license/notices; Playwright is Apache-2.0. Every hash-locked dependency keeps its installed upstream notices; do not relabel the full image as Apache-2.0. No model weights or cloud service account is included.
 
 Failed native steps include at most20 error summaries, each truncated to1024 UTF-8 bytes after exact configured model-key/endpoint redaction.
+
+
+## Verification entry points
+
+Required-use controller: `E2E_REQUIRE_LLM=1` exercises the configured public application against an owned nonce browser fixture, then independently checks actual page state and downloaded PNG. It does not start another command server or copy model keys into the host controller. Native SDK model controllers remain available as separate borrowed-sandbox checks.
