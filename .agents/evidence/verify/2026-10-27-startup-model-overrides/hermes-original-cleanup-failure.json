@@ -1,0 +1,132 @@
+{
+  "result": "FAIL",
+  "template": "hermes-agent",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//hermes-agent@113ebb15b939acf97f446880765b64dedf8838b6",
+  "manifest_sha256": "0773599f43277991badd7a68cb4a8d5ea1cfca5a0bcf537e6ab634799c5a450a",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "hermes_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": false
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "retained in private CLI journal",
+    "diagnostics": [
+      {
+        "kind": "image",
+        "failure_type": "CheckFailed"
+      }
+    ],
+    "artifact_cleanup_failures": 1,
+    "retained_artifact_count": 1,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "HERMES_MODEL",
+      "HERMES_PROVIDER",
+      "OPENAI_API_KEY",
+      "OPENAI_BASE_URL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:0773599f43277991badd7a68cb4a8d5ea1cfca5a0bcf537e6ab634799c5a450a",
+    "source_digest": "fd7391e40824a7c6516a29a0b5cdc3b8e93b6f535bd624169dcd2100eb1fa371",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "620c2c0585af8a2055655bcad2d9faa483b724721fb0641b7e0cec7b9e09b3f7",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "passed": true,
+    "scope": "fresh literal documentation tasks; canonical full-method/model assertions are in the pinned preceding core receipt",
+    "core_receipt_sha256": "f25f41afed47e241426cfb6ae036522a1e89750e292000a13747a9f26fd67f4f",
+    "documented_case": {
+      "template": "hermes-agent",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "literal README CLI business request",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI generated report independently downloaded",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI output independently absent before SDK task",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README Python example",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "SDK generated report independently downloaded",
+          "result": "PASS"
+        },
+        {
+          "id": "previous SDK output independently absent before HTTP task",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP business request",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "HTTP generated report independently downloaded",
+          "result": "PASS"
+        }
+      ],
+      "core_receipt_sha256": "f25f41afed47e241426cfb6ae036522a1e89750e292000a13747a9f26fd67f4f",
+      "configured_model": "qwen3.8-max",
+      "artifact": {
+        "file": "generated_hello.py",
+        "sha256": "bef5d52082fc48aa45a460aec4ec5d98605ef1d35735b4729ea07bb100595e03",
+        "observed_stdout": "Hello from the sandbox"
+      }
+    }
+  },
+  "application_result": "PASS"
+}

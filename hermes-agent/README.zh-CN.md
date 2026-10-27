@@ -20,7 +20,7 @@ NousResearch Hermes Agent `0.22.1` 固定于提交 `297552a9d646119871391d202509
 
 先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，配置选择的平台（沙箱 API Key、连接地址及构建镜像仓库），再配置下面独立的模型/应用凭据。无需 clone 仓库即可启动公共模板。
 
-默认 `openrouter` 提供方使用 `OPENROUTER_API_KEY` 及你 OpenRouter 账号中的模型 ID，不会运行交互设置或登录。若连接自己的兼容 Chat 服务，在 launch 前设置已声明的 `OPENAI_API_KEY`、`OPENAI_BASE_URL`，每次调用 `hermes` 都传 `provider="custom"`、`model="<你的模型ID>"`。`HERMES_PROVIDER` 在 manifest 中有非空默认值，单独 export 这个名称不会切换公共配方。
+默认 openrouter provider 使用 OPENROUTER_API_KEY 和该账号授权的模型 ID。自定义 Chat 兼容服务在 launch 前 export HERMES_PROVIDER=custom、OPENAI_API_KEY、OPENAI_BASE_URL、HERMES_MODEL。空 provider 配置项接收 host 选择，未提供时运行时仍默认为 openrouter。单次 provider/model 参数可覆盖启动值。不执行交互 setup 或导入本机登录态，改变启动配置后创建新实例。
 
 所有 `<...>` 都是需要你替换的占位值，模型名必须使用服务商实际提供的 ID。密钥在你自己的终端或 secret manager 中设置，不要放入镜像、YAML 或公开日志。以下变量要在 launch **之前**设置；之后改变 host 环境不会更新运行中的应用。
 

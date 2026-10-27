@@ -46,8 +46,7 @@ RUN npm install -g @qwen-code/qwen-code@0.23.0 \
 RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6"
 
 ENV HOME=/home/user WORKSPACE=/home/user/app
-ENV OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-ENV OPENAI_MODEL=qwen3-coder-plus
+# Model defaults live in commands.py; image ENV must not shadow launch settings.
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py .
 RUN chown user:user /home/user/app

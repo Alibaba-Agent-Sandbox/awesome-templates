@@ -22,9 +22,9 @@ Use an installed tool in an isolated sandbox, submit work through CLI, Python or
 
 Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
 
-This path selects OpenAI-compatible API-key authentication and disables interactive OAuth. Use your DashScope key as `OPENAI_API_KEY` (or the declared fallback `DASHSCOPE_API_KEY`). The shipped endpoint is `https://dashscope.aliyuncs.com/compatible-mode/v1` and model is `qwen3-coder-plus`. The key, endpoint region and model entitlement must match. For a different model at the same endpoint, pass `model="<your-model-id>"` to `qwen` (include it in the JSON/SDK arguments below). Those endpoint/model manifest defaults are nonempty: host exports do not replace them. To change endpoint, clone this repository, edit `qwen-code/template.yaml` `env.OPENAI_BASE_URL` and `env.OPENAI_MODEL`, then launch `./qwen-code` from that checkout. Do not put the key in YAML.
+This path selects OpenAI-compatible API-key authentication and disables interactive OAuth. Set OPENAI_API_KEY (or DASHSCOPE_API_KEY fallback), OPENAI_BASE_URL and OPENAI_MODEL before launch. The blank manifest slots admit these host settings. If base/model are omitted, the runtime preserves https://dashscope.aliyuncs.com/compatible-mode/v1 and qwen3-coder-plus. The key, endpoint region and model entitlement must match. A qwen model argument overrides the model for that call. Change startup settings by launching a new instance; no local source edit is needed.
 
-For the DashScope base below, create a Beijing-region key following [Model Studio API-key setup](https://www.alibabacloud.com/help/en/model-studio/get-api-key) and use a model allowed for that account. Other regions and Coding Plans use their matching keys/endpoints.
+For the optional DashScope default, create a Beijing-region key following [Model Studio API-key setup](https://www.alibabacloud.com/help/en/model-studio/get-api-key) and use a model allowed for that account. Other regions and Coding Plans use their matching keys/endpoints.
 
 Replace every `<...>` placeholder with your own value; use an exact model ID available to your account. Set secrets in your own terminal or secret manager, never in the image, YAML or public logs. Configure these variables **before** launch; later host changes do not reconfigure the running application.
 
@@ -32,6 +32,8 @@ Replace every `<...>` placeholder with your own value; use an exact model ID ava
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export OPENAI_API_KEY='<your-model-or-vendor-key>'
+export OPENAI_BASE_URL='<your-chat-completions-base-url>'
+export OPENAI_MODEL='<model-id-from-your-provider>'
 abx template launch Alibaba-Agent-Sandbox/awesome-templates//qwen-code --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
@@ -119,8 +121,8 @@ Named-command results are buffered rather than streamed. `cwd` must be an existi
 | --- | --- |
 | `OPENAI_API_KEY` | Primary model key for coding tasks; version/setup checks do not require it |
 | `DASHSCOPE_API_KEY` | Fallback model key when `OPENAI_API_KEY` is empty; mapped only in the child process |
-| `OPENAI_BASE_URL` | Default `https://dashscope.aliyuncs.com/compatible-mode/v1`; edit the manifest default before launch for another compatible endpoint |
-| `OPENAI_MODEL` | Default `qwen3-coder-plus`; explicit command `model` wins |
+| `OPENAI_BASE_URL` | Default `https://dashscope.aliyuncs.com/compatible-mode/v1`; export before launch for another compatible endpoint |
+| `OPENAI_MODEL` | Default `qwen3-coder-plus`; startup export or explicit command `model` wins |
 | `WORKSPACE` | Default `/home/user/app` |
 | `ABX_SERVER_TOKEN` | Required before template launch; independent of model and gateway credentials |
 

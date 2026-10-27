@@ -1,5 +1,9 @@
 # Changelog
 
+## Startup model configuration (2026-10-27)
+
+- Qwen Code2.2.0, DeepSeek harness1.2.0 and Hermes1.2.0 accept explicit startup model/endpoint/provider exports through public launch. Omitted settings preserve prior vendor fallback defaults; application/model credentials stay separate.
+
 ## Unreleased
 
 - Maintain 15 standalone process-runner placements from canonical source snippets, with a CI drift check. Preserve executable ASTs and template-specific policies; no new runtime dependency. / 15 处独立模板进程封装改用公共源码维护并由 CI 检查漂移；保持执行逻辑及模板策略，不增加运行依赖。

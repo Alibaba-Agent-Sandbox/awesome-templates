@@ -20,7 +20,7 @@ Use an installed tool in an isolated sandbox, submit work through CLI, Python or
 
 Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
 
-Set a genuine DeepSeek API key (or the declared `OPENAI_API_KEY` fallback). The shipped endpoint is `https://api.deepseek.com` and model is `deepseek-flash`; your account must provide that model. No browser login is needed. Endpoint/model defaults are nonempty manifest settings: for another service, clone the repository, edit `deepseek-harness/template.yaml` `env.DEEPSEEK_BASE_URL` and `env.DEEPSEEK_MODEL`, then launch `./deepseek-harness`. The command's optional `model` overrides only the model for that call, not the endpoint.
+Set DEEPSEEK_API_KEY (or OPENAI_API_KEY fallback), DEEPSEEK_BASE_URL and DEEPSEEK_MODEL before launch. Blank manifest slots admit explicit host base/model settings. If omitted, runtime defaults remain https://api.deepseek.com and deepseek-flash. Use the key, base and exact model ID authorized by the same service; no browser login occurs. The optional model argument overrides the model for one call. Compatible-service use does not establish a native DeepSeek account entitlement. Launch a new instance after changing startup configuration.
 
 Replace every `<...>` placeholder with your own value; use an exact model ID available to your account. Set secrets in your own terminal or secret manager, never in the image, YAML or public logs. Configure these variables **before** launch; later host changes do not reconfigure the running application.
 
@@ -28,6 +28,8 @@ Replace every `<...>` placeholder with your own value; use an exact model ID ava
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export DEEPSEEK_API_KEY='<your-model-or-vendor-key>'
+export DEEPSEEK_BASE_URL='<your-chat-completions-base-url>'
+export DEEPSEEK_MODEL='<model-id-from-your-provider>'
 abx template launch Alibaba-Agent-Sandbox/awesome-templates//deepseek-harness --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"

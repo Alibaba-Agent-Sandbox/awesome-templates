@@ -149,8 +149,8 @@ def qwen_setup_check() -> dict:
         "installed": installed, "version": qwen_version() if installed else "",
         "pinned_version": PINNED_VERSION,
         "api_key_set": bool(_api_key()),
-        "auth_type": "openai", "model_set": bool(os.environ.get("OPENAI_MODEL", "").strip()),
-        "base_url_set": bool(os.environ.get("OPENAI_BASE_URL", "").strip()),
+        "auth_type": "openai", "model_set": bool(os.environ.get("OPENAI_MODEL") or "qwen3-coder-plus"),
+        "base_url_set": bool(os.environ.get("OPENAI_BASE_URL") or "https://dashscope.aliyuncs.com/compatible-mode/v1"),
         "settings": settings,
     }
 
@@ -167,13 +167,15 @@ def qwen(prompt: str, max_turns: int = 100, model: str = "", cwd: str = "",
         raise ValueError("command_timeout must be between 1 and 1800 seconds")
     env = os.environ.copy()
     env["OPENAI_API_KEY"] = _api_key()
+    env["OPENAI_BASE_URL"] = env.get("OPENAI_BASE_URL") or "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    env["OPENAI_MODEL"] = env.get("OPENAI_MODEL") or "qwen3-coder-plus"
     if not env["OPENAI_API_KEY"].strip():
         raise RuntimeError("OPENAI_API_KEY or DASHSCOPE_API_KEY is required; interactive OAuth login is disabled")
     args = [_executable(), "-p", prompt, "--auth-type", "openai", "--output-format", "json",
             "--max-session-turns", str(max_turns), "--max-wall-time", str(command_timeout),
             "--no-chat-recording"]
-    if model:
-        args.extend(["--model", model])
+    selected_model = model or env["OPENAI_MODEL"]
+    args.extend(["--model", selected_model])
     if yolo:
         args.append("--yolo")
     return _run(args, timeout=command_timeout, cwd=cwd, env=env)

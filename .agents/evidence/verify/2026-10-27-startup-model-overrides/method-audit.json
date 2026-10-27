@@ -1,0 +1,47 @@
+{
+  "qwen-code": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/qwen_version",
+      "POST /commands/qwen_setup_check",
+      "POST /commands/qwen",
+      "POST /commands/run"
+    ],
+    "core_checks": 18,
+    "docs_checks": 14,
+    "compat_checks": 4,
+    "runtime_folders_unchanged": true,
+    "readme_sha256": "eb945cfd8597c825954c8497752ec070c95ad92ae50cbacea7641f6957a1254d"
+  },
+  "deepseek-harness": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/deepseek_tools",
+      "POST /commands/deepseek_setup_check",
+      "POST /commands/deepseek",
+      "POST /commands/run"
+    ],
+    "core_checks": 17,
+    "docs_checks": 11,
+    "compat_checks": 4,
+    "runtime_folders_unchanged": true,
+    "readme_sha256": "f37321e6f43c0ae4a544b1ddc59957be7a44403ba8c518165764cf9c7a970a48"
+  },
+  "hermes-agent": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/hermes_version",
+      "POST /commands/hermes_setup_check",
+      "POST /commands/hermes",
+      "POST /commands/run"
+    ],
+    "core_checks": 17,
+    "docs_checks": 11,
+    "compat_checks": 4,
+    "runtime_folders_unchanged": true,
+    "readme_sha256": "1a488034dff1dad2ce63b0499e598adf2b2f0b5c6a4edb48ab2cec1f8980fa2f"
+  }
+}
