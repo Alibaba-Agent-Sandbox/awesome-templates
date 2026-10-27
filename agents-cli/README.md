@@ -104,7 +104,7 @@ async def main():
                 response.raise_for_status()
             response = await http.post(url("/v1/agents/sessions"), json={
                 "adapter": adapter,
-                "agent": {"model": os.environ["OPENAI_MODEL"]},
+                "agent": {"model": os.environ["OPENAI_MODEL"], "permissions": "full_access"},
                 "environment": {"type": "self_hosted",
                                 "workspace_directory": "/home/user/workspace"},
             })
@@ -158,7 +158,8 @@ For Codex, first send `POST /commands/agents_configure_codex` with `{}`; expect 
 {
   "adapter": "qwen-code",
   "agent": {
-    "model": "<same-model-as-OPENAI_MODEL>"
+    "model": "<same-model-as-OPENAI_MODEL>",
+    "permissions": "full_access"
   },
   "environment": {
     "type": "self_hosted",
