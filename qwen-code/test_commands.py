@@ -129,4 +129,3 @@ def test_blank_launch_settings_preserve_defaults_or_explicit_service(monkeypatch
     assert captured['env']['OPENAI_BASE_URL'] == (base or 'https://dashscope.aliyuncs.com/compatible-mode/v1')
     assert captured['env']['OPENAI_MODEL'] == (model or 'qwen3-coder-plus')
     assert captured['argv'][captured['argv'].index('--model') + 1] == (model or 'qwen3-coder-plus')
-

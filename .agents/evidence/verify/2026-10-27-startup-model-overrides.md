@@ -28,3 +28,5 @@ an API404 model-missing string marked success by upstream; no required file exis
 Both failures and independent cleanup are retained. Native Qwen needs an explicit
 --model flag; forward per-call model or the configured/fallback startup model and
 extend regression assertions to the actual argv. Fresh changed-Qwen cloud runs pending.
+
+Qwen explicit-model argv regression: PASS13; the two new configured/default cases both FAIL against first-source113ebb1, proving missing CLI model forwarding independently of upstream requests. Removed a trailing blank line reported by diff check; no executable change.
