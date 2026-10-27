@@ -14,6 +14,58 @@ commands = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(commands)
 
 
+def test_partial_model_configuration_never_calls_gateway(monkeypatch):
+    monkeypatch.setenv("OPENCLAW_MODEL_API_KEY", "synthetic-model-key")
+    monkeypatch.delenv("OPENCLAW_MODEL_BASE_URL", raising=False)
+    monkeypatch.delenv("OPENCLAW_MODEL", raising=False)
+    monkeypatch.setattr(commands, "gateway_start", lambda: pytest.fail("unexpected launch"))
+    with pytest.raises(ValueError, match="together"):
+        commands.gateway_chat("hello")
+
+
+@pytest.mark.parametrize("base", ["https://user:key@example.invalid/v1", "https://example.invalid/v1?token=x", "file:///etc/passwd"])
+def test_explicit_model_endpoint_validation(base, monkeypatch):
+    monkeypatch.setenv("OPENCLAW_MODEL_API_KEY", "synthetic-model-key")
+    monkeypatch.setenv("OPENCLAW_MODEL_BASE_URL", base)
+    monkeypatch.setenv("OPENCLAW_MODEL", "test-model")
+    with pytest.raises(ValueError, match="explicit HTTP"):
+        commands._model_config()
+
+
+def test_native_chat_session_and_redacted_failure(monkeypatch):
+    import io
+    import urllib.error
+    monkeypatch.setenv("OPENCLAW_MODEL_API_KEY", "synthetic-model-key")
+    monkeypatch.setenv("OPENCLAW_MODEL_BASE_URL", "https://example.invalid/v1")
+    monkeypatch.setenv("OPENCLAW_MODEL", "test-model")
+    monkeypatch.setattr(commands, "_running", lambda: True)
+    monkeypatch.setattr(commands, "_ENV", {"OPENCLAW_GATEWAY_TOKEN": "synthetic-gateway-key"})
+    requests = []
+    class Gateway:
+        def open(self, request, timeout):
+            requests.append(json.loads(request.data))
+            return io.BytesIO(b'{"choices":[{"message":{"content":"51.30"}}]}')
+    monkeypatch.setattr(commands.urllib.request, "build_opener", lambda *a: Gateway())
+    first = commands.gateway_chat("expenses")
+    follow = commands.gateway_chat("remove train", session_id=first['session_id'])
+    assert first['text'] == follow['text'] == "51.30"
+    assert requests[0]['user'] == requests[1]['user']
+    assert requests[0]['model'] == "openclaw/default"
+    class FailedGateway:
+        def open(self, request, timeout):
+            raise urllib.error.HTTPError(request.full_url, 502, "private details", {}, io.BytesIO(b"private upstream credential"))
+    monkeypatch.setattr(commands.urllib.request, "build_opener", lambda *a: FailedGateway())
+    with pytest.raises(RuntimeError, match="^native gateway chat failed with HTTP 502$"):
+        commands.gateway_chat("expenses")
+
+
+@pytest.mark.parametrize("kwargs", [{"prompt": " "}, {"prompt": "x" * 65537}, {"prompt": "hi", "session_id": "../other"}, {"prompt": "hi", "command_timeout": 301}])
+def test_chat_input_limits_before_model_access(kwargs, monkeypatch):
+    monkeypatch.setattr(commands, "_model_config", lambda: pytest.fail("invalid request reached model"))
+    with pytest.raises(ValueError):
+        commands.gateway_chat(**kwargs)
+
+
 def test_missing_token_never_launches(monkeypatch):
     monkeypatch.delenv("OPENCLAW_GATEWAY_TOKEN", raising=False)
     monkeypatch.setattr(commands.subprocess, "Popen", lambda *a, **kw: pytest.fail("unexpected process"))

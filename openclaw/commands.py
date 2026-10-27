@@ -6,6 +6,8 @@ import ipaddress
 import json
 import os
 from pathlib import Path
+import re
+import secrets
 import shutil
 import signal
 import socket
@@ -13,6 +15,9 @@ import subprocess
 import tempfile
 import threading
 import time
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from agent_sandbox.server import command, start
 
@@ -23,6 +28,25 @@ _STATE: tempfile.TemporaryDirectory | None = None
 _ENV: dict[str, str] = {}
 _PORT = 18789
 _BIND = "loopback"
+
+
+def _model_config() -> dict | None:
+    names = ("OPENCLAW_MODEL_API_KEY", "OPENCLAW_MODEL_BASE_URL", "OPENCLAW_MODEL")
+    values = [os.environ.get(name, "").strip() for name in names]
+    if not any(values):
+        return None
+    if not all(values):
+        raise ValueError("set OPENCLAW_MODEL_API_KEY, OPENCLAW_MODEL_BASE_URL and OPENCLAW_MODEL together")
+    key, base_url, model = values
+    parsed = urllib.parse.urlsplit(base_url)
+    if (parsed.scheme not in {"http", "https"} or not parsed.hostname or
+            parsed.username or parsed.password or parsed.query or parsed.fragment):
+        raise ValueError("OPENCLAW_MODEL_BASE_URL must be an explicit HTTP(S) API base without credentials/query/fragment")
+    if len(base_url) > 2048 or len(model) > 256 or any(c.isspace() for c in model):
+        raise ValueError("invalid model endpoint or model identifier")
+    return {"baseUrl": base_url.rstrip("/"), "apiKey": "${OPENCLAW_MODEL_API_KEY}",
+            "api": "openai-completions", "models": [{"id": model, "name": model,
+                "reasoning": False, "input": ["text"], "contextWindow": 128000, "maxTokens": 4096}]}
 
 
 def _trusted_proxies() -> list[str]:
@@ -226,12 +250,19 @@ def gateway_start(port: int = 18789, bind: str = "loopback", command_timeout: in
                 raise RuntimeError("gateway port is already occupied; choose another port") from None
         executable = _binary()
         trusted_proxies = _trusted_proxies()
+        model_config = _model_config()
         _STATE = tempfile.TemporaryDirectory(prefix="abx-openclaw-")
         state = Path(_STATE.name)
         config = {"gateway": {"mode": "local", "port": port, "bind": bind,
                   "auth": {"mode": "token", "token": "${OPENCLAW_GATEWAY_TOKEN}"},
                   "controlUi": {"enabled": False}},
                   "browser": {"enabled": False}}
+        if model_config:
+            config["gateway"]["http"] = {"endpoints": {"chatCompletions": {"enabled": True}}}
+            config["models"] = {"mode": "replace", "providers": {"abx": model_config}}
+            config["agents"] = {"defaults": {"model": {"primary": "abx/" + model_config["models"][0]["id"]},
+                "workspace": str(state / "workspace")}}
+            config["tools"] = {"profile": "minimal", "deny": ["*"]}
         if trusted_proxies:
             config["gateway"]["trustedProxies"] = trusted_proxies
         (state / "openclaw.json").write_text(json.dumps(config), encoding="utf-8")
@@ -276,6 +307,43 @@ def gateway_health(command_timeout: int = 20) -> dict:
         if not _probe(command_timeout):
             raise RuntimeError("owned gateway is absent or authenticated health check failed")
         return {"healthy": True, "url": f"ws://127.0.0.1:{_PORT}"}
+
+
+@command("gateway_chat", description="Send a text turn through the owned native gateway; reuse session_id for context.")
+def gateway_chat(prompt: str, session_id: str = "", command_timeout: int = 180) -> dict:
+    if not prompt.strip() or len(prompt.encode("utf-8")) > 65536:
+        raise ValueError("prompt must contain 1..65536 UTF-8 bytes")
+    if not 1 <= command_timeout <= 300:
+        raise ValueError("command_timeout must be 1..300 seconds")
+    if session_id and not re.fullmatch(r"[A-Za-z0-9_-]{1,80}", session_id):
+        raise ValueError("session_id must contain 1..80 ASCII letters, digits, underscores or hyphens")
+    with _LOCK:
+        if _model_config() is None:
+            raise RuntimeError("gateway_chat requires the three explicit OPENCLAW_MODEL settings")
+        if not _running():
+            gateway_start()
+        conversation = session_id or secrets.token_hex(16)
+        payload = {"model": "openclaw/default", "user": "abx-conversation:" + conversation,
+                   "messages": [{"role": "user", "content": prompt}], "stream": False}
+        request = urllib.request.Request(f"http://127.0.0.1:{_PORT}/v1/chat/completions",
+            data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json",
+            "Authorization": "Bearer " + _ENV["OPENCLAW_GATEWAY_TOKEN"]})
+        # Local gateway traffic never goes through a caller's external proxy.
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        try:
+            with opener.open(request, timeout=command_timeout) as response:
+                raw = response.read(1048577)
+            if len(raw) > 1048576:
+                raise RuntimeError("gateway response exceeds 1 MiB")
+            result = json.loads(raw)
+            text = result["choices"][0]["message"]["content"]
+            if not isinstance(text, str) or not text.strip():
+                raise ValueError("empty assistant response")
+        except urllib.error.HTTPError as exc:
+            raise RuntimeError(f"native gateway chat failed with HTTP {exc.code}") from None
+        except (OSError, ValueError, KeyError, IndexError, TypeError):
+            raise RuntimeError("native gateway chat failed or returned no assistant text") from None
+        return {"session_id": conversation, "text": text}
 
 
 @command("gateway_stop", description="Stop only the gateway owned by this server process.")
