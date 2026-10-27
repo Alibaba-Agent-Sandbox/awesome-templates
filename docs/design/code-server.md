@@ -40,3 +40,12 @@ second uses the actual get_info_by_id API and independently confirms both absenc
 paths. Both original point-in-time records remain unchanged.
 
 Current1.0.0 actual SDK-created image and full HTTP5 plus genuine browser/terminal/editor acceptance passed through the documented sdk-local operator relay. It retains upstream TLS, native password authentication and independent SDK file readback; local browser transport is loopback HTTP. Default FC direct HTML attachment remains a failed mode. All owned cleanup independently confirmed. See the [exact browser receipt](../../code-server/evidence/browser-ui-2026-10-20T091440Z.json).
+
+Version1.0.3 strengthens external workbench acceptance: a redirect back to login
+or a password form cannot pass because a page happens to mention workbench.
+A cookie-stripping proxy regression fails the original controller and is rejected
+by the new one. OpenSandbox1.1.1 strips Cookie in its server proxy, so the guide
+selects the existing provider direct-endpoint mode with native password/cookie
+authentication and private SDK-resolved browser preview. Fresh full Express and
+direct OpenSandbox browser editing/native/method/documentation proof is required;
+no default server-proxy IDE support is claimed.
