@@ -174,8 +174,8 @@ def qwen(prompt: str, max_turns: int = 100, model: str = "", cwd: str = "",
     args = [_executable(), "-p", prompt, "--auth-type", "openai", "--output-format", "json",
             "--max-session-turns", str(max_turns), "--max-wall-time", str(command_timeout),
             "--no-chat-recording"]
-    if model:
-        args.extend(["--model", model])
+    selected_model = model or env["OPENAI_MODEL"]
+    args.extend(["--model", selected_model])
     if yolo:
         args.append("--yolo")
     return _run(args, timeout=command_timeout, cwd=cwd, env=env)

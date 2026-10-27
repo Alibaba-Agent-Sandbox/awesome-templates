@@ -124,7 +124,9 @@ def test_blank_launch_settings_preserve_defaults_or_explicit_service(monkeypatch
     monkeypatch.setenv('OPENAI_MODEL', model)
     monkeypatch.setattr(commands, '_executable', lambda: 'qwen')
     captured = {}
-    monkeypatch.setattr(commands, '_run', lambda argv, **kw: captured.update(kw) or '{}')
+    monkeypatch.setattr(commands, '_run', lambda argv, **kw: captured.update(argv=argv, **kw) or '{}')
     commands.qwen('owned task')
     assert captured['env']['OPENAI_BASE_URL'] == (base or 'https://dashscope.aliyuncs.com/compatible-mode/v1')
     assert captured['env']['OPENAI_MODEL'] == (model or 'qwen3-coder-plus')
+    assert captured['argv'][captured['argv'].index('--model') + 1] == (model or 'qwen3-coder-plus')
+

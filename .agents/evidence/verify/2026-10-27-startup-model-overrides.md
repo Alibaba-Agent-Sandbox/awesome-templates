@@ -20,3 +20,11 @@ resolver confirms nonempty declarations win over host exports.
 
 No cloud/model credentials are included. Vendor fallback behavior is preserved;
 no claim of native vendor account authorization follows from compatible-service use.
+
+Actual first-source cloud findings: Qwen/DeepSeek core PASS. DeepSeek fresh CLI/SDK/HTTP
+also PASS with actual second model. Qwen documentation attempts01/02 FAIL: native
+init selected qwen3-coder-plus despite configured OPENAI_MODEL=qwen3.8-max, and returned
+an API404 model-missing string marked success by upstream; no required file existed.
+Both failures and independent cleanup are retained. Native Qwen needs an explicit
+--model flag; forward per-call model or the configured/fallback startup model and
+extend regression assertions to the actual argv. Fresh changed-Qwen cloud runs pending.
