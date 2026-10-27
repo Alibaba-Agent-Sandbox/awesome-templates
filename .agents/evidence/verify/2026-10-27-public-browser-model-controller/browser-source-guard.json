@@ -1,0 +1,76 @@
+{
+  "result": "FAIL",
+  "template": "browser-use",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//browser-use@5c141ca2cd129313fa40e7c2775f5dc70ca567ab",
+  "manifest_sha256": "e648d7a3624ec16fc9531f94741213cb3dfcdb41bfe956df3897c511ad98b6ad",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "browser_use_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "browser_use_self_test",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "BROWSER_USE_API_KEY",
+      "BROWSER_USE_BASE_URL",
+      "BROWSER_USE_MODEL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:e648d7a3624ec16fc9531f94741213cb3dfcdb41bfe956df3897c511ad98b6ad",
+    "source_digest": "6e5c4fb1f3b9f5a2d2074b4845868cb24099d4a9a6fe87fa0c770a3d2539dba4",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "185a838fdf415e2fbe6308d303cb754cb59417c190feec1190b1dfceb1964c08",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "application_result": "FAIL",
+  "failure_type": "AssertionError",
+  "failed_phase": "application-controller",
+  "diagnostics": {}
+}

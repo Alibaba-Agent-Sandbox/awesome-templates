@@ -3,7 +3,7 @@ import importlib.util,http.server,json,os,threading
 from pathlib import Path
 import pytest
 s=importlib.util.spec_from_file_location('browser_use_commands',Path(__file__).with_name('commands.py'));c=importlib.util.module_from_spec(s);s.loader.exec_module(c)
-seen=[];counter=[];clicks=[];blocked={}
+seen=[];counter=[];clicks=[];blocked={};truncated=[]
 class H(http.server.BaseHTTPRequestHandler):
  def log_message(self,*a):pass
  def do_GET(self):
@@ -22,11 +22,13 @@ class H(http.server.BaseHTTPRequestHandler):
    if not match:raise RuntimeError('authored click target index unavailable')
    content['action']=[{'click':{'index':int(match[1])}}]
 
-  body=json.dumps({'id':'fixture','object':'chat.completion','created':1,'model':'fixture','choices':[{'index':0,'message':{'role':'assistant','content':json.dumps(content)},'finish_reason':'stop'}],'usage':{'prompt_tokens':1,'completion_tokens':1,'total_tokens':2}}).encode();self.send_response(200);self.send_header('Content-Type','application/json');self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
+  finish='stop';text=json.dumps(content)
+  if truncated:truncated.pop();finish='length';text='{"action":['
+  body=json.dumps({'id':'fixture','object':'chat.completion','created':1,'model':'fixture','choices':[{'index':0,'message':{'role':'assistant','content':text},'finish_reason':finish}],'usage':{'prompt_tokens':1,'completion_tokens':1,'total_tokens':2}}).encode();self.send_response(200);self.send_header('Content-Type','application/json');self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
 
 @pytest.fixture
 def native(tmp_path,monkeypatch):
-    seen.clear();counter.clear();clicks.clear();project=tmp_path/'project';project.mkdir();home=tmp_path/'caller-home';home.mkdir();(home/'sentinel').write_text('untouched')
+    seen.clear();counter.clear();clicks.clear();truncated.clear();project=tmp_path/'project';project.mkdir();home=tmp_path/'caller-home';home.mkdir();(home/'sentinel').write_text('untouched')
     monkeypatch.setenv('WORKSPACE',str(project));monkeypatch.setenv('HOME',str(home));monkeypatch.setenv('BROWSER_USE_API_KEY','synthetic-fixture-key');monkeypatch.setenv('BROWSER_USE_MODEL','fixture')
     server=http.server.ThreadingHTTPServer(('127.0.0.1',0),H);thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start();base='http://127.0.0.1:'+str(server.server_port);monkeypatch.setenv('BROWSER_USE_BASE_URL',base+'/v1')
     try:yield project,base
@@ -40,6 +42,15 @@ def test_real_keyless_native_version_cdp_navigation_png_and_cleanup(native):
     assert c.browser_use_setup_check()['browser_installed'] is True
     assert c.browser_use_self_test()=='BROWSER_USE_NATIVE_OK'
     assert not seen
+
+
+def test_native_recovers_from_one_truncated_structured_reply(native):
+    project,base=native;truncated.append(True)
+    result=c.browser_use('Click OwnedClick then finish.',url=base+'/page',max_steps=5,command_timeout=90)
+    assert result['done'] and result['success'] and result['result']=='fixture42'
+    assert len(clicks)==1 and len(seen)>=3 and not truncated
+    assert any('truncated' in error.lower() for error in result['error_summary'])
+    Path(result['screenshot_path']).unlink()
 
 
 def test_real_native_authored_click_independent_counter_png_and_action_surface(native):

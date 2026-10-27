@@ -38,7 +38,12 @@ def main():
         if not all(state.get(x) for x in ['api_key_set','base_url_set','model_set']):
             response=client.post('/commands/browser_use',json={'task':'x'})
             record(response.status_code==500 and 'required' in response.json().get('error',''),'missing-model guard')
-        if os.environ.get('E2E_REQUIRE_LLM')=='1':record(False,'required actual browser model must use separate SDK model_e2e_test.py')
+        if os.environ.get('E2E_REQUIRE_LLM')=='1':
+            if all(state.get(x)for x in ['api_key_set','base_url_set','model_set']):
+                sys.path.insert(0,os.path.dirname(__file__))
+                from http_model_e2e import verify
+                verify(client,record,'browser-use')
+            else:record(False,'required actual model configuration missing on target')
         else:print('[SKIP] real browser model; separate SDK controller required, no L3 claim',flush=True)
     return int(bool(FAILED))
 

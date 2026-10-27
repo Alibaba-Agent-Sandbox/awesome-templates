@@ -1,0 +1,107 @@
+{
+  "result": "FAIL",
+  "template": "browser-use",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//browser-use@9d4af13be0786c3283d7f1608217d976952d2a23",
+  "manifest_sha256": "e648d7a3624ec16fc9531f94741213cb3dfcdb41bfe956df3897c511ad98b6ad",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "browser_use_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "browser_use_self_test",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "retained in private CLI journal",
+    "diagnostics": [
+      {
+        "kind": "image",
+        "failure_type": "CheckFailed"
+      }
+    ],
+    "artifact_cleanup_failures": 1,
+    "retained_artifact_count": 1,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "BROWSER_USE_API_KEY",
+      "BROWSER_USE_BASE_URL",
+      "BROWSER_USE_MODEL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:e648d7a3624ec16fc9531f94741213cb3dfcdb41bfe956df3897c511ad98b6ad",
+    "source_digest": "7981ddd368ade13a1b85eb0bfef08eb50792952767b84aa606f5821151dbbb6d",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "0de3689936694d6c54f0c030c04b306253a8eb00cc22ed88831eb8a6ccd8599d",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "passed": false,
+    "scope": "fresh literal documentation tasks; canonical full-method/model assertions are in the pinned preceding core receipt",
+    "core_receipt_sha256": "879f380422ca36eb71f249bc4d8b311498e6cc8074c96bbb3e1c6431dd53aeb7",
+    "documented_case": {
+      "template": "browser-use",
+      "provider": "alicloud-express",
+      "result": "FAIL",
+      "checks": [],
+      "core_receipt_sha256": "879f380422ca36eb71f249bc4d8b311498e6cc8074c96bbb3e1c6431dd53aeb7",
+      "artifacts": {},
+      "failure_type": "AssertionError",
+      "failure_stack": [
+        [
+          "documented_browser_tasks.py",
+          "execute",
+          22
+        ],
+        [
+          "documented_browser_tasks.py",
+          "validate",
+          14
+        ]
+      ]
+    }
+  },
+  "application_result": "FAIL",
+  "failure_type": "FileNotFoundError",
+  "failed_phase": "application-controller",
+  "diagnostics": {}
+}

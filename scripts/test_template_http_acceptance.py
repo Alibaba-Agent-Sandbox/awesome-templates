@@ -301,3 +301,17 @@ def test_current_template_commands_use_only_canonical_public_names(tmp_path,temp
         process.terminate()
         try:process.wait(timeout=5)
         except subprocess.TimeoutExpired:process.kill();process.wait(timeout=5)
+
+
+@pytest.mark.parametrize('mutated', [False, True])
+def test_browser_verifier_dependency_identity_is_checked_after_actual_subprocess(tmp_path, mutated):
+    text = "from pathlib import Path\n"
+    if mutated:
+        text += "Path(__file__).with_name('http_model_e2e.py').write_text('changed')\n"
+    text += "print('[PASS] native browser assertion')\n"
+    source = controller(tmp_path, 'browser-use', text)
+    (source / 'http_model_e2e.py').write_text('original verifier dependency')
+    proof = run_controller(source, {9000: 'https://synthetic.invalid'}, tmp_path, {}, real_usage=True)
+    assert 'http_model_e2e.py' in proof['verifier_dependencies_sha256']
+    assert proof['verifier_inputs_unchanged'] is (not mutated)
+    assert proof['passed'] is (not mutated)
