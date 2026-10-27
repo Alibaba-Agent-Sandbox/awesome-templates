@@ -354,3 +354,4 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 - [Idempotent owned local-image cleanup](notes/proposed/process/2026-10-27-idempotent-owned-local-cleanup.md) · [verification](evidence/verify/2026-10-27-idempotent-owned-local-cleanup.md). Actual Docker control and independent late cleanup supplements preserve original failures.
 
 - [Public Agents CLI model workflows](notes/proposed/feature/2026-10-27-agents-public-model-workflows.md) · [verification](evidence/verify/2026-10-27-agents-public-model-workflows.md).
+- [Three further native practices](notes/proposed/feature/2026-10-27-three-more-native-practices.md) · [verification](evidence/verify/2026-10-27-three-more-native-practices.md).
