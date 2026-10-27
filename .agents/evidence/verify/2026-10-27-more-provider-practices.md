@@ -72,3 +72,8 @@ container remain. Preserve the original attempt and SHA-bound cleanup supplement
 Raw model/provider logs, private endpoints and keys remain private. Current-head
 CI/review, practical article publication and independent Registry review remain
 separate required gates. No management-key prepare/renewal or CI secret restoration.
+
+Current-head CI control: the new Next regression first failed because aiohttp was
+installed later in the same CI step. Move the existing hash-locked preview dependency
+installation before Next tests; no new unlocked dependency or credentials. The
+original CI failure remains GitHub history; current-head CI must pass after this fix.
