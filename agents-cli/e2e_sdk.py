@@ -293,7 +293,8 @@ def selected_env(root: str, state_dir: str, model: str, token: str, *, adapter: 
 
 async def run(args, *, factory=None) -> dict:
     if factory is None:
-        factory = Sandbox
+        from agent_sandbox import ProviderSandbox
+        factory = ProviderSandbox
     adapter=getattr(args, 'adapter', 'qwen-code')
     require(adapter in {'qwen-code','codex'}, 'unsupported native adapter')
     require(args.template and args.model and 30 <= args.turn_timeout <= 600, 'invalid template/model/timeout')

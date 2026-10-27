@@ -142,3 +142,14 @@ Canonical deploy, Codex and formal metadata are still separate incomplete gates.
 The owned SDK verifier now accepts --adapter qwen-code|codex (Qwen default), with a separate fresh sandbox/journal/report for each real native backend. It explicitly uses the image's pinned Node24 PATH, preserving the original restricted policy and independent management-channel source/artifact/original/generated/held-out checks. Historical Qwen results do not qualify current Codex; current-source real provider receipts are now linked in the final acceptance record.
 
 Current template2.0.1 passed SDK-created native steps and independent native Qwen Code/Codex model sandboxes on2026-10-20. Source5343a671; controller SHA256bbcab0f40452bf833a58cee2e6cfc6d123aae7634411d76d911f5e7cfa1a7538. Each proves source repair, byte-identical original tests, exact artifacts, complete original/generated tests, six held-out cases and post-return ACK; all exact owned sandboxes/template absent. Codex has an explicit private HTTP Responses profile, websockets disabled and environment key reference only. The earlier ambient-profile timeout remains FAIL with no established root cause. [Final acceptance](../../.agents/evidence/verify/2026-10-20-agents-cli-both-native-sdk-final.md).
+
+## Public native model setup (2.1.0)
+
+`agents_configure_codex()` explicitly prepares a native Responses profile from
+startup OPENAI_BASE_URL, referencing OPENAI_API_KEY by name and disabling native
+WebSockets. Creation is exclusive0600, matching config is idempotent, caller/symlink
+config is preserved. No import/read-only diagnostic performs setup. Six restricted
+session/runtime routes remain unchanged; no generic HTTP file/shell policy expansion.
+Required actual acceptance runs both adapters and native continuation on public9000;
+provider-native host file/process reads independently check source/results/state.
+No second command server or model key on the controller is required.

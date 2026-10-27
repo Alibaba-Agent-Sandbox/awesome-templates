@@ -26,9 +26,11 @@ Codex CLI `0.162.1`、Qwen Code `0.23.0`、Node.js `24.16.0` 及受限的本地 
 
 ## 快速开始（CLI）
 
+可选择 `qwen-code`（Chat Completions）或 `codex`（Responses）适配器。启动前显式配置 OPENAI_API_KEY、OPENAI_BASE_URL、OPENAI_MODEL，三者来自自己有权限的同一个模型服务。API Key 流程无需 OAuth 登录，也不继承本机账号。Codex 会话前调用 `agents_configure_codex`：将启动时的 endpoint 写入原生 Responses profile，密钥只保存环境变量名引用，关闭 WebSockets；不覆盖其他已有配置。Qwen 直接使用启动时的 Chat 配置。同一实例使用两个适配器时，上游需要同时支持两种协议，否则分别配置并启动实例。
+
+
 先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，配置选择的平台（沙箱 API Key、连接地址及构建镜像仓库），再配置下面独立的模型/应用凭据。无需 clone 仓库即可启动公共模板。
 
-会话示例选择真实 `qwen-code` adapter。为授权的兼容 Chat 服务填写 `OPENAI_API_KEY`、`OPENAI_BASE_URL`、`OPENAI_MODEL` 三个值，不启动交互 OAuth。切换 Codex 需要 Responses 兼容服务及原生 `CODEX_HOME/config.toml`，此受限模板不会仅靠 `OPENAI_BASE_URL` 自动建立该配置；完整可配置的 Codex 命令流程可使用专门的 `codex` 模板。
 
 使用下方的百炼接入点时，在[百炼 API Key 页面](https://help.aliyun.com/zh/model-studio/get-api-key)选择北京地域创建 Key，并填写该账号可用模型 ID；其他地域或 Coding Plan 使用其对应的 Key/endpoint，不能混用。
 
@@ -38,7 +40,7 @@ Codex CLI `0.162.1`、Qwen Code `0.23.0`、Node.js `24.16.0` 及受限的本地 
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export OPENAI_API_KEY='<your-model-or-vendor-key>'
-export OPENAI_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
+export OPENAI_BASE_URL='<your-model-api-base-including-v1-if-required>'
 export OPENAI_MODEL='<model-id-from-your-provider>'
 abx template launch Alibaba-Agent-Sandbox/awesome-templates//agents-cli --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
@@ -53,6 +55,11 @@ launch 已启动该实例的应用，不需要再建第二个沙箱或启动第�
 
 ```bash
 abx run "$SANDBOX_ID" agents_version
+# For Codex sessions, explicitly prepare the native Responses profile:
+abx run "$SANDBOX_ID" agents_configure_codex
+# Select the adapter for the complete Python example:
+export AGENTS_ADAPTER=qwen-code
+# Or: export AGENTS_ADAPTER=codex
 ```
 
 任务要求在 `/home/user/workspace` 写出 `generated_hello.py` 和 `GENERATED_REPORT.md`。示例显式开放所需的编辑/工具权限，只在自己拥有的可丢弃沙箱中使用。下面的 SDK 和 HTTP 是同一任务的替代调用方式，选择一种即可。
@@ -67,6 +74,7 @@ abx run "$SANDBOX_ID" agents_version
 import asyncio
 import os
 import time
+from pathlib import Path
 import httpx
 from agent_sandbox import ProviderSandbox
 
@@ -89,8 +97,14 @@ async def main():
         def url(path):
             return base.copy_with(path=base.path.rstrip("/") + path)
         async with httpx.AsyncClient(headers=headers, timeout=60) as http:
+            adapter = os.environ.get("AGENTS_ADAPTER", "qwen-code")
+            if adapter not in ("qwen-code", "codex"):
+                raise ValueError("AGENTS_ADAPTER must be qwen-code or codex")
+            if adapter == "codex":
+                response = await http.post(url("/commands/agents_configure_codex"), json={})
+                response.raise_for_status()
             response = await http.post(url("/v1/agents/sessions"), json={
-                "adapter": "qwen-code",
+                "adapter": adapter,
                 "agent": {"model": os.environ["OPENAI_MODEL"]},
                 "environment": {"type": "self_hosted",
                                 "workspace_directory": "/home/user/workspace"},
@@ -117,6 +131,8 @@ async def main():
                 items = response.json()["data"]
                 if state.get("status") == "idle" and items:
                     print(items)
+                    Path("generated_hello.py").write_bytes(await sb.files.read_bytes("/home/user/workspace/generated_hello.py"))
+                    Path("GENERATED_REPORT.md").write_bytes(await sb.files.read_bytes("/home/user/workspace/GENERATED_REPORT.md"))
                     break
                 await asyncio.sleep(1)
             else:
@@ -190,10 +206,17 @@ abx kill "$SANDBOX_ID"
 
 `close()`/`aclose()` 仅关闭客户端连接，不释放沙箱。launch 日志中的已构建模板和镜像可能保留用于复用，不再需要时仅删除自己创建的那些资源。
 
+### 继续会话与切换模型
+
+向同一 session ID 再发送 input-message event，可以恢复原生对话；等待新的 output items 并回到 idle 后，独立检查实际文件，idle 本身不是成功证明。新 ID 用于独立对话。在同一 endpoint/Key 下切换有权限的模型时，为新 session 指定新的 agent.model。更换 endpoint 或 Key 时，修改启动变量并 launch 新实例，之后在本机 export 不会重配旧应用。已有不同 Codex 配置会保留，应该在 launch 前选择新的 CODEX_HOME，不覆盖旧配置。
+
+HTTP 使用 Codex 前，先 `POST /commands/agents_configure_codex`，body 为 `{}`；实际返回 `{"result":{"configured":true,"wire_api":"responses","credential_written":false}}`。会话创建 JSON 的 adapter 改为 codex，其余相同；模型 ID 必须匹配所选协议。
+
 ## 命令参考
 
 | 命令 | 参数 | 返回 | 执行 |
 |---|---|---|---|
+| `agents_configure_codex` | 无；`{}` | `{configured:true,wire_api:"responses",credential_written:false}` | 显式创建 CODEX_HOME/config.toml，权限0600；相同配置幂等，不同已有配置或符号链接拒绝覆盖。使用启动 endpoint 与密钥环境变量引用，不调用模型或登录。 |
 | `agents_version` | 无，`{}` | 缓冲字符串 | 真实 `codex --version` 和 `qwen --version`，各最多 20 秒；缺 CLI 或版本不符返回错误，不输出原始 CLI 内容 |
 
 | 开放接口 | 用途 |
@@ -215,6 +238,7 @@ abx kill "$SANDBOX_ID"
 | `OPENAI_API_KEY` | 兼容模型调用需要 | Qwen 及兼容 Codex 配置的模型凭据，清单中为空 |
 | `CODEX_API_KEY` | Codex 可选替代项 | 清单中为空；实际支持取决于上游及提供方配置 |
 | `OPENAI_BASE_URL`、`OPENAI_MODEL` | 取决于提供方 | Qwen 兼容端点和模型配置 |
+| `ABX_AGENTS_STATE_DIR` | 否 | 原生本地会话存储目录 `/home/user/.agent-sandbox/agents`，随实例删除 |
 | `CODEX_HOME` | 否 | Codex 状态目录，默认 `/home/user/.codex` |
 | `WORKSPACE` | 否 | `/home/user/workspace`；会话请求应显式指定目标目录 |
 | `ABX_SERVER_POLICY_FILE` | 镜像已设置 | 随附策略文件路径；canonical start_cmd 还显式传入 `--policy` |
