@@ -190,6 +190,7 @@ class CleanupTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn('PRIVATE-ID', json.dumps(details))
 
     async def test_express_shared_repository_deletes_only_owned_journal_tag(self):
+        from subprocess import CompletedProcess
         class FakeCLI:
             provider = 'alicloud-express'
         tag = 'public-e2e-123-build'
@@ -197,11 +198,53 @@ class CleanupTests(unittest.IsolatedAsyncioTestCase):
         entries = [{'intent_id': 'image-one', 'kind': 'image', 'state': 'retained',
                     'id': reference, 'correlation_key': reference}]
         with patch.dict('os.environ', {'ACR_NAMESPACE': 'test-namespace', 'ALIBABA_CLOUD_REGION_ID': 'cn-hangzhou'}), \
-             patch('canonical_express_review.delete_absent') as delete:
+             patch('canonical_express_review.delete_absent') as delete, \
+             patch('public_launch_e2e.subprocess.run', side_effect=[
+                 CompletedProcess([], 0, '', ''),
+                 CompletedProcess([], 1, '', 'Error: No such image: ' + reference),
+             ]) as docker:
             done, failures = await cleanup_prepared(entries, FakeCLI(), 'public-e2e-123')
         self.assertEqual(done, {'image-one'})
         self.assertEqual(failures, 0)
         delete.assert_called_once_with('/repos/test-namespace/python-hello/tags/' + tag)
+        self.assertEqual([call.args[0] for call in docker.call_args_list], [
+            ['docker', 'image', 'rm', reference],
+            ['docker', 'image', 'inspect', reference],
+        ])
+
+    async def test_express_local_push_tag_must_be_independently_absent(self):
+        from subprocess import CompletedProcess
+        class FakeCLI:
+            provider = 'alicloud-express'
+        reference = 'registry.cn-hangzhou.aliyuncs.com/test-namespace/python-hello:public-e2e-123-build'
+        entries = [{'intent_id': 'image-one', 'kind': 'image', 'state': 'retained',
+                    'id': reference, 'correlation_key': reference}]
+        for removal, inspection in [
+            (CompletedProcess([], 1, '', 'image is in use'), None),
+            (CompletedProcess([], 0, '', ''), CompletedProcess([], 0, '[{}]', '')),
+        ]:
+            with self.subTest(removal_exit=removal.returncode), \
+                 patch.dict('os.environ', {'ACR_NAMESPACE': 'test-namespace', 'ALIBABA_CLOUD_REGION_ID': 'cn-hangzhou'}), \
+                 patch('canonical_express_review.delete_absent'), \
+                 patch('public_launch_e2e.subprocess.run', side_effect=[removal, inspection]) as docker:
+                done, failures = await cleanup_prepared(entries, FakeCLI(), 'public-e2e-123')
+            self.assertEqual((done, failures), (set(), 1))
+            self.assertEqual(docker.call_args_list[0].args[0], ['docker', 'image', 'rm', reference])
+
+    async def test_express_already_absent_local_push_tag_is_reconciled(self):
+        from subprocess import CompletedProcess
+        class FakeCLI:
+            provider = 'alicloud-express'
+        reference = 'registry.cn-hangzhou.aliyuncs.com/test-namespace/python-hello:public-e2e-123-build'
+        entries = [{'intent_id': 'image-one', 'kind': 'image', 'state': 'retained',
+                    'id': reference, 'correlation_key': reference}]
+        absent = CompletedProcess([], 1, '', 'Error response from daemon: No such image: ' + reference)
+        with patch.dict('os.environ', {'ACR_NAMESPACE': 'test-namespace', 'ALIBABA_CLOUD_REGION_ID': 'cn-hangzhou'}), \
+             patch('canonical_express_review.delete_absent'), \
+             patch('public_launch_e2e.subprocess.run', side_effect=[absent, absent]) as docker:
+            done, failures = await cleanup_prepared(entries, FakeCLI(), 'public-e2e-123')
+        self.assertEqual((done, failures), ({'image-one'}, 0))
+        self.assertEqual(docker.call_count, 2)
 
     async def test_express_alias_in_repository_does_not_own_foreign_tag(self):
         class FakeCLI:

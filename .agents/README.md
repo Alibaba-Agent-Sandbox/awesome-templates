@@ -1,5 +1,9 @@
 # Engineering records: awesome-templates
 
+## Local Express push-tag cleanup (2026-10-27)
+
+- [Decision](notes/proposed/process/2026-10-27-local-push-tag-cleanup.md) · [verification](evidence/verify/2026-10-27-local-push-tag-cleanup.md). Exact owned tags and independent absence; the broader method/model matrix remains separate.
+
 ## Consumer documentation (2026-10-26)
 
 - [Template configuration and practical examples](notes/proposed/process/2026-10-26-consumer-template-documentation.md) · [verification](evidence/verify/2026-10-26-consumer-template-documentation.md). All 50 catalog entries, with historical records preserved separately.
