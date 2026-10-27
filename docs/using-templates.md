@@ -41,7 +41,7 @@ Set `ABX_SERVER_TOKEN` to an independent private application token before source
 
 Templates use different upstream configuration. Do not assume every tool consumes `ABX_LLM_*`, supports arbitrary OpenAI-compatible endpoints, or inherits a login from your machine. Non-model tools do not need a model key. Commercial account login, API-key login and optional web-service passwords are described in the applicable README.
 
-In CLI 0.5.7, declared **empty** template env values can be filled from the host environment. A non-empty manifest value wins over a same-name host export. Use a command's documented model argument to select another model; when a setting has no runtime argument, edit the configuration in your own local template and launch that directory. Only declared runtime settings are carried through this path. Changing exports after launch does not reconfigure an already running process.
+In CLI 0.5.7, declared **empty** template env values can be filled from the host environment. A non-empty manifest value wins over a same-name host export. Use a command's documented model argument to select another model. For an empty startup-only model/key/endpoint setting, export the new value and launch a new instance from the public recipe; use the new returned sandbox ID. A local template copy is only needed to change a non-empty manifest default or the implementation. Only declared runtime settings are carried through this path. Changing exports after launch does not reconfigure an already running process.
 
 ## CLI, SDK and HTTP
 
