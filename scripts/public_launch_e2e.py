@@ -238,9 +238,10 @@ async def cleanup_prepared(entries, cli, alias, diagnostics=None):
             elif entry['kind'] == 'image':
                 # Local Docker tags have no registry hostname; never remove by image ID.
                 if '/' not in correlation:
+                    require(correlation.rsplit(':', 1)[-1].startswith(alias + '-'), 'owned local image tag')
                     proc = await asyncio.to_thread(subprocess.run, ['docker', 'image', 'rm', correlation],
                         capture_output=True, text=True, timeout=60)
-                    require(proc.returncode == 0, 'owned local image removal')
+                    require(proc.returncode == 0 or 'No such image' in proc.stderr, 'owned local image removal')
                     check = await asyncio.to_thread(subprocess.run, ['docker', 'image', 'inspect', correlation],
                         capture_output=True, text=True, timeout=30)
                     require(check.returncode != 0 and 'No such image' in check.stderr,
