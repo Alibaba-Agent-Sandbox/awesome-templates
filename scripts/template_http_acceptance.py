@@ -93,6 +93,9 @@ def run_controller(source: Path, urls: dict[int, str], private: Path,
     script = source / "e2e_test.py"
     transport = Path(__file__).with_name("template_controller_transport.py")
     verifier_bytes, transport_bytes = script.read_bytes(), transport.read_bytes()
+    dependencies = {name: (source / name).read_bytes() for name in
+                    ("http_model_e2e.py", "model_e2e_test.py", "model_fixture.py")
+                    if source.name in {"browser-use", "stagehand"} and (source / name).is_file()}
     result = run_monitored([sys.executable, str(transport), str(script)],
                            env=controller_environment(source, urls, fixture, token=token, gateway_headers=gateway_headers, real_usage=real_usage),
                            idle_timeout=900 if real_usage else 600, wall_timeout=1800 if real_usage else 900)
@@ -106,6 +109,10 @@ def run_controller(source: Path, urls: dict[int, str], private: Path,
               "verifier_sha256": hashlib.sha256(verifier_bytes).hexdigest()}
     counts["transport_adapter_sha256"] = hashlib.sha256(transport_bytes).hexdigest()
     counts["verifier_inputs_unchanged"] = script.read_bytes() == verifier_bytes and transport.read_bytes() == transport_bytes
+    if dependencies:
+        counts["verifier_dependencies_sha256"] = {name: hashlib.sha256(data).hexdigest() for name, data in dependencies.items()}
+        counts["verifier_inputs_unchanged"] = counts["verifier_inputs_unchanged"] and all(
+            (source / name).is_file() and (source / name).read_bytes() == data for name, data in dependencies.items())
     complete = result.returncode == 0 and counts["pass_count"] > 0 and not counts["fail_count"] and counts["verifier_inputs_unchanged"]
     if real_usage:
         complete = complete and not counts["skip_count"] and not counts["not_run_count"]
