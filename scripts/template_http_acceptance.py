@@ -11,23 +11,24 @@ import os
 from pathlib import Path
 import secrets
 import sys
+import yaml
 
 from express_e2e import run_monitored
 
 
-def fixture_environment(name: str) -> tuple[dict[str, str], dict[str, str], dict]:
+def fixture_environment(name: str, *, real_usage: bool = False) -> tuple[dict[str, str], dict[str, str], dict]:
     server, controller, proof = {}, {}, {"model_credentials_injected": False}
     if name == "openclaw":
         token = secrets.token_urlsafe(32)
         server["OPENCLAW_GATEWAY_TOKEN"] = token
         controller["OPENCLAW_GATEWAY_TOKEN"] = token
         proof.update(gateway_lifecycle_required=True, generated_test_token=True)
-    elif name == "cursor-agent":
+    elif name == "cursor-agent" and not real_usage:
         server["CURSOR_API_KEY"] = "key_" + "a" * 64
         controller.update(E2E_CURSOR_INVALID_KEY_FIXTURE="1", E2E_REMOTE_SANDBOX="1")
         proof.update(native_authentication_error_path_required=True,
                      synthetic_invalid_vendor_credential=True)
-    elif name == "devin":
+    elif name == "devin" and not real_usage:
         controller.update(E2E_DEVIN_NO_ACCOUNT_FIXTURE="1", E2E_REMOTE_SANDBOX="1")
         proof.update(native_authentication_error_path_required=True,
                      credential_absence_required=True)
@@ -37,7 +38,7 @@ def fixture_environment(name: str) -> tuple[dict[str, str], dict[str, str], dict
     return server, controller, proof
 
 
-def controller_environment(source: Path, urls: dict[int, str], fixture: dict[str, str], *, token: str | None = None, gateway_headers: dict[str, str] | None = None) -> dict[str, str]:
+def controller_environment(source: Path, urls: dict[int, str], fixture: dict[str, str], *, token: str | None = None, gateway_headers: dict[str, str] | None = None, real_usage: bool = False) -> dict[str, str]:
     if gateway_headers is not None and (not isinstance(gateway_headers, dict) or any(
             not isinstance(key, str) or not isinstance(value, str) or not key or '\r' in key + value or '\n' in key + value
             for key, value in gateway_headers.items())):
@@ -52,6 +53,21 @@ def controller_environment(source: Path, urls: dict[int, str], fixture: dict[str
                E2E_WORKSPACE="/home/user/app", E2E_RUN_LLM="0", E2E_REQUIRE_LLM="0",
                E2E_REQUIRE_CLI="1", E2E_REQUIRE_OCR="1", E2E_REQUIRE_DATABASES="1",
                E2E_REQUIRE_TOOLCHAIN="1")
+    manifest_path = source / "template.yaml"
+    if manifest_path.is_file():
+        manifest = yaml.safe_load(manifest_path.read_text())
+        workspace = manifest.get("env", {}).get("WORKSPACE", "/home/user/app")
+        if not isinstance(workspace, str) or not workspace.startswith("/"):
+            raise ValueError("controller WORKSPACE must be an absolute runtime path")
+        env["E2E_WORKSPACE"] = workspace
+    if real_usage:
+        env.update(E2E_RUN_LLM="1", E2E_REQUIRE_LLM="1", E2E_REQUIRE_DOCUMENT="1",
+                   E2E_REQUIRE_MEDIA="1", E2E_RUN_DESKTOP="1", E2E_REQUIRE_DESKTOP="1",
+                   E2E_REMOTE_SANDBOX="1")
+        # These select test tasks and deadlines, never operator credentials.
+        for key in {"E2E_MODEL", "E2E_LLM_TIMEOUT", "E2E_COMMAND_TIMEOUT", "E2E_MAX_TURNS"}:
+            if key in os.environ:
+                env[key] = os.environ[key]
     if source.name == "code-server":
         env["E2E_CODE_SERVER_URL"] = urls[8443]
     if source.name == "next-app":
@@ -73,19 +89,23 @@ def controller_environment(source: Path, urls: dict[int, str], fixture: dict[str
 
 
 def run_controller(source: Path, urls: dict[int, str], private: Path,
-                   fixture: dict[str, str], *, token: str | None = None, gateway_headers: dict[str, str] | None = None) -> dict:
+                   fixture: dict[str, str], *, token: str | None = None, gateway_headers: dict[str, str] | None = None, real_usage: bool = False) -> dict:
     script = source / "e2e_test.py"
     result = run_monitored([sys.executable, str(script)],
-                           env=controller_environment(source, urls, fixture, token=token, gateway_headers=gateway_headers),
-                           idle_timeout=600, wall_timeout=900)
+                           env=controller_environment(source, urls, fixture, token=token, gateway_headers=gateway_headers, real_usage=real_usage),
+                           idle_timeout=900 if real_usage else 600, wall_timeout=1800 if real_usage else 900)
     (private / "http.log").write_text(result.stdout + "\n" + result.stderr)
     lines = (result.stdout + "\n" + result.stderr).splitlines()
     counts = {"exit_code": result.returncode,
               "pass_count": sum(line.startswith("[PASS]") for line in lines),
               "fail_count": sum(line.startswith("[FAIL]") for line in lines),
               "skip_count": sum(line.startswith("[SKIP]") for line in lines),
+              "not_run_count": sum(line.startswith("[NOT RUN]") for line in lines),
               "verifier_sha256": hashlib.sha256(script.read_bytes()).hexdigest()}
     complete = result.returncode == 0 and counts["pass_count"] > 0 and not counts["fail_count"]
+    if real_usage:
+        complete = complete and not counts["skip_count"] and not counts["not_run_count"]
+        counts["real_usage_required"] = True
     if source.name in {"cursor-agent", "devin"}:
         complete = complete and not counts["skip_count"] and counts["pass_count"] >= 16
     if source.name == "osworld":
