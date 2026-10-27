@@ -315,6 +315,35 @@ class CleanupTests(unittest.IsolatedAsyncioTestCase):
 
 
 
+    async def test_already_absent_local_image_still_requires_independent_absence(self):
+        from subprocess import CompletedProcess
+        class FakeCLI:
+            provider = 'alicloud-express'
+        tag = 'owned:public-e2e-123-build'
+        entries = [{'intent_id':'local', 'kind':'image', 'state':'retained',
+                    'id':tag, 'correlation_key':tag}]
+        missing = CompletedProcess([], 1, '', 'Error: No such image: '+tag)
+        for removal, inspection, expected in [
+            (missing, missing, True),
+            (missing, CompletedProcess([], 0, '[{}]', ''), False),
+            (missing, CompletedProcess([], 1, '', 'daemon unavailable'), False),
+            (CompletedProcess([], 1, '', 'image in use'), None, False),
+        ]:
+            with self.subTest(expected=expected, inspection=getattr(inspection, 'returncode', None)), \
+                 patch('public_launch_e2e.subprocess.run', side_effect=[removal, inspection]):
+                done, failures = await cleanup_prepared(entries, FakeCLI(), 'public-e2e-123')
+            self.assertEqual((done, failures), ({'local'},0) if expected else (set(),1))
+
+    async def test_local_alias_in_repository_does_not_own_foreign_tag(self):
+        class FakeCLI:
+            provider = 'alicloud-express'
+        tag='public-e2e-123-build:foreign'
+        entries=[{'intent_id':'local','kind':'image','state':'retained','id':tag,'correlation_key':tag}]
+        with patch('public_launch_e2e.subprocess.run') as docker:
+            self.assertEqual(await cleanup_prepared(entries,FakeCLI(),'public-e2e-123'),(set(),1))
+        docker.assert_not_called()
+
+
 class ImageExportTests(unittest.TestCase):
     def test_foreign_or_ambiguous_images_are_never_exported(self):
         from subprocess import CompletedProcess
