@@ -44,3 +44,6 @@ The current coding controller imports trusted standard-library code under `pytho
 
 
 Node is always 24.16.0, installed from official x64/arm64 archives after SHA256 verification; no moving NodeSource setup script. Qwen remains pinned 0.23.0. New image/model acceptance remains required.
+
+
+Startup model configuration (2026-10-27): model/endpoint slots for Qwen and DeepSeek, and provider slot for Hermes, are blank in the manifest so explicit host exports are injected. Runtime fallback defaults preserve previous vendor behavior when omitted. Export the matching key/base/model/provider before public launch; create a new instance after changes. No vendor-account acceptance is inferred from compatible service use.

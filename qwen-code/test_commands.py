@@ -115,3 +115,16 @@ def test_runner_drains_both_pipes(monkeypatch, tmp_path):
     monkeypatch.setenv("WORKSPACE", str(tmp_path))
     assert commands._run([sys.executable, "-c",
         "import sys;sys.stdout.write('x'*200000);sys.stderr.write('y'*200000)"], timeout=5) == "x"*200000
+
+
+@pytest.mark.parametrize('base,model', [('', ''), ('https://model.example.invalid/v1', 'owned-model')])
+def test_blank_launch_settings_preserve_defaults_or_explicit_service(monkeypatch, base, model):
+    monkeypatch.setenv('OPENAI_API_KEY', 'synthetic-key')
+    monkeypatch.setenv('OPENAI_BASE_URL', base)
+    monkeypatch.setenv('OPENAI_MODEL', model)
+    monkeypatch.setattr(commands, '_executable', lambda: 'qwen')
+    captured = {}
+    monkeypatch.setattr(commands, '_run', lambda argv, **kw: captured.update(kw) or '{}')
+    commands.qwen('owned task')
+    assert captured['env']['OPENAI_BASE_URL'] == (base or 'https://dashscope.aliyuncs.com/compatible-mode/v1')
+    assert captured['env']['OPENAI_MODEL'] == (model or 'qwen3-coder-plus')

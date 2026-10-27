@@ -20,7 +20,7 @@ Python `3.13`、`httpx==0.28.1` 及模板自带的有界文件/shell 工具循�
 
 先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，配置选择的平台（沙箱 API Key、连接地址及构建镜像仓库），再配置下面独立的模型/应用凭据。无需 clone 仓库即可启动公共模板。
 
-设置真正的 DeepSeek API Key（或已声明的 `OPENAI_API_KEY` 后备值）。模板自带 endpoint `https://api.deepseek.com`、模型 `deepseek-flash`，账号必须有该模型权限；不需要浏览器登录。endpoint/model 为 manifest 非空默认值，使用其他服务时先 clone 仓库，修改 `deepseek-harness/template.yaml` 中 `env.DEEPSEEK_BASE_URL`、`env.DEEPSEEK_MODEL`，再启动 `./deepseek-harness`。命令的可选 `model` 只覆盖该次模型，不修改 endpoint。
+在 launch 前设置 DEEPSEEK_API_KEY（或 OPENAI_API_KEY 后备值）、DEEPSEEK_BASE_URL 和 DEEPSEEK_MODEL。manifest 空配置项接收 host 的 endpoint/模型；未提供时运行时仍使用 https://api.deepseek.com 和 deepseek-flash。Key、base 和确切模型 ID 使用同一授权服务的配置，不需要浏览器登录。单次 model 参数可以覆盖模型。兼容服务可用不代表原生 DeepSeek 账号权限已经具备。改变启动配置后创建新实例。
 
 所有 `<...>` 都是需要你替换的占位值，模型名必须使用服务商实际提供的 ID。密钥在你自己的终端或 secret manager 中设置，不要放入镜像、YAML 或公开日志。以下变量要在 launch **之前**设置；之后改变 host 环境不会更新运行中的应用。
 
@@ -28,6 +28,8 @@ Python `3.13`、`httpx==0.28.1` 及模板自带的有界文件/shell 工具循�
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export DEEPSEEK_API_KEY='<your-model-or-vendor-key>'
+export DEEPSEEK_BASE_URL='<your-chat-completions-base-url>'
+export DEEPSEEK_MODEL='<model-id-from-your-provider>'
 abx template launch Alibaba-Agent-Sandbox/awesome-templates//deepseek-harness --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
