@@ -142,7 +142,7 @@ asyncio.run(main())
 
 ## 配置
 
-此入口调用兼容 Chat Completions API，base 包含供应商要求的前缀（常见 `/v1`），不要额外添加 `/chat/completions`。默认 text 协议要求模型按上游格式返回 bash 操作与提交，不会自动改为原生 toolcall。
+此入口调用兼容 Chat Completions API，base 包含供应商要求的前缀（常见 `/v1`），不要额外添加 `/chat/completions`。1.2.0 默认使用原生 bash 工具调用，要求模型和端点支持 Chat Completions 工具调用；旧版 text 协议可通过自己的模板副本显式选择。
 
 | 变量 | 要求 / 默认值 | 含义 |
 | --- | --- | --- |

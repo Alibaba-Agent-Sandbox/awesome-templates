@@ -36,3 +36,10 @@ image recipe and method signatures stay unchanged. Legacy text is explicit.
   Python evaluation3.11.10; official_benchmark_score=false in every report. These
   portability-slice results are not an official SWE-bench score.
 - Current-head CI, practical article and Registry review pending.
+
+After the actual runs, two leftover prose sentences were corrected to agree with
+the shipped toolcall default. All executable README blocks in both languages are
+byte-identical to executed revision991856c; runtime/manifest/Docker/controller files
+are unchanged. [Documentation-only review](2026-10-27-swe-default-tool-protocol/documentation-only-review.json)
+records both full document digests and identical code-block digests. This is local
+prose review, not a claim that a changed runtime was deployed.

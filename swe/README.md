@@ -152,7 +152,7 @@ This entry calls compatible Chat Completions. Include the vendor API prefix (oft
 | `SWE_MODEL_PROTOCOL` | `toolcall` in the shipped manifest | `toolcall` uses upstream native bash function calls; endpoint/model must support tools. `text` uses the upstream text protocol. |
 | `ABX_SERVER_TOKEN` | Required | Independent application token. |
 
-`SWE_MODEL_PROTOCOL` is nonempty `toolcall` in the shipped manifest. When launching this template directly, a host `export SWE_MODEL_PROTOCOL=toolcall` does not override it. To use the native tool protocol, make your own template copy and change that field explicitly before following the [local-source guide](../docs/using-templates.md). The model key, base and model fields are empty and accept the exports shown above.
+`SWE_MODEL_PROTOCOL` is nonempty `toolcall` in the shipped manifest. A host export cannot override that nonempty value. To retain the legacy text protocol, make your own template copy and set `SWE_MODEL_PROTOCOL: text` explicitly before following the [local-source guide](../docs/using-templates.md). The model key, base and model fields are empty and accept the exports shown above.
 
 Model-generated shell commands have sandbox-user filesystem and network authority. Use a disposable sandbox and trusted tasks. The agent is limited to the bundled Flask instance; the evaluation slice is not the full official Docker benchmark. Export model settings before launch; a later local export does not reconfigure the running application.
 
