@@ -279,6 +279,15 @@ async def cleanup_prepared(entries, cli, alias, diagnostics=None):
                     require(os.environ.get('ALIBABA_CLOUD_REGION_ID', 'cn-hangzhou') == 'cn-hangzhou', 'ACR region')
                     await asyncio.to_thread(delete_absent, '/repos/' + urllib.parse.quote(namespace, safe='') + '/'
                         + urllib.parse.quote(name, safe='') + '/tags/' + urllib.parse.quote(tag, safe=''))
+                    # Docker push leaves a second local tag for the registry URI.
+                    # Removing only the build tag does not release this image.
+                    proc = await asyncio.to_thread(subprocess.run, ['docker', 'image', 'rm', correlation],
+                        capture_output=True, text=True, timeout=60)
+                    require(proc.returncode == 0 or 'No such image' in proc.stderr, 'owned local push tag removal')
+                    check = await asyncio.to_thread(subprocess.run, ['docker', 'image', 'inspect', correlation],
+                        capture_output=True, text=True, timeout=30)
+                    require(check.returncode != 0 and 'No such image' in check.stderr,
+                            'owned local push tag absence')
                 else:
                     continue
             else:
