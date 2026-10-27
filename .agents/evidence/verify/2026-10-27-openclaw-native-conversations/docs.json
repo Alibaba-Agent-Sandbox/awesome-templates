@@ -1,0 +1,139 @@
+{
+  "result": "PASS",
+  "template": "openclaw",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//openclaw@ae8d301",
+  "manifest_sha256": "e482711e3804226eb62009ed83617f1170dba5e2257455911d16321f7d83073e",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "gateway_status",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "gateway_lifecycle_required": true,
+    "generated_test_token": true,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "OPENCLAW_GATEWAY_TOKEN",
+      "OPENCLAW_MODEL",
+      "OPENCLAW_MODEL_API_KEY",
+      "OPENCLAW_MODEL_BASE_URL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:e482711e3804226eb62009ed83617f1170dba5e2257455911d16321f7d83073e",
+    "source_digest": "fb23bbccbf68ecb62d9a77671d0f5517db2939dc111d1d10233d170958ef5fec",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "608eef3e146349acb757aa5fbf68b739ec3cb28317da101683dcdf09a8a08988",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    },
+    {
+      "port": 18789,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "passed": true,
+    "scope": "fresh literal documentation tasks; canonical full-method/model assertions are in the pinned preceding core receipt",
+    "core_receipt_sha256": "93f4e8368c99d14a98c0b54ccc5be2085f0bf63153e42e00c53f0fb2a598a2e2",
+    "documented_case": {
+      "template": "openclaw",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "CLI first turn independently checked count and decimal expense total",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI followup independently checked count and decimal expense total",
+          "result": "PASS"
+        },
+        {
+          "id": "literal CLI all five methods and independent stopped state",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README SDK program",
+          "result": "PASS"
+        },
+        {
+          "id": "SDK first turn independently checked count and decimal expense total",
+          "result": "PASS"
+        },
+        {
+          "id": "SDK followup independently checked count and decimal expense total",
+          "result": "PASS"
+        },
+        {
+          "id": "native SDK conversation retains context; owned gateway stopped",
+          "result": "PASS"
+        },
+        {
+          "id": "HTTP first turn independently checked count and decimal expense total",
+          "result": "PASS"
+        },
+        {
+          "id": "HTTP followup independently checked count and decimal expense total",
+          "result": "PASS"
+        },
+        {
+          "id": "literal HTTP native conversation and independent stopped state",
+          "result": "PASS"
+        }
+      ],
+      "core_receipt_sha256": "93f4e8368c99d14a98c0b54ccc5be2085f0bf63153e42e00c53f0fb2a598a2e2",
+      "readme_sha256": "5215cee0ba4589713820451d80f31edd6ef05ac6a08ded208212cc4c3e34b1c0",
+      "configured_model": "qwen3.8-max",
+      "business_result": {
+        "first": {
+          "count": 3,
+          "total": "51.30"
+        },
+        "followup": {
+          "count": 2,
+          "total": "36.30"
+        },
+        "native_conversation_context": true
+      }
+    }
+  },
+  "application_result": "PASS"
+}
