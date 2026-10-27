@@ -55,6 +55,8 @@ This repository owns template source, specification, catalog and acceptance reco
 Read [CONTRIBUTING.md](../CONTRIBUTING.md) and [the specification](../docs/template-spec.md).
 New engineering records use English and stay in this repository.
 
+- [Five native service/benchmark practices](notes/proposed/feature/2026-10-27-five-service-benchmark-practices.md) · [verification](evidence/verify/2026-10-27-five-service-benchmark-practices.md). Actual methods, consumers and artifacts; full catalog still pending.
+
 - [Document HTML, slides and Writer PDF](notes/proposed/feature/2026-10-20-document-html-pptx-pdf.md) · [verification](evidence/verify/2026-10-20-document-html-pptx-pdf.md)
 - [Document1.1final native/SDK/image/step acceptance](evidence/verify/2026-10-20-document-html-pptx-pdf-final.md)
 
@@ -106,7 +108,7 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 
 ## Current review
 
-- [Public browser model controller](notes/proposed/feature/2026-10-27-public-browser-model-controller.md) · [verification](evidence/verify/2026-10-27-public-browser-model-controller.md). Actual public application use pending; local guards are synthetic.
+- [Public browser model controller](notes/proposed/feature/2026-10-27-public-browser-model-controller.md) · [verification](evidence/verify/2026-10-27-public-browser-model-controller.md). Native public application model proof and documented journeys are recorded separately.
 
 - [Complete public-template launch evidence](notes/implemented/process/2026-10-24-public-template-matrix.md) · [92-case matrix](evidence/verify/2026-10-24-public-template-matrix.md) · [public-install pilot](evidence/verify/2026-10-24-public-install-pilot-2.md) · [public Git journeys](evidence/verify/2026-10-24-public-git-journeys.md)
 
@@ -349,3 +351,4 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 
 - [Nine additional practical experiences](notes/proposed/feature/2026-10-27-nine-more-practices.md) · [verification](evidence/verify/2026-10-27-nine-more-practices.md). Complete individual method/task receipts and three further OpenSandbox experiences; broader catalog pending.
 
+- [Idempotent owned local-image cleanup](notes/proposed/process/2026-10-27-idempotent-owned-local-cleanup.md) · [verification](evidence/verify/2026-10-27-idempotent-owned-local-cleanup.md). Actual Docker control and independent late cleanup supplements preserve original failures.

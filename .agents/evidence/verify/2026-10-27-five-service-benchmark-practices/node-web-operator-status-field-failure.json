@@ -1,0 +1,103 @@
+{
+  "result": "FAIL",
+  "template": "node-web",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//node-web@6bd63f81edd6d909cb7df929dcfb31bd0e5d7393",
+  "manifest_sha256": "e32062a9dafe46e0cc9c4aae4d095bcb9ac8473faaeebed0de60cbfba96278ef",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "smoke",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": []
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:e32062a9dafe46e0cc9c4aae4d095bcb9ac8473faaeebed0de60cbfba96278ef",
+    "source_digest": "7b0db3173d81533436372408c2ff32734ddc3beb2a673575cf2d91a39b01942d",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "a5fe6f7c6d9388ca2cb2aa6198b29c646f18117ff09d24a589a6811bb41c9322",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 3000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    },
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 60,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "dfb52459e9a330c7ef9f536382e3a0e1d2027c66ec6e7e0baa711169cbc84d8b",
+    "transport_adapter_sha256": "f3f71110b6f623042d8f3b1b280cd0cd704f43b94291364ca60bb2e9691be80a",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": false,
+    "documented_case": {
+      "template": "node-web",
+      "provider": "alicloud-express",
+      "result": "FAIL",
+      "checks": [
+        {
+          "id": "cli actual documented business result",
+          "result": "PASS"
+        }
+      ],
+      "artifacts": {},
+      "failure_type": "KeyError",
+      "failure_stack": [
+        [
+          "documented_service_tasks.py",
+          "execute",
+          67
+        ]
+      ]
+    }
+  },
+  "http_diagnostics": [],
+  "application_result": "FAIL",
+  "failure_type": "CheckFailed",
+  "failed_phase": "application-controller",
+  "diagnostics": {},
+  "failed_check": "template application HTTP controller"
+}
