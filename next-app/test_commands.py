@@ -78,3 +78,23 @@ def test_invalid_preview_host_refused_before_start(workspace,host):
     with pytest.raises(ValueError,match='allowed_host'):commands.dev_start('vite','absent',allowed_host=host)
     assert not commands.life._STATE
     assert list(workspace.iterdir())==[]
+
+
+def test_real_next_hmr_accepts_exact_loopback_origin_and_rejects_other_origin(workspace):
+    import asyncio
+    import aiohttp
+    commands.scaffold('next','hmr-origin')
+    commands.dev_start('next','hmr-origin')
+    async def verify(origin, allowed):
+        async with aiohttp.ClientSession()as client:
+            try:
+                async with client.ws_connect('http://127.0.0.1:3000/_next/hmr',headers={
+                        'Origin':origin,'Host':'localhost:3000'},timeout=aiohttp.ClientWSTimeout(ws_receive=10))as ws:
+                    message=await ws.receive()
+                    assert (message.type==aiohttp.WSMsgType.TEXT)is allowed
+            except aiohttp.ClientResponseError:
+                assert not allowed
+    asyncio.run(verify('http://127.0.0.1:19001',True))
+    asyncio.run(verify('http://unrelated.example.invalid',False))
+    logs=commands.dev_logs()
+    assert 'Blocked cross-origin request'in logs and 'unrelated.example.invalid'in logs

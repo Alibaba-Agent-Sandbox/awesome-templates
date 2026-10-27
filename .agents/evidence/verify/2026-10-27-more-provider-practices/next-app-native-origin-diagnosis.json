@@ -1,0 +1,171 @@
+{
+  "result": "FAIL",
+  "template": "next-app",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//next-app@e8d44eb5b1b8f656efdd1100036f9dcda146bee1",
+  "manifest_sha256": "3f3cf8edf63286549643662f744105a695b3cdd7dea345d70688fc4e42a04cda",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "toolchain_versions",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "preview_self_test",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": []
+  },
+  "endpoint_mode": "server-proxy",
+  "input_receipt": {
+    "manifest_digest": "sha256:3f3cf8edf63286549643662f744105a695b3cdd7dea345d70688fc4e42a04cda",
+    "source_digest": "a1c34ebfe84b8e0024a16d66209f355d9cae67ca85b0c2e16e6a68210cfe2bc2",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "71c487bca99e28fbd3787ab7d05b36f50aee90d2efe1c9b8ce2600b15614d4c2",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    },
+    {
+      "port": 3000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    },
+    {
+      "port": 5173,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 6,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "3d85d8758349eda543931867c867802eba8225dd9596d9d55be2696ebd291d89",
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": false,
+    "documented_case": {
+      "template": "next-app",
+      "provider": "opensandbox",
+      "result": "FAIL",
+      "checks": [
+        {
+          "id": "actual external preview 3000 contains expected rendered HTML",
+          "result": "PASS"
+        }
+      ],
+      "readme_sha256": "12ecadb19fd0fe9c63b1bbb6906413c63b6e0ccbc70ed49f0630ad3b2842c283",
+      "failure_type": "TimeoutError",
+      "failure_stack": [
+        [
+          "documented_next_tasks.py",
+          "execute",
+          74
+        ],
+        [
+          "runners.py",
+          "run",
+          195
+        ],
+        [
+          "runners.py",
+          "run",
+          118
+        ],
+        [
+          "base_events.py",
+          "run_until_complete",
+          725
+        ],
+        [
+          "documented_next_tasks.py",
+          "with_sb",
+          12
+        ],
+        [
+          "documented_next_tasks.py",
+          "browser_case",
+          50
+        ],
+        [
+          "_generated.py",
+          "wait_for",
+          17993
+        ],
+        [
+          "_locator.py",
+          "wait_for",
+          710
+        ],
+        [
+          "_frame.py",
+          "wait_for_selector",
+          369
+        ],
+        [
+          "_connection.py",
+          "send",
+          69
+        ],
+        [
+          "_connection.py",
+          "wrap_api_call",
+          559
+        ]
+      ]
+    }
+  },
+  "http_diagnostics": [],
+  "application_result": "FAIL",
+  "failure_type": "CheckFailed",
+  "failed_phase": "application-controller",
+  "diagnostics": {},
+  "failed_check": "template application HTTP controller"
+}

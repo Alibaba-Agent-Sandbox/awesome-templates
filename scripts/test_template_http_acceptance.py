@@ -315,3 +315,21 @@ def test_browser_verifier_dependency_identity_is_checked_after_actual_subprocess
     assert 'http_model_e2e.py' in proof['verifier_dependencies_sha256']
     assert proof['verifier_inputs_unchanged'] is (not mutated)
     assert proof['passed'] is (not mutated)
+
+
+def test_module_level_httpx_concurrent_requests_keep_scoped_application_auth(tmp_path):
+    import http.server,threading
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def log_message(self,*a):pass
+        def do_POST(self):
+            self.rfile.read(int(self.headers.get('Content-Length','0')))
+            expected=self.path.startswith('/selected/')and self.headers.get('X-Access-Token')=='synthetic-application-token'
+            if self.path.startswith('/outside'):
+                assert 'X-Access-Token'not in self.headers
+            body=b'{}';self.send_response(200 if expected else 401);self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
+    server=http.server.ThreadingHTTPServer(('127.0.0.1',0),Handler);thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start();port=server.server_port
+    source=controller(tmp_path,'convenience_auth',"import os,httpx\nfrom concurrent.futures import ThreadPoolExecutor\nbase=os.environ['E2E_BASE_URL']\ndef one(i):\n r=httpx.post(base+'/positive',headers={'Authorization':'Bearer '+os.environ['ABX_SERVER_TOKEN']});assert r.status_code==200\nwith ThreadPoolExecutor(max_workers=2)as pool:list(pool.map(one,range(2)))\nassert httpx.post(base+'/negative',headers={'Authorization':'Bearer wrong'}).status_code==401\nassert httpx.post(base.replace('/selected','/outside'),headers={'Authorization':'Bearer '+os.environ['ABX_SERVER_TOKEN']}).status_code==401\nprint('[PASS] module-level concurrent positive auth and negative/scope controls')\n")
+    try:
+        proof=run_controller(source,{9000:'http://127.0.0.1:'+str(port)+'/selected'},tmp_path,{},token='synthetic-application-token')
+        assert proof['passed']and proof['pass_count']==1
+    finally:server.shutdown();server.server_close();thread.join(timeout=3)

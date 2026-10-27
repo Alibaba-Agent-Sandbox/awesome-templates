@@ -1,0 +1,15 @@
+{
+  "result": "PASS",
+  "scope": "frozen-native-SDK-installation-only; image-acquisition-blocked; no native code execution",
+  "python": "3.12.15",
+  "upstream_source": "30348cbdfe4b9cfd49e0963617aed357a8f1ac4c",
+  "uv_version": "0.9.5",
+  "uv_lock_sha256": "2f4e4211bcaf72f5248a03c8c7bdac35a940e4d362ce5160c8976f94bae945a2",
+  "packages": {
+    "opensandbox": "1.2.0rc2.dev222+g30348cbd",
+    "opensandbox-code-interpreter": "1.2.0rc2.dev222+g30348cbd",
+    "agent-sandbox-client": "0.4.0a6",
+    "agent-sandbox-server": "0.4.0a6"
+  },
+  "dependency_check": "35 packages compatible"
+}

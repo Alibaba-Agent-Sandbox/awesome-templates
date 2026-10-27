@@ -33,3 +33,9 @@ after npm ci. Restrictive0600 source context metadata must remain readable by
 runtime user; write permission is unchanged. The optional actual image regression
 uses explicit NEXT_APP_TEST_BASE_IMAGE, copies inputs0600, builds the real recipe,
 requires non-root toolchain_versions and independently confirms its own tag absent.
+
+Version1.1.4 generates a Next-only next.config.mjs allowing exactly127.0.0.1 for
+local SDK relay development origins. Actual OpenSandbox logs showed Next16.4.2
+rejecting HMR across the gateway despite successful HTTP page rendering. No
+wildcard or arbitrary gateway origins are added. Original native WebSocket tests
+require a real text frame for the permitted origin and refusal for another origin.
