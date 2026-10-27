@@ -1,0 +1,9 @@
+{
+  "result": "BLOCKED",
+  "scope": "independent post-cancellation cleanup observation; no native execution or provider qualification",
+  "original_sha256": "eda7f4ddc2572edc495f37cad52d9ebce14838b35bbdbad9997e5825baaf3270",
+  "requested_native_image_absent": true,
+  "free_bytes_after_download_cleanup_drained": 4783955968,
+  "active_container_count": 1,
+  "only_baseline_registry_running": true
+}

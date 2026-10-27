@@ -1,0 +1,14 @@
+{
+  "result": "BLOCKED",
+  "scope": "actual pinned native interpreter image acquisition only; no provider or business qualification",
+  "image": "opensandbox/code-interpreter@sha256:80c7e241f37afbdf58f52ecaa0d76e90e3f1240e833e9f3a6c1326be7b62f4b1",
+  "compressed_bytes": 2637152785,
+  "owned_base_cache_removed": true,
+  "cleanup_verified": true,
+  "free_bytes_before": 4772114432,
+  "blocker": "local-disk-floor",
+  "pull_exit_code": 143,
+  "minimum_free_bytes": 1432879104,
+  "elapsed_seconds": 21.61,
+  "free_bytes_after": 1611587584
+}

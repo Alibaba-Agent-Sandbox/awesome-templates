@@ -43,3 +43,36 @@ Supplement before the Next1.1.4 actual provider rerun:
   HTTP status and are retained as operator fixture failures, not root-cause proof.
 - New source needs fresh complete Express and OpenSandbox native/docs business
   receipts. Existing qualified Next1.1.3 evidence is not reused for1.1.4.
+
+Droid supplement: original Factory0.241.1 native BYOK custom model completed17
+native assertions and16 fresh documented CLI/full SDK/direct HTTP checks, actual
+source repair, unchanged original tests/independent held-outs and three downloaded
+program/report pairs with independent readonly execution. Core flash/docs max;
+manifest/staged-source/provider identities match, all owned resources absent.
+This uses Droid's native generic-chat-completion-api/customModels, not an authored
+protocol adapter. Four read/BYOK methods verified; separate Factory-account droid
+method unverified. Whole-template Beta remains. First exact native final-response
+failure is preserved; neither a single native reply nor exit0 alone is accepted.
+
+Next1.1.4 final actual source93688d908604d3d5644e53713f94e585a5992687:
+- Both Express and OpenSandbox PASS6 original native assertions and10 documented
+  checks: complete CLI lifecycle, unchanged full SDK program, direct HTTP and
+  independently read real HTML. Both Next/Vite true browser source edits appear
+  through HMR without manual reload; original relay listening inodes absent.
+- All owned sandbox/prepared-template/local/remote image artifacts independently
+  absent, zero skips/fails/not-run. Native Next allowed-origin regression, full
+  same-source provider receipts and historical failures remain distinct.
+- Producer source merge must precede Registry's new1.1.4 Express/OpenSandbox
+  receipts. The old1.1.3 receipt remains historical and must not certify1.1.4.
+
+Native managed interpreter prerequisite attempt remains BLOCKED:
+- Full original upstream Git history/tags at30348cbd, frozen uv0.9.5 native SDK
+  setup on actual CPython3.12.15, published client/server0.4.0a6 and pip check35
+  packages PASS. This is installation only, no native business qualification.
+- Actual pinned amd64 native image acquisition began with4772114432 free bytes.
+  It reached the local disk floor1432879104 bytes after21.61s; the owned pull was
+  cancelled143. Native image never became available, no native sandbox was created.
+- Independent image absence and later download-layer cleanup drain confirmed;
+  final root free4783955968 bytes and only baseline local registry container remain.
+  Original attempt and SHA-bound cleanup supplement preserved. No disk-volume,
+  native interpreter execution, provider qualification or template Beta removal claim.
