@@ -155,3 +155,8 @@ To improve this template, see the [contribution guide](../CONTRIBUTING.md), [tem
 ## License
 
 Wrapper: [Apache-2.0](../LICENSE). Stagehand and Zod: MIT; retain [upstream Stagehand license](UPSTREAM-LICENSE.md). Chromium/Node and their dependencies retain upstream notices/licenses in their unmodified distributions. No SaaS software or vendor account rights are implied.
+
+
+## Verification entry points
+
+Required-use controller: `E2E_REQUIRE_LLM=1` exercises the configured public application against an owned nonce browser fixture, then independently checks actual page state and downloaded PNG. It does not start another command server or copy model keys into the host controller. Native SDK model controllers remain available as separate borrowed-sandbox checks.

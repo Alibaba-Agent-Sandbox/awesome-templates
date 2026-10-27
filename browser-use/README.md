@@ -159,3 +159,8 @@ To improve this template, see the [contribution guide](../CONTRIBUTING.md), [tem
 Wrapper code is [Apache-2.0](../LICENSE). Browser-use is MIT; preserve the [unchanged upstream license](upstream-LICENSE). The unmodified Playwright-distributed Chrome for Testing build retains its bundled license/notices; Playwright is Apache-2.0. Every hash-locked dependency keeps its installed upstream notices; do not relabel the full image as Apache-2.0. No model weights or cloud service account is included.
 
 Failed native steps include at most20 error summaries, each truncated to1024 UTF-8 bytes after exact configured model-key/endpoint redaction.
+
+
+## Verification entry points
+
+Required-use controller: `E2E_REQUIRE_LLM=1` exercises the configured public application against an owned nonce browser fixture, then independently checks actual page state and downloaded PNG. It does not start another command server or copy model keys into the host controller. Native SDK model controllers remain available as separate borrowed-sandbox checks.

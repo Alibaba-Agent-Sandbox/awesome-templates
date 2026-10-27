@@ -261,8 +261,8 @@ jobs:
         run: |
           python -m pytest -q next-app/test_commands.py next-app/test_forwarded_controller.py
           python -m pytest -q browser-automation/test_mcp.py browser-automation/test_pdf_runtime.py
-          python -m pytest -q browser-use/test_commands.py browser-use/test_model_controller.py
-          python -m pytest -q stagehand/test_commands.py stagehand/test_model_controller.py stagehand/test_sdk_connect.py
+          python -m pytest -q browser-use/test_commands.py browser-use/test_model_controller.py browser-use/test_http_model_controller.py
+          python -m pytest -q stagehand/test_commands.py stagehand/test_model_controller.py stagehand/test_http_model_controller.py stagehand/test_sdk_connect.py
           node --test stagehand/test_transport.mjs
           python -m pip install --require-hashes -r scripts/requirements-preview.txt
           python -m pytest -q code-server/test_commands.py code-server/test_browser_local.py scripts/test_preview_proxy.py

@@ -155,3 +155,8 @@ abx kill "$SANDBOX_ID"
 ## 许可证
 
 包装代码：[Apache-2.0](../LICENSE)。Stagehand 和 Zod：MIT；保留 [Stagehand 上游许可](UPSTREAM-LICENSE.md)。Chromium／Node 和依赖保持原发行包许可与声明；不暗示 SaaS 源码或账号授权。
+
+
+## 验证入口
+
+必选业务验证：`E2E_REQUIRE_LLM=1` 对已经启动并配置好的公开应用提交独立 nonce 页面任务，随后独立检查实际页面状态与下载 PNG；不启动第二个命令服务器，也不把模型 Key 复制给 host 控制器。原生 SDK 模型脚本仍可作为独立借用实例的检查。

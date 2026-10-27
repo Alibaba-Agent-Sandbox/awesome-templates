@@ -346,3 +346,5 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 
 
 - [Nine additional practical experiences](notes/proposed/feature/2026-10-27-nine-more-practices.md) · [verification](evidence/verify/2026-10-27-nine-more-practices.md). Complete individual method/task receipts and three further OpenSandbox experiences; broader catalog pending.
+
+- [Public browser model controller](notes/proposed/feature/2026-10-27-public-browser-model-controller.md) · [verification](evidence/verify/2026-10-27-public-browser-model-controller.md). Actual public application use pending; local guards are synthetic.
