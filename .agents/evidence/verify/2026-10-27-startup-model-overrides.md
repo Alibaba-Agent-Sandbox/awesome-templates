@@ -38,3 +38,15 @@ removal is required to establish the causal correction. Remove both image ENV de
 in commands.py, and require actual native initialization to match selected model.
 The earlier explicit-flag correction alone was insufficient; do not relabel docs03.
 Fresh whole-image/native/documented verification is required for this new recipe.
+
+## Complete scoped provider experiences
+
+All three final experiences PASS on actual default Docker/Express. [Method audit](2026-10-27-startup-model-overrides/method-audit.json) lists every method, including each historical run compatibility command. Native core assertions: Qwen18, DeepSeek17, Hermes17 (individual receipts authoritative); no failure/skip/not-run. Real source repair, original tests preserved, independent original/held-out execution and actual reports pass.
+
+Qwen final docs04 PASS14: literal CLI, unchanged SDK and HTTP each initialize exactly qwen3.8-max, generate fresh files/reports, and independently execute downloaded code. This follows actual qwen3.8-flash native work with the corrected image; omitted vendor fallback is separately covered by regressions. Previous three real failures remain immutable above.
+
+DeepSeek and Hermes each complete11 fresh documented checks with actual qwen3.8-max after qwen3.8-flash core. Hermes original overall cleanup failure and new independent supplement are retained separately; original completed business is not rerun or relabeled. All own resources are independently absent.
+
+All three supplementary compatibility runs PASS4 each: actual model-generated Python bytes uploaded to a fresh instance, run through named run via CLI/full SDK/direct HTTP, exact output, independent file and all outer/prepared/image absence. These add zero model calls and cover previously untested public compatibility methods. Every template has4 named methods now actually invoked. Exact core/docs/compat staged identities match; all runtime folders unchanged at reviewed source.
+
+Local checks:51 command regressions; final Qwen command/controller union76 including actual-model-identity rejection. Specification39 and all-template/document checks passed earlier; no other runtime changes after those checks. Current source-head CI, separate three articles and Registry review remain pending. Full50 task is not complete.
