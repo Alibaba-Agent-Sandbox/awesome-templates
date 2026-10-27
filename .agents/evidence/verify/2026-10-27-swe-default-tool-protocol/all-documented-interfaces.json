@@ -1,0 +1,114 @@
+{
+  "result": "PASS",
+  "template": "swe",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//swe@991856c77809bbad0217cc0cadc66417e322254c",
+  "manifest_sha256": "ec5a48e27a8d3f317e7925921acec85fe25013f6f35ff2d6f07865ecac10c101",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "swe_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "SWE_API_KEY",
+      "SWE_BASE_URL",
+      "SWE_MODEL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:ec5a48e27a8d3f317e7925921acec85fe25013f6f35ff2d6f07865ecac10c101",
+    "source_digest": "852d4e8cf53e3f24e83a6f057b273b380161b2c11c7632eb0bcd7b5c0cc31777",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "390a11ae42770dac494c5a6497e7436362cb8d591fa3273fe1a8ce6dca34f91d",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "passed": true,
+    "scope": "fresh literal documentation tasks; canonical full-method/model assertions are in the pinned preceding core receipt",
+    "core_receipt_sha256": "2fbaac1aa316a5fc4aa00bf77b761a6c58843f0dc7467e99ed493bfed9b76825",
+    "documented_case": {
+      "template": "swe",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "literal CLI pinned failing baseline",
+          "result": "PASS"
+        },
+        {
+          "id": "cli exact original60 identities and actual source patch independently downloaded",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI run independently absent before alternative SDK task",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README SDK repair/evaluation/export/cleanup program",
+          "result": "PASS"
+        },
+        {
+          "id": "SDK run independently absent before alternative HTTP task",
+          "result": "PASS"
+        },
+        {
+          "id": "http exact original60 identities and actual source patch independently downloaded",
+          "result": "PASS"
+        },
+        {
+          "id": "HTTP run independently absent",
+          "result": "PASS"
+        }
+      ],
+      "core_receipt_sha256": "2fbaac1aa316a5fc4aa00bf77b761a6c58843f0dc7467e99ed493bfed9b76825",
+      "configured_model": "qwen3.8-max",
+      "artifacts": {
+        "cli-report.json": "sha256:f646eabd6b26e6c7bac3760aeeca320a6b6cccf175a853cfc4a22267e927768b",
+        "cli-repair.patch": "sha256:50f83500d9b5037b231c16df7237bea2c19a089ee2fdc3b9d27dec2fc9803cb9",
+        "sdk-report.json": "sha256:f646eabd6b26e6c7bac3760aeeca320a6b6cccf175a853cfc4a22267e927768b",
+        "sdk-repair.patch": "sha256:a721199752ce9eb6988124590ebd689e522b8c164d595cddbae45e82a1ccbe1f",
+        "http-report.json": "sha256:f646eabd6b26e6c7bac3760aeeca320a6b6cccf175a853cfc4a22267e927768b",
+        "http-repair.patch": "sha256:50f83500d9b5037b231c16df7237bea2c19a089ee2fdc3b9d27dec2fc9803cb9"
+      }
+    }
+  },
+  "application_result": "PASS",
+  "original_receipt_sha256": "13567b34ed990f4adaee4a7714c86ffe163be0e93dd96facff1587a7cf6bc1f6"
+}

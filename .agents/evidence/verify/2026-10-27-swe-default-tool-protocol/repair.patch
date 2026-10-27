@@ -1,0 +1,24 @@
+diff --git a/src/flask/blueprints.py b/src/flask/blueprints.py
+index eb50585..f5fae0a 100644
+--- a/src/flask/blueprints.py
++++ b/src/flask/blueprints.py
+@@ -159,6 +159,9 @@ class Blueprint(Scaffold):
+         automatic detection can fail, so the path can be specified
+         manually instead.
+ 
++    .. versionchanged:: 2.3
++        The ``name`` parameter must not be empty.
++
+     .. versionchanged:: 1.1.0
+         Blueprints have a ``cli`` group to register nested CLI commands.
+         The ``cli_group`` parameter controls the name of the group under
+@@ -190,6 +193,9 @@ class Blueprint(Scaffold):
+             root_path=root_path,
+         )
+ 
++        if not name:
++            raise ValueError("'name' may not be empty.")
++
+         if "." in name:
+             raise ValueError("'name' may not contain a dot '.' character.")
+ 

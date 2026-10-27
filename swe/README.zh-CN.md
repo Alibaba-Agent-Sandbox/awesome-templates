@@ -142,17 +142,17 @@ asyncio.run(main())
 
 ## 配置
 
-此入口调用兼容 Chat Completions API，base 包含供应商要求的前缀（常见 `/v1`），不要额外添加 `/chat/completions`。默认 text 协议要求模型按上游格式返回 bash 操作与提交，不会自动改为原生 toolcall。
+此入口调用兼容 Chat Completions API，base 包含供应商要求的前缀（常见 `/v1`），不要额外添加 `/chat/completions`。1.2.0 默认使用原生 bash 工具调用，要求模型和端点支持 Chat Completions 工具调用；旧版 text 协议可通过自己的模板副本显式选择。
 
 | 变量 | 要求 / 默认值 | 含义 |
 | --- | --- | --- |
 | `SWE_API_KEY` | 模型执行必需 | 兼容模型服务的 API Key。 |
 | `SWE_BASE_URL` | 模型执行必需 | Chat Completions API base，例如供应商 HTTPS `/v1` 接入点。 |
 | `SWE_MODEL` | 模型执行必需 | 端点实际模型 ID；包装层自行添加 LiteLLM `openai/` 前缀。 |
-| `SWE_MODEL_PROTOCOL` | 当前模板固定默认 `text` | `toolcall` 使用上游原生 bash function calls，要求模型/端点支持工具；`text` 使用上游文本协议。 |
+| `SWE_MODEL_PROTOCOL` | 当前模板固定默认 `toolcall` | `toolcall` 使用上游原生 bash function calls，要求模型/端点支持工具；`text` 使用上游文本协议。 |
 | `ABX_SERVER_TOKEN` | 必需 | 独立的应用访问口令。 |
 
-`SWE_MODEL_PROTOCOL` 在当前 manifest 中是非空 `text`。CLI 直接启动此模板时，主机上的 `export SWE_MODEL_PROTOCOL=toolcall` 不会覆盖它；如要使用原生工具协议，请复制为自己的模板，显式修改该字段后按[本地源码用法](../docs/using-templates.zh-CN.md)启动。模型 API Key、base、model 三个字段为空，按上面的 export 填入即可。
+1.2.0 版本默认使用上游原生 bash 工具调用，模型和端点必须支持 Chat Completions 工具调用。旧版1.1.2 默认使用文本动作协议。`SWE_MODEL_PROTOCOL` 在当前 manifest 中是非空 `toolcall`，主机 export 不会覆盖它；如需保留旧版文本协议，请复制为自己的模板，显式设置 `SWE_MODEL_PROTOCOL: text` 后按[本地源码用法](../docs/using-templates.zh-CN.md)启动。模型 API Key、base、model 三个字段为空，按上面的 export 填入即可。
 
 模型生成的 shell 命令拥有沙箱用户的文件与网络权限，应使用一次性沙箱和可信任务。当前只提供内置 Flask 实例，评测切片不是完整官方 Docker benchmark。启动前导出模型设置；在本机稍后修改变量不会重配已启动应用。
 
