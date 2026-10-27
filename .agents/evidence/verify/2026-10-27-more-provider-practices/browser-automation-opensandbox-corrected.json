@@ -1,0 +1,133 @@
+{
+  "result": "PASS",
+  "template": "browser-automation",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//browser-automation@e8d44eb5b1b8f656efdd1100036f9dcda146bee1",
+  "manifest_sha256": "8f01e854b136f5c1fb02c2bacd2eaf1272fe09c3bcd8529569cd59289c5c0a6a",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "browse",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "mcp_self_test",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": []
+  },
+  "endpoint_mode": "server-proxy",
+  "input_receipt": {
+    "manifest_digest": "sha256:8f01e854b136f5c1fb02c2bacd2eaf1272fe09c3bcd8529569cd59289c5c0a6a",
+    "source_digest": "39610689ab7c1b075b1c02d8033912eaca03f88300e52dc2ca59f8cd66146ff0",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "df174aaef6c24d133987b29ec82f8c55b50dde24e550c39e1a16028fae076720",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 37,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "66d52a46a99f919b6eb731652e05426d61cd76e516af478f5e4bf8c310bb0559",
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "browser-automation",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "cli actual documented output independently verified",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI outputs independently absent before SDK",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README SDK program",
+          "result": "PASS"
+        },
+        {
+          "id": "sdk actual documented output independently verified",
+          "result": "PASS"
+        },
+        {
+          "id": "previous SDK outputs independently absent before HTTP",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP request",
+          "result": "PASS"
+        },
+        {
+          "id": "http actual documented output independently verified",
+          "result": "PASS"
+        }
+      ],
+      "readme_sha256": "3c30cb36af89222cac8db5bb03c6ccab190220bb967537ae756cf5f52572bc65",
+      "artifacts": {},
+      "business_result": {
+        "cli": {
+          "title": "Invoice",
+          "text": "Total: 51.30"
+        },
+        "sdk": {
+          "title": "Invoice",
+          "text": "Total: 51.30"
+        },
+        "http": {
+          "title": "Invoice",
+          "text": "Total: 51.30"
+        }
+      }
+    }
+  },
+  "application_result": "PASS"
+}

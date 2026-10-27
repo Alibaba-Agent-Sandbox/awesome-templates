@@ -27,3 +27,19 @@ SDK/direct HTTP checks and independently confirmed owned cleanup are in the
   check_docs224 documents/zero failures; configured-secret scan37 changed files
   and git diff --check PASS. Actual corrected provider reruns are pending. Raw endpoint/credential-bearing diagnostics remain private.
 - Current-head CI, article and Registry provider review remain separate gates.
+
+Supplement before the Next1.1.4 actual provider rerun:
+- Browser automation corrected OpenSandbox attempt PASS37 native assertions and
+  fresh documented CLI/full SDK/HTTP use, independently confirmed owned cleanup.
+  Original concurrency FAIL remains. A separate unpublished-source operator attempt
+  failed E2001 before launch; it is not a product failure or provider proof.
+- Next.js resolved endpoint and HTTP page rendered, but native HMR refused the
+ 127.0.0.1 origin. Both official default internal and host-mapped proxy attempts
+  retain FAIL. Private native logs identified the exact allowedDevOrigins refusal.
+- Next1.1.4 new scaffolds explicitly allow only127.0.0.1. Actual original Next
+  WebSocket positive origin/native refusal-log negative control fails on old source;
+  corrected combined Next/controller/relay suites PASS70, zero skips,19.12s.
+  Earlier local probes used a network-intercepted Host or assumed an exact negative
+  HTTP status and are retained as operator fixture failures, not root-cause proof.
+- New source needs fresh complete Express and OpenSandbox native/docs business
+  receipts. Existing qualified Next1.1.3 evidence is not reused for1.1.4.

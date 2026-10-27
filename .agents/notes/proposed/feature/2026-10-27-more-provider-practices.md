@@ -20,7 +20,8 @@ qualification; unverified native vendor commands retain Beta.
 ## API Design
 PreviewRelay gains optional gateway_headers and allow_loopback_http; existing
 HTTPS callers remain compatible. sdk_preview awaits network.resolve. Browser
-headers cannot override SDK gateway authentication. No template runtime changes,
+headers cannot override SDK gateway authentication. Next-app1.1.4 also adds only the exact127.0.0.1 development origin to new Next
+scaffolds; actual logs confirmed native Next blocked relay HMR. No wildcard origins,
 new command servers, credentials, management-key preparation or CI secrets.
 
 ## Alternatives considered

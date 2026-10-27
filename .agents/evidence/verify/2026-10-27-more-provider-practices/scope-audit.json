@@ -41,11 +41,12 @@
   },
   "browser-automation": {
     "provider": "opensandbox",
-    "scope": "original-native-or-documentation-attempt",
-    "result": "FAIL",
-    "reviewed_provider_qualification": false,
-    "native_assertions": 36,
-    "failure_preserved": true
+    "result": "PASS",
+    "scope": "complete-original-native-methods-plus-fresh-literal-cli-full-sdk-direct-http-business",
+    "native_assertions": 37,
+    "documented_checks": 7,
+    "original_failure_preserved": true,
+    "reviewed_registry_promotion": "PENDING"
   },
   "next-app": {
     "provider": "opensandbox",

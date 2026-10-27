@@ -41,6 +41,8 @@ abx run "$SANDBOX_ID" dev_start --json-args '{"kind":"next","path":"preview-app"
 
 返回 `running: true`、`port: 3000`。解析 3000 端口后可见 `ABX_NEXT_PREVIEW`；源码保留在 `preview-app/`。
 
+Next 脚手架包含 `next.config.mjs`，仅增加本地 SDK 中继所需的准确地址 `allowedDevOrigins: ['127.0.0.1']`。不增加其他开发来源。对已有工程二次开发时，启动 Next 前自行在原配置中加入这个准确地址，保留已有配置，不要使用通配来源。
+
 用 `await sb.network.resolve(3000)` 获取 Next.js 预览入口，并保留地址的路径、查询和网关头；必要时使用[预览指南](../docs/preview-proxy.md)。应用本身没有登录认证，应使用提供方访问控制。Vite 需要指定 `kind="vite"` 并使用 5173；若被 Host 校验拒绝，只把实际网关主机名传给 `allowed_host`，不要填通配符。
 
 `--sandbox-timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
