@@ -40,7 +40,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" stagehand --json-args '{"task":"Click the More information link.","url":"https://example.com","extract_instruction":"Return the visible heading.","command_timeout":180}'
+abx run "$SANDBOX_ID" stagehand --json-args '{"task":"Click the IANA-managed Reserved Domains link.","url":"https://www.iana.org/help/example-domains","extract_instruction":"Return the visible heading.","command_timeout":180}'
 ```
 
 Returns native `action`, `extracted`, final URL and a fresh `screenshot_path`. Inspect `action.success`; the model may fail to complete its instruction.
@@ -72,7 +72,7 @@ async def main():
             9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
         )
         try:
-            result = await client.commands.run('stagehand', task='Click the More information link.', url='https://example.com', extract_instruction='Return the visible heading.', command_timeout=180)
+            result = await client.commands.run('stagehand', task='Click the IANA-managed Reserved Domains link.', url='https://www.iana.org/help/example-domains', extract_instruction='Return the visible heading.', command_timeout=180)
             print(result)
             Path('stagehand.png').write_bytes(await sb.files.read_bytes(result['screenshot_path']))
         finally:
@@ -93,8 +93,8 @@ Resolve port 9000 on the same instance with the [HTTP calling example](../docs/u
 
 ```json
 {
-  "task": "Click the More information link.",
-  "url": "https://example.com",
+  "task": "Click the IANA-managed Reserved Domains link.",
+  "url": "https://www.iana.org/help/example-domains",
   "extract_instruction": "Return the visible heading.",
   "command_timeout": 180
 }

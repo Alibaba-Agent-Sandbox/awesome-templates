@@ -40,7 +40,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" browser_use --json-args '{"task":"Read the heading of this page and return it.","url":"https://example.com","max_steps":8,"command_timeout":300}'
+abx run "$SANDBOX_ID" browser_use --json-args '{"task":"Read the heading of this page and return it.","url":"https://www.iana.org/help/example-domains","max_steps":8,"command_timeout":300}'
 ```
 
 返回 Agent 结果、`done`、`success` 和新的 `screenshot_path`。请检查完成标志，不能仅凭文本判断成功。
@@ -72,7 +72,7 @@ async def main():
             9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
         )
         try:
-            result = await client.commands.run('browser_use', task='Read the heading of this page and return it.', url='https://example.com', max_steps=8, command_timeout=300)
+            result = await client.commands.run('browser_use', task='Read the heading of this page and return it.', url='https://www.iana.org/help/example-domains', max_steps=8, command_timeout=300)
             print(result)
             Path('browser-use.png').write_bytes(await sb.files.read_bytes(result['screenshot_path']))
         finally:
@@ -94,7 +94,7 @@ SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。�
 ```json
 {
   "task": "Read the heading of this page and return it.",
-  "url": "https://example.com",
+  "url": "https://www.iana.org/help/example-domains",
   "max_steps": 8,
   "command_timeout": 300
 }

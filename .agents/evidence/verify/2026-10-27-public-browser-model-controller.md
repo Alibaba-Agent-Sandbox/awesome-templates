@@ -28,3 +28,13 @@ product regression is inferred; the actual image and repository CI install it.
 The separate modified controller/dependency guards all58 PASS. Document links224/zero
 failures and all template specification checks PASS. Real modified-source use and
 current-head CI remain required; unavailable local native dependencies are not passes.
+
+First actual browser-use/default-Docker/Express core PASS with fresh counter3,
+submitted nonce, native completion and independently decoded PNG. Original docs01
+FAIL: native done:true/success:false reports no h1 on example.com. Independent
+current https://example.com primary read confirms no heading; the old sample request
+is stale, not an accepted model success. IANA's own help page has Example Domains
+heading and its Reserved Domains link leads to a real matching main heading.
+Update both complete bilingual examples to those actual official pages; new literal
+CLI/SDK/HTTP execution remains required. Original native failure and cleanup-only
+supplement remain separate; no completed business acceptance is inferred.
