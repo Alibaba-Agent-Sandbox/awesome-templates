@@ -92,7 +92,7 @@ def test_real_next_hmr_accepts_exact_loopback_origin_and_rejects_other_origin(wo
                         'Origin':origin,'Host':'localhost:3000'},timeout=aiohttp.ClientWSTimeout(ws_receive=10))as ws:
                     message=await ws.receive()
                     assert (message.type==aiohttp.WSMsgType.TEXT)is allowed
-            except aiohttp.WSServerHandshakeError as error:
+            except aiohttp.ClientResponseError:
                 assert not allowed
     asyncio.run(verify('http://127.0.0.1:19001',True))
     asyncio.run(verify('http://unrelated.example.invalid',False))

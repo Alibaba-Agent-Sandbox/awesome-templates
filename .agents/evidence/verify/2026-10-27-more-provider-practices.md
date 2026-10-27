@@ -77,3 +77,10 @@ Current-head CI control: the new Next regression first failed because aiohttp wa
 installed later in the same CI step. Move the existing hash-locked preview dependency
 installation before Next tests; no new unlocked dependency or credentials. The
 original CI failure remains GitHub history; current-head CI must pass after this fix.
+
+The subsequent real CI positive WebSocket succeeds; the negative native Next
+refusal writes plain Unauthorized without an HTTP status line, so direct CI raises
+ClientResponseError rather than the local proxy's WSServerHandshakeError. Catch
+that HTTP-response base class only in the negative control and still require native
+cross-origin refusal logs. Positive connection failures still fail. The one test
+file byte change requires fresh source-bound Next1.1.4 provider receipts, pending.
