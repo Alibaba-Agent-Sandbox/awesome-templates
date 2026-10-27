@@ -1,0 +1,83 @@
+{
+  "result": "FAIL",
+  "template": "swe",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//swe@a63f0f8f8996fd772116c570aa21e927dcc1aea0",
+  "manifest_sha256": "a35afc57a7058d93a8ead94220a15262569326bae55d2f8c9b8c72dfb4ac86b5",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "swe_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "SWE_API_KEY",
+      "SWE_BASE_URL",
+      "SWE_MODEL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:a35afc57a7058d93a8ead94220a15262569326bae55d2f8c9b8c72dfb4ac86b5",
+    "source_digest": "61a43ed953827d0648afac3678a74da8047f5527ef6090acdc323a7117c8e1cf",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "474272fd2793936c82d116800f9e371e1d68b4e0ed2d11ff24eb90737625bb79",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 1,
+    "pass_count": 5,
+    "fail_count": 1,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "ca11d11832c45a5a1277c189097dda5a413a7e48ad25d63372e202d9f790183a",
+    "transport_adapter_sha256": "f3f71110b6f623042d8f3b1b280cd0cd704f43b94291364ca60bb2e9691be80a",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": false
+  },
+  "http_diagnostics": [
+    "[FAIL] required real mini run cannot skip missing target settings[LOCATION]"
+  ],
+  "application_result": "FAIL",
+  "failure_type": "CheckFailed",
+  "failed_phase": "application-controller",
+  "diagnostics": {},
+  "failed_check": "template application HTTP controller",
+  "original_receipt_sha256": "69a9c988b20f52c1bc5ff54b08acc24eb92cc6ea5f605138bf273189269fd4bb"
+}

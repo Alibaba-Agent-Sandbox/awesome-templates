@@ -50,14 +50,16 @@ def test_wrong_failing_baseline_node_with_same_counts_refused():
     assert not e.valid_baseline(value)
 
 
-def test_complex_real_instance_uses_supported_bounded_budget_and_keeps_cleanup(monkeypatch):
+def test_shipped_protocol_reaches_bounded_agent_and_keeps_cleanup(monkeypatch):
+    import yaml
+    settings = yaml.safe_load(Path(__file__).with_name("template.yaml").read_text())["env"]
     monkeypatch.setenv('E2E_REQUIRE_LLM','1');monkeypatch.setenv('E2E_RUN_LLM','1')
     calls=[]
     class CapturedBudget(BaseException):pass
     def respond(request):
         calls.append(request.url.path)
         if request.url.path.endswith('swe_setup_check'):
-            return httpx.Response(200,json={'result':dict.fromkeys(['api_key_set','base_url_set','model_set','runtime_available','native_tool_calls'],True)})
+            return httpx.Response(200,json={'result':dict.fromkeys(['api_key_set','base_url_set','model_set','runtime_available'],True)|{'native_tool_calls':settings['SWE_MODEL_PROTOCOL']=='toolcall'}})
         if request.url.path.endswith('swe_prepare'):
             baseline=report()|{'failed':1,'passed':59,'resolved_slice':False}
             baseline['fail_to_pass']=dict.fromkeys(manifest['fail_to_pass'],'failed')
