@@ -4,7 +4,7 @@
 
 ## 做什么
 
-将需要认证的 OpenClaw WebSocket 网关作为本 server 拥有的后台进程运行。命名命令提供启动、状态、认证健康检查和停止；无需安装系统服务。网关健康仅证明运行时可用，不能证明编程 Agent 或模型调用通过。
+运行带认证、由当前服务管理的原生 OpenClaw 网关。配置自己的兼容模型 endpoint、API Key 和模型 ID 后，可以汇总费用，并使用返回的会话 ID 继续追问。
 
 ## 技术栈
 
@@ -16,20 +16,23 @@ OpenClaw `2026.10.4`、Node.js `24.16.0`、应用端口 9000 和可选网关端�
 
 ## 解决的问题
 
-通过命名命令启动、检查并停止带认证的网关，不需要在沙箱内安装 systemd 服务。
+通过原生网关汇总费用、保留上下文继续追问，并管理网关生命周期，无需安装系统服务。
 
 ## 快速开始（CLI）
 
 先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，配置选择的平台（沙箱 API Key、连接地址及构建镜像仓库），再配置下面独立的模型/应用凭据。无需 clone 仓库即可启动公共模板。
 
-此模板只暴露网关生命周期，没有模型对话/编码命令，也没有完成模型/channel 的接入流程。单独填写 `OPENAI_API_KEY`/`ANTHROPIC_API_KEY` 不会得到可用的 Agent。示例需要独立 `OPENCLAW_GATEWAY_TOKEN`，无需模型账号登录。内部 health 使用 `bind="loopback"`；转发访问需要 `bind="lan"`，并在 launch 前配置独立确认的 `OPENCLAW_TRUSTED_PROXIES`。
+使用独立的 `OPENCLAW_GATEWAY_TOKEN` 进行网关认证。模型对话需要同时配置下方三个 `OPENCLAW_MODEL_*` 变量；旧的 `OPENAI_API_KEY`/`ANTHROPIC_API_KEY` 不会自动配置这条链路。上游须支持 OpenAI Chat Completions，此 API Key 流程无需厂商 OAuth 登录。不填模型配置时仍可使用网关生命周期。保持 `bind="loopback"` 即可，命名对话方法通过应用端口 9000 访问内部网关。
 
 所有 `<...>` 都是需要你替换的占位值，模型名必须使用服务商实际提供的 ID。密钥在你自己的终端或 secret manager 中设置，不要放入镜像、YAML 或公开日志。以下变量要在 launch **之前**设置；之后改变 host 环境不会更新运行中的应用。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
-export OPENCLAW_GATEWAY_TOKEN='<your-gateway-token>'
+export OPENCLAW_GATEWAY_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export OPENCLAW_MODEL_API_KEY='<your-model-api-key>'
+export OPENCLAW_MODEL_BASE_URL='<your-chat-completions-api-base-including-v1-if-required>'
+export OPENCLAW_MODEL='<your-exact-model-id>'
 abx template launch Alibaba-Agent-Sandbox/awesome-templates//openclaw --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
@@ -43,6 +46,9 @@ launch 已启动该实例的应用，不需要再建第二个沙箱或启动第�
 ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" gateway_start --json-args '{"bind":"loopback","command_timeout":60}'
 abx run "$SANDBOX_ID" gateway_health
 abx run "$SANDBOX_ID" gateway_status
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" gateway_chat --json-args '{"prompt":"Summarize taxi 12.50, lunch 23.80 and train 15.00. Return only JSON with integer count and two-decimal string total."}'
+# Copy session_id from the result to continue this conversation.
+ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" gateway_chat --json-args '{"prompt":"Remove the train from the previous expenses. Return the same JSON fields.","session_id":"<returned-session-id>"}'
 abx run "$SANDBOX_ID" gateway_stop
 ```
 
@@ -66,6 +72,9 @@ async def main():
         try:
             print(await client.commands.run('gateway_start', bind='loopback', command_timeout=60))
             print(await client.commands.run("gateway_health"))
+            first = await client.commands.run("gateway_chat", prompt="Summarize taxi 12.50, lunch 23.80 and train 15.00. Return only JSON with integer count and two-decimal string total.")
+            print(first)
+            print(await client.commands.run("gateway_chat", prompt="Remove the train from the previous expenses. Return the same JSON fields.", session_id=first["session_id"]))
         finally:
             try:
                 await client.commands.run("gateway_stop")
@@ -100,11 +109,20 @@ abx kill "$SANDBOX_ID"
 
 `close()`/`aclose()` 仅关闭客户端连接，不释放沙箱。launch 日志中的已构建模板和镜像可能保留用于复用，不再需要时仅删除自己创建的那些资源。
 
+### 切换模型和二次开发
+
+更换模型、endpoint 或 API Key 时，修改三个 `OPENCLAW_MODEL_*` 变量并 launch 新实例。运行中的实例保留启动时的环境。`gateway_stop` 会清理临时状态及会话历史，重启后旧 session ID 也从新对话开始；不填或更换 ID 会建立独立对话。每个业务会话使用自己的 ID。
+
+费用示例预期得到 count 3 / total 51.30，追问去掉火车后得到 count 2 / total 36.30。应用应解析 `text` 中的 JSON，并独立核算，不能假定模型始终输出正确格式。可以改为传入发票 CSV 和输出 schema。当前为文本对话能力，禁用模型工具、channel、浏览器/control UI 和嵌套 Docker；不会自动接通 Slack 等渠道。
+
+直接 HTTP 业务请求使用 `POST /commands/gateway_chat`，body 为 `{"prompt":"Summarize taxi 12.50, lunch 23.80 and train 15.00. Return only JSON with integer count and two-decimal string total."}`。第二次 body 为 `{"prompt":"Remove the train from the previous expenses. Return the same JSON fields.","session_id":"<第一次返回的-session-id>"}`；使用完停止网关。内部调用的是 [OpenClaw 原生 Chat Completions](https://docs.openclaw.ai/gateway/openai-http-api)，无需把网关端口转发到公网。
+
 ## 命令参考
 
-| 命令 | 参数（均可选） | 返回值与上游行为 |
+| 命令 | 参数（chat 的 prompt 必填，其余可选） | 返回值与上游行为 |
 |---|---|---|
 | `gateway_start` | `port: int=18789`（1024..65535，排除9000）；`bind: str="loopback"`（loopback或lan）；`command_timeout: int=60`（1..120秒） | 执行 `openclaw gateway run --allow-unconfigured --bind <bind> --auth token --port <port>`，认证健康后返回 `{running:true,healthy:true,url,bind}`。重复相同参数会重查健康；修改运行中的端口或监听方式前须先停止。 |
+| `gateway_chat` | `prompt: str` 必填（非空，1..65536 UTF-8 字节）；`session_id: str=""`（空或1..80位 ASCII 字母/数字/下划线/连字符）；`command_timeout: int=180`（1..300秒） | 原生网关 `/v1/chat/completions` 返回 `{session_id,text}`；以 `openclaw/default` 为目标，以稳定的 `user` 保留会话。必要时自动启动当前服务管理的网关。 |
 | `gateway_status` | 无 | `{running,owned,url}`，仅检查本 server 持有的进程，不代表健康。 |
 | `gateway_health` | `command_timeout: int=20`（1..120秒） | 以隔离配置及 token 环境执行 `openclaw gateway health --json --timeout <毫秒>`，认证成功返回 `{healthy:true,url}`，否则异常。 |
 | `gateway_stop` | `command_timeout: int=10`（1..120秒） | 对拥有的进程组先 TERM，超时 KILL，最多再等5秒回收。返回 `{running:false,owned:false}`，重复调用安全。 |
@@ -123,6 +141,8 @@ Linux 下短生命周期健康检查 RPC 会持续读取输出，并在清理自
 | `OPENAI_API_KEY`、`ANTHROPIC_API_KEY` | 空 | 可选上游模型凭据，网关健康不需要。本命令集不实现或验证模型调用。 |
 
 网关使用私有临时配置与状态目录，关闭 browser/control UI、跳过channels，不修改用户已有 OpenClaw 配置。网关输出丢弃，避免上游原始日志将秘密带入命令接口。需要诊断上游配置时，在受控会话单独执行，不公开原始日志。
+
+客户端超时或断开不保证原生网关已接受的任务取消；停止网关或删除沙箱可以结束剩余工作。对话和生命周期操作使用同一把锁，stop 可能等待当前有执行期限的请求结束。模型工具禁用，会话状态仅存于当前临时目录。
 
 ## 资源
 

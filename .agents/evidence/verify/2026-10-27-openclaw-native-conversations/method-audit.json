@@ -1,0 +1,15 @@
+{
+  "declared": [
+    "GET /health",
+    "GET /commands",
+    "POST /commands/gateway_start",
+    "POST /commands/gateway_status",
+    "POST /commands/gateway_health",
+    "POST /commands/gateway_chat",
+    "POST /commands/gateway_stop"
+  ],
+  "core_assertions": 18,
+  "documented_checks": 10,
+  "identities_match": true,
+  "runtime_folder_unchanged": true
+}

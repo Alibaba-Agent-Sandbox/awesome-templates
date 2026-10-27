@@ -1,6 +1,6 @@
 name: openclaw
-version: "2.1.3"
-description: "Authenticated OpenClaw gateway with an owned background lifecycle."
+version: "2.2.0"
+description: "Authenticated OpenClaw gateway with an owned lifecycle and explicit compatible-model conversations."
 author: alibaba-agent-sandbox
 license: Apache-2.0
 spec_version: 5
@@ -19,6 +19,9 @@ env:
   ABX_SERVER_TOKEN: ""
   OPENCLAW_GATEWAY_TOKEN: ""
   OPENCLAW_TRUSTED_PROXIES: ""
+  OPENCLAW_MODEL_API_KEY: ""
+  OPENCLAW_MODEL_BASE_URL: ""
+  OPENCLAW_MODEL: ""
   ANTHROPIC_API_KEY: ""
   OPENAI_API_KEY: ""
 smoke:
