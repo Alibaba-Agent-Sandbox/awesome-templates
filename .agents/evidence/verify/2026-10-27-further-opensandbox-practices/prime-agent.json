@@ -1,0 +1,94 @@
+{
+  "result": "FAIL",
+  "template": "prime-agent",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//prime-agent@46b7c1ccc01eae9cf41292dde89ab32411ed5f79",
+  "manifest_sha256": "98774e8e504bc48c041f30f13b1dffd93aa99acbe0895bce26b524ab3268de2f",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "prime_agent_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "prime_agent_kernel_check",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "PRIME_MODEL",
+      "PRIME_MODEL_API_KEY",
+      "PRIME_MODEL_BASE_URL"
+    ]
+  },
+  "endpoint_mode": "server-proxy",
+  "input_receipt": {
+    "manifest_digest": "sha256:98774e8e504bc48c041f30f13b1dffd93aa99acbe0895bce26b524ab3268de2f",
+    "source_digest": "e600320685b9abffb63f6ca1037ed5873720fd654e6d6e1e0ea794691a2eaaff",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "2edfc0436c5c167ae00a2976a6c00f909cb0b9be3beb32add5692c237af973af",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 1,
+    "pass_count": 9,
+    "fail_count": 1,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "ec8f5d1e4a02775057a4f65e3aa7ec752d246a38b3dcbe15641f9ce4112ed1e5",
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": false
+  },
+  "http_diagnostics": [
+    "[FAIL] model-generated code requires an explicitly owned remote sandbox"
+  ],
+  "application_result": "FAIL",
+  "failure_type": "CheckFailed",
+  "failed_phase": "application-controller",
+  "diagnostics": {},
+  "failed_check": "template application HTTP controller",
+  "original_private_receipt_sha256": "0b1edf75de47e62211142f5e937c29a33c7c1972edd9ccc337d19a979decb326"
+}

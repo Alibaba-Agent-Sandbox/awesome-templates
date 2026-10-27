@@ -1,0 +1,128 @@
+{
+  "result": "FAIL",
+  "template": "deepagents",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//deepagents@46b7c1ccc01eae9cf41292dde89ab32411ed5f79",
+  "manifest_sha256": "db61bf87e4386e8c6ff9e118cf6c59416356359f8ed25c8c562434f89d8341d0",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "deepagents_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "DEEPAGENTS_API_KEY",
+      "DEEPAGENTS_BASE_URL",
+      "DEEPAGENTS_MODEL"
+    ]
+  },
+  "endpoint_mode": "server-proxy",
+  "input_receipt": {
+    "manifest_digest": "sha256:db61bf87e4386e8c6ff9e118cf6c59416356359f8ed25c8c562434f89d8341d0",
+    "source_digest": "0f2d090dc49965c5ccd63ba20f01486cc9e28f87ce1bbfc046c5ef0523291441",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "ccf6e698231b1b8d20366b221f4200d9167b912a17485e74359ee6e914ac584b",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 17,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "10666536d7d36011e1267126a416494428381fac7a1c77a3c43f938b84ac2f3c",
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": false,
+    "documented_case": {
+      "template": "deepagents",
+      "provider": "opensandbox",
+      "result": "FAIL",
+      "checks": [
+        {
+          "id": "literal README CLI business request",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI business process exit zero",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI generated report independently downloaded",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI output independently absent before SDK task",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README Python example",
+          "result": "FAIL"
+        }
+      ],
+      "readme_sha256": "2edeccbf47f77cde7637ed6e45b72c98afea01d5b170face039c3bdd0ebbda93",
+      "configured_model": "qwen3.8-max",
+      "failure_type": "AssertionError",
+      "failure_stack": [
+        [
+          "documented_case.py",
+          "execute_docs",
+          203
+        ],
+        [
+          "documented_case.py",
+          "check",
+          96
+        ]
+      ]
+    }
+  },
+  "http_diagnostics": [],
+  "application_result": "FAIL",
+  "failure_type": "CheckFailed",
+  "failed_phase": "application-controller",
+  "diagnostics": {},
+  "failed_check": "template application HTTP controller",
+  "original_private_receipt_sha256": "c2103118fb196f602251359be9bb1bd06ffeed707e6a61889d36052f1ea78247"
+}

@@ -1,0 +1,145 @@
+{
+  "result": "PASS",
+  "template": "codex",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//codex@46b7c1ccc01eae9cf41292dde89ab32411ed5f79",
+  "manifest_sha256": "34cf82f44445f776af04cbe1dfdc9f3ac83f9b9ed2f86a5a8aa12a914126cd2e",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "codex_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "codex_setup_check",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": false
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "ABX_LLM_API_KEY",
+      "ABX_LLM_BASE_URL",
+      "CODEX_MODEL"
+    ]
+  },
+  "endpoint_mode": "server-proxy",
+  "input_receipt": {
+    "manifest_digest": "sha256:34cf82f44445f776af04cbe1dfdc9f3ac83f9b9ed2f86a5a8aa12a914126cd2e",
+    "source_digest": "aaab47dfe8ab3f9fa348a6486f695f9517d2983e380db20bac0ddfc59dab09e1",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "09abf525092db758a38542990c0b2777bed4168115922cc99bd91fd16dee5f83",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 19,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "bbefc722ffa1262292c0373aa0d1f1a29e60ea2f4538c2467b2cd4a20e5f9b84",
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "codex",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "literal README CLI business request",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI generated report independently downloaded",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI output independently absent before SDK task",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README Python example",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "SDK generated report independently downloaded",
+          "result": "PASS"
+        },
+        {
+          "id": "previous SDK output independently absent before HTTP task",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP business request",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "HTTP generated report independently downloaded",
+          "result": "PASS"
+        }
+      ],
+      "readme_sha256": "c54da0bddf09b590657c88e28d27305c94e4a7bf264ec1115641bd815b611a82",
+      "configured_model": "qwen3.8-max",
+      "artifact": {
+        "file": "generated_hello.py",
+        "sha256": "bef5d52082fc48aa45a460aec4ec5d98605ef1d35735b4729ea07bb100595e03",
+        "observed_stdout": "Hello from the sandbox"
+      }
+    }
+  },
+  "application_result": "PASS",
+  "original_private_receipt_sha256": "86cbec7c01d048dd971eccdb894ed648a8d3b1f01451d8e5aa219c5e78621af0"
+}

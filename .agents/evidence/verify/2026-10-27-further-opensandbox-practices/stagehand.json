@@ -1,0 +1,138 @@
+{
+  "result": "PASS",
+  "template": "stagehand",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//stagehand@46b7c1ccc01eae9cf41292dde89ab32411ed5f79",
+  "manifest_sha256": "fa012b94383e6351aaa0a12afa247e8b5ac6237ded3f7214fbfd7b3d08f0e700",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "stagehand_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "stagehand_self_test",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "STAGEHAND_API_KEY",
+      "STAGEHAND_BASE_URL",
+      "STAGEHAND_MODEL"
+    ]
+  },
+  "endpoint_mode": "server-proxy",
+  "input_receipt": {
+    "manifest_digest": "sha256:fa012b94383e6351aaa0a12afa247e8b5ac6237ded3f7214fbfd7b3d08f0e700",
+    "source_digest": "7d7d722782c8381a4d4350058a6fd75dc3473f0b676ee87003de285f63ba1359",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "623f42871a683d941f9dd098e63253e20467148553221473ceaca38929c409e4",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 15,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "944ed31564981fb53575ed0edd2720723896a98000e2a06e9975148cc3c2eba1",
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "verifier_dependencies_sha256": {
+      "http_model_e2e.py": "c906b459f1985001c70a98dd160e88dfc9e1a494e01a30ec84d85a2078563d58",
+      "model_e2e_test.py": "23b57d70c2abe373f6400c9467f2e559e5b70532df47895d40090252afb97623",
+      "model_fixture.py": "182fe7c1af4618e1141d115f1df91906ceb47edb4f1e436bd00852080f0b50ae"
+    },
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "stagehand",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "cli native page heading and independently decoded actual PNG",
+          "result": "PASS"
+        },
+        {
+          "id": "cli owned screenshot independently absent",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README SDK program",
+          "result": "PASS"
+        },
+        {
+          "id": "sdk native page heading and independently decoded actual PNG",
+          "result": "PASS"
+        },
+        {
+          "id": "sdk owned screenshot independently absent",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP task",
+          "result": "PASS"
+        },
+        {
+          "id": "http native page heading and independently decoded actual PNG",
+          "result": "PASS"
+        },
+        {
+          "id": "http owned screenshot independently absent",
+          "result": "PASS"
+        }
+      ],
+      "readme_sha256": "93b7e9c45ad821e14448033165d3cc018a022b9ba51cdbb9a78b5beed8e038aa",
+      "artifacts": {
+        "cli-stagehand.png": "sha256:25de238543aec6911f2bcbc7c2895dc1315b93adb711ee982711bf4daca11418",
+        "sdk-stagehand.png": "sha256:25de238543aec6911f2bcbc7c2895dc1315b93adb711ee982711bf4daca11418",
+        "http-stagehand.png": "sha256:25de238543aec6911f2bcbc7c2895dc1315b93adb711ee982711bf4daca11418"
+      },
+      "configured_model": "qwen3.8-max"
+    }
+  },
+  "application_result": "PASS",
+  "original_private_receipt_sha256": "fc9bd0c497b34e32ef0332ffddc9f70770b9e74eef658bb02af7b05397e98273"
+}

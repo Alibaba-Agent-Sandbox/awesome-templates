@@ -361,3 +361,5 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 - [Three further native practices](notes/proposed/feature/2026-10-27-three-more-native-practices.md) · [verification](evidence/verify/2026-10-27-three-more-native-practices.md).
 
 - [Additional provider practices and preview resolution](notes/proposed/feature/2026-10-27-more-provider-practices.md) · [verification](evidence/verify/2026-10-27-more-provider-practices.md). Original failures and compatible-only scope remain explicit.
+
+- [Further OpenSandbox original workflows](notes/proposed/feature/2026-10-27-further-opensandbox-practices.md) · [verification](evidence/verify/2026-10-27-further-opensandbox-practices.md). Additional provider review; full50 incomplete.

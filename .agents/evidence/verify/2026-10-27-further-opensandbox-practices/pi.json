@@ -1,0 +1,145 @@
+{
+  "result": "PASS",
+  "template": "pi",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//pi@46b7c1ccc01eae9cf41292dde89ab32411ed5f79",
+  "manifest_sha256": "5e10b7f3866da72cb6726baa11eb6ac9d438b724155dea596a9138bce7bb64b9",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "pi_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "pi_tools_check",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "PI_API_KEY",
+      "PI_BASE_URL",
+      "PI_MODEL"
+    ]
+  },
+  "endpoint_mode": "server-proxy",
+  "input_receipt": {
+    "manifest_digest": "sha256:5e10b7f3866da72cb6726baa11eb6ac9d438b724155dea596a9138bce7bb64b9",
+    "source_digest": "565b395804126e7e0e8b5841781036cf7b820d3d0966e7df7f9a8ce0d851e62b",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "33f0622d29d1d4eedc8dd4cd25315d4182ed34e8a068dc6cb5434aa51465753c",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 18,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "1b60e99ea0c2e5b041fab7cd896370bc172e5a336a86fa34ea405f913bdbb033",
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "pi",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "literal README CLI business request",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI generated report independently downloaded",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI output independently absent before SDK task",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README Python example",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "SDK generated report independently downloaded",
+          "result": "PASS"
+        },
+        {
+          "id": "previous SDK output independently absent before HTTP task",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP business request",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "HTTP generated report independently downloaded",
+          "result": "PASS"
+        }
+      ],
+      "readme_sha256": "11a2ec665b0c30db9b9d6e04e54a7e721fc01c28ce4c7b4d9a1de3cf5c8a0349",
+      "configured_model": "qwen3.8-max",
+      "artifact": {
+        "file": "generated_hello.py",
+        "sha256": "815d9663d2c7e2cd6758a57f6825d79eaeb64024d45d4f9df2b6d97893d4a68d",
+        "observed_stdout": "Hello from the sandbox"
+      }
+    }
+  },
+  "application_result": "PASS",
+  "original_private_receipt_sha256": "9a0de4d920258d8ed33156ed5e0ee097a14a36677a629e8637440e9f24ebf967"
+}
