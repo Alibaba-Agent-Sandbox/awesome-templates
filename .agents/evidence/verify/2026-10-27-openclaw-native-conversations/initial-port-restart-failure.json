@@ -1,0 +1,119 @@
+{
+  "result": "FAIL",
+  "template": "openclaw",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//openclaw@0f53d07",
+  "manifest_sha256": "e482711e3804226eb62009ed83617f1170dba5e2257455911d16321f7d83073e",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "gateway_status",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "gateway_lifecycle_required": true,
+    "generated_test_token": true,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "OPENCLAW_GATEWAY_TOKEN",
+      "OPENCLAW_MODEL",
+      "OPENCLAW_MODEL_API_KEY",
+      "OPENCLAW_MODEL_BASE_URL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:e482711e3804226eb62009ed83617f1170dba5e2257455911d16321f7d83073e",
+    "source_digest": "82507cf59156bb86a5c84f6dbd847d28934f0aac2df973e6a1fb0f93e038404b",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "d1c092056c876a5447d396ad7336d8f7f8d6908c28ea6a24e754ecc9ceb28cb2",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    },
+    {
+      "port": 18789,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "passed": false,
+    "scope": "fresh literal documentation tasks; canonical full-method/model assertions are in the pinned preceding core receipt",
+    "core_receipt_sha256": "1ddbfa5a6b16da482b392e41bf79cfeae03915d4b37077b54f7bb99a4fcbb0dc",
+    "documented_case": {
+      "template": "openclaw",
+      "provider": "alicloud-express",
+      "result": "FAIL",
+      "checks": [
+        {
+          "id": "CLI first turn independently checked count and decimal expense total",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI followup independently checked count and decimal expense total",
+          "result": "PASS"
+        },
+        {
+          "id": "literal CLI all five methods and independent stopped state",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README SDK program",
+          "result": "FAIL"
+        }
+      ],
+      "core_receipt_sha256": "1ddbfa5a6b16da482b392e41bf79cfeae03915d4b37077b54f7bb99a4fcbb0dc",
+      "readme_sha256": "5215cee0ba4589713820451d80f31edd6ef05ac6a08ded208212cc4c3e34b1c0",
+      "failure_type": "AssertionError",
+      "failure_stack": [
+        [
+          "documented_openclaw_tasks.py",
+          "execute",
+          30
+        ],
+        [
+          "documented_case.py",
+          "check",
+          81
+        ]
+      ]
+    }
+  },
+  "application_result": "FAIL",
+  "failure_type": "FileNotFoundError",
+  "failed_phase": "application-controller",
+  "diagnostics": {}
+}

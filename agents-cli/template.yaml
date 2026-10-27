@@ -1,5 +1,5 @@
 name: agents-cli
-version: "2.0.3"
+version: "2.1.0"
 description: "Restricted local Agents HTTP API with pinned Codex and Qwen Code CLIs."
 author: "alibaba-agent-sandbox"
 license: Apache-2.0
@@ -21,6 +21,7 @@ env:
   CODEX_API_KEY: ""
   OPENAI_BASE_URL: ""
   OPENAI_MODEL: ""
+  ABX_AGENTS_STATE_DIR: "/home/user/.agent-sandbox/agents"
   CODEX_HOME: "/home/user/.codex"
   ABX_SERVER_POLICY_FILE: "/home/user/app/server-policy.json"
   WORKSPACE: "/home/user/workspace"

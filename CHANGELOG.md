@@ -10,6 +10,8 @@
 
 - Preserve asynchronous SDK preview endpoint resolution and gateway headers for HTTP/WebSockets; cover module-level concurrent HTTP requests with scoped controller authentication.
 
+- Agents CLI2.1.0 adds explicit native Codex Responses profile preparation without key serialization or overwriting caller configuration. Both native adapters use the original restricted public application; complete guides cover session coding/continuation, model changes and independent file export. Repair the standalone verifier default ProviderSandbox factory.
+- OpenClaw2.2.0 adds explicit compatible-model key/base/model configuration and native gateway conversations with per-thread continuation. Preserve gateway-only startup and owned cleanup; allow immediate owned restart after TCP TIME_WAIT while refusing foreign listeners.
 - Browser-use2.1.0 permits bounded recovery from truncated model replies, with8192-token output,120-second request wait and at most3 consecutive native failures. Public browser-use/Stagehand acceptance runs the actual launched application; both guides use current IANA pages and retain strict native completion/state/PNG checks.
 
 - Maintain 15 standalone process-runner placements from canonical source snippets, with a CI drift check. Preserve executable ASTs and template-specific policies; no new runtime dependency. / 15 处独立模板进程封装改用公共源码维护并由 CI 检查漂移；保持执行逻辑及模板策略，不增加运行依赖。
