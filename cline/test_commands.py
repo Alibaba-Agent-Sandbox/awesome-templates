@@ -1,7 +1,6 @@
 """Authored local boundary/process tests; no real model or generated source."""
 import importlib.util
 import json
-import os
 from pathlib import Path
 import sys
 import pytest

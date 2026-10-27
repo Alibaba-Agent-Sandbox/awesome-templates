@@ -1,10 +1,8 @@
 """Verify source transfer and platform-step acceptance boundaries without cloud."""
-import json
 import io
 import os
 from pathlib import Path
 import subprocess
-import sys
 from unittest.mock import patch
 
 import pytest

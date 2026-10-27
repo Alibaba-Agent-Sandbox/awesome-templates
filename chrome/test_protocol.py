@@ -1,5 +1,5 @@
 """Actual authored RFB wire fixture and native relay authentication boundaries."""
-import asyncio,importlib.util,io,struct,sys
+import asyncio,importlib.util,io,struct
 from pathlib import Path
 import pytest
 
@@ -104,7 +104,6 @@ def test_visible_native_fixture_validation_ignores_center_pointer_but_requires_a
 def test_cdp_retains_provider_path_query_and_both_authentication_headers(prefix,query):
     cdp=load('chrome_prefixed_cdp_tests','cdp.py')
     async def run():
-        import aiohttp
         from aiohttp import web
         calls=[]
         headers={'Authorization':'Bearer synthetic-app','X-Provider-Token':'synthetic-gateway'}

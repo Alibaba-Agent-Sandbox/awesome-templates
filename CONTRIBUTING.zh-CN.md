@@ -84,3 +84,6 @@ HTTP body 直接是参数对象，响应是 result envelope。进程启动配置
 
 
 进程管理及 QM 调用辅助函数的公共源码位于 `scripts/process_runners/`。修改公共源码后运行 `python scripts/sync_process_runners.py`，并检查受影响模板的具体政策。CI 使用 `python scripts/sync_process_runners.py --check` 检测漂移；生成后的 commands.py 仍可独立使用。
+
+
+清理未使用代码时，应保留用于注册或依赖探测的导入，并分别审查测试导入与模板运行实现。生成的进程 runner 必须从其规范源修改并同步。扫描结果、实际回归结果和本地缺少的前置条件，应与云端、模型验收分别记录。

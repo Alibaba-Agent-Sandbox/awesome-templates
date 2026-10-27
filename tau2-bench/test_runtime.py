@@ -1,5 +1,5 @@
 """Authored process/guard/artifact contracts; no native benchmark/model claim."""
-import importlib.util,json,os,sys
+import importlib.util,json,sys
 from pathlib import Path
 from types import SimpleNamespace
 import pytest

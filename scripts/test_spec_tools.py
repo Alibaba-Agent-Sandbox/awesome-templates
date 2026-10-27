@@ -8,7 +8,6 @@ import re
 import shutil
 import sys
 import tempfile
-import threading
 import time
 import unittest
 from pathlib import Path
@@ -17,8 +16,7 @@ from unittest.mock import patch
 import check_template
 import express_e2e
 import image_size_report
-from test_template_application import ApplicationContractTest  # include v3 contract regressions
-from express_e2e import Proc
+from test_template_application import ApplicationContractTest  # noqa: F401 — discovered by unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 SKELETON = ROOT / "_skeleton"

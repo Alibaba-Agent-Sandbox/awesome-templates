@@ -1,6 +1,5 @@
 """External SDK/native CDP/noVNC verification; never infer GUI from a fake PNG."""
-import asyncio,base64,hashlib,io,json,os,re,shlex,sys,time,uuid
-from pathlib import Path
+import asyncio,base64,hashlib,io,json,os,re,shlex,uuid
 from urllib.parse import quote
 import httpx
 

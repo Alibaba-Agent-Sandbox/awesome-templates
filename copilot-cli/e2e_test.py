@@ -2,13 +2,9 @@
 """Target HTTP acceptance; generated code runs only on an explicitly owned cloud target."""
 from __future__ import annotations
 import base64
-import hashlib
-import importlib.util
 import json
 import os
-from pathlib import Path
 import shlex
-import sys
 import uuid
 from urllib.parse import urlsplit
 import httpx

@@ -1,7 +1,6 @@
 """Original native QM completion metadata; fixed authored fixtures are not model proof."""
 import importlib.util
 from pathlib import Path
-import copy
 import pytest
 spec=importlib.util.spec_from_file_location('qm_terminal_controls',Path(__file__).with_name('e2e_test.py'))
 controller=importlib.util.module_from_spec(spec);spec.loader.exec_module(controller)

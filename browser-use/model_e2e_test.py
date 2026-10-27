@@ -4,7 +4,7 @@
 Borrows that sandbox; kills only its own fixture and command-server processes,
 removes its own files, and never destroys the caller's sandbox/template.
 """
-import argparse,asyncio,hashlib,io,json,os,re,secrets,shlex,time
+import argparse,asyncio,hashlib,io,json,os,re,secrets,shlex
 from pathlib import Path
 from urllib.parse import urlsplit,urlunsplit
 import httpx

@@ -119,3 +119,6 @@ npm `@agent-sandbox/cli`.
 
 
 Owned-process and QM invocation helpers have canonical sources under `scripts/process_runners/`. Edit the canonical source, run `python scripts/sync_process_runners.py`, and review the affected template policies. CI runs `python scripts/sync_process_runners.py --check`; every generated commands.py remains usable alone.
+
+
+Unused-code cleanup must preserve imports used for registration or dependency probes. Review test imports separately from template runtime changes; generated process runners are edited at their canonical source and synchronized. Record scanner findings, actual regressions and missing local prerequisites separately from cloud/model acceptance.
