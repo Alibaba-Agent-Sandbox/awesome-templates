@@ -1,0 +1,40 @@
+{
+  "alicloud-express": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/code_server_version",
+      "POST /commands/code_server_start",
+      "POST /commands/code_server_status",
+      "POST /commands/code_server_stop",
+      "POST /commands/code_server_self_test"
+    ],
+    "native_assertions": 5,
+    "documented_checks": 10,
+    "runtime_folder_tree_matches_individual_pr": true,
+    "source_revision": "4c4d1a700b76135333d8a85f32008f59745cc926",
+    "endpoint_mode": "provider-resolved",
+    "cleanup_verified": true,
+    "result": "PASS",
+    "qualification": "Separate Registry source-bound review required"
+  },
+  "opensandbox": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/code_server_version",
+      "POST /commands/code_server_start",
+      "POST /commands/code_server_status",
+      "POST /commands/code_server_stop",
+      "POST /commands/code_server_self_test"
+    ],
+    "native_assertions": 5,
+    "documented_checks": 10,
+    "runtime_folder_tree_matches_individual_pr": true,
+    "source_revision": "4c4d1a700b76135333d8a85f32008f59745cc926",
+    "endpoint_mode": "direct",
+    "cleanup_verified": true,
+    "result": "PASS",
+    "qualification": "Separate Registry source-bound review required"
+  }
+}

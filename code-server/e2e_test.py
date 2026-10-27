@@ -1,6 +1,8 @@
 """Real authenticated code-server lifecycle through the command and UI endpoints."""
 import os
 import secrets
+import re
+from urllib.parse import urlsplit
 import httpx
 
 # The host runner passes provider gateway authentication separately from app auth.
@@ -41,6 +43,8 @@ def main():
                 assert login.status_code==302 and 'set-cookie' in login.headers
                 page=ui.get('/',follow_redirects=True)
                 assert page.status_code==200 and 'workbench' in page.text
+                assert not urlsplit(str(page.url)).path.rstrip('/').endswith('/login')
+                assert not re.search(r'<input[^>]+type=[\"\']password[\"\']',page.text,re.I)
                 print('[PASS] external forwarded-port authentication and actual IDE document')
             missing=client.post('/commands/code_server_start',json={'password':'short'})
             assert missing.status_code>=400
