@@ -120,6 +120,17 @@ def validate_url(url: str) -> str:
     raise ValueError("only HTTP(S) URLs and files inside WORKSPACE are supported")
 
 
+def normalize_nullable_attributes(accessible_type):
+    """Adapt an empty native GI hash table without fabricating attributes or nodes."""
+    original = accessible_type.get_attributes
+
+    def get_attributes(node):
+        value = original(node)
+        return {} if value is None else value
+
+    accessible_type.get_attributes = get_attributes
+
+
 class Desktop:
     def __init__(self, directory: Path):
         self.directory = directory
@@ -204,6 +215,7 @@ class Desktop:
         spec = importlib.util.spec_from_file_location("osworld_desktop_server", upstream / "main.py")
         self.server = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(self.server)
+        normalize_nullable_attributes(self.server.Accessible)
         self.accessibility_thread = threading.Thread(target=self.server.pyatspi.Registry.start,
                                                        kwargs={"gil": True}, daemon=True)
         self.accessibility_thread.start()
@@ -315,10 +327,6 @@ class Desktop:
                     page = self.page if index == 0 else self.context.new_page()
                     page.goto(url, wait_until="load", timeout=15000)
                 self.page.bring_to_front()
-                # An earlier observation can retain the previous document's
-                # accessible children. Refresh after navigation, retaining the
-                # native cache during the upstream's many attribute queries.
-                self.server.pyatspi.Registry.getDesktop(0).clearCache()
         return {"applied": len(task.get("config", [])), "supported_slice": "linux-browser",
                 "browser_geometry": self.geometry()}
 

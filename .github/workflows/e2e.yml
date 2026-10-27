@@ -160,7 +160,7 @@ jobs:
         run: |
           export PLAYWRIGHT_BROWSERS_PATH="$RUNNER_TEMP/playwright"
           echo "PLAYWRIGHT_BROWSERS_PATH=$PLAYWRIGHT_BROWSERS_PATH" >> "$GITHUB_ENV"
-          python -m pip install --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6" "agent-sandbox-client==0.4.0a6" httpx==0.28.1 pyyaml==6.0.3 jsonschema==4.26.0 pytest==9.1.1 playwright==1.58.0 Pillow==11.3.0 pypdf==6.21.1
+          python -m pip install --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6" "agent-sandbox-client==0.4.0a6" httpx==0.28.1 pyyaml==6.0.3 jsonschema==4.26.0 pytest==9.1.1 playwright==1.58.0 Pillow==11.3.0 pypdf==6.21.1 lxml==6.0.2
           python -m playwright install --with-deps chromium
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libnss3-tools

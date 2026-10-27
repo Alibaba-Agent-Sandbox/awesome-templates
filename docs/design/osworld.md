@@ -64,4 +64,10 @@ The Dockerfile explicitly assigns `/home/user/app` itself to the runtime user. F
 
 Current1.0.0 canonical native steps now pass official READY, actual Python SDK creation, CLI/SDK full native desktop smoke and required external GUI18/0/0 with independent owned sandbox/template/private-asset-cache cleanup. Exact current L1 build39462497032 also passes. [Final current-source verification](../../.agents/evidence/verify/2026-10-20-osworld-sdk-desktop-final.md) keeps historical image/smoke/GUI-skipped scopes distinct.
 
-Template1.0.3 refreshes the native desktop AT-SPI cache after task navigation, retaining caching during original handler traversal, so a prior blank-page observation cannot pin cached children after navigation. This is a proposed repair for actual visible-form/empty-web-tree behavior; actual repeated-order provider validation remains required. Primary API: https://gnome.pages.gitlab.gnome.org/gtk/atspi2/method.Accessible.set_cache_mask.html . Vendored upstream handlers/evaluator remain byte-identical.
+Template1.0.3 normalizes only a None native Accessible.get_attributes result to an
+empty mapping in the owned worker. Actual fresh-observer diagnostics reproduced
+the upstream .items AttributeError and omitted web subtree; earlier cache-refresh
+hypotheses did not repair it and are removed. Nonempty mappings and native
+exceptions retain their original behavior. Vendored upstream bytes remain unchanged;
+no synthetic accessibility tree or second command server is used. Fresh provider
+core and expense business verification remain required.

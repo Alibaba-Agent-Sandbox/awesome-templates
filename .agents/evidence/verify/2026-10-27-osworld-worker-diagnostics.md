@@ -24,3 +24,16 @@ Attempt06 with global cache mask NONE FAIL at the initial real CLI native smoke
 hypothesis did not pass. Replace global cache disabling with native clearCache
 after task navigation, preserving the normal attribute cache for traversal. The
 new actual run remains required; no resource increase or timeout weakening.
+
+The original cache-refresh hypotheses failed the actual expense task and are
+removed from final runtime. A fresh original native observer also misses the web
+subtree and reports AttributeError on None.items plus native AT-SPI errors; this
+rules out claiming that a new observer or root-cache clear repaired the problem.
+
+Current candidate normalizes only Accessible.get_attributes None to an empty
+mapping in the owned worker. Original vendored handler/evaluator bytes unchanged;
+nonempty mapping identity and native exceptions preserved. The exact original XML
+walker first raises on None, then retains the real child after normalization.
+Targeted actual tests:45 PASS, zero skips,2.84s; CI pins lxml6.0.2 for that regression.
+No synthetic XML or second command server. New candidate full native/core/docs/
+GUI expense task and provider acceptance remain pending; OSWorld stays Beta.

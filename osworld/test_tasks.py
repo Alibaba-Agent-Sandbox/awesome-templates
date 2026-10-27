@@ -85,3 +85,34 @@ def test_geometry_preserves_a_viewport_distinct_from_the_desktop():
     for invalid in ('private-path',float('nan'),float('inf'),-1):
         observed['viewport_height']=invalid
         with pytest.raises(RuntimeError,match='invalid browser geometry'):desktop.geometry()
+
+
+def test_unchanged_original_xml_walker_keeps_children_after_empty_native_attributes():
+    import ast,logging
+    import lxml.etree
+    source=ast.parse((runtime.SOURCE/'main.py').read_text())
+    node=next(n for n in source.body if isinstance(n,ast.FunctionDef)and n.name=='_create_atspi_node')
+    ns=next(ast.literal_eval(n.value)['ubuntu']for n in source.body if isinstance(n,ast.Assign)and any(isinstance(t,ast.Name)and t.id=='_accessibility_ns_map'for t in n.targets))
+    scope={'lxml':__import__('lxml'),'_accessibility_ns_map_ubuntu':ns,'MAX_DEPTH':50,'MAX_WIDTH':1024,'logger':logging.getLogger('original-walker-regression')}
+    module=ast.Module(body=[ast.ImportFrom(module='__future__',names=[ast.alias(name='annotations')],level=0),node],type_ignores=[])
+    exec(compile(ast.fix_missing_locations(module),'unchanged-original-walker','exec'),scope)
+    class Accessible:
+        def __init__(self,name,attributes,children=()):self.name,self.attributes,self.children=name,attributes,children
+        def getState(self):return SimpleNamespace(get_states=lambda:[])
+        def get_attributes(self):
+            if isinstance(self.attributes,Exception):raise self.attributes
+            return self.attributes
+        def getRoleName(self):return 'document web'if self.children else'paragraph'
+        def __iter__(self):return iter(self.children)
+        def __getattr__(self,name):
+            if name.startswith('query'):
+                def unavailable():raise NotImplementedError
+                return unavailable
+            raise AttributeError(name)
+    values={'tag':'p'};child=Accessible('Awaiting amount',values);parent=Accessible('Expense entry',None,[child])
+    with pytest.raises(AttributeError,match='items'):scope['_create_atspi_node'](parent)
+    runtime.normalize_nullable_attributes(Accessible)
+    tree=scope['_create_atspi_node'](parent)
+    assert tree.tag=='document-web'and tree.xpath('.//paragraph/@name')==['Awaiting amount']
+    assert child.get_attributes()is values
+    with pytest.raises(RuntimeError,match='native refusal'):Accessible('refused',RuntimeError('native refusal')).get_attributes()

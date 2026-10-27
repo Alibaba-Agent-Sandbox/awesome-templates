@@ -31,3 +31,10 @@ Run ownership/task regressions and actual public-source desktop/core/expense flo
 ## Acceptance criteria
 Identify actual termination cause, repair any template issue, prove all methods
 and literal consumers plus actual desktop results before qualification. Pending.
+
+## Follow-up evidence
+Fresh original observer diagnosis identifies a nullable native attribute mapping
+at the unchanged upstream XML walker. Normalize that mapping in the owned worker;
+remove unsuccessful cache-refresh hypotheses. Keep original failures and exact
+upstream files.45 local tests include actual original XML walking and unchanged
+upstream digest assertions; fresh native/core/GUI business gates remain required.
