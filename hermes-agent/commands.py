@@ -131,7 +131,7 @@ def hermes_setup_check() -> dict:
     installed = shutil.which("hermes") is not None
     return {"installed": installed, "version": hermes_version() if installed else "",
             "pinned_version": PINNED_VERSION, "pinned_commit": PINNED_COMMIT,
-            "api_key_set": bool(os.environ.get("OPENROUTER_API_KEY" if os.environ.get("HERMES_PROVIDER", "openrouter") == "openrouter" else "OPENAI_API_KEY", "").strip()),
+            "api_key_set": bool(os.environ.get("OPENROUTER_API_KEY" if (os.environ.get("HERMES_PROVIDER") or "openrouter") == "openrouter" else "OPENAI_API_KEY", "").strip()),
             "workspace": _workdir()}
 
 

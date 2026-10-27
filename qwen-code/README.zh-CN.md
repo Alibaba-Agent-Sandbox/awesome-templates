@@ -22,9 +22,9 @@
 
 先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，配置选择的平台（沙箱 API Key、连接地址及构建镜像仓库），再配置下面独立的模型/应用凭据。无需 clone 仓库即可启动公共模板。
 
-此路径选择兼容 OpenAI 的 API Key 认证，禁用交互 OAuth。百炼 Key 设置为 `OPENAI_API_KEY`（或已声明的后备 `DASHSCOPE_API_KEY`）。模板自带 endpoint `https://dashscope.aliyuncs.com/compatible-mode/v1`、模型 `qwen3-coder-plus`，Key、接入点地域和模型权限必须匹配。同 endpoint 换模型时，给 `qwen` 增加 `model="<你的模型ID>"` 参数即可（加入下方 JSON/SDK 参数）。endpoint/model 在 manifest 中非空，host export 不会替换它们。需要换 endpoint 时，clone 本仓库，修改 `qwen-code/template.yaml` 的 `env.OPENAI_BASE_URL` 和 `env.OPENAI_MODEL`，再从该 checkout 启动 `./qwen-code`；不要把 Key 写进 YAML。
+此路径使用兼容 OpenAI 的 API Key，禁用交互 OAuth。在 launch 前设置 OPENAI_API_KEY（或 DASHSCOPE_API_KEY 后备值）、OPENAI_BASE_URL、OPENAI_MODEL。manifest 的空配置项会注入这些 host 值；未提供 endpoint/模型时，运行时保留 https://dashscope.aliyuncs.com/compatible-mode/v1 和 qwen3-coder-plus。Key、地域、endpoint 和模型权限须匹配。qwen 的 model 参数可覆盖单次模型。需要换启动配置时创建新实例，无需修改本地模板。
 
-使用下方的百炼接入点时，在[百炼 API Key 页面](https://help.aliyun.com/zh/model-studio/get-api-key)选择北京地域创建 Key，并填写该账号可用模型 ID；其他地域或 Coding Plan 使用其对应的 Key/endpoint，不能混用。
+使用可选的默认百炼接入点时，在[百炼 API Key 页面](https://help.aliyun.com/zh/model-studio/get-api-key)选择北京地域创建 Key，并填写该账号可用模型 ID；其他地域或 Coding Plan 使用其对应的 Key/endpoint，不能混用。
 
 所有 `<...>` 都是需要你替换的占位值，模型名必须使用服务商实际提供的 ID。密钥在你自己的终端或 secret manager 中设置，不要放入镜像、YAML 或公开日志。以下变量要在 launch **之前**设置；之后改变 host 环境不会更新运行中的应用。
 
@@ -32,6 +32,8 @@
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export OPENAI_API_KEY='<your-model-or-vendor-key>'
+export OPENAI_BASE_URL='<your-chat-completions-base-url>'
+export OPENAI_MODEL='<model-id-from-your-provider>'
 abx template launch Alibaba-Agent-Sandbox/awesome-templates//qwen-code --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
@@ -119,7 +121,7 @@ abx kill "$SANDBOX_ID"
 | --- | --- |
 | `OPENAI_API_KEY` | 编码任务所需的主要模型密钥；版本和配置检查不需要 |
 | `DASHSCOPE_API_KEY` | 主要密钥为空时的备选值，仅在子进程映射 |
-| `OPENAI_BASE_URL` | 默认 `https://dashscope.aliyuncs.com/compatible-mode/v1`，其他兼容端点需在启动前修改清单默认值 |
+| `OPENAI_BASE_URL` | 默认 `https://dashscope.aliyuncs.com/compatible-mode/v1`，其他兼容端点可在启动前 export OPENAI_BASE_URL |
 | `OPENAI_MODEL` | 默认 `qwen3-coder-plus`，命令参数 `model` 优先 |
 | `WORKSPACE` | 默认 `/home/user/app` |
 | `ABX_SERVER_TOKEN` | 启动 模板启动前必填；独立于模型和网关凭据 |

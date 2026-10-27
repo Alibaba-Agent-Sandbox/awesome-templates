@@ -94,6 +94,17 @@ if not all(module.add(a,b) == a+b for a,b in
     )
 
 
+def _native_model_selected(output: str, expected: str) -> bool:
+    try:
+        events = _e2e_json.loads(output)
+    except (TypeError, ValueError):
+        return False
+    return isinstance(events, list) and [
+        e.get("model") for e in events if isinstance(e, dict)
+        and e.get("type") == "system" and e.get("subtype") == "init"
+    ] == [expected]
+
+
 def coding(client: httpx.Client, setup: dict | None = None) -> None:
     required = enabled("E2E_REQUIRE_LLM")
     forced_off = os.environ.get("E2E_RUN_LLM", "").lower() in {"0", "false", "no"}
@@ -151,6 +162,8 @@ def coding(client: httpx.Client, setup: dict | None = None) -> None:
         record(response.status_code == 200 and isinstance(response.json().get("result"), str), "real headless CLI completes")
         if response.status_code != 200:
             return
+        if os.environ.get("E2E_MODEL"):
+            record(_native_model_selected(response.json()["result"], os.environ["E2E_MODEL"]), "actual native initialization uses the requested model")
         updated = read(client, project + "/calculator.py")
         record(updated != source, "existing source changed via target files API")
         record(read(client, project + "/test_calculator.py") == tests, "original test file preserved")

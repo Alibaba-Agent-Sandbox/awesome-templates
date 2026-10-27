@@ -140,3 +140,17 @@ def test_deadline_kills_term_ignoring_descendant_after_leader_exits(monkeypatch,
         commands._run_process([sys.executable,"-c",leader], cwd=str(tmp_path), timeout=1)
     time.sleep(1.3)
     assert not marker.exists()
+
+
+def test_blank_launch_provider_uses_same_openrouter_key_in_setup_and_execution(monkeypatch, tmp_path):
+    monkeypatch.setenv('WORKSPACE', str(tmp_path))
+    monkeypatch.setenv('HERMES_PROVIDER', '')
+    monkeypatch.setenv('OPENROUTER_API_KEY', 'synthetic-router-key')
+    monkeypatch.delenv('OPENAI_API_KEY', raising=False)
+    monkeypatch.setattr(commands.shutil, 'which', lambda name: None)
+    assert commands.hermes_setup_check()['api_key_set'] is True
+    captured = {}
+    monkeypatch.setattr(commands, '_executable', lambda: 'hermes')
+    monkeypatch.setattr(commands, '_run', lambda argv, **kw: captured.update(argv=argv, **kw) or '{}')
+    commands.hermes('owned task', model='owned-model')
+    assert 'openrouter' in captured['argv']

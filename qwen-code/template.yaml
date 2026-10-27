@@ -1,5 +1,5 @@
 name: qwen-code
-version: "2.1.4"
+version: "2.2.0"
 description: "Qwen Code CLI with typed headless commands and OpenAI-compatible authentication."
 author: alibaba-agent-sandbox
 license: Apache-2.0
@@ -20,8 +20,8 @@ env:
   OPENAI_API_KEY: ""
   DASHSCOPE_API_KEY: ""
   WORKSPACE: /home/user/app
-  OPENAI_BASE_URL: https://dashscope.aliyuncs.com/compatible-mode/v1
-  OPENAI_MODEL: qwen3-coder-plus
+  OPENAI_BASE_URL: ""
+  OPENAI_MODEL: ""
 smoke:
   - command: qwen_version
     args: {}

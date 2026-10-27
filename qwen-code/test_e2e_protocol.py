@@ -310,3 +310,14 @@ def test_original_suite_requires_three_actual_successes(tmp_path, mode):
     (tmp_path / "test_calculator.py").write_text(tests)
     result, accepted = run_verifier(tmp_path, tests=True)
     assert not accepted, (result.returncode, result.stdout, result.stderr)
+
+
+@pytest.mark.parametrize('events,accepted', [
+    ([{'type':'system','subtype':'init','model':'requested'}],True),
+    ([{'type':'system','subtype':'init','model':'baked-default'}],False),
+    ([{'type':'result','result':'claimed success'}],False),
+    ([],False),
+])
+def test_native_model_identity_cannot_be_inferred_from_launch_export(events,accepted):
+    assert e2e._native_model_selected(json.dumps(events),'requested') is accepted
+    assert not e2e._native_model_selected('claimed success','requested')

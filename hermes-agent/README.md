@@ -20,7 +20,7 @@ Use an installed tool in an isolated sandbox, submit work through CLI, Python or
 
 Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
 
-The default `openrouter` provider uses `OPENROUTER_API_KEY` and a model ID from your OpenRouter account. No interactive setup/login occurs. For a custom Chat-compatible service instead, export the declared `OPENAI_API_KEY` and `OPENAI_BASE_URL` before launch, and pass `provider="custom"` plus `model="<your-model-id>"` on every `hermes` call. `HERMES_PROVIDER` has a nonempty manifest default, so exporting that name alone does not switch the public recipe.
+The default openrouter provider uses OPENROUTER_API_KEY and a model ID authorized by that account. For a custom Chat-compatible service, export HERMES_PROVIDER=custom, OPENAI_API_KEY, OPENAI_BASE_URL and HERMES_MODEL before launch. The blank provider slot accepts the host choice; when omitted, runtime falls back to openrouter. Per-call provider/model arguments override startup values. No interactive setup or imported local login occurs; launch a new instance after changing startup settings.
 
 Replace every `<...>` placeholder with your own value; use an exact model ID available to your account. Set secrets in your own terminal or secret manager, never in the image, YAML or public logs. Configure these variables **before** launch; later host changes do not reconfigure the running application.
 

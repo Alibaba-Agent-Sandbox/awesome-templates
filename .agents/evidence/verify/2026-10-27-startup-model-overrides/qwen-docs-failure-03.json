@@ -1,0 +1,102 @@
+{
+  "result": "FAIL",
+  "template": "qwen-code",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//qwen-code@35f676f12b500d3ab26f56cb24b5e2f90438689b",
+  "manifest_sha256": "c156743571af76b6b208645f68a925968e5e3b6c89c5eac5be862e427c8c86a7",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "qwen_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "OPENAI_API_KEY",
+      "OPENAI_BASE_URL",
+      "OPENAI_MODEL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:c156743571af76b6b208645f68a925968e5e3b6c89c5eac5be862e427c8c86a7",
+    "source_digest": "1773f291eaae456153718d8a4faecf92f422770e045c6288471754dd9b601edf",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "5f2f12cab3f95967eb832a7a821d835a8a4be379099ec67da6382ce18fd70571",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "passed": false,
+    "scope": "fresh literal documentation tasks; canonical full-method/model assertions are in the pinned preceding core receipt",
+    "core_receipt_sha256": "55f82e288f585ba110139272508f5547c5dff63dc1db82dbe5756f78969d2bcc",
+    "documented_case": {
+      "template": "qwen-code",
+      "provider": "alicloud-express",
+      "result": "FAIL",
+      "checks": [
+        {
+          "id": "literal README CLI business request",
+          "result": "PASS"
+        }
+      ],
+      "core_receipt_sha256": "55f82e288f585ba110139272508f5547c5dff63dc1db82dbe5756f78969d2bcc",
+      "configured_model": "qwen3.8-max",
+      "failure_type": "CLIError",
+      "failure_stack": [
+        [
+          "documented_case.py",
+          "execute_docs",
+          145
+        ],
+        [
+          "documented_case.py",
+          "run",
+          67
+        ],
+        [
+          "public_launch_e2e.py",
+          "run",
+          155
+        ]
+      ]
+    }
+  },
+  "application_result": "FAIL",
+  "failure_type": "FileNotFoundError",
+  "failed_phase": "application-controller",
+  "diagnostics": {}
+}

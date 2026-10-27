@@ -4,6 +4,8 @@
 
 - [Decision](notes/proposed/process/2026-10-27-local-push-tag-cleanup.md) · [verification](evidence/verify/2026-10-27-local-push-tag-cleanup.md). Exact owned tags and independent absence; the broader method/model matrix remains separate.
 
+- [Explicit startup model configuration](notes/proposed/feature/2026-10-27-startup-model-overrides.md) · [verification](evidence/verify/2026-10-27-startup-model-overrides.md). Modified-source real usage and full-method supplements recorded separately.
+
 ## Consumer documentation (2026-10-26)
 
 - [Template configuration and practical examples](notes/proposed/process/2026-10-26-consumer-template-documentation.md) · [verification](evidence/verify/2026-10-26-consumer-template-documentation.md). All 50 catalog entries, with historical records preserved separately.
