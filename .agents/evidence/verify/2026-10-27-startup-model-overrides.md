@@ -32,9 +32,9 @@ extend regression assertions to the actual argv. Fresh changed-Qwen cloud runs p
 Qwen explicit-model argv regression: PASS13; the two new configured/default cases both FAIL against first-source113ebb1, proving missing CLI model forwarding independently of upstream requests. Removed a trailing blank line reported by diff check; no executable change.
 
 Second actual Qwen source35f676f core PASS17, but docs03 FAIL with the same native
-qwen3-coder-plus init/API404 despite forwarded CLI model selection. Root cause now
-confirmed in Dockerfile: baked OPENAI_MODEL/OPENAI_BASE_URL override launch settings
-on this prewarmed runtime. Remove both image ENV defaults, keep prior defaults only
+qwen3-coder-plus init/API404 despite forwarded CLI model selection. Remaining baked defaults identified in Dockerfile: OPENAI_MODEL/OPENAI_BASE_URL
+can shadow launch settings on this prewarmed runtime; the controlled whole-image
+removal is required to establish the causal correction. Remove both image ENV defaults, keep prior defaults only
 in commands.py, and require actual native initialization to match selected model.
 The earlier explicit-flag correction alone was insufficient; do not relabel docs03.
 Fresh whole-image/native/documented verification is required for this new recipe.
