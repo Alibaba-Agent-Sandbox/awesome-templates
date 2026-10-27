@@ -18,3 +18,9 @@ is established. New1.0.3 uses native desktop cache mask NONE before browser disc
 and requires the exact observe-before-navigation order in real acceptance. This
 cache hypothesis requires actual provider execution; numeric EOF alone is not fixed
 by inference. Primary no-cache API is linked in design.
+
+Attempt06 with global cache mask NONE FAIL at the initial real CLI native smoke
+(desktop operation timeout); exact owned cleanup independently confirmed. This
+hypothesis did not pass. Replace global cache disabling with native clearCache
+after task navigation, preserving the normal attribute cache for traversal. The
+new actual run remains required; no resource increase or timeout weakening.

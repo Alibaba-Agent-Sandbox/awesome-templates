@@ -207,11 +207,6 @@ class Desktop:
         self.accessibility_thread = threading.Thread(target=self.server.pyatspi.Registry.start,
                                                        kwargs={"gil": True}, daemon=True)
         self.accessibility_thread.start()
-        # Chromium can omit cache invalidation when an already-observed blank
-        # document is replaced. Observations must query the live AT-SPI tree.
-        # Set the desktop policy before discovering any browser accessibles;
-        # applications inherit it, without changing the upstream tree handler.
-        self.server.pyatspi.Registry.getDesktop(0).setCacheMask(self.server.pyatspi.cache.NONE)
         # Upstream probes LibreOffice before every Linux accessibility request.
         # This browser-only image has no Office. Unknown version is the empty
         # tuple; no executable/version is fabricated. Office tasks are rejected.
@@ -320,6 +315,10 @@ class Desktop:
                     page = self.page if index == 0 else self.context.new_page()
                     page.goto(url, wait_until="load", timeout=15000)
                 self.page.bring_to_front()
+                # An earlier observation can retain the previous document's
+                # accessible children. Refresh after navigation, retaining the
+                # native cache during the upstream's many attribute queries.
+                self.server.pyatspi.Registry.getDesktop(0).clearCache()
         return {"applied": len(task.get("config", [])), "supported_slice": "linux-browser",
                 "browser_geometry": self.geometry()}
 

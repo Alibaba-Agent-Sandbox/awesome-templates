@@ -173,4 +173,4 @@ The 1024×768 PNG/Xvfb screen and the browser page viewport are separate measure
 
 For CLI setup, SDK installation, HTTP authentication and resource ownership, see [Using templates](../docs/using-templates.md).
 
-Live AT-SPI observations use the native no-cache desktop policy, including after observing the initial page and navigating to another task. The upstream tree handler and evaluator remain unchanged.
+Task navigation refreshes the native AT-SPI cache, including after observing the initial page and navigating to another task. The upstream tree handler and evaluator remain unchanged.
