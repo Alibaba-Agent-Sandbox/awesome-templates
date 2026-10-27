@@ -84,3 +84,11 @@ ClientResponseError rather than the local proxy's WSServerHandshakeError. Catch
 that HTTP-response base class only in the negative control and still require native
 cross-origin refusal logs. Positive connection failures still fail. The one test
 file byte change requires fresh source-bound Next1.1.4 provider receipts, pending.
+
+Final exact-source replay after the CI-only test portability correction:
+Next1.1.4 source37794be0bd56b6d5f98058ff4d3ce79ffbff7a4d passed both actual
+Express and default OpenSandbox fresh native6/docs10; all Next/Vite real browser
+HMR, literal CLI/full SDK/HTTP and owned absence checks. New final JSON receipts
+are separate from the prior93688d9 successful controls. Runtime/README/image recipe
+bytes unchanged, but the unit-test file changed source identity, so both actual
+provider workflows were repeated before final Registry receipt selection.
