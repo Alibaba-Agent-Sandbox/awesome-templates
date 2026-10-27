@@ -47,7 +47,14 @@ The IDE is separate from the port 9000 command API. Resolve it with `await sb.ne
 
 `--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
 
-For OpenSandbox, set `ABX_PROVIDER=opensandbox` and configure its [provider guide](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md). Keep the same provider selected for subsequent CLI and Python calls.
+For OpenSandbox, configure its [provider guide](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md), then select a direct endpoint before launch:
+
+```bash
+export ABX_PROVIDER=opensandbox
+export ABX_OPENSANDBOX_USE_SERVER_PROXY=false
+```
+
+Keep these settings for later CLI and Python calls. The caller must be able to reach the SDK-resolved endpoint. The OpenSandbox1.1.1 server proxy strips Cookie, so it cannot carry this IDE's authenticated browser session; a displayed login page or workbench shell alone is insufficient. Use the resolved direct endpoint and the same private local preview above, preserving gateway headers and native password/session-cookie authentication. Do not disable authentication or HTTPS certificate checks.
 
 ## Quick start (Python SDK)
 
