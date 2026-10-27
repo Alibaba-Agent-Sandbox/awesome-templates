@@ -1,0 +1,42 @@
+{
+  "result": "FAIL",
+  "template": "next-app",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//next-app@1627b69177263c47886ec8d9ebdb34951c2d3388",
+  "manifest_sha256": "faf6e753841699056f179a8f537f19b9416c26ddd0c58397e923ab372de07d94",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": []
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:faf6e753841699056f179a8f537f19b9416c26ddd0c58397e923ab372de07d94",
+    "source_digest": "f93b4954c9fcbb5651aa0c56b93a07a237758e1b08b82db797143bc6fce266da",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "530164ac8c1c66ca0838f96771a41092668ab64a22de4548c0a9f649c0a43976",
+    "build_profile": null
+  },
+  "application_result": "FAIL",
+  "failure_type": "CLIError",
+  "failed_phase": "cli-command",
+  "diagnostics": {
+    "code": "E3000"
+  },
+  "failed_check": "CLI run failed (exit 1)",
+  "original_receipt_sha256": "939c20476e2f5f993907c871785d2385c81f7c4a486bb4c12cb7d465a8180618"
+}
