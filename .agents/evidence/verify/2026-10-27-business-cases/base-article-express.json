@@ -1,0 +1,9 @@
+{
+  "template": "base",
+  "article_script": "run_case.py",
+  "result": "PASS",
+  "owned_sandbox_count": 1,
+  "cleanup": "independently confirmed absent",
+  "executed_at": "2026-10-27T10:52:38.582993+00:00",
+  "original_private_receipt_sha256": "7248f475c5687f5a0c3a98f8c34d8e3121707900ae8c2568cf06f335da48719a"
+}

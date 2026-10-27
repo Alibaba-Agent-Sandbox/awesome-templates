@@ -1,0 +1,19 @@
+{
+  "result": "PASS",
+  "scope": "Independent reconciliation of every owned sandbox in the isolated OpenSandbox test journals",
+  "owned_sandbox_count": 3,
+  "lifecycle_statuses": [
+    404,
+    404,
+    404
+  ],
+  "matching_container_counts": [
+    0,
+    0,
+    0
+  ],
+  "resources_created_for_reconciliation": false,
+  "server_version": "1.1.1",
+  "execd_image_digest": "sha256:cda2bc35409bbf57561599b316cafb899598f7dce671332e7ceda14eb1cfeded",
+  "executed_at": "2026-10-27T11:17:40.222742+00:00"
+}

@@ -91,7 +91,9 @@ def controller_environment(source: Path, urls: dict[int, str], fixture: dict[str
 def run_controller(source: Path, urls: dict[int, str], private: Path,
                    fixture: dict[str, str], *, token: str | None = None, gateway_headers: dict[str, str] | None = None, real_usage: bool = False) -> dict:
     script = source / "e2e_test.py"
-    result = run_monitored([sys.executable, str(script)],
+    transport = Path(__file__).with_name("template_controller_transport.py")
+    verifier_bytes, transport_bytes = script.read_bytes(), transport.read_bytes()
+    result = run_monitored([sys.executable, str(transport), str(script)],
                            env=controller_environment(source, urls, fixture, token=token, gateway_headers=gateway_headers, real_usage=real_usage),
                            idle_timeout=900 if real_usage else 600, wall_timeout=1800 if real_usage else 900)
     (private / "http.log").write_text(result.stdout + "\n" + result.stderr)
@@ -101,8 +103,10 @@ def run_controller(source: Path, urls: dict[int, str], private: Path,
               "fail_count": sum(line.startswith("[FAIL]") for line in lines),
               "skip_count": sum(line.startswith("[SKIP]") for line in lines),
               "not_run_count": sum(line.startswith("[NOT RUN]") for line in lines),
-              "verifier_sha256": hashlib.sha256(script.read_bytes()).hexdigest()}
-    complete = result.returncode == 0 and counts["pass_count"] > 0 and not counts["fail_count"]
+              "verifier_sha256": hashlib.sha256(verifier_bytes).hexdigest()}
+    counts["transport_adapter_sha256"] = hashlib.sha256(transport_bytes).hexdigest()
+    counts["verifier_inputs_unchanged"] = script.read_bytes() == verifier_bytes and transport.read_bytes() == transport_bytes
+    complete = result.returncode == 0 and counts["pass_count"] > 0 and not counts["fail_count"] and counts["verifier_inputs_unchanged"]
     if real_usage:
         complete = complete and not counts["skip_count"] and not counts["not_run_count"]
         counts["real_usage_required"] = True
