@@ -244,6 +244,10 @@ def gateway_start(port: int = 18789, bind: str = "loopback", command_timeout: in
         _stop_owned(1)
         # Refuse port conflicts instead of --force, which could kill another process.
         with socket.socket() as check:
+            # Node's server may leave accepted connections in TIME_WAIT after
+            # owned shutdown. Match its reusable listener semantics; an active
+            # foreign listener still prevents bind and is never signalled.
+            check.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             try:
                 check.bind(("0.0.0.0" if bind == "lan" else "127.0.0.1", port))
             except OSError:
