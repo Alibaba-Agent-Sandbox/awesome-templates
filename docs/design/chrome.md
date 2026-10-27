@@ -31,3 +31,12 @@ L0 authored URL/secret exclusion/exclusive PNG/private IPC/process cleanup/RFB3.
 Current1.0.5 sourcecd144246bcd3e2ba37865d90e24cba612db8b11b passed actual image L1 and SDK-created canonical native Express steps/fullHTTP30/0/0 with independent owned native/private/display/ports/PNG/outer/OSS absence. Native DOM and framebuffer validation uses independent predefined content regions away from the real software pointer. Historical failures remain preserved. [Final evidence](../../.agents/evidence/verify/2026-10-20-chrome-native-final.md).
 
 Version 1.0.6 preserves the provider-resolved base path and fixed query for native CDP discovery/WebSocket and noVNC static/WebSocket routes. The provider endpoint controls host/scheme; a native discovery host is never adopted. Application and gateway headers remain separate inputs to the existing clients. See [Issue 217](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/217); previous 1.0.5 receipts remain historical.
+
+Version1.0.9 preserves direct Bearer authentication and accepts the same explicit
+X-Access-Token application fallback as the public HTTP guide only when Authorization
+is absent. A wrong/unsupported Authorization cannot be rescued by a valid fallback.
+Both CDP HTTP and WebSocket entry points use this check; native VNC challenge
+authentication is unchanged. The original controller sends both application headers
+so an Authorization-stripping provider proxy retains authentication. A real loopback
+proxy regression fails on1.0.8 and passes on the fix. Fresh full Express/OpenSandbox
+GUI/native/public-method/documentation acceptance remains required before delivery.
