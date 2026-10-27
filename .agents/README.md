@@ -110,6 +110,8 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 
 ## Current review
 
+- [Public browser model controller](notes/proposed/feature/2026-10-27-public-browser-model-controller.md) · [verification](evidence/verify/2026-10-27-public-browser-model-controller.md). Native public application model proof and documented journeys are recorded separately.
+
 - [Complete public-template launch evidence](notes/implemented/process/2026-10-24-public-template-matrix.md) · [92-case matrix](evidence/verify/2026-10-24-public-template-matrix.md) · [public-install pilot](evidence/verify/2026-10-24-public-install-pilot-2.md) · [public Git journeys](evidence/verify/2026-10-24-public-git-journeys.md)
 
 - [Final verification overview](notes/proposed/process/2026-10-21-final-acceptance-overview.md) · [verification](evidence/verify/2026-10-21-final-acceptance-overview.md)
@@ -354,3 +356,6 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 - [Idempotent owned local-image cleanup](notes/proposed/process/2026-10-27-idempotent-owned-local-cleanup.md) · [verification](evidence/verify/2026-10-27-idempotent-owned-local-cleanup.md). Actual Docker control and independent late cleanup supplements preserve original failures.
 
 - [OSWorld worker diagnosis](notes/proposed/feature/2026-10-27-osworld-worker-diagnostics.md) · [verification](evidence/verify/2026-10-27-osworld-worker-diagnostics.md).
+- [Public Agents CLI model workflows](notes/proposed/feature/2026-10-27-agents-public-model-workflows.md) · [verification](evidence/verify/2026-10-27-agents-public-model-workflows.md).
+- [OpenClaw native conversations](notes/proposed/feature/2026-10-27-openclaw-native-conversations.md) · [verification](evidence/verify/2026-10-27-openclaw-native-conversations.md).
+- [Three further native practices](notes/proposed/feature/2026-10-27-three-more-native-practices.md) · [verification](evidence/verify/2026-10-27-three-more-native-practices.md).

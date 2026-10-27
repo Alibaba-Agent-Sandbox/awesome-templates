@@ -40,7 +40,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" stagehand --json-args '{"task":"Click the More information link.","url":"https://example.com","extract_instruction":"Return the visible heading.","command_timeout":180}'
+abx run "$SANDBOX_ID" stagehand --json-args '{"task":"Click the IANA-managed Reserved Domains link.","url":"https://www.iana.org/help/example-domains","extract_instruction":"Return the visible heading.","command_timeout":180}'
 ```
 
 Returns native `action`, `extracted`, final URL and a fresh `screenshot_path`. Inspect `action.success`; the model may fail to complete its instruction.
@@ -72,7 +72,7 @@ async def main():
             9000, token=os.environ["ABX_SERVER_TOKEN"], timeout=450
         )
         try:
-            result = await client.commands.run('stagehand', task='Click the More information link.', url='https://example.com', extract_instruction='Return the visible heading.', command_timeout=180)
+            result = await client.commands.run('stagehand', task='Click the IANA-managed Reserved Domains link.', url='https://www.iana.org/help/example-domains', extract_instruction='Return the visible heading.', command_timeout=180)
             print(result)
             Path('stagehand.png').write_bytes(await sb.files.read_bytes(result['screenshot_path']))
         finally:
@@ -93,8 +93,8 @@ Resolve port 9000 on the same instance with the [HTTP calling example](../docs/u
 
 ```json
 {
-  "task": "Click the More information link.",
-  "url": "https://example.com",
+  "task": "Click the IANA-managed Reserved Domains link.",
+  "url": "https://www.iana.org/help/example-domains",
   "extract_instruction": "Return the visible heading.",
   "command_timeout": 180
 }
@@ -155,3 +155,8 @@ To improve this template, see the [contribution guide](../CONTRIBUTING.md), [tem
 ## License
 
 Wrapper: [Apache-2.0](../LICENSE). Stagehand and Zod: MIT; retain [upstream Stagehand license](UPSTREAM-LICENSE.md). Chromium/Node and their dependencies retain upstream notices/licenses in their unmodified distributions. No SaaS software or vendor account rights are implied.
+
+
+## Verification entry points
+
+Required-use controller: `E2E_REQUIRE_LLM=1` exercises the configured public application against an owned nonce browser fixture, then independently checks actual page state and downloaded PNG. It does not start another command server or copy model keys into the host controller. Native SDK model controllers remain available as separate borrowed-sandbox checks.

@@ -161,7 +161,7 @@ templates:
   author: alibaba-agent-sandbox
   status: experimental
 - name: openclaw
-  description: OpenClaw 2026.10.4 gateway with authenticated health, owned process lifecycle and Node.js 24.16.0.
+  description: OpenClaw 2026.10.4 native model conversations, authenticated gateway lifecycle and Node.js 24.16.0.
   repo: https://github.com/alibaba-agent-sandbox/awesome-templates
   path: openclaw
   tags:

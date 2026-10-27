@@ -1,0 +1,125 @@
+{
+  "result": "PASS",
+  "template": "browser-use",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//browser-use@350f871",
+  "manifest_sha256": "05d1603ed54d4bdd89edacb55653c3e7b8504d33e8a86bc842e0dd99393f470c",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "browser_use_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "browser_use_self_test",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "BROWSER_USE_API_KEY",
+      "BROWSER_USE_BASE_URL",
+      "BROWSER_USE_MODEL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:05d1603ed54d4bdd89edacb55653c3e7b8504d33e8a86bc842e0dd99393f470c",
+    "source_digest": "9bfb07640ea155a55ff530022f435a98af42fcbf0338c032fee1ae459129f28d",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "aa2c24a3561d45bafe67f3f90e264be4cad73fa16a8b1c33f0582941806c6b6d",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "passed": true,
+    "scope": "fresh literal documentation tasks; canonical full-method/model assertions are in the pinned preceding core receipt",
+    "core_receipt_sha256": "736e84fc8d02641dee0264b4ad9832c8ffcee174086e6ffef4fa410d31f69767",
+    "documented_case": {
+      "template": "browser-use",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "cli native page heading and independently decoded actual PNG",
+          "result": "PASS"
+        },
+        {
+          "id": "cli owned screenshot independently absent",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README SDK program",
+          "result": "PASS"
+        },
+        {
+          "id": "sdk native page heading and independently decoded actual PNG",
+          "result": "PASS"
+        },
+        {
+          "id": "sdk owned screenshot independently absent",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP task",
+          "result": "PASS"
+        },
+        {
+          "id": "http native page heading and independently decoded actual PNG",
+          "result": "PASS"
+        },
+        {
+          "id": "http owned screenshot independently absent",
+          "result": "PASS"
+        }
+      ],
+      "core_receipt_sha256": "736e84fc8d02641dee0264b4ad9832c8ffcee174086e6ffef4fa410d31f69767",
+      "readme_sha256": "d3665a170c912780f27434f6aab1a57187f700685c151d2d2a604967010f7e9d",
+      "artifacts": {
+        "cli-browser-use.png": "sha256:27abf1d5ebb94a33a76026899008eba587c704730da22749da7a461abc6ec88e",
+        "sdk-browser-use.png": "sha256:27abf1d5ebb94a33a76026899008eba587c704730da22749da7a461abc6ec88e",
+        "http-browser-use.png": "sha256:27abf1d5ebb94a33a76026899008eba587c704730da22749da7a461abc6ec88e"
+      },
+      "configured_model": "qwen3.8-max"
+    }
+  },
+  "application_result": "PASS"
+}

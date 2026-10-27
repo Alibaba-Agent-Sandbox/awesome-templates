@@ -11,7 +11,7 @@ must return while the process remains alive.
 Start one owned background gateway, report its process status, execute a real
 authenticated health RPC, and stop that process group. Standard server shell,
 files and ports remain available. The verified runtime slice excludes model
-execution, channels, browser/control UI and nested Docker-based agent sandboxing.
+tools, channels, browser/control UI and nested Docker-based agent sandboxing. Template2.2.0 adds native text-model conversations with explicit compatible-provider settings; this remains a scoped runtime rather than the complete messaging product.
 
 ## Exposed API
 
@@ -95,3 +95,20 @@ Work tracks [Issue #20](https://github.com/Alibaba-Agent-Sandbox/awesome-templat
 Actual2.0.1 native authenticated gateway start/RPC and externally forwarded healthz pass, but forwarded readyz returns403 under the pinned upstream's proxy-attribution policy. Add only explicit operator OPENCLAW_TRUSTED_PROXIES IPs/CIDRs to the owned private config. Refuse invalid/empty/whole-Internet/multicast entries; cap16addresses/2048bytes and canonicalize duplicates. Never infer trust from X-Forwarded-For or introduce universal trust. Defaults and token authentication remain. Current2.1native steps and exact CI image now pass actual SDK auth lifecycle, external healthz/readyz and independent owned process/state/sandbox/template/registry cleanup; see the [final record](../../.agents/evidence/verify/2026-10-20-openclaw-native-sdk-final.md). Old2.0.1receipts stay historical.
 
 The borrowed-sandbox SDK controller owns an ephemeral nonce probe on9012, then explicitly configures its own9010server with that observed kernel peer's exact address for testing. Native gateway runs on18789 with token auth; SDK lifecycle, externally forwarded liveness/readiness and independent listener/state cleanup are required. The probe shuts itself down naturally; the caller retains sandbox ownership. No agent/model/channel claim is added. Source/controller tests and actual1:1 image/step proof are separate.
+
+## Explicit model conversations (2.2.0)
+
+`gateway_chat(prompt,session_id="",command_timeout=180)` uses the owned gateway's
+loopback `/v1/chat/completions`, native agent target `openclaw/default`, and stable
+per-conversation `user`. The three OPENCLAW_MODEL settings are all-or-none; no
+implicit vendor credential fallback. Generated config enables native Chat Completions,
+selects the explicit `abx/<model>` provider, uses an environment key reference,
+and disables model tools. Sessions and workspace are within disposable gateway state.
+Model text and same-session continuation must be checked by actual business tasks;
+health alone cannot qualify this feature. Client timeout is not cancellation; stop
+or outer sandbox destruction ends remaining work.
+
+Primary references: [native Chat Completions](https://docs.openclaw.ai/gateway/openai-http-api),
+[custom providers](https://docs.openclaw.ai/gateway/config-tools/custom-providers).
+Current online docs may exceed pinned2026.10.4; the exact installed runtime must
+accept config and execute actual conversations before qualification.

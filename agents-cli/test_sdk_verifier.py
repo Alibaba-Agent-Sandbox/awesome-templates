@@ -290,9 +290,10 @@ def test_actual_http_suite_keeps_required_model_gate_closed(tmp_path, required):
                            cwd=tmp_path, env=env, capture_output=True, text=True, timeout=30)
         assert p.returncode == int(required)
         if required:
-            assert '[FAIL] HTTP-only smoke cannot establish L3' in p.stdout and 'e2e_sdk.py' in p.stdout
+            assert '[FAIL] explicit native Codex profile without stored key' in p.stdout
+            assert 'AGENTS_MODEL_PROOF' not in p.stdout
         else:
-            assert '[SKIP] model/coding acceptance' in p.stdout
+            assert '[SKIP] actual native model turns not requested' in p.stdout
 
 
 @pytest.mark.parametrize('adapter',['qwen-code','codex'])
@@ -329,3 +330,22 @@ def test_owned_codex_profile_has_explicit_responses_no_websockets_and_no_key(tmp
     assert (home/'config.toml').stat().st_mode&0o777==0o600
     env=module.selected_env('/tmp/project',str(tmp_path/'state'),'model','token',adapter='codex')
     assert env['CODEX_HOME']==str(home)
+
+
+def test_default_factory_resolves_the_published_provider_sandbox(tmp_path,monkeypatch):
+    import agent_sandbox
+    class Factory:
+        called=False
+        @classmethod
+        async def create(cls,*a,**kw):
+            cls.called=True
+            raise TimeoutError('synthetic known create failure')
+        @classmethod
+        async def list(cls,**kw):return []
+    monkeypatch.setattr(agent_sandbox,'ProviderSandbox',Factory)
+    monkeypatch.setenv('OPENAI_API_KEY','synthetic-model-key')
+    monkeypatch.setenv('OPENAI_BASE_URL','https://example.invalid/v1')
+    args=SimpleNamespace(template='synthetic-template',model='model',turn_timeout=30,journal=tmp_path/'journal.json',report=tmp_path/'report.json')
+    result=asyncio.run(module.run(args))
+    assert Factory.called and result['failure_category']=='TimeoutError'
+    assert result['cleanup']['sandbox_absence_verified']is True

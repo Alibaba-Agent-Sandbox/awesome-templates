@@ -8,6 +8,9 @@ from __future__ import annotations
 
 import os
 import sys
+import json
+import secrets
+import time
 
 import httpx
 
@@ -39,7 +42,7 @@ def main() -> int:
         check(response.status_code == 200 and response.json().get("status") == "ok", "health")
         response = client.get("/commands")
         check(response.status_code == 200 and
-              {item["name"] for item in response.json().get("commands", [])} == {"agents_version"},
+              {item["name"] for item in response.json().get("commands", [])} == {"agents_version", "agents_configure_codex"},
               "named diagnostics only")
         response = client.post("/commands/agents_version", json={})
         check(response.status_code == 200 and response.json().get("result") == EXPECTED,
@@ -80,8 +83,35 @@ def main() -> int:
             check(response.status_code == 401, "server token protects business routes")
     requested = any(os.environ.get(name, "").lower() in {"1", "true", "yes"}
                     for name in ("E2E_RUN_LLM", "E2E_REQUIRE_LLM"))
-    check(not requested, "HTTP-only smoke cannot establish L3; run agents-cli/e2e_sdk.py for owned SDK coding verification")
-    print("[SKIP] model/coding acceptance: no model turn or artifact acceptance was performed", flush=True)
+    if requested:
+        with httpx.Client(base_url=os.environ.get("E2E_BASE_URL", "http://127.0.0.1:9000"),
+                          headers={**_GATEWAY_HEADERS, **_APPLICATION_HEADERS}, timeout=60) as client:
+            response=client.post('/commands/agents_configure_codex',json={})
+            check(response.status_code==200 and response.json()['result']=={'configured':True,'wire_api':'responses','credential_written':False},'explicit native Codex profile without stored key')
+            model=os.environ['E2E_MODEL']
+            for adapter in ('qwen-code','codex'):
+                nonce=secrets.token_hex(16);root=workspace+'/abx_agents_model_'+nonce
+                expected='Hello agents '+nonce
+                response=client.post('/v1/agents/sessions',json={'adapter':adapter,'agent':{'model':model},'environment':{'type':'self_hosted','workspace_directory':workspace}})
+                check(response.status_code==200,adapter+' native model session created')
+                session=response.json()['id'];path='/v1/agents/sessions/'+session
+                for index,prompt in enumerate([
+                    'Create the owned directory '+root+'. Write hello.py there that prints exactly '+expected+'. Run it, and write a nonempty report.md describing the program. Remember validation code '+nonce+'. Preserve unrelated files; actually edit files, not just text.',
+                    'In the same owned directory from the previous turn, write followup.txt containing only the validation code I gave earlier, plus a newline. Do not alter other files.']):
+                    response=client.post(path+'/events',json={'events':[{'type':'agent.session.input.message','input':[{'role':'user','content':[{'type':'input_text','text':prompt}]}]}]})
+                    check(response.status_code==202,adapter+' native turn queued')
+                    deadline=time.monotonic()+420;previous_items=0 if index==0 else len(items)
+                    while time.monotonic()<deadline:
+                        state=client.get(path);state.raise_for_status();state=state.json()
+                        if state.get('error') or state.get('status')=='failed':raise AssertionError(adapter+' native session failed')
+                        response=client.get(path+'/items',params={'limit':100,'order':'asc'});response.raise_for_status();items=response.json()['data']
+                        if state.get('status')=='idle' and len(items)>previous_items:break
+                        time.sleep(1)
+                    else:raise TimeoutError('owned native turn deadline; destroy sandbox to cancel')
+                print('AGENTS_MODEL_PROOF '+json.dumps({'adapter':adapter,'root':root,'session':session,'nonce':nonce,'expected_stdout':expected+'\n'}),flush=True)
+                check(True,adapter+' two real native turns on the launched public application; independent host artifact checks still required')
+    else:
+        print("[SKIP] actual native model turns not requested",flush=True)
     return 0
 
 
