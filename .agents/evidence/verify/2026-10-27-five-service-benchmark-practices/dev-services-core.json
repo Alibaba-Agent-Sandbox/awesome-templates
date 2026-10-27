@@ -1,0 +1,133 @@
+{
+  "result": "PASS",
+  "template": "dev-services",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//dev-services@6bd63f81edd6d909cb7df929dcfb31bd0e5d7393",
+  "manifest_sha256": "dfa6fd1292bef941336cdf043b5c4962d1ffc73129da58068842e349a26276e1",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "services_versions",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "services_self_test",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "DEV_SERVICES_PASSWORD"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:dfa6fd1292bef941336cdf043b5c4962d1ffc73129da58068842e349a26276e1",
+    "source_digest": "633415431984e9ddfe5d4e9b111c49e689b6089a5c6e56d31099abd630bad86d",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "e48220b79a713aaef71b2a6e14423e81c668c161588a65b739022a0bbfaa1c2f",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    },
+    {
+      "port": 5432,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    },
+    {
+      "port": 16379,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 6,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "4d7abf354f6f7dfcced56be1045921a8b8d1a5c1d3da5e9f60d40b3e40379564",
+    "transport_adapter_sha256": "f3f71110b6f623042d8f3b1b280cd0cd704f43b94291364ca60bb2e9691be80a",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "dev-services",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "cli actual documented business result",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI owned service independently stopped before SDK",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README SDK program",
+          "result": "PASS"
+        },
+        {
+          "id": "sdk actual documented business result",
+          "result": "PASS"
+        },
+        {
+          "id": "SDK owned service independently stopped before HTTP",
+          "result": "PASS"
+        },
+        {
+          "id": "http actual documented business result",
+          "result": "PASS"
+        },
+        {
+          "id": "HTTP owned service independently stopped",
+          "result": "PASS"
+        }
+      ],
+      "artifacts": {}
+    }
+  },
+  "application_result": "PASS"
+}
