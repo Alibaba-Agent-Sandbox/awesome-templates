@@ -1,0 +1,161 @@
+{
+  "copilot-cli": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/copilot_version",
+      "POST /commands/copilot_setup_check",
+      "POST /commands/copilot"
+    ],
+    "core_checks": 17,
+    "documented_checks": 14,
+    "core_source": "Alibaba-Agent-Sandbox/awesome-templates//copilot-cli@1627b69177263c47886ec8d9ebdb34951c2d3388",
+    "docs_source": "Alibaba-Agent-Sandbox/awesome-templates//copilot-cli@a12add43ccd7029dd4b500d8c9a9404dc2f4796f",
+    "input_identities_match": true
+  },
+  "muse": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/muse_version",
+      "POST /commands/muse_native_check",
+      "POST /commands/muse_setup_check",
+      "POST /commands/muse"
+    ],
+    "core_checks": 19,
+    "documented_checks": 11,
+    "core_source": "Alibaba-Agent-Sandbox/awesome-templates//muse@26f9cee590cffdd2b41c0b9845fa1d63e11b1a79",
+    "docs_source": "Alibaba-Agent-Sandbox/awesome-templates//muse@a12add43ccd7029dd4b500d8c9a9404dc2f4796f",
+    "input_identities_match": true
+  },
+  "codex": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/codex_version",
+      "POST /commands/codex_setup_check",
+      "POST /commands/codex_config_write",
+      "POST /commands/codex_agents_write",
+      "POST /commands/codex_exec"
+    ],
+    "core_checks": 18,
+    "documented_checks": 11,
+    "core_source": "Alibaba-Agent-Sandbox/awesome-templates//codex@22168cd80bfe143960e439ab59778301eb580f70",
+    "docs_source": "Alibaba-Agent-Sandbox/awesome-templates//codex@22168cd80bfe143960e439ab59778301eb580f70",
+    "input_identities_match": true
+  },
+  "codex-agent-api": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/codex_version",
+      "POST /commands/codex",
+      "POST /v1/agents/sessions",
+      "GET /v1/agents/sessions",
+      "GET /v1/agents/sessions/{session_id}",
+      "POST /v1/agents/sessions/{session_id}",
+      "DELETE /v1/agents/sessions/{session_id}",
+      "POST /v1/agents/sessions/{session_id}/events",
+      "GET /v1/agents/sessions/{session_id}/events",
+      "GET /v1/agents/sessions/{session_id}/items",
+      "GET /v1/agents/sessions/{session_id}/artifacts/{artifact_id}",
+      "DELETE /v1/agents/sessions/{session_id}/artifacts/{artifact_id}",
+      "POST /v1/agents",
+      "GET /v1/agents",
+      "GET /v1/agents/{agent_id}",
+      "POST /v1/agents/{agent_id}",
+      "DELETE /v1/agents/{agent_id}",
+      "POST /commands/agent_status"
+    ],
+    "core_checks": 30,
+    "documented_checks": 20,
+    "core_source": "Alibaba-Agent-Sandbox/awesome-templates//codex-agent-api@26f9cee590cffdd2b41c0b9845fa1d63e11b1a79",
+    "docs_source": "Alibaba-Agent-Sandbox/awesome-templates//codex-agent-api@6bd63f81edd6d909cb7df929dcfb31bd0e5d7393",
+    "input_identities_match": true
+  },
+  "document-tools": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/document_version",
+      "POST /commands/document_setup_check",
+      "POST /commands/convert",
+      "POST /commands/office_version",
+      "POST /commands/document_smoke",
+      "POST /commands/document_extended_smoke"
+    ],
+    "core_checks": 36,
+    "documented_checks": 7,
+    "core_source": "Alibaba-Agent-Sandbox/awesome-templates//document-tools@54dc3e137013af4a97de0267b4e4006f6ab8a877",
+    "docs_source": "Alibaba-Agent-Sandbox/awesome-templates//document-tools@54dc3e137013af4a97de0267b4e4006f6ab8a877",
+    "input_identities_match": true
+  },
+  "media-tools": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/media_version",
+      "POST /commands/media_setup_check",
+      "POST /commands/media_probe",
+      "POST /commands/transcode",
+      "POST /commands/transcode_args",
+      "POST /commands/media_smoke",
+      "POST /commands/media_args_smoke",
+      "POST /commands/media_video_smoke"
+    ],
+    "core_checks": 28,
+    "documented_checks": 7,
+    "core_source": "Alibaba-Agent-Sandbox/awesome-templates//media-tools@54dc3e137013af4a97de0267b4e4006f6ab8a877",
+    "docs_source": "Alibaba-Agent-Sandbox/awesome-templates//media-tools@54dc3e137013af4a97de0267b4e4006f6ab8a877",
+    "input_identities_match": true
+  },
+  "ocr": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/ocr_version",
+      "POST /commands/ocr_setup_check",
+      "POST /commands/ocr",
+      "POST /commands/ocr_smoke"
+    ],
+    "core_checks": 19,
+    "documented_checks": 7,
+    "core_source": "Alibaba-Agent-Sandbox/awesome-templates//ocr@54dc3e137013af4a97de0267b4e4006f6ab8a877",
+    "docs_source": "Alibaba-Agent-Sandbox/awesome-templates//ocr@54dc3e137013af4a97de0267b4e4006f6ab8a877",
+    "input_identities_match": true
+  },
+  "browser-automation": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/browse",
+      "POST /commands/scrape",
+      "POST /commands/fill_form",
+      "POST /commands/run",
+      "POST /commands/pdf",
+      "POST /commands/mcp_start",
+      "POST /commands/mcp_status",
+      "POST /commands/mcp_call",
+      "POST /commands/mcp_stop",
+      "POST /commands/mcp_self_test"
+    ],
+    "core_checks": 37,
+    "documented_checks": 7,
+    "core_source": "Alibaba-Agent-Sandbox/awesome-templates//browser-automation@54dc3e137013af4a97de0267b4e4006f6ab8a877",
+    "docs_source": "Alibaba-Agent-Sandbox/awesome-templates//browser-automation@54dc3e137013af4a97de0267b4e4006f6ab8a877",
+    "input_identities_match": true
+  },
+  "polyglot-toolchain": {
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/toolchain_versions",
+      "POST /commands/toolchain_smoke"
+    ],
+    "core_checks": 1,
+    "documented_checks": 7,
+    "core_source": "Alibaba-Agent-Sandbox/awesome-templates//polyglot-toolchain@54dc3e137013af4a97de0267b4e4006f6ab8a877",
+    "docs_source": "Alibaba-Agent-Sandbox/awesome-templates//polyglot-toolchain@54dc3e137013af4a97de0267b4e4006f6ab8a877",
+    "input_identities_match": true
+  }
+}
