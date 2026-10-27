@@ -42,8 +42,8 @@ async def run(value):
             return {'self_test':'BROWSER_USE_NATIVE_OK','png_bytes':len(data)}
         tools=Tools(exclude_actions=sorted(ALL_ACTIONS-ALLOWED))
         if set(tools.registry.registry.actions)!=ALLOWED:raise RuntimeError('native action surface differs from pinned profile')
-        llm=ChatOpenAI(model=value['model'],api_key=value['api_key'],base_url=value['base_url'],max_retries=0,timeout=90,max_completion_tokens=4096,add_schema_to_system_prompt=True,dont_force_structured_output=True)
-        agent=Agent(task=value['task'],llm=llm,browser=browser,tools=tools,use_vision=False,use_judge=False,use_thinking=False,generate_gif=False,file_system_path=str(Path(os.environ['HOME'])/'files'),calculate_cost=False,initial_actions=[{'navigate':{'url':value['url']}}] if value['url'] else [],max_failures=1,llm_timeout=100,step_timeout=120,max_actions_per_step=3)
+        llm=ChatOpenAI(model=value['model'],api_key=value['api_key'],base_url=value['base_url'],max_retries=0,timeout=120,max_completion_tokens=8192,add_schema_to_system_prompt=True,dont_force_structured_output=True)
+        agent=Agent(task=value['task'],llm=llm,browser=browser,tools=tools,use_vision=False,use_judge=False,use_thinking=False,generate_gif=False,file_system_path=str(Path(os.environ['HOME'])/'files'),calculate_cost=False,initial_actions=[{'navigate':{'url':value['url']}}] if value['url'] else [],max_failures=3,llm_timeout=130,step_timeout=180,max_actions_per_step=3)
         if set(agent.tools.registry.registry.actions)!=ALLOWED:raise RuntimeError('agent altered the pinned browser action surface')
         history=await agent.run(max_steps=value['max_steps'])
         data=await browser.take_screenshot(path=value['screenshot_path'],format='png');page=await browser.must_get_current_page();url=(await page.get_target_info()).get('url','')

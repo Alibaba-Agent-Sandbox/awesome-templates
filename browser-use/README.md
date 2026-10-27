@@ -144,7 +144,7 @@ abx kill "$SANDBOX_ID"
 
 ## Resources
 
-2vCPU/2048MB, named-command port9000. --disable-dev-shm-usage avoids relying on a large /dev/shm. One browser operation per server; concurrent heavy calls fail busy500. max_steps1..20; max3 actions/step; model90seconds/0retry/4096tokens; native action30/step120/LLM100second guards; outer command1..900seconds plus bounded cleanup. Each captured stream256KiB. Private browser/config/files/processes removed on ordinary success/failure/deadline; the PNG remains caller-owned. Sandbox deletion is the final boundary after abrupt server loss or hostile same-user code. Image rootfs has an8GiB build gate.
+2vCPU/2048MB, named-command port9000. --disable-dev-shm-usage avoids relying on a large /dev/shm. One browser operation per server; concurrent heavy calls fail busy500. max_steps1..20; max3 actions/step; model120seconds/0HTTPretry/8192tokens; at most3 consecutive native agent failures; native action30/step180/LLM130second guards; outer command1..900seconds plus bounded cleanup. Each captured stream256KiB. Private browser/config/files/processes removed on ordinary success/failure/deadline; the PNG remains caller-owned. Sandbox deletion is the final boundary after abrupt server loss or hostile same-user code. Image rootfs has an8GiB build gate.
 
 ## Contributing
 
