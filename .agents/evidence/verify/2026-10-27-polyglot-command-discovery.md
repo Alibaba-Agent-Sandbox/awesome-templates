@@ -48,3 +48,44 @@ registrations; they cannot replace the full source-owned public-method inventory
 Fresh full OpenSandbox Qwen/DeepSeek workflows are added; upcoming current-source
 Hermes workflows also execute the explicit compatibility callback. Native/private
 model outputs and original deadlines remain unchanged.
+
+## Published CLI discovery source audit
+
+Published CLIv0.5.7 source inspection confirms named execution sends only
+POST /commands/name and does not implicitly list GET /commands. The separately
+recorded source hash and exact tag explain why explicit discovery verification
+is necessary; previous business POST success alone does not certify discovery.
+No extra provider case was added for this source-only audit.
+
+[Immutable tag/source hash](2026-10-27-polyglot-command-discovery/published-cli-source-audit.json).
+
+## Fresh complete public-method workflows
+
+Actual published CLI0.5.7/client-server0.4.0a6, source-bound full original native
+controllers and fresh literal CLI/full unchanged README SDK/direct HTTP business
+use. Common actual CLI discovery precedes the workflows. Qwen/DeepSeek also run
+the legacy Python method through all three consumers using new script bytes per
+call, followed by independent file absence. The full source inventory is separate
+from listed command names; hidden methods cannot be inferred from discovery.
+
+| Template | Provider | Result | Native passes | Documented checks |
+| --- | --- | --- | ---: | ---: |
+| polyglot-toolchain | alicloud-express | PASS | 2 | 8 |
+| polyglot-toolchain | opensandbox | PASS | 2 | 8 |
+| apply-patch | alicloud-express | PASS | 5 | 12 |
+| apply-patch | opensandbox | PASS | 5 | 12 |
+| code-server | alicloud-express | PASS | 5 | 11 |
+| code-server | opensandbox | PASS | 5 | 11 |
+| dev-services | alicloud-express | PASS | 6 | 8 |
+| dev-services | opensandbox | PASS | 6 | 8 |
+| next-app | alicloud-express | PASS | 6 | 11 |
+| next-app | opensandbox | PASS | 6 | 11 |
+| swe | alicloud-express | PASS | 14 | 8 |
+| qwen-code | opensandbox | PASS | 17 | 15 |
+| deepseek-harness | opensandbox | PASS | 17 | 12 |
+
+Completed receipts: 13/13; complete passing workflows: 13.
+Successful entries require zero native failures/skips/not-run and exact source/
+README/verifier matching plus independent owned sandbox/prepared/local/remote image
+absence. Failing entries never qualify. Current-head checks, producer/Registry/blog
+publication and public readback remain independent gates. No full50 claim.

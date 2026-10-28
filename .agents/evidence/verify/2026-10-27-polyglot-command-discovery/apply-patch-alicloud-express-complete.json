@@ -1,0 +1,154 @@
+{
+  "result": "PASS",
+  "template": "apply-patch",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//apply-patch@073d2d90bfc687f5cc0a3767c3fe7cea4283e387",
+  "manifest_sha256": "24db5e49e73f3a85b8b4225fa255e8a088009191e66f38d8637b03b9069b47c7",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    "literal documented CLI command discovery",
+    {
+      "smoke": 0,
+      "command": "apply_patch_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "apply_patch_smoke",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": []
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:24db5e49e73f3a85b8b4225fa255e8a088009191e66f38d8637b03b9069b47c7",
+    "source_digest": "f4c0557ea35cffa07818909035b73995c106c5399a578105c2367922e899a695",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "1c871d1a188c8fc2cfbfe0a3595c4e45838579ef24fea23f1e270832c774af2a",
+    "build_profile": null
+  },
+  "listed_command_names": [
+    "apply_patch",
+    "apply_patch_smoke",
+    "apply_patch_version"
+  ],
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 5,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "e1651aab757a49055368f3b960dc1223cb3c3f54dc77752fc33318706ac52eb2",
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "apply-patch",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "actual literal documented CLI command discovery",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README CLI business request",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI business process exit zero",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded exact documented artifact bytes",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI output independently absent before SDK task",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README Python example",
+          "result": "PASS"
+        },
+        {
+          "id": "SDK business process exit zero",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded exact documented artifact bytes",
+          "result": "PASS"
+        },
+        {
+          "id": "previous SDK output independently absent before HTTP task",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP business request",
+          "result": "PASS"
+        },
+        {
+          "id": "HTTP business process exit zero",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded exact documented artifact bytes",
+          "result": "PASS"
+        }
+      ],
+      "listed_command_names": [
+        "apply_patch",
+        "apply_patch_smoke",
+        "apply_patch_version"
+      ],
+      "readme_sha256": "2313699efe2206bd0cac69e346f31bcff9d978b9d55f36b10875562ebe3463f7",
+      "artifact": {
+        "file": "hello.txt",
+        "sha256": "61f9b4faacffe9a97898b6e3edb9d2d0e9b5691771c9533df1eb45d9ce157388",
+        "observed_stdout": "Hello from a patch"
+      }
+    }
+  },
+  "application_result": "PASS",
+  "original_private_receipt_sha256": "6b513d90650e2085619b12c6d8d85aff1154b317228b515fa8a634756aabacde"
+}
