@@ -89,3 +89,15 @@ Successful entries require zero native failures/skips/not-run and exact source/
 README/verifier matching plus independent owned sandbox/prepared/local/remote image
 absence. Failing entries never qualify. Current-head checks, producer/Registry/blog
 publication and public readback remain independent gates. No full50 claim.
+
+## Final integrated source verification on2026-10-28
+
+Normal mainc480481 integration preserves the connected SDK ID equality check
+before actual CLI discovery, all ownership binding arguments and the compatibility
+helper. All13 real-workflow template folder trees remain identical to tested
+source073d2d90. Ownership/controller/compiler regressions95PASS, public launch
+suite42PASS, generator8PASS, specification39PASS, all-template checkerPASS,
+224-document linksPASS and configured-value credential/diff checksPASS. AST
+comparison confirms no test method was lost from either integration parent.
+Current-head remote CI, independent Registry review and final public readback
+remain required; all13 actual provider results and owned cleanup are alreadyPASS.
