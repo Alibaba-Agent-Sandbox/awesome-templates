@@ -1,0 +1,128 @@
+{
+  "result": "PASS",
+  "template": "qm-sandbox",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//qm-sandbox@46b7c1ccc01eae9cf41292dde89ab32411ed5f79",
+  "manifest_sha256": "2ec15f7b3e65a48a5bef92cfb903de48e4171156e6d0505df6d26e320bee54a8",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "qm_sandbox_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "qm_sandbox_native_check",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": []
+  },
+  "endpoint_mode": "server-proxy",
+  "input_receipt": {
+    "manifest_digest": "sha256:2ec15f7b3e65a48a5bef92cfb903de48e4171156e6d0505df6d26e320bee54a8",
+    "source_digest": "7451fd8c4e212e80e23c9e7536e71037d6763e182e55ba7b847c9ce40505c8a8",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "a18073e36c7b37d482a1fa20d6994ca53213a10faaaaa85ffb801f48d8f41f15",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 18,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "42ca73d065d143cd9613c7dedb7a49b400fbf34d191eac412e589a0a56a25e4c",
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "qm-sandbox",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "literal README CLI business request",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded exact documented artifact bytes",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI output independently absent before SDK task",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README Python example",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded exact documented artifact bytes",
+          "result": "PASS"
+        },
+        {
+          "id": "previous SDK output independently absent before HTTP task",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP business request",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded exact documented artifact bytes",
+          "result": "PASS"
+        }
+      ],
+      "readme_sha256": "cff33d12674fb665c70cd0560b3dee79ad3e85da43c1ebb243965f0d9cf4c36c",
+      "artifact": {
+        "file": "note.txt",
+        "sha256": "ff99d0fa4d6124c88227bb9d69622a581230995b7244a459b4b9ee75d622334f",
+        "observed_stdout": "Hello from QM tools"
+      }
+    }
+  },
+  "application_result": "PASS",
+  "original_private_receipt_sha256": "8a26750c5df8c6e74043bb78fafd666e6c59f55e39e4d4ca0ab3959b1416bfa4"
+}

@@ -1,0 +1,129 @@
+{
+  "result": "PASS",
+  "template": "agents-cli",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//agents-cli@46b7c1ccc01eae9cf41292dde89ab32411ed5f79",
+  "manifest_sha256": "64958a6da61412e3e87032ca8b2daeb97a978f5be19dd2b29d930cbdf09fec22",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "agents_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "OPENAI_API_KEY",
+      "OPENAI_BASE_URL",
+      "OPENAI_MODEL"
+    ]
+  },
+  "endpoint_mode": "server-proxy",
+  "input_receipt": {
+    "manifest_digest": "sha256:64958a6da61412e3e87032ca8b2daeb97a978f5be19dd2b29d930cbdf09fec22",
+    "source_digest": "7888c96ec74fd17d57ca8ffc08f745d9bb8b190ebb49b864cb37d48d3060b8f9",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "842bdd833702830f29d0201b0d8edcd83715acd378d37e2a55e332b23a04d79c",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 27,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "01b05d2265b3d68b93b7d5fbc887883281f20c91b3fa268c94e197132c8ab821",
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "agents-cli",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "qwen-code native two completed persisted turns; independent generated source execution/context file/report and owned absence",
+          "result": "PASS"
+        },
+        {
+          "id": "codex native two completed persisted turns; independent generated source execution/context file/report and owned absence",
+          "result": "PASS"
+        },
+        {
+          "id": "literal CLI both named methods; explicit profile idempotence",
+          "result": "PASS"
+        },
+        {
+          "id": "qwen-code unchanged complete README SDK session program",
+          "result": "PASS"
+        },
+        {
+          "id": "qwen-code-sdk new generated source/report independently downloaded and readonly networkless Python execution",
+          "result": "PASS"
+        },
+        {
+          "id": "codex unchanged complete README SDK session program",
+          "result": "PASS"
+        },
+        {
+          "id": "codex-sdk new generated source/report independently downloaded and readonly networkless Python execution",
+          "result": "PASS"
+        },
+        {
+          "id": "qwen-code-http new generated source/report independently downloaded and readonly networkless Python execution",
+          "result": "PASS"
+        },
+        {
+          "id": "codex-http new generated source/report independently downloaded and readonly networkless Python execution",
+          "result": "PASS"
+        }
+      ],
+      "readme_sha256": "69fe8014bcec47e173e075b175c735b6f913527c946d33738979f2ffc2f02049",
+      "native_core_model": "qwen3.8-max",
+      "configured_model": "qwen3.8-max",
+      "adapters": [
+        "qwen-code",
+        "codex"
+      ],
+      "native_core_turns_per_adapter": 2,
+      "independent_generated_programs": 6
+    }
+  },
+  "application_result": "PASS",
+  "original_private_receipt_sha256": "ed54c02cf1162077fd871161d60912ccd3dffc590491fddaca8def8721de3105"
+}

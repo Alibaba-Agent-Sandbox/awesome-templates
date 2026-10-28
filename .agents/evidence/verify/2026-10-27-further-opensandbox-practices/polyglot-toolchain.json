@@ -1,0 +1,116 @@
+{
+  "result": "PASS",
+  "template": "polyglot-toolchain",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//polyglot-toolchain@46b7c1ccc01eae9cf41292dde89ab32411ed5f79",
+  "manifest_sha256": "e06afbb88c5d06d11d4440f43c6276841cf3eedbcc504c5b7436d14214cb61cd",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "toolchain_smoke",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": []
+  },
+  "endpoint_mode": "server-proxy",
+  "input_receipt": {
+    "manifest_digest": "sha256:e06afbb88c5d06d11d4440f43c6276841cf3eedbcc504c5b7436d14214cb61cd",
+    "source_digest": "f48d2893ed2d3631ac78cf2d5a7a5f35cb33df771ca56117b0ccb52f0ef060ed",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "758fe61d03cc064ae3604801e753b8e33e7a4d3d2d9544f8435476e68292cd7e",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 1,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "c0d5bfd64efaed9be9c007e3a49655278fb61a42b5e17d483d170d12ff145d0e",
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "polyglot-toolchain",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "cli actual documented output independently verified",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI outputs independently absent before SDK",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README SDK program",
+          "result": "PASS"
+        },
+        {
+          "id": "sdk actual documented output independently verified",
+          "result": "PASS"
+        },
+        {
+          "id": "previous SDK outputs independently absent before HTTP",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP request",
+          "result": "PASS"
+        },
+        {
+          "id": "http actual documented output independently verified",
+          "result": "PASS"
+        }
+      ],
+      "readme_sha256": "8e42cf38bcb39d803289b07e84cdf70b79cb6a13996ee3d32b3dba87bfab034a",
+      "artifacts": {},
+      "business_result": {
+        "go": "GO_OK",
+        "rust": "RUST_OK",
+        "java": "JAVA_OK",
+        "cleanup_verified": true
+      }
+    }
+  },
+  "application_result": "PASS",
+  "original_private_receipt_sha256": "398fe0b5058cf3d20a21de60fa75011f41f3db221a042b4e7fe24a15b8caf391"
+}

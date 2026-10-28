@@ -1,0 +1,85 @@
+{
+  "result": "FAIL",
+  "template": "droid",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//droid@4c4d1a700b76135333d8a85f32008f59745cc926",
+  "manifest_sha256": "94d33ae85284dc5781ece1ea1f361dcbd6014aef606f480ddfc23e701a47c432",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "droid_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "DROID_MODEL",
+      "DROID_MODEL_API_KEY",
+      "DROID_MODEL_BASE_URL"
+    ]
+  },
+  "endpoint_mode": "direct",
+  "input_receipt": {
+    "manifest_digest": "sha256:94d33ae85284dc5781ece1ea1f361dcbd6014aef606f480ddfc23e701a47c432",
+    "source_digest": "51945022b9d8d09e68a39f6a7dfc859378a629b3e641f1ab057b7c9f3c3ff534",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "031ec3f7e75471354e57ef826a77d501c997798da79f0161dd8432915e390789",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 1,
+    "pass_count": 8,
+    "fail_count": 1,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "b5d146be1480bd628d66eba4f01efaa2f090a34bd7677c01842a146690d4204e",
+    "created_sandbox_target_bound": true,
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": false
+  },
+  "http_diagnostics": [
+    "[FAIL] model-generated code requires an explicitly owned remote sandbox"
+  ],
+  "application_result": "FAIL",
+  "failure_type": "CheckFailed",
+  "failed_phase": "application-controller",
+  "diagnostics": {},
+  "failed_check": "template application HTTP controller",
+  "original_private_receipt_sha256": "e2d4c94e10a7b127e79543eab8d3707dd91655dd8129bd34f9f38de4415cfe38"
+}

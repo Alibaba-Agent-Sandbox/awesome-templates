@@ -1,0 +1,555 @@
+{
+  "polyglot-toolchain": {
+    "provider": "opensandbox",
+    "result": "PASS",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/toolchain_versions",
+      "POST /commands/toolchain_smoke"
+    ],
+    "native_assertions": 1,
+    "native_failures": 0,
+    "documented_checks": 7,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": false,
+    "qualification": "Original native compilation/business result PASS; complete qualification requires PR288 fresh discovery/usage receipts",
+    "public_method_gap": [
+      "GET /commands not explicitly executed by original controller"
+    ]
+  },
+  "chrome": {
+    "provider": "opensandbox",
+    "result": "FAIL",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/chrome_version",
+      "POST /commands/chrome_setup_check",
+      "POST /commands/chrome_start",
+      "POST /commands/chrome_status",
+      "POST /commands/chrome_open",
+      "POST /commands/chrome_screenshot",
+      "POST /commands/chrome_stop",
+      "POST /commands/chrome_smoke"
+    ],
+    "native_assertions": 15,
+    "native_failures": 1,
+    "documented_checks": 0,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": false,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "code-server": {
+    "provider": "opensandbox",
+    "result": "FAIL",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/code_server_version",
+      "POST /commands/code_server_start",
+      "POST /commands/code_server_status",
+      "POST /commands/code_server_stop",
+      "POST /commands/code_server_self_test"
+    ],
+    "native_assertions": 5,
+    "native_failures": 0,
+    "documented_checks": 1,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": false,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "qm-sandbox": {
+    "provider": "opensandbox",
+    "result": "PASS",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/qm_sandbox_version",
+      "POST /commands/qm_sandbox_native_check",
+      "POST /commands/qm_sandbox_setup_check",
+      "POST /commands/qm_sandbox_sdk_smoke",
+      "POST /commands/qm_sandbox_exec",
+      "POST /commands/qm_sandbox_file"
+    ],
+    "native_assertions": 18,
+    "native_failures": 0,
+    "documented_checks": 8,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": true,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "codex": {
+    "provider": "opensandbox",
+    "result": "PASS",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/codex_version",
+      "POST /commands/codex_setup_check",
+      "POST /commands/codex_config_write",
+      "POST /commands/codex_agents_write",
+      "POST /commands/codex_exec"
+    ],
+    "native_assertions": 19,
+    "native_failures": 0,
+    "documented_checks": 11,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": true,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "codex-agent-api": {
+    "provider": "opensandbox",
+    "result": "FAIL",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/codex_version",
+      "POST /commands/codex",
+      "POST /v1/agents/sessions",
+      "GET /v1/agents/sessions",
+      "GET /v1/agents/sessions/{session_id}",
+      "POST /v1/agents/sessions/{session_id}",
+      "DELETE /v1/agents/sessions/{session_id}",
+      "POST /v1/agents/sessions/{session_id}/events",
+      "GET /v1/agents/sessions/{session_id}/events",
+      "GET /v1/agents/sessions/{session_id}/items",
+      "GET /v1/agents/sessions/{session_id}/artifacts/{artifact_id}",
+      "DELETE /v1/agents/sessions/{session_id}/artifacts/{artifact_id}",
+      "POST /v1/agents",
+      "GET /v1/agents",
+      "GET /v1/agents/{agent_id}",
+      "POST /v1/agents/{agent_id}",
+      "DELETE /v1/agents/{agent_id}",
+      "POST /commands/agent_status"
+    ],
+    "native_assertions": 21,
+    "native_failures": 1,
+    "documented_checks": 0,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": false,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "deepseek-harness": {
+    "provider": "opensandbox",
+    "result": "PASS",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/deepseek_tools",
+      "POST /commands/deepseek_setup_check",
+      "POST /commands/deepseek",
+      "POST /commands/run"
+    ],
+    "native_assertions": 17,
+    "native_failures": 0,
+    "documented_checks": 11,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": false,
+    "qualification": "Original native model/business success preserved; fresh complete legacy Python method use is required",
+    "public_method_gap": [
+      "POST /commands/run not actually executed in original OpenSandbox flow"
+    ]
+  },
+  "copilot-cli": {
+    "provider": "opensandbox",
+    "result": "FAIL",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/copilot_version",
+      "POST /commands/copilot_setup_check",
+      "POST /commands/copilot"
+    ],
+    "native_assertions": 8,
+    "native_failures": 1,
+    "documented_checks": 0,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": false,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "qwen-code": {
+    "provider": "opensandbox",
+    "result": "PASS",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/qwen_version",
+      "POST /commands/qwen_setup_check",
+      "POST /commands/qwen",
+      "POST /commands/run"
+    ],
+    "native_assertions": 17,
+    "native_failures": 0,
+    "documented_checks": 14,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": false,
+    "qualification": "Original native model/business success preserved; fresh complete legacy Python method use is required",
+    "public_method_gap": [
+      "POST /commands/run not actually executed in original OpenSandbox flow"
+    ]
+  },
+  "pi": {
+    "provider": "opensandbox",
+    "result": "PASS",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/pi_version",
+      "POST /commands/pi_tools_check",
+      "POST /commands/pi_setup_check",
+      "POST /commands/pi"
+    ],
+    "native_assertions": 18,
+    "native_failures": 0,
+    "documented_checks": 11,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": true,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "deepagents": {
+    "provider": "opensandbox",
+    "result": "FAIL",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/deepagents_version",
+      "POST /commands/deepagents_setup_check",
+      "POST /commands/deepagents"
+    ],
+    "native_assertions": 17,
+    "native_failures": 0,
+    "documented_checks": 6,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": false,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "crush": {
+    "provider": "opensandbox",
+    "result": "PASS",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/crush_version",
+      "POST /commands/crush_setup_check",
+      "POST /commands/crush"
+    ],
+    "native_assertions": 17,
+    "native_failures": 0,
+    "documented_checks": 14,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": true,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "kimi-code": {
+    "provider": "opensandbox",
+    "result": "PASS",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/kimi_version",
+      "POST /commands/kimi_setup_check",
+      "POST /commands/kimi"
+    ],
+    "native_assertions": 17,
+    "native_failures": 0,
+    "documented_checks": 11,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": true,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "grok": {
+    "provider": "opensandbox",
+    "result": "FAIL",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/grok_version",
+      "POST /commands/grok_setup_check",
+      "POST /commands/grok"
+    ],
+    "native_assertions": 8,
+    "native_failures": 1,
+    "documented_checks": 0,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": false,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "cline": {
+    "provider": "opensandbox",
+    "result": "FAIL",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/cline_version",
+      "POST /commands/cline_setup_check",
+      "POST /commands/cline"
+    ],
+    "native_assertions": 8,
+    "native_failures": 1,
+    "documented_checks": 0,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": false,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "prime-agent": {
+    "provider": "opensandbox",
+    "result": "FAIL",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/prime_agent_version",
+      "POST /commands/prime_agent_kernel_check",
+      "POST /commands/prime_agent_setup_check",
+      "POST /commands/prime_agent"
+    ],
+    "native_assertions": 9,
+    "native_failures": 1,
+    "documented_checks": 0,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": false,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "hermes-agent": {
+    "provider": "opensandbox",
+    "result": "FAIL",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/hermes_version",
+      "POST /commands/hermes_setup_check",
+      "POST /commands/hermes",
+      "POST /commands/run"
+    ],
+    "native_assertions": 0,
+    "native_failures": 0,
+    "documented_checks": 0,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": false,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "muse": {
+    "provider": "opensandbox",
+    "result": "FAIL",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/muse_version",
+      "POST /commands/muse_native_check",
+      "POST /commands/muse_setup_check",
+      "POST /commands/muse"
+    ],
+    "native_assertions": 10,
+    "native_failures": 1,
+    "documented_checks": 0,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": false,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "qm": {
+    "provider": "opensandbox",
+    "result": "FAIL",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/qm_version",
+      "POST /commands/qm_native_check",
+      "POST /commands/qm_setup_check",
+      "POST /commands/qm_sdk_smoke",
+      "POST /commands/qm"
+    ],
+    "native_assertions": 10,
+    "native_failures": 1,
+    "documented_checks": 0,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": false,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "agents-cli": {
+    "provider": "opensandbox",
+    "result": "PASS",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/agents_configure_codex",
+      "POST /commands/agents_version",
+      "GET /v1/agents/runtimes",
+      "POST /v1/agents/sessions",
+      "GET /v1/agents/sessions",
+      "GET /v1/agents/sessions/{id}",
+      "POST /v1/agents/sessions/{id}/events",
+      "GET /v1/agents/sessions/{id}/items"
+    ],
+    "native_assertions": 27,
+    "native_failures": 0,
+    "documented_checks": 9,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": true,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "openclaw": {
+    "provider": "opensandbox",
+    "result": "PASS",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/gateway_start",
+      "POST /commands/gateway_status",
+      "POST /commands/gateway_health",
+      "POST /commands/gateway_chat",
+      "POST /commands/gateway_stop"
+    ],
+    "native_assertions": 18,
+    "native_failures": 0,
+    "documented_checks": 10,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": true,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "browser-use": {
+    "provider": "opensandbox",
+    "result": "FAIL",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/browser_use_version",
+      "POST /commands/browser_use_setup_check",
+      "POST /commands/browser_use_self_test",
+      "POST /commands/browser_use"
+    ],
+    "native_assertions": 12,
+    "native_failures": 1,
+    "documented_checks": 0,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": false,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "stagehand": {
+    "provider": "opensandbox",
+    "result": "PASS",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/stagehand_version",
+      "POST /commands/stagehand_setup_check",
+      "POST /commands/stagehand_self_test",
+      "POST /commands/stagehand"
+    ],
+    "native_assertions": 15,
+    "native_failures": 0,
+    "documented_checks": 8,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": true,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "tau2-bench": {
+    "provider": "opensandbox",
+    "result": "FAIL",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/tau2_version",
+      "POST /commands/tau2_setup_check",
+      "POST /commands/tau2_run",
+      "POST /commands/tau2_verify_artifact"
+    ],
+    "native_assertions": 8,
+    "native_failures": 1,
+    "documented_checks": 0,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": false,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "appworld": {
+    "provider": "opensandbox",
+    "result": "FAIL",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/appworld_version",
+      "POST /commands/appworld_setup_check",
+      "POST /commands/appworld_native_smoke",
+      "POST /commands/appworld_run",
+      "POST /commands/appworld_verify_artifact"
+    ],
+    "native_assertions": 9,
+    "native_failures": 1,
+    "documented_checks": 0,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": false,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  },
+  "swe": {
+    "provider": "opensandbox",
+    "result": "FAIL",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/swe_version",
+      "POST /commands/swe_setup_check",
+      "POST /commands/swe_prepare",
+      "POST /commands/swe_run_agent",
+      "POST /commands/swe_evaluate",
+      "POST /commands/swe_report",
+      "POST /commands/swe_cleanup"
+    ],
+    "native_assertions": 7,
+    "native_failures": 2,
+    "documented_checks": 0,
+    "runtime_folder_unchanged": true,
+    "cleanup_verified": true,
+    "endpoint_mode": "server-proxy",
+    "complete_provider_candidate": false,
+    "qualification": "Separate Registry current-source review required; failures never qualify"
+  }
+}
