@@ -1,0 +1,94 @@
+{
+  "result": "FAIL",
+  "template": "appworld",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//appworld@4c4d1a700b76135333d8a85f32008f59745cc926",
+  "manifest_sha256": "9e2c7a944b3def04446411b812e170c4e284b029fb9019b7a83e4eaa717121f5",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "appworld_native_smoke",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "retained in private CLI journal",
+    "diagnostics": [
+      {
+        "kind": "image",
+        "failure_type": "ReadTimeout"
+      },
+      {
+        "kind": "image",
+        "failure_type": "ReadTimeout"
+      }
+    ],
+    "artifact_cleanup_failures": 2,
+    "retained_artifact_count": 2,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "APPWORLD_MODEL",
+      "APPWORLD_MODEL_API_KEY",
+      "APPWORLD_MODEL_BASE_URL"
+    ]
+  },
+  "endpoint_mode": "direct",
+  "input_receipt": {
+    "manifest_digest": "sha256:9e2c7a944b3def04446411b812e170c4e284b029fb9019b7a83e4eaa717121f5",
+    "source_digest": "f4ebad4295d1fafbb3aea9367a150fa4687a8402a1948fb87a67e90dd5fa79a6",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "5ddb9cba5c8174b3830ab207f44673eac5db602d74eaa1b7b40100690563753a",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 1,
+    "pass_count": 9,
+    "fail_count": 1,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "14e0dc6e6415837e90a8096d0857be072c5b611c45e1dc34e48bd4d5dbcda29d",
+    "created_sandbox_target_bound": true,
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": false
+  },
+  "http_diagnostics": [
+    "[FAIL] original AppWorld controller aborted (ServerAPIError); counters={}; protected content omitted"
+  ],
+  "application_result": "FAIL",
+  "failure_type": "CheckFailed",
+  "failed_phase": "application-controller",
+  "diagnostics": {},
+  "failed_check": "template application HTTP controller",
+  "original_private_receipt_sha256": "e4eb8b8a0bca77ef5d6e89275751e73cf5e19c8ba9ab06fdf73f493d6a9e59a1"
+}

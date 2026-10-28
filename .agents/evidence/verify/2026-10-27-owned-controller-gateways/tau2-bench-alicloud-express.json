@@ -1,0 +1,148 @@
+{
+  "result": "PASS",
+  "template": "tau2-bench",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//tau2-bench@4c4d1a700b76135333d8a85f32008f59745cc926",
+  "manifest_sha256": "d522c02e22f1d41d6d3ff018423e0bafdf3e41002d5799e6089ef026a201b280",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "tau2_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "TAU2_MODEL",
+      "TAU2_MODEL_API_KEY",
+      "TAU2_MODEL_BASE_URL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:d522c02e22f1d41d6d3ff018423e0bafdf3e41002d5799e6089ef026a201b280",
+    "source_digest": "affe76dded9b6bbccb6c8b02f2a99107285e4f75af6f6ba7ab727381d2e7ea61",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "d57072caae77c5db95cb217b4efdc0889f69201eb1c49a1f4f4bd68e6c38e722",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 17,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "9f5593838bc3acbfa3d72e218d6f9e6b8ee2423e677e2c8ca3a3f348a54fed02",
+    "created_sandbox_target_bound": true,
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "tau2-bench",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "actual literal documented CLI command discovery",
+          "result": "PASS"
+        },
+        {
+          "id": "cli actual original task, downloaded exact artifact and keyless native replay",
+          "result": "PASS"
+        },
+        {
+          "id": "cli owned result directory independently absent",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README SDK program",
+          "result": "PASS"
+        },
+        {
+          "id": "sdk actual original task, downloaded exact artifact and keyless native replay",
+          "result": "PASS"
+        },
+        {
+          "id": "sdk owned result directory independently absent",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP task",
+          "result": "PASS"
+        },
+        {
+          "id": "http actual original task, downloaded exact artifact and keyless native replay",
+          "result": "PASS"
+        },
+        {
+          "id": "http owned result directory independently absent",
+          "result": "PASS"
+        }
+      ],
+      "listed_command_names": [
+        "tau2_run",
+        "tau2_setup_check",
+        "tau2_verify_artifact",
+        "tau2_version"
+      ],
+      "readme_sha256": "30c7b80dc1cafcfdc4241e5ce2c7642bfa2b3ee66f5b2e6f4f5ca5f88eb807f0",
+      "runs": {
+        "cli": {
+          "score": 1,
+          "artifact_bytes": 83773,
+          "artifact_sha256": "a08b2e634c09846693f9e3569f45500457d113a91f84a8ce92018544f22bee81",
+          "native_replay_score": 1.0
+        },
+        "sdk": {
+          "score": 1.0,
+          "artifact_bytes": 71379,
+          "artifact_sha256": "a564ce01eea89a3824c719c57de73584153adaca6af84b74ea724943f23ec821",
+          "native_replay_score": 1.0
+        },
+        "http": {
+          "score": 1.0,
+          "artifact_bytes": 87877,
+          "artifact_sha256": "bef38ef3793c8d4f88db6cbb697967d899f699f7f482fab3e0a7095cbb711d94",
+          "native_replay_score": 1.0
+        }
+      },
+      "configured_model": "qwen3.8-max"
+    }
+  },
+  "application_result": "PASS",
+  "original_private_receipt_sha256": "6ef2d0b01e3ba54dcd2c0beb52096c006653721a2546e19b35da3047a66eb42c"
+}

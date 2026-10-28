@@ -20,6 +20,17 @@ _APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKE
 
 RESULTS=[]
 INVALID_REQUESTS=[{'prompt':''},{'prompt':'x','command_timeout':'bad'},{'prompt':'x','command_timeout':601},{'prompt':'x','cwd':'/outside-workspace'}]
+# Generated from scripts/sync_controller_ownership.py; do not edit this function alone.
+def owned_loopback_gateway(base):
+    import re
+    sandbox_id=os.environ.get('E2E_OWNED_SANDBOX_ID','')
+    bound=os.environ.get('E2E_OWNED_GATEWAY_URL','').rstrip('/')
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,127}',sandbox_id) or bound!=base.rstrip('/'):
+        return False
+    path=urlsplit(base).path.rstrip('/')
+    return '/sandboxes/'not in path or path.endswith('/sandboxes/'+sandbox_id+'/proxy/9000')
+
+
 def record(ok,label):
     RESULTS.append(bool(ok));print(f"[{'PASS' if ok else 'FAIL'}] {label}",flush=True)
 
@@ -58,7 +69,7 @@ def model_check(client,workspace,base):
         if os.environ.get('E2E_REQUIRE_LLM')=='1':record(False,'real-model acceptance is required')
         else:print('[NOT RUN] native model/source-edit acceptance; requires owned cloud opt-in',flush=True)
         return
-    if os.environ.get('E2E_REMOTE_SANDBOX')!='1' or local_target(base):
+    if os.environ.get('E2E_REMOTE_SANDBOX')!='1' or (local_target(base) and not owned_loopback_gateway(base)):
         record(False,'model-generated code requires an explicitly owned remote sandbox');return
     project=workspace+'/abx_e2e_qm_'+uuid.uuid4().hex;marker='ABX_E2E_'+uuid.uuid4().hex
     source='def add(a, b):\n    return a - b\n'
