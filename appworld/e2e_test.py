@@ -12,6 +12,17 @@ _APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKE
 RESULTS=[]
 
 
+# Generated from scripts/sync_controller_ownership.py; do not edit this function alone.
+def owned_loopback_gateway(base):
+    import re
+    sandbox_id=os.environ.get('E2E_OWNED_SANDBOX_ID','')
+    bound=os.environ.get('E2E_OWNED_GATEWAY_URL','').rstrip('/')
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,127}',sandbox_id) or bound!=base.rstrip('/'):
+        return False
+    path=urlsplit(base).path.rstrip('/')
+    return '/sandboxes/'not in path or path.endswith('/sandboxes/'+sandbox_id+'/proxy/9000')
+
+
 def record(ok,label):
     RESULTS.append(bool(ok));print(f"[{'PASS'if ok else'FAIL'}] {label}",flush=True)
 
@@ -39,7 +50,7 @@ def model(client,base,workspace):
         else:
             print('[NOT RUN] original AppWorld real-model task; owned cloud opt-in required',flush=True)
         return
-    if os.environ.get('E2E_REMOTE_SANDBOX')!='1' or local(base):
+    if os.environ.get('E2E_REMOTE_SANDBOX')!='1' or (local(base) and not owned_loopback_gateway(base)):
         record(False,'original task requires explicitly owned remote sandbox')
         return
     folder=None

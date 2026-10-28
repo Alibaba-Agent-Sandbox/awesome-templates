@@ -1,0 +1,145 @@
+{
+  "result": "PASS",
+  "template": "qm",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//qm@4c4d1a700b76135333d8a85f32008f59745cc926",
+  "manifest_sha256": "8cb8b02f5f9763076838cd0b1a53903737a36c8e1e80156bfd350fa78001b65a",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "qm_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "qm_native_check",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "QM_MODEL",
+      "QM_MODEL_API_KEY",
+      "QM_MODEL_BASE_URL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:8cb8b02f5f9763076838cd0b1a53903737a36c8e1e80156bfd350fa78001b65a",
+    "source_digest": "ad2618a189de56ffd124aa6067bef5718ad4b702c800d89352d70c0622aecdda",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "d66e5cef47ddd862104caea24cbd6043e0dc1dfc54ad510bca8c3c09117b1059",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 19,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "548be347061cf7cb466ec0dcee932bdb1bd681e5fd11aaad41f5b07adaeed636",
+    "created_sandbox_target_bound": true,
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "qm",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "literal README CLI business request",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI business process exit zero",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI output independently absent before SDK task",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README Python example",
+          "result": "PASS"
+        },
+        {
+          "id": "SDK business process exit zero",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "previous SDK output independently absent before HTTP task",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP business request",
+          "result": "PASS"
+        },
+        {
+          "id": "HTTP business process exit zero",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        }
+      ],
+      "readme_sha256": "9433928b4b8164dab26c7aca4acff48c90da34afebd4ad9cd35527eecee6907f",
+      "configured_model": "qwen3.8-flash",
+      "artifact": {
+        "file": "hello.py",
+        "sha256": "2522d21ffb2dea027b7b49549e69748ccf3d4fcf4418ba2ae35b9e3ed8e179e9",
+        "observed_stdout": "Hello from QM"
+      }
+    }
+  },
+  "application_result": "PASS",
+  "original_private_receipt_sha256": "82ae08a3ab9c9f9048d064676d7ad9173e9d893c7f91e7c794aa850a0ed7f12f"
+}

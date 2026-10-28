@@ -37,6 +37,7 @@ jobs:
           python-version: "3.13"
       - run: python -m pip install pytest==9.1.1
       - run: python scripts/sync_process_runners.py --check
+      - run: python scripts/sync_controller_ownership.py --check
       - run: python scripts/check_docs.py
       - run: python -m pytest -q scripts/test_check_docs.py
 
@@ -265,7 +266,7 @@ jobs:
           python -m pytest -q browser-use/test_commands.py browser-use/test_model_controller.py browser-use/test_http_model_controller.py
           python -m pytest -q stagehand/test_commands.py stagehand/test_model_controller.py stagehand/test_http_model_controller.py stagehand/test_sdk_connect.py
           node --test stagehand/test_transport.mjs
-          python -m pytest -q code-server/test_commands.py code-server/test_browser_local.py scripts/test_preview_proxy.py
+          python -m pytest -q code-server/test_commands.py code-server/test_http_controller.py code-server/test_browser_local.py scripts/test_preview_proxy.py
           python -m pytest -q polyglot-toolchain/test_commands.py
           python -m pytest -q apply-patch/test_commands.py
           python -m pytest -q deepagents/test_commands.py deepagents/test_controller.py
@@ -285,6 +286,8 @@ jobs:
           python -m pytest -q muse/test_commands.py muse/test_relay.py muse/test_terminal.py muse/test_controller.py
           python qm-sandbox/prepare_sdk_tests.py "$RUNNER_TEMP/qm-original-sdk-tests"
           ABX_QM_TEST_SDK_ENTRY="$RUNNER_TEMP/qm-original-sdk-tests/dist/index.js" node --test qm-sandbox/test_adapter.mjs
+          python -m pytest -q scripts/test_controller_ownership.py
+          python -m pytest -q hermes-agent/test_download_source.py
           python -m pytest -q python-hello/test_command_errors.py
           python -m pytest -q node-web/test_startup.py node-web/test_http_output.py
           python -m pytest -q claude-code/tests

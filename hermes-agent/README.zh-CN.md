@@ -8,7 +8,7 @@
 
 默认配方使用 Alibaba FC generation-2 基础镜像，以非 root `user` 运行，服务端固定安装已发布的 `agent-sandbox-server==0.4.0a6`。
 
-NousResearch Hermes Agent `0.22.1` 固定于提交 `297552a9d646119871391d202509822cd86330df`，使用独立 Python `3.14.6` 和上游冻结依赖锁。
+NousResearch Hermes Agent `0.22.1` 固定于提交 `297552a9d646119871391d202509822cd86330df`，使用独立 Python `3.14.6` 和上游冻结依赖锁。 源码包在解压前核对固定大小与 SHA-256，遇到临时下载错误时有限重试。
 
 [Dockerfile](Dockerfile) · [template.yaml](template.yaml)
 

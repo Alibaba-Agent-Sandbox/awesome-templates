@@ -8,6 +8,8 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
+from urllib.parse import urlsplit
 from pathlib import Path
 import secrets
 import sys
@@ -38,7 +40,7 @@ def fixture_environment(name: str, *, real_usage: bool = False) -> tuple[dict[st
     return server, controller, proof
 
 
-def controller_environment(source: Path, urls: dict[int, str], fixture: dict[str, str], *, token: str | None = None, gateway_headers: dict[str, str] | None = None, real_usage: bool = False) -> dict[str, str]:
+def controller_environment(source: Path, urls: dict[int, str], fixture: dict[str, str], *, token: str | None = None, gateway_headers: dict[str, str] | None = None, real_usage: bool = False, owned_sandbox_id: str | None = None) -> dict[str, str]:
     if gateway_headers is not None and (not isinstance(gateway_headers, dict) or any(
             not isinstance(key, str) or not isinstance(value, str) or not key or '\r' in key + value or '\n' in key + value
             for key, value in gateway_headers.items())):
@@ -68,6 +70,17 @@ def controller_environment(source: Path, urls: dict[int, str], fixture: dict[str
         for key in {"E2E_MODEL", "E2E_LLM_TIMEOUT", "E2E_COMMAND_TIMEOUT", "E2E_MAX_TURNS"}:
             if key in os.environ:
                 env[key] = os.environ[key]
+    if owned_sandbox_id is not None:
+        if not real_usage or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", owned_sandbox_id):
+            raise ValueError("owned controller target requires real usage and a valid created sandbox ID")
+        target = urls[9000].rstrip("/")
+        parts = urlsplit(target)
+        if (parts.scheme not in {"http", "https"} or not parts.hostname
+                or parts.username or parts.password or parts.fragment
+                or "/sandboxes/" in parts.path and not parts.path.rstrip("/").endswith(
+                    "/sandboxes/" + owned_sandbox_id + "/proxy/9000")):
+            raise ValueError("controller target must match its created sandbox endpoint")
+        env.update(E2E_OWNED_SANDBOX_ID=owned_sandbox_id, E2E_OWNED_GATEWAY_URL=target)
     if source.name == "code-server":
         env["E2E_CODE_SERVER_URL"] = urls[8443]
     if source.name == "next-app":
@@ -89,7 +102,7 @@ def controller_environment(source: Path, urls: dict[int, str], fixture: dict[str
 
 
 def run_controller(source: Path, urls: dict[int, str], private: Path,
-                   fixture: dict[str, str], *, token: str | None = None, gateway_headers: dict[str, str] | None = None, real_usage: bool = False) -> dict:
+                   fixture: dict[str, str], *, token: str | None = None, gateway_headers: dict[str, str] | None = None, real_usage: bool = False, owned_sandbox_id: str | None = None) -> dict:
     script = source / "e2e_test.py"
     transport = Path(__file__).with_name("template_controller_transport.py")
     verifier_bytes, transport_bytes = script.read_bytes(), transport.read_bytes()
@@ -97,7 +110,7 @@ def run_controller(source: Path, urls: dict[int, str], private: Path,
                     ("http_model_e2e.py", "model_e2e_test.py", "model_fixture.py")
                     if source.name in {"browser-use", "stagehand"} and (source / name).is_file()}
     result = run_monitored([sys.executable, str(transport), str(script)],
-                           env=controller_environment(source, urls, fixture, token=token, gateway_headers=gateway_headers, real_usage=real_usage),
+                           env=controller_environment(source, urls, fixture, token=token, gateway_headers=gateway_headers, real_usage=real_usage, owned_sandbox_id=owned_sandbox_id),
                            idle_timeout=900 if real_usage else 600, wall_timeout=1800 if real_usage else 900)
     (private / "http.log").write_text(result.stdout + "\n" + result.stderr)
     lines = (result.stdout + "\n" + result.stderr).splitlines()
@@ -107,6 +120,7 @@ def run_controller(source: Path, urls: dict[int, str], private: Path,
               "skip_count": sum(line.startswith("[SKIP]") for line in lines),
               "not_run_count": sum(line.startswith("[NOT RUN]") for line in lines),
               "verifier_sha256": hashlib.sha256(verifier_bytes).hexdigest()}
+    counts["created_sandbox_target_bound"] = owned_sandbox_id is not None
     counts["transport_adapter_sha256"] = hashlib.sha256(transport_bytes).hexdigest()
     counts["verifier_inputs_unchanged"] = script.read_bytes() == verifier_bytes and transport.read_bytes() == transport_bytes
     if dependencies:

@@ -1,0 +1,46 @@
+{
+  "hermes-agent@alicloud-express": {
+    "template": "hermes-agent",
+    "provider": "alicloud-express",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/hermes_version",
+      "POST /commands/hermes_setup_check",
+      "POST /commands/hermes",
+      "POST /commands/run"
+    ],
+    "result": "PASS",
+    "attempt": "repaired-express-01",
+    "startup_model_profile": "qwen3.8-flash",
+    "native_assertions": 17,
+    "native_failures": 0,
+    "documented_checks": 13,
+    "runtime_folder_tree_matches_individual_pr": true,
+    "source_revision": "4c4d1a700b76135333d8a85f32008f59745cc926",
+    "endpoint_mode": "provider-resolved",
+    "qualification": "Separate Registry current-source review required"
+  },
+  "hermes-agent@opensandbox": {
+    "template": "hermes-agent",
+    "provider": "opensandbox",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/hermes_version",
+      "POST /commands/hermes_setup_check",
+      "POST /commands/hermes",
+      "POST /commands/run"
+    ],
+    "result": "PASS",
+    "attempt": "repaired-opensandbox-01",
+    "startup_model_profile": "qwen3.8-flash",
+    "native_assertions": 17,
+    "native_failures": 0,
+    "documented_checks": 13,
+    "runtime_folder_tree_matches_individual_pr": true,
+    "source_revision": "4c4d1a700b76135333d8a85f32008f59745cc926",
+    "endpoint_mode": "direct",
+    "qualification": "Separate Registry current-source review required"
+  }
+}

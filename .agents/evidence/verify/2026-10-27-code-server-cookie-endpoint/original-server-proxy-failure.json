@@ -1,0 +1,168 @@
+{
+  "result": "FAIL",
+  "template": "code-server",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//code-server@46b7c1ccc01eae9cf41292dde89ab32411ed5f79",
+  "manifest_sha256": "e19d9da0be33a2149bd04144a715d8282836d09de69625c49d161a27b1de2f40",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "code_server_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "code_server_self_test",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "CODE_SERVER_PASSWORD"
+    ]
+  },
+  "endpoint_mode": "server-proxy",
+  "input_receipt": {
+    "manifest_digest": "sha256:e19d9da0be33a2149bd04144a715d8282836d09de69625c49d161a27b1de2f40",
+    "source_digest": "0695e0225e8493c85161b3b496c410ac31ee3ab7af819812577e4dc601323eb0",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "445556c237f483f83afadd18076d9692935a856050e6c9f7bbc712eba2a2d8ee",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    },
+    {
+      "port": 8443,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 5,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "fbee3199c5e056cbb17f1f3f420f5c53a39a9b397008bdc001aa5b18e362a788",
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": false,
+    "documented_case": {
+      "template": "code-server",
+      "provider": "opensandbox",
+      "result": "FAIL",
+      "checks": [
+        {
+          "id": "cli actual documented business result",
+          "result": "PASS"
+        }
+      ],
+      "readme_sha256": "c5262d840511f5280b52e2f5e10a613dc9583550b86c4be53bd9b06637b18dbf",
+      "artifacts": {},
+      "failure_type": "TimeoutError",
+      "failure_stack": [
+        [
+          "documented_service_tasks.py",
+          "execute",
+          86
+        ],
+        [
+          "runners.py",
+          "run",
+          195
+        ],
+        [
+          "runners.py",
+          "run",
+          118
+        ],
+        [
+          "base_events.py",
+          "run_until_complete",
+          725
+        ],
+        [
+          "documented_service_tasks.py",
+          "with_sb",
+          11
+        ],
+        [
+          "documented_service_tasks.py",
+          "ide_browser",
+          32
+        ],
+        [
+          "_generated.py",
+          "dblclick",
+          15682
+        ],
+        [
+          "_locator.py",
+          "dblclick",
+          177
+        ],
+        [
+          "_frame.py",
+          "dblclick",
+          581
+        ],
+        [
+          "_connection.py",
+          "send",
+          69
+        ],
+        [
+          "_connection.py",
+          "wrap_api_call",
+          559
+        ]
+      ]
+    }
+  },
+  "http_diagnostics": [],
+  "application_result": "FAIL",
+  "failure_type": "CheckFailed",
+  "failed_phase": "application-controller",
+  "diagnostics": {},
+  "failed_check": "template application HTTP controller",
+  "original_private_receipt_sha256": "33bc74706bd33fe667d0551b38a56735268f6e580445313e07c426fad1e3bd14"
+}
