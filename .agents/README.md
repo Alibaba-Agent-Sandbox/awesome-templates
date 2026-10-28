@@ -363,3 +363,7 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 - [Additional provider practices and preview resolution](notes/proposed/feature/2026-10-27-more-provider-practices.md) · [verification](evidence/verify/2026-10-27-more-provider-practices.md). Original failures and compatible-only scope remain explicit.
 
 - [Further OpenSandbox original workflows](notes/proposed/feature/2026-10-27-further-opensandbox-practices.md) · [verification](evidence/verify/2026-10-27-further-opensandbox-practices.md). Additional provider review; full50 incomplete.
+
+- [Local Docker network recovery](evidence/verify/2026-10-28-local-docker-network-recovery.md). Operator infrastructure failure and SHA-bound cleanup are separate from fresh provider business acceptance.
+
+- [Further OpenSandbox endpoint profiles](evidence/verify/2026-10-27-further-opensandbox-endpoint-profiles.md). Source-bound complete and compatible-only use; vendor-account gaps retain Beta.

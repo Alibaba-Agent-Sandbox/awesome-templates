@@ -35,8 +35,17 @@ Published CLI0.5.7/client-server0.4.0a6, official OpenSandbox1.1.1 and pinned
 execd1.1.1 with internal proxy enabled. Full native method inventories, zero native
 omissions for passes, actual model/browser/language/service artifacts, independent
 owned sandbox/template/local/remote image absence. Local docs/spec/secret/diff and
-final-head CI gates remain required. All26 original results are available:11 complete candidates and15 failures, retained separately from follow-up runs.
+final-head CI gates remain required. All26 original results are available:11 successful business workflows and15
+failures. Expanded method review retains8 complete candidates; Polyglot discovery
+and Qwen/DeepSeek legacy Python method gaps require their new PR288 evidence.
+Original results and follow-up runs remain separately recorded.
 
 ## Acceptance criteria
 Review each actual result separately, retain blockers/failures, qualify only complete
 matching provider results through Registry. No full50-template completion claim.
+
+Further review and explicitly separate profiles: preserve the26 original outcomes,
+run unchanged native/README business checks using caller-reachable direct endpoints
+where appropriate, and keep compatible-only vendor CLI work partial. Polyglot's
+original discovery gap and the Qwen/DeepSeek legacy method gaps are tracked in https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/288;
+complete qualification requires its new positive source-bound provider evidence.

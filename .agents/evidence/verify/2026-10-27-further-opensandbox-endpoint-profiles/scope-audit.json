@@ -1,0 +1,61 @@
+{
+  "codex-agent-api": {
+    "provider": "opensandbox",
+    "execution_result": "FAIL",
+    "review_result": "FAIL",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/codex_version",
+      "POST /commands/codex",
+      "POST /v1/agents/sessions",
+      "GET /v1/agents/sessions",
+      "GET /v1/agents/sessions/{session_id}",
+      "POST /v1/agents/sessions/{session_id}",
+      "DELETE /v1/agents/sessions/{session_id}",
+      "POST /v1/agents/sessions/{session_id}/events",
+      "GET /v1/agents/sessions/{session_id}/events",
+      "GET /v1/agents/sessions/{session_id}/items",
+      "GET /v1/agents/sessions/{session_id}/artifacts/{artifact_id}",
+      "DELETE /v1/agents/sessions/{session_id}/artifacts/{artifact_id}",
+      "POST /v1/agents",
+      "GET /v1/agents",
+      "GET /v1/agents/{agent_id}",
+      "POST /v1/agents/{agent_id}",
+      "DELETE /v1/agents/{agent_id}",
+      "POST /commands/agent_status"
+    ],
+    "native_assertions": 21,
+    "native_failures": 1,
+    "documented_checks": 0,
+    "source_revision": "4c4d1a700b76135333d8a85f32008f59745cc926",
+    "runtime_folder_unchanged": true,
+    "endpoint_mode": "direct",
+    "startup_model_profile": "qwen3.8-flash",
+    "complete_provider_candidate": false,
+    "unverified_public_methods": [],
+    "qualification": "Separate Registry review; compatible-only scopes retain whole-template Beta"
+  },
+  "deepagents": {
+    "provider": "opensandbox",
+    "execution_result": "PASS",
+    "review_result": "PASS",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/deepagents_version",
+      "POST /commands/deepagents_setup_check",
+      "POST /commands/deepagents"
+    ],
+    "native_assertions": 17,
+    "native_failures": 0,
+    "documented_checks": 15,
+    "source_revision": "4c4d1a700b76135333d8a85f32008f59745cc926",
+    "runtime_folder_unchanged": true,
+    "endpoint_mode": "direct",
+    "startup_model_profile": "qwen3.8-flash",
+    "complete_provider_candidate": true,
+    "unverified_public_methods": [],
+    "qualification": "Separate Registry review; compatible-only scopes retain whole-template Beta"
+  }
+}

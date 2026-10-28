@@ -1,6 +1,6 @@
 # Further OpenSandbox original business workflows
 
-Result: PARTIAL (11 complete provider candidates, 15 original failures preserved)
+Result: PARTIAL (11 original business successes, 15 failures; Polyglot discovery supplement required)
 
 Date: 2026-10-27. Unchanged source46b7c1ccc01eae9cf41292dde89ab32411ed5f79;
 published CLI0.5.7/client-server0.4.0a6, official OpenSandbox1.1.1 server,
@@ -67,3 +67,9 @@ with zero failures; configured-secret scan PASS31 changed files; diff check PASS
 Current-head CI remains pending.
 Registry qualification, practical article updates and public readback are separate
 deliveries. Full50-template request remains open.
+
+Additional method review: original Polyglot compiler/business checks PASS, but its
+controller never explicitly requests GET /commands. It is not a complete candidate
+until the fresh discovery assertion/provider workflows in PR288 pass. The original
+raw execution result stays PASS for the checks actually performed; scope-audit.json
+now excludes it from complete qualification. No original failed run is rewritten.

@@ -14,8 +14,11 @@
     "runtime_folder_unchanged": true,
     "cleanup_verified": true,
     "endpoint_mode": "server-proxy",
-    "complete_provider_candidate": true,
-    "qualification": "Separate Registry current-source review required; failures never qualify"
+    "complete_provider_candidate": false,
+    "qualification": "Original native compilation/business result PASS; complete qualification requires PR288 fresh discovery/usage receipts",
+    "public_method_gap": [
+      "GET /commands not explicitly executed by original controller"
+    ]
   },
   "chrome": {
     "provider": "opensandbox",
@@ -156,8 +159,11 @@
     "runtime_folder_unchanged": true,
     "cleanup_verified": true,
     "endpoint_mode": "server-proxy",
-    "complete_provider_candidate": true,
-    "qualification": "Separate Registry current-source review required; failures never qualify"
+    "complete_provider_candidate": false,
+    "qualification": "Original native model/business success preserved; fresh complete legacy Python method use is required",
+    "public_method_gap": [
+      "POST /commands/run not actually executed in original OpenSandbox flow"
+    ]
   },
   "copilot-cli": {
     "provider": "opensandbox",
@@ -195,8 +201,11 @@
     "runtime_folder_unchanged": true,
     "cleanup_verified": true,
     "endpoint_mode": "server-proxy",
-    "complete_provider_candidate": true,
-    "qualification": "Separate Registry current-source review required; failures never qualify"
+    "complete_provider_candidate": false,
+    "qualification": "Original native model/business success preserved; fresh complete legacy Python method use is required",
+    "public_method_gap": [
+      "POST /commands/run not actually executed in original OpenSandbox flow"
+    ]
   },
   "pi": {
     "provider": "opensandbox",
