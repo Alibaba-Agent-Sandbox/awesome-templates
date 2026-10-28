@@ -37,13 +37,15 @@ OpenSandbox 先按其 [provider 指南](https://github.com/Alibaba-Agent-Sandbox
 
 ### 配置应用和模型
 
-源码启动前，将 `ABX_SERVER_TOKEN` 设置为独立的私有应用访问令牌，同时配置目标模板实际读取的模型 API Key、endpoint、模型选择及必要账号登录。沙箱平台 API Key 不能调用模型 API，模型 Key 也不能管理沙箱。
+正常启动模板时，CLI 自动生成私有应用令牌、保存在本机并供后续命令复用。自定义令牌或从外部 SDK／HTTP 客户端调用服务时，按[应用认证说明](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/zh/guide/guided-configuration.md)配置。模板实际读取的模型 API Key、endpoint、模型选择及必要账号登录另行准备，沙箱、应用和模型凭据各有用途。
 
 各工具采用不同的上游配置方式。不能假定所有工具都读取 `ABX_LLM_*`、支持任意 OpenAI 兼容端点，或继承本机登录态。非模型工具不需要模型 Key；商业账号登录、API Key 模式和可选 Web 服务密码由对应 README 分别说明。
 
 CLI 0.5.8 中，模板清单声明为**空值**的环境变量可由主机环境填充；非空清单值优先于同名主机 export。切模型优先使用命令提供的 `model` 等参数。对于清单空值声明的启动配置，export 新模型、Key 或 endpoint 后，从公开模板创建新实例，并使用新返回的沙箱 ID；只有修改非空清单默认值或实现时才需要本地模板副本。此路径只传递已声明的运行配置。启动后修改本机 export，不会重配已经运行的应用。
 
 ## CLI、SDK 与 HTTP
+
+以下示例还会从外部 Python／HTTP 客户端调用应用，因此显式设置自定义 `ABX_SERVER_TOKEN` 并在启动与调用时复用。只使用 CLI 时无需手动设置令牌。
 
 下面的 `python-hello` 不需要模型服务。请先替换凭据与 ID 占位符，并按上文对全部操作使用同一个 `ABX_PROVIDER`。
 
