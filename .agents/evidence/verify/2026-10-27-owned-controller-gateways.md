@@ -67,3 +67,10 @@ unchanged and all original model/output/auth/deadline assertions preserved.
 Separate max-profile OpenSandbox follow-ups continue in PR286; they must pass
 before those providers receive current-source Registry receipts. Failed and
 pending scopes are not promoted by merging the controller fix.
+
+Final local integration with merged Hermes08a7406: all8 template folder trees
+still exactly match tested source4c4d1a7. Ownership/controller-driver regressions
+89PASS, public launch suite40PASS, generator check8PASS, specification39PASS,
+all-template checkerPASS,224-document linksPASS and configured-value credential/
+diff scansPASS. Both CI commands and both engineering index entries were preserved
+during the normal main merge. Final-head remote CI remains required.
