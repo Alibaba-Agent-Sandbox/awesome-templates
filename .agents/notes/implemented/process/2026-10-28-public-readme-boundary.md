@@ -1,6 +1,6 @@
 # Decision: Keep public template documentation focused on use
 
-Status: proposed
+Status: implemented
 
 ## Problem
 

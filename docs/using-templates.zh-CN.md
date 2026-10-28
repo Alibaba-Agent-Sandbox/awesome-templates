@@ -6,10 +6,10 @@
 
 ## 安装
 
-安装公开 CLI 0.5.7 和 Python client 0.4.0a6。Python 建议使用独立虚拟环境；此包仍为预览版，所以明确固定版本。npm 安装需要 Node 20+，终端能力建议 Node 22+。
+安装公开 CLI 0.5.8 和 Python client 0.4.0a6。Python 建议使用独立虚拟环境；此包仍为预览版，所以明确固定版本。npm 安装需要 Node 20+，终端能力建议 Node 22+。
 
 ```bash
-npm install -g @agent-sandbox/cli@0.5.7 --registry=https://registry.npmjs.org
+npm install -g @agent-sandbox/cli@0.5.8 --registry=https://registry.npmjs.org
 python3 -m venv .venv
 . .venv/bin/activate
 python3 -m pip install --index-url https://pypi.org/simple 'agent-sandbox-client==0.4.0a6'
@@ -41,7 +41,7 @@ OpenSandbox 先按其 [provider 指南](https://github.com/Alibaba-Agent-Sandbox
 
 各工具采用不同的上游配置方式。不能假定所有工具都读取 `ABX_LLM_*`、支持任意 OpenAI 兼容端点，或继承本机登录态。非模型工具不需要模型 Key；商业账号登录、API Key 模式和可选 Web 服务密码由对应 README 分别说明。
 
-CLI 0.5.7 中，模板清单声明为**空值**的环境变量可由主机环境填充；非空清单值优先于同名主机 export。切模型优先使用命令提供的 `model` 等参数。对于清单空值声明的启动配置，export 新模型、Key 或 endpoint 后，从公开模板创建新实例，并使用新返回的沙箱 ID；只有修改非空清单默认值或实现时才需要本地模板副本。此路径只传递已声明的运行配置。启动后修改本机 export，不会重配已经运行的应用。
+CLI 0.5.8 中，模板清单声明为**空值**的环境变量可由主机环境填充；非空清单值优先于同名主机 export。切模型优先使用命令提供的 `model` 等参数。对于清单空值声明的启动配置，export 新模型、Key 或 endpoint 后，从公开模板创建新实例，并使用新返回的沙箱 ID；只有修改非空清单默认值或实现时才需要本地模板副本。此路径只传递已声明的运行配置。启动后修改本机 export，不会重配已经运行的应用。
 
 ## CLI、SDK 与 HTTP
 
