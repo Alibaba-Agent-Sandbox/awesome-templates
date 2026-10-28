@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+- Recommend published CLI 0.5.8 in the bilingual shared setup guide. / 双语模板安装指南更新为已发布 CLI 0.5.8。
+
 - Keep the repository README focused on template discovery, setup and use; retain internal implementation and acceptance history in engineering records. / 仓库 README 聚焦模板发现、配置和使用，内部实现与验收历史保留在工程记录中。
 
 - Hermes-agent1.2.1 bounds transient source-download retries and verifies the fixed archive before extraction, including cached canonical builds.

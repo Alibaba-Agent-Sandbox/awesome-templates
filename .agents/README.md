@@ -377,6 +377,8 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 
 - [Polyglot public command discovery](notes/proposed/feature/2026-10-27-polyglot-command-discovery.md) · [verification](evidence/verify/2026-10-27-polyglot-command-discovery.md). Actual discovery is required in addition to compilation; fresh provider records pending.
 
-- [Public README audience boundary](notes/proposed/process/2026-10-28-public-readme-boundary.md) · [verification](evidence/verify/2026-10-28-public-readme-boundary.md).
+- [Public README audience boundary](notes/implemented/process/2026-10-28-public-readme-boundary.md) · [verification](evidence/verify/2026-10-28-public-readme-boundary.md).
 
 - [README publication follow-up](evidence/verify/2026-10-28-public-readme-publication.md).
+
+- [CLI 0.5.8 shared setup guidance](notes/proposed/process/2026-10-28-cli-058-template-installation.md) · [verification](evidence/verify/2026-10-28-cli-058-template-installation.md).
