@@ -1,0 +1,129 @@
+{
+  "result": "PASS",
+  "template": "polyglot-toolchain",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//polyglot-toolchain@073d2d90bfc687f5cc0a3767c3fe7cea4283e387",
+  "manifest_sha256": "e06afbb88c5d06d11d4440f43c6276841cf3eedbcc504c5b7436d14214cb61cd",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    "literal documented CLI command discovery",
+    {
+      "smoke": 0,
+      "command": "toolchain_smoke",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": []
+  },
+  "endpoint_mode": "server-proxy",
+  "input_receipt": {
+    "manifest_digest": "sha256:e06afbb88c5d06d11d4440f43c6276841cf3eedbcc504c5b7436d14214cb61cd",
+    "source_digest": "67e9bf0ce40d9a89c4fadfe6eab6712d4b47e9fe52bbecaa3d219d3841f3c02c",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "847d279a19d2759805731a89feb3f7a30c46d433a20ba4a066ac1c48490a15e8",
+    "build_profile": null
+  },
+  "listed_command_names": [
+    "toolchain_smoke",
+    "toolchain_versions"
+  ],
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 2,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "f9e5599256eacedc9162917f0ed3e0cc22000ccf79e7d3b61e066ce427ddf710",
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "polyglot-toolchain",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "actual literal documented CLI command discovery",
+          "result": "PASS"
+        },
+        {
+          "id": "cli actual documented output independently verified",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI outputs independently absent before SDK",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README SDK program",
+          "result": "PASS"
+        },
+        {
+          "id": "sdk actual documented output independently verified",
+          "result": "PASS"
+        },
+        {
+          "id": "previous SDK outputs independently absent before HTTP",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP request",
+          "result": "PASS"
+        },
+        {
+          "id": "http actual documented output independently verified",
+          "result": "PASS"
+        }
+      ],
+      "listed_command_names": [
+        "toolchain_smoke",
+        "toolchain_versions"
+      ],
+      "readme_sha256": "8e42cf38bcb39d803289b07e84cdf70b79cb6a13996ee3d32b3dba87bfab034a",
+      "artifacts": {},
+      "business_result": {
+        "go": "GO_OK",
+        "rust": "RUST_OK",
+        "java": "JAVA_OK",
+        "cleanup_verified": true
+      }
+    }
+  },
+  "application_result": "PASS",
+  "original_private_receipt_sha256": "973249b79643a48d24988e1be5100294070614a65cd3945a8a63d8259fb16c9b"
+}
