@@ -49,3 +49,10 @@ run unchanged native/README business checks using caller-reachable direct endpoi
 where appropriate, and keep compatible-only vendor CLI work partial. Polyglot's
 original discovery gap and the Qwen/DeepSeek legacy method gaps are tracked in https://github.com/Alibaba-Agent-Sandbox/awesome-templates/pull/288;
 complete qualification requires its new positive source-bound provider evidence.
+
+All9 follow-up profile outcomes are now recorded. Three original native CLI
+BYOK documentation cases required explicitly non-qualifying diagnostics after
+the unchanged canonical controllers rejected owned loopback endpoints before
+model use. Their actual three-consumer generated programs/reports pass, while
+whole resultFAIL/coreNOT_RUN and native-account gaps remain explicit. This is
+partial practical use, never a provider acceptance or hidden gate waiver.

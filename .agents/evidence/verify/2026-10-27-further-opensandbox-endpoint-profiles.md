@@ -17,6 +17,11 @@ does not establish the cause of each earlier failed proxy/max attempt.
 | --- | --- | ---: | ---: |
 | codex-agent-api | FAIL | 21 | 0 |
 | deepagents | PASS | 17 | 15 |
+| browser-use | FAIL | 12 | 0 |
+| swe | FAIL | 8 | 0 |
+| claude-code | PARTIAL | 0 | 15 |
+| gemini | PARTIAL | 0 | 15 |
+| droid | PARTIAL | 0 | 17 |
 | tau2-bench | FAIL | 16 | 0 |
 | appworld | FAIL | 9 | 0 |
 
@@ -28,7 +33,10 @@ remain required. Individual JSON and scope-audit.json preserve exact source,
 README/controller and original private receipt digests.
 
 Claude/Gemini/Droid runs, if successful, exercise their original native CLI with
-explicit existing BYOK/compatible configurations. Their native vendor-account
+explicit existing BYOK/compatible configurations. Original local ownership
+controller rejections are preserved. The separate docs-only cases intentionally
+leave whole resultFAIL and canonical coreNOT_RUN; actual documented CLI/full SDK/
+HTTP business may pass without qualifying the provider. Their native vendor-account
 methods remain unverified, vendor keys are not injected and whole-template Beta
 is retained. No compatible model key is sent to a foreign vendor default endpoint.
 

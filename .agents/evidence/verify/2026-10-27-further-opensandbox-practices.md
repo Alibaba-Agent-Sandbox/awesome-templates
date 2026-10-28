@@ -73,3 +73,26 @@ controller never explicitly requests GET /commands. It is not a complete candida
 until the fresh discovery assertion/provider workflows in PR288 pass. The original
 raw execution result stays PASS for the checks actually performed; scope-audit.json
 now excludes it from complete qualification. No original failed run is rewritten.
+
+## Final reviewed follow-up scopes
+
+Runtime fixes279/281/283/285 and complete method coverage288 are merged. The
+original26 outcomes remain unchanged:11 business successes, with8 complete
+provider candidates after expanded method review, and15 failures. Polyglot,
+Qwen andDeepSeek now have separate full positive current-source proof in PR288.
+The new endpoint/profile record has9 outcomes: DeepAgents completePASS;3 actual
+Claude/Gemini/Droid documented native-CLI BYOK workflowsPARTIAL;5 failed model/
+benchmark workflows. Original pre-business ownership rejections for those3 are
+preserved separately. Docs-only diagnostics execute unchanged CLI/full SDK/HTTP
+examples and independent generated-code/report checks, while whole result remains
+FAIL and canonical coreNOT_RUN. Native vendor-account methods remain unverified;
+those scopes never receive Registry acceptance and keep whole-templateBeta.
+All newly completed workflows have independently confirmed owned resource absence.
+The dated network incident and cleanup-only reconciliation remain separate from
+business evidence. No runtime or template declaration changes belong to this PR.
+
+Final local evidence-only integration checks on2026-10-28:224-document links
+PASS, all-template checkerPASS, configured credential scan48changed filesPASS,
+diff checkPASS. All runtime fixes and method regressions arrive from merged
+main58961ae5, with no runtime/template changes in this PR. Current-head CI and
+separate Registry/blog/public delivery remain required.

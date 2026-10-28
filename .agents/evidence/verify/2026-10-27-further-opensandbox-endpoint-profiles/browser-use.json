@@ -1,0 +1,100 @@
+{
+  "result": "FAIL",
+  "template": "browser-use",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//browser-use@4c4d1a700b76135333d8a85f32008f59745cc926",
+  "manifest_sha256": "05d1603ed54d4bdd89edacb55653c3e7b8504d33e8a86bc842e0dd99393f470c",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "browser_use_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    {
+      "smoke": 1,
+      "command": "browser_use_self_test",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "BROWSER_USE_API_KEY",
+      "BROWSER_USE_BASE_URL",
+      "BROWSER_USE_MODEL"
+    ]
+  },
+  "endpoint_mode": "direct",
+  "input_receipt": {
+    "manifest_digest": "sha256:05d1603ed54d4bdd89edacb55653c3e7b8504d33e8a86bc842e0dd99393f470c",
+    "source_digest": "9bfb07640ea155a55ff530022f435a98af42fcbf0338c032fee1ae459129f28d",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "0b303dd1e3ba9e2fa6a3585efdcc17ff4b21d605b2b1a80686452bad29bdfaf0",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 1,
+    "pass_count": 12,
+    "fail_count": 1,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "d3dbd5e2727b272d7638d31ccdba35dc94dbdd91beec26d83a33dc6e2b377abe",
+    "created_sandbox_target_bound": true,
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "verifier_dependencies_sha256": {
+      "http_model_e2e.py": "9d1f6b183672202beef1d114681997496d217646abefd424524aa89f066703f3",
+      "model_e2e_test.py": "915abdc82af4de2d60726ea970d47296e90e0252bb6bf5d11cfaa653a0af76d2",
+      "model_fixture.py": "5de7b826b7ba48df403ba84445035f27b1c06017210e81cb8613fe87e609123e"
+    },
+    "real_usage_required": true,
+    "passed": false
+  },
+  "http_diagnostics": [
+    "[FAIL] actual browser-model task failed (RemoteProtocolError); private response omitted"
+  ],
+  "application_result": "FAIL",
+  "failure_type": "CheckFailed",
+  "failed_phase": "application-controller",
+  "diagnostics": {},
+  "failed_check": "template application HTTP controller",
+  "original_private_receipt_sha256": "d13a12f40568039bd9cc3a6ba4295566687a23a81ca03db4eeec3921b87788db"
+}

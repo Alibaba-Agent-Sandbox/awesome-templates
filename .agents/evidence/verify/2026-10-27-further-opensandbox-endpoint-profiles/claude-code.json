@@ -1,0 +1,162 @@
+{
+  "result": "FAIL",
+  "template": "claude-code",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//claude-code@4c4d1a700b76135333d8a85f32008f59745cc926",
+  "manifest_sha256": "9ea3a56f9be4b5dd78a5c41b91157aa49db925768d07d97503e6d618fd2f5ba1",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "claude_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "CLAUDE_MODEL",
+      "CLAUDE_MODEL_API_KEY",
+      "CLAUDE_MODEL_BASE_URL"
+    ]
+  },
+  "endpoint_mode": "direct",
+  "input_receipt": {
+    "manifest_digest": "sha256:9ea3a56f9be4b5dd78a5c41b91157aa49db925768d07d97503e6d618fd2f5ba1",
+    "source_digest": "4a87ae988030b8bed155a491e633a80d5f4688fbdff654ad71681acecc3423e8",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "b4cafac71992abd401c863f1762ea16e7e9836373371b4c1c7e62eb2d217736c",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "passed": false,
+    "scope": "diagnostic-only actual documented native CLI BYOK business; canonical core NOT_RUN; whole-template qualification forbidden",
+    "pass_count": 0,
+    "fail_count": 0,
+    "not_run_count": 1,
+    "skip_count": 0,
+    "original_owned_gateway_failure_sha256": "e859e402f783807e3840ca4c48f830cde7c0959141110a55e5dce6528df0c446",
+    "diagnostic_only_after_failed_core": true,
+    "documented_case": {
+      "template": "claude-code",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "actual literal documented CLI command discovery",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README CLI business request",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI business process exit zero",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI generated report independently downloaded",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI output independently absent before SDK task",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README Python example",
+          "result": "PASS"
+        },
+        {
+          "id": "SDK business process exit zero",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "SDK generated report independently downloaded",
+          "result": "PASS"
+        },
+        {
+          "id": "previous SDK output independently absent before HTTP task",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP business request",
+          "result": "PASS"
+        },
+        {
+          "id": "HTTP business process exit zero",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "HTTP generated report independently downloaded",
+          "result": "PASS"
+        }
+      ],
+      "listed_command_names": [
+        "claude",
+        "claude_byok",
+        "claude_native_check",
+        "claude_setup_check",
+        "claude_version"
+      ],
+      "scope": "actual native CLI BYOK business only; original whole-core ownership rejection and native vendor-account gaps remain; whole-template qualification forbidden",
+      "readme_sha256": "cb034f9b674c407b61ee4f0568061d39921d612985b43409bec517906634cabc",
+      "configured_model": "qwen3.8-max",
+      "artifact": {
+        "file": "generated_hello.py",
+        "sha256": "bef5d52082fc48aa45a460aec4ec5d98605ef1d35735b4729ea07bb100595e03",
+        "observed_stdout": "Hello from the sandbox"
+      }
+    }
+  },
+  "http_diagnostics": [],
+  "application_result": "FAIL",
+  "failure_type": "CheckFailed",
+  "failed_phase": "application-controller",
+  "diagnostics": {},
+  "failed_check": "template application HTTP controller",
+  "original_private_receipt_sha256": "d37d9c77c1dce031d915bec32a9230b54c80d74432ef68273618f1453e921cc9"
+}
