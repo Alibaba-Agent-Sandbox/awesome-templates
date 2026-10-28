@@ -32,7 +32,11 @@ Documentation changes only. No provider API calls, sandboxes, templates, cloud k
 
 | File | SHA-256 |
 | --- | --- |
-| `README.md` | `a949b85b4a8ec11a6f5ce9d1cad8b5c8308caf51dc950026c3da244cc8afd03e` |
-| `README.zh-CN.md` | `042848edfffd40799174c716a994c42ec1a0be7a94b643141a319f20f547b1a6` |
+| `README.md` | `8950d095e2e36b4b34f319858ab78bcf2ca4572c18f5c9a373f436853327cb42` |
+| `README.zh-CN.md` | `003ccd9d0887dc6cdd45d570519f946666e6fd989f7583d80a140089a62bff11` |
 | `docs/using-templates.md` | `030f82f89dd2b226355196c494e6eaab7d835fb3816ff79145ec247d42768c38` |
 | `docs/using-templates.zh-CN.md` | `dbe825ef2c08e5fc3a7b541d0844da64afb6ec7136c569369f178f34ba398fd4` |
+
+## Editorial follow-up
+
+Refined the agent category and descriptions to distinguish the OpenClaw gateway, Hermes assistant, DeepAgents tools and the bounded mini-swe-agent Flask task. The template implementations and acceptance inputs remain unchanged.

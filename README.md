@@ -50,7 +50,7 @@ Source templates need a build. Browse by task below; each template explains its 
 | [chrome](chrome/README.md) | Headed Chrome with CDP and a remote desktop |
 | [osworld](osworld/README.md) | OSWorld Linux browser tasks |
 
-### Coding agents
+### Coding and assistant agents
 
 | Template | Purpose |
 | --- | --- |
@@ -59,17 +59,17 @@ Source templates need a build. Browse by task below; each template explains its 
 | [codex](codex/README.md) | Codex coding agent |
 | [qoder](qoder/README.md) | Qoder coding agent |
 | [qwen-code](qwen-code/README.md) | Qwen Code coding agent |
-| [deepagents](deepagents/README.md) | Deepagents coding agent |
+| [deepagents](deepagents/README.md) | DeepAgents file and shell agent |
 | [deepseek-harness](deepseek-harness/README.md) | Deepseek Harness coding agent |
-| [hermes-agent](hermes-agent/README.md) | Hermes Agent coding agent |
-| [openclaw](openclaw/README.md) | Openclaw coding agent |
+| [hermes-agent](hermes-agent/README.md) | Hermes assistant with file and terminal tools |
+| [openclaw](openclaw/README.md) | OpenClaw assistant gateway |
 | [opencode](opencode/README.md) | Opencode coding agent |
 | [amp](amp/README.md) | Amp coding agent |
 | [droid](droid/README.md) | Droid coding agent |
 | [gemini](gemini/README.md) | Gemini coding agent |
 | [pi](pi/README.md) | Pi coding agent |
 | [aider](aider/README.md) | Aider coding agent |
-| [swe](swe/README.md) | Swe coding agent |
+| [swe](swe/README.md) | Flask repair task with mini-swe-agent |
 | [kimi-code](kimi-code/README.md) | Kimi Code coding agent |
 | [goose](goose/README.md) | Goose coding agent |
 | [crush](crush/README.md) | Crush coding agent |

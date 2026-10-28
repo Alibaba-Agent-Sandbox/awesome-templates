@@ -50,7 +50,7 @@ abx kill <sandbox-id>
 | [chrome](chrome/README.zh-CN.md) | 带 CDP 和远程桌面的有界面 Chrome |
 | [osworld](osworld/README.zh-CN.md) | OSWorld Linux 浏览器任务 |
 
-### 编码 Agent
+### 编码与助手 Agent
 
 | 模板 | 用途 |
 | --- | --- |
@@ -59,17 +59,17 @@ abx kill <sandbox-id>
 | [codex](codex/README.zh-CN.md) | Codex 编码 Agent |
 | [qoder](qoder/README.zh-CN.md) | Qoder 编码 Agent |
 | [qwen-code](qwen-code/README.zh-CN.md) | Qwen Code 编码 Agent |
-| [deepagents](deepagents/README.zh-CN.md) | Deepagents 编码 Agent |
+| [deepagents](deepagents/README.zh-CN.md) | DeepAgents 文件与终端 Agent |
 | [deepseek-harness](deepseek-harness/README.zh-CN.md) | Deepseek Harness 编码 Agent |
-| [hermes-agent](hermes-agent/README.zh-CN.md) | Hermes Agent 编码 Agent |
-| [openclaw](openclaw/README.zh-CN.md) | Openclaw 编码 Agent |
+| [hermes-agent](hermes-agent/README.zh-CN.md) | 带文件和终端工具的 Hermes 助手 |
+| [openclaw](openclaw/README.zh-CN.md) | OpenClaw 助手网关 |
 | [opencode](opencode/README.zh-CN.md) | Opencode 编码 Agent |
 | [amp](amp/README.zh-CN.md) | Amp 编码 Agent |
 | [droid](droid/README.zh-CN.md) | Droid 编码 Agent |
 | [gemini](gemini/README.zh-CN.md) | Gemini 编码 Agent |
 | [pi](pi/README.zh-CN.md) | Pi 编码 Agent |
 | [aider](aider/README.zh-CN.md) | Aider 编码 Agent |
-| [swe](swe/README.zh-CN.md) | Swe 编码 Agent |
+| [swe](swe/README.zh-CN.md) | 使用 mini-swe-agent 修复 Flask 任务 |
 | [kimi-code](kimi-code/README.zh-CN.md) | Kimi Code 编码 Agent |
 | [goose](goose/README.zh-CN.md) | Goose 编码 Agent |
 | [crush](crush/README.zh-CN.md) | Crush 编码 Agent |
