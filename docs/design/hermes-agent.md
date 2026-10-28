@@ -82,3 +82,14 @@ Current-version acceptance on 2026-10-20: version 1.1.1 genuine image READY/CLI/
 
 
 Startup model configuration (2026-10-27): model/endpoint slots for Qwen and DeepSeek, and provider slot for Hermes, are blank in the manifest so explicit host exports are injected. Runtime fallback defaults preserve previous vendor behavior when omitted. Export the matching key/base/model/provider before public launch; create a new instance after changes. No vendor-account acceptance is inferred from compatible service use.
+
+Version1.2.1 uses a bounded HTTPS archive fetch before extraction, retrying transient
+HTTP429/5xx/network failures within an explicit attempt/time budget. The fixed
+83225459-byte archive has controller-measured SHA256
+fbd55e510b49592635429aa451a7c2b9fb4061cddbbab09f52504226f4338fcf; selected upstream
+Git blobs match the unchanged commit. This is not an upstream-published checksum.
+Atomic verified output prevents extraction of a failed/partial response. Canonical
+steps pass their reviewed cached archive through the same integrity check, and
+retain support for the historical literal immutable download recipe. Native
+Python3.14.6, uv0.12.3, upstream frozen lock, install stamp and licensing unchanged.
+Actual current-source Express/OpenSandbox use and independent cleanup required.

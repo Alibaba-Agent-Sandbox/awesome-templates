@@ -148,7 +148,8 @@ def test_generated_cache_preserves_original_source_and_is_removed_before_runtime
     if name == "hermes-agent":
         assert proof["python_download_profile"].startswith("uv0.12.3")
         assert any("uv python install cpython-3.14.6-linux-$(uname -m)-gnu" in step["args"][0] for step in steps if step["type"] == "RUN")
-        assert any("tar -xz --strip-components=1 -C /opt/hermes -f /tmp/abx-step-assets/" in step["args"][0] for step in steps if step["type"] == "RUN")
+        assert any("download_source.py --archive /tmp/abx-step-assets/" in step["args"][0] for step in steps if step["type"] == "RUN")
+        assert any("tar -xz --strip-components=1 -C /opt/hermes -f /tmp/hermes-source.tar.gz" in step["args"][0] for step in steps if step["type"] == "RUN")
         assert not any("curl -fsSL https://codeload.github.com/NousResearch/hermes-agent/" in step["args"][0] for step in steps if step["type"] == "RUN")
     assert steps[-1] == {"type": "USER", "args": ["user"]}
     # compact_run retains short cleanup commands in plaintext.
@@ -320,3 +321,17 @@ def test_muse_installer_runs_through_verified_native_asset_adapter():
     manifest,_=prepare(ROOT/'muse',asset_transport='parallel')
     commands=[v['args'][0]for v in manifest['build']['steps']if v['type']=='RUN']
     assert any('python3 /tmp/abx-step-assets/step_assets.py run /tmp/muse-original-installer/install_runtime.py'in value for value in commands)
+
+
+def test_hermes_cached_source_pin_and_historical_recipe_are_reviewed(tmp_path):
+    from prepare_steps import parallel_assets
+    source=tmp_path/'hermes-agent';source.mkdir()
+    (source/'Dockerfile').write_text('RUN pip install uv==0.12.3 && curl -fsSL https://codeload.github.com/NousResearch/hermes-agent/tar.gz/297552a9d646119871391d202509822cd86330df | tar -xz && uv python install 3.14.6\n')
+    assets=parallel_assets(source)
+    assert assets['x86_64'][-1]['sha256']=='fbd55e510b49592635429aa451a7c2b9fb4061cddbbab09f52504226f4338fcf'
+    metadata=json.loads((ROOT/'hermes-agent/source.json').read_text())
+    (source/'source.json').write_text(json.dumps(metadata))
+    assert parallel_assets(source)==assets
+    metadata['sha256']='0'*64
+    (source/'source.json').write_text(json.dumps(metadata))
+    with pytest.raises(ValueError,match='reviewed immutable transport'):parallel_assets(source)
