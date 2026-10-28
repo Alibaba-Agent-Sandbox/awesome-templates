@@ -8,7 +8,7 @@ Run the actual upstream Hermes Agent CLI with its local terminal and file toolse
 
 The default recipe uses the Alibaba FC generation-2 base, non-root `user`, and the published `agent-sandbox-server==0.4.0a6` package.
 
-NousResearch Hermes Agent `0.22.1` at commit `297552a9d646119871391d202509822cd86330df`, private Python `3.14.6`, and the upstream frozen dependency lock.
+NousResearch Hermes Agent `0.22.1` at commit `297552a9d646119871391d202509822cd86330df`, private Python `3.14.6`, and the upstream frozen dependency lock. The source archive is checked against its recorded size/SHA-256 before extraction; transient download failures receive bounded retries.
 
 [Dockerfile](Dockerfile) · [template.yaml](template.yaml)
 

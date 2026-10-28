@@ -287,6 +287,7 @@ jobs:
           python qm-sandbox/prepare_sdk_tests.py "$RUNNER_TEMP/qm-original-sdk-tests"
           ABX_QM_TEST_SDK_ENTRY="$RUNNER_TEMP/qm-original-sdk-tests/dist/index.js" node --test qm-sandbox/test_adapter.mjs
           python -m pytest -q scripts/test_controller_ownership.py
+          python -m pytest -q hermes-agent/test_download_source.py
           python -m pytest -q python-hello/test_command_errors.py
           python -m pytest -q node-web/test_startup.py node-web/test_http_output.py
           python -m pytest -q claude-code/tests
