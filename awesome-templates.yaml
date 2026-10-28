@@ -137,8 +137,7 @@ templates:
   author: alibaba-agent-sandbox
   status: experimental
 - name: hermes-agent
-  description: NousResearch Hermes 0.22.1 with pinned upstream runtime, local file/terminal tools and bounded headless
-    execution.
+  description: Pinned upstream Hermes Agent CLI with verified source installation and local terminal/file tools.
   repo: https://github.com/alibaba-agent-sandbox/awesome-templates
   path: hermes-agent
   tags:
@@ -417,7 +416,7 @@ templates:
   author: alibaba-agent-sandbox
   status: experimental
 - name: chrome
-  description: Pinned headed Chrome145 with native CDP and authenticated visible noVNC desktop
+  description: Pinned headed Chrome145 with gateway-compatible application-authenticated CDP and native noVNC desktop
   repo: https://github.com/alibaba-agent-sandbox/awesome-templates
   path: chrome
   tags:

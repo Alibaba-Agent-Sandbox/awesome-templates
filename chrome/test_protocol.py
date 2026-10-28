@@ -152,3 +152,39 @@ def test_vnc_websocket_retains_distinct_provider_path_and_fixed_query():
             assert cdp.endpoint_url('https://provider.invalid/prefix?fixed=1','ws://native.invalid/devtools/page/owned?native=2',websocket=True)=='wss://provider.invalid/prefix/devtools/page/owned?fixed=1&native=2'
         finally:await runner.cleanup()
     asyncio.run(run())
+
+
+def test_cdp_auth_survives_authorization_stripping_proxy_without_accepting_wrong_bearer():
+    relay=load('chrome_cdp_proxy_fallback_tests','relay.py')
+    async def run():
+        import aiohttp
+        from aiohttp import web
+        relay.TOKEN='synthetic-application-token'
+        async def native(request):
+            relay.authorized(request)
+            return web.json_response({'authenticated':True})
+        backend=web.Application();backend.router.add_get('/cdp',native)
+        runner=web.AppRunner(backend);await runner.setup()
+        site=web.TCPSite(runner,'127.0.0.1',0);await site.start()
+        url=f'http://127.0.0.1:{site._server.sockets[0].getsockname()[1]}/cdp'
+        async def proxy(request):
+            # The real provider retains the application fallback, not Bearer.
+            forwarded={k:v for k,v in request.headers.items()if k.lower()not in {'authorization','host'}}
+            async with aiohttp.ClientSession()as client:
+                async with client.get(url,headers=forwarded)as response:
+                    return web.Response(status=response.status,body=await response.read())
+        gateway=web.Application();gateway.router.add_get('/cdp',proxy)
+        gateway_runner=web.AppRunner(gateway);await gateway_runner.setup()
+        gateway_site=web.TCPSite(gateway_runner,'127.0.0.1',0);await gateway_site.start()
+        gate=f'http://127.0.0.1:{gateway_site._server.sockets[0].getsockname()[1]}/cdp'
+        try:
+            async with aiohttp.ClientSession()as client:
+                async with client.get(gate,headers={'Authorization':'Bearer synthetic-application-token','X-Access-Token':'synthetic-application-token'})as response:
+                    assert response.status==200
+                    assert await response.json(content_type=None)=={'authenticated':True}
+                for headers in [{},{'X-Access-Token':'wrong'},{'Authorization':'Bearer wrong','X-Access-Token':'synthetic-application-token'},{'Authorization':'Basic wrong','X-Access-Token':'synthetic-application-token'}]:
+                    async with client.get(url,headers=headers)as response:assert response.status==401
+                async with client.get(url,headers={'Authorization':'Bearer synthetic-application-token'})as response:assert response.status==200
+        finally:
+            await gateway_runner.cleanup();await runner.cleanup()
+    asyncio.run(run())

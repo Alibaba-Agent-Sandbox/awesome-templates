@@ -2,10 +2,12 @@ FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8
 # v0.22.1, immutable upstream commit; preserve its MIT license and uv.lock.
+COPY source.json download_source.py /opt/hermes-build/
 RUN pip install --no-cache-dir uv==0.12.3 \
     && mkdir -p /opt/hermes /opt/hermes-python \
-    && curl -fsSL https://codeload.github.com/NousResearch/hermes-agent/tar.gz/297552a9d646119871391d202509822cd86330df \
-       | tar -xz --strip-components=1 -C /opt/hermes \
+    && python3 /opt/hermes-build/download_source.py --output /tmp/hermes-source.tar.gz \
+    && tar -xz --strip-components=1 -C /opt/hermes -f /tmp/hermes-source.tar.gz \
+    && rm /tmp/hermes-source.tar.gz \
     && UV_PYTHON_INSTALL_DIR=/opt/hermes-python uv python install 3.14.6 \
     && cd /opt/hermes \
     && UV_PYTHON_INSTALL_DIR=/opt/hermes-python uv sync --frozen --no-default-groups --python 3.14.6 \

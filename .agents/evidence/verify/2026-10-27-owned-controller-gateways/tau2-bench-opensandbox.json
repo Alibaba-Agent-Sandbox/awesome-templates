@@ -1,0 +1,115 @@
+{
+  "result": "FAIL",
+  "template": "tau2-bench",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//tau2-bench@4c4d1a700b76135333d8a85f32008f59745cc926",
+  "manifest_sha256": "d522c02e22f1d41d6d3ff018423e0bafdf3e41002d5799e6089ef026a201b280",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "tau2_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "TAU2_MODEL",
+      "TAU2_MODEL_API_KEY",
+      "TAU2_MODEL_BASE_URL"
+    ]
+  },
+  "endpoint_mode": "direct",
+  "input_receipt": {
+    "manifest_digest": "sha256:d522c02e22f1d41d6d3ff018423e0bafdf3e41002d5799e6089ef026a201b280",
+    "source_digest": "affe76dded9b6bbccb6c8b02f2a99107285e4f75af6f6ba7ab727381d2e7ea61",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "b12af7ec4ecf36db5584aff725051e13b4b7f52de0cad2bdeb440b05f784905d",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 17,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "9f5593838bc3acbfa3d72e218d6f9e6b8ee2423e677e2c8ca3a3f348a54fed02",
+    "created_sandbox_target_bound": true,
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": false,
+    "documented_case": {
+      "template": "tau2-bench",
+      "provider": "opensandbox",
+      "result": "FAIL",
+      "checks": [
+        {
+          "id": "actual literal documented CLI command discovery",
+          "result": "PASS"
+        }
+      ],
+      "listed_command_names": [
+        "tau2_run",
+        "tau2_setup_check",
+        "tau2_verify_artifact",
+        "tau2_version"
+      ],
+      "readme_sha256": "30c7b80dc1cafcfdc4241e5ce2c7642bfa2b3ee66f5b2e6f4f5ca5f88eb807f0",
+      "runs": {},
+      "failure_type": "AssertionError",
+      "failure_stack": [
+        [
+          "documented_benchmark_tasks.py",
+          "execute",
+          32
+        ],
+        [
+          "documented_benchmark_tasks.py",
+          "validate",
+          20
+        ]
+      ]
+    }
+  },
+  "http_diagnostics": [],
+  "application_result": "FAIL",
+  "failure_type": "CheckFailed",
+  "failed_phase": "application-controller",
+  "diagnostics": {},
+  "failed_check": "template application HTTP controller",
+  "original_private_receipt_sha256": "4954ca2bf2a670a68a37cb10120751b3c8881b98acc8a148d5d65023d2ff1d06"
+}

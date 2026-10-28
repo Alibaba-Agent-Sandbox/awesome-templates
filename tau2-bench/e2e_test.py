@@ -12,6 +12,17 @@ _APPLICATION_HEADERS = {"Authorization": "Bearer " + os.environ["ABX_SERVER_TOKE
 RESULTS=[]
 
 
+# Generated from scripts/sync_controller_ownership.py; do not edit this function alone.
+def owned_loopback_gateway(base):
+    import re
+    sandbox_id=os.environ.get('E2E_OWNED_SANDBOX_ID','')
+    bound=os.environ.get('E2E_OWNED_GATEWAY_URL','').rstrip('/')
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,127}',sandbox_id) or bound!=base.rstrip('/'):
+        return False
+    path=urlsplit(base).path.rstrip('/')
+    return '/sandboxes/'not in path or path.endswith('/sandboxes/'+sandbox_id+'/proxy/9000')
+
+
 def record(ok,label):
     RESULTS.append(bool(ok));print(f"[{'PASS'if ok else'FAIL'}] {label}",flush=True)
 
@@ -37,7 +48,7 @@ def model(client,base,workspace):
         if os.environ.get('E2E_REQUIRE_LLM')=='1':record(False,'required real benchmark model run not enabled')
         else:print('[NOT RUN] actual native agent/user benchmark; owned cloud opt-in required',flush=True)
         return
-    if os.environ.get('E2E_REMOTE_SANDBOX')!='1'or local(base):record(False,'model benchmark requires explicitly owned remote sandbox');return
+    if os.environ.get('E2E_REMOTE_SANDBOX')!='1'or (local(base) and not owned_loopback_gateway(base)):record(False,'model benchmark requires explicitly owned remote sandbox');return
     folder=None
     try:
         value=asyncio.run(native(base,'tau2_run',domain='retail',task_id='0',max_steps=40,command_timeout=900))

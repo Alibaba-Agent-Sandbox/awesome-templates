@@ -42,7 +42,7 @@ abx run "$SANDBOX_ID" chrome_screenshot --json-args '{}'
 
 Returns the actual browser title and final URL. The following screenshot captures the same session.
 
-`chrome_start` returns a session-specific VNC password. Resolve port 6080, open noVNC and log in with that password; CDP uses port 9222 and application authentication. Preserve provider URL paths, query strings and gateway headers unchanged. Website accounts must be logged in within this remote session; local cookies are not imported.
+`chrome_start` returns a session-specific VNC password. Resolve port 6080, open noVNC and log in with that password; CDP uses port 9222 and application authentication. Preserve provider URL paths, query strings and gateway headers unchanged. For direct CDP HTTP/WebSocket calls, add both `Authorization: Bearer <application-token>` and `X-Access-Token: <application-token>` after the gateway headers. The fallback is required when a provider proxy strips Authorization; an explicitly incorrect Authorization remains rejected. The noVNC connection still uses its original generated VNC password. Website accounts must be logged in within this remote session; local cookies are not imported.
 
 `--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
 

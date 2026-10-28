@@ -45,8 +45,8 @@ SWE/apply-patch/IDE/database/Next native controllers. Their named methods are
 covered across smoke/native/README business flows (SWE report and Next self-test
 are in those other layers). Require the literal documented CLI command-list step
 in the common public launch runner, retaining every original native/business gate.
-Fresh complete workflows are queued for both providers for the four non-model
-families and Express SWE; the pending direct OpenSandbox SWE workflow already
+Fresh complete workflows passed for both providers for the four non-model
+families and Express SWE; the separate direct OpenSandbox SWE workflow also
 executes the explicit CLI discovery callback. No model/user-output gate is reduced.
 
 The same review found original OpenSandbox Qwen/DeepSeek controllers list the
@@ -56,6 +56,6 @@ Qwen/DeepSeek/Hermes through CLI/SDK/HTTP, changing trusted nonce program bytes
 between consumers and independently removing the owned script even on failure.
 No template runtime or dependency changes. The actual listed names exclude hidden
 registrations; they cannot replace the full source-owned public-method inventory.
-Fresh full OpenSandbox Qwen/DeepSeek workflows are added; upcoming current-source
-Hermes workflows also execute the explicit compatibility callback. Native/private
+Fresh full OpenSandbox Qwen/DeepSeek workflows passed; current-source
+Hermes workflows also passed the explicit compatibility callback in merged PR285. Native/private
 model outputs and original deadlines remain unchanged.

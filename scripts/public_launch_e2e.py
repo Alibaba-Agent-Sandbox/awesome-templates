@@ -505,6 +505,7 @@ async def verify(args):
         report['checks'].append('unchanged source launched by installed CLI')
         phase = 'sdk-connect'
         sandbox = await ProviderSandbox.connect(launch['sandbox_id'], provider=args.provider)
+        require(sandbox.id == launch['sandbox_id'], 'connected sandbox must match the owned CLI launch')
         phase = 'command-discovery'
         discovered = await asyncio.to_thread(cli.run, ['sandbox', 'command', 'list', sandbox.id])
         require(isinstance(discovered, list) and bool(discovered) and all(
@@ -586,7 +587,8 @@ async def verify(args):
                     'has_path_prefix': bool(parts.path.strip('/')), 'has_query': bool(parts.query),
                     'gateway_header_count': len(port_headers)})
             report['http_acceptance'] = await asyncio.to_thread(run_controller, source, urls,
-                cli.private_directory, controller_fixture, token=env['ABX_SERVER_TOKEN'], gateway_headers=gateway_headers, real_usage=args.real_usage)
+                cli.private_directory, controller_fixture, token=env['ABX_SERVER_TOKEN'], gateway_headers=gateway_headers, real_usage=args.real_usage,
+                owned_sandbox_id=launch['sandbox_id'] if args.real_usage else None)
             if not report['http_acceptance']['passed']:
                 labels = [line for line in (cli.private_directory / 'http.log').read_text().splitlines()
                           if line.startswith(('[FAIL]', '[SKIP]'))]
