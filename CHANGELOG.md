@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+- Keep the repository README focused on template discovery, setup and use; retain internal implementation and acceptance history in engineering records. / 仓库 README 聚焦模板发现、配置和使用，内部实现与验收历史保留在工程记录中。
+
 - Hermes-agent1.2.1 bounds transient source-download retries and verifies the fixed archive before extraction, including cached canonical builds.
 
 - Chrome1.0.9 supports explicit CDP application-token fallback through Authorization-stripping gateways while preserving wrong-Bearer rejection and native VNC authentication.

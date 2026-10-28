@@ -9,7 +9,7 @@ The [template specification](template-spec.md) owns exact README/design headings
 Write the task and observable result first. Put reusable usage in `docs/`,
 template-specific arguments in that template's README, design rationale in
 `docs/design/`, and executed verification in `.agents/` or template-local evidence.
-Keep validation reports, historical acceptance, secondary-development instructions and test-tier narratives out of template user READMEs; retain the original evidence in its existing engineering location. Link to the authority rather than copying contracts that will drift. Separate
+Keep internal implementation details, validation matrices, pass/fail totals, frozen batches, repair progress and test-tier narratives out of the repository README, template READMEs and user guides. Keep engineering decisions and executed verification under `.agents/` or existing template-local evidence. Public documentation explains setup, supported behavior, actionable limits and cleanup; it does not reproduce internal reports. Maintainer instructions belong in contributor or engineering documentation. Link to the authority rather than copying contracts that will drift. Separate
 current instructions from dated research and historical verification. Date
 availability/feasibility observations and link the source or executed check.
 
