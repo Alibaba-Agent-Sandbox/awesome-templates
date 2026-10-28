@@ -1,0 +1,149 @@
+{
+  "result": "PASS",
+  "template": "appworld",
+  "provider": "alicloud-express",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//appworld@4c4d1a700b76135333d8a85f32008f59745cc926",
+  "manifest_sha256": "9e2c7a944b3def04446411b812e170c4e284b029fb9019b7a83e4eaa717121f5",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "appworld_native_smoke",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": true
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "APPWORLD_MODEL",
+      "APPWORLD_MODEL_API_KEY",
+      "APPWORLD_MODEL_BASE_URL"
+    ]
+  },
+  "input_receipt": {
+    "manifest_digest": "sha256:9e2c7a944b3def04446411b812e170c4e284b029fb9019b7a83e4eaa717121f5",
+    "source_digest": "f4ebad4295d1fafbb3aea9367a150fa4687a8402a1948fb87a67e90dd5fa79a6",
+    "provider_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "provider_snapshot_digest": "sha256:7d6f5517786e31181f24adf7035662943729b2f08afd293e7173a7dbb086f87d",
+    "plan_digest": "879014935f3bc33f3837ccd82e32cab1348f2cfbb09316bb07decc96c3ec1cb0",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "https",
+      "has_path_prefix": false,
+      "has_query": false,
+      "gateway_header_count": 1
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 17,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "14e0dc6e6415837e90a8096d0857be072c5b611c45e1dc34e48bd4d5dbcda29d",
+    "created_sandbox_target_bound": true,
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "appworld",
+      "provider": "alicloud-express",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "actual literal documented CLI command discovery",
+          "result": "PASS"
+        },
+        {
+          "id": "cli actual original task, downloaded exact artifact and keyless native replay",
+          "result": "PASS"
+        },
+        {
+          "id": "cli owned result directory independently absent",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README SDK program",
+          "result": "PASS"
+        },
+        {
+          "id": "sdk actual original task, downloaded exact artifact and keyless native replay",
+          "result": "PASS"
+        },
+        {
+          "id": "sdk owned result directory independently absent",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP task",
+          "result": "PASS"
+        },
+        {
+          "id": "http actual original task, downloaded exact artifact and keyless native replay",
+          "result": "PASS"
+        },
+        {
+          "id": "http owned result directory independently absent",
+          "result": "PASS"
+        }
+      ],
+      "listed_command_names": [
+        "appworld_native_smoke",
+        "appworld_run",
+        "appworld_setup_check",
+        "appworld_verify_artifact",
+        "appworld_version"
+      ],
+      "readme_sha256": "79df3e4f79287dcd4faec1777a5060b8915032250ef8099fc3a3767f7c09f111",
+      "runs": {
+        "cli": {
+          "score": 1,
+          "artifact_bytes": 14642,
+          "artifact_sha256": "775e8715f0437a7fc2d0536cae3ddceb22eb5019ced6145b42e45ef2222f1400",
+          "native_replay_score": 1.0
+        },
+        "sdk": {
+          "score": 1.0,
+          "artifact_bytes": 12676,
+          "artifact_sha256": "029366b3dd7ba9bdda420bc3935d2a84bc58448367b73515526f914922f0db6f",
+          "native_replay_score": 1.0
+        },
+        "http": {
+          "score": 1.0,
+          "artifact_bytes": 14873,
+          "artifact_sha256": "8ab698978d06b86d57a5c18b9c4867ebe19e91c60d1c70e8b1a4150cd5656e7c",
+          "native_replay_score": 1.0
+        }
+      },
+      "configured_model": "qwen3.8-flash"
+    }
+  },
+  "application_result": "PASS",
+  "original_private_receipt_sha256": "b0417e683caaeea04ddd3249ec4ed36f127e6a1559304c6f6592654d85ef8e17"
+}

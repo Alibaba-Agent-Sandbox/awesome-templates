@@ -31,7 +31,9 @@ blanket guard prevents real approved Docker verification despite actual isolatio
 Refs https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/282 and
 https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/244.
 New source identities include changed verification files, so all eight require
-fresh Express/OpenSandbox actual workflows and Registry review before acceptance.
+fresh Express actual workflows and best-effort OpenSandbox workflows, with
+independent Registry review before provider qualification. Failed model/business
+results remain failed and never qualify a provider.
 Original runtime/manifests remain unchanged; historical receipts stay preserved.
 
 ## Test Strategy
