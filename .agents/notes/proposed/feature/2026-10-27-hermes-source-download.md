@@ -38,8 +38,10 @@ Actual loopback HTTP429→200, bounded repeated429,403 non-retry, corrupt checks
 atomic destination preservation, cleartext rejection and cached integrity checks.
 Three archive files match Git blob hashes at the unchanged fixed commit. Related
 Hermes/canonical suites110 PASS; legacy/current cached source compatibility PASS.
-Spec39, all-template checker and224-document links pass. Fresh current Express/
-OpenSandbox native/method/model/documentation/business/owned-cleanup still required.
+Spec39, all-template checker and224-document links pass. Fresh Express and
+OpenSandbox each passed17 native and13 documented-use checks, including all three
+legacy Python consumers, independent model outputs and owned resource absence.
+Current-head CI and separate Registry/blog publication remain required.
 
 ## Acceptance criteria
 Final-head CI/review, fresh full dual-provider use, exact owned cleanup, source and

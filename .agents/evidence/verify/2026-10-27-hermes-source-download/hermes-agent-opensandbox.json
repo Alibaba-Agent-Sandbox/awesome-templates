@@ -1,0 +1,152 @@
+{
+  "result": "PASS",
+  "template": "hermes-agent",
+  "provider": "opensandbox",
+  "scope": "public CLI source launch, CLI/Python/HTTP smoke and real usage controller; not automatic full documented-method qualification",
+  "source": "Alibaba-Agent-Sandbox/awesome-templates//hermes-agent@4c4d1a700b76135333d8a85f32008f59745cc926",
+  "manifest_sha256": "5df411f0122c255ba5638bde0a388015e395186ffb6e19a6bc25eee2b707ccbc",
+  "cli_version": "abx, version 0.5.7",
+  "python_client_version": "0.4.0a6",
+  "checks": [
+    "unchanged source launched by installed CLI",
+    {
+      "smoke": 0,
+      "command": "hermes_version",
+      "consumers": [
+        "cli",
+        "python",
+        "host-http"
+      ],
+      "has_expected_result": false
+    },
+    "service authentication rejects wrong token",
+    "runtime source identity",
+    "SDK exec and file round trip",
+    "CLI exec, stat, upload/download exact bytes and independent SDK file cleanup"
+  ],
+  "cleanup": {
+    "sandbox": "confirmed absent",
+    "prepared_artifacts": "confirmed absent",
+    "diagnostics": [],
+    "artifact_cleanup_failures": 0,
+    "retained_artifact_count": 0,
+    "uncertain_count": 0
+  },
+  "test_configuration": {
+    "model_credentials_injected": false,
+    "real_usage_required": true,
+    "explicit_manifest_environment": [
+      "HERMES_MODEL",
+      "HERMES_PROVIDER",
+      "OPENAI_API_KEY",
+      "OPENAI_BASE_URL"
+    ]
+  },
+  "endpoint_mode": "direct",
+  "input_receipt": {
+    "manifest_digest": "sha256:5df411f0122c255ba5638bde0a388015e395186ffb6e19a6bc25eee2b707ccbc",
+    "source_digest": "c62d4fee6319a6dce34628e59dca1bde0ffe93dc17b60e8b523ef6e81b33917d",
+    "provider_digest": "sha256:a27b95feb4bac6a7e8ba97c598aa6016bcf2ba37fcf17c5f2c6fa6b9acfa5eab",
+    "provider_snapshot_digest": "abec5f19683ec2623c2d09d1133b4d0a5a2ccb2d8e1c4ca5df14f5a1b9a9f75f",
+    "plan_digest": "0877d8dd1e9708702376518c188eb286ff0b44f724b7adb08e3ac4ad01594dd3",
+    "build_profile": null
+  },
+  "server_package_version": "0.4.0a6",
+  "port_endpoint_layout": [
+    {
+      "port": 9000,
+      "scheme": "http",
+      "has_path_prefix": true,
+      "has_query": false,
+      "gateway_header_count": 0
+    }
+  ],
+  "http_acceptance": {
+    "exit_code": 0,
+    "pass_count": 17,
+    "fail_count": 0,
+    "skip_count": 0,
+    "not_run_count": 0,
+    "verifier_sha256": "289cbf0acccd32d8b45ff07df23fc96ed7cde7cf15108d0af87be82e639ad0ed",
+    "created_sandbox_target_bound": true,
+    "transport_adapter_sha256": "7ff6804f000a15eb79b5796a22f996e20fa60ef9972dddeba746006d10bccf2b",
+    "verifier_inputs_unchanged": true,
+    "real_usage_required": true,
+    "passed": true,
+    "documented_case": {
+      "template": "hermes-agent",
+      "provider": "opensandbox",
+      "result": "PASS",
+      "checks": [
+        {
+          "id": "actual literal documented CLI command discovery",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README CLI business request",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "CLI generated report independently downloaded",
+          "result": "PASS"
+        },
+        {
+          "id": "previous CLI output independently absent before SDK task",
+          "result": "PASS"
+        },
+        {
+          "id": "unchanged complete README Python example",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "SDK generated report independently downloaded",
+          "result": "PASS"
+        },
+        {
+          "id": "previous SDK output independently absent before HTTP task",
+          "result": "PASS"
+        },
+        {
+          "id": "literal README HTTP business request",
+          "result": "PASS"
+        },
+        {
+          "id": "downloaded generated Python independently executes",
+          "result": "PASS"
+        },
+        {
+          "id": "HTTP generated report independently downloaded",
+          "result": "PASS"
+        },
+        {
+          "id": "legacy Python run through CLI SDK HTTP with three fresh programs and independent cleanup",
+          "result": "PASS"
+        }
+      ],
+      "listed_command_names": [
+        "hermes",
+        "hermes_setup_check",
+        "hermes_version",
+        "run"
+      ],
+      "readme_sha256": "3efc8a23250421efc02f1ab71a92462b783f7b56a27099e486cbc397ba869044",
+      "configured_model": "qwen3.8-flash",
+      "compatibility_verifier_sha256": "607751c126f5e7fea8e9d58add58b190e8c910d03822435be89c37bce7bc6fa1",
+      "artifact": {
+        "file": "generated_hello.py",
+        "sha256": "b262fec13d8cdc72d7eca04d5a30e98bdc9d0a6625fe5301df24e1d7b2d12a10",
+        "observed_stdout": "Hello from the sandbox"
+      }
+    }
+  },
+  "application_result": "PASS",
+  "original_private_receipt_sha256": "29320522517e1b75f6705bbc765f28647f3c91c6f2210111c809287b0db37bbc"
+}
