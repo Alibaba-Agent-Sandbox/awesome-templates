@@ -57,5 +57,52 @@
     "complete_provider_candidate": true,
     "unverified_public_methods": [],
     "qualification": "Separate Registry review; compatible-only scopes retain whole-template Beta"
+  },
+  "tau2-bench": {
+    "provider": "opensandbox",
+    "execution_result": "FAIL",
+    "review_result": "FAIL",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/tau2_version",
+      "POST /commands/tau2_setup_check",
+      "POST /commands/tau2_run",
+      "POST /commands/tau2_verify_artifact"
+    ],
+    "native_assertions": 16,
+    "native_failures": 1,
+    "documented_checks": 0,
+    "source_revision": "4c4d1a700b76135333d8a85f32008f59745cc926",
+    "runtime_folder_unchanged": true,
+    "endpoint_mode": "direct",
+    "startup_model_profile": "qwen3.8-max",
+    "complete_provider_candidate": false,
+    "unverified_public_methods": [],
+    "qualification": "Separate Registry review; compatible-only scopes retain whole-template Beta"
+  },
+  "appworld": {
+    "provider": "opensandbox",
+    "execution_result": "FAIL",
+    "review_result": "FAIL",
+    "declared": [
+      "GET /health",
+      "GET /commands",
+      "POST /commands/appworld_version",
+      "POST /commands/appworld_setup_check",
+      "POST /commands/appworld_native_smoke",
+      "POST /commands/appworld_run",
+      "POST /commands/appworld_verify_artifact"
+    ],
+    "native_assertions": 9,
+    "native_failures": 1,
+    "documented_checks": 0,
+    "source_revision": "4c4d1a700b76135333d8a85f32008f59745cc926",
+    "runtime_folder_unchanged": true,
+    "endpoint_mode": "direct",
+    "startup_model_profile": "qwen3.8-max",
+    "complete_provider_candidate": false,
+    "unverified_public_methods": [],
+    "qualification": "Separate Registry review; compatible-only scopes retain whole-template Beta"
   }
 }

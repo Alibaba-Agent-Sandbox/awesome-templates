@@ -6,7 +6,9 @@ Date:2026-10-27. Original26 attempts remain in the earlier dated record and immu
 evidence commit04a9a6153f08cbb4856bde934605ddc1b9772534. New runs use unchanged
 individual template folders at frozen combined source4c4d1a700b76135333d8a85f32008f59745cc926,
 published CLI0.5.7/client-server0.4.0a6, official OpenSandbox/execd1.1.1 and explicit
-direct endpoint mode. Codex API/DeepAgents configure a fresh flash startup profile;
+direct endpoint mode. Tau2/AppWorld max-profile follow-ups are recorded here after
+the scoped ownership fix lands; all8 Express and6 OpenSandbox completed workflows
+remain immutable in PR283. Codex API/DeepAgents configure a fresh flash startup profile;
 Browser Use/SWE retain their original max startup profile. Original output, model,
 native/tool, auth and deadline assertions are not weakened. A working configuration
 does not establish the cause of each earlier failed proxy/max attempt.
@@ -15,6 +17,8 @@ does not establish the cause of each earlier failed proxy/max attempt.
 | --- | --- | ---: | ---: |
 | codex-agent-api | FAIL | 21 | 0 |
 | deepagents | PASS | 17 | 15 |
+| tau2-bench | FAIL | 16 | 0 |
+| appworld | FAIL | 9 | 0 |
 
 Every complete candidate includes fresh full original native/public-method gates,
 literal README CLI, unchanged complete SDK program, direct HTTP, independently
