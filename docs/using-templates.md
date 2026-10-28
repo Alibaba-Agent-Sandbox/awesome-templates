@@ -37,13 +37,15 @@ For OpenSandbox, first follow its [provider setup](https://github.com/Alibaba-Ag
 
 ### Configure the application and model
 
-Set `ABX_SERVER_TOKEN` to an independent private application token before source launch. Set the chosen template's documented model API key, endpoint, model selector and any required account login at the same time. A sandbox API key cannot authenticate a model API, and a model key cannot authenticate the sandbox platform.
+The CLI generates a private application token during normal template launch, saves it locally and reuses it for later commands. To use your own token or call the service from an external SDK/HTTP client, follow [application authentication](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/guide/guided-configuration.md). Configure the template's documented model API key, endpoint, model selector and any required account login separately. Sandbox, application and model credentials serve different purposes.
 
 Templates use different upstream configuration. Do not assume every tool consumes `ABX_LLM_*`, supports arbitrary OpenAI-compatible endpoints, or inherits a login from your machine. Non-model tools do not need a model key. Commercial account login, API-key login and optional web-service passwords are described in the applicable README.
 
 In CLI 0.5.8, declared **empty** template env values can be filled from the host environment. A non-empty manifest value wins over a same-name host export. Use a command's documented model argument to select another model. For an empty startup-only model/key/endpoint setting, export the new value and launch a new instance from the public recipe; use the new returned sandbox ID. A local template copy is only needed to change a non-empty manifest default or the implementation. Only declared runtime settings are carried through this path. Changing exports after launch does not reconfigure an already running process.
 
 ## CLI, SDK and HTTP
+
+This walkthrough also calls the application from external Python/HTTP clients, so it sets a custom `ABX_SERVER_TOKEN` and reuses it for launch and calls. CLI-only use does not require setting a token manually.
 
 The `python-hello` template below needs no model service. The example's credential and ID placeholders must be replaced before use; set `ABX_PROVIDER` consistently as described above.
 

@@ -382,3 +382,5 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 - [README publication follow-up](evidence/verify/2026-10-28-public-readme-publication.md).
 
 - [CLI 0.5.8 shared setup guidance](notes/proposed/process/2026-10-28-cli-058-template-installation.md) · [verification](evidence/verify/2026-10-28-cli-058-template-installation.md).
+
+- [README audience review](notes/proposed/process/2026-10-28-readme-audience-review.md) · [verification](evidence/verify/2026-10-28-readme-audience-review.md).
