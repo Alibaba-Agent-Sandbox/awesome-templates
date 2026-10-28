@@ -368,3 +368,5 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 - [Chrome proxy application authentication](notes/proposed/feature/2026-10-27-chrome-proxy-auth.md) · [verification](evidence/verify/2026-10-27-chrome-proxy-auth.md). Actual reruns required before provider qualification.
 
 - [Cookie-preserving browser IDE endpoints](notes/proposed/feature/2026-10-27-code-server-cookie-endpoint.md) · [verification](evidence/verify/2026-10-27-code-server-cookie-endpoint.md). Actual direct-provider browser use required.
+
+- [Polyglot public command discovery](notes/proposed/feature/2026-10-27-polyglot-command-discovery.md) · [verification](evidence/verify/2026-10-27-polyglot-command-discovery.md). Actual discovery is required in addition to compilation; fresh provider records pending.

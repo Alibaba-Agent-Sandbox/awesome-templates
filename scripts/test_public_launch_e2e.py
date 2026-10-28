@@ -445,5 +445,59 @@ class CliIoTests(unittest.IsolatedAsyncioTestCase):
             with self.assertRaisesRegex(RuntimeError,'partial upload'):
                 await self.exercise(Path(directory),failed_upload=True)
 
+class PythonCompatibilityProofTests(unittest.IsolatedAsyncioTestCase):
+    async def exercise(self, *, stale_http=False):
+        import httpx
+        import subprocess
+        from types import SimpleNamespace
+        from public_launch_e2e import verify_python_compatibility
+        files = {}
+        programs = []
+        class Files:
+            async def exists(self, path): return path in files
+            async def write(self, path, value): files[path] = value
+            async def read(self, path): return files[path]
+            async def remove(self, path): del files[path]
+        def execute():
+            source = next(iter(files.values()))
+            programs.append(source)
+            result = subprocess.run([__import__('sys').executable, '-I', '-c', source], capture_output=True, text=True, timeout=5)
+            self.assertEqual(result.returncode, 0)
+            return result.stdout
+        class Commands:
+            async def run(self, name, **kwargs):
+                self_case.assertEqual(name, 'run')
+                return execute()
+        self_case = self
+        def cli_run(args):
+            self.assertEqual(args[:3], ['run', 'owned-sandbox', 'run'])
+            return {'result': execute()}
+        def http(request):
+            self.assertEqual(request.url.path, '/owned/proxy/9000/commands/run')
+            self.assertEqual(request.url.query, b'fixed=1')
+            value = 'stale output\n' if stale_http else execute()
+            return httpx.Response(200, json={'result': value})
+        original = httpx.AsyncClient
+        def client(*args, **kwargs):
+            kwargs['transport'] = httpx.MockTransport(http)
+            return original(*args, **kwargs)
+        try:
+            with patch('httpx.AsyncClient', side_effect=client):
+                await verify_python_compatibility(SimpleNamespace(run=cli_run),
+                    SimpleNamespace(id='owned-sandbox', files=Files()),
+                    SimpleNamespace(commands=Commands()),
+                    'http://provider.invalid/owned/proxy/9000?fixed=1', {}, '/home/user/app')
+        finally:
+            self.assertEqual(files, {}, 'owned program is absent even when a consumer fails')
+        self.assertEqual(len(programs), 3)
+        self.assertEqual(len(set(programs)), 3)
+
+    async def test_all_consumers_execute_fresh_real_python_and_cleanup(self):
+        await self.exercise()
+
+    async def test_stale_consumer_result_fails_and_still_cleans_owned_program(self):
+        with self.assertRaises(CheckFailed):
+            await self.exercise(stale_http=True)
+
 if __name__ == '__main__':
     unittest.main()

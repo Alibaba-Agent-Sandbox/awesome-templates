@@ -49,6 +49,37 @@ def application_headers(gateway_headers, token):
     return headers
 
 
+async def verify_python_compatibility(cli, sandbox, client, endpoint, headers, workspace):
+    """Execute each documented legacy Python entry with fresh owned script bytes."""
+    import httpx
+    import uuid
+    require(isinstance(workspace, str) and workspace.startswith('/'), 'compatibility workspace must be absolute')
+    filename = 'abx_compat_' + uuid.uuid4().hex + '.py'
+    path = workspace.rstrip('/') + '/' + filename
+    require(not await sandbox.files.exists(path), 'compatibility fixture must not adopt an existing file')
+    try:
+        async with httpx.AsyncClient(timeout=180, follow_redirects=False, trust_env=False) as http:
+            for consumer in ['cli', 'python', 'host-http']:
+                marker = 'COMPAT_' + uuid.uuid4().hex
+                source = 'print(' + repr(marker) + ')\n'
+                await sandbox.files.write(path, source)
+                require(await sandbox.files.read(path) == source, 'compatibility input bytes must match')
+                if consumer == 'cli':
+                    result = await asyncio.to_thread(cli.run, ['run', sandbox.id, 'run', '--json-args', json.dumps({'script': filename})])
+                    value = result['result']
+                elif consumer == 'python':
+                    value = await client.commands.run('run', script=filename)
+                else:
+                    response = await http.post(command_url(endpoint, 'run'), headers=headers, json={'script': filename})
+                    require(response.status_code == 200, 'compatibility HTTP method must succeed')
+                    value = response.json()['result']
+                require(value == marker + '\n', 'compatibility entry must execute the current fresh script')
+    finally:
+        if await sandbox.files.exists(path):
+            await sandbox.files.remove(path)
+        require(not await sandbox.files.exists(path), 'owned compatibility script must be independently absent')
+
+
 class CheckFailed(AssertionError):
     """A runner-owned, controlled check label, never a dependency exception."""
 
@@ -475,6 +506,15 @@ async def verify(args):
         phase = 'sdk-connect'
         sandbox = await ProviderSandbox.connect(launch['sandbox_id'], provider=args.provider)
         require(sandbox.id == launch['sandbox_id'], 'connected sandbox must match the owned CLI launch')
+        phase = 'command-discovery'
+        discovered = await asyncio.to_thread(cli.run, ['sandbox', 'command', 'list', sandbox.id])
+        require(isinstance(discovered, list) and bool(discovered) and all(
+            isinstance(item, dict) and isinstance(item.get('name'), str) and item['name']
+            for item in discovered), 'literal documented CLI command discovery returns registered methods')
+        names = [item['name'] for item in discovered]
+        require(len(names) == len(set(names)), 'command discovery names must be unique')
+        report['listed_command_names'] = sorted(names)
+        report['checks'].append('literal documented CLI command discovery')
         phase = 'application-client'
         client = await sandbox.application_client(9000, token=env['ABX_SERVER_TOKEN'], timeout=180)
         phase = 'endpoint-resolution'
@@ -528,6 +568,11 @@ async def verify(args):
         phase = 'cli-process-and-files'
         await verify_cli_io(cli, sandbox, alias, cli.private_directory)
         report['checks'].append('CLI exec, stat, upload/download exact bytes and independent SDK file cleanup')
+        if args.template in {'qwen-code', 'deepseek-harness', 'hermes-agent'}:
+            phase = 'python-compatibility-command'
+            await verify_python_compatibility(cli, sandbox, client, endpoint, headers,
+                manifest.get('env', {}).get('WORKSPACE', '/home/user/app'))
+            report['checks'].append('legacy Python run through CLI, SDK and HTTP with three fresh programs and independent cleanup')
 
         if args.application_controller:
             phase = 'application-controller'

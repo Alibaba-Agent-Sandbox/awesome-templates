@@ -1,0 +1,10 @@
+{
+  "result": "PASS",
+  "scope": "read-only published CLI source audit; no provider acceptance inferred",
+  "tag": "v0.5.7",
+  "commit": "5811c8d50eb7602339ff58cf94c9466f7d8c5b31",
+  "path": "src/api/sandbox.ts",
+  "sha256": "b36e659c5ac811de5df895c1e45eec17a00da92fe48b5f2c6a1b16b0a2f44930",
+  "finding": "Named command execution issues POST /commands/name and does not implicitly list GET /commands. Existing successful business POST calls do not alone certify command discovery; focused explicit discovery coverage remains necessary.",
+  "workspace_mutations": false
+}
