@@ -80,6 +80,8 @@ class ApplicationContractTest(unittest.TestCase):
         for entry in catalog["templates"]:
             source = ROOT / entry["path"]
             data = check_template.yaml.safe_load((source / "template.yaml").read_text())
+            if data.get("spec_version") != 5:
+                continue  # Spec6 is a distinct managed application, not an old launch migration.
             data["spec_version"] = 5
             data["smoke"] = [item for item in data["smoke"] if "expect" in item]
             if not data["smoke"]:

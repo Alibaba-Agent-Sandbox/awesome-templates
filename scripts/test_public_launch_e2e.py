@@ -33,10 +33,14 @@ class PublicLaunchTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             installation_provenance(env, '0.3.1a5', '0.3.1a5')
 
-    def test_all_source_templates_have_named_smoke_cases(self):
+    def test_source_sandbox_templates_keep_named_smoke_and_managed_apps_are_explicit(self):
         names = source_names()
-        self.assertEqual(len(names), 46)
+        self.assertEqual(len(names), 47)
         for name in names:
+            if name == 'agents-api':
+                with self.assertRaisesRegex(ValueError, 'application deployment acceptance through their Gateway'):
+                    load_plan(name)
+                continue
             source, manifest, cases = load_plan(name)
             self.assertTrue(cases)
             self.assertTrue((source / 'commands.py').is_file())

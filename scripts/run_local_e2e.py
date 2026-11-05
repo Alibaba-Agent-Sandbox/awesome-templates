@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Run every template e2e against a locally started ``commands.py``.
+"""Run every template e2e against its declared supported local server.
 
 For each template directory this script:
 
 1. binds an ephemeral port,
-2. starts ``python3 commands.py`` in that directory,
+2. starts ``python3 commands.py`` or the declared managed bridge module,
 3. sets ``E2E_BASE_URL`` to the local server,
 4. runs ``e2e_test.py``,
 5. stops the server.
@@ -19,6 +19,7 @@ from __future__ import annotations
 import ast
 import json
 import os
+import secrets
 import shutil
 import socket
 import subprocess
@@ -190,10 +191,24 @@ def _run_one(directory: Path, path_prefix: str) -> tuple[str, str]:
     port = _free_port()
     pty_port = _free_port()
     env = _child_env(str(directory), port, pty_port, path_prefix)
+    try:
+        startup, managed = _startup_argv(directory, port)
+    except ValueError as exc:
+        return "fail", str(exc)
+    managed_scratch = None
+    if managed:
+        # Generated solely for this loopback run; never forward caller/cloud keys.
+        env["ABX_SERVER_TOKEN"] = secrets.token_urlsafe(32)
+        env["E2E_MANAGED_TOKEN"] = env["ABX_SERVER_TOKEN"]
+        managed_scratch = tempfile.TemporaryDirectory(prefix="abx-managed-local-")
+        workspace = Path(managed_scratch.name) / "workspace"
+        workspace.mkdir()
+        env["ABX_MANAGED_WORKSPACE"] = str(workspace)
+        env["ABX_MANAGED_STATE_DIR"] = str(Path(managed_scratch.name) / "state")
     stdout: list[str] = []
     stderr: list[str] = []
     proc = subprocess.Popen(
-        ["python3", "commands.py"],
+        startup,
         cwd=directory,
         env=env,
         stdout=subprocess.PIPE,
@@ -225,6 +240,28 @@ def _run_one(directory: Path, path_prefix: str) -> tuple[str, str]:
     finally:
         _stop(proc)
         _cleanup(directory)
+        if managed_scratch is not None:
+            managed_scratch.cleanup()
+
+
+def _startup_argv(directory: Path, port: int) -> tuple[list[str], bool]:
+    """Use the exact v6 bridge entry; existing v5 local startup stays unchanged."""
+    if __package__:
+        from . import check_template
+        from .template_application import is_managed_application, validate_v6
+    else:
+        import check_template
+        from template_application import is_managed_application, validate_v6
+
+    manifest, errors = check_template._load_yaml(directory / "template.yaml")
+    if errors or not isinstance(manifest, dict):
+        raise ValueError("local startup needs a valid template manifest")
+    if not is_managed_application(manifest):
+        return ["python3", "commands.py"], False
+    failures = validate_v6(manifest, directory)
+    if failures:
+        raise ValueError("invalid managed bridge manifest: " + "; ".join(failures))
+    return [sys.executable, "-m", "agent_sandbox.server.managed", "--port", str(port)], True
 
 
 def _conformance() -> int:

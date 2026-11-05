@@ -92,10 +92,10 @@ smoke:
 |---|---|
 | `name` | Same as the directory. |
 | `description`, `version`, `author`, `license` | Non-empty strings. |
-| `spec_version` | Only integer `5` is accepted. Retired and unknown schemas are rejected without compatibility mode. |
+| `spec_version` | Integer `5` selects the existing Sandbox contract. Integer `6` selects the managed-session application contract below. Retired and unknown schemas are rejected. |
 | `base` | String. Either the placeholder `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` or a pinned `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:vX.Y.Z`. Not a mapping. |
 | `generation` | Integer `2`. |
-| `start_cmd` | `agent-sandbox-server serve` plus the path of `commands.py` inside the image. |
+| `start_cmd` | Version 5 uses `agent-sandbox-server serve` plus the image path of `commands.py`. The version-6 managed bridge has one exact module entrypoint below. |
 | `ready_cmd` | `agent-sandbox-server healthcheck` plus the port. |
 | `resources.cpu` | Positive integer, vCPU. |
 | `resources.memory` | Positive integer, MB. |
@@ -119,7 +119,7 @@ Named commands are not listed in `template.yaml`. They are registered in `comman
 
 ## Optional application deployment (spec version 5)
 
-Every input uses the closed [spec/template-v5.schema.json](../spec/template-v5.schema.json).
+Version-5 inputs use the closed [spec/template-v5.schema.json](../spec/template-v5.schema.json).
 `application` remains optional. When present, its existing deployment topology,
 hooks, durable state and non-null smoke expectations retain their meaning.
 Template startup and application deployment remain separate operations.
@@ -172,6 +172,41 @@ Install the pinned checker dependencies with
 `python -m pip install -r scripts/requirements-spec.txt`, then run the checker and
 `scripts/test_spec_tools.py`. Runtime/image/provider/model acceptance tiers below
 still apply independently; schema validity cannot certify a launch or promote catalog status.
+
+## Managed-session application deployment (spec version 6)
+
+Version 6 uses the independent closed [spec/template-v6.schema.json](../spec/template-v6.schema.json)
+for the `fc-managed-agents` profile. Existing version-5 templates retain their original
+contract and do not acquire managed deployment behavior. Configuration remains in the
+same `template.yaml`; the profile expands into owned deployment resources rather than
+accepting an arbitrary workflow language. See the [managed application reference](managed-agent-applications.md)
+([中文](managed-agent-applications.zh-CN.md)).
+
+The version-6 runtime is explicitly `in-sandbox`, `sandbox-local-api`,
+`managed-bridge-v1`; its private protocol is `agent-sandbox-managed-bridge/v1`.
+It does not expose the core Agents routes or named commands. Its exact startup is
+`python -m agent_sandbox.server.managed --port 9000`; readiness remains
+`agent-sandbox-server healthcheck --port 9000`. The Alibaba base, generation 2,
+non-root user, independent published dependency pins and source-path rules still apply.
+
+Version-6 root `smoke` entries use `operation: health` or `operation: capabilities`
+with a non-null `expect`, instead of naming a nonexistent command. Local L0 starts
+the actual declared bridge with isolated state/workspace and a generated test token.
+The full application task is verified through the Gateway after deployment; a bridge
+health response or `commands.py` diagnostic does not prove an Agent task.
+
+The application uses exclusive `per-session` Sandboxes, durable state, role-scoped
+binding references, finite session/storage/execution budgets and explicit close/delete
+policies. `serverImage` must be digest-pinned, or `serverBuildRecipe` selects a safe
+Dockerfile inside the template context; they are mutually exclusive. The deployer
+builds and freezes the latter before invoking components. Hooks are bounded custom
+checks or `serverless-devs` `info` queries on an existing profile step; hooks cannot
+create unrecorded deployment resources.
+
+The managed application README uses the Gateway task in CLI/Python/HTTP examples:
+`abx app` for application deployment and authenticated Gateway HTTP for business calls.
+It does not require callers to connect a `ProviderSandbox` or use `abx run`.
+The required headings and user-documentation boundaries below remain unchanged.
 
 ## Alibaba base image
 
@@ -274,7 +309,7 @@ if __name__ == "__main__":
 
 `/health` is exempt from server-token authentication; the provider gateway may still authenticate that request. A successful health probe does not prove named-command authentication or model configuration.
 
-The server reads `ABX_SERVER_TOKEN` when the process starts. When the variable is non-empty, protected requests need `Authorization: Bearer <token>` or `X-Access-Token: <token>`. Declare the name in `env` with an empty value. Provide the real value to the server process before it starts. Create-time injection (`abx create --env` or `ProviderSandbox.create(envs=...)`) applies only when that provider starts the server with those values; it cannot reconfigure a prewarmed process. Use the unified template launch to configure and start the declared service, then connect the SDK to that running application; see [runtime environment configuration](runtime-environment.md).
+The following named-command authentication rules apply to spec5. The managed6 bridge instead requires its generated token and never permits anonymous managed operations. The server reads `ABX_SERVER_TOKEN` when the process starts. When the variable is non-empty, protected requests need `Authorization: Bearer <token>` or `X-Access-Token: <token>`. Declare the name in `env` with an empty value. Provide the real value to the server process before it starts. Create-time injection (`abx create --env` or `ProviderSandbox.create(envs=...)`) applies only when that provider starts the server with those values; it cannot reconfigure a prewarmed process. Use the unified template launch to configure and start the declared service, then connect the SDK to that running application; see [runtime environment configuration](runtime-environment.md).
 
 When the variable is unset, the application allows anonymous calls; provider gateway authentication remains separate. The client preserves the provider's gateway headers and sends an explicit application token as `Authorization: Bearer <token>`, also adding the existing application `X-Access-Token` header when unoccupied. Authentication failures are returned without an anonymous retry. Templates that set `ABX_SERVER_TOKEN` must document `await sb.application_client(port, token=...)` for the project Python API and `ABX_SERVER_TOKEN` for CLI named commands.
 
@@ -322,7 +357,7 @@ not delete the sandbox: delete your owned instance with `abx kill <sandbox-id>` 
 finished, and reconcile its prepared template/image separately. Record source refs
 and installed package versions for acceptance.
 
-Local L0 does not create a cloud sandbox. `scripts/run_local_e2e.py` starts `python3 commands.py`, sets `E2E_BASE_URL`, and runs `e2e_test.py`. That test may use HTTP against `E2E_BASE_URL`. Cloud acceptance must exercise the actual selected CLI/SDK/HTTP entry points.
+Local L0 does not create a cloud sandbox. `scripts/run_local_e2e.py` starts `python3 commands.py` for spec5 or the actual managed module for spec6, sets `E2E_BASE_URL`, and runs `e2e_test.py`. That test may use HTTP against `E2E_BASE_URL`. Cloud acceptance must exercise the actual selected CLI/SDK/HTTP entry points.
 
 ### HTTP POST contract
 
@@ -417,7 +452,7 @@ Template READMEs are usage guides: keep validation reports, historical acceptanc
 
 Before launch, explain required provider credentials separately from application and model credentials, and document the actual model, endpoint, API-key or product-login configuration consumed by the template. Do not invent a universal variable mapping for upstream tools.
 
-The CLI section contains an `abx run` example. The SDK section imports `ProviderSandbox`, resolves its application client with `application_client`, and calls `client.commands.run`. The command reference is a table with the parameters. A non-Alibaba base adds `## Base image` / `## 基础镜像`.
+For spec6, show explicit `abx app` deployment and standard Gateway HTTP through Python `httpx`, with the public API table and managed close/delete cleanup. The following client requirements apply to spec5. The CLI section contains an `abx run` example. The SDK section imports `ProviderSandbox`, resolves its application client with `application_client`, and calls `client.commands.run`. The command reference is a table with the parameters. A non-Alibaba base adds `## Base image` / `## 基础镜像`.
 
 ## Listing and acceptance
 
@@ -493,7 +528,7 @@ python3 scripts/check_template.py --all
 
 `--all` checks every root directory containing `template.yaml`, including the skeleton. Every manifest requires an explicit supported `spec_version`; missing, malformed or unknown versions fail. The catalog requires `schema_version: 2`. CI and `scripts/run_local_e2e.py` use the same complete check and fail on any violation.
 
-Violation codes include `required-file`, `readme-section`, `base-image`, `dockerfile-cmd`, `dockerfile-user`, `yaml-field`, `commands-start`, `verified-evidence`, `pinned-version`, `readme-client`, `secrets`. `pinned-version` fails when a `RUN` has neither allowed server pin above. `readme-client` fails when a spec_version 4 SDK section does not name `agent-sandbox-client`, or when a README tells the reader to `pip install agent-sandbox`.
+Violation codes include `required-file`, `readme-section`, `base-image`, `dockerfile-cmd`, `dockerfile-user`, `yaml-field`, `commands-start`, `verified-evidence`, `pinned-version`, `readme-client`, `secrets`. `pinned-version` fails when a `RUN` has neither allowed server pin above. `readme-client` fails when a spec5 SDK section does not name `agent-sandbox-client` (managed6 instead names `httpx`), or when a README tells the reader to `pip install agent-sandbox`.
 
 ## Native preparation maintenance
 

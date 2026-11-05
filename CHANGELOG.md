@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+- Add an independent managed-session application specification with private bridge startup, operation-based smoke, bounded role bindings and an FC deployment profile; preserve specification 5 contracts. / 新增独立托管会话应用规范，定义私有桥接启动、操作式 smoke、角色绑定和 FC 部署 profile，保留规范 5 的原有契约。
+
 - Recommend published CLI 0.5.8 in the bilingual shared setup guide. / 双语模板安装指南更新为已发布 CLI 0.5.8。
 
 - Keep the repository README focused on template discovery, setup and use; retain internal implementation and acceptance history in engineering records. / 仓库 README 聚焦模板发现、配置和使用，内部实现与验收历史保留在工程记录中。

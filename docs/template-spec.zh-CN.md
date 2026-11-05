@@ -92,10 +92,10 @@ smoke:
 |---|---|
 | `name` | 与目录名相同。 |
 | `description`、`version`、`author`、`license` | 非空字符串。 |
-| `spec_version` | 仅支持整数 `5`，旧版及未知版本明确拒绝，不提供兼容模式。 |
+| `spec_version` | 整数 `5` 选择既有 Sandbox 契约，整数 `6` 选择下述托管会话应用契约；旧版及未知版本明确拒绝。 |
 | `base` | 字符串。占位符 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，或钉死的 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:vX.Y.Z`。不是 mapping。 |
 | `generation` | 整数 `2`。 |
-| `start_cmd` | `agent-sandbox-server serve`，并带上镜像里 `commands.py` 的路径。 |
+| `start_cmd` | 版本 5 使用 `agent-sandbox-server serve` 和镜像里的 `commands.py` 路径；版本 6 的托管桥接只使用下述精确模块入口。 |
 | `ready_cmd` | `agent-sandbox-server healthcheck`，并带上端口。 |
 | `resources.cpu` | 正整数，单位 vCPU。 |
 | `resources.memory` | 正整数，单位 MB。 |
@@ -159,6 +159,18 @@ smoke:
 使用 `python -m pip install -r scripts/requirements-spec.txt` 安装固定检查依赖，
 然后运行检查器与 `scripts/test_spec_tools.py`。下文 runtime、镜像、提供方与模型验收
 仍独立适用；schema 有效不能认证启动或提升目录状态。
+
+## 托管会话应用部署（规范版本 6）
+
+版本 6 使用独立封闭的 [spec/template-v6.schema.json](../spec/template-v6.schema.json)，选择 `fc-managed-agents` 应用 profile。现有版本 5 模板保持原义，不自动获得托管部署行为。配置仍只写同一份 `template.yaml`；profile 展开为有归属记录的部署资源，不接受任意工作流语言。完整字段和使用边界见[托管应用参考](managed-agent-applications.zh-CN.md)（[English](managed-agent-applications.md)）。
+
+版本 6 明确使用 `in-sandbox`、`sandbox-local-api`、`managed-bridge-v1`，私有协议为 `agent-sandbox-managed-bridge/v1`，不开放旧核心 Agents 路由或命名命令。精确启动入口为 `python -m agent_sandbox.server.managed --port 9000`，就绪检查仍是 `agent-sandbox-server healthcheck --port 9000`。阿里云基础镜像、generation 2、非 root、已发布依赖精确钉和路径边界仍适用。
+
+版本 6 的根级 `smoke` 使用 `operation: health` 或 `operation: capabilities` 和非空 `expect`，不虚构命名命令。L0 使用独立状态、工作区和生成的本地 token 启动实际声明的 bridge。完整业务通过部署后的 Gateway 验证；bridge 健康或 `commands.py` 诊断都不能证明 Agent 任务完成。
+
+托管应用要求独占 `per-session` Sandbox、持久状态、角色限定的 binding 引用、有限预算和明确的 close/delete 语义。Server 必须选择摘要固定的 `serverImage` 或模板上下文内的 `serverBuildRecipe`，二者互斥；构建及产物固定在部署计划冻结前完成。hooks 仅做有界 custom 检查或已有 profile step 的 `serverless-devs info` 查询，不能建立无记录资源。
+
+该 profile 的 README 使用实际 Gateway 任务：CLI 用 `abx app` 部署，Python/HTTP 以业务凭据访问 Gateway，不要求业务调用者连接 `ProviderSandbox` 或使用 `abx run`。后述标题和用户文档边界不变。
 
 ## 阿里云基础镜像
 
@@ -262,7 +274,7 @@ if __name__ == "__main__":
 
 `/health` 不要求 server token；提供方网关仍可能认证该请求。health 成功不证明命名命令认证或模型配置正确。
 
-进程启动时读取 `ABX_SERVER_TOKEN`。变量非空时，受保护的请求需要带 `Authorization: Bearer <token>` 或 `X-Access-Token: <token>`。在 `env` 里声明这个名字，值为空字符串。真正的值必须在服务进程启动前传入。创建时注入（`abx create --env` 或 `ProviderSandbox.create(envs=...)`）仅适用于提供方实际使用这些值启动服务的情况，不能重新配置预热进程。使用统一模板启动入口配置并启动声明的服务，再用 SDK 连接已运行的应用；参见[运行环境配置](runtime-environment.zh-CN.md)。
+以下命名命令认证规则适用于 spec5；managed6 bridge 必须提供生成的令牌，不允许匿名托管操作。进程启动时读取 `ABX_SERVER_TOKEN`。变量非空时，受保护的请求需要带 `Authorization: Bearer <token>` 或 `X-Access-Token: <token>`。在 `env` 里声明这个名字，值为空字符串。真正的值必须在服务进程启动前传入。创建时注入（`abx create --env` 或 `ProviderSandbox.create(envs=...)`）仅适用于提供方实际使用这些值启动服务的情况，不能重新配置预热进程。使用统一模板启动入口配置并启动声明的服务，再用 SDK 连接已运行的应用；参见[运行环境配置](runtime-environment.zh-CN.md)。
 
 变量未设置时应用允许匿名调用；提供方网关认证仍单独处理。客户端保留提供方的网关访问头，把显式应用令牌放入 `Authorization: Bearer <token>`，并在同名头未被占用时补充已有应用 `X-Access-Token` 头。认证失败会直接返回，不会自动匿名重试。设置 `ABX_SERVER_TOKEN` 的模板必须说明：项目 Python API 使用 `await sb.application_client(port, token=...)`，CLI 命名命令使用 `ABX_SERVER_TOKEN`。
 
@@ -398,7 +410,7 @@ Express 历史回执使用 `evidence/express-<date>.json` 或 `evidence/alicloud
 
 启动前区分所需平台凭据、应用令牌和模型凭据，并写清模板实际读取的模型、endpoint、API Key 或产品登录配置；不臆造通用于所有上游工具的变量映射。
 
-CLI 一节要有 `abx run` 示例。SDK 一节导入 `ProviderSandbox`，通过 `application_client` 获取应用客户端，并调用 `client.commands.run`。命令参考是带参数的表。非阿里云基础镜像再加 `## Base image` / `## 基础镜像`。
+spec6 使用显式 `abx app` 部署及 Python `httpx` 访问统一 Gateway，列出公开 API 和托管 close/delete 清理。以下客户端要求适用于 spec5。CLI 一节要有 `abx run` 示例。SDK 一节导入 `ProviderSandbox`，通过 `application_client` 获取应用客户端，并调用 `client.commands.run`。命令参考是带参数的表。非阿里云基础镜像再加 `## Base image` / `## 基础镜像`。
 
 ## 上架与验收
 

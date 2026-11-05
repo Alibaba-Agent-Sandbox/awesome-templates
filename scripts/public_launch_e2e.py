@@ -231,6 +231,8 @@ def load_plan(name, root=ROOT):
         raise ValueError('select an existing source template from the catalog')
     source = root / name
     manifest = yaml.safe_load((source / 'template.yaml').read_text())
+    if manifest.get('spec_version') == 6:
+        raise ValueError('managed applications require application deployment acceptance through their Gateway; sandbox named-command launch is not that workflow')
     cases = manifest.get('smoke') or []
     if not cases or any(not isinstance(case.get('command'), str) for case in cases):
         raise ValueError('public launch acceptance needs named smoke cases')

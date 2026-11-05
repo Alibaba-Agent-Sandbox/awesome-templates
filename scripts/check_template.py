@@ -5,7 +5,7 @@ Exit status:
   0  every checked directory conforms
   1  at least one checked directory violates the supported specification
 
-Every template must declare specification v5 with one template startup.
+Every template declares a supported specification with one template startup.
 """
 from __future__ import annotations
 
@@ -232,7 +232,7 @@ def _index_entries(root: Path) -> list[dict] | None:
     return [item for item in templates if isinstance(item, dict)]
 
 
-def _check_readme(path: Path, headings: tuple[str, ...], violations: list[Violation]) -> dict[str, str]:
+def _check_readme(path: Path, headings: tuple[str, ...], violations: list[Violation], *, managed: bool = False) -> dict[str, str]:
     if not path.is_file():
         return {}
     sections = _sections(path.read_text(encoding="utf-8"))
@@ -251,11 +251,13 @@ def _check_readme(path: Path, headings: tuple[str, ...], violations: list[Violat
     sdk = sections.get(sdk_heading, "")
     commands = sections.get(commands_heading, "")
     issues = sections.get(issues_heading, "")
-    if cli_heading in sections and "abx run" not in cli:
-        violations.append(Violation("readme-cli", f"{path.name}: Quick start (CLI) must show `abx run`"))
-    if sdk_heading in sections and ("Sandbox" not in sdk or ".run" not in sdk):
+    cli_entry = "abx app" if managed else "abx run"
+    if cli_heading in sections and cli_entry not in cli:
+        violations.append(Violation("readme-cli", f"{path.name}: Quick start (CLI) must show `{cli_entry}`"))
+    sdk_tokens = ("httpx", ".post") if managed else ("Sandbox", ".run")
+    if sdk_heading in sections and not all(token in sdk for token in sdk_tokens):
         violations.append(
-            Violation("readme-sdk", f"{path.name}: Quick start (Python SDK) must show Sandbox and .run")
+            Violation("readme-sdk", f"{path.name}: Quick start (Python SDK) must show the declared application's Python entrypoint")
         )
     if commands_heading in sections and not any(line.strip().startswith("|") for line in commands.splitlines()):
         violations.append(Violation("readme-api", f"{path.name}: Command reference needs a parameter table"))
@@ -469,37 +471,43 @@ def check_directory(template_dir: Path) -> list[Violation]:
         if data:
             _require_str(data, key, violations)
 
+    from template_application import is_managed_application
+    managed = is_managed_application(data)
+
     base = data.get("base") if data else None
     base_ok = isinstance(base, str) and (base == FC_PLACEHOLDER or FC_PINNED.fullmatch(base) is not None)
     readme_en = template_dir / "README.md"
-    en_sections = _check_readme(readme_en, README_EN, violations) if readme_en.is_file() else {}
+    en_sections = _check_readme(readme_en, README_EN, violations, managed=managed) if readme_en.is_file() else {}
     zh_sections = {}
     readme_zh = template_dir / "README.zh-CN.md"
     if readme_zh.is_file():
-        zh_sections = _check_readme(readme_zh, README_ZH, violations)
+        zh_sections = _check_readme(readme_zh, README_ZH, violations, managed=managed)
 
-    if data.get("spec_version") == 5:
+    if data.get("spec_version") in (5, 6):
         for label, sections, heading in (
             ("README.md", en_sections, "Quick start (HTTP POST)"),
             ("README.zh-CN.md", zh_sections, "快速开始（HTTP POST）"),
         ):
             body = sections.get(heading, "")
-            if body and not all(token in body for token in ("POST", "/commands/", "application/json", '"result"')):
+            required_http = (("POST", "/v1/agents/sessions", "application/json") if managed
+                             else ("POST", "/commands/", "application/json", '"result"'))
+            if body and not all(token in body for token in required_http):
                 violations.append(
                     Violation(
                         "readme-http",
-                        f"{label}: {heading} must show POST /commands/<name>, application/json, and a result envelope",
+                        f"{label}: {heading} must show the declared API's POST path and JSON contract",
                     )
                 )
         for label, sections, heading in (
             ("README.md", en_sections, "Quick start (Python SDK)"),
             ("README.zh-CN.md", zh_sections, "快速开始（Python SDK）"),
         ):
-            if heading in sections and "agent-sandbox-client" not in sections[heading]:
+            package = "httpx" if managed else "agent-sandbox-client"
+            if heading in sections and package not in sections[heading]:
                 violations.append(
                     Violation(
                         "readme-client",
-                        f"{label}: {heading} must document the client install as agent-sandbox-client "
+                        f"{label}: {heading} must document the client package as {package} "
                         "(pip install agent-sandbox is an unrelated project)",
                     )
                 )
@@ -528,17 +536,18 @@ def check_directory(template_dir: Path) -> list[Violation]:
             )
 
     if data:
-        from template_application import validate_v5
-        violations.extend(Violation("yaml-schema", message) for message in validate_v5(data, template_dir))
+        from template_application import validate_manifest
+        violations.extend(Violation("yaml-schema", message) for message in validate_manifest(data, template_dir))
         if data.get("generation") != 2:
             violations.append(Violation("yaml-generation", "generation must be the integer 2"))
         start = data.get("start_cmd")
         ready = data.get("ready_cmd")
-        if not isinstance(start, str) or "agent-sandbox-server serve" not in start or "commands.py" not in start:
+        managed_start = managed and start == "python -m agent_sandbox.server.managed --port 9000"
+        if not managed_start and (not isinstance(start, str) or "agent-sandbox-server serve" not in start or "commands.py" not in start):
             violations.append(
                 Violation(
                     "yaml-start",
-                    "start_cmd must run agent-sandbox-server serve and point at commands.py",
+                    "start_cmd must run the declared supported server entrypoint",
                 )
             )
         if not isinstance(ready, str) or "agent-sandbox-server healthcheck" not in ready:
@@ -576,7 +585,10 @@ def check_directory(template_dir: Path) -> list[Violation]:
             violations.append(Violation("yaml-smoke", "smoke must list at least one {command, args, expect}"))
         else:
             for index, item in enumerate(smoke):
-                if not isinstance(item, dict) or not isinstance(item.get("command"), str) or not item["command"]:
+                if managed:
+                    if not isinstance(item, dict) or item.get("operation") not in {"health", "capabilities"} or "expect" not in item:
+                        violations.append(Violation("yaml-smoke", f"smoke[{index}] must declare a managed bridge operation and expectation"))
+                elif not isinstance(item, dict) or not isinstance(item.get("command"), str) or not item["command"]:
                     violations.append(Violation("yaml-smoke", f"smoke[{index}].command must be a string"))
                 elif item.get("args") is not None and not isinstance(item.get("args"), dict):
                     violations.append(Violation("yaml-smoke", f"smoke[{index}].args must be a mapping"))
@@ -662,7 +674,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
     for provider in sorted(verified_en):
         violations.append(Violation("verified-evidence", f"{provider}: a README table cannot establish trusted workflow certification"))
 
-    if name and name != SKELETON_NAME and data.get("spec_version") == 5:
+    if name and name != SKELETON_NAME and data.get("spec_version") in (5, 6):
         design = template_dir.parent / "docs" / "design" / f"{name}.md"
         if template_dir.parent.name == "docs":
             design = template_dir.parent / "design" / f"{name}.md"
@@ -683,7 +695,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
                     )
 
     if (template_dir.parent / "awesome-templates.yaml").is_file() and name and name != SKELETON_NAME:
-        if data.get("spec_version") == 5:
+        if data.get("spec_version") in (5, 6):
             entries = _index_entries(template_dir.parent) or []
             match = [item for item in entries if item.get("path") == name or item.get("name") == name]
             if not match:

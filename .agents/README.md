@@ -1,5 +1,9 @@
 # Engineering records: awesome-templates
 
+## Managed Agent applications (2026-11-05)
+
+- [Managed-session application contract and template](notes/proposed/feature/2026-11-05-managed-agents-template.md) · [source verification](evidence/verify/2026-11-05-managed-agents-template-source.md). Issue [295](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/295); source, public package, image and cloud acceptance remain separate.
+
 ## Local Express push-tag cleanup (2026-10-27)
 
 - [Decision](notes/proposed/process/2026-10-27-local-push-tag-cleanup.md) · [verification](evidence/verify/2026-10-27-local-push-tag-cleanup.md). Exact owned tags and independent absence; the broader method/model matrix remains separate.

@@ -1,0 +1,49 @@
+{
+  "agents-state": {
+    "databaseUrl": {
+      "env": "ABX_MANAGED_DATABASE_URL"
+    }
+  },
+  "agents-sandboxAccess": {
+    "provider": "alicloud-express",
+    "apiKey": {
+      "env": "SANDBOX_API_KEY"
+    },
+    "baseUrl": {
+      "env": "SANDBOX_BASE_URL"
+    },
+    "domain": {
+      "env": "SANDBOX_DOMAIN"
+    },
+    "region": {
+      "env": "SANDBOX_REGION"
+    }
+  },
+  "agents-model": {
+    "apiKey": {
+      "env": "OPENAI_API_KEY"
+    },
+    "baseUrl": {
+      "env": "OPENAI_BASE_URL"
+    },
+    "model": {
+      "env": "OPENAI_MODEL"
+    },
+    "adapter": "qwen-code"
+  },
+  "agents-clientAuth": {
+    "generate": true,
+    "owner": "default"
+  },
+  "agents-internalAuth": {
+    "generate": true,
+    "roleArn": {
+      "env": "AGENTS_FC_ROLE_ARN"
+    }
+  },
+  "agents-ingress": {
+    "kind": "function-alias",
+    "aliasName": "prod",
+    "allowTestDomain": true
+  }
+}

@@ -10,7 +10,8 @@ Before changing files, read [CONTRIBUTING.md](CONTRIBUTING.md),
 the PR/Issue templates, and any template-local `AGENTS.md`.
 
 - Inspect the initial diff; preserve unrelated work and use an isolated task branch when needed.
-- Current manifests use `spec_version: 5`: one startup command and all declared
+- Existing Sandbox manifests use `spec_version: 5`; managed session applications
+  use the closed `spec_version: 6` profile. Both retain one startup command and all declared
   services. Do not add workflow selectors or rewrite historical verification as
   current-format acceptance. Keep task-specific commands callable after startup.
 - Use `_skeleton/`, pinned dependencies and the documented platform/non-root profile.

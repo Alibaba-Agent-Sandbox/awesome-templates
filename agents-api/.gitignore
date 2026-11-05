@@ -1,0 +1,4 @@
+# Local deployment inputs, receipts, generated credentials and private overrides.
+.abx/
+.env
+.env.*
