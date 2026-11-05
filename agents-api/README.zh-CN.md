@@ -63,8 +63,9 @@ abx app status '<apply 返回的 receipt_file>'
 提供其中的 `internalToken`。
 
 更新时重新 Build，Plan 使用 `--previous-receipt <receipt_file>`，再 Apply 新计划。
-已有 Session 固定在原 revision。保留旧收据，待其 Session 全部结束后使用 CLI 显式的
-revision 退休操作释放保留的资源。
+已有 Session 固定在原 revision。保留旧收据，待其 Session 全部结束后使用
+`abx app retire <当前收据> --revision <保留的revision> --bindings .abx/bindings.json --yes`。
+退休要求该 revision 已不持有可继续使用的 Session 或未解决的清理；请先关闭其 Session。
 
 ## 快速开始（Python SDK）
 
@@ -156,6 +157,38 @@ Agent 已完成任务。
 | `agents-clientAuth`、`agents-internalAuth` | 默认 `generate: true` 在首次 Apply 生成不同的业务和内部 Key。自定义业务凭据只提供 SHA-256 摘要、owner 和受支持 scopes。 |
 | `agents-ingress` | 默认函数 alias 和 FC 测试域名；生产环境使用显式配置的 HTTPS 自定义域名 binding。 |
 
+数据库只能通过 VPC 访问时，将私有 binding 文件中的 `agents-state` 对象替换为以下
+形状。由平台/网络维护方提供 FC 同地域已有的 VPC、一个或多个不同的 vSwitch ID，
+以及对应安全组 ID：
+
+```json
+{
+  "databaseUrl": {"env": "ABX_MANAGED_DATABASE_URL"},
+  "vpcConfig": {
+    "vpcId": {"env": "AGENTS_VPC_ID"},
+    "vSwitchIds": [{"env": "AGENTS_VSWITCH_ID"}],
+    "securityGroupId": {"env": "AGENTS_SECURITY_GROUP_ID"}
+  }
+}
+```
+
+三个 FC 角色使用这份已有网络配置。本模板不创建 VPC、vSwitch、安全组、路由或 NAT。
+FC 保持启用公网访问，但仍需按实际路由和安全规则验证数据库、镜像仓库、Sandbox API
+及模型 endpoint 连通，不能假定选择 VPC 后外部服务都会可达。
+
+PostgreSQL 使用私有证书机构时，在该对象的 `databaseUrl` 旁增加 `databaseCa`，例如
+`"databaseCa": {"file": "/absolute/path/to/database-ca.pem"}`。从数据库服务或管理员获取
+CA 链，数据库 URL 保持 `sslmode=verify-full`，并使用证书覆盖的数据库主机名。
+
+`databaseCa` 接受证书 PEM 字符串、`{env: "AGENTS_DATABASE_CA_PEM"}` 引用，或
+`{file: "host-path"}` 引用。文件在运行 CLI 的宿主机读取；相对路径以 binding JSON 所在目录为基准，纯环境引用时
+以当前目录为基准，使用绝对路径可避免歧义。证书链上限
+64 KiB、八个有效 `CERTIFICATE` 块，不接受私钥。该信任配置仅供 Server 使用，不放进
+Sandbox、镜像、计划或收据。
+
+不需要 VPC 或 CA 配置时，数据库 binding 也可以是 PostgreSQL URL 字符串。应用更新、状态查询和清理应继续使用同一数据库；
+CLI 自动检查已保存的持久状态身份，无需手工填写身份值。
+
 `ABX_SERVER_TOKEN` 是运行时为每个 Sandbox 单独生成的应用认证令牌，不是云控制台
 申请的 API Key，本模板无需手工配置。
 
@@ -177,8 +210,19 @@ abx app plan --destroy '<receipt_file>' --out .abx/destroy-plan.json
 abx app destroy .abx/destroy-plan.json --bindings .abx/bindings.json --yes
 ```
 
-检查结果收据，对保留的 owned 资源继续 Reconcile。借用的数据库、模型账号、自定义域名
-仍由你管理；销毁部署不代表另外保留的数据库历史已经擦除。
+检查结果收据，对保留的 owned 资源继续 Reconcile。Destroy 和 revision 退休只在无其他
+保留 revision 引用时删除记录中的 owned Server 镜像 tag。用户提供的 `serverImage` 属于
+借用资源，不自动删除。
+
+Server 构建失败或不再准备部署时，可用 `abx app clean-build .abx/build.json --yes`
+清理归属已确认的 owned 镜像。构建一旦参与过任何 Apply，必须通过应用 Destroy 或 Retire
+清理；即使 Apply 失败，Clean-build 也会拒绝。构建归属不确定时保留收据用于协调，
+不要手工删除未经确认的 tag。
+
+Sandbox 构建镜像可能仍需手工清理。检查 `retained_build_artifacts` 和保存的 revision/
+build 收据，再按镜像仓库清理说明只删除属于你的未使用 tag。应用 Destroy 成功不表示
+所有构建产物都已删除。借用的数据库、VPC/网络资源、模型账号和自定义域名仍由你管理；
+销毁部署不代表另外保留的数据库历史已经擦除。
 
 ## 贡献
 

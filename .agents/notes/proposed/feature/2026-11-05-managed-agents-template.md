@@ -17,6 +17,14 @@ operation-based local smoke. Keep generic runtime and cloud deployment code in
 their owners. Add an agents-api template only with honest dependency, image,
 Provider and model acceptance boundaries.
 
+A private State binding can borrow an existing explicit FC VPC configuration;
+network resources are never provisioned by this template. Optional bounded
+certificate-only database CA input configures Server trust without weakening
+DSN hostname verification or entering guest/build/plan/receipt payloads. CLI-owned Server image
+builds have a separate unused-build cleanup command; builds that entered Apply
+remain under app Destroy/Retire ownership, while borrowed images and retained
+Sandbox build artifacts keep their distinct cleanup rules.
+
 ## API Design
 
 The managed Gateway uses agent-sandbox-managed-agents/v1; the guest is separately

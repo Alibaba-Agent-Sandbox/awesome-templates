@@ -78,7 +78,16 @@ database or business-auth configuration is copied to the Sandbox. The applicatio
 token is generated per session; it is not a cloud-console API key.
 
 The deployment resolver validates the binding's actual value type and ownership.
-Missing required values prevent publication. Same-UID Agent tools can access model
+Missing required values prevent publication. The resolved State binding accepts
+a PostgreSQL URL string or `{databaseUrl, vpcConfig?, databaseCa?}`. Optional `vpcConfig` has
+exactly `vpcId`, distinct `vSwitchIds` and `securityGroupId` for the three FC roles;
+it is deployment networking, never a guest environment value. It borrows existing
+network resources and does not create NAT/routing or prove endpoint reachability.
+Optional `databaseCa` accepts a bounded certificate-only PEM string, environment
+reference, or CLI-host file reference; preserve database hostname verification.
+It configures Server trust only and is not an image/plan/receipt/guest input.
+The CLI pins the database's durable identity internally; users do not supply it.
+Same-UID Agent tools can access model
 credentials intentionally provided to that Sandbox; they do not receive Server
 control credentials.
 
@@ -111,7 +120,11 @@ requirements; a test function URL is not a production domain guarantee.
 Session revisions remain fixed during updates. Old Workers and compatible Server
 artifacts are retained until sessions drain. Cleanup failures retain ownership
 records and an operational cleanup path; borrowed databases and model services
-are not deleted.
+are not deleted. Unused, confirmed owned Server builds can be cleaned with
+`abx app clean-build BUILD --yes`. Once a build participates in Apply it belongs
+to app Destroy/Retire, which delete owned image tags only after references drain;
+borrowed Server images are preserved. Sandbox image builds may remain under
+`retained_build_artifacts` for explicit registry cleanup.
 
 ## Hooks and outputs
 
