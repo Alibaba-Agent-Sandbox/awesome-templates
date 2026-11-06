@@ -166,7 +166,7 @@ smoke:
 
 版本 6 明确使用 `in-sandbox`、`sandbox-local-api`、`managed-bridge-v1`，私有协议为 `agent-sandbox-managed-bridge/v1`，不开放旧核心 Agents 路由或命名命令。精确启动入口为 `python -m agent_sandbox.server.managed --port 9000`，就绪检查仍是 `agent-sandbox-server healthcheck --port 9000`。阿里云基础镜像、generation 2、非 root、已发布依赖精确钉和路径边界仍适用。
 
-版本 6 的根级 `smoke` 使用 `operation: health` 或 `operation: capabilities` 和非空 `expect`，不虚构命名命令。运行时验收须使用独立状态、工作区和生成的本地 token 启动实际声明的 bridge。旧命名命令本地 runner 明确拒绝该启动 profile；静态契约检查不执行或安装托管运行时。完整业务通过部署后的 Gateway 验证；bridge 健康或 `commands.py` 诊断都不能证明 Agent 任务完成。
+版本 6 的根级 `smoke` 使用 `operation: health` 或 `operation: capabilities` 和非空 `expect`，不虚构命名命令。安装兼容的 Server SDK 后，L0 使用独立状态、工作区和生成的本地 token 启动实际声明的 bridge。静态检查不会安装或执行托管运行时。完整业务通过部署后的 Gateway 验证；bridge 健康或 `commands.py` 诊断都不能证明 Agent 任务完成。
 
 托管应用要求独占 `per-session` Sandbox、持久状态、角色限定的 binding 引用、有限预算和明确的 close/delete 语义。Server 必须选择摘要固定的 `serverImage` 或模板上下文内的 `serverBuildRecipe`，二者互斥；构建及产物固定在部署计划冻结前完成。hooks 仅做有界 custom 检查或已有 profile step 的 `serverless-devs info` 查询，不能建立无记录资源。
 

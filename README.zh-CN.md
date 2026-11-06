@@ -35,6 +35,7 @@ abx kill <sandbox-id>
 | --- | --- |
 | [python-hello](python-hello/README.zh-CN.md) | 提供 hello 命令的最小 Python 应用 |
 | [node-web](node-web/README.zh-CN.md) | Node.js Web 服务 |
+| [agents-api](agents-api/README.zh-CN.md) | 统一 Gateway 管理会话 Agent、文件和结果；需要托管运行时发行版 |
 | [next-app](next-app/README.zh-CN.md) | Next.js、Vite 项目与预览服务 |
 | [code-server](code-server/README.zh-CN.md) | 带认证的浏览器 IDE |
 | [dev-services](dev-services/README.zh-CN.md) | PostgreSQL 与 Redis 服务 |

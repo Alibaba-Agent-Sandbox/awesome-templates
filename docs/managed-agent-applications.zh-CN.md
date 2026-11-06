@@ -55,7 +55,7 @@ binding 保存引用名，不写密钥值或连接 URL，并声明允许的目�
 
 `model` 要求 `resolverRole: worker`，以及显式 `allowedEnv`，仅允许 `OPENAI_API_KEY`、`OPENAI_BASE_URL`、`OPENAI_MODEL`、`CODEX_API_KEY` 的子集。云、数据库和业务认证配置不复制进 Sandbox。每会话应用 token 自动生成，不是云控制台申请的 API Key。
 
-部署解析器检查 binding 实际值类型与归属，缺少必需值阻止发布。同 UID 的 Agent 工具可以访问有意注入该 Sandbox 的模型凭据，但不获得 Server 控制凭据。
+部署解析器检查 binding 实际值类型与归属，缺少必需值阻止发布。状态 binding 的实际值可以是 PostgreSQL URL 字符串，或 `{databaseUrl, vpcConfig?, databaseCa?}` 对象。可选 `vpcConfig` 只包含 `vpcId`、不同的 `vSwitchIds` 和 `securityGroupId`，用于三个 FC 角色的部署网络，不注入 guest。网络资源均为借用，不自动创建 NAT/路由，也不证明 endpoint 可达。可选 `databaseCa` 接受有界的纯证书 PEM 字符串、环境引用或 CLI 宿主机文件引用，保留数据库主机名验证；它仅配置 Server 信任，不进入镜像、计划、收据或 guest。CLI 内部固定数据库持久身份，用户无需手工提供该身份。同 UID 的 Agent 工具可以访问有意注入该 Sandbox 的模型凭据，但不获得 Server 控制凭据。
 
 ## Server 构建与部署
 
@@ -73,7 +73,7 @@ serverBuildRecipe:
 
 profile 准备 Sandbox Template，创建 revision 专属 Worker，部署候选 Gateway/Dispatcher，验证后发布稳定入口。生产 timer 关闭期间，验证使用受限私有派发。公开 endpoint 来自实际验证的入口，不猜测组件返回字段。function-alias 与 custom-domain binding 有不同提供商要求；测试函数 URL 不等于生产域名保证。
 
-更新时 Session 固定原 revision；旧 Worker 和兼容 Server 产物保留到会话排空。清理失败保留归属记录和可继续工作的清理路径；借用的数据库和模型服务不会自动删除。
+更新时 Session 固定原 revision；旧 Worker 和兼容 Server 产物保留到会话排空。清理失败保留归属记录和可继续工作的清理路径；借用的数据库和模型服务不会自动删除。尚未参与 Apply 且归属已确认的 owned Server 构建可通过 `abx app clean-build BUILD --yes` 清理；参与 Apply 后由应用 Destroy/Retire 在引用排空后清理。借用的 Server 镜像不删除。Sandbox 构建镜像可能仍列在 `retained_build_artifacts` 中，需要显式按仓库说明清理。
 
 ## Hooks 与输出
 

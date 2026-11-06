@@ -190,10 +190,10 @@ It does not expose the core Agents routes or named commands. Its exact startup i
 non-root user, independent published dependency pins and source-path rules still apply.
 
 Version-6 root `smoke` entries use `operation: health` or `operation: capabilities`
-with a non-null `expect`, instead of naming a nonexistent command. Runtime acceptance
-must start the actual declared bridge with isolated state/workspace and a generated
-test token. The legacy commands-only local runner rejects this startup profile;
-static contract validation does not execute or install a managed runtime.
+with a non-null `expect`, instead of naming a nonexistent command. With a compatible
+Server SDK installed, local L0 starts the actual declared bridge with isolated
+state/workspace and a generated test token. Static validation does not install
+or execute a managed runtime.
 The full application task is verified through the Gateway after deployment; a bridge
 health response or `commands.py` diagnostic does not prove an Agent task.
 
@@ -359,7 +359,7 @@ not delete the sandbox: delete your owned instance with `abx kill <sandbox-id>` 
 finished, and reconcile its prepared template/image separately. Record source refs
 and installed package versions for acceptance.
 
-For spec5, local L0 does not create a cloud sandbox. `scripts/run_local_e2e.py` starts `python3 commands.py`, sets `E2E_BASE_URL`, and runs `e2e_test.py`. That test may use HTTP against `E2E_BASE_URL`. Cloud acceptance must exercise the actual selected CLI/SDK/HTTP entry points.
+Local L0 does not create a cloud sandbox. `scripts/run_local_e2e.py` starts `python3 commands.py` for spec5 or the actual managed module for spec6, sets `E2E_BASE_URL`, and runs `e2e_test.py`. That test may use HTTP against `E2E_BASE_URL`. Cloud acceptance must exercise the actual selected CLI/SDK/HTTP entry points.
 
 ### HTTP POST contract
 

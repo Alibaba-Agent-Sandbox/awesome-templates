@@ -502,6 +502,20 @@ templates:
   - cli
   author: alibaba-agent-sandbox
   status: experimental
+- name: agents-api
+  description: One stable Gateway for session-owned Sandbox Agents, durable files
+    and explicit lifecycle.
+  repo: https://github.com/alibaba-agent-sandbox/awesome-templates
+  path: agents-api
+  tags:
+  - agents-api
+  - gateway
+  - sessions
+  - qwen-code
+  - codex
+  author: alibaba-agent-sandbox
+  status: experimental
+
 managed_templates:
 - name: base
   provider: alicloud-express

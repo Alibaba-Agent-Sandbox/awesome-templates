@@ -8,6 +8,8 @@
 
 - Add the closed spec6 managed-session manifest schema, static semantic checker and bilingual contract reference; preserve spec5 and keep runtime/template delivery separate. / 新增封闭 spec6 托管会话清单、静态语义检查与双语契约参考，保留 spec5；运行时和模板交付单独验收。
 
+- Add the managed Agents API template with one Gateway endpoint, per-Session Sandbox execution and a two-turn existing-source coding task. / 新增托管 Agents API 模板，提供统一 Gateway endpoint、每会话独占 Sandbox 与两轮现有源码编码任务。
+
 - Recommend published CLI 0.5.8 in the bilingual shared setup guide. / 双语模板安装指南更新为已发布 CLI 0.5.8。
 
 - Keep the repository README focused on template discovery, setup and use; retain internal implementation and acceptance history in engineering records. / 仓库 README 聚焦模板发现、配置和使用，内部实现与验收历史保留在工程记录中。

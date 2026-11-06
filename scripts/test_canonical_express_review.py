@@ -24,7 +24,7 @@ class AuthorizationTest(unittest.TestCase):
     def test_current_catalog_scope_and_invalid_input(self):
         self.assertEqual(review.select("python-hello,pi"), ["python-hello", "pi"])
         self.assertEqual(len(review.select("all")), 46)
-        for value in ("", "../python-hello", "python-hello,python-hello", "python-hello;echo bad", "base"):
+        for value in ("", "../python-hello", "python-hello,python-hello", "python-hello;echo bad", "base", "agents-api"):
             with self.subTest(value=value), self.assertRaises(ValueError):
                 review.select(value)
 
@@ -41,6 +41,8 @@ class AuthorizationTest(unittest.TestCase):
                     text = Path('canonical-authorization.json').read_text()
                     receipt = json.loads(text)
                     self.assertFalse(receipt['cloud_executed'])
+                    self.assertEqual(receipt['scope'], 'spec5-single-sandbox')
+                    self.assertIn('unverified', receipt['managed_applications'])
                     self.assertEqual(receipt['entry_point'], 'public-template-launch.yml')
                     self.assertNotIn('synthetic-private-key', text)
                 finally:

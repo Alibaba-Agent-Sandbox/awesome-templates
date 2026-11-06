@@ -35,6 +35,7 @@ Source templates need a build. Browse by task below; each template explains its 
 | --- | --- |
 | [python-hello](python-hello/README.md) | Minimal Python application with a named hello command |
 | [node-web](node-web/README.md) | Node.js web services |
+| [agents-api](agents-api/README.md) | One Gateway for session-owned Agents, files and results; requires the managed runtime release |
 | [next-app](next-app/README.md) | Next.js and Vite projects with preview servers |
 | [code-server](code-server/README.md) | Authenticated browser IDE |
 | [dev-services](dev-services/README.md) | PostgreSQL and Redis services |

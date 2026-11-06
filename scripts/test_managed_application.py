@@ -1,4 +1,4 @@
-"""Static managed manifest boundaries, independent of SDK and product recipes."""
+"""Managed manifest boundaries and declared local startup selection."""
 from __future__ import annotations
 
 import copy
@@ -103,13 +103,15 @@ class ManagedApplicationContractTest(unittest.TestCase):
         (self.template / "template.yaml").write_text(check_template.yaml.safe_dump(self.data))
         self.assertTrue(any(item.code == "yaml-start" for item in check_template.check_directory(self.template)))
 
-    def test_legacy_local_runner_rejects_managed_startup_before_any_preparation(self):
+    def test_invalid_managed_startup_is_rejected_before_any_preparation(self):
         manifest = self.template / "template.yaml"
-        manifest.write_text(check_template.yaml.safe_dump(self.data))
+        invalid = copy.deepcopy(self.data)
+        invalid["start_cmd"] += " --unsafe-option"
+        manifest.write_text(check_template.yaml.safe_dump(invalid))
         with patch.object(run_local_e2e, "_missing_imports") as imports, patch.object(run_local_e2e, "_free_port") as port, patch.object(run_local_e2e.subprocess, "Popen") as process:
             status, detail = run_local_e2e._run_one(self.template, "")
         self.assertEqual(status, "fail")
-        self.assertIn("Unsupported startup profile", detail)
+        self.assertIn("invalid managed bridge manifest", detail)
         imports.assert_not_called(); port.assert_not_called(); process.assert_not_called()
         manifest.write_text(check_template.yaml.safe_dump(self.legacy))
         with patch.object(run_local_e2e, "_missing_imports", return_value=["fixture dependency"]) as imports:
@@ -120,11 +122,40 @@ class ManagedApplicationContractTest(unittest.TestCase):
 
     def test_local_runner_can_be_loaded_by_file_without_package_or_sibling_import_path(self):
         source = ROOT / "scripts/run_local_e2e.py"
+        manifest = self.template / "template.yaml"
+        manifest.write_text(check_template.yaml.safe_dump(self.data))
         code = ("import importlib.util, sys; "
+                "from pathlib import Path; "
                 "spec = importlib.util.spec_from_file_location('independent_local_runner', sys.argv[1]); "
                 "module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module); "
-                "assert callable(module._run_one)")
-        result = subprocess.run([sys.executable, "-I", "-c", code, str(source)], cwd=self.root,
+                "assert callable(module._run_one); "
+                "assert module._startup_argv(Path(sys.argv[2]), 31234) == "
+                "([sys.executable, '-m', 'agent_sandbox.server.managed', '--port', '31234'], True)")
+        result = subprocess.run([sys.executable, "-I", "-c", code, str(source), str(self.template)], cwd=self.root,
+                                capture_output=True, text=True, timeout=30)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_declared_managed_startup_and_legacy_argv_remain_distinct(self):
+        manifest = self.template / "template.yaml"
+        manifest.write_text(check_template.yaml.safe_dump(self.legacy))
+        self.assertEqual(run_local_e2e._startup_argv(self.template, 31234), (["python3", "commands.py"], False))
+        manifest.write_text(check_template.yaml.safe_dump(self.data))
+        self.assertEqual(run_local_e2e._startup_argv(self.template, 31234),
+                         ([sys.executable, "-m", "agent_sandbox.server.managed", "--port", "31234"], True))
+
+    def test_duplicate_yaml_is_rejected_before_startup_preparation(self):
+        manifest = self.template / "template.yaml"
+        manifest.write_text(check_template.yaml.safe_dump(self.data) + "\nspec_version: 6\n")
+        with patch.object(run_local_e2e, "_missing_imports") as imports, patch.object(run_local_e2e, "_free_port") as port, patch.object(run_local_e2e.subprocess, "Popen") as process:
+            status, detail = run_local_e2e._run_one(self.template, "")
+        self.assertEqual(status, "fail")
+        self.assertIn("valid template manifest", detail)
+        imports.assert_not_called(); port.assert_not_called(); process.assert_not_called()
+
+    def test_imported_local_runner_keeps_the_package_entry(self):
+        code = ("from pathlib import Path; from scripts.run_local_e2e import _startup_argv; "
+                "assert _startup_argv(Path('agents-api'), 31234)[1]")
+        result = subprocess.run([sys.executable, "-c", code], cwd=ROOT,
                                 capture_output=True, text=True, timeout=30)
         self.assertEqual(result.returncode, 0, result.stderr)
 
