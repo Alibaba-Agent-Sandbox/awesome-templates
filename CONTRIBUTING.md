@@ -122,3 +122,5 @@ Owned-process and QM invocation helpers have canonical sources under `scripts/pr
 
 
 Unused-code cleanup must preserve imports used for registration or dependency probes. Review test imports separately from template runtime changes; generated process runners are edited at their canonical source and synchronized. Record scanner findings, actual regressions and missing local prerequisites separately from cloud/model acceptance.
+
+Managed-session application authors use the closed [spec6 contract reference](docs/managed-agent-applications.md). Static validation and runtime/provider acceptance are separate requirements.
