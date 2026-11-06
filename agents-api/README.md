@@ -28,11 +28,9 @@ Qwen Code 0.23.0, PostgreSQL and FC Gateway/Worker/Dispatcher functions.
 [template.yaml](template.yaml) · [Sandbox Dockerfile](Dockerfile) ·
 [Server Dockerfile](server/Dockerfile)
 
-This recipe requires a CLI release with `abx app` and SDK distributions containing
-`agent_sandbox.managed_agents` and `agent_sandbox.server.managed`. Published SDK
-0.4.0a6 does not contain these modules. The current exact package pins cannot
-build this application until a compatible runtime release is selected. There is
-no automatic source installation fallback.
+The images pin SDK 0.4.0a7, which provides the managed Gateway and guest bridge.
+Application deployment requires Node.js 20 or later and the npm distribution of
+CLI 0.5.9. Business HTTP clients need only the Gateway endpoint and business key.
 
 ## Problem solved
 
@@ -43,16 +41,21 @@ application token enter the Sandbox.
 
 ## Quick start (CLI)
 
-Use a CLI that provides `abx app`, configure your Sandbox/build registry with the
+Install the npm CLI below, configure your Sandbox/build registry with the
 [usage guide](../docs/using-templates.md#installation), and select an existing
 Serverless Devs access profile in `application.deployment.accessRef`. The FC
 region, Sandbox region, database connectivity and registry image access must agree.
-Install Python `httpx==0.28.1` for the deployment verification hook and examples.
+Keep the Python environment active when deploying: its `httpx==0.28.1` dependency
+is used by the verification hook and examples.
 
 ```bash
+npm install --global @agent-sandbox/cli@0.5.9
 git clone https://github.com/Alibaba-Agent-Sandbox/awesome-templates.git
 cd awesome-templates/agents-api
 mkdir -p .abx
+python3 -m venv .abx/venv
+. .abx/venv/bin/activate
+python -m pip install httpx==0.28.1
 cp bindings.example.json .abx/bindings.json
 chmod 600 .abx/bindings.json
 ```

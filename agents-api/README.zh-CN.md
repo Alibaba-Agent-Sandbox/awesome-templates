@@ -23,9 +23,8 @@ Qwen Code 0.23.0、PostgreSQL，以及 FC Gateway/Worker/Dispatcher 函数。
 [template.yaml](template.yaml) · [Sandbox Dockerfile](Dockerfile) ·
 [Server Dockerfile](server/Dockerfile)
 
-本模板需要提供 `abx app` 的 CLI，以及包含 `agent_sandbox.managed_agents` 和
-`agent_sandbox.server.managed` 的 SDK 发行物。已发布的 SDK 0.4.0a6 不包含这些模块；
-当前固定依赖必须选择兼容的新运行时发行版后才能构建此应用，不会自动改为安装源码。
+镜像固定使用 SDK 0.4.0a7，提供托管 Gateway 和 guest bridge。部署应用需要 Node.js 20
+或更高版本，以及 npm 分发的 CLI 0.5.9。业务 HTTP 客户端只需要 Gateway endpoint 和业务 Key。
 
 ## 解决的问题
 
@@ -34,15 +33,19 @@ Sandbox 管理凭据留在 Server；Sandbox 只接收选定的模型配置和单
 
 ## 快速开始（CLI）
 
-使用支持 `abx app` 的 CLI，按[使用指南](../docs/using-templates.md#installation)
+使用下面的 npm CLI，按[使用指南](../docs/using-templates.md#installation)
 配置 Sandbox 及镜像构建仓库，并在 `application.deployment.accessRef` 选择已有的
 Serverless Devs access。FC 地域、Sandbox 地域、数据库网络和镜像仓库访问需要相互匹配。
-部署验证 hook 和 Python 示例需要安装 `httpx==0.28.1`。
+部署期间保持 Python 虚拟环境激活，验证 hook 和示例需要其中的 `httpx==0.28.1`。
 
 ```bash
+npm install --global @agent-sandbox/cli@0.5.9
 git clone https://github.com/Alibaba-Agent-Sandbox/awesome-templates.git
 cd awesome-templates/agents-api
 mkdir -p .abx
+python3 -m venv .abx/venv
+. .abx/venv/bin/activate
+python -m pip install httpx==0.28.1
 cp bindings.example.json .abx/bindings.json
 chmod 600 .abx/bindings.json
 ```

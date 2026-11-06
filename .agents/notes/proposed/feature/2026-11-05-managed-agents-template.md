@@ -80,6 +80,14 @@ turn prompts. The real local service rejects the prior target and accepts the
 corrected target without any Provider/model execution. The runtime's input-path
 allowlist is preserved.
 
+After the actual PyPI0.4.0a7 artifacts became downloadable with the producer's CI
+hashes, pin both recipe images to a7. Keep the public recipe on npm CLI0.5.9 with
+Node20+ and a private `.abx/venv` containing httpx0.28.1, so the managed toolchain
+uses its real Node package tree and hooks receive their required Python client.
+The normal source-wheel FC run and active cancellation passed independently;
+npm publication and the exact public-recipe cloud run remain separate merge gates.
+Do not remove Beta or grant public qualification from those source results.
+
 ## Acceptance criteria
 
 - Supported version selection is closed and existing spec5 inputs remain valid.
