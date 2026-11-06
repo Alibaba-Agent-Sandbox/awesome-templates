@@ -8,18 +8,27 @@ from __future__ import annotations
 
 import argparse
 import csv
+from decimal import Decimal, InvalidOperation
+import hashlib
 import io
 import json
 import os
 from pathlib import Path
 import sys
 import time
+from typing import Callable
 from urllib.parse import urlsplit
 import uuid
 
 import httpx
 
-INPUT = b"month,amount\n2026-01,10\n2026-01,20\n2026-02,7\n"
+FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "csv-analysis"
+INPUT = (FIXTURES / "sales.csv").read_bytes()
+SEED_PROGRAM = (FIXTURES / "aggregate.py").read_bytes()
+SEED_PROGRAM_SHA256 = hashlib.sha256(SEED_PROGRAM).hexdigest()
+ORIGINAL_TESTS_SHA256 = hashlib.sha256((FIXTURES / "tests" / "test_aggregate.py").read_bytes()).hexdigest()
+DEMO = "/workspace/agents-api-demo"
+TurnInspector = Callable[[str, str, str, dict[str, bytes]], None]
 
 
 class SmokeFailure(Exception):
@@ -86,10 +95,13 @@ def verify_csv(content: bytes, with_share: bool) -> None:
         reader = csv.DictReader(io.StringIO(content.decode("utf-8")))
         rows = list(reader)
         require(reader.fieldnames == (["month", "total", "share"] if with_share else ["month", "total"]), "csv_columns")
-        require([(row["month"], int(row["total"])) for row in rows] == [("2026-01", 30), ("2026-02", 7)], "independent_csv_totals")
+        require([(row["month"], Decimal(row["total"])) for row in rows]
+                == [("2026-01", Decimal("30.00")), ("2026-02", Decimal("10.00"))], "independent_csv_totals")
         if with_share:
-            require(all(abs(float(row["share"]) - int(row["total"]) / 37) < 0.00001 for row in rows), "independent_csv_share")
-    except (UnicodeError, ValueError, KeyError, csv.Error):
+            require(all(Decimal(row["share"]).is_finite()
+                        and abs(Decimal(row["share"]) - Decimal(row["total"]) / Decimal("40.00"))
+                        < Decimal("0.000001") for row in rows), "independent_csv_share")
+    except (UnicodeError, ValueError, KeyError, csv.Error, InvalidOperation):
         raise SmokeFailure("invalid_csv_artifact") from None
 
 
@@ -121,7 +133,15 @@ def cleanup(client: httpx.Client, sid: str | None, released: bool, source_id: st
     return passed
 
 
-def run(base: str, token: str, model: str | None, timeout: float) -> None:
+def run(base: str, token: str, model: str | None, timeout: float,
+        *, inspect_turn: TurnInspector | None = None) -> None:
+    """Verify the business path; an optional trusted controller can inspect each idle turn.
+
+    inspect_turn(stage, public_session_id, public_turn_id, artifacts) is an
+    in-process engineering-test callback, never loaded from user input or the
+    public API. It must use bounded private checks and return before the next
+    managed turn starts. This script never executes generated code on the host.
+    """
     target = urlsplit(base)
     require(target.scheme in {"http", "https"} and bool(target.hostname)
             and not target.username and not target.password and not target.query and not target.fragment, "explicit_gateway_url")
@@ -146,11 +166,16 @@ def run(base: str, token: str, model: str | None, timeout: float) -> None:
             created = request(client, "POST", "/v1/agents/sessions", 201,
                               headers={"Idempotency-Key": "smoke-session-" + uuid.uuid4().hex},
                               json={"agent": {"model": selected},
-                                    "input": "Read /workspace/input/sales.csv. Create a Python aggregation program, run it, and write "
-                                    "/workspace/outputs/summary.csv with exactly the columns month,total. Sum integer amount per month, "
-                                    "sort months ascending, and do not add any other rows. Preserve the input file.",
+                                    "input": f"Repair the existing {DEMO}/aggregate.py so repeated months accumulate Decimal amounts. "
+                                    f"Preserve its CLI: python {DEMO}/aggregate.py INPUT OUTPUT [--with-share]. "
+                                    f"Do not change {DEMO}/tests/test_aggregate.py. Run those original tests. "
+                                    f"Read {DEMO}/input/sales.csv and run the repaired program to write "
+                                    "/workspace/outputs/summary.csv with exactly month,total, months ascending and totals to two decimals. "
+                                    "Do not implement --with-share yet. Preserve the CSV input. "
+                                    "Copy the actual repaired source to /workspace/outputs/aggregate.py. "
+                                    "Write /workspace/outputs/report.md explaining the repair and both monthly totals.",
                                     "x_agent_sandbox": {"input_files": [
-                                        {"file_id": source_id, "path": "/workspace/input/sales.csv"}]}})
+                                        {"file_id": source_id, "path": DEMO + "/input/sales.csv"}]}})
             session = created.json()
             sid = session["id"]
             initial = created.headers.get("X-Agent-Sandbox-Submission-Id", "")
@@ -158,12 +183,29 @@ def run(base: str, token: str, model: str | None, timeout: float) -> None:
             first = wait_submission(client, sid, initial, deadline)
             first_bytes = artifact(client, sid, first["turn_id"], "summary.csv")
             verify_csv(first_bytes, False)
+            first_program = artifact(client, sid, first["turn_id"], "aggregate.py")
+            require(bool(first_program) and first_program != SEED_PROGRAM, "existing_source_modified")
+            first_report = artifact(client, sid, first["turn_id"], "report.md")
+            require(bool(first_report.strip()), "repair_report_saved")
+            if inspect_turn:
+                inspect_turn("summary", sid, first["turn_id"],
+                             {"aggregate.py": first_program, "summary.csv": first_bytes,
+                              "report.md": first_report})
             second = submit(client, sid,
-                            "Continue using the existing workspace. Read the summary.csv produced by the previous turn and "
-                            "write /workspace/outputs/summary-with-share.csv with exactly month,total,share. Preserve month and "
-                            "total; share is total divided by the grand total, numeric with at least six decimals. "
-                            "Run the program and preserve the previous summary.csv.", deadline)
-            verify_csv(artifact(client, sid, second["turn_id"], "summary-with-share.csv"), True)
+                            f"Continue the same workspace and modify the existing {DEMO}/aggregate.py to implement --with-share. "
+                            "The share is each total divided by the grand total, at least six decimal places; "
+                            "use 0.000000 when the grand total is zero. Preserve the default month,total mode. "
+                            f"Do not change {DEMO}/tests/test_aggregate.py; run those original tests again. "
+                            f"Run python {DEMO}/aggregate.py {DEMO}/input/sales.csv "
+                            "/workspace/outputs/summary-with-share.csv --with-share. "
+                            "Preserve summary.csv and copy the actual modified source to /workspace/outputs/aggregate.py.", deadline)
+            second_bytes = artifact(client, sid, second["turn_id"], "summary-with-share.csv")
+            verify_csv(second_bytes, True)
+            second_program = artifact(client, sid, second["turn_id"], "aggregate.py")
+            require(bool(second_program) and second_program != first_program, "continuation_source_modified")
+            if inspect_turn:
+                inspect_turn("share", sid, second["turn_id"],
+                             {"aggregate.py": second_program, "summary-with-share.csv": second_bytes})
             close(client, sid, deadline)
             released = True
             require(artifact(client, sid, first["turn_id"], "summary.csv") == first_bytes, "artifact_survives_compute_close")

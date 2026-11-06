@@ -55,6 +55,15 @@ source escape and actual local startup selection. Run owner specification and
 catalog/document checks. Local/image/cloud/model acceptance and cleanup remain
 separate required evidence; none follows from schema validity.
 
+The coding smoke uses an intentionally defective, pre-existing CSV exercise,
+unchanged original tests, decimal-valued data and two successive source edits. It
+downloads the actual modified source and verifies independent CSV totals/shares.
+A trusted engineering inspector may run between published turns and before close,
+using owned Provider access for source/test hash checks and original/held-out tests
+inside the Sandbox. Business calls remain Gateway-only, and generated source is
+never executed in the host process. This closes an acceptance-design gap without
+claiming the new image/model path has already run.
+
 ## Acceptance criteria
 
 - Supported version selection is closed and existing spec5 inputs remain valid.

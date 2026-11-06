@@ -47,6 +47,7 @@ RUN python3 -c "import agent_sandbox.server.managed"
 
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py ./
+COPY --chown=user:user fixtures/csv-analysis/ /workspace/agents-api-demo/
 RUN chown user:user /home/user/app
 USER user
 EXPOSE 9000

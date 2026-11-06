@@ -72,6 +72,17 @@ reconcile/destroy and independent owned cleanup, not legacy sandbox named smoke.
 L3 requires real compatible model input upload, two-turn native continuation,
 executed tools, independently calculated/downloaded CSV artifacts, SSE/replay,
 cancel/isolation/restart/delivery/limits checks, and close retaining artifacts.
+The image includes an explicitly named CSV exercise with a real source bug, original
+tests and decimal/quoted/Unicode input. The Gateway-only afterReady script repairs
+the existing source in turn one, publishes source/summary/report, then adds shares in
+turn two while retaining the first artifact version. It checks downloaded CSV results
+without executing generated code on the host. An optional trusted in-process inspector
+runs only after publication and before continuation/close; an engineering controller
+can use owned Provider APIs to verify source/test hashes and run original/held-out
+assertions inside that same Sandbox. No public exec route or extra cloud credential is
+added to the business hook. That independent execution is separate from the default
+Gateway-only assertion and must have its own evidence.
+
 The Gateway-only afterReady script covers a bounded business path; the full shared
 runtime/CLI acceptance matrices remain separately required. L4 requires each actual
 additional-provider run; no additional provider is declared for this profile.

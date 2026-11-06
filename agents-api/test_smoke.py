@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import importlib.util
+import shutil
+import subprocess
+import sys
 from pathlib import Path
 from unittest.mock import patch
 
@@ -33,10 +36,46 @@ def test_successfully_released_compute_is_not_closed_again():
 
 
 def test_independent_csv_rejects_wrong_results_and_non_finite_share():
-    smoke.verify_csv(b"month,total\n2026-01,30\n2026-02,7\n", False)
-    for content in (b"month,total\n2026-01,37\n", b"month,total,share\n2026-01,30,nan\n2026-02,7,nan\n"):
+    smoke.verify_csv(b"month,total\n2026-01,30.00\n2026-02,10.00\n", False)
+    smoke.verify_csv(b"month,total,share\n2026-01,30.00,0.750000\n2026-02,10.00,0.250000\n", True)
+    for content in (b"month,total\n2026-01,37\n", b"month,total,share\n2026-01,30,nan\n2026-02,10,nan\n"):
         with pytest.raises(smoke.SmokeFailure):
             smoke.verify_csv(content, b"share" in content)
+
+
+def test_seed_program_fails_the_unchanged_original_tests(tmp_path):
+    """The model task starts with a real source defect, not an already-green sample."""
+    shutil.copytree(smoke.FIXTURES, tmp_path / "exercise")
+    result = subprocess.run([sys.executable, "-m", "unittest", "discover", "-s", "tests"],
+                            cwd=tmp_path / "exercise", capture_output=True, text=True, timeout=20)
+    assert result.returncode != 0
+    assert "FAILED (failures=2)" in result.stderr
+
+
+def test_trusted_inspection_finishes_before_continuation_and_close(monkeypatch):
+    order = []
+    payload = {"/healthz": {"protocol": "agent-sandbox-managed-agents/v1"},
+               "/v1/agent-sandbox/capabilities": {"protocol": "agent-sandbox-managed-agents/v1"},
+               "/v1/models": {"data": [{"id": "model"}]}, "/v1/files": {"id": "input"},
+               "/v1/agents/sessions": {"id": "session"}}
+    def request(client, method, path, expected, **kwargs):
+        return httpx.Response(expected, json=payload.get(path, {}),
+                              headers={"X-Agent-Sandbox-Submission-Id": "submission"})
+    monkeypatch.setattr(smoke, "request", request)
+    monkeypatch.setattr(smoke, "wait_submission", lambda *args: {"turn_id": "first"})
+    def submit(*args):
+        order.append("submit_second")
+        return {"turn_id": "second"}
+    monkeypatch.setattr(smoke, "submit", submit)
+    monkeypatch.setattr(smoke, "artifact", lambda client, sid, turn, name: (turn + name).encode())
+    monkeypatch.setattr(smoke, "verify_csv", lambda *args: None)
+    monkeypatch.setattr(smoke, "close", lambda *args: order.append("close"))
+    monkeypatch.setattr(smoke, "cleanup", lambda *args: True)
+    def inspect(stage, sid, turn, artifacts):
+        assert sid == "session" and artifacts["aggregate.py"] == (turn + "aggregate.py").encode()
+        order.append("inspect_" + stage)
+    smoke.run("https://gateway.invalid", "test-token", None, 10, inspect_turn=inspect)
+    assert order == ["inspect_summary", "submit_second", "inspect_share", "close"]
 
 
 @pytest.mark.parametrize("primary_failure", [False, True])
@@ -57,6 +96,6 @@ def test_cleanup_failure_never_turns_business_success_green_or_masks_primary(pri
         return {"turn_id": "first"}
     monkeypatch.setattr(smoke, "wait_submission", wait)
     monkeypatch.setattr(smoke, "verify_csv", lambda *args: None)
-    monkeypatch.setattr(smoke, "artifact", lambda *args: b"captured")
+    monkeypatch.setattr(smoke, "artifact", lambda client, sid, turn, name: (turn + name).encode())
     with pytest.raises(smoke.SmokeFailure, match="original_business_failure" if primary_failure else "owned_cleanup_incomplete"):
         smoke.run("https://gateway.invalid", "test-token", None, 10)

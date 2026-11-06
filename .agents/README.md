@@ -3,6 +3,7 @@
 ## Managed Agent applications (2026-11-05)
 
 - [Managed-session application contract and template](notes/proposed/feature/2026-11-05-managed-agents-template.md) · [source verification](evidence/verify/2026-11-05-managed-agents-template-source.md) · [network/trust/cleanup documentation](evidence/verify/2026-11-05-managed-agents-template-network-cleanup-docs.md). Issue [295](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/295); source, public package, image and cloud acceptance remain separate.
+- [Existing-source coding smoke](evidence/verify/2026-11-06-managed-agents-coding-smoke.md): original exercise tests, two-turn source artifacts and a trusted pre-close inspection boundary; new image/model acceptance remains separate.
 
 ## Local Express push-tag cleanup (2026-10-27)
 

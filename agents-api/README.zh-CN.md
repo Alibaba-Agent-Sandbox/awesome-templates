@@ -111,6 +111,11 @@ with httpx.Client(base_url=os.environ["AGENTS_API_BASE_URL"],
 结束。完整的上传、两轮真实 Agent 处理和产物下载示例见 `scripts/smoke.py`；为其提供同一
 私有凭据中的 `AGENTS_API_KEY` 和 `AGENTS_API_BASE_URL`。
 
+镜像在 `/workspace/agents-api-demo` 提供一个有意保留聚合缺陷的 CSV 练习和原始测试。
+完整示例先让 Agent 修复现有 `aggregate.py`，运行原始测试，生成汇总、说明和修改后的源码；
+第二轮继续给同一个程序增加占比列。示例从 Gateway 下载每一轮的独立产物版本，并核对
+金额和占比，不在宿主机执行 Agent 生成的代码。这个练习目录不覆盖你自己的文件。
+
 ## 快速开始（HTTP POST）
 
 从私有文件读取业务 Key 到 `AGENTS_API_KEY`，不要打印值。`model-id` 使用

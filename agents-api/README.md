@@ -128,6 +128,14 @@ ID. Saved results remain available after successful close until retention expire
 For a complete upload/two-turn/download example, run `scripts/smoke.py` with
 `AGENTS_API_BASE_URL` and `AGENTS_API_KEY` supplied from the same private store.
 
+The image includes a CSV exercise with a deliberate aggregation defect and original
+tests under `/workspace/agents-api-demo`. The full example asks the Agent to repair
+the existing `aggregate.py`, run its original tests, and publish the summary, repair
+report and modified source. The next turn adds shares to the same program. The
+example downloads each turn's artifact version through the Gateway and independently
+checks amounts and shares; it never executes generated code on the host. The exercise
+directory does not replace your own files.
+
 ## Quick start (HTTP POST)
 
 Read the business key from your private store into `AGENTS_API_KEY` without
