@@ -52,8 +52,10 @@ New package availability must be checked independently from source installation.
 Behavior regressions cover valid/invalid version combinations, private protocol
 identity, role injection, budgets, image/build exclusivity, hook restrictions,
 source escape and actual local startup selection. Run owner specification and
-catalog/document checks. Local/image/cloud/model acceptance and cleanup remain
-separate required evidence; none follows from schema validity.
+catalog/document checks. Local/image/cloud/model checks and cleanup remain distinct evidence;
+none follows from schema validity. The current ordinary public CLI0.5.10 and
+SDK0.4.0a7 recipe0.1.4 deployment reached ready and its own Gateway-only smoke
+completed two actual Qwen turns, downloaded results, and closed/deleted the Session.
 
 The coding smoke uses an intentionally defective, pre-existing CSV exercise,
 unchanged original tests, decimal-valued data and two successive source edits. It
@@ -61,8 +63,8 @@ downloads the actual modified source and verifies independent CSV totals/shares.
 A trusted engineering inspector may run between published turns and before close,
 using owned Provider access for source/test hash checks and original/held-out tests
 inside the Sandbox. Business calls remain Gateway-only, and generated source is
-never executed in the host process. This closes an acceptance-design gap without
-claiming the new image/model path has already run.
+never executed in the host process. The stronger historical inspector results retain their original source/recipe identity;
+the current core delivery uses the template Gateway-only two-turn check.
 
 The branch integrates the independently published spec6 contract at
 `31fe653c2940d8681b9549be3f570977152847a7` without changing schema bytes. Keep
@@ -88,15 +90,19 @@ version0.1.4 raises the documented deployment prerequisite to0.5.10. The revised
 CLI waits within the existing bounded health budget until the exact revision
 is confirmed; unrelated or malformed HTTP200 bodies never establish readiness.
 This dependency change leaves both a7 Dockerfiles, smoke assertions, API and
-execution limits unchanged. Do not remove Beta or grant new recipe qualification
-until its independent public cloud/model/upgrade and owned cleanup gates pass.
+execution limits unchanged. Keep Beta and the documented capability boundaries. The user narrowed final
+delivery to the unified Server Gateway, Agent execution inside an owned Sandbox,
+related real two-turn file workflow, practical article and owned resource release.
+Do not make a wider API/upgrade/qualification matrix or new cross-repository
+publication a prerequisite for this scoped template delivery.
 
 ## Acceptance criteria
 
 - Supported version selection is closed and existing spec5 inputs remain valid.
 - The actual bridge starts during L0; named diagnostics cannot impersonate it.
 - Manifest/recipe/catalog/user translations and new dependency versions agree.
-- Required local, image, Provider/model and owned cleanup evidence exists.
+- The exact public recipe normally deploys and completes its two actual Agent file turns, downloads, Close/Delete and owned cleanup.
+- Broader historical API/SSE/cancel/upgrade results keep their exact dated scope and do not become new0.1.4 claims.
 - Current-head CI/review pass and the scoped PR is verified merged.
 
 
@@ -110,5 +116,4 @@ finite codes, numeric HTTP status, terminal enums and known-cleanup booleans.
 Main business assertions, model prompts, execution budgets and the existing
 hook result protocol stay unchanged. New local evidence is in
 [the report verification](../../../evidence/verify/2026-11-06-managed-agents-smoke-reports.md);
-the failed public update is not retroactively reclassified, and new cloud
-Codex/upgrade acceptance remains required.
+the failed public update is not retroactively reclassified, and the wider historical cloud Codex/upgrade evidence remains separate from the current core acceptance.
