@@ -24,7 +24,7 @@ Qwen Code 0.23.0、PostgreSQL，以及 FC Gateway/Worker/Dispatcher 函数。
 [Server Dockerfile](server/Dockerfile)
 
 镜像固定使用 SDK 0.4.0a7，提供托管 Gateway 和 guest bridge。部署应用需要 Node.js 20
-或更高版本，以及 npm 分发的 CLI 0.5.9。业务 HTTP 客户端只需要 Gateway endpoint 和业务 Key。
+或更高版本，以及 npm 分发的 CLI 0.5.10。业务 HTTP 客户端只需要 Gateway endpoint 和业务 Key。
 
 ## 解决的问题
 
@@ -39,7 +39,7 @@ Serverless Devs access。FC 地域、Sandbox 地域、数据库网络和镜像�
 部署期间保持 Python 虚拟环境激活，验证 hook 和示例需要其中的 `httpx==0.28.1`。
 
 ```bash
-npm install --global @agent-sandbox/cli@0.5.9
+npm install --global @agent-sandbox/cli@0.5.10
 git clone https://github.com/Alibaba-Agent-Sandbox/awesome-templates.git
 cd awesome-templates/agents-api
 mkdir -p .abx

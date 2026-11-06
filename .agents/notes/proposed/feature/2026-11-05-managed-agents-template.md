@@ -80,13 +80,16 @@ turn prompts. The real local service rejects the prior target and accepts the
 corrected target without any Provider/model execution. The runtime's input-path
 allowlist is preserved.
 
-After the actual PyPI0.4.0a7 artifacts became downloadable with the producer's CI
-hashes, pin both recipe images to a7. Keep the public recipe on npm CLI0.5.9 with
-Node20+ and a private `.abx/venv` containing httpx0.28.1, so the managed toolchain
-uses its real Node package tree and hooks receive their required Python client.
-The normal source-wheel FC run and active cancellation passed independently;
-npm publication and the exact public-recipe cloud run remain separate merge gates.
-Do not remove Beta or grant public qualification from those source results.
+The initial public dependency transition pinned both images to published
+PyPI0.4.0a7 and used npm CLI0.5.9 with Node20+ and a private `.abx/venv` containing
+httpx0.28.1. Its dated source and public0.1.2/0.1.3 results remain separate evidence.
+After formal npm CLI0.5.10 publication and independent fresh installation,
+version0.1.4 raises the documented deployment prerequisite to0.5.10. The revised
+CLI waits within the existing bounded health budget until the exact revision
+is confirmed; unrelated or malformed HTTP200 bodies never establish readiness.
+This dependency change leaves both a7 Dockerfiles, smoke assertions, API and
+execution limits unchanged. Do not remove Beta or grant new recipe qualification
+until its independent public cloud/model/upgrade and owned cleanup gates pass.
 
 ## Acceptance criteria
 

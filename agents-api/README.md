@@ -30,7 +30,7 @@ Qwen Code 0.23.0, PostgreSQL and FC Gateway/Worker/Dispatcher functions.
 
 The images pin SDK 0.4.0a7, which provides the managed Gateway and guest bridge.
 Application deployment requires Node.js 20 or later and the npm distribution of
-CLI 0.5.9. Business HTTP clients need only the Gateway endpoint and business key.
+CLI 0.5.10. Business HTTP clients need only the Gateway endpoint and business key.
 
 ## Problem solved
 
@@ -49,7 +49,7 @@ Keep the Python environment active when deploying: its `httpx==0.28.1` dependenc
 is used by the verification hook and examples.
 
 ```bash
-npm install --global @agent-sandbox/cli@0.5.9
+npm install --global @agent-sandbox/cli@0.5.10
 git clone https://github.com/Alibaba-Agent-Sandbox/awesome-templates.git
 cd awesome-templates/agents-api
 mkdir -p .abx
