@@ -1,5 +1,5 @@
 name: agents-api
-version: 0.1.1
+version: 0.1.2
 description: One stable Gateway for session-owned Sandbox Agents, durable files and
   explicit lifecycle.
 author: alibaba-agent-sandbox

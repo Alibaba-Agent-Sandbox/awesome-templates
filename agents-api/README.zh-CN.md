@@ -112,6 +112,7 @@ with httpx.Client(base_url=os.environ["AGENTS_API_BASE_URL"],
 私有凭据中的 `AGENTS_API_KEY` 和 `AGENTS_API_BASE_URL`。
 
 镜像在 `/workspace/agents-api-demo` 提供一个有意保留聚合缺陷的 CSV 练习和原始测试。
+附件目标位于 `/workspace/input/`，CSV 练习使用 `/workspace/input/sales.csv`。
 完整示例先让 Agent 修复现有 `aggregate.py`，运行原始测试，生成汇总、说明和修改后的源码；
 第二轮继续给同一个程序增加占比列。示例从 Gateway 下载每一轮的独立产物版本，并核对
 金额和占比，不在宿主机执行 Agent 生成的代码。这个练习目录不覆盖你自己的文件。

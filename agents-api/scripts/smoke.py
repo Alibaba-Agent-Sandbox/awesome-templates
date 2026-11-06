@@ -28,6 +28,7 @@ SEED_PROGRAM = (FIXTURES / "aggregate.py").read_bytes()
 SEED_PROGRAM_SHA256 = hashlib.sha256(SEED_PROGRAM).hexdigest()
 ORIGINAL_TESTS_SHA256 = hashlib.sha256((FIXTURES / "tests" / "test_aggregate.py").read_bytes()).hexdigest()
 DEMO = "/workspace/agents-api-demo"
+INPUT_PATH = "/workspace/input/sales.csv"
 TurnInspector = Callable[[str, str, str, dict[str, bytes]], None]
 
 
@@ -169,13 +170,13 @@ def run(base: str, token: str, model: str | None, timeout: float,
                                     "input": f"Repair the existing {DEMO}/aggregate.py so repeated months accumulate Decimal amounts. "
                                     f"Preserve its CLI: python {DEMO}/aggregate.py INPUT OUTPUT [--with-share]. "
                                     f"Do not change {DEMO}/tests/test_aggregate.py. Run those original tests. "
-                                    f"Read {DEMO}/input/sales.csv and run the repaired program to write "
+                                    f"Read {INPUT_PATH} and run the repaired program to write "
                                     "/workspace/outputs/summary.csv with exactly month,total, months ascending and totals to two decimals. "
                                     "Do not implement --with-share yet. Preserve the CSV input. "
                                     "Copy the actual repaired source to /workspace/outputs/aggregate.py. "
                                     "Write /workspace/outputs/report.md explaining the repair and both monthly totals.",
                                     "x_agent_sandbox": {"input_files": [
-                                        {"file_id": source_id, "path": DEMO + "/input/sales.csv"}]}})
+                                        {"file_id": source_id, "path": INPUT_PATH}]}})
             session = created.json()
             sid = session["id"]
             initial = created.headers.get("X-Agent-Sandbox-Submission-Id", "")
@@ -196,7 +197,7 @@ def run(base: str, token: str, model: str | None, timeout: float,
                             "The share is each total divided by the grand total, at least six decimal places; "
                             "use 0.000000 when the grand total is zero. Preserve the default month,total mode. "
                             f"Do not change {DEMO}/tests/test_aggregate.py; run those original tests again. "
-                            f"Run python {DEMO}/aggregate.py {DEMO}/input/sales.csv "
+                            f"Run python {DEMO}/aggregate.py {INPUT_PATH} "
                             "/workspace/outputs/summary-with-share.csv --with-share. "
                             "Preserve summary.csv and copy the actual modified source to /workspace/outputs/aggregate.py.", deadline)
             second_bytes = artifact(client, sid, second["turn_id"], "summary-with-share.csv")

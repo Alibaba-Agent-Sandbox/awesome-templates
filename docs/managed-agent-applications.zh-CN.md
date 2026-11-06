@@ -1,5 +1,7 @@
 # 托管 Agent 应用
 
+本文定义清单契约。部署应用需要兼容的 CLI 与运行时发行版；示例通过静态检查并不代表已安装运行时或完成模板部署。
+
 规范 6 描述一个稳定公开 Gateway 与每会话独占 Sandbox 的应用。Agent 的模型、工具循环和 CLI 在 Sandbox 内运行；业务调用方使用 Gateway URL 与业务凭据，Sandbox 地址和管理凭据留在内部。
 
 封闭契约是 [template-v6.schema.json](../spec/template-v6.schema.json)。规范 5 保留既有生命周期与部署语义。应用部署必须显式执行；导入、构建或创建 Sandbox 不会部署 Server 资源或运行主机 hooks。

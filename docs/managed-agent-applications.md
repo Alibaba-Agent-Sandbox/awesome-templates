@@ -1,5 +1,9 @@
 # Managed Agent applications
 
+This reference defines the manifest contract. Deploying an application requires compatible
+CLI and runtime releases; validating this document's examples does not install a runtime
+or demonstrate a deployed template.
+
 Specification 6 describes an application with one stable public Gateway and one
 exclusive Sandbox per session. The Agent's model/tool loop and CLI run inside the
 Sandbox. Business callers use the Gateway URL and business credentials; Sandbox

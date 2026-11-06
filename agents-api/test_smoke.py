@@ -59,11 +59,16 @@ def test_trusted_inspection_finishes_before_continuation_and_close(monkeypatch):
                "/v1/models": {"data": [{"id": "model"}]}, "/v1/files": {"id": "input"},
                "/v1/agents/sessions": {"id": "session"}}
     def request(client, method, path, expected, **kwargs):
+        if method == "POST" and path == "/v1/agents/sessions":
+            assert kwargs["json"]["x_agent_sandbox"]["input_files"] == [
+                {"file_id": "input", "path": "/workspace/input/sales.csv"}]
+            assert "/workspace/input/sales.csv" in kwargs["json"]["input"]
         return httpx.Response(expected, json=payload.get(path, {}),
                               headers={"X-Agent-Sandbox-Submission-Id": "submission"})
     monkeypatch.setattr(smoke, "request", request)
     monkeypatch.setattr(smoke, "wait_submission", lambda *args: {"turn_id": "first"})
     def submit(*args):
+        assert "/workspace/input/sales.csv" in args[2]
         order.append("submit_second")
         return {"turn_id": "second"}
     monkeypatch.setattr(smoke, "submit", submit)

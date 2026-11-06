@@ -190,8 +190,10 @@ It does not expose the core Agents routes or named commands. Its exact startup i
 non-root user, independent published dependency pins and source-path rules still apply.
 
 Version-6 root `smoke` entries use `operation: health` or `operation: capabilities`
-with a non-null `expect`, instead of naming a nonexistent command. Local L0 starts
-the actual declared bridge with isolated state/workspace and a generated test token.
+with a non-null `expect`, instead of naming a nonexistent command. With a compatible
+Server SDK installed, local L0 starts the actual declared bridge with isolated
+state/workspace and a generated test token. Static validation does not install
+or execute a managed runtime.
 The full application task is verified through the Gateway after deployment; a bridge
 health response or `commands.py` diagnostic does not prove an Agent task.
 

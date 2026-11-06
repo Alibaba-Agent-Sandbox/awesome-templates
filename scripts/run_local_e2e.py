@@ -17,6 +17,7 @@ the template.
 from __future__ import annotations
 
 import ast
+import runpy
 import json
 import os
 import secrets
@@ -181,6 +182,10 @@ def _cleanup(directory: Path) -> None:
 def _run_one(directory: Path, path_prefix: str) -> tuple[str, str]:
     """Return ``(status, detail)`` for one template. status is pass or fail."""
     name = directory.name
+    try:
+        startup, managed = _startup_argv(directory, 0)
+    except ValueError as exc:
+        return "fail", str(exc)
     source = (directory / "commands.py").read_text(encoding="utf-8")
 
     missing = _missing_imports(source)
@@ -191,10 +196,8 @@ def _run_one(directory: Path, path_prefix: str) -> tuple[str, str]:
     port = _free_port()
     pty_port = _free_port()
     env = _child_env(str(directory), port, pty_port, path_prefix)
-    try:
-        startup, managed = _startup_argv(directory, port)
-    except ValueError as exc:
-        return "fail", str(exc)
+    if managed:
+        startup[-1] = str(port)
     managed_scratch = None
     if managed:
         # Generated solely for this loopback run; never forward caller/cloud keys.
@@ -246,19 +249,19 @@ def _run_one(directory: Path, path_prefix: str) -> tuple[str, str]:
 
 def _startup_argv(directory: Path, port: int) -> tuple[list[str], bool]:
     """Use the exact v6 bridge entry; existing v5 local startup stays unchanged."""
-    if __package__:
-        from . import check_template
-        from .template_application import is_managed_application, validate_v6
-    else:
-        import check_template
-        from template_application import is_managed_application, validate_v6
-
-    manifest, errors = check_template._load_yaml(directory / "template.yaml")
+    # Use this repository's canonical strict reader, even under an unrelated
+    # CWD / importlib file load. Non-main names avoid executing either CLI.
+    helper_directory = Path(__file__).resolve().parent
+    checker = runpy.run_path(str(helper_directory / "check_template.py"),
+                             run_name="_abx_local_template_checker")
+    manifest, errors = checker["_load_yaml"](directory / "template.yaml")
     if errors or not isinstance(manifest, dict):
         raise ValueError("local startup needs a valid template manifest")
-    if not is_managed_application(manifest):
+    if type(manifest.get("spec_version")) is not int or manifest["spec_version"] != 6:
         return ["python3", "commands.py"], False
-    failures = validate_v6(manifest, directory)
+    helper = runpy.run_path(str(helper_directory / "template_application.py"),
+                            run_name="_abx_local_manifest_contract")
+    failures = helper["validate_v6"](manifest, directory)
     if failures:
         raise ValueError("invalid managed bridge manifest: " + "; ".join(failures))
     return [sys.executable, "-m", "agent_sandbox.server.managed", "--port", str(port)], True

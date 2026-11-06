@@ -64,6 +64,22 @@ inside the Sandbox. Business calls remain Gateway-only, and generated source is
 never executed in the host process. This closes an acceptance-design gap without
 claiming the new image/model path has already run.
 
+The branch integrates the independently published spec6 contract at
+`31fe653c2940d8681b9549be3f570977152847a7` without changing schema bytes. Keep
+its temporary complete-checker regression and independent importlib loader
+coverage. The executable template runner replaces the contract-only unsupported
+guard with strict preflight validation before preparation and the exact managed
+module startup. It loads its own sibling validator by fixed file origin, so
+standalone file loading and package imports both work without global path changes.
+Source/candidate L0 remains distinct from public dependency availability.
+
+The admission review found that attachments cannot target the seeded exercise's
+nested input directory. Version0.1.2 keeps source/tests in the exercise directory
+and uses the supported `/workspace/input/sales.csv` target in the upload and both
+turn prompts. The real local service rejects the prior target and accepts the
+corrected target without any Provider/model execution. The runtime's input-path
+allowlist is preserved.
+
 ## Acceptance criteria
 
 - Supported version selection is closed and existing spec5 inputs remain valid.
