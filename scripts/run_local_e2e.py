@@ -30,6 +30,13 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+import yaml
+
+try:
+    from .template_application import is_managed_application
+except ImportError:
+    from template_application import is_managed_application
+
 ROOT = Path(__file__).resolve().parents[1]
 HEALTH_TIMEOUT = 20.0
 
@@ -180,6 +187,10 @@ def _cleanup(directory: Path) -> None:
 def _run_one(directory: Path, path_prefix: str) -> tuple[str, str]:
     """Return ``(status, detail)`` for one template. status is pass or fail."""
     name = directory.name
+    manifest_path = directory / "template.yaml"
+    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8")) if manifest_path.is_file() else None
+    if isinstance(manifest, dict) and is_managed_application(manifest):
+        return "fail", "Unsupported startup profile: managed bridge acceptance requires its declared runtime; no commands.py process was started"
     source = (directory / "commands.py").read_text(encoding="utf-8")
 
     missing = _missing_imports(source)

@@ -17,6 +17,7 @@ import check_template
 import express_e2e
 import image_size_report
 from test_template_application import ApplicationContractTest  # noqa: F401 — discovered by unittest
+from test_managed_application import ManagedApplicationContractTest  # noqa: F401 — discovered by unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 SKELETON = ROOT / "_skeleton"

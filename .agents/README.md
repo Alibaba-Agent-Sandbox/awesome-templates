@@ -1,5 +1,7 @@
 # Engineering records: awesome-templates
 
+- [Independent managed manifest contract](notes/proposed/feature/2026-11-06-managed-manifest-contract.md) · [verification](evidence/verify/2026-11-06-managed-manifest-contract.md) · [Issue298](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/298). This publishes static spec6 boundaries independently of executable template delivery.
+
 ## Local Express push-tag cleanup (2026-10-27)
 
 - [Decision](notes/proposed/process/2026-10-27-local-push-tag-cleanup.md) · [verification](evidence/verify/2026-10-27-local-push-tag-cleanup.md). Exact owned tags and independent absence; the broader method/model matrix remains separate.
