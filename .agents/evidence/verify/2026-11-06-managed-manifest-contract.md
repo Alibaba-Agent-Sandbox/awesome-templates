@@ -37,7 +37,7 @@ resolved that environment prerequisite without a product change.
 
 | Check | Result | Scope |
 | --- | --- | --- |
-| Specification tools | PASS | 48 regressions, including independent managed checker/guard cases and preserved v5 behavior |
+| Specification tools | PASS | 49 regressions, including independent managed checker/guard/file-loader cases and preserved v5 behavior |
 | Complete checker | PASS | All 47 existing root manifest directories; no catalog change |
 | Documentation links | PASS | 227 documents, zero failures |
 | Public-launch controller regressions | PASS | 42 local tests; no real cloud call |
@@ -46,6 +46,15 @@ resolved that environment prerequisite without a product change.
 | Scoped diff and exact schema bytes | PASS | No v5 schema, template directory, catalog or acceptance/image workflow changes |
 | Latest-head CI and merge | PENDING | Required before producer delivery |
 
+
+## Remote CI import boundary follow-up
+
+The first complete remote local-e2e job failed at the existing node-web controller test, which
+loads run_local_e2e.py under an arbitrary importlib module name without a package or sibling import
+path. The new module-level sibling import was incompatible with that established use. Independent
+review accepted a narrow inline closed-profile identity predicate instead of mutating sys.path or
+adding dynamic dependency loading. A fresh isolated-interpreter file-loader regression covers the
+actual missing import context; the original CI failure remains historical. Schema bytes are unchanged.
 
 ## Cleanup and limitations
 

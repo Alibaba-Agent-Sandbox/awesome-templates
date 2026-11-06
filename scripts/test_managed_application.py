@@ -4,6 +4,8 @@ from __future__ import annotations
 import copy
 import json
 import shutil
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -115,6 +117,16 @@ class ManagedApplicationContractTest(unittest.TestCase):
         self.assertEqual(status, "fail")
         self.assertIn("fixture dependency", detail)
         imports.assert_called_once()
+
+    def test_local_runner_can_be_loaded_by_file_without_package_or_sibling_import_path(self):
+        source = ROOT / "scripts/run_local_e2e.py"
+        code = ("import importlib.util, sys; "
+                "spec = importlib.util.spec_from_file_location('independent_local_runner', sys.argv[1]); "
+                "module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module); "
+                "assert callable(module._run_one)")
+        result = subprocess.run([sys.executable, "-I", "-c", code, str(source)], cwd=self.root,
+                                capture_output=True, text=True, timeout=30)
+        self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_wrong_profile_topology_or_command_smoke_is_rejected(self):
         for key, value in (("runtime", {"placement": "in-sandbox", "driver": "sandbox-local-api", "profile": "server-core-agents"}),

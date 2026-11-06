@@ -32,11 +32,6 @@ from pathlib import Path
 
 import yaml
 
-try:
-    from .template_application import is_managed_application
-except ImportError:
-    from template_application import is_managed_application
-
 ROOT = Path(__file__).resolve().parents[1]
 HEALTH_TIMEOUT = 20.0
 
@@ -189,7 +184,10 @@ def _run_one(directory: Path, path_prefix: str) -> tuple[str, str]:
     name = directory.name
     manifest_path = directory / "template.yaml"
     manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8")) if manifest_path.is_file() else None
-    if isinstance(manifest, dict) and is_managed_application(manifest):
+    application = manifest.get("application") if isinstance(manifest, dict) else None
+    runtime = application.get("runtime") if isinstance(application, dict) else None
+    if (isinstance(manifest, dict) and type(manifest.get("spec_version")) is int and manifest["spec_version"] == 6
+            and isinstance(runtime, dict) and runtime.get("profile") == "managed-bridge-v1"):
         return "fail", "Unsupported startup profile: managed bridge acceptance requires its declared runtime; no commands.py process was started"
     source = (directory / "commands.py").read_text(encoding="utf-8")
 
