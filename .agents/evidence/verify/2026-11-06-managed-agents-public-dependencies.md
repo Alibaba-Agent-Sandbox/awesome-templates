@@ -57,3 +57,22 @@ attempt selected the environment's parent interpreter without passing its bin
 path to child startup: managed collection lacked httpx and the legacy child
 could not import agent_sandbox. It was recorded as an environment setup failure;
 the corrected invocation changes PATH only and does not relax runtime assertions.
+
+
+## Actual latest-head CI fixture correction
+
+The remote e2e run [42204018164](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/42204018164)
+on68a095b failed in `ImageBuildContextTest`, before local template startup:
+its existing blanket assertion required servera6 for every recipe, conflicting
+with the independently published managed recipe's explicit a7. Documentation,
+Express CLI, media, document and dev-services jobs passed. The original failure
+is preserved rather than relabeled as a product startup failure.
+
+After independent deployment-review approval, the existing assertion now expects
+exact a7 only for agents-api and exact a6 for every other template. It still
+requires the public PyPI index, byte-for-byte materialized Dockerfile equality
+apart from the known FROM substitution, and no local wheel. The expected version
+is not inferred from the Dockerfile under test. No recipe or runtime bytes changed.
+Actual isolated `python scripts/test_spec_tools.py`:52 tests passed in20.736s;
+the printed malformed-fixture conformance errors are expected negative cases.
+Latest-head remote CI must pass before merge; no prior failed run is overwritten.
