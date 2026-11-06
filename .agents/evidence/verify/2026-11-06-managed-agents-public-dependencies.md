@@ -36,3 +36,24 @@ The CLI/deployment reviewer independently read all four recipe/README changes
 and accepted this scope. The Server base remains python3.13.8-slim; image probes
 must derive installed distribution paths instead of assuming Python3.12.
 Commit/push starts latest-head CI; it does not grant public template qualification.
+
+## L0 consumer pin follow-up
+
+Actual workflow/source review found the main full-template local-e2e job still
+installed server/clienta6, while the strict managed startup invokes
+`agent_sandbox.server.managed`, absent from that release. Upgrade only this job's
+two SDK pins to the public a7. Other isolated database/document/media jobsa6 pins
+remain unchanged; no interpreter override or runner behavior is added. The
+deployment reviewer independently accepted this narrower dependency correction.
+The recipe directory at a6d37c32 remains byte-for-byte unchanged by this follow-up.
+Fresh installed-a7 managed and legacy L0 results are recorded below; remote full
+local-e2e remains the authority for the complete template compatibility matrix.
+
+Installed both public a7 packages in the isolated template test environment and
+ran the actual `_run_one` local runner with that environment's bin directory:
+`agents-api` PASS, `python-hello` PASS (20 cases), `node-web` PASS (60 cases).
+These are local process/HTTP checks with no cloud or model call. An earlier
+attempt selected the environment's parent interpreter without passing its bin
+path to child startup: managed collection lacked httpx and the legacy child
+could not import agent_sandbox. It was recorded as an environment setup failure;
+the corrected invocation changes PATH only and does not relax runtime assertions.
