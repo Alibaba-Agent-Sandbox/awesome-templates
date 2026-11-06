@@ -88,3 +88,10 @@ runtime/CLI acceptance matrices remain separately required. L4 requires each act
 additional-provider run; no additional provider is declared for this profile.
 
 Actual results and blocked release/cloud gates belong in dated engineering evidence.
+
+The local business smoke persists bounded label-only progress beneath its own
+`.abx/agents-smoke-reports` directory before its first HTTP call. Per-attempt
+JSONL and atomic latest snapshots survive the deployer's temporary-hook cleanup.
+The local report never retains hook context identities, credentials, URLs,
+model text or raw exceptions; an incomplete/running report cannot grant success.
+This does not change the deployment hook result or Gateway protocol.

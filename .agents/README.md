@@ -7,6 +7,7 @@
 - [Independent-contract integration](evidence/verify/2026-11-06-managed-agents-contract-integration.md): preserved static checker regressions, standalone/package startup selection and focused managed/spec5 local service checks; public release and hosted acceptance remain separate.
 - [Attachment-root regression](evidence/verify/2026-11-06-managed-agents-input-root.md): actual local admission failure/control and corrected0.1.2 example; runtime path restrictions remain unchanged.
 - [Public dependency transition](evidence/verify/2026-11-06-managed-agents-public-dependencies.md): published a7 image pins and Node/npm/hook prerequisites; exact public recipe acceptance remains a separate gate.
+- [Persistent controlled business-check reports](evidence/verify/2026-11-06-managed-agents-smoke-reports.md): local real HTTP/termination and failure-preserving regressions; new0.1.3 cloud/model acceptance remains separate.
 
 - [Independent managed manifest contract](notes/proposed/feature/2026-11-06-managed-manifest-contract.md) · [verification](evidence/verify/2026-11-06-managed-manifest-contract.md) · [Issue298](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/298). This publishes static spec6 boundaries independently of executable template delivery.
 

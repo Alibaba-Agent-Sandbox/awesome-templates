@@ -78,6 +78,23 @@ and reuses them for later updates. Explicit custom credentials are not copied
 into this store. Business callers need only the endpoint and `businessKey` from
 the private credentials file; do not share its `internalToken`.
 
+The built-in business check keeps local progress in `.abx/agents-smoke-reports/latest.json`
+and a separate append-only `*.jsonl` file for each attempt. If Apply's check fails, inspect:
+
+```bash
+python -m json.tool .abx/agents-smoke-reports/latest.json
+```
+
+The report contains fixed phase/check codes, optional numeric HTTP and terminal status,
+and cleanup booleans, without credentials, resource IDs, model output or raw exceptions.
+A killed or timed-out check can leave `status: running`; that is not success. Reports require
+an owner-private writable directory, and a report write failure keeps the check failed.
+If the command prints `report_io`, the last report may be unavailable or from an earlier checkpoint.
+`cleanup_confirmed` covers only known resources that this check tried to release; it does
+not prove the absence of unknown requests or independently verify provider cleanup.
+Preserve the application receipt and use Status/Reconcile after a failed Apply; do not replay
+its creation steps merely to obtain another report.
+
 For an update, build again, then plan with `--previous-receipt <receipt_file>` and
 apply the new plan. Existing sessions remain assigned to their original revision.
 Keep the earlier receipt until its sessions drain. Retire an old revision with

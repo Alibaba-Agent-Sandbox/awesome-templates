@@ -95,3 +95,17 @@ Do not remove Beta or grant public qualification from those source results.
 - Manifest/recipe/catalog/user translations and new dependency versions agree.
 - Required local, image, Provider/model and owned cleanup evidence exists.
 - Current-head CI/review pass and the scoped PR is verified merged.
+
+
+The public Qwen API, stream and active-cancel paths pass, but a later public
+Codex update stops at its candidate business hook. Its exact cause remains
+unknown: the original smoke catch discarded its controlled check label, and the
+deployer removed the temporary hook result. Version0.1.3 adds a bounded local
+phase/check report before HTTP admission, with per-attempt append-only files
+and an atomic latest snapshot outside that temporary directory. It records only
+finite codes, numeric HTTP status, terminal enums and known-cleanup booleans.
+Main business assertions, model prompts, execution budgets and the existing
+hook result protocol stay unchanged. New local evidence is in
+[the report verification](../../../evidence/verify/2026-11-06-managed-agents-smoke-reports.md);
+the failed public update is not retroactively reclassified, and new cloud
+Codex/upgrade acceptance remains required.

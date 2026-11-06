@@ -65,6 +65,21 @@ abx app status '<apply 返回的 receipt_file>'
 保存。业务客户端只需要 endpoint 和私有凭据文件中的 `businessKey`，不要向业务调用方
 提供其中的 `internalToken`。
 
+内置业务检查将本机进度保存在 `.abx/agents-smoke-reports/latest.json`，每次执行另有独立的
+追加式 `*.jsonl` 历史文件。Apply 检查失败时可以查看：
+
+```bash
+python -m json.tool .abx/agents-smoke-reports/latest.json
+```
+
+报告只包含固定阶段、检查码、可选的数字 HTTP 状态与终态，以及清理布尔值，不包含
+凭据、资源 ID、模型正文或原始异常。检查被终止或超时时可能保留 `status: running`，
+这不表示成功。报告目录须可写且仅归属当前用户；报告写入失败也会使检查失败。
+命令输出 `report_io` 时，报告可能不可用，或仍停留在先前的检查点。
+`cleanup_confirmed` 仅表示检查已尝试释放的已知资源得到确认，不证明未知请求没有生效，
+也不代替提供方独立不存在检查。Apply 失败后保留应用收据，使用 Status/Reconcile；
+不要仅为获得新报告而重放原创建步骤。
+
 更新时重新 Build，Plan 使用 `--previous-receipt <receipt_file>`，再 Apply 新计划。
 已有 Session 固定在原 revision。保留旧收据，待其 Session 全部结束后使用
 `abx app retire <当前收据> --revision <保留的revision> --bindings .abx/bindings.json --yes`。
