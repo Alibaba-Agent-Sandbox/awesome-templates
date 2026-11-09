@@ -1,5 +1,13 @@
 # Engineering records: awesome-templates
 
+## Template development convention (2026-11-09)
+
+- [Decision](notes/proposed/process/2026-11-09-template-convention.md) ·
+  [verification and assessment guide](evidence/verify/2026-11-09-template-convention.md) ·
+  [all-catalog static assessment](evidence/verify/2026-11-09-template-convention-assessment.json).
+  Delivery type, origin, purpose, interfaces, customization and resource clarity
+  are reviewed independently of runtime qualification and measured performance.
+
 ## Managed Agent applications (2026-11-05)
 
 - [Managed-session application contract and template](notes/proposed/feature/2026-11-05-managed-agents-template.md) · [source verification](evidence/verify/2026-11-05-managed-agents-template-source.md) · [network/trust/cleanup documentation](evidence/verify/2026-11-05-managed-agents-template-network-cleanup-docs.md). Issue [295](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/295); source, public package, image and cloud acceptance remain separate.

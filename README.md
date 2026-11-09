@@ -122,6 +122,10 @@ abx template install python-hello --download-only --dir ./python-hello
 
 This repository owns the source templates and [`awesome-templates.yaml`](awesome-templates.yaml), read by the CLI and Registry. Read [CONTRIBUTING.md](CONTRIBUTING.md) and the [template specification](docs/template-spec.md) before changing or adding a template. Report template problems in [Issues](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues).
 
+Authors can use the [development convention](docs/template-convention.md) for
+scenario, interface, customization and resource requirements, and the
+[AI evaluation procedure](docs/template-evaluation.md) for evidence-based review.
+
 ## License
 
 [Apache-2.0](LICENSE). Tools and assets used by individual templates also retain their upstream licenses.
