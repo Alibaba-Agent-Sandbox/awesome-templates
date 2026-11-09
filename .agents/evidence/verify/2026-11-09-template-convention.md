@@ -65,6 +65,10 @@ This review identity does not replace the qualification identity algorithm.
   industry-specific schema. Some initial observations concern optional extension
   opportunities or scope limits, not defects; the report explicitly retains that
   interpretation boundary. No follow-up runtime change is implied by an observation.
+- A final independent challenge corrected a Prime Agent initial statement about
+  caller-prepared kernel dependencies: the Dockerfile already installs/checks
+  them. Its usability score remains 3 for documented setup/deadline complexity.
+  Manual-token findings describe README instructions, not tested CLI inability.
 
 The 46 source Sandbox templates already declare typed named-command transport.
 `abx run` is not itself proof of arbitrary shell-only design. Managed desktop
@@ -81,7 +85,7 @@ These are source/document findings, not new backend reproductions.
 | `python scripts/test_spec_tools.py` | PASS: 52 tests; negative fixtures intentionally print conformance failures before suite success |
 | `python scripts/check_template.py --all` | PASS: 48 conformant directories including skeleton; no claimed-spec failures |
 | Assessment coverage/identity checks | PASS: 51 unique catalog records, exact source/managed sets, complete five-axis reasons and source references |
-| Evidence-reference checks | PASS: 609 dimension citations resolve to existing fixed-source file/line pairs |
+| Evidence-reference checks | PASS: 611 dimension citations resolve to existing fixed-source file/line pairs |
 | Reviewed inputs | PASS: 393 file-digest records; own catalog declaration digests kept separately |
 | Score/state checks | PASS: scores in 0..4 or explicit unknown; no sum; all performance unassessed and qualification unchanged |
 | Translation and challenge | PASS: English/Chinese authoring rules agree; reviewer translations preserve scores and citation paths; root reconciliations remain explicit |

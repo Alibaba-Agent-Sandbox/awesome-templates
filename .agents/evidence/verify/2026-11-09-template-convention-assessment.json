@@ -6,6 +6,7 @@
   "source_revision": "e94ab308a74715982bb059b142518f7d6070c1c2",
   "review_method": "Three AI reviewers partitioned 51 initial semantic reviews. A root reconciler reviewed the combined findings and calibrated common anchors. Independent challenges sampled eight named rows and the bilingual convention; this is not a claim of double independent review of every row.",
   "reviewer_model": "Codex collaborating agents; exact model build was not recorded.",
+  "documentation_caveat": "Manual-token observations describe README instructions, not a verified absence of CLI automatic token setup. CLI behavior was not rerun for these scores. Raw initial observations and superseded reasons are retained with reconciliation boundaries.",
   "human_maintainer_approval": "not_recorded",
   "counts": {
     "source": 47,
@@ -12931,7 +12932,7 @@
         },
         "usability": {
           "score": 3,
-          "reason": "Model credential sources, three invocation paths, execution/download and cleanup are covered. Manual token preparation and fixed-kernel startup requirements still require user setup.",
+          "reason": "Model credential sources, three invocation paths, execution/download and cleanup are documented. The README still requires manual application-token and model setup and distinguishes several deadlines; kernel dependencies are already installed and checked by the image build.",
           "sources": [
             {
               "path": "prime-agent/README.md",
@@ -12952,8 +12953,19 @@
               "path": "prime-agent/README.md",
               "line": 94,
               "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/e94ab308a74715982bb059b142518f7d6070c1c2/prime-agent/README.md#L94"
+            },
+            {
+              "path": "prime-agent/Dockerfile",
+              "line": 6,
+              "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/e94ab308a74715982bb059b142518f7d6070c1c2/prime-agent/Dockerfile#L6"
+            },
+            {
+              "path": "docs/design/prime-agent.md",
+              "line": 17,
+              "url": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/e94ab308a74715982bb059b142518f7d6070c1c2/docs/design/prime-agent.md#L17"
             }
-          ]
+          ],
+          "initial_reason": "Model credential sources, three invocation paths, execution/download and cleanup are covered. Manual token preparation and fixed-kernel startup requirements still require user setup."
         },
         "resources": {
           "score": 3,
@@ -12989,7 +13001,14 @@
       "scope_notes": [
         "Interpret findings against the stated purpose: a Sandbox need not provide a cross-instance Gateway, an industry-specific schema, or every optional asynchronous feature. Missing performance measurements are separate from five-axis maturity."
       ],
-      "calibrations": [],
+      "calibrations": [
+        {
+          "axis": "usability",
+          "initial_score": 3,
+          "final_score": 3,
+          "reason": "Model credential sources, three invocation paths, execution/download and cleanup are documented. The README still requires manual application-token and model setup and distinguishes several deadlines; kernel dependencies are already installed and checked by the image build."
+        }
+      ],
       "performance": {
         "state": "not_assessed",
         "reason": "No performance test in this source review; historical receipts were not revalidated as current benchmarks."
