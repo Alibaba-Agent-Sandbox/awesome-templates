@@ -43,6 +43,10 @@ There are five evidence dimensions and no aggregate or universal ranking.
 All performance states are `not_assessed`; runtime acceptance is `not_reassessed`;
 qualification remains unchanged. Reviewed-file hashes bind each row to its input.
 Managed records hash their own canonical catalog declaration, not the whole index.
+Each row also records its complete template/managed-document directory Git tree
+to detect changes to dependencies or subordinate implementation not cited as a
+reviewed file. Shared inputs outside that tree and listed hashes need separate
+invalidation; the file-digest list alone is not a complete source review.
 This review identity does not replace the qualification identity algorithm.
 
 ### Reconciled findings
