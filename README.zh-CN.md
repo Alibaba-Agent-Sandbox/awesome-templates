@@ -122,6 +122,9 @@ abx template install python-hello --download-only --dir ./python-hello
 
 源码与目录由本仓库维护，[`awesome-templates.yaml`](awesome-templates.yaml)供 CLI 和 Registry 读取。修改或新增模板前请阅读[贡献指南](CONTRIBUTING.zh-CN.md)与[模板规范](docs/template-spec.zh-CN.md)。模板问题请提交到 [Issues](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues)。
 
+作者可按[开发公约](docs/template-convention.zh-CN.md)设计场景、接口、定制与资源需求，
+并按[AI 评价流程](docs/template-evaluation.zh-CN.md)进行有证据的评审。
+
 ## 许可证
 
 [Apache-2.0](LICENSE)。各模板依赖的工具及资产还须遵循其上游许可证。

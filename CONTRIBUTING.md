@@ -6,6 +6,11 @@
 [engineering-record rules](.agents/README.md). These cover ownership, compatibility,
 licenses, security, reproducibility, review, resource cleanup and Issue completion.
 
+Use the [template development convention](docs/template-convention.md) to design
+the scenario, interface, customization and complete resource footprint. The
+[AI evaluation procedure](docs/template-evaluation.md) supports evidence-based
+catalog review without replacing runtime/provider acceptance.
+
 The rules for a template are [docs/template-spec.md](./docs/template-spec.md)
 ([中文](./docs/template-spec.zh-CN.md)). `_skeleton/` is a directory that
 already passes `scripts/check_template.py`. It is not a catalog entry.

@@ -5,6 +5,9 @@
 [文档规范](docs/documentation-standards.zh-CN.md)、
 [模板规范](docs/template-spec.zh-CN.md)及[工程记录要求](.agents/README.md)。
 
+按[模板开发公约](docs/template-convention.zh-CN.md)设计场景、接口、定制和完整资源需求。
+[AI 评价机制](docs/template-evaluation.zh-CN.md)用于有证据的目录评审，不能替代运行时与提供方验收。
+
 ## 模板清单
 
 1. 复制 `_skeleton/` 到 kebab-case 目录，目录、manifest name 和目录索引 path 一致。
