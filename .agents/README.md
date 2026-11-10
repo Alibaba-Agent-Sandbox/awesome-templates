@@ -1,5 +1,10 @@
 # Engineering records: awesome-templates
 
+## Recent changes — 2026-11-10
+
+- [Owner change index](notes/proposed/process/2026-11-10-recent-change-index.md) · [records verification](evidence/verify/2026-11-10-recent-change-index.md).
+- This is a dated source/delivery index; Draft implementation, prior releases and new validation remain separate.
+
 ## Managed Agent applications (2026-11-05)
 
 - [Managed-session application contract and template](notes/proposed/feature/2026-11-05-managed-agents-template.md) · [source verification](evidence/verify/2026-11-05-managed-agents-template-source.md) · [network/trust/cleanup documentation](evidence/verify/2026-11-05-managed-agents-template-network-cleanup-docs.md). Issue [295](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/295); source, public package, image and cloud acceptance remain separate.
