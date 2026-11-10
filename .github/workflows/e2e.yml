@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Alibaba-Agent-Sandbox/agent-sandbox
-          ref: 2eecb789beda997cd8090dd0244e93695d6615c2
+          ref: 3a93c8192a6ebd74bc23294931ee9e6b90d4ccff
           path: .cli-contract
           persist-credentials: false
       - name: Build the reviewed CLI source

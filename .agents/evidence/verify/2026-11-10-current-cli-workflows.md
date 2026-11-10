@@ -87,3 +87,9 @@ Final check results: actual compiled CLI parser tests 2/2 PASS; current-document
 links 234 documents / 0 failures; documentation tests 4/4 PASS; both changed
 workflow YAML files parse; git diff --check PASS. These checks did not submit
 cloud work or execute GitHub Actions.
+
+CI follow-up: the reviewed CLI reference advances to
+`3a93c8192a6ebd74bc23294931ee9e6b90d4ccff` for clean-install type dependencies,
+its MCP artifact workflow and corrected current documentation. This changes no
+template runtime contract. Repeated actual CLI parser checks passed 2/2 and the
+consumer workflow YAML parsed successfully; no cloud verification was repeated.
