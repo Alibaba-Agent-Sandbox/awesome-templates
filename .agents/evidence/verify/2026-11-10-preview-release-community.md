@@ -4,7 +4,7 @@
 - Base revision: `e94ab308a74715982bb059b142518f7d6070c1c2`
 - Scope: bilingual root READMEs and the original community QR image and this repository's engineering record.
 - Environment: Linux, Node.js 22.22.2, Python 3.13.13.
-- Result: PASS — scoped local validation; remote CI, merge and publication are separate.
+- Result: BLOCKED — local documentation checks pass; required remote CI fails during existing dependency installation.
 
 ## Content and image
 
@@ -20,3 +20,7 @@ The original 470 × 468 PNG was downloaded from the maintainer's attachment with
 ## Limitations and cleanup
 
 No package release, cloud sandbox or model task is part of this documentation change. No temporary cloud resources created. DingTalk membership was not joined or authenticated. Publication is checked separately after merge.
+
+## Remote merge gate
+
+The document-tools-offline job fails before tests: Debian trixie cannot resolve LibreOffice 4:25.2.3-2+deb13u8. The announcement changes no workflow or template dependencies. No gate was skipped and the PR remains unmerged. Follow-up: https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/304. Original failure: https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/42793988288/job/129754293724.
