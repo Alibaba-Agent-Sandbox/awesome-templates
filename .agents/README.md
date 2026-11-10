@@ -396,3 +396,7 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 - [CLI 0.5.8 shared setup guidance](notes/proposed/process/2026-10-28-cli-058-template-installation.md) · [verification](evidence/verify/2026-10-28-cli-058-template-installation.md).
 
 - [README audience review](notes/proposed/process/2026-10-28-readme-audience-review.md) · [verification](evidence/verify/2026-10-28-readme-audience-review.md).
+
+- [Preview release notice and community](notes/proposed/process/2026-11-10-preview-release-community.md) · [verification](evidence/verify/2026-11-10-preview-release-community.md).
+
+- [Community QR replacement](notes/proposed/process/2026-11-10-refresh-community-qr.md) · [verification](evidence/verify/2026-11-10-refresh-community-qr.md).

@@ -6,6 +6,8 @@ Reusable environments for AI agents: browser automation, coding tools, web servi
 
 [Browse templates](https://registry.agent-sandbox.cn/en/templates/) · [Usage guide](docs/using-templates.md) · [Provider setup](docs/provider-preparation.md)
 
+> **Preview release:** Agent Sandbox is currently in preview and may introduce breaking changes. The stable **1.0.0** release is expected on **November 15, 2026**. Stay tuned!
+
 ## Quick start
 
 [Install abx CLI](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#installation) 0.5.8 or newer. Follow the [usage guide](docs/using-templates.md) to prepare the selected provider's credentials and build environment, then launch the introductory template, which needs no model:
@@ -121,6 +123,14 @@ abx template install python-hello --download-only --dir ./python-hello
 ```
 
 This repository owns the source templates and [`awesome-templates.yaml`](awesome-templates.yaml), read by the CLI and Registry. Read [CONTRIBUTING.md](CONTRIBUTING.md) and the [template specification](docs/template-spec.md) before changing or adding a template. Report template problems in [Issues](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues).
+
+## Community
+
+Join the **Agent Sandbox 开发者工具交流群** on DingTalk to discuss usage and share feedback. [Join the group](https://qr.dingtalk.com/action/joingroup?code=v1,k1,LSusypYdoGm4U0xoz1p1QSlgoBHeoi/kgpsl4uQ8qus=&_dt_no_comment=1&origin=1) or search for group number **213605001586**.
+
+Scan the QR code with DingTalk:
+
+<a href="https://qr.dingtalk.com/action/joingroup?code=v1,k1,LSusypYdoGm4U0xoz1p1QSlgoBHeoi/kgpsl4uQ8qus=&amp;_dt_no_comment=1&amp;origin=1"><img src="assets/dingtalk-group.jpg" alt="DingTalk group QR code" width="235" /></a>
 
 ## License
 

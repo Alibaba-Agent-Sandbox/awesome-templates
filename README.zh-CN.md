@@ -6,6 +6,8 @@
 
 [浏览模板](https://registry.agent-sandbox.cn/templates/) · [使用指南](docs/using-templates.zh-CN.md) · [提供方配置](docs/provider-preparation.zh-CN.md)
 
+> **预览版说明：** Agent Sandbox 目前处于预览阶段，可能会有不兼容变更。预计于 **2026 年 11 月 15 日**发布 **1.0.0 正式版**，敬请期待！
+
 ## 快速开始
 
 先[安装 abx CLI](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#installation)（0.5.8 或更新版本），按[使用指南](docs/using-templates.zh-CN.md)准备所选提供方的凭据和构建环境，再启动无需模型的入门模板：
@@ -121,6 +123,14 @@ abx template install python-hello --download-only --dir ./python-hello
 ```
 
 源码与目录由本仓库维护，[`awesome-templates.yaml`](awesome-templates.yaml)供 CLI 和 Registry 读取。修改或新增模板前请阅读[贡献指南](CONTRIBUTING.zh-CN.md)与[模板规范](docs/template-spec.zh-CN.md)。模板问题请提交到 [Issues](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues)。
+
+## 交流与反馈
+
+欢迎加入 **Agent Sandbox 开发者工具交流群**，交流使用经验、分享建议与反馈。[点击加入钉钉群](https://qr.dingtalk.com/action/joingroup?code=v1,k1,LSusypYdoGm4U0xoz1p1QSlgoBHeoi/kgpsl4uQ8qus=&_dt_no_comment=1&origin=1)，或搜索钉钉群号 **213605001586**。
+
+也可以使用钉钉扫描二维码加入：
+
+<a href="https://qr.dingtalk.com/action/joingroup?code=v1,k1,LSusypYdoGm4U0xoz1p1QSlgoBHeoi/kgpsl4uQ8qus=&amp;_dt_no_comment=1&amp;origin=1"><img src="assets/dingtalk-group.jpg" alt="钉钉交流群二维码" width="235" /></a>
 
 ## 许可证
 
