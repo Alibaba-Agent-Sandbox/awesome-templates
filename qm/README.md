@@ -33,14 +33,14 @@ export QM_MODEL_API_KEY='<your-model-api-key>'
 export QM_MODEL_BASE_URL='https://model.example.invalid/v1'
 export QM_MODEL='<your-model-id>'
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//qm --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//qm --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" qm --json-args '{"prompt":"Create hello.py in the current project. It must print Hello from QM. Run it and report the output.","command_timeout":300}'
+abx sandbox run "$SANDBOX_ID" qm --json-args '{"prompt":"Create hello.py in the current project. It must print Hello from QM. Run it and report the output.","command_timeout":300}'
 ```
 
 Returns the original QM agent result and real SDK tool-call counters. Read `hello.py` independently to inspect the work.
@@ -119,7 +119,7 @@ This entry calls compatible Chat Completions. Include the vendor API prefix (oft
 | WORKSPACE | /home/user/app | Existing caller project root, captured at startup |
 | QM_SANDBOX_BASE_URL | http://127.0.0.1:9000 | Actual SDK data-plane server on the same owned computer; literal local HTTP only, no userinfo/query/fragment/path |
 | QM_SANDBOX_TOKEN | empty; optional | SDK server's independent Bearer token; falls back to ABX_SERVER_TOKEN for the default same server |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the deploy; separate from model and gateway credentials |
 | QM_MODEL_API_KEY | empty; required for qm | Approved compatible model key; anonymous stdin/private native memory |
 | QM_MODEL_BASE_URL | empty; required for qm | Explicit HTTPS compatible Chat Completions API base; local HTTP for authored fixtures only; no userinfo/query/fragment, max2048characters |
 | QM_MODEL | empty; required for qm | Actual model identifier, max200allowed characters; no default vendor fallback |
@@ -129,11 +129,11 @@ Captured when commands.py loads; read-only setup flags do not prove connectivity
 The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
 
 ```bash
-abx download "$SANDBOX_ID" /home/user/app/hello.py ./hello.py
-abx kill "$SANDBOX_ID"
+abx sandbox download "$SANDBOX_ID" /home/user/app/hello.py ./hello.py
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+`abx delete` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
 ## Resources
 

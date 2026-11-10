@@ -1,7 +1,7 @@
 # Build and test a template with native platform steps
 
 [中文](platform-steps.zh-CN.md). This maintenance path prepares the template on
-Alibaba Express without a local Docker daemon. The normal public template launch
+Alibaba Express without a local Docker daemon. The normal public deploy
 path is described in [using templates](using-templates.md). A step-build receipt
 and a Docker image receipt are separate evidence.
 
@@ -20,7 +20,7 @@ python scripts/run_steps_e2e.py python-hello --timeout 900
 This command runs the entire existing application controller. It generates native
 steps from the selected Dockerfile, calls the native provider preparation API,
 waits for the exact owned template to become READY, and invokes the current
-`abx template launch` with a temporary managed manifest containing that prepared
+`abx deploy` with a temporary managed manifest containing that prepared
 ID and the original startup, readiness, services and environment declarations.
 Explicit Dockerfile ENV values are runtime defaults; original manifest environment
 entries take precedence. Build-only cache and upload variables are not forwarded.
@@ -32,7 +32,7 @@ path; there is no CLI-versus-SDK creation selector.
 The internal native `template deploy --build steps` performs preparation only;
 it does not start a second application or replace current public launch. Native
 status must be actual JSON strings/objects, never Python repr strings. The public
-`template launch` does not acquire a new `--build steps` option.
+`deploy` does not acquire a new `--build steps` option.
 
 ## Inspect preparation without creating cloud resources
 

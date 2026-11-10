@@ -20,7 +20,7 @@ Use an installed tool in an isolated sandbox, submit work through CLI, Python or
 
 Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
 
-Create a Qoder PAT at [account integrations](https://qoder.com/account/integrations), following [Qoder authentication](https://docs.qoder.com/cli/authentication). Set `QODER_PERSONAL_ACCESS_TOKEN`; named commands never start `/login`. This wrapper uses the Qoder service and does not expose custom endpoint/model selection. `accept_edits` permits file edits; shell confirmations remain denied. Run generated code separately with `abx exec`.
+Create a Qoder PAT at [account integrations](https://qoder.com/account/integrations), following [Qoder authentication](https://docs.qoder.com/cli/authentication). Set `QODER_PERSONAL_ACCESS_TOKEN`; named commands never start `/login`. This wrapper uses the Qoder service and does not expose custom endpoint/model selection. `accept_edits` permits file edits; shell confirmations remain denied. Run generated code separately with `abx sandbox exec`.
 
 Replace every `<...>` placeholder with your own value; use an exact model ID available to your account. Set secrets in your own terminal or secret manager, never in the image, YAML or public logs. Configure these variables **before** launch; later host changes do not reconfigure the running application.
 
@@ -28,7 +28,7 @@ Replace every `<...>` placeholder with your own value; use an exact model ID ava
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export QODER_PERSONAL_ACCESS_TOKEN='<your-model-or-vendor-key>'
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//qoder --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//qoder --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
@@ -38,7 +38,7 @@ abx sandbox command list "$SANDBOX_ID"
 Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
 
 ```bash
-ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" qoder --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","cwd":"/home/user/app","command_timeout":300}'
+ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" qoder --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","cwd":"/home/user/app","command_timeout":300}'
 ```
 
 The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/app`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.
@@ -87,10 +87,10 @@ The response is `{"result": ...}`; see the command reference for its actual cont
 ### Export files and cleanup
 
 ```bash
-abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
-abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
-abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
-abx kill "$SANDBOX_ID"
+abx sandbox exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx delete "$SANDBOX_ID"
 ```
 
 Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.

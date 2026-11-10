@@ -36,7 +36,7 @@ export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsa
 export AIDER_API_KEY='<your-model-or-vendor-key>'
 export AIDER_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
 export AIDER_MODEL='<model-id-from-your-provider>'
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//aider --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//aider --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
@@ -46,11 +46,11 @@ abx sandbox command list "$SANDBOX_ID"
 Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
 
 ```bash
-abx exec "$SANDBOX_ID" -- git -C /home/user/app init -q
+abx sandbox exec "$SANDBOX_ID" -- git -C /home/user/app init -q
 ```
 
 ```bash
-ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" aider --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","files":"[\"generated_hello.py\",\"GENERATED_REPORT.md\"]","allow_write":true,"cwd":"/home/user/app","command_timeout":300}'
+ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" aider --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","files":"[\"generated_hello.py\",\"GENERATED_REPORT.md\"]","allow_write":true,"cwd":"/home/user/app","command_timeout":300}'
 ```
 
 The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/app`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.
@@ -85,7 +85,7 @@ asyncio.run(main())
 
 ## Quick start (HTTP POST)
 
-Every entry requires a Git worktree. Before this request, run the `abx exec ... git ... init -q` preparation above.
+Every entry requires a Git worktree. Before this request, run the `abx sandbox exec ... git ... init -q` preparation above.
 
 Use the [direct HTTP example](../docs/using-templates.md#cli-sdk-and-http) to resolve the endpoint, preserving gateway headers, URL path/query and the independent application token. Send `POST /commands/aider` with `Content-Type: application/json` and this direct argument object, without an `args` wrapper:
 
@@ -104,10 +104,10 @@ The response is `{"result": ...}`; see the command reference for its actual cont
 ### Export files and cleanup
 
 ```bash
-abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
-abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
-abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
-abx kill "$SANDBOX_ID"
+abx sandbox exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx delete "$SANDBOX_ID"
 ```
 
 Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
@@ -132,9 +132,9 @@ Named-command results are buffered rather than streamed. `cwd` must be an existi
 | `AIDER_BASE_URL` | empty; required HTTP(S) endpoint, without embedded credentials/query/fragment |
 | `AIDER_MODEL` | empty; required model ID, `openai/` prefix added for LiteLLM |
 | `WORKSPACE` | `/home/user/app`; default working directory |
-| `ABX_SERVER_TOKEN` | Export an independent application token before the template launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | Export an independent application token before the deploy; separate from model and gateway credentials |
 
-Export `AIDER_API_KEY`, `AIDER_BASE_URL`, `AIDER_MODEL` and the independent application token before `template launch`. This path starts the named server for the instance; no second port-9010 server is needed. Changing the host environment does not reconfigure an existing application; launch a new instance after changing configuration.
+Export `AIDER_API_KEY`, `AIDER_BASE_URL`, `AIDER_MODEL` and the independent application token before `deploy`. This path starts the named server for the instance; no second port-9010 server is needed. Changing the host environment does not reconfigure an existing application; launch a new instance after changing configuration.
 
 The compatible-model settings disable thinking with `extra_body.enable_thinking=false`.
 Your model endpoint must accept this request parameter. Credentials are not written to stage

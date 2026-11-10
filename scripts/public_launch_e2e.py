@@ -65,7 +65,7 @@ async def verify_python_compatibility(cli, sandbox, client, endpoint, headers, w
                 await sandbox.files.write(path, source)
                 require(await sandbox.files.read(path) == source, 'compatibility input bytes must match')
                 if consumer == 'cli':
-                    result = await asyncio.to_thread(cli.run, ['run', sandbox.id, 'run', '--json-args', json.dumps({'script': filename})])
+                    result = await asyncio.to_thread(cli.run, ['sandbox', 'run', sandbox.id, 'run', '--json-args', json.dumps({'script': filename})])
                     value = result['result']
                 elif consumer == 'python':
                     value = await client.commands.run('run', script=filename)
@@ -170,11 +170,11 @@ class CLI:
     def journal_directory(self):
         return Path(self.env.get('HOME') or Path.home()) / '.abx' / 'resource-journal'
 
-    def run(self, args, timeout=300, json_output=True, native=False):
-        proc = subprocess.run(self.command + (['--native'] if native else []) + ['--provider', self.provider]
+    def run(self, args, timeout=300, json_output=True, pass_fds=()):
+        proc = subprocess.run(self.command + ['--provider', self.provider]
             + (['--json'] if json_output else []) + args,
             env=self.env, stdin=subprocess.DEVNULL, capture_output=True,
-            text=True, timeout=timeout)
+            text=True, timeout=timeout, pass_fds=pass_fds)
         self.call_count += 1
         log = self.private_directory / f'cli-{self.call_count}.log'
         with log.open('x') as stream:
@@ -190,7 +190,7 @@ class CLI:
 async def verify_cli_io(cli, sandbox, alias, private):
     """Exercise published CLI process/transfer paths against independent SDK reads."""
     json_output = cli.provider != 'alicloud-express'
-    executed = await asyncio.to_thread(cli.run, ['exec', sandbox.id, '--', 'python3', '-c', 'print(21 * 2)'],
+    executed = await asyncio.to_thread(cli.run, ['sandbox', 'exec', sandbox.id, '--', 'python3', '-c', 'print(21 * 2)'],
                                       json_output=json_output)
     if json_output:
         require(isinstance(executed, dict) and executed.get('exit_code') == 0
@@ -206,10 +206,10 @@ async def verify_cli_io(cli, sandbox, alias, private):
     with uploaded.open('xb') as stream:
         stream.write(payload)
     try:
-        await asyncio.to_thread(cli.run, ['upload', sandbox.id, str(uploaded), remote], json_output=False)
+        await asyncio.to_thread(cli.run, ['sandbox', 'upload', sandbox.id, str(uploaded), remote], json_output=False)
         require((await sandbox.files.read(remote)).encode('utf-8') == payload, 'SDK reads exact CLI uploaded bytes')
         await asyncio.to_thread(cli.run, ['sandbox', 'files', 'stat', sandbox.id, '--path', remote], json_output=False)
-        await asyncio.to_thread(cli.run, ['download', sandbox.id, remote, str(downloaded)], json_output=False)
+        await asyncio.to_thread(cli.run, ['sandbox', 'download', sandbox.id, remote, str(downloaded)], json_output=False)
         require(downloaded.read_bytes() == payload, 'CLI download preserves uploaded bytes')
         await asyncio.to_thread(cli.run, ['sandbox', 'files', 'rm', sandbox.id, '--path', remote, '--yes'], json_output=False)
         require(not await sandbox.files.exists(remote), 'SDK confirms CLI file deletion')
@@ -251,6 +251,14 @@ def json_contains(value, target):
     return value == target
 
 
+async def cleanup_named_deployment(cli, name, launched):
+    """Use the public lifecycle; callers still independently verify owned absence."""
+    if not launched:
+        await asyncio.to_thread(cli.run, ['recover', name])
+    result = await asyncio.to_thread(cli.run, ['delete', name, '--yes'])
+    require(result.get('status') == 'deleted', 'public deployment deletion confirmed')
+
+
 async def cleanup_prepared(entries, cli, alias, diagnostics=None):
     """Delete only exact receipt-owned artifacts; unfamiliar registries stay pending."""
     import httpx
@@ -265,8 +273,8 @@ async def cleanup_prepared(entries, cli, alias, diagnostics=None):
             continue
         try:
             if entry['kind'] == 'template' and cli.provider == 'alicloud-express':
-                await asyncio.to_thread(cli.run, ['template', 'delete', reference, '--yes'], json_output=False, native=True)
-                inventory = await asyncio.to_thread(cli.run, ['template', 'list'], native=True)
+                await asyncio.to_thread(cli.run, ['provider', 'run', 'template.delete', '--input', json.dumps({'template_id': reference}), '--yes'], json_output=False)
+                inventory = await asyncio.to_thread(cli.run, ['provider', 'run', 'template.list', '--input', '{}'])
                 require(not json_contains(inventory, reference), 'owned template deletion readback')
             elif entry['kind'] == 'image':
                 # Local Docker tags have no registry hostname; never remove by image ID.
@@ -476,6 +484,7 @@ async def verify(args):
     journal_dir = cli.journal_directory
     original_journals = set(journal_dir.glob('*.json'))
     launch = None
+    deploy_attempted = False
     sandbox = None
     client = None
     phase = 'public-source-resolution'
@@ -495,9 +504,10 @@ async def verify(args):
                 report['installed_packages']['template_verifier_ref'] = env.get('PUBLIC_LAUNCH_TEMPLATES_REF')
                 report['installed_packages']['template_source_ref'] = public_source_commit
         phase = 'template-launch'
+        deploy_attempted = True
         launch = await asyncio.to_thread(cli.run,
-            ['template', 'launch', args.source or report['source'],
-             '--alias', alias, '--timeout', str(args.build_timeout), '--sandbox-timeout', '1800', '--yes'],
+            ['deploy', args.source or report['source'],
+             '--name', alias, '--build-timeout', str(args.build_timeout), '--sandbox-timeout', '1800', '--yes'],
             args.build_timeout + 300)
         require(launch.get('manifest_digest') == 'sha256:' + report['manifest_sha256'],
                 'launched manifest must match the selected local verifier input')
@@ -526,7 +536,7 @@ async def verify(args):
             for index, case in enumerate(cases):
                 name, values = case['command'], case.get('args', {})
                 phase = 'cli-command'
-                result = await asyncio.to_thread(cli.run, ['run', sandbox.id, name, '--json-args', json.dumps(values)])
+                result = await asyncio.to_thread(cli.run, ['sandbox', 'run', sandbox.id, name, '--json-args', json.dumps(values)])
                 observed = result['result']
                 if 'expect' in case:
                     require(matches(observed, case['expect']), f'CLI smoke {index} result')
@@ -615,6 +625,15 @@ async def verify(args):
             report['failed_check'] = label
     finally:
         async def release_resources():
+            public_cleanup_failed = False
+            if deploy_attempted:
+                try:
+                    await cleanup_named_deployment(cli, alias, launch is not None)
+                    report['cleanup']['public_deployment'] = 'confirmed deleted'
+                except Exception as failure:
+                    public_cleanup_failed = True
+                    report['cleanup']['public_deployment'] = 'failed'
+                    report['cleanup']['public_failure_type'] = type(failure).__name__
             journals = []
             for path in set(journal_dir.glob('*.json')) - original_journals:
                 data = json.loads(path.read_text())
@@ -625,7 +644,7 @@ async def verify(args):
             ids = {entry['id'] for entry in entries if entry['kind'] == 'sandbox' and entry.get('id')}
             if launch:
                 ids.add(launch['sandbox_id'])
-            cleanup_failed = False
+            cleanup_failed = public_cleanup_failed
             for sid in ids:
                 try:
                     await delete_sandbox(ProviderSandbox, sid, args.provider, SandboxNotFoundError)

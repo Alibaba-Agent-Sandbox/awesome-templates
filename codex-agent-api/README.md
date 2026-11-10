@@ -24,7 +24,7 @@ Install the CLI/Python client and configure your platform (Sandbox API key, conn
 
 The configured model service must implement HTTP Responses, not only Chat Completions. `ABX_LLM_API_KEY` supplies the custom provider key; do not leave a conflicting `OPENAI_BASE_URL` in the launch environment because that URL takes precedence here. API-key mode does not require interactive login. `CODEX_SANDBOX` defaults to `workspace-write`; use the existing `bypass` option only when your platform cannot run nested Codex sandboxing and you accept the owned outer sandbox as the boundary.
 
-Before running a coding task, check whether your platform supports Codex's nested Linux sandbox. On a platform that refuses it, the public recipe's fixed `CODEX_SANDBOX=workspace-write` cannot be changed by exporting a host value. If you deliberately choose the outer sandbox as the isolation boundary, clone the repository, change `env.CODEX_SANDBOX` to `bypass` in `codex-agent-api/template.yaml`, and use `abx template launch ./codex-agent-api --sandbox-timeout 1800 --yes` instead of the public recipe command below.
+Before running a coding task, check whether your platform supports Codex's nested Linux sandbox. On a platform that refuses it, the public recipe's fixed `CODEX_SANDBOX=workspace-write` cannot be changed by exporting a host value. If you deliberately choose the outer sandbox as the isolation boundary, clone the repository, change `env.CODEX_SANDBOX` to `bypass` in `codex-agent-api/template.yaml`, and use `abx deploy ./codex-agent-api --sandbox-timeout 1800 --yes` instead of the public recipe command below.
 
 Replace every `<...>` placeholder with your own value; use an exact model ID available to your account. Set secrets in your own terminal or secret manager, never in the image, YAML or public logs. Configure these variables **before** launch; later host changes do not reconfigure the running application.
 
@@ -34,7 +34,7 @@ export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsa
 export ABX_LLM_API_KEY='<your-model-or-vendor-key>'
 export ABX_LLM_BASE_URL='https://api.openai.com/v1'
 export CODEX_MODEL='<model-id-from-your-Responses-provider>'
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//codex-agent-api --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//codex-agent-api --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
@@ -44,7 +44,7 @@ abx sandbox command list "$SANDBOX_ID"
 Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
 
 ```bash
-ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" codex --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","timeout_s":300}'
+ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" codex --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","timeout_s":300}'
 ```
 
 The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/workspace`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.
@@ -92,10 +92,10 @@ The response is `{"result": ...}`; see the command reference for its actual cont
 ### Export files and cleanup
 
 ```bash
-abx exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
-abx download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
-abx download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
-abx kill "$SANDBOX_ID"
+abx sandbox exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx delete "$SANDBOX_ID"
 ```
 
 Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
@@ -142,7 +142,7 @@ Named-command results are buffered rather than streamed. `cwd` must be an existi
 | `WORKSPACE` | `/home/user/workspace` |
 | `AGENT_MAX_SESSIONS` | `20` |
 | `AGENT_SESSION_TTL` | `1800` seconds; GC checks every 60 seconds |
-| `ABX_SERVER_TOKEN` | Export an independent application token before the template launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | Export an independent application token before the deploy; separate from model and gateway credentials |
 
 The service retains at most 200 saved agent configurations; each session allows 100 turns. Replay and retained item buffers each hold at most 1000 events / 2 MB; a single JSONL line exceeding 256000 bytes fails the turn. stderr is drained continuously and only a bounded, redacted tail can be included in errors. Environment secret values, request-supplied MCP header values and bearer tokens are redacted from returned events/configurations/errors/text artifacts. Artifacts reject `.env`, `.aws`, `.codex`, `.ssh` paths and symlinks outside the workspace. This filtering supplements sandbox isolation; the standard shell/files APIs still require trusted access and server policy.
 

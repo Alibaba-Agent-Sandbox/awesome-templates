@@ -31,15 +31,15 @@ export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export DEV_SERVICES_PASSWORD='<choose-a-long-unique-password>'
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//dev-services --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//dev-services --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" services_start --json-args '{}'
-abx run "$SANDBOX_ID" services_sql --json-args '{"sql":"CREATE TABLE usage_demo (amount integer); INSERT INTO usage_demo VALUES (5130); SELECT sum(amount) AS total_cents FROM usage_demo;"}'
+abx sandbox run "$SANDBOX_ID" services_start --json-args '{}'
+abx sandbox run "$SANDBOX_ID" services_sql --json-args '{"sql":"CREATE TABLE usage_demo (amount integer); INSERT INTO usage_demo VALUES (5130); SELECT sum(amount) AS total_cents FROM usage_demo;"}'
 ```
 
 Returns PostgreSQL query output containing total `5130` cents; it creates a table in this sandbox database.
@@ -130,7 +130,7 @@ Version1.1.0 adds postgres_port:int=0 and redis_port:int=0 to services_start. Ze
 
 | Name | Default | Purpose |
 |---|---|---|
-| ABX_SERVER_TOKEN | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | empty | Export an independent application token before the deploy; separate from model and gateway credentials |
 | ABX_SERVER_PORT | 9000 | local command API port |
 | WORKSPACE | /home/user/app | existing workspace root |
 | DEV_SERVICES_PASSWORD | empty | optional default password; per-call password also supported |
@@ -143,11 +143,11 @@ Prewarmed command servers need [explicit process configuration](../docs/runtime-
 The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
 
 ```bash
-abx run "$SANDBOX_ID" services_stop --json-args '{}'
-abx kill "$SANDBOX_ID"
+abx sandbox run "$SANDBOX_ID" services_stop --json-args '{}'
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+`abx delete` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
 ## Resources
 

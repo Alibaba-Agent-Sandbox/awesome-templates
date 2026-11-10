@@ -28,15 +28,15 @@ These template commands require no model, model endpoint or model API key.
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//next-app --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//next-app --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" scaffold --json-args '{"kind":"next","path":"preview-app"}'
-abx run "$SANDBOX_ID" dev_start --json-args '{"kind":"next","path":"preview-app","timeout_s":120}'
+abx sandbox run "$SANDBOX_ID" scaffold --json-args '{"kind":"next","path":"preview-app"}'
+abx sandbox run "$SANDBOX_ID" dev_start --json-args '{"kind":"next","path":"preview-app","timeout_s":120}'
 ```
 
 Returns `running: true`, `port: 3000`. Resolve port 3000 to view `ABX_NEXT_PREVIEW`; source files remain in `preview-app/`.
@@ -130,7 +130,7 @@ Use allowed_host for Vite's exact SDK-forwarded hostname. The default empty valu
 
 | Name | Default | Purpose |
 |---|---|---|
-| ABX_SERVER_TOKEN | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | empty | Export an independent application token before the deploy; separate from model and gateway credentials |
 | ABX_SERVER_PORT | 9000 | local server port |
 | WORKSPACE | /home/user/app | existing workspace root |
 | NEXT_APP_TOOLCHAIN | /opt/next-app | trusted pinned toolchain; local tests may select the installed source directory |
@@ -140,11 +140,11 @@ Development server environment contains only Node PATH, isolated temporary HOME,
 The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
 
 ```bash
-abx run "$SANDBOX_ID" dev_stop --json-args '{}'
-abx kill "$SANDBOX_ID"
+abx sandbox run "$SANDBOX_ID" dev_stop --json-args '{}'
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+`abx delete` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
 ## Resources
 

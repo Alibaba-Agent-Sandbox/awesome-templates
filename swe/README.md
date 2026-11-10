@@ -35,14 +35,14 @@ export SWE_API_KEY='<your-model-api-key>'
 export SWE_BASE_URL='https://model.example.invalid/v1'
 export SWE_MODEL='<your-model-id>'
 export ABX_HTTP_TIMEOUT=1200
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//swe --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//swe --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" swe_prepare --json-args '{}'
+abx sandbox run "$SANDBOX_ID" swe_prepare --json-args '{}'
 ```
 
 Returns a `run_id` and the failing baseline for `pallets__flask-5014`; keep the run ID for the coding and evaluation calls below.
@@ -55,13 +55,13 @@ Copy the prepared `run_id` into `RUN_ID`. Use `allow_execution:true` only when a
 
 ```bash
 export RUN_ID='paste-run-id'
-abx run "$SANDBOX_ID" swe_run_agent --json-args "{\"run_id\":\"$RUN_ID\",\"allow_execution\":true,\"max_steps\":30,\"command_timeout\":600}"
-abx run "$SANDBOX_ID" swe_evaluate --arg run_id="$RUN_ID"
-abx run "$SANDBOX_ID" swe_report --arg run_id="$RUN_ID"
+abx sandbox run "$SANDBOX_ID" swe_run_agent --json-args "{\"run_id\":\"$RUN_ID\",\"allow_execution\":true,\"max_steps\":30,\"command_timeout\":600}"
+abx sandbox run "$SANDBOX_ID" swe_evaluate --arg run_id="$RUN_ID"
+abx sandbox run "$SANDBOX_ID" swe_report --arg run_id="$RUN_ID"
 # Download returned report and patch paths before cleanup
-abx download "$SANDBOX_ID" '<returned-report-path>' ./report.json
-abx download "$SANDBOX_ID" '<returned-patch-path>' ./repair.patch
-abx run "$SANDBOX_ID" swe_cleanup --arg run_id="$RUN_ID"
+abx sandbox download "$SANDBOX_ID" '<returned-report-path>' ./report.json
+abx sandbox download "$SANDBOX_ID" '<returned-patch-path>' ./repair.patch
+abx sandbox run "$SANDBOX_ID" swe_cleanup --arg run_id="$RUN_ID"
 ```
 
 ## Quick start (Python SDK)
@@ -159,10 +159,10 @@ Model-generated shell commands have sandbox-user filesystem and network authorit
 The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
 
 ```bash
-abx kill "$SANDBOX_ID"
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+`abx delete` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
 ## Resources
 

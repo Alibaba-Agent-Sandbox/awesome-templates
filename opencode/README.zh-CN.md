@@ -31,18 +31,18 @@ export ABX_SERVER_TOKEN="<独立的应用访问令牌>"
 export ABX_LLM_API_KEY="<模型服务APIKey>"
 export ABX_LLM_BASE_URL="https://dashscope.aliyuncs.com/compatible-mode/v1"
 export ABX_HTTP_TIMEOUT=660
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//opencode --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//opencode --sandbox-timeout 1800 --yes
 ```
 
 把返回的沙箱 ID 填入下一条变量。如果使用 OpenSandbox，先完成该平台配置，并在后续所有示例中统一使用 `ABX_PROVIDER=opensandbox`。
 
 ```bash
 export ABX_SANDBOX_ID="<返回的沙箱ID>"
-abx exec "$ABX_SANDBOX_ID" -- mkdir -p /home/user/workspace
-abx run "$ABX_SANDBOX_ID" opencode_version
-abx run "$ABX_SANDBOX_ID" opencode_setup_check
-abx run "$ABX_SANDBOX_ID" opencode_run --json-args '{"prompt":"在当前目录创建 hello.py，运行后打印 Hello from OpenCode，然后运行它。","model":"dashscope/qwen3.8-flash","cwd":"/home/user/workspace"}'
-abx download "$ABX_SANDBOX_ID" /home/user/workspace/hello.py ./hello.py
+abx sandbox exec "$ABX_SANDBOX_ID" -- mkdir -p /home/user/workspace
+abx sandbox run "$ABX_SANDBOX_ID" opencode_version
+abx sandbox run "$ABX_SANDBOX_ID" opencode_setup_check
+abx sandbox run "$ABX_SANDBOX_ID" opencode_run --json-args '{"prompt":"在当前目录创建 hello.py，运行后打印 Hello from OpenCode，然后运行它。","model":"dashscope/qwen3.8-flash","cwd":"/home/user/workspace"}'
+abx sandbox download "$ABX_SANDBOX_ID" /home/user/workspace/hello.py ./hello.py
 ```
 
 任务返回 `text`、`stdout`、`session_id`、`model`、`agent`、`cwd`。模型说明文字每次可能不同；下载后的 Python 文件运行时应打印 `Hello from OpenCode`。CLI、SDK、HTTP 是同一任务的三种调用方式，任选一种即可，无需为它们分别创建沙箱。
@@ -167,7 +167,7 @@ asyncio.run(main())
 OpenCode 以命令的 `cwd` 为项目目录。示例显式创建工作目录，避免修改模板应用文件。释放前导出代码、会话数据及其他所需产物；沙箱内修改不会更新原始模板。
 
 ```bash
-abx kill "$ABX_SANDBOX_ID"
+abx delete "$ABX_SANDBOX_ID"
 ```
 
 不再复用准备的模板／镜像时，还应根据启动返回的记录清理本次确切拥有的资源，见[资源清理](../docs/using-templates.zh-CN.md#clisdk-与-http)。不要把 Key 或登录态写进可复用镜像。

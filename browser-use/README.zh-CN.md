@@ -33,14 +33,14 @@ export BROWSER_USE_API_KEY='<your-model-api-key>'
 export BROWSER_USE_BASE_URL='https://model.example.invalid/v1'
 export BROWSER_USE_MODEL='<your-model-id>'
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//browser-use --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//browser-use --sandbox-timeout 1800 --yes
 # 将启动输出中的沙箱 ID 填到这里
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" browser_use --json-args '{"task":"Read the heading of this page and return it.","url":"https://www.iana.org/help/example-domains","max_steps":8,"command_timeout":300}'
+abx sandbox run "$SANDBOX_ID" browser_use --json-args '{"task":"Read the heading of this page and return it.","url":"https://www.iana.org/help/example-domains","max_steps":8,"command_timeout":300}'
 ```
 
 返回 Agent 结果、`done`、`success` 和新的 `screenshot_path`。请检查完成标志，不能仅凭文本判断成功。
@@ -136,11 +136,11 @@ SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。�
 
 ```bash
 # 把 <returned-path> 换成结果中的 screenshot_path
-abx download "$SANDBOX_ID" '<returned-path>' ./browser-use.png
-abx kill "$SANDBOX_ID"
+abx sandbox download "$SANDBOX_ID" '<returned-path>' ./browser-use.png
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
+`abx delete` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
 
 ## 资源
 

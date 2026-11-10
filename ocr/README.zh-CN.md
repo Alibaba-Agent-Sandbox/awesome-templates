@@ -28,19 +28,19 @@ CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//ocr --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//ocr --sandbox-timeout 1800 --yes
 # 将启动输出中的沙箱 ID 填到这里
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" ocr --json-args '{"image_path":"fixtures/sample.png"}'
+abx sandbox run "$SANDBOX_ID" ocr --json-args '{"image_path":"fixtures/sample.png"}'
 ```
 
 识别内置样例，`text` 包含 SANDBOX、OCR 和 314159，并返回可导出的 TXT/TSV 路径及哈希。
 
-处理自己的图片时，先 `abx upload "$SANDBOX_ID" ./scan.png /home/user/app/scan.png`，再把 `image_path` 改为 `scan.png`。仅内置英文 `eng` 识别，不是多模态模型，也不声称支持中文 OCR。
+处理自己的图片时，先 `abx sandbox upload "$SANDBOX_ID" ./scan.png /home/user/app/scan.png`，再把 `image_path` 改为 `scan.png`。仅内置英文 `eng` 识别，不是多模态模型，也不声称支持中文 OCR。
 
 `--sandbox-timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
 
@@ -123,11 +123,11 @@ SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。�
 
 ```bash
 # 把 <returned-path> 换成结果中的 text_path
-abx download "$SANDBOX_ID" '<returned-path>' ./recognized.txt
-abx kill "$SANDBOX_ID"
+abx sandbox download "$SANDBOX_ID" '<returned-path>' ./recognized.txt
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
+`abx delete` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
 
 ## 资源
 

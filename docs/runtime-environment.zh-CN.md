@@ -2,14 +2,14 @@
 
 [English](runtime-environment.md)
 
-由一个入口负责启动：`abx template launch` 准备模板并启动其声明的应用。SDK 连接这个已运行的沙箱，调用命名命令。模型配置和 `ABX_SERVER_TOKEN` 必须在应用进程导入模板前传入；再连接一个客户端不会重新配置已有进程。
+由一个入口负责启动：`abx deploy` 准备模板并启动其声明的应用。SDK 连接这个已运行的沙箱，调用命名命令。模型配置和 `ABX_SERVER_TOKEN` 必须在应用进程导入模板前传入；再连接一个客户端不会重新配置已有进程。
 
 ## 启动一次，再连接使用
 
 先完成[安装和提供方配置](using-templates.zh-CN.md#安装)。以下示例使用已发布的 CLI 0.5.6、Python 客户端 0.4.0a6 和 `python-hello` 模板。配置极速版，并在启动前将 `ABX_SERVER_TOKEN` 安全地设置到本地环境。模型模板还需要按其 README 设置声明的配置项；`template.yaml` 中声明空值并不提供密钥。
 
 ```bash
-abx --provider alicloud-express template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello --yes
+abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --yes
 ```
 
 将返回的沙箱 ID 填入下面示例，提供方和应用令牌与启动时保持一致。应用已在声明的 9000 端口运行；连接时不会启动另一个服务。
@@ -38,7 +38,7 @@ asyncio.run(main())
 
 预期结果为 `Hello, Ada!`。使用 OpenSandbox 时，先完成其[提供方配置](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)，启动选择 `--provider opensandbox`，连接选择 `provider="opensandbox"`。其他模板使用其实际服务端口和命令名。CLI 调用、HTTP POST 和清理参见[完整调用示例](using-templates.zh-CN.md)。
 
-`client.aclose()` 和 `sb.close()` 关闭客户端资源，不删除沙箱。使用结束后，资源所有者用 `abx --provider alicloud-express kill <sandbox-id>` 删除该实例，并单独清理不再需要的确切自有准备模板和镜像。消费已运行应用的 API 不需要再创建沙箱。
+`client.aclose()` 和 `sb.close()` 关闭客户端资源，不删除沙箱。使用结束后，资源所有者用 `abx --provider alicloud-express delete <sandbox-id>` 删除该实例，并单独清理不再需要的确切自有准备模板和镜像。消费已运行应用的 API 不需要再创建沙箱。
 
 ## 启动配置与认证
 

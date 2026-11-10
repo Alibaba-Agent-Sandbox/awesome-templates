@@ -28,16 +28,16 @@ CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//chrome --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//chrome --sandbox-timeout 1800 --yes
 # 将启动输出中的沙箱 ID 填到这里
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" chrome_start --json-args '{}'
-abx run "$SANDBOX_ID" chrome_open --json-args '{"url":"https://example.com"}'
-abx run "$SANDBOX_ID" chrome_screenshot --json-args '{}'
+abx sandbox run "$SANDBOX_ID" chrome_start --json-args '{}'
+abx sandbox run "$SANDBOX_ID" chrome_open --json-args '{"url":"https://example.com"}'
+abx sandbox run "$SANDBOX_ID" chrome_screenshot --json-args '{}'
 ```
 
 返回实际浏览器标题和最终 URL；随后可截图保存同一会话。
@@ -138,12 +138,12 @@ SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。�
 
 ```bash
 # 使用 chrome_screenshot 返回的 path 下载 PNG
-abx download "$SANDBOX_ID" '<returned-path>' ./chrome.png
-abx run "$SANDBOX_ID" chrome_stop --json-args '{}'
-abx kill "$SANDBOX_ID"
+abx sandbox download "$SANDBOX_ID" '<returned-path>' ./chrome.png
+abx sandbox run "$SANDBOX_ID" chrome_stop --json-args '{}'
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
+`abx delete` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
 
 ## 资源
 

@@ -2,7 +2,7 @@
 
 ## English summary
 
-Survey date 2026-10-15, deepened the same day. Express `base` was probed with `abx create --template base` and then deleted. Verified: non-root `user` can `sudo -n` to uid 0, but `mount` is still denied; no KVM, FUSE, Docker socket, or GPU; 2 vCPU, ~2GB RAM, ~10G disk; Python 3.13.13 and Node 20.20.2; egress works; Xvfb + xdotool + scrot produced a PNG after apt install. Every OpenSandbox example, the E2B cookbook, CubeSandbox examples, and the Daytona/Modal/Vercel/Cloudflare galleries are mapped in the coverage matrix. Candidate templates: see `docs/template-backlog.json`. Wave 1 is CLI/service wrappers that fit Express. Wave 2 is a useful slice with a stated gap. Wave 3 needs another provider for the actual workload. Do not copy OpenSandbox or E2B Dockerfiles into this repo.
+Survey date 2026-10-15, deepened the same day. Express `base` was probed with `abx deploy --template-id base` and then deleted. Verified: non-root `user` can `sudo -n` to uid 0, but `mount` is still denied; no KVM, FUSE, Docker socket, or GPU; 2 vCPU, ~2GB RAM, ~10G disk; Python 3.13.13 and Node 20.20.2; egress works; Xvfb + xdotool + scrot produced a PNG after apt install. Every OpenSandbox example, the E2B cookbook, CubeSandbox examples, and the Daytona/Modal/Vercel/Cloudflare galleries are mapped in the coverage matrix. Candidate templates: see `docs/template-backlog.json`. Wave 1 is CLI/service wrappers that fit Express. Wave 2 is a useful slice with a stated gap. Wave 3 needs another provider for the actual workload. Do not copy OpenSandbox or E2B Dockerfiles into this repo.
 
 ## 极速版探针
 
@@ -286,15 +286,15 @@ OpenSandbox 的 host volume、Docker PVC、OSSFS、rclone、Kubernetes PVC，以
 
 **目的与用户。** 平台模板 id `base`，也是 E2B 不传 template 时的默认沙箱。给所有别的模板当参照，不在本仓库里再做一个同名目录。
 
-**能力。** 没有命名命令。调用方用 `abx exec` 或 SDK `commands.run`。 端口：49983（envd，创建时返回的 URL 带这个端口）。 文件与产物：空的 /home/user。 流式：exec 支持流式 stdout。
+**能力。** 没有命名命令。调用方用 `abx sandbox exec` 或 SDK `commands.run`。 端口：49983（envd，创建时返回的 URL 带这个端口）。 文件与产物：空的 /home/user。 流式：exec 支持流式 stdout。
 
-**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。不要新建目录。文档写清如何 `abx create --template base`。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：实测 2 vCPU，约 2GB 内存，约 10G rootfs。 SDK：`Sandbox.create` 之后调用命名命令（`exec`）。依赖模板：无。
+**构建。** `FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。不要新建目录。文档写清如何 `abx deploy --template-id base`。 平台 generation 2 的 start_cmd 固定为 `agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py`，ready_cmd 为 `agent-sandbox-server healthcheck --port 9000`。不要写镜像 CMD/ENTRYPOINT。资源：实测 2 vCPU，约 2GB 内存，约 10G rootfs。 SDK：`Sandbox.create` 之后调用命名命令（`exec`）。依赖模板：无。
 
 **需要。** 极速版 API key。无 GPU/KVM/Docker。
 
 **极速版。** `yes`。限制因素：这是平台镜像，本仓库 Dockerfile 改变不了它。 能跑的子集：实测内容见文首探针。 其余：E2B 的 `base` 是另一块 Debian 镜像（带 gh、Yarn），不要写成同一份软件清单。
 
-**上游与调用。** 平台镜像；E2B 文档 base image，Dockerfile templates/base/e2b.Dockerfile。 无头形态：abx exec <id> -- <argv>。
+**上游与调用。** 平台镜像；E2B 文档 base image，Dockerfile templates/base/e2b.Dockerfile。 无头形态：abx sandbox exec <id> -- <argv>。
 
 **结论。** 状态 catalog-only，批次 other，优先级 P1，issue #31。目录外的平台模板，issue #31 只做文档和核实。 来源：express-probe, e2b-docs。
 

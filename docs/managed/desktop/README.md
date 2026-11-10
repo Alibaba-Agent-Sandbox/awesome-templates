@@ -24,17 +24,17 @@ export ABX_E2B_API_KEY='<e2b-api-key>'
 
 Use a key with access to the `desktop` template. This is E2B platform authentication; no interactive sandbox login, model API key, model endpoint or application token is needed for shell/files/desktop access. Custom E2B deployments can additionally require `ABX_E2B_BASE_URL` and `ABX_E2B_DOMAIN`; use their deployment values instead of Alibaba Express credentials.
 
-Use CLI 0.5.6 or later and the current managed catalog; see [installation and provider setup](../../using-templates.md).
+Use the current source CLI and managed catalog; see [installation and provider setup](../../using-templates.md).
 
 Install the [CLI](../../using-templates.md) and Node.js 22+, configure your provider below, and replace `<sandbox-id>` with the ID returned by launch.
 
 ```bash
 abx provider install Alibaba-Agent-Sandbox/awesome-providers//e2b --allow-unpinned --yes
 abx provider doctor e2b
-abx --provider e2b template launch desktop --sandbox-timeout 180 --yes
+abx --provider e2b deploy desktop --sandbox-timeout 180 --yes
 export ABX_SANDBOX_ID="<returned-sandbox-id>"
-abx --provider e2b exec "$ABX_SANDBOX_ID" -- python3 -c 'print(6*7)'
-abx --provider e2b kill "$ABX_SANDBOX_ID" -y
+abx --provider e2b sandbox exec "$ABX_SANDBOX_ID" -- python3 -c 'print(6*7)'
+abx --provider e2b delete "$ABX_SANDBOX_ID" -y
 ```
 
 ## Quick start (Python SDK)

@@ -49,8 +49,8 @@ async def verify(name: str, output: Path, cli: str | None) -> bool:
     try:
         if caller:
             result["cli_version"] = caller.run(["--version"], json_output=False)
-            launched = await asyncio.to_thread(caller.run, ["template", "launch", name,
-                "--alias", tag[:42], "--sandbox-timeout", "240", "--yes"])
+            launched = await asyncio.to_thread(caller.run, ["deploy", name,
+                "--name", tag[:42], "--sandbox-timeout", "240", "--yes"])
             sandbox_id = launched["sandbox_id"]
             intent["sandbox_id"] = sandbox_id
             save()
@@ -77,7 +77,7 @@ async def verify(name: str, output: Path, cli: str | None) -> bool:
         # Process/file acceptance makes no persistent interpreter-session claim.
         result["consumer"] = "public-cli-and-python" if caller else "python-provider"
         if caller:
-            stdout = await asyncio.to_thread(caller.run, ["exec", sb.id, "--", "python3", "-c", "print(6*7)"], json_output=False)
+            stdout = await asyncio.to_thread(caller.run, ["sandbox", "exec", sb.id, "--", "python3", "-c", "print(6*7)"], json_output=False)
             assert stdout.strip() == "42"
             result["checks"].append("real installed CLI exec result 42")
         if name == "code-interpreter-v1":
@@ -93,7 +93,7 @@ async def verify(name: str, output: Path, cli: str | None) -> bool:
             if sandbox_id:
                 if caller:
                     try:
-                        await asyncio.to_thread(caller.run, ["kill", sandbox_id], json_output=False)
+                        await asyncio.to_thread(caller.run, ["delete", tag[:42], "--yes"], json_output=False)
                     except Exception as exc:
                         result["passed"] = False
                         result["cli_cleanup_failure_type"] = type(exc).__name__

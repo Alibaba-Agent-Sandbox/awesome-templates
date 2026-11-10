@@ -75,7 +75,7 @@ serverBuildRecipe:
 
 profile 准备 Sandbox Template，创建 revision 专属 Worker，部署候选 Gateway/Dispatcher，验证后发布稳定入口。生产 timer 关闭期间，验证使用受限私有派发。公开 endpoint 来自实际验证的入口，不猜测组件返回字段。function-alias 与 custom-domain binding 有不同提供商要求；测试函数 URL 不等于生产域名保证。
 
-更新时 Session 固定原 revision；旧 Worker 和兼容 Server 产物保留到会话排空。清理失败保留归属记录和可继续工作的清理路径；借用的数据库和模型服务不会自动删除。尚未参与 Apply 且归属已确认的 owned Server 构建可通过 `abx app clean-build BUILD --yes` 清理；参与 Apply 后由应用 Destroy/Retire 在引用排空后清理。借用的 Server 镜像不删除。Sandbox 构建镜像可能仍列在 `retained_build_artifacts` 中，需要显式按仓库说明清理。
+更新时 Session 固定原 revision；旧 Worker 和兼容 Server 产物保留到会话排空。用 `abx status NAME --revisions` 查看保留版本，再用 `abx delete NAME --revision REVISION --yes` 删除指定版本。`abx delete NAME --yes` 清理部署自有资源；操作中断或结果不确定时用 `abx recover NAME` 核查。通过 `--build` 提供的可复用构建产物和用户提供的 Server 镜像属于借用资源。独立构建不再被任何部署使用后，可用 `abx template build --clean BUILD --yes` 清理。Sandbox 构建镜像可能仍列在 `retained_build_artifacts` 中，需要显式按仓库说明清理。已有数据库、网络和模型服务仍由你管理。
 
 ## Hooks 与输出
 

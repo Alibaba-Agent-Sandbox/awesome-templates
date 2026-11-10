@@ -31,7 +31,7 @@ These template commands require no model, model endpoint or model API key.
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//document-tools --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//document-tools --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
@@ -44,11 +44,11 @@ printf '# Quarterly report\n\nRevenue: 51.30.\n' > report.md
 ```
 
 ```bash
-abx upload "$SANDBOX_ID" ./report.md /home/user/app/report.md
+abx sandbox upload "$SANDBOX_ID" ./report.md /home/user/app/report.md
 ```
 
 ```bash
-abx run "$SANDBOX_ID" convert --json-args '{"input_path":"report.md","output_name":"report.docx","output_format":"docx"}'
+abx sandbox run "$SANDBOX_ID" convert --json-args '{"input_path":"report.md","output_name":"report.docx","output_format":"docx"}'
 ```
 
 Returns `output_path`, `output_format: docx`, `bytes` and `sha256`. The DOCX is retained for download.
@@ -129,7 +129,7 @@ One conversion runs at a time. Pandoc has 1 GiB address space, a 256 MiB Haskell
 
 | Name | Required | Default | Purpose |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the deploy; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | no | `9000` | Port for direct local startup. |
 | `WORKSPACE` | no | `/home/user/app` | Existing runtime-user-owned input/output directory. |
 | `DOCUMENT_PANDOC_BINARY` | no | `/usr/bin/pandoc` | Operator-only absolute executable path, still version checked. |
@@ -141,11 +141,11 @@ The working directory is `/home/user/app`. Artifacts remain on the sandbox disk;
 
 ```bash
 # Replace <returned-path> with output_path from the result
-abx download "$SANDBOX_ID" '<returned-path>' ./report.docx
-abx kill "$SANDBOX_ID"
+abx sandbox download "$SANDBOX_ID" '<returned-path>' ./report.docx
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+`abx delete` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
 ## Resources
 

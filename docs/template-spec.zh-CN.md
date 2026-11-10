@@ -107,7 +107,7 @@ smoke:
 | `provides` | 模板提供的全部服务，包含协议、版本、端口与操作；启动后返回全部声明端点，无需选择工作流。 |
 | `smoke` | `{command, args, expect}` 列表，由 `scripts/public_launch_e2e.py` 执行。`args` 的键是命令参数。可选的字符串 `expect` 在去掉首尾空白后比较；没有 expect 时，成功非空响应只证明调用链。 |
 
-`template launch` 准备模板、创建沙箱、执行 `start_cmd`，执行 `ready_cmd` 并解析全部声明服务的端点。内置 server v2 协议额外检查健康及已声明的命令发现；其他协议提供端点，解析出 URL 不代表其协议已验证。
+`deploy` 准备模板、创建沙箱、执行 `start_cmd`，执行 `ready_cmd` 并解析全部声明服务的端点。内置 server v2 协议额外检查健康及已声明的命令发现；其他协议提供端点，解析出 URL 不代表其协议已验证。
 注册命令和工具在启动后可用；需要业务参数的任务按需调用，不会逐个自动执行。
 从准备好的引用另建实例，不会继承原实例的运行进程。
 
@@ -172,7 +172,7 @@ smoke:
 
 托管应用要求独占 `per-session` Sandbox、持久状态、角色限定的 binding 引用、有限预算和明确的 close/delete 语义。Server 必须选择摘要固定的 `serverImage` 或模板上下文内的 `serverBuildRecipe`，二者互斥；构建及产物固定在部署计划冻结前完成。hooks 仅做有界 custom 检查或已有 profile step 的 `serverless-devs info` 查询，不能建立无记录资源。
 
-该 profile 的 README 使用实际 Gateway 任务：CLI 用 `abx app` 部署，Python/HTTP 以业务凭据访问 Gateway，不要求业务调用者连接 `ProviderSandbox` 或使用 `abx run`。后述标题和用户文档边界不变。
+该 profile 的 README 使用实际 Gateway 任务：CLI 用 `abx deploy` 部署，Python/HTTP 以业务凭据访问 Gateway，不要求业务调用者连接 `ProviderSandbox` 或使用 `abx sandbox run`。后述标题和用户文档边界不变。
 
 ## 阿里云基础镜像
 
@@ -264,7 +264,7 @@ if __name__ == "__main__":
 | 名字 | `@command("name")`，或省略第一个参数时用函数名。包装产品时用上游 CLI 的动词，`snake_case`（`claude`、`codex_exec`）。 |
 | 参数 | 来自函数签名。`int`、`float`、`bool` 保持类型，其余是字符串。没有默认值的参数是必填。 |
 | 返回值 | 一个可 JSON 序列化的值：`str`、`int`、`float`、`bool`、`None`、`list` 或 `dict`。HTTP 正文是 `{"result": <value>}`。不要返回生成器。 |
-| 流式 | 命名命令是一次请求、一份 JSON。实时 stdout 属于进程 API（`sb.commands.stream`、`abx exec`），不属于 `@command`。返回完整文本，或写文件后让客户端用 `sb.files` 读取。 |
+| 流式 | 命名命令是一次请求、一份 JSON。实时 stdout 属于进程 API（`sb.commands.stream`、`abx sandbox exec`），不属于 `@command`。返回完整文本，或写文件后让客户端用 `sb.files` 读取。 |
 | 错误 | 缺参或类型不对时函数不会被调用：HTTP 400，正文 `{"error", "type": "ValueError"}`。上游失败时抛 `RuntimeError`（或 `ValueError`）。服务返回 HTTP 500，正文 `{"error": "<message>", "type": "<ExceptionName>"}`。上游非零退出是异常，不是一条成功的字符串。消息里不要带密钥。 |
 | 隐藏 | `@command(hidden=True)` 仍可调用，但不出现在 `GET /commands`。 |
 | `start()` | 只写在 `if __name__ == "__main__"` 下面。`agent-sandbox-server serve --commands` 会导入这个模块。导入时调用 `start()` 会破坏这条路径。 |
@@ -276,22 +276,22 @@ if __name__ == "__main__":
 
 `/health` 不要求 server token；提供方网关仍可能认证该请求。health 成功不证明命名命令认证或模型配置正确。
 
-以下命名命令认证规则适用于 spec5；managed6 bridge 必须提供生成的令牌，不允许匿名托管操作。进程启动时读取 `ABX_SERVER_TOKEN`。变量非空时，受保护的请求需要带 `Authorization: Bearer <token>` 或 `X-Access-Token: <token>`。在 `env` 里声明这个名字，值为空字符串。真正的值必须在服务进程启动前传入。创建时注入（`abx create --env` 或 `ProviderSandbox.create(envs=...)`）仅适用于提供方实际使用这些值启动服务的情况，不能重新配置预热进程。使用统一模板启动入口配置并启动声明的服务，再用 SDK 连接已运行的应用；参见[运行环境配置](runtime-environment.zh-CN.md)。
+以下命名命令认证规则适用于 spec5；managed6 bridge 必须提供生成的令牌，不允许匿名托管操作。进程启动时读取 `ABX_SERVER_TOKEN`。变量非空时，受保护的请求需要带 `Authorization: Bearer <token>` 或 `X-Access-Token: <token>`。在 `env` 里声明这个名字，值为空字符串。真正的值必须在服务进程启动前传入。创建时注入（`abx deploy --template-id --env` 或 `ProviderSandbox.create(envs=...)`）仅适用于提供方实际使用这些值启动服务的情况，不能重新配置预热进程。使用统一模板启动入口配置并启动声明的服务，再用 SDK 连接已运行的应用；参见[运行环境配置](runtime-environment.zh-CN.md)。
 
 变量未设置时应用允许匿名调用；提供方网关认证仍单独处理。客户端保留提供方的网关访问头，把显式应用令牌放入 `Authorization: Bearer <token>`，并在同名头未被占用时补充已有应用 `X-Access-Token` 头。认证失败会直接返回，不会自动匿名重试。设置 `ABX_SERVER_TOKEN` 的模板必须说明：项目 Python API 使用 `await sb.application_client(port, token=...)`，CLI 命名命令使用 `ABX_SERVER_TOKEN`。
 
 ## 客户端如何调用
 
-CLI，在 `abx --provider alicloud-express template launch <source> --yes` 已启动应用之后：
+CLI，在 `abx --provider alicloud-express deploy <source> --yes` 已启动应用之后：
 
 ```bash
-abx run <sandbox-id> hello --arg name=Ada
-abx run <sandbox-id> add --json-args '{"x": 1, "y": 2}'
+abx sandbox run <sandbox-id> hello --arg name=Ada
+abx sandbox run <sandbox-id> add --json-args '{"x": 1, "y": 2}'
 abx sandbox command list <sandbox-id>
-abx exec <sandbox-id> -- python3 -c 'print(1)'
+abx sandbox exec <sandbox-id> -- python3 -c 'print(1)'
 ```
 
-`--arg` 的值是字符串。数字和布尔用 `--json-args`。`abx exec` 是 shell 或 argv，不是命名命令。
+`--arg` 的值是字符串。数字和布尔用 `--json-args`。`abx sandbox exec` 是 shell 或 argv，不是命名命令。
 
 Python SDK。PyPI 上的客户端发行名是 `agent-sandbox-client`。导入名仍是 `agent_sandbox`。`pip install agent-sandbox` 会装上一个无关项目。
 
@@ -319,7 +319,7 @@ asyncio.run(main())
 ```
 
 `client.commands.run` 把关键字参数作为 `POST /commands/hello` 的 JSON 正文并返回 `result`；
-`sb.commands.run` 是进程 API。关闭连接不会删除沙箱；用完执行 `abx kill <sandbox-id>`
+`sb.commands.run` 是进程 API。关闭连接不会删除沙箱；用完执行 `abx delete <sandbox-id>`
 删除自己创建的实例，并另行核对准备的模板和镜像。验收记录源码提交及实际安装版本。
 
 本地 L0 不创建云沙箱。`scripts/run_local_e2e.py` 启动 `python3 commands.py`，设置 `E2E_BASE_URL`，再运行 `e2e_test.py`。该测试可以对 `E2E_BASE_URL` 发 HTTP。云验收必须调用实际选定的 CLI/SDK/HTTP 入口。
@@ -412,7 +412,7 @@ Express 历史回执使用 `evidence/express-<date>.json` 或 `evidence/alicloud
 
 启动前区分所需平台凭据、应用令牌和模型凭据，并写清模板实际读取的模型、endpoint、API Key 或产品登录配置；不臆造通用于所有上游工具的变量映射。
 
-spec6 使用显式 `abx app` 部署及 Python `httpx` 访问统一 Gateway，列出公开 API 和托管 close/delete 清理。以下客户端要求适用于 spec5。CLI 一节要有 `abx run` 示例。SDK 一节导入 `ProviderSandbox`，通过 `application_client` 获取应用客户端，并调用 `client.commands.run`。命令参考是带参数的表。非阿里云基础镜像再加 `## Base image` / `## 基础镜像`。
+spec6 使用显式 `abx deploy` 部署及 Python `httpx` 访问统一 Gateway，列出公开 API 和托管 close/delete 清理。以下客户端要求适用于 spec5。CLI 一节要有 `abx sandbox run` 示例。SDK 一节导入 `ProviderSandbox`，通过 `application_client` 获取应用客户端，并调用 `client.commands.run`。命令参考是带参数的表。非阿里云基础镜像再加 `## Base image` / `## 基础镜像`。
 
 ## 上架与验收
 
@@ -434,7 +434,7 @@ spec6 使用显式 `abx app` 部署及 Python `httpx` 访问统一 Gateway，列
 文档变更不重跑无关云测试。部署／模型验收条件未完成时，Issue 继续开放，不受目录标签影响。
 记录准确源码、提供方、调用入口、测试及清理结果。索引只使用当前目录 schema 接受的字段；已退休的能力／验证字段会被拒绝。
 
-`abx --provider <provider> template launch <source>` 通过所选提供方已实现的操作准备配方并启动应用。
+`abx --provider <provider> deploy <source>` 通过所选提供方已实现的操作准备配方并启动应用。
 文档应说明各提供方的实际使用契约；只有匹配的真实运行记录才能证明该路径已测试。
 没有证据本身不等于不支持。
 

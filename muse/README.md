@@ -33,14 +33,14 @@ export MUSE_MODEL_API_KEY='<your-model-api-key>'
 export MUSE_MODEL_BASE_URL='https://model.example.invalid/v1'
 export MUSE_MODEL='<your-model-id>'
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//muse --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//muse --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" muse --json-args '{"prompt":"Create hello.py in the current directory. It must print Hello from Muse. Run it and report the output.","command_timeout":300}'
+abx sandbox run "$SANDBOX_ID" muse --json-args '{"prompt":"Create hello.py in the current directory. It must print Hello from Muse. Run it and report the output.","command_timeout":300}'
 ```
 
 Returns native completion status, model/tool call counts and buffered output; inspect the generated `hello.py` independently.
@@ -121,18 +121,18 @@ Muse requires streaming Responses API support; the code appends `/responses` to 
 | MUSE_MODEL_BASE_URL | empty; required for coding | Explicit HTTPS Responses base, max2048characters, no userinfo/query/fragment; literal-loopback HTTP only for authored fixtures |
 | MUSE_MODEL | empty; required for coding | Actual upstream model identifier,1..200allowed identifier characters |
 | WORKSPACE | `/home/user/app` | Existing caller project root |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the deploy; separate from model and gateway credentials |
 
 Captured at commands.py import; presence flags do not prove authentication. Key max8192/no control characters. Native receives only a fresh per-call local relay token by anonymous stdin. The parent relay uses the upstream key only for the exact approved Responses endpoint, rejects redirects and wrong route/token/model, and retains no transcript. Native/tools use a minimal environment and private HOME/cache/config; caller project artifacts persist. Same-user OS access remains; cwd containment and environment filtering are not another tenant boundary. `--yolo` selects the disposable outer sandbox as the execution boundary.
 
 The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
 
 ```bash
-abx download "$SANDBOX_ID" /home/user/app/hello.py ./hello.py
-abx kill "$SANDBOX_ID"
+abx sandbox download "$SANDBOX_ID" /home/user/app/hello.py ./hello.py
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+`abx delete` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
 ## Resources
 

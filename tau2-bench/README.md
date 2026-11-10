@@ -59,14 +59,14 @@ export TAU2_MODEL_API_KEY='<your-model-api-key>'
 export TAU2_MODEL_BASE_URL='https://model.example.invalid/v1'
 export TAU2_MODEL='<your-model-id>'
 export ABX_HTTP_TIMEOUT=750
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//tau2-bench --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//tau2-bench --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" tau2_run --json-args '{"domain":"retail","task_id":"0","max_steps":30,"command_timeout":600}'
+abx sandbox run "$SANDBOX_ID" tau2_run --json-args '{"domain":"retail","task_id":"0","max_steps":30,"command_timeout":600}'
 ```
 
 Returns native `score`, termination reason and sanitized trajectory `artifact_path`. Both the agent and simulated user make billable model calls; reward 1 is not guaranteed.
@@ -150,7 +150,7 @@ This entry calls compatible Chat Completions. Include the vendor API prefix (oft
 | `TAU2_MODEL_BASE_URL` | Required for run; empty | Explicit HTTPS compatible base URL, at most2048 characters; literal local HTTP permitted for synthetic fixtures. No userinfo, query or fragment. |
 | `TAU2_MODEL` | Required for run; empty | Explicit model identifier, at most200 allowed identifier characters. |
 | `WORKSPACE` | `/home/user/workspace` | Existing writable result root. |
-| `ABX_SERVER_TOKEN` | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | required; empty declaration | Export an independent application token before the deploy; separate from model and gateway credentials |
 
 Settings are captured at server import. Both native participants receive the same
 explicit `openai/` model and `api_base`; the key is supplied only to the private
@@ -166,11 +166,11 @@ The working directory is `/home/user/workspace`. Artifacts remain on the sandbox
 
 ```bash
 # Replace <returned-path> with artifact_path from the result
-abx download "$SANDBOX_ID" '<returned-path>' ./tau2-trajectory.json
-abx kill "$SANDBOX_ID"
+abx sandbox download "$SANDBOX_ID" '<returned-path>' ./tau2-trajectory.json
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+`abx delete` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
 ## Resources
 

@@ -93,12 +93,12 @@ if __name__ == "__main__":
     start(int(os.environ.get("ABX_SERVER_PORT", "9000")))
 ```
 
-Callers use `abx run <sandbox-id> hello --arg name=Ada` or
+Callers use `abx sandbox run <sandbox-id> hello --arg name=Ada` or
 `await client.commands.run("hello", name="Ada")` after `ProviderSandbox.connect(...)`
 and `await sb.application_client(9000, token=...)`. The CLI launch starts the
 application; creating another sandbox alone does not start that service. See
 [the complete example](docs/using-templates.md#cli-sdk-and-http).
-A shell string is `sb.commands.run("echo hi")` or `abx exec`.
+A shell string is `sb.commands.run("echo hi")` or `abx sandbox exec`.
 
 ## Where to file issues
 

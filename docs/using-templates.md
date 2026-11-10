@@ -6,10 +6,15 @@ Choose a template, configure the sandbox platform and any model service it needs
 
 ## Installation
 
-Install published CLI 0.5.8 and Python client 0.4.0a6. Use a virtual environment for Python. The Python distribution is a preview, so the version is explicit. Node 20+ is required for npm installation; Node 22+ is recommended for terminal support.
+These examples use the unified commands in the current source. Published CLI 0.5.10 does not support these new entry points. Install the CLI from source with Node 20+; Python examples continue to use client 0.4.0a6 in a virtual environment.
 
 ```bash
-npm install -g @agent-sandbox/cli@0.5.8 --registry=https://registry.npmjs.org
+git clone https://github.com/Alibaba-Agent-Sandbox/agent-sandbox.git
+cd agent-sandbox
+npm ci
+npm run build
+npm link
+cd ..
 python3 -m venv .venv
 . .venv/bin/activate
 python3 -m pip install --index-url https://pypi.org/simple 'agent-sandbox-client==0.4.0a6'
@@ -37,11 +42,11 @@ For OpenSandbox, first follow its [provider setup](https://github.com/Alibaba-Ag
 
 ### Configure the application and model
 
-The CLI generates a private application token during normal template launch, saves it locally and reuses it for later commands. To use your own token or call the service from an external SDK/HTTP client, follow [application authentication](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/guide/guided-configuration.md). Configure the template's documented model API key, endpoint, model selector and any required account login separately. Sandbox, application and model credentials serve different purposes.
+The CLI generates a private application token during normal deploy, saves it locally and reuses it for later commands. To use your own token or call the service from an external SDK/HTTP client, follow [application authentication](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/guide/guided-configuration.md). Configure the template's documented model API key, endpoint, model selector and any required account login separately. Sandbox, application and model credentials serve different purposes.
 
 Templates use different upstream configuration. Do not assume every tool consumes `ABX_LLM_*`, supports arbitrary OpenAI-compatible endpoints, or inherits a login from your machine. Non-model tools do not need a model key. Commercial account login, API-key login and optional web-service passwords are described in the applicable README.
 
-In CLI 0.5.8, declared **empty** template env values can be filled from the host environment. A non-empty manifest value wins over a same-name host export. Use a command's documented model argument to select another model. For an empty startup-only model/key/endpoint setting, export the new value and launch a new instance from the public recipe; use the new returned sandbox ID. A local template copy is only needed to change a non-empty manifest default or the implementation. Only declared runtime settings are carried through this path. Changing exports after launch does not reconfigure an already running process.
+Declared **empty** template env values can be filled from the host environment. A non-empty manifest value wins over a same-name host export. Use a command's documented model argument to select another model. For an empty startup-only model/key/endpoint setting, export the new value and launch a new instance from the public recipe; use the new returned sandbox ID. A local template copy is only needed to change a non-empty manifest default or the implementation. Only declared runtime settings are carried through this path. Changing exports after launch does not reconfigure an already running process.
 
 ## CLI, SDK and HTTP
 
@@ -52,15 +57,15 @@ The `python-hello` template below needs no model service. The example's credenti
 ```bash
 export ABX_SERVER_TOKEN="<independent-application-token>"
 export ABX_HTTP_TIMEOUT=660
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --sandbox-timeout 1800 --yes
 export ABX_SANDBOX_ID="<returned-sandbox-id>"
 abx sandbox command list "$ABX_SANDBOX_ID"
-abx run "$ABX_SANDBOX_ID" hello --arg name=Ada
+abx sandbox run "$ABX_SANDBOX_ID" hello --arg name=Ada
 ```
 
-Expected result: `Hello, Ada!`. Launch prepares the template and starts its declared application; it returns the sandbox ID and references to retained prepared resources. `abx run` calls named commands, while `abx exec` executes a process. Numeric and boolean named-command arguments use `--json-args`.
+Expected result: `Hello, Ada!`. Launch prepares the template and starts its declared application; it returns the sandbox ID and references to retained prepared resources. `abx sandbox run` calls named commands, while `abx sandbox exec` executes a process. Numeric and boolean named-command arguments use `--json-args`.
 
-The three timeout controls serve different purposes: `--timeout` is the build deadline; `--sandbox-timeout` is the instance lifetime; `ABX_HTTP_TIMEOUT` is the CLI HTTP wait. A model command's own execution limit is separate. For a 600-second coding task, an 1800-second instance and a 660-second client wait avoid the default 300-second instance/30-second SDK wait expiring first.
+The three timeout controls serve different purposes: `--build-timeout` is the build deadline; `--sandbox-timeout` is the instance lifetime; `ABX_HTTP_TIMEOUT` is the CLI HTTP wait. A model command's own execution limit is separate. For a 600-second coding task, an 1800-second instance and a 660-second client wait avoid the default 300-second instance/30-second SDK wait expiring first.
 
 ### Python SDK
 
@@ -134,10 +139,10 @@ For another template, change the command path and JSON arguments to its document
 
 ### Export files and clean up
 
-Use `abx download "$ABX_SANDBOX_ID" /remote/path ./local-file` or `await sb.files.read_bytes("/remote/path")` before removing the sandbox. Only delete the instance owned by your task:
+Use `abx sandbox download "$ABX_SANDBOX_ID" /remote/path ./local-file` or `await sb.files.read_bytes("/remote/path")` before removing the sandbox. Only delete the instance owned by your task:
 
 ```bash
-abx kill "$ABX_SANDBOX_ID"
+abx delete "$ABX_SANDBOX_ID"
 ```
 
 Prepared templates/images may remain for reuse. When no longer needed, remove the exact owned resources reported by launch using the selected platform's management tools. Do not delete shared base templates or other users' resources.
@@ -156,4 +161,4 @@ Maintainer test procedures and dated results live in [public launch testing](pub
 
 ## Client entry compatibility
 
-These provider/application examples use `ProviderSandbox`. Standard `Sandbox` / `AsyncSandbox` interpreter interfaces are separate; follow the selected template's instructions and the [SDK entry-point guide](https://github.com/Alibaba-Agent-Sandbox/python-sdk/blob/main/README.md). `abx create <platform-template-id>` selects an existing platform template, whereas source templates use `abx template launch <source-reference>`.
+These provider/application examples use `ProviderSandbox`. Standard `Sandbox` / `AsyncSandbox` interpreter interfaces are separate; follow the selected template's instructions and the [SDK entry-point guide](https://github.com/Alibaba-Agent-Sandbox/python-sdk/blob/main/README.md). `abx deploy --template-id <platform-template-id>` selects an existing platform template, whereas source templates use `abx deploy <source-reference>`.

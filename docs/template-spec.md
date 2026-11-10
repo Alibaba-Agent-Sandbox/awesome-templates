@@ -107,7 +107,7 @@ smoke:
 | `provides` | All services supplied by the template, with protocol, version, port and operations. Launch returns every declared endpoint without selecting a workflow. |
 | `smoke` | List of `{command, args, expect}` run by `scripts/public_launch_e2e.py`. `args` keys are the command parameters. An optional `expect` is compared after strip for strings; without it, a successful nonempty result proves only the call path. |
 
-`template launch` prepares the template, creates its sandbox, executes `start_cmd`,
+`deploy` prepares the template, creates its sandbox, executes `start_cmd`,
 runs `ready_cmd` and resolves every declared service endpoint. The built-in server v2
 protocol also receives health checks and command discovery when declared. Other protocols are
 exposed as endpoints; resolving a URL does not prove protocol readiness. All installed commands remain
@@ -215,8 +215,8 @@ checks or `serverless-devs` `info` queries on an existing profile step; hooks ca
 create unrecorded deployment resources.
 
 The managed application README uses the Gateway task in CLI/Python/HTTP examples:
-`abx app` for application deployment and authenticated Gateway HTTP for business calls.
-It does not require callers to connect a `ProviderSandbox` or use `abx run`.
+`abx deploy` for application deployment and authenticated Gateway HTTP for business calls.
+It does not require callers to connect a `ProviderSandbox` or use `abx sandbox run`.
 The required headings and user-documentation boundaries below remain unchanged.
 
 ## Alibaba base image
@@ -308,7 +308,7 @@ if __name__ == "__main__":
 | Name | `@command("name")` or the function name when the first argument is omitted. Use the upstream CLI's verb in `snake_case` when the command wraps a product (`claude`, `codex_exec`). |
 | Parameters | Taken from the function signature. `int`, `float`, and `bool` stay typed. Everything else is a string. A parameter with no default is required. |
 | Return | One JSON-serializable value: `str`, `int`, `float`, `bool`, `None`, `list`, or `dict`. The HTTP body is `{"result": <value>}`. Do not return a generator. |
-| Streaming | A named command is one request and one JSON response. Live stdout belongs to the process API (`sb.commands.stream`, `abx exec`), not to `@command`. Return the full text, or write a file and let the client read it with `sb.files`. |
+| Streaming | A named command is one request and one JSON response. Live stdout belongs to the process API (`sb.commands.stream`, `abx sandbox exec`), not to `@command`. Return the full text, or write a file and let the client read it with `sb.files`. |
 | Errors | Missing or mistyped arguments never call the function: HTTP 400 `{"error", "type": "ValueError"}`. Raise `RuntimeError` (or `ValueError`) for an upstream failure. The server returns HTTP 500 `{"error": "<message>", "type": "<ExceptionName>"}`. A non-zero upstream exit is an exception, not a successful string. Keep secrets out of the message. |
 | Hidden | `@command(hidden=True)` stays callable and is omitted from `GET /commands`. |
 | `start()` | Only under `if __name__ == "__main__"`. `agent-sandbox-server serve --commands` imports the module. A `start()` at import time breaks that path. |
@@ -320,22 +320,22 @@ if __name__ == "__main__":
 
 `/health` is exempt from server-token authentication; the provider gateway may still authenticate that request. A successful health probe does not prove named-command authentication or model configuration.
 
-The following named-command authentication rules apply to spec5. The managed6 bridge instead requires its generated token and never permits anonymous managed operations. The server reads `ABX_SERVER_TOKEN` when the process starts. When the variable is non-empty, protected requests need `Authorization: Bearer <token>` or `X-Access-Token: <token>`. Declare the name in `env` with an empty value. Provide the real value to the server process before it starts. Create-time injection (`abx create --env` or `ProviderSandbox.create(envs=...)`) applies only when that provider starts the server with those values; it cannot reconfigure a prewarmed process. Use the unified template launch to configure and start the declared service, then connect the SDK to that running application; see [runtime environment configuration](runtime-environment.md).
+The following named-command authentication rules apply to spec5. The managed6 bridge instead requires its generated token and never permits anonymous managed operations. The server reads `ABX_SERVER_TOKEN` when the process starts. When the variable is non-empty, protected requests need `Authorization: Bearer <token>` or `X-Access-Token: <token>`. Declare the name in `env` with an empty value. Provide the real value to the server process before it starts. Create-time injection (`abx deploy --template-id --env` or `ProviderSandbox.create(envs=...)`) applies only when that provider starts the server with those values; it cannot reconfigure a prewarmed process. Use the unified deploy to configure and start the declared service, then connect the SDK to that running application; see [runtime environment configuration](runtime-environment.md).
 
 When the variable is unset, the application allows anonymous calls; provider gateway authentication remains separate. The client preserves the provider's gateway headers and sends an explicit application token as `Authorization: Bearer <token>`, also adding the existing application `X-Access-Token` header when unoccupied. Authentication failures are returned without an anonymous retry. Templates that set `ABX_SERVER_TOKEN` must document `await sb.application_client(port, token=...)` for the project Python API and `ABX_SERVER_TOKEN` for CLI named commands.
 
 ## Calling a command
 
-CLI, after `abx --provider alicloud-express template launch <source> --yes` has started the application:
+CLI, after `abx --provider alicloud-express deploy <source> --yes` has started the application:
 
 ```bash
-abx run <sandbox-id> hello --arg name=Ada
-abx run <sandbox-id> add --json-args '{"x": 1, "y": 2}'
+abx sandbox run <sandbox-id> hello --arg name=Ada
+abx sandbox run <sandbox-id> add --json-args '{"x": 1, "y": 2}'
 abx sandbox command list <sandbox-id>
-abx exec <sandbox-id> -- python3 -c 'print(1)'
+abx sandbox exec <sandbox-id> -- python3 -c 'print(1)'
 ```
 
-`--arg` values are strings. Use `--json-args` for numbers and booleans. `abx exec` is a shell or argv, not a named command.
+`--arg` values are strings. Use `--json-args` for numbers and booleans. `abx sandbox exec` is a shell or argv, not a named command.
 
 Python SDK. The client distribution on PyPI is `agent-sandbox-client`. The import stays `agent_sandbox`. `pip install agent-sandbox` installs an unrelated project.
 
@@ -364,7 +364,7 @@ asyncio.run(main())
 
 `client.commands.run` posts keyword arguments as the JSON body of `POST /commands/hello`
 and returns `result`. `sb.commands.run` is the process API. Closing a connection does
-not delete the sandbox: delete your owned instance with `abx kill <sandbox-id>` when
+not delete the sandbox: delete your owned instance with `abx delete <sandbox-id>` when
 finished, and reconcile its prepared template/image separately. Record source refs
 and installed package versions for acceptance.
 
@@ -463,7 +463,7 @@ Template READMEs are usage guides: keep validation reports, historical acceptanc
 
 Before launch, explain required provider credentials separately from application and model credentials, and document the actual model, endpoint, API-key or product-login configuration consumed by the template. Do not invent a universal variable mapping for upstream tools.
 
-For spec6, show explicit `abx app` deployment and standard Gateway HTTP through Python `httpx`, with the public API table and managed close/delete cleanup. The following client requirements apply to spec5. The CLI section contains an `abx run` example. The SDK section imports `ProviderSandbox`, resolves its application client with `application_client`, and calls `client.commands.run`. The command reference is a table with the parameters. A non-Alibaba base adds `## Base image` / `## 基础镜像`.
+For spec6, show explicit `abx deploy` deployment and standard Gateway HTTP through Python `httpx`, with the public API table and managed close/delete cleanup. The following client requirements apply to spec5. The CLI section contains an `abx sandbox run` example. The SDK section imports `ProviderSandbox`, resolves its application client with `application_client`, and calls `client.commands.run`. The command reference is a table with the parameters. A non-Alibaba base adds `## Base image` / `## 基础镜像`.
 
 ## Listing and acceptance
 
@@ -490,7 +490,7 @@ criteria keep their Issue open, regardless of catalog label. Record the exact so
 provider, entry point, test and cleanup result. Index entries must use only fields
 accepted by the current catalog schema; retired capability/verification fields are rejected.
 
-`abx --provider <provider> template launch <source>` prepares the selected recipe
+`abx --provider <provider> deploy <source>` prepares the selected recipe
 and starts its application through that provider's implemented operations. Document
 the actual usage contract for each provider. Claim a path is tested only when its
 matching execution record exists; missing evidence does not by itself mean unsupported.

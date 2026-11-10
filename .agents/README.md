@@ -40,7 +40,7 @@
 
 - [Published runtime and current acceptance](notes/proposed/process/2026-10-25-published-server-runtime.md) · [verification](evidence/verify/2026-10-25-published-server-runtime.md). New package pins require new image/cloud evidence; prior matrices retain their exact dated scope.
 
-- [Unified template launch](notes/proposed/architecture/2026-10-25-unified-template-launch.md) · [verification](evidence/verify/2026-10-25-unified-template-launch.md).
+- [Unified deploy](notes/proposed/architecture/2026-10-25-unified-template-launch.md) · [verification](evidence/verify/2026-10-25-unified-template-launch.md).
 
 - [Release installation and durable matrix evidence](notes/proposed/process/2026-10-25-unified-launch-release-docs.md) · [documentation verification](evidence/verify/2026-10-25-unified-launch-release-docs.md) · [complete OpenSandbox matrix](evidence/verify/2026-10-25-unified-launch-opensandbox-matrix.md).
 
@@ -124,7 +124,7 @@ credentials, private prompts or unsanitized logs. Cross-repository links are abs
 
 - [Public browser model controller](notes/proposed/feature/2026-10-27-public-browser-model-controller.md) · [verification](evidence/verify/2026-10-27-public-browser-model-controller.md). Native public application model proof and documented journeys are recorded separately.
 
-- [Complete public-template launch evidence](notes/implemented/process/2026-10-24-public-template-matrix.md) · [92-case matrix](evidence/verify/2026-10-24-public-template-matrix.md) · [public-install pilot](evidence/verify/2026-10-24-public-install-pilot-2.md) · [public Git journeys](evidence/verify/2026-10-24-public-git-journeys.md)
+- [Complete public-deploy evidence](notes/implemented/process/2026-10-24-public-template-matrix.md) · [92-case matrix](evidence/verify/2026-10-24-public-template-matrix.md) · [public-install pilot](evidence/verify/2026-10-24-public-install-pilot-2.md) · [public Git journeys](evidence/verify/2026-10-24-public-git-journeys.md)
 
 - [Final verification overview](notes/proposed/process/2026-10-21-final-acceptance-overview.md) · [verification](evidence/verify/2026-10-21-final-acceptance-overview.md)
 
@@ -167,7 +167,7 @@ Coding verifier completion follow-up: [decision](notes/proposed/feature/2026-10-
 
 - [Native acceptance entry](notes/proposed/process/2026-10-19-native-acceptance-entry.md) · [verification](evidence/verify/2026-10-19-native-acceptance-entry.md)
 
-- [Provider-owned template launch](notes/proposed/feature/2026-10-19-provider-template-launch.md) · [verification](evidence/verify/2026-10-19-provider-template-launch.md)
+- [Provider-owned deploy](notes/proposed/feature/2026-10-19-provider-template-launch.md) · [verification](evidence/verify/2026-10-19-provider-template-launch.md)
 
 - [Polyglot toolchain](notes/proposed/feature/2026-10-19-polyglot-toolchain.md) · [verification](evidence/verify/2026-10-19-polyglot-toolchain.md)
 - [Native apply_patch](notes/proposed/feature/2026-10-19-apply-patch-runtime.md) · [verification](evidence/verify/2026-10-19-apply-patch-runtime.md)
@@ -398,3 +398,5 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 - [README audience review](notes/proposed/process/2026-10-28-readme-audience-review.md) · [verification](evidence/verify/2026-10-28-readme-audience-review.md).
 
 - 2026-11-10 application profile defaults: [decision](notes/proposed/process/2026-11-10-application-profile-defaults.md), [local verification](evidence/verify/2026-11-10-application-profile-defaults.md).
+
+- [Current CLI workflows](notes/proposed/process/2026-11-10-current-cli-workflows.md) · [verification](evidence/verify/2026-11-10-current-cli-workflows.md).

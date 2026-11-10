@@ -24,17 +24,17 @@ export ABX_E2B_API_KEY='<e2b-api-key>'
 
 使用有权访问 `desktop` 模板的 Key。这是 E2B 平台认证；shell、文件和桌面访问不需要在沙箱中交互登录，也不需要模型 API Key、模型 endpoint 或应用令牌。自建 E2B 部署可能还需 `ABX_E2B_BASE_URL` 和 `ABX_E2B_DOMAIN`，按该部署实际值配置，不要传入阿里云极速版凭据。
 
-使用 CLI 0.5.6 或更高版本和当前托管目录，按[安装与平台配置说明](../../using-templates.zh-CN.md)准备。
+使用 当前源码 CLI和当前托管目录，按[安装与平台配置说明](../../using-templates.zh-CN.md)准备。
 
 安装 [CLI](../../using-templates.zh-CN.md) 和 Node.js 22+，完成下方平台配置，将 `<sandbox-id>` 替换为创建时返回的实例 ID。
 
 ```bash
 abx provider install Alibaba-Agent-Sandbox/awesome-providers//e2b --allow-unpinned --yes
 abx provider doctor e2b
-abx --provider e2b template launch desktop --sandbox-timeout 180 --yes
+abx --provider e2b deploy desktop --sandbox-timeout 180 --yes
 export ABX_SANDBOX_ID="<返回的沙箱ID>"
-abx --provider e2b exec "$ABX_SANDBOX_ID" -- python3 -c 'print(6*7)'
-abx --provider e2b kill "$ABX_SANDBOX_ID" -y
+abx --provider e2b sandbox exec "$ABX_SANDBOX_ID" -- python3 -c 'print(6*7)'
+abx --provider e2b delete "$ABX_SANDBOX_ID" -y
 ```
 
 ## 快速开始（Python SDK）

@@ -2,14 +2,14 @@
 
 [中文](runtime-environment.zh-CN.md)
 
-Use one startup owner: `abx template launch` prepares the template and starts its declared application. Connect the SDK to that running sandbox to call its named commands. Model settings and `ABX_SERVER_TOKEN` must reach the application process before it imports the template; connecting another client does not reconfigure that process.
+Use one startup owner: `abx deploy` prepares the template and starts its declared application. Connect the SDK to that running sandbox to call its named commands. Model settings and `ABX_SERVER_TOKEN` must reach the application process before it imports the template; connecting another client does not reconfigure that process.
 
 ## Launch once, then connect
 
 Follow [installation and provider setup](using-templates.md#installation). The example uses the published CLI 0.5.6, Python client 0.4.0a6 and the `python-hello` template. Configure Express and securely set `ABX_SERVER_TOKEN` in your local environment before launching. For a model template, also set the configuration names declared in its README; declaring an empty value in `template.yaml` does not provide a secret.
 
 ```bash
-abx --provider alicloud-express template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello --yes
+abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --yes
 ```
 
 Copy the returned sandbox ID into the Python example below. Use the same provider and application token as the launch. The application already runs on its declared port 9000; this connection does not start another server.
@@ -38,7 +38,7 @@ asyncio.run(main())
 
 The expected result is `Hello, Ada!`. For OpenSandbox, use `--provider opensandbox` for launch and `provider="opensandbox"` for the connection, after its [provider setup](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md). Use the selected template's actual service port and command names. For CLI calls, HTTP POST and cleanup, follow [the complete calling example](using-templates.md#cli-sdk-and-http).
 
-`client.aclose()` and `sb.close()` close client resources; they do not delete the sandbox. When finished, the owner deletes that instance with `abx --provider alicloud-express kill <sandbox-id>` and separately removes any exact owned prepared template/image no longer needed. Do not create another sandbox merely to consume this running application's API.
+`client.aclose()` and `sb.close()` close client resources; they do not delete the sandbox. When finished, the owner deletes that instance with `abx --provider alicloud-express delete <sandbox-id>` and separately removes any exact owned prepared template/image no longer needed. Do not create another sandbox merely to consume this running application's API.
 
 ## Startup configuration and authentication
 

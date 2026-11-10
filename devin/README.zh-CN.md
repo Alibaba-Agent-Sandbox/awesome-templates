@@ -32,7 +32,7 @@
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export DEVIN_CREDENTIALS_FILE='/home/user/devin-private/credentials.toml'
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//devin --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//devin --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
@@ -44,14 +44,14 @@ launch 已启动该实例的应用，不需要再建第二个沙箱或启动第�
 在可信机器完成原版登录后，把你自己实际生成的 credentials.toml 路径填入下面占位符；不要打印文件内容：
 
 ```bash
-abx exec "$SANDBOX_ID" -- mkdir -p /home/user/devin-private
-abx exec "$SANDBOX_ID" -- chmod 700 /home/user/devin-private
-abx upload "$SANDBOX_ID" "<local-credentials.toml>" /home/user/devin-private/credentials.toml
-abx exec "$SANDBOX_ID" -- chmod 600 /home/user/devin-private/credentials.toml
+abx sandbox exec "$SANDBOX_ID" -- mkdir -p /home/user/devin-private
+abx sandbox exec "$SANDBOX_ID" -- chmod 700 /home/user/devin-private
+abx sandbox upload "$SANDBOX_ID" "<local-credentials.toml>" /home/user/devin-private/credentials.toml
+abx sandbox exec "$SANDBOX_ID" -- chmod 600 /home/user/devin-private/credentials.toml
 ```
 
 ```bash
-ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" devin --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","allow_unsafe_tools":true,"cwd":"/home/user/app","command_timeout":300}'
+ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" devin --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","allow_unsafe_tools":true,"cwd":"/home/user/app","command_timeout":300}'
 ```
 
 任务要求在 `/home/user/app` 写出 `generated_hello.py` 和 `GENERATED_REPORT.md`。示例显式开放所需的编辑/工具权限，只在自己拥有的可丢弃沙箱中使用。下面的 SDK 和 HTTP 是同一任务的替代调用方式，选择一种即可。
@@ -101,10 +101,10 @@ asyncio.run(main())
 ### 导出产物与清理
 
 ```bash
-abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
-abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
-abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
-abx kill "$SANDBOX_ID"
+abx sandbox exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx delete "$SANDBOX_ID"
 ```
 
 程序预期输出 `Hello from the sandbox`。先读取产物并检查再使用；模型回答成功不代表文件一定存在。文件不会自动回写模板或你的本机，释放沙箱前必须导出。

@@ -131,13 +131,15 @@ component field. Function-alias and custom-domain bindings have distinct Provide
 requirements; a test function URL is not a production domain guarantee.
 
 Session revisions remain fixed during updates. Old Workers and compatible Server
-artifacts are retained until sessions drain. Cleanup failures retain ownership
-records and an operational cleanup path; borrowed databases and model services
-are not deleted. Unused, confirmed owned Server builds can be cleaned with
-`abx app clean-build BUILD --yes`. Once a build participates in Apply it belongs
-to app Destroy/Retire, which delete owned image tags only after references drain;
-borrowed Server images are preserved. Sandbox image builds may remain under
-`retained_build_artifacts` for explicit registry cleanup.
+artifacts are retained until sessions drain. Use `abx status NAME --revisions` to
+inspect retained revisions and `abx delete NAME --revision REVISION --yes` to retire
+one. `abx delete NAME --yes` removes the deployment's owned resources; use
+`abx recover NAME` after an interrupted or uncertain operation. Reusable `--build`
+artifacts and supplied Server images remain borrowed. A standalone build no
+longer used by any deployment can be cleaned with
+`abx template build --clean BUILD --yes`. Sandbox image builds may remain under
+`retained_build_artifacts` for explicit registry cleanup. Existing databases,
+networks and model services remain yours to manage.
 
 ## Hooks and outputs
 
