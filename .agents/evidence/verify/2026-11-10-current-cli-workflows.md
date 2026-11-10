@@ -93,3 +93,8 @@ CI follow-up: the reviewed CLI reference advances to
 its MCP artifact workflow and corrected current documentation. This changes no
 template runtime contract. Repeated actual CLI parser checks passed 2/2 and the
 consumer workflow YAML parsed successfully; no cloud verification was repeated.
+
+The final exact CLI pin is `ba52904b4f099ffa50d9017e2a4260dff3c0aeeb`.
+Its only additional change after 3a93c819 is a CubeSandbox test invocation fix;
+consumer parser behavior and the documentation content are unchanged. Workflow
+YAML and diff checks passed again. No template cloud acceptance was repeated.
