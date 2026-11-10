@@ -73,3 +73,17 @@ and --input-file, without a credential-bearing disk file or command argument.
 The combined relevant suite passed 109 tests and 6 subtests. The final archive
 suite passed 28 tests including an actual subprocess fd handoff, fd closure and
 secret-free argv/log assertions. All tests use synthetic credentials locally.
+
+Final parser CI is pinned to CLI source commit
+`2eecb789beda997cd8090dd0244e93695d6615c2`, checked out separately and built
+with npm ci/build before executing the existing real parser tests. It no longer
+installs the incompatible published 0.5.6 CLI. Current Express/image/steps
+maintenance guides now name that source distribution, retain published SDK
+dependencies, and describe provider template.create without requiring ordinary
+users to split their deploy into manual CRUD. Dated historical evidence remains
+unchanged. The final local parser, YAML and document checks are recorded below.
+
+Final check results: actual compiled CLI parser tests 2/2 PASS; current-document
+links 234 documents / 0 failures; documentation tests 4/4 PASS; both changed
+workflow YAML files parse; git diff --check PASS. These checks did not submit
+cloud work or execute GitHub Actions.

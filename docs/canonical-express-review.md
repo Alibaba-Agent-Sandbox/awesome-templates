@@ -2,7 +2,7 @@
 
 [中文](canonical-express-review.zh-CN.md).
 
-Current Express acceptance uses [Public template launch matrix](public-launch-testing.md), with the published CLI/Python distributions and provider-resolved application endpoints. The former fixed-commit deployment job is retired.
+Current Express acceptance uses [Public template launch matrix](public-launch-testing.md), with an exact reviewed source CLI revision and published Python distributions and provider-resolved application endpoints. The former fixed-commit deployment job is retired.
 
 ## Current task: local Express acceptance
 

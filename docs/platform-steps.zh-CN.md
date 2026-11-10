@@ -4,7 +4,7 @@
 常规公开启动见[模板使用指南](using-templates.zh-CN.md)。步骤构建与 Docker 镜像
 构建是不同的验证范围。
 
-按[安装指南](using-templates.zh-CN.md)安装当前已发布 CLI 和 Python client/server，
+按[安装指南](using-templates.zh-CN.md)构建当前源码 CLI 并安装已发布 Python client/server，
 再安装本仓库检查器及对应控制器依赖。通过进程环境提供已有极速版账号；这些命令
 不会把凭据上传到 Actions。
 
@@ -22,9 +22,11 @@ python scripts/run_steps_e2e.py python-hello --timeout 900
 客户端及 HTTP 调用命名命令，检查实际源码、文件和进程操作，最后独立销毁并核对
 沙箱及准备模板不存在。只有一条启动路径，没有 CLI／SDK 两种创建选项。
 
-内部 `template deploy --build steps` 只负责准备，不预先启动另一套应用，也不替代
-公开启动。原生状态必须是实际 JSON 字符串或对象，不接受 Python repr 字符串。
-公开 `deploy` 不增加 `--build steps` 参数。
+维护程序通过 `abx provider run template.create --input-file INPUT.json --yes`
+提交原生准备。JSON 包含 `name`、`image`、`generation: 2` 及有序的 `steps`，
+每一步使用 `type` 和 `args` 字段；准备阶段不传应用启动命令。普通使用者仍可直接
+执行 `abx deploy PROJECT --name NAME --yes`，由清单选择构建步骤。
+`deploy --build` 接受已有构建制品的路径，不接受构建模式名。
 
 ## 不创建云资源，只检查准备结果
 

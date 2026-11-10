@@ -19,11 +19,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - name: Install the current published CLI and verify real parser contracts
+      - name: Check out the reviewed CLI contract
+        uses: actions/checkout@v4
+        with:
+          repository: Alibaba-Agent-Sandbox/agent-sandbox
+          ref: 2eecb789beda997cd8090dd0244e93695d6615c2
+          path: .cli-contract
+          persist-credentials: false
+      - name: Build the reviewed CLI source
+        working-directory: .cli-contract
         run: |
-          npm install --global --registry https://registry.npmjs.org @agent-sandbox/cli@0.5.6
+          npm ci
+          npm run build
+      - name: Verify the real source CLI parser contract
+        run: |
           python -m pip install -r scripts/requirements-spec.txt
-          ABX=abx python scripts/test_express_cli_contract.py
+          ABX="node $GITHUB_WORKSPACE/.cli-contract/dist/bin/abx.js" python scripts/test_express_cli_contract.py
 
   documentation:
     runs-on: ubuntu-24.04

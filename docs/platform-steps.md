@@ -5,7 +5,7 @@ Alibaba Express without a local Docker daemon. The normal public deploy
 path is described in [using templates](using-templates.md). A step-build receipt
 and a Docker image receipt are separate evidence.
 
-Install the current published CLI and Python client/server using the
+Build the current source CLI and install the published Python client/server using the
 [installation guide](using-templates.md), then install checker and controller
 dependencies from this repository. Supply the existing Express account through
 process environment. No credentials are uploaded to Actions by these commands.
@@ -29,10 +29,12 @@ checks source identity and files/process operations, and independently destroys
 and reads back absence of its sandbox and prepared template. There is one launch
 path; there is no CLI-versus-SDK creation selector.
 
-The internal native `template deploy --build steps` performs preparation only;
-it does not start a second application or replace current public launch. Native
-status must be actual JSON strings/objects, never Python repr strings. The public
-`deploy` does not acquire a new `--build steps` option.
+The maintenance runner submits native preparation through `abx provider run
+template.create --input-file INPUT.json --yes`. The JSON includes `name`, `image`,
+`generation: 2` and ordered `steps` entries with `type` and `args` fields. It omits
+application startup commands during preparation. Normal users can still use
+`abx deploy PROJECT --name NAME --yes`; the manifest selects its build steps.
+The `deploy --build` option takes an existing build artifact path, not a build mode.
 
 ## Inspect preparation without creating cloud resources
 

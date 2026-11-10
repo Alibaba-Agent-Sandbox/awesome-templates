@@ -2,7 +2,7 @@
 
 [中文](source-image-acceptance.zh-CN.md).
 
-The current catalog contains 46 source recipes and four provider-managed entries. Use the [public launch testing guide](public-launch-testing.md) for fresh installation, source builds, provider-resolved CLI/SDK/HTTP calls and independent cleanup on Express and OpenSandbox. Provider-managed IDs are tested separately on their owning provider.
+The catalog includes source recipes and provider-managed entries. Use the [public launch testing guide](public-launch-testing.md) for fresh installation, source builds, provider-resolved CLI/SDK/HTTP calls and independent cleanup on Express and OpenSandbox. Provider-managed IDs are tested separately on their owning provider.
 
 ## Image build checks
 
@@ -12,7 +12,7 @@ The optional `export_images` input saves an already verified image for one day. 
 
 ## Provider launch and full HTTP checks
 
-Use **Public template launch matrix** with `distribution=published`, `provider=opensandbox`, `alicloud-express` or `both`, and `templates=all` or explicit catalog names. The workflow installs official published CLI/Python packages, installs the public provider plugin where needed and runs the existing `scripts/public_launch_e2e.py` controller. Follow its guide for exact reviewed package/provider refs and provider configuration.
+Use **Public template launch matrix** with `distribution=source` and an exact reviewed `cli_ref`, `provider=opensandbox`, `alicloud-express` or `both`, and `templates=all` or explicit catalog names. The workflow builds that CLI source and installs the published Python packages, installs the public provider plugin where needed and runs the existing `scripts/public_launch_e2e.py` controller. Follow its guide for exact reviewed package/provider refs and provider configuration.
 
 The controller launches the documented source, checks the actual guest server version against the Dockerfile, invokes manifest commands through CLI, Python and HTTP, checks service authentication, shell/files and every template's complete HTTP controller. Browser templates use actual provider-resolved CDP/noVNC endpoints. Only owned resources are deleted; independent absence is required. Model/vendor-account omissions remain explicit.
 

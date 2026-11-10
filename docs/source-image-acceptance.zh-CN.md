@@ -2,7 +2,7 @@
 
 [English](source-image-acceptance.md).
 
-当前目录有 46 个源码模板和 4 个提供方托管条目。按照[公开启动测试指南](public-launch-testing.md#中文)从安装工具开始，测试极速版和 OpenSandbox 的源码构建、提供方返回的 CLI/SDK/HTTP 入口及独立清理。托管标识在其所属提供方单独验证。
+目录包含源码模板和提供方托管条目。按照[公开启动测试指南](public-launch-testing.md#中文)从安装工具开始，测试极速版和 OpenSandbox 的源码构建、提供方返回的 CLI/SDK/HTTP 入口及独立清理。托管标识在其所属提供方单独验证。
 
 ## 镜像构建检查
 
@@ -12,7 +12,7 @@
 
 ## 提供方启动与完整 HTTP 检查
 
-使用 **Public template launch matrix**，选择 `distribution=published`、`provider=opensandbox`、`alicloud-express` 或 `both`，并设置 `templates=all` 或具体目录名。工作流安装官网已发布的 CLI/Python 包、所需公开 provider 插件，再调用已有 `scripts/public_launch_e2e.py`。精确的软件包/provider 提交及平台配置见该指南。
+使用 **Public template launch matrix**，选择 `distribution=source` 并固定精确审阅的 `cli_ref`，`provider=opensandbox`、`alicloud-express` 或 `both`，并设置 `templates=all` 或具体目录名。工作流构建该 CLI 源码，安装已发布 Python 包及所需公开 provider 插件，再调用已有 `scripts/public_launch_e2e.py`。精确的软件包/provider 提交及平台配置见该指南。
 
 控制器启动文档中的源码，读取沙箱内实际服务包版本并核对 Dockerfile，通过 CLI、Python 和 HTTP 调用清单命令，检查服务认证、shell/文件及模板的完整 HTTP 控制器。浏览器模板直接使用提供方返回的 CDP/noVNC 访问地址。只删除本轮自建资源，并独立确认不存在。模型或厂商账号缺失单独列明。
 
