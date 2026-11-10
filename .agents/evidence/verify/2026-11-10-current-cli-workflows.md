@@ -124,3 +124,19 @@ must be confirmed by the PR job. No cloud deployment/model acceptance is claimed
 Registry and Website intentionally retain the prior producer revision 1847abe:
 its template/contract content is identical; this follow-up changes CI/testing and
 engineering evidence only.
+
+The next local-e2e CI invocation exposed a test-only import-path mistake in the
+new workflow regression: direct `python scripts/test_spec_tools.py` begins with
+scripts/ on sys.path, while the real image workflow uses stdin from the repository
+root. The test had passed under pytest, which already includes that root. Exact
+CI failure:
+https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/42809963992/job/129808629868
+
+A clean direct-script invocation reproduced the same three ModuleNotFoundError
+subtest errors locally before the correction. The test now temporarily includes
+ROOT in sys.path only while executing the captured workflow, then restores it.
+No workflow/product code, assertion, global PYTHONPATH or template changed.
+Afterwards, with PYTHONPATH unset, test_local_cleanup.py passed 1 test and the
+exact test_spec_tools.py script entry passed all 59 tests. The separate pytest
+specification/image-selector run again passed 87 tests and 180 subtests.
+This supersedes the earlier pytest-only coverage of that fixture.

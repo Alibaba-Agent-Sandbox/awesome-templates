@@ -415,7 +415,10 @@ class ImageBuildContextTest(unittest.TestCase):
         try:
             os.chdir(ROOT)
             for label, template, manifest, managed in cases:
+                # The workflow runs Python on stdin from ROOT; direct unittest
+                # invocation starts with scripts/ instead, so scope its import path.
                 with self.subTest(profile=label), patch.dict(os.environ, {"TEMPLATE": template}), \
+                        patch.object(sys, "path", [str(ROOT), *sys.path]), \
                         patch("yaml.safe_load", return_value=manifest), patch("subprocess.run") as docker:
                     before = json.dumps(manifest, sort_keys=True)
                     exec(compile(code, "image-build.yml::smoke", "exec"), {})
