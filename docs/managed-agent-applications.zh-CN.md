@@ -6,9 +6,11 @@
 
 封闭契约是 [template-v6.schema.json](../spec/template-v6.schema.json)。规范 5 保留既有生命周期与部署语义。应用部署必须显式执行；导入、构建或创建 Sandbox 不会部署 Server 资源或运行主机 hooks。
 
+显式 `application.deployment.profile: fc-managed-agents` 从[profile 默认值](../contracts/application-profile/profiles.json)补齐固定字段。编写清单时可省略重复常量，显式指定冲突值会报错。凭据、binding 引用、地域、镜像、资源大小与可配置预算没有默认值。精简形式需要支持 profile 展开的 CLI；CLI 0.5.10 需要完整字段。
+
 ## 运行时与生命周期
 
-支持的组合为：
+profile 提供以下运行时默认值；本段只有 `sandbox.provider` 需要显式选择：
 
 ```yaml
 runtime:
@@ -42,7 +44,7 @@ close 停止接收任务并释放计算，已提交结果按保留期可读。de
 
 `application.api.protocol` 为 `agent-sandbox-managed-agents/v1`。Gateway 通过能力发现说明受支持的 OpenAI 风格子集及托管扩展。不支持的 steering、工具和设置明确报错；排队新轮次不能静默冒充引导当前轮。
 
-binding 保存引用名，不写密钥值或连接 URL，并声明允许的目标角色：
+binding 保存引用名，不写密钥值或连接 URL。以下目标角色由 profile 默认提供，引用名仍需显式填写：
 
 | 绑定 | 目标 | 用途与来源 |
 | --- | --- | --- |
@@ -53,7 +55,7 @@ binding 保存引用名，不写密钥值或连接 URL，并声明允许的目�
 | `internalAuth` | gateway、worker、dispatcher | 独立的私有控制身份或签名配置。 |
 | 入口（`deployment.ingressBindingRef`） | deployment-publisher | 有归属记录的稳定路由、alias 或域名配置。 |
 
-`model` 要求 `resolverRole: worker`，以及显式 `allowedEnv`，仅允许 `OPENAI_API_KEY`、`OPENAI_BASE_URL`、`OPENAI_MODEL`、`CODEX_API_KEY` 的子集。云、数据库和业务认证配置不复制进 Sandbox。每会话应用 token 自动生成，不是云控制台申请的 API Key。
+`model` 默认使用 `resolverRole: worker` 和 `allowedEnv: [OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL]`。显式 `allowedEnv` 可选择这些名称以及 `CODEX_API_KEY` 的非空子集。云、数据库和业务认证配置不复制进 Sandbox。每会话应用 token 自动生成，不是云控制台申请的 API Key。
 
 部署解析器检查 binding 实际值类型与归属，缺少必需值阻止发布。状态 binding 的实际值可以是 PostgreSQL URL 字符串，或 `{databaseUrl, vpcConfig?, databaseCa?}` 对象。可选 `vpcConfig` 只包含 `vpcId`、不同的 `vSwitchIds` 和 `securityGroupId`，用于三个 FC 角色的部署网络，不注入 guest。网络资源均为借用，不自动创建 NAT/路由，也不证明 endpoint 可达。可选 `databaseCa` 接受有界的纯证书 PEM 字符串、环境引用或 CLI 宿主机文件引用，保留数据库主机名验证；它仅配置 Server 信任，不进入镜像、计划、收据或 guest。CLI 内部固定数据库持久身份，用户无需手工提供该身份。同 UID 的 Agent 工具可以访问有意注入该 Sandbox 的模型凭据，但不获得 Server 控制凭据。
 

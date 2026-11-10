@@ -166,6 +166,8 @@ Agent 已完成任务。
 私有 bridge 不是业务 API。`commands.py` 中的本机 `agents_version()` 无参数，只检查
 安装的 CLI 并返回固定版本；私有 bridge 不开放该命名命令。
 
+清单省略了 `fc-managed-agents` profile 的固定字段。按需修改显式声明的提供方、binding 引用、地域和预算；默认值与允许的覆盖见 [profile 参考](../docs/managed-agent-applications.zh-CN.md)。
+
 ## 配置
 
 复制 [bindings.example.json](bindings.example.json)。其中 `{env: ...}` 是 Apply 时解析的

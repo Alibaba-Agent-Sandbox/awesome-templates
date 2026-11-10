@@ -1,5 +1,5 @@
 name: agents-api
-version: 0.1.4
+version: 0.1.5
 description: One stable Gateway for session-owned Sandbox Agents, durable files and
   explicit lifecycle.
 author: alibaba-agent-sandbox
@@ -51,40 +51,18 @@ provides:
     - submissions.get
     - submissions.cancel
 application:
-  api:
-    protocol: agent-sandbox-managed-agents/v1
-    compatibility: openai-agents-inspired-subset
-    busyInputPolicy: reject-unless-steerable
-    explicitQueue: true
-  runtime:
-    placement: in-sandbox
-    driver: sandbox-local-api
-    profile: managed-bridge-v1
-  gateway:
-    placement: fc-web
   sandbox:
     provider: alicloud-express
-    lifetime: per-session
-    workspace: exclusive
-    requiredFeatures:
-    - sandbox.lifecycle
-    - ports.url
   sessions:
     idleTimeoutSeconds: 900
     maxLifetimeSeconds: 3600
     maxLogicalSessionsPerOwner: 100
     maxActiveSessions: 20
     maxQueuedTurnsPerSession: 8
-    maxConcurrentTurnsPerSession: 1
     resultRetentionSeconds: 86400
-    closePolicy: release-compute-retain-results
-    deletePolicy: remove-public-data-retain-private-cleanup
-    guestRestartPolicy: freeze-and-reconcile
   state:
-    profile: durable
     bindingRef: state
   storage:
-    backend: bounded-database
     maxFileBytes: 10485760
     maxArtifactBytes: 10485760
     maxTurnArtifactBytes: 10485760
@@ -92,38 +70,16 @@ application:
   bindings:
     state:
       reference: agents-state
-      targets:
-      - gateway
-      - worker
-      - dispatcher
     sandboxAccess:
       reference: agents-sandboxAccess
-      targets:
-      - worker
-      - dispatcher
     model:
       reference: agents-model
-      targets:
-      - sandbox-creation
-      resolverRole: worker
-      allowedEnv:
-      - OPENAI_API_KEY
-      - OPENAI_BASE_URL
-      - OPENAI_MODEL
     clientAuth:
       reference: agents-clientAuth
-      targets:
-      - gateway
     internalAuth:
       reference: agents-internalAuth
-      targets:
-      - gateway
-      - worker
-      - dispatcher
     ingress:
       reference: agents-ingress
-      targets:
-      - deployment-publisher
   limits:
     maxRunSeconds: 600
     maxToolSeconds: 60
@@ -142,11 +98,6 @@ application:
       dockerfile: server/Dockerfile
       context: .
     ingressBindingRef: ingress
-    revisionStrategy: immutable-workers-with-drain
-  outputs:
-    endpoint:
-      from: publish.outputs.endpoint
-    protocol: agent-sandbox-managed-agents/v1
   hooks:
     afterReady:
     - id: managed-agent-business

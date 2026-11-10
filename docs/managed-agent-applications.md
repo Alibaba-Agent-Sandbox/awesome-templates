@@ -14,9 +14,17 @@ Version 5 retains its original lifecycle and deployment semantics. Application
 deployment is explicit; importing, building or creating a Sandbox never deploys
 Server resources or executes host hooks.
 
+The explicit `application.deployment.profile: fc-managed-agents` supplies fixed
+fields from the [profile defaults](../contracts/application-profile/profiles.json).
+Omit repeated constants when authoring a manifest; specifying a conflicting value
+is an error. Defaults do not supply credentials, binding references, region, images,
+resource sizes or configurable budgets. A CLI must support profile expansion to read
+the compact form; CLI 0.5.10 requires the fully expanded fields.
+
 ## Runtime and lifecycle
 
-The supported combination is:
+The profile supplies the following runtime defaults; only `sandbox.provider` must
+be chosen explicitly in this section:
 
 ```yaml
 runtime:
@@ -65,7 +73,7 @@ Gateway. Unsupported steering, tools and settings fail explicitly; a queued new
 turn is not silently described as steering the active turn.
 
 Bindings store references, never secret values or connection URLs. Each binding
-declares its permitted role targets:
+uses the following role targets by default. References remain explicit:
 
 | Binding | Targets | Purpose and source |
 | --- | --- | --- |
@@ -76,8 +84,9 @@ declares its permitted role targets:
 | `internalAuth` | gateway, worker, dispatcher | Independent private control identity/signing configuration. |
 | Ingress (`deployment.ingressBindingRef`) | deployment-publisher | Owned or borrowed stable route/alias/domain configuration. |
 
-`model` requires `resolverRole: worker` and an explicit `allowedEnv` subset of
-`OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL`, `CODEX_API_KEY`. No cloud,
+`model` defaults to `resolverRole: worker` and
+`allowedEnv: [OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL]`. An explicit `allowedEnv`
+may select a nonempty subset of these names plus `CODEX_API_KEY`. No cloud,
 database or business-auth configuration is copied to the Sandbox. The application
 token is generated per session; it is not a cloud-console API key.
 

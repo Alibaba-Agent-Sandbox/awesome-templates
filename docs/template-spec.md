@@ -182,6 +182,15 @@ same `template.yaml`; the profile expands into owned deployment resources rather
 accepting an arbitrary workflow language. See the [managed application reference](managed-agent-applications.md)
 ([中文](managed-agent-applications.zh-CN.md)).
 
+Template type is selected by the explicit `application.deployment.profile`, while
+`spec_version` selects the supported validation contract. Version 6 alone does not
+identify or enable a deployment. The `fc-managed-agents` profile supplies its fixed
+API, runtime, Gateway, lifecycle, storage-backend, output and binding-role fields
+from the [shared defaults](../contracts/application-profile/profiles.json). Authors
+may omit these fields; explicit conflicting values still fail validation. Consumers
+expand missing fields before validation and execution. Provider, credentials,
+region, images, resource sizes and all configurable budgets remain explicit.
+
 The version-6 runtime is explicitly `in-sandbox`, `sandbox-local-api`,
 `managed-bridge-v1`; its private protocol is `agent-sandbox-managed-bridge/v1`.
 It does not expose the core Agents routes or named commands. Its exact startup is

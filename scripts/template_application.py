@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import importlib.util
 from pathlib import Path
 from typing import Any
 
@@ -9,12 +10,20 @@ SCHEMA_PATH = Path(__file__).resolve().parents[1] / "spec" / "template-v5.schema
 MANAGED_SCHEMA_PATH = SCHEMA_PATH.with_name("template-v6.schema.json")
 
 
+PROFILE_ROOT = SCHEMA_PATH.parent.parent / "contracts" / "application-profile"
+_profile_spec = importlib.util.spec_from_file_location("application_profile", PROFILE_ROOT / "normalize.py")
+_profile_module = importlib.util.module_from_spec(_profile_spec)
+_profile_spec.loader.exec_module(_profile_module)
+PROFILE_CATALOG = json.loads((PROFILE_ROOT / "profiles.json").read_text(encoding="utf-8"))
+
+
+def normalize_manifest(data: dict[str, Any]) -> dict[str, Any]:
+    return _profile_module.normalize_application_profile(data, PROFILE_CATALOG)
+
+
 def is_managed_application(data: dict[str, Any]) -> bool:
-    """Identify only the explicit managed bridge contract, never a legacy route."""
-    application = data.get("application")
-    runtime = application.get("runtime") if isinstance(application, dict) else None
-    return (type(data.get("spec_version")) is int and data["spec_version"] == 6
-            and isinstance(runtime, dict) and runtime.get("profile") == "managed-bridge-v1")
+    """Identify the explicit deployment profile; version only selects validation."""
+    return _profile_module.application_profile(data) == "fc-managed-agents"
 
 
 def validate_manifest(data: dict[str, Any], template_dir: Path | None = None) -> list[str]:
@@ -32,6 +41,10 @@ def validate_v6(data: dict[str, Any], template_dir: Path | None = None) -> list[
         return ["v6 validation needs jsonschema==4.26.0; install scripts/requirements-spec.txt"]
     if type(data.get("spec_version")) is not int or data["spec_version"] != 6:
         return ["managed application requires spec_version: 6"]
+    try:
+        data = normalize_manifest(data)
+    except ValueError as error:
+        return [str(error)]
     schema = json.loads(MANAGED_SCHEMA_PATH.read_text(encoding="utf-8"))
     errors = [f"{'.'.join(map(str, error.absolute_path)) or '<root>'}: {error.message}"
               for error in Draft202012Validator(schema).iter_errors(data)]
@@ -68,9 +81,12 @@ def validate_v6(data: dict[str, Any], template_dir: Path | None = None) -> list[
         ("internalAuth", {"gateway", "worker", "dispatcher"}), ("model", {"sandbox-creation"}),
     ]
     for name, targets in required_targets:
-        if name in bindings and set(bindings[name]["targets"]) != targets:
+        if name in bindings and set(bindings[name].get("targets", [])) != targets:
             errors.append(f"application.bindings.{name}: targets must be {', '.join(sorted(targets))}")
     for name, binding in bindings.items():
+        if "targets" not in binding:
+            errors.append(f"application.bindings.{name}: targets are required for an additional binding")
+            continue
         targets = set(binding["targets"])
         if "sandbox-creation" in targets:
             if targets != {"sandbox-creation"} or binding.get("resolverRole") != "worker":

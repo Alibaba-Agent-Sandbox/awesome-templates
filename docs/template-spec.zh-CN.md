@@ -164,6 +164,8 @@ smoke:
 
 版本 6 使用独立封闭的 [spec/template-v6.schema.json](../spec/template-v6.schema.json)，选择 `fc-managed-agents` 应用 profile。现有版本 5 模板保持原义，不自动获得托管部署行为。配置仍只写同一份 `template.yaml`；profile 展开为有归属记录的部署资源，不接受任意工作流语言。完整字段和使用边界见[托管应用参考](managed-agent-applications.zh-CN.md)（[English](managed-agent-applications.md)）。
 
+模板类型由显式 `application.deployment.profile` 决定，`spec_version` 只选择支持的校验契约。仅声明版本 6 不会获得部署能力。`fc-managed-agents` 的固定 API、运行时、Gateway、生命周期、存储后端、输出和 binding 角色来自[共享默认值](../contracts/application-profile/profiles.json)。作者可省略这些字段；显式冲突仍校验失败。消费者先补齐缺失字段，再校验和执行。提供方、凭据引用、地域、镜像、资源大小及可配置预算仍需显式填写。
+
 版本 6 明确使用 `in-sandbox`、`sandbox-local-api`、`managed-bridge-v1`，私有协议为 `agent-sandbox-managed-bridge/v1`，不开放旧核心 Agents 路由或命名命令。精确启动入口为 `python -m agent_sandbox.server.managed --port 9000`，就绪检查仍是 `agent-sandbox-server healthcheck --port 9000`。阿里云基础镜像、generation 2、非 root、已发布依赖精确钉和路径边界仍适用。
 
 版本 6 的根级 `smoke` 使用 `operation: health` 或 `operation: capabilities` 和非空 `expect`，不虚构命名命令。安装兼容的 Server SDK 后，L0 使用独立状态、工作区和生成的本地 token 启动实际声明的 bridge。静态检查不会安装或执行托管运行时。完整业务通过部署后的 Gateway 验证；bridge 健康或 `commands.py` 诊断都不能证明 Agent 任务完成。

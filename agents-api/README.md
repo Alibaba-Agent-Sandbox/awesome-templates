@@ -187,6 +187,10 @@ The private bridge is not the business API. `commands.py` contains a local
 `agents_version()` diagnostic with no arguments; it checks installed CLI versions
 and returns their pinned versions. It is not exposed by the private bridge.
 
+The manifest omits fixed `fc-managed-agents` profile fields. Customize the declared
+provider, bindings, region and budgets; see the [profile reference](../docs/managed-agent-applications.md)
+for defaults and supported overrides.
+
 ## Configuration
 
 Copy [bindings.example.json](bindings.example.json). Its `{env: ...}` values are
