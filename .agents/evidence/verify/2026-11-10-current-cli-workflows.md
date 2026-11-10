@@ -98,3 +98,29 @@ The final exact CLI pin is `ba52904b4f099ffa50d9017e2a4260dff3c0aeeb`.
 Its only additional change after 3a93c819 is a CubeSandbox test invocation fix;
 consumer parser behavior and the documentation content are unchanged. Workflow
 YAML and diff checks passed again. No template cloud acceptance was repeated.
+
+## L1 compact-profile smoke dispatch correction
+
+PR305 image job 129805241181 built both agents-api images successfully and passed
+managed Server import, non-root workspace and installed Node/Codex/Qwen pins, then
+failed keyless smoke with `KeyError: command`. The host payload marked `managed`
+false because it still inspected the now-optional runtime.profile field. This
+is a missed consumer in this change, distinct from the pre-existing LibreOffice
+package blocker. Job:
+https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/42808945136/job/129805241181
+
+The workflow now reuses the existing is_managed_application helper, selecting
+the explicit application.deployment.profile. The Docker-side bridge readiness,
+authentication, capability expectations and ordinary command assertions are
+unchanged. A regression executes the actual workflow host Python and captures
+only the Docker subprocess boundary for compact agents-api, expanded agents-api
+and ordinary python-hello manifests. It failed before the fix (compact managed
+flag false) and passed afterwards. Specification/image-selector selection:
+87 tests and 180 subtests passed. Workflow YAML and diff checks passed.
+
+No template, profile contract, image or runtime package was changed by this
+follow-up. Local Docker remains unavailable; the real corrected L1 image smoke
+must be confirmed by the PR job. No cloud deployment/model acceptance is claimed.
+Registry and Website intentionally retain the prior producer revision 1847abe:
+its template/contract content is identical; this follow-up changes CI/testing and
+engineering evidence only.

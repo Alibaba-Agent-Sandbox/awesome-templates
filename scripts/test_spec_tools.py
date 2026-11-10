@@ -398,6 +398,39 @@ class ImageBuildContextTest(unittest.TestCase):
                     )
 
 
+    def test_workflow_smoke_payload_classifies_compact_and_expanded_profiles(self) -> None:
+        """Execute the workflow host code; capture only the final Docker boundary."""
+        from template_application import normalize_manifest
+
+        workflow = check_template.yaml.safe_load((ROOT / ".github/workflows/image-build.yml").read_text())
+        step = next(item for item in workflow["jobs"]["image-build"]["steps"]
+                    if item.get("name") == "Check installed pins and keyless smoke as the image user")
+        code = step["run"].split("<<'PY'", 1)[1].split("\n", 1)[1].rsplit("\nPY", 1)[0]
+        compact = check_template.yaml.safe_load((ROOT / "agents-api/template.yaml").read_text())
+        ordinary = check_template.yaml.safe_load((ROOT / "python-hello/template.yaml").read_text())
+        cases = [("compact", "agents-api", compact, True),
+                 ("expanded", "agents-api", normalize_manifest(compact), True),
+                 ("ordinary", "python-hello", ordinary, False)]
+        cwd = Path.cwd()
+        try:
+            os.chdir(ROOT)
+            for label, template, manifest, managed in cases:
+                with self.subTest(profile=label), patch.dict(os.environ, {"TEMPLATE": template}), \
+                        patch("yaml.safe_load", return_value=manifest), patch("subprocess.run") as docker:
+                    before = json.dumps(manifest, sort_keys=True)
+                    exec(compile(code, "image-build.yml::smoke", "exec"), {})
+                    docker.assert_called_once()
+                    argv = docker.call_args.args[0]
+                    self.assertEqual(argv[:8], ["docker", "run", "--rm", "--network", "none", "--entrypoint", "python3", "abx-l1:" + template])
+                    payload = json.loads(argv[-1])
+                    self.assertEqual(payload["managed"], managed)
+                    self.assertEqual(payload["smoke"], manifest["smoke"])
+                    self.assertTrue(all(("operation" if managed else "command") in smoke for smoke in payload["smoke"]))
+                    self.assertEqual(json.dumps(manifest, sort_keys=True), before)
+        finally:
+            os.chdir(cwd)
+
+
 class ImageReportTest(unittest.TestCase):
     def test_render_lists_layers_and_guidance(self) -> None:
         text = image_size_report.render(

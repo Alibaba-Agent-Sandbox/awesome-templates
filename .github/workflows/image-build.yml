@@ -124,6 +124,7 @@ jobs:
 
           import yaml
           from scripts.server_package import server_version
+          from scripts.template_application import is_managed_application
 
           template = os.environ["TEMPLATE"]
           config = yaml.safe_load((Path(template) / "template.yaml").read_text())
@@ -146,7 +147,7 @@ jobs:
               "kimi-code": [("node --version", "v24.16.0"), ("kimi --version", "2.2.0")],
               "qwen-code": [("qwen --version", "0.23.0")],
           }
-          managed = config.get("spec_version") == 6 and config.get("application", {}).get("runtime", {}).get("profile") == "managed-bridge-v1"
+          managed = is_managed_application(config)
           payload = {"smoke": config["smoke"], "pins": pins.get(template, []), "template": template, "server_version": server_version(Path(template)), "managed": managed}
           code = r'''
           import importlib.metadata
