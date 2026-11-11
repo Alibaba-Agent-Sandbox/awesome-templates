@@ -14,6 +14,19 @@ owns one native thread/workspace; first input allocates compute. PostgreSQL is
 host-authoritative for acceptance/ownership, not independent proof of Agent
 execution. Same-UID guest records do not establish hostile-code attestation.
 
+## Deployment architecture
+
+The [user-facing architecture and resource map](../../agents-api/README.md#architecture-and-cloud-services)
+describes the current cloud prerequisites. Gateway, Dispatcher and Worker run as
+three FC functions sharing the Server image. Gateway accepts business requests
+and persists them to PostgreSQL. The FC timer invokes Dispatcher, which reads due
+work and invokes the revision-bound Worker through FC asynchronous tasks. Worker
+creates or reuses the session-owned Sandbox, drives the private bridge, and
+captures events and artifacts. The native Agent calls the model from the Sandbox.
+PostgreSQL stores queue state and bounded file/artifact bytes as well as sessions.
+The deployer supplies the database, model access, ACR namespace and RAM role;
+private network and custom-domain resources are conditional existing inputs.
+
 ## Exposed API
 
 Business calls use Gateway authentication; no guest endpoint is returned. The
@@ -28,10 +41,9 @@ for local installation diagnostics only; it is not an acceptance substitute.
 The [guest recipe](../../agents-api/Dockerfile) preserves Alibaba generation2 and
 non-root user, pins Node24.16.0 and exact Codex0.162.1/Qwen0.23.0 packages. The
 [thin Server recipe](../../agents-api/server/Dockerfile) runs the shared runtime's
-module entrypoint; it copies no duplicate Server implementation. Current published
-client/server0.4.0a6 pins have import guards for new modules and cannot build until
-an actually published compatible SDK replaces both pins. Source artifact testing
-must be recorded separately from the public pip recipe gate.
+module entrypoint; it copies no duplicate Server implementation. The public recipes pin client/server 0.4.0a7 and the deployment guide uses CLI
+0.5.10. Source artifact testing remains separate from published-package and
+cloud acceptance.
 
 Spec6 uses exact managed module start and the existing healthcheck ready command.
 The app profile builds/resolves immutable images before freezing plans, prepares

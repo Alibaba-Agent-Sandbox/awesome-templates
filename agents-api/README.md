@@ -31,6 +31,52 @@ Qwen Code 0.23.0, PostgreSQL and FC Gateway/Worker/Dispatcher functions.
 The images pin SDK 0.4.0a7, which provides the managed Gateway and guest bridge.
 Application deployment requires Node.js 20 or later and the current source CLI. Business HTTP clients need only the Gateway endpoint and business key.
 
+### Architecture and cloud services
+
+Each deployment revision has three FC functions: Gateway, Dispatcher and Worker.
+They share one Server image and start with different roles. Model calls, tools and
+workspaces run in Agent Sandbox Express. Each Session owns a Sandbox, created on
+its first task and reused across later turns.
+
+![agents-api runtime: clients call the FC Gateway, which saves data to PostgreSQL; an FC timer invokes Dispatcher, which schedules Worker asynchronously; Worker drives a Session Sandbox that calls the model API](https://raw.githubusercontent.com/Alibaba-Agent-Sandbox/awesome-templates/main/docs/assets/agents-api-architecture.svg)
+
+| Module | Cloud product or service | Responsibility |
+| --- | --- | --- |
+| Gateway | Function Compute (FC) container function, HTTP trigger and function alias | Expose the business URL, authenticate requests, accept sessions, files and tasks, and serve status, events and artifact downloads |
+| Dispatcher | FC container function and timer trigger | Read pending tasks, expiry and cleanup work from the database and schedule the Worker for the appropriate revision |
+| Worker | FC container function invoked through FC asynchronous tasks | Create or reuse the Session Sandbox, submit and track tasks through the private bridge, and save events, results and artifacts to the database |
+| Guest bridge, Qwen Code / Codex and workspace | Alibaba Cloud Agent Sandbox Express | Run the Agent tool loop and user code, call the model API and preserve the Session workspace |
+| Durable state and file storage | Existing PostgreSQL, such as RDS for PostgreSQL | Store sessions, queue state, events, uploaded files and captured artifacts, using the current size-limited database storage backend |
+| Model inference | Existing compatible model API, such as a Model Studio endpoint supporting the selected adapter | Called by the Agent inside the Sandbox; the deployer supplies a key, endpoint and available model ID |
+| Image registry | Container Registry (ACR) | Store the Server and Sandbox images used by FC and Agent Sandbox |
+
+A task follows this path:
+
+1. The client uploads files and submits input to Gateway, which stores the data and pending work in PostgreSQL.
+2. An FC timer invokes Dispatcher, currently once per minute. Dispatcher finds due work and invokes Worker through an FC asynchronous task. This interval can affect when a new task starts.
+3. Worker creates or reuses the Session Sandbox and drives it through the private bridge. Qwen Code / Codex calls the model and executes tools inside the Sandbox.
+4. Worker saves events and captured artifacts to PostgreSQL. The client reads progress and downloads results through Gateway. After the Session closes, saved results remain until the configured retention period expires.
+
+### Resources to prepare
+
+| Resource | Requirement | Preparation and deployment |
+| --- | --- | --- |
+| Available FC and Agent Sandbox Express accounts and permissions | Required | The deployer enables access and supplies configuration; `abx app` deploys the three FC functions, triggers and ingress, and prepares the Sandbox template. The runtime creates instances per Session |
+| ACR registry and namespace | Required | The deployer prepares the registry and access; the build uploads images |
+| PostgreSQL database | Required | Supply an existing reachable database and connection details; the template does not create or delete the database instance |
+| Compatible model service | Required | Supply a model account, key, endpoint and model ID; `qwen-code` needs Chat Completions with tools, while `codex` needs Responses with tool turns |
+| RAM deployment identity and FC execution role | Required | Select the deployment identity through an existing Serverless Devs access profile and supply an FC role ARN with the required internal function invocation permissions |
+| VPC, vSwitches and security group | Conditional | For a database accessible only through a private network, supply existing network configuration and verify connectivity from all three FC functions to the database and required external services |
+| Database CA chain | Conditional | Supply it when PostgreSQL uses a private CA; a publicly trusted certificate does not require an additional private CA |
+| HTTPS custom domain and certificate | Prepare for production ingress as needed | The default provides an FC test domain; configure an existing domain and the corresponding HTTPS ingress for production use |
+
+Gateway is an application module running on FC, so a separate API Gateway product
+is not required. Queue state, files and artifacts currently reside in PostgreSQL;
+the template does not require a separate message queue, Redis or OSS. RDS for
+PostgreSQL and Model Studio are service options, not exclusive requirements. The
+CLI, local Docker and Serverless Devs are deployment tools, not additional resident
+services. See Configuration and Resources below for network, credentials and cleanup.
+
 ## Problem solved
 
 Callers use one application endpoint instead of discovering an endpoint for each
