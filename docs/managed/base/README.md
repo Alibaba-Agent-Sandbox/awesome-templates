@@ -26,15 +26,15 @@ export ABX_SANDBOX_DOMAIN='<sandbox-domain>'
 
 Replace the three placeholders with your Sandbox API key, API URL and sandbox domain; the domain is a hostname, not a URL. These are platform credentials, not an LLM API key. This managed-image example needs no model, model endpoint, model key, application token or interactive login. Creating this existing image does not require Docker, an ACR namespace or image-build AccessKeys. Use the [provider setup guide](../../using-templates.md) if your account settings differ.
 
-Use CLI 0.5.6 or later and the current managed catalog; see [installation and provider setup](../../using-templates.md).
+Use the current source CLI and managed catalog; see [installation and provider setup](../../using-templates.md).
 
 Install [CLI and provider configuration](../../using-templates.md), then replace `<sandbox-id>` with the ID returned by launch.
 
 ```bash
-abx --provider alicloud-express template launch base --sandbox-timeout 180 --yes
+abx --provider alicloud-express deploy base --sandbox-timeout 180 --yes
 export ABX_SANDBOX_ID="<returned-sandbox-id>"
-abx --provider alicloud-express exec "$ABX_SANDBOX_ID" -- python3 -c 'print(6*7)'
-abx --provider alicloud-express kill "$ABX_SANDBOX_ID"
+abx --provider alicloud-express sandbox exec "$ABX_SANDBOX_ID" -- python3 -c 'print(6*7)'
+abx --provider alicloud-express delete "$ABX_SANDBOX_ID"
 ```
 
 ## Quick start (Python SDK)

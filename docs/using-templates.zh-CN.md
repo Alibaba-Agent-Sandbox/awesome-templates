@@ -6,10 +6,15 @@
 
 ## 安装
 
-安装公开 CLI 0.5.8 和 Python client 0.4.0a6。Python 建议使用独立虚拟环境；此包仍为预览版，所以明确固定版本。npm 安装需要 Node 20+，终端能力建议 Node 22+。
+本页使用当前源码中的统一命令；已发布 CLI 0.5.10 不支持这些新入口。先从源码安装 CLI（需要 Node 20+），Python 示例继续使用 client 0.4.0a6 和独立虚拟环境。
 
 ```bash
-npm install -g @agent-sandbox/cli@0.5.8 --registry=https://registry.npmjs.org
+git clone https://github.com/Alibaba-Agent-Sandbox/agent-sandbox.git
+cd agent-sandbox
+npm ci
+npm run build
+npm link
+cd ..
 python3 -m venv .venv
 . .venv/bin/activate
 python3 -m pip install --index-url https://pypi.org/simple 'agent-sandbox-client==0.4.0a6'
@@ -41,7 +46,7 @@ OpenSandbox 先按其 [provider 指南](https://github.com/Alibaba-Agent-Sandbox
 
 各工具采用不同的上游配置方式。不能假定所有工具都读取 `ABX_LLM_*`、支持任意 OpenAI 兼容端点，或继承本机登录态。非模型工具不需要模型 Key；商业账号登录、API Key 模式和可选 Web 服务密码由对应 README 分别说明。
 
-CLI 0.5.8 中，模板清单声明为**空值**的环境变量可由主机环境填充；非空清单值优先于同名主机 export。切模型优先使用命令提供的 `model` 等参数。对于清单空值声明的启动配置，export 新模型、Key 或 endpoint 后，从公开模板创建新实例，并使用新返回的沙箱 ID；只有修改非空清单默认值或实现时才需要本地模板副本。此路径只传递已声明的运行配置。启动后修改本机 export，不会重配已经运行的应用。
+模板清单声明为**空值**的环境变量可由主机环境填充；非空清单值优先于同名主机 export。切模型优先使用命令提供的 `model` 等参数。对于清单空值声明的启动配置，export 新模型、Key 或 endpoint 后，从公开模板创建新实例，并使用新返回的沙箱 ID；只有修改非空清单默认值或实现时才需要本地模板副本。此路径只传递已声明的运行配置。启动后修改本机 export，不会重配已经运行的应用。
 
 ## CLI、SDK 与 HTTP
 
@@ -52,15 +57,15 @@ CLI 0.5.8 中，模板清单声明为**空值**的环境变量可由主机环境
 ```bash
 export ABX_SERVER_TOKEN="<independent-application-token>"
 export ABX_HTTP_TIMEOUT=660
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --sandbox-timeout 1800 --yes
 export ABX_SANDBOX_ID="<returned-sandbox-id>"
 abx sandbox command list "$ABX_SANDBOX_ID"
-abx run "$ABX_SANDBOX_ID" hello --arg name=Ada
+abx sandbox run "$ABX_SANDBOX_ID" hello --arg name=Ada
 ```
 
-预期返回 `Hello, Ada!`。启动过程准备模板并启动它声明的应用，返回沙箱 ID 和保留的准备资源引用。`abx run` 调用命名命令，`abx exec` 执行进程；数值和布尔参数使用 `--json-args`。
+预期返回 `Hello, Ada!`。启动过程准备模板并启动它声明的应用，返回沙箱 ID 和保留的准备资源引用。`abx sandbox run` 调用命名命令，`abx sandbox exec` 执行进程；数值和布尔参数使用 `--json-args`。
 
-三类超时分别控制不同阶段：`--timeout` 是构建期限，`--sandbox-timeout` 是实例寿命，`ABX_HTTP_TIMEOUT` 是 CLI 等待 HTTP 的时间；模型命令还有自己的执行期限。对于 600 秒编码任务，示例采用 1800 秒实例与 660 秒客户端等待，避免默认 300 秒实例或 SDK 的默认 30 秒等待先到期。
+三类超时分别控制不同阶段：`--build-timeout` 是构建期限，`--sandbox-timeout` 是实例寿命，`ABX_HTTP_TIMEOUT` 是 CLI 等待 HTTP 的时间；模型命令还有自己的执行期限。对于 600 秒编码任务，示例采用 1800 秒实例与 660 秒客户端等待，避免默认 300 秒实例或 SDK 的默认 30 秒等待先到期。
 
 ### Python SDK
 
@@ -134,10 +139,10 @@ asyncio.run(main())
 
 ### 导出文件与清理
 
-释放前用 `abx download "$ABX_SANDBOX_ID" /remote/path ./local-file` 或 `await sb.files.read_bytes("/remote/path")` 导出产物。只删除自己这次任务创建的实例：
+释放前用 `abx sandbox download "$ABX_SANDBOX_ID" /remote/path ./local-file` 或 `await sb.files.read_bytes("/remote/path")` 导出产物。只删除自己这次任务创建的实例：
 
 ```bash
-abx kill "$ABX_SANDBOX_ID"
+abx delete "$ABX_SANDBOX_ID"
 ```
 
 准备的模板／镜像可能保留供复用。不再需要时，按启动返回的准确资源引用，通过所选平台管理工具清理；不要删除共享基础模板或其他用户的资源。
@@ -156,4 +161,4 @@ abx kill "$ABX_SANDBOX_ID"
 
 ## 客户端入口兼容性
 
-本页 provider／应用示例使用 `ProviderSandbox`。标准 `Sandbox`／`AsyncSandbox` 解释器接口是另一条合同，见相应模板说明及 [SDK 入口指南](https://github.com/Alibaba-Agent-Sandbox/python-sdk/blob/main/README.md)。`abx create <平台模板ID>` 使用平台已有模板，源码模板使用 `abx template launch <源码引用>`。
+本页 provider／应用示例使用 `ProviderSandbox`。标准 `Sandbox`／`AsyncSandbox` 解释器接口是另一条合同，见相应模板说明及 [SDK 入口指南](https://github.com/Alibaba-Agent-Sandbox/python-sdk/blob/main/README.md)。`abx deploy --template-id <平台模板ID>` 使用平台已有模板，源码模板使用 `abx deploy <源码引用>`。

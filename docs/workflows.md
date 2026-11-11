@@ -3,7 +3,7 @@
 A template describes the environment to start, its startup command and the services it exposes. Run one command; no workflow selection is required. [中文](workflows.zh-CN.md).
 
 ```sh
-abx --provider alicloud-express template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello --yes
+abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --yes
 ```
 
 ## Current machine contract

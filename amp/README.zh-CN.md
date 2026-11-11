@@ -44,7 +44,7 @@ Amp 不接受 DashScope 密钥、`ABX_LLM_API_KEY` 或 OpenAI 兼容的 base URL
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export AMP_API_KEY='<your-model-or-vendor-key>'
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//amp --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//amp --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
@@ -54,7 +54,7 @@ abx sandbox command list "$SANDBOX_ID"
 launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
 
 ```bash
-ABX_HTTP_TIMEOUT=720 abx run "$SANDBOX_ID" amp_execute --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","dangerously_allow_all":true}'
+ABX_HTTP_TIMEOUT=720 abx sandbox run "$SANDBOX_ID" amp_execute --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","dangerously_allow_all":true}'
 ```
 
 任务要求在 `/home/user/app` 写出 `generated_hello.py` 和 `GENERATED_REPORT.md`。示例显式开放所需的编辑/工具权限，只在自己拥有的可丢弃沙箱中使用。下面的 SDK 和 HTTP 是同一任务的替代调用方式，选择一种即可。
@@ -102,10 +102,10 @@ asyncio.run(main())
 ### 导出产物与清理
 
 ```bash
-abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
-abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
-abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
-abx kill "$SANDBOX_ID"
+abx sandbox exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx delete "$SANDBOX_ID"
 ```
 
 程序预期输出 `Hello from the sandbox`。先读取产物并检查再使用；模型回答成功不代表文件一定存在。文件不会自动回写模板或你的本机，释放沙箱前必须导出。
@@ -134,7 +134,7 @@ abx kill "$SANDBOX_ID"
 | `AMP_LOG_FILE` | 否 | 镜像内为 `/home/user/.cache/amp/logs/cli.log` | CLI 日志路径。 |
 | `ABX_SERVER_TOKEN` | 是 | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
-在 `template launch` 前安全导出清单中声明为空的秘密变量，让应用启动时读取；不要写入镜像、YAML 或日志。
+在 `deploy` 前安全导出清单中声明为空的秘密变量，让应用启动时读取；不要写入镜像、YAML 或日志。
 
 
 ## 资源

@@ -1,11 +1,11 @@
 # Build and test a template with native platform steps
 
 [中文](platform-steps.zh-CN.md). This maintenance path prepares the template on
-Alibaba Express without a local Docker daemon. The normal public template launch
+Alibaba Express without a local Docker daemon. The normal public deploy
 path is described in [using templates](using-templates.md). A step-build receipt
 and a Docker image receipt are separate evidence.
 
-Install the current published CLI and Python client/server using the
+Build the current source CLI and install the published Python client/server using the
 [installation guide](using-templates.md), then install checker and controller
 dependencies from this repository. Supply the existing Express account through
 process environment. No credentials are uploaded to Actions by these commands.
@@ -20,7 +20,7 @@ python scripts/run_steps_e2e.py python-hello --timeout 900
 This command runs the entire existing application controller. It generates native
 steps from the selected Dockerfile, calls the native provider preparation API,
 waits for the exact owned template to become READY, and invokes the current
-`abx template launch` with a temporary managed manifest containing that prepared
+`abx deploy` with a temporary managed manifest containing that prepared
 ID and the original startup, readiness, services and environment declarations.
 Explicit Dockerfile ENV values are runtime defaults; original manifest environment
 entries take precedence. Build-only cache and upload variables are not forwarded.
@@ -29,10 +29,12 @@ checks source identity and files/process operations, and independently destroys
 and reads back absence of its sandbox and prepared template. There is one launch
 path; there is no CLI-versus-SDK creation selector.
 
-The internal native `template deploy --build steps` performs preparation only;
-it does not start a second application or replace current public launch. Native
-status must be actual JSON strings/objects, never Python repr strings. The public
-`template launch` does not acquire a new `--build steps` option.
+The maintenance runner submits native preparation through `abx provider run
+template.create --input-file INPUT.json --yes`. The JSON includes `name`, `image`,
+`generation: 2` and ordered `steps` entries with `type` and `args` fields. It omits
+application startup commands during preparation. Normal users can still use
+`abx deploy PROJECT --name NAME --yes`; the manifest selects its build steps.
+The `deploy --build` option takes an existing build artifact path, not a build mode.
 
 ## Inspect preparation without creating cloud resources
 

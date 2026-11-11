@@ -10,9 +10,9 @@ A small Python development sandbox that greets callers, executes inline Python o
 
 Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
-- Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` supplies Python 3.13 and Node.js 20. `abx template deploy` resolves the defaults to `cn-hangzhou` and `v0.0.49`.
+- Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` supplies Python 3.13 and Node.js 20. `abx template build` resolves the defaults to `cn-hangzhou` and `v0.0.49`.
 - `pytest==8.4.2` is installed in the image for the `test` command.
-- Non-root runtime `user`, working directory `/home/user/app`, generation 2. `abx template launch` executes the YAML `start_cmd` and probes `ready_cmd`.
+- Non-root runtime `user`, working directory `/home/user/app`, generation 2. `abx deploy` executes the YAML `start_cmd` and probes `ready_cmd`.
 
 ## Problem solved
 
@@ -30,14 +30,14 @@ These template commands require no model, model endpoint or model API key.
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" run_script --json-args '{"code":"from pathlib import Path\nrows = [12.50, 18.80, 20.00]\ntotal = sum(rows)\nPath(\"summary.txt\").write_text(f\"total={total:.2f}\\n\")\nprint(f\"total={total:.2f}\")"}'
+abx sandbox run "$SANDBOX_ID" run_script --json-args '{"code":"from pathlib import Path\nrows = [12.50, 18.80, 20.00]\ntotal = sum(rows)\nPath(\"summary.txt\").write_text(f\"total={total:.2f}\\n\")\nprint(f\"total={total:.2f}\")"}'
 ```
 
 Returns stdout `total=51.30` and creates `summary.txt` for download.
@@ -112,27 +112,27 @@ All arguments below are strings with no template-defined length limit. Paths may
 
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the deploy; separate from model and gateway credentials |
 | `WORKSPACE` | No | Directory containing `commands.py` | Existing directory used by all Python subprocesses; override alongside your upload paths. |
 | `ABX_SERVER_BASE_DIR` | No | `/home/user` | File API path boundary; a custom workspace must be inside the configured boundary. This does not restrict arbitrary Python execution. |
 | `ABX_SERVER_PORT` | No | `9000` | Local `python3 commands.py` port; cloud `start_cmd` explicitly uses 9000. |
 | `LANG` | No | `C.UTF-8` | Unicode process output. |
 
-Before `template launch`, securely export the secret variables declared empty in the manifest so the application reads them at startup. Keep values out of images, YAML and logs.
+Before `deploy`, securely export the secret variables declared empty in the manifest so the application reads them at startup. Keep values out of images, YAML and logs.
 
 The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
 
 ```bash
-abx download "$SANDBOX_ID" /home/user/app/summary.txt ./summary.txt
-abx kill "$SANDBOX_ID"
+abx sandbox download "$SANDBOX_ID" /home/user/app/summary.txt ./summary.txt
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+`abx delete` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
 ### Explicit portable image profile
 
 For OpenSandbox, select `--build-profile portable` with
-`abx template launch`. `Dockerfile.portable` pins the Python base by digest,
+`abx deploy`. `Dockerfile.portable` pins the Python base by digest,
 creates its non-root user and installs the pinned command server directly. The
 default Dockerfile retains its Express platform placeholders; providers do not
 rewrite either recipe or inject a wheel. Template launch starts the

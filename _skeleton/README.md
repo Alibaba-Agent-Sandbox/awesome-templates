@@ -10,10 +10,10 @@ Registers one named command, `hello`, on `agent-sandbox-server` at port 9000. Th
 
 Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by the Dockerfile.
 
-- Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template deploy` replaces `<region>` with `ALIBABA_CLOUD_REGION_ID` or `cn-hangzhou`, and `<tag>` with `ABX_BASE_IMAGE_TAG` or `v0.0.49`.
+- Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template build` replaces `<region>` with `ALIBABA_CLOUD_REGION_ID` or `cn-hangzhou`, and `<tag>` with `ABX_BASE_IMAGE_TAG` or `v0.0.49`.
 - Work directory `/home/user/app`. Runtime user `user`.
 - Python 3.13 and Node.js 20 come from the base image.
-- `abx template launch` starts the process with the template's `start_cmd`. The Dockerfile stops after `USER` and `EXPOSE`.
+- `abx deploy` starts the process with the template's `start_cmd`. The Dockerfile stops after `USER` and `EXPOSE`.
 
 ## Problem solved
 
@@ -25,12 +25,12 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./_skeleton --sandbox-timeout 1800 --yes
+abx deploy ./_skeleton --sandbox-timeout 1800 --yes
 export ABX_SANDBOX_ID="<returned-sandbox-id>"
-abx run "$ABX_SANDBOX_ID" hello --json-args '{"name": "Express"}'
+abx sandbox run "$ABX_SANDBOX_ID" hello --json-args '{"name": "Express"}'
 ```
 
-`template launch` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
+`deploy` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.
 
 ## Quick start (Python SDK)
 
@@ -70,7 +70,7 @@ Expected response for this check:
 
 | Name | Required | Default | Purpose |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the deploy; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | no | `9000` | Port `start()` binds for a local `python3 commands.py`. |
 
 Provide secret values before the command server starts; use create-time env only when the provider starts that server with it. See [runtime environment](../docs/runtime-environment.md). Do not write them into the image, the Dockerfile, or a log.

@@ -6,9 +6,11 @@
 
 封闭契约是 [template-v6.schema.json](../spec/template-v6.schema.json)。规范 5 保留既有生命周期与部署语义。应用部署必须显式执行；导入、构建或创建 Sandbox 不会部署 Server 资源或运行主机 hooks。
 
+显式 `application.deployment.profile: fc-managed-agents` 从[profile 默认值](../contracts/application-profile/profiles.json)补齐固定字段。编写清单时可省略重复常量，显式指定冲突值会报错。凭据、binding 引用、地域、镜像、资源大小与可配置预算没有默认值。精简形式需要支持 profile 展开的 CLI；CLI 0.5.10 需要完整字段。
+
 ## 运行时与生命周期
 
-支持的组合为：
+profile 提供以下运行时默认值；本段只有 `sandbox.provider` 需要显式选择：
 
 ```yaml
 runtime:
@@ -42,7 +44,7 @@ close 停止接收任务并释放计算，已提交结果按保留期可读。de
 
 `application.api.protocol` 为 `agent-sandbox-managed-agents/v1`。Gateway 通过能力发现说明受支持的 OpenAI 风格子集及托管扩展。不支持的 steering、工具和设置明确报错；排队新轮次不能静默冒充引导当前轮。
 
-binding 保存引用名，不写密钥值或连接 URL，并声明允许的目标角色：
+binding 保存引用名，不写密钥值或连接 URL。以下目标角色由 profile 默认提供，引用名仍需显式填写：
 
 | 绑定 | 目标 | 用途与来源 |
 | --- | --- | --- |
@@ -53,7 +55,7 @@ binding 保存引用名，不写密钥值或连接 URL，并声明允许的目�
 | `internalAuth` | gateway、worker、dispatcher | 独立的私有控制身份或签名配置。 |
 | 入口（`deployment.ingressBindingRef`） | deployment-publisher | 有归属记录的稳定路由、alias 或域名配置。 |
 
-`model` 要求 `resolverRole: worker`，以及显式 `allowedEnv`，仅允许 `OPENAI_API_KEY`、`OPENAI_BASE_URL`、`OPENAI_MODEL`、`CODEX_API_KEY` 的子集。云、数据库和业务认证配置不复制进 Sandbox。每会话应用 token 自动生成，不是云控制台申请的 API Key。
+`model` 默认使用 `resolverRole: worker` 和 `allowedEnv: [OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL]`。显式 `allowedEnv` 可选择这些名称以及 `CODEX_API_KEY` 的非空子集。云、数据库和业务认证配置不复制进 Sandbox。每会话应用 token 自动生成，不是云控制台申请的 API Key。
 
 部署解析器检查 binding 实际值类型与归属，缺少必需值阻止发布。状态 binding 的实际值可以是 PostgreSQL URL 字符串，或 `{databaseUrl, vpcConfig?, databaseCa?}` 对象。可选 `vpcConfig` 只包含 `vpcId`、不同的 `vSwitchIds` 和 `securityGroupId`，用于三个 FC 角色的部署网络，不注入 guest。网络资源均为借用，不自动创建 NAT/路由，也不证明 endpoint 可达。可选 `databaseCa` 接受有界的纯证书 PEM 字符串、环境引用或 CLI 宿主机文件引用，保留数据库主机名验证；它仅配置 Server 信任，不进入镜像、计划、收据或 guest。CLI 内部固定数据库持久身份，用户无需手工提供该身份。同 UID 的 Agent 工具可以访问有意注入该 Sandbox 的模型凭据，但不获得 Server 控制凭据。
 
@@ -73,7 +75,7 @@ serverBuildRecipe:
 
 profile 准备 Sandbox Template，创建 revision 专属 Worker，部署候选 Gateway/Dispatcher，验证后发布稳定入口。生产 timer 关闭期间，验证使用受限私有派发。公开 endpoint 来自实际验证的入口，不猜测组件返回字段。function-alias 与 custom-domain binding 有不同提供商要求；测试函数 URL 不等于生产域名保证。
 
-更新时 Session 固定原 revision；旧 Worker 和兼容 Server 产物保留到会话排空。清理失败保留归属记录和可继续工作的清理路径；借用的数据库和模型服务不会自动删除。尚未参与 Apply 且归属已确认的 owned Server 构建可通过 `abx app clean-build BUILD --yes` 清理；参与 Apply 后由应用 Destroy/Retire 在引用排空后清理。借用的 Server 镜像不删除。Sandbox 构建镜像可能仍列在 `retained_build_artifacts` 中，需要显式按仓库说明清理。
+更新时 Session 固定原 revision；旧 Worker 和兼容 Server 产物保留到会话排空。用 `abx status NAME --revisions` 查看保留版本，再用 `abx delete NAME --revision REVISION --yes` 删除指定版本。`abx delete NAME --yes` 清理部署自有资源；操作中断或结果不确定时用 `abx recover NAME` 核查。通过 `--build` 提供的可复用构建产物和用户提供的 Server 镜像属于借用资源。独立构建不再被任何部署使用后，可用 `abx template build --clean BUILD --yes` 清理。Sandbox 构建镜像可能仍列在 `retained_build_artifacts` 中，需要显式按仓库说明清理。已有数据库、网络和模型服务仍由你管理。
 
 ## Hooks 与输出
 

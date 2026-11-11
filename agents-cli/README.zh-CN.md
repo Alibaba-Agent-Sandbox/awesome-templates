@@ -41,7 +41,7 @@ export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsa
 export OPENAI_API_KEY='<your-model-or-vendor-key>'
 export OPENAI_BASE_URL='<your-model-api-base-including-v1-if-required>'
 export OPENAI_MODEL='<model-id-from-your-provider>'
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//agents-cli --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//agents-cli --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
@@ -53,9 +53,9 @@ launch 已启动该实例的应用，不需要再建第二个沙箱或启动第�
 命名命令提供版本诊断和显式 Codex 配置准备；真实编码使用后面的会话 API，配置完成或版本响应本身都不是编码结果。
 
 ```bash
-abx run "$SANDBOX_ID" agents_version
+abx sandbox run "$SANDBOX_ID" agents_version
 # For Codex sessions, explicitly prepare the native Responses profile:
-abx run "$SANDBOX_ID" agents_configure_codex
+abx sandbox run "$SANDBOX_ID" agents_configure_codex
 # Select the adapter for the complete Python example:
 export AGENTS_ADAPTER=qwen-code
 # Or: export AGENTS_ADAPTER=codex
@@ -67,7 +67,7 @@ export AGENTS_ADAPTER=qwen-code
 
 先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
 
-连接 launch 已启动的应用，并通过 SDK 解析真实网关地址；以下 Python 发起同一个编码任务，再有界轮询会话输出。应用的受限策略没有普通文件/shell HTTP 路由，最终产物通过提供方的 `abx exec`/`download` 检查。
+连接 launch 已启动的应用，并通过 SDK 解析真实网关地址；以下 Python 发起同一个编码任务，再有界轮询会话输出。应用的受限策略没有普通文件/shell HTTP 路由，最终产物通过提供方的 `abx sandbox exec`/`download` 检查。
 
 ```python
 import asyncio
@@ -195,10 +195,10 @@ asyncio.run(main())
 ### 导出产物与清理
 
 ```bash
-abx exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
-abx download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
-abx download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
-abx kill "$SANDBOX_ID"
+abx sandbox exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx delete "$SANDBOX_ID"
 ```
 
 程序预期输出 `Hello from the sandbox`。先读取产物并检查再使用；模型回答成功不代表文件一定存在。文件不会自动回写模板或你的本机，释放沙箱前必须导出。

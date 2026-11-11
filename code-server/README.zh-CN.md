@@ -31,14 +31,14 @@ export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export CODE_SERVER_PASSWORD='<choose-a-long-unique-password>'
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//code-server --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//code-server --sandbox-timeout 1800 --yes
 # 将启动输出中的沙箱 ID 填到这里
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" code_server_start --json-args '{"port":8443,"timeout_s":60}'
+abx sandbox run "$SANDBOX_ID" code_server_start --json-args '{"port":8443,"timeout_s":60}'
 ```
 
 返回 `running: true`、`port: 8443`、`auth: password`。解析 8443 端口地址后，使用 `CODE_SERVER_PASSWORD` 登录 IDE。
@@ -133,11 +133,11 @@ WORKSPACE 默认 /home/user/app。CODE_SERVER_PASSWORD、ABX_SERVER_TOKEN 都是
 工作目录为 `/home/user/app`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
 
 ```bash
-abx run "$SANDBOX_ID" code_server_stop --json-args '{}'
-abx kill "$SANDBOX_ID"
+abx sandbox run "$SANDBOX_ID" code_server_stop --json-args '{}'
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
+`abx delete` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
 
 ## 资源
 

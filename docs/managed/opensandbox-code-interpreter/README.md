@@ -25,17 +25,17 @@ export ABX_OPENSANDBOX_API_KEY='<server-api-key>'
 
 The URL above is for a server running locally; replace it with your actual server root. Replace the key with that server’s configured key, or leave the variable unset only if the server does not require authentication. No interactive login, model API key, model endpoint or application token is needed. The server must be able to obtain the native image.
 
-Use CLI 0.5.6 or later and the current managed catalog; see [installation and provider setup](../../using-templates.md).
+Use the current source CLI and managed catalog; see [installation and provider setup](../../using-templates.md).
 
 Install the [CLI](../../using-templates.md) and Node.js 22+, configure your provider below, and replace `<sandbox-id>` with the ID returned by launch.
 
 ```bash
 abx provider install Alibaba-Agent-Sandbox/awesome-providers//opensandbox --allow-unpinned --yes
 abx provider doctor opensandbox
-abx --provider opensandbox template launch opensandbox-code-interpreter --sandbox-timeout 180 --yes
+abx --provider opensandbox deploy opensandbox-code-interpreter --sandbox-timeout 180 --yes
 export ABX_SANDBOX_ID="<returned-sandbox-id>"
-abx --provider opensandbox exec "$ABX_SANDBOX_ID" -- python3 -c 'print(6*7)'
-abx --provider opensandbox kill "$ABX_SANDBOX_ID" -y
+abx --provider opensandbox sandbox exec "$ABX_SANDBOX_ID" -- python3 -c 'print(6*7)'
+abx --provider opensandbox delete "$ABX_SANDBOX_ID" -y
 ```
 
 ## Quick start (Python SDK)

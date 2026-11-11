@@ -16,7 +16,7 @@ def config():
 @pytest.fixture
 def prepared(tmp_path,monkeypatch):
     source=tmp_path/'example';source.mkdir()
-    original={'name':'example','version':'1.0.1','start_cmd':'original start','ready_cmd':'original ready',
+    original={'name':'example','base':'fixture/image:1','version':'1.0.1','start_cmd':'original start','ready_cmd':'original ready',
               'services':{'app':{'port':9000}},'env':{'APP_SETTING':'value'}}
     import yaml
     (source/'template.yaml').write_text(yaml.safe_dump(original))
@@ -27,24 +27,24 @@ def prepared(tmp_path,monkeypatch):
     def cli(self,args,*a,**kwargs):
         calls.append((args,kwargs))
         if args[-1:] == ['--help']:
-            assert kwargs['native'] is True and kwargs['json_output'] is False
-            return '--build --alias --generation --start-cmd --ready-cmd'
-        if args[:2]==['template','list']:
-            return [{'Name':self.env.get('unused',''), 'TemplateID':x} for x in resources]
-        if args[:2]==['template','deploy']:
-            assert kwargs['native'] is True
-            stage=Path(args[2]);staged=yaml.safe_load((stage/'template.yaml').read_text())
-            assert 'start_cmd' not in staged and 'ready_cmd' not in staged
-            assert args[args.index('--start-cmd')+1]==''
-            assert args[args.index('--ready-cmd')+1]==''
-            resources.append('owned-template');return {'TemplateID':'owned-template'}
-        if args[:2]==['template','info']:
-            if args[2] in resources:return {'status':{'state':'ready'}}
+            assert kwargs['json_output'] is False
+            return '--input --input-file --yes image: generation: steps:'
+        assert args[:2] == ['provider', 'run']
+        operation=args[2];values=json.loads(args[args.index('--input')+1])
+        if operation=='template.list':
+            return {'templates': [{'name':self.env.get('unused',''), 'templateID':x} for x in resources]}
+        if operation=='template.create':
+            assert args[-1]=='--yes' and values['steps']==[]
+            assert 'start_command' not in values and 'ready_command' not in values
+            assert values['image']=='fixture/image:1' and values['generation']==2
+            resources.append('owned-template');return {'template': {'templateID':'owned-template'}}
+        if operation=='template.get':
+            if values['template_id'] in resources:return {'template': {'status':{'state':'ready'}}}
             from public_launch_e2e import CLIError
             raise CLIError('template',4,json.dumps({'code':'E2001','message':'owned template not found'}))
-        if args[:2]==['template','delete']:
-            assert kwargs['native'] is True
-            resources.remove(args[2]);return {}
+        if operation=='template.delete':
+            assert args[-1]=='--yes'
+            resources.remove(values['template_id']);return {'template_id': values['template_id'], 'deleted': True}
         pytest.fail('unexpected CLI operation '+str(args))
     monkeypatch.setattr(CLI,'run',cli)
     monkeypatch.setattr(current,'exact_templates',lambda cli,alias:list(resources))
@@ -93,7 +93,7 @@ def test_uncertain_template_cleanup_cannot_become_acceptance(prepared,monkeypatc
     monkeypatch.setattr(current,'exercise',exercise)
     original=CLI.run
     def reject(self,args,*a,**k):
-        if args[:2]==['template','delete']:raise RuntimeError('controlled delete failure')
+        if args[:3]==['provider','run','template.delete']:raise RuntimeError('controlled delete failure')
         return original(self,args,*a,**k)
     monkeypatch.setattr(CLI,'run',reject)
     report=steps.run_one('example',config())
@@ -108,7 +108,7 @@ def test_known_template_is_deleted_even_if_inventory_temporarily_omits_it(prepar
     monkeypatch.setattr(current,'exercise',exercise)
     report=steps.run_one('example',config())
     assert report['passed'] and not resources
-    assert any(args[:3]==['template','delete','owned-template'] for args,_ in calls)
+    assert any(args[:3]==['provider','run','template.delete'] and json.loads(args[4])=={'template_id':'owned-template'} for args,_ in calls)
 
 
 def test_unknown_owned_cleanup_stops_the_existing_serial_selection(monkeypatch):
@@ -137,10 +137,14 @@ def test_independently_cleaned_failure_does_not_hide_later_templates(monkeypatch
 
 def test_lost_registration_response_and_empty_inventory_remain_uncertain(prepared,monkeypatch):
     _,_,resources,_=prepared
-    original=CLI.run;stages=[]
+    original=CLI.run;intents=[]
+    save=current.images.save_private
+    def capture(path,data):
+        if path.name=='platform-intent.json':intents.append(dict(data))
+        return save(path,data)
+    monkeypatch.setattr(current.images,'save_private',capture)
     def uncertain(self,args,*a,**k):
-        if args[:2]==['template','deploy'] and args[-1:]!=['--help']:
-            stages.append(Path(args[2]))
+        if args[:3]==['provider','run','template.create'] and args[-1:]!=['--help']:
             raise TimeoutError('controlled lost registration response')
         return original(self,args,*a,**k)
     monkeypatch.setattr(CLI,'run',uncertain)
@@ -148,7 +152,7 @@ def test_lost_registration_response_and_empty_inventory_remain_uncertain(prepare
     assert report['preparation_attempted'] and not report['runtime_attempted']
     assert report['template_cleanup_verified'] is False and report['unresolved_owned_cleanup'] is True
     assert not report['passed'] and not resources
-    intent=json.loads((stages[0]/'platform-intent.json').read_text())
+    intent=intents[-1]
     assert intent['registration_attempted'] and not intent.get('template_id')
     assert intent['template_cleanup_verified'] is False
 
@@ -158,7 +162,7 @@ def test_missing_alias_and_successful_delete_cannot_hide_still_present_known_id(
     monkeypatch.setattr(current,'exact_templates',lambda *args:[])
     original=CLI.run
     def no_op_delete(self,args,*a,**k):
-        if args[:2]==['template','delete']:return ''
+        if args[:3]==['provider','run','template.delete']:return ''
         return original(self,args,*a,**k)
     monkeypatch.setattr(CLI,'run',no_op_delete)
     cleanup=current.delete_owned_templates

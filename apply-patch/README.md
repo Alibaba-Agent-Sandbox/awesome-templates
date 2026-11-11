@@ -28,14 +28,14 @@ These template commands require no model, model endpoint or model API key.
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//apply-patch --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//apply-patch --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" apply_patch --json-args '{"patch_text":"*** Begin Patch\n*** Add File: hello.txt\n+Hello from a patch\n*** End Patch\n"}'
+abx sandbox run "$SANDBOX_ID" apply_patch --json-args '{"patch_text":"*** Begin Patch\n*** Add File: hello.txt\n+Hello from a patch\n*** End Patch\n"}'
 ```
 
 Creates `hello.txt`; inspect `exit_code == 0` and the actual file.
@@ -109,11 +109,11 @@ No model key. WORKSPACE defaults to /home/user/app. Export ABX_SERVER_TOKEN befo
 The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
 
 ```bash
-abx download "$SANDBOX_ID" /home/user/app/hello.txt ./hello.txt
-abx kill "$SANDBOX_ID"
+abx sandbox download "$SANDBOX_ID" /home/user/app/hello.txt ./hello.txt
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+`abx delete` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
 ## Resources
 

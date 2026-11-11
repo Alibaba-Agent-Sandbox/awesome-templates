@@ -10,10 +10,10 @@
 
 沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
-- 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`abx template deploy` 把 `<region>` 换成 `ALIBABA_CLOUD_REGION_ID` 或 `cn-hangzhou`，把 `<tag>` 换成 `ABX_BASE_IMAGE_TAG` 或 `v0.0.49`。
+- 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`abx template build` 把 `<region>` 换成 `ALIBABA_CLOUD_REGION_ID` 或 `cn-hangzhou`，把 `<tag>` 换成 `ABX_BASE_IMAGE_TAG` 或 `v0.0.49`。
 - 工作目录 `/home/user/app`。运行用户 `user`。
 - 基础镜像自带 Python 3.13 和 Node.js 20。
-- `abx template launch` 执行模板的 `start_cmd` 启动进程。Dockerfile 在 `USER` 和 `EXPOSE` 之后结束。
+- `abx deploy` 执行模板的 `start_cmd` 启动进程。Dockerfile 在 `USER` 和 `EXPOSE` 之后结束。
 
 ## 解决的问题
 
@@ -25,12 +25,12 @@
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-abx template launch ./_skeleton --sandbox-timeout 1800 --yes
+abx deploy ./_skeleton --sandbox-timeout 1800 --yes
 export ABX_SANDBOX_ID="<returned-sandbox-id>"
-abx run "$ABX_SANDBOX_ID" hello --json-args '{"name": "Express"}'
+abx sandbox run "$ABX_SANDBOX_ID" hello --json-args '{"name": "Express"}'
 ```
 
-`template launch` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
+`deploy` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。
 
 ## 快速开始（Python SDK）
 

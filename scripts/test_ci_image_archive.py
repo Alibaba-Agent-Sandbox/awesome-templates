@@ -177,17 +177,17 @@ def test_prepared_image_uses_shared_startup_contract_and_current_services(tmp_pa
 def test_native_readiness_consumes_structured_json_and_rejects_legacy_python_strings():
     from types import SimpleNamespace
     calls=[]
-    cli=SimpleNamespace(run=lambda args,**kwargs: calls.append((args,kwargs)) or {'status':{'state':'ready'}})
+    cli=SimpleNamespace(run=lambda args,*pos,**kwargs: calls.append((args,pos,kwargs)) or {'template': {'status':{'state':'ready'}}})
     review.wait_ready(cli,'owned-template',timeout=1)
-    assert calls==[(['template','info','owned-template'],{'native':True})]
-    cli.run=lambda *args,**kwargs:{'status':"{'state': 'ready'}"}
+    assert calls==[(['provider','run','template.get','--input',json.dumps({'template_id':'owned-template'})],(300,),{})]
+    cli.run=lambda *args,**kwargs:{'template': {'status':"{'state': 'ready'}"}}
     with pytest.raises(AssertionError):review.wait_ready(cli,'owned-template',timeout=1)
 
 
 def test_native_inventory_matches_only_exact_owned_name():
     from types import SimpleNamespace
-    cli=SimpleNamespace(run=lambda *args,**kwargs:[{'Name':'owned','TemplateID':'correct'},
-        {'Name':'owned-extra','TemplateID':'foreign'},{'Name':'other','TemplateID':'another'}])
+    cli=SimpleNamespace(run=lambda *args,**kwargs:{'templates': [{'name':'owned','templateID':'correct'},
+        {'name':'owned-extra','templateID':'foreign'},{'name':'other','templateID':'another'}]})
     assert review.exact_templates(cli,'owned')==['correct']
 
 
@@ -210,14 +210,22 @@ def test_runtime_digest_gate_controls_final_result_even_after_application_and_cl
     templates=[]
     monkeypatch.setattr(review,'exact_templates',lambda cli,alias:list(templates))
     def cli(self,args,*pos,**kwargs):
-        if args[:2]==['template','from-image']:
-            templates.append('owned-template');return {'TemplateID':'owned-template'}
-        if args[:2]==['template','info']:
-            if args[2] in templates:return {'status':{'state':'ready'}}
+        assert args[:2]==['provider','run']
+        if '--input-file' in args:
+            assert kwargs['pass_fds'] and 'synthetic-password' not in str(args)
+            file=Path(args[args.index('--input-file')+1])
+            values=json.loads(file.read_text())
+        else:
+            values=json.loads(args[args.index('--input')+1])
+        if args[2]=='template.create':
+            assert args[-1]=='--yes' and values['registry_password']=='synthetic-password'
+            templates.append('owned-template');return {'template': {'templateID':'owned-template'}}
+        if args[2]=='template.get':
+            if values['template_id'] in templates:return {'template': {'status':{'state':'ready'}}}
             from public_launch_e2e import CLIError
             raise CLIError('template',4,json.dumps({'code':'E2001','message':'owned template not found'}))
-        if args[:2]==['template','delete']:
-            templates.remove(args[2]);return ''
+        if args[2]=='template.delete':
+            templates.remove(values['template_id']);return {'template_id': values['template_id'], 'deleted': True}
         raise AssertionError('unexpected operation')
     monkeypatch.setattr(review.CLI,'run',cli)
     monkeypatch.setattr(review,'wait_ready',lambda *args:None)
@@ -243,18 +251,18 @@ def test_known_id_absence_is_independent_of_missing_alias_index(monkeypatch,info
     from public_launch_e2e import CLIError
     calls=[]
     monkeypatch.setattr(review,'exact_templates',lambda *args:[])
-    def invoke(args,**kwargs):
+    def invoke(args,*pos,**kwargs):
         calls.append(args)
-        if args[1]=='delete':return ''
-        if info_state=='still-present':return {'status':{'state':'ready'}}
+        if args[2]=='template.delete':return {'deleted':True}
+        if info_state=='still-present':return {'template': {'status':{'state':'ready'}}}
         raise CLIError('template',4,json.dumps({'code':'E2001' if info_state=='deleted' else 'E5000','message':'controlled failure'}))
     cli=SimpleNamespace(run=invoke)
     if info_state=='denied':
         with pytest.raises(CLIError):review.delete_owned_templates(cli,'unique-alias','owned-template',timeout=0)
     else:assert review.delete_owned_templates(cli,'unique-alias','owned-template',timeout=0) is expected
-    expected_calls=([['template','info','owned-template']]*2 if info_state=='deleted' else
-        [['template','info','owned-template']] if info_state=='denied' else
-        [['template','info','owned-template'],['template','delete','owned-template','--yes'],['template','info','owned-template']])
+    expected_calls=([['provider','run','template.get','--input',json.dumps({'template_id':'owned-template'})]]*2 if info_state=='deleted' else
+        [['provider','run','template.get','--input',json.dumps({'template_id':'owned-template'})]] if info_state=='denied' else
+        [['provider','run','template.get','--input',json.dumps({'template_id':'owned-template'})],['provider','run','template.delete','--input',json.dumps({'template_id':'owned-template'}),'--yes'],['provider','run','template.get','--input',json.dumps({'template_id':'owned-template'})]])
     assert calls==expected_calls
 
 
@@ -270,9 +278,31 @@ def test_already_absent_known_id_requires_typed_info_and_does_not_attempt_delete
     from public_launch_e2e import CLIError
     monkeypatch.setattr(review,'exact_templates',lambda *args:[])
     calls=[]
-    def invoke(args,**kwargs):
+    def invoke(args,*pos,**kwargs):
         calls.append(args)
-        assert args==['template','info','owned-template']
+        assert args==['provider','run','template.get','--input',json.dumps({'template_id':'owned-template'})]
         raise CLIError('template',4,json.dumps({'code':'E2001','message':'owned template not found'}))
     assert review.delete_owned_templates(SimpleNamespace(run=invoke),'unique-alias','owned-template',timeout=0)
     assert len(calls)==2
+
+
+def test_native_create_credentials_cross_process_only_via_anonymous_fd(tmp_path, monkeypatch):
+    import shlex
+    from public_launch_e2e import CLI
+    program=tmp_path/'cli.py'
+    program.write_text('import json,sys\nfrom pathlib import Path\n'
+        'assert "synthetic-password" not in str(sys.argv)\n'
+        'value=json.loads(Path(sys.argv[sys.argv.index("--input-file")+1]).read_text())\n'
+        'assert value["registry_password"]=="synthetic-password"\n'
+        'print(json.dumps({"template":{"templateID":"owned"}}))\n')
+    descriptors=[];original=os.memfd_create
+    def create(*args):
+        fd=original(*args);descriptors.append(fd);return fd
+    monkeypatch.setattr(os,'memfd_create',create)
+    cli=CLI(shlex.quote(sys.executable)+' '+shlex.quote(str(program)), 'alicloud-express', os.environ.copy())
+    cli.private_directory.rmdir()
+    cli.private_directory=tmp_path
+    assert review.native_template(cli,'create',{'registry_password':'synthetic-password'})=={'templateID':'owned'}
+    assert len(descriptors)==1
+    with pytest.raises(OSError):os.fstat(descriptors[0])
+    assert 'synthetic-password' not in (tmp_path/'cli-1.log').read_text()

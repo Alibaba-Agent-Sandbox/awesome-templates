@@ -31,18 +31,18 @@ export ABX_SERVER_TOKEN="<independent-application-token>"
 export ABX_LLM_API_KEY="<model-api-key>"
 export ABX_LLM_BASE_URL="https://dashscope.aliyuncs.com/compatible-mode/v1"
 export ABX_HTTP_TIMEOUT=660
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//opencode --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//opencode --sandbox-timeout 1800 --yes
 ```
 
 Replace the next placeholder with the sandbox ID returned by launch. For OpenSandbox, configure its provider first and use `ABX_PROVIDER=opensandbox` consistently in every example.
 
 ```bash
 export ABX_SANDBOX_ID="<returned-sandbox-id>"
-abx exec "$ABX_SANDBOX_ID" -- mkdir -p /home/user/workspace
-abx run "$ABX_SANDBOX_ID" opencode_version
-abx run "$ABX_SANDBOX_ID" opencode_setup_check
-abx run "$ABX_SANDBOX_ID" opencode_run --json-args '{"prompt":"Create hello.py in the current directory that prints Hello from OpenCode, then run it.","model":"dashscope/qwen3.8-flash","cwd":"/home/user/workspace"}'
-abx download "$ABX_SANDBOX_ID" /home/user/workspace/hello.py ./hello.py
+abx sandbox exec "$ABX_SANDBOX_ID" -- mkdir -p /home/user/workspace
+abx sandbox run "$ABX_SANDBOX_ID" opencode_version
+abx sandbox run "$ABX_SANDBOX_ID" opencode_setup_check
+abx sandbox run "$ABX_SANDBOX_ID" opencode_run --json-args '{"prompt":"Create hello.py in the current directory that prints Hello from OpenCode, then run it.","model":"dashscope/qwen3.8-flash","cwd":"/home/user/workspace"}'
+abx sandbox download "$ABX_SANDBOX_ID" /home/user/workspace/hello.py ./hello.py
 ```
 
 The task returns an object with `text`, `stdout`, `session_id`, `model`, `agent` and `cwd`. Text varies with the model; the downloaded Python file should print `Hello from OpenCode` when run. Choose CLI, SDK or HTTP below as alternatives for the same task, rather than creating three sandboxes.
@@ -167,7 +167,7 @@ The wrapper automatically approves OpenCode tool execution (`--auto`). Its `cwd`
 OpenCode runs in the command's `cwd`. The example explicitly creates a workspace instead of editing template application files. Export code, session data and other required output before deleting the sandbox; changes do not update the original template.
 
 ```bash
-abx kill "$ABX_SANDBOX_ID"
+abx delete "$ABX_SANDBOX_ID"
 ```
 
 The owner should also delete the exact prepared template/image identified in launch output when no longer needed; follow [resource cleanup](../docs/using-templates.md#cli-sdk-and-http). No key or login state should be baked into a reusable image.

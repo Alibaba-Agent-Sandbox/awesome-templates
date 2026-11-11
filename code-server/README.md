@@ -31,14 +31,14 @@ export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export CODE_SERVER_PASSWORD='<choose-a-long-unique-password>'
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//code-server --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//code-server --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" code_server_start --json-args '{"port":8443,"timeout_s":60}'
+abx sandbox run "$SANDBOX_ID" code_server_start --json-args '{"port":8443,"timeout_s":60}'
 ```
 
 Returns `running: true`, `port: 8443`, `auth: password`. Resolve port 8443 and log in to the IDE with `CODE_SERVER_PASSWORD`.
@@ -133,11 +133,11 @@ WORKSPACE defaults to /home/user/app. CODE_SERVER_PASSWORD and ABX_SERVER_TOKEN 
 The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
 
 ```bash
-abx run "$SANDBOX_ID" code_server_stop --json-args '{}'
-abx kill "$SANDBOX_ID"
+abx sandbox run "$SANDBOX_ID" code_server_stop --json-args '{}'
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+`abx delete` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
 ## Resources
 

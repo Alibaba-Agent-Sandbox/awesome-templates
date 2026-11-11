@@ -26,15 +26,15 @@ export ABX_SANDBOX_DOMAIN='<sandbox-domain>'
 
 三个占位符分别替换为 Sandbox API Key、API URL 和沙箱域名；域名填主机名，不填 URL。这些是平台凭据，不是模型 API Key。本例不需要模型、模型 endpoint、模型密钥、应用令牌或交互登录。直接创建已有托管镜像，无需 Docker、ACR namespace 或镜像构建 AccessKey。账号配置差异见[平台配置指南](../../using-templates.zh-CN.md)。
 
-使用 CLI 0.5.6 或更高版本和当前托管目录，按[安装与平台配置说明](../../using-templates.zh-CN.md)准备。
+使用 当前源码 CLI和当前托管目录，按[安装与平台配置说明](../../using-templates.zh-CN.md)准备。
 
 先完成 [CLI 安装和平台配置](../../using-templates.zh-CN.md)，将 `<sandbox-id>` 替换为创建时返回的实例 ID。
 
 ```bash
-abx --provider alicloud-express template launch base --sandbox-timeout 180 --yes
+abx --provider alicloud-express deploy base --sandbox-timeout 180 --yes
 export ABX_SANDBOX_ID="<返回的沙箱ID>"
-abx --provider alicloud-express exec "$ABX_SANDBOX_ID" -- python3 -c 'print(6*7)'
-abx --provider alicloud-express kill "$ABX_SANDBOX_ID"
+abx --provider alicloud-express sandbox exec "$ABX_SANDBOX_ID" -- python3 -c 'print(6*7)'
+abx --provider alicloud-express delete "$ABX_SANDBOX_ID"
 ```
 
 ## 快速开始（Python SDK）

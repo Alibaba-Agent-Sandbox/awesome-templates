@@ -251,7 +251,7 @@ def _check_readme(path: Path, headings: tuple[str, ...], violations: list[Violat
     sdk = sections.get(sdk_heading, "")
     commands = sections.get(commands_heading, "")
     issues = sections.get(issues_heading, "")
-    cli_entry = "abx app" if managed else "abx run"
+    cli_entry = "abx deploy" if managed else "abx sandbox run"
     if cli_heading in sections and cli_entry not in cli:
         violations.append(Violation("readme-cli", f"{path.name}: Quick start (CLI) must show `{cli_entry}`"))
     sdk_tokens = ("httpx", ".post") if managed else ("Sandbox", ".run")

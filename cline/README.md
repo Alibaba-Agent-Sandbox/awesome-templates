@@ -32,7 +32,7 @@ export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsa
 export CLINE_MODEL_API_KEY='<your-model-or-vendor-key>'
 export CLINE_MODEL_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
 export CLINE_MODEL='<model-id-from-your-provider>'
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//cline --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//cline --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
@@ -42,7 +42,7 @@ abx sandbox command list "$SANDBOX_ID"
 Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
 
 ```bash
-ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" cline --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","cwd":"/home/user/workspace","command_timeout":300}'
+ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" cline --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","cwd":"/home/user/workspace","command_timeout":300}'
 ```
 
 The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/workspace`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.
@@ -91,10 +91,10 @@ The response is `{"result": ...}`; see the command reference for its actual cont
 ### Export files and cleanup
 
 ```bash
-abx exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
-abx download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
-abx download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
-abx kill "$SANDBOX_ID"
+abx sandbox exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx delete "$SANDBOX_ID"
 ```
 
 Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
@@ -119,7 +119,7 @@ Named-command results are buffered rather than streamed. `cwd` must be an existi
 | CLINE_MODEL_BASE_URL | model required; empty | Explicit HTTPS API base, literal localhost HTTP for authored development only; no userinfo/query/fragment; max2048characters |
 | CLINE_MODEL | model required; empty | Actual model identifier, max200allowed identifier characters |
 | WORKSPACE | `/home/user/workspace` | Existing workspace root |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the deploy; separate from model and gateway credentials |
 
 Values are captured when commands.py loads. The wrapper writes only provider/model/base metadata into private0600settings, not a model key value; native key resolution uses its documented environment support. Native state is private and removed on return/failure. Global telemetry/auto-update and runtime file logging are disabled; public/private model catalog refresh is disabled. Cline config/data/team/MCP paths are per-call and no caller GitHub/cloud keys, alternate binary override or Cline account token is forwarded. Host operator credentials never enter the native coding process.
 

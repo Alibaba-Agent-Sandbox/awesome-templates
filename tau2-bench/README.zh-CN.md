@@ -44,14 +44,14 @@ export TAU2_MODEL_API_KEY='<your-model-api-key>'
 export TAU2_MODEL_BASE_URL='https://model.example.invalid/v1'
 export TAU2_MODEL='<your-model-id>'
 export ABX_HTTP_TIMEOUT=750
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//tau2-bench --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//tau2-bench --sandbox-timeout 1800 --yes
 # 将启动输出中的沙箱 ID 填到这里
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" tau2_run --json-args '{"domain":"retail","task_id":"0","max_steps":30,"command_timeout":600}'
+abx sandbox run "$SANDBOX_ID" tau2_run --json-args '{"domain":"retail","task_id":"0","max_steps":30,"command_timeout":600}'
 ```
 
 返回原生 `score`、终止原因和脱敏轨迹 `artifact_path`；Agent 与模拟用户均会产生模型调用费用，不能保证奖励为 1。
@@ -140,11 +140,11 @@ SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。�
 
 ```bash
 # 把 <returned-path> 换成结果中的 artifact_path
-abx download "$SANDBOX_ID" '<returned-path>' ./tau2-trajectory.json
-abx kill "$SANDBOX_ID"
+abx sandbox download "$SANDBOX_ID" '<returned-path>' ./tau2-trajectory.json
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
+`abx delete` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
 
 ## 资源
 

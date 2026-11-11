@@ -24,7 +24,7 @@ Qwen Code 0.23.0、PostgreSQL，以及 FC Gateway/Worker/Dispatcher 函数。
 [Server Dockerfile](server/Dockerfile)
 
 镜像固定使用 SDK 0.4.0a7，提供托管 Gateway 和 guest bridge。部署应用需要 Node.js 20
-或更高版本，以及 npm 分发的 CLI 0.5.10。业务 HTTP 客户端只需要 Gateway endpoint 和业务 Key。
+或更高版本，以及 当前源码 CLI。业务 HTTP 客户端只需要 Gateway endpoint 和业务 Key。
 
 ## 解决的问题
 
@@ -33,13 +33,12 @@ Sandbox 管理凭据留在 Server；Sandbox 只接收选定的模型配置和单
 
 ## 快速开始（CLI）
 
-使用下面的 npm CLI，按[使用指南](../docs/using-templates.md#installation)
+这些命令需要当前源码 CLI，已发布的 0.5.10 不支持。先按[使用指南](../docs/using-templates.md#installation)
 配置 Sandbox 及镜像构建仓库，并在 `application.deployment.accessRef` 选择已有的
 Serverless Devs access。FC 地域、Sandbox 地域、数据库网络和镜像仓库访问需要相互匹配。
 部署期间保持 Python 虚拟环境激活，验证 hook 和示例需要其中的 `httpx==0.28.1`。
 
 ```bash
-npm install --global @agent-sandbox/cli@0.5.10
 git clone https://github.com/Alibaba-Agent-Sandbox/awesome-templates.git
 cd awesome-templates/agents-api
 mkdir -p .abx
@@ -54,36 +53,27 @@ Apply 前提供“配置”表中的环境变量，在私有 binding 文件中�
 对应 adapter，并修改清单中的地域、access 和资源限制。私有文件、构建收据和计划存放在 `.abx/` 下，该目录不进入镜像构建上下文。
 
 ```bash
-abx app build template.yaml --out .abx/build.json --yes
-abx app plan template.yaml --build-receipt .abx/build.json --out .abx/plan.json
-abx app apply .abx/plan.json --bindings .abx/bindings.json --yes
-abx app status '<apply 返回的 receipt_file>'
+abx deploy . --name agents-api --bindings .abx/bindings.json --yes
+abx status agents-api
 ```
 
-保存返回的 `endpoint`、`receipt_file` 和 `credentials_file`。首次 Apply 自动生成独立的
-业务及内部 Key，安全保存在本机并在后续更新中复用；显式提供的自定义凭据不会被复制
-保存。业务客户端只需要 endpoint 和私有凭据文件中的 `businessKey`，不要向业务调用方
-提供其中的 `internalToken`。
-
-内置业务检查将本机进度保存在 `.abx/agents-smoke-reports/latest.json`，每次执行另有独立的
-追加式 `*.jsonl` 历史文件。Apply 检查失败时可以查看：
+`abx status agents-api` 显示 endpoint 和本机私有凭据文件路径。首次部署自动生成独立的业务及内部 Key，后续更新复用。业务客户端只需要 endpoint 和该文件中的 `businessKey`，不要分享 `internalToken`。显式提供的自定义凭据不会复制保存。
 
 ```bash
-python -m json.tool .abx/agents-smoke-reports/latest.json
+abx logs agents-api
+abx recover agents-api
 ```
 
-报告只包含固定阶段、检查码、可选的数字 HTTP 状态与终态，以及清理布尔值，不包含
-凭据、资源 ID、模型正文或原始异常。检查被终止或超时时可能保留 `status: running`，
-这不表示成功。报告目录须可写且仅归属当前用户；报告写入失败也会使检查失败。
-命令输出 `report_io` 时，报告可能不可用，或仍停留在先前的检查点。
-`cleanup_confirmed` 仅表示检查已尝试释放的已知资源得到确认，不证明未知请求没有生效，
-也不代替提供方独立不存在检查。Apply 失败后保留应用收据，使用 Status/Reconcile；
-不要仅为获得新报告而重放原创建步骤。
+`abx logs` 需要配置 FC `logConfig`；本模板默认不配置。未配置时，请在 FC 控制台查看可用的函数诊断信息。
 
-更新时重新 Build，Plan 使用 `--previous-receipt <receipt_file>`，再 Apply 新计划。
-已有 Session 固定在原 revision。保留旧收据，待其 Session 全部结束后使用
-`abx app retire <当前收据> --revision <保留的revision> --bindings .abx/bindings.json --yes`。
-退休要求该 revision 已不持有可继续使用的 Session 或未解决的清理；请先关闭其 Session。
+部署中断后先执行 `recover` 查看已知资源和恢复提示，不重复提交创建请求。修改模板或配置后，使用相同名称再次执行 `abx deploy . --name agents-api --bindings .abx/bindings.json --yes` 更新。已有 Session 保留原 revision；先关闭其 Session，再清理未使用的旧版本：
+
+```bash
+abx status agents-api --revisions
+abx delete agents-api --revision <旧版本> --bindings .abx/bindings.json --yes
+```
+
+作者需要分开构建和部署时，可选用 `abx template build . --out .abx/build.json --yes`，再通过 `abx deploy . --build .abx/build.json --name agents-api --bindings .abx/bindings.json --yes` 复用构建。发布源码使用 `abx template publish`，不会自动上架 Registry。
 
 ## 快速开始（Python SDK）
 
@@ -166,6 +156,8 @@ Agent 已完成任务。
 私有 bridge 不是业务 API。`commands.py` 中的本机 `agents_version()` 无参数，只检查
 安装的 CLI 并返回固定版本；私有 bridge 不开放该命名命令。
 
+清单省略了 `fc-managed-agents` profile 的固定字段。按需修改显式声明的提供方、binding 引用、地域和预算；默认值与允许的覆盖见 [profile 参考](../docs/managed-agent-applications.zh-CN.md)。
+
 ## 配置
 
 复制 [bindings.example.json](bindings.example.json)。其中 `{env: ...}` 是 Apply 时解析的
@@ -230,23 +222,16 @@ FC、镜像存储、Sandbox、数据库和模型可能产生费用。FC 内置�
 完成后关闭 Session，下载结果并删除不再需要的公开 Session/文件。删除部署：
 
 ```bash
-abx app plan --destroy '<receipt_file>' --out .abx/destroy-plan.json
-abx app destroy .abx/destroy-plan.json --bindings .abx/bindings.json --yes
+abx delete agents-api --bindings .abx/bindings.json --yes
 ```
 
-检查结果收据，对保留的 owned 资源继续 Reconcile。Destroy 和 revision 退休只在无其他
-保留 revision 引用时删除记录中的 owned Server 镜像 tag。用户提供的 `serverImage` 属于
-借用资源，不自动删除。
+检查删除结果；操作中断或结果不确定时，使用 `abx recover agents-api` 核查。
+删除操作清理部署记录中的自有资源。通过 `--build` 提供的可复用构建产物、用户提供的
+`serverImage`，以及已有数据库、网络、模型服务和自定义域名仍由你管理。
 
-Server 构建失败或不再准备部署时，可用 `abx app clean-build .abx/build.json --yes`
-清理归属已确认的 owned 镜像。构建一旦参与过任何 Apply，必须通过应用 Destroy 或 Retire
-清理；即使 Apply 失败，Clean-build 也会拒绝。构建归属不确定时保留收据用于协调，
-不要手工删除未经确认的 tag。
-
-Sandbox 构建镜像可能仍需手工清理。检查 `retained_build_artifacts` 和保存的 revision/
-build 收据，再按镜像仓库清理说明只删除属于你的未使用 tag。应用 Destroy 成功不表示
-所有构建产物都已删除。借用的数据库、VPC/网络资源、模型账号和自定义域名仍由你管理；
-销毁部署不代表另外保留的数据库历史已经擦除。
+独立构建不再被任何部署使用后，可用 `abx template build --clean .abx/build.json --yes`
+清理归属已确认的 Server 镜像。Sandbox 构建镜像可能仍列在 `retained_build_artifacts`
+中；按镜像仓库清理说明只删除属于你的未使用 tag。删除部署不会擦除另外保留的数据库历史。
 
 ## 贡献
 

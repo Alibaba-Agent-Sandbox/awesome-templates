@@ -28,14 +28,14 @@ These template commands require no model, model endpoint or model API key.
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//polyglot-toolchain --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//polyglot-toolchain --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" toolchain_smoke --json-args '{}'
+abx sandbox run "$SANDBOX_ID" toolchain_smoke --json-args '{}'
 ```
 
 Compiles and runs Go, Rust and Java examples; returns `go: GO_OK`, `rust: RUST_OK`, `java: JAVA_OK` and `cleanup_verified: true`.
@@ -109,10 +109,10 @@ The legacy `rootfs_used_bytes` and `rootfs_free_bytes` response keys are visible
 The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
 
 ```bash
-abx kill "$SANDBOX_ID"
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+`abx delete` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
 ## Resources
 

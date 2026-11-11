@@ -38,7 +38,7 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
               "preparation_attempted": False, "runtime_attempted": False, "cleanup_verified": False, "template_cleanup_verified": False}
     cache = None
     try:
-        from run_ci_image_e2e import controller_missing_imports, exercise, exact_templates, wait_ready, delete_owned_templates
+        from run_ci_image_e2e import controller_missing_imports, exercise, exact_templates, wait_ready, delete_owned_templates, native_template
         from public_launch_e2e import CLI, require
         from ci_image_archive import save_private
         missing = controller_missing_imports(source)
@@ -46,8 +46,8 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
             result['missing_controller_modules'] = missing
             raise RuntimeError('missing local HTTP controller prerequisites')
         cli = CLI(os.environ.get('ABX', 'abx'), 'alicloud-express', os.environ.copy())
-        native_help = cli.run(['template', 'deploy', '--help'], native=True, json_output=False)
-        require(all(flag in native_help for flag in ['--build', '--alias', '--generation', '--start-cmd', '--ready-cmd']),
+        native_help = cli.run(['provider', 'run', 'template.create', '--help'], json_output=False)
+        require(all(field in native_help for field in ['--input', 'image:', 'generation:', 'steps:']),
                 'current native step preparation contract')
         cache_config = None
         if args.asset_transport == "oss" and parallel_assets(source):
@@ -73,10 +73,11 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
                                   'registration_attempted': True, 'sandbox_ids': []})
         try:
             result["preparation_attempted"] = True
-            deployed = cli.run(['template', 'deploy', str(stage), '--build', 'steps',
-                '--generation', '2', '--start-cmd', '', '--ready-cmd', '',
-                '--alias', alias, '--timeout', str(args.timeout), '--yes'], args.timeout + 180, native=True)
-            template_id = deployed['TemplateID']
+            resources = manifest.get('resources', {})
+            deployed = native_template(cli, 'create', {'name': alias, 'image': manifest['base'],
+                'generation': 2, 'envd_inject': False, 'steps': manifest['build']['steps'],
+                'cpu': resources.get('cpu', 2), 'memory_size': resources.get('memory', 2048)}, args.timeout + 180)
+            template_id = deployed['templateID']
             require(isinstance(template_id, str) and bool(template_id.strip()), 'native step template identifier')
             intent = json.loads(intent_path.read_text());intent['template_id'] = template_id
             save_private(intent_path, intent)

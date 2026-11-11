@@ -28,15 +28,15 @@ These template commands require no model, model endpoint or model API key.
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//node-web --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//node-web --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" serve --json-args '{"entry":"index.js","port":3000}'
-abx run "$SANDBOX_ID" request --json-args '{"path":"/"}'
+abx sandbox run "$SANDBOX_ID" serve --json-args '{"entry":"index.js","port":3000}'
+abx sandbox run "$SANDBOX_ID" request --json-args '{"path":"/"}'
 ```
 
 Returns the sample application HTTP status and body containing `node-web ready`.
@@ -131,18 +131,18 @@ One service can run at a time; a second start fails until `stop`. Readiness test
 | `HOST` | set to `0.0.0.0` by launch | Hint to compatible application servers; application must honor it |
 | `WORKSPACE` | unset | Default application working directory |
 | `ABX_SERVER_PORT` | `9000` | Local command server port |
-| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the deploy; separate from model and gateway credentials |
 
 No model/cloud key is needed by these commands. Keep secret values out of source, images and logs. Inject them only through authorized runtime configuration; do not log environment variables. App stdout is user controlled and can contain secrets: applications must redact before logging, and logs must not be attached to public issues without review.
 
 The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
 
 ```bash
-abx run "$SANDBOX_ID" stop --json-args '{}'
-abx kill "$SANDBOX_ID"
+abx sandbox run "$SANDBOX_ID" stop --json-args '{}'
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+`abx delete` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
 ## Resources
 

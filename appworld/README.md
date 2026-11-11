@@ -37,14 +37,14 @@ export APPWORLD_MODEL_API_KEY='<your-model-api-key>'
 export APPWORLD_MODEL_BASE_URL='https://model.example.invalid/v1'
 export APPWORLD_MODEL='<your-model-id>'
 export ABX_HTTP_TIMEOUT=750
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//appworld --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//appworld --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" appworld_run --json-args '{"max_steps":30,"command_timeout":600}'
+abx sandbox run "$SANDBOX_ID" appworld_run --json-args '{"max_steps":30,"command_timeout":600}'
 ```
 
 Returns the selected training task, native `score`, `success` and encrypted `artifact_path`; a model is not guaranteed to solve a task.
@@ -124,7 +124,7 @@ This entry calls compatible Chat Completions. Include the vendor API prefix (oft
 | APPWORLD_MODEL_BASE_URL | model required; empty | Explicit HTTPS base; literal loopback HTTP only for authored fixtures; no userinfo/query/fragment, max2048characters |
 | APPWORLD_MODEL | model required; empty | Actual model identifier,1..200 safe characters |
 | WORKSPACE | /home/user/workspace | Existing result root, captured at module startup |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the deploy; separate from model and gateway credentials |
 
 Configuration is captured at command-server startup. Key max8192characters/noCRLF/NUL. Worker environment excludes operator cloud/GitHub/model tokens; model settings travel via anonymous stdin into private memory. Original model execution guards remain enabled. Bridge validates allowed original app/API identifiers and renders JSON arguments as Python literals; it does not accept executable model Python. At most16tool calls execute per response;17..64calls receive complete rejection feedback without API execution and larger batches fail. At most3empty-choice responses across a task,8192response tokens,160native interactions,50API calls/interaction,30seconds/native execution,60seconds/model HTTP without SDK retries. Native inspect/API tool output is bounded; model context at most1MiB.
 
@@ -132,11 +132,11 @@ The working directory is `/home/user/workspace`. Artifacts remain on the sandbox
 
 ```bash
 # Replace <returned-path> with artifact_path from the result
-abx download "$SANDBOX_ID" '<returned-path>' ./appworld-result.zip
-abx kill "$SANDBOX_ID"
+abx sandbox download "$SANDBOX_ID" '<returned-path>' ./appworld-result.zip
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+`abx delete` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
 ## Resources
 

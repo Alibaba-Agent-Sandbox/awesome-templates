@@ -31,19 +31,19 @@ These template commands require no model, model endpoint or model API key.
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//ocr --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//ocr --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" ocr --json-args '{"image_path":"fixtures/sample.png"}'
+abx sandbox run "$SANDBOX_ID" ocr --json-args '{"image_path":"fixtures/sample.png"}'
 ```
 
 Recognizes the bundled sample; `text` contains SANDBOX, OCR and 314159. Returns TXT/TSV paths and hashes for export.
 
-For your own image, upload it with `abx upload "$SANDBOX_ID" ./scan.png /home/user/app/scan.png`, then change `image_path` to `scan.png`. Only English `eng` data is bundled; this is not a multimodal model or a claim of Chinese OCR support.
+For your own image, upload it with `abx sandbox upload "$SANDBOX_ID" ./scan.png /home/user/app/scan.png`, then change `image_path` to `scan.png`. Only English `eng` data is bundled; this is not a multimodal model or a claim of Chinese OCR support.
 
 `--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
 
@@ -114,7 +114,7 @@ One OCR job runs at a time; another request fails promptly. The actual argv is `
 
 | Name | Required | Default | Purpose |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the deploy; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | no | `9000` | Direct local startup port. |
 | `WORKSPACE` | no | `/home/user/app` | Existing runtime-user-owned input/output root. |
 | `OCR_TESSERACT_BINARY` | no | `/usr/bin/tesseract` | Operator-only absolute executable path; version remains checked. |
@@ -126,11 +126,11 @@ The working directory is `/home/user/app`. Artifacts remain on the sandbox disk;
 
 ```bash
 # Replace <returned-path> with text_path from the result
-abx download "$SANDBOX_ID" '<returned-path>' ./recognized.txt
-abx kill "$SANDBOX_ID"
+abx sandbox download "$SANDBOX_ID" '<returned-path>' ./recognized.txt
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+`abx delete` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
 ## Resources
 

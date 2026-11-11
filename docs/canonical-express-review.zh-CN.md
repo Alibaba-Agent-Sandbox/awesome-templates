@@ -2,7 +2,7 @@
 
 [English](canonical-express-review.md).
 
-当前极速版验证统一使用[公开模板启动工作流](public-launch-testing.md#中文)、已发布 CLI/Python 包和 provider 返回的应用访问地址；旧的固定提交部署任务已退役。
+当前极速版验证统一使用[公开模板启动工作流](public-launch-testing.md#中文)、精确审阅提交的源码 CLI 和已发布 Python 包和 provider 返回的应用访问地址；旧的固定提交部署任务已退役。
 
 ## 当前任务：本地极速版验收
 

@@ -32,7 +32,7 @@ Replace every `<...>` placeholder with your own value; use an exact model ID ava
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export DEVIN_CREDENTIALS_FILE='/home/user/devin-private/credentials.toml'
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//devin --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//devin --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
@@ -44,14 +44,14 @@ Launch starts this instance's application; do not create a second sandbox or sec
 After native login on your trusted machine, replace the local pathname below with your own generated credentials.toml; do not print its content:
 
 ```bash
-abx exec "$SANDBOX_ID" -- mkdir -p /home/user/devin-private
-abx exec "$SANDBOX_ID" -- chmod 700 /home/user/devin-private
-abx upload "$SANDBOX_ID" "<local-credentials.toml>" /home/user/devin-private/credentials.toml
-abx exec "$SANDBOX_ID" -- chmod 600 /home/user/devin-private/credentials.toml
+abx sandbox exec "$SANDBOX_ID" -- mkdir -p /home/user/devin-private
+abx sandbox exec "$SANDBOX_ID" -- chmod 700 /home/user/devin-private
+abx sandbox upload "$SANDBOX_ID" "<local-credentials.toml>" /home/user/devin-private/credentials.toml
+abx sandbox exec "$SANDBOX_ID" -- chmod 600 /home/user/devin-private/credentials.toml
 ```
 
 ```bash
-ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" devin --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","allow_unsafe_tools":true,"cwd":"/home/user/app","command_timeout":300}'
+ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" devin --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","allow_unsafe_tools":true,"cwd":"/home/user/app","command_timeout":300}'
 ```
 
 The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/app`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.
@@ -101,10 +101,10 @@ The response is `{"result": ...}`; see the command reference for its actual cont
 ### Export files and cleanup
 
 ```bash
-abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
-abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
-abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
-abx kill "$SANDBOX_ID"
+abx sandbox exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx delete "$SANDBOX_ID"
 ```
 
 Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
@@ -128,7 +128,7 @@ Named-command results are buffered rather than streamed. `cwd` must be an existi
 | --- | --- | --- |
 | DEVIN_CREDENTIALS_FILE | empty; optional for diagnostics/error-path, required for account tasks | Authored wrapper input path captured at module import; absolute, outside WORKSPACE, regular nonsymlink owned by root/current UID, no group/other permissions,1..65536bytes valid UTF8TOML |
 | WORKSPACE | /home/user/app | Captured existing project root |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the deploy; separate from model and gateway credentials |
 
 A missing original account file reaches original print and preserves its explicit login refusal; no interactive login, made-up DEVIN_API_KEY, root model key or fallback planner is used. The subprocess receives minimal private state environment without operator/model/cloud credentials or the source credential path. Known credential TOML string values, server Bearer/private HOME/source path are redacted in returned stdout. Native errors omit raw output. One operation per server process; overlap returns busy.
 

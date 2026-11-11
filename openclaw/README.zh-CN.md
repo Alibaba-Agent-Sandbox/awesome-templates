@@ -33,7 +33,7 @@ export OPENCLAW_GATEWAY_TOKEN="$(python3 -c 'import secrets; print(secrets.token
 export OPENCLAW_MODEL_API_KEY='<your-model-api-key>'
 export OPENCLAW_MODEL_BASE_URL='<your-chat-completions-api-base-including-v1-if-required>'
 export OPENCLAW_MODEL='<your-exact-model-id>'
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//openclaw --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//openclaw --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
@@ -43,13 +43,13 @@ abx sandbox command list "$SANDBOX_ID"
 launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
 
 ```bash
-ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" gateway_start --json-args '{"bind":"loopback","command_timeout":60}'
-abx run "$SANDBOX_ID" gateway_health
-abx run "$SANDBOX_ID" gateway_status
-ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" gateway_chat --json-args '{"prompt":"Summarize taxi 12.50, lunch 23.80 and train 15.00. Return only JSON with integer count and two-decimal string total."}'
+ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" gateway_start --json-args '{"bind":"loopback","command_timeout":60}'
+abx sandbox run "$SANDBOX_ID" gateway_health
+abx sandbox run "$SANDBOX_ID" gateway_status
+ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" gateway_chat --json-args '{"prompt":"Summarize taxi 12.50, lunch 23.80 and train 15.00. Return only JSON with integer count and two-decimal string total."}'
 # Copy session_id from the result to continue this conversation.
-ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" gateway_chat --json-args '{"prompt":"Remove the train from the previous expenses. Return the same JSON fields.","session_id":"<returned-session-id>"}'
-abx run "$SANDBOX_ID" gateway_stop
+ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" gateway_chat --json-args '{"prompt":"Remove the train from the previous expenses. Return the same JSON fields.","session_id":"<returned-session-id>"}'
+abx sandbox run "$SANDBOX_ID" gateway_stop
 ```
 
 ## 快速开始（Python SDK）
@@ -104,7 +104,7 @@ asyncio.run(main())
 HTTP 启动后用相同认证 `POST /commands/gateway_health`（`{}`）检查，然后 `POST /commands/gateway_stop`（`{}`）停止。最后删除沙箱：
 
 ```bash
-abx kill "$SANDBOX_ID"
+abx delete "$SANDBOX_ID"
 ```
 
 `close()`/`aclose()` 仅关闭客户端连接，不释放沙箱。launch 日志中的已构建模板和镜像可能保留用于复用，不再需要时仅删除自己创建的那些资源。

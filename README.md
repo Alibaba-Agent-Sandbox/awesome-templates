@@ -11,7 +11,7 @@ Reusable environments for AI agents: browser automation, coding tools, web servi
 [Install abx CLI](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#installation) 0.5.8 or newer. Follow the [usage guide](docs/using-templates.md) to prepare the selected provider's credentials and build environment, then launch the introductory template, which needs no model:
 
 ```bash
-abx --provider alicloud-express template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello
+abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello
 ```
 
 The CLI guides missing setup, generates and saves the default application token, and reuses it for later commands. Model-based templates also need the model account or API settings described in their README.
@@ -19,8 +19,8 @@ The CLI guides missing setup, generates and saves the default application token,
 Replace `<sandbox-id>` with the returned sandbox ID:
 
 ```bash
-abx run <sandbox-id> hello --arg name=Ada
-abx kill <sandbox-id>
+abx sandbox run <sandbox-id> hello --arg name=Ada
+abx delete <sandbox-id>
 ```
 
 Expected output: `Hello, Ada!`. `kill` deletes the running sandbox. Follow [cleanup instructions](docs/using-templates.md#export-files-and-clean-up) to remove retained images and templates separately.
@@ -117,7 +117,7 @@ These entries use an existing runtime on their owning platform. Select that prov
 Search with `abx template search python`. Download an editable copy without creating cloud resources:
 
 ```bash
-abx template install python-hello --download-only --dir ./python-hello
+abx template init ./python-hello --from Alibaba-Agent-Sandbox/awesome-templates//python-hello
 ```
 
 This repository owns the source templates and [`awesome-templates.yaml`](awesome-templates.yaml), read by the CLI and Registry. Read [CONTRIBUTING.md](CONTRIBUTING.md) and the [template specification](docs/template-spec.md) before changing or adding a template. Report template problems in [Issues](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues).

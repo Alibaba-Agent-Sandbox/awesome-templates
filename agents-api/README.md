@@ -29,8 +29,7 @@ Qwen Code 0.23.0, PostgreSQL and FC Gateway/Worker/Dispatcher functions.
 [Server Dockerfile](server/Dockerfile)
 
 The images pin SDK 0.4.0a7, which provides the managed Gateway and guest bridge.
-Application deployment requires Node.js 20 or later and the npm distribution of
-CLI 0.5.10. Business HTTP clients need only the Gateway endpoint and business key.
+Application deployment requires Node.js 20 or later and the current source CLI. Business HTTP clients need only the Gateway endpoint and business key.
 
 ## Problem solved
 
@@ -41,7 +40,7 @@ application token enter the Sandbox.
 
 ## Quick start (CLI)
 
-Install the npm CLI below, configure your Sandbox/build registry with the
+Install the current source CLI using the linked guide; published CLI 0.5.10 does not support these commands. Configure your Sandbox/build registry with the
 [usage guide](../docs/using-templates.md#installation), and select an existing
 Serverless Devs access profile in `application.deployment.accessRef`. The FC
 region, Sandbox region, database connectivity and registry image access must agree.
@@ -49,7 +48,6 @@ Keep the Python environment active when deploying: its `httpx==0.28.1` dependenc
 is used by the verification hook and examples.
 
 ```bash
-npm install --global @agent-sandbox/cli@0.5.10
 git clone https://github.com/Alibaba-Agent-Sandbox/awesome-templates.git
 cd awesome-templates/agents-api
 mkdir -p .abx
@@ -66,41 +64,27 @@ Edit the manifest's region, access profile and limits for your account. Keep
 private files, plans and build receipts under `.abx/`, excluded from image builds.
 
 ```bash
-abx app build template.yaml --out .abx/build.json --yes
-abx app plan template.yaml --build-receipt .abx/build.json --out .abx/plan.json
-abx app apply .abx/plan.json --bindings .abx/bindings.json --yes
-abx app status '<receipt_file returned by apply>'
+abx deploy . --name agents-api --bindings .abx/bindings.json --yes
+abx status agents-api
 ```
 
-Save the returned `endpoint`, `receipt_file` and `credentials_file`. The first
-apply generates business/internal keys, stores them privately on this computer
-and reuses them for later updates. Explicit custom credentials are not copied
-into this store. Business callers need only the endpoint and `businessKey` from
-the private credentials file; do not share its `internalToken`.
-
-The built-in business check keeps local progress in `.abx/agents-smoke-reports/latest.json`
-and a separate append-only `*.jsonl` file for each attempt. If Apply's check fails, inspect:
+`abx status agents-api` displays the endpoint and private local credentials file. The first deployment generates separate business and internal keys and reuses them on updates. Business clients need the endpoint and `businessKey` from that file; do not share `internalToken`. Explicit custom credentials are not copied into the local store.
 
 ```bash
-python -m json.tool .abx/agents-smoke-reports/latest.json
+abx logs agents-api
+abx recover agents-api
 ```
 
-The report contains fixed phase/check codes, optional numeric HTTP and terminal status,
-and cleanup booleans, without credentials, resource IDs, model output or raw exceptions.
-A killed or timed-out check can leave `status: running`; that is not success. Reports require
-an owner-private writable directory, and a report write failure keeps the check failed.
-If the command prints `report_io`, the last report may be unavailable or from an earlier checkpoint.
-`cleanup_confirmed` covers only known resources that this check tried to release; it does
-not prove the absence of unknown requests or independently verify provider cleanup.
-Preserve the application receipt and use Status/Reconcile after a failed Apply; do not replay
-its creation steps merely to obtain another report.
+`abx logs` requires FC `logConfig` to be configured; this template does not configure it by default. Without it, inspect available function diagnostics in the FC console.
 
-For an update, build again, then plan with `--previous-receipt <receipt_file>` and
-apply the new plan. Existing sessions remain assigned to their original revision.
-Keep the earlier receipt until its sessions drain. Retire an old revision with
-`abx app retire <current-receipt> --revision <retained-revision> --bindings .abx/bindings.json --yes`.
-Retirement requires that the revision no longer owns a reusable Session or unresolved
-cleanup; close its Sessions first.
+After an interruption, use `recover` to inspect known resources and the next action; do not repeat creation requests. Update by running `abx deploy . --name agents-api --bindings .abx/bindings.json --yes` again after editing the template or configuration. Existing Sessions keep their original revision. Close its Sessions before removing an unused revision:
+
+```bash
+abx status agents-api --revisions
+abx delete agents-api --revision <old-revision> --bindings .abx/bindings.json --yes
+```
+
+Authors may build separately with `abx template build . --out .abx/build.json --yes`, then reuse it through `abx deploy . --build .abx/build.json --name agents-api --bindings .abx/bindings.json --yes`. `abx template publish` publishes committed source without automatically listing it in Registry.
 
 ## Quick start (Python SDK)
 
@@ -187,6 +171,10 @@ The private bridge is not the business API. `commands.py` contains a local
 `agents_version()` diagnostic with no arguments; it checks installed CLI versions
 and returns their pinned versions. It is not exposed by the private bridge.
 
+The manifest omits fixed `fc-managed-agents` profile fields. Customize the declared
+provider, bindings, region and budgets; see the [profile reference](../docs/managed-agent-applications.md)
+for defaults and supported overrides.
+
 ## Configuration
 
 Copy [bindings.example.json](bindings.example.json). Its `{env: ...}` values are
@@ -262,28 +250,20 @@ Close individual sessions when finished, download needed results and delete
 public session/file data. To remove this deployment:
 
 ```bash
-abx app plan --destroy '<receipt_file>' --out .abx/destroy-plan.json
-abx app destroy .abx/destroy-plan.json --bindings .abx/bindings.json --yes
+abx delete agents-api --bindings .abx/bindings.json --yes
 ```
 
-Check the resulting receipt and reconcile any retained owned resources. Destroy
-and revision retirement remove only the recorded owned Server image tags when
-no retained revision uses them. A supplied `serverImage` is borrowed and is never
-deleted automatically.
+Inspect the result and use `abx recover agents-api` if an operation was interrupted
+or its result is uncertain. Delete removes the deployment's recorded owned
+resources. A reusable artifact supplied with `--build`, a supplied `serverImage`,
+and existing databases, networks, model services and custom domains remain yours
+to manage.
 
-If a Server build failed or will not be deployed, use
-`abx app clean-build .abx/build.json --yes` to clean its confirmed owned image.
-Once that build has entered any Apply, use application Destroy or Retire; Clean-build
-refuses it, including after a failed Apply. Preserve uncertain build receipts for
-reconciliation instead of deleting an unconfirmed tag manually.
-
-Sandbox image builds can remain for manual cleanup. Review
-`retained_build_artifacts` and the saved revision/build receipts, then remove
-only your unused image tags using the registry's cleanup instructions. A successful
-application Destroy does not mean every build artifact was removed. Borrowed
-databases, VPC/network resources, model accounts and custom domains remain yours
-to manage. Deployment destruction does not mean separately retained database
-history was erased.
+When a standalone build is no longer used by any deployment, clean its confirmed
+owned Server image with `abx template build --clean .abx/build.json --yes`.
+Sandbox image builds may remain in `retained_build_artifacts`; remove only your
+unused image tags using the registry's cleanup instructions. Deleting a deployment
+does not erase separately retained database history.
 
 ## Contributing
 

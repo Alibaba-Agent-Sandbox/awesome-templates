@@ -35,14 +35,14 @@ export SWE_API_KEY='<your-model-api-key>'
 export SWE_BASE_URL='https://model.example.invalid/v1'
 export SWE_MODEL='<your-model-id>'
 export ABX_HTTP_TIMEOUT=1200
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//swe --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//swe --sandbox-timeout 1800 --yes
 # 将启动输出中的沙箱 ID 填到这里
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" swe_prepare --json-args '{}'
+abx sandbox run "$SANDBOX_ID" swe_prepare --json-args '{}'
 ```
 
 返回 `pallets__flask-5014` 的 `run_id` 和失败基线，请保留该 ID 用于后续编码和评测。
@@ -55,13 +55,13 @@ OpenSandbox 用户将 `ABX_PROVIDER` 改为 `opensandbox`，并按[提供方指�
 
 ```bash
 export RUN_ID='paste-run-id'
-abx run "$SANDBOX_ID" swe_run_agent --json-args "{\"run_id\":\"$RUN_ID\",\"allow_execution\":true,\"max_steps\":30,\"command_timeout\":600}"
-abx run "$SANDBOX_ID" swe_evaluate --arg run_id="$RUN_ID"
-abx run "$SANDBOX_ID" swe_report --arg run_id="$RUN_ID"
+abx sandbox run "$SANDBOX_ID" swe_run_agent --json-args "{\"run_id\":\"$RUN_ID\",\"allow_execution\":true,\"max_steps\":30,\"command_timeout\":600}"
+abx sandbox run "$SANDBOX_ID" swe_evaluate --arg run_id="$RUN_ID"
+abx sandbox run "$SANDBOX_ID" swe_report --arg run_id="$RUN_ID"
 # 把返回的报告/补丁路径分别下载到本机，再清理
-abx download "$SANDBOX_ID" '<returned-report-path>' ./report.json
-abx download "$SANDBOX_ID" '<returned-patch-path>' ./repair.patch
-abx run "$SANDBOX_ID" swe_cleanup --arg run_id="$RUN_ID"
+abx sandbox download "$SANDBOX_ID" '<returned-report-path>' ./report.json
+abx sandbox download "$SANDBOX_ID" '<returned-patch-path>' ./repair.patch
+abx sandbox run "$SANDBOX_ID" swe_cleanup --arg run_id="$RUN_ID"
 ```
 
 ## 快速开始（Python SDK）
@@ -159,10 +159,10 @@ asyncio.run(main())
 工作目录为 `/home/user/app`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
 
 ```bash
-abx kill "$SANDBOX_ID"
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
+`abx delete` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
 
 ## 资源
 

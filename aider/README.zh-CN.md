@@ -35,7 +35,7 @@ export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsa
 export AIDER_API_KEY='<your-model-or-vendor-key>'
 export AIDER_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
 export AIDER_MODEL='<model-id-from-your-provider>'
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//aider --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//aider --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
@@ -45,11 +45,11 @@ abx sandbox command list "$SANDBOX_ID"
 launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
 
 ```bash
-abx exec "$SANDBOX_ID" -- git -C /home/user/app init -q
+abx sandbox exec "$SANDBOX_ID" -- git -C /home/user/app init -q
 ```
 
 ```bash
-ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" aider --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","files":"[\"generated_hello.py\",\"GENERATED_REPORT.md\"]","allow_write":true,"cwd":"/home/user/app","command_timeout":300}'
+ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" aider --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","files":"[\"generated_hello.py\",\"GENERATED_REPORT.md\"]","allow_write":true,"cwd":"/home/user/app","command_timeout":300}'
 ```
 
 任务要求在 `/home/user/app` 写出 `generated_hello.py` 和 `GENERATED_REPORT.md`。示例显式开放所需的编辑/工具权限，只在自己拥有的可丢弃沙箱中使用。下面的 SDK 和 HTTP 是同一任务的替代调用方式，选择一种即可。
@@ -84,7 +84,7 @@ asyncio.run(main())
 
 ## 快速开始（HTTP POST）
 
-所有调用入口都需要 Git 工作树；发送下面请求前，先运行上面的 `abx exec ... git ... init -q` 准备步骤。
+所有调用入口都需要 Git 工作树；发送下面请求前，先运行上面的 `abx sandbox exec ... git ... init -q` 准备步骤。
 
 使用[直接 HTTP 示例](../docs/using-templates.zh-CN.md#clisdk-与-http)解析 endpoint，保留网关 headers、URL path/query 和独立应用 token。请求 `POST /commands/aider`，`Content-Type: application/json`，body 是下面的直接参数对象，不加 `args` 包装：
 
@@ -103,10 +103,10 @@ asyncio.run(main())
 ### 导出产物与清理
 
 ```bash
-abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
-abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
-abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
-abx kill "$SANDBOX_ID"
+abx sandbox exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx delete "$SANDBOX_ID"
 ```
 
 程序预期输出 `Hello from the sandbox`。先读取产物并检查再使用；模型回答成功不代表文件一定存在。文件不会自动回写模板或你的本机，释放沙箱前必须导出。
@@ -133,7 +133,7 @@ abx kill "$SANDBOX_ID"
 | `WORKSPACE` | `/home/user/app`；默认工作目录 |
 | `ABX_SERVER_TOKEN` | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
 
-在 `template launch` 前导出 `AIDER_API_KEY`、`AIDER_BASE_URL`、`AIDER_MODEL` 和独立应用令牌。当前 launch 路径启动该实例的命名服务，无需另启 9010 服务。修改宿主机环境不会重新配置已运行的应用；更改配置后启动新实例。
+在 `deploy` 前导出 `AIDER_API_KEY`、`AIDER_BASE_URL`、`AIDER_MODEL` 和独立应用令牌。当前 launch 路径启动该实例的命名服务，无需另启 9010 服务。修改宿主机环境不会重新配置已运行的应用；更改配置后启动新实例。
 
 兼容配置使用 `extra_body.enable_thinking=false`，模型服务必须接受这个请求参数。key 不写入 stage 文件；选中源码仍会发往模型服务。
 

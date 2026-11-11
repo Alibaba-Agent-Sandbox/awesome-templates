@@ -41,7 +41,7 @@ export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsa
 export OPENAI_API_KEY='<your-model-or-vendor-key>'
 export OPENAI_BASE_URL='<your-model-api-base-including-v1-if-required>'
 export OPENAI_MODEL='<model-id-from-your-provider>'
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//agents-cli --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//agents-cli --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
@@ -53,9 +53,9 @@ Launch starts this instance's application; do not create a second sandbox or sec
 Use the session API below for an actual coding task. The version diagnostic and profile preparation alone do not run the model.
 
 ```bash
-abx run "$SANDBOX_ID" agents_version
+abx sandbox run "$SANDBOX_ID" agents_version
 # For Codex sessions, explicitly prepare the native Responses profile:
-abx run "$SANDBOX_ID" agents_configure_codex
+abx sandbox run "$SANDBOX_ID" agents_configure_codex
 # Select the adapter for the complete Python example:
 export AGENTS_ADAPTER=qwen-code
 # Or: export AGENTS_ADAPTER=codex
@@ -67,7 +67,7 @@ The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/w
 
 In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
 
-Connect to the application started by launch and resolve its gateway with the SDK. This Python example submits the same coding task and polls output within a bounded wait. The restricted application policy has no generic file/shell HTTP routes; inspect the files afterward through provider `abx exec`/`download`.
+Connect to the application started by launch and resolve its gateway with the SDK. This Python example submits the same coding task and polls output within a bounded wait. The restricted application policy has no generic file/shell HTTP routes; inspect the files afterward through provider `abx sandbox exec`/`download`.
 
 ```python
 import asyncio
@@ -201,10 +201,10 @@ Post a further input-message event to the same session ID to resume the native c
 ### Export files and cleanup
 
 ```bash
-abx exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
-abx download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
-abx download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
-abx kill "$SANDBOX_ID"
+abx sandbox exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx delete "$SANDBOX_ID"
 ```
 
 Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
@@ -233,7 +233,7 @@ Named-command results are buffered rather than streamed. `cwd` must be an existi
 
 | Name | Required | Purpose |
 |---|---|---|
-| `ABX_SERVER_TOKEN` | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | required; empty declaration | Export an independent application token before the deploy; separate from model and gateway credentials |
 | `OPENAI_API_KEY` | For compatible model turns | Runtime credential, declared empty; usable by Qwen and compatible Codex setups |
 | `CODEX_API_KEY` | Optional Codex alternative | Declared empty; actual authentication support depends on the chosen upstream provider |
 | `OPENAI_BASE_URL`, `OPENAI_MODEL` | Provider-dependent | Explicit model endpoint/model; Qwen requires Chat Completions, Codex requires Responses after profile preparation |

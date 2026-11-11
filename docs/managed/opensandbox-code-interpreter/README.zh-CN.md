@@ -25,17 +25,17 @@ export ABX_OPENSANDBOX_API_KEY='<server-api-key>'
 
 上面的地址用于本机服务；远端部署时替换为实际服务根地址。Key 使用该服务配置的密钥；只有服务不要求认证时才可不设置该变量。本例不需要交互登录、模型 API Key、模型 endpoint 或应用令牌；服务端需要能获取该原生镜像。
 
-使用 CLI 0.5.6 或更高版本和当前托管目录，按[安装与平台配置说明](../../using-templates.zh-CN.md)准备。
+使用 当前源码 CLI和当前托管目录，按[安装与平台配置说明](../../using-templates.zh-CN.md)准备。
 
 安装 [CLI](../../using-templates.zh-CN.md) 和 Node.js 22+，完成下方平台配置，将 `<sandbox-id>` 替换为创建时返回的实例 ID。
 
 ```bash
 abx provider install Alibaba-Agent-Sandbox/awesome-providers//opensandbox --allow-unpinned --yes
 abx provider doctor opensandbox
-abx --provider opensandbox template launch opensandbox-code-interpreter --sandbox-timeout 180 --yes
+abx --provider opensandbox deploy opensandbox-code-interpreter --sandbox-timeout 180 --yes
 export ABX_SANDBOX_ID="<返回的沙箱ID>"
-abx --provider opensandbox exec "$ABX_SANDBOX_ID" -- python3 -c 'print(6*7)'
-abx --provider opensandbox kill "$ABX_SANDBOX_ID" -y
+abx --provider opensandbox sandbox exec "$ABX_SANDBOX_ID" -- python3 -c 'print(6*7)'
+abx --provider opensandbox delete "$ABX_SANDBOX_ID" -y
 ```
 
 ## 快速开始（Python SDK）

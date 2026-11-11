@@ -24,7 +24,7 @@
 
 模型服务必须实现 HTTP Responses，仅提供 Chat Completions 不够。`ABX_LLM_API_KEY` 用作自定义服务密钥；启动环境不要同时保留冲突的 `OPENAI_BASE_URL`，本模板该 URL 优先。API Key 方式无需交互登录。`CODEX_SANDBOX` 默认为 `workspace-write`；只有平台不支持内层 Codex 沙箱且你接受外层沙箱为隔离边界时，才使用现有 `bypass` 选项。
 
-编码前须确认平台能运行 Codex 内层 Linux 沙箱。平台拒绝时，公共配方中固定的 `CODEX_SANDBOX=workspace-write` 不能通过 host export 修改。如果你明确选择以外层沙箱作为隔离边界，clone 仓库，将 `codex-agent-api/template.yaml` 的 `env.CODEX_SANDBOX` 改为 `bypass`，使用 `abx template launch ./codex-agent-api --sandbox-timeout 1800 --yes` 替换下面的公共配方命令。
+编码前须确认平台能运行 Codex 内层 Linux 沙箱。平台拒绝时，公共配方中固定的 `CODEX_SANDBOX=workspace-write` 不能通过 host export 修改。如果你明确选择以外层沙箱作为隔离边界，clone 仓库，将 `codex-agent-api/template.yaml` 的 `env.CODEX_SANDBOX` 改为 `bypass`，使用 `abx deploy ./codex-agent-api --sandbox-timeout 1800 --yes` 替换下面的公共配方命令。
 
 所有 `<...>` 都是需要你替换的占位值，模型名必须使用服务商实际提供的 ID。密钥在你自己的终端或 secret manager 中设置，不要放入镜像、YAML 或公开日志。以下变量要在 launch **之前**设置；之后改变 host 环境不会更新运行中的应用。
 
@@ -34,7 +34,7 @@ export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsa
 export ABX_LLM_API_KEY='<your-model-or-vendor-key>'
 export ABX_LLM_BASE_URL='https://api.openai.com/v1'
 export CODEX_MODEL='<model-id-from-your-Responses-provider>'
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//codex-agent-api --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//codex-agent-api --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
@@ -44,7 +44,7 @@ abx sandbox command list "$SANDBOX_ID"
 launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
 
 ```bash
-ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" codex --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","timeout_s":300}'
+ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" codex --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","timeout_s":300}'
 ```
 
 任务要求在 `/home/user/workspace` 写出 `generated_hello.py` 和 `GENERATED_REPORT.md`。示例显式开放所需的编辑/工具权限，只在自己拥有的可丢弃沙箱中使用。下面的 SDK 和 HTTP 是同一任务的替代调用方式，选择一种即可。
@@ -92,10 +92,10 @@ asyncio.run(main())
 ### 导出产物与清理
 
 ```bash
-abx exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
-abx download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
-abx download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
-abx kill "$SANDBOX_ID"
+abx sandbox exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx delete "$SANDBOX_ID"
 ```
 
 程序预期输出 `Hello from the sandbox`。先读取产物并检查再使用；模型回答成功不代表文件一定存在。文件不会自动回写模板或你的本机，释放沙箱前必须导出。

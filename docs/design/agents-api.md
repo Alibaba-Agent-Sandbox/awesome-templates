@@ -95,3 +95,13 @@ JSONL and atomic latest snapshots survive the deployer's temporary-hook cleanup.
 The local report never retains hook context identities, credentials, URLs,
 model text or raw exceptions; an incomplete/running report cannot grant success.
 This does not change the deployment hook result or Gateway protocol.
+
+
+## Manifest profile defaults
+
+The manifest selects `fc-managed-agents` explicitly. Fixed runtime, API, lifecycle
+and binding-role fields come from the shared application-profile contract; the
+normalizer preserves explicit values for strict schema and semantic validation.
+Provider, binding references, images, region and configurable budgets remain
+visible author inputs. This changes the manifest consumer requirement, not the
+runtime or deployment topology. Existing execution evidence remains historical.

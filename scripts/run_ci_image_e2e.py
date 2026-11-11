@@ -22,7 +22,7 @@ import secrets
 import shlex
 import time
 import yaml
-from public_launch_e2e import CLI, CLIError, require, matches, command_url, application_headers, delete_sandbox, verify_cli_io
+from public_launch_e2e import CLI, CLIError, require, matches, command_url, application_headers, delete_sandbox, verify_cli_io, cleanup_named_deployment
 import ci_image_archive as images
 from template_http_acceptance import fixture_environment, run_controller
 
@@ -46,11 +46,34 @@ def controller_missing_imports(source: Path) -> list[str]:
 def check_image_cli() -> None:
     """Reject a missing/renamed CLI surface before archive transfer or cloud writes."""
     result=CLI(os.environ.get('ABX','abx'),'alicloud-express',os.environ.copy()).run(
-        ['template','from-image','--help'],30,native=True,json_output=False)
-    required=['--generation','--start-cmd','--ready-cmd','--cpu','--memory',
-              '--no-envd-inject','--registry-type','--registry-username','--registry-password']
-    if any(flag not in result for flag in required):
-        raise RuntimeError('CLI lacks the native template from-image contract; update ABX before image acceptance')
+        ['provider','run','template.create','--help'],30,json_output=False)
+    required = ['--input', 'image:', 'generation:', 'cpu:', 'memory_size:', 'envd_inject:',
+                'registry_type:', 'registry_username:', 'registry_password:']
+    if any(field not in result for field in required):
+        raise RuntimeError('CLI lacks provider run template.create; update ABX before image acceptance')
+
+
+def native_template(cli: CLI, operation: str, values: dict | None = None, timeout: int = 300):
+    args = ['provider', 'run', 'template.' + operation]
+    descriptor = None
+    try:
+        if values and 'registry_password' in values:
+            # Preserve the image harness's existing anonymous-RAM credential boundary.
+            if not hasattr(os, 'memfd_create'):
+                raise RuntimeError('Linux anonymous RAM auth is required')
+            descriptor = os.memfd_create('abx-template-input', os.MFD_CLOEXEC)
+            os.write(descriptor, json.dumps(values).encode())
+            os.lseek(descriptor, 0, os.SEEK_SET)
+            args += ['--input-file', '/proc/self/fd/' + str(descriptor)]
+        else:
+            args += ['--input', json.dumps(values or {})]
+        if operation in {'create', 'delete'}:
+            args.append('--yes')
+        result = cli.run(args, timeout, **({'pass_fds': (descriptor,)} if descriptor is not None else {}))
+        return result['templates'] if operation == 'list' else result['template'] if operation in {'get', 'create'} else result
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
 
 
 def publish(source: Path, receipt: dict, report: dict) -> None:
@@ -85,9 +108,9 @@ def prepared_launch_manifest(source: Path, template_id: str, *, runtime_env: dic
 
 
 def exact_templates(cli: CLI, alias: str) -> list[str]:
-    rows=cli.run(['template','list'],native=True)
+    rows=native_template(cli, 'list')
     require(isinstance(rows,list),'native template inventory shape')
-    return [row['TemplateID'] for row in rows if row.get('Name')==alias]
+    return [row['templateID'] for row in rows if row.get('name')==alias]
 
 
 def delete_owned_templates(cli: CLI, alias: str, known_id: str | None, timeout: float=60) -> bool:
@@ -96,15 +119,15 @@ def delete_owned_templates(cli: CLI, alias: str, known_id: str | None, timeout: 
     if known_id:ids.add(known_id)
     if not ids:return False  # An ambiguous submission cannot be cleared by an empty index.
     for identifier in ids:
-        try:cli.run(['template','info',identifier],native=True)
+        try:native_template(cli, 'get', {'template_id': identifier})
         except CLIError as exc:
             if exc.diagnostics.get('code')=='E2001':continue
             raise
-        cli.run(['template','delete',identifier,'--yes'],native=True,json_output=False)
+        native_template(cli, 'delete', {'template_id': identifier})
     deadline=time.monotonic()+timeout
     for identifier in ids:
         while True:
-            try:cli.run(['template','info',identifier],native=True)
+            try:native_template(cli, 'get', {'template_id': identifier})
             except CLIError as exc:
                 if exc.diagnostics.get('code')=='E2001':
                     break
@@ -117,7 +140,7 @@ def delete_owned_templates(cli: CLI, alias: str, known_id: str | None, timeout: 
 def wait_ready(cli: CLI, template_id: str, timeout: int=900) -> None:
     deadline=time.monotonic()+timeout
     while time.monotonic()<deadline:
-        value=cli.run(['template','info',template_id],native=True)
+        value=native_template(cli, 'get', {'template_id': template_id})
         state=value.get('status',value.get('Status'))
         if isinstance(state,dict):state=state.get('state')
         require(isinstance(state,str),'native readiness state shape')
@@ -147,15 +170,15 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
     (runtime/'template.yaml').write_text(yaml.safe_dump(manifest,sort_keys=False))
     cli=CLI(os.environ.get('ABX','abx'),'alicloud-express',environment)
     alias='image-app-'+uuid.uuid4().hex[:16]
-    report.update(test_configuration=fixture_proof,sandbox_create='abx template launch',
+    report.update(test_configuration=fixture_proof,sandbox_create='abx deploy',
         cli_version=cli.run(['--version'],json_output=False),client_version=importlib.metadata.version('agent-sandbox-client'),
         cli_distribution=os.environ.get('PUBLIC_LAUNCH_DISTRIBUTION','published'),cli_source_ref=os.environ.get('PUBLIC_LAUNCH_CLI_REF'),
         prepared_launch_manifest_sha256=hashlib.sha256((runtime/'template.yaml').read_bytes()).hexdigest())
     journals=cli.journal_directory
     before=set(journals.glob('*.json'));launch=None;sandbox=None;client=None
     try:
-        launch=await asyncio.to_thread(cli.run,['template','launch',str(runtime),'--alias',alias,
-            '--timeout','120','--sandbox-timeout','1200','--yes'],420)
+        launch=await asyncio.to_thread(cli.run,['deploy',str(runtime),'--name',alias,
+            '--build-timeout','120','--sandbox-timeout','1200','--yes'],420)
         journal=json.loads(journal_path.read_text());journal['sandbox_ids']=[launch['sandbox_id']];images.save_private(journal_path,journal)
         sandbox=await ProviderSandbox.connect(launch['sandbox_id'],provider='alicloud-express')
         client=await sandbox.application_client(9000,token=environment['ABX_SERVER_TOKEN'])
@@ -166,7 +189,7 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
         async with httpx.AsyncClient(timeout=180) as remote:
             for index,case in enumerate(manifest['smoke']):
                 name,args=case['command'],case.get('args',{})
-                cli_result=await asyncio.to_thread(cli.run,['run',sandbox.id,name,'--json-args',json.dumps(args)])
+                cli_result=await asyncio.to_thread(cli.run,['sandbox','run',sandbox.id,name,'--json-args',json.dumps(args)])
                 sdk_result=await client.commands.run(name,**args)
                 response=await remote.post(command_url(url,name),headers=headers,json=args)
                 require(response.status_code==200,'prepared image HTTP command')
@@ -203,6 +226,12 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
             require(report['http_acceptance']['passed'],'complete current external HTTP controller')
         report['application_result']='PASS'
     finally:
+        cleanup=True
+        try:
+            await cleanup_named_deployment(cli, alias, launch is not None)
+        except Exception as failure:
+            cleanup=False
+            report['public_cleanup_failure_type']=type(failure).__name__
         owned=set()
         uncertain=False
         for path in set(journals.glob('*.json'))-before:
@@ -215,7 +244,6 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
                     if entry.get('id'):owned.add(entry['id'])
                     elif entry.get('state')!='deleted':uncertain=True
         if launch:owned.add(launch['sandbox_id'])
-        cleanup=True
         for sid in owned:
             try:await delete_sandbox(ProviderSandbox,sid,'alicloud-express',SandboxNotFoundError)
             except Exception:cleanup=False
@@ -259,10 +287,10 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,private_root:
         username,password=images.temporary_registry_credentials()
         resources=yaml.safe_load((source/'template.yaml').read_text()).get('resources',{})
         # Registration does not prestart an anonymous application: the shared launch core owns startup and runtime env.
-        registered=cli.run(['template','from-image',image_ref,'--name',alias,'--generation','2',
-            '--cpu',str(resources.get('cpu',2)),'--memory',str(resources.get('memory',2048)),
-            '--no-envd-inject','--registry-type','acr','--registry-username='+username,'--registry-password='+password],native=True)
-        template_id=registered['TemplateID'];journal=json.loads(platform_path.read_text())
+        registered=native_template(cli, 'create', {'image': image_ref, 'name': alias, 'generation': 2,
+            'cpu': resources.get('cpu', 2), 'memory_size': resources.get('memory', 2048),
+            'envd_inject': False, 'registry_type': 'acr', 'registry_username': username, 'registry_password': password})
+        template_id=registered['templateID'];journal=json.loads(platform_path.read_text())
         journal['template_id']=template_id;images.save_private(platform_path,journal)
         wait_ready(cli,template_id)
         report['runtime_attempted']=True

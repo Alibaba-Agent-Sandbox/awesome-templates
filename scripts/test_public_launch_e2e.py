@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from public_launch_e2e import export_owned_image, installation_provenance, CLI, CLIError, CheckFailed, safe_failure_label, controller_label, cli_diagnostics, safe_diagnostics, application_headers, command_url, load_plan, matches, source_names, cleanup_prepared, cleanup_before_close, delete_sandbox
+from public_launch_e2e import export_owned_image, installation_provenance, CLI, CLIError, CheckFailed, safe_failure_label, controller_label, cli_diagnostics, safe_diagnostics, application_headers, command_url, load_plan, matches, source_names, cleanup_prepared, cleanup_before_close, delete_sandbox, cleanup_named_deployment
 
 
 class PublicLaunchTests(unittest.TestCase):
@@ -100,8 +100,8 @@ class PublicLaunchTests(unittest.TestCase):
     def test_cli_failure_does_not_leak_raw_output(self):
         from subprocess import CompletedProcess
         with patch('public_launch_e2e.subprocess.run', return_value=CompletedProcess([], 1, 'PRIVATE-ID', 'secret-value')):
-            with self.assertRaisesRegex(RuntimeError, '^CLI template failed \\(exit 1\\)$'):
-                CLI('node /tmp/installed-abx.js', 'opensandbox', {}).run(['template', 'launch'])
+            with self.assertRaisesRegex(RuntimeError, '^CLI deploy failed \\(exit 1\\)$'):
+                CLI('node /tmp/installed-abx.js', 'opensandbox', {}).run(['deploy'])
 
 
     def test_cli_diagnostics_only_exports_controlled_values(self):
@@ -126,8 +126,8 @@ class PublicLaunchTests(unittest.TestCase):
     def test_native_selection_is_the_first_cli_argument(self):
         from subprocess import CompletedProcess
         with patch('public_launch_e2e.subprocess.run', return_value=CompletedProcess([], 0, '[]', '')) as run:
-            CLI('node /tmp/installed-abx.js', 'alicloud-express', {}).run(['template', 'list'], native=True)
-        self.assertEqual(run.call_args.args[0], ['node', '/tmp/installed-abx.js', '--native', '--provider', 'alicloud-express', '--json', 'template', 'list'])
+            CLI('node /tmp/installed-abx.js', 'alicloud-express', {}).run(['provider', 'run', 'template.list', '--input', '{}'])
+        self.assertEqual(run.call_args.args[0], ['node', '/tmp/installed-abx.js', '--provider', 'alicloud-express', '--json', 'provider', 'run', 'template.list', '--input', '{}'])
 
 
 
@@ -145,6 +145,32 @@ class CleanupTests(unittest.IsolatedAsyncioTestCase):
                 events.append('sandbox close')
         self.assertEqual(await cleanup_before_close(release, Client(), Sandbox()), ['RuntimeError'])
         self.assertEqual(events, ['sandbox deleted', 'template deleted', 'image deleted', 'application close', 'sandbox close'])
+
+    async def test_public_cleanup_recovers_failed_launch_before_delete(self):
+        calls=[]
+        class FakeCLI:
+            def run(self,args):
+                calls.append(args)
+                return {'status':'deleted'}
+        await cleanup_named_deployment(FakeCLI(), 'owned', False)
+        self.assertEqual(calls, [['recover','owned'], ['delete','owned','--yes']])
+
+    async def test_public_cleanup_success_skips_recovery_and_requires_deleted_result(self):
+        calls=[]
+        class FakeCLI:
+            def run(self,args):
+                calls.append(args)
+                return {'status':'requires_recovery'}
+        with self.assertRaises(CheckFailed):
+            await cleanup_named_deployment(FakeCLI(), 'owned', True)
+        self.assertEqual(calls, [['delete','owned','--yes']])
+
+    async def test_public_cleanup_failure_is_not_swallowed(self):
+        class FakeCLI:
+            def run(self,args):
+                raise CLIError('delete', 1, '{}')
+        with self.assertRaises(CLIError):
+            await cleanup_named_deployment(FakeCLI(), 'owned', True)
 
     async def test_delete_polls_control_plane_without_reconnect(self):
         class NotFound(Exception):
@@ -212,15 +238,15 @@ class CleanupTests(unittest.IsolatedAsyncioTestCase):
             provider = 'alicloud-express'
             def run(self, args, **kwargs):
                 calls.append((args, kwargs))
-                return [{'templateID': 'owned-template'}] if args[1] == 'list' else ''
+                return {'templates': [{'templateID': 'owned-template'}]} if args[2] == 'template.list' else ''
         entries = [{'intent_id': 'one', 'kind': 'template', 'state': 'retained', 'id': 'owned-template',
                     'correlation_key': 'public-e2e-123-build'}]
         done, failures = await cleanup_prepared(entries, FakeCLI(), 'public-e2e-123')
         self.assertEqual(done, set())
         self.assertEqual(failures, 1)
-        self.assertEqual([item[0][1] for item in calls], ['delete', 'list'])
-        self.assertTrue(all(item[1].get('native') is True for item in calls))
-        self.assertEqual(calls[-1][0], ['template', 'list'])
+        self.assertEqual([item[0][2] for item in calls], ['template.delete', 'template.list'])
+        self.assertEqual(json.loads(calls[0][0][-2]), {'template_id': 'owned-template'})
+        self.assertEqual(calls[-1][0], ['provider', 'run', 'template.list', '--input', '{}'])
 
     async def test_cleanup_diagnostic_never_contains_resource_identifier(self):
         class FakeCLI:
@@ -384,6 +410,8 @@ class CliIoTests(unittest.IsolatedAsyncioTestCase):
         class Adapter:
             def run(self, args, json_output=True, **kwargs):
                 calls.append(args)
+                if args[:2] in (['sandbox', 'exec'], ['sandbox', 'upload'], ['sandbox', 'download']):
+                    args = args[1:]
                 if args[0] == 'exec':
                     if self.provider == 'alicloud-express':
                         if json_output:raise CLIError('exec',1,"error: unknown option '--json'")
@@ -412,9 +440,9 @@ class CliIoTests(unittest.IsolatedAsyncioTestCase):
     async def test_current_cli_roundtrip_independently_reads_same_unicode_bytes(self):
         with tempfile.TemporaryDirectory() as directory:
             calls=await self.exercise(Path(directory))
-        self.assertEqual([args[0] for args in calls],['exec','upload','sandbox','download','sandbox'])
-        self.assertEqual(calls[0],['exec','owned-fixture','--','python3','-c','print(21 * 2)'])
-        self.assertTrue(calls[1][3].startswith('/tmp/owned-run-cli-'))
+        self.assertEqual([args[:2] for args in calls],[['sandbox','exec'],['sandbox','upload'],['sandbox','files'],['sandbox','download'],['sandbox','files']])
+        self.assertEqual(calls[0],['sandbox','exec','owned-fixture','--','python3','-c','print(21 * 2)'])
+        self.assertTrue(calls[1][4].startswith('/tmp/owned-run-cli-'))
 
     async def test_changed_download_bytes_fail_and_owned_file_is_removed(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -474,7 +502,7 @@ class PythonCompatibilityProofTests(unittest.IsolatedAsyncioTestCase):
                 return execute()
         self_case = self
         def cli_run(args):
-            self.assertEqual(args[:3], ['run', 'owned-sandbox', 'run'])
+            self.assertEqual(args[:4], ['sandbox', 'run', 'owned-sandbox', 'run'])
             return {'result': execute()}
         def http(request):
             self.assertEqual(request.url.path, '/owned/proxy/9000/commands/run')

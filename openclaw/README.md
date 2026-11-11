@@ -33,7 +33,7 @@ export OPENCLAW_GATEWAY_TOKEN="$(python3 -c 'import secrets; print(secrets.token
 export OPENCLAW_MODEL_API_KEY='<your-model-api-key>'
 export OPENCLAW_MODEL_BASE_URL='<your-chat-completions-api-base-including-v1-if-required>'
 export OPENCLAW_MODEL='<your-exact-model-id>'
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//openclaw --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//openclaw --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
@@ -43,13 +43,13 @@ abx sandbox command list "$SANDBOX_ID"
 Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
 
 ```bash
-ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" gateway_start --json-args '{"bind":"loopback","command_timeout":60}'
-abx run "$SANDBOX_ID" gateway_health
-abx run "$SANDBOX_ID" gateway_status
-ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" gateway_chat --json-args '{"prompt":"Summarize taxi 12.50, lunch 23.80 and train 15.00. Return only JSON with integer count and two-decimal string total."}'
+ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" gateway_start --json-args '{"bind":"loopback","command_timeout":60}'
+abx sandbox run "$SANDBOX_ID" gateway_health
+abx sandbox run "$SANDBOX_ID" gateway_status
+ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" gateway_chat --json-args '{"prompt":"Summarize taxi 12.50, lunch 23.80 and train 15.00. Return only JSON with integer count and two-decimal string total."}'
 # Copy session_id from the result to continue this conversation.
-ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" gateway_chat --json-args '{"prompt":"Remove the train from the previous expenses. Return the same JSON fields.","session_id":"<returned-session-id>"}'
-abx run "$SANDBOX_ID" gateway_stop
+ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" gateway_chat --json-args '{"prompt":"Remove the train from the previous expenses. Return the same JSON fields.","session_id":"<returned-session-id>"}'
+abx sandbox run "$SANDBOX_ID" gateway_stop
 ```
 
 ## Quick start (Python SDK)
@@ -104,7 +104,7 @@ The response is `{"result": ...}`; see the command reference for its actual cont
 After an HTTP start, call authenticated `POST /commands/gateway_health` with `{}`, then `POST /commands/gateway_stop` with `{}`. Finally delete the sandbox:
 
 ```bash
-abx kill "$SANDBOX_ID"
+abx delete "$SANDBOX_ID"
 ```
 
 `close()`/`aclose()` only close client connections; they do not delete the sandbox. Prepared templates/images in the launch journal can remain for reuse; remove only your own exact resources when no longer needed.
@@ -137,7 +137,7 @@ On Linux, each short-lived gateway health RPC drains its output and keeps its le
 |---|---|---|
 | `OPENCLAW_GATEWAY_TOKEN` | empty | Required for gateway start; inject via sandbox environment, never a command parameter. It is passed in the child environment and referenced by name in isolated config, never returned or included in argv. |
 | `OPENCLAW_TRUSTED_PROXIES` | empty | Explicit verified proxy IP/CIDR list for forwarded access; max16/2048bytes, no unrestricted/multicast networks. |
-| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the template launch; separate from model and gateway credentials `/health` does not require the application token. |
+| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the deploy; separate from model and gateway credentials `/health` does not require the application token. |
 | `OPENCLAW_MODEL_API_KEY` | empty | Explicit compatible-model key, referenced by environment name in native config; never guessed from legacy vendor credentials. |
 | `OPENCLAW_MODEL_BASE_URL` | empty | Explicit HTTP(S) API base, including `/v1` when required; no embedded credentials/query/fragment. |
 | `OPENCLAW_MODEL` | empty | Exact model ID available on that endpoint; all three model settings must be supplied together. Native catalog declares 128000 context / 4096 output tokens; choose a model supporting these limits. |

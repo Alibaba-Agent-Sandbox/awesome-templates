@@ -12,7 +12,7 @@
 
 - Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` 自带 Python 3.13、Node.js 20。部署时默认解析为 `cn-hangzhou` 和 `v0.0.49`。
 - 镜像安装 `pytest==8.4.2`，供 `test` 命令使用。
-- 非 root 用户 `user`，工作目录 `/home/user/app`，generation 2。`abx template launch` 执行 YAML 的 `start_cmd` 并用 `ready_cmd` 探测就绪。
+- 非 root 用户 `user`，工作目录 `/home/user/app`，generation 2。`abx deploy` 执行 YAML 的 `start_cmd` 并用 `ready_cmd` 探测就绪。
 
 ## 解决的问题
 
@@ -30,14 +30,14 @@ CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --sandbox-timeout 1800 --yes
 # 将启动输出中的沙箱 ID 填到这里
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" run_script --json-args '{"code":"from pathlib import Path\nrows = [12.50, 18.80, 20.00]\ntotal = sum(rows)\nPath(\"summary.txt\").write_text(f\"total={total:.2f}\\n\")\nprint(f\"total={total:.2f}\")"}'
+abx sandbox run "$SANDBOX_ID" run_script --json-args '{"code":"from pathlib import Path\nrows = [12.50, 18.80, 20.00]\ntotal = sum(rows)\nPath(\"summary.txt\").write_text(f\"total={total:.2f}\\n\")\nprint(f\"total={total:.2f}\")"}'
 ```
 
 返回 stdout `total=51.30`，并生成可下载的 `summary.txt`。
@@ -118,20 +118,20 @@ SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。�
 | `ABX_SERVER_PORT` | 否 | `9000` | 本地 `python3 commands.py` 监听端口；云端 `start_cmd` 固定指定 9000。 |
 | `LANG` | 否 | `C.UTF-8` | Unicode 输出。 |
 
-在 `template launch` 前安全导出清单中声明为空的秘密变量，让应用启动时读取；不要写入镜像、YAML 或日志。
+在 `deploy` 前安全导出清单中声明为空的秘密变量，让应用启动时读取；不要写入镜像、YAML 或日志。
 
 工作目录为 `/home/user/app`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
 
 ```bash
-abx download "$SANDBOX_ID" /home/user/app/summary.txt ./summary.txt
-abx kill "$SANDBOX_ID"
+abx sandbox download "$SANDBOX_ID" /home/user/app/summary.txt ./summary.txt
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
+`abx delete` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
 
 ### 显式选择通用镜像构建方案
 
-在 OpenSandbox 上使用 `abx template launch` 时，显式传入
+在 OpenSandbox 上使用 `abx deploy` 时，显式传入
 `--build-profile portable`。`Dockerfile.portable` 使用
 摘要固定的 Python 基础镜像，创建非 root 用户并直接安装已发布固定版本的命令服务。
 默认 Dockerfile 保留 Express 平台占位参数；Provider 不会改写构建文件或注入 wheel。

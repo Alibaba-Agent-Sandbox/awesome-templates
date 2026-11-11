@@ -28,15 +28,15 @@ CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//next-app --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//next-app --sandbox-timeout 1800 --yes
 # 将启动输出中的沙箱 ID 填到这里
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" scaffold --json-args '{"kind":"next","path":"preview-app"}'
-abx run "$SANDBOX_ID" dev_start --json-args '{"kind":"next","path":"preview-app","timeout_s":120}'
+abx sandbox run "$SANDBOX_ID" scaffold --json-args '{"kind":"next","path":"preview-app"}'
+abx sandbox run "$SANDBOX_ID" dev_start --json-args '{"kind":"next","path":"preview-app","timeout_s":120}'
 ```
 
 返回 `running: true`、`port: 3000`。解析 3000 端口后可见 `ABX_NEXT_PREVIEW`；源码保留在 `preview-app/`。
@@ -140,11 +140,11 @@ Vite 可通过 allowed_host 指定准确的 SDK 转发主机名。默认空值�
 工作目录为 `/home/user/app`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
 
 ```bash
-abx run "$SANDBOX_ID" dev_stop --json-args '{}'
-abx kill "$SANDBOX_ID"
+abx sandbox run "$SANDBOX_ID" dev_stop --json-args '{}'
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
+`abx delete` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
 
 ## 资源
 

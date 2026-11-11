@@ -92,7 +92,7 @@ class ManagedApplicationContractTest(unittest.TestCase):
         ):
             target = self.template / name
             text = target.read_text()
-            replacements = {cli: "abx app plan template.yaml", sdk: "pip install httpx==0.28.1\nimport httpx\nclient.post('/v1/agents/sessions')",
+            replacements = {cli: "abx deploy . --name agents-api --plan", sdk: "pip install httpx==0.28.1\nimport httpx\nclient.post('/v1/agents/sessions')",
                             http: 'POST /v1/agents/sessions\nContent-Type: application/json'}
             for heading, body in replacements.items():
                 text = re.sub(r"(?ms)(^## " + re.escape(heading) + r"\s*\n).*?(?=^## |\Z)",

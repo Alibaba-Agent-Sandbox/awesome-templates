@@ -20,7 +20,7 @@
 
 先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，配置选择的平台（沙箱 API Key、连接地址及构建镜像仓库），再配置下面独立的模型/应用凭据。无需 clone 仓库即可启动公共模板。
 
-按照 [Qoder 认证说明](https://docs.qoder.com/cli/authentication)，在[账号集成页面](https://qoder.com/account/integrations)创建 PAT，设置 `QODER_PERSONAL_ACCESS_TOKEN`。命名命令不会启动 `/login`。当前包装使用 Qoder 服务，未提供自定义 endpoint/model 参数。`accept_edits` 允许文件编辑，但拒绝 shell 确认；生成代码后通过 `abx exec` 单独执行。
+按照 [Qoder 认证说明](https://docs.qoder.com/cli/authentication)，在[账号集成页面](https://qoder.com/account/integrations)创建 PAT，设置 `QODER_PERSONAL_ACCESS_TOKEN`。命名命令不会启动 `/login`。当前包装使用 Qoder 服务，未提供自定义 endpoint/model 参数。`accept_edits` 允许文件编辑，但拒绝 shell 确认；生成代码后通过 `abx sandbox exec` 单独执行。
 
 所有 `<...>` 都是需要你替换的占位值，模型名必须使用服务商实际提供的 ID。密钥在你自己的终端或 secret manager 中设置，不要放入镜像、YAML 或公开日志。以下变量要在 launch **之前**设置；之后改变 host 环境不会更新运行中的应用。
 
@@ -28,7 +28,7 @@
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export QODER_PERSONAL_ACCESS_TOKEN='<your-model-or-vendor-key>'
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//qoder --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//qoder --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
@@ -38,7 +38,7 @@ abx sandbox command list "$SANDBOX_ID"
 launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
 
 ```bash
-ABX_HTTP_TIMEOUT=420 abx run "$SANDBOX_ID" qoder --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","cwd":"/home/user/app","command_timeout":300}'
+ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" qoder --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","cwd":"/home/user/app","command_timeout":300}'
 ```
 
 任务要求在 `/home/user/app` 写出 `generated_hello.py` 和 `GENERATED_REPORT.md`。示例显式开放所需的编辑/工具权限，只在自己拥有的可丢弃沙箱中使用。下面的 SDK 和 HTTP 是同一任务的替代调用方式，选择一种即可。
@@ -87,10 +87,10 @@ asyncio.run(main())
 ### 导出产物与清理
 
 ```bash
-abx exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
-abx download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
-abx download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
-abx kill "$SANDBOX_ID"
+abx sandbox exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
+abx sandbox download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
+abx delete "$SANDBOX_ID"
 ```
 
 程序预期输出 `Hello from the sandbox`。先读取产物并检查再使用；模型回答成功不代表文件一定存在。文件不会自动回写模板或你的本机，释放沙箱前必须导出。

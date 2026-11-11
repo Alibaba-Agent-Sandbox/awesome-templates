@@ -33,14 +33,14 @@ export STAGEHAND_API_KEY='<your-model-api-key>'
 export STAGEHAND_BASE_URL='https://model.example.invalid/v1'
 export STAGEHAND_MODEL='<your-model-id>'
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//stagehand --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//stagehand --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx run "$SANDBOX_ID" stagehand --json-args '{"task":"Click the IANA-managed Reserved Domains link.","url":"https://www.iana.org/help/example-domains","extract_instruction":"Return the visible heading.","command_timeout":180}'
+abx sandbox run "$SANDBOX_ID" stagehand --json-args '{"task":"Click the IANA-managed Reserved Domains link.","url":"https://www.iana.org/help/example-domains","extract_instruction":"Return the visible heading.","command_timeout":180}'
 ```
 
 Returns native `action`, `extracted`, final URL and a fresh `screenshot_path`. Inspect `action.success`; the model may fail to complete its instruction.
@@ -122,7 +122,7 @@ This entry calls compatible Chat Completions. Include the vendor API prefix (oft
 | STAGEHAND_API_KEY | required for model; empty | Approved compatible endpoint credential; never a Browserbase token |
 | STAGEHAND_BASE_URL | required for model; empty | HTTPS API base ending in your endpoint's API prefix; literal localhost HTTP allowed for development; no userinfo/query/fragment; appends `/chat/completions` |
 | STAGEHAND_MODEL | required for model; empty | Actual model identifier, at most200 allowed identifier characters |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the template launch; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the deploy; separate from model and gateway credentials |
 | WORKSPACE | `/home/user/app` | Existing artifact root |
 
 The wrapper uses upstream ClientLLM structured generation, maps text/images and requires complete JSON-schema model replies. Requests cap2MiB, replies1MiB, each inference60seconds; no redirects, retries or provider fallback. Model values are captured at server import. Secrets enter the Node consumer via anonymous stdin memory, never argv, browser environment or credential files. Browser subprocesses inherit only selected runtime/certificate variables and new private HOME/cache/profile. Native Chromium sandbox is explicitly disabled inside the outer disposable sandbox; it is not a tenant/security boundary. Pages can reach networks accessible to that sandbox; authenticate/trust named-command callers accordingly.
@@ -134,11 +134,11 @@ The working directory is `/home/user/app`. Artifacts remain on the sandbox disk;
 
 ```bash
 # Replace <returned-path> with screenshot_path from the result
-abx download "$SANDBOX_ID" '<returned-path>' ./stagehand.png
-abx kill "$SANDBOX_ID"
+abx sandbox download "$SANDBOX_ID" '<returned-path>' ./stagehand.png
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+`abx delete` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
 ## Resources
 

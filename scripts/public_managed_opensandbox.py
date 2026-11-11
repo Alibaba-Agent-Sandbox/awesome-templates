@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Use published tools for the native OpenSandbox catalog and explicit foreign IDs.
+"""Use selected CLI tools for the native OpenSandbox catalog and explicit foreign IDs.
 
 Requires a dedicated disposable real Docker-backed OpenSandbox already running.
 The source-only recipes and native provider-owned identities are separate inputs.
 """
 from __future__ import annotations
-import argparse, asyncio, importlib.metadata, importlib.util, json, os, sys
+import argparse, asyncio, importlib.metadata, importlib.util, json, os, sys, uuid
 from pathlib import Path
 
 from public_launch_e2e import CLI, CLIError, CheckFailed, delete_sandbox, require, safe_diagnostics
@@ -20,7 +20,8 @@ async def verify(args):
     from agent_sandbox import ProviderSandbox
     from agent_sandbox.models.errors import SandboxNotFoundError
     cli = CLI(args.abx, 'opensandbox', os.environ.copy())
-    report = {'result': 'FAIL', 'provider': 'opensandbox', 'installation_channel': 'published-npm-and-pypi',
+    report = {'result': 'FAIL', 'provider': 'opensandbox', 'installation_channel': os.environ.get('PUBLIC_LAUNCH_DISTRIBUTION','published'),
+              'cli_source_ref': os.environ.get('PUBLIC_LAUNCH_CLI_REF'),
               'cli_version': cli.run(['--version'], json_output=False),
               'python_client_version': importlib.metadata.version('agent-sandbox-client'),
               'python_server_version': importlib.metadata.version('agent-sandbox-server'),
@@ -32,7 +33,7 @@ async def verify(args):
         for name, provider in [('base','alicloud-express'), ('code-interpreter-v1','alicloud-express'), ('desktop','e2b')]:
             sid = None
             try:
-                result = await asyncio.to_thread(cli.run, ['template','launch',name,'--sandbox-timeout','180','--yes'])
+                result = await asyncio.to_thread(cli.run, ['deploy',name,'--sandbox-timeout','180','--yes'])
                 sid = result.get('sandbox_id')
                 raise CheckFailed('foreign provider-owned template identity must be rejected')
             except CLIError as failure:
@@ -47,12 +48,12 @@ async def verify(args):
         sid = None
         sb = None
         try:
-            launch = await asyncio.to_thread(cli.run, ['template','launch','opensandbox-code-interpreter','--sandbox-timeout','300','--yes'])
+            launch = await asyncio.to_thread(cli.run, ['deploy','opensandbox-code-interpreter','--name','native-' + uuid.uuid4().hex[:16],'--sandbox-timeout','300','--yes'])
             sid = launch['sandbox_id']
             require(launch['provider']=='opensandbox', 'native catalog selected provider')
             sb = await ProviderSandbox.connect(sid, provider='opensandbox')
             phase = 'native-cli-exec'
-            result = await asyncio.to_thread(cli.run, ['exec',sid,'--','python3','-c','print(6*7)'])
+            result = await asyncio.to_thread(cli.run, ['sandbox','exec',sid,'--','python3','-c','print(6*7)'])
             require(result.get('exit_code') == 0 and result.get('stdout','').strip() == '42', 'explicit JSON CLI native exec expected result')
             # The CLI intentionally selects JSON automatically in CI. Test the
             # ordinary developer text channel in an explicitly non-CI environment.
@@ -60,7 +61,7 @@ async def verify(args):
             for key in ['CI','GITHUB_ACTIONS','GITLAB_CI','JENKINS_URL','TRAVIS','CIRCLECI','BITBUCKET_PIPELINES','TF_BUILD','CODEBUILD_BUILD_ID']:
                 developer_env.pop(key, None)
             developer_cli = CLI(args.abx, 'opensandbox', developer_env)
-            text = await asyncio.to_thread(developer_cli.run, ['exec',sid,'--','python3','-c','print(6*7)'], json_output=False)
+            text = await asyncio.to_thread(developer_cli.run, ['sandbox','exec',sid,'--','python3','-c','print(6*7)'], json_output=False)
             require(text.strip() == '42', 'plain developer CLI native exec expected result')
             report['cli_exec_checks']=['explicit JSON stdout 42 and exit 0','plain non-CI developer stdout 42']
             phase = 'native-sdk-shell-files'
@@ -74,10 +75,17 @@ async def verify(args):
             report['managed_catalog'].append({'name':'opensandbox-code-interpreter','declared_provider':'opensandbox',
                 'result':'PASS','checks':['default public catalog CLI launch','CLI exec 42','SDK shell 42','SDK file write/read/delete']})
         finally:
+            public_cleanup_error = None
             if sid:
+                try:
+                    await asyncio.to_thread(cli.run, ['delete',launch['name'],'--yes'])
+                except Exception as failure:
+                    public_cleanup_error = failure
                 await delete_sandbox(ProviderSandbox,sid,'opensandbox',SandboxNotFoundError)
             if sb:
                 await sb.close()
+            if public_cleanup_error:
+                raise public_cleanup_error
             require(native.docker_ids()==baseline, 'native catalog sandbox independently absent in Docker')
             report['catalog_cleanup']='independently confirmed absent'
         phase = 'native-interpreter-business'

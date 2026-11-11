@@ -3,7 +3,7 @@
 模板描述要启动的环境、启动命令和对外服务。一次启动即可使用模板内容，无需选择工作流。[English](workflows.md)。
 
 ```sh
-abx --provider alicloud-express template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello --yes
+abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --yes
 ```
 
 ## 当前机器契约

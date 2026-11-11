@@ -11,7 +11,7 @@
 先[安装 abx CLI](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#installation)（0.5.8 或更新版本），按[使用指南](docs/using-templates.zh-CN.md)准备所选提供方的凭据和构建环境，再启动无需模型的入门模板：
 
 ```bash
-abx --provider alicloud-express template launch Alibaba-Agent-Sandbox/awesome-templates//python-hello
+abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello
 ```
 
 CLI 会引导补齐必要配置，自动生成并保存默认应用认证令牌，后续命令复用。使用模型的模板还需要其 README 指定的模型账号或 API 配置。
@@ -19,8 +19,8 @@ CLI 会引导补齐必要配置，自动生成并保存默认应用认证令牌�
 启动后，将 `<sandbox-id>` 替换为返回的沙箱 ID：
 
 ```bash
-abx run <sandbox-id> hello --arg name=Ada
-abx kill <sandbox-id>
+abx sandbox run <sandbox-id> hello --arg name=Ada
+abx delete <sandbox-id>
 ```
 
 预期输出为 `Hello, Ada!`。`kill` 删除运行中的沙箱；保留的镜像和模板按[清理说明](docs/using-templates.zh-CN.md#导出文件与清理)另行删除。
@@ -117,7 +117,7 @@ abx kill <sandbox-id>
 搜索模板：`abx template search python`。下载可编辑副本而不创建云资源：
 
 ```bash
-abx template install python-hello --download-only --dir ./python-hello
+abx template init ./python-hello --from Alibaba-Agent-Sandbox/awesome-templates//python-hello
 ```
 
 源码与目录由本仓库维护，[`awesome-templates.yaml`](awesome-templates.yaml)供 CLI 和 Registry 读取。修改或新增模板前请阅读[贡献指南](CONTRIBUTING.zh-CN.md)与[模板规范](docs/template-spec.zh-CN.md)。模板问题请提交到 [Issues](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues)。

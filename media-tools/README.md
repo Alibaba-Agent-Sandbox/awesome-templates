@@ -30,7 +30,7 @@ These template commands require no model, model endpoint or model API key.
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//media-tools --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//media-tools --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
@@ -50,11 +50,11 @@ with wave.open("sample.wav", "wb") as f:
 ```
 
 ```bash
-abx upload "$SANDBOX_ID" ./sample.wav /home/user/app/sample.wav
+abx sandbox upload "$SANDBOX_ID" ./sample.wav /home/user/app/sample.wav
 ```
 
 ```bash
-abx run "$SANDBOX_ID" transcode --json-args '{"input_path":"sample.wav","output_name":"sample.flac","preset":"flac","max_seconds":5,"command_timeout":60}'
+abx sandbox run "$SANDBOX_ID" transcode --json-args '{"input_path":"sample.wav","output_name":"sample.flac","preset":"flac","max_seconds":5,"command_timeout":60}'
 ```
 
 Returns `output_path`, duration, streams, `bytes` and `sha256` for the converted FLAC.
@@ -154,7 +154,7 @@ by the wrapper and cannot be replaced with user flags.
 Using the uploaded `sample.wav`:
 
 ```bash
-abx run "$SANDBOX_ID" transcode_args --json-args '{"args":["-i","sample.wav","-c:a","flac","argv-result.flac"],"max_seconds":5}'
+abx sandbox run "$SANDBOX_ID" transcode_args --json-args '{"args":["-i","sample.wav","-c:a","flac","argv-result.flac"],"max_seconds":5}'
 ```
 
 ```json
@@ -172,7 +172,7 @@ download. The model-free native smoke is `media_args_smoke`.
 
 | Name | Required | Default | Purpose |
 |---|---|---|---|
-| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the template launch; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the deploy; separate from model and gateway credentials |
 | `ABX_SERVER_PORT` | no | `9000` | Direct local server startup port. |
 | `WORKSPACE` | no | `/home/user/app` | Existing input/output directory owned by the runtime user. |
 
@@ -182,11 +182,11 @@ The working directory is `/home/user/app`. Artifacts remain on the sandbox disk;
 
 ```bash
 # Replace <returned-path> with output_path from the result
-abx download "$SANDBOX_ID" '<returned-path>' ./sample.flac
-abx kill "$SANDBOX_ID"
+abx sandbox download "$SANDBOX_ID" '<returned-path>' ./sample.flac
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
+`abx delete` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.
 
 ## Resources
 

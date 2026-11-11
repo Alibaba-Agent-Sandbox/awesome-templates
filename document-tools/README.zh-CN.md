@@ -30,7 +30,7 @@ CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任
 export ABX_PROVIDER=alicloud-express
 export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export ABX_HTTP_TIMEOUT=450
-abx template launch Alibaba-Agent-Sandbox/awesome-templates//document-tools --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//document-tools --sandbox-timeout 1800 --yes
 # 将启动输出中的沙箱 ID 填到这里
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
@@ -43,11 +43,11 @@ printf '# Quarterly report\n\nRevenue: 51.30.\n' > report.md
 ```
 
 ```bash
-abx upload "$SANDBOX_ID" ./report.md /home/user/app/report.md
+abx sandbox upload "$SANDBOX_ID" ./report.md /home/user/app/report.md
 ```
 
 ```bash
-abx run "$SANDBOX_ID" convert --json-args '{"input_path":"report.md","output_name":"report.docx","output_format":"docx"}'
+abx sandbox run "$SANDBOX_ID" convert --json-args '{"input_path":"report.md","output_name":"report.docx","output_format":"docx"}'
 ```
 
 返回 `output_path`、`output_format: docx`、`bytes` 和 `sha256`；DOCX 会保留供下载。
@@ -140,11 +140,11 @@ SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。�
 
 ```bash
 # 把 <returned-path> 换成结果中的 output_path
-abx download "$SANDBOX_ID" '<returned-path>' ./report.docx
-abx kill "$SANDBOX_ID"
+abx sandbox download "$SANDBOX_ID" '<returned-path>' ./report.docx
+abx delete "$SANDBOX_ID"
 ```
 
-`abx kill` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
+`abx delete` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。
 
 ## 资源
 
