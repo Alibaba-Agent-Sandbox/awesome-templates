@@ -61,3 +61,25 @@ same existing credential; no credential was changed or created. Public
 producer source branches can now be pushed. Private Registry/Website main was
 fetched successfully, and the prior coordinating PRs were confirmed merged.
 This supersedes the initial delivery-authentication limitation above.
+
+## Serving setup follow-up
+
+The current built CLI at 4367143 acquired `agents-api` through the public catalog
+with `abx template init ./agents-api --from agents-api`. It copied the spec6
+manifest, server recipe, scripts and exercise files without deployment. In the
+resulting project a fresh Python3 venv installed exact httpx0.28.1; the actual
+smoke script help ran and copied binding references had mode0600. No separate
+mkdir was needed. `abx --json deploy . --name agents-api --bindings
+.abx/bindings.json --plan` returned kind=application, profile=fc-managed-agents,
+status=preview and builds_or_cloud_changes=false. Config paths were isolated
+through the CLI's existing configuration seam; source fetching/parser/filesystem
+were actual components, not mocks. No cloud or model request was executed.
+
+The updated managed-document fixture first failed on the old SDK-title
+requirement (one of13 tests failed). After the checker/spec were aligned with
+the truthful Python HTTP-client heading, all60 spec tests and the complete
+catalog check passed (zero nonconformant entries). The managed fixture also
+rejects missing httpx in both languages. Full documentation checking passes;
+one initial invocation failed due Git safe-directory configuration, then the
+unchanged checker passed with explicit worktree ownership configuration.
+Source identity/acceptance and the existing LibreOffice gate remain unchanged.

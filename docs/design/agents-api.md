@@ -28,10 +28,9 @@ for local installation diagnostics only; it is not an acceptance substitute.
 The [guest recipe](../../agents-api/Dockerfile) preserves Alibaba generation2 and
 non-root user, pins Node24.16.0 and exact Codex0.162.1/Qwen0.23.0 packages. The
 [thin Server recipe](../../agents-api/server/Dockerfile) runs the shared runtime's
-module entrypoint; it copies no duplicate Server implementation. Current published
-client/server0.4.0a6 pins have import guards for new modules and cannot build until
-an actually published compatible SDK replaces both pins. Source artifact testing
-must be recorded separately from the public pip recipe gate.
+module entrypoint; it copies no duplicate Server implementation. Both recipes pin published client/server0.4.0a7. Current source CLI expands the
+managed profile; published CLI0.5.10 requires the older full manifest. Source
+artifact testing and published image acceptance retain their separate evidence.
 
 Spec6 uses exact managed module start and the existing healthcheck ready command.
 The app profile builds/resolves immutable images before freezing plans, prepares
@@ -105,3 +104,14 @@ normalizer preserves explicit values for strict schema and semantic validation.
 Provider, binding references, images, region and configurable budgets remain
 visible author inputs. This changes the manifest consumer requirement, not the
 runtime or deployment topology. Existing execution evidence remains historical.
+
+## Current user entry
+
+Acquire an editable project with `abx template init ./agents-api --from agents-api`,
+then use root deploy/status/logs/recover/delete by application name. Host Python3
+and pinned httpx remain required by the afterReady business script; creating its
+venv also creates the ignored .abx directory. Binding references remain private
+configuration and existing PostgreSQL/network/model access remain prerequisites.
+The Python example uses an HTTP client, not a dedicated Gateway SDK. Repository
+guides use absolute upstream links so they remain accessible in the extracted
+project. No hook, image, runtime or API behavior changes in this documentation update.

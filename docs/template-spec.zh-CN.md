@@ -410,6 +410,8 @@ Express 历史回执使用 `evidence/express-<date>.json` 或 `evidence/alicloud
 | Issues | 问题反馈 |
 | License | 许可证 |
 
+托管 spec6 应用将 Python SDK 标题替换为 `Quick start (Python HTTP client)` / `快速开始（Python HTTP 客户端）`，如实展示使用 `httpx` 调用 Gateway；当前不提供专用 Gateway 客户端 SDK。
+
 启动前区分所需平台凭据、应用令牌和模型凭据，并写清模板实际读取的模型、endpoint、API Key 或产品登录配置；不臆造通用于所有上游工具的变量映射。
 
 spec6 使用显式 `abx deploy` 部署及 Python `httpx` 访问统一 Gateway，列出公开 API 和托管 close/delete 清理。以下客户端要求适用于 spec5。CLI 一节要有 `abx sandbox command run` 示例。SDK 一节导入 `ProviderSandbox`，通过 `application_client` 获取应用客户端，并调用 `client.commands.run`。命令参考是带参数的表。非阿里云基础镜像再加 `## Base image` / `## 基础镜像`。

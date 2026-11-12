@@ -33,3 +33,16 @@ Current user instructions resolve to supported commands; every catalog template 
 ## Evidence
 
 [Verification](../../../evidence/verify/2026-11-12-ecosystem-guidance-sync.md).
+
+## Managed serving-template follow-up
+
+The user requested the full agents-api setup, not only replacement of deployment
+verbs. Acquire just the editable project through template init by catalog name,
+retain host Python/httpx because afterReady runs the real Gateway business task,
+and retain private binding references. Venv creates .abx without a redundant
+mkdir. README links to repository-wide guides are absolute so extraction does
+not break them. Label the Python example as the actual HTTP client; spec/checker
+requirements and bilingual regressions distinguish this from a dedicated SDK.
+The article's current deploy/status/update/delete instructions are refreshed
+while its original 0.1.4 business results retain explicit version provenance.
+No new CLI, runtime, dependency or deployment abstraction is introduced.

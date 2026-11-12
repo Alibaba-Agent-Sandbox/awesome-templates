@@ -461,6 +461,8 @@ Template READMEs are usage guides: keep validation reports, historical acceptanc
 | Issues | 问题反馈 |
 | License | 许可证 |
 
+For managed spec6 applications, use `Quick start (Python HTTP client)` / `快速开始（Python HTTP 客户端）` in place of the Python SDK heading. These applications use `httpx` against the Gateway; a dedicated Gateway client SDK is not provided.
+
 Before launch, explain required provider credentials separately from application and model credentials, and document the actual model, endpoint, API-key or product-login configuration consumed by the template. Do not invent a universal variable mapping for upstream tools.
 
 For spec6, show explicit `abx deploy` deployment and standard Gateway HTTP through Python `httpx`, with the public API table and managed close/delete cleanup. The following client requirements apply to spec5. The CLI section contains an `abx sandbox command run` example. The SDK section imports `ProviderSandbox`, resolves its application client with `application_client`, and calls `client.commands.run`. The command reference is a table with the parameters. A non-Alibaba base adds `## Base image` / `## 基础镜像`.
