@@ -21,6 +21,8 @@
 
 - [Final Agents API local validation](evidence/verify/2026-11-12-agents-api-final-local-validation.md). Exact final Server image, unchanged Guest real Qwen two-turn task, independent downloaded-code tests and public source acquisition; FC/cloud E2E remains separate.
 
+- [Current resource paths in existing protocol regressions](notes/proposed/process/2026-11-12-v1-template-test-readers.md) · [verification](evidence/verify/2026-11-12-v1-template-test-readers.md). Actual CI failure preserved; fresh published-a7 local HTTP/budget/cleanup regressions pass without lowering assertions.
+
 ## Recent changes — 2026-11-10
 
 - [Owner change index](notes/proposed/process/2026-11-10-recent-change-index.md) · [records verification](evidence/verify/2026-11-10-recent-change-index.md).

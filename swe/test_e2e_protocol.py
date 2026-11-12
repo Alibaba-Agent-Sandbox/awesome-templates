@@ -4,6 +4,8 @@ from pathlib import Path
 import httpx
 import pytest
 
+from scripts.template_application import load_source_document
+
 spec=importlib.util.spec_from_file_location('swe_e2e',Path(__file__).with_name('e2e_test.py'))
 e=importlib.util.module_from_spec(spec);spec.loader.exec_module(e)
 manifest=json.loads(Path(__file__).with_name('instance.json').read_text())
@@ -51,8 +53,7 @@ def test_wrong_failing_baseline_node_with_same_counts_refused():
 
 
 def test_shipped_protocol_reaches_bounded_agent_and_keeps_cleanup(monkeypatch):
-    import yaml
-    settings = yaml.safe_load(Path(__file__).with_name("template.yaml").read_text())["env"]
+    settings = load_source_document(Path(__file__).with_name("template.yaml"))["sandbox"]["instance"]["envs"]
     monkeypatch.setenv('E2E_REQUIRE_LLM','1');monkeypatch.setenv('E2E_RUN_LLM','1')
     calls=[]
     class CapturedBudget(BaseException):pass
