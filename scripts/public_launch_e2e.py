@@ -65,7 +65,7 @@ async def verify_python_compatibility(cli, sandbox, client, endpoint, headers, w
                 await sandbox.files.write(path, source)
                 require(await sandbox.files.read(path) == source, 'compatibility input bytes must match')
                 if consumer == 'cli':
-                    result = await asyncio.to_thread(cli.run, ['sandbox', 'run', sandbox.id, 'run', '--json-args', json.dumps({'script': filename})])
+                    result = await asyncio.to_thread(cli.run, ['sandbox', 'command', 'run', sandbox.id, 'run', '--json-args', json.dumps({'script': filename})])
                     value = result['result']
                 elif consumer == 'python':
                     value = await client.commands.run('run', script=filename)
@@ -536,7 +536,7 @@ async def verify(args):
             for index, case in enumerate(cases):
                 name, values = case['command'], case.get('args', {})
                 phase = 'cli-command'
-                result = await asyncio.to_thread(cli.run, ['sandbox', 'run', sandbox.id, name, '--json-args', json.dumps(values)])
+                result = await asyncio.to_thread(cli.run, ['sandbox', 'command', 'run', sandbox.id, name, '--json-args', json.dumps(values)])
                 observed = result['result']
                 if 'expect' in case:
                     require(matches(observed, case['expect']), f'CLI smoke {index} result')

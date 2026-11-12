@@ -30,7 +30,8 @@ This entry uses a model API key: no browser OAuth login is required, and your lo
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export SWE_API_KEY='<your-model-api-key>'
 export SWE_BASE_URL='https://model.example.invalid/v1'
 export SWE_MODEL='<your-model-id>'
@@ -42,7 +43,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" swe_prepare --json-args '{}'
+abx sandbox command run "$SANDBOX_ID" swe_prepare --json-args '{}'
 ```
 
 Returns a `run_id` and the failing baseline for `pallets__flask-5014`; keep the run ID for the coding and evaluation calls below.
@@ -55,13 +56,13 @@ Copy the prepared `run_id` into `RUN_ID`. Use `allow_execution:true` only when a
 
 ```bash
 export RUN_ID='paste-run-id'
-abx sandbox run "$SANDBOX_ID" swe_run_agent --json-args "{\"run_id\":\"$RUN_ID\",\"allow_execution\":true,\"max_steps\":30,\"command_timeout\":600}"
-abx sandbox run "$SANDBOX_ID" swe_evaluate --arg run_id="$RUN_ID"
-abx sandbox run "$SANDBOX_ID" swe_report --arg run_id="$RUN_ID"
+abx sandbox command run "$SANDBOX_ID" swe_run_agent --json-args "{\"run_id\":\"$RUN_ID\",\"allow_execution\":true,\"max_steps\":30,\"command_timeout\":600}"
+abx sandbox command run "$SANDBOX_ID" swe_evaluate --arg run_id="$RUN_ID"
+abx sandbox command run "$SANDBOX_ID" swe_report --arg run_id="$RUN_ID"
 # Download returned report and patch paths before cleanup
 abx sandbox download "$SANDBOX_ID" '<returned-report-path>' ./report.json
 abx sandbox download "$SANDBOX_ID" '<returned-patch-path>' ./repair.patch
-abx sandbox run "$SANDBOX_ID" swe_cleanup --arg run_id="$RUN_ID"
+abx sandbox command run "$SANDBOX_ID" swe_cleanup --arg run_id="$RUN_ID"
 ```
 
 ## Quick start (Python SDK)

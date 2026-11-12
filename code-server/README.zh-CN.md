@@ -28,7 +28,8 @@ CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI 默认生成并保存应用令牌；外部 SDK/HTTP 如需自定义，在部署前取消下一行注释。
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export CODE_SERVER_PASSWORD='<choose-a-long-unique-password>'
 export ABX_HTTP_TIMEOUT=450
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//code-server --sandbox-timeout 1800 --yes
@@ -38,7 +39,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" code_server_start --json-args '{"port":8443,"timeout_s":60}'
+abx sandbox command run "$SANDBOX_ID" code_server_start --json-args '{"port":8443,"timeout_s":60}'
 ```
 
 返回 `running: true`、`port: 8443`、`auth: password`。解析 8443 端口地址后，使用 `CODE_SERVER_PASSWORD` 登录 IDE。
@@ -133,7 +134,7 @@ WORKSPACE 默认 /home/user/app。CODE_SERVER_PASSWORD、ABX_SERVER_TOKEN 都是
 工作目录为 `/home/user/app`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
 
 ```bash
-abx sandbox run "$SANDBOX_ID" code_server_stop --json-args '{}'
+abx sandbox command run "$SANDBOX_ID" code_server_stop --json-args '{}'
 abx delete "$SANDBOX_ID"
 ```
 

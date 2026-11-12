@@ -25,5 +25,28 @@ The root dotenv's configured GitHub credential returned HTTP401, no alternate pr
 - check_template.py --all: zero non-conformant entries and zero claimed spec failures.
 - Lychee 0.24.2 offline with fragments: all 636 tracked Markdown inputs pass.
 - Initial catalog/spec checks failed because the fresh validation venv lacked the pinned jsonschema dependency. Installing scripts/requirements-spec.txt resolved the prerequisite; the unchanged assertions then passed.
-- Template README/runtime/manifest content was inspected across the complete catalog. Existing current README recipes already used the new commands; this patch corrects the remaining top-level and controller references.
+- Template README/runtime/manifest content was inspected across the complete catalog. The first literal scan covered retired root commands but missed the unsupported sandbox run spelling. Comparing actual built parser help exposed that this spelling was still required by the checker and used in the READMEs and controllers. The final verification below supersedes that incomplete scan.
 - Five Dockerfile edits change comments only, including the skeleton. No Docker instruction, dependency, model/business function, manifest or acceptance receipt was modified. Source identities can still change under the existing conservative hash rules; no new qualification or image/cloud test is claimed.
+
+## Supported named-command correction
+
+The current parser supports `sandbox command run`, not `sandbox run`. Updated
+all affected source template READMEs, the skeleton, public usage/spec pages and
+both active public-launch/image-verification controllers. The checker now
+requires the supported entry; a new bilingual regression failed both cases
+before the fix and passed after it. The CLI-only instructions no longer require
+manually generating an application token: they explain the generated/saved
+default and the optional custom value for external SDK/HTTP consumers.
+
+- Full spec regression after the fix: 60 passed.
+- Full catalog check: zero non-conformant templates and zero claimed spec failures.
+- Current local document checker: 234 pages, zero failures.
+- Current Markdown links/fragments pass after the final edit.
+- Actual compiled CLI parser and controller tests are recorded below.
+
+These changes do not alter business code, Docker instructions or runtime API
+implementations. All historical receipts remain tied to their original source
+identity; no replacement qualification is claimed.
+
+- Real compiled CLI parser contract script: 2 passed, no credentials or cloud calls.
+- Public-launch and image-archive controller selection: 74 tests plus 6 subtests passed. The compatibility fixture now verifies the complete supported command path and retains fresh-script/output/cleanup assertions.

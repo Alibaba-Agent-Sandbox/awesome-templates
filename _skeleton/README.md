@@ -27,7 +27,7 @@ Follow the [usage guide](../docs/using-templates.md#installation) to install the
 export ABX_PROVIDER=alicloud-express
 abx deploy ./_skeleton --sandbox-timeout 1800 --yes
 export ABX_SANDBOX_ID="<returned-sandbox-id>"
-abx sandbox run "$ABX_SANDBOX_ID" hello --json-args '{"name": "Express"}'
+abx sandbox command run "$ABX_SANDBOX_ID" hello --json-args '{"name": "Express"}'
 ```
 
 `deploy` prepares and starts this instance's application. For OpenSandbox, set `ABX_PROVIDER=opensandbox` above and use `provider="opensandbox"` in Python. See the [complete calling flow](../docs/using-templates.md#cli-sdk-and-http) for OpenSandbox configuration, provider selection on every call and owned-resource cleanup. The next examples reuse the same running instance.

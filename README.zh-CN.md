@@ -19,7 +19,7 @@ CLI 会引导补齐必要配置，自动生成并保存默认应用认证令牌�
 启动后，将 `<sandbox-id>` 替换为返回的沙箱 ID：
 
 ```bash
-abx sandbox run <sandbox-id> hello --arg name=Ada
+abx sandbox command run <sandbox-id> hello --arg name=Ada
 abx delete <sandbox-id>
 ```
 

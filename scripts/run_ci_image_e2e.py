@@ -189,7 +189,7 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
         async with httpx.AsyncClient(timeout=180) as remote:
             for index,case in enumerate(manifest['smoke']):
                 name,args=case['command'],case.get('args',{})
-                cli_result=await asyncio.to_thread(cli.run,['sandbox','run',sandbox.id,name,'--json-args',json.dumps(args)])
+                cli_result=await asyncio.to_thread(cli.run,['sandbox','command','run',sandbox.id,name,'--json-args',json.dumps(args)])
                 sdk_result=await client.commands.run(name,**args)
                 response=await remote.post(command_url(url,name),headers=headers,json=args)
                 require(response.status_code==200,'prepared image HTTP command')

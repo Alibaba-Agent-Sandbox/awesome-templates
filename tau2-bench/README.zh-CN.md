@@ -39,7 +39,8 @@ CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI 默认生成并保存应用令牌；外部 SDK/HTTP 如需自定义，在部署前取消下一行注释。
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export TAU2_MODEL_API_KEY='<your-model-api-key>'
 export TAU2_MODEL_BASE_URL='https://model.example.invalid/v1'
 export TAU2_MODEL='<your-model-id>'
@@ -51,7 +52,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" tau2_run --json-args '{"domain":"retail","task_id":"0","max_steps":30,"command_timeout":600}'
+abx sandbox command run "$SANDBOX_ID" tau2_run --json-args '{"domain":"retail","task_id":"0","max_steps":30,"command_timeout":600}'
 ```
 
 返回原生 `score`、终止原因和脱敏轨迹 `artifact_path`；Agent 与模拟用户均会产生模型调用费用，不能保证奖励为 1。

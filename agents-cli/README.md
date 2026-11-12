@@ -37,7 +37,8 @@ Replace every `<...>` placeholder with your own value; use an exact model ID ava
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export OPENAI_API_KEY='<your-model-or-vendor-key>'
 export OPENAI_BASE_URL='<your-model-api-base-including-v1-if-required>'
 export OPENAI_MODEL='<model-id-from-your-provider>'
@@ -53,9 +54,9 @@ Launch starts this instance's application; do not create a second sandbox or sec
 Use the session API below for an actual coding task. The version diagnostic and profile preparation alone do not run the model.
 
 ```bash
-abx sandbox run "$SANDBOX_ID" agents_version
+abx sandbox command run "$SANDBOX_ID" agents_version
 # For Codex sessions, explicitly prepare the native Responses profile:
-abx sandbox run "$SANDBOX_ID" agents_configure_codex
+abx sandbox command run "$SANDBOX_ID" agents_configure_codex
 # Select the adapter for the complete Python example:
 export AGENTS_ADAPTER=qwen-code
 # Or: export AGENTS_ADAPTER=codex

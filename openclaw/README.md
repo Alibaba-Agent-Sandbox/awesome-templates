@@ -28,7 +28,8 @@ Replace every `<...>` placeholder with your own value; use an exact model ID ava
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export OPENCLAW_GATEWAY_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export OPENCLAW_MODEL_API_KEY='<your-model-api-key>'
 export OPENCLAW_MODEL_BASE_URL='<your-chat-completions-api-base-including-v1-if-required>'
@@ -43,13 +44,13 @@ abx sandbox command list "$SANDBOX_ID"
 Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
 
 ```bash
-ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" gateway_start --json-args '{"bind":"loopback","command_timeout":60}'
-abx sandbox run "$SANDBOX_ID" gateway_health
-abx sandbox run "$SANDBOX_ID" gateway_status
-ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" gateway_chat --json-args '{"prompt":"Summarize taxi 12.50, lunch 23.80 and train 15.00. Return only JSON with integer count and two-decimal string total."}'
+ABX_HTTP_TIMEOUT=420 abx sandbox command run "$SANDBOX_ID" gateway_start --json-args '{"bind":"loopback","command_timeout":60}'
+abx sandbox command run "$SANDBOX_ID" gateway_health
+abx sandbox command run "$SANDBOX_ID" gateway_status
+ABX_HTTP_TIMEOUT=420 abx sandbox command run "$SANDBOX_ID" gateway_chat --json-args '{"prompt":"Summarize taxi 12.50, lunch 23.80 and train 15.00. Return only JSON with integer count and two-decimal string total."}'
 # Copy session_id from the result to continue this conversation.
-ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" gateway_chat --json-args '{"prompt":"Remove the train from the previous expenses. Return the same JSON fields.","session_id":"<returned-session-id>"}'
-abx sandbox run "$SANDBOX_ID" gateway_stop
+ABX_HTTP_TIMEOUT=420 abx sandbox command run "$SANDBOX_ID" gateway_chat --json-args '{"prompt":"Remove the train from the previous expenses. Return the same JSON fields.","session_id":"<returned-session-id>"}'
+abx sandbox command run "$SANDBOX_ID" gateway_stop
 ```
 
 ## Quick start (Python SDK)

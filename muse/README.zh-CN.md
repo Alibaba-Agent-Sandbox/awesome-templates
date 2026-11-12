@@ -28,7 +28,8 @@ CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI 默认生成并保存应用令牌；外部 SDK/HTTP 如需自定义，在部署前取消下一行注释。
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export MUSE_MODEL_API_KEY='<your-model-api-key>'
 export MUSE_MODEL_BASE_URL='https://model.example.invalid/v1'
 export MUSE_MODEL='<your-model-id>'
@@ -40,7 +41,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" muse --json-args '{"prompt":"Create hello.py in the current directory. It must print Hello from Muse. Run it and report the output.","command_timeout":300}'
+abx sandbox command run "$SANDBOX_ID" muse --json-args '{"prompt":"Create hello.py in the current directory. It must print Hello from Muse. Run it and report the output.","command_timeout":300}'
 ```
 
 返回原生完成状态、模型/工具调用计数和缓冲输出；请独立读取生成的 `hello.py`。

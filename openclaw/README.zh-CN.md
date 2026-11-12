@@ -28,7 +28,8 @@ OpenClaw `2026.10.4`、Node.js `24.16.0`、应用端口 9000 和可选网关端�
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI 默认生成并保存应用令牌；外部 SDK/HTTP 如需自定义，在部署前取消下一行注释。
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export OPENCLAW_GATEWAY_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export OPENCLAW_MODEL_API_KEY='<your-model-api-key>'
 export OPENCLAW_MODEL_BASE_URL='<your-chat-completions-api-base-including-v1-if-required>'
@@ -43,13 +44,13 @@ abx sandbox command list "$SANDBOX_ID"
 launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
 
 ```bash
-ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" gateway_start --json-args '{"bind":"loopback","command_timeout":60}'
-abx sandbox run "$SANDBOX_ID" gateway_health
-abx sandbox run "$SANDBOX_ID" gateway_status
-ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" gateway_chat --json-args '{"prompt":"Summarize taxi 12.50, lunch 23.80 and train 15.00. Return only JSON with integer count and two-decimal string total."}'
+ABX_HTTP_TIMEOUT=420 abx sandbox command run "$SANDBOX_ID" gateway_start --json-args '{"bind":"loopback","command_timeout":60}'
+abx sandbox command run "$SANDBOX_ID" gateway_health
+abx sandbox command run "$SANDBOX_ID" gateway_status
+ABX_HTTP_TIMEOUT=420 abx sandbox command run "$SANDBOX_ID" gateway_chat --json-args '{"prompt":"Summarize taxi 12.50, lunch 23.80 and train 15.00. Return only JSON with integer count and two-decimal string total."}'
 # Copy session_id from the result to continue this conversation.
-ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" gateway_chat --json-args '{"prompt":"Remove the train from the previous expenses. Return the same JSON fields.","session_id":"<returned-session-id>"}'
-abx sandbox run "$SANDBOX_ID" gateway_stop
+ABX_HTTP_TIMEOUT=420 abx sandbox command run "$SANDBOX_ID" gateway_chat --json-args '{"prompt":"Remove the train from the previous expenses. Return the same JSON fields.","session_id":"<returned-session-id>"}'
+abx sandbox command run "$SANDBOX_ID" gateway_stop
 ```
 
 ## 快速开始（Python SDK）

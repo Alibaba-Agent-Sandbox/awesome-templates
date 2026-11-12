@@ -26,7 +26,8 @@ These template commands require no model, model endpoint or model API key.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export ABX_HTTP_TIMEOUT=450
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//chrome --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
@@ -35,9 +36,9 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" chrome_start --json-args '{}'
-abx sandbox run "$SANDBOX_ID" chrome_open --json-args '{"url":"https://example.com"}'
-abx sandbox run "$SANDBOX_ID" chrome_screenshot --json-args '{}'
+abx sandbox command run "$SANDBOX_ID" chrome_start --json-args '{}'
+abx sandbox command run "$SANDBOX_ID" chrome_open --json-args '{"url":"https://example.com"}'
+abx sandbox command run "$SANDBOX_ID" chrome_screenshot --json-args '{}'
 ```
 
 Returns the actual browser title and final URL. The following screenshot captures the same session.
@@ -139,7 +140,7 @@ The working directory is `/home/user/workspace`. Artifacts remain on the sandbox
 ```bash
 # Download the path returned by chrome_screenshot
 abx sandbox download "$SANDBOX_ID" '<returned-path>' ./chrome.png
-abx sandbox run "$SANDBOX_ID" chrome_stop --json-args '{}'
+abx sandbox command run "$SANDBOX_ID" chrome_stop --json-args '{}'
 abx delete "$SANDBOX_ID"
 ```
 

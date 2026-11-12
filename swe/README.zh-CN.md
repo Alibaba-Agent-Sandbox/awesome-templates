@@ -30,7 +30,8 @@ CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI 默认生成并保存应用令牌；外部 SDK/HTTP 如需自定义，在部署前取消下一行注释。
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export SWE_API_KEY='<your-model-api-key>'
 export SWE_BASE_URL='https://model.example.invalid/v1'
 export SWE_MODEL='<your-model-id>'
@@ -42,7 +43,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" swe_prepare --json-args '{}'
+abx sandbox command run "$SANDBOX_ID" swe_prepare --json-args '{}'
 ```
 
 返回 `pallets__flask-5014` 的 `run_id` 和失败基线，请保留该 ID 用于后续编码和评测。
@@ -55,13 +56,13 @@ OpenSandbox 用户将 `ABX_PROVIDER` 改为 `opensandbox`，并按[提供方指�
 
 ```bash
 export RUN_ID='paste-run-id'
-abx sandbox run "$SANDBOX_ID" swe_run_agent --json-args "{\"run_id\":\"$RUN_ID\",\"allow_execution\":true,\"max_steps\":30,\"command_timeout\":600}"
-abx sandbox run "$SANDBOX_ID" swe_evaluate --arg run_id="$RUN_ID"
-abx sandbox run "$SANDBOX_ID" swe_report --arg run_id="$RUN_ID"
+abx sandbox command run "$SANDBOX_ID" swe_run_agent --json-args "{\"run_id\":\"$RUN_ID\",\"allow_execution\":true,\"max_steps\":30,\"command_timeout\":600}"
+abx sandbox command run "$SANDBOX_ID" swe_evaluate --arg run_id="$RUN_ID"
+abx sandbox command run "$SANDBOX_ID" swe_report --arg run_id="$RUN_ID"
 # 把返回的报告/补丁路径分别下载到本机，再清理
 abx sandbox download "$SANDBOX_ID" '<returned-report-path>' ./report.json
 abx sandbox download "$SANDBOX_ID" '<returned-patch-path>' ./repair.patch
-abx sandbox run "$SANDBOX_ID" swe_cleanup --arg run_id="$RUN_ID"
+abx sandbox command run "$SANDBOX_ID" swe_cleanup --arg run_id="$RUN_ID"
 ```
 
 ## 快速开始（Python SDK）

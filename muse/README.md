@@ -28,7 +28,8 @@ This entry uses a model API key: no browser OAuth login is required, and your lo
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export MUSE_MODEL_API_KEY='<your-model-api-key>'
 export MUSE_MODEL_BASE_URL='https://model.example.invalid/v1'
 export MUSE_MODEL='<your-model-id>'
@@ -40,7 +41,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" muse --json-args '{"prompt":"Create hello.py in the current directory. It must print Hello from Muse. Run it and report the output.","command_timeout":300}'
+abx sandbox command run "$SANDBOX_ID" muse --json-args '{"prompt":"Create hello.py in the current directory. It must print Hello from Muse. Run it and report the output.","command_timeout":300}'
 ```
 
 Returns native completion status, model/tool call counts and buffered output; inspect the generated `hello.py` independently.

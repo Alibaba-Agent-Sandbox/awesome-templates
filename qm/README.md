@@ -28,7 +28,8 @@ This entry uses a model API key: no browser OAuth login is required, and your lo
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export QM_MODEL_API_KEY='<your-model-api-key>'
 export QM_MODEL_BASE_URL='https://model.example.invalid/v1'
 export QM_MODEL='<your-model-id>'
@@ -40,7 +41,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" qm --json-args '{"prompt":"Create hello.py in the current project. It must print Hello from QM. Run it and report the output.","command_timeout":300}'
+abx sandbox command run "$SANDBOX_ID" qm --json-args '{"prompt":"Create hello.py in the current project. It must print Hello from QM. Run it and report the output.","command_timeout":300}'
 ```
 
 Returns the original QM agent result and real SDK tool-call counters. Read `hello.py` independently to inspect the work.

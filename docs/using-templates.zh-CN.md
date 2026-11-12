@@ -60,10 +60,10 @@ export ABX_HTTP_TIMEOUT=660
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --sandbox-timeout 1800 --yes
 export ABX_SANDBOX_ID="<returned-sandbox-id>"
 abx sandbox command list "$ABX_SANDBOX_ID"
-abx sandbox run "$ABX_SANDBOX_ID" hello --arg name=Ada
+abx sandbox command run "$ABX_SANDBOX_ID" hello --arg name=Ada
 ```
 
-预期返回 `Hello, Ada!`。启动过程准备模板并启动它声明的应用，返回沙箱 ID 和保留的准备资源引用。`abx sandbox run` 调用命名命令，`abx sandbox exec` 执行进程；数值和布尔参数使用 `--json-args`。
+预期返回 `Hello, Ada!`。启动过程准备模板并启动它声明的应用，返回沙箱 ID 和保留的准备资源引用。`abx sandbox command run` 调用命名命令，`abx sandbox exec` 执行进程；数值和布尔参数使用 `--json-args`。
 
 三类超时分别控制不同阶段：`--build-timeout` 是构建期限，`--sandbox-timeout` 是实例寿命，`ABX_HTTP_TIMEOUT` 是 CLI 等待 HTTP 的时间；模型命令还有自己的执行期限。对于 600 秒编码任务，示例采用 1800 秒实例与 660 秒客户端等待，避免默认 300 秒实例或 SDK 的默认 30 秒等待先到期。
 

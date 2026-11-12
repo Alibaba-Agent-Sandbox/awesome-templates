@@ -54,7 +54,8 @@ This entry uses a model API key: no browser OAuth login is required, and your lo
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export TAU2_MODEL_API_KEY='<your-model-api-key>'
 export TAU2_MODEL_BASE_URL='https://model.example.invalid/v1'
 export TAU2_MODEL='<your-model-id>'
@@ -66,7 +67,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" tau2_run --json-args '{"domain":"retail","task_id":"0","max_steps":30,"command_timeout":600}'
+abx sandbox command run "$SANDBOX_ID" tau2_run --json-args '{"domain":"retail","task_id":"0","max_steps":30,"command_timeout":600}'
 ```
 
 Returns native `score`, termination reason and sanitized trajectory `artifact_path`. Both the agent and simulated user make billable model calls; reward 1 is not guaranteed.

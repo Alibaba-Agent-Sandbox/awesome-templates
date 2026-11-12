@@ -37,7 +37,8 @@ Codex CLI `0.162.1`、Qwen Code `0.23.0`、Node.js `24.16.0` 及受限的本地 
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI 默认生成并保存应用令牌；外部 SDK/HTTP 如需自定义，在部署前取消下一行注释。
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export OPENAI_API_KEY='<your-model-or-vendor-key>'
 export OPENAI_BASE_URL='<your-model-api-base-including-v1-if-required>'
 export OPENAI_MODEL='<model-id-from-your-provider>'
@@ -53,9 +54,9 @@ launch 已启动该实例的应用，不需要再建第二个沙箱或启动第�
 命名命令提供版本诊断和显式 Codex 配置准备；真实编码使用后面的会话 API，配置完成或版本响应本身都不是编码结果。
 
 ```bash
-abx sandbox run "$SANDBOX_ID" agents_version
+abx sandbox command run "$SANDBOX_ID" agents_version
 # For Codex sessions, explicitly prepare the native Responses profile:
-abx sandbox run "$SANDBOX_ID" agents_configure_codex
+abx sandbox command run "$SANDBOX_ID" agents_configure_codex
 # Select the adapter for the complete Python example:
 export AGENTS_ADAPTER=qwen-code
 # Or: export AGENTS_ADAPTER=codex

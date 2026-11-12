@@ -27,7 +27,7 @@
 export ABX_PROVIDER=alicloud-express
 abx deploy ./_skeleton --sandbox-timeout 1800 --yes
 export ABX_SANDBOX_ID="<returned-sandbox-id>"
-abx sandbox run "$ABX_SANDBOX_ID" hello --json-args '{"name": "Express"}'
+abx sandbox command run "$ABX_SANDBOX_ID" hello --json-args '{"name": "Express"}'
 ```
 
 `deploy` 负责准备并启动该实例的应用。使用 OpenSandbox 时先将上面的值改为 `ABX_PROVIDER=opensandbox`，Python 使用 `provider="opensandbox"`。提供方配置和自有资源清理见[完整调用流程](../docs/using-templates.zh-CN.md#clisdk-与-http)。下面沿用同一个已启动实例。

@@ -36,7 +36,8 @@ These template commands require no model, model endpoint or model API key.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export ABX_HTTP_TIMEOUT=450
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//browser-automation --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
@@ -45,7 +46,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" browse --json-args '{"url":"data:text/html,<title>Invoice</title><h1>Total: 51.30</h1>","action":"extract"}'
+abx sandbox command run "$SANDBOX_ID" browse --json-args '{"url":"data:text/html,<title>Invoice</title><h1>Total: 51.30</h1>","action":"extract"}'
 ```
 
 Returns `action: extract`, `title: Invoice` and visible text containing `Total: 51.30`.
@@ -140,13 +141,13 @@ The image includes official `@playwright/mcp@0.0.83`, lockfile-pinned JavaScript
 | mcp_stop | none | running:false after owned process/browser/listener cleanup |
 | mcp_self_test | none | PLAYWRIGHT_MCP_OK only after actual initialization/tools, two browser clicks independently observed by an owned HTTP fixture, real PNG screenshot and cleanup |
 
-Run `abx sandbox run <sandbox-id> mcp_start`, then `abx sandbox run <sandbox-id> mcp_call --arg method=tools/list`. Inside that same sandbox a standard MCP client uses `http://127.0.0.1:8931/mcp` with the native MCP HTTP session/protocol headers. The listener is private to the sandbox;8931 is not an authenticated public gateway. Outside clients use SDK `await client.commands.run("mcp_call", method="tools/list")` through the command server's configured bearer authentication. For browser_click, the pinned upstream schema uses `target` from a fresh browser_snapshot; it does not use the old ref argument.
+Run `abx sandbox command run <sandbox-id> mcp_start`, then `abx sandbox command run <sandbox-id> mcp_call --arg method=tools/list`. Inside that same sandbox a standard MCP client uses `http://127.0.0.1:8931/mcp` with the native MCP HTTP session/protocol headers. The listener is private to the sandbox;8931 is not an authenticated public gateway. Outside clients use SDK `await client.commands.run("mcp_call", method="tools/list")` through the command server's configured bearer authentication. For browser_click, the pinned upstream schema uses `target` from a fresh browser_snapshot; it does not use the old ref argument.
 
 A process-start diagnostic `MCP_NODE_MODULES` may select an independently installed exact lockfile tree; production uses /opt/playwright-mcp/node_modules. MCP HOME/profile/output are private and deleted on stop; no saved browser/profile/extensions are loaded. Default action/navigation limits10/20seconds, HTTP response4MiB, native output-file eviction threshold10MiB (not a hard disk quota) and idle browser60seconds. Calls are serialized; streaming stays on the native in-sandbox MCP endpoint, while mcp_call returns a buffered result. Native child environment excludes operator cloud/model/server keys and Node injection variables. Browser navigation shares the sandbox's egress authority; no SSRF policy is added. Caller requests, page data and results can be private and must not be publicly logged.
 
 ### PDF and bounded workspace scripts
 
-`pdf(url:str, landscape:bool=false, print_background:bool=true, timeout_s:int=30) -> {path,bytes,format:"PDF"}` renders A4 using the pinned real Chromium. URL supports the same schemes as browse, up to256KiB/no NUL. The generated workspace PDF is capped at16MiB after rendering; this is not a peak-memory bound. Boolean flags are typed. Read the artifact with SDK `await sb.files.read_bytes(result["path"])` and remove it after export. `abx sandbox run <sandbox-id> pdf --arg url='data:text/html,<h1>PDF proof</h1>'` exercises the actual renderer. No caller output filename is overwritten; symlink artifact directories are refused.
+`pdf(url:str, landscape:bool=false, print_background:bool=true, timeout_s:int=30) -> {path,bytes,format:"PDF"}` renders A4 using the pinned real Chromium. URL supports the same schemes as browse, up to256KiB/no NUL. The generated workspace PDF is capped at16MiB after rendering; this is not a peak-memory bound. Boolean flags are typed. Read the artifact with SDK `await sb.files.read_bytes(result["path"])` and remove it after export. `abx sandbox command run <sandbox-id> pdf --arg url='data:text/html,<h1>PDF proof</h1>'` exercises the actual renderer. No caller output filename is overwritten; symlink artifact directories are refused.
 
 PDF execution runs in a private-HOME child with its own1–120second execution deadline and bounded teardown. Generic run now also reserves process identity and stops marked detached/ordinary children on success, failure, overflow or deadline. stdout/stderr are each capped at256KiB; native diagnostics are omitted from errors. run preserves caller HOME but forwards only PATH/locale/browser/CA settings, excluding server/cloud/model keys and injected loaders. Use the SDK process interface for explicit long-lived background work/environment settings. This process hygiene is not a second sandbox security boundary. Build enforces actual du rootfs accounting at8GiB; disk free-space size is a separate quantity.
 

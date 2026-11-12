@@ -29,7 +29,8 @@ These template commands require no model, model endpoint or model API key.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export ABX_HTTP_TIMEOUT=450
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//document-tools --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
@@ -48,7 +49,7 @@ abx sandbox upload "$SANDBOX_ID" ./report.md /home/user/app/report.md
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" convert --json-args '{"input_path":"report.md","output_name":"report.docx","output_format":"docx"}'
+abx sandbox command run "$SANDBOX_ID" convert --json-args '{"input_path":"report.md","output_name":"report.docx","output_format":"docx"}'
 ```
 
 Returns `output_path`, `output_format: docx`, `bytes` and `sha256`. The DOCX is retained for download.

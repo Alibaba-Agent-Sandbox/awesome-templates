@@ -49,7 +49,7 @@ if __name__ == "__main__":
     start(int(os.environ.get("ABX_SERVER_PORT", "9000")))
 ```
 
-CLI 用 `abx sandbox run <sandbox-id> hello --arg name=Ada`。Python 用 `ProviderSandbox.connect(...)`
+CLI 用 `abx sandbox command run <sandbox-id> hello --arg name=Ada`。Python 用 `ProviderSandbox.connect(...)`
 连接，获取 `await sb.application_client(9000, token=...)` 后调用
 `await client.commands.run("hello", name="Ada")`。CLI launch 会启动应用；单独新建沙箱不等于启动该服务。
 完整示例见[使用指南](docs/using-templates.zh-CN.md#clisdk-与-http)。shell 使用 `sb.commands.run` 或 `abx sandbox exec`。

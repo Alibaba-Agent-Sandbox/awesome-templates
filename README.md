@@ -19,7 +19,7 @@ The CLI guides missing setup, generates and saves the default application token,
 Replace `<sandbox-id>` with the returned sandbox ID:
 
 ```bash
-abx sandbox run <sandbox-id> hello --arg name=Ada
+abx sandbox command run <sandbox-id> hello --arg name=Ada
 abx delete <sandbox-id>
 ```
 
