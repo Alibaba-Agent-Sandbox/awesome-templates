@@ -19,6 +19,8 @@
 
 - [V1 source reader consumer intake](notes/proposed/process/2026-11-12-template-v1-reader-consumers.md) · [verification](evidence/verify/2026-11-12-template-v1-reader-consumers.md). Bounded public-file parity, final SDK source dependency and precise Managed ingress scope.
 
+- [Final Agents API local validation](evidence/verify/2026-11-12-agents-api-final-local-validation.md). Exact final Server image, unchanged Guest real Qwen two-turn task, independent downloaded-code tests and public source acquisition; FC/cloud E2E remains separate.
+
 ## Recent changes — 2026-11-10
 
 - [Owner change index](notes/proposed/process/2026-11-10-recent-change-index.md) · [records verification](evidence/verify/2026-11-10-recent-change-index.md).

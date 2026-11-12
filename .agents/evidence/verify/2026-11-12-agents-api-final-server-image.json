@@ -1,0 +1,46 @@
+{
+  "scope": "Actual final local Server image build and offline container/HTTP/SQLite checks; no cloud or model execution",
+  "sdkCommit": "b988d2a76057b6202d836ec329cc0bd90a572b26",
+  "sdkArchiveSha256": "abefcb1f16d7c87089d9d560d4f8ebd5787a140351553b84f970a171fdd18f68",
+  "dockerfileSha256": "f13427c5c0bac4f04799775823f0c1ed09e35bfe26d8ceed4a566b3a52c16145",
+  "imageId": "sha256:e6bfd49db465de1282a37829f82e68f4dd93f2528dd6dfc21c24003ab7239413",
+  "baselineImageId": "sha256:bd7e3d1f3172cedb8c3662f90e9a2c5d9a99ee985fe6908ecf3d80f6dc82781e",
+  "build": {
+    "exit": 0,
+    "seconds": 17.87,
+    "cacheUsed": true
+  },
+  "probe": {
+    "exit": 0,
+    "seconds": 1.2,
+    "network": "none",
+    "actualResult": {
+      "scope": "real final image; offline local HTTP/SQLite; in-process native infrastructure fixture; no model/cloud",
+      "sourceCommit": "b988d2a76057b6202d836ec329cc0bd90a572b26",
+      "sourceSha256": "abefcb1f16d7c87089d9d560d4f8ebd5787a140351553b84f970a171fdd18f68",
+      "nonRoot": true,
+      "managedInstanceTTLAndPrivateEnv": true,
+      "projectionCreateGetList": true,
+      "internalClockPrecision": true,
+      "yamlcore": "0.1.1",
+      "validRawVectors": 13,
+      "invalidRawVectors": 25
+    },
+    "probeSha256": "2c52bead595366a2e102d0dd8fee876f01ae5eb56e68df481b268c2e856217a4"
+  },
+  "pipCheck": {
+    "exit": 0,
+    "seconds": 0.51,
+    "output": [
+      "No broken requirements found."
+    ]
+  },
+  "remainingContainers": [],
+  "upstreamResultSha256": {
+    "server-final-build-inputs.json": "943db63e0f3067d559e11e7a7e1dd401a285214249f6d1b01848692f0605fb85",
+    "server-final-build.json": "22472b1eb70c1f6e2d1bd63a49ea9abe24634b2d970ad12b4f41a90583725b6c",
+    "server-final-image.json": "d768f1b43a8199573d788c36f2c8bb4c2fea3dbe814a50996f223a14bcbc38b1",
+    "server-final-probe.json": "9fc5f1b14df59e709e311dab7e123fb5d8213766c712869cc3906b527bd73209",
+    "server-final-pip-check.json": "a9917798a32ae22b79c12d7a77edf8d1268ff54f80b3118b0a6f0bc6fa4a0dee"
+  }
+}
