@@ -83,3 +83,4 @@ separate required consumer delivery work.
 ## Evidence
 
 - [Verification](../../../evidence/verify/2026-11-12-template-v1-contract.md).
+- [Dedicated contract CI coverage](../../../evidence/verify/2026-11-12-template-v1-ci.md).
