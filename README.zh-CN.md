@@ -114,7 +114,7 @@ abx delete <sandbox-id>
 
 ## 定制与贡献
 
-搜索模板：`abx template search python`。下载可编辑副本而不创建云资源：
+搜索模板：`abx template list python`。下载可编辑副本而不创建云资源：
 
 ```bash
 abx template init ./python-hello --from Alibaba-Agent-Sandbox/awesome-templates//python-hello

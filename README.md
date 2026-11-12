@@ -114,7 +114,7 @@ These entries use an existing runtime on their owning platform. Select that prov
 
 ## Customize and contribute
 
-Search with `abx template search python`. Download an editable copy without creating cloud resources:
+Search with `abx template list python`. Download an editable copy without creating cloud resources:
 
 ```bash
 abx template init ./python-hello --from Alibaba-Agent-Sandbox/awesome-templates//python-hello

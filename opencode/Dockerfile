@@ -8,7 +8,7 @@ ENV OPENCODE_MODEL=dashscope/qwen3.8-flash
 ENV OPENCODE_CONFIG=/home/user/app/opencode.json
 
 # python-sdk main 61c43e0be65a1f57aa09186d578e7b399e48429b includes PR #21.
-# abx template deploy substitutes <region> and <tag> and may inject a wheel.
+# Source preparation substitutes <region> and <tag> and may inject a wheel.
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \

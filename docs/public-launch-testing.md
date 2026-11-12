@@ -56,7 +56,7 @@ business acceptance. The source recipes' smoke commands must be safe to repeat;
 application-specific full controllers remain separate tests.
 
 The runner deletes known owned sandboxes and confirms absence through independent SDK control-plane reads. For Express, it deletes journal-owned templates and reads the complete
-inventory using explicit `--native --json` (without a standard-only `--format` flag),
+inventory through `abx --provider alicloud-express --json provider run template.list`,
 then removes exact owned Hangzhou ACR tags using the existing cleanup
 verifier. Other registry types remain explicit pending cleanup. For the disposable
 OpenSandbox registry it removes exact owned manifests, checks absence and removes
