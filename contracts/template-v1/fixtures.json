@@ -934,6 +934,32 @@
           }
         }
       }
+    },
+    {
+      "id": "independent-sandbox-and-native-serving",
+      "stage": "resolved",
+      "manifest": {
+        "specVersion": 1,
+        "name": "mixed",
+        "sandbox": {
+          "template": {
+            "reference": "owned"
+          },
+          "provider": "alicloud-express"
+        },
+        "deployment": {
+          "edition": "3.0.0",
+          "resources": {
+            "api": {
+              "component": "fc3@0.1.26",
+              "props": {
+                "region": "cn-hangzhou"
+              }
+            }
+          }
+        }
+      },
+      "compile": true
     }
   ],
   "invalidTemplates": [
@@ -2777,30 +2803,6 @@
       }
     },
     {
-      "id": "unowned-mixed-resources",
-      "stage": "intent",
-      "manifest": {
-        "specVersion": 1,
-        "name": "mixed",
-        "sandbox": {
-          "template": {
-            "reference": "owned"
-          }
-        },
-        "deployment": {
-          "edition": "3.0.0",
-          "resources": {
-            "api": {
-              "component": "fc3@0.1.26",
-              "props": {
-                "region": "cn-hangzhou"
-              }
-            }
-          }
-        }
-      }
-    },
-    {
       "id": "managed-duplicate-lifetime",
       "stage": "resolved",
       "manifest": {
@@ -2990,6 +2992,208 @@
             },
             "model": {
               "apiKey": "fixture-model-key",
+              "baseUrl": "https://models.example.invalid/v1",
+              "model": "fixture-model",
+              "adapter": "qwen-code"
+            },
+            "ingress": {
+              "kind": "function-alias",
+              "allowTestDomain": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "protected-worker-bootstrap-abx_managed_sandbox_env_json",
+      "stage": "intent",
+      "manifest": {
+        "specVersion": 1,
+        "name": "agents-api",
+        "sandbox": {
+          "template": {
+            "source": {
+              "dockerfile": "Dockerfile"
+            },
+            "props": {
+              "cpu": 2,
+              "memory": 4096
+            }
+          }
+        },
+        "deployment": {
+          "edition": "3.0.0",
+          "access": "default",
+          "vars": {
+            "region": "cn-hangzhou"
+          },
+          "resources": {
+            "publicApi": {
+              "component": "fc3@0.1.26",
+              "props": {
+                "region": "${vars.region}",
+                "cpu": 1,
+                "memorySize": 1024,
+                "logConfig": {
+                  "logstore": "existing-logstore",
+                  "project": "existing-log-project"
+                }
+              }
+            },
+            "sessionWorker": {
+              "component": "fc3@0.1.26",
+              "props": {
+                "region": "${vars.region}",
+                "cpu": 2,
+                "memorySize": 4096,
+                "logConfig": {
+                  "logstore": "existing-logstore",
+                  "project": "existing-log-project"
+                },
+                "environmentVariables": {
+                  "ABX_MANAGED_SANDBOX_ENV_JSON": "${env('CUSTOM')}"
+                }
+              }
+            },
+            "scheduler": {
+              "component": "fc3@0.1.26",
+              "props": {
+                "region": "${vars.region}",
+                "cpu": 2,
+                "memorySize": 4096,
+                "logConfig": {
+                  "logstore": "existing-logstore",
+                  "project": "existing-log-project"
+                }
+              }
+            }
+          }
+        },
+        "application": {
+          "type": "agents-api",
+          "roles": {
+            "gateway": "publicApi",
+            "worker": "sessionWorker",
+            "dispatcher": "scheduler"
+          },
+          "server": {
+            "source": {
+              "dockerfile": "server/Dockerfile"
+            }
+          },
+          "state": {
+            "databaseUrl": "${env('AGENTS_DATABASE_URL')}"
+          },
+          "bindings": {
+            "sandboxAccess": {
+              "apiKey": "${env('SANDBOX_API_KEY')}",
+              "baseUrl": "https://sandbox.example.invalid",
+              "domain": "sandbox.example.invalid",
+              "region": "cn-hangzhou"
+            },
+            "model": {
+              "apiKey": "${env('OPENAI_API_KEY')}",
+              "baseUrl": "https://models.example.invalid/v1",
+              "model": "fixture-model",
+              "adapter": "qwen-code"
+            },
+            "ingress": {
+              "kind": "function-alias",
+              "allowTestDomain": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "protected-worker-bootstrap-abx_managed_sandbox_env_file",
+      "stage": "intent",
+      "manifest": {
+        "specVersion": 1,
+        "name": "agents-api",
+        "sandbox": {
+          "template": {
+            "source": {
+              "dockerfile": "Dockerfile"
+            },
+            "props": {
+              "cpu": 2,
+              "memory": 4096
+            }
+          }
+        },
+        "deployment": {
+          "edition": "3.0.0",
+          "access": "default",
+          "vars": {
+            "region": "cn-hangzhou"
+          },
+          "resources": {
+            "publicApi": {
+              "component": "fc3@0.1.26",
+              "props": {
+                "region": "${vars.region}",
+                "cpu": 1,
+                "memorySize": 1024,
+                "logConfig": {
+                  "logstore": "existing-logstore",
+                  "project": "existing-log-project"
+                }
+              }
+            },
+            "sessionWorker": {
+              "component": "fc3@0.1.26",
+              "props": {
+                "region": "${vars.region}",
+                "cpu": 2,
+                "memorySize": 4096,
+                "logConfig": {
+                  "logstore": "existing-logstore",
+                  "project": "existing-log-project"
+                },
+                "environmentVariables": {
+                  "ABX_MANAGED_SANDBOX_ENV_FILE": "${env('CUSTOM')}"
+                }
+              }
+            },
+            "scheduler": {
+              "component": "fc3@0.1.26",
+              "props": {
+                "region": "${vars.region}",
+                "cpu": 2,
+                "memorySize": 4096,
+                "logConfig": {
+                  "logstore": "existing-logstore",
+                  "project": "existing-log-project"
+                }
+              }
+            }
+          }
+        },
+        "application": {
+          "type": "agents-api",
+          "roles": {
+            "gateway": "publicApi",
+            "worker": "sessionWorker",
+            "dispatcher": "scheduler"
+          },
+          "server": {
+            "source": {
+              "dockerfile": "server/Dockerfile"
+            }
+          },
+          "state": {
+            "databaseUrl": "${env('AGENTS_DATABASE_URL')}"
+          },
+          "bindings": {
+            "sandboxAccess": {
+              "apiKey": "${env('SANDBOX_API_KEY')}",
+              "baseUrl": "https://sandbox.example.invalid",
+              "domain": "sandbox.example.invalid",
+              "region": "cn-hangzhou"
+            },
+            "model": {
+              "apiKey": "${env('OPENAI_API_KEY')}",
               "baseUrl": "https://models.example.invalid/v1",
               "model": "fixture-model",
               "adapter": "qwen-code"

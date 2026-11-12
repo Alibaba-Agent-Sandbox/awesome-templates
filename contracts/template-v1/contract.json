@@ -197,7 +197,9 @@
     "customContainerConfig.image",
     "customContainerConfig.port",
     "customContainerConfig.entrypoint",
-    "customContainerConfig.command"
+    "customContainerConfig.command",
+    "environmentVariables.ABX_MANAGED_SANDBOX_ENV_JSON",
+    "environmentVariables.ABX_MANAGED_SANDBOX_ENV_FILE"
   ],
   "managedInstanceDefaults": {
     "timeout": 3600,

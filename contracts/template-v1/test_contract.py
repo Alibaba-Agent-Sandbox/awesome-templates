@@ -125,6 +125,12 @@ class ContractTest(unittest.TestCase):
         result = outcomes()
         self.assertEqual(len(result["valid"]), len(FIXTURES["validTemplates"]))
 
+    def test_independent_resource_declarations_are_preserved(self) -> None:
+        row = next(row for row in outcomes()["valid"] if row["id"] == "independent-sandbox-and-native-serving")
+        self.assertEqual(row["compiled"]["sandbox"], row["normalized"]["sandbox"])
+        self.assertEqual(row["compiled"]["deployment"], row["normalized"]["deployment"])
+        self.assertNotIn("application", row["compiled"])
+
     def test_managed_props_and_generated_bindings(self) -> None:
         rows = {row["id"]: row for row in outcomes()["valid"]}
         compiled = rows["managed-resolved-native-memory"]["compiled"]

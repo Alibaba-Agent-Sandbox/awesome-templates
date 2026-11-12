@@ -1471,20 +1471,5 @@
         ]
       }
     }
-  },
-  "allOf": [
-    {
-      "if": {
-        "required": [
-          "sandbox",
-          "deployment"
-        ]
-      },
-      "then": {
-        "required": [
-          "application"
-        ]
-      }
-    }
-  ]
+  }
 }
