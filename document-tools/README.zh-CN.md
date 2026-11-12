@@ -8,6 +8,8 @@
 
 ## 技术栈
 
+- LibreOffice writer/core/common 固定为 Debian `4:25.2.3-2+deb13u9`，与 CI 和镜像配方一致。
+
 沙箱服务固定使用已发布的 `agent-sandbox-server==0.4.0a6`，由 Dockerfile 直接安装。
 
 - 阿里云基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，通常为 `cn-hangzhou` / `v0.0.49`。
