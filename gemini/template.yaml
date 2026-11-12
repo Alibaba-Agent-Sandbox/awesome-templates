@@ -1,37 +1,29 @@
+specVersion: 1
 name: gemini
-version: "2.2.2"
-description: "Pinned Gemini CLI with typed headless commands and explicit tool approval."
-author: alibaba-agent-sandbox
-license: Apache-2.0
-spec_version: 5
-base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
-generation: 2
-start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
-ready_cmd: "agent-sandbox-server healthcheck --port 9000"
-resources:
-  cpu: 2
-  memory: 4096
-ports: [9000]
-tags: [gemini, ai-coding, ai-agent]
-priority: P0
-wave: 1
-env:
-  ABX_SERVER_TOKEN: ""
-  GEMINI_API_KEY: ""
-  GEMINI_BYOK_API_KEY: ""
-  GEMINI_BYOK_BASE_URL: ""
-  GEMINI_BYOK_MODEL: ""
-  GEMINI_MODEL: gemini-3.1-flash-lite
-  WORKSPACE: /home/user/app
-smoke:
-  - command: gemini_version
-    args: {}
-    expect: "0.64.0"
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations:
-    - commands.list
-    - commands.run
+sandbox:
+  template:
+    source:
+      dockerfile: Dockerfile
+      context: .
+    props:
+      cpu: 2
+      memory: 4096
+  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+  ready: agent-sandbox-server healthcheck --port 9000
+  instance:
+    envs:
+      ABX_SERVER_TOKEN: ''
+      GEMINI_API_KEY: ''
+      GEMINI_BYOK_API_KEY: ''
+      GEMINI_BYOK_BASE_URL: ''
+      GEMINI_BYOK_MODEL: ''
+      GEMINI_MODEL: gemini-3.1-flash-lite
+      WORKSPACE: /home/user/app
+  services:
+    app:
+      protocol: agent-sandbox-server
+      version: 2
+      port: 9000
+      operations:
+      - commands.list
+      - commands.run

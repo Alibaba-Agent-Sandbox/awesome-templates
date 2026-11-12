@@ -1,5 +1,7 @@
 # Hermes Agent
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Run the actual upstream Hermes Agent CLI with its local terminal and file toolsets. This template exposes the coding slice; messaging gateways, browser/desktop integrations and external terminal backends are not provisioned.

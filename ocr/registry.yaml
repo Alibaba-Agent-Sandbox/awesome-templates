@@ -1,0 +1,18 @@
+specVersion: 1
+name: ocr
+version: 1.0.3
+description:
+  zh: 使用 Tesseract 识别英文图片文字，输出 TXT 或 TSV 文件，适合离线 OCR 处理。
+  en: Recognize English text in images with Tesseract and export TXT or TSV files
+    for offline OCR.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- ocr
+- tesseract
+- images
+- english
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

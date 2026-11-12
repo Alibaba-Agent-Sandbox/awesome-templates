@@ -1,0 +1,17 @@
+specVersion: 1
+name: aider
+version: 1.0.3
+description:
+  zh: 先只读评审代码，再将修改写回你选定的文件，适合需要控制变更范围的开发任务。
+  en: Review code in read-only mode, then apply changes to selected files when you
+    choose to allow writes.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- aider
+- coding-agent
+- openai-compatible
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

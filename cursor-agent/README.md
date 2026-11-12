@@ -2,6 +2,8 @@
 
 [中文](README.zh-CN.md).
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Run the original Cursor Agent CLI in an owned disposable sandbox through typed named commands. Cursor owns inference and tool execution. A genuine CURSOR_API_KEY is required for agent tasks; no compatible-model or operator-key fallback exists. Automatic native tools require explicit `allow_unsafe_tools=True`.

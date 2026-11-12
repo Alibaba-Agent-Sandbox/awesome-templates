@@ -2,6 +2,8 @@
 
 [中文](README.zh-CN.md)
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Create a fresh minimal Next.js or Vite application, serve real source edits, inspect a bounded log tail and stop owned workers. One development server at a time; command API9000, Next3000, Vite5173. No Vercel publishing or claimed HMR/WebSocket certification.

@@ -1,5 +1,7 @@
 # Factory Droid
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 运行固定版本 Factory Droid CLI。`droid_byok` 使用显式兼容模型，`droid` 使用 Factory 账号；两条路径均为无交互命令。

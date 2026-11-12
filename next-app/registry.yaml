@@ -1,0 +1,17 @@
+specVersion: 1
+name: next-app
+version: 1.1.4
+description:
+  zh: 创建 Next.js 或 Vite 前端项目，在沙箱中启动并访问预览。
+  en: Create Next.js or Vite frontend projects and run accessible previews in a sandbox.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- node
+- nextjs
+- vite
+- preview
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

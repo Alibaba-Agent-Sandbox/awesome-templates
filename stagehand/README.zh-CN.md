@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 使用真实 Node.js `@browserbasehq/stagehand@4.3.0` SDK、随包浏览器扩展和私有本地 Chromium。每次有界调用执行一条上游 `act` 指令，可选原生 `extract` 提取 `{text: string}`，并生成新 PNG。这里只提供本地浏览器切片，不承诺 Browserbase 托管会话、持久登录、完整自主规划或任意提取 schema。

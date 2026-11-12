@@ -1,33 +1,27 @@
+specVersion: 1
 name: node-web
-version: "1.1.4"
-description: "Manage a Node HTTP service with readiness, process cleanup and bounded logs."
-author: alibaba-agent-sandbox
-license: Apache-2.0
-spec_version: 5
-base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
-generation: 2
-start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
-ready_cmd: "agent-sandbox-server healthcheck --port 9000"
-resources:
-  cpu: 2
-  memory: 2048
-ports: [3000, 9000]
-tags: [nodejs, web, express, api, javascript]
-priority: P1
-wave: 1
-env:
-  NODE_ENV: production
-  PORT: "3000"
-  ABX_SERVER_TOKEN: ""
-smoke:
-  - command: smoke
-    args: {}
-    expect: "node-web ready"
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations:
-    - commands.list
-    - commands.run
+sandbox:
+  template:
+    source:
+      dockerfile: Dockerfile
+      context: .
+    props:
+      cpu: 2
+      memory: 2048
+  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+  ready: agent-sandbox-server healthcheck --port 9000
+  instance:
+    envs:
+      NODE_ENV: production
+      PORT: '3000'
+      ABX_SERVER_TOKEN: ''
+  services:
+    app:
+      protocol: agent-sandbox-server
+      version: 2
+      port: 9000
+      operations:
+      - commands.list
+      - commands.run
+  ports:
+  - 3000

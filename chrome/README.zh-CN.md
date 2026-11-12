@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 运行原版有界面的 Chrome-for-Testing145.0.7632.6，使用私有 Xvfb/Openbox 桌面，提供原生 CDP9222、Debian 原版 noVNC6080 和真实桌面 PNG。范围是浏览器应用；不包含模型、远程桌面产品或基准成绩。

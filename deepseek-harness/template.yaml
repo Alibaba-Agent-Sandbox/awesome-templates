@@ -1,36 +1,28 @@
+specVersion: 1
 name: deepseek-harness
-version: "1.2.0"
-description: "DeepSeek-compatible coding agent with bounded file and terminal tool calls."
-author: "alibaba-agent-sandbox"
-license: Apache-2.0
-spec_version: 5
-base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
-generation: 2
-start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
-ready_cmd: "agent-sandbox-server healthcheck --port 9000"
-resources:
-  cpu: 2
-  memory: 2048
-ports: [9000]
-tags: [deepseek-harness, ai-coding, ai-agent]
-priority: P1
-wave: 1
-env:
-  WORKSPACE: "/home/user/app"
-  ABX_SERVER_TOKEN: ""
-  DEEPSEEK_API_KEY: ""
-  OPENAI_API_KEY: ""
-  DEEPSEEK_BASE_URL: ""
-  DEEPSEEK_MODEL: ""
-smoke:
-  - command: deepseek_tools
-    args: {}
-    expect: "list_files,read_file,run_shell,write_file"
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations:
-    - commands.list
-    - commands.run
+sandbox:
+  template:
+    source:
+      dockerfile: Dockerfile
+      context: .
+    props:
+      cpu: 2
+      memory: 2048
+  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+  ready: agent-sandbox-server healthcheck --port 9000
+  instance:
+    envs:
+      WORKSPACE: /home/user/app
+      ABX_SERVER_TOKEN: ''
+      DEEPSEEK_API_KEY: ''
+      OPENAI_API_KEY: ''
+      DEEPSEEK_BASE_URL: ''
+      DEEPSEEK_MODEL: ''
+  services:
+    app:
+      protocol: agent-sandbox-server
+      version: 2
+      port: 9000
+      operations:
+      - commands.list
+      - commands.run

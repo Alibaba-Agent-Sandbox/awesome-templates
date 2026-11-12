@@ -1,0 +1,17 @@
+specVersion: 1
+name: goose
+version: 1.0.2
+description:
+  zh: 使用 Goose 的开发工具执行沙箱编码任务，并配置独立的兼容模型服务。
+  en: Use Goose developer tools for sandbox coding tasks with a separately configured
+    compatible model service.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- goose
+- coding-agent
+- openai-compatible
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

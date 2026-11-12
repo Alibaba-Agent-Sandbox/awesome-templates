@@ -37,9 +37,9 @@ against actual help/source. Record whether examples were executed or only syntax
 
 Before launch, show required configuration with actual names and defaults: separate platform credentials, application tokens and model credentials. Explain the model ID, endpoint, API key and any product login required by the pinned upstream tool. State supported authentication and endpoint restrictions rather than mapping every tool to common environment variables.
 
-Managed spec6 applications document explicit `abx deploy` deployment, Python `httpx` and the same Gateway HTTP task. They do not require a Sandbox client or named-command discovery. Their public recipe must pin a compatible published runtime; source artifact verification remains separate and must not become a silent installation fallback.
+Managed Agents API applications document explicit `abx deploy` deployment, Python `httpx` and the same Gateway HTTP task. They do not require a Sandbox client or named-command discovery. Their public recipe must pin a compatible published runtime; source artifact verification remains separate and must not become a silent installation fallback.
 
-For spec5, name the client distribution `agent-sandbox-client`, import the SDK entry point
+For ordinary Sandbox templates, name the client distribution `agent-sandbox-client`, import the SDK entry point
 appropriate to the pinned version, and install `agent-sandbox-server` inside the
 image. Give a pinned source alternative when a package is unpublished. Keep typed
 JSON arguments distinct from string CLI arguments. HTTP examples include method,

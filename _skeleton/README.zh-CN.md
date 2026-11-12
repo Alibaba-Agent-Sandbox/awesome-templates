@@ -2,6 +2,8 @@
 
 新模板的骨架。复制这个目录，再换掉命令和元数据。它不是目录里的一个模板条目。
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 在端口 9000 的 `agent-sandbox-server` 上注册一个命名命令 `hello`。命令返回 `Hello, <name>!`。
@@ -13,7 +15,7 @@
 - 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`。`abx template build` 把 `<region>` 换成 `ALIBABA_CLOUD_REGION_ID` 或 `cn-hangzhou`，把 `<tag>` 换成 `ABX_BASE_IMAGE_TAG` 或 `v0.0.49`。
 - 工作目录 `/home/user/app`。运行用户 `user`。
 - 基础镜像自带 Python 3.13 和 Node.js 20。
-- `abx deploy` 执行模板的 `start_cmd` 启动进程。Dockerfile 在 `USER` 和 `EXPOSE` 之后结束。
+- `abx deploy` 执行模板的 `sandbox.start` 启动进程。Dockerfile 在 `USER` 和 `EXPOSE` 之后结束。
 
 ## 解决的问题
 

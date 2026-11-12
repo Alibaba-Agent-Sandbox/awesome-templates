@@ -6,9 +6,11 @@
 
 [浏览模板](https://registry.agent-sandbox.cn/templates/) · [使用指南](docs/using-templates.zh-CN.md) · [提供方配置](docs/provider-preparation.zh-CN.md)
 
+本分支使用 `specVersion: 1`，需要匹配的开发版 CLI/SDK；已发布 CLI 0.5.10 不支持此格式。请先看[资源规范](docs/template-spec.zh-CN.md)。
+
 ## 快速开始
 
-先[安装 abx CLI](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#installation)（0.5.8 或更新版本），按[使用指南](docs/using-templates.zh-CN.md)准备所选提供方的凭据和构建环境，再启动无需模型的入门模板：
+先[安装 abx CLI](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#installation)（匹配 YAML v1 的开发构建），按[使用指南](docs/using-templates.zh-CN.md)准备所选提供方的凭据和构建环境，再启动无需模型的入门模板：
 
 ```bash
 abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello

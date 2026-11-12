@@ -1,32 +1,27 @@
+specVersion: 1
 name: grok
-version: "1.0.3"
-description: "Pinned genuine official xAI Grok Build1.0.62 CLI, private OpenAI-compatible configuration and bounded headless coding."
-author: "alibaba-agent-sandbox"
-license: Apache-2.0
-spec_version: 5
-base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
-generation: 2
-start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
-ready_cmd: "agent-sandbox-server healthcheck --port 9000"
-resources: {cpu: 2, memory: 4096}
-ports: [9000]
-tags: [grok, coding-agent, openai-compatible]
-priority: P1
-wave: 2
-env:
-  ABX_SERVER_TOKEN: ""
-  GROK_MODEL_API_KEY: ""
-  GROK_MODEL_BASE_URL: ""
-  GROK_MODEL: ""
-  WORKSPACE: "/home/user/workspace"
-smoke:
-  - command: grok_version
-    expect: {native_version: "1.0.62"}
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations:
-    - commands.list
-    - commands.run
+sandbox:
+  template:
+    source:
+      dockerfile: Dockerfile
+      context: .
+    props:
+      cpu: 2
+      memory: 4096
+  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+  ready: agent-sandbox-server healthcheck --port 9000
+  instance:
+    envs:
+      ABX_SERVER_TOKEN: ''
+      GROK_MODEL_API_KEY: ''
+      GROK_MODEL_BASE_URL: ''
+      GROK_MODEL: ''
+      WORKSPACE: /home/user/workspace
+  services:
+    app:
+      protocol: agent-sandbox-server
+      version: 2
+      port: 9000
+      operations:
+      - commands.list
+      - commands.run

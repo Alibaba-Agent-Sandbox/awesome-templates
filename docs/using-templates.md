@@ -6,11 +6,12 @@ Choose a template, configure the sandbox platform and any model service it needs
 
 ## Installation
 
-These examples use the unified commands in the current source. Published CLI 0.5.10 does not support these new entry points. Install the CLI from source with Node 20+; Python examples continue to use client 0.4.0a6 in a virtual environment.
+These examples require a reviewed YAML v1 development revision. Replace the revision placeholder with the matching CLI commit; checking out main does not select an unreleased change. Published CLI 0.5.10 does not support these new entry points. Install the CLI from source with Node 20+; Python examples continue to use client 0.4.0a6 in a virtual environment.
 
 ```bash
 git clone https://github.com/Alibaba-Agent-Sandbox/agent-sandbox.git
 cd agent-sandbox
+git checkout <reviewed-yaml-v1-cli-revision>
 npm ci
 npm run build
 npm link
@@ -46,7 +47,7 @@ The CLI generates a private application token during normal deploy, saves it loc
 
 Templates use different upstream configuration. Do not assume every tool consumes `ABX_LLM_*`, supports arbitrary OpenAI-compatible endpoints, or inherits a login from your machine. Non-model tools do not need a model key. Commercial account login, API-key login and optional web-service passwords are described in the applicable README.
 
-Declared **empty** template env values can be filled from the host environment. A non-empty manifest value wins over a same-name host export. Use a command's documented model argument to select another model. For an empty startup-only model/key/endpoint setting, export the new value and launch a new instance from the public recipe; use the new returned sandbox ID. A local template copy is only needed to change a non-empty manifest default or the implementation. Only declared runtime settings are carried through this path. Changing exports after launch does not reconfigure an already running process.
+Declared **empty** `sandbox.instance.envs` values can be filled from the host environment. A non-empty manifest value wins over a same-name host export. Use a command's documented model argument to select another model. For an empty startup-only model/key/endpoint setting, export the new value and launch a new instance from the public recipe; use the new returned sandbox ID. A local template copy is only needed to change a non-empty manifest default or the implementation. Only declared runtime settings are carried through this path. Changing exports after launch does not reconfigure an already running process.
 
 ## CLI, SDK and HTTP
 
@@ -162,3 +163,15 @@ Maintainer test procedures and dated results live in [public launch testing](pub
 ## Client entry compatibility
 
 These provider/application examples use `ProviderSandbox`. Standard `Sandbox` / `AsyncSandbox` interpreter interfaces are separate; follow the selected template's instructions and the [SDK entry-point guide](https://github.com/Alibaba-Agent-Sandbox/python-sdk/blob/main/README.md). `abx deploy --template-id <platform-template-id>` selects an existing platform template, whereas source templates use `abx deploy <source-reference>`.
+
+Resource intake accepts `specVersion: 1` only. Registry metadata is independent from local execution. Supply native `${env('NAME')}` references through an untracked project `.env`; nonempty literal defaults retain their meaning. See the [resource specification](template-spec.md).
+
+### Loading YAML v1 directly from Python
+
+The published-client connection example above only connects to an already running Sandbox. Direct v1 loading through `agent_sandbox.api.template.launch_template` requires the fixed development source, rather than another installation of the same published a7 package:
+
+```bash
+python -m pip install "agent-sandbox-client @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/1079841307f1f63253ae68fdda6e6d2d1e77e851.tar.gz#subdirectory=client-sdk&sha256=a7dfffac2eba7a8ee3d5620d231c5abf3f767ca655194b7329341389faf83485"
+```
+
+This API accepts literal values or a private v1 snapshot resolved by the CLI's native parser; it never reads or substitutes `${...}` expressions. Python does not build source projects: prepare with the CLI, then supply an existing Provider reference/image. Additional ports return access endpoints; known business protocols provide typed clients. See the [fixed-source SDK instructions](https://github.com/Alibaba-Agent-Sandbox/python-sdk/blob/1079841307f1f63253ae68fdda6e6d2d1e77e851/client-sdk/README.md). Installed metadata remains0.4.0a7; this is an explicit source development recipe, not a new PyPI version.

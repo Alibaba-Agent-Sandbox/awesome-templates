@@ -1,5 +1,7 @@
 # prime-agent
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Runs the unchanged stable Prime Agent0.10.0 native Rust CLI with its original CPython REPL tool named `ipython`. Uses an explicitly approved compatible model and supported fixed kernel interpreter. This bounded headless coding slice does not qualify daemon sessions, recursive agents, subscription models or research benchmarks. [official release](https://github.com/PrimeIntellect-ai/prime-agent/releases/tag/v0.10.0); [pinned native source](https://github.com/PrimeIntellect-ai/prime-agent/tree/763094e1b6a7c17450ee8399b06cda1853847ca5).

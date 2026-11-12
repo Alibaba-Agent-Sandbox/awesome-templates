@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 在私有本地Chromium上运行真实browser-use0.13.11 Agent，读取文本DOM、操作网页，返回实际PNG、最终URL和结果。它补充无需模型的Playwright原语，不使用Browser Use Cloud或远程浏览器。

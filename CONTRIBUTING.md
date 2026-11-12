@@ -14,8 +14,8 @@ already passes `scripts/check_template.py`. It is not a catalog entry.
 
 1. Copy `_skeleton/` to a kebab-case directory. The directory name,
    `template.yaml` `name`, and the index `path` are the same string.
-2. Keep the default Express recipe's Alibaba base image, `generation: 2`,
-   `start_cmd`, `ready_cmd`, pinned installs, and `USER user`. Do not add `CMD` or
+2. Keep the default Express recipe's Alibaba base image, Provider generation-2 preparation,
+   `sandbox.start`, `sandbox.ready`, pinned installs, and `USER user`. Do not add `CMD` or
    `ENTRYPOINT` to that recipe. A separately declared explicit build profile may
    use another pinned base; it must preserve the original recipe and non-root
    runtime, and is selected by name rather than applied as a provider rewrite.
@@ -52,7 +52,7 @@ already passes `scripts/check_template.py`. It is not a catalog entry.
    parameters into current CLI examples.
 
 Do not commit `__pycache__/`, `.env`, or secret values. Declare secret
-*names* with empty values in `template.yaml` `env`.
+*names* with empty values in `template.yaml` `sandbox.instance.envs`.
 
 ## Review and completion
 
@@ -123,4 +123,6 @@ Owned-process and QM invocation helpers have canonical sources under `scripts/pr
 
 Unused-code cleanup must preserve imports used for registration or dependency probes. Review test imports separately from template runtime changes; generated process runners are edited at their canonical source and synchronized. Record scanner findings, actual regressions and missing local prerequisites separately from cloud/model acceptance.
 
-Managed-session application authors use the closed [spec6 contract reference](docs/managed-agent-applications.md). Static validation and runtime/provider acceptance are separate requirements.
+Managed-session application authors use the closed [Agents API contract reference](docs/managed-agent-applications.md). Static validation and runtime/provider acceptance are separate requirements.
+
+New resources use `specVersion: 1`. Publication metadata lives only in registry.yaml and catalog rows reference it; local execution is independent. Engineering smoke/priority/wave live in scripts/template-checks.json, not resource fields. Generate field references with `python scripts/sync_template_reference.py`; CI checks with --check.

@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 每个沙箱管理一个真实 Node HTTP 应用。`serve` 启动 JavaScript 入口，`start` 和 `dev` 在后台运行 npm 脚本。只有子进程存活并返回 HTTP 2xx/3xx，启动才成功。`status`、`request`、`logs`、`stop` 提供状态、真实请求、日志和停止。内置无第三方依赖的 `index.js`，可直接验证 HTTP 服务。

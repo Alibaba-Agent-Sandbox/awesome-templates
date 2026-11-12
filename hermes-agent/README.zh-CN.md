@@ -1,5 +1,7 @@
 # Hermes Agent
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 运行真实 NousResearch Hermes Agent CLI，启用本地终端和文件工具。当前交付代码任务切片，未配置消息网关、浏览器、桌面或外部终端后端。

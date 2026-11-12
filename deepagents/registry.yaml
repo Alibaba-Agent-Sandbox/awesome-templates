@@ -1,0 +1,17 @@
+specVersion: 1
+name: deepagents
+version: 1.0.2
+description:
+  zh: 使用本地文件与命令工具运行 DeepAgents 任务，连接你配置的兼容模型。
+  en: Run DeepAgents tasks with local file and shell tools through your configured
+    compatible model.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- deepagents
+- coding-agent
+- openai-compatible
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

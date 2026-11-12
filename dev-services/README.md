@@ -2,6 +2,8 @@
 
 [中文](README.zh-CN.md)
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Initialize a private workspace database directory, start both actual servers, execute bounded SQL and selected Redis operations, inspect status and stop only owned workers. Default listeners are loopback5432/16379; command API9000. Both require a caller-supplied password. Existing unrelated data directories are rejected.

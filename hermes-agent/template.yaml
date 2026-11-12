@@ -1,36 +1,29 @@
+specVersion: 1
 name: hermes-agent
-version: "1.2.1"
-description: "Pinned upstream Hermes Agent headless CLI with local file and terminal tools."
-author: "alibaba-agent-sandbox"
-license: Apache-2.0
-spec_version: 5
-base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
-generation: 2
-start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
-ready_cmd: "agent-sandbox-server healthcheck --port 9000"
-resources:
-  cpu: 2
-  memory: 2048
-ports: [9000]
-tags: [hermes-agent, ai-coding, ai-agent]
-priority: P0
-wave: 2
-env:
-  WORKSPACE: "/home/user/app"
-  ABX_SERVER_TOKEN: ""
-  OPENROUTER_API_KEY: ""
-  OPENAI_API_KEY: ""
-  OPENAI_BASE_URL: ""
-  HERMES_MODEL: ""
-  HERMES_PROVIDER: ""
-smoke:
-  - command: hermes_version
-    args: {}
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations:
-    - commands.list
-    - commands.run
+sandbox:
+  template:
+    source:
+      dockerfile: Dockerfile
+      context: .
+    props:
+      cpu: 2
+      memory: 2048
+  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+  ready: agent-sandbox-server healthcheck --port 9000
+  instance:
+    envs:
+      WORKSPACE: /home/user/app
+      ABX_SERVER_TOKEN: ''
+      OPENROUTER_API_KEY: ''
+      OPENAI_API_KEY: ''
+      OPENAI_BASE_URL: ''
+      HERMES_MODEL: ''
+      HERMES_PROVIDER: ''
+  services:
+    app:
+      protocol: agent-sandbox-server
+      version: 2
+      port: 9000
+      operations:
+      - commands.list
+      - commands.run

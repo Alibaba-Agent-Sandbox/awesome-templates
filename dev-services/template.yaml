@@ -1,44 +1,29 @@
+specVersion: 1
 name: dev-services
-version: "1.1.2"
-description: Pinned non-root PostgreSQL17.11 and Redis8.0.2 without Docker or systemd.
-author: alibaba-agent-sandbox
-license: Apache-2.0
-spec_version: 5
-base: fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
-generation: 2
-start_cmd: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
-ready_cmd: agent-sandbox-server healthcheck --port 9000
-resources:
-  cpu: 2
-  memory: 2048
-ports:
-- 9000
-- 5432
-- 16379
-tags:
-- database
-- postgresql
-- redis
-- development
-priority: P1
-wave: 1
-env:
-  ABX_SERVER_TOKEN: ''
-  DEV_SERVICES_PASSWORD: ''
-  DEV_SERVICES_REDIS_PORT: '16379'
-  DEV_SERVICES_POSTGRES_PORT: '5432'
-smoke:
-- command: services_versions
-  expect:
-    postgres: '17.11'
-    redis: 8.0.2
-- command: services_self_test
-  expect: POSTGRES_REDIS_OK
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations:
-    - commands.list
-    - commands.run
+sandbox:
+  template:
+    source:
+      dockerfile: Dockerfile
+      context: .
+    props:
+      cpu: 2
+      memory: 2048
+  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+  ready: agent-sandbox-server healthcheck --port 9000
+  instance:
+    envs:
+      ABX_SERVER_TOKEN: ''
+      DEV_SERVICES_PASSWORD: ''
+      DEV_SERVICES_REDIS_PORT: '16379'
+      DEV_SERVICES_POSTGRES_PORT: '5432'
+  services:
+    app:
+      protocol: agent-sandbox-server
+      version: 2
+      port: 9000
+      operations:
+      - commands.list
+      - commands.run
+  ports:
+  - 5432
+  - 16379

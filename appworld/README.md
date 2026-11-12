@@ -2,6 +2,8 @@
 
 [中文](README.zh-CN.md)
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Run original AppWorld0.1.3.post1 training worlds, APIs, SQLite state and native evaluator with an authored compatible-model API bridge. The bridge offers original API documentation and actual API calls; the historical paper agent baseline is not claimed. Result artifacts retain the upstream encrypted bundle format. This is a single-training-task slice, not a leaderboard score.

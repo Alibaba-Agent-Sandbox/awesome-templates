@@ -1,0 +1,17 @@
+specVersion: 1
+name: qm
+version: 1.0.3
+description:
+  zh: 运行 QM 的 Pi 工具流程，通过 Sandbox SDK 后端执行任务并获取结果。
+  en: Run QM Pi tool workflows through a Sandbox SDK backend and retrieve task results.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- qm
+- sandbox
+- sdk
+- coding-agent
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

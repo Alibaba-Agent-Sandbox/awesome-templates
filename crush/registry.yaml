@@ -1,0 +1,17 @@
+specVersion: 1
+name: crush
+version: 1.0.2
+description:
+  zh: 在沙箱内运行 Crush 编码会话，显式选择模型并启用所需工具。
+  en: Run Crush coding sessions in a sandbox with explicit model settings and selected
+    tools.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- crush
+- coding-agent
+- openai-compatible
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

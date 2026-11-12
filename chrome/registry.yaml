@@ -1,0 +1,19 @@
+specVersion: 1
+name: chrome
+version: 1.0.9
+description:
+  zh: 启动带认证访问的 Chrome 浏览器，通过 CDP 或 noVNC 进行浏览器与桌面操作。
+  en: Start Chrome with authenticated access and use CDP or noVNC for browser and
+    desktop interaction.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- chrome
+- browser
+- cdp
+- vnc
+- desktop
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

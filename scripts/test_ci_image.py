@@ -13,7 +13,11 @@ IMAGE='registry.cn-hangzhou.aliyuncs.com/example/e2e-ci-image-'+'a'*16+':review'
 
 def fixture(tmp_path):
     source=tmp_path/'product';source.mkdir()
-    (source/'template.yaml').write_text('name: product\nversion: 1.0.0\nresources: {cpu: 2, memory: 2048}\nsmoke:\n  - command: hello\n    expect: ok\ntested_on: []\n')
+    from v1_test_support import resource, publication
+    import yaml
+    data=resource('product');data['sandbox']['template']={'source':{'dockerfile':'Dockerfile'},'props':{'cpu':2,'memory':2048}}
+    (source/'template.yaml').write_text(yaml.safe_dump(data))
+    publication(source,'product','1.0.0')
     (source/'Dockerfile').write_text('FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>\nRUN pip install agent-sandbox-server==0.4.0a6\nWORKDIR /home/user/app\nCOPY --chown=user:user commands.py .\nUSER user\n')
     (source/'commands.py').write_text('# immutable public runtime\n')
     proof={'schema_version':1,'verification_type':'ci-docker-archive','template':'product','template_version':'1.0.0','github_repository':'Alibaba-Agent-Sandbox/awesome-templates','source_head_commit':'b'*40,'checkout_commit':'b'*40,'workflow_run_id':'123','artifact_id':'456','archive_sha256':'c'*64,'image_config_sha256':'d'*64,'pushed_image_digest':'sha256:'+'a'*64,'server_package_version':'0.4.0a6','context_sha256':ci_image.context_sha256(source),'artifact_verified':True,'image_context_verified':True,'image_non_root':True,'registry_push_verified':True,'registry_private_repo_verified':True,'registry_credentials_storage':'anonymous RAM fd','registration_reference_type':'owned tag with digest readback','tag_digest_verified_before_registration':True,'tag_digest_verified_after_runtime':False}
@@ -36,9 +40,9 @@ def test_mutable_reference_and_changed_runtime_are_rejected(tmp_path):
 
 def test_any_manifest_change_invalidates_image_identity(tmp_path):
     source,proof,path=fixture(tmp_path)
-    text=(source/'template.yaml').read_text().replace('tested_on: []','tested_on: [alicloud-express]');(source/'template.yaml').write_text(text)
+    text=(source/'template.yaml').read_text().replace('memory: 2048','memory: 3072');(source/'template.yaml').write_text(text)
     with pytest.raises(ValueError):ci_image.validate_proof(source,proof,IMAGE)
-    (source/'template.yaml').write_text(text.replace('expect: ok','expect: different'))
+    (source/'template.yaml').write_text(text.replace('cpu: 2','cpu: 3'))
     with pytest.raises(ValueError):ci_image.validate_proof(source,proof,IMAGE)
 
 

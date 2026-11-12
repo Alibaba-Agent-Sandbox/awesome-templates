@@ -2,6 +2,8 @@
 
 [中文](README.zh-CN.md)
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Runs the genuine Node.js `@browserbasehq/stagehand@4.3.0` SDK and its bundled browser extension against a private local Chromium. A bounded call performs one upstream `act` instruction, optionally extracts a `{text: string}` result with native `extract`, and writes a fresh PNG. It is a local browser slice; Browserbase hosted sessions, login persistence, full autonomous planning and arbitrary extraction schemas are outside this template's contract.

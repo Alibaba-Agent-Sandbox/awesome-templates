@@ -1,5 +1,7 @@
 # cline
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Runs genuine official `cline@3.0.73` in bounded headless JSON/yolo mode. The CLI reads a prompt from anonymous stdin, edits the selected workspace using its native tools and returns buffered NDJSON plus its actual exit code. It uses an explicitly configured OpenAI-compatible provider; a Cline hosted account is not selected. This is the CLI product, with no VS Code extension or desktop UI claim.

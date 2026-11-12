@@ -1,5 +1,7 @@
 # DeepSeek coding harness
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Run a repository-owned coding agent using the official DeepSeek Chat Completions function-call protocol. Each turn executes read_file, write_file, list_files or run_shell and returns tool results to the model until a final answer.

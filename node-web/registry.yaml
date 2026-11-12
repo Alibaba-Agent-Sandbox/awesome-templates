@@ -1,0 +1,18 @@
+specVersion: 1
+name: node-web
+version: 1.1.4
+description:
+  zh: 构建并运行 Node.js Web 服务，可使用 Express、Fastify 等框架。
+  en: Build and run Node.js web services with Express, Fastify or another framework.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- nodejs
+- web
+- express
+- api
+- javascript
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

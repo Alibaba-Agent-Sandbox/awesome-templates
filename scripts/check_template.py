@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import argparse
 import ast
-import json
 import re
 import shlex
 import sys
@@ -224,7 +223,7 @@ def _index_entries(root: Path) -> list[dict] | None:
     data, errors = _load_yaml(path)
     if errors or not isinstance(data, dict):
         return []
-    if data.get("schema_version") != 2:
+    if data.get("schema_version") != 3:
         return []
     templates = data.get("templates")
     if not isinstance(templates, list):
@@ -441,9 +440,9 @@ def _check_env(env: object, where: str, violations: list[Violation]) -> None:
         if not isinstance(key, str):
             violations.append(Violation("yaml-env", f"{where}: env key {key!r} must be a string"))
             continue
-        if SECRET_KEY.search(key) and value not in ("", None):
+        if SECRET_KEY.search(key) and value not in ("", None) and not (isinstance(value, str) and value.startswith("${") and value.endswith("}")):
             violations.append(
-                Violation("secrets", f"{where}: {key} must be an empty string (the value is injected at create)")
+                Violation("secrets", f"{where}: {key} must be empty or a native expression (injected at create)")
             )
 
 
@@ -460,7 +459,14 @@ def check_directory(template_dir: Path) -> list[Violation]:
         loaded, errors = _load_yaml(yaml_path)
         violations.extend(errors)
         if isinstance(loaded, dict):
-            data = loaded
+            raw_data = loaded
+            from template_application import project_manifest, validate_manifest
+            failures = validate_manifest(raw_data, template_dir)
+            violations.extend(Violation("yaml-schema", message) for message in failures)
+            try:
+                data = project_manifest(raw_data, template_dir)
+            except (OSError, TypeError, ValueError):
+                data = {"name": raw_data.get("name", ""), "specVersion": raw_data.get("specVersion")}
 
     directory_name = template_dir.name
     name = _require_str(data, "name", violations) if data else ""
@@ -471,8 +477,8 @@ def check_directory(template_dir: Path) -> list[Violation]:
     if name and name != SKELETON_NAME and not NAME_RE.fullmatch(name):
         violations.append(Violation("yaml-name", f"name {name!r} must match {NAME_RE.pattern}"))
 
-    for key in ("description", "version", "author", "license"):
-        if data:
+    if (template_dir / "registry.yaml").is_file():
+        for key in ("description", "version", "author", "license"):
             _require_str(data, key, violations)
 
     from template_application import is_managed_application
@@ -487,7 +493,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
     if readme_zh.is_file():
         zh_sections = _check_readme(readme_zh, README_ZH, violations, managed=managed)
 
-    if data.get("spec_version") in (5, 6):
+    if data.get("specVersion") == 1:
         for label, sections, heading in (
             ("README.md", en_sections, "Quick start (HTTP POST)"),
             ("README.zh-CN.md", zh_sections, "快速开始（HTTP POST）"),
@@ -533,17 +539,13 @@ def check_directory(template_dir: Path) -> list[Violation]:
             violations.append(
                 Violation(
                     "base-image",
-                    "template.yaml base must be the Alibaba FC image string "
+                    "the default Dockerfile FROM must be the Alibaba FC image "
                     f"{FC_PLACEHOLDER!r} or a pinned fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:vX.Y.Z "
                     f"(got {got!r}). A different base needs a README '## Base image' explanation.",
                 )
             )
 
     if data:
-        from template_application import validate_manifest
-        violations.extend(Violation("yaml-schema", message) for message in validate_manifest(data, template_dir))
-        if data.get("generation") != 2:
-            violations.append(Violation("yaml-generation", "generation must be the integer 2"))
         start = data.get("start_cmd")
         ready = data.get("ready_cmd")
         managed_start = managed and start == "python -m agent_sandbox.server.managed --port 9000"
@@ -551,20 +553,22 @@ def check_directory(template_dir: Path) -> list[Violation]:
             violations.append(
                 Violation(
                     "yaml-start",
-                    "start_cmd must run the declared supported server entrypoint",
+                    "sandbox.start must run the declared supported server entrypoint",
                 )
             )
         if not isinstance(ready, str) or "agent-sandbox-server healthcheck" not in ready:
-            violations.append(Violation("yaml-ready", "ready_cmd must run agent-sandbox-server healthcheck"))
+            violations.append(Violation("yaml-ready", "sandbox.ready must run agent-sandbox-server healthcheck"))
         resources = data.get("resources")
         if not isinstance(resources, dict):
-            violations.append(Violation("yaml-resources", "resources.cpu and resources.memory are required"))
+            violations.append(Violation("yaml-resources", "sandbox.template.props.cpu and memory are required"))
         else:
             cpu = resources.get("cpu")
             memory = resources.get("memory")
-            if not isinstance(cpu, int) or isinstance(cpu, bool) or cpu < 1:
+            cpu_expression = isinstance(cpu, str) and cpu.startswith("${") and cpu.endswith("}")
+            memory_expression = isinstance(memory, str) and memory.startswith("${") and memory.endswith("}")
+            if not cpu_expression and (not isinstance(cpu, int) or isinstance(cpu, bool) or cpu < 1):
                 violations.append(Violation("yaml-resources", "resources.cpu must be a positive integer (vCPU)"))
-            if not isinstance(memory, int) or isinstance(memory, bool) or memory < 128:
+            if not memory_expression and (not isinstance(memory, int) or isinstance(memory, bool) or memory < 128):
                 violations.append(Violation("yaml-resources", "resources.memory must be a positive integer (MB)"))
             valid_cpu = isinstance(cpu, int) and not isinstance(cpu, bool) and cpu >= 1
             valid_memory = isinstance(memory, int) and not isinstance(memory, bool) and memory >= 128
@@ -574,11 +578,11 @@ def check_directory(template_dir: Path) -> list[Violation]:
         if not isinstance(ports, list) or 9000 not in ports:
             violations.append(Violation("yaml-ports", "ports must include 9000"))
         tags = data.get("tags")
-        if not isinstance(tags, list) or not tags or not all(isinstance(tag, str) and tag for tag in tags):
+        if (template_dir / "registry.yaml").is_file() and (not isinstance(tags, list) or not tags or not all(isinstance(tag, str) and tag for tag in tags)):
             violations.append(Violation("yaml-tags", "tags must be a non-empty list of strings"))
-        if data.get("priority") not in {"P0", "P1", "P2"}:
+        if data.get("priority") is not None and data.get("priority") not in {"P0", "P1", "P2"}:
             violations.append(Violation("yaml-wave", "priority must be P0, P1, or P2"))
-        if data.get("wave") not in {1, 2, 3, "other"}:
+        if data.get("wave") is not None and data.get("wave") not in {1, 2, 3, "other"}:
             violations.append(Violation("yaml-wave", "wave must be 1, 2, 3, or other"))
         if "env" not in data:
             violations.append(Violation("yaml-field", "template.yaml: env must be a mapping"))
@@ -678,7 +682,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
     for provider in sorted(verified_en):
         violations.append(Violation("verified-evidence", f"{provider}: a README table cannot establish trusted workflow certification"))
 
-    if name and name != SKELETON_NAME and data.get("spec_version") in (5, 6):
+    if name and name != SKELETON_NAME and data.get("specVersion") == 1:
         design = template_dir.parent / "docs" / "design" / f"{name}.md"
         if template_dir.parent.name == "docs":
             design = template_dir.parent / "design" / f"{name}.md"
@@ -699,7 +703,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
                     )
 
     if (template_dir.parent / "awesome-templates.yaml").is_file() and name and name != SKELETON_NAME:
-        if data.get("spec_version") in (5, 6):
+        if data.get("specVersion") == 1:
             entries = _index_entries(template_dir.parent) or []
             match = [item for item in entries if item.get("path") == name or item.get("name") == name]
             if not match:
@@ -710,6 +714,10 @@ def check_directory(template_dir: Path) -> list[Violation]:
                     violations.append(Violation("index", f"index name/path must both be {name}"))
                 if item.get("status") not in {"official", "community", "experimental"}:
                     violations.append(Violation("index", f"index status for {name} is not a known value"))
+                if set(item) - {"name", "path", "repo", "status", "registry"}:
+                    violations.append(Violation("index", f"{name}: source rows contain locators only; publication metadata belongs to registry.yaml"))
+                if item.get("registry") != f"{name}/registry.yaml" or not (template_dir / "registry.yaml").is_file():
+                    violations.append(Violation("index", f"{name}: publication needs its own registry.yaml locator"))
                 if any(key in item for key in ("capabilities", "tested_on", "providers")):
                     violations.append(Violation("index-workflow", f"{name}: retired compatibility/verification metadata is rejected"))
 
@@ -723,7 +731,7 @@ def claims_spec(template_dir: Path) -> bool:
     loaded, errors = _load_yaml(path)
     if errors or not isinstance(loaded, dict):
         return True  # malformed manifests cannot opt out by breaking the version parse
-    return "spec_version" in loaded
+    return "specVersion" in loaded or "spec_version" in loaded
 
 
 def iter_templates(root: Path) -> list[Path]:

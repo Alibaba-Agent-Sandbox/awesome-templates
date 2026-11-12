@@ -1,0 +1,19 @@
+specVersion: 1
+name: document-tools
+version: 1.1.3
+description:
+  zh: 将 Markdown 或 HTML 转换为 DOCX、TXT、PPTX 和 PDF，适合文档生成与批处理。
+  en: Convert Markdown or HTML into DOCX, TXT, PPTX and PDF for document generation
+    and batch processing.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- pandoc
+- documents
+- markdown
+- docx
+- cpu
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

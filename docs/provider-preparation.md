@@ -4,7 +4,7 @@ A source directory is portable input. Native template IDs, image URIs and launch
 
 ## Preparation responsibility
 
-The manifest declares one startup command and all services in `provides`. The planner derives the required provider operations from that startup and the services; authors do not select workflows. Provider maturity and actual launch verification remain separate.
+The manifest declares one startup command and all services in `sandbox.services`. The planner derives the required provider operations from that startup and the services; authors do not select workflows. Provider maturity and actual launch verification remain separate.
 
 The selected adapter builds, pushes and registers source through its native protocol. The CLI stages the official base recipe and resolves its `<region>`/`<tag>`; the Dockerfile installs its exact published server package. Application instructions, non-root USER and source files remain unchanged. Other unresolved placeholders fail preflight; a custom base is an explicit build profile. Application deployment hooks are separate from sandbox startup and run through their explicit application-deployment operation.
 

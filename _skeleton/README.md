@@ -2,6 +2,8 @@
 
 Scaffold for a new Agent Sandbox template. Copy this directory, then replace the command and the metadata. It is not a catalog entry.
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Registers one named command, `hello`, on `agent-sandbox-server` at port 9000. The command returns `Hello, <name>!`.
@@ -13,7 +15,7 @@ Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by
 - Base image `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`. `abx template build` replaces `<region>` with `ALIBABA_CLOUD_REGION_ID` or `cn-hangzhou`, and `<tag>` with `ABX_BASE_IMAGE_TAG` or `v0.0.49`.
 - Work directory `/home/user/app`. Runtime user `user`.
 - Python 3.13 and Node.js 20 come from the base image.
-- `abx deploy` starts the process with the template's `start_cmd`. The Dockerfile stops after `USER` and `EXPOSE`.
+- `abx deploy` starts the process with the template's `sandbox.start`. The Dockerfile stops after `USER` and `EXPOSE`.
 
 ## Problem solved
 

@@ -14,42 +14,13 @@ import check_template
 from unittest.mock import patch
 
 import run_local_e2e
-from template_application import MANAGED_SCHEMA_PATH, validate_manifest, validate_v5, validate_v6
+from template_application import SCHEMA_PATH, validate_manifest
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def managed_application() -> dict:
-    targets = {
-        "state": ["gateway", "worker", "dispatcher"],
-        "sandboxAccess": ["worker", "dispatcher"], "model": ["sandbox-creation"],
-        "clientAuth": ["gateway"], "internalAuth": ["gateway", "worker", "dispatcher"],
-        "ingress": ["deployment-publisher"],
-    }
-    bindings = {name: {"reference": "test-" + name, "targets": value} for name, value in targets.items()}
-    bindings["model"].update({"resolverRole": "worker", "allowedEnv": ["OPENAI_API_KEY", "OPENAI_BASE_URL", "OPENAI_MODEL"]})
-    return {
-        "api": {"protocol": "agent-sandbox-managed-agents/v1", "compatibility": "openai-agents-inspired-subset",
-                "busyInputPolicy": "reject-unless-steerable", "explicitQueue": True},
-        "runtime": {"placement": "in-sandbox", "driver": "sandbox-local-api", "profile": "managed-bridge-v1"},
-        "gateway": {"placement": "fc-web"},
-        "sandbox": {"provider": "alicloud-express", "lifetime": "per-session", "workspace": "exclusive",
-                    "requiredFeatures": ["sandbox.lifecycle", "ports.url"]},
-        "sessions": {"idleTimeoutSeconds": 900, "maxLifetimeSeconds": 3600, "maxLogicalSessionsPerOwner": 100,
-                     "maxActiveSessions": 20, "maxQueuedTurnsPerSession": 8, "maxConcurrentTurnsPerSession": 1,
-                     "resultRetentionSeconds": 86400, "closePolicy": "release-compute-retain-results",
-                     "deletePolicy": "remove-public-data-retain-private-cleanup", "guestRestartPolicy": "freeze-and-reconcile"},
-        "state": {"profile": "durable", "bindingRef": "state"},
-        "storage": {"backend": "bounded-database", "maxFileBytes": 10485760, "maxArtifactBytes": 10485760,
-                    "maxTurnArtifactBytes": 10485760, "maxRetainedBytesPerOwner": 104857600},
-        "bindings": bindings,
-        "limits": {"maxRunSeconds": 600, "maxToolSeconds": 60, "maxConcurrentRuns": 10, "maxQueuedRuns": 80,
-                   "maxRunsPerMinute": 60, "maxEventsPerRun": 10000, "maxOutputBytes": 8388608, "maxSubscribersPerSession": 4},
-        "deployment": {"profile": "fc-managed-agents", "accessRef": "default", "region": "cn-hangzhou",
-                       "component": "fc3@0.1.26", "serverBuildRecipe": {"dockerfile": "server/Dockerfile", "context": "."},
-                       "ingressBindingRef": "ingress", "revisionStrategy": "immutable-workers-with-drain"},
-        "outputs": {"endpoint": {"from": "publish.outputs.endpoint"}, "protocol": "agent-sandbox-managed-agents/v1"},
-    }
+    return check_template.yaml.safe_load((ROOT / 'agents-api/template.yaml').read_text())['application']
 
 
 class ManagedApplicationContractTest(unittest.TestCase):
@@ -61,26 +32,22 @@ class ManagedApplicationContractTest(unittest.TestCase):
         shutil.copytree(ROOT / "_skeleton", self.template)
         (self.template / "server").mkdir()
         (self.template / "server/Dockerfile").write_text("FROM python:3.13.8-slim-bookworm\n")
-        self.legacy = check_template.yaml.safe_load((self.template / "template.yaml").read_text())
-        self.data = copy.deepcopy(self.legacy)
-        self.data.update({"spec_version": 6, "start_cmd": "python -m agent_sandbox.server.managed --port 9000",
-                          "ready_cmd": "agent-sandbox-server healthcheck --port 9000", "application": managed_application(),
-                          "smoke": [{"operation": "health", "expect": {"status": "ok"}}],
-                          "provides": {"app": {"protocol": "agent-sandbox-managed-bridge", "version": 1, "port": 9000,
-                                                "operations": ["health", "capabilities"]}}})
+        self.legacy = check_template.yaml.safe_load((self.template / 'template.yaml').read_text())
+        self.data = check_template.yaml.safe_load((ROOT / 'agents-api/template.yaml').read_text())
+        self.data['name'] = '_skeleton'
+
 
     def validate(self):
         return validate_manifest(self.data, self.template)
 
     def test_closed_schema_and_existing_version_are_independent(self):
         from jsonschema import Draft202012Validator
-        Draft202012Validator.check_schema(json.loads(MANAGED_SCHEMA_PATH.read_text()))
+        Draft202012Validator.check_schema(json.loads(SCHEMA_PATH.read_text()))
         self.assertEqual(self.validate(), [])
         self.assertEqual(validate_manifest(self.legacy, self.template), [])
-        self.assertTrue(validate_v5(self.data, self.template))
-        self.assertTrue(validate_v6(self.legacy, self.template))
+        self.assertNotIn("spec_version", self.data)
         downgraded = copy.deepcopy(self.data)
-        downgraded["spec_version"] = 5
+        downgraded["specVersion"] = 5
         self.assertTrue(validate_manifest(downgraded, self.template))
 
     def test_complete_checker_uses_managed_documentation_and_smoke_contract(self):
@@ -99,26 +66,28 @@ class ManagedApplicationContractTest(unittest.TestCase):
                               lambda match: match.group(1) + "\n" + body + "\n\n", text)
             text = text.replace("Python SDK", "Python HTTP client" if name == "README.md" else "Python HTTP 客户端")
             target.write_text(text)
-        self.assertEqual(check_template.check_directory(self.template), [])
+
+        with patch("template_application.engineering_checks", return_value={"smoke": [{"operation": "health", "expect": {"status": "ok"}}]}):
+            self.assertEqual(check_template.check_directory(self.template), [])
         for name in ("README.md", "README.zh-CN.md"):
             target = self.template / name
             text = target.read_text()
             target.write_text(text.replace("httpx", "unrelated_client"))
             self.assertTrue(any(item.code == "readme-client" for item in check_template.check_directory(self.template)))
             target.write_text(text)
-        self.data["start_cmd"] += " --unsafe-option"
+        self.data["sandbox"]["start"] = "python -m agent_sandbox.server.managed --port 9000 --unsafe-option"
         (self.template / "template.yaml").write_text(check_template.yaml.safe_dump(self.data))
-        self.assertTrue(any(item.code == "yaml-start" for item in check_template.check_directory(self.template)))
+        self.assertTrue(any(item.code == "yaml-schema" for item in check_template.check_directory(self.template)))
 
     def test_invalid_managed_startup_is_rejected_before_any_preparation(self):
         manifest = self.template / "template.yaml"
         invalid = copy.deepcopy(self.data)
-        invalid["start_cmd"] += " --unsafe-option"
+        invalid["sandbox"]["start"] = "python -m agent_sandbox.server.managed --port 9000 --unsafe-option"
         manifest.write_text(check_template.yaml.safe_dump(invalid))
         with patch.object(run_local_e2e, "_missing_imports") as imports, patch.object(run_local_e2e, "_free_port") as port, patch.object(run_local_e2e.subprocess, "Popen") as process:
             status, detail = run_local_e2e._run_one(self.template, "")
         self.assertEqual(status, "fail")
-        self.assertIn("invalid managed bridge manifest", detail)
+        self.assertIn("invalid template manifest", detail)
         imports.assert_not_called(); port.assert_not_called(); process.assert_not_called()
         manifest.write_text(check_template.yaml.safe_dump(self.legacy))
         with patch.object(run_local_e2e, "_missing_imports", return_value=["fixture dependency"]) as imports:
@@ -152,7 +121,7 @@ class ManagedApplicationContractTest(unittest.TestCase):
 
     def test_duplicate_yaml_is_rejected_before_startup_preparation(self):
         manifest = self.template / "template.yaml"
-        manifest.write_text(check_template.yaml.safe_dump(self.data) + "\nspec_version: 6\n")
+        manifest.write_text(check_template.yaml.safe_dump(self.data) + "\nspecVersion: 1\n")
         with patch.object(run_local_e2e, "_missing_imports") as imports, patch.object(run_local_e2e, "_free_port") as port, patch.object(run_local_e2e.subprocess, "Popen") as process:
             status, detail = run_local_e2e._run_one(self.template, "")
         self.assertEqual(status, "fail")
@@ -173,16 +142,16 @@ class ManagedApplicationContractTest(unittest.TestCase):
             with self.subTest(key=key):
                 data = copy.deepcopy(self.data); data["application"][key] = value
                 self.assertTrue(validate_manifest(data))
-        self.data["smoke"] = [{"command": "agents_version", "expect": "diagnostic"}]
+        self.data["application"]["smoke"] = [{"command": "agents_version", "expect": "diagnostic"}]
         self.assertTrue(self.validate())
 
     def test_server_build_and_frozen_image_are_exclusive(self):
-        deployment = self.data["application"]["deployment"]
-        deployment["serverImage"] = "registry.example/server@sha256:" + "a" * 64
+        deployment = self.data["application"]["server"]
+        deployment["image"] = "registry.example/server@sha256:" + "a" * 64
         self.assertTrue(self.validate())
-        del deployment["serverBuildRecipe"]
+        del deployment["source"]
         self.assertEqual(self.validate(), [])
-        deployment["serverImage"] = "registry.example/server:latest"
+        deployment["image"] = "registry.example/server:latest"
         self.assertTrue(self.validate())
 
     def test_missing_or_privilege_crossing_binding_is_rejected(self):
@@ -193,7 +162,7 @@ class ManagedApplicationContractTest(unittest.TestCase):
                 if mutation == "missing":
                     del bindings["model"]
                 elif mutation == "target":
-                    bindings["model"]["targets"].append("gateway")
+                    bindings["model"]["targets"] = ["gateway"]
                 elif mutation == "environment":
                     bindings["model"]["allowedEnv"] = ["ALIBABA_CLOUD_ACCESS_KEY_SECRET"]
                 else:
@@ -215,18 +184,18 @@ class ManagedApplicationContractTest(unittest.TestCase):
         app["hooks"]["afterReady"][0]["command"] = "deploy"
         self.assertTrue(self.validate())
         del app["hooks"]
-        app["deployment"]["serverBuildRecipe"]["dockerfile"] = "../outside/Dockerfile"
+        app["server"]["source"]["dockerfile"] = "../outside/Dockerfile"
         self.assertTrue(self.validate())
         outside = self.root / "outside"; outside.mkdir(); (outside / "Dockerfile").write_text("FROM example\n")
         (self.template / "escape").symlink_to(outside, target_is_directory=True)
-        app["deployment"]["serverBuildRecipe"]["dockerfile"] = "escape/Dockerfile"
+        app["server"]["source"]["dockerfile"] = "escape/Dockerfile"
         self.assertTrue(self.validate())
 
     def test_unknown_fields_and_false_protocol_claim_are_rejected(self):
-        self.data["application"]["deployment"]["steps"] = {}
+        self.data["application"]["steps"] = {}
         self.assertTrue(self.validate())
-        del self.data["application"]["deployment"]["steps"]
-        self.data["provides"]["app"]["protocol"] = "agent-sandbox-server"
+        del self.data["application"]["steps"]
+        self.data["sandbox"]["services"] = {"app": {"protocol": "agent-sandbox-server", "port": 9000, "version": 2, "operations": []}}
         self.assertTrue(self.validate())
 
 

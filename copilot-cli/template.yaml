@@ -1,42 +1,26 @@
+specVersion: 1
 name: copilot-cli
-version: "1.0.2"
-description: Pinned native GitHub Copilot CLI with explicit OpenAI-compatible BYOK
-  and bounded per-call ownership.
-author: alibaba-agent-sandbox
-license: Apache-2.0
-spec_version: 5
-base: fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
-generation: 2
-start_cmd: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
-ready_cmd: agent-sandbox-server healthcheck --port 9000
-resources:
-  cpu: 2
-  memory: 2048
-ports:
-- 9000
-tags:
-- copilot
-- ai-coding
-- byok
-priority: P1
-wave: 2
-env:
-  ABX_SERVER_TOKEN: ''
-  COPILOT_PROVIDER_BASE_URL: ''
-  COPILOT_PROVIDER_API_KEY: ''
-  COPILOT_MODEL: ''
-smoke:
-- command: copilot_version
-  args: {}
-  expect:
-    native_version: 1.0.100
-- command: copilot_setup_check
-  args: {}
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations:
-    - commands.list
-    - commands.run
+sandbox:
+  template:
+    source:
+      dockerfile: Dockerfile
+      context: .
+    props:
+      cpu: 2
+      memory: 2048
+  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+  ready: agent-sandbox-server healthcheck --port 9000
+  instance:
+    envs:
+      ABX_SERVER_TOKEN: ''
+      COPILOT_PROVIDER_BASE_URL: ''
+      COPILOT_PROVIDER_API_KEY: ''
+      COPILOT_MODEL: ''
+  services:
+    app:
+      protocol: agent-sandbox-server
+      version: 2
+      port: 9000
+      operations:
+      - commands.list
+      - commands.run

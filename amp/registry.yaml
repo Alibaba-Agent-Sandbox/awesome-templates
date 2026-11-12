@@ -1,0 +1,18 @@
+specVersion: 1
+name: amp
+version: 1.2.3
+description:
+  zh: 在沙箱中执行 Amp 编码任务，先检查安装与配置，再提交需要模型的操作。
+  en: Run Amp coding tasks in a sandbox, checking installation and configuration before
+    model-backed work.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- amp
+- sourcegraph
+- ai-agent
+- ai-coding
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

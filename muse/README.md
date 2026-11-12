@@ -2,6 +2,8 @@
 
 [中文](README.zh-CN.md)
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Run the unchanged official Meta Muse Code1.4.11-R6667.1 native headless agent, original miniswe tools and native runtime records on one owned Express computer. Coding uses an explicitly configured compatible Responses model. The authored local relay supplies the selected model catalogue and keeps the upstream key out of native/tool environments; Responses requests and streams pass unchanged. This is the original Muse binary, not a same-named substitute. [Original documentation](https://dev.meta.ai/docs/muse-code).

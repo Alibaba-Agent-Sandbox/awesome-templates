@@ -1,5 +1,7 @@
 # codex-agent-api
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 A project-defined HTTP session adapter that calls the official Codex CLI for every turn. The image pins `@openai/codex@0.162.1`, matching the [`codex`](../codex) template. It offers named commands and `/v1/agents/*` routes through `agent-sandbox-server` on port 9000. This is a limited session API; compatibility with every OpenAI Agents API feature or SDK method has not been established. Use the HTTP contract below rather than assuming a particular `client.beta.agents` interface exists.
@@ -24,7 +26,7 @@ Install the CLI/Python client and configure your platform (Sandbox API key, conn
 
 The configured model service must implement HTTP Responses, not only Chat Completions. `ABX_LLM_API_KEY` supplies the custom provider key; do not leave a conflicting `OPENAI_BASE_URL` in the launch environment because that URL takes precedence here. API-key mode does not require interactive login. `CODEX_SANDBOX` defaults to `workspace-write`; use the existing `bypass` option only when your platform cannot run nested Codex sandboxing and you accept the owned outer sandbox as the boundary.
 
-Before running a coding task, check whether your platform supports Codex's nested Linux sandbox. On a platform that refuses it, the public recipe's fixed `CODEX_SANDBOX=workspace-write` cannot be changed by exporting a host value. If you deliberately choose the outer sandbox as the isolation boundary, clone the repository, change `env.CODEX_SANDBOX` to `bypass` in `codex-agent-api/template.yaml`, and use `abx deploy ./codex-agent-api --sandbox-timeout 1800 --yes` instead of the public recipe command below.
+Before running a coding task, check whether your platform supports Codex's nested Linux sandbox. On a platform that refuses it, the public recipe's fixed `CODEX_SANDBOX=workspace-write` cannot be changed by exporting a host value. If you deliberately choose the outer sandbox as the isolation boundary, clone the repository, change `sandbox.instance.envs.CODEX_SANDBOX` to `bypass` in `codex-agent-api/template.yaml`, and use `abx deploy ./codex-agent-api --sandbox-timeout 1800 --yes` instead of the public recipe command below.
 
 Replace every `<...>` placeholder with your own value; use an exact model ID available to your account. Set secrets in your own terminal or secret manager, never in the image, YAML or public logs. Configure these variables **before** launch; later host changes do not reconfigure the running application.
 

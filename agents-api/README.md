@@ -6,6 +6,8 @@ key once.
 
 [中文](README.zh-CN.md) · [API reference](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/managed-agents-api.md)
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Create logical sessions, upload inputs, run Codex or Qwen Code, follow durable
@@ -28,7 +30,7 @@ Qwen Code 0.23.0, PostgreSQL and FC Gateway/Worker/Dispatcher functions.
 [template.yaml](template.yaml) · [Sandbox Dockerfile](Dockerfile) ·
 [Server Dockerfile](server/Dockerfile)
 
-The images pin SDK 0.4.0a7, which provides the managed Gateway and guest bridge.
+The Guest pins published Server0.4.0a7. The Server image explicitly builds the development client at SDK commit `1079841307f1f63253ae68fdda6e6d2d1e77e851`, with its archive hash fixed in the [Server Dockerfile](server/Dockerfile). Its package metadata still says a7; this is not a new PyPI release.
 Application deployment requires Node.js 20 or later and the current source CLI. Business HTTP clients need only the Gateway endpoint and business key.
 
 ## Problem solved
@@ -42,7 +44,7 @@ application token enter the Sandbox.
 
 Install the current source CLI using the linked guide; published CLI 0.5.10 does not support these commands. Configure your Sandbox/build registry with the
 [usage guide](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/using-templates.md#installation), and select an existing
-Serverless Devs access profile in `application.deployment.accessRef`. The FC
+Serverless Devs access profile in `deployment.access`. The FC
 region, Sandbox region, database connectivity and registry image access must agree.
 The CLI copies just this template into an editable project. Source acquisition
 does not deploy it. Python 3 and `httpx==0.28.1` are needed on the deployment host:
@@ -56,19 +58,16 @@ cd agents-api
 python3 -m venv .abx/venv
 . .abx/venv/bin/activate
 python -m pip install httpx==0.28.1
-cp bindings.example.json .abx/bindings.json
-chmod 600 .abx/bindings.json
 ```
 
 Set the referenced environment variables described in Configuration before deployment.
-Choose the adapter in the private bindings file and supply its matching model ID
-through `OPENAI_MODEL`.
+Choose `application.bindings.model.adapter` in template.yaml and supply its matching model ID through `OPENAI_MODEL`.
 Edit the manifest's region, access profile and limits for your account. Keep
 private files, plans and build receipts under `.abx/`, excluded from image builds.
 
 ```bash
-abx deploy . --name agents-api --bindings .abx/bindings.json --plan
-abx deploy . --name agents-api --bindings .abx/bindings.json --yes
+abx deploy . --name agents-api --plan
+abx deploy . --name agents-api --yes
 abx status agents-api
 ```
 
@@ -84,14 +83,14 @@ abx recover agents-api
 
 `abx logs` requires FC `logConfig` to be configured; this template does not configure it by default. Without it, inspect available function diagnostics in the FC console.
 
-After an interruption, use `recover` to inspect known resources and the next action; do not repeat creation requests. Update by running `abx deploy . --name agents-api --bindings .abx/bindings.json --yes` again after editing the template or configuration. Existing Sessions keep their original revision. Close its Sessions before removing an unused revision:
+After an interruption, use `recover` to inspect known resources and the next action; do not repeat creation requests. Update by running `abx deploy . --name agents-api --yes` again after editing the template or configuration. Existing Sessions keep their original revision. Close its Sessions before removing an unused revision:
 
 ```bash
 abx status agents-api --revisions
-abx delete agents-api --revision <old-revision> --bindings .abx/bindings.json --yes
+abx delete agents-api --revision <old-revision> --yes
 ```
 
-Authors may build separately with `abx template build . --out .abx/build.json --yes`, then reuse it through `abx deploy . --build .abx/build.json --name agents-api --bindings .abx/bindings.json --yes`. `abx template publish` publishes committed source without automatically listing it in Registry.
+Authors may build separately with `abx template build . --out .abx/build.json --yes`, then reuse it through `abx deploy . --build .abx/build.json --name agents-api --yes`. `abx template publish` publishes committed source without automatically listing it in Registry.
 
 ## Quick start (Python HTTP client)
 
@@ -185,64 +184,41 @@ for defaults and supported overrides.
 
 ## Configuration
 
-Copy [bindings.example.json](bindings.example.json). Its `{env: ...}` values are
-references resolved at deployment; the file contains no credential literals.
+Edit [template.yaml](template.yaml) only. Native Serverless Devs expressions `${env('NAME')}` read local configuration; supply the following in an untracked project `.env` or process environment. No bindings JSON is required. registry.yaml only supplies publication/initialization metadata.
 
-| Variable or binding | Purpose and source |
+| Variable / field | Purpose and source |
 | --- | --- |
-| `ABX_MANAGED_DATABASE_URL` | Existing PostgreSQL connection URL; obtain from your database service. All three FC roles need network access. This template does not provision or delete PostgreSQL. |
-| `SANDBOX_API_KEY` | Existing Sandbox platform API key from your Sandbox access setup; used by Worker/Dispatcher for lifecycle operations. |
-| `SANDBOX_BASE_URL`, `SANDBOX_DOMAIN`, `SANDBOX_REGION` | Explicit API address, Sandbox endpoint domain and region from the same platform configuration. |
-| `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL` | Model-provider key, compatible API base and exact allowed model ID. `qwen-code` requires Chat Completions with tools; `codex` requires Responses with tools. A simple text request is insufficient. |
-| `AGENTS_FC_ROLE_ARN` | Existing FC execution role permitted to invoke the revision's private Worker/Dispatcher functions. Obtain its ARN from your RAM/FC setup. |
-| `agents-clientAuth`, `agents-internalAuth` | Default `generate: true` creates distinct business and internal keys on first deployment. For custom business keys provide only SHA-256 hashes, owner and supported scopes. |
-| `agents-ingress` | Default function alias plus FC test domain. For production use an explicitly configured HTTPS custom-domain binding. |
+| ABX_MANAGED_DATABASE_URL | Existing PostgreSQL URL from your database provider, reachable by all three FC roles. Database provisioning/deletion is separate. |
+| SANDBOX_API_KEY | Existing Sandbox platform key from its account setup; used for instance lifecycle. |
+| SANDBOX_BASE_URL / SANDBOX_DOMAIN / SANDBOX_REGION | The matching Sandbox platform's API address, instance endpoint domain and region. |
+| OPENAI_API_KEY / OPENAI_BASE_URL / OPENAI_MODEL | Model-provider key, compatible API base and exact authorized model ID. qwen-code needs tool-capable Chat Completions; codex needs tool-capable Responses. |
+| AGENTS_FC_ROLE_ARN | Existing RAM execution role ARN allowed to invoke private Worker/Dispatcher functions, from RAM/FC setup. |
+| application.bindings.model.adapter | Set qwen-code or codex in template.yaml to match the model service. |
+| deployment.access / vars.region | Existing Serverless Devs credential alias and FC region. Deployment AK/SK, model credentials and Sandbox keys are separate. |
+| application.bindings.clientAuth / internalAuth | CLI defaults generate distinct business/internal keys and securely reuse them locally. Business clients receive only business credentials. |
 
-For a database reachable only over your VPC, replace the `agents-state` object
-in the private bindings file with the following shape. Set these references to an
-existing VPC, one or more distinct vSwitch IDs and its security group in the FC
-region; the platform/network owner supplies these resource IDs.
+For an existing private-network database, configure its supplied network IDs under application.state:
 
-```json
-{
-  "databaseUrl": {"env": "ABX_MANAGED_DATABASE_URL"},
-  "vpcConfig": {
-    "vpcId": {"env": "AGENTS_VPC_ID"},
-    "vSwitchIds": [{"env": "AGENTS_VSWITCH_ID"}],
-    "securityGroupId": {"env": "AGENTS_SECURITY_GROUP_ID"}
-  }
-}
+```yaml
+application:
+  state:
+    databaseUrl: ${env('ABX_MANAGED_DATABASE_URL')}
+    databaseCa: ${env('AGENTS_DATABASE_CA_PEM')}
+    vpcConfig:
+      vpcId: ${env('AGENTS_VPC_ID')}
+      vSwitchIds: ["${env('AGENTS_VSWITCH_ID')}"]
+      securityGroupId: ${env('AGENTS_SECURITY_GROUP_ID')}
 ```
 
-The three FC roles use this existing network configuration. The template does not
-create a VPC, vSwitch, security group, route or NAT gateway. FC public internet
-access remains enabled, but you must verify actual database, image-registry,
-Sandbox API and model endpoint connectivity under your routing and security
-rules. Do not assume that selecting a VPC makes every external service reachable.
-If PostgreSQL uses a private certificate authority, add `databaseCa` beside
-`databaseUrl` in that object, for example
-`"databaseCa": {"file": "/absolute/path/to/database-ca.pem"}`. Obtain the CA chain
-from your database provider or administrator and keep `sslmode=verify-full` in
-the database URL. Use the database hostname covered by its certificate.
+Add databaseCa only for a private database CA. Supply certificate PEM from your database provider, never a private key. Keep sslmode=verify-full and the certificate's database hostname. This version does not add another {env: ...} or {file: ...} syntax.
 
-`databaseCa` accepts a certificate PEM string, an `{env: "AGENTS_DATABASE_CA_PEM"}`
-reference, or a `{file: "host-path"}` reference. File paths are read on the CLI
-host. Relative paths are resolved from the bindings JSON directory, or from the
-current directory for environment-only bindings; an absolute path avoids ambiguity.
-The chain is limited to 64 KiB and eight valid
-`CERTIFICATE` blocks, with no private key. Only the Server uses this trust
-configuration; it is not placed in the Sandbox, image, plan or receipt.
+The three FC roles borrow the supplied network. This creates no VPC, switch, security group, route or NAT. Verify actual database, registry, Sandbox API and model connectivity. Declare production domain resources in native deployment.resources and select the supported ingress route; a Serving domain is not a sandbox.instance property. See the [resource specification](../docs/template-spec.md).
 
-The database binding also accepts a plain PostgreSQL URL string when no VPC
-or CA configuration is needed. Keep the same database for an application's updates,
-status and cleanup; the CLI checks its saved durable identity automatically.
-
-`ABX_SERVER_TOKEN` is a separate per-Sandbox application token generated by the
-runtime. It is not a cloud-console API key and needs no manual setup here.
+ABX_SERVER_TOKEN is the independent application token generated per Sandbox by the runtime; there is no cloud-console key or manual setup step for it.
 
 ## Resources
 
-The Sandbox requests 2 vCPU and 4096 MiB. Default session idle/max lifetime is
+The Sandbox requests 2 vCPU and 4096 MB. Default session idle/max lifetime is
 900/3600 seconds; one turn per session executes at a time. Turn/tool budgets are
 600/60 seconds. File and artifact limits are 10 MiB each and retained owner storage
 is 100 MiB; check the manifest for all admission limits.
@@ -258,12 +234,12 @@ Close individual sessions when finished, download needed results and delete
 public session/file data. To remove this deployment:
 
 ```bash
-abx delete agents-api --bindings .abx/bindings.json --yes
+abx delete agents-api --yes
 ```
 
 Inspect the result and use `abx recover agents-api` if an operation was interrupted
 or its result is uncertain. Delete removes the deployment's recorded owned
-resources. A reusable artifact supplied with `--build`, a supplied `serverImage`,
+resources. A reusable artifact supplied with `--build`, a supplied `application.server.image`,
 and existing databases, networks, model services and custom domains remain yours
 to manage.
 

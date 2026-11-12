@@ -1,0 +1,15 @@
+specVersion: 1
+name: code-interpreter-v1
+version: provider-managed
+description:
+  zh: 运行代码片段并获取结构化结果，适合数据处理和交互式计算。
+  en: Execute code snippets and retrieve structured results for data processing and
+    interactive computation.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- provider-managed
+- code-interpreter-v1
+readme:
+  en: README.md
+  zh: README.zh-CN.md

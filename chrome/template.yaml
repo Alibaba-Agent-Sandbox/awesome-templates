@@ -1,29 +1,27 @@
+specVersion: 1
 name: chrome
-version: "1.0.9"
-description: "Pinned genuine headed Chrome with native CDP, authenticated noVNC framebuffer and owned non-root desktop lifecycle."
-author: alibaba-agent-sandbox
-license: Apache-2.0
-spec_version: 5
-base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
-generation: 2
-start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
-ready_cmd: "agent-sandbox-server healthcheck --port 9000"
-resources: {cpu: 2, memory: 2048}
-ports: [9000, 9222, 6080]
-tags: [chrome, chromium, browser, cdp, vnc, desktop]
-priority: P1
-wave: 2
-env:
-  ABX_SERVER_TOKEN: ""
-  WORKSPACE: "/home/user/workspace"
-smoke:
-  - command: chrome_smoke
-    expect: "native headed Chrome145.0.7632.6 CDP/VNC/PNG and cleanup OK"
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations:
-    - commands.list
-    - commands.run
+sandbox:
+  template:
+    source:
+      dockerfile: Dockerfile
+      context: .
+    props:
+      cpu: 2
+      memory: 2048
+  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+  ready: agent-sandbox-server healthcheck --port 9000
+  instance:
+    envs:
+      ABX_SERVER_TOKEN: ''
+      WORKSPACE: /home/user/workspace
+  services:
+    app:
+      protocol: agent-sandbox-server
+      version: 2
+      port: 9000
+      operations:
+      - commands.list
+      - commands.run
+  ports:
+  - 6080
+  - 9222

@@ -1,0 +1,18 @@
+specVersion: 1
+name: tau2-bench
+version: 1.0.6
+description:
+  zh: 运行 Tau2 文本零售场景，配置 Agent 与用户模型，检查对话轨迹和评估结果。
+  en: Run Tau2 text retail scenarios with agent and user models, inspecting conversation
+    trajectories and evaluation results.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- tau2
+- benchmark
+- tools
+- retail
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

@@ -2,6 +2,8 @@
 
 [中文](README.zh-CN.md).
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Run the original Cognition Devin CLI3000.11.92 through typed bounded named commands in an owned disposable sandbox. The native CLI owns inference and tools; no replacement planner or compatible-model fallback is supplied. Automatic tools require `allow_unsafe_tools=True`.

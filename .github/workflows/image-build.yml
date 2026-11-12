@@ -124,10 +124,10 @@ jobs:
 
           import yaml
           from scripts.server_package import server_version
-          from scripts.template_application import is_managed_application
+          from scripts.template_application import is_managed_application, project_manifest
 
           template = os.environ["TEMPLATE"]
-          config = yaml.safe_load((Path(template) / "template.yaml").read_text())
+          config = project_manifest(yaml.safe_load((Path(template) / "template.yaml").read_text()), Path(template))
           pins = {
               "polyglot-toolchain": [("go version", "go1.25.14"), ("rustc --version", "1.90.0"), ("cargo --version", "1.90.0"), ("javac --version", "21.0.12.1")],
               "agents-cli": [("node --version", "v24.16.0"), ("codex --version", "0.162.1"), ("qwen --version", "0.23.0")],

@@ -6,9 +6,11 @@ Reusable environments for AI agents: browser automation, coding tools, web servi
 
 [Browse templates](https://registry.agent-sandbox.cn/en/templates/) · [Usage guide](docs/using-templates.md) · [Provider setup](docs/provider-preparation.md)
 
+This branch uses `specVersion: 1` and requires matching development CLI/SDK builds. Published CLI0.5.10 does not support this format. Read the [resource specification](docs/template-spec.md) before running these recipes.
+
 ## Quick start
 
-[Install abx CLI](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#installation) 0.5.8 or newer. Follow the [usage guide](docs/using-templates.md) to prepare the selected provider's credentials and build environment, then launch the introductory template, which needs no model:
+[Install abx CLI](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#installation) from a matching YAML v1 development build. Follow the [usage guide](docs/using-templates.md) to prepare the selected provider's credentials and build environment, then launch the introductory template, which needs no model:
 
 ```bash
 abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello

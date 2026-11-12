@@ -1,5 +1,7 @@
 # prime-agent
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 运行未经修改的稳定版 Prime Agent0.10.0 Rust 原生 CLI，以及工具名为 `ipython` 的原版 CPython REPL。使用显式批准的兼容模型和固定内核解释器。本模板覆盖有界的无头编码流程；daemon、递归代理、订阅模型及研究基准仍未验证。[official release](https://github.com/PrimeIntellect-ai/prime-agent/releases/tag/v0.10.0)；[pinned native source](https://github.com/PrimeIntellect-ai/prime-agent/tree/763094e1b6a7c17450ee8399b06cda1853847ca5)。

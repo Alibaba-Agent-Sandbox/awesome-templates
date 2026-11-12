@@ -4,6 +4,8 @@
 
 Run OpenCode coding tasks in an isolated workspace, call them through CLI/Python/HTTP, and download the generated files.
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 `opencode_run` asks the installed OpenCode CLI to edit, create or refactor files without an interactive terminal. It returns text, JSON events and a session ID. Reuse that exact ID to continue a task. The optional `opencode_serve_start` command starts OpenCode's own HTTP service; ordinary coding tasks do not need it.

@@ -5,6 +5,8 @@
 
 [English](README.md) · [API 参考](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/managed-agents-api.zh-CN.md)
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 通过同一个 Gateway 创建逻辑 Session、上传输入、运行 Codex 或 Qwen Code、查询持久化
@@ -23,8 +25,9 @@ Qwen Code 0.23.0、PostgreSQL，以及 FC Gateway/Worker/Dispatcher 函数。
 [template.yaml](template.yaml) · [Sandbox Dockerfile](Dockerfile) ·
 [Server Dockerfile](server/Dockerfile)
 
-镜像固定使用 SDK 0.4.0a7，提供托管 Gateway 和 guest bridge。部署应用需要 Node.js 20
-或更高版本，以及当前源码 CLI。业务 HTTP 客户端只需要 Gateway endpoint 和业务 Key。
+部署应用需要 Node.js 20 或更高版本和匹配的开发版 CLI。业务 HTTP 客户端只需要 Gateway endpoint 和业务 Key。
+
+Guest 保留已发布 Server0.4.0a7；Server 使用固定 SDK 开发源码提交 `1079841307f1f63253ae68fdda6e6d2d1e77e851`，详见 [Server Dockerfile](server/Dockerfile)。源码包元信息仍为 a7，不代表新的 PyPI 发行。
 
 ## 解决的问题
 
@@ -34,7 +37,7 @@ Sandbox 管理凭据留在 Server；Sandbox 只接收选定的模型配置和单
 ## 快速开始（CLI）
 
 这些命令需要当前源码 CLI，已发布的 0.5.10 不支持。先按[使用指南](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/using-templates.md#installation)
-配置 Sandbox 及镜像构建仓库，并在 `application.deployment.accessRef` 选择已有的
+配置 Sandbox 及镜像构建仓库，并在 `deployment.access` 选择已有的
 Serverless Devs access。FC 地域、Sandbox 地域、数据库网络和镜像仓库访问需要相互匹配。
 CLI 只复制这个模板，得到可编辑项目，不会在获取源码时部署。部署主机仍需 Python 3
 和 `httpx==0.28.1`：部署后会执行 `scripts/smoke.py`，通过 Gateway 完成两轮 Agent
@@ -46,16 +49,14 @@ cd agents-api
 python3 -m venv .abx/venv
 . .abx/venv/bin/activate
 python -m pip install httpx==0.28.1
-cp bindings.example.json .abx/bindings.json
-chmod 600 .abx/bindings.json
 ```
 
 部署前提供“配置”表中的环境变量，在私有 binding 文件中选择 adapter，
 通过 `OPENAI_MODEL` 提供与其匹配且实际可用的模型 ID，并修改清单中的地域、access 和资源限制。私有文件、构建收据和计划存放在 `.abx/` 下，该目录不进入镜像构建上下文。
 
 ```bash
-abx deploy . --name agents-api --bindings .abx/bindings.json --plan
-abx deploy . --name agents-api --bindings .abx/bindings.json --yes
+abx deploy . --name agents-api --plan
+abx deploy . --name agents-api --yes
 abx status agents-api
 ```
 
@@ -70,14 +71,14 @@ abx recover agents-api
 
 `abx logs` 需要配置 FC `logConfig`；本模板默认不配置。未配置时，请在 FC 控制台查看可用的函数诊断信息。
 
-部署中断后先执行 `recover` 查看已知资源和恢复提示，不重复提交创建请求。修改模板或配置后，使用相同名称再次执行 `abx deploy . --name agents-api --bindings .abx/bindings.json --yes` 更新。已有 Session 保留原 revision；先关闭其 Session，再清理未使用的旧版本：
+部署中断后先执行 `recover` 查看已知资源和恢复提示，不重复提交创建请求。修改模板或配置后，使用相同名称再次执行 `abx deploy . --name agents-api --yes` 更新。已有 Session 保留原 revision；先关闭其 Session，再清理未使用的旧版本：
 
 ```bash
 abx status agents-api --revisions
-abx delete agents-api --revision <旧版本> --bindings .abx/bindings.json --yes
+abx delete agents-api --revision <旧版本> --yes
 ```
 
-作者需要分开构建和部署时，可选用 `abx template build . --out .abx/build.json --yes`，再通过 `abx deploy . --build .abx/build.json --name agents-api --bindings .abx/bindings.json --yes` 复用构建。发布源码使用 `abx template publish`，不会自动上架 Registry。
+作者需要分开构建和部署时，可选用 `abx template build . --out .abx/build.json --yes`，再通过 `abx deploy . --build .abx/build.json --name agents-api --yes` 复用构建。发布源码使用 `abx template publish`，不会自动上架 Registry。
 
 ## 快速开始（Python HTTP 客户端）
 
@@ -165,57 +166,41 @@ Agent 已完成任务。
 
 ## 配置
 
-复制 [bindings.example.json](bindings.example.json)。其中 `{env: ...}` 是部署时解析的
-引用，不在文件中填写凭据明文。
+只编辑 [template.yaml](template.yaml)；`${env('NAME')}` 由原生 Serverless Devs parser 读取本地环境值。可以在当前项目未提交的 `.env` 中设置下列变量，不再需要 bindings JSON。模板中的 `registry.yaml` 仅用于上架和初始化提问。
 
-| 环境变量或 binding | 用途与来源 |
+| 变量 / 字段 | 用途与来源 |
 | --- | --- |
-| `ABX_MANAGED_DATABASE_URL` | 已有 PostgreSQL 连接 URL，由数据库服务提供；三个 FC 角色都需要网络可达。本模板不创建或删除 PostgreSQL。 |
-| `SANDBOX_API_KEY` | 已有 Sandbox 平台 API Key，由 Sandbox 访问配置获得；Worker/Dispatcher 用于生命周期管理。 |
-| `SANDBOX_BASE_URL`、`SANDBOX_DOMAIN`、`SANDBOX_REGION` | 同一平台配置中的 API 地址、Sandbox endpoint 域名和地域，全部显式提供。 |
-| `OPENAI_API_KEY`、`OPENAI_BASE_URL`、`OPENAI_MODEL` | 模型服务 Key、兼容接口地址和准确模型 ID。`qwen-code` 需要带工具的 Chat Completions；`codex` 需要带工具的 Responses。简单文本调用成功不足以证明兼容。 |
-| `AGENTS_FC_ROLE_ARN` | 已有 FC 执行角色 ARN，需具备调用该 revision 私有 Worker/Dispatcher 函数的权限；从 RAM/FC 配置获取。 |
-| `agents-clientAuth`、`agents-internalAuth` | 默认 `generate: true` 在首次部署生成不同的业务和内部 Key。自定义业务凭据只提供 SHA-256 摘要、owner 和受支持 scopes。 |
-| `agents-ingress` | 默认函数 alias 和 FC 测试域名；生产环境使用显式配置的 HTTPS 自定义域名 binding。 |
+| ABX_MANAGED_DATABASE_URL | 已有 PostgreSQL URL，来自数据库提供商；三个 FC 角色都要可达。不自动创建或删除数据库。 |
+| SANDBOX_API_KEY | 已有 Sandbox 平台 Key，用于实例生命周期；来自对应平台的账号配置。 |
+| SANDBOX_BASE_URL / SANDBOX_DOMAIN / SANDBOX_REGION | 同一 Sandbox 平台的 API、实例访问域名和地域。与 Key 匹配。 |
+| OPENAI_API_KEY / OPENAI_BASE_URL / OPENAI_MODEL | 模型提供商的 Key、兼容 API 地址和已获授权的准确模型 ID。qwen-code 需要支持工具的 Chat Completions，codex 需要支持工具的 Responses。 |
+| AGENTS_FC_ROLE_ARN | 已有 FC 执行角色的 RAM ARN，须能调用私有 Worker/Dispatcher；来自 RAM/FC 配置。 |
+| application.bindings.model.adapter | 在 template.yaml 选择 qwen-code 或 codex，与上面模型兼容性对应。 |
+| deployment.access / vars.region | 已有 Serverless Devs 凭据别名及 FC 地域；云 AK/SK 用于部署，与模型和 Sandbox Key 分开。 |
+| application.bindings.clientAuth / internalAuth | 缺省由 CLI 自动生成不同的业务和内部密钥并在本机安全复用。业务客户端只使用业务密钥。 |
 
-数据库只能通过 VPC 访问时，将私有 binding 文件中的 `agents-state` 对象替换为以下
-形状。由平台/网络维护方提供 FC 同地域已有的 VPC、一个或多个不同的 vSwitch ID，
-以及对应安全组 ID：
+例如使用已有私网数据库时，在 `application.state` 中配置现有网络（真实 ID 由网络管理员提供）：
 
-```json
-{
-  "databaseUrl": {"env": "ABX_MANAGED_DATABASE_URL"},
-  "vpcConfig": {
-    "vpcId": {"env": "AGENTS_VPC_ID"},
-    "vSwitchIds": [{"env": "AGENTS_VSWITCH_ID"}],
-    "securityGroupId": {"env": "AGENTS_SECURITY_GROUP_ID"}
-  }
-}
+```yaml
+application:
+  state:
+    databaseUrl: ${env('ABX_MANAGED_DATABASE_URL')}
+    databaseCa: ${env('AGENTS_DATABASE_CA_PEM')}
+    vpcConfig:
+      vpcId: ${env('AGENTS_VPC_ID')}
+      vSwitchIds: ["${env('AGENTS_VSWITCH_ID')}"]
+      securityGroupId: ${env('AGENTS_SECURITY_GROUP_ID')}
 ```
 
-三个 FC 角色使用这份已有网络配置。本模板不创建 VPC、vSwitch、安全组、路由或 NAT。
-FC 保持启用公网访问，但仍需按实际路由和安全规则验证数据库、镜像仓库、Sandbox API
-及模型 endpoint 连通，不能假定选择 VPC 后外部服务都会可达。
+只在数据库使用私有 CA 时添加 databaseCa；值为证书 PEM，来自数据库提供商，不是私钥。数据库 URL 保留 sslmode=verify-full，并使用证书覆盖的主机名。本版本不提供另一套 `{env: ...}` 或 `{file: ...}` 配置语法。
 
-PostgreSQL 使用私有证书机构时，在该对象的 `databaseUrl` 旁增加 `databaseCa`，例如
-`"databaseCa": {"file": "/absolute/path/to/database-ca.pem"}`。从数据库服务或管理员获取
-CA 链，数据库 URL 保持 `sslmode=verify-full`，并使用证书覆盖的数据库主机名。
+FC 三角色借用这些网络资源；不会创建 VPC、交换机、安全组、路由或 NAT。按实际路由验证数据库、镜像仓库、Sandbox 和模型端点可达性。生产自定义域名在原生 deployment.resources 中声明域名组件并在 ingress 选择对应入口；不要把 Serving 域名放到 sandbox.instance。具体支持范围见[资源规范](../docs/template-spec.zh-CN.md)。
 
-`databaseCa` 接受证书 PEM 字符串、`{env: "AGENTS_DATABASE_CA_PEM"}` 引用，或
-`{file: "host-path"}` 引用。文件在运行 CLI 的宿主机读取；相对路径以 binding JSON 所在目录为基准，纯环境引用时
-以当前目录为基准，使用绝对路径可避免歧义。证书链上限
-64 KiB、八个有效 `CERTIFICATE` 块，不接受私钥。该信任配置仅供 Server 使用，不放进
-Sandbox、镜像、计划或收据。
-
-不需要 VPC 或 CA 配置时，数据库 binding 也可以是 PostgreSQL URL 字符串。应用更新、状态查询和清理应继续使用同一数据库；
-CLI 自动检查已保存的持久状态身份，无需手工填写身份值。
-
-`ABX_SERVER_TOKEN` 是运行时为每个 Sandbox 单独生成的应用认证令牌，不是云控制台
-申请的 API Key，本模板无需手工配置。
+`ABX_SERVER_TOKEN` 是运行时为每个 Sandbox 生成的独立应用认证令牌，无需去云控制台申请，也无需手动填写。
 
 ## 资源
 
-Sandbox 请求 2 vCPU、4096 MiB。默认 Session 空闲/最大寿命为 900/3600 秒，一个 Session
+Sandbox 请求 2 vCPU、4096 MB。默认 Session 空闲/最大寿命为 900/3600 秒，一个 Session
 同时只执行一轮。Turn/工具预算为 600/60 秒。单文件和单产物上限各 10 MiB，owner 保留
 总量为 100 MiB；完整的接收限制见清单。
 
@@ -227,12 +212,12 @@ FC、镜像存储、Sandbox、数据库和模型可能产生费用。FC 内置�
 完成后关闭 Session，下载结果并删除不再需要的公开 Session/文件。删除部署：
 
 ```bash
-abx delete agents-api --bindings .abx/bindings.json --yes
+abx delete agents-api --yes
 ```
 
 检查删除结果；操作中断或结果不确定时，使用 `abx recover agents-api` 核查。
 删除操作清理部署记录中的自有资源。通过 `--build` 提供的可复用构建产物、用户提供的
-`serverImage`，以及已有数据库、网络、模型服务和自定义域名仍由你管理。
+`application.server.image`，以及已有数据库、网络、模型服务和自定义域名仍由你管理。
 
 独立构建不再被任何部署使用后，可用 `abx template build --clean .abx/build.json --yes`
 清理归属已确认的 Server 镜像。Sandbox 构建镜像可能仍列在 `retained_build_artifacts`

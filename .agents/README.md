@@ -6,6 +6,8 @@
 
 - [Additional v1 access ports](notes/proposed/architecture/2026-11-12-template-v1-additional-ports.md) · [verification](evidence/verify/2026-11-12-template-v1-additional-ports.md). Extra ports carry no protocol/readiness promise.
 
+- [V1 resource and catalog migration](notes/proposed/architecture/2026-11-12-template-v1-migration.md) · [local verification](evidence/verify/2026-11-12-template-v1-migration.md). Active source candidate; coordinated consumer/image/cloud/release gates remain separate.
+
 - [Strict v1 local identifier boundaries](notes/proposed/architecture/2026-11-12-template-v1-identifier-boundaries.md) · [verification](evidence/verify/2026-11-12-template-v1-identifier-boundaries.md). Python/JS admission now agrees without limiting native reference IDs.
 
 ## Recent changes — 2026-11-10

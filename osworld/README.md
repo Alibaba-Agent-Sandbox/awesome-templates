@@ -2,6 +2,8 @@
 
 [中文](README.zh-CN.md)
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 A real private Xvfb/Openbox/Chromium desktop with [OSWorld](https://github.com/xlang-ai/OSWorld) screenshots, Linux AT-SPI, native mouse/keyboard actions and private-clipboard Unicode paste and selected task evaluators. This is an independent Alibaba template. Full OSWorld benchmark execution, VM snapshots, Office and a model agent are outside this browser slice; [Issue 36](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/36) tracks delivery of this slice.

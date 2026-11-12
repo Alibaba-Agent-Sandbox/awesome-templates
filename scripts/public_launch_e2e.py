@@ -231,16 +231,17 @@ def load_plan(name, root=ROOT):
         raise ValueError('select an existing source template from the catalog')
     source = root / name
     manifest = yaml.safe_load((source / 'template.yaml').read_text())
-    if manifest.get('spec_version') == 6:
+    from template_application import is_managed_application, validate_manifest, project_manifest
+    if is_managed_application(manifest):
         raise ValueError('managed applications require application deployment acceptance through their Gateway; sandbox named-command launch is not that workflow')
-    cases = manifest.get('smoke') or []
+    projected = project_manifest(manifest, source)
+    cases = projected.get('smoke') or []
     if not cases or any(not isinstance(case.get('command'), str) for case in cases):
         raise ValueError('public launch acceptance needs named smoke cases')
-    from template_application import validate_v5
-    problems = validate_v5(manifest, source)
+    problems = validate_manifest(manifest, source)
     if problems:
         raise ValueError('invalid template launch manifest: ' + '; '.join(problems))
-    return source, manifest, cases
+    return source, projected, cases
 
 
 def json_contains(value, target):

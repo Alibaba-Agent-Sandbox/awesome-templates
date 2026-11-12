@@ -1,5 +1,7 @@
 # DeepSeek coding harness
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 使用 DeepSeek 官方 Chat Completions 工具协议执行真实代码循环：模型可读取、写入、列目录和执行 shell，工具结果回传模型，直到最终回答。

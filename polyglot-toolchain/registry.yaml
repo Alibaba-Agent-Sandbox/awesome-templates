@@ -1,0 +1,18 @@
+specVersion: 1
+name: polyglot-toolchain
+version: 1.0.4
+description:
+  zh: 提供 Go、Rust 和 Java 工具链，用于编译、运行与检查多语言项目。
+  en: Go, Rust and Java toolchains for compiling, running and checking projects in
+    multiple languages.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- go
+- rust
+- java
+- toolchain
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

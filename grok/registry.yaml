@@ -1,0 +1,18 @@
+specVersion: 1
+name: grok
+version: 1.0.3
+description:
+  zh: 运行 Grok Build 编码任务，显式配置兼容模型和隔离的任务工作区。
+  en: Run Grok Build coding tasks with a configured compatible model and an isolated
+    task workspace.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- grok
+- xai
+- coding-agent
+- openai-compatible
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

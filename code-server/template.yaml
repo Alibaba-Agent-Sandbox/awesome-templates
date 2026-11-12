@@ -1,39 +1,26 @@
+specVersion: 1
 name: code-server
-version: "1.0.3"
-description: Pinned code-server4.141.0 browser IDE with mandatory password authentication,
-  owned lifecycle and real login/workbench smoke.
-author: alibaba-agent-sandbox
-license: Apache-2.0
-spec_version: 5
-base: fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
-generation: 2
-start_cmd: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
-ready_cmd: agent-sandbox-server healthcheck --port 9000
-resources:
-  cpu: 2
-  memory: 2048
-ports:
-- 9000
-- 8443
-tags:
-- ide
-- vscode
-- code-server
-priority: P1
-wave: 1
-env:
-  ABX_SERVER_TOKEN: ''
-  CODE_SERVER_PASSWORD: ''
-smoke:
-- command: code_server_version
-  expect: 4.141.0
-- command: code_server_self_test
-  expect: CODE_SERVER_OK
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations:
-    - commands.list
-    - commands.run
+sandbox:
+  template:
+    source:
+      dockerfile: Dockerfile
+      context: .
+    props:
+      cpu: 2
+      memory: 2048
+  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+  ready: agent-sandbox-server healthcheck --port 9000
+  instance:
+    envs:
+      ABX_SERVER_TOKEN: ''
+      CODE_SERVER_PASSWORD: ''
+  services:
+    app:
+      protocol: agent-sandbox-server
+      version: 2
+      port: 9000
+      operations:
+      - commands.list
+      - commands.run
+  ports:
+  - 8443

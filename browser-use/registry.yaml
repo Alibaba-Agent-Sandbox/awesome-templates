@@ -1,0 +1,17 @@
+specVersion: 1
+name: browser-use
+version: 2.1.0
+description:
+  zh: 让 browser-use 驱动内置 Chromium 完成网页操作，使用你配置的模型服务。
+  en: Let browser-use operate the included Chromium browser through your configured
+    model service.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- browser-use
+- browser
+- ai-agent
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

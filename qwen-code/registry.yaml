@@ -1,0 +1,20 @@
+specVersion: 1
+name: qwen-code
+version: 2.2.0
+description:
+  zh: 使用 Qwen Code 在沙箱中阅读、修改和运行代码，按任务配置模型服务。
+  en: Use Qwen Code to read, modify and run code in a sandbox with your configured
+    model service.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- qwen
+- qwen-code
+- dashscope
+- ai-coding
+- ai-agent
+- deploy
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

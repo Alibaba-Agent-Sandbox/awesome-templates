@@ -1,5 +1,7 @@
 # Pi
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 在阿里云沙箱基础镜像内运行[官方 Pi 编程 CLI](https://github.com/earendil-works/pi)。本模板提供一次性的 print 模式任务，使用 OpenAI 兼容模型端点；它是独立模板，不依赖 E2B 模板注册。

@@ -1,0 +1,18 @@
+specVersion: 1
+name: deepseek-harness
+version: 1.2.0
+description:
+  zh: 为 DeepSeek 兼容模型提供读写文件、列目录和执行命令的编码任务环境。
+  en: A coding environment for DeepSeek-compatible models with file, directory and
+    shell tools.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- deepseek
+- ai-agent
+- ai-coding
+- code-generation
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 运行原版 AppWorld0.1.3.post1 训练任务、API、SQLite 状态及原版评分器，配合自编的兼容模型 API 连接层。连接层提供原版 API 文档和真实 API 调用；不声称复现论文基线。结果保持上游加密 bundle 格式。范围是单个训练任务，不代表排行榜成绩。

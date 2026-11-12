@@ -329,7 +329,11 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
         source_commit = head.stdout.strip() if head.returncode == 0 else None
     if source_commit is not None and not re.fullmatch(r"[0-9a-f]{40}", source_commit):
         raise ValueError("source commit must be an immutable 40-character commit")
-    data = yaml.safe_load((source / "template.yaml").read_text())
+    try:
+        from .template_application import project_manifest
+    except ImportError:
+        from template_application import project_manifest
+    data = project_manifest(yaml.safe_load((source / "template.yaml").read_text()), source)
     if base_path is None and tag != "v0.0.49":
         raise ValueError("an unverified base tag requires an explicit verified --base-path")
     build_env = {"PATH": base_path or BASE_PATH}
@@ -514,7 +518,7 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
     provenance = {"schema_version": 1, "template": source.name,
                   "materializer_sha256": MATERIALIZER_SHA256,
                   "source_manifest_contract_sha256": manifest_contract_sha256((source / "template.yaml").read_bytes()),
-                  "template_version": str(data["version"]), "build_mode": "steps",
+                  "template_version": str(data.get("version", "unpublished-local")), "build_mode": "steps",
                   "base_image": data["base"],
                   "verified_base_path": base_path or BASE_PATH,
                   "copy_source_commit": None if _inline else source_commit,
@@ -554,7 +558,7 @@ def main() -> int:
                                source_commit=args.source_commit,
                                base_path=args.base_path, asset_transport=args.asset_transport)
     args.output.mkdir(parents=True, exist_ok=False)
-    (args.output / "template.yaml").write_text(yaml.safe_dump(data, sort_keys=False, allow_unicode=True))
+    (args.output / "prepared-steps.yaml").write_text(yaml.safe_dump(data, sort_keys=False, allow_unicode=True))
     (args.output / "steps-provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
     print(f"Prepared {args.template.name}: {len(data['build']['steps'])} explicit steps; no cloud call")
     return 0

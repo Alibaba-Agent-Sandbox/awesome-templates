@@ -2,6 +2,8 @@
 
 [中文](README.zh-CN.md)
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Runs one real Node HTTP application per sandbox. `serve` starts a JavaScript entry point; `start` and `dev` run package scripts in the background. Readiness requires HTTP 2xx/3xx from the owned child. `status`, `request`, `logs`, and `stop` inspect and manage that service. A dependency-free `index.js` is included for a first request.

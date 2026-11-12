@@ -1,5 +1,7 @@
 # codex-agent-api
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 这是由官方 Codex CLI 驱动的项目会话 HTTP 适配器。镜像与 [`codex`](../codex) 模板统一固定 `@openai/codex@0.162.1`，通过端口 9000 上的 `agent-sandbox-server` 提供命名命令和 `/v1/agents/*` 路由。此处只承诺下表所列接口，尚未验证对 OpenAI Agents API 所有功能或 SDK 方法的兼容性；不要假定存在某个 `client.beta.agents` SDK 接口。
@@ -24,7 +26,7 @@
 
 模型服务必须实现 HTTP Responses，仅提供 Chat Completions 不够。`ABX_LLM_API_KEY` 用作自定义服务密钥；启动环境不要同时保留冲突的 `OPENAI_BASE_URL`，本模板该 URL 优先。API Key 方式无需交互登录。`CODEX_SANDBOX` 默认为 `workspace-write`；只有平台不支持内层 Codex 沙箱且你接受外层沙箱为隔离边界时，才使用现有 `bypass` 选项。
 
-编码前须确认平台能运行 Codex 内层 Linux 沙箱。平台拒绝时，公共配方中固定的 `CODEX_SANDBOX=workspace-write` 不能通过 host export 修改。如果你明确选择以外层沙箱作为隔离边界，clone 仓库，将 `codex-agent-api/template.yaml` 的 `env.CODEX_SANDBOX` 改为 `bypass`，使用 `abx deploy ./codex-agent-api --sandbox-timeout 1800 --yes` 替换下面的公共配方命令。
+编码前须确认平台能运行 Codex 内层 Linux 沙箱。平台拒绝时，公共配方中固定的 `CODEX_SANDBOX=workspace-write` 不能通过 host export 修改。如果你明确选择以外层沙箱作为隔离边界，clone 仓库，将 `codex-agent-api/template.yaml` 的 `sandbox.instance.envs.CODEX_SANDBOX` 改为 `bypass`，使用 `abx deploy ./codex-agent-api --sandbox-timeout 1800 --yes` 替换下面的公共配方命令。
 
 所有 `<...>` 都是需要你替换的占位值，模型名必须使用服务商实际提供的 ID。密钥在你自己的终端或 secret manager 中设置，不要放入镜像、YAML 或公开日志。以下变量要在 launch **之前**设置；之后改变 host 环境不会更新运行中的应用。
 

@@ -9,7 +9,7 @@ import subprocess
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
-SHARED_INPUTS = {'.github/workflows/image-build.yml', 'scripts/select_image_templates.py'}
+SHARED_INPUTS = {'.github/workflows/image-build.yml', 'scripts/select_image_templates.py', 'scripts/template-checks.json', 'scripts/template_application.py', 'spec/template-v1.schema.json', 'contracts/template-v1/contract.json', 'contracts/template-v1/normalize.py'}
 
 
 def catalog_names(root: Path = ROOT) -> list[str]:

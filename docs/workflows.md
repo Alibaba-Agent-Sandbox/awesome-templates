@@ -8,9 +8,9 @@ abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//
 
 ## Current machine contract
 
-Source manifests and managed catalog entries use `spec_version: 5`; the catalog uses `schema_version: 2`. The source schema is [template-v5.schema.json](../spec/template-v5.schema.json). [Shared launch rules](../spec/contracts/launch-v1.json) are copied from the [Python contract owner](https://github.com/Alibaba-Agent-Sandbox/python-sdk/tree/main/contracts) with an exact source lock; synchronize them through `scripts/sync_launch_contracts.py`.
+Source manifests and managed catalog entries use `specVersion: 1`; the catalog uses `schema_version: 3`. The source schema is [template-v1.schema.json](../spec/template-v1.schema.json). [Shared launch rules](../spec/contracts/launch-v1.json) are copied from the [Python contract owner](https://github.com/Alibaba-Agent-Sandbox/python-sdk/tree/main/contracts) with an exact source lock; synchronize them through `scripts/sync_launch_contracts.py`.
 
-`provides` lists all exposed services, each with protocol, version, port and operations. `start_cmd` starts the template and `ready_cmd` checks readiness. The command registry remains in `commands.py`. There are no per-operation startup modes or user-written capability plans.
+`sandbox.services` lists all exposed services, each with protocol, version, port and operations. `sandbox.start` starts the template and `sandbox.ready` checks readiness. The command registry remains in `commands.py`. There are no per-operation startup modes or user-written capability plans.
 
 Launch prepares source when required, creates one sandbox, runs the startup command and readiness command, and returns every declared service endpoint. The built-in server v2 protocol additionally receives health checks and command discovery when declared. Other protocols remain extensible: endpoint resolution alone does not establish their protocol readiness; the template readiness command is responsible for its overall readiness. An already prepared image or a provider-bound native template identity supplies the environment without redefining the services. Installing a tool does not imply that its task should run immediately: commands that need a prompt, password or workspace remain callable after startup. For example, the database template exposes `services_start` with its explicit password and data-directory arguments; launch does not invent those inputs.
 
@@ -18,7 +18,7 @@ A provider owns its registry/upload configuration, native template registration,
 
 ## Deployment topology
 
-The optional `application` mapping retains placement, deployment adapter, hooks, state and limits. It describes an explicit application deployment. Those hooks never run during template installation, source preparation or sandbox startup. Both [local](examples/application-local/template.yaml) and [external](examples/application-external/template.yaml) examples preserve this separation.
+`sandbox` declares the Sandbox workload; `deployment` embeds native Serving resources. `application.type: agents-api` selects only the managed Agents API coordinator. Installation and Sandbox startup do not execute deployment hooks. See the [resource specification](template-spec.md).
 
 ## Ownership and evidence
 
@@ -26,7 +26,7 @@ Source snapshots and resource journals bind the source, effective configuration 
 
 Static validation proves configuration consistency, not cloud execution. A launch verification records exact source/manifest/CLI/SDK/provider revisions, service checks, actual calls and independent cleanup. Missing or skipped required checks are not passes. Model tasks and optional native interfaces require their own tests.
 
-Historical receipts are immutable and keep their original workflow, consumer and source scope. Do not rewrite them as specification 5 acceptance. The historical receipt contract files in `spec/contracts` remain available for reading old evidence; they do not impose workflow declarations on current authors. A catalog record does not itself certify a template.
+Historical receipts are immutable and keep their original workflow, consumer and source scope. Do not rewrite them as current-format acceptance. The historical receipt contract files in `spec/contracts` remain available for reading old evidence; they do not impose workflow declarations on current authors. A catalog record does not itself certify a template.
 
 ## Validation
 

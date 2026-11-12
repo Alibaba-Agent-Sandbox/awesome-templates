@@ -1,7 +1,6 @@
 """Native step preparation must use the existing full current launch consumer."""
 from argparse import Namespace
 import json
-from pathlib import Path
 import pytest
 import run_steps_e2e as steps
 import run_ci_image_e2e as current
@@ -16,13 +15,15 @@ def config():
 @pytest.fixture
 def prepared(tmp_path,monkeypatch):
     source=tmp_path/'example';source.mkdir()
-    original={'name':'example','base':'fixture/image:1','version':'1.0.1','start_cmd':'original start','ready_cmd':'original ready',
-              'services':{'app':{'port':9000}},'env':{'APP_SETTING':'value'}}
+    from v1_test_support import resource, publication
+    from template_application import project_manifest
+    original=resource('example',start='original start',ready='original ready',env={'APP_SETTING':'value'},services={'app':{'protocol':'agent-sandbox-server','version':2,'port':9000,'operations':[]}})
     import yaml
     (source/'template.yaml').write_text(yaml.safe_dump(original))
+    publication(source)
     monkeypatch.setattr(steps,'ROOT',tmp_path)
     monkeypatch.setattr(current,'controller_missing_imports',lambda _:[])
-    monkeypatch.setattr(steps,'prepare',lambda *a,**k:({**original,'build':{'steps':[]}}, {'build_mode':'steps'}))
+    monkeypatch.setattr(steps,'prepare',lambda *a,**k:({**project_manifest(original,source),'base':'fixture/image:1','build':{'steps':[]}}, {'build_mode':'steps'}))
     resources=[];calls=[]
     def cli(self,args,*a,**kwargs):
         calls.append((args,kwargs))
@@ -59,7 +60,7 @@ def test_prepare_then_existing_current_launch_and_independent_template_cleanup(p
         import yaml
         assert yaml.safe_load((source/'template.yaml').read_text())==original
         assert json.loads(journal.read_text())['template_id']=='owned-template'
-        assert runtime_env==original['env']
+        assert runtime_env==original['sandbox']['instance']['envs']
         report.update(application_result='PASS',cleanup_verified=True,
                       commands=[{'name':'hello','via':via,'ok':True} for via in ['cli','sdk','host-http']],
                       http_acceptance={'passed':True})
@@ -176,17 +177,16 @@ def test_missing_alias_and_successful_delete_cannot_hide_still_present_known_id(
 
 def test_prepared_runtime_environment_preserves_original_launch_contract(tmp_path):
     import yaml
-    original={'name':'owned','env':{'PRIORITY':'manifest','TOKEN':''},
-              'start_cmd':'original start','ready_cmd':'original ready',
-              'provides':{'app':{'port':9000}}}
+    from v1_test_support import resource
+    original=resource('owned',env={'PRIORITY':'manifest','TOKEN':''},start='original start',ready='original ready',services={'app':{'protocol':'agent-sandbox-server','version':2,'port':9000,'operations':[]}})
     (tmp_path/'template.yaml').write_text(yaml.safe_dump(original))
     actual=current.prepared_launch_manifest(tmp_path,'owned-template',
         runtime_env={'PATH':'/opt/tool/bin:/usr/bin','PRIORITY':'docker'})
-    assert actual['env']=={'PATH':'/opt/tool/bin:/usr/bin','PRIORITY':'manifest','TOKEN':''}
-    assert actual['provides']==original['provides']
-    assert current.prepared_launch_manifest(tmp_path,'owned-template')['env']==original['env']
-    for key in ['start_cmd','ready_cmd']:
-        assert current.prepared_launch_manifest(tmp_path,'owned-template')[key]==original[key]
+    assert actual['sandbox']['instance']['envs']=={'PATH':'/opt/tool/bin:/usr/bin','PRIORITY':'manifest','TOKEN':''}
+    assert actual['sandbox']['services']==original['sandbox']['services']
+    assert current.prepared_launch_manifest(tmp_path,'owned-template')['sandbox']['instance']['envs']==original['sandbox']['instance']['envs']
+    for key in ['start','ready']:
+        assert current.prepared_launch_manifest(tmp_path,'owned-template')['sandbox'][key]==original['sandbox'][key]
     assert yaml.safe_load((tmp_path/'template.yaml').read_text())==original
 
 
@@ -200,15 +200,16 @@ def test_native_start_and_ready_receive_explicit_environment_without_freezing_em
     output=tmp_path/'observed.json'
     code='import json,os,pathlib; pathlib.Path('+repr(str(output))+').write_text(json.dumps({"setting":os.environ["SETTING"],"literal":os.environ["LITERAL"],"secret_matches":os.environ.get("TOKEN")=="inherited-fixture"}))'
     command='owned-agent && '+shlex.quote(sys.executable)+' -c '+shlex.quote(code)
-    original={'name':'owned','env':{'SETTING':'manifest','TOKEN':''},'start_cmd':command,
-              'ready_cmd':'test "$(owned-agent)" = owned-version','provides':{}}
+    from v1_test_support import resource
+    original=resource('owned',env={'SETTING':'manifest','TOKEN':''},start=command,ready='test "$(owned-agent)" = owned-version',services={})
     (tmp_path/'template.yaml').write_text(yaml.safe_dump(original))
     supplied={'PATH':str(tools)+':/usr/bin:/bin','SETTING':'docker','LITERAL':"two words; '$HOME'"}
     actual=current.prepared_launch_manifest(tmp_path,'owned-template',runtime_env=supplied)
     environment={'PATH':'/usr/bin:/bin','TOKEN':'inherited-fixture','SETTING':'ambient'}
-    for key in ['start_cmd','ready_cmd']:
-        process=subprocess.run(['/bin/sh','-c',actual[key]],env=environment,capture_output=True,text=True,timeout=10)
+    environment.update({key:value for key,value in actual['sandbox']['instance']['envs'].items() if value})
+    for key in ['start','ready']:
+        process=subprocess.run(['/bin/sh','-c',actual['sandbox'][key]],env=environment,capture_output=True,text=True,timeout=10)
         assert process.returncode==0,process.stderr
-        assert 'TOKEN=' not in actual[key]
+        assert 'TOKEN=' not in actual['sandbox'][key]
     assert json.loads(output.read_text())=={'setting':'manifest','literal':"two words; '$HOME'",'secret_matches':True}
     assert yaml.safe_load((tmp_path/'template.yaml').read_text())==original

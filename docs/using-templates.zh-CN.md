@@ -6,11 +6,12 @@
 
 ## 安装
 
-本页使用当前源码中的统一命令；已发布 CLI 0.5.10 不支持这些新入口。先从源码安装 CLI（需要 Node 20+），Python 示例继续使用 client 0.4.0a6 和独立虚拟环境。
+本页要求匹配的 YAML v1 开发构建；将下面的 revision 占位符替换为已审查的 CLI 提交，直接 clone main 不会自动选择尚未发布的改动。已发布 CLI 0.5.10 不支持这些新入口。先从源码安装 CLI（需要 Node 20+），Python 示例继续使用 client 0.4.0a6 和独立虚拟环境。
 
 ```bash
 git clone https://github.com/Alibaba-Agent-Sandbox/agent-sandbox.git
 cd agent-sandbox
+git checkout <reviewed-yaml-v1-cli-revision>
 npm ci
 npm run build
 npm link
@@ -46,7 +47,7 @@ OpenSandbox 先按其 [provider 指南](https://github.com/Alibaba-Agent-Sandbox
 
 各工具采用不同的上游配置方式。不能假定所有工具都读取 `ABX_LLM_*`、支持任意 OpenAI 兼容端点，或继承本机登录态。非模型工具不需要模型 Key；商业账号登录、API Key 模式和可选 Web 服务密码由对应 README 分别说明。
 
-模板清单声明为**空值**的环境变量可由主机环境填充；非空清单值优先于同名主机 export。切模型优先使用命令提供的 `model` 等参数。对于清单空值声明的启动配置，export 新模型、Key 或 endpoint 后，从公开模板创建新实例，并使用新返回的沙箱 ID；只有修改非空清单默认值或实现时才需要本地模板副本。此路径只传递已声明的运行配置。启动后修改本机 export，不会重配已经运行的应用。
+模板 `sandbox.instance.envs` 声明为**空值**的环境变量可由主机环境填充；非空清单值优先于同名主机 export。切模型优先使用命令提供的 `model` 等参数。对于清单空值声明的启动配置，export 新模型、Key 或 endpoint 后，从公开模板创建新实例，并使用新返回的沙箱 ID；只有修改非空清单默认值或实现时才需要本地模板副本。此路径只传递已声明的运行配置。启动后修改本机 export，不会重配已经运行的应用。
 
 ## CLI、SDK 与 HTTP
 
@@ -162,3 +163,15 @@ abx delete "$ABX_SANDBOX_ID"
 ## 客户端入口兼容性
 
 本页 provider／应用示例使用 `ProviderSandbox`。标准 `Sandbox`／`AsyncSandbox` 解释器接口是另一条合同，见相应模板说明及 [SDK 入口指南](https://github.com/Alibaba-Agent-Sandbox/python-sdk/blob/main/README.md)。`abx deploy --template-id <平台模板ID>` 使用平台已有模板，源码模板使用 `abx deploy <源码引用>`。
+
+资源入口只接受 `specVersion: 1`；Registry 上架 metadata 与本地运行分开。原生 `${env('NAME')}` 引用可通过项目未提交的 `.env` 提供；非空固定值仍按原生值使用。具体字段见[资源规范](template-spec.zh-CN.md)。
+
+### Python 直接读取 YAML v1
+
+上面的已发布 client 连接示例只连接已运行的 Sandbox。直接使用 `agent_sandbox.api.template.launch_template` 读取 v1 时，需要固定开发源码；不是安装同名 a7 就获得新能力：
+
+```bash
+python -m pip install "agent-sandbox-client @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/1079841307f1f63253ae68fdda6e6d2d1e77e851.tar.gz#subdirectory=client-sdk&sha256=a7dfffac2eba7a8ee3d5620d231c5abf3f767ca655194b7329341389faf83485"
+```
+
+该 API 只接受字面值或由 CLI 原生 parser 解析好的私有 v1 快照，不读取或替换 `${...}`。Python 不构建源码；先通过 CLI 准备模板，再传已有 Provider reference/image。额外 ports 仅返回访问端点，已知业务协议才提供对应客户端。详见[固定源码 SDK 说明](https://github.com/Alibaba-Agent-Sandbox/python-sdk/blob/1079841307f1f63253ae68fdda6e6d2d1e77e851/client-sdk/README.md)。安装后的包元信息仍为0.4.0a7；这是显式源码开发配方，不是新 PyPI 版本。

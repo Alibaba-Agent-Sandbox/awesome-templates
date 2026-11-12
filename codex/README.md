@@ -2,6 +2,8 @@
 
 Non-interactive [OpenAI Codex CLI](https://github.com/openai/codex) in an Agent Sandbox. The image pins `@openai/codex@0.162.1`.
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Named commands on `agent-sandbox-server` (port 9000) call `codex exec`. `codex_exec` returns JSONL events (`thread.started`, `turn.*`, `item.*`), the last agent message, and the `thread_id` used to resume. `codex_version` prints the CLI version. `codex_setup_check` probes Codex's Linux sandbox and reports `--dangerously-bypass-approvals-and-sandbox` when bubblewrap, seccomp, or the legacy landlock path cannot start. `codex_config_write` writes `$CODEX_HOME/config.toml` for an OpenAI-compatible `base_url` (`wire_api = "responses"` only). `codex_agents_write` writes `AGENTS.md`, which Codex reads from the working directory.

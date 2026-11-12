@@ -2,6 +2,8 @@
 
 Agent Sandbox 里的 Sourcegraph Amp CLI。镜像钉住 `@ampcode/cli`，在端口 9000 上提供命名命令。
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 安装 Amp CLI（命令名 `amp`），并注册四个命令：

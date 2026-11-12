@@ -1,178 +1,222 @@
-"""Validate supported manifests without executing hooks, adapters, or cloud APIs."""
+"""Validate public v1 manifests and project private engineering inputs without execution."""
+
 from __future__ import annotations
 
-import json
 import importlib.util
+import json
+import re
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
-SCHEMA_PATH = Path(__file__).resolve().parents[1] / "spec" / "template-v5.schema.json"
-MANAGED_SCHEMA_PATH = SCHEMA_PATH.with_name("template-v6.schema.json")
+import yaml
+from jsonschema import Draft202012Validator
 
-
-PROFILE_ROOT = SCHEMA_PATH.parent.parent / "contracts" / "application-profile"
-_profile_spec = importlib.util.spec_from_file_location("application_profile", PROFILE_ROOT / "normalize.py")
+ROOT = Path(__file__).resolve().parents[1]
+SCHEMA_PATH = ROOT / "spec/template-v1.schema.json"
+REGISTRY_SCHEMA_PATH = ROOT / "spec/registry-v1.schema.json"
+PROFILE_ROOT = ROOT / "contracts/template-v1"
+_profile_spec = importlib.util.spec_from_file_location(
+    "template_v1_contract", PROFILE_ROOT / "normalize.py"
+)
+assert _profile_spec and _profile_spec.loader
 _profile_module = importlib.util.module_from_spec(_profile_spec)
 _profile_spec.loader.exec_module(_profile_module)
-PROFILE_CATALOG = json.loads((PROFILE_ROOT / "profiles.json").read_text(encoding="utf-8"))
+PROFILE_CATALOG = json.loads((PROFILE_ROOT / "contract.json").read_text())
+_VALIDATOR = Draft202012Validator(json.loads(SCHEMA_PATH.read_text())).validate
+_REGISTRY_VALIDATOR = Draft202012Validator(
+    json.loads(REGISTRY_SCHEMA_PATH.read_text())
+).validate
 
 
-def normalize_manifest(data: dict[str, Any]) -> dict[str, Any]:
-    return _profile_module.normalize_application_profile(data, PROFILE_CATALOG)
+def normalize_manifest(
+    data: dict[str, Any], provider: str | None = None
+) -> dict[str, Any]:
+    """Return canonical v1 intent; this never evaluates native Devs expressions."""
+    return _profile_module.normalize_template_v1(data, _VALIDATOR, provider=provider)
 
 
 def is_managed_application(data: dict[str, Any]) -> bool:
-    """Identify the explicit deployment profile; version only selects validation."""
-    return _profile_module.application_profile(data) == "fc-managed-agents"
+    """Classify only the explicit business type, never the version or resource names."""
+    return (
+        isinstance(data.get("application"), dict)
+        and data["application"].get("type") == "agents-api"
+    )
 
 
-def validate_manifest(data: dict[str, Any], template_dir: Path | None = None) -> list[str]:
-    """Dispatch a declared supported version without weakening its contract."""
-    if type(data.get("spec_version")) is int and data["spec_version"] == 6:
-        return validate_v6(data, template_dir)
-    return validate_v5(data, template_dir)
+def _contained(root: Path, value: str, *, directory: bool = False) -> Path:
+    path = root / value
+    if (
+        Path(value).is_absolute()
+        or path.is_symlink()
+        or not path.resolve().is_relative_to(root.resolve())
+    ):
+        raise ValueError("referenced source must stay inside the template directory")
+    if not (path.is_dir() if directory else path.is_file()):
+        raise ValueError("referenced source does not exist")
+    return path
 
 
-def validate_v6(data: dict[str, Any], template_dir: Path | None = None) -> list[str]:
-    """Validate the closed managed-session profile and its role/source boundaries."""
-    try:
-        from jsonschema import Draft202012Validator
-    except ImportError:
-        return ["v6 validation needs jsonschema==4.26.0; install scripts/requirements-spec.txt"]
-    if type(data.get("spec_version")) is not int or data["spec_version"] != 6:
-        return ["managed application requires spec_version: 6"]
-    try:
-        data = normalize_manifest(data)
-    except ValueError as error:
-        return [str(error)]
-    schema = json.loads(MANAGED_SCHEMA_PATH.read_text(encoding="utf-8"))
-    errors = [f"{'.'.join(map(str, error.absolute_path)) or '<root>'}: {error.message}"
-              for error in Draft202012Validator(schema).iter_errors(data)]
-    if errors:
-        return errors
-    for service_id, service in data["provides"].items():
-        if service["port"] not in data["ports"]:
-            errors.append(f"provides.{service_id}.port must be declared in ports")
-    services = data["provides"].values()
-    if not any(service["protocol"] == "agent-sandbox-managed-bridge"
-               and service["version"] == 1 and service["port"] == 9000 for service in services):
-        errors.append("managed bridge profile must provide agent-sandbox-managed-bridge v1 on port 9000")
-    app = data["application"]
-    limits, sessions, storage = app["limits"], app["sessions"], app["storage"]
-    if limits["maxToolSeconds"] > limits["maxRunSeconds"]:
-        errors.append("application.limits.maxToolSeconds must not exceed maxRunSeconds")
-    if limits["maxRunSeconds"] >= sessions["maxLifetimeSeconds"]:
-        errors.append("application.sessions.maxLifetimeSeconds must exceed maxRunSeconds for bounded collection/cleanup")
-    if sessions["idleTimeoutSeconds"] > sessions["maxLifetimeSeconds"]:
-        errors.append("application.sessions.idleTimeoutSeconds must not exceed maxLifetimeSeconds")
-    if storage["maxArtifactBytes"] > storage["maxTurnArtifactBytes"]:
-        errors.append("application.storage.maxArtifactBytes must not exceed maxTurnArtifactBytes")
-    if max(storage["maxFileBytes"], storage["maxTurnArtifactBytes"]) > storage["maxRetainedBytesPerOwner"]:
-        errors.append("application.storage per-file/turn budget must not exceed maxRetainedBytesPerOwner")
-    bindings = app["bindings"]
-    for label, target in (("state.bindingRef", app["state"]["bindingRef"]),
-                          ("deployment.ingressBindingRef", app["deployment"]["ingressBindingRef"])):
-        if target not in bindings:
-            errors.append(f"application.{label} must name an application.bindings key")
-    required_targets = [
-        (app["state"]["bindingRef"], {"gateway", "worker", "dispatcher"}),
-        (app["deployment"]["ingressBindingRef"], {"deployment-publisher"}),
-        ("sandboxAccess", {"worker", "dispatcher"}), ("clientAuth", {"gateway"}),
-        ("internalAuth", {"gateway", "worker", "dispatcher"}), ("model", {"sandbox-creation"}),
-    ]
-    for name, targets in required_targets:
-        if name in bindings and set(bindings[name].get("targets", [])) != targets:
-            errors.append(f"application.bindings.{name}: targets must be {', '.join(sorted(targets))}")
-    for name, binding in bindings.items():
-        if "targets" not in binding:
-            errors.append(f"application.bindings.{name}: targets are required for an additional binding")
-            continue
-        targets = set(binding["targets"])
-        if "sandbox-creation" in targets:
-            if targets != {"sandbox-creation"} or binding.get("resolverRole") != "worker":
-                errors.append(f"application.bindings.{name}: sandbox-creation binding needs only that target and worker resolver")
-            allowed = {"OPENAI_API_KEY", "OPENAI_BASE_URL", "OPENAI_MODEL", "CODEX_API_KEY"}
-            if not binding.get("allowedEnv") or not set(binding["allowedEnv"]).issubset(allowed):
-                errors.append(f"application.bindings.{name}: guest injection needs an explicit model-only allowedEnv")
-        elif "allowedEnv" in binding or "resolverRole" in binding:
-            errors.append(f"application.bindings.{name}: guest injection fields require sandbox-creation target")
-    sources: list[tuple[str, str, bool]] = []
-    recipe = app["deployment"].get("serverBuildRecipe")
-    if recipe is not None:
-        sources.append(("deployment.serverBuildRecipe.dockerfile", recipe["dockerfile"], False))
-    seen = set()
-    for phase, hooks in app.get("hooks", {}).items():
-        for hook in hooks:
-            if hook["id"] in seen:
-                errors.append(f"application.hooks: duplicate hook id {hook['id']!r}")
-            seen.add(hook["id"])
-            if hook["type"] == "custom":
-                sources.append((f"hooks.{phase}.{hook['id']}.cwd", hook["cwd"], True))
+def publication_metadata(
+    template_dir: Path, data: dict[str, Any]
+) -> dict[str, Any] | None:
+    """Load optional author metadata; it is not used by runtime resource normalization."""
+    path = template_dir / "registry.yaml"
+    if not path.is_file():
+        return None
+    if path.is_symlink() or path.stat().st_size > 1024 * 1024:
+        raise ValueError("publication metadata must be a bounded regular file")
+    metadata = yaml.safe_load(path.read_text())
+    result = _profile_module.normalize_registry_v1(
+        metadata, data, _REGISTRY_VALIDATOR, _VALIDATOR
+    )
+    for value in result["readme"].values():
+        _contained(template_dir, value)
+    return result
+
+
+def engineering_checks(name: str) -> dict[str, Any]:
+    """Read owned CI smoke declarations, never user runtime resource properties."""
+    return deepcopy(
+        json.loads((ROOT / "scripts/template-checks.json").read_text())[
+            "templates"
+        ].get(name, {})
+    )
+
+
+def project_manifest(
+    data: dict[str, Any],
+    template_dir: Path | None = None,
+    *,
+    provider: str | None = "alicloud-express",
+) -> dict[str, Any]:
+    """Project v1 into private legacy-shaped test inputs, not an executable public format.
+
+    Expressions stay literal. Only the actual CLI native-parser consumer resolves them.
+    Provider profile/image facts and publication metadata are derived from their own source.
+    """
+    normalized = normalize_manifest(
+        data, provider if not data.get("sandbox", {}).get("provider") else None
+    )
+    sb = normalized.get("sandbox", {})
+    template = sb.get("template", {})
+    services = sb.get("services", {})
+    result: dict[str, Any] = {
+        "specVersion": 1,
+        "name": normalized["name"],
+        "sandbox": deepcopy(sb),
+        "resources": deepcopy(template.get("props", {})),
+        "env": deepcopy(sb.get("instance", {}).get("envs", {})),
+        "provides": deepcopy(services),
+        "ports": sorted(
+            set(sb.get("ports", [])) | {v["port"] for v in services.values()}
+        ),
+        "start_cmd": sb.get("start"),
+        "ready_cmd": sb.get("ready"),
+        "provider": sb.get("provider"),
+        **engineering_checks(normalized["name"]),
+    }
+    if "image" in template:
+        result["image"] = template["image"]
+    if "reference" in template:
+        result["template_id"] = template["reference"]
+    if "aliases" in template:
+        result["aliases"] = deepcopy(template["aliases"])
+    if template.get("source", {}).get("profiles"):
+        result["build_profiles"] = deepcopy(template["source"]["profiles"])
     if template_dir is not None:
-        root = template_dir.resolve()
-        for label, source, directory in sources:
-            try:
-                path = (root / source).resolve()
-            except (OSError, RuntimeError):
-                errors.append(f"application.{label}: cannot resolve source path")
-                continue
-            if not path.is_relative_to(root):
-                errors.append(f"application.{label}: source must stay inside the template directory")
-            elif (directory and not path.is_dir()) or (not directory and not path.is_file()):
-                errors.append(f"application.{label}: referenced {'directory' if directory else 'file'} does not exist")
-    return errors
+        metadata = publication_metadata(template_dir, data)
+        if metadata:
+            result.update(
+                version=metadata["version"],
+                description=metadata["description"]["en"],
+                author=metadata["author"],
+                license=metadata["license"],
+                tags=metadata.get("tags", []),
+            )
+        recipe = template.get("source", {}).get("dockerfile", "Dockerfile")
+        dockerfile = template_dir / recipe
+        if dockerfile.is_file():
+            match = re.search(
+                r"(?im)^\s*FROM\s+(?:--platform=\S+\s+)?([^\s]+)",
+                dockerfile.read_text(),
+            )
+            if match:
+                result["base"] = match[1]
+    if "deployment" in normalized:
+        result["deployment"] = deepcopy(normalized["deployment"])
+    if is_managed_application(normalized):
+        app = normalized["application"]
+        legacy = deepcopy(PROFILE_CATALOG["managedProfile"]["defaults"])
+        legacy["type"] = "agents-api"
+        legacy["sessions"].update(deepcopy(app["sessions"]))
+        legacy["sessions"]["maxLifetimeSeconds"] = sb["instance"]["timeout"]
+        legacy["limits"] = deepcopy(app["limits"])
+        legacy["storage"].update(deepcopy(app["storage"]))
+        legacy["sandbox"]["provider"] = sb["provider"]
+        legacy["state"]["bindingRef"] = "state"
+        legacy["bindings"] = {
+            name: {"reference": name, **deepcopy(value)}
+            for name, value in PROFILE_CATALOG["managedProfile"]["bindings"].items()
+        }
+        deployment = normalized["deployment"]
+        role = deployment["resources"][app["roles"]["gateway"]]
+        legacy["deployment"].update(
+            profile="fc-managed-agents",
+            accessRef=deployment["access"],
+            component=role["component"],
+            region=role["props"].get("region")
+            if isinstance(role["props"], dict)
+            else None,
+            ingressBindingRef="ingress",
+        )
+        legacy["deployment"].update(
+            serverBuildRecipe=deepcopy(app["server"]["source"])
+        ) if "source" in app["server"] else legacy["deployment"].update(
+            serverImage=app["server"]["image"]
+        )
+        if "hooks" in app:
+            legacy["hooks"] = deepcopy(app["hooks"])
+        result["application"] = legacy
+    return result
 
 
-def validate_v5(data: dict[str, Any], template_dir: Path | None = None) -> list[str]:
-    """Return schema/semantic errors; optional source checks stay under the template root."""
+def validate_manifest(
+    data: dict[str, Any], template_dir: Path | None = None
+) -> list[str]:
+    """Admit only v1 and validate source/hook containment without adapters or cloud calls."""
     try:
-        from jsonschema import Draft202012Validator
-    except ImportError:
-        return ["v5 validation needs jsonschema==4.26.0; install scripts/requirements-spec.txt"]
-    if data.get("spec_version") != 5:
-        return ["template requires spec_version: 5; migrate by removing workflow_contract_version, default_workflow and workflows"]
-    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
-    errors = [f"{'.'.join(map(str, error.absolute_path)) or '<root>'}: {error.message}"
-              for error in Draft202012Validator(schema).iter_errors(data)]
-    if errors:
-        return errors
-    for service_id, service in data["provides"].items():
-        if service["port"] not in data["ports"]:
-            errors.append(f"provides.{service_id}.port must be declared in ports")
-    if errors:
-        return errors
-    application = data.get("application")
-    if application is None:
+        normalized = normalize_manifest(data)
+        if template_dir is not None:
+            sb = normalized.get("sandbox", {})
+            recipes = []
+            source = sb.get("template", {}).get("source")
+            if source:
+                recipes.append(source)
+                recipes.extend(source.get("profiles", {}).values())
+            app = normalized.get("application")
+            if app and app["server"].get("source"):
+                recipes.append(app["server"]["source"])
+            for recipe in recipes:
+                _contained(template_dir, recipe["dockerfile"])
+                _contained(template_dir, recipe["context"], directory=True)
+            if app:
+                ids = set()
+                for hooks in app.get("hooks", {}).values():
+                    for hook in hooks:
+                        if hook["id"] in ids:
+                            raise ValueError("duplicate hook id")
+                        ids.add(hook["id"])
+                        if hook["type"] == "custom":
+                            _contained(
+                                template_dir, hook.get("cwd", "."), directory=True
+                            )
+            publication_metadata(template_dir, data)
         return []
-    limits = application["limits"]
-    if limits["maxToolSeconds"] > limits["maxRunSeconds"]:
-        errors.append("application.limits.maxToolSeconds must not exceed maxRunSeconds")
-    state = application["state"]
-    if "bindingRef" in state and state["bindingRef"] not in application["bindings"]:
-        errors.append("application.state.bindingRef must name an application.bindings key")
-    hooks = application.get("hooks", {})
-    seen = set()
-    for phase, entries in hooks.items():
-        for hook in entries:
-            if hook["id"] in seen:
-                errors.append(f"application.hooks: duplicate hook id {hook['id']!r}")
-            seen.add(hook["id"])
-    if template_dir is None:
-        return errors
-    root = template_dir.resolve()
-    deployment = application["deployment"]
-    sources = [(f"deployment.{key}", deployment[key], False)
-               for key in ("project", "toolchainLock") if key in deployment]
-    sources.extend((f"hooks.{phase}.{hook['id']}.cwd", hook["cwd"], True)
-                   for phase, entries in hooks.items() for hook in entries)
-    for label, source, directory in sources:
-        try:
-            path = (root / source).resolve()
-        except (OSError, RuntimeError):
-            errors.append(f"application.{label}: cannot resolve source path")
-            continue
-        if not path.is_relative_to(root):
-            errors.append(f"application.{label}: source must stay inside the template directory")
-        elif (directory and not path.is_dir()) or (not directory and not path.is_file()):
-            errors.append(f"application.{label}: referenced {'directory' if directory else 'file'} does not exist")
-    return errors
+    except (OSError, TypeError, ValueError) as error:
+        return [str(error)]
+
+
+def validate_v1(data: dict[str, Any], template_dir: Path | None = None) -> list[str]:
+    """Explicit first-public-version validator."""
+    return validate_manifest(data, template_dir)

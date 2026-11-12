@@ -1,0 +1,18 @@
+specVersion: 1
+name: qoder
+version: 1.1.4
+description:
+  zh: 在沙箱内运行 Qoder 编码任务，检查配置并获取无界面执行结果。
+  en: Run headless Qoder coding tasks in a sandbox, check setup and retrieve execution
+    results.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- qoder
+- ai-coding
+- ai-agent
+- development
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

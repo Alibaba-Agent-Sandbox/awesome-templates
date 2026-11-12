@@ -1,0 +1,17 @@
+specVersion: 1
+name: copilot-cli
+version: 1.0.2
+description:
+  zh: 在沙箱内使用 GitHub Copilot CLI 完成编码任务，配置模型服务并获取任务输出。
+  en: Use GitHub Copilot CLI for sandbox coding tasks with explicit model settings
+    and task output.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- copilot
+- ai-coding
+- byok
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

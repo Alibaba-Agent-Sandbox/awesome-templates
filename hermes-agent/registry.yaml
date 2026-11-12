@@ -1,0 +1,18 @@
+specVersion: 1
+name: hermes-agent
+version: 1.2.1
+description:
+  zh: 在隔离沙箱内运行 Hermes Agent，通过终端和文件工具完成开发任务。
+  en: Run Hermes Agent development tasks in an isolated sandbox with terminal and
+    file tools.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- hermes
+- nousresearch
+- ai-agent
+- tool-calling
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

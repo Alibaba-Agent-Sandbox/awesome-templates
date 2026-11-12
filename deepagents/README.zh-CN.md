@@ -2,6 +2,8 @@
 
 [English](README.md).
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 运行真实DeepAgents0.7.25本地文件/shell后端及显式兼容OpenAI聊天模型。默认不开放工具；allow_tools=true仅启用ls/read_file/write_file/edit_file/glob/grep/execute/delete八项。关闭通用及显式子Agent，工具中没有task/委派。

@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 运行真实的私有 Xvfb/Openbox/Chromium 桌面，提供 [OSWorld](https://github.com/xlang-ai/OSWorld) 截图、Linux AT-SPI、原生鼠标键盘操作与私有剪贴板 Unicode 粘贴和明确的任务评估子集。这是独立的 Alibaba 模板。完整 OSWorld benchmark、VM 快照、Office 和模型 agent 不在此浏览器切片内；[Issue 36](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/36) 保持开放。

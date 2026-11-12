@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 检查上传的音视频文件，生成有大小和时长限制的 MP4/H.264、WAV 或 FLAC 产物。命令实际执行固定版本的 `ffmpeg` 和 `ffprobe`，无需模型、GPU、外部账号或显示器。产物保留在工作目录，直到调用方删除或销毁沙箱。

@@ -2,6 +2,8 @@
 
 [中文](README.zh-CN.md)
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Runs Go 1.25.14, Rust/Cargo 1.90.0 and Eclipse Temurin JDK 21.0.12.1+1 in one non-root sandbox. `toolchain_smoke` compiles and executes a separate program with each language, then removes its owned sources, binaries and Go cache.

@@ -1,5 +1,7 @@
 # claude-code
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Run unchanged official Claude Code2.0.76 headless planning and Read/Edit/Write/Bash tools. Existing `claude` retains its Anthropic-oriented API; new `claude_byok` explicitly uses an authored Messages-to-OpenAI-Chat text/tool adapter. Compatible-model use is experimental and [not supported by Anthropic](https://code.claude.com/docs/en/llm-gateway); no Claude-model/subscription/vendor endorsement claim.

@@ -1,0 +1,17 @@
+specVersion: 1
+name: gemini
+version: 2.2.2
+description:
+  zh: 在沙箱内运行 Gemini CLI 编码任务，使用自己的模型凭证并获取任务结果。
+  en: Run Gemini CLI coding tasks in a sandbox with your model credentials and retrieve
+    the results.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- gemini
+- ai-agent
+- ai-coding
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

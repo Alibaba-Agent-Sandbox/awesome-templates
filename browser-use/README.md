@@ -2,6 +2,8 @@
 
 [中文](README.zh-CN.md)
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Runs the actual browser-use0.13.11 agent on a private local Chromium browser. It reads text DOM, performs browser interactions and returns a real PNG plus final URL/result. This complements model-free Playwright primitives; it does not use Browser Use Cloud or a remote browser.

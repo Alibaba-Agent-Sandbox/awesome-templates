@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 创建全新最小工程，启动真实开发服务器、查看日志并停止本次进程。每次只运行一个服务：命令接口9000、Next3000、Vite5173。不包含发布到 Vercel；HMR/WebSocket 尚未认证。

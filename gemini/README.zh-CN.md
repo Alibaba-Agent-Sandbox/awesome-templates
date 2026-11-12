@@ -1,5 +1,7 @@
 # gemini
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 运行官方未修改的 Google Gemini CLI0.64.0规划和文本/文件/shell工具。保留原gemini/setup/version接口；新增gemini_byok通过本项目编写的GenerateContent到Chat文本工具适配器使用显式兼容上游。原CLI和工具引擎不变，不代表Google模型、OAuth、订阅或完整功能兼容。见[官方配置](https://geminicli.com/docs/reference/configuration/)。

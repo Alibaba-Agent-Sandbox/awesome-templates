@@ -1,5 +1,7 @@
 # kimi-code
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Run official Kimi Code 2.2.0 for one headless prompt in an existing sandbox directory. Each turn gets private temporary Kimi settings and cleans its owned process group. Upstream prompt mode automatically permits tools, so the wrapper requires explicit allow_tools=True before launching it. Results are buffered stream-JSON text; this template does not provide resumable sessions.

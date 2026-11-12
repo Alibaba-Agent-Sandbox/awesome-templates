@@ -19,9 +19,9 @@ import shutil
 import tempfile
 import uuid
 import secrets
-import shlex
 import time
 import yaml
+from template_application import project_manifest, normalize_manifest
 from public_launch_e2e import CLI, CLIError, require, matches, command_url, application_headers, delete_sandbox, verify_cli_io, cleanup_named_deployment
 import ci_image_archive as images
 from template_http_acceptance import fixture_environment, run_controller
@@ -94,17 +94,14 @@ def publish(source: Path, receipt: dict, report: dict) -> None:
 
 def prepared_launch_manifest(source: Path, template_id: str, *, runtime_env: dict[str, str] | None = None) -> dict:
     """Keep original launch declarations; apply prepared ENV defaults and its owned ID."""
-    manifest=yaml.safe_load((source/'template.yaml').read_text())
+    manifest=normalize_manifest(yaml.safe_load((source/'template.yaml').read_text()))
+    sandbox=manifest['sandbox']
     if runtime_env:
-        manifest['env']={**runtime_env, **manifest.get('env', {})}
-        assignments=' '.join(shlex.quote(key+'='+value) for key,value in manifest['env'].items() if value)
-        if assignments:
-            for key in ['start_cmd','ready_cmd']:
-                if manifest.get(key):
-                    manifest[key]='/usr/bin/env -- '+assignments+' /bin/sh -c '+shlex.quote(manifest[key])
-    manifest.update(template_id=template_id,provider='alicloud-express')
-    manifest.pop('image',None)
-    return manifest
+        instance=sandbox.setdefault('instance', {})
+        instance['envs']={**runtime_env, **instance.get('envs', {})}
+    sandbox['provider']='alicloud-express'
+    sandbox['template']={'reference':template_id}
+    return normalize_manifest(manifest)
 
 
 def exact_templates(cli: CLI, alias: str) -> list[str]:
@@ -156,9 +153,10 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
     from agent_sandbox import ProviderSandbox
     from agent_sandbox.models.errors import SandboxNotFoundError
     import httpx
-    manifest=prepared_launch_manifest(source,template_id,runtime_env=runtime_env)
+    raw_manifest=prepared_launch_manifest(source,template_id,runtime_env=runtime_env)
+    manifest=project_manifest(raw_manifest, source)
     runtime=private/'prepared-template';runtime.mkdir()
-    (runtime/'template.yaml').write_text(yaml.safe_dump(manifest,sort_keys=False))
+    (runtime/'template.yaml').write_text(yaml.safe_dump(raw_manifest,sort_keys=False))
     environment=os.environ.copy()
     for key,value in manifest.get('env',{}).items():
         if value=='':environment.pop(key,None)
@@ -166,8 +164,8 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
     server_fixture,controller_fixture,fixture_proof=fixture_environment(source.name)
     environment.update(server_fixture)
     # Empty fixture declarations must be visible to the shared launch environment resolver.
-    manifest.setdefault('env',{}).update({key:'' for key in server_fixture})
-    (runtime/'template.yaml').write_text(yaml.safe_dump(manifest,sort_keys=False))
+    raw_manifest['sandbox'].setdefault('instance',{}).setdefault('envs',{}).update({key:'' for key in server_fixture})
+    (runtime/'template.yaml').write_text(yaml.safe_dump(raw_manifest,sort_keys=False))
     cli=CLI(os.environ.get('ABX','abx'),'alicloud-express',environment)
     alias='image-app-'+uuid.uuid4().hex[:16]
     report.update(test_configuration=fixture_proof,sandbox_create='abx deploy',
@@ -285,7 +283,7 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,private_root:
         require(not exact_templates(cli,alias),'unique native registration alias preflight')
         images.save_private(platform_path,{'alias':alias,'preflight_absent':True,'registration_attempted':True,'sandbox_ids':[]})
         username,password=images.temporary_registry_credentials()
-        resources=yaml.safe_load((source/'template.yaml').read_text()).get('resources',{})
+        resources=project_manifest(yaml.safe_load((source/'template.yaml').read_text()), source)['resources']
         # Registration does not prestart an anonymous application: the shared launch core owns startup and runtime env.
         registered=native_template(cli, 'create', {'image': image_ref, 'name': alias, 'generation': 2,
             'cpu': resources.get('cpu', 2), 'memory_size': resources.get('memory', 2048),
@@ -318,7 +316,7 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,private_root:
         report['passed']=report.get('application_result')=='PASS' and report.get('cleanup_verified') is True and template_clean and registry_clean and not report.get('local_close_errors') and report.get('image_provenance',{}).get('tag_digest_verified_after_runtime') is True and (not http or report.get('http_acceptance',{}).get('passed') is True)
         report['result']='PASS' if report['passed'] else 'FAIL';images.save_private(private/'result.json',report)
     if report['passed']:
-        manifest=yaml.safe_load((source/'template.yaml').read_text())
+        manifest=project_manifest(yaml.safe_load((source/'template.yaml').read_text()), source)
         receipt={**report,'template_version':str(manifest['version'])}
         publish(source,receipt,report);shutil.rmtree(private)
     else:

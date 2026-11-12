@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 `ocr(image_path)` 处理工作区中的一张 PNG/JPEG，返回文字、尺寸、词数，以及私有 TXT/TSV 文件路径和 SHA256。实际运行 OCR 引擎，无需模型、API key 或网络。空白图片可以正常返回零个词。当前只安装英文识别数据；中文文档不代表支持中文 OCR。

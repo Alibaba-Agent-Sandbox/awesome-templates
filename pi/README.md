@@ -1,5 +1,7 @@
 # Pi
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Run the official [Pi coding CLI](https://github.com/earendil-works/pi) in Alibaba's sandbox base image. This template exposes one ephemeral print-mode task against an OpenAI-compatible model endpoint. It is an independent template, with no E2B template registration dependency.

@@ -1,40 +1,23 @@
+specVersion: 1
 name: document-tools
-version: "1.1.3"
-description: "Bounded Markdown/HTML to DOCX, TXT, PPTX and headless LibreOffice PDF."
-author: "alibaba-agent-sandbox"
-license: Apache-2.0
-spec_version: 5
-base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
-generation: 2
-start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
-ready_cmd: "agent-sandbox-server healthcheck --port 9000"
-resources:
-  cpu: 2
-  memory: 4096
-ports: [9000]
-tags: [pandoc, documents, markdown, docx, cpu]
-priority: P1
-wave: 1
-env:
-  ABX_SERVER_TOKEN: ""
-smoke:
-  - command: document_version
-    args: {}
-    expect: "pandoc 3.1.11.1"
-  - command: document_smoke
-    args: {}
-    expect: "Pandoc Markdown DOCX/TXT artifacts OK"
-  - command: office_version
-    args: {}
-    expect: "LibreOffice 4:25.2.3-2+deb13u9"
-  - command: document_extended_smoke
-    args: {}
-    expect: "Pandoc HTML/PPTX and LibreOffice PDF artifacts OK"
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations:
-    - commands.list
-    - commands.run
+sandbox:
+  template:
+    source:
+      dockerfile: Dockerfile
+      context: .
+    props:
+      cpu: 2
+      memory: 4096
+  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+  ready: agent-sandbox-server healthcheck --port 9000
+  instance:
+    envs:
+      ABX_SERVER_TOKEN: ''
+  services:
+    app:
+      protocol: agent-sandbox-server
+      version: 2
+      port: 9000
+      operations:
+      - commands.list
+      - commands.run

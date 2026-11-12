@@ -164,13 +164,14 @@ def test_public_export_refuses_mixed_public_and_verifier_source_labels():
 def test_prepared_image_uses_shared_startup_contract_and_current_services(tmp_path):
     import yaml
     source=tmp_path/'example';source.mkdir()
-    manifest={'spec_version':5,'name':'example','version':'1.0.0','start_cmd':'python commands.py',
-        'ready_cmd':'python check.py','env':{'ABX_SERVER_TOKEN':'','OTHER':'fixed'},
-        'ports':[9000,9001],'provides':{'app':{'protocol':'agent-sandbox-server','version':2,
-        'port':9000,'operations':['commands.run']}},'smoke':[{'command':'hello'}]}
+    from v1_test_support import resource
+    manifest=resource('example',start='python commands.py',ready='python check.py',env={'ABX_SERVER_TOKEN':'','OTHER':'fixed'},services={'app':{'protocol':'agent-sandbox-server','version':2,'port':9000,'operations':['commands.run']}})
     (source/'template.yaml').write_text(yaml.safe_dump(manifest))
     actual=review.prepared_launch_manifest(source,'owned-template')
-    assert actual==dict(manifest,provider='alicloud-express',template_id='owned-template')
+    assert actual['sandbox']['template']['reference']=='owned-template'
+    for key in ['start','ready','services']:
+        assert actual['sandbox'][key]==manifest['sandbox'][key]
+    assert actual['sandbox']['instance']['envs']==manifest['sandbox']['instance']['envs']
     assert yaml.safe_load((source/'template.yaml').read_text())==manifest
 
 
@@ -195,7 +196,9 @@ def test_native_inventory_matches_only_exact_owned_name():
 def test_runtime_digest_gate_controls_final_result_even_after_application_and_cleanup_pass(tmp_path,monkeypatch,observed_digest,expected_status):
     import yaml
     source=tmp_path/'repo'/'example';source.mkdir(parents=True)
-    (source/'template.yaml').write_text(yaml.safe_dump({'name':'example','version':'1.0.1','resources':{'cpu':2,'memory':2048}}))
+    from v1_test_support import resource, publication
+    (source/'template.yaml').write_text(yaml.safe_dump(resource('example')))
+    publication(source)
     monkeypatch.setattr(review,'controller_missing_imports',lambda _:[])
     monkeypatch.setattr(review,'check_image_cli',lambda:None)
     monkeypatch.setattr(images,'download_verified',lambda *args:None)

@@ -4,6 +4,8 @@
 
 在隔离工作目录中运行 OpenCode 编码任务，通过 CLI、Python 或 HTTP 调用，并下载生成的文件。
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 `opencode_run` 以非交互方式调用沙箱内的 OpenCode，完成代码编写、修改与重构，返回文本、JSON 事件和会话 ID。后续传入该 ID 可以继续同一任务。`opencode_serve_start` 可按需启动 OpenCode 自身的 HTTP 服务，普通编码任务不需要额外启动它。

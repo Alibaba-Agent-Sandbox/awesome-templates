@@ -2,6 +2,8 @@
 
 通过受限的本地 Agents HTTP API 调用固定版本的 Codex 和 Qwen Code。
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 安装 `@openai/codex@0.162.1`、`@qwen-code/qwen-code@0.23.0`，提供版本检查和六个
@@ -241,7 +243,7 @@ HTTP 使用 Codex 前，先 `POST /commands/agents_configure_codex`，body 为 `
 | `ABX_AGENTS_STATE_DIR` | 否 | 原生本地会话存储目录 `/home/user/.agent-sandbox/agents`，随实例删除 |
 | `CODEX_HOME` | 否 | Codex 状态目录，默认 `/home/user/.codex` |
 | `WORKSPACE` | 否 | `/home/user/workspace`；会话请求应显式指定目标目录 |
-| `ABX_SERVER_POLICY_FILE` | 镜像已设置 | 随附策略文件路径；canonical start_cmd 还显式传入 `--policy` |
+| `ABX_SERVER_POLICY_FILE` | 镜像已设置 | 随附策略文件路径；sandbox.start 还显式传入 `--policy` |
 
 修改策略会改变 HTTP 接口范围；本模板契约基于随附 allowlist。
 

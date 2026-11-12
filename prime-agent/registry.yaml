@@ -1,0 +1,18 @@
+specVersion: 1
+name: prime-agent
+version: 1.0.2
+description:
+  zh: 通过 Prime Agent 与 Python REPL 执行编码和计算任务，连接你配置的兼容模型。
+  en: Use Prime Agent and a Python REPL for coding and computation through a compatible
+    model.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- prime-agent
+- coding-agent
+- rlm
+- python
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

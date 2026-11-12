@@ -1,0 +1,16 @@
+specVersion: 1
+name: opencode
+version: 2.0.5
+description:
+  zh: 运行 OpenCode 无界面编码任务，或启动服务供其他程序调用。
+  en: Run headless OpenCode coding tasks or start its server for programmatic access.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- opencode
+- ai-agent
+- ai-coding
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

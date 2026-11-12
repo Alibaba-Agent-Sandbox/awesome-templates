@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 提供最小 Python 开发沙箱：问候、执行内联 Python、运行上传的脚本和 pytest 测试，同时演示隐藏命令和自定义 GET 路由。`agent-sandbox-server` 在 9000 端口提供命名命令。

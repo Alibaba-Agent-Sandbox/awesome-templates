@@ -34,10 +34,11 @@ def select(text: str) -> list[str]:
     catalog = yaml.safe_load((root / "awesome-templates.yaml").read_text())
     available = {item["path"] for item in catalog["templates"]
                  if item.get("kind", "source") == "source"
-                 and yaml.safe_load((root / item["path"] / "template.yaml").read_text()).get("spec_version") == 5}
+                 and yaml.safe_load((root / item["path"] / "template.yaml").read_text()).get("specVersion") == 1
+                 and yaml.safe_load((root / item["path"] / "template.yaml").read_text()).get("application", {}).get("type") != "agents-api"}
     names = sorted(available) if text == "all" else text.split(",")
     if not names or len(set(names)) != len(names) or any(name not in available for name in names):
-        raise ValueError("select unique spec5 Sandbox template names or all; managed applications require separate Gateway deployment acceptance")
+        raise ValueError("select unique v1 Sandbox template names or all; managed applications require separate Gateway deployment acceptance")
     return names
 
 
@@ -55,7 +56,7 @@ def plan() -> int:
     save(Path("canonical-authorization.json"), {"result": "AUTHORIZED" if enabled else "BLOCKED",
         "cloud_executed": False, "entry_point": "public-template-launch.yml", "reason": "exact-head opt-in accepted" if enabled else
         "default disabled, unapproved workflow head or fork; no cloud acceptance",
-        "templates": names, "scope": "spec5-single-sandbox",
+        "templates": names, "scope": "v1-single-sandbox",
         "managed_applications": "excluded-unverified-use-application-deployment-acceptance"})
     with open(os.environ["GITHUB_OUTPUT"], "a") as stream:
         stream.write("enabled=" + str(enabled).lower() + "\n")

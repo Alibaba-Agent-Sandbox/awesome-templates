@@ -14,7 +14,10 @@ from prepare_steps import BASE, ROOT, instructions, prepare
 def fixture(tmp_path: Path, extra: str = "") -> Path:
     source = tmp_path / "source"
     source.mkdir()
-    (source / "template.yaml").write_text("name: example\nversion: 1.0.0\n")
+    (source / "template.yaml").write_text("specVersion: 1\nname: example\nsandbox:\n  template:\n    source: {dockerfile: Dockerfile}\n    props: {cpu: 2, memory: 2048}\n")
+    (source / "registry.yaml").write_text("specVersion: 1\nname: example\nversion: 1.0.0\ndescription: {en: Example, zh: 示例}\nauthor: example\nlicense: Apache-2.0\nreadme: {en: README.md, zh: README.zh-CN.md}\n")
+    for file in ["README.md", "README.zh-CN.md"]:
+        (source / file).write_text("Example\n")
     (source / "commands.py").write_text("# actual source with 'quotes' and 中文\n")
     (source / "Dockerfile").write_text(BASE.join(["FROM ", "\n"]) +
         "ENV FIRST=one SECOND=\"two words\"\n" + extra +
@@ -129,7 +132,7 @@ def test_explicit_docker_environment_reaches_runtime_with_manifest_priority(tmp_
     source=fixture(tmp_path,'ENV PATH="/opt/tool/bin:${PATH}" FIRST=docker\n')
     import yaml
     data=yaml.safe_load((source/'template.yaml').read_text())
-    data['env']={'FIRST':'manifest','TOKEN':''}
+    data['sandbox']['instance']={'envs':{'FIRST':'manifest','TOKEN':''}}
     (source/'template.yaml').write_text(yaml.safe_dump(data))
     prepared,_=prepare(source)
     assert prepared['env']=={'PATH':'/opt/tool/bin:'+prepare_steps.BASE_PATH,
@@ -208,7 +211,7 @@ def test_preparation_binds_every_manifest_field(tmp_path):
     _,proof=prepare(source)
     assert proof['source_manifest_contract_sha256']==manifest_contract_sha256((source/'template.yaml').read_bytes())
     original=proof['source_manifest_contract_sha256']
-    path=source/'template.yaml';path.write_text(path.read_text()+'tested_on: [alicloud-express]\n')
+    path=source/'template.yaml';path.write_text(path.read_text().replace('memory: 2048', 'memory: 3072'))
     assert prepare(source)[1]['source_manifest_contract_sha256']!=original
-    path.write_text(path.read_text()+'start_cmd: changed\n')
+    path.write_text(path.read_text().replace('memory: 3072', 'memory: 4096'))
     assert prepare(source)[1]['source_manifest_contract_sha256']!=original

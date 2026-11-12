@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 在一个非 root 沙箱中运行 Go 1.25.14、Rust/Cargo 1.90.0 和 Eclipse Temurin JDK 21.0.12.1+1。`toolchain_smoke` 分别编译并运行三个语言的真实程序，结束后删除本次源文件、二进制和 Go 缓存。

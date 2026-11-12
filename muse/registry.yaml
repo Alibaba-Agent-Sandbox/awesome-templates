@@ -1,0 +1,17 @@
+specVersion: 1
+name: muse
+version: 1.0.3
+description:
+  zh: 运行 Meta Muse Code 编码任务，通过配置的 Responses 兼容模型服务处理请求。
+  en: Run Meta Muse Code coding tasks through your configured Responses-compatible
+    model service.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- muse
+- meta
+- coding-agent
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

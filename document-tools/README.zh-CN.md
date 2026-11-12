@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 把工作目录内 UTF-8 Markdown 转为真实 DOCX 或纯文本，返回路径、字节数和 SHA256，通过 files API 下载产物。无需模型、外部账号、显示器、GPU 或特权守护进程。

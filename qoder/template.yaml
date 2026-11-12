@@ -1,33 +1,25 @@
+specVersion: 1
 name: qoder
-version: "1.1.4"
-description: "Pinned Qoder headless CLI with typed named commands and a local Python compatibility command."
-author: "alibaba-agent-sandbox"
-license: Apache-2.0
-spec_version: 5
-base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
-generation: 2
-start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
-ready_cmd: "agent-sandbox-server healthcheck --port 9000"
-resources:
-  cpu: 2
-  memory: 2048
-ports: [9000]
-tags: [qoder, ai-coding, development]
-priority: P2
-wave: other
-env:
-  WORKSPACE: "/home/user/app"
-  ABX_SERVER_TOKEN: ""
-  QODER_PERSONAL_ACCESS_TOKEN: ""
-smoke:
-  - command: qoder_version
-    args: {}
-    expect: "1.1.72"
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations:
-    - commands.list
-    - commands.run
+sandbox:
+  template:
+    source:
+      dockerfile: Dockerfile
+      context: .
+    props:
+      cpu: 2
+      memory: 2048
+  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+  ready: agent-sandbox-server healthcheck --port 9000
+  instance:
+    envs:
+      WORKSPACE: /home/user/app
+      ABX_SERVER_TOKEN: ''
+      QODER_PERSONAL_ACCESS_TOKEN: ''
+  services:
+    app:
+      protocol: agent-sandbox-server
+      version: 2
+      port: 9000
+      operations:
+      - commands.list
+      - commands.run

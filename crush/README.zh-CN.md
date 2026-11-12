@@ -2,6 +2,8 @@
 
 [English](README.md).
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 运行官方原生Crush0.98.1，显式配置兼容OpenAI的提供方。默认无工具；allow_tools=true仅启用bash/edit/multiedit/view/write/ls/glob/grep八项。禁用子Agent、MCP、联网抓取、后台任务及LSP工具。

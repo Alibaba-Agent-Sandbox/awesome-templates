@@ -1,33 +1,26 @@
+specVersion: 1
 name: goose
-version: "1.0.2"
-description: "Official Goose1.54.0 CLI with private compatible-provider config and explicit developer tools."
-author: alibaba-agent-sandbox
-license: Apache-2.0
-spec_version: 5
-base: fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
-generation: 2
-start_cmd: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
-ready_cmd: agent-sandbox-server healthcheck --port 9000
-resources:
-  cpu: 2
-  memory: 2048
-ports: [9000]
-tags: [goose, coding-agent, openai-compatible]
-priority: P0
-wave: 1
-env:
-  ABX_SERVER_TOKEN: ""
-  GOOSE_API_KEY: ""
-  GOOSE_BASE_URL: ""
-  GOOSE_MODEL: ""
-smoke:
-  - command: goose_version
-    expect: "1.54.0"
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations:
-    - commands.list
-    - commands.run
+sandbox:
+  template:
+    source:
+      dockerfile: Dockerfile
+      context: .
+    props:
+      cpu: 2
+      memory: 2048
+  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+  ready: agent-sandbox-server healthcheck --port 9000
+  instance:
+    envs:
+      ABX_SERVER_TOKEN: ''
+      GOOSE_API_KEY: ''
+      GOOSE_BASE_URL: ''
+      GOOSE_MODEL: ''
+  services:
+    app:
+      protocol: agent-sandbox-server
+      version: 2
+      port: 9000
+      operations:
+      - commands.list
+      - commands.run

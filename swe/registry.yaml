@@ -1,0 +1,17 @@
+specVersion: 1
+name: swe
+version: 1.2.0
+description:
+  zh: 使用 mini-swe-agent 处理指定 SWE-bench Flask 任务，并通过评估器检查修改结果。
+  en: Use mini-swe-agent for the included SWE-bench Flask task and evaluate the resulting
+    changes.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- swe-bench
+- mini-swe-agent
+- evaluation
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

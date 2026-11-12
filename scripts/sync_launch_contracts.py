@@ -25,13 +25,13 @@ def verify() -> None:
         if hashlib.sha256((TARGET / name).read_bytes()).hexdigest() != lock['files'][name]:
             raise ValueError('contract content differs from lock: ' + name)
     contract = json.loads((TARGET / 'launch-v1.json').read_text())
-    schema = json.loads((ROOT / 'spec/template-v5.schema.json').read_text())
-    if schema['properties']['spec_version']['const'] != contract['template_spec_version']:
+    schema = json.loads((ROOT / 'spec/template-v1.schema.json').read_text())
+    if schema['properties']['specVersion']['const'] != contract['template_spec_version']:
         raise ValueError('source specification differs from launch contract')
     if any(field in schema['properties'] for field in contract['retired_keys']):
         raise ValueError('source schema retains retired launch fields')
-    service = schema['properties']['provides']['additionalProperties']
-    if service['required'] != contract['service_keys']:
+    service = schema['$defs']['service']
+    if set(service['properties']) != set(contract['service_keys']):
         raise ValueError('service fields differ from launch contract')
 
 

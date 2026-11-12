@@ -2,6 +2,8 @@
 
 [English](README.md)。
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 在自有一次性沙箱中，通过类型明确且有界的命名命令调用Cognition原版Devin CLI3000.11.92。推理与工具由原版负责；没有替代规划器或兼容模型兜底。自动工具必须显式allow_unsafe_tools=True。

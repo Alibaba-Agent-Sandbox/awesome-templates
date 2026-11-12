@@ -41,7 +41,7 @@ class AuthorizationTest(unittest.TestCase):
                     text = Path('canonical-authorization.json').read_text()
                     receipt = json.loads(text)
                     self.assertFalse(receipt['cloud_executed'])
-                    self.assertEqual(receipt['scope'], 'spec5-single-sandbox')
+                    self.assertEqual(receipt['scope'], 'v1-single-sandbox')
                     self.assertIn('unverified', receipt['managed_applications'])
                     self.assertEqual(receipt['entry_point'], 'public-template-launch.yml')
                     self.assertNotIn('synthetic-private-key', text)

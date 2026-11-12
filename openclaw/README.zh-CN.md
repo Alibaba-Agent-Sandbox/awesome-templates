@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 运行带认证、由当前服务管理的原生 OpenClaw 网关。配置自己的兼容模型 endpoint、API Key 和模型 ID 后，可以汇总费用，并使用返回的会话 ID 继续追问。

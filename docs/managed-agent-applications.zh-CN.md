@@ -1,92 +1,52 @@
 # 托管 Agent 应用
 
-本文定义清单契约。部署应用需要兼容的 CLI 与运行时发行版；示例通过静态检查并不代表已安装运行时或完成模板部署。
+[English](managed-agent-applications.md)
 
-规范 6 描述一个稳定公开 Gateway 与每会话独占 Sandbox 的应用。Agent 的模型、工具循环和 CLI 在 Sandbox 内运行；业务调用方使用 Gateway URL 与业务凭据，Sandbox 地址和管理凭据留在内部。
-
-封闭契约是 [template-v6.schema.json](../spec/template-v6.schema.json)。规范 5 保留既有生命周期与部署语义。应用部署必须显式执行；导入、构建或创建 Sandbox 不会部署 Server 资源或运行主机 hooks。
-
-显式 `application.deployment.profile: fc-managed-agents` 从[profile 默认值](../contracts/application-profile/profiles.json)补齐固定字段。编写清单时可省略重复常量，显式指定冲突值会报错。凭据、binding 引用、地域、镜像、资源大小与可配置预算没有默认值。精简形式需要支持 profile 展开的 CLI；CLI 0.5.10 需要完整字段。
+[Agents API 模板](../agents-api/README.zh-CN.md)提供稳定 Gateway，每个活跃 Session 使用独占 Sandbox，模型、CLI 与工具循环在其中运行。本分支使用 YAML v1 和匹配的开发构建；已发布 CLI0.5.10 不接受新格式。
 
 ## 运行时与生命周期
 
-profile 提供以下运行时默认值；本段只有 `sandbox.provider` 需要显式选择：
+声明 `application.type: agents-api`，用 `application.roles.gateway/worker/dispatcher` 引用三个不同的原生 FC 资源。协调器补齐私有桥接启动、就绪和服务定义；作者不再重复协议、版本和 operations 常量。
 
-```yaml
-runtime:
-  placement: in-sandbox
-  driver: sandbox-local-api
-  profile: managed-bridge-v1
-gateway:
-  placement: fc-web
-sandbox:
-  provider: alicloud-express
-  lifetime: per-session
-  workspace: exclusive
-  requiredFeatures: [sandbox.lifecycle, ports.url]
-```
+首次输入分配计算，后续轮次保留同一原生 thread 和工作区。`sandbox.instance.timeout` 是唯一最长寿命，Managed 默认3600秒。`application.sessions.idleTimeoutSeconds` 默认900秒，必须小于最长寿命；轮次/工具预算默认600/60秒，必须适合实例寿命。逻辑 Session、存活 Sandbox、队列和保留存储分别限额，详见[字段全表](template-fields.zh-CN.md)。
 
-私有桥接协议与 `server-core-agents` 不同。它使用 `python -m agent_sandbox.server.managed --port 9000` 启动，以自动生成的应用令牌保护能力发现和托管操作，保留只读 `/health` 就绪探测。根级 `provides.app` 声明 `protocol: agent-sandbox-managed-bridge`、`version: 1` 和端口 9000。
-
-根级 smoke 声明桥接操作及预期，例如：
-
-```yaml
-smoke:
-  - operation: health
-    expect: {status: ok, protocol: agent-sandbox-managed-bridge/v1}
-```
-
-第一次输入按需分配计算，后续轮次保留同一个原生 thread 与工作区。每会话同时最多一个执行或采集中的轮次。逻辑会话、存活及不确定 Sandbox、队列和保留存储分别限额。读取状态或事件不延长空闲期；新任务必须适合 Sandbox 剩余最大寿命及采集、清理余量。
-
-close 停止接收任务并释放计算，已提交结果按保留期可读。delete 撤下公开数据，只保留完成清理所需的内部记录。提交、重启或删除结果未知时，不自动重放，也不当作资源已不存在。
+close 释放计算并保留已提交结果；delete 撤下公开数据，同时完成清理。不确定的提交或资源删除需要协调恢复；队列新轮次不等于 steering 当前轮次。能力接口列出 OpenAI 风格子集及显式扩展，不表示实现 OpenAI 托管 harness。
 
 ## 配置与绑定
 
-`application.api.protocol` 为 `agent-sandbox-managed-agents/v1`。Gateway 通过能力发现说明受支持的 OpenAI 风格子集及托管扩展。不支持的 steering、工具和设置明确报错；排队新轮次不能静默冒充引导当前轮。
+资源配置都在 [template.yaml](../agents-api/template.yaml)。`${env('NAME')}` 引用本地未提交的 `.env` 或进程环境。无须另一份 bindings JSON；Registry 提问也不是运行必填文件。
 
-binding 保存引用名，不写密钥值或连接 URL。以下目标角色由 profile 默认提供，引用名仍需显式填写：
+| 路径 | 取值及来源 |
+| --- | --- |
+| application.state.databaseUrl | 数据库管理员提供的已有 PostgreSQL URL。 |
+| application.state.vpcConfig | 可选已有 vpcId、不同的 vSwitchIds 和 securityGroupId；只借用，不创建。 |
+| application.state.databaseCa | 可选私有 CA 证书 PEM，使用原生表达式；保留数据库主机名验证。 |
+| application.bindings.sandboxAccess | 已有平台 apiKey/baseUrl/domain/region；供 Server 管理实例。 |
+| application.bindings.model | 模型 apiKey/baseUrl/model 和 codex 或 qwen-code 适配器；Worker 向 Session Sandbox 提供模型配置。 |
+| application.bindings.clientAuth | 默认 generate:true，自动生成并在本机安全保留业务凭据；可显式提供支持的哈希、owner、scopes。 |
+| application.bindings.internalAuth | 单独生成内部认证；执行角色权威来自一致的原生 role 字段。 |
+| application.bindings.ingress | 选择支持的 Gateway alias/domain 入口；不是 Sandbox 域名。 |
 
-| 绑定 | 目标 | 用途与来源 |
-| --- | --- | --- |
-| 状态（`state.bindingRef`） | gateway、worker、dispatcher | 部署环境解析的已有 PostgreSQL 服务引用。 |
-| `sandboxAccess` | worker、dispatcher | 用于生命周期和核查的已有 Sandbox 访问配置。 |
-| `model` | sandbox-creation | 有权限的模型 Key、base、model 引用，仅由 Worker 解析并注入 guest。 |
-| `clientAuth` | gateway | 业务认证配置；生成的令牌安全交付调用方。 |
-| `internalAuth` | gateway、worker、dispatcher | 独立的私有控制身份或签名配置。 |
-| 入口（`deployment.ingressBindingRef`） | deployment-publisher | 有归属记录的稳定路由、alias 或域名配置。 |
+Guest 应用认证令牌自动生成，与平台、云账号、模型凭据分开。额外 Sandbox env/metadata/volumes 受 Managed 所有权约束：不能覆盖系统、模型、认证变量和托管 metadata；挂载不能遮盖工作区和状态目录。协调器不支持 pause/resume 生命周期。自定义实例环境值只交给 Worker。
 
-`model` 默认使用 `resolverRole: worker` 和 `allowedEnv: [OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL]`。显式 `allowedEnv` 可选择这些名称以及 `CODEX_API_KEY` 的非空子集。云、数据库和业务认证配置不复制进 Sandbox。每会话应用 token 自动生成，不是云控制台申请的 API Key。
-
-部署解析器检查 binding 实际值类型与归属，缺少必需值阻止发布。状态 binding 的实际值可以是 PostgreSQL URL 字符串，或 `{databaseUrl, vpcConfig?, databaseCa?}` 对象。可选 `vpcConfig` 只包含 `vpcId`、不同的 `vSwitchIds` 和 `securityGroupId`，用于三个 FC 角色的部署网络，不注入 guest。网络资源均为借用，不自动创建 NAT/路由，也不证明 endpoint 可达。可选 `databaseCa` 接受有界的纯证书 PEM 字符串、环境引用或 CLI 宿主机文件引用，保留数据库主机名验证；它仅配置 Server 信任，不进入镜像、计划、收据或 guest。CLI 内部固定数据库持久身份，用户无需手工提供该身份。同 UID 的 Agent 工具可以访问有意注入该 Sandbox 的模型凭据，但不获得 Server 控制凭据。
+同 UID Agent 工具可读取明确注入的模型凭据。Server 的数据库、管理权限及业务/内部认证不属于 Guest 环境配置。计划不得暴露解析后的凭据和原生环境值。
 
 ## Server 构建与部署
 
-`application.deployment` 选择 `profile: fc-managed-agents`，精确的已发布 `fc3@X.Y.Z` 组件、部署 `accessRef`、地域、入口引用和 `revisionStrategy: immutable-workers-with-drain`。
+Server 配方固定 SDK 开发源码提交 `1079841307f1f63253ae68fdda6e6d2d1e77e851`，Guest 保留已发布 Server0.4.0a7。源码包元信息仍为 a7，仅凭版本号不能识别 v1 运行时。
 
-Server 产物二选一：
+`deployment` 是原生 Serverless Devs edition3 项目。使用真实 `component: fc3@<版本>` 和原生 props；cpu、memorySize、timeout、role、logConfig、vpcConfig 的名称和单位不另造一层。三个 Managed 角色采用相同固定组件版本、地域和执行角色权威。用户填写的原生 memory4096 不被改回协调器常量。
 
-```yaml
-serverBuildRecipe:
-  dockerfile: server/Dockerfile
-  context: .
-```
+`application.server` 在 source 配方 `{source: {dockerfile, context}}` 和 digest 固定 image 中二选一，提供真实 Server 镜像输入。协调器负责生成函数名、revision 说明、容器启动和内部控制配置。域名等额外资源及 output 依赖仍放在原生项目。
 
-或提供带 `@sha256:<64位小写十六进制>` 的不可变 `serverImage`。构建输入限于模板上下文。CLI 构建并解析镜像后，才冻结计划和自动生成的工具链完整性锁。本 profile 不接受任意 `deployment.steps` 或另一套工作流 DSL。
-
-profile 准备 Sandbox Template，创建 revision 专属 Worker，部署候选 Gateway/Dispatcher，验证后发布稳定入口。生产 timer 关闭期间，验证使用受限私有派发。公开 endpoint 来自实际验证的入口，不猜测组件返回字段。function-alias 与 custom-domain binding 有不同提供商要求；测试函数 URL 不等于生产域名保证。
-
-更新时 Session 固定原 revision；旧 Worker 和兼容 Server 产物保留到会话排空。用 `abx status NAME --revisions` 查看保留版本，再用 `abx delete NAME --revision REVISION --yes` 删除指定版本。`abx delete NAME --yes` 清理部署自有资源；操作中断或结果不确定时用 `abx recover NAME` 核查。通过 `--build` 提供的可复用构建产物和用户提供的 Server 镜像属于借用资源。独立构建不再被任何部署使用后，可用 `abx template build --clean BUILD --yes` 清理。Sandbox 构建镜像可能仍列在 `retained_build_artifacts` 中，需要显式按仓库说明清理。已有数据库、网络和模型服务仍由你管理。
+构建、部署、配置解析、持久化、版本路由与清理仍由实际运行时承接。静态检查不求值 Devs 表达式，也不证明云部署可用。普通 Sandbox 与 Serving 可独立并列声明；未接入的联合执行会在副作用前拒绝，不自动选择本协调器。
 
 ## Hooks 与输出
 
-`beforeApply`、`afterReady` 每阶段最多八个 hook，ID 全局唯一。`custom` 声明 argv、安全相对 cwd、1–900 秒期限和显式环境变量白名单。`serverless-devs` 引用 `gateway`、`worker` 或 `dispatcher`，只支持有界的 `command: info` 查询。部署和销毁属于受管理步骤，不能靠无记录的 hook 副作用实现。
+可选 beforeApply/afterReady hooks 为有界 custom argv/cwd/timeout/envAllowlist 或 Serverless Devs 角色 info 检查。源码初始化和普通 Sandbox 启动不执行它们。[模板](../agents-api/template.yaml)带部署后双轮业务检查，需要已说明的模型服务并可能产生费用。
 
-输出是已验证的 `publish.outputs.endpoint` 和协议 `agent-sandbox-managed-agents/v1`。健康、语法、URL 解析和 hook 成功不替代业务任务实际完成。
+协调器提供稳定 endpoint 和安全保留的客户端凭据。更新时旧 Session 继续路由原 revision；关闭 Session 后再删未使用版本。借用的数据库、网络、域名和外部镜像仍由资源拥有者管理。
 
 ## 调用与资源使用
 
-先向 Gateway 上传输入，再引用不透明 file ID。文件在轮次边界持有会话执行权时安装进工作区。发布产物是带 turn、path、digest 身份的不可变捕获副本；删除发布副本不删除活工作区原文件。
-
-重试受支持的创建或提交调用时复用已保存的幂等键。流重连读取已提交事件，不取消或重新启动 Agent。以具体 turn 及其已保存 items 判定结果。close 释放计算，过期前下载需保留的输出，不再需要时删除公开数据。
-
-用户操作写入模板 README；实现审查、验证证据及确切测试版本保留在所属仓库工程记录。
+客户端使用 HTTP，不访问私有桥接或单个 Sandbox 地址。见 [API 参考](managed-agents-api.zh-CN.md)和模板里的完整 Python HTTP/URL 示例。项目没有专用 Gateway SDK；能力接口明确支持范围，路径相似不代表任意 SDK 互操作。

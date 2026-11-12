@@ -1,5 +1,7 @@
 # kimi-code
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 在已有沙箱目录运行官方 Kimi Code 2.2.0 的一次无头任务。每次使用私有临时配置，结束、失败和超时清理自有进程组。上游 prompt 模式自动许可工具，wrapper 须显式 allow_tools=True 才启动；返回缓冲的 stream-JSON 字符串，不提供会话续接。

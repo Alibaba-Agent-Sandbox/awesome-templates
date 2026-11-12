@@ -1,34 +1,27 @@
+specVersion: 1
 name: stagehand
-version: "1.1.3"
-description: "Native Stagehand4.3.0 local Chromium act/extract with explicit compatible model transport."
-author: "alibaba-agent-sandbox"
-license: Apache-2.0
-spec_version: 5
-base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
-generation: 2
-start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
-ready_cmd: "agent-sandbox-server healthcheck --port 9000"
-resources: {cpu: 2, memory: 4096}
-ports: [9000]
-tags: [stagehand, browser, automation, nodejs]
-priority: P2
-wave: 3
-env:
-  ABX_SERVER_TOKEN: ""
-  STAGEHAND_API_KEY: ""
-  STAGEHAND_BASE_URL: ""
-  STAGEHAND_MODEL: ""
-  WORKSPACE: "/home/user/app"
-smoke:
-  - command: stagehand_version
-    expect: "4.3.0"
-  - command: stagehand_self_test
-    expect: "STAGEHAND_NATIVE_OK"
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations:
-    - commands.list
-    - commands.run
+sandbox:
+  template:
+    source:
+      dockerfile: Dockerfile
+      context: .
+    props:
+      cpu: 2
+      memory: 4096
+  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+  ready: agent-sandbox-server healthcheck --port 9000
+  instance:
+    envs:
+      ABX_SERVER_TOKEN: ''
+      STAGEHAND_API_KEY: ''
+      STAGEHAND_BASE_URL: ''
+      STAGEHAND_MODEL: ''
+      WORKSPACE: /home/user/app
+  services:
+    app:
+      protocol: agent-sandbox-server
+      version: 2
+      port: 9000
+      operations:
+      - commands.list
+      - commands.run

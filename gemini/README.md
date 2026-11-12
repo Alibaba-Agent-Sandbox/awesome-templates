@@ -1,5 +1,7 @@
 # gemini
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Run original official Google Gemini CLI0.64.0 planning and text/file/shell tools. Existing gemini/setup/version APIs remain; gemini_byok adds explicit compatible Chat transport through an authored GenerateContent-to-Chat text/tool adapter. Original CLI/tool engine is unchanged; Google Gemini model access, OAuth, hosted subscriptions and full feature compatibility are not claimed. [Official configuration](https://geminicli.com/docs/reference/configuration/).

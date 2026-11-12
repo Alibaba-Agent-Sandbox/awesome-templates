@@ -1,0 +1,17 @@
+specVersion: 1
+name: openclaw
+version: 2.2.0
+description:
+  zh: 运行 OpenClaw 模型对话，并按需启动带认证的 Gateway 服务。
+  en: Run OpenClaw model conversations and start an authenticated Gateway when needed.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- openclaw
+- ai-agent
+- ai-coding
+- gateway
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

@@ -1,5 +1,7 @@
 # claude-code
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 运行官方未修改的 Claude Code2.0.76无交互规划及 Read/Edit/Write/Bash 工具。原 `claude` 保留面向 Anthropic 的接口；`claude_byok` 显式使用本项目编写的 Messages 到 OpenAI Chat 文本和工具协议适配器。兼容模型模式属于实验功能，[Anthropic 不支持将其用于非 Claude 模型](https://code.claude.com/docs/en/llm-gateway)，不代表获得 Claude 模型、订阅或官方背书。

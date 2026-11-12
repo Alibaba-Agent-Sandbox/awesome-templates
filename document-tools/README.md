@@ -2,6 +2,8 @@
 
 [中文](README.zh-CN.md)
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Convert UTF-8 Markdown or bounded text HTML workspace files to actual DOCX, TXT, PPTX or native headless Writer PDF artifacts. The server returns the path, byte count and SHA256; callers download the file using the files API. No model, external account, display, GPU or privileged daemon is required.

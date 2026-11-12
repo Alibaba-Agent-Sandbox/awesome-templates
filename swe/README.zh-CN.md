@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 使用官方 `mini-swe-agent==2.4.6` 修复真正的 SWE-bench Verified 题目 `pallets__flask-5014`。准备固定 Flask base commit 和原始测试补丁，重现 1 个失败与 59 个通过；显式授权后由代理改源码，在另一个全新检出目录和 venv 中评测，交回源码补丁及 JSON 报告。

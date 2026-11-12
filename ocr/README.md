@@ -2,6 +2,8 @@
 
 [中文](README.zh-CN.md)
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 `ocr(image_path)` recognizes one workspace PNG or JPEG and returns text, image dimensions, word count, and private TXT/TSV artifact paths with SHA256 hashes. It runs the actual Tesseract engine; no model, API key or network request is needed. Blank images legitimately return no words. English is the installed recognition language; bilingual documentation does not imply Chinese recognition support.

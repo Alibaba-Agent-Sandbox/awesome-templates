@@ -1,5 +1,7 @@
 # grok
 
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+
 ## What it does
 
 Runs genuine official xAI `@xai-official/grok@1.0.62` headless coding. The native Rust binary reads anonymous stdin through --prompt-file /dev/stdin, uses its real tools and returns buffered JSON plus actual exit code. An explicitly configured approved compatible model is selected. This is xAI Grok Build, not the unrelated community grok-dev CLI; compatible-model success does not qualify xAI-hosted Grok models or subscriptions.

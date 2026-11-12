@@ -58,7 +58,7 @@ def controller_environment(source: Path, urls: dict[int, str], fixture: dict[str
     manifest_path = source / "template.yaml"
     if manifest_path.is_file():
         manifest = yaml.safe_load(manifest_path.read_text())
-        workspace = manifest.get("env", {}).get("WORKSPACE", "/home/user/app")
+        workspace = manifest.get("sandbox", {}).get("instance", {}).get("envs", {}).get("WORKSPACE", "/home/user/app")
         if not isinstance(workspace, str) or not workspace.startswith("/"):
             raise ValueError("controller WORKSPACE must be an absolute runtime path")
         env["E2E_WORKSPACE"] = workspace
