@@ -50,3 +50,5 @@ identity; no replacement qualification is claimed.
 
 - Real compiled CLI parser contract script: 2 passed, no credentials or cloud calls.
 - Public-launch and image-archive controller selection: 74 tests plus 6 subtests passed. The compatibility fixture now verifies the complete supported command path and retains fresh-script/output/cleanup assertions.
+
+The final global-selector/retired-authoring scan also corrected current image-acceptance docs from the removed from-image command to the existing provider template.create operation.

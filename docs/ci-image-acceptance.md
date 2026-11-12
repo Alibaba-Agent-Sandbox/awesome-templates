@@ -47,7 +47,7 @@ long-term cloud keys. It first uploads an empty public-content ownership guard,
 requires the new repository to be PRIVATE, then transfers the reviewed image
 and reads back its content digest. Existing account policy is never changed.
 
-Actual `abx template from-image` registers the nonce-owned review tag; live digest readback before registration and after runtime requires an unchanged content digest. Official API polling requires
+Actual `abx --provider alicloud-express provider run template.create` registers the nonce-owned review tag; live digest readback before registration and after runtime requires an unchanged content digest. Official API polling requires
 READY, and real CLI/SDK smoke precedes external HTTP acceptance. Model acceptance
 is explicitly NOT_RUN by this controller; use a separate strict image-backed
 model verifier when the owner Issue requires it. This command always runs complete HTTP acceptance.
