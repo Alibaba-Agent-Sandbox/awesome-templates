@@ -6,6 +6,7 @@ Reports exclude credentials, native resource IDs and command output. The CLI's
 private resource journal owns recovery after an ambiguous launch failure.
 """
 from __future__ import annotations
+from template_application import load_source_document
 
 import argparse
 import asyncio
@@ -21,7 +22,6 @@ import subprocess
 import tempfile
 import urllib.parse
 
-import yaml
 
 from select_image_templates import ROOT, catalog_names
 
@@ -230,7 +230,7 @@ def load_plan(name, root=ROOT):
     if name not in source_names(root):
         raise ValueError('select an existing source template from the catalog')
     source = root / name
-    manifest = yaml.safe_load((source / 'template.yaml').read_text())
+    manifest = load_source_document(source / 'template.yaml')
     from template_application import is_managed_application, validate_manifest, project_manifest
     if is_managed_application(manifest):
         raise ValueError('managed applications require application deployment acceptance through their Gateway; sandbox named-command launch is not that workflow')

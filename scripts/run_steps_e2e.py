@@ -5,6 +5,7 @@ Credentials come from the environment. ABX selects the verified CLI command.
 Private harness journals/logs remain outside the checkout. This does not run L3.
 """
 from __future__ import annotations
+from template_application import load_source_document
 
 import argparse
 import asyncio
@@ -66,7 +67,7 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
         proof['generated_manifest_sha256'] = hashlib.sha256((stage / 'prepared-steps.yaml').read_bytes()).hexdigest()
         (stage / 'steps-provenance.json').write_text(json.dumps(proof, indent=2) + '\n')
         result['build_provenance'] = proof
-        result['template_version'] = str(publication_metadata(source, yaml.safe_load((source / 'template.yaml').read_text()))['version'])
+        result['template_version'] = str(publication_metadata(source, load_source_document(source / 'template.yaml'))['version'])
         alias = 'e2e-steps-' + name[:24] + '-' + uuid.uuid4().hex[:8]
         require(not exact_templates(cli, alias), 'unique native step alias preflight')
         intent_path = stage / 'platform-intent.json'

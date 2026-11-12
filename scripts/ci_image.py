@@ -5,15 +5,14 @@ import json
 from pathlib import Path
 import re
 import shlex
-import yaml
 
 try:
     from .prepare_steps import instructions
-    from .template_application import project_manifest
+    from .template_application import project_manifest, load_source_document
     from .server_package import server_version
 except ImportError:
     from prepare_steps import instructions
-    from template_application import project_manifest
+    from template_application import project_manifest, load_source_document
     from server_package import server_version
 
 PUBLIC_PROOF_KEYS = {
@@ -39,7 +38,7 @@ def context_sha256(source: Path) -> dict[str,str]:
     result={'Dockerfile':hashlib.sha256(dockerfile).hexdigest()}
     if (source/'.dockerignore').exists():
         result['.dockerignore']=hashlib.sha256((source/'.dockerignore').read_bytes()).hexdigest()
-    manifest=yaml.safe_load((source/'template.yaml').read_text())
+    manifest=load_source_document(source/'template.yaml')
     result['template.yaml:contract']=hashlib.sha256(json.dumps(manifest,sort_keys=True,separators=(',',':')).encode()).hexdigest()
     for kind,value in instructions(dockerfile.decode()):
         if kind!='COPY':continue
@@ -64,7 +63,7 @@ def validate_proof(source: Path, proof: dict, image_ref: str) -> dict:
     if not re.fullmatch(r'registry\.[a-z0-9-]+\.aliyuncs\.com/[a-z0-9_.-]+/e2e-ci-image-[a-f0-9]{16}:review',image_ref):raise ValueError('a nonce-owned personal ACR review tag is required')
     if proof.get('registration_reference_type')!='owned tag with digest readback' or proof.get('tag_digest_verified_before_registration') is not True:
         raise ValueError('owned image tag needs independently read-back digest before registration')
-    config=project_manifest(yaml.safe_load((source/'template.yaml').read_text()), source)
+    config=project_manifest(load_source_document(source/'template.yaml'), source)
     validate_resources(config)
     if proof.get('schema_version')!=1 or proof.get('verification_type')!='ci-docker-archive':raise ValueError('unsupported image proof schema')
     if proof.get('template')!=config['name'] or proof.get('template_version')!=str(config['version']):raise ValueError('image proof template/version mismatch')

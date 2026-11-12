@@ -330,10 +330,10 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
     if source_commit is not None and not re.fullmatch(r"[0-9a-f]{40}", source_commit):
         raise ValueError("source commit must be an immutable 40-character commit")
     try:
-        from .template_application import project_manifest
+        from .template_application import project_manifest, load_source_document
     except ImportError:
-        from template_application import project_manifest
-    data = project_manifest(yaml.safe_load((source / "template.yaml").read_text()), source)
+        from template_application import project_manifest, load_source_document
+    data = project_manifest(load_source_document(source / "template.yaml"), source)
     if base_path is None and tag != "v0.0.49":
         raise ValueError("an unverified base tag requires an explicit verified --base-path")
     build_env = {"PATH": base_path or BASE_PATH}

@@ -14,6 +14,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import check_template
+import yaml
 import express_e2e
 import image_size_report
 from test_template_application import ApplicationContractTest  # noqa: F401 — discovered by unittest
@@ -67,9 +68,9 @@ class CheckerTest(unittest.TestCase):
             shutil.copytree(SKELETON, dest)
             for cpu, memory, valid in [(2,1024,False),(1,1024,True),(2,2048,True),(1,4160,False),(1,1025,False)]:
                 with self.subTest(cpu=cpu,memory=memory):
-                    data=check_template.yaml.safe_load((dest/"template.yaml").read_text())
+                    data=yaml.safe_load((dest/"template.yaml").read_text())
                     data["sandbox"]["template"]["props"]={"cpu":cpu,"memory":memory}
-                    (dest/"template.yaml").write_text(check_template.yaml.safe_dump(data))
+                    (dest/"template.yaml").write_text(yaml.safe_dump(data))
                     errors=[v for v in check_template.check_directory(dest) if v.code=="yaml-resources"]
                     self.assertEqual(not errors,valid)
 
@@ -80,7 +81,7 @@ class CheckerTest(unittest.TestCase):
             shutil.copytree(SKELETON, dest)
             index = {"templates": [{"name": "_skeleton", "path": "_skeleton", "status": "experimental",
                 "providers": {"alicloud-express": "provider-preparation-required"}}]}
-            (root / "awesome-templates.yaml").write_text(check_template.yaml.safe_dump(index))
+            (root / "awesome-templates.yaml").write_text(yaml.safe_dump(index))
             path = dest / "README.md"
             path.write_text(path.read_text() +
                 "\n## Verified\n\n| Provider | Date | Level |\n|---|---|---|\n| alicloud-express | 2026-10-19 | L2 |\n")
@@ -93,13 +94,13 @@ class CheckerTest(unittest.TestCase):
             root = Path(tmp)
             dest = root / "example"
             shutil.copytree(SKELETON, dest)
-            metadata = check_template.yaml.safe_load((dest / "template.yaml").read_text())
+            metadata = yaml.safe_load((dest / "template.yaml").read_text())
             metadata["name"] = "example"
-            (dest / "template.yaml").write_text(check_template.yaml.safe_dump(metadata))
+            (dest / "template.yaml").write_text(yaml.safe_dump(metadata))
             for key in ("capabilities", "tested_on", "providers"):
                 with self.subTest(key=key):
                     row = {"name": "example", "path": "example", "status": "experimental", key: []}
-                    (root / "awesome-templates.yaml").write_text(check_template.yaml.safe_dump({"schema_version": 3, "templates": [row]}))
+                    (root / "awesome-templates.yaml").write_text(yaml.safe_dump({"schema_version": 3, "templates": [row]}))
                     self.assertIn("index-workflow", {item.code for item in check_template.check_directory(dest)})
 
     def test_http_section_requires_request_and_result(self) -> None:
@@ -218,9 +219,9 @@ class CheckerTest(unittest.TestCase):
             dest = Path(tmp) / "_skeleton"
             shutil.copytree(SKELETON, dest)
             metadata = dest / "template.yaml"
-            data = check_template.yaml.safe_load(metadata.read_text(encoding="utf-8"))
+            data = yaml.safe_load(metadata.read_text(encoding="utf-8"))
             data.pop("specVersion", None)
-            metadata.write_text(check_template.yaml.safe_dump(data), encoding="utf-8")
+            metadata.write_text(yaml.safe_dump(data), encoding="utf-8")
             self.assertEqual(check_template.main(["--all", "--root", tmp]), 1)
 
     def test_public_server_package_pin_is_required(self) -> None:
@@ -247,9 +248,9 @@ class CheckerTest(unittest.TestCase):
             dest = Path(tmp) / '_skeleton'
             shutil.copytree(SKELETON, dest)
             metadata = dest / 'template.yaml'
-            data = check_template.yaml.safe_load(metadata.read_text())
+            data = yaml.safe_load(metadata.read_text())
             data['sandbox']['template']['source']['profiles'] = {'portable': {'dockerfile': 'Dockerfile.portable', 'context': '.'}}
-            metadata.write_text(check_template.yaml.safe_dump(data))
+            metadata.write_text(yaml.safe_dump(data))
             profile = dest / 'Dockerfile.portable'
             original = (dest / 'Dockerfile').read_text()
             profile.write_text(original)
@@ -387,13 +388,13 @@ class ImageBuildContextTest(unittest.TestCase):
         import contextlib
         import io
 
-        workflow = check_template.yaml.safe_load((ROOT / ".github/workflows/image-build.yml").read_text())
+        workflow = yaml.safe_load((ROOT / ".github/workflows/image-build.yml").read_text())
         job = workflow["jobs"]["image-build"]
         step = next(item for item in job["steps"] if item.get("name") == "Prepare the standalone template context")
         code = step["run"].split("python - <<'PY'\n", 1)[1].rsplit("\nPY", 1)[0]
-        templates = sorted(item["path"] for item in check_template.yaml.safe_load((ROOT / "awesome-templates.yaml").read_text())["templates"])
+        templates = sorted(item["path"] for item in yaml.safe_load((ROOT / "awesome-templates.yaml").read_text())["templates"])
         self.assertEqual(job["strategy"]["matrix"]["template"], "${{ fromJSON(needs.plan.outputs.templates) }}")
-        catalog = check_template.yaml.safe_load((ROOT / "awesome-templates.yaml").read_text())["templates"]
+        catalog = yaml.safe_load((ROOT / "awesome-templates.yaml").read_text())["templates"]
         self.assertEqual(set(templates), {item["path"] for item in catalog})
         with tempfile.TemporaryDirectory() as folder:
             runner = Path(folder)
@@ -420,12 +421,12 @@ class ImageBuildContextTest(unittest.TestCase):
         """Execute the workflow host code; capture only the final Docker boundary."""
         from template_application import normalize_manifest, engineering_checks
 
-        workflow = check_template.yaml.safe_load((ROOT / ".github/workflows/image-build.yml").read_text())
+        workflow = yaml.safe_load((ROOT / ".github/workflows/image-build.yml").read_text())
         step = next(item for item in workflow["jobs"]["image-build"]["steps"]
                     if item.get("name") == "Check installed pins and keyless smoke as the image user")
         code = step["run"].split("<<'PY'", 1)[1].split("\n", 1)[1].rsplit("\nPY", 1)[0]
-        compact = check_template.yaml.safe_load((ROOT / "agents-api/template.yaml").read_text())
-        ordinary = check_template.yaml.safe_load((ROOT / "python-hello/template.yaml").read_text())
+        compact = yaml.safe_load((ROOT / "agents-api/template.yaml").read_text())
+        ordinary = yaml.safe_load((ROOT / "python-hello/template.yaml").read_text())
         cases = [("compact", "agents-api", compact, True),
                  ("expanded", "agents-api", normalize_manifest(compact), True),
                  ("ordinary", "python-hello", ordinary, False)]
@@ -437,7 +438,7 @@ class ImageBuildContextTest(unittest.TestCase):
                 # invocation starts with scripts/ instead, so scope its import path.
                 with self.subTest(profile=label), patch.dict(os.environ, {"TEMPLATE": template}), \
                         patch.object(sys, "path", [str(ROOT), *sys.path]), \
-                        patch("scripts.template_application.publication_metadata", return_value=None), patch("yaml.safe_load", return_value=manifest), patch("subprocess.run") as docker:
+                        patch("scripts.template_application.publication_metadata", return_value=None), patch("scripts.template_application.load_source_document", return_value=manifest), patch("subprocess.run") as docker:
                     before = json.dumps(manifest, sort_keys=True)
                     exec(compile(code, "image-build.yml::smoke", "exec"), {})
                     docker.assert_called_once()

@@ -33,11 +33,11 @@ Guest 应用认证令牌自动生成，与平台、云账号、模型凭据分�
 
 ## Server 构建与部署
 
-Server 配方固定 SDK 开发源码提交 `c550cf53a9eb0c3c9899d0336b924633eb9b0988`，Guest 保留已发布 Server0.4.0a7。源码包元信息仍为 a7，仅凭版本号不能识别 v1 运行时。
+Server 配方固定 SDK 开发源码提交 `b988d2a76057b6202d836ec329cc0bd90a572b26`，Guest 保留已发布 Server0.4.0a7。源码包元信息仍为 a7，仅凭版本号不能识别 v1 运行时。
 
 `deployment` 是原生 Serverless Devs edition3 项目。使用真实 `component: fc3@<版本>` 和原生 props；cpu、memorySize、timeout、role、logConfig、vpcConfig 的名称和单位不另造一层。三个 Managed 角色采用相同固定组件版本、地域和执行角色权威。用户填写的原生 memory4096 不被改回协调器常量。
 
-`application.server` 在 source 配方 `{source: {dockerfile, context}}` 和 digest 固定 image 中二选一，提供真实 Server 镜像输入。协调器负责生成函数名、revision 说明、容器启动和内部控制配置。域名等额外资源及 output 依赖仍放在原生项目。
+`application.server` 在 source 配方 `{source: {dockerfile, context}}` 和 digest 固定 image 中二选一，提供真实 Server 镜像输入。协调器负责生成函数名、revision 说明、容器启动和内部控制配置。此托管部署仅支持三个角色资源，额外原生资源在部署前拒绝。自定义域名入口借用已有 HTTPS 域名，要求独占的 `/*` 路由指向同一个 Gateway，只更新 revision qualifier，不创建域名、DNS 或网络资源。
 
 构建、部署、配置解析、持久化、版本路由与清理仍由实际运行时承接。静态检查不求值 Devs 表达式，也不证明云部署可用。普通 Sandbox 与 Serving 可独立并列声明；未接入的联合执行会在副作用前拒绝，不自动选择本协调器。
 

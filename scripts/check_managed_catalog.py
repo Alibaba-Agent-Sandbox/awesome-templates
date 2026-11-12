@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 """Validate managed template references. Historical receipts never confer certification."""
 from __future__ import annotations
+from template_application import load_source_document
 
 import argparse
 import json
 import re
 from pathlib import Path
-
-import yaml
 
 from check_template import README_EN, README_ZH, PROVIDERS
 
@@ -29,8 +28,8 @@ def local_file(root, value):
 def check(root=ROOT):
     problems = []
     try:
-        catalog = yaml.safe_load((root / 'awesome-templates.yaml').read_text())
-    except (OSError, ValueError, yaml.YAMLError):
+        catalog = load_source_document(root / 'awesome-templates.yaml')
+    except (OSError, TypeError, ValueError):
         return ['invalid catalog YAML']
     if not isinstance(catalog, dict) or catalog.get('schema_version') != 3:
         return ['catalog requires schema_version: 3']
@@ -74,7 +73,7 @@ def check(root=ROOT):
             fail('registry must reference existing publication metadata')
         else:
             try:
-                metadata = _profile_module.normalize_registry_v1(yaml.safe_load(metadata_path.read_text()), resource, _REGISTRY_VALIDATOR, _VALIDATOR)
+                metadata = _profile_module.normalize_registry_v1(load_source_document(metadata_path), resource, _REGISTRY_VALIDATOR, _VALIDATOR)
                 if metadata['name'] != name:
                     fail('publication identity differs from native resource')
                 for language, value in metadata['readme'].items():

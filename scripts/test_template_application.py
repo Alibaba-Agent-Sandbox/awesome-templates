@@ -9,6 +9,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import check_template
+import yaml
 from template_application import SCHEMA_PATH, validate_manifest, engineering_checks
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -19,7 +20,7 @@ class ApplicationContractTest(unittest.TestCase):
         self.directory = tempfile.TemporaryDirectory(); self.addCleanup(self.directory.cleanup)
         self.root = Path(self.directory.name)
         self.template = self.root / '_skeleton'; shutil.copytree(ROOT / '_skeleton', self.template)
-        self.data = check_template.yaml.safe_load((self.template / 'template.yaml').read_text())
+        self.data = yaml.safe_load((self.template / 'template.yaml').read_text())
 
     def check(self, data=None):
         return validate_manifest(self.data if data is None else data, self.template)
@@ -31,7 +32,7 @@ class ApplicationContractTest(unittest.TestCase):
     def test_documented_examples_match_machine_contract(self):
         for source in sorted((ROOT / 'docs/examples').glob('*/template.yaml')):
             with self.subTest(source=source):
-                self.assertEqual(validate_manifest(check_template.yaml.safe_load(source.read_text()), source.parent), [])
+                self.assertEqual(validate_manifest(yaml.safe_load(source.read_text()), source.parent), [])
 
     def test_current_default_without_registry_is_valid(self):
         self.assertFalse((self.template / 'registry.yaml').exists())
@@ -39,9 +40,9 @@ class ApplicationContractTest(unittest.TestCase):
         self.assertEqual(check_template.check_directory(self.template), [])
 
     def test_existing_engineering_expectations_remain_separate_from_resources(self):
-        catalog = check_template.yaml.safe_load((ROOT / 'awesome-templates.yaml').read_text())
+        catalog = yaml.safe_load((ROOT / 'awesome-templates.yaml').read_text())
         for row in catalog['templates']:
-            data = check_template.yaml.safe_load((ROOT / row['path'] / 'template.yaml').read_text())
+            data = yaml.safe_load((ROOT / row['path'] / 'template.yaml').read_text())
             with self.subTest(template=row['name']):
                 self.assertNotIn('smoke', data)
                 cases = engineering_checks(row['name'])['smoke']
@@ -88,7 +89,7 @@ class ApplicationContractTest(unittest.TestCase):
 
     def test_static_checker_preserves_numeric_expressions_without_environment_resolution(self):
         self.data['sandbox']['template']['props'] = {'cpu': "${env('CPU')}", 'memory': "${env('MEMORY')}"}
-        (self.template / 'template.yaml').write_text(check_template.yaml.safe_dump(self.data))
+        (self.template / 'template.yaml').write_text(yaml.safe_dump(self.data))
         (self.template / '.env').write_text('CPU=not-a-number\nMEMORY=not-a-number\n')
         with patch('subprocess.run', side_effect=AssertionError('must not execute')), patch('subprocess.Popen', side_effect=AssertionError('must not execute')):
             self.assertEqual(check_template.check_directory(self.template), [])
@@ -96,20 +97,20 @@ class ApplicationContractTest(unittest.TestCase):
     def test_unknown_versions_cannot_bypass_all_mode(self):
         for version in [2, 3, 5, 6, 999, None, False, '1']:
             data = copy.deepcopy(self.data); data['specVersion'] = version
-            (self.template / 'template.yaml').write_text(check_template.yaml.safe_dump(data))
+            (self.template / 'template.yaml').write_text(yaml.safe_dump(data))
             self.assertTrue(check_template.claims_spec(self.template))
             self.assertEqual(check_template.main(['--all', '--root', str(self.root)]), 1)
 
     def test_design_and_catalog_gates_remain(self):
         self.data['name'] = 'sample'; renamed = self.root / 'sample'; self.template.rename(renamed)
-        (renamed / 'template.yaml').write_text(check_template.yaml.safe_dump(self.data))
+        (renamed / 'template.yaml').write_text(yaml.safe_dump(self.data))
         (self.root / 'awesome-templates.yaml').write_text('schema_version: 3\ntemplates: []\n')
         codes = {item.code for item in check_template.check_directory(renamed)}
         self.assertIn('index', codes); self.assertIn('design-doc', codes)
 
     def test_duplicate_keys_and_malformed_manifests_cannot_hide_version(self):
         for suffix in ['specVersion: 4\n', 'application: [\n']:
-            (self.template / 'template.yaml').write_text(check_template.yaml.safe_dump(self.data) + suffix)
+            (self.template / 'template.yaml').write_text(yaml.safe_dump(self.data) + suffix)
             self.assertTrue(check_template.claims_spec(self.template))
             self.assertIn('yaml-parse', {item.code for item in check_template.check_directory(self.template)})
 

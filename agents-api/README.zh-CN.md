@@ -5,7 +5,7 @@
 
 [English](README.md) · [API 参考](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/managed-agents-api.zh-CN.md)
 
-本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。Sandbox 实例环境配置位于 `sandbox.instance.envs`，模型访问位于 `application.bindings.model`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
 
 ## 做什么
 
@@ -27,7 +27,7 @@ Qwen Code 0.23.0、PostgreSQL，以及 FC Gateway/Worker/Dispatcher 函数。
 
 部署应用需要 Node.js 20 或更高版本和匹配的开发版 CLI。业务 HTTP 客户端只需要 Gateway endpoint 和业务 Key。
 
-Guest 保留已发布 Server0.4.0a7；Server 使用固定 SDK 开发源码提交 `c550cf53a9eb0c3c9899d0336b924633eb9b0988`，详见 [Server Dockerfile](server/Dockerfile)。源码包元信息仍为 a7，不代表新的 PyPI 发行。
+Guest 保留已发布 Server0.4.0a7；Server 使用固定 SDK 开发源码提交 `b988d2a76057b6202d836ec329cc0bd90a572b26`，详见 [Server Dockerfile](server/Dockerfile)。源码包元信息仍为 a7，不代表新的 PyPI 发行。
 
 ## 解决的问题
 
@@ -37,8 +37,7 @@ Sandbox 管理凭据留在 Server；Sandbox 只接收选定的模型配置和单
 ## 快速开始（CLI）
 
 这些命令需要当前源码 CLI，已发布的 0.5.10 不支持。先按[使用指南](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/using-templates.md#installation)
-配置 Sandbox 及镜像构建仓库，并在 `deployment.access` 选择已有的
-Serverless Devs access。FC 地域、Sandbox 地域、数据库网络和镜像仓库访问需要相互匹配。
+配置 Sandbox 及镜像构建仓库。`deployment.access` 可选已有 Devs 别名、复用 abx 云凭据的 `abx`，或读取进程云凭据的 `env`，缺省仍为 `default`。FC 地域、Sandbox 地域、数据库网络和镜像仓库访问需要相互匹配。
 CLI 只复制这个模板，得到可编辑项目，不会在获取源码时部署。部署主机仍需 Python 3
 和 `httpx==0.28.1`：部署后会执行 `scripts/smoke.py`，通过 Gateway 完成两轮 Agent
 文件任务。部署及更新时保持该虚拟环境激活。创建虚拟环境会同时创建 `.abx/`，无需单独建目录。
@@ -176,7 +175,7 @@ Agent 已完成任务。
 | OPENAI_API_KEY / OPENAI_BASE_URL / OPENAI_MODEL | 模型提供商的 Key、兼容 API 地址和已获授权的准确模型 ID。qwen-code 需要支持工具的 Chat Completions，codex 需要支持工具的 Responses。 |
 | AGENTS_FC_ROLE_ARN | 已有 FC 执行角色的 RAM ARN，须能调用私有 Worker/Dispatcher；来自 RAM/FC 配置。 |
 | application.bindings.model.adapter | 在 template.yaml 选择 qwen-code 或 codex，与上面模型兼容性对应。 |
-| deployment.access / vars.region | 已有 Serverless Devs 凭据别名及 FC 地域；云 AK/SK 用于部署，与模型和 Sandbox Key 分开。 |
+| deployment.access / deployment.vars.region | 保留原生缺省 `default` 或选择已有 Devs 别名；也可用 `abx` 复用已配置的 abx 云凭据，或用 `env` 读取进程云凭据。FC 地域在 `deployment.vars.region`。部署凭据与模型、Sandbox Key 分开。 |
 | application.bindings.clientAuth / internalAuth | 缺省由 CLI 自动生成不同的业务和内部密钥并在本机安全复用。业务客户端只使用业务密钥。 |
 
 例如使用已有私网数据库时，在 `application.state` 中配置现有网络（真实 ID 由网络管理员提供）：
@@ -194,7 +193,7 @@ application:
 
 只在数据库使用私有 CA 时添加 databaseCa；值为证书 PEM，来自数据库提供商，不是私钥。数据库 URL 保留 sslmode=verify-full，并使用证书覆盖的主机名。本版本不提供另一套 `{env: ...}` 或 `{file: ...}` 配置语法。
 
-FC 三角色借用这些网络资源；不会创建 VPC、交换机、安全组、路由或 NAT。按实际路由验证数据库、镜像仓库、Sandbox 和模型端点可达性。生产自定义域名在原生 deployment.resources 中声明域名组件并在 ingress 选择对应入口；不要把 Serving 域名放到 sandbox.instance。具体支持范围见[资源规范](../docs/template-spec.zh-CN.md)。
+FC 三角色借用这些网络资源；不会创建 VPC、交换机、安全组、路由或 NAT。按实际路由验证数据库、镜像仓库、Sandbox 和模型端点可达性。生产入口使用已有 HTTPS 域名，要求独占的 `/*` 路由指向同一个 Gateway；该托管路径只更新 revision qualifier，不创建域名、DNS 或 VPC。托管部署仅支持三个角色资源，额外原生资源在部署前拒绝。具体支持范围见[资源规范](../docs/template-spec.zh-CN.md)。
 
 `ABX_SERVER_TOKEN` 是运行时为每个 Sandbox 生成的独立应用认证令牌，无需去云控制台申请，也无需手动填写。
 

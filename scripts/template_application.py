@@ -9,7 +9,6 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
-import yaml
 from jsonschema import Draft202012Validator
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -57,6 +56,13 @@ def _contained(root: Path, value: str, *, directory: bool = False) -> Path:
     return path
 
 
+def load_source_document(path: Path) -> Any:
+    """Read only the bounded v1 source profile, without native/config evaluation."""
+    with path.open("rb") as stream:
+        data = stream.read(_profile_module.MAX_YAML_BYTES + 1)
+    return _profile_module.parse_yaml_v1(data)
+
+
 def publication_metadata(
     template_dir: Path, data: dict[str, Any]
 ) -> dict[str, Any] | None:
@@ -66,7 +72,7 @@ def publication_metadata(
         return None
     if path.is_symlink() or path.stat().st_size > 1024 * 1024:
         raise ValueError("publication metadata must be a bounded regular file")
-    metadata = yaml.safe_load(path.read_text())
+    metadata = load_source_document(path)
     result = _profile_module.normalize_registry_v1(
         metadata, data, _REGISTRY_VALIDATOR, _VALIDATOR
     )

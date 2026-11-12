@@ -6,7 +6,7 @@ key once.
 
 [中文](README.zh-CN.md) · [API reference](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/managed-agents-api.md)
 
-This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Sandbox instance environment settings are under `sandbox.instance.envs`; model access belongs to `application.bindings.model`. See Configuration for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
 
 ## What it does
 
@@ -30,7 +30,7 @@ Qwen Code 0.23.0, PostgreSQL and FC Gateway/Worker/Dispatcher functions.
 [template.yaml](template.yaml) · [Sandbox Dockerfile](Dockerfile) ·
 [Server Dockerfile](server/Dockerfile)
 
-The Guest pins published Server0.4.0a7. The Server image explicitly builds the development client at SDK commit `c550cf53a9eb0c3c9899d0336b924633eb9b0988`, with its archive hash fixed in the [Server Dockerfile](server/Dockerfile). Its package metadata still says a7; this is not a new PyPI release.
+The Guest pins published Server0.4.0a7. The Server image explicitly builds the development client at SDK commit `b988d2a76057b6202d836ec329cc0bd90a572b26`, with its archive hash fixed in the [Server Dockerfile](server/Dockerfile). Its package metadata still says a7; this is not a new PyPI release.
 Application deployment requires Node.js 20 or later and the current source CLI. Business HTTP clients need only the Gateway endpoint and business key.
 
 ## Problem solved
@@ -43,8 +43,7 @@ application token enter the Sandbox.
 ## Quick start (CLI)
 
 Install the current source CLI using the linked guide; published CLI 0.5.10 does not support these commands. Configure your Sandbox/build registry with the
-[usage guide](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/using-templates.md#installation), and select an existing
-Serverless Devs access profile in `deployment.access`. The FC
+[usage guide](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/using-templates.md#installation), then select `deployment.access`: an existing Devs alias, `abx` for configured abx credentials, or `env` for process credentials. The default remains `default`. The FC
 region, Sandbox region, database connectivity and registry image access must agree.
 The CLI copies just this template into an editable project. Source acquisition
 does not deploy it. Python 3 and `httpx==0.28.1` are needed on the deployment host:
@@ -194,7 +193,7 @@ Edit [template.yaml](template.yaml) only. Native Serverless Devs expressions `${
 | OPENAI_API_KEY / OPENAI_BASE_URL / OPENAI_MODEL | Model-provider key, compatible API base and exact authorized model ID. qwen-code needs tool-capable Chat Completions; codex needs tool-capable Responses. |
 | AGENTS_FC_ROLE_ARN | Existing RAM execution role ARN allowed to invoke private Worker/Dispatcher functions, from RAM/FC setup. |
 | application.bindings.model.adapter | Set qwen-code or codex in template.yaml to match the model service. |
-| deployment.access / vars.region | Existing Serverless Devs credential alias and FC region. Deployment AK/SK, model credentials and Sandbox keys are separate. |
+| deployment.access / deployment.vars.region | Keep the native `default` access alias, select another existing Devs alias, use `abx` to reuse configured abx cloud credentials, or `env` for process cloud credentials. Set the FC region under `deployment.vars.region`. Deployment, model and Sandbox credentials are separate. |
 | application.bindings.clientAuth / internalAuth | CLI defaults generate distinct business/internal keys and securely reuse them locally. Business clients receive only business credentials. |
 
 For an existing private-network database, configure its supplied network IDs under application.state:
@@ -212,7 +211,7 @@ application:
 
 Add databaseCa only for a private database CA. Supply certificate PEM from your database provider, never a private key. Keep sslmode=verify-full and the certificate's database hostname. This version does not add another {env: ...} or {file: ...} syntax.
 
-The three FC roles borrow the supplied network. This creates no VPC, switch, security group, route or NAT. Verify actual database, registry, Sandbox API and model connectivity. Declare production domain resources in native deployment.resources and select the supported ingress route; a Serving domain is not a sandbox.instance property. See the [resource specification](../docs/template-spec.md).
+The three FC roles borrow the supplied network. This creates no VPC, switch, security group, route or NAT. Verify actual database, registry, Sandbox API and model connectivity. For production, use an existing HTTPS domain with an exclusive `/*` route to this same Gateway; the Managed path updates its revision qualifier. It does not create domains, DNS or VPC resources. This Managed deployment accepts only the three role resources; extra native resources fail before deployment. See the [resource specification](../docs/template-spec.md).
 
 ABX_SERVER_TOKEN is the independent application token generated per Sandbox by the runtime; there is no cloud-console key or manual setup step for it.
 

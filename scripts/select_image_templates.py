@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """Select actual changed image contexts or explicit dispatch targets, never credentials."""
 from __future__ import annotations
+from template_application import load_source_document
 import argparse
 import json
 from pathlib import Path
 import re
 import subprocess
-import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 SHARED_INPUTS = {'.github/workflows/image-build.yml', 'scripts/select_image_templates.py', 'scripts/template-checks.json', 'scripts/template_application.py', 'spec/template-v1.schema.json', 'contracts/template-v1/contract.json', 'contracts/template-v1/normalize.py'}
 
 
 def catalog_names(root: Path = ROOT) -> list[str]:
-    names = [item['path'] for item in yaml.safe_load((root/'awesome-templates.yaml').read_text())['templates']]
+    names = [item['path'] for item in load_source_document(root/'awesome-templates.yaml')['templates']]
     if len(set(names)) != len(names) or not all(re.fullmatch(r'[a-z0-9][a-z0-9-]*', name) for name in names):
         raise ValueError('catalog template paths must be unique plain template names')
     return sorted(names)

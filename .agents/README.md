@@ -17,6 +17,8 @@
 - [Agents API local image verification](evidence/verify/2026-11-12-agents-api-local-images.json): independent real builds/offline probes; exact image/source bounds, no cloud or Agent turn claim.
 - [Shared v1 Core YAML source reader](notes/proposed/architecture/2026-11-12-template-v1-core-reader.md) · [verification](evidence/verify/2026-11-12-template-v1-core-reader.md). Actual dual-parser raw-source parity; native evaluation remains a separate stage.
 
+- [V1 source reader consumer intake](notes/proposed/process/2026-11-12-template-v1-reader-consumers.md) · [verification](evidence/verify/2026-11-12-template-v1-reader-consumers.md). Bounded public-file parity, final SDK source dependency and precise Managed ingress scope.
+
 ## Recent changes — 2026-11-10
 
 - [Owner change index](notes/proposed/process/2026-11-10-recent-change-index.md) · [records verification](evidence/verify/2026-11-10-recent-change-index.md).

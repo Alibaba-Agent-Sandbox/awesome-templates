@@ -72,6 +72,8 @@ Independent Sandbox and Serving declarations may coexist. The current developmen
 
 ## Configuration and publication
 
+Source files use the JSON-compatible YAML1.2 Core subset: one document, string map keys, no aliases/duplicate keys/custom tags, and at most1MiB of UTF-8. Plain on/off/dates remain strings; quote true/false and numbers when an environment value must be a string. Explicit YAML1.1 directives are rejected. Source reading does not read environment values or evaluate expressions.
+
 Use native Serverless Devs expressions such as ${env('NAME')} and ${vars.name}. The CLI invokes the official parser; static tools retain the authored text. No second {env: NAME} or bindings JSON syntax is needed. Supply references in a local untracked .env and follow each template's configuration table. The CLI generates and locally retains normal Sandbox application authentication; model keys, Sandbox keys and cloud AK/SK serve separate purposes.
 
 Optional registry.yaml declares specVersion/name/version, bilingual description, author/license/tags and bilingual readme. Initialization questions target actual template.yaml values using JSON Pointer; types and defaults are not duplicated. Catalog schema_version:3 source rows contain only name/path/repo/status/registry locators. Runtime reads template.yaml independently. Native managed rows retain real Provider references under resource, with publication metadata in docs/managed/<name>/registry.yaml; they are not installable source packages.

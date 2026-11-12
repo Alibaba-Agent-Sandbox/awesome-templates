@@ -11,6 +11,7 @@ import unittest
 from pathlib import Path
 
 import check_template
+import yaml
 from unittest.mock import patch
 
 import run_local_e2e
@@ -20,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def managed_application() -> dict:
-    return check_template.yaml.safe_load((ROOT / 'agents-api/template.yaml').read_text())['application']
+    return yaml.safe_load((ROOT / 'agents-api/template.yaml').read_text())['application']
 
 
 class ManagedApplicationContractTest(unittest.TestCase):
@@ -32,8 +33,8 @@ class ManagedApplicationContractTest(unittest.TestCase):
         shutil.copytree(ROOT / "_skeleton", self.template)
         (self.template / "server").mkdir()
         (self.template / "server/Dockerfile").write_text("FROM python:3.13.8-slim-bookworm\n")
-        self.legacy = check_template.yaml.safe_load((self.template / 'template.yaml').read_text())
-        self.data = check_template.yaml.safe_load((ROOT / 'agents-api/template.yaml').read_text())
+        self.legacy = yaml.safe_load((self.template / 'template.yaml').read_text())
+        self.data = yaml.safe_load((ROOT / 'agents-api/template.yaml').read_text())
         self.data['name'] = 'example'
 
 
@@ -51,7 +52,7 @@ class ManagedApplicationContractTest(unittest.TestCase):
         self.assertTrue(validate_manifest(downgraded, self.template))
 
     def test_complete_checker_uses_managed_documentation_and_smoke_contract(self):
-        (self.template / "template.yaml").write_text(check_template.yaml.safe_dump(self.data))
+        (self.template / "template.yaml").write_text(yaml.safe_dump(self.data))
         import re
         for name, cli, sdk, http in (
             ("README.md", "Quick start (CLI)", "Quick start (Python SDK)", "Quick start (HTTP POST)"),
@@ -76,20 +77,20 @@ class ManagedApplicationContractTest(unittest.TestCase):
             self.assertTrue(any(item.code == "readme-client" for item in check_template.check_directory(self.template)))
             target.write_text(text)
         self.data["sandbox"]["start"] = "python -m agent_sandbox.server.managed --port 9000 --unsafe-option"
-        (self.template / "template.yaml").write_text(check_template.yaml.safe_dump(self.data))
+        (self.template / "template.yaml").write_text(yaml.safe_dump(self.data))
         self.assertTrue(any(item.code == "yaml-schema" for item in check_template.check_directory(self.template)))
 
     def test_invalid_managed_startup_is_rejected_before_any_preparation(self):
         manifest = self.template / "template.yaml"
         invalid = copy.deepcopy(self.data)
         invalid["sandbox"]["start"] = "python -m agent_sandbox.server.managed --port 9000 --unsafe-option"
-        manifest.write_text(check_template.yaml.safe_dump(invalid))
+        manifest.write_text(yaml.safe_dump(invalid))
         with patch.object(run_local_e2e, "_missing_imports") as imports, patch.object(run_local_e2e, "_free_port") as port, patch.object(run_local_e2e.subprocess, "Popen") as process:
             status, detail = run_local_e2e._run_one(self.template, "")
         self.assertEqual(status, "fail")
         self.assertIn("invalid template manifest", detail)
         imports.assert_not_called(); port.assert_not_called(); process.assert_not_called()
-        manifest.write_text(check_template.yaml.safe_dump(self.legacy))
+        manifest.write_text(yaml.safe_dump(self.legacy))
         with patch.object(run_local_e2e, "_missing_imports", return_value=["fixture dependency"]) as imports:
             status, detail = run_local_e2e._run_one(self.template, "")
         self.assertEqual(status, "fail")
@@ -99,7 +100,7 @@ class ManagedApplicationContractTest(unittest.TestCase):
     def test_local_runner_can_be_loaded_by_file_without_package_or_sibling_import_path(self):
         source = ROOT / "scripts/run_local_e2e.py"
         manifest = self.template / "template.yaml"
-        manifest.write_text(check_template.yaml.safe_dump(self.data))
+        manifest.write_text(yaml.safe_dump(self.data))
         code = ("import importlib.util, sys; "
                 "from pathlib import Path; "
                 "spec = importlib.util.spec_from_file_location('independent_local_runner', sys.argv[1]); "
@@ -113,15 +114,15 @@ class ManagedApplicationContractTest(unittest.TestCase):
 
     def test_declared_managed_startup_and_legacy_argv_remain_distinct(self):
         manifest = self.template / "template.yaml"
-        manifest.write_text(check_template.yaml.safe_dump(self.legacy))
+        manifest.write_text(yaml.safe_dump(self.legacy))
         self.assertEqual(run_local_e2e._startup_argv(self.template, 31234), (["python3", "commands.py"], False))
-        manifest.write_text(check_template.yaml.safe_dump(self.data))
+        manifest.write_text(yaml.safe_dump(self.data))
         self.assertEqual(run_local_e2e._startup_argv(self.template, 31234),
                          ([sys.executable, "-m", "agent_sandbox.server.managed", "--port", "31234"], True))
 
     def test_duplicate_yaml_is_rejected_before_startup_preparation(self):
         manifest = self.template / "template.yaml"
-        manifest.write_text(check_template.yaml.safe_dump(self.data) + "\nspecVersion: 1\n")
+        manifest.write_text(yaml.safe_dump(self.data) + "\nspecVersion: 1\n")
         with patch.object(run_local_e2e, "_missing_imports") as imports, patch.object(run_local_e2e, "_free_port") as port, patch.object(run_local_e2e.subprocess, "Popen") as process:
             status, detail = run_local_e2e._run_one(self.template, "")
         self.assertEqual(status, "fail")

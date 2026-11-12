@@ -6,6 +6,7 @@ never emulates Docker build or claims platform-step execution. Private output an
 ownership journals must stay outside the checkout; no credentials are written.
 """
 from __future__ import annotations
+from template_application import load_source_document, _profile_module
 import argparse
 import base64
 from contextlib import contextmanager
@@ -28,7 +29,6 @@ import urllib.parse
 import urllib.request
 import uuid
 import zipfile
-import yaml
 try:
     from .ci_image import context_sha256,server_version,validate_resources
 except ImportError:
@@ -131,7 +131,7 @@ def verify_source(source: Path, checkout: str, expected: dict[str,str]) -> None:
         if result.returncode:raise ValueError('reviewed image source is unavailable; fetch the exact public checkout first')
         content=result.stdout
         if name=='template.yaml:contract':
-            data=yaml.safe_load(content);content=json.dumps(data,sort_keys=True,separators=(',',':')).encode()
+            data=_profile_module.parse_yaml_v1(content);content=json.dumps(data,sort_keys=True,separators=(',',':')).encode()
         if hashlib.sha256(content).hexdigest()!=digest:raise ValueError('current source differs from the actual CI image checkout: '+filename)
 
 
@@ -177,11 +177,11 @@ def validate_archive_revisions(metadata: dict, workflow: dict, artifact: dict, n
 
 def download_verified(artifact_id: int, source: Path, output: Path) -> dict:
     source=source.resolve()
-    validate_resources(__import__('template_application').project_manifest(yaml.safe_load((source/'template.yaml').read_text()), source))
+    validate_resources(__import__('template_application').project_manifest(load_source_document(source/'template.yaml'), source))
     if output.resolve().is_relative_to(source.parent):raise ValueError('image staging must stay outside the repository')
     output.mkdir(parents=True,exist_ok=False);output.chmod(0o700)
     archive_zip=output/'artifact.zip';artifact=artifact_download(artifact_id,archive_zip)
-    template=yaml.safe_load((source/'template.yaml').read_text());name=template['name']
+    template=load_source_document(source/'template.yaml');name=template['name']
     archive_name=name+'-image.tar';metadata_name=name+'-image-metadata.json'
     allowed={archive_name,archive_name+'.sha256',metadata_name}
     with zipfile.ZipFile(archive_zip) as archive:

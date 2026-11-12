@@ -72,6 +72,8 @@ Sandbox 与 Serving 可以并列声明；当前开发消费者尚不执行未关
 
 ## 配置与上架
 
+源文件使用 JSON 兼容的 YAML1.2 Core 子集：单文档、字符串映射键、无 alias/重复键/自定义 tag，UTF-8 文件最多1MiB。on/off和日期保持字符串；环境值若要写 true/false 或数字须加引号。显式 YAML1.1 声明会拒绝。读取源文件不读取环境值、不求值表达式。
+
 统一使用 Serverless Devs 原生 `${env('NAME')}`、`${vars.name}` 等表达式。实际 CLI 调用官方 parser，检查器只保留原文；不引入第二套 `{env: NAME}` 或 bindings JSON。可在本机 `.env` 提供引用值，勿提交到 Git；密钥来源见模板配置表。普通 Sandbox 的应用认证令牌由 CLI 生成和本机保存；模型 Key、Sandbox Key、云 AK/SK 是不同凭据。
 
 投稿的可选 `registry.yaml` 独立声明 specVersion/name/version、双语 description、author/license/tags、双语 readme；初始化 questions 用 JSON Pointer 指向 template.yaml 的真实字段。类型与默认值从资源配置取得，不重复维护。目录 schema_version:3 的 source 行只保存 name/path/repo/status/registry 定位；运行时只读 template.yaml。托管条目在 resource 中保留 Provider 原生 reference，说明 metadata 放 docs/managed/<name>/registry.yaml；不冒充可安装源码。

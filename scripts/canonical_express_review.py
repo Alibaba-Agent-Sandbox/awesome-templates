@@ -4,6 +4,7 @@ Current cloud acceptance runs through public-template-launch.yml and
 public_launch_e2e.py. This module never launches an old pinned deployment path.
 """
 from __future__ import annotations
+from template_application import load_source_document
 
 import argparse
 import base64
@@ -19,7 +20,6 @@ import time
 import urllib.error
 import urllib.request
 import uuid
-import yaml
 
 def save(path: Path, data: dict, *, private: bool = False) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -31,11 +31,11 @@ def save(path: Path, data: dict, *, private: bool = False) -> None:
 
 def select(text: str) -> list[str]:
     root = Path(__file__).resolve().parents[1]
-    catalog = yaml.safe_load((root / "awesome-templates.yaml").read_text())
+    catalog = load_source_document(root / "awesome-templates.yaml")
     available = {item["path"] for item in catalog["templates"]
                  if item.get("kind", "source") == "source"
-                 and yaml.safe_load((root / item["path"] / "template.yaml").read_text()).get("specVersion") == 1
-                 and yaml.safe_load((root / item["path"] / "template.yaml").read_text()).get("application", {}).get("type") != "agents-api"}
+                 and load_source_document(root / item["path"] / "template.yaml").get("specVersion") == 1
+                 and load_source_document(root / item["path"] / "template.yaml").get("application", {}).get("type") != "agents-api"}
     names = sorted(available) if text == "all" else text.split(",")
     if not names or len(set(names)) != len(names) or any(name not in available for name in names):
         raise ValueError("select unique v1 Sandbox template names or all; managed applications require separate Gateway deployment acceptance")

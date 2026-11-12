@@ -17,11 +17,6 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-try:
-    import yaml
-except ImportError:  # pragma: no cover - CI installs PyYAML
-    print("check_template.py needs PyYAML (pip install pyyaml)", file=sys.stderr)
-    raise SystemExit(1)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -106,28 +101,14 @@ class Violation:
         return f"{self.code}: {self.message}"
 
 
-class _UniqueKeyLoader(yaml.SafeLoader):
-    """Reject ambiguous maps instead of silently accepting the final key."""
-
-
-def _unique_mapping(loader: yaml.SafeLoader, node: yaml.MappingNode, deep: bool = False) -> dict:
-    loader.flatten_mapping(node)
-    result = {}
-    for key_node, value_node in node.value:
-        key = loader.construct_object(key_node, deep=deep)
-        if key in result:
-            raise ValueError(f"duplicate YAML key {key!r}")
-        result[key] = loader.construct_object(value_node, deep=deep)
-    return result
-
-
-_UniqueKeyLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _unique_mapping)
-
-
 def _load_yaml(path: Path) -> tuple[object, list[Violation]]:
+    import runpy
+
+    application = runpy.run_path(str(Path(__file__).with_name("template_application.py")))
+    load_source_document = application["load_source_document"]
     try:
-        data = yaml.load(path.read_text(encoding="utf-8"), Loader=_UniqueKeyLoader)
-    except Exception as exc:  # noqa: BLE001 - surface the parser error
+        data = load_source_document(path)
+    except (OSError, TypeError, ValueError) as exc:
         return None, [Violation("yaml-parse", f"{path.name}: {exc}")]
     if not isinstance(data, dict):
         return None, [Violation("yaml-parse", f"{path.name} must be a mapping")]

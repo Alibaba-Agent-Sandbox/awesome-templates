@@ -5,6 +5,7 @@ Requires the native CLI, reviewed SDK, a verified crane binary and existing
 account credentials in the process environment. Credentials never enter CI.
 """
 from __future__ import annotations
+from template_application import load_source_document
 import argparse
 import ast
 import importlib.util
@@ -94,7 +95,7 @@ def publish(source: Path, receipt: dict, report: dict) -> None:
 
 def prepared_launch_manifest(source: Path, template_id: str, *, runtime_env: dict[str, str] | None = None) -> dict:
     """Keep original launch declarations; apply prepared ENV defaults and its owned ID."""
-    manifest=normalize_manifest(yaml.safe_load((source/'template.yaml').read_text()))
+    manifest=normalize_manifest(load_source_document(source/'template.yaml'))
     sandbox=manifest['sandbox']
     if runtime_env:
         instance=sandbox.setdefault('instance', {})
@@ -283,7 +284,7 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,private_root:
         require(not exact_templates(cli,alias),'unique native registration alias preflight')
         images.save_private(platform_path,{'alias':alias,'preflight_absent':True,'registration_attempted':True,'sandbox_ids':[]})
         username,password=images.temporary_registry_credentials()
-        resources=project_manifest(yaml.safe_load((source/'template.yaml').read_text()), source)['resources']
+        resources=project_manifest(load_source_document(source/'template.yaml'), source)['resources']
         # Registration does not prestart an anonymous application: the shared launch core owns startup and runtime env.
         registered=native_template(cli, 'create', {'image': image_ref, 'name': alias, 'generation': 2,
             'cpu': resources.get('cpu', 2), 'memory_size': resources.get('memory', 2048),
@@ -316,7 +317,7 @@ def run(source: Path,artifact_id: int,crane: str,*,http: bool=True,private_root:
         report['passed']=report.get('application_result')=='PASS' and report.get('cleanup_verified') is True and template_clean and registry_clean and not report.get('local_close_errors') and report.get('image_provenance',{}).get('tag_digest_verified_after_runtime') is True and (not http or report.get('http_acceptance',{}).get('passed') is True)
         report['result']='PASS' if report['passed'] else 'FAIL';images.save_private(private/'result.json',report)
     if report['passed']:
-        manifest=project_manifest(yaml.safe_load((source/'template.yaml').read_text()), source)
+        manifest=project_manifest(load_source_document(source/'template.yaml'), source)
         receipt={**report,'template_version':str(manifest['version'])}
         publish(source,receipt,report);shutil.rmtree(private)
     else:
