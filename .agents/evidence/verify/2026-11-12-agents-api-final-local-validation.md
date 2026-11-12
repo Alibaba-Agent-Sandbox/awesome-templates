@@ -52,9 +52,19 @@ copied into this repository. Result-file hashes identify the retained original t
 ## Source acquisition and canonical identity
 
 PASS: actual built CLI f26f789e98ab84ab1aa2504dce62cd996cf2197b executes template init from
-the exact public7b0ef9c source. All14 source files match byte for byte, resource is present,
-and publication metadata is optional. Exit0 in2.07 seconds. This only obtains source; it
-runs no build, deployment or model. See [source acquisition](2026-11-12-agents-api-v1-source-acquisition.json).
+the exact public7b0ef9c source. All14 source files match byte for byte; resource and
+publication metadata are present. Exit0 in2.07 seconds. The acquisition receipt originally
+called its metadata-presence field registryOptional, although its implementation only checked
+Path.is_file(). The archived field is corrected to publicationMetadataPresent; the original
+receipt and its hash remain unchanged. This acquisition result does not itself prove optionality.
+
+PASS separately: the actual built CLI readProjectIntent succeeds in an independent directory
+containing only template.yaml, without registry.yaml, parameters or cloud/model credentials.
+It returns specVersion1/name:agents-api, confirms metadata/parameters absent, and retains
+unresolved native expressions. This independent resource-only probe establishes that local
+intent reading does not require publication metadata or initialization parameters. Both typed
+results and their original hashes are in [source acquisition](2026-11-12-agents-api-v1-source-acquisition.json).
+Neither probe performs a build, deployment or model execution.
 Canonical schema/normalizer/requirements bytes remain identical to ef695803cb78bf82b8473195fcb37b3e6357a363,
 as separately checked and recorded in [owner consumer/merge evidence](2026-11-12-template-v1-reader-consumers.md).
 
