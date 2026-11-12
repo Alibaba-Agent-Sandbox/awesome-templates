@@ -4094,6 +4094,26 @@
           }
         }
       }
+    },
+    {
+      "id": "engineering-directory-is-not-a-resource-name",
+      "stage": "intent",
+      "manifest": {
+        "specVersion": 1,
+        "name": "_skeleton",
+        "sandbox": {
+          "provider": "alicloud-express",
+          "template": {
+            "reference": "existing-template"
+          },
+          "instance": {
+            "timeout": 300,
+            "volume_mounts": {
+              "/data": "existing-volume-name"
+            }
+          }
+        }
+      }
     }
   ],
   "registry": {
