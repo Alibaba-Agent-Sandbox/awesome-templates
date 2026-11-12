@@ -408,3 +408,5 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 
 - [Complete template guidance synchronization](notes/proposed/process/2026-11-12-ecosystem-guidance-sync.md) · [verification](evidence/verify/2026-11-12-ecosystem-guidance-sync.md).
 - [Document engine package pins](notes/proposed/process/2026-11-12-document-engine-package-pins.md) · [verification](evidence/verify/2026-11-12-document-engine-package-pins.md).
+
+- [Inactive canonical template v1 contract](notes/proposed/architecture/2026-11-12-template-v1-contract.md) · [local verification and pending consumer/E2E gates](evidence/verify/2026-11-12-template-v1-contract.md).
