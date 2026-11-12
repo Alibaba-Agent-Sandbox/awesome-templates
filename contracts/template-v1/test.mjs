@@ -45,6 +45,7 @@ const rows = Object.fromEntries(valid.map(row => [row.id, row]));
 assert.deepEqual(rows['independent-sandbox-and-native-serving'].compiled.deployment, rows['independent-sandbox-and-native-serving'].normalized.deployment);
 assert.deepEqual(rows['independent-sandbox-and-native-serving'].compiled.sandbox, rows['independent-sandbox-and-native-serving'].normalized.sandbox);
 assert.equal(Object.hasOwn(rows['independent-sandbox-and-native-serving'].compiled, 'application'), false);
+assert.ok(rows['long-native-reference-unrestricted'].compiled.template_id.length > 128);
 assert.deepEqual(rows['additional-access-ports-only'].compiled.ports, [6080, 9222]);
 assert.deepEqual(rows['additional-access-ports-only'].compiled.provides, {});
 assert.deepEqual(rows['service-and-additional-port-union'].compiled.ports, [9000, 9222]);

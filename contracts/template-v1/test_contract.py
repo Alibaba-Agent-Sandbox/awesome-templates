@@ -125,6 +125,24 @@ class ContractTest(unittest.TestCase):
         result = outcomes()
         self.assertEqual(len(result["valid"]), len(FIXTURES["validTemplates"]))
 
+    def test_resource_names_are_strict_without_limiting_native_references(self) -> None:
+        manifest = deepcopy(FIXTURES["validTemplates"][0]["manifest"])
+        manifest["name"] = "a" * 63
+        self.assertEqual(
+            normalizer.normalize_template_v1(manifest, VALIDATORS["intent"])["name"],
+            "a" * 63,
+        )
+        for name in ["a" * 64, "name\n", "name\r\n"]:
+            manifest["name"] = name
+            with self.assertRaises(ValueError):
+                normalizer.normalize_template_v1(manifest, VALIDATORS["intent"])
+        row = next(
+            row
+            for row in outcomes()["valid"]
+            if row["id"] == "long-native-reference-unrestricted"
+        )
+        self.assertGreater(len(row["compiled"]["template_id"]), 128)
+
     def test_additional_ports_do_not_fabricate_services(self) -> None:
         rows = {row["id"]: row for row in outcomes()["valid"]}
         self.assertEqual(
