@@ -60,10 +60,10 @@ export ABX_HTTP_TIMEOUT=660
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --sandbox-timeout 1800 --yes
 export ABX_SANDBOX_ID="<returned-sandbox-id>"
 abx sandbox command list "$ABX_SANDBOX_ID"
-abx sandbox run "$ABX_SANDBOX_ID" hello --arg name=Ada
+abx sandbox command run "$ABX_SANDBOX_ID" hello --arg name=Ada
 ```
 
-Expected result: `Hello, Ada!`. Launch prepares the template and starts its declared application; it returns the sandbox ID and references to retained prepared resources. `abx sandbox run` calls named commands, while `abx sandbox exec` executes a process. Numeric and boolean named-command arguments use `--json-args`.
+Expected result: `Hello, Ada!`. Launch prepares the template and starts its declared application; it returns the sandbox ID and references to retained prepared resources. `abx sandbox command run` calls named commands, while `abx sandbox exec` executes a process. Numeric and boolean named-command arguments use `--json-args`.
 
 The three timeout controls serve different purposes: `--build-timeout` is the build deadline; `--sandbox-timeout` is the instance lifetime; `ABX_HTTP_TIMEOUT` is the CLI HTTP wait. A model command's own execution limit is separate. For a 600-second coding task, an 1800-second instance and a 660-second client wait avoid the default 300-second instance/30-second SDK wait expiring first.
 

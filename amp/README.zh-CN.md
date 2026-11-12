@@ -42,7 +42,8 @@ Amp 不接受 DashScope 密钥、`ABX_LLM_API_KEY` 或 OpenAI 兼容的 base URL
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI 默认生成并保存应用令牌；外部 SDK/HTTP 如需自定义，在部署前取消下一行注释。
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export AMP_API_KEY='<your-model-or-vendor-key>'
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//amp --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
@@ -54,7 +55,7 @@ abx sandbox command list "$SANDBOX_ID"
 launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
 
 ```bash
-ABX_HTTP_TIMEOUT=720 abx sandbox run "$SANDBOX_ID" amp_execute --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","dangerously_allow_all":true}'
+ABX_HTTP_TIMEOUT=720 abx sandbox command run "$SANDBOX_ID" amp_execute --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","dangerously_allow_all":true}'
 ```
 
 任务要求在 `/home/user/app` 写出 `generated_hello.py` 和 `GENERATED_REPORT.md`。示例显式开放所需的编辑/工具权限，只在自己拥有的可丢弃沙箱中使用。下面的 SDK 和 HTTP 是同一任务的替代调用方式，选择一种即可。

@@ -19,7 +19,7 @@ CLI 会引导补齐必要配置，自动生成并保存默认应用认证令牌�
 启动后，将 `<sandbox-id>` 替换为返回的沙箱 ID：
 
 ```bash
-abx sandbox run <sandbox-id> hello --arg name=Ada
+abx sandbox command run <sandbox-id> hello --arg name=Ada
 abx delete <sandbox-id>
 ```
 
@@ -114,7 +114,7 @@ abx delete <sandbox-id>
 
 ## 定制与贡献
 
-搜索模板：`abx template search python`。下载可编辑副本而不创建云资源：
+搜索模板：`abx template list python`。下载可编辑副本而不创建云资源：
 
 ```bash
 abx template init ./python-hello --from Alibaba-Agent-Sandbox/awesome-templates//python-hello

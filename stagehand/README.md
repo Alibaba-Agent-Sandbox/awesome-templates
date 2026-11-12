@@ -28,7 +28,8 @@ This entry uses a model API key: no browser OAuth login is required, and your lo
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export STAGEHAND_API_KEY='<your-model-api-key>'
 export STAGEHAND_BASE_URL='https://model.example.invalid/v1'
 export STAGEHAND_MODEL='<your-model-id>'
@@ -40,7 +41,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" stagehand --json-args '{"task":"Click the IANA-managed Reserved Domains link.","url":"https://www.iana.org/help/example-domains","extract_instruction":"Return the visible heading.","command_timeout":180}'
+abx sandbox command run "$SANDBOX_ID" stagehand --json-args '{"task":"Click the IANA-managed Reserved Domains link.","url":"https://www.iana.org/help/example-domains","extract_instruction":"Return the visible heading.","command_timeout":180}'
 ```
 
 Returns native `action`, `extracted`, final URL and a fresh `screenshot_path`. Inspect `action.success`; the model may fail to complete its instruction.

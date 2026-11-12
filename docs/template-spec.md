@@ -216,7 +216,7 @@ create unrecorded deployment resources.
 
 The managed application README uses the Gateway task in CLI/Python/HTTP examples:
 `abx deploy` for application deployment and authenticated Gateway HTTP for business calls.
-It does not require callers to connect a `ProviderSandbox` or use `abx sandbox run`.
+It does not require callers to connect a `ProviderSandbox` or use `abx sandbox command run`.
 The required headings and user-documentation boundaries below remain unchanged.
 
 ## Alibaba base image
@@ -329,8 +329,8 @@ When the variable is unset, the application allows anonymous calls; provider gat
 CLI, after `abx --provider alicloud-express deploy <source> --yes` has started the application:
 
 ```bash
-abx sandbox run <sandbox-id> hello --arg name=Ada
-abx sandbox run <sandbox-id> add --json-args '{"x": 1, "y": 2}'
+abx sandbox command run <sandbox-id> hello --arg name=Ada
+abx sandbox command run <sandbox-id> add --json-args '{"x": 1, "y": 2}'
 abx sandbox command list <sandbox-id>
 abx sandbox exec <sandbox-id> -- python3 -c 'print(1)'
 ```
@@ -461,9 +461,11 @@ Template READMEs are usage guides: keep validation reports, historical acceptanc
 | Issues | 问题反馈 |
 | License | 许可证 |
 
+For managed spec6 applications, use `Quick start (Python HTTP client)` / `快速开始（Python HTTP 客户端）` in place of the Python SDK heading. These applications use `httpx` against the Gateway; a dedicated Gateway client SDK is not provided.
+
 Before launch, explain required provider credentials separately from application and model credentials, and document the actual model, endpoint, API-key or product-login configuration consumed by the template. Do not invent a universal variable mapping for upstream tools.
 
-For spec6, show explicit `abx deploy` deployment and standard Gateway HTTP through Python `httpx`, with the public API table and managed close/delete cleanup. The following client requirements apply to spec5. The CLI section contains an `abx sandbox run` example. The SDK section imports `ProviderSandbox`, resolves its application client with `application_client`, and calls `client.commands.run`. The command reference is a table with the parameters. A non-Alibaba base adds `## Base image` / `## 基础镜像`.
+For spec6, show explicit `abx deploy` deployment and standard Gateway HTTP through Python `httpx`, with the public API table and managed close/delete cleanup. The following client requirements apply to spec5. The CLI section contains an `abx sandbox command run` example. The SDK section imports `ProviderSandbox`, resolves its application client with `application_client`, and calls `client.commands.run`. The command reference is a table with the parameters. A non-Alibaba base adds `## Base image` / `## 基础镜像`.
 
 ## Listing and acceptance
 

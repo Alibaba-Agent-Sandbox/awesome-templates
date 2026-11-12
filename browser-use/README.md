@@ -28,7 +28,8 @@ This entry uses a model API key: no browser OAuth login is required, and your lo
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export BROWSER_USE_API_KEY='<your-model-api-key>'
 export BROWSER_USE_BASE_URL='https://model.example.invalid/v1'
 export BROWSER_USE_MODEL='<your-model-id>'
@@ -40,7 +41,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" browser_use --json-args '{"task":"Read the heading of this page and return it.","url":"https://www.iana.org/help/example-domains","max_steps":8,"command_timeout":300}'
+abx sandbox command run "$SANDBOX_ID" browser_use --json-args '{"task":"Read the heading of this page and return it.","url":"https://www.iana.org/help/example-domains","max_steps":8,"command_timeout":300}'
 ```
 
 Returns the agent result, `done`, `success` and a fresh `screenshot_path`. Inspect completion flags; text alone is not a success indicator.

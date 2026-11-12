@@ -32,7 +32,8 @@ Replace every `<...>` placeholder with your own value; use an exact model ID ava
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export AIDER_API_KEY='<your-model-or-vendor-key>'
 export AIDER_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
 export AIDER_MODEL='<model-id-from-your-provider>'
@@ -50,7 +51,7 @@ abx sandbox exec "$SANDBOX_ID" -- git -C /home/user/app init -q
 ```
 
 ```bash
-ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" aider --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","files":"[\"generated_hello.py\",\"GENERATED_REPORT.md\"]","allow_write":true,"cwd":"/home/user/app","command_timeout":300}'
+ABX_HTTP_TIMEOUT=420 abx sandbox command run "$SANDBOX_ID" aider --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","files":"[\"generated_hello.py\",\"GENERATED_REPORT.md\"]","allow_write":true,"cwd":"/home/user/app","command_timeout":300}'
 ```
 
 The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/app`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.

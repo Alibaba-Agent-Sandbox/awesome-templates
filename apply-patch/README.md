@@ -26,7 +26,8 @@ These template commands require no model, model endpoint or model API key.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export ABX_HTTP_TIMEOUT=450
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//apply-patch --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
@@ -35,7 +36,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" apply_patch --json-args '{"patch_text":"*** Begin Patch\n*** Add File: hello.txt\n+Hello from a patch\n*** End Patch\n"}'
+abx sandbox command run "$SANDBOX_ID" apply_patch --json-args '{"patch_text":"*** Begin Patch\n*** Add File: hello.txt\n+Hello from a patch\n*** End Patch\n"}'
 ```
 
 Creates `hello.txt`; inspect `exit_code == 0` and the actual file.

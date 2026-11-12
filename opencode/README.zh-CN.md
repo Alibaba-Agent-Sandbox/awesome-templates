@@ -27,7 +27,8 @@
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="<独立的应用访问令牌>"
+# CLI 默认生成并保存应用令牌；外部 SDK/HTTP 如需自定义，在部署前取消下一行注释。
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export ABX_LLM_API_KEY="<模型服务APIKey>"
 export ABX_LLM_BASE_URL="https://dashscope.aliyuncs.com/compatible-mode/v1"
 export ABX_HTTP_TIMEOUT=660
@@ -39,9 +40,9 @@ abx deploy Alibaba-Agent-Sandbox/awesome-templates//opencode --sandbox-timeout 1
 ```bash
 export ABX_SANDBOX_ID="<返回的沙箱ID>"
 abx sandbox exec "$ABX_SANDBOX_ID" -- mkdir -p /home/user/workspace
-abx sandbox run "$ABX_SANDBOX_ID" opencode_version
-abx sandbox run "$ABX_SANDBOX_ID" opencode_setup_check
-abx sandbox run "$ABX_SANDBOX_ID" opencode_run --json-args '{"prompt":"在当前目录创建 hello.py，运行后打印 Hello from OpenCode，然后运行它。","model":"dashscope/qwen3.8-flash","cwd":"/home/user/workspace"}'
+abx sandbox command run "$ABX_SANDBOX_ID" opencode_version
+abx sandbox command run "$ABX_SANDBOX_ID" opencode_setup_check
+abx sandbox command run "$ABX_SANDBOX_ID" opencode_run --json-args '{"prompt":"在当前目录创建 hello.py，运行后打印 Hello from OpenCode，然后运行它。","model":"dashscope/qwen3.8-flash","cwd":"/home/user/workspace"}'
 abx sandbox download "$ABX_SANDBOX_ID" /home/user/workspace/hello.py ./hello.py
 ```
 

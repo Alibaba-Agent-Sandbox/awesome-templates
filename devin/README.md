@@ -30,7 +30,8 @@ Replace every `<...>` placeholder with your own value; use an exact model ID ava
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export DEVIN_CREDENTIALS_FILE='/home/user/devin-private/credentials.toml'
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//devin --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
@@ -51,7 +52,7 @@ abx sandbox exec "$SANDBOX_ID" -- chmod 600 /home/user/devin-private/credentials
 ```
 
 ```bash
-ABX_HTTP_TIMEOUT=420 abx sandbox run "$SANDBOX_ID" devin --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","allow_unsafe_tools":true,"cwd":"/home/user/app","command_timeout":300}'
+ABX_HTTP_TIMEOUT=420 abx sandbox command run "$SANDBOX_ID" devin --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","allow_unsafe_tools":true,"cwd":"/home/user/app","command_timeout":300}'
 ```
 
 The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/app`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.

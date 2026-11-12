@@ -30,7 +30,7 @@ another repository beside this one. Cross-repository links use absolute GitHub U
 
 ## Runnable examples and API reference
 
-Every template documents the same useful task through CLI, Python SDK and HTTP
+Every template documents the same useful task through CLI, a Python SDK or actual HTTP client, and HTTP
 POST. Include installation provenance, provider setup, deploy/create, command
 discovery, arguments, expected response and owned cleanup. Use commands verified
 against actual help/source. Record whether examples were executed or only syntax checked in the engineering verification record. Do not imply a snippet is a real cloud pass.

@@ -28,7 +28,8 @@ Replace the password placeholder with a unique password of 16–128 URL-safe ASC
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export DEV_SERVICES_PASSWORD='<choose-a-long-unique-password>'
 export ABX_HTTP_TIMEOUT=450
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//dev-services --sandbox-timeout 1800 --yes
@@ -38,8 +39,8 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" services_start --json-args '{}'
-abx sandbox run "$SANDBOX_ID" services_sql --json-args '{"sql":"CREATE TABLE usage_demo (amount integer); INSERT INTO usage_demo VALUES (5130); SELECT sum(amount) AS total_cents FROM usage_demo;"}'
+abx sandbox command run "$SANDBOX_ID" services_start --json-args '{}'
+abx sandbox command run "$SANDBOX_ID" services_sql --json-args '{"sql":"CREATE TABLE usage_demo (amount integer); INSERT INTO usage_demo VALUES (5130); SELECT sum(amount) AS total_cents FROM usage_demo;"}'
 ```
 
 Returns PostgreSQL query output containing total `5130` cents; it creates a table in this sandbox database.
@@ -143,7 +144,7 @@ Prewarmed command servers need [explicit process configuration](../docs/runtime-
 The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
 
 ```bash
-abx sandbox run "$SANDBOX_ID" services_stop --json-args '{}'
+abx sandbox command run "$SANDBOX_ID" services_stop --json-args '{}'
 abx delete "$SANDBOX_ID"
 ```
 

@@ -3,7 +3,7 @@ FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8
 
-# abx template deploy substitutes <region> and <tag> (default cn-hangzhou and v0.0.49).
+# Source preparation substitutes <region> and <tag> before building.
 # Layer order: heavy tool installs go in the early RUN below. commands.py is
 # copied last, so a command edit does not rebuild or re-push the tool layer.
 # pip --no-cache-dir keeps that layer from storing a download cache.

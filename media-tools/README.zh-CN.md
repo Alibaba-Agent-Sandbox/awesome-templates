@@ -28,7 +28,8 @@ CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI 默认生成并保存应用令牌；外部 SDK/HTTP 如需自定义，在部署前取消下一行注释。
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export ABX_HTTP_TIMEOUT=450
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//media-tools --sandbox-timeout 1800 --yes
 # 将启动输出中的沙箱 ID 填到这里
@@ -54,7 +55,7 @@ abx sandbox upload "$SANDBOX_ID" ./sample.wav /home/user/app/sample.wav
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" transcode --json-args '{"input_path":"sample.wav","output_name":"sample.flac","preset":"flac","max_seconds":5,"command_timeout":60}'
+abx sandbox command run "$SANDBOX_ID" transcode --json-args '{"input_path":"sample.wav","output_name":"sample.flac","preset":"flac","max_seconds":5,"command_timeout":60}'
 ```
 
 返回转码后 FLAC 的 `output_path`、时长、流信息、`bytes` 和 `sha256`。
@@ -151,7 +152,7 @@ SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。�
 使用已上传的 `sample.wav`：
 
 ```bash
-abx sandbox run "$SANDBOX_ID" transcode_args --json-args '{"args":["-i","sample.wav","-c:a","flac","argv-result.flac"],"max_seconds":5}'
+abx sandbox command run "$SANDBOX_ID" transcode_args --json-args '{"args":["-i","sample.wav","-c:a","flac","argv-result.flac"],"max_seconds":5}'
 ```
 
 ```json

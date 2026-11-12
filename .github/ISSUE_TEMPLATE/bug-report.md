@@ -27,7 +27,7 @@ assignees: []
 ## Reproduction steps
 
 ```bash
-abx template install alibaba-agent-sandbox/awesome-templates//<name>
+abx deploy alibaba-agent-sandbox/awesome-templates//<name> --name repro
 # ...
 ```
 

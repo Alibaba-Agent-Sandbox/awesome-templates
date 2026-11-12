@@ -502,7 +502,7 @@ class PythonCompatibilityProofTests(unittest.IsolatedAsyncioTestCase):
                 return execute()
         self_case = self
         def cli_run(args):
-            self.assertEqual(args[:4], ['sandbox', 'run', 'owned-sandbox', 'run'])
+            self.assertEqual(args[:5], ['sandbox', 'command', 'run', 'owned-sandbox', 'run'])
             return {'result': execute()}
         def http(request):
             self.assertEqual(request.url.path, '/owned/proxy/9000/commands/run')

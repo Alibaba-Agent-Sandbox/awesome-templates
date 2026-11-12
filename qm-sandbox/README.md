@@ -26,7 +26,8 @@ These template commands require no model, model endpoint or model API key.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export ABX_HTTP_TIMEOUT=450
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//qm-sandbox --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
@@ -35,7 +36,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" qm_sandbox_file --json-args '{"action":"write","path":"note.txt","text":"Hello from QM tools\n"}'
+abx sandbox command run "$SANDBOX_ID" qm_sandbox_file --json-args '{"action":"write","path":"note.txt","text":"Hello from QM tools\n"}'
 ```
 
 Returns `result: true`, `sdk_calls` and `original_qm_tools: true`; the exact text is stored in `note.txt`.

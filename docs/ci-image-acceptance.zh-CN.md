@@ -40,7 +40,7 @@ python scripts/run_ci_image_e2e.py ocr \
 建立所有权，确认新仓库为 PRIVATE，再传输已验证镜像并读回内容摘要。
 不修改账号策略。
 
-真实 `abx template from-image` 注册本次独占的 review 标签，并在注册前和运行后独立读回内容摘要确认未变，官方 API 必须返回 READY，再执行
+真实 `abx --provider alicloud-express provider run template.create` 注册本次独占的 review 标签，并在注册前和运行后独立读回内容摘要确认未变，官方 API 必须返回 READY，再执行
 CLI/SDK 冒烟与完整外部 HTTP 验收。本控制器明确记录模型验收 NOT_RUN；Issue
 要求真实模型时，仍需独立严格的镜像内模型验证。该命令始终运行完整 HTTP 验收。
 

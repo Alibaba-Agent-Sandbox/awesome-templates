@@ -30,7 +30,8 @@ CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI 默认生成并保存应用令牌；外部 SDK/HTTP 如需自定义，在部署前取消下一行注释。
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export ABX_HTTP_TIMEOUT=450
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//document-tools --sandbox-timeout 1800 --yes
 # 将启动输出中的沙箱 ID 填到这里
@@ -49,7 +50,7 @@ abx sandbox upload "$SANDBOX_ID" ./report.md /home/user/app/report.md
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" convert --json-args '{"input_path":"report.md","output_name":"report.docx","output_format":"docx"}'
+abx sandbox command run "$SANDBOX_ID" convert --json-args '{"input_path":"report.md","output_name":"report.docx","output_format":"docx"}'
 ```
 
 返回 `output_path`、`output_format: docx`、`bytes` 和 `sha256`；DOCX 会保留供下载。

@@ -42,7 +42,8 @@ Replace every `<...>` placeholder with your own value; use an exact model ID ava
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export AMP_API_KEY='<your-model-or-vendor-key>'
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//amp --sandbox-timeout 1800 --yes
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
@@ -54,7 +55,7 @@ abx sandbox command list "$SANDBOX_ID"
 Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
 
 ```bash
-ABX_HTTP_TIMEOUT=720 abx sandbox run "$SANDBOX_ID" amp_execute --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","dangerously_allow_all":true}'
+ABX_HTTP_TIMEOUT=720 abx sandbox command run "$SANDBOX_ID" amp_execute --json-args '{"prompt":"Create generated_hello.py that prints exactly Hello from the sandbox, and GENERATED_REPORT.md explaining the program. Preserve unrelated existing files.","dangerously_allow_all":true}'
 ```
 
 The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/app`. The example explicitly enables the required editing/tools; use an owned disposable sandbox. The SDK and HTTP examples are alternative ways to submit the same task; choose one.

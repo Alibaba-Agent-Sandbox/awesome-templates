@@ -26,7 +26,8 @@ These template commands require no model, model endpoint or model API key.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export ABX_HTTP_TIMEOUT=450
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//node-web --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
@@ -35,8 +36,8 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" serve --json-args '{"entry":"index.js","port":3000}'
-abx sandbox run "$SANDBOX_ID" request --json-args '{"path":"/"}'
+abx sandbox command run "$SANDBOX_ID" serve --json-args '{"entry":"index.js","port":3000}'
+abx sandbox command run "$SANDBOX_ID" request --json-args '{"path":"/"}'
 ```
 
 Returns the sample application HTTP status and body containing `node-web ready`.
@@ -138,7 +139,7 @@ No model/cloud key is needed by these commands. Keep secret values out of source
 The working directory is `/home/user/app`. Artifacts remain on the sandbox disk; export anything needed before deleting the instance. Delete only your own instance and the prepared template/image identified by its launch receipt.
 
 ```bash
-abx sandbox run "$SANDBOX_ID" stop --json-args '{}'
+abx sandbox command run "$SANDBOX_ID" stop --json-args '{}'
 abx delete "$SANDBOX_ID"
 ```
 

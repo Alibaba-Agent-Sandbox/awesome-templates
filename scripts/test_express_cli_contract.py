@@ -41,6 +41,10 @@ class ExpressCliContract(unittest.TestCase):
             for flag in ('--out', '--clean', '--build-profile'):
                 self.assertIn(flag, author)
             self.assertIn('--input', help_for(['--provider', 'alicloud-express', 'provider', 'run', 'template.delete']))
+            named = help_for(['sandbox', 'command', 'run'])
+            for flag in ('--arg', '--json-args', '--server-port'):
+                self.assertIn(flag, named)
+            self.assertIn('Usage: abx sandbox command run', named)
 
 
 if __name__ == '__main__': unittest.main()

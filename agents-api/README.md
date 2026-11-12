@@ -4,7 +4,7 @@ One stable Gateway endpoint for Agents whose model, tools and workspace run in a
 session-owned Sandbox. Business clients configure the Gateway URL and business
 key once.
 
-[中文](README.zh-CN.md) · [API reference](../docs/managed-agents-api.md)
+[中文](README.zh-CN.md) · [API reference](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/managed-agents-api.md)
 
 ## What it does
 
@@ -41,16 +41,18 @@ application token enter the Sandbox.
 ## Quick start (CLI)
 
 Install the current source CLI using the linked guide; published CLI 0.5.10 does not support these commands. Configure your Sandbox/build registry with the
-[usage guide](../docs/using-templates.md#installation), and select an existing
+[usage guide](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/using-templates.md#installation), and select an existing
 Serverless Devs access profile in `application.deployment.accessRef`. The FC
 region, Sandbox region, database connectivity and registry image access must agree.
-Keep the Python environment active when deploying: its `httpx==0.28.1` dependency
-is used by the verification hook and examples.
+The CLI copies just this template into an editable project. Source acquisition
+does not deploy it. Python 3 and `httpx==0.28.1` are needed on the deployment host:
+after deployment, the template runs `scripts/smoke.py` against the Gateway for a
+two-turn Agent file task. Keep the virtual environment active for deploy/update.
+The venv command also creates `.abx/`; no separate directory setup is needed.
 
 ```bash
-git clone https://github.com/Alibaba-Agent-Sandbox/awesome-templates.git
-cd awesome-templates/agents-api
-mkdir -p .abx
+abx template init ./agents-api --from agents-api
+cd agents-api
 python3 -m venv .abx/venv
 . .abx/venv/bin/activate
 python -m pip install httpx==0.28.1
@@ -58,15 +60,20 @@ cp bindings.example.json .abx/bindings.json
 chmod 600 .abx/bindings.json
 ```
 
-Set the referenced environment variables described in Configuration before apply.
-Choose an actual model ID and its matching adapter in the private bindings file.
+Set the referenced environment variables described in Configuration before deployment.
+Choose the adapter in the private bindings file and supply its matching model ID
+through `OPENAI_MODEL`.
 Edit the manifest's region, access profile and limits for your account. Keep
 private files, plans and build receipts under `.abx/`, excluded from image builds.
 
 ```bash
+abx deploy . --name agents-api --bindings .abx/bindings.json --plan
 abx deploy . --name agents-api --bindings .abx/bindings.json --yes
 abx status agents-api
 ```
+
+`--plan` previews the resources without building or deploying. `--yes` authorizes
+the build, cloud deployment and the template's model-backed business check.
 
 `abx status agents-api` displays the endpoint and private local credentials file. The first deployment generates separate business and internal keys and reuses them on updates. Business clients need the endpoint and `businessKey` from that file; do not share `internalToken`. Explicit custom credentials are not copied into the local store.
 
@@ -86,10 +93,11 @@ abx delete agents-api --revision <old-revision> --bindings .abx/bindings.json --
 
 Authors may build separately with `abx template build . --out .abx/build.json --yes`, then reuse it through `abx deploy . --build .abx/build.json --name agents-api --bindings .abx/bindings.json --yes`. `abx template publish` publishes committed source without automatically listing it in Registry.
 
-## Quick start (Python SDK)
+## Quick start (Python HTTP client)
 
-The Gateway accepts standard HTTP; no Sandbox SDK or individual Sandbox address
-is needed. Set `AGENTS_API_BASE_URL` to the returned endpoint and
+The Gateway accepts standard HTTP. There is no dedicated Gateway client SDK;
+this example uses `httpx`, with no Sandbox SDK or individual Sandbox address.
+Set `AGENTS_API_BASE_URL` to the returned endpoint and
 `AGENTS_CREDENTIALS_FILE` to the returned private credentials file. This example
 creates a session with an initial task and waits for its durable submission.
 
@@ -157,7 +165,7 @@ the Agent task completed.
 
 ## Command reference
 
-[API reference](../docs/managed-agents-api.md) lists the public operations.
+[API reference](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/managed-agents-api.md) lists the public operations.
 
 | Entry | Parameters | Result |
 | --- | --- | --- |
@@ -172,13 +180,13 @@ The private bridge is not the business API. `commands.py` contains a local
 and returns their pinned versions. It is not exposed by the private bridge.
 
 The manifest omits fixed `fc-managed-agents` profile fields. Customize the declared
-provider, bindings, region and budgets; see the [profile reference](../docs/managed-agent-applications.md)
+provider, bindings, region and budgets; see the [profile reference](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/managed-agent-applications.md)
 for defaults and supported overrides.
 
 ## Configuration
 
 Copy [bindings.example.json](bindings.example.json). Its `{env: ...}` values are
-references resolved at apply; the file contains no credential literals.
+references resolved at deployment; the file contains no credential literals.
 
 | Variable or binding | Purpose and source |
 | --- | --- |
@@ -187,7 +195,7 @@ references resolved at apply; the file contains no credential literals.
 | `SANDBOX_BASE_URL`, `SANDBOX_DOMAIN`, `SANDBOX_REGION` | Explicit API address, Sandbox endpoint domain and region from the same platform configuration. |
 | `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL` | Model-provider key, compatible API base and exact allowed model ID. `qwen-code` requires Chat Completions with tools; `codex` requires Responses with tools. A simple text request is insufficient. |
 | `AGENTS_FC_ROLE_ARN` | Existing FC execution role permitted to invoke the revision's private Worker/Dispatcher functions. Obtain its ARN from your RAM/FC setup. |
-| `agents-clientAuth`, `agents-internalAuth` | Default `generate: true` creates distinct business and internal keys on first apply. For custom business keys provide only SHA-256 hashes, owner and supported scopes. |
+| `agents-clientAuth`, `agents-internalAuth` | Default `generate: true` creates distinct business and internal keys on first deployment. For custom business keys provide only SHA-256 hashes, owner and supported scopes. |
 | `agents-ingress` | Default function alias plus FC test domain. For production use an explicitly configured HTTPS custom-domain binding. |
 
 For a database reachable only over your VPC, replace the `agents-state` object
@@ -267,8 +275,8 @@ does not erase separately retained database history.
 
 ## Contributing
 
-Follow [CONTRIBUTING.md](../CONTRIBUTING.md) and the
-[template specification](../docs/template-spec.md). Keep both languages aligned.
+Follow [CONTRIBUTING.md](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/CONTRIBUTING.md) and the
+[template specification](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/template-spec.md). Keep both languages aligned.
 
 ## Issues
 
@@ -279,4 +287,4 @@ Remove keys, database URLs and private logs from reports.
 
 ## License
 
-Apache-2.0; see [LICENSE](../LICENSE). Upstream CLIs retain their own licenses.
+Apache-2.0; see [LICENSE](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/LICENSE). Upstream CLIs retain their own licenses.

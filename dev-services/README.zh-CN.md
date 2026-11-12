@@ -28,7 +28,8 @@ CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI 默认生成并保存应用令牌；外部 SDK/HTTP 如需自定义，在部署前取消下一行注释。
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export DEV_SERVICES_PASSWORD='<choose-a-long-unique-password>'
 export ABX_HTTP_TIMEOUT=450
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//dev-services --sandbox-timeout 1800 --yes
@@ -38,8 +39,8 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" services_start --json-args '{}'
-abx sandbox run "$SANDBOX_ID" services_sql --json-args '{"sql":"CREATE TABLE usage_demo (amount integer); INSERT INTO usage_demo VALUES (5130); SELECT sum(amount) AS total_cents FROM usage_demo;"}'
+abx sandbox command run "$SANDBOX_ID" services_start --json-args '{}'
+abx sandbox command run "$SANDBOX_ID" services_sql --json-args '{"sql":"CREATE TABLE usage_demo (amount integer); INSERT INTO usage_demo VALUES (5130); SELECT sum(amount) AS total_cents FROM usage_demo;"}'
 ```
 
 返回 PostgreSQL 查询输出，合计 `5130` 分；会在此沙箱数据库中创建表。
@@ -143,7 +144,7 @@ psql使用 -X、ON_ERROR_STOP；redis-cli使用 -e 将协议错误作为失败�
 工作目录为 `/home/user/app`。产物保存在沙箱磁盘，释放实例前导出需要保留的文件。不要删除原始模板目录；只清理自己的实例和启动回执列出的自有模板/镜像。
 
 ```bash
-abx sandbox run "$SANDBOX_ID" services_stop --json-args '{}'
+abx sandbox command run "$SANDBOX_ID" services_stop --json-args '{}'
 abx delete "$SANDBOX_ID"
 ```
 

@@ -26,7 +26,8 @@ CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI 默认生成并保存应用令牌；外部 SDK/HTTP 如需自定义，在部署前取消下一行注释。
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export ABX_HTTP_TIMEOUT=450
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//qm-sandbox --sandbox-timeout 1800 --yes
 # 将启动输出中的沙箱 ID 填到这里
@@ -35,7 +36,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" qm_sandbox_file --json-args '{"action":"write","path":"note.txt","text":"Hello from QM tools\n"}'
+abx sandbox command run "$SANDBOX_ID" qm_sandbox_file --json-args '{"action":"write","path":"note.txt","text":"Hello from QM tools\n"}'
 ```
 
 返回 `result: true`、`sdk_calls` 和 `original_qm_tools: true`；文本写入 `note.txt`。

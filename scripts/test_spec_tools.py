@@ -119,6 +119,24 @@ class CheckerTest(unittest.TestCase):
                     self.assertTrue(any(v.code == "readme-http" and filename in v.message for v in violations))
                     readme.write_text(original, encoding="utf-8")
 
+    def test_cli_readme_requires_supported_named_command_entry(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp) / "_skeleton"
+            shutil.copytree(SKELETON, dest)
+            for filename in ("README.md", "README.zh-CN.md"):
+                with self.subTest(filename=filename):
+                    readme = dest / filename
+                    original = readme.read_text(encoding="utf-8")
+                    supported = original.replace("abx sandbox run", "abx sandbox command run")
+                    readme.write_text(supported, encoding="utf-8")
+                    self.assertFalse(any(v.code == "readme-cli" and filename in v.message
+                                         for v in check_template.check_directory(dest)))
+                    retired = supported.replace("abx sandbox command run", "abx sandbox run")
+                    readme.write_text(retired, encoding="utf-8")
+                    self.assertTrue(any(v.code == "readme-cli" and filename in v.message
+                                        for v in check_template.check_directory(dest)))
+                    readme.write_text(original, encoding="utf-8")
+
     def test_consumer_readme_does_not_require_engineering_sections(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             dest = Path(tmp) / "_skeleton"

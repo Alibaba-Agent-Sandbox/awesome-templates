@@ -3,7 +3,7 @@
 业务客户端只配置一个 Gateway endpoint 和业务 Key。Agent 的模型调用、工具和工作区
 运行在 Session 独占的 Sandbox 中。
 
-[English](README.md) · [API 参考](../docs/managed-agents-api.zh-CN.md)
+[English](README.md) · [API 参考](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/managed-agents-api.zh-CN.md)
 
 ## 做什么
 
@@ -24,7 +24,7 @@ Qwen Code 0.23.0、PostgreSQL，以及 FC Gateway/Worker/Dispatcher 函数。
 [Server Dockerfile](server/Dockerfile)
 
 镜像固定使用 SDK 0.4.0a7，提供托管 Gateway 和 guest bridge。部署应用需要 Node.js 20
-或更高版本，以及 当前源码 CLI。业务 HTTP 客户端只需要 Gateway endpoint 和业务 Key。
+或更高版本，以及当前源码 CLI。业务 HTTP 客户端只需要 Gateway endpoint 和业务 Key。
 
 ## 解决的问题
 
@@ -33,15 +33,16 @@ Sandbox 管理凭据留在 Server；Sandbox 只接收选定的模型配置和单
 
 ## 快速开始（CLI）
 
-这些命令需要当前源码 CLI，已发布的 0.5.10 不支持。先按[使用指南](../docs/using-templates.md#installation)
+这些命令需要当前源码 CLI，已发布的 0.5.10 不支持。先按[使用指南](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/using-templates.md#installation)
 配置 Sandbox 及镜像构建仓库，并在 `application.deployment.accessRef` 选择已有的
 Serverless Devs access。FC 地域、Sandbox 地域、数据库网络和镜像仓库访问需要相互匹配。
-部署期间保持 Python 虚拟环境激活，验证 hook 和示例需要其中的 `httpx==0.28.1`。
+CLI 只复制这个模板，得到可编辑项目，不会在获取源码时部署。部署主机仍需 Python 3
+和 `httpx==0.28.1`：部署后会执行 `scripts/smoke.py`，通过 Gateway 完成两轮 Agent
+文件任务。部署及更新时保持该虚拟环境激活。创建虚拟环境会同时创建 `.abx/`，无需单独建目录。
 
 ```bash
-git clone https://github.com/Alibaba-Agent-Sandbox/awesome-templates.git
-cd awesome-templates/agents-api
-mkdir -p .abx
+abx template init ./agents-api --from agents-api
+cd agents-api
 python3 -m venv .abx/venv
 . .abx/venv/bin/activate
 python -m pip install httpx==0.28.1
@@ -49,13 +50,16 @@ cp bindings.example.json .abx/bindings.json
 chmod 600 .abx/bindings.json
 ```
 
-Apply 前提供“配置”表中的环境变量，在私有 binding 文件中选择实际可用的模型 ID 和
-对应 adapter，并修改清单中的地域、access 和资源限制。私有文件、构建收据和计划存放在 `.abx/` 下，该目录不进入镜像构建上下文。
+部署前提供“配置”表中的环境变量，在私有 binding 文件中选择 adapter，
+通过 `OPENAI_MODEL` 提供与其匹配且实际可用的模型 ID，并修改清单中的地域、access 和资源限制。私有文件、构建收据和计划存放在 `.abx/` 下，该目录不进入镜像构建上下文。
 
 ```bash
+abx deploy . --name agents-api --bindings .abx/bindings.json --plan
 abx deploy . --name agents-api --bindings .abx/bindings.json --yes
 abx status agents-api
 ```
+
+`--plan` 只预览资源，不构建或部署；`--yes` 确认执行构建、云端部署和模板自带的真实模型业务检查。
 
 `abx status agents-api` 显示 endpoint 和本机私有凭据文件路径。首次部署自动生成独立的业务及内部 Key，后续更新复用。业务客户端只需要 endpoint 和该文件中的 `businessKey`，不要分享 `internalToken`。显式提供的自定义凭据不会复制保存。
 
@@ -75,9 +79,10 @@ abx delete agents-api --revision <旧版本> --bindings .abx/bindings.json --yes
 
 作者需要分开构建和部署时，可选用 `abx template build . --out .abx/build.json --yes`，再通过 `abx deploy . --build .abx/build.json --name agents-api --bindings .abx/bindings.json --yes` 复用构建。发布源码使用 `abx template publish`，不会自动上架 Registry。
 
-## 快速开始（Python SDK）
+## 快速开始（Python HTTP 客户端）
 
-Gateway 使用标准 HTTP，无需 Sandbox SDK 或单个 Sandbox 地址。设置
+Gateway 使用标准 HTTP，目前没有专用的 Gateway 客户端 SDK；本例使用 `httpx`，无需
+Sandbox SDK 或单个 Sandbox 地址。设置
 `AGENTS_API_BASE_URL` 为返回的 endpoint，`AGENTS_CREDENTIALS_FILE` 为返回的本机私有
 凭据文件路径。下面创建带初始任务的 Session，并查询其持久化 Submission。
 
@@ -143,7 +148,7 @@ Agent 已完成任务。
 
 ## 命令参考
 
-[API 参考](../docs/managed-agents-api.zh-CN.md)列出公开操作。
+[API 参考](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/managed-agents-api.zh-CN.md)列出公开操作。
 
 | 入口 | 参数 | 结果 |
 | --- | --- | --- |
@@ -156,11 +161,11 @@ Agent 已完成任务。
 私有 bridge 不是业务 API。`commands.py` 中的本机 `agents_version()` 无参数，只检查
 安装的 CLI 并返回固定版本；私有 bridge 不开放该命名命令。
 
-清单省略了 `fc-managed-agents` profile 的固定字段。按需修改显式声明的提供方、binding 引用、地域和预算；默认值与允许的覆盖见 [profile 参考](../docs/managed-agent-applications.zh-CN.md)。
+清单省略了 `fc-managed-agents` profile 的固定字段。按需修改显式声明的提供方、binding 引用、地域和预算；默认值与允许的覆盖见 [profile 参考](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/managed-agent-applications.zh-CN.md)。
 
 ## 配置
 
-复制 [bindings.example.json](bindings.example.json)。其中 `{env: ...}` 是 Apply 时解析的
+复制 [bindings.example.json](bindings.example.json)。其中 `{env: ...}` 是部署时解析的
 引用，不在文件中填写凭据明文。
 
 | 环境变量或 binding | 用途与来源 |
@@ -170,7 +175,7 @@ Agent 已完成任务。
 | `SANDBOX_BASE_URL`、`SANDBOX_DOMAIN`、`SANDBOX_REGION` | 同一平台配置中的 API 地址、Sandbox endpoint 域名和地域，全部显式提供。 |
 | `OPENAI_API_KEY`、`OPENAI_BASE_URL`、`OPENAI_MODEL` | 模型服务 Key、兼容接口地址和准确模型 ID。`qwen-code` 需要带工具的 Chat Completions；`codex` 需要带工具的 Responses。简单文本调用成功不足以证明兼容。 |
 | `AGENTS_FC_ROLE_ARN` | 已有 FC 执行角色 ARN，需具备调用该 revision 私有 Worker/Dispatcher 函数的权限；从 RAM/FC 配置获取。 |
-| `agents-clientAuth`、`agents-internalAuth` | 默认 `generate: true` 在首次 Apply 生成不同的业务和内部 Key。自定义业务凭据只提供 SHA-256 摘要、owner 和受支持 scopes。 |
+| `agents-clientAuth`、`agents-internalAuth` | 默认 `generate: true` 在首次部署生成不同的业务和内部 Key。自定义业务凭据只提供 SHA-256 摘要、owner 和受支持 scopes。 |
 | `agents-ingress` | 默认函数 alias 和 FC 测试域名；生产环境使用显式配置的 HTTPS 自定义域名 binding。 |
 
 数据库只能通过 VPC 访问时，将私有 binding 文件中的 `agents-state` 对象替换为以下
@@ -235,7 +240,7 @@ abx delete agents-api --bindings .abx/bindings.json --yes
 
 ## 贡献
 
-遵循 [CONTRIBUTING.md](../CONTRIBUTING.md) 和[模板规范](../docs/template-spec.zh-CN.md)，
+遵循 [CONTRIBUTING.md](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/CONTRIBUTING.md) 和[模板规范](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/template-spec.zh-CN.md)，
 同步维护中英文文档。
 
 ## 问题反馈
@@ -247,4 +252,4 @@ Gateway/bridge/runtime 问题到 [python-sdk](https://github.com/Alibaba-Agent-S
 
 ## 许可证
 
-Apache-2.0，见 [LICENSE](../LICENSE)。上游 CLI 保留各自许可证。
+Apache-2.0，见 [LICENSE](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/LICENSE)。上游 CLI 保留各自许可证。

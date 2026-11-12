@@ -28,7 +28,8 @@ CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI 默认生成并保存应用令牌；外部 SDK/HTTP 如需自定义，在部署前取消下一行注释。
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export STAGEHAND_API_KEY='<your-model-api-key>'
 export STAGEHAND_BASE_URL='https://model.example.invalid/v1'
 export STAGEHAND_MODEL='<your-model-id>'
@@ -40,7 +41,7 @@ abx sandbox command list "$SANDBOX_ID"
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" stagehand --json-args '{"task":"Click the IANA-managed Reserved Domains link.","url":"https://www.iana.org/help/example-domains","extract_instruction":"Return the visible heading.","command_timeout":180}'
+abx sandbox command run "$SANDBOX_ID" stagehand --json-args '{"task":"Click the IANA-managed Reserved Domains link.","url":"https://www.iana.org/help/example-domains","extract_instruction":"Return the visible heading.","command_timeout":180}'
 ```
 
 返回原生 `action`、`extracted`、最终 URL 和新的 `screenshot_path`；请检查 `action.success`，模型可能未完成操作。

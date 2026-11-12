@@ -6,6 +6,9 @@
 
 ## Unreleased
 
+- Acquire the agents-api Serving project with template init, clarify required host business-check dependencies and private bindings, and identify its Python HTTP client accurately. / agents-api 使用 template init 获取项目，明确宿主机业务检查依赖及私有 bindings，并将 Python 接入如实标为 HTTP 客户端。
+
+- Complete catalog-wide CLI guidance review, root discovery and source recipe comments. / 补齐全目录 CLI 用法检查、首页发现入口及配方注释。
 - Restore document-tools1.1.3 and its required CI with exact available Debian security LibreOffice u9 packages; preserve conversion/installed-version assertions. / document-tools1.1.3 和 CI 固定到可用的 LibreOffice u9 安全更新，保留转换及安装版本检查。
 
 - Simplify managed application manifests with shared profile defaults, and align current recipes and executable checks with unified deploy/lifecycle commands. These commands require the current source CLI; published 0.5.10 does not include them. / 使用共享 profile 默认值精简托管应用清单，当前模板文档与执行检查统一使用 deploy 和生命周期命令；这些命令需要当前源码 CLI，已发布的 0.5.10 不包含这些入口。

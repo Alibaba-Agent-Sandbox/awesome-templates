@@ -236,28 +236,32 @@ def _check_readme(path: Path, headings: tuple[str, ...], violations: list[Violat
     if not path.is_file():
         return {}
     sections = _sections(path.read_text(encoding="utf-8"))
+    english = "Command reference" in headings
+    python_client = "Python SDK"
+    if managed:
+        python_client = "Python HTTP client" if english else "Python HTTP 客户端"
+        headings = tuple(heading.replace("Python SDK", python_client) for heading in headings)
     for heading in headings:
         if heading not in sections:
             violations.append(Violation("readme-section", f"{path.name}: missing section '## {heading}'"))
             continue
         if len(sections[heading].strip()) < 3:
             violations.append(Violation("readme-section", f"{path.name}: section '## {heading}' is empty"))
-    english = "Command reference" in headings
     cli_heading = "Quick start (CLI)" if english else "快速开始（CLI）"
-    sdk_heading = "Quick start (Python SDK)" if english else "快速开始（Python SDK）"
+    sdk_heading = f"Quick start ({python_client})" if english else f"快速开始（{python_client}）"
     commands_heading = "Command reference" if english else "命令参考"
     issues_heading = "Issues" if english else "问题反馈"
     cli = sections.get(cli_heading, "")
     sdk = sections.get(sdk_heading, "")
     commands = sections.get(commands_heading, "")
     issues = sections.get(issues_heading, "")
-    cli_entry = "abx deploy" if managed else "abx sandbox run"
+    cli_entry = "abx deploy" if managed else "abx sandbox command run"
     if cli_heading in sections and cli_entry not in cli:
         violations.append(Violation("readme-cli", f"{path.name}: Quick start (CLI) must show `{cli_entry}`"))
     sdk_tokens = ("httpx", ".post") if managed else ("Sandbox", ".run")
     if sdk_heading in sections and not all(token in sdk for token in sdk_tokens):
         violations.append(
-            Violation("readme-sdk", f"{path.name}: Quick start (Python SDK) must show the declared application's Python entrypoint")
+            Violation("readme-sdk", f"{path.name}: {sdk_heading} must show the declared application's Python entrypoint")
         )
     if commands_heading in sections and not any(line.strip().startswith("|") for line in commands.splitlines()):
         violations.append(Violation("readme-api", f"{path.name}: Command reference needs a parameter table"))
@@ -499,8 +503,8 @@ def check_directory(template_dir: Path) -> list[Violation]:
                     )
                 )
         for label, sections, heading in (
-            ("README.md", en_sections, "Quick start (Python SDK)"),
-            ("README.zh-CN.md", zh_sections, "快速开始（Python SDK）"),
+            ("README.md", en_sections, "Quick start (Python HTTP client)" if managed else "Quick start (Python SDK)"),
+            ("README.zh-CN.md", zh_sections, "快速开始（Python HTTP 客户端）" if managed else "快速开始（Python SDK）"),
         ):
             package = "httpx" if managed else "agent-sandbox-client"
             if heading in sections and package not in sections[heading]:

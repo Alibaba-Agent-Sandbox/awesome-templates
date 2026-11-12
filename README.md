@@ -19,7 +19,7 @@ The CLI guides missing setup, generates and saves the default application token,
 Replace `<sandbox-id>` with the returned sandbox ID:
 
 ```bash
-abx sandbox run <sandbox-id> hello --arg name=Ada
+abx sandbox command run <sandbox-id> hello --arg name=Ada
 abx delete <sandbox-id>
 ```
 
@@ -114,7 +114,7 @@ These entries use an existing runtime on their owning platform. Select that prov
 
 ## Customize and contribute
 
-Search with `abx template search python`. Download an editable copy without creating cloud resources:
+Search with `abx template list python`. Download an editable copy without creating cloud resources:
 
 ```bash
 abx template init ./python-hello --from Alibaba-Agent-Sandbox/awesome-templates//python-hello

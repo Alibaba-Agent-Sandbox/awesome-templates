@@ -27,7 +27,8 @@ Configure the application **before launching**. This example uses the mainland D
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="<independent-application-token>"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export ABX_LLM_API_KEY="<model-api-key>"
 export ABX_LLM_BASE_URL="https://dashscope.aliyuncs.com/compatible-mode/v1"
 export ABX_HTTP_TIMEOUT=660
@@ -39,9 +40,9 @@ Replace the next placeholder with the sandbox ID returned by launch. For OpenSan
 ```bash
 export ABX_SANDBOX_ID="<returned-sandbox-id>"
 abx sandbox exec "$ABX_SANDBOX_ID" -- mkdir -p /home/user/workspace
-abx sandbox run "$ABX_SANDBOX_ID" opencode_version
-abx sandbox run "$ABX_SANDBOX_ID" opencode_setup_check
-abx sandbox run "$ABX_SANDBOX_ID" opencode_run --json-args '{"prompt":"Create hello.py in the current directory that prints Hello from OpenCode, then run it.","model":"dashscope/qwen3.8-flash","cwd":"/home/user/workspace"}'
+abx sandbox command run "$ABX_SANDBOX_ID" opencode_version
+abx sandbox command run "$ABX_SANDBOX_ID" opencode_setup_check
+abx sandbox command run "$ABX_SANDBOX_ID" opencode_run --json-args '{"prompt":"Create hello.py in the current directory that prints Hello from OpenCode, then run it.","model":"dashscope/qwen3.8-flash","cwd":"/home/user/workspace"}'
 abx sandbox download "$ABX_SANDBOX_ID" /home/user/workspace/hello.py ./hello.py
 ```
 

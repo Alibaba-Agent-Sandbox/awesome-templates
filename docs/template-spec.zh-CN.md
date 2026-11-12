@@ -172,7 +172,7 @@ smoke:
 
 托管应用要求独占 `per-session` Sandbox、持久状态、角色限定的 binding 引用、有限预算和明确的 close/delete 语义。Server 必须选择摘要固定的 `serverImage` 或模板上下文内的 `serverBuildRecipe`，二者互斥；构建及产物固定在部署计划冻结前完成。hooks 仅做有界 custom 检查或已有 profile step 的 `serverless-devs info` 查询，不能建立无记录资源。
 
-该 profile 的 README 使用实际 Gateway 任务：CLI 用 `abx deploy` 部署，Python/HTTP 以业务凭据访问 Gateway，不要求业务调用者连接 `ProviderSandbox` 或使用 `abx sandbox run`。后述标题和用户文档边界不变。
+该 profile 的 README 使用实际 Gateway 任务：CLI 用 `abx deploy` 部署，Python/HTTP 以业务凭据访问 Gateway，不要求业务调用者连接 `ProviderSandbox` 或使用 `abx sandbox command run`。后述标题和用户文档边界不变。
 
 ## 阿里云基础镜像
 
@@ -285,8 +285,8 @@ if __name__ == "__main__":
 CLI，在 `abx --provider alicloud-express deploy <source> --yes` 已启动应用之后：
 
 ```bash
-abx sandbox run <sandbox-id> hello --arg name=Ada
-abx sandbox run <sandbox-id> add --json-args '{"x": 1, "y": 2}'
+abx sandbox command run <sandbox-id> hello --arg name=Ada
+abx sandbox command run <sandbox-id> add --json-args '{"x": 1, "y": 2}'
 abx sandbox command list <sandbox-id>
 abx sandbox exec <sandbox-id> -- python3 -c 'print(1)'
 ```
@@ -410,9 +410,11 @@ Express 历史回执使用 `evidence/express-<date>.json` 或 `evidence/alicloud
 | Issues | 问题反馈 |
 | License | 许可证 |
 
+托管 spec6 应用将 Python SDK 标题替换为 `Quick start (Python HTTP client)` / `快速开始（Python HTTP 客户端）`，如实展示使用 `httpx` 调用 Gateway；当前不提供专用 Gateway 客户端 SDK。
+
 启动前区分所需平台凭据、应用令牌和模型凭据，并写清模板实际读取的模型、endpoint、API Key 或产品登录配置；不臆造通用于所有上游工具的变量映射。
 
-spec6 使用显式 `abx deploy` 部署及 Python `httpx` 访问统一 Gateway，列出公开 API 和托管 close/delete 清理。以下客户端要求适用于 spec5。CLI 一节要有 `abx sandbox run` 示例。SDK 一节导入 `ProviderSandbox`，通过 `application_client` 获取应用客户端，并调用 `client.commands.run`。命令参考是带参数的表。非阿里云基础镜像再加 `## Base image` / `## 基础镜像`。
+spec6 使用显式 `abx deploy` 部署及 Python `httpx` 访问统一 Gateway，列出公开 API 和托管 close/delete 清理。以下客户端要求适用于 spec5。CLI 一节要有 `abx sandbox command run` 示例。SDK 一节导入 `ProviderSandbox`，通过 `application_client` 获取应用客户端，并调用 `client.commands.run`。命令参考是带参数的表。非阿里云基础镜像再加 `## Base image` / `## 基础镜像`。
 
 ## 上架与验收
 

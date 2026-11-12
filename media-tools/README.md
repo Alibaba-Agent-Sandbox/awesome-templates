@@ -28,7 +28,8 @@ These template commands require no model, model endpoint or model API key.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-export ABX_SERVER_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export ABX_HTTP_TIMEOUT=450
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//media-tools --sandbox-timeout 1800 --yes
 # Paste the sandbox ID from the launch output
@@ -54,7 +55,7 @@ abx sandbox upload "$SANDBOX_ID" ./sample.wav /home/user/app/sample.wav
 ```
 
 ```bash
-abx sandbox run "$SANDBOX_ID" transcode --json-args '{"input_path":"sample.wav","output_name":"sample.flac","preset":"flac","max_seconds":5,"command_timeout":60}'
+abx sandbox command run "$SANDBOX_ID" transcode --json-args '{"input_path":"sample.wav","output_name":"sample.flac","preset":"flac","max_seconds":5,"command_timeout":60}'
 ```
 
 Returns `output_path`, duration, streams, `bytes` and `sha256` for the converted FLAC.
@@ -154,7 +155,7 @@ by the wrapper and cannot be replaced with user flags.
 Using the uploaded `sample.wav`:
 
 ```bash
-abx sandbox run "$SANDBOX_ID" transcode_args --json-args '{"args":["-i","sample.wav","-c:a","flac","argv-result.flac"],"max_seconds":5}'
+abx sandbox command run "$SANDBOX_ID" transcode_args --json-args '{"args":["-i","sample.wav","-c:a","flac","argv-result.flac"],"max_seconds":5}'
 ```
 
 ```json

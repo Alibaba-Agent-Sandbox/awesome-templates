@@ -406,4 +406,5 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 
 - [Current CLI workflows](notes/proposed/process/2026-11-10-current-cli-workflows.md) · [verification](evidence/verify/2026-11-10-current-cli-workflows.md).
 
+- [Complete template guidance synchronization](notes/proposed/process/2026-11-12-ecosystem-guidance-sync.md) · [verification](evidence/verify/2026-11-12-ecosystem-guidance-sync.md).
 - [Document engine package pins](notes/proposed/process/2026-11-12-document-engine-package-pins.md) · [verification](evidence/verify/2026-11-12-document-engine-package-pins.md).

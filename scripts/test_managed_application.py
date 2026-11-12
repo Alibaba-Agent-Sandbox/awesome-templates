@@ -97,8 +97,15 @@ class ManagedApplicationContractTest(unittest.TestCase):
             for heading, body in replacements.items():
                 text = re.sub(r"(?ms)(^## " + re.escape(heading) + r"\s*\n).*?(?=^## |\Z)",
                               lambda match: match.group(1) + "\n" + body + "\n\n", text)
+            text = text.replace("Python SDK", "Python HTTP client" if name == "README.md" else "Python HTTP 客户端")
             target.write_text(text)
         self.assertEqual(check_template.check_directory(self.template), [])
+        for name in ("README.md", "README.zh-CN.md"):
+            target = self.template / name
+            text = target.read_text()
+            target.write_text(text.replace("httpx", "unrelated_client"))
+            self.assertTrue(any(item.code == "readme-client" for item in check_template.check_directory(self.template)))
+            target.write_text(text)
         self.data["start_cmd"] += " --unsafe-option"
         (self.template / "template.yaml").write_text(check_template.yaml.safe_dump(self.data))
         self.assertTrue(any(item.code == "yaml-start" for item in check_template.check_directory(self.template)))
