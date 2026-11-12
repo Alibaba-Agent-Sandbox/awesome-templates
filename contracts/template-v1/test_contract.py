@@ -25,6 +25,7 @@ REGISTRY_SCHEMA = json.loads(
     (ROOT.parents[1] / "spec/registry-v1.schema.json").read_text()
 )
 FIXTURES = json.loads((ROOT / "fixtures.json").read_text())
+YAML_FIXTURES = json.loads((ROOT / "yaml-fixtures.json").read_text())
 VALIDATORS = {
     stage: Draft202012Validator(normalizer.schema_for_stage(SCHEMA, stage)).validate
     for stage in ("intent", "resolved")
@@ -108,7 +109,31 @@ def outcomes() -> dict[str, Any]:
             registry_invalid.append(case["id"])
         else:
             raise AssertionError("Accepted invalid registry fixture " + case["id"])
+    yaml_valid = []
+    for case in YAML_FIXTURES["valid"]:
+        value = normalizer.parse_yaml_v1(case["text"])
+        assert value == case["expected"], case["id"]
+        assert normalizer.parse_yaml_v1(case["text"].encode("utf-8")) == value
+        yaml_valid.append({"id": case["id"], "value": value})
+    yaml_invalid = []
+    for case in YAML_FIXTURES["invalid"]:
+        source = (
+            case["text"]
+            if "text" in case
+            else bytes.fromhex(case["hex"])
+            if "hex" in case
+            else case["repeat"] * case["count"]
+        )
+        try:
+            normalizer.parse_yaml_v1(source)
+        except (TypeError, ValueError) as error:
+            assert "private-source-canary" not in str(error)
+            yaml_invalid.append(case["id"])
+        else:
+            raise AssertionError("Accepted invalid source YAML " + case["id"])
     return {
+        "yamlValid": yaml_valid,
+        "yamlInvalid": yaml_invalid,
         "valid": results,
         "invalid": invalid,
         "registry": publication,
@@ -124,6 +149,31 @@ class ContractTest(unittest.TestCase):
         Draft202012Validator.check_schema(REGISTRY_SCHEMA)
         result = outcomes()
         self.assertEqual(len(result["valid"]), len(FIXTURES["validTemplates"]))
+
+    def test_yaml_source_boundaries_and_no_resolver_side_effects(self) -> None:
+        import yaml
+
+        self.assertEqual(normalizer.MAX_YAML_BYTES, 1048576)
+        self.assertIsNone(normalizer.parse_yaml_v1("#" * normalizer.MAX_YAML_BYTES))
+        self.assertEqual(normalizer.parse_yaml_v1("value: on")["value"], "on")
+        self.assertIs(yaml.safe_load("value: on")["value"], True)
+        self.assertEqual(
+            yaml.safe_load("value: 2026-11-12")["value"].isoformat(), "2026-11-12"
+        )
+        with self.assertRaises(TypeError):
+            normalizer.parse_yaml_v1(True)
+
+    def test_yaml_source_error_context_is_redacted(self) -> None:
+        source = "value: !custom private-source-canary"
+        try:
+            normalizer.parse_yaml_v1(source)
+        except ValueError as error:
+            rendered = "".join(
+                traceback.TracebackException.from_exception(error).format()
+            )
+            self.assertNotIn("private-source-canary", rendered)
+        else:
+            self.fail("Accepted an unsupported source tag")
 
     def test_resource_names_are_strict_without_limiting_native_references(self) -> None:
         manifest = deepcopy(FIXTURES["validTemplates"][0]["manifest"])

@@ -10,6 +10,8 @@
 
 - [Ordinary public resource names](notes/proposed/architecture/2026-11-12-template-v1-resource-name.md) · [verification](evidence/verify/2026-11-12-template-v1-resource-name.md). Engineering directories do not define public naming exceptions.
 
+- [Shared v1 Core YAML source reader](notes/proposed/architecture/2026-11-12-template-v1-core-reader.md) · [verification](evidence/verify/2026-11-12-template-v1-core-reader.md). Actual dual-parser raw-source parity; native evaluation remains a separate stage.
+
 ## Recent changes — 2026-11-10
 
 - [Owner change index](notes/proposed/process/2026-11-10-recent-change-index.md) · [records verification](evidence/verify/2026-11-10-recent-change-index.md).
