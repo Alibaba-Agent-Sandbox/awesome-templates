@@ -119,3 +119,5 @@ The existing repository specification/checker/document checks remain mandatory. 
 execution belongs to the CLI parser integration; build/deploy/model/cleanup acceptance belongs
 to the corresponding implementation delivery. Tracker:
 [awesome-templates Issue309](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/309).
+
+`sandbox.ports` optionally declares additional access ports (unique integers1..65535). Compilation returns the sorted union with real services.port values. Raw ports promise no running service, protocol or public Gateway route.

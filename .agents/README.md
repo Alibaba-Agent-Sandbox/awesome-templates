@@ -4,6 +4,8 @@
 
 - [Resolved Provider validation boundary](notes/proposed/architecture/2026-11-12-template-v1-provider-validation-stage.md) · [verification](evidence/verify/2026-11-12-template-v1-provider-validation-stage.md). Intent expressions remain unevaluated.
 
+- [Additional v1 access ports](notes/proposed/architecture/2026-11-12-template-v1-additional-ports.md) · [verification](evidence/verify/2026-11-12-template-v1-additional-ports.md). Extra ports carry no protocol/readiness promise.
+
 ## Recent changes — 2026-11-10
 
 - [Owner change index](notes/proposed/process/2026-11-10-recent-change-index.md) · [records verification](evidence/verify/2026-11-10-recent-change-index.md).

@@ -125,6 +125,18 @@ class ContractTest(unittest.TestCase):
         result = outcomes()
         self.assertEqual(len(result["valid"]), len(FIXTURES["validTemplates"]))
 
+    def test_additional_ports_do_not_fabricate_services(self) -> None:
+        rows = {row["id"]: row for row in outcomes()["valid"]}
+        self.assertEqual(
+            rows["additional-access-ports-only"]["compiled"]["ports"], [6080, 9222]
+        )
+        self.assertEqual(
+            rows["additional-access-ports-only"]["compiled"]["provides"], {}
+        )
+        self.assertEqual(
+            rows["service-and-additional-port-union"]["compiled"]["ports"], [9000, 9222]
+        )
+
     def test_provider_validation_is_deferred_until_resolved_stage(self) -> None:
         intent = deepcopy(FIXTURES["validTemplates"][0]["manifest"])
         intent["sandbox"]["instance"]["timeout"] = "${env('LIFETIME')}"
@@ -134,17 +146,30 @@ class ContractTest(unittest.TestCase):
             calls.append((stage, value, provider))
             return False
 
-        normalized = normalizer.normalize_template_v1(intent, VALIDATORS["intent"], validate_provider=reject)
-        self.assertEqual(normalized["sandbox"]["instance"]["timeout"], "${env('LIFETIME')}")
+        normalized = normalizer.normalize_template_v1(
+            intent, VALIDATORS["intent"], validate_provider=reject
+        )
+        self.assertEqual(
+            normalized["sandbox"]["instance"]["timeout"], "${env('LIFETIME')}"
+        )
         self.assertEqual(calls, [])
         intent["sandbox"]["instance"]["timeout"] = 300
         with self.assertRaisesRegex(ValueError, "selected Provider validation failed"):
-            normalizer.normalize_template_v1(intent, VALIDATORS["resolved"], stage="resolved", validate_provider=reject)
+            normalizer.normalize_template_v1(
+                intent,
+                VALIDATORS["resolved"],
+                stage="resolved",
+                validate_provider=reject,
+            )
         self.assertEqual(len(calls), 1)
         self.assertEqual(calls[0][0], "sandbox.create")
 
     def test_independent_resource_declarations_are_preserved(self) -> None:
-        row = next(row for row in outcomes()["valid"] if row["id"] == "independent-sandbox-and-native-serving")
+        row = next(
+            row
+            for row in outcomes()["valid"]
+            if row["id"] == "independent-sandbox-and-native-serving"
+        )
         self.assertEqual(row["compiled"]["sandbox"], row["normalized"]["sandbox"])
         self.assertEqual(row["compiled"]["deployment"], row["normalized"]["deployment"])
         self.assertNotIn("application", row["compiled"])

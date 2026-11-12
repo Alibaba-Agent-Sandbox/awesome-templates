@@ -93,3 +93,5 @@ Registry schema 包含模板包身份/版本、双语简介、作者/许可证�
 仓库现有规范、checker 与文档检查仍必须执行。真实表达式执行由 CLI 集成验证，构建、
 部署、模型任务及资源释放由对应实现交付验证。跟踪事项：
 [awesome-templates Issue309](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/309)。
+
+`sandbox.ports` 可选声明额外访问端口（去重整数1..65535）；compile 合并并排序 ports 与真实 services.port。端口不承诺已启动、协议或公共 Gateway 路由，不编造业务服务元数据。

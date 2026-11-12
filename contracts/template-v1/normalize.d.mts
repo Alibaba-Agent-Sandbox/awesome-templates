@@ -37,6 +37,8 @@ export interface SandboxV1 {
   start?: string;
   ready?: string;
   services?: Record<string, ServiceV1>;
+  /** Additional access ports; no protocol, readiness or public-Gateway promise. */
+  ports?: number[];
 }
 export interface DevsResourceV1 {
   component: string;

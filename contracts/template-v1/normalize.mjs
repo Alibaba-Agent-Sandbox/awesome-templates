@@ -175,7 +175,7 @@ export function compileTemplateV1(manifest, validate, {stage = 'resolved', contr
   if (intent.deployment) result.deployment = clone(intent.deployment);
   if (intent.sandbox) {
     const sb = intent.sandbox;
-    Object.assign(result, {sandbox: clone(sb), provider: sb.provider, provides: clone(sb.services), env: clone(sb.instance.envs), ports: [...new Set(Object.values(sb.services).map(service => service.port))].sort((a, b) => a - b), resources: clone(sb.template.props ?? {}), start_cmd: sb.start ?? null, ready_cmd: sb.ready ?? null});
+    Object.assign(result, {sandbox: clone(sb), provider: sb.provider, provides: clone(sb.services), env: clone(sb.instance.envs), ports: [...new Set([...(sb.ports ?? []), ...Object.values(sb.services).map(service => service.port)])].sort((a, b) => a - b), resources: clone(sb.template.props ?? {}), start_cmd: sb.start ?? null, ready_cmd: sb.ready ?? null});
     if (sb.template.aliases) result.aliases = clone(sb.template.aliases);
     if (sb.template.source?.profiles) result.build_profiles = clone(sb.template.source.profiles);
     if (sb.template.image) result.image = sb.template.image;
