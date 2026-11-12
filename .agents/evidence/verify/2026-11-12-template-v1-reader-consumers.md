@@ -28,3 +28,25 @@ Commands: `python -m pytest -q scripts`, `python scripts/test_spec_tools.py`,
 scoped `ruff check --select F`, `git diff --check`, and fresh SDK `python -m pip check`.
 Source-reader regressions are included in the v1 CI specification job; native expression
 resolution remains the CLI official-parser phase, not this source reader.
+
+## Stacked branch ancestry closure
+
+The pre-merge `git merge-tree --write-tree ef695803cb78bf82b8473195fcb37b3e6357a363
+f9c8391ca9f1c47fc328597ebea5b08ffec7cc58` reported exactly one conflict:
+.agents/README.md. The common ancestor was6dfaf3990b43364ea8ec1e2f5a46dc4db2cc0811.
+The migration tree already contained the exact canonical contracts/template-v1 directory,
+two public schemas and requirements-spec bytes; their diff against ef695 was empty.
+
+A normal non-fast-forward merge brings the actual canonical ancestor into the migration
+branch. Keep the migration record index, which contains all canonical entries and the
+additional owner migration/reference/image/consumer entries. No product file or Server
+recipe changes are needed. Server Dockerfile SHA256 remains f13427c5c0bac4f04799775823f0c1ed09e35bfe26d8ceed4a566b3a52c16145.
+
+PASS after conflict resolution: directspec59, source48, native4, docs238, generator drift,
+Python canonical14 and actual Node/Python deep-equal vectors21 positive/59 resource-negative/
+9 metadata-negative/13 YAML-positive/25 YAML-negative. `npm test` initially selected the host
+Python without jsonschema and failed before assertions; rerun with the documented dependency
+venv first in PATH passed. This environment failure is preserved separately from product
+results. Full516 owner scripts passed at the pre-merge identical product tree, so this
+ancestry/record-only merge does not repeat image, cloud or model matrices. Remote mergeability
+must be rechecked after the parent pushes the new merge head; local merge is not remote proof.
