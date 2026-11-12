@@ -125,6 +125,24 @@ class ContractTest(unittest.TestCase):
         result = outcomes()
         self.assertEqual(len(result["valid"]), len(FIXTURES["validTemplates"]))
 
+    def test_provider_validation_is_deferred_until_resolved_stage(self) -> None:
+        intent = deepcopy(FIXTURES["validTemplates"][0]["manifest"])
+        intent["sandbox"]["instance"]["timeout"] = "${env('LIFETIME')}"
+        calls = []
+
+        def reject(stage: str, value: Any, provider: str) -> bool:
+            calls.append((stage, value, provider))
+            return False
+
+        normalized = normalizer.normalize_template_v1(intent, VALIDATORS["intent"], validate_provider=reject)
+        self.assertEqual(normalized["sandbox"]["instance"]["timeout"], "${env('LIFETIME')}")
+        self.assertEqual(calls, [])
+        intent["sandbox"]["instance"]["timeout"] = 300
+        with self.assertRaisesRegex(ValueError, "selected Provider validation failed"):
+            normalizer.normalize_template_v1(intent, VALIDATORS["resolved"], stage="resolved", validate_provider=reject)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0][0], "sandbox.create")
+
     def test_independent_resource_declarations_are_preserved(self) -> None:
         row = next(row for row in outcomes()["valid"] if row["id"] == "independent-sandbox-and-native-serving")
         self.assertEqual(row["compiled"]["sandbox"], row["normalized"]["sandbox"])

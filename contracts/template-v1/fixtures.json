@@ -960,6 +960,27 @@
         }
       },
       "compile": true
+    },
+    {
+      "id": "intent-descriptor-deferred",
+      "stage": "intent",
+      "manifest": {
+        "specVersion": 1,
+        "name": "example",
+        "sandbox": {
+          "provider": "alicloud-express",
+          "template": {
+            "reference": "existing-template"
+          },
+          "instance": {
+            "timeout": "${env('LIFETIME')}",
+            "volume_mounts": {
+              "/data": "existing-volume-name"
+            }
+          }
+        }
+      },
+      "descriptor": true
     }
   ],
   "invalidTemplates": [

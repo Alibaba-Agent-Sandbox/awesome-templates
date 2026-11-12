@@ -153,7 +153,7 @@ export function normalizeTemplateV1(manifest, validate, {stage = 'intent', contr
   checked(result, validate);
   if (sb) {
     if (stage === 'resolved' && !contract.providerInputs[sb.provider] && typeof validateProvider !== 'function') fail('/sandbox/provider', 'the selected plugin must supply real preparation/create validators');
-    if (validateProvider && sb.provider) {
+    if (stage === 'resolved' && validateProvider && sb.provider) {
       const invoke = (stage, value, path) => {
         try {
           const accepted = validateProvider(stage, clone(value), sb.provider);

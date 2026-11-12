@@ -45,6 +45,7 @@ const rows = Object.fromEntries(valid.map(row => [row.id, row]));
 assert.deepEqual(rows['independent-sandbox-and-native-serving'].compiled.deployment, rows['independent-sandbox-and-native-serving'].normalized.deployment);
 assert.deepEqual(rows['independent-sandbox-and-native-serving'].compiled.sandbox, rows['independent-sandbox-and-native-serving'].normalized.sandbox);
 assert.equal(Object.hasOwn(rows['independent-sandbox-and-native-serving'].compiled, 'application'), false);
+assert.equal(rows['intent-descriptor-deferred'].normalized.sandbox.instance.timeout, "${env('LIFETIME')}");
 assert.equal(rows['managed-resolved-native-memory'].compiled.roleProps.worker.memorySize, 4096);
 assert.equal(rows['managed-resolved-native-memory'].compiled.sandbox.instance.timeout, 3600);
 assert.equal(rows['managed-single-ttl'].compiled.application.sessions.maxLifetimeSeconds, 1800);

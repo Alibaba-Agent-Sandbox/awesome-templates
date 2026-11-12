@@ -403,7 +403,7 @@ def normalize_template_v1(
                 "/sandbox/provider",
                 "the selected plugin must supply real preparation/create validators",
             )
-        if validate_provider and sb.get("provider"):
+        if stage == "resolved" and validate_provider and sb.get("provider"):
 
             def invoke(stage: str, value: Any, path: str) -> None:
                 try:
