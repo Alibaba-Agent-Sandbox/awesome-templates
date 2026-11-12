@@ -8,6 +8,8 @@
 
 - [Strict v1 local identifier boundaries](notes/proposed/architecture/2026-11-12-template-v1-identifier-boundaries.md) · [verification](evidence/verify/2026-11-12-template-v1-identifier-boundaries.md). Python/JS admission now agrees without limiting native reference IDs.
 
+- [Ordinary public resource names](notes/proposed/architecture/2026-11-12-template-v1-resource-name.md) · [verification](evidence/verify/2026-11-12-template-v1-resource-name.md). Engineering directories do not define public naming exceptions.
+
 ## Recent changes — 2026-11-10
 
 - [Owner change index](notes/proposed/process/2026-11-10-recent-change-index.md) · [records verification](evidence/verify/2026-11-10-recent-change-index.md).
