@@ -65,7 +65,7 @@ def main():
                 return 0
             check(call("document_version") == "pandoc 3.1.11.1", "actual pinned Pandoc version")
             check(call("document_smoke") == "Pandoc Markdown DOCX/TXT artifacts OK", "actual native DOCX/TXT self-test and cleanup")
-            check(call("office_version") == "LibreOffice 4:25.2.3-2+deb13u8", "exact native headless Writer package and binary")
+            check(call("office_version") == "LibreOffice 4:25.2.3-2+deb13u9", "exact native headless Writer package and binary")
             check(call("document_extended_smoke") == "Pandoc HTML/PPTX and LibreOffice PDF artifacts OK", "native HTML, slides, PDF and owned cleanup")
             name = "document-controller-" + uuid.uuid4().hex
             nonce = secrets.token_hex(12)

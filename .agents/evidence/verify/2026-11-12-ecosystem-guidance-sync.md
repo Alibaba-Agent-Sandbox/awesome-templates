@@ -83,3 +83,15 @@ rejects missing httpx in both languages. Full documentation checking passes;
 one initial invocation failed due Git safe-directory configuration, then the
 unchanged checker passed with explicit worktree ownership configuration.
 Source identity/acceptance and the existing LibreOffice gate remain unchanged.
+
+## Required gate repair integration
+
+The user requested completion of the blocked delivery. Separate PR308 updates
+the unavailable LibreOffice u8 pin consistently in native CI and the actual
+document-tools1.1.3 recipe/runtime/smoke expectations to official security u9.
+Its exact-dependency host verification passed62 native/SDK/HTTP tests plus the
+declared startup smoke; previous failed attempts remain recorded separately.
+This branch integrates that reviewed scoped repair normally, preserving both
+engineering-index/CHANGELOG entries in the only conflicts. Merge PR308 before
+this PR; all final-head native, local, documentation, parser and actual image
+gates remain required. No skips, loose version checks or history rewrites.
