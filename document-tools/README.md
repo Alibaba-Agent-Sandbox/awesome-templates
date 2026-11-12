@@ -12,7 +12,7 @@ Runtime server: published `agent-sandbox-server==0.4.0a6`, installed directly by
 
 - Alibaba base `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`, normally `cn-hangzhou` / `v0.0.49`.
 - Exact Debian 13 `pandoc=3.1.11.1+ds-2`, `pandoc-data=3.1.11.1-3`; their different version strings are intentional. Other OS libraries resolve from Debian repositories.
-- Headless LibreOffice writer/core/common `4:25.2.3-2+deb13u8`, DejaVu `2.37-8` and Noto CJK `1:20240730+repack1-1`.
+- Headless LibreOffice writer/core/common `4:25.2.3-2+deb13u9`, DejaVu `2.37-8` and Noto CJK `1:20240730+repack1-1`.
 - Non-root `user`, writable `/home/user/app`, generation 2 standard serve/healthcheck, port 9000.
 
 ## Problem solved

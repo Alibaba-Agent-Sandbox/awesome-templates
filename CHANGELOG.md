@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+- Restore document-tools1.1.3 and its required CI with exact available Debian security LibreOffice u9 packages; preserve conversion/installed-version assertions. / document-tools1.1.3 和 CI 固定到可用的 LibreOffice u9 安全更新，保留转换及安装版本检查。
+
 - Simplify managed application manifests with shared profile defaults, and align current recipes and executable checks with unified deploy/lifecycle commands. These commands require the current source CLI; published 0.5.10 does not include them. / 使用共享 profile 默认值精简托管应用清单，当前模板文档与执行检查统一使用 deploy 和生命周期命令；这些命令需要当前源码 CLI，已发布的 0.5.10 不包含这些入口。
 
 - Add the closed spec6 managed-session manifest schema, static semantic checker and bilingual contract reference; preserve spec5 and keep runtime/template delivery separate. / 新增封闭 spec6 托管会话清单、静态语义检查与双语契约参考，保留 spec5；运行时和模板交付单独验收。

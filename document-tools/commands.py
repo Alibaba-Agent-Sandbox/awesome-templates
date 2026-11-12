@@ -22,7 +22,7 @@ from xml.etree import ElementTree
 from agent_sandbox.server import command, start
 
 VERSION = "3.1.11.1"
-OFFICE_DEBIAN_VERSION = "4:25.2.3-2+deb13u8"
+OFFICE_DEBIAN_VERSION = "4:25.2.3-2+deb13u9"
 MAX_FILE = 1024 * 1024
 MAX_DIAGNOSTICS = 1024 * 1024
 _LOCK = threading.Lock()
