@@ -35,3 +35,20 @@ skipped because native Pandoc/Writer were not installed on the operator. These
 are prerequisite failures, retained separately from the actual native run.
 The host is Debian13; install the same exact native packages and rerun with
 E2E_REQUIRE_DOCUMENT=1 before claiming native success.
+
+## Actual native result
+
+The same Debian13 operator installed exact Pandoc/data, fonts and the three
+LibreOffice u9 security packages used by CI. With the fresh pinned server/client
+0.4.0a6 venv, E2E_REQUIRE_DOCUMENT=1 pytest document-tools/test_commands.py
+document-tools/test_http.py completed62 passed, zero skipped. This includes
+actual native conversions, limits/path/process/owned-file cleanup, authenticated
+SDK access and independent external-HTTP artifact content/hash checks.
+The unchanged local startup runner then returned pass for document-tools,
+including exact u9 office_version and actual extended conversion smoke.
+Owned test servers and conversion/controller files were cleaned by their
+existing fixtures. No cloud resource or model request was made.
+
+The existing actual Dockerfile L1 build and full CI remain mandatory remote
+checks on this PR's final head; native source success is not image/provider
+qualification. Old u8 receipts remain history.
