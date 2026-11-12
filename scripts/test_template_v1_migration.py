@@ -26,6 +26,7 @@ def test_all_original_workloads_and_engineering_assertions_survive():
         normalized = normalize_manifest(data)
         projected = project_manifest(data, source)
         assert data["specVersion"] == 1 and "spec_version" not in data
+        assert data["name"] == ("example" if name == "_skeleton" else old["name"])
         assert engineering_checks(name) == {
             key: old[key] for key in ["smoke", "priority", "wave"] if key in old
         }

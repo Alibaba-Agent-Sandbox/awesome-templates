@@ -171,7 +171,7 @@ abx delete "$ABX_SANDBOX_ID"
 上面的已发布 client 连接示例只连接已运行的 Sandbox。直接使用 `agent_sandbox.api.template.launch_template` 读取 v1 时，需要固定开发源码；不是安装同名 a7 就获得新能力：
 
 ```bash
-python -m pip install "agent-sandbox-client @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/1079841307f1f63253ae68fdda6e6d2d1e77e851.tar.gz#subdirectory=client-sdk&sha256=a7dfffac2eba7a8ee3d5620d231c5abf3f767ca655194b7329341389faf83485"
+python -m pip install "agent-sandbox-client @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/c550cf53a9eb0c3c9899d0336b924633eb9b0988.tar.gz#subdirectory=client-sdk&sha256=e5c8c5b1d4deef7a49f720a4e42cfca709652551fc379e1f7b1f7dec00e1afe9"
 ```
 
-该 API 只接受字面值或由 CLI 原生 parser 解析好的私有 v1 快照，不读取或替换 `${...}`。Python 不构建源码；先通过 CLI 准备模板，再传已有 Provider reference/image。额外 ports 仅返回访问端点，已知业务协议才提供对应客户端。详见[固定源码 SDK 说明](https://github.com/Alibaba-Agent-Sandbox/python-sdk/blob/1079841307f1f63253ae68fdda6e6d2d1e77e851/client-sdk/README.md)。安装后的包元信息仍为0.4.0a7；这是显式源码开发配方，不是新 PyPI 版本。
+该 API 只接受字面值或由 CLI 原生 parser 解析好的私有 v1 快照，不读取或替换 `${...}`。Python 不构建源码；先通过 CLI 准备模板，再传已有 Provider reference/image。额外 ports 仅返回访问端点，已知业务协议才提供对应客户端。详见[固定源码 SDK 说明](https://github.com/Alibaba-Agent-Sandbox/python-sdk/blob/c550cf53a9eb0c3c9899d0336b924633eb9b0988/client-sdk/README.md)。安装后的包元信息仍为0.4.0a7；这是显式源码开发配方，不是新 PyPI 版本。

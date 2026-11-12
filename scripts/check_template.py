@@ -470,11 +470,11 @@ def check_directory(template_dir: Path) -> list[Violation]:
 
     directory_name = template_dir.name
     name = _require_str(data, "name", violations) if data else ""
-    if name and name != directory_name:
+    if name and name != directory_name and directory_name != SKELETON_NAME:
         violations.append(
             Violation("yaml-name", f"template.yaml name {name!r} must match the directory {directory_name!r}")
         )
-    if name and name != SKELETON_NAME and not NAME_RE.fullmatch(name):
+    if name and not NAME_RE.fullmatch(name):
         violations.append(Violation("yaml-name", f"name {name!r} must match {NAME_RE.pattern}"))
 
     if (template_dir / "registry.yaml").is_file():
@@ -682,7 +682,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
     for provider in sorted(verified_en):
         violations.append(Violation("verified-evidence", f"{provider}: a README table cannot establish trusted workflow certification"))
 
-    if name and name != SKELETON_NAME and data.get("specVersion") == 1:
+    if name and template_dir.name != SKELETON_NAME and data.get("specVersion") == 1:
         design = template_dir.parent / "docs" / "design" / f"{name}.md"
         if template_dir.parent.name == "docs":
             design = template_dir.parent / "design" / f"{name}.md"
@@ -702,7 +702,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
                         Violation("design-doc", f"docs/design/{name}.md Express feasibility needs 'Limiting factor:'")
                     )
 
-    if (template_dir.parent / "awesome-templates.yaml").is_file() and name and name != SKELETON_NAME:
+    if (template_dir.parent / "awesome-templates.yaml").is_file() and name and template_dir.name != SKELETON_NAME:
         if data.get("specVersion") == 1:
             entries = _index_entries(template_dir.parent) or []
             match = [item for item in entries if item.get("path") == name or item.get("name") == name]

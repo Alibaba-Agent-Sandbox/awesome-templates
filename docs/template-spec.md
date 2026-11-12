@@ -34,7 +34,7 @@ sandbox:
 | Field | Meaning |
 | --- | --- |
 | specVersion | Integer1 only; old spec_version is rejected. |
-| name | Kebab-case resource name; the author skeleton also allows _skeleton. |
+| name | ASCII kebab-case resource name, 1–63 characters. The author directory _skeleton uses name: example. |
 | sandbox.provider | Optional intent binding, selected by explicit CLI/config context before execution. Conflicting qualified references fail. |
 | sandbox.template | Exactly one of source, image or reference. Source has Dockerfile/context and optional source.profiles alternate recipes. aliases supply lookup names. |
 | sandbox.template.props | Template preparation inputs: cpu in vCPU and memory in MB for Express (other adapters use their documented backend units). |

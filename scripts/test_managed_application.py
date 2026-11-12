@@ -34,7 +34,7 @@ class ManagedApplicationContractTest(unittest.TestCase):
         (self.template / "server/Dockerfile").write_text("FROM python:3.13.8-slim-bookworm\n")
         self.legacy = check_template.yaml.safe_load((self.template / 'template.yaml').read_text())
         self.data = check_template.yaml.safe_load((ROOT / 'agents-api/template.yaml').read_text())
-        self.data['name'] = '_skeleton'
+        self.data['name'] = 'example'
 
 
     def validate(self):

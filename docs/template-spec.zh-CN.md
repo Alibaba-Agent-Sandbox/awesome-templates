@@ -34,7 +34,7 @@ sandbox:
 | 字段 | 含义 |
 | --- | --- |
 | `specVersion` | 整数，只能为 1；旧 spec_version 不再接受。 |
-| `name` | 资源名称，kebab-case；作者骨架允许 `_skeleton`。 |
+| `name` | 资源名称为1–63字符的 ASCII kebab-case。工程目录 `_skeleton` 中的资源名称为 example。 |
 | `sandbox.provider` | 可省略，运行时按明确选项/CLI 配置选择；本地意图可以未绑定，执行时必须具体。显式 Provider 与引用不得冲突。 |
 | `sandbox.template` | `source`、`image`、`reference` 三选一。源码才有 Dockerfile/context，替代配方位于 source.profiles；aliases 是查找别名。 |
 | `sandbox.template.props` | 模板准备阶段参数；目前为 cpu（vCPU）和 memory（Express 为 MB，其它按后端接口）。不把创建实例字段混到此处。 |

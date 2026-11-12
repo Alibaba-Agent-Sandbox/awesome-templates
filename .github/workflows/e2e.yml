@@ -31,7 +31,7 @@ jobs:
           python scripts/check_template.py --all
           python scripts/test_spec_tools.py
           python -m pip install pytest==9.1.1
-          python -m pytest -q scripts/test_template_v1_migration.py
+          python -m pytest -q scripts/test_template_v1_migration.py scripts/test_template_reference.py
 
   express-cli-contract:
     runs-on: ubuntu-24.04

@@ -114,7 +114,11 @@ def project_manifest(
         "start_cmd": sb.get("start"),
         "ready_cmd": sb.get("ready"),
         "provider": sb.get("provider"),
-        **engineering_checks(normalized["name"]),
+        **engineering_checks(
+            "_skeleton"
+            if template_dir is not None and template_dir.name == "_skeleton"
+            else normalized["name"]
+        ),
     }
     if "image" in template:
         result["image"] = template["image"]

@@ -27,7 +27,7 @@ Qwen Code 0.23.0、PostgreSQL，以及 FC Gateway/Worker/Dispatcher 函数。
 
 部署应用需要 Node.js 20 或更高版本和匹配的开发版 CLI。业务 HTTP 客户端只需要 Gateway endpoint 和业务 Key。
 
-Guest 保留已发布 Server0.4.0a7；Server 使用固定 SDK 开发源码提交 `1079841307f1f63253ae68fdda6e6d2d1e77e851`，详见 [Server Dockerfile](server/Dockerfile)。源码包元信息仍为 a7，不代表新的 PyPI 发行。
+Guest 保留已发布 Server0.4.0a7；Server 使用固定 SDK 开发源码提交 `c550cf53a9eb0c3c9899d0336b924633eb9b0988`，详见 [Server Dockerfile](server/Dockerfile)。源码包元信息仍为 a7，不代表新的 PyPI 发行。
 
 ## 解决的问题
 

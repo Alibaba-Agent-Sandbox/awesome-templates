@@ -1,174 +1,959 @@
 # YAML v1 field reference
 
-Generated from the canonical schema. `$ref` links name types below. This is the integrated high-level input subset, not every native cloud API. The selected component defines native FC `props`.
+Fields are grouped by their YAML path. Required means required when that object or branch is used. Defaults come from the shared normalizer; a dash means no default is declared.
 
-[Usage and units](template-spec.md) · [Source schema](../spec/template-v1.schema.json)
+[Usage and units](template-spec.md) · [Managed semantics](managed-agent-applications.md) · [Machine schema](../spec/template-v1.schema.json)
+
+This is the integrated high-level input subset. Native Devs/FC object fields belong to the selected component; this table neither duplicates its schema nor claims unintegrated Provider APIs.
+
+<a id="template"></a>
 
 ## template
 
-| Field | Type / values / constraints | Required |
-| --- | --- | --- |
-| `specVersion` | `{"const":1}` | yes |
-| `name` | `{"type":"string","pattern":"^(?:_skeleton\|[a-z0-9][a-z0-9-]{0,62})(?![\\s\\S])"}` | yes |
-| `sandbox` | `{"type":"object","additionalProperties":false,"properties":{"provider":{"type":"string","pattern":"^[a-z][a-z0-9._-]*(?![\\s\\S])"},"template":{"type":"object","additionalProperties":false,"properties":{"source":{"$ref":"#/$defs/source"},"image":{"type":"string","minLength":1},"reference":{"type":"string","minLength":1},"aliases":{"type":"array","uniqueItems":true,"items":{"type":"string","minLength":1}},"props":{"type":"object"}},"oneOf":[{"required":["source"],"not":{"anyOf":[{"required":["image"]},{"required":["reference"]}]}},{"required":["image"],"not":{"anyOf":[{"required":["source"]},{"required":["reference"]}]}},{"required":["reference"],"not":{"anyOf":[{"required":["source"]},{"required":["image"]}]}}]},"instance":{"type":"object","additionalProperties":false,"properties":{"timeout":{"$ref":"#/$defs/positiveIntegerInput"},"envs":{"type":"object","additionalProperties":{"type":"string"}},"metadata":{"type":"object","additionalProperties":{"type":"string"}},"cpu":{"$ref":"#/$defs/positiveIntegerInput"},"memory":{"$ref":"#/$defs/positiveIntegerInput"},"disk":{"$ref":"#/$defs/nonnegativeIntegerInput"},"gpu":{"type":"string","minLength":1},"secure":{"$ref":"#/$defs/booleanInput"},"volume_mounts":{"type":"object","propertyNames":{"pattern":"^/(?!bin(?:/\|$)\|opt(?:/\|$)\|var(?:/\|$)\|dev(?:/\|$))(?!.*(?:^\|/)\\.)(?!.*//)[^\\x00]+[^/]$"},"additionalProperties":{"type":"string","minLength":1}},"lifecycle":{"type":"object","additionalProperties":false,"properties":{"onTimeout":{"enum":["pause","kill"]},"autoResume":{"$ref":"#/$defs/booleanInput"}},"required":["onTimeout"]},"provider_options":{"type":"object"}}},"start":{"type":"string","minLength":1},"ready":{"type":"string","minLength":1},"services":{"type":"object","propertyNames":{"pattern":"^[a-z][a-z0-9_-]*(?![\\s\\S])"},"additionalProperties":{"$ref":"#/$defs/service"}},"ports":{"type":"array","uniqueItems":true,"items":{"type":"integer","minimum":1,"maximum":65535}}},"required":["template"],"allOf":[{"if":{"properties":{"provider":{"const":"alicloud-express"}},"required":["provider"]},"then":{"properties":{"instance":{"$ref":"#/$defs/instance_alicloud-express"},"template":{"properties":{"props":{"type":"object","additionalProperties":false,"properties":{"cpu":{"$ref":"#/$defs/positiveIntegerInput"},"memory":{"$ref":"#/$defs/positiveIntegerInput"}}}}}}}},{"if":{"properties":{"provider":{"const":"opensandbox"}},"required":["provider"]},"then":{"properties":{"instance":{"$ref":"#/$defs/instance_opensandbox"},"template":{"properties":{"props":{"type":"object","additionalProperties":false,"properties":{"cpu":{"$ref":"#/$defs/positiveIntegerInput"},"memory":{"$ref":"#/$defs/positiveIntegerInput"}}}}}}}},{"if":{"properties":{"provider":{"const":"e2b"}},"required":["provider"]},"then":{"properties":{"instance":{"$ref":"#/$defs/instance_e2b"},"template":{"properties":{"props":{"type":"object","additionalProperties":false,"properties":{"cpu":{"$ref":"#/$defs/positiveIntegerInput"},"memory":{"$ref":"#/$defs/positiveIntegerInput"}}}}}}}},{"if":{"properties":{"provider":{"const":"cubesandbox"}},"required":["provider"]},"then":{"properties":{"instance":{"$ref":"#/$defs/instance_cubesandbox"},"template":{"properties":{"props":{"type":"object","additionalProperties":false,"properties":{"cpu":{"$ref":"#/$defs/positiveIntegerInput"},"memory":{"$ref":"#/$defs/positiveIntegerInput"}}}}}}}},{"if":{"properties":{"provider":{"const":"alicloud-container"}},"required":["provider"]},"then":{"properties":{"instance":{"$ref":"#/$defs/instance_alicloud-container"},"template":{"properties":{"props":{"type":"object","additionalProperties":false,"properties":{"cpu":{"$ref":"#/$defs/positiveIntegerInput"},"memory":{"$ref":"#/$defs/positiveIntegerInput"}}}}}}}}]}` | no |
-| `deployment` | `{"type":"object","additionalProperties":false,"properties":{"edition":{"const":"3.0.0"},"name":{"type":"string","minLength":1},"access":{"type":"string","minLength":1},"vars":{"type":"object"},"resources":{"type":"object","minProperties":1,"propertyNames":{"pattern":"^[A-Za-z][A-Za-z0-9_-]*(?![\\s\\S])"},"additionalProperties":{"type":"object","additionalProperties":false,"properties":{"component":{"type":"string","minLength":1},"props":{"$ref":"#/$defs/componentProps"},"actions":{}},"required":["component","props"]}},"flow":{"type":"object"},"actions":{},"template":{"type":"object"},"validation":{"type":"boolean"}},"required":["edition","resources"],"description":"Embedded native Serverless Devs 3 project. Native project semantics and component properties are validated by the actual selected Devs implementation, not this envelope schema."}` | no |
-| `application` | `{"type":"object","additionalProperties":false,"properties":{"type":{"const":"agents-api"},"roles":{"type":"object","additionalProperties":false,"properties":{"gateway":{"type":"string","minLength":1},"worker":{"type":"string","minLength":1},"dispatcher":{"type":"string","minLength":1}},"required":["gateway","worker","dispatcher"]},"server":{"type":"object","additionalProperties":false,"properties":{"source":{"$ref":"#/$defs/recipe"},"image":{"type":"string","pattern":"^[^\\s@]+@sha256:[0-9a-f]{64}$"}},"oneOf":[{"required":["source"],"not":{"required":["image"]}},{"required":["image"],"not":{"required":["source"]}}]},"sessions":{"type":"object","additionalProperties":false,"properties":{"idleTimeoutSeconds":{"oneOf":[{"type":"integer","minimum":1},{"$ref":"#/$defs/expression"}]},"maxLogicalSessionsPerOwner":{"oneOf":[{"type":"integer","minimum":1},{"$ref":"#/$defs/expression"}]},"maxActiveSessions":{"oneOf":[{"type":"integer","minimum":1},{"$ref":"#/$defs/expression"}]},"maxQueuedTurnsPerSession":{"oneOf":[{"type":"integer","minimum":1},{"$ref":"#/$defs/expression"}]},"resultRetentionSeconds":{"oneOf":[{"type":"integer","minimum":1},{"$ref":"#/$defs/expression"}]}}},"storage":{"type":"object","additionalProperties":false,"properties":{"maxFileBytes":{"oneOf":[{"type":"integer","minimum":1},{"$ref":"#/$defs/expression"}]},"maxArtifactBytes":{"oneOf":[{"type":"integer","minimum":1},{"$ref":"#/$defs/expression"}]},"maxTurnArtifactBytes":{"oneOf":[{"type":"integer","minimum":1},{"$ref":"#/$defs/expression"}]},"maxRetainedBytesPerOwner":{"oneOf":[{"type":"integer","minimum":1},{"$ref":"#/$defs/expression"}]}}},"limits":{"type":"object","additionalProperties":false,"properties":{"maxRunSeconds":{"oneOf":[{"type":"integer","minimum":1},{"$ref":"#/$defs/expression"}]},"maxToolSeconds":{"oneOf":[{"type":"integer","minimum":1},{"$ref":"#/$defs/expression"}]},"maxConcurrentRuns":{"oneOf":[{"type":"integer","minimum":1},{"$ref":"#/$defs/expression"}]},"maxQueuedRuns":{"oneOf":[{"type":"integer","minimum":1},{"$ref":"#/$defs/expression"}]},"maxRunsPerMinute":{"oneOf":[{"type":"integer","minimum":1},{"$ref":"#/$defs/expression"}]},"maxEventsPerRun":{"oneOf":[{"type":"integer","minimum":5},{"$ref":"#/$defs/expression"}]},"maxOutputBytes":{"oneOf":[{"type":"integer","minimum":1024},{"$ref":"#/$defs/expression"}]},"maxSubscribersPerSession":{"oneOf":[{"type":"integer","minimum":1,"maximum":100},{"$ref":"#/$defs/expression"}]}}},"state":{"type":"object","additionalProperties":false,"properties":{"databaseUrl":{"$ref":"#/$defs/secret"},"vpcConfig":{"type":"object"},"databaseCa":{"$ref":"#/$defs/secret"}},"required":["databaseUrl"]},"bindings":{"type":"object","additionalProperties":false,"properties":{"sandboxAccess":{"type":"object","additionalProperties":false,"properties":{"apiKey":{"$ref":"#/$defs/secret"},"baseUrl":{"type":"string","minLength":1},"domain":{"type":"string","minLength":1},"region":{"type":"string","minLength":1}},"required":["apiKey","baseUrl","domain","region"]},"model":{"type":"object","additionalProperties":false,"properties":{"apiKey":{"$ref":"#/$defs/secret"},"baseUrl":{"type":"string","minLength":1},"model":{"type":"string","minLength":1},"adapter":{"enum":["codex","qwen-code"]}},"required":["apiKey","baseUrl","model","adapter"]},"clientAuth":{"oneOf":[{"type":"object","additionalProperties":false,"properties":{"generate":{"const":true,"default":true},"owner":{"type":"string","minLength":1}},"required":["generate"]},{"type":"object","additionalProperties":false,"properties":{"tokens":{"type":"array","minItems":1,"items":{"type":"object","additionalProperties":false,"properties":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},"owner":{"type":"string","minLength":1},"scopes":{"type":"array","minItems":1,"uniqueItems":true,"items":{"enum":["agents:read","agents:write"]}},"expiresAt":{"$ref":"#/$defs/positiveIntegerInput"}},"required":["sha256","owner","scopes"]}}},"required":["tokens"]},{"$ref":"#/$defs/expression"}]},"internalAuth":{"oneOf":[{"type":"object","additionalProperties":false,"properties":{"generate":{"const":true,"default":true},"roleArn":{"type":"string","minLength":1}},"required":["generate"]},{"type":"object","additionalProperties":false,"properties":{"token":{"$ref":"#/$defs/secret"},"roleArn":{"type":"string","minLength":1}},"required":["token"]},{"$ref":"#/$defs/expression"}]},"ingress":{"type":"object","additionalProperties":false,"properties":{"kind":{"enum":["function-alias","custom-domain"]},"aliasName":{"type":"string","minLength":1},"allowTestDomain":{"type":"boolean"},"domainName":{"type":"string","minLength":1},"protocol":{"const":"HTTPS"},"path":{"const":"/"}},"required":["kind"],"allOf":[{"if":{"properties":{"kind":{"const":"function-alias"}},"required":["kind"]},"then":{"required":["allowTestDomain"],"properties":{"allowTestDomain":{"const":true}},"not":{"anyOf":[{"required":["domainName"]},{"required":["protocol"]},{"required":["path"]}]}}},{"if":{"properties":{"kind":{"const":"custom-domain"}},"required":["kind"]},"then":{"required":["domainName","protocol"],"not":{"required":["allowTestDomain"]}}}]}},"required":["sandboxAccess","model","ingress"]},"hooks":{"type":"object","additionalProperties":false,"properties":{"beforeApply":{"$ref":"#/$defs/hooks"},"afterReady":{"$ref":"#/$defs/hooks"}},"required":[]}},"required":["type","roles","server","state","bindings"]}` | no |
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `specVersion` | integer | yes | — | = `1` | Public resource format version. |
+| `name` | string | yes | — | ASCII kebab-case, 1–63 characters | Resource name. |
+| `sandbox` | object · [fields](#field-sandbox) | no | — | — | Sandbox template and instance settings. |
+| `deployment` | object · [fields](#field-deployment) | no | — | — | Native Serverless Devs project. |
+| `application` | object · [fields](#field-application) | no | — | — | Select the Agents API coordinator. |
 
-Other fields are rejected.
+- Other fields are rejected.
+- At least one: `sandbox`; `deployment`.
+- `application` requires `sandbox`, `deployment`.
+
+<a id="field-sandbox"></a>
+
+## sandbox
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `provider` | string | no | CLI/context; agents-api: alicloud-express | complete ASCII identifier | Provider selected before execution. |
+| `template` | object · [fields](#field-sandbox-template) | yes | — | — | Environment source, image or existing reference. |
+| `instance` | object · [fields](#field-sandbox-instance) | no | — | — | Instance creation settings, separate from preparation. |
+| `start` | string | no | — | length ≥ 1 | One workload startup command. |
+| `ready` | string | no | — | length ≥ 1 | Workload readiness command. |
+| `services` | object · [fields](#field-sandbox-services) | no | — | — | Named business service contracts. |
+| `ports` | array of integer | no | — | unique items; each: ≥ 1; ≤ 65535 | Additional access ports; no listener or protocol promise. |
+
+- Other fields are rejected.
+- [When provider=alicloud-express](#field-sandbox-allof-0-then)
+- [When provider=opensandbox](#field-sandbox-allof-1-then)
+- [When provider=e2b](#field-sandbox-allof-2-then)
+- [When provider=cubesandbox](#field-sandbox-allof-3-then)
+- [When provider=alicloud-container](#field-sandbox-allof-4-then)
+
+<a id="field-sandbox-template"></a>
+
+## sandbox.template
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `source` | [source](#type-source) | no | — | — | Contained source build recipe. |
+| `image` | string | no | — | length ≥ 1 | Container image input. |
+| `reference` | string | no | — | length ≥ 1 | Existing Provider-native template ID; never translated across Providers. |
+| `aliases` | array of string | no | — | unique items; each: length ≥ 1 | Template lookup names. |
+| `props` | object · [fields](#field-sandbox-template-props) | no | — | — | Selected Provider preparation inputs; see its conditional fields. |
+
+- Other fields are rejected.
+- Choose exactly one: `source`; `image`; `reference`.
+
+<a id="field-sandbox-template-props"></a>
+
+## sandbox.template.props
+
+Preparation fields depend on the selected Provider:
+
+- [provider=alicloud-express](#field-sandbox-allof-0-then-template-props)
+- [provider=opensandbox](#field-sandbox-allof-1-then-template-props)
+- [provider=e2b](#field-sandbox-allof-2-then-template-props)
+- [provider=cubesandbox](#field-sandbox-allof-3-then-template-props)
+- [provider=alicloud-container](#field-sandbox-allof-4-then-template-props)
+
+
+<a id="field-sandbox-instance"></a>
+
+## sandbox.instance
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `timeout` | [positive integer or expression](#type-positiveintegerinput) | no | 300; agents-api:3600 | — | Instance lifetime in seconds; maximum 86400. |
+| `envs` | object · [fields](#field-sandbox-instance-envs) | no | empty map | — | Declared guest environment values. |
+| `metadata` | object · [fields](#field-sandbox-instance-metadata) | no | empty map | — | Provider instance metadata. |
+| `cpu` | [positive integer or expression](#type-positiveintegerinput) | no | — | — | vCPU count for this stage. |
+| `memory` | [positive integer or expression](#type-positiveintegerinput) | no | — | — | Memory amount; Express uses MB, other adapters retain their input units. |
+| `disk` | [nonnegative integer or expression](#type-nonnegativeintegerinput) | no | — | — | Instance disk amount in MB. |
+| `gpu` | string | no | — | length ≥ 1 | Provider GPU selector; OpenSandbox requires a count string. |
+| `secure` | [boolean or expression](#type-booleaninput) | no | — | — | OpenSandbox secure-mode setting. |
+| `volume_mounts` | object · [fields](#field-sandbox-instance-volume-mounts) | no | — | — | Guest mount path to existing volume name; no volume creation. |
+| `lifecycle` | object · [fields](#field-sandbox-instance-lifecycle) | no | — | — | Instance timeout policy. |
+| `provider_options` | object · [fields](#field-sandbox-instance-provider-options) | no | — | — | Selected Provider's integrated create options. |
+
+- Other fields are rejected.
+
+<a id="field-sandbox-instance-envs"></a>
+
+## sandbox.instance.envs
+
+Each map value: string
+
+
+<a id="field-sandbox-instance-metadata"></a>
+
+## sandbox.instance.metadata
+
+Each map value: string
+
+
+<a id="field-sandbox-instance-volume-mounts"></a>
+
+## sandbox.instance.volume_mounts
+
+Each map value: string
+
+Map keys: absolute mount path; system paths excluded
+
+
+<a id="field-sandbox-instance-lifecycle"></a>
+
+## sandbox.instance.lifecycle
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `onTimeout` | string | yes | — | `"pause"`, `"kill"` | Pause or delete the instance on timeout. |
+| `autoResume` | [boolean or expression](#type-booleaninput) | no | — | — | Automatic resume; requires onTimeout=pause. |
+
+- Other fields are rejected.
+
+<a id="field-sandbox-instance-provider-options"></a>
+
+## sandbox.instance.provider_options
+
+[OpenSandbox options](#type-opensandboxoptions)
+
+
+<a id="field-sandbox-services"></a>
+
+## sandbox.services
+
+Each map value: [service](#type-service)
+
+Map keys: complete ASCII identifier
+
+
+<a id="field-sandbox-allof-0-then"></a>
+
+## sandbox — provider=alicloud-express
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `instance` | [instance_alicloud-express](#type-instance-alicloud-express) | no | — | — | Instance creation settings, separate from preparation. |
+| `template` | object · [fields](#field-sandbox-allof-0-then-template) | yes | — | — | Environment source, image or existing reference. |
+
+
+<a id="field-sandbox-allof-0-then-template"></a>
+
+## sandbox — provider=alicloud-express.template
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `props` | object · [fields](#field-sandbox-allof-0-then-template-props) | no | — | — | Selected Provider preparation inputs; see its conditional fields. |
+
+
+<a id="field-sandbox-allof-0-then-template-props"></a>
+
+## sandbox — provider=alicloud-express.template.props
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `cpu` | [positive integer or expression](#type-positiveintegerinput) | no | `2` | — | vCPU count for this stage. |
+| `memory` | [positive integer or expression](#type-positiveintegerinput) | no | `2048`; agents-api:4096 | — | Memory amount; Express uses MB, other adapters retain their input units. |
+
+- Other fields are rejected.
+- Project preparation checks memory ≥128 and a multiple of64; Express also requires1024–4096 per vCPU. Values are checked after native expression resolution. Backend limits remain Provider-owned.
+
+<a id="field-sandbox-allof-1-then"></a>
+
+## sandbox — provider=opensandbox
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `instance` | [instance_opensandbox](#type-instance-opensandbox) | no | — | — | Instance creation settings, separate from preparation. |
+| `template` | object · [fields](#field-sandbox-allof-1-then-template) | yes | — | — | Environment source, image or existing reference. |
+
+
+<a id="field-sandbox-allof-1-then-template"></a>
+
+## sandbox — provider=opensandbox.template
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `props` | object · [fields](#field-sandbox-allof-1-then-template-props) | no | — | — | Selected Provider preparation inputs; see its conditional fields. |
+
+
+<a id="field-sandbox-allof-1-then-template-props"></a>
+
+## sandbox — provider=opensandbox.template.props
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `cpu` | [positive integer or expression](#type-positiveintegerinput) | no | `2` | — | vCPU count for this stage. |
+| `memory` | [positive integer or expression](#type-positiveintegerinput) | no | `2048`; agents-api:4096 | — | Memory amount; Express uses MB, other adapters retain their input units. |
+
+- Other fields are rejected.
+- Project preparation checks memory ≥128 and a multiple of64; Express also requires1024–4096 per vCPU. Values are checked after native expression resolution. Backend limits remain Provider-owned.
+
+<a id="field-sandbox-allof-2-then"></a>
+
+## sandbox — provider=e2b
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `instance` | [instance_e2b](#type-instance-e2b) | no | — | — | Instance creation settings, separate from preparation. |
+| `template` | object · [fields](#field-sandbox-allof-2-then-template) | yes | — | — | Environment source, image or existing reference. |
+
+
+<a id="field-sandbox-allof-2-then-template"></a>
+
+## sandbox — provider=e2b.template
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `props` | object · [fields](#field-sandbox-allof-2-then-template-props) | no | — | — | Selected Provider preparation inputs; see its conditional fields. |
+
+
+<a id="field-sandbox-allof-2-then-template-props"></a>
+
+## sandbox — provider=e2b.template.props
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `cpu` | [positive integer or expression](#type-positiveintegerinput) | no | `2` | — | vCPU count for this stage. |
+| `memory` | [positive integer or expression](#type-positiveintegerinput) | no | `2048`; agents-api:4096 | — | Memory amount; Express uses MB, other adapters retain their input units. |
+
+- Other fields are rejected.
+- Project preparation checks memory ≥128 and a multiple of64; Express also requires1024–4096 per vCPU. Values are checked after native expression resolution. Backend limits remain Provider-owned.
+
+<a id="field-sandbox-allof-3-then"></a>
+
+## sandbox — provider=cubesandbox
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `instance` | [instance_cubesandbox](#type-instance-cubesandbox) | no | — | — | Instance creation settings, separate from preparation. |
+| `template` | object · [fields](#field-sandbox-allof-3-then-template) | yes | — | — | Environment source, image or existing reference. |
+
+
+<a id="field-sandbox-allof-3-then-template"></a>
+
+## sandbox — provider=cubesandbox.template
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `props` | object · [fields](#field-sandbox-allof-3-then-template-props) | no | — | — | Selected Provider preparation inputs; see its conditional fields. |
+
+
+<a id="field-sandbox-allof-3-then-template-props"></a>
+
+## sandbox — provider=cubesandbox.template.props
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `cpu` | [positive integer or expression](#type-positiveintegerinput) | no | `2` | — | vCPU count for this stage. |
+| `memory` | [positive integer or expression](#type-positiveintegerinput) | no | `2048`; agents-api:4096 | — | Memory amount; Express uses MB, other adapters retain their input units. |
+
+- Other fields are rejected.
+- Project preparation checks memory ≥128 and a multiple of64; Express also requires1024–4096 per vCPU. Values are checked after native expression resolution. Backend limits remain Provider-owned.
+
+<a id="field-sandbox-allof-4-then"></a>
+
+## sandbox — provider=alicloud-container
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `instance` | [instance_alicloud-container](#type-instance-alicloud-container) | no | — | — | Instance creation settings, separate from preparation. |
+| `template` | object · [fields](#field-sandbox-allof-4-then-template) | yes | — | — | Environment source, image or existing reference. |
+
+
+<a id="field-sandbox-allof-4-then-template"></a>
+
+## sandbox — provider=alicloud-container.template
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `props` | object · [fields](#field-sandbox-allof-4-then-template-props) | no | — | — | Selected Provider preparation inputs; see its conditional fields. |
+
+
+<a id="field-sandbox-allof-4-then-template-props"></a>
+
+## sandbox — provider=alicloud-container.template.props
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `cpu` | [positive integer or expression](#type-positiveintegerinput) | no | `2` | — | vCPU count for this stage. |
+| `memory` | [positive integer or expression](#type-positiveintegerinput) | no | `2048`; agents-api:4096 | — | Memory amount; Express uses MB, other adapters retain their input units. |
+
+- Other fields are rejected.
+- Project preparation checks memory ≥128 and a multiple of64; Express also requires1024–4096 per vCPU. Values are checked after native expression resolution. Backend limits remain Provider-owned.
+
+<a id="field-deployment"></a>
+
+## deployment
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `edition` | string | yes | — | = `"3.0.0"` | Native Devs project edition. |
+| `name` | string | no | root name | length ≥ 1 | Native project name. |
+| `access` | string | no | `"default"` | length ≥ 1 | Existing Serverless Devs credential alias. |
+| `vars` | object · [fields](#field-deployment-vars) | no | — | — | Native project variables. |
+| `resources` | object · [fields](#field-deployment-resources) | yes | — | fields ≥ 1 | Native component resources keyed by project ID. |
+| `flow` | object · [fields](#field-deployment-flow) | no | — | — | Native Devs execution flow. |
+| `actions` | native JSON value | no | — | — | Native Devs lifecycle actions. |
+| `template` | object · [fields](#field-deployment-template) | no | — | — | Native Devs project template settings. |
+| `validation` | boolean | no | — | — | Native project validation setting. |
+
+- Other fields are rejected.
+
+<a id="field-deployment-vars"></a>
+
+## deployment.vars
+
+Object contents are defined by the native component or linked usage reference.
+
+
+<a id="field-deployment-resources"></a>
+
+## deployment.resources
+
+Each map value: object · [fields](#field-deployment-resources-additionalproperties)
+
+Map keys: complete ASCII identifier
+
+
+<a id="field-deployment-resources-additionalproperties"></a>
+
+## deployment.resources.<name>
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `component` | string | yes | — | length ≥ 1 | Actual native component identifier and version. |
+| `props` | [native object or expression](#type-componentprops) | yes | — | — | Native component-owned props; not a duplicated FC schema. |
+| `actions` | native JSON value | no | — | — | Native Devs lifecycle actions. |
+
+- Other fields are rejected.
+
+<a id="field-deployment-flow"></a>
+
+## deployment.flow
+
+Object contents are defined by the native component or linked usage reference.
+
+
+<a id="field-deployment-template"></a>
+
+## deployment.template
+
+Object contents are defined by the native component or linked usage reference.
+
+
+<a id="field-application"></a>
+
+## application
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `type` | string | yes | — | = `"agents-api"` | Declared application or hook type. |
+| `roles` | object · [fields](#field-application-roles) | yes | — | — | References to three distinct native FC resources. |
+| `server` | object · [fields](#field-application-server) | yes | — | — | Server image source or digest-pinned image. |
+| `sessions` | object · [fields](#field-application-sessions) | no | — | — | Managed Session admission and retention settings. |
+| `storage` | object · [fields](#field-application-storage) | no | — | — | File and artifact storage bounds. |
+| `limits` | object · [fields](#field-application-limits) | no | — | — | Run, queue, event and output budgets. |
+| `state` | object · [fields](#field-application-state) | yes | — | — | Existing durable database and optional connection settings. |
+| `bindings` | object · [fields](#field-application-bindings) | yes | — | — | Local business and credential inputs. |
+| `hooks` | object · [fields](#field-application-hooks) | no | — | — | Optional bounded deployment checks. |
+
+- Other fields are rejected.
+
+<a id="field-application-roles"></a>
+
+## application.roles
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `gateway` | string | yes | — | length ≥ 1 | Public Gateway resource ID. |
+| `worker` | string | yes | — | length ≥ 1 | Private Worker resource ID. |
+| `dispatcher` | string | yes | — | length ≥ 1 | Private Dispatcher resource ID. |
+
+- Other fields are rejected.
+
+<a id="field-application-server"></a>
+
+## application.server
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `source` | [recipe](#type-recipe) | no | — | — | Contained source build recipe. |
+| `image` | string | no | — | image@sha256:64 lowercase hex digits | Digest-pinned Server image, exclusive with source. |
+
+- Other fields are rejected.
+- Choose exactly one: `source`; `image`.
+
+<a id="field-application-sessions"></a>
+
+## application.sessions
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `idleTimeoutSeconds` | integer or [native expression](#type-expression) | no | `900` | literal: ≥ 1 | Session idle timeout in seconds. |
+| `maxLogicalSessionsPerOwner` | integer or [native expression](#type-expression) | no | `100` | literal: ≥ 1 | Maximum logical Sessions per owner. |
+| `maxActiveSessions` | integer or [native expression](#type-expression) | no | `20` | literal: ≥ 1 | Active Session admission limit. |
+| `maxQueuedTurnsPerSession` | integer or [native expression](#type-expression) | no | `8` | literal: ≥ 1 | Queued turns per Session. |
+| `resultRetentionSeconds` | integer or [native expression](#type-expression) | no | `86400` | literal: ≥ 1 | Committed-result retention in seconds. |
+
+- Other fields are rejected.
+
+<a id="field-application-storage"></a>
+
+## application.storage
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `maxFileBytes` | integer or [native expression](#type-expression) | no | `10485760` | literal: ≥ 1 | Maximum input file size in bytes. |
+| `maxArtifactBytes` | integer or [native expression](#type-expression) | no | `10485760` | literal: ≥ 1 | Maximum individual artifact size in bytes. |
+| `maxTurnArtifactBytes` | integer or [native expression](#type-expression) | no | `10485760` | literal: ≥ 1 | Total artifact bytes per turn. |
+| `maxRetainedBytesPerOwner` | integer or [native expression](#type-expression) | no | `104857600` | literal: ≥ 1 | Retained bytes per owner. |
+
+- Other fields are rejected.
+
+<a id="field-application-limits"></a>
+
+## application.limits
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `maxRunSeconds` | integer or [native expression](#type-expression) | no | `600` | literal: ≥ 1 | Run time budget in seconds. |
+| `maxToolSeconds` | integer or [native expression](#type-expression) | no | `60` | literal: ≥ 1 | Tool-call time budget in seconds. |
+| `maxConcurrentRuns` | integer or [native expression](#type-expression) | no | `10` | literal: ≥ 1 | Concurrent-run admission budget. |
+| `maxQueuedRuns` | integer or [native expression](#type-expression) | no | `80` | literal: ≥ 1 | Queued-run admission budget. |
+| `maxRunsPerMinute` | integer or [native expression](#type-expression) | no | `60` | literal: ≥ 1 | Run admission budget per minute. |
+| `maxEventsPerRun` | integer or [native expression](#type-expression) | no | `10000` | literal: ≥ 5 | Event count bound per run. |
+| `maxOutputBytes` | integer or [native expression](#type-expression) | no | `8388608` | literal: ≥ 1024 | Captured output bound in bytes. |
+| `maxSubscribersPerSession` | integer or [native expression](#type-expression) | no | `4` | literal: ≥ 1; ≤ 100 | Concurrent event subscribers per Session. |
+
+- Other fields are rejected.
+
+<a id="field-application-state"></a>
+
+## application.state
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `databaseUrl` | [secret expression](#type-secret) | yes | — | — | Existing PostgreSQL connection URL; Server-only. |
+| `vpcConfig` | object · [fields](#field-application-state-vpcconfig) | no | — | — | Existing FC network configuration; see the Managed reference. |
+| `databaseCa` | [secret expression](#type-secret) | no | — | — | Optional private database CA certificate PEM. |
+
+- Other fields are rejected.
+
+<a id="field-application-state-vpcconfig"></a>
+
+## application.state.vpcConfig
+
+Existing network IDs: see [configuration and bindings](managed-agent-applications.md#configuration-and-bindings).
+
+
+<a id="field-application-bindings"></a>
+
+## application.bindings
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `sandboxAccess` | object · [fields](#field-application-bindings-sandboxaccess) | yes | — | — | Server-only Sandbox lifecycle access. |
+| `model` | object · [fields](#field-application-bindings-model) | yes | — | — | Allowed model identifier or model-access configuration. |
+| `clientAuth` | object · [generate=true](#field-application-bindings-clientauth-oneof-0) or object · [explicit tokens](#field-application-bindings-clientauth-oneof-1) or [native expression](#type-expression) | no | generated credentials | — | Generated business credentials or explicit token hashes. |
+| `internalAuth` | object · [generate=true](#field-application-bindings-internalauth-oneof-0) or object · [explicit token](#field-application-bindings-internalauth-oneof-1) or [native expression](#type-expression) | no | generated credentials | — | Separate private control-plane authentication. |
+| `ingress` | object · [fields](#field-application-bindings-ingress) | yes | — | — | Stable Gateway alias or domain route. |
+
+- Other fields are rejected.
+
+<a id="field-application-bindings-sandboxaccess"></a>
+
+## application.bindings.sandboxAccess
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `apiKey` | [secret expression](#type-secret) | yes | — | — | Referenced service API key. |
+| `baseUrl` | string | yes | — | length ≥ 1 | Explicit service API base URL. |
+| `domain` | string | yes | — | length ≥ 1 | Sandbox endpoint domain from the selected platform. |
+| `region` | string | yes | — | length ≥ 1 | Matching target region. |
+
+- Other fields are rejected.
+
+<a id="field-application-bindings-model"></a>
+
+## application.bindings.model
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `apiKey` | [secret expression](#type-secret) | yes | — | — | Referenced service API key. |
+| `baseUrl` | string | yes | — | length ≥ 1 | Explicit service API base URL. |
+| `model` | string | yes | — | length ≥ 1 | Allowed model identifier or model-access configuration. |
+| `adapter` | string | yes | — | `"codex"`, `"qwen-code"` | Agent CLI adapter matching the model API. |
+
+- Other fields are rejected.
+
+<a id="field-application-bindings-clientauth"></a>
+
+## application.bindings.clientAuth
+
+object · [generate=true](#field-application-bindings-clientauth-oneof-0) or object · [explicit tokens](#field-application-bindings-clientauth-oneof-1) or [native expression](#type-expression)
+
+
+<a id="field-application-bindings-clientauth-oneof-0"></a>
+
+## application.bindings.clientAuth — generate=true
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `generate` | boolean | yes | `true` | = `true` | Generate and safely reuse a local credential. |
+| `owner` | string | no | `"default"` | length ≥ 1 | Business credential owner. |
+
+- Other fields are rejected.
+
+<a id="field-application-bindings-clientauth-oneof-1"></a>
+
+## application.bindings.clientAuth — explicit tokens
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `tokens` | array of object · [fields](#field-application-bindings-clientauth-oneof-1-tokens-items) | yes | — | items ≥ 1 | Explicit accepted business-token hashes. |
+
+- Other fields are rejected.
+
+<a id="field-application-bindings-clientauth-oneof-1-tokens-items"></a>
+
+## application.bindings.clientAuth — explicit tokens.tokens[]
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `sha256` | string | yes | — | 64 lowercase hex digits | Lowercase SHA256 of a business token, never its plaintext. |
+| `owner` | string | yes | — | length ≥ 1 | Business credential owner. |
+| `scopes` | array of string | yes | — | items ≥ 1; unique items; each: `"agents:read"`, `"agents:write"` | Allowed business API scopes. |
+| `expiresAt` | [positive integer or expression](#type-positiveintegerinput) | no | — | — | Credential expiration timestamp. |
+
+- Other fields are rejected.
+
+<a id="field-application-bindings-internalauth"></a>
+
+## application.bindings.internalAuth
+
+object · [generate=true](#field-application-bindings-internalauth-oneof-0) or object · [explicit token](#field-application-bindings-internalauth-oneof-1) or [native expression](#type-expression)
+
+
+<a id="field-application-bindings-internalauth-oneof-0"></a>
+
+## application.bindings.internalAuth — generate=true
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `generate` | boolean | yes | `true` | = `true` | Generate and safely reuse a local credential. |
+| `roleArn` | string | no | — | length ≥ 1 | Existing FC execution role; must agree with native roles. |
+
+- Other fields are rejected.
+
+<a id="field-application-bindings-internalauth-oneof-1"></a>
+
+## application.bindings.internalAuth — explicit token
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `token` | [secret expression](#type-secret) | yes | — | — | Referenced private internal token. |
+| `roleArn` | string | no | — | length ≥ 1 | Existing FC execution role; must agree with native roles. |
+
+- Other fields are rejected.
+
+<a id="field-application-bindings-ingress"></a>
+
+## application.bindings.ingress
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `kind` | string | yes | — | `"function-alias"`, `"custom-domain"` | Gateway ingress mode. |
+| `aliasName` | string | no | `"prod"` | length ≥ 1 | Stable FC alias name. |
+| `allowTestDomain` | boolean | no | — | — | Explicitly allow the FC test domain. |
+| `domainName` | string | no | — | length ≥ 1 | Configured HTTPS custom domain. |
+| `protocol` | string | no | — | = `"HTTPS"` | Declared service protocol, or HTTPS for custom-domain ingress. |
+| `path` | string | no | — | = `"/"` | Custom-domain root route. |
+
+- Other fields are rejected.
+- [When kind=function-alias](#field-application-bindings-ingress-allof-0-then)
+- [When kind=custom-domain](#field-application-bindings-ingress-allof-1-then)
+
+<a id="field-application-bindings-ingress-allof-0-then"></a>
+
+## application.bindings.ingress — kind=function-alias
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `allowTestDomain` | boolean | yes | — | = `true` | Explicitly allow the FC test domain. |
+
+- Do not provide: `domainName`, `protocol`, `path`.
+
+<a id="field-application-bindings-ingress-allof-1-then"></a>
+
+## application.bindings.ingress — kind=custom-domain
+
+- Required inherited fields: `domainName`, `protocol`.
+- Do not provide: `allowTestDomain`.
+
+<a id="field-application-hooks"></a>
+
+## application.hooks
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `beforeApply` | [hooks](#type-hooks) | no | — | — | Checks before applying deployment changes. |
+| `afterReady` | [hooks](#type-hooks) | no | — | — | Checks after the candidate becomes ready. |
+
+- Other fields are rejected.
+
+<a id="type-expression"></a>
 
 ## expression
 
-| Field | Type / values / constraints | Required |
-| --- | --- | --- |
-| — | `{"type":"string","pattern":"^\\$\\{[\\s\\S]+\\}$","description":"A native Serverless Devs expression; only the official parser evaluates it."}` | — |
+string; native `${...}`; evaluated by Devs
+
+
+<a id="type-positiveintegerinput"></a>
 
 ## positiveIntegerInput
 
-| Field | Type / values / constraints | Required |
-| --- | --- | --- |
-| — | `{"oneOf":[{"type":"integer","minimum":1,"maximum":9007199254740991},{"$ref":"#/$defs/expression"}]}` | — |
+integer or [native expression](#type-expression)
+
+literal: ≥ 1; ≤ 9007199254740991
+
+
+<a id="type-nonnegativeintegerinput"></a>
 
 ## nonnegativeIntegerInput
 
-| Field | Type / values / constraints | Required |
-| --- | --- | --- |
-| — | `{"oneOf":[{"type":"integer","minimum":0,"maximum":9007199254740991},{"$ref":"#/$defs/expression"}]}` | — |
+integer or [native expression](#type-expression)
+
+literal: ≥ 0; ≤ 9007199254740991
+
+
+<a id="type-booleaninput"></a>
 
 ## booleanInput
 
-| Field | Type / values / constraints | Required |
-| --- | --- | --- |
-| — | `{"oneOf":[{"type":"boolean"},{"$ref":"#/$defs/expression"}]}` | — |
+boolean or [native expression](#type-expression)
+
+
+<a id="type-secret"></a>
 
 ## secret
 
-| Field | Type / values / constraints | Required |
-| --- | --- | --- |
-| — | `{"type":"string","pattern":"^\\$\\{[\\s\\S]+\\}$","description":"A native Serverless Devs expression; only the official parser evaluates it."}` | — |
+string; native `${...}`; evaluated by Devs
+
+
+<a id="type-componentprops"></a>
 
 ## componentProps
 
-| Field | Type / values / constraints | Required |
-| --- | --- | --- |
-| — | `{"oneOf":[{"type":"object"},{"$ref":"#/$defs/expression"}]}` | — |
+object · [choice 1](#type-componentprops-oneof-0) or [native expression](#type-expression)
+
+
+<a id="type-componentprops-oneof-0"></a>
+
+## componentProps — choice 1
+
+Object contents are defined by the native component or linked usage reference.
+
+
+<a id="type-source"></a>
 
 ## source
 
-| Field | Type / values / constraints | Required |
-| --- | --- | --- |
-| `dockerfile` | `{"type":"string","minLength":1,"default":"Dockerfile"}` | no |
-| `context` | `{"const":".","default":"."}` | no |
-| `profiles` | `{"type":"object","propertyNames":{"pattern":"^[A-Za-z0-9][A-Za-z0-9._-]*(?![\\s\\S])"},"additionalProperties":{"type":"object","additionalProperties":false,"properties":{"dockerfile":{"type":"string","minLength":1,"default":"Dockerfile"},"context":{"const":".","default":"."}}}}` | no |
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `dockerfile` | string | no | `"Dockerfile"` | length ≥ 1 | Dockerfile inside the template directory. |
+| `context` | string | no | `"."` | = `"."` | Build context rooted in the template directory. |
+| `profiles` | object · [fields](#type-source-properties-profiles) | no | — | — | Explicit alternate source recipes. |
 
-Other fields are rejected.
+- Other fields are rejected.
+
+<a id="type-source-properties-profiles"></a>
+
+## source.profiles
+
+Each map value: object · [fields](#type-source-properties-profiles-additionalproperties)
+
+Map keys: complete ASCII identifier
+
+
+<a id="type-source-properties-profiles-additionalproperties"></a>
+
+## source.profiles.<name>
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `dockerfile` | string | no | `"Dockerfile"` | length ≥ 1 | Dockerfile inside the template directory. |
+| `context` | string | no | `"."` | = `"."` | Build context rooted in the template directory. |
+
+- Other fields are rejected.
+
+<a id="type-recipe"></a>
 
 ## recipe
 
-| Field | Type / values / constraints | Required |
-| --- | --- | --- |
-| `dockerfile` | `{"type":"string","minLength":1,"default":"Dockerfile"}` | no |
-| `context` | `{"const":".","default":"."}` | no |
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `dockerfile` | string | no | `"Dockerfile"` | length ≥ 1 | Dockerfile inside the template directory. |
+| `context` | string | no | `"."` | = `"."` | Build context rooted in the template directory. |
 
-Other fields are rejected.
+- Other fields are rejected.
+
+<a id="type-service"></a>
 
 ## service
 
-| Field | Type / values / constraints | Required |
-| --- | --- | --- |
-| `protocol` | `{"type":"string","minLength":1}` | yes |
-| `version` | `{"type":"integer","minimum":1,"maximum":9007199254740991}` | yes |
-| `port` | `{"type":"integer","minimum":1,"maximum":65535}` | yes |
-| `operations` | `{"type":"array","uniqueItems":true,"items":{"type":"string","minLength":1},"default":[]}` | no |
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `protocol` | string | yes | — | length ≥ 1 | Declared service protocol, or HTTPS for custom-domain ingress. |
+| `version` | integer | yes | — | ≥ 1; ≤ 9007199254740991 | Service protocol contract version. |
+| `port` | integer | yes | — | ≥ 1; ≤ 65535 | Service access port. |
+| `operations` | array of string | no | empty list | unique items; each: length ≥ 1 | Described service operations; not a permission grant. |
 
-Other fields are rejected.
+- Other fields are rejected.
+
+<a id="type-opensandboxoptions"></a>
 
 ## openSandboxOptions
 
-| Field | Type / values / constraints | Required |
-| --- | --- | --- |
-| `entrypoint` | `{"type":"string","minLength":1}` | no |
-| `ready_timeout` | `{"$ref":"#/$defs/positiveIntegerInput"}` | no |
-| `network_policy` | `{"type":"string","minLength":1}` | no |
-| `platform` | `{"enum":["linux/amd64","linux/arm64","windows/amd64","windows/arm64"]}` | no |
-| `secure_access` | `{"$ref":"#/$defs/booleanInput"}` | no |
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `entrypoint` | string | no | — | length ≥ 1 | OpenSandbox container entrypoint command. |
+| `ready_timeout` | [positive integer or expression](#type-positiveintegerinput) | no | — | — | OpenSandbox readiness wait in seconds. |
+| `network_policy` | string | no | — | length ≥ 1 | OpenSandbox network-policy selector. |
+| `platform` | string | no | — | `"linux/amd64"`, `"linux/arm64"`, `"windows/amd64"`, `"windows/arm64"` | Container operating system and architecture. |
+| `secure_access` | [boolean or expression](#type-booleaninput) | no | — | — | OpenSandbox secure-access option. |
 
-Other fields are rejected.
+- Other fields are rejected.
+
+<a id="type-instance-alicloud-express"></a>
 
 ## instance_alicloud-express
 
-| Field | Type / values / constraints | Required |
-| --- | --- | --- |
-| `timeout` | `{"$ref":"#/$defs/positiveIntegerInput"}` | no |
-| `envs` | `{"type":"object","additionalProperties":{"type":"string"}}` | no |
-| `metadata` | `{"type":"object","additionalProperties":{"type":"string"}}` | no |
-| `cpu` | `{"$ref":"#/$defs/positiveIntegerInput"}` | no |
-| `memory` | `{"$ref":"#/$defs/positiveIntegerInput"}` | no |
-| `disk` | `{"$ref":"#/$defs/nonnegativeIntegerInput"}` | no |
-| `gpu` | `{"type":"string","minLength":1}` | no |
-| `volume_mounts` | `{"type":"object","propertyNames":{"pattern":"^/(?!bin(?:/\|$)\|opt(?:/\|$)\|var(?:/\|$)\|dev(?:/\|$))(?!.*(?:^\|/)\\.)(?!.*//)[^\\x00]+[^/]$"},"additionalProperties":{"type":"string","minLength":1}}` | no |
-| `lifecycle` | `{"type":"object","additionalProperties":false,"properties":{"onTimeout":{"enum":["pause","kill"]},"autoResume":{"$ref":"#/$defs/booleanInput"}},"required":["onTimeout"]}` | no |
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `timeout` | [positive integer or expression](#type-positiveintegerinput) | no | 300; agents-api:3600 | — | Instance lifetime in seconds; maximum 86400. |
+| `envs` | object · [fields](#type-instance-alicloud-express-properties-envs) | no | empty map | — | Declared guest environment values. |
+| `metadata` | object · [fields](#type-instance-alicloud-express-properties-metadata) | no | empty map | — | Provider instance metadata. |
+| `cpu` | [positive integer or expression](#type-positiveintegerinput) | no | — | — | vCPU count for this stage. |
+| `memory` | [positive integer or expression](#type-positiveintegerinput) | no | — | — | Memory amount; Express uses MB, other adapters retain their input units. |
+| `disk` | [nonnegative integer or expression](#type-nonnegativeintegerinput) | no | — | — | Instance disk amount in MB. |
+| `gpu` | string | no | — | length ≥ 1 | Provider GPU selector; OpenSandbox requires a count string. |
+| `volume_mounts` | object · [fields](#type-instance-alicloud-express-properties-volume-mounts) | no | — | — | Guest mount path to existing volume name; no volume creation. |
+| `lifecycle` | object · [fields](#type-instance-alicloud-express-properties-lifecycle) | no | — | — | Instance timeout policy. |
 
-Other fields are rejected.
+- Other fields are rejected.
+
+<a id="type-instance-alicloud-express-properties-envs"></a>
+
+## instance_alicloud-express.envs
+
+Each map value: string
+
+
+<a id="type-instance-alicloud-express-properties-metadata"></a>
+
+## instance_alicloud-express.metadata
+
+Each map value: string
+
+
+<a id="type-instance-alicloud-express-properties-volume-mounts"></a>
+
+## instance_alicloud-express.volume_mounts
+
+Each map value: string
+
+Map keys: absolute mount path; system paths excluded
+
+
+<a id="type-instance-alicloud-express-properties-lifecycle"></a>
+
+## instance_alicloud-express.lifecycle
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `onTimeout` | string | yes | — | `"pause"`, `"kill"` | Pause or delete the instance on timeout. |
+| `autoResume` | [boolean or expression](#type-booleaninput) | no | — | — | Automatic resume; requires onTimeout=pause. |
+
+- Other fields are rejected.
+
+<a id="type-instance-opensandbox"></a>
 
 ## instance_opensandbox
 
-| Field | Type / values / constraints | Required |
-| --- | --- | --- |
-| `timeout` | `{"$ref":"#/$defs/positiveIntegerInput"}` | no |
-| `envs` | `{"type":"object","additionalProperties":{"type":"string"}}` | no |
-| `metadata` | `{"type":"object","additionalProperties":{"type":"string"}}` | no |
-| `cpu` | `{"$ref":"#/$defs/positiveIntegerInput"}` | no |
-| `memory` | `{"$ref":"#/$defs/positiveIntegerInput"}` | no |
-| `gpu` | `{"type":"string","minLength":1}` | no |
-| `secure` | `{"$ref":"#/$defs/booleanInput"}` | no |
-| `provider_options` | `{"$ref":"#/$defs/openSandboxOptions"}` | no |
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `timeout` | [positive integer or expression](#type-positiveintegerinput) | no | 300; agents-api:3600 | — | Instance lifetime in seconds; maximum 86400. |
+| `envs` | object · [fields](#type-instance-opensandbox-properties-envs) | no | empty map | — | Declared guest environment values. |
+| `metadata` | object · [fields](#type-instance-opensandbox-properties-metadata) | no | empty map | — | Provider instance metadata. |
+| `cpu` | [positive integer or expression](#type-positiveintegerinput) | no | — | — | vCPU count for this stage. |
+| `memory` | [positive integer or expression](#type-positiveintegerinput) | no | — | — | Memory amount; Express uses MB, other adapters retain their input units. |
+| `gpu` | string | no | — | length ≥ 1 | Provider GPU selector; OpenSandbox requires a count string. |
+| `secure` | [boolean or expression](#type-booleaninput) | no | — | — | OpenSandbox secure-mode setting. |
+| `provider_options` | [openSandboxOptions](#type-opensandboxoptions) | no | — | — | Selected Provider's integrated create options. |
 
-Other fields are rejected.
+- Other fields are rejected.
+
+<a id="type-instance-opensandbox-properties-envs"></a>
+
+## instance_opensandbox.envs
+
+Each map value: string
+
+
+<a id="type-instance-opensandbox-properties-metadata"></a>
+
+## instance_opensandbox.metadata
+
+Each map value: string
+
+
+<a id="type-instance-e2b"></a>
 
 ## instance_e2b
 
-| Field | Type / values / constraints | Required |
-| --- | --- | --- |
-| `timeout` | `{"$ref":"#/$defs/positiveIntegerInput"}` | no |
-| `envs` | `{"type":"object","additionalProperties":{"type":"string"}}` | no |
-| `metadata` | `{"type":"object","additionalProperties":{"type":"string"}}` | no |
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `timeout` | [positive integer or expression](#type-positiveintegerinput) | no | 300; agents-api:3600 | — | Instance lifetime in seconds; maximum 86400. |
+| `envs` | object · [fields](#type-instance-e2b-properties-envs) | no | empty map | — | Declared guest environment values. |
+| `metadata` | object · [fields](#type-instance-e2b-properties-metadata) | no | empty map | — | Provider instance metadata. |
 
-Other fields are rejected.
+- Other fields are rejected.
+
+<a id="type-instance-e2b-properties-envs"></a>
+
+## instance_e2b.envs
+
+Each map value: string
+
+
+<a id="type-instance-e2b-properties-metadata"></a>
+
+## instance_e2b.metadata
+
+Each map value: string
+
+
+<a id="type-instance-cubesandbox"></a>
 
 ## instance_cubesandbox
 
-| Field | Type / values / constraints | Required |
-| --- | --- | --- |
-| `timeout` | `{"$ref":"#/$defs/positiveIntegerInput"}` | no |
-| `envs` | `{"type":"object","additionalProperties":{"type":"string"}}` | no |
-| `metadata` | `{"type":"object","additionalProperties":{"type":"string"}}` | no |
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `timeout` | [positive integer or expression](#type-positiveintegerinput) | no | 300; agents-api:3600 | — | Instance lifetime in seconds; maximum 86400. |
+| `envs` | object · [fields](#type-instance-cubesandbox-properties-envs) | no | empty map | — | Declared guest environment values. |
+| `metadata` | object · [fields](#type-instance-cubesandbox-properties-metadata) | no | empty map | — | Provider instance metadata. |
 
-Other fields are rejected.
+- Other fields are rejected.
+
+<a id="type-instance-cubesandbox-properties-envs"></a>
+
+## instance_cubesandbox.envs
+
+Each map value: string
+
+
+<a id="type-instance-cubesandbox-properties-metadata"></a>
+
+## instance_cubesandbox.metadata
+
+Each map value: string
+
+
+<a id="type-instance-alicloud-container"></a>
 
 ## instance_alicloud-container
 
-| Field | Type / values / constraints | Required |
-| --- | --- | --- |
-| `timeout` | `{"$ref":"#/$defs/positiveIntegerInput"}` | no |
-| `envs` | `{"type":"object","additionalProperties":{"type":"string"}}` | no |
-| `metadata` | `{"type":"object","additionalProperties":{"type":"string"}}` | no |
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `timeout` | [positive integer or expression](#type-positiveintegerinput) | no | 300; agents-api:3600 | — | Instance lifetime in seconds; maximum 86400. |
+| `envs` | object · [fields](#type-instance-alicloud-container-properties-envs) | no | empty map | — | Declared guest environment values. |
+| `metadata` | object · [fields](#type-instance-alicloud-container-properties-metadata) | no | empty map | — | Provider instance metadata. |
 
-Other fields are rejected.
+- Other fields are rejected.
+
+<a id="type-instance-alicloud-container-properties-envs"></a>
+
+## instance_alicloud-container.envs
+
+Each map value: string
+
+
+<a id="type-instance-alicloud-container-properties-metadata"></a>
+
+## instance_alicloud-container.metadata
+
+Each map value: string
+
+
+<a id="type-refname"></a>
 
 ## refName
 
-| Field | Type / values / constraints | Required |
-| --- | --- | --- |
-| — | `{"type":"string","pattern":"^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}(?![\\s\\S])"}` | — |
+string; ASCII reference ID, 1–128 characters
+
+
+<a id="type-relativepath"></a>
 
 ## relativePath
 
-| Field | Type / values / constraints | Required |
-| --- | --- | --- |
-| — | `{"type":"string","minLength":1,"maxLength":1024,"pattern":"^(?!/)(?![A-Za-z]:)(?!.*(?:^\|/)\\.\\.(?:/\|$))[^\\\\\\x00-\\x1f]+$"}` | — |
+string; length ≥ 1; length ≤ 1024; contained relative path
+
+
+<a id="type-hooks"></a>
 
 ## hooks
 
-| Field | Type / values / constraints | Required |
-| --- | --- | --- |
-| — | `{"type":"array","maxItems":8,"items":{"oneOf":[{"type":"object","additionalProperties":false,"properties":{"id":{"$ref":"#/$defs/refName"},"type":{"const":"custom"},"argv":{"type":"array","minItems":1,"maxItems":64,"items":{"type":"string","minLength":1,"maxLength":4096}},"cwd":{"$ref":"#/$defs/relativePath"},"timeoutSeconds":{"type":"integer","minimum":1,"maximum":900},"envAllowlist":{"type":"array","uniqueItems":true,"items":{"type":"string","pattern":"^[A-Z][A-Z0-9_]*(?![\\s\\S])"}}},"required":["id","type","argv","cwd","timeoutSeconds","envAllowlist"]},{"type":"object","additionalProperties":false,"properties":{"id":{"$ref":"#/$defs/refName"},"type":{"const":"serverless-devs"},"step":{"enum":["gateway","worker","dispatcher"]},"command":{"const":"info"},"timeoutSeconds":{"type":"integer","minimum":1,"maximum":900}},"required":["id","type","step","command","timeoutSeconds"]}]}}` | — |
+array of object · [type=custom](#type-hooks-items-oneof-0) or object · [type=serverless-devs](#type-hooks-items-oneof-1); items ≤ 8
+
+
+<a id="type-hooks-items"></a>
+
+## hooks[]
+
+object · [type=custom](#type-hooks-items-oneof-0) or object · [type=serverless-devs](#type-hooks-items-oneof-1)
+
+- Choose exactly one: `id`, `type`, `argv`, `cwd`, `timeoutSeconds`, `envAllowlist`; `id`, `type`, `step`, `command`, `timeoutSeconds`.
+
+<a id="type-hooks-items-oneof-0"></a>
+
+## hooks[] — type=custom
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `id` | [refName](#type-refname) | yes | — | — | Unique hook identifier across phases. |
+| `type` | string | yes | — | = `"custom"` | Declared application or hook type. |
+| `argv` | array of string | yes | — | items ≥ 1; items ≤ 64; each: length ≥ 1; length ≤ 4096 | Executable and arguments; no implicit shell. |
+| `cwd` | [relativePath](#type-relativepath) | yes | — | — | Contained working directory relative to the template. |
+| `timeoutSeconds` | integer | yes | — | ≥ 1; ≤ 900 | Hook time budget in seconds. |
+| `envAllowlist` | array of string | yes | — | unique items; each: complete ASCII identifier | Host variable names allowed into this hook. |
+
+- Other fields are rejected.
+
+<a id="type-hooks-items-oneof-1"></a>
+
+## hooks[] — type=serverless-devs
+
+| Field | Type | Required | Default | Constraints | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `id` | [refName](#type-refname) | yes | — | — | Unique hook identifier across phases. |
+| `type` | string | yes | — | = `"serverless-devs"` | Declared application or hook type. |
+| `step` | string | yes | — | `"gateway"`, `"worker"`, `"dispatcher"` | Managed role inspected by the native info command. |
+| `command` | string | yes | — | = `"info"` | Read-only native component command. |
+| `timeoutSeconds` | integer | yes | — | ≥ 1; ≤ 900 | Hook time budget in seconds. |
+
+- Other fields are rejected.

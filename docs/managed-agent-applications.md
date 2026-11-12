@@ -33,7 +33,7 @@ Same-UID Agent tools can read the model credentials deliberately supplied to the
 
 ## Server build and deployment
 
-The Server recipe pins the development client source at SDK commit `1079841307f1f63253ae68fdda6e6d2d1e77e851`; the Guest retains published Server0.4.0a7. Source package metadata still says a7, so the version alone cannot identify the v1 runtime.
+The Server recipe pins the development client source at SDK commit `c550cf53a9eb0c3c9899d0336b924633eb9b0988`; the Guest retains published Server0.4.0a7. Source package metadata still says a7, so the version alone cannot identify the v1 runtime.
 
 `deployment` is the original Serverless Devs edition3 project. Keep real `component: fc3@<version>` identifiers and native `props`: cpu, memorySize, timeout, role, logConfig and vpcConfig retain native names and units. The three Managed role resources use one pinned FC component version and region, with the same execution role authority. User-selected native memory4096 is not normalized back to a coordinator constant.
 

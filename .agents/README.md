@@ -12,6 +12,10 @@
 
 - [Ordinary public resource names](notes/proposed/architecture/2026-11-12-template-v1-resource-name.md) · [verification](evidence/verify/2026-11-12-template-v1-resource-name.md). Engineering directories do not define public naming exceptions.
 
+- [Readable resource field tables and author-directory closure](notes/proposed/process/2026-11-12-template-reference-readability.md) · [verification](evidence/verify/2026-11-12-template-reference-readability.md). Human field reference, ordinary skeleton resource name and final tested Server source pin.
+
+- [Agents API local image verification](evidence/verify/2026-11-12-agents-api-local-images.json): independent real builds/offline probes; exact image/source bounds, no cloud or Agent turn claim.
+
 ## Recent changes — 2026-11-10
 
 - [Owner change index](notes/proposed/process/2026-11-10-recent-change-index.md) · [records verification](evidence/verify/2026-11-10-recent-change-index.md).

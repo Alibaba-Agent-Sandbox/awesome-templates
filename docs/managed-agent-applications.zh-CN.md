@@ -33,7 +33,7 @@ Guest 应用认证令牌自动生成，与平台、云账号、模型凭据分�
 
 ## Server 构建与部署
 
-Server 配方固定 SDK 开发源码提交 `1079841307f1f63253ae68fdda6e6d2d1e77e851`，Guest 保留已发布 Server0.4.0a7。源码包元信息仍为 a7，仅凭版本号不能识别 v1 运行时。
+Server 配方固定 SDK 开发源码提交 `c550cf53a9eb0c3c9899d0336b924633eb9b0988`，Guest 保留已发布 Server0.4.0a7。源码包元信息仍为 a7，仅凭版本号不能识别 v1 运行时。
 
 `deployment` 是原生 Serverless Devs edition3 项目。使用真实 `component: fc3@<版本>` 和原生 props；cpu、memorySize、timeout、role、logConfig、vpcConfig 的名称和单位不另造一层。三个 Managed 角色采用相同固定组件版本、地域和执行角色权威。用户填写的原生 memory4096 不被改回协调器常量。
 

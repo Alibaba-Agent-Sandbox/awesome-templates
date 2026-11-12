@@ -30,7 +30,7 @@ Qwen Code 0.23.0, PostgreSQL and FC Gateway/Worker/Dispatcher functions.
 [template.yaml](template.yaml) · [Sandbox Dockerfile](Dockerfile) ·
 [Server Dockerfile](server/Dockerfile)
 
-The Guest pins published Server0.4.0a7. The Server image explicitly builds the development client at SDK commit `1079841307f1f63253ae68fdda6e6d2d1e77e851`, with its archive hash fixed in the [Server Dockerfile](server/Dockerfile). Its package metadata still says a7; this is not a new PyPI release.
+The Guest pins published Server0.4.0a7. The Server image explicitly builds the development client at SDK commit `c550cf53a9eb0c3c9899d0336b924633eb9b0988`, with its archive hash fixed in the [Server Dockerfile](server/Dockerfile). Its package metadata still says a7; this is not a new PyPI release.
 Application deployment requires Node.js 20 or later and the current source CLI. Business HTTP clients need only the Gateway endpoint and business key.
 
 ## Problem solved

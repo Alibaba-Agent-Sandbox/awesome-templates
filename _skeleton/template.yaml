@@ -1,5 +1,5 @@
 specVersion: 1
-name: _skeleton
+name: example
 sandbox:
   template:
     source:
