@@ -121,3 +121,21 @@ to the corresponding implementation delivery. Tracker:
 [awesome-templates Issue309](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/309).
 
 `sandbox.ports` optionally declares additional access ports (unique integers1..65535). Compilation returns the sorted union with real services.port values. Raw ports promise no running service, protocol or public Gateway route.
+
+
+## Source YAML reader
+
+`parseYamlV1(textOrBytes)` / `parse_yaml_v1(text_or_bytes)` and `MAX_YAML_BYTES` provide the
+same pure source boundary for template, publication and catalog documents. They evaluate no
+Devs expressions and read no files or environment. Callers bound file reads to MAX+1 bytes.
+The reader accepts at most1MiB of strict UTF-8 and the JSON-compatible YAML1.2 Core subset:
+string map keys, finite/safe numbers, one document, no aliases, duplicate keys or unsupported
+tags. An unused anchor is harmless. Either omit the YAML version directive or use1.2;1.1 is rejected. Explicit `!!str` fixes a string; other explicit scalar tags cannot
+force conversion to a different Core kind. Thus `!!float 1.0` works but `!!float 1` is not a v1
+source cast. Plain dates/on/off remain strings; merge-looking `<<` remains an ordinary key.
+
+Scalar resolution belongs to the actual Node yaml2.9.1 Core library and Python
+PyYAML6.0.3+yamlcore0.1.1, not a hand-maintained resolver. Parser errors are redacted. Existing
+non-v1 PyYAML uses are unchanged. `yaml-fixtures.json` is part of the shared source lock and
+actual dual-parser conformance. The official Devs parser is a separate stage: consumers must
+preserve these input types when handing their private project to that parser.

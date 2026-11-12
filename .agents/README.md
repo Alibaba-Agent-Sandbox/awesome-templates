@@ -15,6 +15,7 @@
 - [Readable resource field tables and author-directory closure](notes/proposed/process/2026-11-12-template-reference-readability.md) · [verification](evidence/verify/2026-11-12-template-reference-readability.md). Human field reference, ordinary skeleton resource name and final tested Server source pin.
 
 - [Agents API local image verification](evidence/verify/2026-11-12-agents-api-local-images.json): independent real builds/offline probes; exact image/source bounds, no cloud or Agent turn claim.
+- [Shared v1 Core YAML source reader](notes/proposed/architecture/2026-11-12-template-v1-core-reader.md) · [verification](evidence/verify/2026-11-12-template-v1-core-reader.md). Actual dual-parser raw-source parity; native evaluation remains a separate stage.
 
 ## Recent changes — 2026-11-10
 

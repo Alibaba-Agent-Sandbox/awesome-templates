@@ -95,3 +95,18 @@ Registry schema 包含模板包身份/版本、双语简介、作者/许可证�
 [awesome-templates Issue309](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues/309)。
 
 `sandbox.ports` 可选声明额外访问端口（去重整数1..65535）；compile 合并并排序 ports 与真实 services.port。端口不承诺已启动、协议或公共 Gateway 路由，不编造业务服务元数据。
+
+
+## 源 YAML 读取
+
+`parseYamlV1(textOrBytes)` / `parse_yaml_v1(text_or_bytes)` 与 `MAX_YAML_BYTES` 为模板、上架
+metadata、目录文档提供同一个纯读取边界，不读文件或环境，也不求值 Devs 表达式。调用方
+将文件读取限制为 MAX+1 字节。仅接受最多1MiB的严格UTF-8、单文档、字符串映射键及有限安全
+JSON值；拒绝 alias、重复键和不支持的 tag。未使用的 anchor 可以保留。YAML版本声明只允许
+1.2或省略。`!!str` 可固定字符串；其他显式标量 tag 不做改变 Core 类型的强制转换，因此
+`!!float 1.0` 可用而 `!!float 1` 不属于v1源语法。日期、on/off保持字符串，`<<`不展开合并。
+
+实际标量规则由 Node yaml2.9.1 Core 与 Python PyYAML6.0.3+yamlcore0.1.1 提供，不自行维护
+resolver；异常不会回显源码。其他旧PyYAML用途不变。共享锁包含 `yaml-fixtures.json`，测试
+调用两种真实解析器并比较完整结果。后续官方Devs解析是另一阶段，消费者传入私有项目时仍
+须保持这里确定的类型，不能让第二次解析静默改值。
