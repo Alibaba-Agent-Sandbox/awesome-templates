@@ -23,6 +23,8 @@
 
 - [Current resource paths in existing protocol regressions](notes/proposed/process/2026-11-12-v1-template-test-readers.md) · [verification](evidence/verify/2026-11-12-v1-template-test-readers.md). Actual CI failure preserved; fresh published-a7 local HTTP/budget/cleanup regressions pass without lowering assertions.
 
+- [Bounded observation of HMR diagnostics](notes/proposed/process/2026-11-12-next-hmr-buffered-observation.md) · [verification](evidence/verify/2026-11-12-next-hmr-buffered-observation.md). Actual native-toolchain test preserves both origin checks and exact diagnostic assertion; no runtime change.
+
 ## Recent changes — 2026-11-10
 
 - [Owner change index](notes/proposed/process/2026-11-10-recent-change-index.md) · [records verification](evidence/verify/2026-11-10-recent-change-index.md).
