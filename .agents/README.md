@@ -1,5 +1,17 @@
 # Engineering records: awesome-templates
 
+- [Independent v1 resources and Worker bootstrap ownership](notes/proposed/architecture/2026-11-12-template-v1-independent-resources.md) · [verification](evidence/verify/2026-11-12-template-v1-independent-resources.md). Producer-only increment; combined execution and cloud acceptance remain separate.
+
+- [Resolved Provider validation boundary](notes/proposed/architecture/2026-11-12-template-v1-provider-validation-stage.md) · [verification](evidence/verify/2026-11-12-template-v1-provider-validation-stage.md). Intent expressions remain unevaluated.
+
+- [Additional v1 access ports](notes/proposed/architecture/2026-11-12-template-v1-additional-ports.md) · [verification](evidence/verify/2026-11-12-template-v1-additional-ports.md). Extra ports carry no protocol/readiness promise.
+
+- [Strict v1 local identifier boundaries](notes/proposed/architecture/2026-11-12-template-v1-identifier-boundaries.md) · [verification](evidence/verify/2026-11-12-template-v1-identifier-boundaries.md). Python/JS admission now agrees without limiting native reference IDs.
+
+- [Ordinary public resource names](notes/proposed/architecture/2026-11-12-template-v1-resource-name.md) · [verification](evidence/verify/2026-11-12-template-v1-resource-name.md). Engineering directories do not define public naming exceptions.
+
+- [Shared v1 Core YAML source reader](notes/proposed/architecture/2026-11-12-template-v1-core-reader.md) · [verification](evidence/verify/2026-11-12-template-v1-core-reader.md). Actual dual-parser raw-source parity; native evaluation remains a separate stage.
+
 ## Recent changes — 2026-11-10
 
 - [Owner change index](notes/proposed/process/2026-11-10-recent-change-index.md) · [records verification](evidence/verify/2026-11-10-recent-change-index.md).
@@ -408,3 +420,5 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 
 - [Complete template guidance synchronization](notes/proposed/process/2026-11-12-ecosystem-guidance-sync.md) · [verification](evidence/verify/2026-11-12-ecosystem-guidance-sync.md).
 - [Document engine package pins](notes/proposed/process/2026-11-12-document-engine-package-pins.md) · [verification](evidence/verify/2026-11-12-document-engine-package-pins.md).
+
+- [Inactive canonical template v1 contract](notes/proposed/architecture/2026-11-12-template-v1-contract.md) · [local verification and pending consumer/E2E gates](evidence/verify/2026-11-12-template-v1-contract.md).
