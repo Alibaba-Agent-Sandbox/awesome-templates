@@ -1,21 +1,19 @@
 #!/usr/bin/env python3
 """Validate managed template references. Historical receipts never confer certification."""
 from __future__ import annotations
+from template_application import load_source_document
 
 import argparse
 import json
 import re
 from pathlib import Path
 
-import yaml
-from jsonschema import Draft202012Validator
-
 from check_template import README_EN, README_ZH, PROVIDERS
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SERVICE_FIELDS = {'provides'}
-FIELDS = {'name', 'provider', 'template_id', 'kind', 'documentation', 'historical_evidence', 'spec_version'} | SERVICE_FIELDS
+FIELDS = {'name', 'kind', 'documentation', 'historical_evidence', 'resource', 'registry'}
 
 
 def local_file(root, value):
@@ -30,16 +28,15 @@ def local_file(root, value):
 def check(root=ROOT):
     problems = []
     try:
-        catalog = yaml.safe_load((root / 'awesome-templates.yaml').read_text())
-    except (OSError, ValueError, yaml.YAMLError):
+        catalog = load_source_document(root / 'awesome-templates.yaml')
+    except (OSError, TypeError, ValueError):
         return ['invalid catalog YAML']
-    if not isinstance(catalog, dict) or catalog.get('schema_version') != 2:
-        return ['catalog requires schema_version: 2']
+    if not isinstance(catalog, dict) or catalog.get('schema_version') != 3:
+        return ['catalog requires schema_version: 3']
     rows = catalog.get('managed_templates', [])
     if not isinstance(rows, list):
         return ['managed_templates must be a list']
-    schema = json.loads((ROOT / 'spec/template-v5.schema.json').read_text())
-    validator = Draft202012Validator(schema['properties']['provides'])
+    from template_application import validate_manifest, _profile_module, _VALIDATOR, _REGISTRY_VALIDATOR
     source_names = {item.get('name') for item in catalog.get('templates', []) if isinstance(item, dict) and isinstance(item.get('name'), str)}
     seen = set()
     for index, row in enumerate(rows):
@@ -49,7 +46,19 @@ def check(root=ROOT):
         if not isinstance(row, dict) or set(row) != FIELDS:
             fail('managed fields must match the current template contract')
             continue
-        name, provider = row['name'], row['provider']
+        name = row['name']
+        resource = row.get('resource', {})
+        resource_errors = validate_manifest(resource)
+        for message in resource_errors:
+            fail('resource: ' + message)
+        if resource_errors:
+            continue
+        sandboxes = list(resource.get('sandbox', {}).values())
+        if len(sandboxes) != 1 or resource.get('serving'):
+            fail('managed catalog entry must borrow exactly one Sandbox template')
+            continue
+        sandbox = sandboxes[0]
+        provider = sandbox.get('provider')
         if not isinstance(name, str) or not re.fullmatch('[a-z0-9][a-z0-9-]*', name):
             fail('name must be kebab-case')
             continue
@@ -58,12 +67,24 @@ def check(root=ROOT):
         seen.add(name)
         if not isinstance(provider, str) or provider not in PROVIDERS:
             fail('unknown provider')
-        if row['spec_version'] != 5 or type(row['spec_version']) is not int:
-            fail('managed template requires spec_version: 5')
-        if row['kind'] != 'provider-managed' or not isinstance(row['template_id'], str) or not row['template_id'].strip():
-            fail('managed kind/native template ID required')
-        for error in validator.iter_errors(row['provides']):
-            fail('provides: ' + error.message)
+        native = sandbox.get('template', {})
+        if row['kind'] != 'provider-managed' or not isinstance(native.get('reference'), str) or any(key in native for key in ('buildConfig', 'image')):
+            fail('managed kind/native template reference required')
+        if resource.get('name') != name:
+            fail('resource name differs from catalog identity')
+        metadata_path = local_file(root, row['registry'])
+        if not metadata_path:
+            fail('registry must reference existing publication metadata')
+        else:
+            try:
+                metadata = _profile_module.normalize_registry_v1(load_source_document(metadata_path), resource, _REGISTRY_VALIDATOR, _VALIDATOR)
+                if metadata['name'] != name:
+                    fail('publication identity differs from native resource')
+                for language, value in metadata['readme'].items():
+                    if not local_file(metadata_path.parent, value):
+                        fail('publication README is missing or outside its source')
+            except (OSError, TypeError, ValueError):
+                fail('invalid managed publication metadata')
         doc = local_file(root, row['documentation'])
         if not doc:
             fail('documentation must be an existing local file')

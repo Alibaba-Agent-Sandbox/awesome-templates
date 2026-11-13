@@ -6,11 +6,13 @@ Reports exclude credentials, native resource IDs and command output. The CLI's
 private resource journal owns recovery after an ambiguous launch failure.
 """
 from __future__ import annotations
+from template_application import load_source_document
 
 import argparse
 import asyncio
 import hashlib
 import importlib.metadata
+import importlib.util
 import json
 import os
 import re
@@ -21,7 +23,6 @@ import subprocess
 import tempfile
 import urllib.parse
 
-import yaml
 
 from select_image_templates import ROOT, catalog_names
 
@@ -230,17 +231,18 @@ def load_plan(name, root=ROOT):
     if name not in source_names(root):
         raise ValueError('select an existing source template from the catalog')
     source = root / name
-    manifest = yaml.safe_load((source / 'template.yaml').read_text())
-    if manifest.get('spec_version') == 6:
+    manifest = load_source_document(source / 'template.yaml')
+    from template_application import is_managed_application, validate_manifest, project_manifest
+    if is_managed_application(manifest):
         raise ValueError('managed applications require application deployment acceptance through their Gateway; sandbox named-command launch is not that workflow')
-    cases = manifest.get('smoke') or []
+    projected = project_manifest(manifest, source)
+    cases = projected.get('smoke') or []
     if not cases or any(not isinstance(case.get('command'), str) for case in cases):
         raise ValueError('public launch acceptance needs named smoke cases')
-    from template_application import validate_v5
-    problems = validate_v5(manifest, source)
+    problems = validate_manifest(manifest, source)
     if problems:
         raise ValueError('invalid template launch manifest: ' + '; '.join(problems))
-    return source, manifest, cases
+    return source, projected, cases
 
 
 def json_contains(value, target):
@@ -505,19 +507,33 @@ async def verify(args):
                 report['installed_packages']['template_source_ref'] = public_source_commit
         phase = 'template-launch'
         deploy_attempted = True
-        launch = await asyncio.to_thread(cli.run,
-            ['deploy', args.source or report['source'],
-             '--name', alias, '--build-timeout', str(args.build_timeout), '--sandbox-timeout', '1800', '--yes'],
-            args.build_timeout + 300)
-        require(launch.get('manifest_digest') == 'sha256:' + report['manifest_sha256'],
-                'launched manifest must match the selected local verifier input')
-        require(launch.get('provider') == args.provider, 'selected provider must be retained')
-        report['input_receipt'] = {key: launch.get(key) for key in
-            ['manifest_digest', 'source_digest', 'provider_digest', 'provider_snapshot_digest', 'plan_digest', 'build_profile']}
-        report['checks'].append('unchanged source launched by installed CLI')
+        deployed = await asyncio.to_thread(cli.run,
+            ['deploy', args.source or report['source'], '--name', alias,
+             '--build-timeout', str(args.build_timeout), '--yes'], args.build_timeout + 300)
+        require(deployed.get('status')=='ready','resource deployment readiness')
+        templates=[row for row in deployed.get('resources',[]) if row.get('kind')=='template' and row.get('status')=='ready']
+        require(len(templates)==1 and isinstance(templates[0].get('id'),str),'one prepared template identity')
+        resource_receipt_path=journal_dir.parent/'deployments'/alias/'resources.json'
+        resource_receipt=json.loads(resource_receipt_path.read_text())
+        deployed_source=Path(resource_receipt['source'])
+        require((deployed_source/'template.yaml').read_bytes()==(source/'template.yaml').read_bytes(),
+                'deployed manifest must match the selected local verifier input')
+        require((deployed_source/'run.py').read_bytes()==(source/'run.py').read_bytes(),
+                'deployed application runner must match the selected local verifier input')
+        require(all(row.get('provider')==args.provider for row in resource_receipt['resources']),
+                'selected provider must be retained')
+        report['input_receipt']={'manifest_digest':'sha256:'+report['manifest_sha256'],
+            'runner_sha256':hashlib.sha256((source/'run.py').read_bytes()).hexdigest()}
+        report['checks'].append('unchanged source prepared by installed CLI and standalone business runner')
+        runner_spec=importlib.util.spec_from_file_location('public_template_runner',deployed_source/'run.py')
+        require(runner_spec is not None and runner_spec.loader is not None,'standalone business runner is available')
+        runner=importlib.util.module_from_spec(runner_spec);runner_spec.loader.exec_module(runner)
+        phase='application-startup'
+        launch=await runner.launch(argparse.Namespace(template=templates[0]['id'],provider=args.provider,
+            timeout=1800,ready_timeout=120,session=str(cli.private_directory/'application-session.json')),environ=env)
         phase = 'sdk-connect'
         sandbox = await ProviderSandbox.connect(launch['sandbox_id'], provider=args.provider)
-        require(sandbox.id == launch['sandbox_id'], 'connected sandbox must match the owned CLI launch')
+        require(sandbox.id == launch['sandbox_id'], 'connected sandbox must match the owned application startup')
         phase = 'command-discovery'
         discovered = await asyncio.to_thread(cli.run, ['sandbox', 'command', 'list', sandbox.id])
         require(isinstance(discovered, list) and bool(discovered) and all(
@@ -642,8 +658,10 @@ async def verify(args):
                     journals.append(data)
             entries = [entry for journal in journals for entry in journal.get('entries', [])]
             ids = {entry['id'] for entry in entries if entry['kind'] == 'sandbox' and entry.get('id')}
-            if launch:
-                ids.add(launch['sandbox_id'])
+            session_path=cli.private_directory/'application-session.json'
+            session=json.loads(session_path.read_text()) if session_path.is_file() else {}
+            if session.get('sandbox_id'):ids.add(session['sandbox_id'])
+            if launch:ids.add(launch['sandbox_id'])
             cleanup_failed = public_cleanup_failed
             for sid in ids:
                 try:
@@ -657,13 +675,19 @@ async def verify(args):
             cleanup_failed = cleanup_failed or prepared_failures > 0
             pending = [entry for entry in entries if entry['kind'] != 'sandbox' and entry.get('state') != 'deleted' and entry['intent_id'] not in prepared_done]
             unknown = [entry for entry in entries if entry.get('state') in {'intent', 'uncertain'}]
+            receipt_path=journal_dir.parent/'deployments'/alias/'resources.json'
+            if receipt_path.is_file():
+                resource_state=json.loads(receipt_path.read_text())
+                pending.extend(row for row in resource_state['resources'] if row.get('owned') and row.get('status')!='deleted')
+                unknown.extend(row for row in resource_state['resources'] if row.get('status')=='pending')
+            if session and not session.get('sandbox_id'):unknown.append({'kind':'sandbox'})
             report['cleanup']['prepared_artifacts'] = 'retained in private CLI journal' if pending else ('confirmed absent' if prepared_done else 'none observed')
             report['cleanup']['artifact_cleanup_failures'] = prepared_failures
             report['cleanup']['retained_artifact_count'] = len(pending)
             report['cleanup']['uncertain_count'] = len(unknown)
             # A successful application test cannot silently certify registry/template cleanup.
             if report.get('application_result') == 'PASS' and not cleanup_failed:
-                report['result'] = 'PARTIAL' if pending or unknown or not journals else 'PASS'
+                report['result'] = 'PARTIAL' if pending or unknown or not receipt_path.is_file() else 'PASS'
         close_errors = await cleanup_before_close(release_resources, client, sandbox)
         if close_errors:
             report['result'] = 'FAIL'

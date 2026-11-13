@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+- Replace the unreleased YAML candidate with named Sandbox/Serving resources, Dockerfile-or-steps builds, native FC props and optional Registry initialization parameters. Ordinary templates now use standalone SDK startup scripts with private generated application tokens; deployment prepares reusable resources. / 未发布 YAML 方案调整为命名 Sandbox/Serving 资源、Dockerfile 或 steps 构建、原生 FC props 和可选 Registry 初始化参数；普通模板使用独立 SDK 脚本启动应用并自动生成私有令牌，部署负责准备可复用资源。
+
 - Acquire the agents-api Serving project with template init, clarify required host business-check dependencies and private bindings, and identify its Python HTTP client accurately. / agents-api 使用 template init 获取项目，明确宿主机业务检查依赖及私有 bindings，并将 Python 接入如实标为 HTTP 客户端。
 
 - Complete catalog-wide CLI guidance review, root discovery and source recipe comments. / 补齐全目录 CLI 用法检查、首页发现入口及配方注释。

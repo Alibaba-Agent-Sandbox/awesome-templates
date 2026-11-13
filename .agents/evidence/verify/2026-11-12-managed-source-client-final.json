@@ -1,0 +1,27 @@
+{
+  "result": "PASS",
+  "repository": "https://github.com/Alibaba-Agent-Sandbox/python-sdk",
+  "revision": "c550cf53a9eb0c3c9899d0336b924633eb9b0988",
+  "archive": {
+    "archive_info": {
+      "hash": "sha256=e5c8c5b1d4deef7a49f720a4e42cfca709652551fc379e1f7b1f7dec00e1afe9",
+      "hashes": {
+        "sha256": "e5c8c5b1d4deef7a49f720a4e42cfca709652551fc379e1f7b1f7dec00e1afe9"
+      }
+    },
+    "subdirectory": "client-sdk",
+    "url": "https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/c550cf53a9eb0c3c9899d0336b924633eb9b0988.tar.gz"
+  },
+  "distribution_version": "0.4.0a7",
+  "python": "3.13.13",
+  "checks": [
+    "actual immutable official archive wheel build/install with managed-agents extras",
+    "ManagedConfig fields and single TTL derivation",
+    "Worker private environment validation",
+    "literal v1 compiler and additional-port union",
+    "Managed runtime entry module import"
+  ],
+  "cloud": false,
+  "image_build": false,
+  "release": false
+}

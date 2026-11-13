@@ -1,23 +1,11 @@
-# 提供方负责的模板准备
+# Provider 负责的模板准备
 
-可移植输入是源码目录。注册模板 ID、镜像 URI 和启动引用属于具体提供方、账号和地域，不能跨云转换。[English](provider-preparation.md)。
+[English](provider-preparation.md)
 
-## 准备职责
+每个 `sandbox.<名称>` 指定一个 Provider；`template` 属性按其合同校验。模板 ID、镜像 URI 及卷属于特定 Provider、账号和地域，不能直接跨云转换。Express 地域保留在 `template.region`，同级静态卷采用该地域。
 
-清单声明一个启动命令和 `provides` 中的全部服务。规划器根据启动与服务推导实际需要的 Provider 操作，作者无需声明工作流。Provider 成熟度与实际启动是否验证相互独立。
+`buildConfig` 选择 Dockerfile/context 或原生 steps。Dockerfile 分支构建镜像，有 `image` 时向该地址推送；steps 分支将 `image` 作为输入并准备平台模板，不承诺导出完成后的 OCI 镜像。省略 buildConfig 且填写 image 时直接使用该镜像；reference 借用已有模板。
 
-源码准备由对应 adapter 构建、推送并按平台协议注册。CLI 在临时构建目录解析官方配方的 `<region>`/`<tag>`，Dockerfile 直接安装固定的已发布服务端包。应用指令、非 root USER 和源码文件不变；其他未解析占位符在构建前报错，自定义基础镜像使用显式构建方案。应用部署 hooks 与沙箱启动分开，由对应的显式应用部署操作执行。
+仓库认证、证书及拉取网络可用 `registryConfig` 覆盖。可推导的仓库类型和普通 Linux 系统类型由适配器处理。仓库实例身份无法可靠识别时应明确失败并指导配置，不猜测实例 ID。Dockerfile 中安装依赖不等于创建卷、挂载或授予权限。
 
-## 路径条件
-
-模板的 Python、命名服务和软件由镜像提供。应用 HTTP 路径不依赖统一解释器。普通 exec、模板服务和统一解释器必须分别声明和检查；缺少上下文或实时流支持时明确拒绝，不能忽略参数或降级 shell。
-
-E2B、Cube 和容器版使用平台托管引用，不能将 OCI image 当模板 ID。OpenSandbox 使用镜像及 execd，当前不承诺执行镜像原生 ENTRYPOINT。Python 统一入口 `launch_template(...) -> TemplateSession` 不构建 Registry 源码项目，调用方需传入已准备的平台镜像或托管引用。
-
-准备、配置、权限、网络和协议故障分别报告。平台凭据与模板应用凭据隔离，端点必须属于本次 sandbox 和 port；不自动重定向或匿名重试。
-
-## 资源和验收
-
-推送、注册和创建请求前先持久写 intent，成功后记录返回 ID；未知响应不能盲重试。仅清理本轮拥有的资源。镜像或原生模板没有已实现的删除协议时，报告保留项和人工恢复信息，不能宣称完全清理。
-
-项目验证仅由可信 CI 收据推导，绑定精确输入、实际消费入口和网络位置。作者字段不能认证，历史 guest/bridge 通过不能认证统一 launch。参见[启动契约与证据](workflows.zh-CN.md)、[调用指南](using-templates.zh-CN.md)和[step 指南](platform-steps.zh-CN.md)。
+Provider 能力不足应在操作前报错，不能静默忽略字段或自动换 Provider。其他 Provider 必须使用自己的字段，不直接套用 Express 配置。动态实例启动见[运行环境](runtime-environment.zh-CN.md)，静态部署见[资源规范](template-spec.zh-CN.md)。

@@ -20,5 +20,18 @@ WORKDIR /home/user/app
 COPY --chown=user:user commands.py .
 RUN mkdir -p /home/user/workspace /home/user/.codex \
     && chown -R user:user /home/user/app /home/user/workspace /home/user/.codex
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV OPENAI_API_KEY="" \
+    CODEX_API_KEY="" \
+    ABX_LLM_API_KEY="" \
+    OPENAI_BASE_URL="" \
+    ABX_LLM_BASE_URL="" \
+    CODEX_MODEL="" \
+    CODEX_HOME="/home/user/.codex" \
+    CODEX_SANDBOX="workspace-write" \
+    AGENT_MAX_SESSIONS="20" \
+    AGENT_SESSION_TTL="1800" \
+    WORKSPACE="/home/user/workspace" \
+    ABX_SERVER_TOKEN=""
 USER user
 EXPOSE 9000

@@ -1,178 +1,100 @@
-# 模板开发、上架与验收
+# 模板 YAML v1 规范
 
-这是本仓库模板的规范。[docs/template-spec.md](./template-spec.md) 是同一份内容的英文版。两份不一致时，以英文版为准。
+[English](template-spec.md)
 
-`docs/acceptance.md` 只保留指向这里的入口。`_skeleton/` 是符合本规范的目录示例，不是目录条目。
-
-后续模板工作依赖的工具：
-
-| 工具 | 作用 |
-|---|---|
-| `scripts/check_template.py` | 静态检查。目录符合本规范时退出码为 0。 |
-| `scripts/public_launch_e2e.py` | 已安装 CLI 源码启动、宿主 CLI/Python/HTTP smoke，以及 Express/OpenSandbox 自有资源独立清理。 |
-| `scripts/run_local_e2e.py` | 对每个带 `commands.py` 和 `e2e_test.py` 的目录做 L0，并运行检查器。 |
-| `scripts/image_size_report.py` | 打印本地镜像每一层的大小（`docker history`）。 |
-
-项目治理与完成条件见[项目规范](project-standards.zh-CN.md)，写作与翻译要求见
-[文档规范](documentation-standards.zh-CN.md)。
+`template.yaml` 声明要准备和部署的资源。此格式需要匹配的开发版 CLI；已发布 CLI 0.5.10 未实现该规范。
 
 ## 目录布局
 
-一个模板是仓库根目录下的一个目录。目录名、`template.yaml` 的 `name`、`awesome-templates.yaml` 里的 `path` 是同一个字符串。产品名符合 `^[a-z0-9][a-z0-9-]*$`。下划线目录只有 `_skeleton`，它不会被安装。
-
-```
-<name>/
-├── template.yaml
-├── Dockerfile
-├── commands.py
-├── e2e_test.py
-├── README.md
-├── README.zh-CN.md
-└── evidence/                 # 按日期保存尝试，通过回执单独保留
-    └── express-<YYYY-MM-DD>.json
-docs/design/<name>.md         # 每个产品模板都要有
-```
-
-| 文件 | 内容 |
-|---|---|
-| `template.yaml` | 下面的 schema。 |
-| `Dockerfile` | 阿里云基础镜像、钉死的安装、`WORKDIR /home/user/app`、`USER user`。不写 `CMD` 或 `ENTRYPOINT`。 |
-| `commands.py` | `@command` 函数。`start()` 只出现在 `if __name__ == "__main__"` 里。 |
-| `e2e_test.py` | 本地冒烟。读取 `E2E_BASE_URL`。 |
-| `README.md` | 英文章节，见下表。 |
-| `README.zh-CN.md` | 同样的章节，中文。 |
-| `docs/design/<name>.md` | 事前分析。从 [docs/design/_TEMPLATE.md](./design/_TEMPLATE.md) 复制。 |
-| `evidence/*.json` | 脱敏机器记录。提供方／日期资格文件必须运行及独立清理通过；失败尝试使用单独的 attempt 文件名保存，不作为提供方通过。 |
-
-提供方内置运行时以托管目录引用表示，不复制成源码配方；保留其提供方身份与实际使用契约，见下文托管条目。
+资源和值写在 `template.yaml`，镜像安装步骤写在 Dockerfile，业务行为写在源码。可选 `registry.yaml` 提供上架信息和初始化表单。本地运行不会重新读取 Registry 默认值。
 
 ## template.yaml
 
 ```yaml
-name: my-template
-version: "1.0.0"
-description: "一句话。"
-author: "github-handle"
-license: Apache-2.0
-spec_version: 5
-
-base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
-generation: 2
-start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
-ready_cmd: "agent-sandbox-server healthcheck --port 9000"
-
-resources:
-  cpu: 2          # vCPU
-  memory: 2048    # MB
-
-ports:
-  - 9000
-
-tags: [example]
-priority: P2      # P0、P1 或 P2
-wave: other       # 1、2、3 或 other
-
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations: [commands.list, commands.run]
-env:
-  SOME_API_KEY: ""
-
-smoke:
-  - command: hello
-    args:
-      name: Express
-    expect: "Hello, Express!"
+specVersion: 1
+name: python-hello
+vars:
+  location: cn-hangzhou
+sandbox:
+  agent:
+    provider: alicloud-express
+    template:
+      region: ${vars.location}
+      buildConfig:
+        dockerfile: ./Dockerfile
+      generation: 2
+      cpu: 2
+      memorySize: 2048
+      startCommand: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+      readyCommand: agent-sandbox-server healthcheck --port 9000
 ```
 
-| 字段 | 规则 |
-|---|---|
-| `name` | 与目录名相同。 |
-| `description`、`version`、`author`、`license` | 非空字符串。 |
-| `spec_version` | 整数 `5` 选择既有 Sandbox 契约，整数 `6` 选择下述托管会话应用契约；旧版及未知版本明确拒绝。 |
-| `base` | 字符串。占位符 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>`，或钉死的 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:vX.Y.Z`。不是 mapping。 |
-| `generation` | 整数 `2`。 |
-| `start_cmd` | 版本 5 使用 `agent-sandbox-server serve` 和镜像里的 `commands.py` 路径；版本 6 的托管桥接只使用下述精确模块入口。 |
-| `ready_cmd` | `agent-sandbox-server healthcheck`，并带上端口。 |
-| `resources.cpu` | 正整数，单位 vCPU。 |
-| `resources.memory` | 正整数，单位 MB。 |
-| `env` | mapping。以 `API_KEY`、`SECRET`、`TOKEN`、`PASSWORD`、`CREDENTIAL` 或 `PRIVATE_KEY` 结尾的键，值必须是空字符串。 |
-| `ports` | 包含 `9000`。 |
-| `tags` | 非空字符串列表。 |
-| `priority` | `P0`、`P1` 或 `P2`。模板已经在 `docs/template-backlog.json` 里时，与那里的优先级一致。 |
-| `wave` | `1`（整份产品能在极速版跑）、`2`（文中写明的切片）、`3`（工作负载要别的提供方）、或 `other`。 |
-| `provides` | 模板提供的全部服务，包含协议、版本、端口与操作；启动后返回全部声明端点，无需选择工作流。 |
-| `smoke` | `{command, args, expect}` 列表，由 `scripts/public_launch_e2e.py` 执行。`args` 的键是命令参数。可选的字符串 `expect` 在去掉首尾空白后比较；没有 expect 时，成功非空响应只证明调用链。 |
-
-`deploy` 准备模板、创建沙箱、执行 `start_cmd`，执行 `ready_cmd` 并解析全部声明服务的端点。内置 server v2 协议额外检查健康及已声明的命令发现；其他协议提供端点，解析出 URL 不代表其协议已验证。
-注册命令和工具在启动后可用；需要业务参数的任务按需调用，不会逐个自动执行。
-从准备好的引用另建实例，不会继承原实例的运行进程。
-
-命名命令不写在 `template.yaml` 里，在 `commands.py` 注册。
-
-## 可选应用部署（规范版本 5）
-
-所有输入使用封闭的 [spec/template-v5.schema.json](../spec/template-v5.schema.json)。
-`application` 可省略；存在时保留原部署拓扑、hooks、持久状态和非空 smoke 期望语义。
-模板启动与 application 应用部署是独立操作，两者不能互相替代。
-未知字段、旧版本和非法拓扑组合检查失败，不提供旧版兼容。
-
-`template.yaml` 是唯一用户配置入口，不增加 `agent-app.yaml`。
-应用部署由显式 CLI 操作触发；安装模板、导入模块、构建 sandbox 镜像和
-`ProviderSandbox.create()` 都不执行应用 hooks 或部署 FC 函数。Sandbox provider 与应用
-部署 adapter 保持独立接口。
-
-已做语法检查的[本地示例](examples/application-local/template.yaml)描述现有
-`agents-cli` 本地 API profile，不代表新镜像验收或持久托管服务。
-[外部示例](examples/application-external/template.yaml)演示内嵌 Serverless Devs 项目；
-组件版本、角色、镜像、数据库和身份绑定必须在部署前解析并审查。
-这些文件不是云端通过证据，也不是可安装的目录条目。
-
-| Application 字段 | 契约 |
+| 字段 | 含义 |
 | --- | --- |
-| `runtime` | `placement: external` 需要 `driver: python-remote-tools`，不能写本地 profile。`in-sandbox` 需要 `driver: sandbox-local-api`，profile 为 `server-core-agents`。Profile 不证明全部本地接口已开放。 |
-| `gateway` | `placement: fc-web` 表示外部网关；`client-direct` 仅适用于 sandbox 内 runtime。 |
-| `deployment` | 直连只能是 `{adapter: none}`。FC 需要 `adapter: serverless-devs-fc3`、`accessRef`、`toolchainLock`，以及 `inline`、`project` 二选一。Access 引用是名称，不是凭据。 |
-| `deployment.inline` | Serverless Devs v3 mapping，包括 `edition: "3.0.0"`、`name`、`resources`。资源键限 `gateway`、`worker`、`dispatcher`；外部 runtime 三者都必需。每项包含精确 `component: fc3@X.Y.Z`、非空 `props`，可选 `actions`。Adapter 提取 mapping 生成冻结的 `s.yaml`，用户无需再维护一份 YAML。Schema 不验证 FC 属性、组件可用性、IAM 或实际代码。 |
-| `deployment.project` | 高级替代方式：手写且已审查的 Serverless Devs 项目的相对路径。完整引用源码树都属于部署输入。 |
-| `deployment.toolchainLock` | 部署工具版本及完整性锁的相对路径。JSON lock 的格式与验证执行属于 CLI adapter，不属于模板检查器。 |
-| `sandbox` | Provider 名称、`lifetime: per-run`、`workspace: exclusive`、非空 `requiredFeatures`。两种模式都需要 `sandbox.lifecycle`；外部还需 `exec.run`、`files.rw`，sandbox 内还需 `ports.url`。能力声明不证明 provider 已支持，也不授予运行权限。 |
-| `state` | 外部网关需要 `profile: durable`，`bindingRef` 必须指向 `bindings` 的键。客户端直连只能是 `{profile: ephemeral}`。 |
-| `bindings` | 逻辑名称到凭据或服务引用名称的 mapping，不得写密钥、连接串或签名 URL。直连模式允许为空。 |
-| `limits` | 正整数 `maxRunSeconds`、`maxToolSeconds`、`maxConcurrentRuns`、`maxQueuedRuns`、`maxRunsPerMinute`；`maxEventsPerRun >= 5`、`maxOutputBytes >= 1024`。工具预算不能超过任务预算。实际限制由 runtime 执行，检查器不实现准入控制。 |
-| `hooks` | 可选 `beforeApply`、`afterReady` 列表，每阶段最多八项。直连本地模式没有部署 hooks，其他阶段名拒绝。 |
+| `specVersion` | 整数 `1`。 |
+| `name` | 项目名称，1–63 个小写 ASCII 字母、数字和连字符。 |
+| `vars` | 可选、完全由作者命名的复用值；没有保留镜像变量名，也可直接写字面值。 |
+| `sandbox.<名称>` | 命名 Sandbox 资源，包含 Provider、模板、可选静态卷和资源动作。 |
+| `sandbox.<名称>.template` | Provider 属性；Express 使用 `region`、`image`、`generation`、`cpu`、`memorySize`、`diskSize`、网络、日志、仓库和模板原生命令。 |
+| `sandbox.<名称>.template.reference` | 借用已有原生模板。只可同时填写地域 `region`；不更新或删除借用资源。 |
+| `sandbox.<名称>.volumes` | 命名静态卷。`props` 创建拥有卷，`reference` 借用已有卷，`retain: true` 在移除时保留拥有卷。卷共用 `template.region`。 |
+| `serving.<名称>` | 原生组件标识、`props` 和可选资源动作。 |
 
-每个 hook 包含全局唯一 `id`、`executor: host-command`、argv 数组、相对 `cwd`、
-`1..900` 的 `timeoutSeconds` 和环境变量名称 `envAllowlist`。
-部署 adapter 在主机/CI 执行已审查的 argv 并限制输出；检查器只读取配置。
-`beforeApply` 只验证冻结输入，不能重新构建或修改产物；`afterReady` 在发布前验证候选。
-它们不是 sandbox 启动 hooks。Serverless Devs 原生 actions 与表达式也是可执行代码，
-需要审查；构建步骤在部署计划冻结前完成。
+Sandbox 与 Serving 逻辑名全局唯一。不接收 `access`、`application`、`deployment`、用户自定义 `outputs`、`instance`、`runtimeConfig`、`sandboxConfig` 或通用 `build`/`builds`。凭据复用现有配置。CPU/内存组合、地域和账号准入仍由 Provider 校验；未填写的 API 属性不会被猜测默认值填充。
 
-路径必须是相对路径，不含反斜杠、控制字符或 `..` 段，解析后必须位于模板目录内。
-引用的 project、lock 文件与 hook 工作目录必须存在；拒绝符号链接越界。
-检查器不将 hook argv 当作 shell 字符串执行。
+完整类型见[嵌套字段表](template-fields.zh-CN.md)和[Schema](../spec/template-v1.schema.json)。
 
-使用 `python -m pip install -r scripts/requirements-spec.txt` 安装固定检查依赖，
-然后运行检查器与 `scripts/test_spec_tools.py`。下文 runtime、镜像、提供方与模型验收
-仍独立适用；schema 有效不能认证启动或提升目录状态。
+## 构建来源与镜像语义
 
-## 托管会话应用部署（规范版本 6）
+`buildConfig` 只有两种互斥分支：`dockerfile` 配可选 `context`，或者 `steps`。不接受空对象或单独 `context`。路径相对 `template.yaml` 所在目录；省略 `context` 时使用 Dockerfile 所在目录。整段省略时不会扫描并自动构建本地 Dockerfile。
 
-版本 6 使用独立封闭的 [spec/template-v6.schema.json](../spec/template-v6.schema.json)，选择 `fc-managed-agents` 应用 profile。现有版本 5 模板保持原义，不自动获得托管部署行为。配置仍只写同一份 `template.yaml`；profile 展开为有归属记录的部署资源，不接受任意工作流语言。完整字段和使用边界见[托管应用参考](managed-agent-applications.zh-CN.md)（[English](managed-agent-applications.md)）。
+| 配置 | 结果 |
+| --- | --- |
+| 只有 `image` | 使用已有镜像准备模板。 |
+| `image` 与 `buildConfig.dockerfile` | 构建并推送到该镜像地址，再准备模板。未填地址时必须由已有构建配置提供目的仓库。 |
+| `image` 与 `buildConfig.steps` | 以该镜像为输入执行原生模板步骤，结果是模板 ID；不承诺把步骤后的 OCI 镜像导出并推回输入地址。 |
+| `reference` | 复用已有模板，不构建或更新。 |
 
-模板类型由显式 `application.deployment.profile` 决定，`spec_version` 只选择支持的校验契约。仅声明版本 6 不会获得部署能力。`fc-managed-agents` 的固定 API、运行时、Gateway、生命周期、存储后端、输出和 binding 角色来自[共享默认值](../contracts/application-profile/profiles.json)。作者可省略这些字段；显式冲突仍校验失败。消费者先补齐缺失字段，再校验和执行。提供方、凭据引用、地域、镜像、资源大小及可配置预算仍需显式填写。
+原生步骤为 `type: USER|WORKDIR|ENV|RUN` 和 `args: string[]`。ENV 按键值成对填写；USER 接受用户名及可选布尔字符串 sudo 标志；RUN 接受命令及可选执行用户。运行秘密不能放进镜像 ENV 或模板构建步骤。
 
-版本 6 明确使用 `in-sandbox`、`sandbox-local-api`、`managed-bridge-v1`，私有协议为 `agent-sandbox-managed-bridge/v1`，不开放旧核心 Agents 路由或命名命令。精确启动入口为 `python -m agent_sandbox.server.managed --port 9000`，就绪检查仍是 `agent-sandbox-server healthcheck --port 9000`。阿里云基础镜像、generation 2、非 root、已发布依赖精确钉和路径边界仍适用。
+Express 的 `registryConfig` 按需覆盖拉取认证、TLS 和仓库网络。不需要时整段省略。普通 Linux 和可识别的 ACR 镜像无需重复填写 `osType`、仓库类型或 ACR 实例。存储客户端由 Dockerfile 或基础镜像准备；安装不等于创建卷、挂载或授权。必要镜像复制和注入由 Provider 承接，不再暴露第二套高级构建配置。
 
-版本 6 的根级 `smoke` 使用 `operation: health` 或 `operation: capabilities` 和非空 `expect`，不虚构命名命令。安装兼容的 Server SDK 后，L0 使用独立状态、工作区和生成的本地 token 启动实际声明的 bridge。静态检查不会安装或执行托管运行时。完整业务通过部署后的 Gateway 验证；bridge 健康或 `commands.py` 诊断都不能证明 Agent 任务完成。
+## Serving 与动作
 
-托管应用要求独占 `per-session` Sandbox、持久状态、角色限定的 binding 引用、有限预算和明确的 close/delete 语义。Server 必须选择摘要固定的 `serverImage` 或模板上下文内的 `serverBuildRecipe`，二者互斥；构建及产物固定在部署计划冻结前完成。hooks 仅做有界 custom 检查或已有 profile step 的 `serverless-devs info` 查询，不能建立无记录资源。
+```yaml
+serving:
+  api:
+    component: serverless-devs/fc3@0.1.26
+    actions:
+      pre-deploy:
+        - component: serverless-devs/fc3@0.1.26 build --dockerfile ./server/Dockerfile --context ./server
+    props:
+      region: cn-hangzhou
+      functionName: sandbox-api
+      runtime: custom-container
+      code: ./server
+      customContainerConfig:
+        image: registry.example/project/api:release-1
+        port: 9000
+      environmentVariables:
+        SANDBOX_TEMPLATE_ID: ${resources.agent.output.templateId}
+```
 
-该 profile 的 README 使用实际 Gateway 任务：CLI 用 `abx deploy` 部署，Python/HTTP 以业务凭据访问 Gateway，不要求业务调用者连接 `ProviderSandbox` 或使用 `abx sandbox command run`。后述标题和用户文档边界不变。
+示例镜像地址是占位符，须改成自己有推送权限的仓库。`serverless-devs/` 前缀选择组件执行适配器，原生 `fc3@0.1.26` 决定 `props`。FC 的 build 与 deploy 推送行为不同；引用已构建远端镜像应走组件支持的跳过推送路径，不能仅删除构建动作就认为不会推送。
+
+动作在部署发起端执行。`run` 执行 Shell，`component` 在当前资源上下文调用原生组件命令，可选 `path` 指定工作目录。`pre-deploy` 在资源部署前，`success-deploy` 在资源就绪后，`fail-deploy` 在失败时，`complete-deploy` 在两种结果后执行。Sandbox 成功需查询模板就绪，不能仅收到构建请求受理就成功。输出引用确定依赖顺序，未知资源和循环引用在部署前失败。
+
+## 模板与动态实例
+
+部署准备可复用模板和静态卷。业务代码、SDK 或 `abx sandbox create --template <template-id>` 创建实例并选择运行环境变量、租期和挂载。`startCommand` 与 `readyCommand` 保留模板准备/快照阶段原生语义，不是每个动态实例的钩子。恢复的预热进程不会自动重新读取创建时环境变量。应用启动与模型凭据见[运行环境指南](runtime-environment.zh-CN.md)。
+
+镜像默认值是普通 Dockerfile ENV；空凭据名称不含秘密。运行时私有值需在创建实例时或通过业务运行时显式注入。端口声明、进程监听、网络访问和业务协议分别配置，声明端口不等于公开或认证业务 API。
+
+## 配置与上架
+
+使用单个 JSON 兼容 YAML 1.2 Core 文档，键为字符串，不允许重复键、别名或自定义标签，UTF-8 最大 1 MiB。静态目录工具不求值 `${env('NAME')}`、`${vars.key}` 或资源输出表达式。
+
+可选 `registry.yaml` 包含 `specVersion`、`name`、`version`、双语 `description`、`author`、`license`、`tags`、双语 `readme` 和 `parameters`。每个参数用 JSON Pointer `target` 指向实际配置值，并提供双语 `title`。敏感参数另设 `environmentVariable`，目标必须对应 `${env('NAME')}`。初始化修改实际本地值或私有来源；之后运行只依赖 `template.yaml` 和它显式引用的来源。
 
 ## 阿里云基础镜像
 
@@ -276,7 +198,7 @@ if __name__ == "__main__":
 
 `/health` 不要求 server token；提供方网关仍可能认证该请求。health 成功不证明命名命令认证或模型配置正确。
 
-以下命名命令认证规则适用于 spec5；managed6 bridge 必须提供生成的令牌，不允许匿名托管操作。进程启动时读取 `ABX_SERVER_TOKEN`。变量非空时，受保护的请求需要带 `Authorization: Bearer <token>` 或 `X-Access-Token: <token>`。在 `env` 里声明这个名字，值为空字符串。真正的值必须在服务进程启动前传入。创建时注入（`abx deploy --template-id --env` 或 `ProviderSandbox.create(envs=...)`）仅适用于提供方实际使用这些值启动服务的情况，不能重新配置预热进程。使用统一模板启动入口配置并启动声明的服务，再用 SDK 连接已运行的应用；参见[运行环境配置](runtime-environment.zh-CN.md)。
+应用在进程启动时读取 `ABX_SERVER_TOKEN`，受保护请求使用 `Authorization: Bearer <token>` 或 `X-Access-Token: <token>`。普通模板通过 `run.py` 生成或接收令牌，创建实例并显式启动应用，再验证带认证的命令发现。凭据不写入模板准备命令或镜像层。见[运行环境配置](runtime-environment.zh-CN.md)。
 
 变量未设置时应用允许匿名调用；提供方网关认证仍单独处理。客户端保留提供方的网关访问头，把显式应用令牌放入 `Authorization: Bearer <token>`，并在同名头未被占用时补充已有应用 `X-Access-Token` 头。认证失败会直接返回，不会自动匿名重试。设置 `ABX_SERVER_TOKEN` 的模板必须说明：项目 Python API 使用 `await sb.application_client(port, token=...)`，CLI 命名命令使用 `ABX_SERVER_TOKEN`。
 
@@ -319,7 +241,7 @@ asyncio.run(main())
 ```
 
 `client.commands.run` 把关键字参数作为 `POST /commands/hello` 的 JSON 正文并返回 `result`；
-`sb.commands.run` 是进程 API。关闭连接不会删除沙箱；用完执行 `abx delete <sandbox-id>`
+`sb.commands.run` 是进程 API。关闭连接不会删除沙箱；用完执行 `abx sandbox delete <sandbox-id> --yes`
 删除自己创建的实例，并另行核对准备的模板和镜像。验收记录源码提交及实际安装版本。
 
 本地 L0 不创建云沙箱。`scripts/run_local_e2e.py` 启动 `python3 commands.py`，设置 `E2E_BASE_URL`，再运行 `e2e_test.py`。该测试可以对 `E2E_BASE_URL` 发 HTTP。云验收必须调用实际选定的 CLI/SDK/HTTP 入口。
@@ -387,7 +309,7 @@ Express 历史回执使用 `evidence/express-<date>.json` 或 `evidence/alicloud
 ## 安全
 
 - 密钥的值不进入镜像、`template.yaml`、Docker 历史或证据 JSON。
-- `env` 只声明名字和空字符串。真正的值在使用它的进程启动前明确传入；创建请求不能更新已有进程。
+- 创建实例时的 `envs` 只声明名字和空字符串。真正的值在使用它的进程启动前明确传入；创建请求不能更新已有进程。
 - 日志和报告不包含秘密或原生资源标识。公开运行器私下保留原始子进程诊断，只导出受控检查标签、稳定错误码和数值 HTTP 状态。
 - 不要提交 `.env`、云凭证或 `Dockerfile.abx-build`。
 
@@ -410,11 +332,11 @@ Express 历史回执使用 `evidence/express-<date>.json` 或 `evidence/alicloud
 | Issues | 问题反馈 |
 | License | 许可证 |
 
-托管 spec6 应用将 Python SDK 标题替换为 `Quick start (Python HTTP client)` / `快速开始（Python HTTP 客户端）`，如实展示使用 `httpx` 调用 Gateway；当前不提供专用 Gateway 客户端 SDK。
+托管 Managed Agents API 应用将 Python SDK 标题替换为 `Quick start (Python HTTP client)` / `快速开始（Python HTTP 客户端）`，如实展示使用 `httpx` 调用 Gateway；当前不提供专用 Gateway 客户端 SDK。
 
 启动前区分所需平台凭据、应用令牌和模型凭据，并写清模板实际读取的模型、endpoint、API Key 或产品登录配置；不臆造通用于所有上游工具的变量映射。
 
-spec6 使用显式 `abx deploy` 部署及 Python `httpx` 访问统一 Gateway，列出公开 API 和托管 close/delete 清理。以下客户端要求适用于 spec5。CLI 一节要有 `abx sandbox command run` 示例。SDK 一节导入 `ProviderSandbox`，通过 `application_client` 获取应用客户端，并调用 `client.commands.run`。命令参考是带参数的表。非阿里云基础镜像再加 `## Base image` / `## 基础镜像`。
+Managed Agents API 使用显式 `abx deploy` 部署及 Python `httpx` 访问统一 Gateway，列出公开 API 和托管 close/delete 清理。以下客户端要求适用于 ordinary Sandbox templates。CLI 一节要有 `abx sandbox command run` 示例。SDK 一节导入 `ProviderSandbox`，通过 `application_client` 获取应用客户端，并调用 `client.commands.run`。命令参考是带参数的表。非阿里云基础镜像再加 `## Base image` / `## 基础镜像`。
 
 ## 上架与验收
 
@@ -482,32 +404,14 @@ python3 scripts/check_template.py _skeleton
 python3 scripts/check_template.py --all
 ```
 
-`--all` 检查根目录下所有包含 `template.yaml` 的目录，包括 skeleton。每份清单必须显式填写受支持的 `spec_version`，缺失、格式错误及未知版本均失败。目录索引必须声明 `schema_version: 2`。CI 和 `scripts/run_local_e2e.py` 使用同一项完整检查，任一违规都会导致失败。
+`--all` 检查根目录下所有包含 `template.yaml` 的目录，包括 skeleton。每份清单必须显式填写受支持的 `specVersion: 1`，缺失、格式错误及未知版本均失败。目录索引必须声明 `schema_version: 3`。CI 和 `scripts/run_local_e2e.py` 使用同一项完整检查，任一违规都会导致失败。
 
-违规代码包括 `required-file`、`readme-section`、`base-image`、`dockerfile-cmd`、`dockerfile-user`、`yaml-field`、`commands-start`、`verified-evidence`、`pinned-version`、`readme-client`、`secrets`。`RUN` 上两种服务端钉都没有时，`pinned-version` 失败。spec_version 4 的 SDK 章节没有写 `agent-sandbox-client`，或 README 让读者 `pip install agent-sandbox` 时，`readme-client` 失败。
+违规代码包括 `required-file`、`readme-section`、`base-image`、`dockerfile-cmd`、`dockerfile-user`、`yaml-field`、`commands-start`、`verified-evidence`、`pinned-version`、`readme-client`、`secrets`。`RUN` 上两种服务端钉都没有时，`pinned-version` 失败。普通 Sandbox 模板的 SDK 章节没有写 `agent-sandbox-client`，或 README 让读者 `pip install agent-sandbox` 时，`readme-client` 失败。
 
 ## 原生部署维护
 
-原生云准备使用[平台步骤](platform-steps.zh-CN.md)：准备空闲 provider 模板，再保留
-原清单并复用当前完整公开启动消费者。`express_e2e.py` 仅保留外部控制器使用的有界
-进程监控，不再提供第二套部署／创建／恢复 CLI。历史回执保留其原源码范围；清理
-成功不能把原应用失败改成通过。
+源码默认通过 Dockerfile 构建。原生 Provider 的 steps API 仍是独立能力；`scripts/prepare_steps.py` 生成工程用 `prepared-steps.yaml`，不是可部署的公开 template.yaml。工程验收先通过原生 API 注册，再用 v1 reference 启动。smoke/priority/wave 在 scripts/template-checks.json，仅用于工程检查，不是用户资源字段。
 
 ## 提供方托管条目
 
-`managed_templates` 是与可安装源码 `templates` 分开的目录命名空间。每条记录只包含 `name`、`provider`、`template_id`、`kind: provider-managed`、`documentation`、`historical_evidence`、`spec_version: 5` 和 `provides`。平台标识绑定其 Provider；没有应用服务时 `provides` 为 `{}`。无需声明工作流，创建后使用该平台实际支持的接口。
-
-Exec 启动必须有明确的 `start_cmd`。托管记录不包含该字段，因此拒绝
-`startup: exec`。请选择 `none` 或提供方确实支持的原生 `entrypoint` 路径；
-元数据本身不授予提供方启动能力。
-
-托管 ID 没有此仓库拥有的 Dockerfile、镜像版本、commands.py 或构建上下文，因此不参与源码模板的镜像选择、steps 生成和部署检查。原生模板引用本身不证明运行时身份不可变。实测必须绑定实际输入、消费入口和网络路径，核对准确的操作语义，并独立确认自有资源清理。Shell 执行不能认证原生或统一解释器。参见 [base](managed/base/README.zh-CN.md) 和 [code-interpreter-v1](managed/code-interpreter-v1/README.zh-CN.md)。
-
-同一天验证新版本时，使用独立的 express-YYYY-MM-DDTHHMMSSZ.json 回执，保留旧日期文件。提供方资格必须匹配当前清单版本，且 passed 和 cleanup_verified 都为 true，并含真实 CLI/SDK 成功调用；旧版本不能认证变更后的模板。
-
-含 `application` 的 spec4 清单必须为 smoke 显式填写非 null 的 `expect`，支持字符串、数值、布尔、对象和数组，并使用结构化比较。旧 schema 输入直接拒绝。
-
-
-托管目录通过 `python scripts/check_managed_catalog.py` 检查准确字段、与源码目录不重名、服务声明、双语 12 个有序 README 章节，以及本地历史证据身份。`historical_evidence` 只链接原始回执，其内容不授予当前启动认证。只有完整、输入匹配且来源受独立信任的回执才能认证路径，参见[启动验证](workflows.zh-CN.md)。托管 ID 仍排除在源码镜像选择／steps 之外。[Desktop](managed/desktop/README.zh-CN.md)和[OpenSandbox 解释器](managed/opensandbox-code-interpreter/README.zh-CN.md)说明各条目的条件、可用接口及运行限制。
-
-Dockerfile 固定已发布的 `agent-sandbox-server` 版本；CI 直接安装该依赖并检查实际版本，不再通过 Git 归档或注入 wheel 回退。
+目录保留原生 Provider、template.reference、文档及历史证据；引用不代表当前已验证，也不自动获得源码安装和重建能力。

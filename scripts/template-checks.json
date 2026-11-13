@@ -1,0 +1,1803 @@
+{
+  "schemaVersion": 1,
+  "description": "Engineering acceptance inputs retained from prior manifests; not runtime configuration or certification.",
+  "templates": {
+    "_skeleton": {
+      "smoke": [
+        {
+          "command": "hello",
+          "args": {
+            "name": "Express"
+          },
+          "expect": "Hello, Express!"
+        }
+      ],
+      "priority": "P2",
+      "wave": "other",
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN"
+        ]
+      }
+    },
+    "agents-api": {
+      "smoke": [
+        {
+          "operation": "health",
+          "expect": {
+            "status": "ok",
+            "protocol": "agent-sandbox-managed-bridge/v1"
+          }
+        },
+        {
+          "operation": "capabilities",
+          "expect": {
+            "durable_receipts": true
+          }
+        }
+      ],
+      "priority": "P1",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-managed-bridge",
+          "version": 1,
+          "port": 9000,
+          "operations": [
+            "health",
+            "capabilities",
+            "session.create",
+            "session.get",
+            "submissions.create",
+            "submissions.get",
+            "submissions.cancel"
+          ]
+        }
+      },
+      "ports": [
+        9000
+      ],
+      "localRuntime": {
+        "start": "python -m agent_sandbox.server.managed --port 9000",
+        "ready": "agent-sandbox-server healthcheck --port 9000"
+      }
+    },
+    "agents-cli": {
+      "smoke": [
+        {
+          "command": "agents_version",
+          "expect": "codex 0.162.1; qwen-code 0.23.0"
+        }
+      ],
+      "priority": "P2",
+      "wave": 2,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py --policy /home/user/app/server-policy.json",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "OPENAI_API_KEY",
+          "CODEX_API_KEY",
+          "OPENAI_BASE_URL",
+          "OPENAI_MODEL",
+          "ABX_AGENTS_STATE_DIR",
+          "CODEX_HOME",
+          "ABX_SERVER_POLICY_FILE",
+          "WORKSPACE"
+        ]
+      }
+    },
+    "aider": {
+      "smoke": [
+        {
+          "command": "aider_version",
+          "args": {},
+          "expect": "aider 0.86.2"
+        }
+      ],
+      "priority": "P1",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "AIDER_API_KEY",
+          "AIDER_BASE_URL",
+          "AIDER_MODEL"
+        ]
+      }
+    },
+    "amp": {
+      "smoke": [
+        {
+          "command": "amp_version",
+          "args": {},
+          "expect": "0.0.1792022479-ge66e24"
+        },
+        {
+          "command": "amp_setup_check",
+          "args": {},
+          "expect": {
+            "installed": true,
+            "package": "@ampcode/cli",
+            "version": "0.0.1792022479-ge66e24",
+            "api_key_set": false,
+            "settings_path": "/home/user/.config/amp/settings.json",
+            "settings_exists": true,
+            "dangerously_allow_all": false,
+            "updates_mode": "disabled"
+          }
+        }
+      ],
+      "priority": "P1",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "AMP_API_KEY",
+          "ABX_SERVER_TOKEN"
+        ]
+      }
+    },
+    "apply-patch": {
+      "smoke": [
+        {
+          "command": "apply_patch_version",
+          "expect": "codex-cli 0.162.1"
+        },
+        {
+          "command": "apply_patch_smoke",
+          "expect": "APPLY_PATCH_OK"
+        }
+      ],
+      "priority": "P1",
+      "wave": 2,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN"
+        ]
+      }
+    },
+    "appworld": {
+      "smoke": [
+        {
+          "command": "appworld_native_smoke",
+          "expect": "original AppWorld0.1.3.post1 native API and private cleanup OK"
+        }
+      ],
+      "priority": "P2",
+      "wave": 2,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "APPWORLD_MODEL_API_KEY",
+          "APPWORLD_MODEL_BASE_URL",
+          "APPWORLD_MODEL",
+          "WORKSPACE"
+        ]
+      }
+    },
+    "browser-automation": {
+      "smoke": [
+        {
+          "command": "browse",
+          "args": {
+            "url": "data:text/html,<title>ABX_E2E_OK</title><h1>ABX_E2E_OK</h1>",
+            "action": "extract"
+          },
+          "expect": {
+            "action": "extract",
+            "title": "ABX_E2E_OK",
+            "text": "ABX_E2E_OK"
+          }
+        },
+        {
+          "command": "mcp_self_test",
+          "expect": "PLAYWRIGHT_MCP_OK"
+        }
+      ],
+      "priority": "P0",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "PLAYWRIGHT_BROWSERS_PATH",
+          "ABX_SERVER_TOKEN"
+        ]
+      }
+    },
+    "browser-use": {
+      "smoke": [
+        {
+          "command": "browser_use_version",
+          "expect": "0.13.11"
+        },
+        {
+          "command": "browser_use_self_test",
+          "expect": "BROWSER_USE_NATIVE_OK"
+        }
+      ],
+      "priority": "P0",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "PLAYWRIGHT_BROWSERS_PATH",
+          "BROWSER_USE_PYTHON",
+          "BROWSER_USE_API_KEY",
+          "BROWSER_USE_BASE_URL",
+          "BROWSER_USE_MODEL"
+        ]
+      }
+    },
+    "chrome": {
+      "smoke": [
+        {
+          "command": "chrome_smoke",
+          "expect": "native headed Chrome145.0.7632.6 CDP/VNC/PNG and cleanup OK"
+        }
+      ],
+      "priority": "P1",
+      "wave": 2,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [
+        6080,
+        9222
+      ],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "WORKSPACE"
+        ]
+      }
+    },
+    "claude-code": {
+      "smoke": [
+        {
+          "command": "claude_version",
+          "args": {},
+          "expect": "2.0.76 (Claude Code)"
+        }
+      ],
+      "priority": "P0",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ANTHROPIC_API_KEY",
+          "CLAUDE_MODEL_API_KEY",
+          "CLAUDE_MODEL_BASE_URL",
+          "CLAUDE_MODEL",
+          "ABX_SERVER_TOKEN",
+          "WORKSPACE"
+        ]
+      }
+    },
+    "cline": {
+      "smoke": [
+        {
+          "command": "cline_version",
+          "expect": {
+            "native_version": "3.0.73"
+          }
+        }
+      ],
+      "priority": "P1",
+      "wave": 2,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "CLINE_MODEL_API_KEY",
+          "CLINE_MODEL_BASE_URL",
+          "CLINE_MODEL",
+          "WORKSPACE"
+        ]
+      }
+    },
+    "code-server": {
+      "smoke": [
+        {
+          "command": "code_server_version",
+          "expect": "4.141.0"
+        },
+        {
+          "command": "code_server_self_test",
+          "expect": "CODE_SERVER_OK"
+        }
+      ],
+      "priority": "P1",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [
+        8443
+      ],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "CODE_SERVER_PASSWORD"
+        ]
+      }
+    },
+    "codex": {
+      "smoke": [
+        {
+          "command": "codex_version",
+          "expect": "0.162.1"
+        },
+        {
+          "command": "codex_setup_check"
+        }
+      ],
+      "priority": "P0",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "OPENAI_API_KEY",
+          "CODEX_API_KEY",
+          "ABX_LLM_API_KEY",
+          "OPENAI_BASE_URL",
+          "ABX_LLM_BASE_URL",
+          "CODEX_MODEL",
+          "CODEX_HOME",
+          "WORKSPACE",
+          "ABX_SERVER_TOKEN"
+        ]
+      }
+    },
+    "codex-agent-api": {
+      "smoke": [
+        {
+          "command": "codex_version",
+          "expect": "0.162.1"
+        },
+        {
+          "command": "agent_status",
+          "expect": "[]"
+        }
+      ],
+      "priority": "P1",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "OPENAI_API_KEY",
+          "CODEX_API_KEY",
+          "ABX_LLM_API_KEY",
+          "OPENAI_BASE_URL",
+          "ABX_LLM_BASE_URL",
+          "CODEX_MODEL",
+          "CODEX_HOME",
+          "CODEX_SANDBOX",
+          "AGENT_MAX_SESSIONS",
+          "AGENT_SESSION_TTL",
+          "WORKSPACE",
+          "ABX_SERVER_TOKEN"
+        ]
+      }
+    },
+    "copilot-cli": {
+      "smoke": [
+        {
+          "command": "copilot_version",
+          "args": {},
+          "expect": {
+            "native_version": "1.0.100"
+          }
+        },
+        {
+          "command": "copilot_setup_check",
+          "args": {}
+        }
+      ],
+      "priority": "P1",
+      "wave": 2,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "COPILOT_PROVIDER_BASE_URL",
+          "COPILOT_PROVIDER_API_KEY",
+          "COPILOT_MODEL"
+        ]
+      }
+    },
+    "crush": {
+      "smoke": [
+        {
+          "command": "crush_version",
+          "expect": "0.98.1"
+        }
+      ],
+      "priority": "P0",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "CRUSH_API_KEY",
+          "CRUSH_BASE_URL",
+          "CRUSH_MODEL"
+        ]
+      }
+    },
+    "cursor-agent": {
+      "smoke": [
+        {
+          "command": "agent_version",
+          "args": {},
+          "expect": "2026.10.19-6bbf2c4"
+        },
+        {
+          "command": "agent_native_check",
+          "args": {}
+        }
+      ],
+      "priority": "P1",
+      "wave": 2,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "CURSOR_API_KEY",
+          "WORKSPACE"
+        ]
+      }
+    },
+    "deepagents": {
+      "smoke": [
+        {
+          "command": "deepagents_version",
+          "expect": "0.7.25"
+        }
+      ],
+      "priority": "P1",
+      "wave": 2,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "DEEPAGENTS_API_KEY",
+          "DEEPAGENTS_BASE_URL",
+          "DEEPAGENTS_MODEL",
+          "DEEPAGENTS_PYTHON"
+        ]
+      }
+    },
+    "deepseek-harness": {
+      "smoke": [
+        {
+          "command": "deepseek_tools",
+          "args": {},
+          "expect": "list_files,read_file,run_shell,write_file"
+        }
+      ],
+      "priority": "P1",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "WORKSPACE",
+          "ABX_SERVER_TOKEN",
+          "DEEPSEEK_API_KEY",
+          "OPENAI_API_KEY",
+          "DEEPSEEK_BASE_URL",
+          "DEEPSEEK_MODEL"
+        ]
+      }
+    },
+    "dev-services": {
+      "smoke": [
+        {
+          "command": "services_versions",
+          "expect": {
+            "postgres": "17.11",
+            "redis": "8.0.2"
+          }
+        },
+        {
+          "command": "services_self_test",
+          "expect": "POSTGRES_REDIS_OK"
+        }
+      ],
+      "priority": "P1",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [
+        5432,
+        16379
+      ],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "DEV_SERVICES_PASSWORD",
+          "DEV_SERVICES_REDIS_PORT",
+          "DEV_SERVICES_POSTGRES_PORT"
+        ]
+      }
+    },
+    "devin": {
+      "smoke": [
+        {
+          "command": "devin_version",
+          "args": {},
+          "expect": "devin 3000.11.92 (7f4e64980e22)"
+        },
+        {
+          "command": "devin_native_check",
+          "args": {}
+        }
+      ],
+      "priority": "P2",
+      "wave": 2,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "DEVIN_CREDENTIALS_FILE",
+          "WORKSPACE"
+        ]
+      }
+    },
+    "document-tools": {
+      "smoke": [
+        {
+          "command": "document_version",
+          "args": {},
+          "expect": "pandoc 3.1.11.1"
+        },
+        {
+          "command": "document_smoke",
+          "args": {},
+          "expect": "Pandoc Markdown DOCX/TXT artifacts OK"
+        },
+        {
+          "command": "office_version",
+          "args": {},
+          "expect": "LibreOffice 4:25.2.3-2+deb13u9"
+        },
+        {
+          "command": "document_extended_smoke",
+          "args": {},
+          "expect": "Pandoc HTML/PPTX and LibreOffice PDF artifacts OK"
+        }
+      ],
+      "priority": "P1",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN"
+        ]
+      }
+    },
+    "droid": {
+      "smoke": [
+        {
+          "command": "droid_version",
+          "args": {},
+          "expect": "0.241.1"
+        }
+      ],
+      "priority": "P1",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "FACTORY_API_KEY",
+          "DROID_MODEL_API_KEY",
+          "DROID_MODEL_BASE_URL",
+          "DROID_MODEL",
+          "ABX_SERVER_TOKEN",
+          "WORKSPACE"
+        ]
+      }
+    },
+    "gemini": {
+      "smoke": [
+        {
+          "command": "gemini_version",
+          "args": {},
+          "expect": "0.64.0"
+        }
+      ],
+      "priority": "P0",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "GEMINI_API_KEY",
+          "GEMINI_BYOK_API_KEY",
+          "GEMINI_BYOK_BASE_URL",
+          "GEMINI_BYOK_MODEL",
+          "GEMINI_MODEL",
+          "WORKSPACE"
+        ]
+      }
+    },
+    "goose": {
+      "smoke": [
+        {
+          "command": "goose_version",
+          "expect": "1.54.0"
+        }
+      ],
+      "priority": "P0",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "GOOSE_API_KEY",
+          "GOOSE_BASE_URL",
+          "GOOSE_MODEL"
+        ]
+      }
+    },
+    "grok": {
+      "smoke": [
+        {
+          "command": "grok_version",
+          "expect": {
+            "native_version": "1.0.62"
+          }
+        }
+      ],
+      "priority": "P1",
+      "wave": 2,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "GROK_MODEL_API_KEY",
+          "GROK_MODEL_BASE_URL",
+          "GROK_MODEL",
+          "WORKSPACE"
+        ]
+      }
+    },
+    "hermes-agent": {
+      "smoke": [
+        {
+          "command": "hermes_version",
+          "args": {}
+        }
+      ],
+      "priority": "P0",
+      "wave": 2,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "WORKSPACE",
+          "ABX_SERVER_TOKEN",
+          "OPENROUTER_API_KEY",
+          "OPENAI_API_KEY",
+          "OPENAI_BASE_URL",
+          "HERMES_MODEL",
+          "HERMES_PROVIDER"
+        ]
+      }
+    },
+    "kimi-code": {
+      "smoke": [
+        {
+          "command": "kimi_version",
+          "expect": "2.2.0"
+        },
+        {
+          "command": "kimi_setup_check"
+        }
+      ],
+      "priority": "P0",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "WORKSPACE",
+          "KIMI_MODEL_NAME",
+          "KIMI_MODEL_API_KEY",
+          "KIMI_MODEL_BASE_URL",
+          "KIMI_MODEL_PROVIDER_TYPE",
+          "ABX_SERVER_TOKEN"
+        ]
+      }
+    },
+    "media-tools": {
+      "smoke": [
+        {
+          "command": "media_version",
+          "args": {},
+          "expect": "FFmpeg 7.1.5-0+deb13u1"
+        },
+        {
+          "command": "media_smoke",
+          "args": {},
+          "expect": "FFmpeg CPU audio transcode OK"
+        },
+        {
+          "command": "media_video_smoke",
+          "args": {},
+          "expect": "FFmpeg CPU H.264 video transcode OK"
+        },
+        {
+          "command": "media_args_smoke",
+          "args": {},
+          "expect": "FFmpeg native argv audio transcode OK"
+        }
+      ],
+      "priority": "P2",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN"
+        ]
+      }
+    },
+    "muse": {
+      "smoke": [
+        {
+          "command": "muse_version",
+          "expect": "Muse Code 1.4.11 (1.4.11-R6667.1)"
+        },
+        {
+          "command": "muse_native_check",
+          "expect": {
+            "original_native": true,
+            "headless_json": true,
+            "anonymous_api_key_stdin": true,
+            "no_session_log": true
+          }
+        }
+      ],
+      "priority": "P2",
+      "wave": 2,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "MUSE_MODEL_API_KEY",
+          "MUSE_MODEL_BASE_URL",
+          "MUSE_MODEL",
+          "ABX_SERVER_TOKEN",
+          "WORKSPACE"
+        ]
+      }
+    },
+    "next-app": {
+      "smoke": [
+        {
+          "command": "toolchain_versions",
+          "expect": {
+            "next": "16.4.2",
+            "react": "19.3.1",
+            "react-dom": "19.3.1",
+            "vite": "8.3.4"
+          }
+        },
+        {
+          "command": "preview_self_test",
+          "expect": "NEXT_VITE_PREVIEW_OK"
+        }
+      ],
+      "priority": "P1",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [
+        3000,
+        5173
+      ],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN"
+        ]
+      }
+    },
+    "node-web": {
+      "smoke": [
+        {
+          "command": "smoke",
+          "args": {},
+          "expect": "node-web ready"
+        }
+      ],
+      "priority": "P1",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [
+        3000
+      ],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "NODE_ENV",
+          "PORT",
+          "ABX_SERVER_TOKEN"
+        ]
+      }
+    },
+    "ocr": {
+      "smoke": [
+        {
+          "command": "ocr_smoke",
+          "args": {},
+          "expect": "Tesseract image/text/TSV artifacts OK"
+        }
+      ],
+      "priority": "P2",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN"
+        ]
+      }
+    },
+    "openclaw": {
+      "smoke": [
+        {
+          "command": "gateway_status",
+          "args": {},
+          "expect": {
+            "running": false,
+            "owned": false,
+            "url": null
+          }
+        }
+      ],
+      "priority": "P0",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [
+        18789
+      ],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "OPENCLAW_GATEWAY_TOKEN",
+          "OPENCLAW_TRUSTED_PROXIES",
+          "OPENCLAW_MODEL_API_KEY",
+          "OPENCLAW_MODEL_BASE_URL",
+          "OPENCLAW_MODEL",
+          "ANTHROPIC_API_KEY",
+          "OPENAI_API_KEY"
+        ]
+      }
+    },
+    "opencode": {
+      "smoke": [
+        {
+          "command": "opencode_version",
+          "expect": "1.19.0"
+        },
+        {
+          "command": "opencode_setup_check",
+          "expect": "ok"
+        }
+      ],
+      "priority": "P0",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [
+        4096
+      ],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_LLM_API_KEY",
+          "ABX_LLM_BASE_URL",
+          "OPENCODE_API_KEY",
+          "OPENCODE_MODEL",
+          "OPENCODE_SERVER_PASSWORD",
+          "ABX_SERVER_TOKEN"
+        ]
+      }
+    },
+    "osworld": {
+      "smoke": [
+        {
+          "command": "osworld_desktop_smoke",
+          "args": {},
+          "expect": "desktop screenshot/click/type/hotkey/AT-SPI/evaluation OK"
+        }
+      ],
+      "priority": "P0",
+      "wave": 2,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN"
+        ]
+      }
+    },
+    "pi": {
+      "smoke": [
+        {
+          "command": "pi_version",
+          "args": {},
+          "expect": "1.3.0"
+        },
+        {
+          "command": "pi_tools_check",
+          "args": {},
+          "expect": "read/find/grep/ls OK"
+        }
+      ],
+      "priority": "P0",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "PI_API_KEY",
+          "PI_BASE_URL",
+          "PI_MODEL"
+        ]
+      }
+    },
+    "polyglot-toolchain": {
+      "smoke": [
+        {
+          "command": "toolchain_smoke",
+          "expect": {
+            "go": "GO_OK",
+            "rust": "RUST_OK",
+            "java": "JAVA_OK",
+            "cleanup_verified": true
+          }
+        }
+      ],
+      "priority": "P1",
+      "wave": 2,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN"
+        ]
+      }
+    },
+    "prime-agent": {
+      "smoke": [
+        {
+          "command": "prime_agent_version",
+          "expect": {
+            "native_version": "0.10.0"
+          }
+        },
+        {
+          "command": "prime_agent_kernel_check",
+          "expect": {
+            "protocol_version": 3,
+            "required_imports_checked": 12
+          }
+        }
+      ],
+      "priority": "P2",
+      "wave": 2,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "PRIME_MODEL_API_KEY",
+          "PRIME_MODEL_BASE_URL",
+          "PRIME_MODEL",
+          "WORKSPACE"
+        ]
+      }
+    },
+    "python-hello": {
+      "smoke": [
+        {
+          "command": "hello",
+          "args": {
+            "name": "Express"
+          },
+          "expect": "Hello, Express!"
+        },
+        {
+          "command": "run_script",
+          "args": {
+            "code": "print(21 * 2)"
+          },
+          "expect": "42"
+        }
+      ],
+      "priority": "P2",
+      "wave": "other",
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "alternativeRecipes": {
+        "portable": {
+          "dockerfile": "Dockerfile.portable",
+          "context": "."
+        }
+      },
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "LANG",
+          "ABX_SERVER_TOKEN"
+        ]
+      }
+    },
+    "qm": {
+      "smoke": [
+        {
+          "command": "qm_version",
+          "expect": {
+            "qm_version": "0.1.0",
+            "node_version": "24.16.0",
+            "sdk_version": "0.1.0"
+          }
+        },
+        {
+          "command": "qm_native_check",
+          "expect": {
+            "original_qm_harness": true,
+            "original_tool_context": true,
+            "actual_sdk_client": true
+          }
+        }
+      ],
+      "priority": "P2",
+      "wave": 2,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "QM_SANDBOX_BASE_URL",
+          "QM_SANDBOX_TOKEN",
+          "WORKSPACE",
+          "QM_MODEL_API_KEY",
+          "QM_MODEL_BASE_URL",
+          "QM_MODEL"
+        ]
+      }
+    },
+    "qm-sandbox": {
+      "smoke": [
+        {
+          "command": "qm_sandbox_version",
+          "expect": {
+            "qm_version": "0.1.0",
+            "node_version": "24.16.0",
+            "sdk_version": "0.1.0"
+          }
+        },
+        {
+          "command": "qm_sandbox_native_check",
+          "expect": {
+            "original_qm_harness": true,
+            "original_tool_context": true,
+            "actual_sdk_client": true
+          }
+        }
+      ],
+      "priority": "P2",
+      "wave": 2,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "QM_SANDBOX_BASE_URL",
+          "QM_SANDBOX_TOKEN",
+          "WORKSPACE"
+        ]
+      }
+    },
+    "qoder": {
+      "smoke": [
+        {
+          "command": "qoder_version",
+          "args": {},
+          "expect": "1.1.72"
+        }
+      ],
+      "priority": "P2",
+      "wave": "other",
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "WORKSPACE",
+          "ABX_SERVER_TOKEN",
+          "QODER_PERSONAL_ACCESS_TOKEN"
+        ]
+      }
+    },
+    "qwen-code": {
+      "smoke": [
+        {
+          "command": "qwen_version",
+          "args": {},
+          "expect": "0.23.0"
+        }
+      ],
+      "priority": "P0",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "OPENAI_API_KEY",
+          "DASHSCOPE_API_KEY",
+          "WORKSPACE",
+          "OPENAI_BASE_URL",
+          "OPENAI_MODEL"
+        ]
+      }
+    },
+    "stagehand": {
+      "smoke": [
+        {
+          "command": "stagehand_version",
+          "expect": "4.3.0"
+        },
+        {
+          "command": "stagehand_self_test",
+          "expect": "STAGEHAND_NATIVE_OK"
+        }
+      ],
+      "priority": "P2",
+      "wave": 3,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "STAGEHAND_API_KEY",
+          "STAGEHAND_BASE_URL",
+          "STAGEHAND_MODEL",
+          "WORKSPACE"
+        ]
+      }
+    },
+    "swe": {
+      "smoke": [
+        {
+          "command": "swe_version",
+          "args": {},
+          "expect": "mini-swe-agent 2.4.6"
+        }
+      ],
+      "priority": "P0",
+      "wave": 2,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "SWE_API_KEY",
+          "SWE_BASE_URL",
+          "SWE_MODEL",
+          "SWE_MODEL_PROTOCOL"
+        ]
+      }
+    },
+    "tau2-bench": {
+      "smoke": [
+        {
+          "command": "tau2_version",
+          "expect": {
+            "native_version": "1.0.1",
+            "domain": "retail",
+            "task_count": 114
+          }
+        }
+      ],
+      "priority": "P1",
+      "wave": 2,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-server",
+          "version": 2,
+          "port": 9000,
+          "operations": [
+            "commands.list",
+            "commands.run"
+          ]
+        }
+      },
+      "ports": [],
+      "runtime": {
+        "start": "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py",
+        "ready": "agent-sandbox-server healthcheck --port 9000",
+        "envNames": [
+          "ABX_SERVER_TOKEN",
+          "TAU2_MODEL_API_KEY",
+          "TAU2_MODEL_BASE_URL",
+          "TAU2_MODEL",
+          "WORKSPACE"
+        ]
+      }
+    }
+  }
+}

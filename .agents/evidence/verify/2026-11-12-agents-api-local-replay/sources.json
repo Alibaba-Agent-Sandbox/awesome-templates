@@ -1,0 +1,26 @@
+{
+  "files": {
+    "guest-driver.py": {
+      "sha256": "6c2718c37680caf8b5b1c5c5d48ba6c2f47e5fed5537bd245dffc72bd4b63faa",
+      "source_scope": "retained original 2026-11-12 execution; copied byte-for-byte"
+    },
+    "verify-downloads.py": {
+      "sha256": "022b16b61464d562061b3e31a6cfb12285d44145963a01a473b78297f2f992a1",
+      "source_scope": "retained original 2026-11-12 execution; copied byte-for-byte"
+    },
+    "verify-original-tests.py": {
+      "sha256": "1a76fcb6bb367e3e4b04f527383166e2d7df557b0ad352c8711af6a12986499c",
+      "source_scope": "retained original 2026-11-12 execution; copied byte-for-byte"
+    },
+    "Dockerfile.guest.resolved": {
+      "sha256": "b359836650e6aa2b447def8848c98388613db333dc76d5cb08305e4d482ca922",
+      "source_scope": "retained original 2026-11-12 image execution; copied byte-for-byte"
+    },
+    "server-final-probe.py": {
+      "sha256": "2c52bead595366a2e102d0dd8fee876f01ae5eb56e68df481b268c2e856217a4",
+      "source_scope": "retained original 2026-11-12 image execution; copied byte-for-byte"
+    }
+  },
+  "copied_at_utc": "2026-11-12T20:36:42.986367+00:00",
+  "reexecuted_during_record_placement": false
+}

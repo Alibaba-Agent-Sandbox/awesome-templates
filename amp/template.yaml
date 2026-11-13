@@ -1,55 +1,13 @@
+specVersion: 1
 name: amp
-version: "1.2.3"
-description: "Sourcegraph Amp CLI. amp_execute runs amp -x; amp_version and amp_setup_check do not need a key."
-author: "alibaba-agent-sandbox"
-license: Apache-2.0
-spec_version: 5
-base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
-generation: 2
-start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
-ready_cmd: "agent-sandbox-server healthcheck --port 9000"
-
-resources:
-  cpu: 2
-  memory: 2048
-
-ports:
-  - 9000
-
-tags:
-  - amp
-  - sourcegraph
-  - ai-coding
-  - ai-agent
-
-priority: P1
-wave: 1
-
-
-env:
-  AMP_API_KEY: ""
-  ABX_SERVER_TOKEN: ""
-
-smoke:
-  - command: amp_version
-    args: {}
-    expect: "0.0.1792022479-ge66e24"
-  - command: amp_setup_check
-    args: {}
-    expect:
-      installed: true
-      package: "@ampcode/cli"
-      version: "0.0.1792022479-ge66e24"
-      api_key_set: false
-      settings_path: "/home/user/.config/amp/settings.json"
-      settings_exists: true
-      dangerously_allow_all: false
-      updates_mode: "disabled"
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations:
-    - commands.list
-    - commands.run
+sandbox:
+  agent:
+    provider: alicloud-express
+    template:
+      region: cn-hangzhou
+      buildConfig:
+        dockerfile: Dockerfile
+        context: .
+      generation: 2
+      cpu: 2
+      memorySize: 2048

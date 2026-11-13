@@ -1,223 +1,100 @@
-# Template development, listing, and acceptance
+# Template YAML v1 specification
 
-This is the normative spec for a template in this repository. [docs/template-spec.zh-CN.md](./template-spec.zh-CN.md) is the same content in Chinese. If the two files disagree, this file wins.
+[中文](template-spec.zh-CN.md)
 
-`docs/acceptance.md` is a pointer here. `_skeleton/` is a passing example of the file layout. It is not a catalog entry.
-
-Tooling that later template work relies on:
-
-| Tool | Role |
-|---|---|
-| `scripts/check_template.py` | Static lint. Exit 0 when the directory matches this spec. |
-| `scripts/public_launch_e2e.py` | Installed CLI source launch, host CLI/Python/HTTP smoke and independent owned-resource cleanup on Express or OpenSandbox. |
-| `scripts/run_local_e2e.py` | L0 for every directory that has `commands.py` and `e2e_test.py`. Also runs the checker. |
-| `scripts/image_size_report.py` | Per-layer sizes of a local image (`docker history`). |
-
-Repository governance and completion criteria are in [project standards](project-standards.md);
-shared writing and translation rules are in [documentation standards](documentation-standards.md).
+`template.yaml` declares the resources to prepare and deploy. This format requires a matching development CLI; published CLI 0.5.10 does not implement it.
 
 ## Directory layout
 
-A template is one directory at the repository root. The directory name, `template.yaml` `name`, and the `path` in `awesome-templates.yaml` are the same string. Product names match `^[a-z0-9][a-z0-9-]*$`. `_skeleton` is the only underscore directory, and it is not installed.
-
-```
-<name>/
-├── template.yaml
-├── Dockerfile
-├── commands.py
-├── e2e_test.py
-├── README.md
-├── README.zh-CN.md
-└── evidence/                 # dated attempts; successful receipts remain distinct
-    └── express-<YYYY-MM-DD>.json
-docs/design/<name>.md         # required for every product template
-```
-
-| File | Required content |
-|---|---|
-| `template.yaml` | Schema below. |
-| `Dockerfile` | Alibaba base image, pinned installs, `WORKDIR /home/user/app`, `USER user`. No `CMD` or `ENTRYPOINT`. |
-| `commands.py` | `@command` functions. `start()` only under `if __name__ == "__main__"`. |
-| `e2e_test.py` | Local smoke. Reads `E2E_BASE_URL`. |
-| `README.md` | English sections below. |
-| `README.zh-CN.md` | The same sections in Chinese. |
-| `docs/design/<name>.md` | Pre-analysis. Copy [docs/design/_TEMPLATE.md](./design/_TEMPLATE.md). |
-| `evidence/*.json` | Sanitized machine-readable results. Provider/date qualification files require a passing run and independent cleanup; retain failed attempts under distinct attempt filenames without claiming provider acceptance. |
-
-Provider-managed runtimes are catalog references, not copied source recipes. Keep their provider identity and usage contract in the managed catalog described below.
+Keep the resource values in `template.yaml`, image instructions in the Dockerfile, and application behavior in source code. Optional `registry.yaml` supplies publication metadata and initialization forms. Local execution does not read Registry defaults again.
 
 ## template.yaml
 
 ```yaml
-name: my-template
-version: "1.0.0"
-description: "One sentence."
-author: "github-handle"
-license: Apache-2.0
-spec_version: 5
-
-base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
-generation: 2
-start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
-ready_cmd: "agent-sandbox-server healthcheck --port 9000"
-
-resources:
-  cpu: 2          # vCPU
-  memory: 2048    # MB
-
-ports:
-  - 9000
-
-tags: [example]
-priority: P2      # P0, P1, or P2
-wave: other       # 1, 2, 3, or other
-
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations: [commands.list, commands.run]
-env:
-  SOME_API_KEY: ""
-
-smoke:
-  - command: hello
-    args:
-      name: Express
-    expect: "Hello, Express!"
+specVersion: 1
+name: python-hello
+vars:
+  location: cn-hangzhou
+sandbox:
+  agent:
+    provider: alicloud-express
+    template:
+      region: ${vars.location}
+      buildConfig:
+        dockerfile: ./Dockerfile
+      generation: 2
+      cpu: 2
+      memorySize: 2048
+      startCommand: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+      readyCommand: agent-sandbox-server healthcheck --port 9000
 ```
 
-| Field | Rule |
-|---|---|
-| `name` | Same as the directory. |
-| `description`, `version`, `author`, `license` | Non-empty strings. |
-| `spec_version` | Integer `5` selects the existing Sandbox contract. Integer `6` selects the managed-session application contract below. Retired and unknown schemas are rejected. |
-| `base` | String. Either the placeholder `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>` or a pinned `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:vX.Y.Z`. Not a mapping. |
-| `generation` | Integer `2`. |
-| `start_cmd` | Version 5 uses `agent-sandbox-server serve` plus the image path of `commands.py`. The version-6 managed bridge has one exact module entrypoint below. |
-| `ready_cmd` | `agent-sandbox-server healthcheck` plus the port. |
-| `resources.cpu` | Positive integer, vCPU. |
-| `resources.memory` | Positive integer, MB. |
-| `env` | Mapping. A key ending in `API_KEY`, `SECRET`, `TOKEN`, `PASSWORD`, `CREDENTIAL`, or `PRIVATE_KEY` has an empty string value. |
-| `ports` | Includes `9000`. |
-| `tags` | Non-empty list of strings. |
-| `priority` | `P0`, `P1`, or `P2`, matching `docs/template-backlog.json` when the template is listed there. |
-| `wave` | `1` (whole product on Express), `2` (a stated slice), `3` (needs another provider for the workload), or `other`. |
-| `provides` | All services supplied by the template, with protocol, version, port and operations. Launch returns every declared endpoint without selecting a workflow. |
-| `smoke` | List of `{command, args, expect}` run by `scripts/public_launch_e2e.py`. `args` keys are the command parameters. An optional `expect` is compared after strip for strings; without it, a successful nonempty result proves only the call path. |
-
-`deploy` prepares the template, creates its sandbox, executes `start_cmd`,
-runs `ready_cmd` and resolves every declared service endpoint. The built-in server v2
-protocol also receives health checks and command discovery when declared. Other protocols are
-exposed as endpoints; resolving a URL does not prove protocol readiness. All installed commands remain
-available. Business tasks and services requiring task arguments are invoked when
-needed; launch does not execute every registered command. Creating another sandbox
-from a prepared reference does not inherit a running process.
-
-Named commands are not listed in `template.yaml`. They are registered in `commands.py`.
-
-## Optional application deployment (spec version 5)
-
-Version-5 inputs use the closed [spec/template-v5.schema.json](../spec/template-v5.schema.json).
-`application` remains optional. When present, its existing deployment topology,
-hooks, durable state and non-null smoke expectations retain their meaning.
-Template startup and application deployment remain separate operations.
-Unknown fields, retired versions and invalid topology combinations fail without
-compatibility mode.
-
-`template.yaml` is the sole user configuration entry. Do not add `agent-app.yaml`.
-Application deployment is an explicit CLI operation; installing a template,
-importing a module, building a sandbox image, or `ProviderSandbox.create()` never executes
-application hooks or deploys FC functions. Sandbox providers and application
-deployment adapters remain separate interfaces.
-
-The syntax-checked [local example](examples/application-local/template.yaml)
-uses the existing `agents-cli` local API profile. It describes configuration,
-not a newly accepted image or a durable hosted service. The
-[external example](examples/application-external/template.yaml) demonstrates an
-inline Serverless Devs project; its component version, role, images, database and
-identity bindings must be resolved and reviewed before deployment. It is not an
-executed cloud receipt or an installable catalog entry.
-
-| Application field | Contract |
+| Field | Meaning |
 | --- | --- |
-| `runtime` | `placement: external` requires `driver: python-remote-tools` without a local profile. `in-sandbox` requires `driver: sandbox-local-api` and profile `server-core-agents`. A profile does not certify that every local endpoint is enabled. |
-| `gateway` | `placement: fc-web` selects an external gateway; `client-direct` is only for the in-sandbox runtime. |
-| `deployment` | Direct access requires exactly `{adapter: none}`. FC requires `adapter: serverless-devs-fc3`, `accessRef`, `toolchainLock`, and exactly one of `inline` or `project`. Access references are names, not credentials. |
-| `deployment.inline` | Serverless Devs v3 mapping with `edition: "3.0.0"`, `name`, and `resources`. Resource keys are `gateway`, `worker`, `dispatcher`; external runtime requires all three. Each resource has exact `component: fc3@X.Y.Z`, nonempty `props`, optional `actions`. The adapter extracts this mapping to a frozen generated `s.yaml`; users do not maintain another YAML. The schema validates topology, not FC properties, component availability, IAM, or deployed code. |
-| `deployment.project` | Optional advanced alternative: relative path to a reviewed hand-written Serverless Devs project. Its complete referenced source tree is deployment input. |
-| `deployment.toolchainLock` | Relative path to the deployment adapter's tool/version/integrity lock. JSON lock format and verified execution belong to the CLI adapter, not the template checker. |
-| `sandbox` | Provider name, `lifetime: per-run`, `workspace: exclusive`, and nonempty `requiredFeatures`. Both modes require `sandbox.lifecycle`; external also requires `exec.run` and `files.rw`, in-sandbox requires `ports.url`. Features are requirements, not proof of provider support or runtime authorization. |
-| `state` | External gateways require `profile: durable` and `bindingRef` naming a `bindings` key. Client-direct uses only `{profile: ephemeral}`. |
-| `bindings` | Mapping from logical names to credential/service reference names. No secret values, connection strings, or signed URLs. Empty is allowed for direct local access. |
-| `limits` | Positive integer `maxRunSeconds`, `maxToolSeconds`, `maxConcurrentRuns`, `maxQueuedRuns`, `maxRunsPerMinute`; `maxEventsPerRun >= 5`, `maxOutputBytes >= 1024`. Tool budget cannot exceed run budget. These declarations require runtime enforcement; the checker does not implement admission control. |
-| `hooks` | Optional lists named `beforeApply` and `afterReady`, at most eight hooks per phase. Direct local access has no deployment hooks. Other phase names fail. |
+| `specVersion` | Integer `1`. |
+| `name` | Project name, 1–63 lowercase ASCII letters, digits and hyphens. |
+| `vars` | Optional author-defined reusable values; no reserved image variable names. Direct literal values work too. |
+| `sandbox.<name>` | Named Sandbox resource with a Provider, template, optional volumes and resource actions. |
+| `sandbox.<name>.template` | Provider attributes; Express uses `region`, `image`, `generation`, `cpu`, `memorySize`, `diskSize`, network/logging/registry settings and native template commands. |
+| `sandbox.<name>.template.reference` | Borrow an existing native template. Only `region` may accompany it; borrowed resources are never updated or removed. |
+| `sandbox.<name>.volumes` | Named static volume declarations. `props` creates an owned volume; `reference` borrows one. `retain: true` keeps an owned volume during removal. Volumes share `template.region`. |
+| `serving.<name>` | Native component selector, `props` and optional resource actions. |
 
-Every hook declares a globally unique `id`, `executor: host-command`, argv array,
-relative `cwd`, `timeoutSeconds` in `1..900`, and `envAllowlist` of environment
-variable names. The deployment adapter executes reviewed argv on the host/CI and
-bounds output; the checker only reads configuration. `beforeApply` validates
-frozen inputs and cannot rebuild or change artifacts; `afterReady` verifies a
-candidate before release. They are not sandbox startup hooks. Native Serverless
-Devs actions and expressions are also executable code and require review; build
-steps run before the deployment plan is frozen.
+Logical names are globally unique across Sandbox and Serving. `access`, `application`, `deployment`, user-defined `outputs`, `instance`, `runtimeConfig`, `sandboxConfig`, and generic `build`/`builds` are not resource inputs. Reuse the configured credentials. CPU/memory combinations and account/regional availability remain Provider checks; omitted API properties are not silently filled with guessed defaults.
 
-Paths must be relative, cannot contain backslashes, control characters or `..`
-segments, and must resolve inside the template directory. Referenced project and
-lock files and hook working directories must exist. Symlink escape is rejected.
-Hook argv is never interpreted as a shell string by the template checker.
+See the [nested field reference](template-fields.md) and [schema](../spec/template-v1.schema.json).
 
-Install the pinned checker dependencies with
-`python -m pip install -r scripts/requirements-spec.txt`, then run the checker and
-`scripts/test_spec_tools.py`. Runtime/image/provider/model acceptance tiers below
-still apply independently; schema validity cannot certify a launch or promote catalog status.
+## Build sources and image meaning
 
-## Managed-session application deployment (spec version 6)
+`buildConfig` has exactly two alternatives: `dockerfile` with optional `context`, or `steps`. It cannot be empty and `context` cannot stand alone. Paths are relative to the directory containing `template.yaml`; omitted `context` is the Dockerfile's directory. There is no implicit scan for a Dockerfile when the whole build configuration is absent.
 
-Version 6 uses the independent closed [spec/template-v6.schema.json](../spec/template-v6.schema.json)
-for the `fc-managed-agents` profile. Existing version-5 templates retain their original
-contract and do not acquire managed deployment behavior. Configuration remains in the
-same `template.yaml`; the profile expands into owned deployment resources rather than
-accepting an arbitrary workflow language. See the [managed application reference](managed-agent-applications.md)
-([中文](managed-agent-applications.zh-CN.md)).
+| Configuration | Result |
+| --- | --- |
+| `image` alone | Use the existing image to prepare the template. |
+| `image` and `buildConfig.dockerfile` | Build and push to that image address, then prepare the template. Without an explicit address, the configured build destination must supply one. |
+| `image` and `buildConfig.steps` | Use the image as the input for native template steps. The result is a prepared template ID; native steps do not promise an OCI image export to the input address. |
+| `reference` | Reuse an existing template without a build or update. |
 
-Template type is selected by the explicit `application.deployment.profile`, while
-`spec_version` selects the supported validation contract. Version 6 alone does not
-identify or enable a deployment. The `fc-managed-agents` profile supplies its fixed
-API, runtime, Gateway, lifecycle, storage-backend, output and binding-role fields
-from the [shared defaults](../contracts/application-profile/profiles.json). Authors
-may omit these fields; explicit conflicting values still fail validation. Consumers
-expand missing fields before validation and execution. Provider, credentials,
-region, images, resource sizes and all configurable budgets remain explicit.
+Native steps use `type: USER|WORKDIR|ENV|RUN` and `args: string[]`. ENV uses key/value pairs. USER takes a username and optional boolean-string sudo flag; RUN takes a command and optional execution user. Runtime secrets do not belong in image ENV or template build steps.
 
-The version-6 runtime is explicitly `in-sandbox`, `sandbox-local-api`,
-`managed-bridge-v1`; its private protocol is `agent-sandbox-managed-bridge/v1`.
-It does not expose the core Agents routes or named commands. Its exact startup is
-`python -m agent_sandbox.server.managed --port 9000`; readiness remains
-`agent-sandbox-server healthcheck --port 9000`. The Alibaba base, generation 2,
-non-root user, independent published dependency pins and source-path rules still apply.
+For Express, `registryConfig` optionally overrides pull authentication, TLS and registry network settings. Omit the whole object when unused. Ordinary Linux and recognizable ACR image references do not require duplicate `osType`, registry type or ACR instance inputs. Storage clients belong in the Dockerfile or base image; installing them does not create or mount volumes or grant storage access. Provider internals handle required image copying/injection instead of exposing a second advanced build configuration.
 
-Version-6 root `smoke` entries use `operation: health` or `operation: capabilities`
-with a non-null `expect`, instead of naming a nonexistent command. With a compatible
-Server SDK installed, local L0 starts the actual declared bridge with isolated
-state/workspace and a generated test token. Static validation does not install
-or execute a managed runtime.
-The full application task is verified through the Gateway after deployment; a bridge
-health response or `commands.py` diagnostic does not prove an Agent task.
+## Serving and actions
 
-The application uses exclusive `per-session` Sandboxes, durable state, role-scoped
-binding references, finite session/storage/execution budgets and explicit close/delete
-policies. `serverImage` must be digest-pinned, or `serverBuildRecipe` selects a safe
-Dockerfile inside the template context; they are mutually exclusive. The deployer
-builds and freezes the latter before invoking components. Hooks are bounded custom
-checks or `serverless-devs` `info` queries on an existing profile step; hooks cannot
-create unrecorded deployment resources.
+```yaml
+serving:
+  api:
+    component: serverless-devs/fc3@0.1.26
+    actions:
+      pre-deploy:
+        - component: serverless-devs/fc3@0.1.26 build --dockerfile ./server/Dockerfile --context ./server
+    props:
+      region: cn-hangzhou
+      functionName: sandbox-api
+      runtime: custom-container
+      code: ./server
+      customContainerConfig:
+        image: registry.example/project/api:release-1
+        port: 9000
+      environmentVariables:
+        SANDBOX_TEMPLATE_ID: ${resources.agent.output.templateId}
+```
 
-The managed application README uses the Gateway task in CLI/Python/HTTP examples:
-`abx deploy` for application deployment and authenticated Gateway HTTP for business calls.
-It does not require callers to connect a `ProviderSandbox` or use `abx sandbox command run`.
-The required headings and user-documentation boundaries below remain unchanged.
+The image address above is a placeholder. Use a repository you can push to. The `serverless-devs/` prefix selects the component execution adapter; native `fc3@0.1.26` owns its properties. FC build and deploy have distinct image-push behavior. Existing remote images must use the component's supported skip-push path; omitting a build action alone does not establish that behavior.
+
+Actions run on the deployment host. `run` executes a shell command; `component` invokes the selected native component command with the resource context. Optional `path` selects a working directory. `pre-deploy` runs before the resource, `success-deploy` after it is ready, `fail-deploy` on failure and `complete-deploy` on either outcome. Sandbox readiness means a successful template readiness query, not merely acceptance of a build request. Output references order dependent resources; unresolved names and cycles fail before deployment.
+
+## Templates and dynamic instances
+
+Deployment prepares reusable templates and static volumes. Business code, SDK or `abx sandbox create --template <template-id>` creates instances and chooses their environment, lifetime and mounts. `startCommand` and `readyCommand` retain native template preparation/snapshot semantics; they are not per-instance hooks. A resumed prewarmed process does not automatically read new create-time environment values. Follow the [runtime environment guide](runtime-environment.md) for application startup and model credentials.
+
+Image defaults are ordinary Dockerfile ENV declarations. Empty credential names contain no credentials. Pass private runtime values explicitly at instance creation or through the application runtime. Ports, listeners, network access and application protocols are distinct; declaring a port does not expose or authenticate a business API.
+
+## Configuration and publication
+
+Use one JSON-compatible YAML 1.2 Core document with string keys, no duplicate keys, aliases or custom tags, and at most 1 MiB of UTF-8. Static catalog tools do not evaluate `${env('NAME')}`, `${vars.key}` or resource output expressions.
+
+Optional `registry.yaml` contains `specVersion`, `name`, `version`, bilingual `description`, `author`, `license`, `tags`, bilingual `readme` and `parameters`. Each parameter names an existing value with a JSON Pointer `target` and bilingual `title`. A sensitive parameter also specifies `environmentVariable`; its target must be the corresponding `${env('NAME')}` expression. Initialization edits those concrete local values or private sources; subsequent execution uses only `template.yaml` and its explicit references.
 
 ## Alibaba base image
 
@@ -320,7 +197,7 @@ if __name__ == "__main__":
 
 `/health` is exempt from server-token authentication; the provider gateway may still authenticate that request. A successful health probe does not prove named-command authentication or model configuration.
 
-The following named-command authentication rules apply to spec5. The managed6 bridge instead requires its generated token and never permits anonymous managed operations. The server reads `ABX_SERVER_TOKEN` when the process starts. When the variable is non-empty, protected requests need `Authorization: Bearer <token>` or `X-Access-Token: <token>`. Declare the name in `env` with an empty value. Provide the real value to the server process before it starts. Create-time injection (`abx deploy --template-id --env` or `ProviderSandbox.create(envs=...)`) applies only when that provider starts the server with those values; it cannot reconfigure a prewarmed process. Use the unified deploy to configure and start the declared service, then connect the SDK to that running application; see [runtime environment configuration](runtime-environment.md).
+The server reads `ABX_SERVER_TOKEN` at application startup. Protected requests use `Authorization: Bearer <token>` or `X-Access-Token: <token>`. Ordinary templates start through `run.py`, which generates or accepts the token, creates the instance, explicitly starts the application and verifies authenticated discovery. Keep credentials out of native template preparation commands and image layers. See [runtime configuration](runtime-environment.md).
 
 When the variable is unset, the application allows anonymous calls; provider gateway authentication remains separate. The client preserves the provider's gateway headers and sends an explicit application token as `Authorization: Bearer <token>`, also adding the existing application `X-Access-Token` header when unoccupied. Authentication failures are returned without an anonymous retry. Templates that set `ABX_SERVER_TOKEN` must document `await sb.application_client(port, token=...)` for the project Python API and `ABX_SERVER_TOKEN` for CLI named commands.
 
@@ -364,11 +241,11 @@ asyncio.run(main())
 
 `client.commands.run` posts keyword arguments as the JSON body of `POST /commands/hello`
 and returns `result`. `sb.commands.run` is the process API. Closing a connection does
-not delete the sandbox: delete your owned instance with `abx delete <sandbox-id>` when
+not delete the sandbox: delete your owned instance with `abx sandbox delete <sandbox-id> --yes` when
 finished, and reconcile its prepared template/image separately. Record source refs
 and installed package versions for acceptance.
 
-Local L0 does not create a cloud sandbox. `scripts/run_local_e2e.py` starts `python3 commands.py` for spec5 or the actual managed module for spec6, sets `E2E_BASE_URL`, and runs `e2e_test.py`. That test may use HTTP against `E2E_BASE_URL`. Cloud acceptance must exercise the actual selected CLI/SDK/HTTP entry points.
+Local L0 does not create a cloud sandbox. `scripts/run_local_e2e.py` starts `python3 commands.py` for ordinary Sandbox templates or the actual managed module for Managed Agents API, sets `E2E_BASE_URL`, and runs `e2e_test.py`. That test may use HTTP against `E2E_BASE_URL`. Cloud acceptance must exercise the actual selected CLI/SDK/HTTP entry points.
 
 ### HTTP POST contract
 
@@ -438,7 +315,7 @@ Template READMEs are usage guides: keep validation reports, historical acceptanc
 ## Security
 
 - Secret values are not copied into the image, `template.yaml`, Docker history, or evidence JSON.
-- `env` declares the name and an empty string. Pass values explicitly to the process that needs them before it starts; a create call does not update existing processes.
+- instance-creation `envs` declares the name and an empty string. Pass values explicitly to the process that needs them before it starts; a create call does not update existing processes.
 - Logs and reports must omit secrets and native resource identifiers. The public runner keeps raw subprocess diagnostics private and exports only controlled check labels, stable codes and numeric HTTP statuses.
 - Do not commit `.env`, cloud credentials, or `Dockerfile.abx-build`.
 
@@ -461,11 +338,11 @@ Template READMEs are usage guides: keep validation reports, historical acceptanc
 | Issues | 问题反馈 |
 | License | 许可证 |
 
-For managed spec6 applications, use `Quick start (Python HTTP client)` / `快速开始（Python HTTP 客户端）` in place of the Python SDK heading. These applications use `httpx` against the Gateway; a dedicated Gateway client SDK is not provided.
+For managed Managed Agents API applications, use `Quick start (Python HTTP client)` / `快速开始（Python HTTP 客户端）` in place of the Python SDK heading. These applications use `httpx` against the Gateway; a dedicated Gateway client SDK is not provided.
 
 Before launch, explain required provider credentials separately from application and model credentials, and document the actual model, endpoint, API-key or product-login configuration consumed by the template. Do not invent a universal variable mapping for upstream tools.
 
-For spec6, show explicit `abx deploy` deployment and standard Gateway HTTP through Python `httpx`, with the public API table and managed close/delete cleanup. The following client requirements apply to spec5. The CLI section contains an `abx sandbox command run` example. The SDK section imports `ProviderSandbox`, resolves its application client with `application_client`, and calls `client.commands.run`. The command reference is a table with the parameters. A non-Alibaba base adds `## Base image` / `## 基础镜像`.
+For Managed Agents API, show explicit `abx deploy` deployment and standard Gateway HTTP through Python `httpx`, with the public API table and managed close/delete cleanup. The following client requirements apply to ordinary Sandbox templates. The CLI section contains an `abx sandbox command run` example. The SDK section imports `ProviderSandbox`, resolves its application client with `application_client`, and calls `client.commands.run`. The command reference is a table with the parameters. A non-Alibaba base adds `## Base image` / `## 基础镜像`.
 
 ## Listing and acceptance
 
@@ -539,34 +416,14 @@ python3 scripts/check_template.py _skeleton
 python3 scripts/check_template.py --all
 ```
 
-`--all` checks every root directory containing `template.yaml`, including the skeleton. Every manifest requires an explicit supported `spec_version`; missing, malformed or unknown versions fail. The catalog requires `schema_version: 2`. CI and `scripts/run_local_e2e.py` use the same complete check and fail on any violation.
+`--all` checks every root directory containing `template.yaml`, including the skeleton. Every manifest requires an explicit supported `specVersion: 1`; missing, malformed or unknown versions fail. The catalog requires `schema_version: 3`. CI and `scripts/run_local_e2e.py` use the same complete check and fail on any violation.
 
-Violation codes include `required-file`, `readme-section`, `base-image`, `dockerfile-cmd`, `dockerfile-user`, `yaml-field`, `commands-start`, `verified-evidence`, `pinned-version`, `readme-client`, `secrets`. `pinned-version` fails when a `RUN` has neither allowed server pin above. `readme-client` fails when a spec5 SDK section does not name `agent-sandbox-client` (managed6 instead names `httpx`), or when a README tells the reader to `pip install agent-sandbox`.
+Violation codes include `required-file`, `readme-section`, `base-image`, `dockerfile-cmd`, `dockerfile-user`, `yaml-field`, `commands-start`, `verified-evidence`, `pinned-version`, `readme-client`, `secrets`. `pinned-version` fails when a `RUN` has neither allowed server pin above. `readme-client` fails when a ordinary Sandbox templates SDK section does not name `agent-sandbox-client` (Managed Agents API instead names `httpx`), or when a README tells the reader to `pip install agent-sandbox`.
 
 ## Native preparation maintenance
 
-Use [platform steps](platform-steps.md) when native cloud preparation is required.
-The step runner prepares an idle provider template, then reuses the current full
-public launch consumer with the original manifest. `express_e2e.py` now contains
-only the bounded process monitor used by external controllers; it does not expose
-an alternate deployment/create/recovery CLI. Preserve dated receipts at their
-recorded source. Cleanup success cannot relabel an original application failure.
+Source recipes build through Dockerfile by default. Native Provider steps APIs remain independently available. scripts/prepare_steps.py emits engineering-only prepared-steps.yaml, not a deployable public template.yaml. Acceptance registers through the native API, then launches a v1 reference. Smoke/priority/wave live in scripts/template-checks.json as engineering checks, not resource fields.
 
 ## Provider-managed catalog entries
 
-`managed_templates` is a catalog namespace separate from installable source `templates`. Each record contains exactly `name`, `provider`, `template_id`, `kind: provider-managed`, `documentation`, `historical_evidence`, `spec_version: 5` and `provides`. Native template identity stays bound to its provider. Use `provides: {}` when no application service is declared. No workflow is selected; use the provider interfaces after creation.
-
-Exec startup requires an explicit `start_cmd`. Managed records have no such field,
-so they reject `startup: exec`. Select `none` or an actual provider-supported
-native `entrypoint` path; metadata does not grant provider startup support.
-
-Managed IDs have no repository-owned Dockerfile, image version, commands.py or build context, so source image selection, steps generation and deploy checks do not apply. A native template reference does not establish immutable runtime identity. Runtime acceptance must bind the actual input, consumer and network path, observe exact operation semantics, and independently confirm owned cleanup. Shell execution cannot certify a native or unified interpreter. See [base](managed/base/README.md) and [code-interpreter-v1](managed/code-interpreter-v1/README.md).
-
-When a changed version is verified on the same UTC date, use a distinct express-YYYY-MM-DDTHHMMSSZ.json receipt and preserve the older date-only file. Provider qualification requires the current manifest version, both passed and cleanup_verified true, and successful real CLI/SDK calls. Prior-version receipts cannot certify a changed template.
-
-Spec4 manifests containing `application` require an explicit, non-null smoke `expect`, supporting strings, numbers, booleans, objects and arrays with structured comparison. Retired schema inputs are rejected.
-
-
-Managed catalog validation: `python scripts/check_managed_catalog.py` checks exact fields, disjoint names, provided-service declarations, 12 ordered bilingual README sections, and local historical-evidence identity. `historical_evidence` links original receipts; its contents do not confer current launch certification. Only complete, input-matching receipts with independently trusted provenance can certify a path; see [launch verification](workflows.md). Managed IDs remain excluded from source image selection/steps. [Desktop](managed/desktop/README.md) and [OpenSandbox interpreter](managed/opensandbox-code-interpreter/README.md) document each entry’s prerequisites, usable interfaces and runtime limitations.
-
-The Dockerfile pins an actually published `agent-sandbox-server` version. CI installs that dependency directly and checks the installed version; there is no Git-archive or injected-wheel fallback.
+Keep native Provider/template.reference identities, documentation and historical proof. A reference does not confer current verification, source installation or rebuildability.

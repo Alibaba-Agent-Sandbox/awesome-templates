@@ -1,0 +1,59 @@
+{
+  "head": "dfb9e413c0797b4279456426839272e145198200",
+  "jobUrl": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/43293813726/job/131446657105",
+  "jobLogSha256": "7d3d66770ea5f5e01703c45d57ff6e23576a76d5024f3dca319c6c6686269395",
+  "firstFailure": {
+    "test": "next-app/test_commands.py::test_real_next_hmr_accepts_exact_loopback_origin_and_rejects_other_origin",
+    "line": 100,
+    "assertion": "blocked-origin warning and exact rejected hostname are present in dev_logs()",
+    "groupResult": {
+      "failed": 1,
+      "passed": 17,
+      "seconds": 20.09
+    },
+    "networkAssertionsBeforeFailure": "accepted-origin TEXT and rejected-origin non-TEXT/error assertions passed"
+  },
+  "unreached": "SWE and agents-cli protocol groups occur later; this run does not prove their remote result",
+  "nextCodeChangeFromPriorHead": false,
+  "actualLibrary": {
+    "name": "next",
+    "version": "16.4.2",
+    "integrity": "sha512-r+oBJojfefUjOiWkBhXgLS+igxX/7BWyK59uHnyOyplMSLtBZ+QLP3okrdYTbrfrbrmNTVWLBPaHDX9KRaIt3w==",
+    "integrityVerified": true,
+    "blockRequestOrder": [
+      "warnOnce",
+      "res.end"
+    ]
+  },
+  "logCollector": "separate reader thread using stdout.read1; dev_logs returns current retained buffer snapshot",
+  "candidate": "Only bound the test wait for both existing warning substrings; preserve one actual accepted/rejected network attempt and all assertions",
+  "hypothesis": "Immediate log snapshot races independent collector thread; consistent with actual result and code, not yet independently reproduced",
+  "productModified": false,
+  "cloudExecution": false,
+  "change": "Test-only bounded5s monotonic observation of buffered log; real websocket calls and final exact conjunctive log assertion unchanged",
+  "interpretation": "Immediate assertion was inconsistent with asynchronous buffered-snapshot API; exact scheduling order in the failed CI run is not independently established",
+  "verification": {
+    "python": "3.13.13",
+    "node": "v22.22.2",
+    "npm": "12.0.2",
+    "packageLockSha256": "c41bed7b4d4623040121df3887f8dae84f879a6d5d570c916d2706604cd154eb",
+    "scratchLockByteEqual": true,
+    "scratchTestByteEqual": true,
+    "command": "E2E_RUN_LLM=0 python -m pytest -q <scratch-next-app>/test_commands.py <scratch-next-app>/test_forwarded_controller.py",
+    "passed": 18,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 14.68,
+    "logSha256": "03d94ce3eec0b15dd7d80a743982a74eae35c506c3c139e40baf8c4e760b6543",
+    "pipCheck": "PASS",
+    "actualPackages": {
+      "next": "16.4.2",
+      "react": "19.3.1",
+      "react-dom": "19.3.1",
+      "vite": "8.3.4"
+    }
+  },
+  "installationBoundary": "First npm12 attempt refused lockfile remote tarball URLs (EALLOWREMOTE) before tests; task-local rerun explicitly permits locked remote packages with --ignore-scripts, then succeeds. No global config or lockfile changed.",
+  "runtimeModified": false,
+  "testConsumerModified": true
+}

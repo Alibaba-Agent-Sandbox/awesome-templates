@@ -1,0 +1,18 @@
+specVersion: 1
+name: osworld
+version: 1.0.3
+description:
+  zh: 在 Linux 浏览器桌面上截图、操作界面和读取可访问性信息，并评估选定的 OSWorld 任务。
+  en: Operate a Linux browser desktop using screenshots and accessibility information,
+    with selected OSWorld task evaluators.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- osworld
+- computer-use
+- desktop
+- browser
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

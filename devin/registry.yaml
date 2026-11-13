@@ -1,0 +1,17 @@
+specVersion: 1
+name: devin
+version: 1.0.3
+description:
+  zh: 运行 Devin CLI 编码任务，使用自己的账号配置和显式启用的工具。
+  en: Run Devin CLI coding tasks with your account configuration and explicitly enabled
+    tools.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- devin
+- coding-agent
+- cli
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

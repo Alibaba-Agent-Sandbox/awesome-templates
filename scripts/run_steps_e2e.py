@@ -5,6 +5,7 @@ Credentials come from the environment. ABX selects the verified CLI command.
 Private harness journals/logs remain outside the checkout. This does not run L3.
 """
 from __future__ import annotations
+from template_application import load_source_document
 
 import argparse
 import asyncio
@@ -22,6 +23,7 @@ import uuid
 import yaml
 
 from prepare_steps import ROOT, parallel_assets, prepare
+from template_application import publication_metadata
 from select_image_templates import catalog_names
 
 
@@ -61,11 +63,11 @@ def run_one(name: str, args: argparse.Namespace) -> dict:
         # consumer owns the original application's startup, env and readiness.
         manifest.pop('start_cmd', None)
         manifest.pop('ready_cmd', None)
-        (stage / 'template.yaml').write_text(yaml.safe_dump(manifest, sort_keys=False, allow_unicode=True))
-        proof['generated_manifest_sha256'] = hashlib.sha256((stage / 'template.yaml').read_bytes()).hexdigest()
+        (stage / 'prepared-steps.yaml').write_text(yaml.safe_dump(manifest, sort_keys=False, allow_unicode=True))
+        proof['generated_manifest_sha256'] = hashlib.sha256((stage / 'prepared-steps.yaml').read_bytes()).hexdigest()
         (stage / 'steps-provenance.json').write_text(json.dumps(proof, indent=2) + '\n')
         result['build_provenance'] = proof
-        result['template_version'] = str(yaml.safe_load((source / 'template.yaml').read_text())['version'])
+        result['template_version'] = str(publication_metadata(source, load_source_document(source / 'template.yaml'))['version'])
         alias = 'e2e-steps-' + name[:24] + '-' + uuid.uuid4().hex[:8]
         require(not exact_templates(cli, alias), 'unique native step alias preflight')
         intent_path = stage / 'platform-intent.json'

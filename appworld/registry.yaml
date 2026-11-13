@@ -1,0 +1,18 @@
+specVersion: 1
+name: appworld
+version: 1.0.8
+description:
+  zh: 在 AppWorld 模拟应用中运行 Agent 任务，并查看原生评估结果。
+  en: Run agent tasks against AppWorld simulated applications and inspect native evaluation
+    results.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- appworld
+- benchmark
+- function-calling
+- evaluation
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

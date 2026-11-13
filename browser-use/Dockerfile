@@ -16,5 +16,12 @@ WORKDIR /home/user/app
 COPY --chown=user:user commands.py worker.py process.py lifecycle.py .
 RUN chown user:user /home/user/app \
     && python3 -c "import subprocess; p=subprocess.run(['du','-sx','--block-size=1','/'],capture_output=True,text=True,timeout=120); assert p.returncode==0, 'rootfs accounting failed'; n=int(p.stdout.split()[0]); print('image_rootfs_bytes='+str(n)); assert n<=8*1024**3, 'rootfs exceeds8GiB'"
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV ABX_SERVER_TOKEN="" \
+    PLAYWRIGHT_BROWSERS_PATH="/opt/playwright" \
+    BROWSER_USE_PYTHON="/opt/browser-use/bin/python" \
+    BROWSER_USE_API_KEY="" \
+    BROWSER_USE_BASE_URL="" \
+    BROWSER_USE_MODEL=""
 USER user
 EXPOSE 9000

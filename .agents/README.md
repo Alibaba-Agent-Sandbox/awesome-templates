@@ -1,16 +1,37 @@
 # Engineering records: awesome-templates
 
+- [Named resource CI follow-up](evidence/verify/2026-11-13-named-resource-ci-followup.md): preserved SWE and agents-cli protocol checks after retiring dynamic manifest fields; media CI reproduction remains separate.
+
+- [Agents API on native named resources](notes/proposed/feature/2026-11-13-agents-api-native-resources.md) · [local verification](evidence/verify/2026-11-13-agents-api-native-resources.md). Business bootstrap and publication ownership; hosted upgrade acceptance remains separate.
+
+- [Named static resource contract and business startup ownership](notes/proposed/architecture/2026-11-13-named-resource-contract.md) · [verification](evidence/verify/2026-11-13-named-resource-contract.md). Supersedes the unmerged v1 public candidate; cloud/release gates remain independent.
+
+- [Agents API delivery operations](notes/proposed/process/2026-11-12-agents-api-delivery-operations.md) · [record-placement verification](evidence/verify/2026-11-12-agents-api-delivery-operations.md).
+
 - [Independent v1 resources and Worker bootstrap ownership](notes/proposed/architecture/2026-11-12-template-v1-independent-resources.md) · [verification](evidence/verify/2026-11-12-template-v1-independent-resources.md). Producer-only increment; combined execution and cloud acceptance remain separate.
 
 - [Resolved Provider validation boundary](notes/proposed/architecture/2026-11-12-template-v1-provider-validation-stage.md) · [verification](evidence/verify/2026-11-12-template-v1-provider-validation-stage.md). Intent expressions remain unevaluated.
 
 - [Additional v1 access ports](notes/proposed/architecture/2026-11-12-template-v1-additional-ports.md) · [verification](evidence/verify/2026-11-12-template-v1-additional-ports.md). Extra ports carry no protocol/readiness promise.
 
+- [V1 resource and catalog migration](notes/proposed/architecture/2026-11-12-template-v1-migration.md) · [local verification](evidence/verify/2026-11-12-template-v1-migration.md). Active source candidate; coordinated consumer/image/cloud/release gates remain separate.
+
 - [Strict v1 local identifier boundaries](notes/proposed/architecture/2026-11-12-template-v1-identifier-boundaries.md) · [verification](evidence/verify/2026-11-12-template-v1-identifier-boundaries.md). Python/JS admission now agrees without limiting native reference IDs.
 
 - [Ordinary public resource names](notes/proposed/architecture/2026-11-12-template-v1-resource-name.md) · [verification](evidence/verify/2026-11-12-template-v1-resource-name.md). Engineering directories do not define public naming exceptions.
 
+- [Readable resource field tables and author-directory closure](notes/proposed/process/2026-11-12-template-reference-readability.md) · [verification](evidence/verify/2026-11-12-template-reference-readability.md). Human field reference, ordinary skeleton resource name and final tested Server source pin.
+
+- [Agents API local image verification](evidence/verify/2026-11-12-agents-api-local-images.json): independent real builds/offline probes; exact image/source bounds, no cloud or Agent turn claim.
 - [Shared v1 Core YAML source reader](notes/proposed/architecture/2026-11-12-template-v1-core-reader.md) · [verification](evidence/verify/2026-11-12-template-v1-core-reader.md). Actual dual-parser raw-source parity; native evaluation remains a separate stage.
+
+- [V1 source reader consumer intake](notes/proposed/process/2026-11-12-template-v1-reader-consumers.md) · [verification](evidence/verify/2026-11-12-template-v1-reader-consumers.md). Bounded public-file parity, final SDK source dependency and precise Managed ingress scope.
+
+- [Final Agents API local validation](evidence/verify/2026-11-12-agents-api-final-local-validation.md). Exact final Server image, unchanged Guest real Qwen two-turn task, independent downloaded-code tests and public source acquisition; FC/cloud E2E remains separate.
+
+- [Current resource paths in existing protocol regressions](notes/proposed/process/2026-11-12-v1-template-test-readers.md) · [verification](evidence/verify/2026-11-12-v1-template-test-readers.md). Actual CI failure preserved; fresh published-a7 local HTTP/budget/cleanup regressions pass without lowering assertions.
+
+- [Bounded observation of HMR diagnostics](notes/proposed/process/2026-11-12-next-hmr-buffered-observation.md) · [verification](evidence/verify/2026-11-12-next-hmr-buffered-observation.md). Actual native-toolchain test preserves both origin checks and exact diagnostic assertion; no runtime change.
 
 ## Recent changes — 2026-11-10
 

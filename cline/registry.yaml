@@ -1,0 +1,17 @@
+specVersion: 1
+name: cline
+version: 1.0.4
+description:
+  zh: 通过 Cline CLI 运行无界面编码任务，配置兼容模型并控制任务运行时间。
+  en: Run headless Cline CLI coding tasks with a compatible model and bounded execution
+    time.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- cline
+- coding-agent
+- openai-compatible
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

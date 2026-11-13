@@ -1,1 +1,4 @@
 *.whl
+
+# Private application sessions (contain generated authentication).
+.sandbox-session*.json

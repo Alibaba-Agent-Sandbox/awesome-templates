@@ -1,3 +1,6 @@
 node_modules/
 .next/
 .vite/
+
+# Private application sessions (contain generated authentication).
+.sandbox-session*.json

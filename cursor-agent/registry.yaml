@@ -1,0 +1,17 @@
+specVersion: 1
+name: cursor-agent
+version: 1.0.2
+description:
+  zh: 在你创建的沙箱内运行 Cursor Agent，使用原生工具完成编码任务。
+  en: Run Cursor Agent in a sandbox you create and use its native tools for coding
+    tasks.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- cursor
+- coding-agent
+- cli
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

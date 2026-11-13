@@ -1,0 +1,150 @@
+{
+  "scope": "Real local Docker image/component validation only; no cloud template, ACR push, model call, Agent turn or full FC E2E",
+  "dockerServerVersion": "26.1.5+dfsg1",
+  "images": {
+    "guest": {
+      "Id": "sha256:331c2b4d31dbea9e1b827fab9defa3eacae7681cb3e9c6fb1b55e48390ab9df3",
+      "RepoTags": [
+        "abx-v1-agents-guest:20261112"
+      ],
+      "Architecture": "amd64",
+      "Os": "linux",
+      "Size": 1428296009,
+      "Created": "2026-11-12T18:06:37.912410511Z",
+      "User": "user",
+      "ExposedPorts": {
+        "49983/tcp": {},
+        "5000/tcp": {},
+        "50005/tcp": {},
+        "9000/tcp": {}
+      },
+      "OwnershipLabel": "agents-api-v1-20261112"
+    },
+    "server": {
+      "Id": "sha256:bd7e3d1f3172cedb8c3662f90e9a2c5d9a99ee985fe6908ecf3d80f6dc82781e",
+      "RepoTags": [
+        "abx-v1-agents-server:20261112"
+      ],
+      "Architecture": "amd64",
+      "Os": "linux",
+      "Size": 224563902,
+      "Created": "2026-11-12T18:13:19.37306734Z",
+      "User": "app",
+      "ExposedPorts": {
+        "9000/tcp": {}
+      },
+      "OwnershipLabel": "agents-api-v1-20261112"
+    }
+  },
+  "inputs": {
+    "guest": {
+      "scope": "local image only",
+      "templateCommit": "c5549a80d0d79a318c688d6778504253b1a13e43",
+      "archiveSha256": "e5dab6701e0a69aebdcd6177ba4d13e2beb8af7a5aca360042657275e81f00d9",
+      "contextFiles": {
+        ".gitignore": "c7596bac3ba333b42c6c7b227a59f372f9f983a005220ef7606963e82f47d021",
+        "Dockerfile": "ae0ae92ed1a0f07c5c5cfb068658d278f3a48fded476842ed29fdc2528369306",
+        "README.md": "a7a276727c15ccae577b31caa583850a7f90f52079c8507910ff23959bbc4494",
+        "README.zh-CN.md": "860d5bbc5af12822d898b37c208a30225adbce0d25d3d3e2437e32ec6e1dcfe6",
+        "commands.py": "2ceebf0a32889d58305f5e88b6974834f2605a24e10b00421bc2d763127e600f",
+        "e2e_test.py": "c5a541ca1d3a2f62fc542c85225cefc1df3811a3639e3c385aecb0e3aa992bec",
+        "fixtures/csv-analysis/aggregate.py": "add3f786fdb0a86d411dce9c11759035bd33e74deb737a04c4244ead731f47d8",
+        "fixtures/csv-analysis/sales.csv": "bf0302f06857b256122fedd2da30fc7e5a767d96cf006a786cdb0bbdc5236722",
+        "fixtures/csv-analysis/tests/test_aggregate.py": "6572f0585e3be203aa51a624834b4da96cf0ccc7532de3c00bdf2638e3d81270",
+        "registry.yaml": "78fdba5adf3c6595c8bc06d7c7a2f2433237515d504bafb972af138ce34b2581",
+        "scripts/smoke.py": "4cd38fc6f25b989068f1f16e48c75603bdc1cf92cbe81dffc96950dc4a48e4be",
+        "server/Dockerfile": "653c17ec49ad9d6f47132a9f88ba915411f2666565fb58732ec0fde4155046dd",
+        "template.yaml": "54c4c38dcf03931403823f37b9569fc19c66ca51d46d015bff3f3abe6f65ad42",
+        "test_smoke.py": "dc2fbb188f22f1db3b867630c8bfd265aa0466baa77b52ecf47bb007269b6243"
+      },
+      "resolvedDockerfileSha256": "b359836650e6aa2b447def8848c98388613db333dc76d5cb08305e4d482ca922",
+      "imageTag": "abx-v1-agents-guest:20261112",
+      "ownershipLabel": "abx-local-task=agents-api-v1-20261112"
+    },
+    "server": {
+      "scope": "local image only",
+      "dockerfileSourceState": "owner-frozen working-tree bytes; immutable SDK source archive",
+      "dockerfileSha256": "b83cb75cb07ee8ffeab7e5f3120b96100abb9968628bad2a0735b076fa74e5be",
+      "sdkSourceCommit": "c550cf53a9eb0c3c9899d0336b924633eb9b0988",
+      "sdkSourceArchiveSha256": "e5c8c5b1d4deef7a49f720a4e42cfca709652551fc379e1f7b1f7dec00e1afe9",
+      "baseImage": "python:3.13.8-slim-bookworm",
+      "baseImageDigest": "sha256:61169c2bdb8e6bb44a8dfad33f569d324d52f079fded9a204b322a6fb9c9f799",
+      "imageTag": "abx-v1-agents-server:20261112",
+      "ownershipLabel": "abx-local-task=agents-api-v1-20261112"
+    }
+  },
+  "commands": {
+    "guest-base-pull": {
+      "exit": 0,
+      "seconds": 17.79
+    },
+    "guest-build": {
+      "exit": 0,
+      "seconds": 30.89
+    },
+    "guest-probe": {
+      "exit": 0,
+      "seconds": 0.96
+    },
+    "guest-pip-check": {
+      "exit": 0,
+      "seconds": 0.48
+    },
+    "server-build": {
+      "exit": 0,
+      "seconds": 18.1
+    },
+    "server-probe": {
+      "exit": 0,
+      "seconds": 0.62
+    },
+    "server-pip-check": {
+      "exit": 0,
+      "seconds": 0.6
+    }
+  },
+  "probes": {
+    "guest": {
+      "scope": "local image/offline bridge component only; no Agent turn/model/cloud",
+      "serverVersionMetadata": "0.4.0a7",
+      "bridgeProtocol": "agent-sandbox-managed-bridge/v1",
+      "cliVersions": {
+        "codex": "codex-cli 0.162.1",
+        "qwen": "0.23.0"
+      },
+      "nonRoot": true,
+      "privateBridgeHealth": true,
+      "unauthorizedCapabilitiesRejected": true,
+      "authenticatedAdapterDiscovery": true,
+      "fixtureStarterUnmodified": true,
+      "fixtureSha256": {
+        "aggregate.py": "add3f786fdb0a86d411dce9c11759035bd33e74deb737a04c4244ead731f47d8",
+        "sales.csv": "bf0302f06857b256122fedd2da30fc7e5a767d96cf006a786cdb0bbdc5236722",
+        "tests/test_aggregate.py": "6572f0585e3be203aa51a624834b4da96cf0ccc7532de3c00bdf2638e3d81270"
+      }
+    },
+    "server": {
+      "scope": "local real image/offline component; native infrastructure replaced in memory; no cloud/model request",
+      "clientVersionMetadata": "0.4.0a7",
+      "sourceURL": "https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/c550cf53a9eb0c3c9899d0336b924633eb9b0988.tar.gz",
+      "sourceSha256": "e5c8c5b1d4deef7a49f720a4e42cfca709652551fc379e1f7b1f7dec00e1afe9",
+      "nonRoot": true,
+      "newManagedConfigFields": true,
+      "providerEndpointMethod": true,
+      "workerLiteralSource": true,
+      "actualNativePayloadMappingInProcess": true,
+      "privateEnvAbsentFromSQLiteSessionAndReceipt": true
+    }
+  },
+  "cleanup": {
+    "taskContainersRemaining": [],
+    "localImagesRetainedForSameTask": true,
+    "noGlobalPruneOrProxyChange": true
+  },
+  "limitations": [
+    "Server native infrastructure was replaced in process for mapping checks",
+    "Guest bridge probes never submitted an Agent turn",
+    "No official OpenAI SDK compatibility or live cloud acceptance asserted",
+    "Guest source context used archived c5549a8; final source changes require corresponding ownership/source receipts even when build layers can be reused"
+  ]
+}

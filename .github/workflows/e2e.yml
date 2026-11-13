@@ -21,12 +21,18 @@ jobs:
           python-version: "3.13"
       - name: Install locked contract validators
         run: |
-          python -m pip install -r scripts/requirements-spec.txt
+          python -m pip install -r scripts/requirements-spec.txt agent-sandbox-client==0.4.0a7 agent-sandbox-server==0.4.0a7 httpx==0.28.1
           npm ci --prefix contracts/template-v1 --ignore-scripts --no-audit --no-fund
       - name: Check both canonical contract implementations
         run: |
           npm test --prefix contracts/template-v1
           python contracts/template-v1/test_contract.py
+          python scripts/sync_template_reference.py --check
+          python scripts/sync_runtime_runners.py --check
+          python scripts/check_template.py --all
+          python scripts/test_spec_tools.py
+          python -m pip install pytest==9.1.1
+          python -m pytest -q scripts/test_template_v1_migration.py scripts/test_template_reference.py scripts/test_v1_source_reader.py scripts/test_runtime_runner.py scripts/test_managed_catalog.py
 
   express-cli-contract:
     runs-on: ubuntu-24.04
@@ -45,7 +51,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Alibaba-Agent-Sandbox/agent-sandbox
-          ref: ba52904b4f099ffa50d9017e2a4260dff3c0aeeb
+          ref: dcc3dd265c38ebf179cb7ea063cac0a335232cc3
           path: .cli-contract
           persist-credentials: false
       - name: Build the reviewed CLI source
@@ -94,7 +100,7 @@ jobs:
       - name: Install test dependencies
         run: |
           python3 -m venv /tmp/database-venv
-          /tmp/database-venv/bin/pip install --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6" httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3
+          /tmp/database-venv/bin/pip install --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6" httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3 jsonschema==4.26.0 yamlcore==0.1.1
           chown -R service-test:service-test "$GITHUB_WORKSPACE"
       - name: Exercise actual authenticated engines and HTTP as non-root
         env:
@@ -124,7 +130,7 @@ jobs:
       - name: Install scoped test dependencies
         run: |
           python3 -m venv /tmp/document-venv
-          /tmp/document-venv/bin/pip install --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6" "agent-sandbox-client==0.4.0a6" httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3 pypdf==6.21.1 jsonschema==4.26.0
+          /tmp/document-venv/bin/pip install --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6" "agent-sandbox-client==0.4.0a6" httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3 pypdf==6.21.1 jsonschema==4.26.0 yamlcore==0.1.1
       - name: Verify actual document conversion, limits, SDK and external HTTP artifacts
         env:
           E2E_REQUIRE_DOCUMENT: "1"
@@ -153,7 +159,7 @@ jobs:
       - name: Install scoped test dependencies
         run: |
           python3 -m venv /tmp/media-venv
-          /tmp/media-venv/bin/pip install --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6" "agent-sandbox-client==0.4.0a6" httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3 jsonschema==4.26.0
+          /tmp/media-venv/bin/pip install --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a6" "agent-sandbox-client==0.4.0a6" httpx==0.28.1 pytest==9.1.1 pyyaml==6.0.3 jsonschema==4.26.0 yamlcore==0.1.1
       - name: Verify real CPU codecs, limits, descendants and HTTP artifact bytes
         env:
           E2E_REQUIRE_MEDIA: "1"
@@ -194,7 +200,7 @@ jobs:
         run: |
           export PLAYWRIGHT_BROWSERS_PATH="$RUNNER_TEMP/playwright"
           echo "PLAYWRIGHT_BROWSERS_PATH=$PLAYWRIGHT_BROWSERS_PATH" >> "$GITHUB_ENV"
-          python -m pip install --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a7" "agent-sandbox-client==0.4.0a7" httpx==0.28.1 pyyaml==6.0.3 jsonschema==4.26.0 pytest==9.1.1 playwright==1.58.0 Pillow==11.3.0 pypdf==6.21.1 lxml==6.0.2
+          python -m pip install --index-url https://pypi.org/simple "agent-sandbox-server==0.4.0a7" "agent-sandbox-client==0.4.0a7" httpx==0.28.1 pyyaml==6.0.3 jsonschema==4.26.0 pytest==9.1.1 playwright==1.58.0 Pillow==11.3.0 pypdf==6.21.1 lxml==6.0.2 yamlcore==0.1.1
           python -m playwright install --with-deps chromium
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libnss3-tools
@@ -269,6 +275,7 @@ jobs:
 
       - name: Lint templates and unit-test the checker
         run: |
+          npm ci --prefix contracts/template-v1 --ignore-scripts --no-audit --no-fund
           python3 scripts/test_local_cleanup.py && python3 scripts/test_spec_tools.py
           python3 scripts/test_public_launch_e2e.py
           python -m pytest -q scripts/test_prepare_steps.py scripts/test_ci_image.py scripts/test_ci_image_archive.py scripts/test_express_cleanup.py scripts/test_steps_http.py scripts/test_step_assets.py scripts/test_step_asset_cache.py scripts/test_cursor_assets.py scripts/test_devin_assets.py scripts/test_template_http_acceptance.py scripts/test_image_e2e_batch.py

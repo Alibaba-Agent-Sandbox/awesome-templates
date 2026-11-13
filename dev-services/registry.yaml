@@ -1,0 +1,17 @@
+specVersion: 1
+name: dev-services
+version: 1.1.2
+description:
+  zh: 为沙箱开发和应用集成运行 PostgreSQL 与 Redis 服务。
+  en: Run PostgreSQL and Redis services for sandbox development and application integration.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- database
+- postgresql
+- redis
+- development
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

@@ -1,0 +1,70 @@
+{
+  "head": "6f7aee8844a54e37ae251cf4020d77b8ce03a63b",
+  "jobUrl": "https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/43290753694/job/131436058740",
+  "jobLogSha256": "a3ca95a0299c896b66577b1cd03ff280821835fe30282e37f0e6cdd6e20b4f67",
+  "firstFailure": {
+    "test": "swe/test_e2e_protocol.py::test_shipped_protocol_reaches_bounded_agent_and_keeps_cleanup",
+    "line": 55,
+    "exception": "KeyError: 'env'",
+    "jobGroup": "1 failed, 35 passed"
+  },
+  "samePatternLaterInWorkflow": {
+    "file": "agents-cli/test_protocol.py",
+    "line": 46,
+    "retiredKey": "start_cmd"
+  },
+  "localBefore": {
+    "command": "python -m pytest -q swe/test_e2e_protocol.py agents-cli/test_protocol.py",
+    "failed": 4,
+    "passed": 19,
+    "cause": "old public manifest paths in test consumers"
+  },
+  "candidate": "Read actual v1 files through canonical owner reader; use sandbox.instance.envs and sandbox.start; keep all behavior assertions and cleanup unchanged",
+  "productMutation": false,
+  "cloudExecution": false,
+  "fixScope": {
+    "files": [
+      "swe/test_e2e_protocol.py",
+      "agents-cli/test_protocol.py"
+    ],
+    "reader": "scripts.template_application.load_source_document",
+    "paths": [
+      "sandbox.instance.envs",
+      "sandbox.start"
+    ],
+    "assertionsRemoved": false,
+    "runtimeModified": false
+  },
+  "after": {
+    "python": "3.13.13",
+    "installation": "fresh venv; published PyPI client/server a7, not editable/source SDK",
+    "dependencies": {
+      "agent-sandbox-client": "0.4.0a7",
+      "agent-sandbox-server": "0.4.0a7",
+      "pytest": "9.1.1",
+      "httpx": "0.28.1",
+      "jsonschema": "4.26.0",
+      "PyYAML": "6.0.3",
+      "yamlcore": "0.1.1"
+    },
+    "targeted": {
+      "command": "E2E_RUN_LLM=0 python -m pytest -q swe/test_e2e_protocol.py agents-cli/test_protocol.py",
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 1.38
+    },
+    "relatedGroups": {
+      "command": "E2E_RUN_LLM=0 python -m pytest -q swe/test_commands.py swe/test_e2e_protocol.py agents-cli/test_model_setup.py agents-cli/test_protocol.py agents-cli/test_sdk_verifier.py",
+      "passed": 89,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 9.63
+    },
+    "pipCheck": "PASS"
+  },
+  "beforeLogSha256": "206639bbf08941e63f66767be7077a9d0cb17b4bef0340d9e19754cc90936a25",
+  "targetedAfterLogSha256": "ebad1e2088c070c883579f67dd52435746a9f07269b885072b2580897dd23435",
+  "relatedAfterLogSha256": "209d75b1de1085c883d6b1b9e4295010fc69d8b8f41fd797ec231e014993b047",
+  "testConsumerMutation": true
+}

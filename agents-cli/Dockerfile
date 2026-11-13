@@ -45,5 +45,15 @@ RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbo
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py server-policy.json ./
 RUN chown user:user /home/user/app
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV ABX_SERVER_TOKEN="" \
+    OPENAI_API_KEY="" \
+    CODEX_API_KEY="" \
+    OPENAI_BASE_URL="" \
+    OPENAI_MODEL="" \
+    ABX_AGENTS_STATE_DIR="/home/user/.agent-sandbox/agents" \
+    CODEX_HOME="/home/user/.codex" \
+    ABX_SERVER_POLICY_FILE="/home/user/app/server-policy.json" \
+    WORKSPACE="/home/user/workspace"
 USER user
 EXPOSE 9000

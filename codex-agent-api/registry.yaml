@@ -1,0 +1,19 @@
+specVersion: 1
+name: codex-agent-api
+version: 2.0.2
+description:
+  zh: 通过 HTTP 管理 Codex 会话和任务，以 SSE 接收执行更新并读取结果。
+  en: Manage Codex sessions and tasks over HTTP, receive SSE updates and retrieve
+    task results.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- codex
+- openai
+- agents-api
+- ai-agent
+- self-hosted
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

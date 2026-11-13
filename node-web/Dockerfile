@@ -9,5 +9,9 @@ WORKDIR /home/user/app
 COPY --chown=user:user index.js .
 COPY --chown=user:user commands.py .
 RUN chown user:user /home/user/app
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV NODE_ENV="production" \
+    PORT="3000" \
+    ABX_SERVER_TOKEN=""
 USER user
 EXPOSE 3000 9000

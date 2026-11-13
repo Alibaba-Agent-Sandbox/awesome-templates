@@ -1,43 +1,13 @@
+specVersion: 1
 name: python-hello
-version: "1.1.4"
-description: "Python command server with script execution, pytest, and file examples"
-author: "alibaba-agent-sandbox"
-license: Apache-2.0
-spec_version: 5
-base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
-generation: 2
-start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
-ready_cmd: "agent-sandbox-server healthcheck --port 9000"
-resources:
-  cpu: 2
-  memory: 2048
-ports: [9000]
-tags: [python, hello-world, example, pytest]
-priority: P2
-wave: other
-# The retained 2026-10-15 evidence covers hello on 1.0.0, not this revision.
-env:
-  LANG: C.UTF-8
-  ABX_SERVER_TOKEN: ""
-smoke:
-  - command: hello
-    args: {name: Express}
-    expect: "Hello, Express!"
-  - command: run_script
-    args:
-      code: "print(21 * 2)"
-    expect: "42"
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations:
-    - commands.list
-    - commands.run
-# Select explicitly with --build-profile portable; the default Dockerfile stays provider-native.
-build_profiles:
-  portable:
-    dockerfile: Dockerfile.portable
-    # Quote the root path: YAML 1.1 float resolvers can treat a bare dot as NaN.
-    context: '.'
+sandbox:
+  agent:
+    provider: alicloud-express
+    template:
+      region: cn-hangzhou
+      buildConfig:
+        dockerfile: Dockerfile
+        context: .
+      generation: 2
+      cpu: 2
+      memorySize: 2048

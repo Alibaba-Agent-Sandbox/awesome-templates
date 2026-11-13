@@ -248,7 +248,7 @@ def _run_one(directory: Path, path_prefix: str) -> tuple[str, str]:
 
 
 def _startup_argv(directory: Path, port: int) -> tuple[list[str], bool]:
-    """Use the exact v6 bridge entry; existing v5 local startup stays unchanged."""
+    """Select the exact supported business entry from native template attributes."""
     # Use this repository's canonical strict reader, even under an unrelated
     # CWD / importlib file load. Non-main names avoid executing either CLI.
     helper_directory = Path(__file__).resolve().parent
@@ -257,13 +257,18 @@ def _startup_argv(directory: Path, port: int) -> tuple[list[str], bool]:
     manifest, errors = checker["_load_yaml"](directory / "template.yaml")
     if errors or not isinstance(manifest, dict):
         raise ValueError("local startup needs a valid template manifest")
-    if type(manifest.get("spec_version")) is not int or manifest["spec_version"] != 6:
-        return ["python3", "commands.py"], False
     helper = runpy.run_path(str(helper_directory / "template_application.py"),
                             run_name="_abx_local_manifest_contract")
-    failures = helper["validate_v6"](manifest, directory)
+    failures = helper["validate_manifest"](manifest, directory)
     if failures:
-        raise ValueError("invalid managed bridge manifest: " + "; ".join(failures))
+        raise ValueError("invalid template manifest: " + "; ".join(failures))
+    if not helper["is_managed_application"](manifest):
+        return ["python3", "commands.py"], False
+    # This is an owner-maintained local test harness. Native preparation commands
+    # never become the command executed on the developer's machine.
+    expected = helper["engineering_checks"]("agents-api").get("localRuntime", {}).get("start")
+    if expected != "python -m agent_sandbox.server.managed --port 9000":
+        raise ValueError("invalid template manifest: unsupported managed startup command for local harness")
     return [sys.executable, "-m", "agent_sandbox.server.managed", "--port", str(port)], True
 
 

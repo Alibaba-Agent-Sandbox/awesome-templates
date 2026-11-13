@@ -1,0 +1,16 @@
+specVersion: 1
+name: qm-sandbox
+version: 1.0.3
+description:
+  zh: 为 QM 工具提供基于 Agent Sandbox Node.js 客户端的执行环境。
+  en: An execution environment for QM tools backed by the Agent Sandbox Node.js client.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- qm
+- sandbox
+- sdk
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

@@ -1,0 +1,17 @@
+specVersion: 1
+name: python-hello
+version: 1.1.4
+description:
+  zh: 最小 Python 示例，用于体验模板启动、运行脚本和获取执行结果。
+  en: A minimal Python example for launching a template, running a script and retrieving
+    its output.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- python
+- hello-world
+- example
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

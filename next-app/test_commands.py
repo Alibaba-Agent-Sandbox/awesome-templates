@@ -82,6 +82,7 @@ def test_invalid_preview_host_refused_before_start(workspace,host):
 
 def test_real_next_hmr_accepts_exact_loopback_origin_and_rejects_other_origin(workspace):
     import asyncio
+    import time
     import aiohttp
     commands.scaffold('next','hmr-origin')
     commands.dev_start('next','hmr-origin')
@@ -96,5 +97,11 @@ def test_real_next_hmr_accepts_exact_loopback_origin_and_rejects_other_origin(wo
                 assert not allowed
     asyncio.run(verify('http://127.0.0.1:19001',True))
     asyncio.run(verify('http://unrelated.example.invalid',False))
+    deadline=time.monotonic()+5
     logs=commands.dev_logs()
+    # The websocket response does not synchronize the independent log reader.
+    while time.monotonic()<deadline:
+        if 'Blocked cross-origin request'in logs and 'unrelated.example.invalid'in logs:break
+        time.sleep(.01)
+        logs=commands.dev_logs()
     assert 'Blocked cross-origin request'in logs and 'unrelated.example.invalid'in logs

@@ -1,0 +1,17 @@
+specVersion: 1
+name: kimi-code
+version: 1.0.3
+description:
+  zh: 运行 Kimi Code 无界面编码任务，显式设置工具权限并获取任务输出。
+  en: Run headless Kimi Code coding tasks with explicit tool permissions and retrieve
+    task output.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- kimi
+- coding-agent
+- openai-compatible
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

@@ -1,51 +1,13 @@
+specVersion: 1
 name: codex
-version: "2.0.3"
-description: "OpenAI Codex CLI (@openai/codex@0.162.1) non-interactive exec with JSON events and an OpenAI-compatible config."
-author: "alibaba-agent-sandbox"
-license: Apache-2.0
-spec_version: 5
-base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
-generation: 2
-start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
-ready_cmd: "agent-sandbox-server healthcheck --port 9000"
-
-resources:
-  cpu: 2
-  memory: 2048
-
-ports:
-  - 9000
-
-tags:
-  - codex
-  - openai
-  - ai-agent
-  - code-generation
-
-priority: P0
-wave: 1
-
-
-env:
-  OPENAI_API_KEY: ""
-  CODEX_API_KEY: ""
-  ABX_LLM_API_KEY: ""
-  OPENAI_BASE_URL: ""
-  ABX_LLM_BASE_URL: ""
-  CODEX_MODEL: ""
-  CODEX_HOME: "/home/user/.codex"
-  WORKSPACE: "/home/user/workspace"
-  ABX_SERVER_TOKEN: ""
-
-smoke:
-  - command: codex_version
-    expect: "0.162.1"
-  - command: codex_setup_check
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations:
-    - commands.list
-    - commands.run
+sandbox:
+  agent:
+    provider: alicloud-express
+    template:
+      region: cn-hangzhou
+      buildConfig:
+        dockerfile: Dockerfile
+        context: .
+      generation: 2
+      cpu: 2
+      memorySize: 2048

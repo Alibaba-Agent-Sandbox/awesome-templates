@@ -1,0 +1,18 @@
+specVersion: 1
+name: agents-cli
+version: 2.1.0
+description:
+  zh: 在同一个沙箱内通过 HTTP 调用 Codex 与 Qwen Code，管理任务和编码会话。
+  en: Call Codex and Qwen Code over HTTP in one sandbox, managing tasks and coding
+    sessions.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- agents-api
+- codex
+- qwen-code
+- self-hosted
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

@@ -1,0 +1,18 @@
+specVersion: 1
+name: droid
+version: 1.2.2
+description:
+  zh: 通过 Factory Droid 执行沙箱编码任务，显式配置兼容模型和任务可写范围。
+  en: Use Factory Droid for sandbox coding tasks with explicit compatible-model settings
+    and writable scope.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- droid
+- factory
+- ai-agent
+- ai-coding
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

@@ -8,5 +8,10 @@ WORKDIR /home/user/app
 COPY --chown=user:user commands.py process.py lifecycle.py .
 RUN chown user:user /home/user/app \
     && python3 -c "import subprocess; used=int(subprocess.check_output(['du','-sx','--block-size=1','/']).split()[0]); assert used <= 8*1024**3, 'image rootfs exceeds8GiB'"
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV ABX_SERVER_TOKEN="" \
+    CRUSH_API_KEY="" \
+    CRUSH_BASE_URL="" \
+    CRUSH_MODEL=""
 USER user
 EXPOSE 9000

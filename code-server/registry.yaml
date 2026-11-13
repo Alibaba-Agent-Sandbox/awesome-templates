@@ -1,0 +1,17 @@
+specVersion: 1
+name: code-server
+version: 1.0.3
+description:
+  zh: 通过浏览器访问带密码认证的代码编辑器，在沙箱内编辑文件和开发应用。
+  en: Access a password-protected browser IDE to edit files and develop applications
+    in a sandbox.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- ide
+- vscode
+- code-server
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

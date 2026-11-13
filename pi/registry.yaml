@@ -1,0 +1,16 @@
+specVersion: 1
+name: pi
+version: 1.0.3
+description:
+  zh: 使用 Pi CLI 与显式启用的工具完成编码任务，按任务配置兼容模型。
+  en: Use Pi CLI and explicitly enabled tools for coding tasks with a compatible model.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- pi
+- coding-agent
+- openai-compatible
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

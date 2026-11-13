@@ -2,6 +2,8 @@
 
 通过受限的本地 Agents HTTP API 调用固定版本的 Codex 和 Qwen Code。
 
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。模板属性在 `sandbox.agent.template`；运行默认值在 Dockerfile，私有运行值在创建实例时显式传入。用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+
 ## 做什么
 
 安装 `@openai/codex@0.162.1`、`@qwen-code/qwen-code@0.23.0`，提供版本检查和六个
@@ -26,6 +28,9 @@ Codex CLI `0.162.1`、Qwen Code `0.23.0`、Node.js `24.16.0` 及受限的本地 
 
 ## 快速开始（CLI）
 
+`abx deploy` 只准备模板。下载本目录源码后，从该目录执行下面的部署，再将 `<prepared-template-id>` 改成返回的模板 ID，运行 `run.py` 创建实例并显式启动业务服务。脚本只传入本页列出的运行配置，自动生成并将应用令牌保存在本地 `.sandbox-session.json`（仅当前用户可读）；不会打印令牌。已有会话文件不会被覆盖，可用 `--session` 选择新文件。
+
+
 可选择 `qwen-code`（Chat Completions）或 `codex`（Responses）适配器。启动前显式配置 OPENAI_API_KEY、OPENAI_BASE_URL、OPENAI_MODEL，三者来自自己有权限的同一个模型服务。API Key 流程无需 OAuth 登录，也不继承本机账号。Codex 会话前调用 `agents_configure_codex`：将启动时的 endpoint 写入原生 Responses profile，密钥只保存环境变量名引用，关闭 WebSockets；不覆盖其他已有配置。Qwen 直接使用启动时的 Chat 配置。同一实例使用两个适配器时，上游需要同时支持两种协议，否则分别配置并启动实例。
 
 
@@ -37,17 +42,20 @@ Codex CLI `0.162.1`、Qwen Code `0.23.0`、Node.js `24.16.0` 及受限的本地 
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-# CLI 默认生成并保存应用令牌；外部 SDK/HTTP 如需自定义，在部署前取消下一行注释。
+# run.py 自动生成私有应用令牌；需要自行指定时可取消下一行注释。
 # export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export OPENAI_API_KEY='<your-model-or-vendor-key>'
 export OPENAI_BASE_URL='<your-model-api-base-including-v1-if-required>'
 export OPENAI_MODEL='<model-id-from-your-provider>'
-abx deploy Alibaba-Agent-Sandbox/awesome-templates//agents-cli --sandbox-timeout 1800 --yes
+abx deploy . --yes
+python3 -m pip install "agent-sandbox-client==0.4.0a7"
+python3 run.py --template <prepared-template-id> --timeout 1800
+export ABX_SERVER_TOKEN="$(python3 -c 'import json; print(json.load(open(".sandbox-session.json"))["application_token"])')"
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
-`--sandbox-timeout 1800` 是沙箱生存时间（秒），`command_timeout`/`timeout_s` 是单次任务执行期限，`ABX_HTTP_TIMEOUT`/SDK `timeout` 是客户端等待时间，三者分别设置。
+`run.py --timeout 1800` 是沙箱生存时间（秒），`command_timeout`/`timeout_s` 是单次任务执行期限，`ABX_HTTP_TIMEOUT`/SDK `timeout` 是客户端等待时间，三者分别设置。
 
 launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
 
@@ -66,7 +74,7 @@ export AGENTS_ADAPTER=qwen-code
 
 ## 快速开始（Python SDK）
 
-先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a7`。
 
 连接 launch 已启动的应用，并通过 SDK 解析真实网关地址；以下 Python 发起同一个编码任务，再有界轮询会话输出。应用的受限策略没有普通文件/shell HTTP 路由，最终产物通过提供方的 `abx sandbox exec`/`download` 检查。
 
@@ -199,7 +207,7 @@ asyncio.run(main())
 abx sandbox exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
 abx sandbox download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
 abx sandbox download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
-abx delete "$SANDBOX_ID"
+abx sandbox delete "$SANDBOX_ID" --yes
 ```
 
 程序预期输出 `Hello from the sandbox`。先读取产物并检查再使用；模型回答成功不代表文件一定存在。文件不会自动回写模板或你的本机，释放沙箱前必须导出。
@@ -232,16 +240,18 @@ HTTP 使用 Codex 前，先 `POST /commands/agents_configure_codex`，body 为 `
 
 ## 配置
 
+资源配置改 `template.yaml` 的 `sandbox.agent.template`；镜像默认值改 Dockerfile。运行时值从当前进程环境传给 `run.py`，允许的名称直接列在脚本 `RUNTIME_ENV_NAMES` 中。空值不会作为秘密写入镜像。业务启动命令在 `run.py`；不在模板快照阶段启动带动态认证的服务。外部 SDK/HTTP 客户端可从私有 `.sandbox-session.json` 读取 `application_token`，或复用显式设置的 `ABX_SERVER_TOKEN`。
+
 | 名称 | 必需 | 用途 |
 |---|---|---|
-| `ABX_SERVER_TOKEN` | 必填；清单为空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| `ABX_SERVER_TOKEN` | 必填；清单为空 | run.py 自动生成，或显式提供；外部客户端从私有会话文件读取。 |
 | `OPENAI_API_KEY` | 兼容模型调用需要 | Qwen 及兼容 Codex 配置的模型凭据，清单中为空 |
 | `CODEX_API_KEY` | Codex 可选替代项 | 清单中为空；实际支持取决于上游及提供方配置 |
 | `OPENAI_BASE_URL`、`OPENAI_MODEL` | 取决于提供方 | 显式模型端点和模型 ID；Qwen 使用 Chat Completions，Codex 准备 profile 后使用 Responses |
 | `ABX_AGENTS_STATE_DIR` | 否 | 原生本地会话存储目录 `/home/user/.agent-sandbox/agents`，随实例删除 |
 | `CODEX_HOME` | 否 | Codex 状态目录，默认 `/home/user/.codex` |
 | `WORKSPACE` | 否 | `/home/user/workspace`；会话请求应显式指定目标目录 |
-| `ABX_SERVER_POLICY_FILE` | 镜像已设置 | 随附策略文件路径；canonical start_cmd 还显式传入 `--policy` |
+| `ABX_SERVER_POLICY_FILE` | 镜像已设置 | 随附策略文件路径；sandbox.agent.template.startCommand 还显式传入 `--policy` |
 
 修改策略会改变 HTTP 接口范围；本模板契约基于随附 allowlist。
 

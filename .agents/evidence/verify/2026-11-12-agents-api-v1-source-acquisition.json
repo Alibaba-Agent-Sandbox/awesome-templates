@@ -1,0 +1,28 @@
+{
+  "cliSource": "f26f789e98ab84ab1aa2504dce62cd996cf2197b",
+  "templateSource": "7b0ef9c63cd971949e1a024b37f9f1b0877d1cbe",
+  "exit_code": 0,
+  "seconds": 2.07,
+  "scope": "source acquisition only; no cloud/model credentials passed; no deploy/build",
+  "source_files": 14,
+  "byte_mismatches": [],
+  "resourcePresent": true,
+  "command": "abx template init <temporary-directory> --from Alibaba-Agent-Sandbox/awesome-templates//agents-api@7b0ef9c63cd971949e1a024b37f9f1b0877d1cbe --name agents-api --yes",
+  "upstreamResultSha256": "eb7b207638a127b79b82236bfb199936c7af3f9f95b43ac27fd092fe0b7800cf",
+  "publicationMetadataPresent": true,
+  "receiptFieldCorrection": "The original acquisition receipt key registryOptional only recorded Path.is_file() presence; it did not test optionality. The original receipt and its upstreamResultSha256 are unchanged.",
+  "independentResourceOnlyProbe": {
+    "scope": "actual built CLI intent reader with only template.yaml present; no credentials, model or cloud execution",
+    "cliSource": "f26f789e98ab84ab1aa2504dce62cd996cf2197b",
+    "sourceManifest": "7b0ef9c63cd971949e1a024b37f9f1b0877d1cbe",
+    "exit_code": 0,
+    "result": {
+      "specVersion": 1,
+      "name": "agents-api",
+      "parametersPresent": false,
+      "metadataExists": false,
+      "nativeExpressionsUnresolved": true
+    },
+    "upstreamResultSha256": "f6071f1d1594753da5d549545997fbe7d38f39ead89e7fc0b6170d092c4dadb5"
+  }
+}

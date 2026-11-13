@@ -8,7 +8,7 @@
 ## 模板清单
 
 1. 复制 `_skeleton/` 到 kebab-case 目录，目录、manifest name 和目录索引 path 一致。
-2. 默认 Express 构建文件保留阿里云基础镜像、generation 2、start_cmd、ready_cmd、固定依赖和 USER user，不添加 CMD/ENTRYPOINT。独立声明的显式构建方案可采用其他固定基础镜像，但保留原构建文件与非 root 运行契约，由调用方按名称选择，不由 Provider 自动改写。
+2. 默认 Express 构建文件保留阿里云基础镜像、Provider generation 2、模板自有 run.py 中的应用启动、固定依赖和 USER user，不添加 CMD/ENTRYPOINT。独立声明的显式构建方案可采用其他固定基础镜像，但保留原构建文件与非 root 运行契约，由调用方修改 buildConfig.dockerfile 选择，不由 Provider 自动改写。
 3. 在 commands.py 用 server SDK 的 `@command` 注册命令；只在 main guard 内调用 start。
 4. 根据 [设计骨架](docs/design/_TEMPLATE.md) 完成 `docs/design/<name>.md`。
 5. 双语 README 使用规范要求的标题，参数、默认值、错误、CLI/SDK/HTTP 示例和限制一致。README 聚焦安装、配置、有用任务、输出和清理；测试结果、历史验收及开发说明放在工程记录、设计或贡献指南，保留原始证据，真实提供方／模型验收要求不变。
@@ -88,4 +88,6 @@ HTTP body 直接是参数对象，响应是 result envelope。进程启动配置
 
 清理未使用代码时，应保留用于注册或依赖探测的导入，并分别审查测试导入与模板运行实现。生成的进程 runner 必须从其规范源修改并同步。扫描结果、实际回归结果和本地缺少的前置条件，应与云端、模型验收分别记录。
 
-托管会话应用作者遵循封闭的 [spec6 契约参考](docs/managed-agent-applications.zh-CN.md)。静态检查与运行时、提供方验收分别完成。
+托管会话应用作者遵循封闭的 [Agents API 契约参考](docs/managed-agent-applications.zh-CN.md)。静态检查与运行时、提供方验收分别完成。
+
+新增资源使用 `specVersion: 1`。上架信息只写 registry.yaml，目录行只引用它。本地运行不依赖该文件。工程 smoke/priority/wave 保存在 scripts/template-checks.json；修改后同步测试，勿移回用户字段。完整字段文档由 `python scripts/sync_template_reference.py` 生成，CI 用 --check 校验。

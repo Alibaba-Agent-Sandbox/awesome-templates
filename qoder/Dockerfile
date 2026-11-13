@@ -15,5 +15,9 @@ ENV WORKSPACE=/home/user/app
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py .
 RUN chown user:user /home/user/app
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV WORKSPACE="/home/user/app" \
+    ABX_SERVER_TOKEN="" \
+    QODER_PERSONAL_ACCESS_TOKEN=""
 USER user
 EXPOSE 9000

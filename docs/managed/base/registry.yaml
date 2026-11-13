@@ -1,0 +1,14 @@
+specVersion: 1
+name: base
+version: provider-managed
+description:
+  zh: 可随时创建与释放的 Linux 基础环境，用于运行命令、处理文件和安装任务依赖。
+  en: A disposable Linux environment for commands, files and task dependencies.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- provider-managed
+- base
+readme:
+  en: README.md
+  zh: README.zh-CN.md

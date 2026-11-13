@@ -1,0 +1,17 @@
+specVersion: 1
+name: apply-patch
+version: 1.0.3
+description:
+  zh: 在限定工作目录内应用 Codex 格式补丁，控制文件修改范围并检查执行结果。
+  en: Apply Codex-format patches within a bounded workspace and inspect the resulting
+    file changes.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- patch
+- files
+- codex
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

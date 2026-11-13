@@ -6,24 +6,22 @@ Reusable environments for AI agents: browser automation, coding tools, web servi
 
 [Browse templates](https://registry.agent-sandbox.cn/en/templates/) · [Usage guide](docs/using-templates.md) · [Provider setup](docs/provider-preparation.md)
 
+This branch uses `specVersion: 1` and requires matching development CLI/SDK builds. Published CLI0.5.10 does not support this format. Read the [resource specification](docs/template-spec.md) before running these recipes.
+
 ## Quick start
 
-[Install abx CLI](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#installation) 0.5.8 or newer. Follow the [usage guide](docs/using-templates.md) to prepare the selected provider's credentials and build environment, then launch the introductory template, which needs no model:
+Follow the [usage guide](docs/using-templates.md#installation) to install a matching YAML v1 development CLI and Python client, and prepare platform credentials and build tools. Download the matching template revision, then run inside the introductory template directory; it needs no model:
 
 ```bash
-abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello
-```
-
-The CLI guides missing setup, generates and saves the default application token, and reuses it for later commands. Model-based templates also need the model account or API settings described in their README.
-
-Replace `<sandbox-id>` with the returned sandbox ID:
-
-```bash
+cd python-hello
+abx deploy . --yes
+python3 run.py --template <prepared-template-id> --timeout 1800
+export ABX_SERVER_TOKEN="$(python3 -c 'import json; print(json.load(open(".sandbox-session.json"))["application_token"])')"
 abx sandbox command run <sandbox-id> hello --arg name=Ada
-abx delete <sandbox-id>
+abx sandbox delete <sandbox-id> --yes
 ```
 
-Expected output: `Hello, Ada!`. `kill` deletes the running sandbox. Follow [cleanup instructions](docs/using-templates.md#export-files-and-clean-up) to remove retained images and templates separately.
+Use the template ID returned by deploy and the Sandbox ID returned by run.py. The script generates a private application token in the session file, which later calls reuse. Expected result: `Hello, Ada!`. Model templates document their extra credentials. Manage reusable templates and images separately using the [cleanup instructions](docs/using-templates.md#export-files-and-clean-up).
 
 ## Choose a template
 

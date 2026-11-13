@@ -40,6 +40,13 @@ COPY --chown=user:user commands.py opencode.json ./
 # Root installation/version probes can create native log/data state under HOME.
 # Hand that state to the declared runtime user after all installer probes.
 RUN chown -R user:user /home/user/app /home/user/.local /home/user/.config
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV ABX_LLM_API_KEY="" \
+    ABX_LLM_BASE_URL="" \
+    OPENCODE_API_KEY="" \
+    OPENCODE_MODEL="dashscope/qwen3.8-flash" \
+    OPENCODE_SERVER_PASSWORD="" \
+    ABX_SERVER_TOKEN=""
 USER user
 EXPOSE 9000
 EXPOSE 4096

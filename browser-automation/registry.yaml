@@ -1,0 +1,18 @@
+specVersion: 1
+name: browser-automation
+version: 2.2.2
+description:
+  zh: 使用 Playwright 与 Chromium 抓取网页、操作页面和执行 UI 测试。
+  en: Use Playwright and Chromium for web scraping, page interaction and UI testing.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- browser
+- playwright
+- chromium
+- automation
+- web-scraping
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml

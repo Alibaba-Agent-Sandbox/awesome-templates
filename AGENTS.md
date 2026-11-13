@@ -10,10 +10,7 @@ Before changing files, read [CONTRIBUTING.md](CONTRIBUTING.md),
 the PR/Issue templates, and any template-local `AGENTS.md`.
 
 - Inspect the initial diff; preserve unrelated work and use an isolated task branch when needed.
-- Existing Sandbox manifests use `spec_version: 5`; managed session applications
-  use the closed `spec_version: 6` profile. Both retain one startup command and all declared
-  services. Do not add workflow selectors or rewrite historical verification as
-  current-format acceptance. Keep task-specific commands callable after startup.
+- Public resources use `specVersion: 1`; optional publication metadata belongs to `registry.yaml`. Keep Provider prepare/create inputs separate and Serving props native. Preserve one startup and all services, and never rewrite historical verification as current-format acceptance.
 - Use `_skeleton/`, pinned dependencies and the documented platform/non-root profile.
   Keep manifest, catalog, design, commands and both README languages consistent.
 - All modified repositories need their own decision note and actual verification evidence.

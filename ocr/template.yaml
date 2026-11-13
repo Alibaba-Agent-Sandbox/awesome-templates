@@ -1,31 +1,13 @@
+specVersion: 1
 name: ocr
-version: "1.0.3"
-description: "CPU English image OCR with pinned Tesseract 5.5.0 and bounded private TXT/TSV artifacts."
-author: "alibaba-agent-sandbox"
-license: Apache-2.0
-spec_version: 5
-base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
-generation: 2
-start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
-ready_cmd: "agent-sandbox-server healthcheck --port 9000"
-resources:
-  cpu: 1
-  memory: 1024
-ports: [9000]
-tags: [ocr, tesseract, images, english]
-priority: P2
-wave: 1
-env:
-  ABX_SERVER_TOKEN: ""
-smoke:
-  - command: ocr_smoke
-    args: {}
-    expect: "Tesseract image/text/TSV artifacts OK"
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations:
-    - commands.list
-    - commands.run
+sandbox:
+  agent:
+    provider: alicloud-express
+    template:
+      region: cn-hangzhou
+      buildConfig:
+        dockerfile: Dockerfile
+        context: .
+      generation: 2
+      cpu: 1
+      memorySize: 1024

@@ -22,5 +22,7 @@ RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbo
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py .
 RUN chown user:user /home/user/app
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV ABX_SERVER_TOKEN=""
 USER user
 EXPOSE 9000

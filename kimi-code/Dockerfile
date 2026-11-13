@@ -46,5 +46,12 @@ RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbo
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py .
 RUN chown user:user /home/user/app
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV WORKSPACE="/home/user/app" \
+    KIMI_MODEL_NAME="" \
+    KIMI_MODEL_API_KEY="" \
+    KIMI_MODEL_BASE_URL="" \
+    KIMI_MODEL_PROVIDER_TYPE="openai" \
+    ABX_SERVER_TOKEN=""
 USER user
 EXPOSE 9000

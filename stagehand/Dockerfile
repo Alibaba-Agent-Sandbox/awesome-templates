@@ -38,5 +38,11 @@ RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbo
 ENV HOME=/home/user WORKSPACE=/home/user/app
 COPY --chown=user:user commands.py worker.mjs browser.mjs transport.mjs process.py lifecycle.py UPSTREAM-LICENSE.md ./
 RUN chown user:user /home/user/app     && python3 -c "import subprocess; p=subprocess.run(['du','-sx','--block-size=1','/'],capture_output=True,text=True,timeout=120); assert p.returncode==0; n=int(p.stdout.split()[0]); print('image_rootfs_bytes='+str(n)); assert n<=8*1024**3"
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV ABX_SERVER_TOKEN="" \
+    STAGEHAND_API_KEY="" \
+    STAGEHAND_BASE_URL="" \
+    STAGEHAND_MODEL="" \
+    WORKSPACE="/home/user/app"
 USER user
 EXPOSE 9000

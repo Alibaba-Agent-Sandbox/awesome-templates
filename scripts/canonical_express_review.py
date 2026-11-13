@@ -4,6 +4,7 @@ Current cloud acceptance runs through public-template-launch.yml and
 public_launch_e2e.py. This module never launches an old pinned deployment path.
 """
 from __future__ import annotations
+from template_application import load_source_document, is_managed_application
 
 import argparse
 import base64
@@ -19,7 +20,6 @@ import time
 import urllib.error
 import urllib.request
 import uuid
-import yaml
 
 def save(path: Path, data: dict, *, private: bool = False) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -31,13 +31,14 @@ def save(path: Path, data: dict, *, private: bool = False) -> None:
 
 def select(text: str) -> list[str]:
     root = Path(__file__).resolve().parents[1]
-    catalog = yaml.safe_load((root / "awesome-templates.yaml").read_text())
+    catalog = load_source_document(root / "awesome-templates.yaml")
     available = {item["path"] for item in catalog["templates"]
                  if item.get("kind", "source") == "source"
-                 and yaml.safe_load((root / item["path"] / "template.yaml").read_text()).get("spec_version") == 5}
+                 and load_source_document(root / item["path"] / "template.yaml").get("specVersion") == 1
+                 and not is_managed_application(load_source_document(root / item["path"] / "template.yaml"))}
     names = sorted(available) if text == "all" else text.split(",")
     if not names or len(set(names)) != len(names) or any(name not in available for name in names):
-        raise ValueError("select unique spec5 Sandbox template names or all; managed applications require separate Gateway deployment acceptance")
+        raise ValueError("select unique v1 Sandbox template names or all; managed applications require separate Gateway deployment acceptance")
     return names
 
 
@@ -55,7 +56,7 @@ def plan() -> int:
     save(Path("canonical-authorization.json"), {"result": "AUTHORIZED" if enabled else "BLOCKED",
         "cloud_executed": False, "entry_point": "public-template-launch.yml", "reason": "exact-head opt-in accepted" if enabled else
         "default disabled, unapproved workflow head or fork; no cloud acceptance",
-        "templates": names, "scope": "spec5-single-sandbox",
+        "templates": names, "scope": "v1-single-sandbox",
         "managed_applications": "excluded-unverified-use-application-deployment-acceptance"})
     with open(os.environ["GITHUB_OUTPUT"], "a") as stream:
         stream.write("enabled=" + str(enabled).lower() + "\n")

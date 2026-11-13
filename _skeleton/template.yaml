@@ -1,42 +1,13 @@
-name: _skeleton
-version: "1.0.4"
-description: "Scaffold for a new Agent Sandbox template. Not a catalog entry."
-author: "alibaba-agent-sandbox"
-license: Apache-2.0
-spec_version: 5
-base: "fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"
-generation: 2
-start_cmd: "agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py"
-ready_cmd: "agent-sandbox-server healthcheck --port 9000"
-
-resources:
-  cpu: 2
-  memory: 2048
-
-ports:
-  - 9000
-
-tags:
-  - example
-  - skeleton
-
-priority: P2
-wave: other
-
-
-env:
-  ABX_SERVER_TOKEN: ""
-
-smoke:
-  - command: hello
-    args:
-      name: Express
-    expect: "Hello, Express!"
-provides:
-  app:
-    protocol: agent-sandbox-server
-    version: 2
-    port: 9000
-    operations:
-    - commands.list
-    - commands.run
+specVersion: 1
+name: example
+sandbox:
+  agent:
+    provider: alicloud-express
+    template:
+      region: cn-hangzhou
+      buildConfig:
+        dockerfile: Dockerfile
+        context: .
+      generation: 2
+      cpu: 2
+      memorySize: 2048

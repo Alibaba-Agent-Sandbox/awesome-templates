@@ -1,0 +1,152 @@
+{
+  "scope": "Single local Docker private bridge plus real Qwen two-turn workflow; not FC or cloud Sandbox application E2E",
+  "model": "qwen3-coder-flash",
+  "imageId": "sha256:331c2b4d31dbea9e1b827fab9defa3eacae7681cb3e9c6fb1b55e48390ab9df3",
+  "runtime": {
+    "secretTransport": "stdin only; no envfile/docker environment injection",
+    "outputBudgetBytes": 3145728,
+    "deadlineSeconds": 400,
+    "exit": 0,
+    "seconds": 95.36,
+    "stderrBytes": 121,
+    "stderrSha256": "97f4a20fa3c62f76c8b1d23f5e39c3d2c70d4b4a16c04081fd2916a9e504d7e5",
+    "outputOverflow": false,
+    "independentExit": 0,
+    "independentResult": {
+      "downloadedCodeIndependentlyRun": true,
+      "firstTotals": [
+        "30.00",
+        "10.00"
+      ],
+      "secondShares": [
+        "0.7500",
+        "0.2500"
+      ],
+      "secondTurnReadsFirstArtifact": true,
+      "network": "none"
+    },
+    "remainingTaskContainers": [],
+    "driverSha256": "6c2718c37680caf8b5b1c5c5d48ba6c2f47e5fed5537bd245dffc72bd4b63faa",
+    "verifierSha256": "022b16b61464d562061b3e31a6cfb12285d44145963a01a473b78297f2f992a1"
+  },
+  "containerControls": {
+    "cpus": 2,
+    "memory": "2g",
+    "pidsLimit": 192,
+    "capDrop": "ALL",
+    "noNewPrivileges": true,
+    "cleanup": "--rm and finally; independent owned-task listing empty"
+  },
+  "business": {
+    "scope": "local Docker private bridge + real Qwen model; not cloud/FC E2E",
+    "model": "qwen3-coder-flash",
+    "turns": [
+      {
+        "index": 1,
+        "status": "completed",
+        "stopConfirmed": true,
+        "itemTypes": {
+          "message": 13,
+          "mcp_call": 12
+        },
+        "wireEventTypes": {
+          "agent.session.in_progress": 1,
+          "agent.session.turn.created": 1,
+          "agent.session.turn.in_progress": 1,
+          "agent.session.turn.item.added": 25,
+          "agent.session.turn.content_part.added": 13,
+          "agent.session.turn.output_text.delta": 187,
+          "agent.session.turn.output_text.done": 13,
+          "agent.session.turn.content_part.done": 13,
+          "agent.session.turn.item.done": 25,
+          "agent.session.turn.completed": 1,
+          "agent.session.idle": 1
+        },
+        "toolItems": 12,
+        "artifactErrors": [],
+        "artifacts": [
+          {
+            "path": "outputs/summary.csv",
+            "sha256": "091a6cd799dc38f6a859ed4c0acc35ffb2032db42c10044a71642633235b02d6",
+            "bytes": 43
+          },
+          {
+            "path": "outputs/aggregate.py",
+            "sha256": "752649df9173700b3910d374c58b028fbf9dd2b325248ea35a73e482bab60bd6",
+            "bytes": 1710
+          }
+        ]
+      },
+      {
+        "index": 2,
+        "status": "completed",
+        "stopConfirmed": true,
+        "itemTypes": {
+          "message": 11,
+          "mcp_call": 10
+        },
+        "wireEventTypes": {
+          "agent.session.in_progress": 2,
+          "agent.session.turn.created": 2,
+          "agent.session.turn.in_progress": 2,
+          "agent.session.turn.item.added": 46,
+          "agent.session.turn.content_part.added": 24,
+          "agent.session.turn.output_text.delta": 326,
+          "agent.session.turn.output_text.done": 24,
+          "agent.session.turn.content_part.done": 24,
+          "agent.session.turn.item.done": 46,
+          "agent.session.turn.completed": 2,
+          "agent.session.idle": 2
+        },
+        "toolItems": 10,
+        "artifactErrors": [],
+        "artifacts": [
+          {
+            "path": "outputs/continuity.json",
+            "sha256": "41e35867c6c31b9c5143a23cba839bdfba2df614803c409a37cbf5ed545ba0df",
+            "bytes": 132
+          },
+          {
+            "path": "outputs/summary.csv",
+            "sha256": "091a6cd799dc38f6a859ed4c0acc35ffb2032db42c10044a71642633235b02d6",
+            "bytes": 43
+          },
+          {
+            "path": "outputs/shares.csv",
+            "sha256": "32abd1f72005a5105f0fc700b420235e827f329321a08b57960c0e7bb6e26a49",
+            "bytes": 63
+          },
+          {
+            "path": "outputs/aggregate.py",
+            "sha256": "a8d71545b0b361e75c61dbdba83a95755a9b824a4aafeef4d4ed26f301546317",
+            "bytes": 2320
+          }
+        ]
+      }
+    ],
+    "originalTestsUnchanged": true,
+    "originalSourceSha256": "add3f786fdb0a86d411dce9c11759035bd33e74deb737a04c4244ead731f47d8",
+    "originalTestsSha256": "6572f0585e3be203aa51a624834b4da96cf0ccc7532de3c00bdf2638e3d81270",
+    "seconds": 94.46,
+    "sameBridgeSession": true,
+    "nativeCLIResumeIdentity": "not independently captured"
+  },
+  "originalTests": {
+    "exit": 0,
+    "originalTestsSha256": "6572f0585e3be203aa51a624834b4da96cf0ccc7532de3c00bdf2638e3d81270",
+    "verifierSha256": "1a76fcb6bb367e3e4b04f527383166e2d7df557b0ad352c8711af6a12986499c",
+    "result": {
+      "downloadedFirstVersionOriginalTests": 3,
+      "downloadedFinalVersionOriginalTests": 3,
+      "allPassed": true,
+      "network": "none"
+    }
+  },
+  "eventCountBoundary": "Second-turn wireEventTypes includes replayed first-turn history; per-terminal-turn toolItems are counted separately",
+  "nativeCLIResumeIdentity": "not independently captured; sameBridgeSession only",
+  "upstreamResultSha256": {
+    "summary.json": "d091548707facda648696a811e2ed6c17e18c9ffdfb76a35e6546cbe2a951653",
+    "business-result.json": "36f1c9a18a452f70af7778243945b91336950e71636523686893adfb1483be94",
+    "original-tests-result.json": "bd13aa784b62e6493dc4d7b4db92d1b0ab538c8e37c878d05f429dcc3bb877e6"
+  }
+}

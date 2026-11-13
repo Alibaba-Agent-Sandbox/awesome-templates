@@ -143,468 +143,128 @@ def _fill(target: dict[str, Any], values: dict[str, Any]) -> None:
             _fill(target[key], value)
 
 
-def _local_recipe(recipe: dict[str, Any], path: str) -> None:
-    _fill(recipe, {"dockerfile": "Dockerfile", "context": "."})
-    if (
-        recipe["dockerfile"].startswith("/")
-        or "\\" in recipe["dockerfile"]
-        or "\0" in recipe["dockerfile"]
-        or any(part in ("", ".", "..") for part in recipe["dockerfile"].split("/"))
-    ):
-        _fail(path + "/dockerfile", "expected a contained relative file path")
+def schema_for_stage(schema: dict[str, Any], stage: str = 'intent') -> dict[str, Any]:
+    """Return shape validation for intent or expression-resolved inputs."""
+    if stage not in {'intent', 'resolved'}:
+        raise ValueError('Unknown template validation stage')
+    def strip(value):
+        if isinstance(value, list):
+            return [strip(item) for item in value]
+        if not isinstance(value, dict):
+            return value
+        if stage == 'resolved' and isinstance(value.get('oneOf'), list) and value['oneOf'][-1].get('$ref') == '#/$defs/expression':
+            return strip(value['oneOf'][0])
+        return {key: strip(item) for key, item in value.items()}
+    return strip(deepcopy(schema))
 
 
-def _field_at(value: Any, path: str) -> tuple[bool, Any]:
-    for key in path.split("."):
-        if not isinstance(value, dict) or key not in value:
-            return False, None
-        value = value[key]
-    return True, value
+def _local_path(value: str, path: str) -> None:
+    if _expression(value):
+        return
+    if value.startswith('/') or re.match(r'^[A-Za-z]:', value) or '\\' in value or '\0' in value or '..' in value.split('/'):
+        _fail(path, 'expected a relative path contained in the template directory')
 
 
-def _numeric_order(parent: dict[str, Any], lower: str, upper: str, path: str) -> None:
-    if (
-        isinstance(parent[lower], (int, float))
-        and isinstance(parent[upper], (int, float))
-        and parent[lower] > parent[upper]
-    ):
-        _fail(path + "/" + lower, f"must be at most {upper}")
+def _references(value: Any) -> set[str]:
+    if isinstance(value, str):
+        return set(re.findall(r'\$\{resources\.([A-Za-z][A-Za-z0-9_-]*)\.output(?:\.[^}]+)?\}', value))
+    if isinstance(value, dict):
+        value = list(value.values())
+    return set().union(*(_references(item) for item in value)) if isinstance(value, list) else set()
 
 
-def schema_for_stage(schema: dict[str, Any], stage: str = "intent") -> dict[str, Any]:
-    """Clone the intent schema for post-native-parser validation without evaluation."""
-    if stage not in ("intent", "resolved"):
-        raise ValueError("Unknown template validation stage")
-    result = deepcopy(schema)
-    if stage == "resolved":
-
-        def strip(value: Any) -> Any:
-            if isinstance(value, list):
-                return [strip(item) for item in value]
-            if not isinstance(value, dict):
-                return value
-            branches = value.get("oneOf")
-            if (
-                isinstance(branches, list)
-                and branches
-                and branches[-1].get("$ref") == "#/$defs/expression"
-            ):
-                alternatives = [strip(item) for item in branches[:-1]]
-                return (
-                    alternatives[0]
-                    if len(alternatives) == 1
-                    else {**value, "oneOf": alternatives}
-                )
-            return {key: strip(item) for key, item in value.items()}
-
-        result = strip(result)
-        result["$defs"]["secret"] = {"type": "string", "minLength": 1}
-        result["properties"]["sandbox"]["required"] = ["provider", "template"]
-
-    return result
-
-
-def normalize_template_v1(
-    manifest: dict[str, Any],
-    validate: Validator,
-    *,
-    stage: str = "intent",
-    contract: dict[str, Any] = DEFAULT_CONTRACT,
-    provider: str | None = None,
-    validate_provider: Callable[[str, Any, str], Any] | None = None,
-) -> dict[str, Any]:
-    """Validate a v1 document, fill its sole defaults and check cross-field invariants."""
-    if stage not in ("intent", "resolved"):
-        raise ValueError("Unknown template validation stage")
+def normalize_template_v1(manifest: dict[str, Any], validate: Validator, *, stage: str = 'intent', contract: dict[str, Any] = DEFAULT_CONTRACT, provider: str | None = None, validate_provider: Callable[[str, Any, str], Any] | None = None) -> dict[str, Any]:
+    """Validate named resources without credentials, runtime defaults or expression evaluation."""
+    if stage not in {'intent', 'resolved'}:
+        raise ValueError('Unknown template validation stage')
     _finite(manifest)
     result = deepcopy(manifest)
-    if isinstance(result, dict) and isinstance(result.get("sandbox"), dict):
-        declared = result["sandbox"].get("provider")
-        if provider and declared and provider != declared:
-            _fail("/sandbox/provider", "conflicts with the selected Provider context")
-        if not declared and provider:
-            result["sandbox"]["provider"] = provider
-        if (
-            not result["sandbox"].get("provider")
-            and isinstance(result.get("application"), dict)
-            and result["application"].get("type") == "agents-api"
-        ):
-            result["sandbox"]["provider"] = "alicloud-express"
     _checked(result, validate)
-    sb, app = result.get("sandbox"), result.get("application")
-    if sb:
-        if "source" in sb["template"]:
-            _local_recipe(sb["template"]["source"], "/sandbox/template/source")
-            for name, recipe in sb["template"]["source"].get("profiles", {}).items():
-                _local_recipe(recipe, "/sandbox/template/source/profiles/" + name)
-        if sb["template"].get("reference") and sb["template"].get("props"):
-            _fail(
-                "/sandbox/template/props",
-                "preparation properties cannot modify an existing template reference",
-            )
-        if not sb["template"].get("reference"):
-            sb["template"].setdefault("props", {})
-            if sb.get("provider") in contract["providerInputs"]:
-                _fill(
-                    sb["template"]["props"],
-                    {
-                        **contract["templateDefaults"],
-                        **({"memory": 4096} if app else {}),
-                    },
-                )
-        sb.setdefault("instance", {})
-        _fill(
-            sb["instance"],
-            contract["managedInstanceDefaults"]
-            if app
-            else contract["instanceDefaults"],
-        )
-        sb.setdefault("services", {})
-        for service in sb["services"].values():
-            service.setdefault("operations", [])
-        if (
-            sb["instance"].get("lifecycle", {}).get("autoResume") is True
-            and sb["instance"]["lifecycle"]["onTimeout"] != "pause"
-        ):
-            _fail("/sandbox/instance/lifecycle/autoResume", "requires onTimeout=pause")
-        gpu = sb["instance"].get("gpu")
-        if (
-            sb.get("provider") == "opensandbox"
-            and gpu
-            and not re.fullmatch(r"[0-9]+", gpu)
-            and not _expression(gpu)
-        ):
-            _fail(
-                "/sandbox/instance/gpu",
-                "this adapter accepts a numeric GPU count string",
-            )
-        resources = sb["template"].get("props")
-        if (
-            sb.get("provider") in contract["providerInputs"]
-            and resources
-            and isinstance(resources.get("memory"), (int, float))
-        ):
-            memory, cpu = resources["memory"], resources.get("cpu")
-            if memory < 128 or memory % 64:
-                _fail(
-                    "/sandbox/template/props/memory",
-                    "preparation memory is at least 128 MB and a multiple of 64",
-                )
-            if (
-                sb.get("provider") == "alicloud-express"
-                and isinstance(cpu, (int, float))
-                and (memory < cpu * 1024 or memory > cpu * 4096)
-            ):
-                _fail(
-                    "/sandbox/template/props/memory",
-                    "Express preparation uses 1024..4096 MB per vCPU",
-                )
-        if (
-            isinstance(sb["instance"]["timeout"], (int, float))
-            and sb["instance"]["timeout"] > 86400
-        ):
-            _fail(
-                "/sandbox/instance/timeout",
-                "exceeds the high-level API limit of 86400 seconds",
-            )
-    if "deployment" in result:
-        _fill(result["deployment"], {"name": result["name"], "access": "default"})
-    if app:
-        if sb["provider"] != "alicloud-express":
-            _fail(
-                "/sandbox/provider",
-                "the current Managed consumer supports alicloud-express only",
-            )
-        app_defaults = deepcopy(contract["managedDefaults"])
-        for auth in ("clientAuth", "internalAuth"):
-            if auth in app["bindings"]:
-                del app_defaults["bindings"][auth]
-        _fill(app, app_defaults)
-        if "source" in app["server"]:
-            _local_recipe(app["server"]["source"], "/application/server/source")
-        for key in ("start", "ready"):
-            if key in sb and sb[key] != contract["managedSandbox"][key]:
-                _fail("/sandbox/" + key, "conflicts with the Managed bridge runtime")
-            sb[key] = contract["managedSandbox"][key]
-        if sb["services"] and sb["services"] != contract["managedSandbox"]["services"]:
-            _fail(
-                "/sandbox/services",
-                "the Managed bridge service is fixed by this application type",
-            )
-        sb["services"] = deepcopy(contract["managedSandbox"]["services"])
-        selected = list(app["roles"].values())
-        if len(set(selected)) != 3:
-            _fail(
-                "/application/roles",
-                "each Managed role needs a distinct declared resource",
-            )
-        resource_names = set(result["deployment"]["resources"])
-        for role, rid in app["roles"].items():
-            if rid not in resource_names:
-                _fail("/application/roles/" + role, "resource reference was not found")
-            resource = result["deployment"]["resources"][rid]
-            if not re.fullmatch(r"fc3@[0-9]+\.[0-9]+\.[0-9]+", resource["component"]):
-                _fail(
-                    "/deployment/resources/" + rid + "/component",
-                    "the current Managed consumer requires a pinned fc3 component",
-                )
-            if (
-                isinstance(resource["props"], dict)
-                and resource["props"].get("runtime") is not None
-                and resource["props"]["runtime"] != "custom-container"
-                and not _expression(resource["props"]["runtime"])
-            ):
-                _fail(
-                    "/deployment/resources/" + rid + "/props/runtime",
-                    "the Managed bridge requires custom-container",
-                )
-            if isinstance(resource["props"], dict):
-                for path in contract["protectedManagedProps"]:
-                    if _field_at(resource["props"], path)[0]:
-                        _fail(
-                            "/deployment/resources/"
-                            + rid
-                            + "/props/"
-                            + path.replace(".", "/"),
-                            "this value is generated by the Managed coordinator",
-                        )
-        components = [
-            result["deployment"]["resources"][rid]["component"] for rid in selected
-        ]
-        if len(set(components)) != 1:
-            _fail(
-                "/application/roles",
-                "current Managed roles share one locked fc3 component version",
-            )
-        if (
-            isinstance(app["sessions"]["idleTimeoutSeconds"], (int, float))
-            and isinstance(sb["instance"]["timeout"], (int, float))
-            and app["sessions"]["idleTimeoutSeconds"] > sb["instance"]["timeout"]
-        ):
-            _fail(
-                "/application/sessions/idleTimeoutSeconds",
-                "must be at most sandbox.instance.timeout",
-            )
-        _numeric_order(
-            app["limits"], "maxToolSeconds", "maxRunSeconds", "/application/limits"
-        )
-        if (
-            isinstance(app["limits"]["maxRunSeconds"], (int, float))
-            and isinstance(sb["instance"]["timeout"], (int, float))
-            and app["limits"]["maxRunSeconds"] >= sb["instance"]["timeout"]
-        ):
-            _fail(
-                "/application/limits/maxRunSeconds",
-                "must be less than sandbox.instance.timeout",
-            )
-        _numeric_order(
-            app["storage"],
-            "maxArtifactBytes",
-            "maxTurnArtifactBytes",
-            "/application/storage",
-        )
-        _numeric_order(
-            app["storage"],
-            "maxFileBytes",
-            "maxRetainedBytesPerOwner",
-            "/application/storage",
-        )
-        _numeric_order(
-            app["storage"],
-            "maxTurnArtifactBytes",
-            "maxRetainedBytesPerOwner",
-            "/application/storage",
-        )
-        if stage == "resolved":
-            regions = [
-                result["deployment"]["resources"][rid]["props"].get("region")
-                for rid in selected
-            ]
-            if (
-                any(
-                    not isinstance(region, str)
-                    or not re.fullmatch(r"cn-[a-z0-9-]+", region)
-                    for region in regions
-                )
-                or len(set(regions)) != 1
-            ):
-                _fail(
-                    "/application/roles",
-                    "resolved Managed roles need the same supported literal region",
-                )
-            role_arns = [
-                result["deployment"]["resources"][rid]["props"]["role"]
-                for rid in selected
-                if "role" in result["deployment"]["resources"][rid]["props"]
-            ]
-            if role_arns and (
-                any(not isinstance(value, str) or not value for value in role_arns)
-                or len(set(role_arns)) != 1
-            ):
-                _fail(
-                    "/application/roles",
-                    "the current Managed consumer uses one function RAM role",
-                )
-            if (
-                role_arns
-                and app["bindings"]["internalAuth"].get("roleArn")
-                and role_arns[0] != app["bindings"]["internalAuth"]["roleArn"]
-            ):
-                _fail(
-                    "/application/bindings/internalAuth/roleArn",
-                    "conflicts with the declared native function role",
-                )
-            if app["bindings"]["sandboxAccess"]["region"] != regions[0]:
-                _fail(
-                    "/application/bindings/sandboxAccess/region",
-                    "must match the resolved Managed FC region",
-                )
-    _checked(result, validate)
-    if sb:
-        if (
-            stage == "resolved"
-            and sb.get("provider") not in contract["providerInputs"]
-            and not callable(validate_provider)
-        ):
-            _fail(
-                "/sandbox/provider",
-                "the selected plugin must supply real preparation/create validators",
-            )
-        if stage == "resolved" and validate_provider and sb.get("provider"):
-
-            def invoke(stage: str, value: Any, path: str) -> None:
+    all_resources = {**result.get('sandbox', {}), **result.get('serving', {})}
+    for name in result.get('sandbox', {}):
+        if name in result.get('serving', {}):
+            _fail('/sandbox/' + name, 'resource names must be globally unique')
+    for name, resource in result.get('sandbox', {}).items():
+        path, template = '/sandbox/' + name, resource['template']
+        if provider and provider != resource['provider']:
+            _fail(path + '/provider', 'conflicts with selected Provider context')
+        if template.get('reference') and set(template) - {'reference', 'region'}:
+            _fail(path + '/template', 'a borrowed template accepts only reference and region')
+        build = template.get('buildConfig', {})
+        if build.get('dockerfile'):
+            _local_path(build['dockerfile'], path + '/template/buildConfig/dockerfile')
+            if 'context' not in build and not _expression(build['dockerfile']):
+                build['context'] = '/'.join(build['dockerfile'].split('/')[:-1]) or '.'
+            if 'context' in build:
+                _local_path(build['context'], path + '/template/buildConfig/context')
+        if build.get('steps'):
+            if not template.get('image'):
+                _fail(path + '/template/image', 'steps require an input image')
+            for index, step in enumerate(build['steps']):
+                count = len(step['args'])
+                where = path + '/template/buildConfig/steps/' + str(index)
+                if step['type'] == 'ENV' and count % 2:
+                    _fail(where, 'ENV requires key/value pairs')
+                if step['type'] == 'WORKDIR' and count != 1 or step['type'] in {'USER', 'RUN'} and count > 2:
+                    _fail(where, 'invalid step argument count')
+                if step['type'] == 'USER' and count == 2 and step['args'][1] not in {'true', 'false'}:
+                    _fail(where, 'USER sudo must be a boolean string')
+        for volume_name, volume in resource.get('volumes', {}).items():
+            if resource['provider'] == 'alicloud-express' and 'props' in volume:
+                storage = {'agenticBucketVolumeConfig', 'agenticFSVolumeConfig', 'juiceFSVolumeConfig', 'ossVolumeConfig'}
+                if len(storage & set(volume['props'])) != 1:
+                    _fail(path + '/volumes/' + volume_name + '/props', 'choose exactly one storage backend')
+                if set(volume['props']) - storage - {'mountConfig', 'volumeName'}:
+                    _fail(path + '/volumes/' + volume_name + '/props', 'unsupported Express volume creation field')
+        if stage == 'resolved' and validate_provider:
+            def invoke(operation, value, where):
                 try:
-                    accepted = validate_provider(stage, deepcopy(value), sb["provider"])
+                    accepted = validate_provider(operation, deepcopy(value), resource['provider'])
                     if inspect.isawaitable(accepted):
-                        if hasattr(accepted, "close"):
-                            accepted.close()
-                        _fail(path, "selected Provider validation failed")
+                        if hasattr(accepted, 'close'): accepted.close()
+                        _fail(where, 'selected Provider validation failed')
                     if accepted is False:
-                        _fail(path, "selected Provider validation failed")
-                except Exception:  # noqa: BLE001 - Sanitize errors from external validators.
-                    raise ValueError(
-                        f"Template v1 {path}: selected Provider validation failed"
-                    ) from None
-
-            if not sb["template"].get("reference"):
-                invoke("template.prepare", sb["template"], "/sandbox/template")
-            invoke("sandbox.create", sb["instance"], "/sandbox/instance")
+                        _fail(where, 'selected Provider validation failed')
+                except Exception:
+                    raise ValueError(f'Template v1 {where}: selected Provider validation failed') from None
+            if not template.get('reference'):
+                invoke('template.prepare', template, path + '/template')
+            for volume_name, volume in resource.get('volumes', {}).items():
+                if 'props' in volume:
+                    invoke('volume.create', volume['props'], path + '/volumes/' + volume_name + '/props')
+    dependencies = {}
+    for name, resource in all_resources.items():
+        actions = resource.get('actions', {})
+        configuration = {key: value for key, value in resource.items() if key != 'actions'}
+        required = _references([configuration, actions.get('pre-deploy')])
+        after = _references([actions.get(key) for key in ['success-deploy', 'fail-deploy', 'complete-deploy']])
+        dependencies[name] = required | (after - {name})
+    if _references(result.get('vars', {})) - set(all_resources):
+        _fail('/vars', 'resource output reference was not found')
+    for name, names in dependencies.items():
+        if names - set(all_resources):
+            _fail('/resources/' + name, 'resource output reference was not found')
+    visited, visiting = set(), set()
+    def visit(name):
+        if name in visiting:
+            _fail('/resources/' + name, 'cyclic resource output dependency')
+        if name in visited: return
+        visiting.add(name)
+        for dependency in dependencies[name]: visit(dependency)
+        visiting.remove(name)
+        visited.add(name)
+    for name in dependencies: visit(name)
+    _checked(result, validate)
     return result
 
 
-def compile_template_v1(
-    manifest: dict[str, Any],
-    validate: Validator,
-    *,
-    stage: str = "resolved",
-    contract: dict[str, Any] = DEFAULT_CONTRACT,
-    provider: str | None = None,
-    validate_provider: Callable[[str, Any, str], Any] | None = None,
-) -> dict[str, Any]:
-    """Compile only resolved v1 input to private fields; never emit old spec versions."""
-    if stage != "resolved":
-        raise ValueError("Compile requires native-parser-resolved input")
-    intent = normalize_template_v1(
-        manifest,
-        validate,
-        stage=stage,
-        contract=contract,
-        provider=provider,
-        validate_provider=validate_provider,
-    )
-    result: dict[str, Any] = {
-        "name": intent["name"],
-        "kind": "application"
-        if intent.get("application")
-        else "serving"
-        if intent.get("deployment")
-        else "sandbox",
-    }
-    if "deployment" in intent:
-        result["deployment"] = deepcopy(intent["deployment"])
-    if "sandbox" in intent:
-        sb = intent["sandbox"]
-        result.update(
-            sandbox=deepcopy(sb),
-            provider=sb["provider"],
-            provides=deepcopy(sb["services"]),
-            env=deepcopy(sb["instance"]["envs"]),
-            ports=sorted(
-                set(sb.get("ports", []))
-                | {service["port"] for service in sb["services"].values()}
-            ),
-            resources=deepcopy(sb["template"].get("props", {})),
-            start_cmd=sb.get("start"),
-            ready_cmd=sb.get("ready"),
-        )
-        if sb["template"].get("aliases") is not None:
-            result["aliases"] = deepcopy(sb["template"]["aliases"])
-        if sb["template"].get("source", {}).get("profiles") is not None:
-            result["build_profiles"] = deepcopy(sb["template"]["source"]["profiles"])
-        if sb["template"].get("image"):
-            result["image"] = sb["template"]["image"]
-        if sb["template"].get("reference"):
-            result["template_id"] = sb["template"]["reference"]
-    if "application" in intent:
-        app, dep = intent["application"], intent["deployment"]
-        profile = deepcopy(contract["managedProfile"])
-        gateway = dep["resources"][app["roles"]["gateway"]]
-        binding_values = {"state": deepcopy(app["state"]), **deepcopy(app["bindings"])}
-        binding_values["sandboxAccess"]["provider"] = intent["sandbox"]["provider"]
-        native_role = next(
-            (
-                dep["resources"][rid]["props"]["role"]
-                for rid in app["roles"].values()
-                if "role" in dep["resources"][rid]["props"]
-            ),
-            None,
-        )
-        if native_role is not None:
-            binding_values["internalAuth"]["roleArn"] = native_role
-        compiled = deepcopy(profile["defaults"])
-        _fill(
-            compiled,
-            {
-                "sessions": app["sessions"],
-                "limits": app["limits"],
-                "storage": app["storage"],
-            },
-        )
-        compiled["sessions"] = {
-            **compiled["sessions"],
-            **deepcopy(app["sessions"]),
-            "maxLifetimeSeconds": intent["sandbox"]["instance"]["timeout"],
-        }
-        compiled["limits"] = deepcopy(app["limits"])
-        compiled["storage"] = {**compiled["storage"], **deepcopy(app["storage"])}
-        compiled["sandbox"]["provider"] = intent["sandbox"]["provider"]
-        compiled["state"] = {**compiled["state"], "bindingRef": "state"}
-        compiled["bindings"] = {
-            name: {"reference": name, **deepcopy(options)}
-            for name, options in profile["bindings"].items()
-        }
-        compiled["deployment"] = {
-            **compiled["deployment"],
-            "profile": "fc-managed-agents",
-            "accessRef": dep["access"],
-            "region": gateway["props"]["region"],
-            "component": gateway["component"],
-            "ingressBindingRef": "ingress",
-            **(
-                {"serverBuildRecipe": deepcopy(app["server"]["source"])}
-                if "source" in app["server"]
-                else {"serverImage": app["server"]["image"]}
-            ),
-        }
-        if app.get("hooks"):
-            compiled["hooks"] = deepcopy(app["hooks"])
-        result["application"] = compiled
-        result["bindingValues"] = binding_values
-        result["roleResources"] = deepcopy(app["roles"])
-        result["roleProps"] = {
-            role: deepcopy(dep["resources"][rid]["props"])
-            for role, rid in app["roles"].items()
-        }
+def compile_template_v1(manifest: dict[str, Any], validate: Validator, *, stage: str = 'resolved', **options: Any) -> dict[str, Any]:
+    """Compile resolved input without reconstructing retired application or instance recipes."""
+    if stage != 'resolved':
+        raise ValueError('Compile requires parser-resolved input')
+    result = normalize_template_v1(manifest, validate, stage=stage, **options)
+    result.pop('specVersion')
+    result['kind'] = 'application' if result.get('sandbox') and result.get('serving') else 'serving' if result.get('serving') else 'sandbox'
     return result
 
 
@@ -615,17 +275,17 @@ def pointer_value(document: Any, pointer: str) -> Any:
         or not pointer.startswith("/")
         or re.search(r"~(?![01])", pointer)
     ):
-        _fail("/questions/target", "expected a non-root JSON Pointer")
+        _fail("/parameters/target", "expected a non-root JSON Pointer")
     value = document
     for encoded in pointer[1:].split("/"):
         key = encoded.replace("~1", "/").replace("~0", "~")
         if isinstance(value, list):
             if not re.fullmatch(r"0|[1-9][0-9]*", key) or int(key) >= len(value):
-                _fail("/questions/target", "target was not found")
+                _fail("/parameters/target", "target was not found")
             value = value[int(key)]
         else:
             if not isinstance(value, dict) or key not in value:
-                _fail("/questions/target", "target was not found")
+                _fail("/parameters/target", "target was not found")
             value = value[key]
     return deepcopy(value)
 
@@ -643,21 +303,21 @@ def normalize_registry_v1(
     _checked(metadata, validate_registry)
     result = deepcopy(metadata)
     intent = normalize_template_v1(template, validate_template, contract=contract)
-    _fill(result, {"entry": "template.yaml", "questions": []})
+    _fill(result, {"entry": "template.yaml", "parameters": []})
     targets: set[str] = set()
-    for index, question in enumerate(result["questions"]):
-        if question["target"] in targets:
-            _fail(f"/questions/{index}/target", "duplicate question target")
-        targets.add(question["target"])
-        value = pointer_value(intent, question["target"])
-        if question.get("sensitive"):
-            env = question["environmentVariable"]
+    for index, parameter in enumerate(result["parameters"]):
+        if parameter["target"] in targets:
+            _fail(f"/parameters/{index}/target", "duplicate parameter target")
+        targets.add(parameter["target"])
+        value = pointer_value(intent, parameter["target"])
+        if parameter.get("sensitive"):
+            env = parameter["environmentVariable"]
             if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", env) or value not in (
                 "${env('" + env + "')}",
                 '${env("' + env + '")}',
             ):
                 _fail(
-                    f"/questions/{index}/target",
-                    "a sensitive question must target its declared native env expression",
+                    f"/parameters/{index}/target",
+                    "a sensitive parameter must target its declared native env expression",
                 )
     return result

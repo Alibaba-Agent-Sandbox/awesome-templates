@@ -1,0 +1,15 @@
+specVersion: 1
+name: opensandbox-code-interpreter
+version: provider-managed
+description:
+  zh: OpenSandbox 的代码解释器运行环境，用于执行代码片段并读取结果。
+  en: An OpenSandbox code interpreter runtime for executing snippets and retrieving
+    results.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- provider-managed
+- opensandbox-code-interpreter
+readme:
+  en: README.md
+  zh: README.zh-CN.md

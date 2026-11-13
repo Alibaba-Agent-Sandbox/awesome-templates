@@ -1,0 +1,46 @@
+specVersion: 1
+name: agents-api
+version: 0.1.5
+description:
+  zh: 以一个 Gateway 接入 Agent 会话、文件上传和结果下载，每个会话使用独立沙箱。
+  en: Expose one Gateway for agent sessions, file uploads and result downloads, with
+    a separate sandbox for each session.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- agents-api
+- gateway
+- sessions
+- qwen-code
+- codex
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml
+parameters:
+- target: /vars/region
+  title:
+    en: Resource region
+    zh: 资源地域
+- target: /vars/adapter
+  title:
+    en: 'Model adapter: qwen-code or codex'
+    zh: 模型适配器：qwen-code 或 codex
+- target: /serving/worker/props/environmentVariables/ABX_MANAGED_DATABASE_URL
+  title:
+    en: Existing PostgreSQL connection URL
+    zh: 已有 PostgreSQL 连接 URL
+  environmentVariable: ABX_MANAGED_DATABASE_URL
+  sensitive: true
+- target: /serving/worker/props/environmentVariables/SANDBOX_API_KEY
+  title:
+    en: Sandbox platform API key
+    zh: Sandbox 平台 API Key
+  environmentVariable: SANDBOX_API_KEY
+  sensitive: true
+- target: /serving/worker/props/environmentVariables/OPENAI_API_KEY
+  title:
+    en: Model service API key
+    zh: 模型服务 API Key
+  environmentVariable: OPENAI_API_KEY
+  sensitive: true

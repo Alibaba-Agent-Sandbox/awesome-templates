@@ -1,0 +1,15 @@
+specVersion: 1
+name: desktop
+version: provider-managed
+description:
+  zh: 带图形桌面的 Linux 沙箱，用于截图、界面操作和桌面自动化。
+  en: A Linux desktop sandbox for screenshots, application interaction and desktop
+    automation.
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- provider-managed
+- desktop
+readme:
+  en: README.md
+  zh: README.zh-CN.md
