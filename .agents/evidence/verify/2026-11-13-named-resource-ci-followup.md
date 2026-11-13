@@ -25,3 +25,11 @@ An initial attempt to combine distinct template pytest groups in one invocation 
 The broader local runtime runner completed with 35 passed and 13 failed. This environment lacks several CI prerequisites, including Pillow and pypdf, and several installed native CLI versions do not match template pins. These failures are retained; this run is not a complete local E2E pass or a diagnosis of every failure. The owned runner process group is absent and its generated working directories were cleaned. No further toolchain installation or cloud/model testing was performed.
 
 The refreshed remote CI and consumer CLI source pin are managed separately. Historical evidence remains unchanged. No public release, image build or provider qualification is claimed by these checks.
+
+## Final executable dependency
+
+The coordinated CLI source pin is now `dcc3dd265c38ebf179cb7ea063cac0a335232cc3`,
+including installed-package entry verification and embedded native Devs workers for
+the standalone binary. The previous refreshed owner run passed all seven E2E jobs
+and all 47 image jobs plus their plan job. Updating this source-only CI dependency
+does not change the canonical schema bytes committed at `6009ae6`.
