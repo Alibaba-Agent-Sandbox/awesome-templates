@@ -69,7 +69,7 @@ class CheckerTest(unittest.TestCase):
             for cpu, memory, valid in [(2,1024,False),(1,1024,True),(2,2048,True),(1,4160,False),(1,1025,False)]:
                 with self.subTest(cpu=cpu,memory=memory):
                     data=yaml.safe_load((dest/"template.yaml").read_text())
-                    data["sandbox"]["template"]["props"]={"cpu":cpu,"memory":memory}
+                    data["sandbox"]["agent"]["template"].update(cpu=cpu,memorySize=memory)
                     (dest/"template.yaml").write_text(yaml.safe_dump(data))
                     errors=[v for v in check_template.check_directory(dest) if v.code=="yaml-resources"]
                     self.assertEqual(not errors,valid)
@@ -243,13 +243,13 @@ class CheckerTest(unittest.TestCase):
             path.write_text(path.read_text().replace('agent-sandbox-server==0.4.0a6', 'agent-sandbox-server @ https://github.com/Alibaba-Agent-Sandbox/python-sdk/archive/' + 'a'*40 + '.tar.gz#subdirectory=server-sdk'))
             self.assertIn('server-package-pin', {item.code for item in check_template.check_directory(dest)})
 
-    def test_declared_profile_requires_same_published_server_pin(self) -> None:
+    def test_selected_recipe_requires_same_published_server_pin(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             dest = Path(tmp) / '_skeleton'
             shutil.copytree(SKELETON, dest)
             metadata = dest / 'template.yaml'
             data = yaml.safe_load(metadata.read_text())
-            data['sandbox']['template']['source']['profiles'] = {'portable': {'dockerfile': 'Dockerfile.portable', 'context': '.'}}
+            data['sandbox']['agent']['template']['buildConfig'] = {'dockerfile': 'Dockerfile.portable', 'context': '.'}
             metadata.write_text(yaml.safe_dump(data))
             profile = dest / 'Dockerfile.portable'
             original = (dest / 'Dockerfile').read_text()

@@ -36,11 +36,19 @@ def normalize_manifest(
 
 
 def is_managed_application(data: dict[str, Any]) -> bool:
-    """Classify only the explicit business type, never the version or resource names."""
-    return (
-        isinstance(data.get("application"), dict)
-        and data["application"].get("type") == "agents-api"
-    )
+    """Classify actual native Serving configuration for owner-specific engineering tests."""
+    if data.get("application", {}).get("type") == "agents-api":
+        return True  # Already projected engineering test input only.
+    for resource in data.get("serving", {}).values():
+        props = resource.get("props", {})
+        env = props.get("environmentVariables", {})
+        container = props.get("customContainerConfig", {})
+        if not isinstance(env, dict) or not isinstance(container, dict):
+            continue
+        command = container.get("command", [])
+        if {"ABX_MANAGED_DATABASE_URL", "AGENTS_POLICY_JSON"} <= set(env) and command in (["worker"], ["gateway"], ["dispatcher"]):
+            return True
+    return False
 
 
 def _contained(root: Path, value: str, *, directory: bool = False) -> Path:
@@ -90,143 +98,88 @@ def engineering_checks(name: str) -> dict[str, Any]:
     )
 
 
-def project_manifest(
-    data: dict[str, Any],
-    template_dir: Path | None = None,
-    *,
-    provider: str | None = "alicloud-express",
-) -> dict[str, Any]:
-    """Project v1 into private legacy-shaped test inputs, not an executable public format.
+def _image_environment(dockerfile: Path) -> dict[str, str]:
+    import shlex
+    if not dockerfile.is_file():
+        return {}
+    env: dict[str, str] = {}
+    text = dockerfile.read_text().replace("\\\n", " ")
+    for line in text.splitlines():
+        if line.lstrip().startswith("ENV "):
+            for token in shlex.split(line.strip()[4:]):
+                if "=" in token:
+                    key, value = token.split("=", 1)
+                    env[key] = value
+    return env
 
-    Expressions stay literal. Only the actual CLI native-parser consumer resolves them.
-    Provider profile/image facts and publication metadata are derived from their own source.
-    """
-    normalized = normalize_manifest(
-        data, provider if not data.get("sandbox", {}).get("provider") else None
-    )
-    sb = normalized.get("sandbox", {})
-    template = sb.get("template", {})
-    services = sb.get("services", {})
+
+def project_manifest(data: dict[str, Any], template_dir: Path | None = None, *, provider: str | None = None) -> dict[str, Any]:
+    """Project current resources into engineering smoke inputs; never runtime configuration."""
+    normalized = normalize_manifest(data)
+    entries = list(normalized.get("sandbox", {}).values())
+    if len(entries) != 1:
+        raise ValueError("the template smoke runner requires exactly one sandbox resource")
+    sb = entries[0]
+    template = sb["template"]
+    name = "_skeleton" if template_dir is not None and template_dir.name == "_skeleton" else normalized["name"]
+    checks = engineering_checks(name)
+    if is_managed_application(normalized):
+        managed_checks = engineering_checks("agents-api")
+        checks = {**managed_checks, **checks}
+        checks["localRuntime"] = managed_checks.get("localRuntime", {})
+    services = checks.get("services", {})
+    runtime = checks.get("runtime", checks.get("localRuntime", {}))
     result: dict[str, Any] = {
-        "specVersion": 1,
-        "name": normalized["name"],
-        "sandbox": deepcopy(sb),
-        "resources": deepcopy(template.get("props", {})),
-        "env": deepcopy(sb.get("instance", {}).get("envs", {})),
-        "provides": deepcopy(services),
-        "ports": sorted(
-            set(sb.get("ports", [])) | {v["port"] for v in services.values()}
-        ),
-        "start_cmd": sb.get("start"),
-        "ready_cmd": sb.get("ready"),
-        "provider": sb.get("provider"),
-        **engineering_checks(
-            "_skeleton"
-            if template_dir is not None and template_dir.name == "_skeleton"
-            else normalized["name"]
-        ),
+        "specVersion": 1, "name": normalized["name"], "sandbox": deepcopy(sb),
+        "resources": {"cpu": template.get("cpu"), "memory": template.get("memorySize")},
+        "env": {}, "provides": deepcopy(services),
+        "ports": sorted(set(checks.get("ports", [])) | {v["port"] for v in services.values()}),
+        "start_cmd": template.get("startCommand", runtime.get("start")), "ready_cmd": template.get("readyCommand", runtime.get("ready")),
+        "provider": sb["provider"], **{k: v for k, v in checks.items() if k in {"smoke", "priority", "wave"}},
     }
-    if "image" in template:
-        result["image"] = template["image"]
-    if "reference" in template:
-        result["template_id"] = template["reference"]
-    if "aliases" in template:
-        result["aliases"] = deepcopy(template["aliases"])
-    if template.get("source", {}).get("profiles"):
-        result["build_profiles"] = deepcopy(template["source"]["profiles"])
+    if "image" in template: result["image"] = template["image"]
+    if "reference" in template: result["template_id"] = template["reference"]
+    if checks.get("alternativeRecipes"): result["build_profiles"] = deepcopy(checks["alternativeRecipes"])
     if template_dir is not None:
         metadata = publication_metadata(template_dir, data)
         if metadata:
-            result.update(
-                version=metadata["version"],
-                description=metadata["description"]["en"],
-                author=metadata["author"],
-                license=metadata["license"],
-                tags=metadata.get("tags", []),
-            )
-        recipe = template.get("source", {}).get("dockerfile", "Dockerfile")
-        dockerfile = template_dir / recipe
+            result.update(version=metadata["version"], description=metadata["description"]["en"], author=metadata["author"], license=metadata["license"], tags=metadata.get("tags", []))
+        dockerfile = template_dir / template.get("buildConfig", {}).get("dockerfile", "Dockerfile")
         if dockerfile.is_file():
-            match = re.search(
-                r"(?im)^\s*FROM\s+(?:--platform=\S+\s+)?([^\s]+)",
-                dockerfile.read_text(),
-            )
-            if match:
-                result["base"] = match[1]
-    if "deployment" in normalized:
-        result["deployment"] = deepcopy(normalized["deployment"])
+            result["env"] = _image_environment(dockerfile)
+            text = dockerfile.read_text()
+            match = re.search(r"(?im)^\s*FROM\s+(?:--platform=\S+\s+)?([^\s]+)", text)
+            if match: result["base"] = match[1]
+            for line in text.splitlines():
+                if line.startswith("EXPOSE "):
+                    result["ports"] = sorted(set(result["ports"]) | {int(port.split("/")[0]) for port in line.split()[1:] if port.split("/")[0].isdigit()})
     if is_managed_application(normalized):
-        app = normalized["application"]
-        legacy = deepcopy(PROFILE_CATALOG["managedProfile"]["defaults"])
-        legacy["type"] = "agents-api"
-        legacy["sessions"].update(deepcopy(app["sessions"]))
-        legacy["sessions"]["maxLifetimeSeconds"] = sb["instance"]["timeout"]
-        legacy["limits"] = deepcopy(app["limits"])
-        legacy["storage"].update(deepcopy(app["storage"]))
-        legacy["sandbox"]["provider"] = sb["provider"]
-        legacy["state"]["bindingRef"] = "state"
-        legacy["bindings"] = {
-            name: {"reference": name, **deepcopy(value)}
-            for name, value in PROFILE_CATALOG["managedProfile"]["bindings"].items()
-        }
-        deployment = normalized["deployment"]
-        role = deployment["resources"][app["roles"]["gateway"]]
-        legacy["deployment"].update(
-            profile="fc-managed-agents",
-            accessRef=deployment["access"],
-            component=role["component"],
-            region=role["props"].get("region")
-            if isinstance(role["props"], dict)
-            else None,
-            ingressBindingRef="ingress",
-        )
-        legacy["deployment"].update(
-            serverBuildRecipe=deepcopy(app["server"]["source"])
-        ) if "source" in app["server"] else legacy["deployment"].update(
-            serverImage=app["server"]["image"]
-        )
-        if "hooks" in app:
-            legacy["hooks"] = deepcopy(app["hooks"])
-        result["application"] = legacy
+        result["application"] = {"type": "agents-api"}  # Engineering runner classification only.
+    if "serving" in normalized: result["serving"] = deepcopy(normalized["serving"])
     return result
 
 
-def validate_manifest(
-    data: dict[str, Any], template_dir: Path | None = None
-) -> list[str]:
-    """Admit only v1 and validate source/hook containment without adapters or cloud calls."""
+def validate_manifest(data: dict[str, Any], template_dir: Path | None = None) -> list[str]:
+    """Validate all named resources and contained local paths without executing actions."""
     try:
         normalized = normalize_manifest(data)
         if template_dir is not None:
-            sb = normalized.get("sandbox", {})
-            recipes = []
-            source = sb.get("template", {}).get("source")
-            if source:
-                recipes.append(source)
-                recipes.extend(source.get("profiles", {}).values())
-            app = normalized.get("application")
-            if app and app["server"].get("source"):
-                recipes.append(app["server"]["source"])
-            for recipe in recipes:
-                _contained(template_dir, recipe["dockerfile"])
-                _contained(template_dir, recipe["context"], directory=True)
-            if app:
-                ids = set()
-                for hooks in app.get("hooks", {}).values():
-                    for hook in hooks:
-                        if hook["id"] in ids:
-                            raise ValueError("duplicate hook id")
-                        ids.add(hook["id"])
-                        if hook["type"] == "custom":
-                            _contained(
-                                template_dir, hook.get("cwd", "."), directory=True
-                            )
+            for resource in normalized.get("sandbox", {}).values():
+                build = resource["template"].get("buildConfig", {})
+                if "dockerfile" in build and not build["dockerfile"].startswith("${"):
+                    _contained(template_dir, build["dockerfile"])
+                    if not build.get("context", ".").startswith("${"):
+                        _contained(template_dir, build.get("context", "."), directory=True)
+            for resource in list(normalized.get("sandbox", {}).values()) + list(normalized.get("serving", {}).values()):
+                for actions in resource.get("actions", {}).values():
+                    for action in actions:
+                        if action.get("path") and not action["path"].startswith("${"):
+                            _contained(template_dir, action["path"], directory=True)
             publication_metadata(template_dir, data)
         return []
-    except (OSError, TypeError, ValueError) as error:
+    except (OSError, TypeError, ValueError, RuntimeError) as error:
         return [str(error)]
 
 
 def validate_v1(data: dict[str, Any], template_dir: Path | None = None) -> list[str]:
-    """Explicit first-public-version validator."""
     return validate_manifest(data, template_dir)

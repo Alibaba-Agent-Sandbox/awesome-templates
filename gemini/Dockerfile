@@ -16,5 +16,13 @@ ENV HOME=/home/user WORKSPACE=/home/user/app GEMINI_MODEL=gemini-3.1-flash-lite
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py byok.py relay.py process.py lifecycle.py upstream.json .
 RUN chown user:user /home/user/app
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV ABX_SERVER_TOKEN="" \
+    GEMINI_API_KEY="" \
+    GEMINI_BYOK_API_KEY="" \
+    GEMINI_BYOK_BASE_URL="" \
+    GEMINI_BYOK_MODEL="" \
+    GEMINI_MODEL="gemini-3.1-flash-lite" \
+    WORKSPACE="/home/user/app"
 USER user
 EXPOSE 9000

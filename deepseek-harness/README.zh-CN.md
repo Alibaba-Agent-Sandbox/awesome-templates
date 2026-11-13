@@ -1,6 +1,6 @@
 # DeepSeek coding harness
 
-本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。模板属性在 `sandbox.agent.template`；运行默认值在 Dockerfile，私有运行值在创建实例时显式传入。用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
 
 ## 做什么
 
@@ -20,6 +20,9 @@ Python `3.13`、`httpx==0.28.1` 及模板自带的有界文件/shell 工具循�
 
 ## 快速开始（CLI）
 
+`abx deploy` 只准备模板。下载本目录源码后，从该目录执行下面的部署，再将 `<prepared-template-id>` 改成返回的模板 ID，运行 `run.py` 创建实例并显式启动业务服务。脚本只传入本页列出的运行配置，自动生成并将应用令牌保存在本地 `.sandbox-session.json`（仅当前用户可读）；不会打印令牌。已有会话文件不会被覆盖，可用 `--session` 选择新文件。
+
+
 先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，配置选择的平台（沙箱 API Key、连接地址及构建镜像仓库），再配置下面独立的模型/应用凭据。无需 clone 仓库即可启动公共模板。
 
 在 launch 前设置 DEEPSEEK_API_KEY（或 OPENAI_API_KEY 后备值）、DEEPSEEK_BASE_URL 和 DEEPSEEK_MODEL。manifest 空配置项接收 host 的 endpoint/模型；未提供时运行时仍使用 https://api.deepseek.com 和 deepseek-flash。Key、base 和确切模型 ID 使用同一授权服务的配置，不需要浏览器登录。单次 model 参数可以覆盖模型。兼容服务可用不代表原生 DeepSeek 账号权限已经具备。改变启动配置后创建新实例。
@@ -28,17 +31,20 @@ Python `3.13`、`httpx==0.28.1` 及模板自带的有界文件/shell 工具循�
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-# CLI 默认生成并保存应用令牌；外部 SDK/HTTP 如需自定义，在部署前取消下一行注释。
+# run.py 自动生成私有应用令牌；需要自行指定时可取消下一行注释。
 # export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export DEEPSEEK_API_KEY='<your-model-or-vendor-key>'
 export DEEPSEEK_BASE_URL='<your-chat-completions-base-url>'
 export DEEPSEEK_MODEL='<model-id-from-your-provider>'
-abx deploy Alibaba-Agent-Sandbox/awesome-templates//deepseek-harness --sandbox-timeout 1800 --yes
+abx deploy . --yes
+python3 -m pip install "agent-sandbox-client==0.4.0a7"
+python3 run.py --template <prepared-template-id> --timeout 1800
+export ABX_SERVER_TOKEN="$(python3 -c 'import json; print(json.load(open(".sandbox-session.json"))["application_token"])')"
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
-`--sandbox-timeout 1800` 是沙箱生存时间（秒），`command_timeout`/`timeout_s` 是单次任务执行期限，`ABX_HTTP_TIMEOUT`/SDK `timeout` 是客户端等待时间，三者分别设置。
+`run.py --timeout 1800` 是沙箱生存时间（秒），`command_timeout`/`timeout_s` 是单次任务执行期限，`ABX_HTTP_TIMEOUT`/SDK `timeout` 是客户端等待时间，三者分别设置。
 
 launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
 
@@ -50,7 +56,7 @@ ABX_HTTP_TIMEOUT=420 abx sandbox command run "$SANDBOX_ID" deepseek --json-args 
 
 ## 快速开始（Python SDK）
 
-先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a7`。
 
 ```python
 import asyncio
@@ -95,7 +101,7 @@ asyncio.run(main())
 abx sandbox exec "$SANDBOX_ID" -- python3 /home/user/app/generated_hello.py
 abx sandbox download "$SANDBOX_ID" /home/user/app/generated_hello.py ./generated_hello.py
 abx sandbox download "$SANDBOX_ID" /home/user/app/GENERATED_REPORT.md ./GENERATED_REPORT.md
-abx delete "$SANDBOX_ID"
+abx sandbox delete "$SANDBOX_ID" --yes
 ```
 
 程序预期输出 `Hello from the sandbox`。先读取产物并检查再使用；模型回答成功不代表文件一定存在。文件不会自动回写模板或你的本机，释放沙箱前必须导出。
@@ -121,6 +127,8 @@ abx delete "$SANDBOX_ID"
 命令响应为缓冲结果，不是流式事件。`cwd` 必须指向已存在且符合本模板路径约束的目录；允许编辑/工具执行时，模型可按沙箱用户权限修改文件或运行程序。超时只限制相应调用，客户端断连不能作为取消机制。
 
 ## 配置
+
+资源配置改 `template.yaml` 的 `sandbox.agent.template`；镜像默认值改 Dockerfile。运行时值从当前进程环境传给 `run.py`，允许的名称直接列在脚本 `RUNTIME_ENV_NAMES` 中。空值不会作为秘密写入镜像。业务启动命令在 `run.py`；不在模板快照阶段启动带动态认证的服务。外部 SDK/HTTP 客户端可从私有 `.sandbox-session.json` 读取 `application_token`，或复用显式设置的 `ABX_SERVER_TOKEN`。
 
 默认 `DEEPSEEK_BASE_URL=https://api.deepseek.com`、`DEEPSEEK_MODEL=deepseek-flash`、`WORKSPACE=/home/user/app`。`DEEPSEEK_API_KEY` 缺失时使用 `OPENAI_API_KEY`。兼容服务必须显式指定端点和模型。shell 子进程不继承环境凭据。文件工具拒绝 cwd 外路径及符号链接逃逸，单次读写上限 128 KiB，shell 每个输出流保留最后 64 KiB。shell 具有沙箱用户权限，不受文件工具的路径检查约束。
 

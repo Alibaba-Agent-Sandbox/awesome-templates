@@ -31,7 +31,7 @@ export ABX_SANDBOX_DOMAIN='<sandbox-domain>'
 先完成 [CLI 安装和平台配置](../../using-templates.zh-CN.md)，将 `<sandbox-id>` 替换为创建时返回的实例 ID。
 
 ```bash
-abx --provider alicloud-express deploy code-interpreter-v1 --sandbox-timeout 180 --yes
+abx --provider alicloud-express sandbox create --template code-interpreter-v1 --timeout 180 --yes
 export ABX_SANDBOX_ID="<返回的沙箱ID>"
 abx --provider alicloud-express sandbox exec "$ABX_SANDBOX_ID" -- python3 -c 'import pandas as pd; print(int(pd.DataFrame({"amount": [12, 30]})["amount"].sum()))'
 abx --provider alicloud-express delete "$ABX_SANDBOX_ID"

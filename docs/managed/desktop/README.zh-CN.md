@@ -31,7 +31,7 @@ export ABX_E2B_API_KEY='<e2b-api-key>'
 ```bash
 abx provider install Alibaba-Agent-Sandbox/awesome-providers//e2b --allow-unpinned --yes
 abx provider doctor e2b
-abx --provider e2b deploy desktop --sandbox-timeout 180 --yes
+abx --provider e2b sandbox create --template desktop --timeout 180 --yes
 export ABX_SANDBOX_ID="<返回的沙箱ID>"
 abx --provider e2b sandbox exec "$ABX_SANDBOX_ID" -- python3 -c 'print(6*7)'
 abx --provider e2b delete "$ABX_SANDBOX_ID" -y

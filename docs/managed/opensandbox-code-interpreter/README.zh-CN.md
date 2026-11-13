@@ -32,7 +32,7 @@ export ABX_OPENSANDBOX_API_KEY='<server-api-key>'
 ```bash
 abx provider install Alibaba-Agent-Sandbox/awesome-providers//opensandbox --allow-unpinned --yes
 abx provider doctor opensandbox
-abx --provider opensandbox deploy opensandbox-code-interpreter --sandbox-timeout 180 --yes
+abx --provider opensandbox sandbox create --template opensandbox-code-interpreter --timeout 180 --yes
 export ABX_SANDBOX_ID="<返回的沙箱ID>"
 abx --provider opensandbox sandbox exec "$ABX_SANDBOX_ID" -- python3 -c 'print(6*7)'
 abx --provider opensandbox delete "$ABX_SANDBOX_ID" -y

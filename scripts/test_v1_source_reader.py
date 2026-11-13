@@ -44,15 +44,13 @@ def test_checker_metadata_and_catalog_preserve_core_strings_without_env(
     shutil.copytree(ROOT / "_skeleton", source)
     path = source / "template.yaml"
     path.write_text(
-        path.read_text().replace(
-            "envs:\n", "envs:\n      FLAG: on\n      WHEN: 2026-11-12\n"
-        )
+        path.read_text() + "\nvars:\n  FLAG: on\n  WHEN: 2026-11-12\n"
     )
     monkeypatch.setenv("FLAG", "must-not-be-read")
     data, errors = check_template._load_yaml(path)
     assert errors == []
-    assert data["sandbox"]["instance"]["envs"]["FLAG"] == "on"
-    assert data["sandbox"]["instance"]["envs"]["WHEN"] == "2026-11-12"
+    assert data["vars"]["FLAG"] == "on"
+    assert data["vars"]["WHEN"] == "2026-11-12"
     (source / "registry.yaml").write_text(
         "specVersion: 1\nname: example\nversion: 1.0.0\ndescription: {en: on, zh: 2026-11-12}\nauthor: on\nlicense: Apache-2.0\ntags: [on]\nreadme: {en: README.md, zh: README.zh-CN.md}\n"
     )

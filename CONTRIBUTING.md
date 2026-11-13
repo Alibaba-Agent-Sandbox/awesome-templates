@@ -15,7 +15,7 @@ already passes `scripts/check_template.py`. It is not a catalog entry.
 1. Copy `_skeleton/` to a kebab-case directory. The directory name,
    `template.yaml` `name`, and the index `path` are the same string.
 2. Keep the default Express recipe's Alibaba base image, Provider generation-2 preparation,
-   `sandbox.start`, `sandbox.ready`, pinned installs, and `USER user`. Do not add `CMD` or
+   the template-owned `run.py` application startup, pinned installs, and `USER user`. Do not add `CMD` or
    `ENTRYPOINT` to that recipe. A separately declared explicit build profile may
    use another pinned base; it must preserve the original recipe and non-root
    runtime, and is selected by name rather than applied as a provider rewrite.
@@ -52,7 +52,7 @@ already passes `scripts/check_template.py`. It is not a catalog entry.
    parameters into current CLI examples.
 
 Do not commit `__pycache__/`, `.env`, or secret values. Declare secret
-*names* with empty values in `template.yaml` `sandbox.instance.envs`.
+*names* with empty values in `template.yaml` instance-creation `envs`.
 
 ## Review and completion
 

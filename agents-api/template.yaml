@@ -1,109 +1,181 @@
+# Resource configuration. Registry form definitions live in registry.yaml.
+# vars keys belong to this recipe; they are not reserved specification fields.
 specVersion: 1
 name: agents-api
+vars:
+  region: cn-hangzhou
+  applicationName: agents-api
+  revision: ${env('AGENTS_REVISION', 'pending')}
+  serverImage: ${env('AGENTS_SERVER_IMAGE')}
+  adapter: qwen-code
+  policy:
+    sessions:
+      idleTimeoutSeconds: 900
+      maxLogicalSessionsPerOwner: 100
+      maxActiveSessions: 20
+      maxQueuedTurnsPerSession: 8
+      resultRetentionSeconds: 86400
+      maxLifetimeSeconds: 3600
+      maxConcurrentTurnsPerSession: 1
+    limits:
+      maxRunSeconds: 600
+      maxToolSeconds: 60
+      maxConcurrentRuns: 10
+      maxQueuedRuns: 80
+      maxRunsPerMinute: 60
+      maxEventsPerRun: 10000
+      maxOutputBytes: 8388608
+      maxSubscribersPerSession: 4
+    storage:
+      maxFileBytes: 10485760
+      maxArtifactBytes: 10485760
+      maxTurnArtifactBytes: 10485760
+      maxRetainedBytesPerOwner: 104857600
+    instance:
+      timeout: 3600
 sandbox:
-  template:
-    source:
-      dockerfile: Dockerfile
-      context: .
-    props:
+  agent:
+    provider: alicloud-express
+    actions:
+      pre-deploy:
+      - run: python scripts/release.py init --name '${vars.applicationName}' --region
+          '${vars.region}'
+    template:
+      region: ${vars.region}
+      buildConfig:
+        dockerfile: ./Dockerfile
+        context: .
+      generation: 2
       cpu: 2
-      memory: 4096
-  instance:
-    timeout: 3600
-  provider: alicloud-express
-deployment:
-  edition: 3.0.0
-  access: default
-  vars:
-    region: cn-hangzhou
-    executionRole: ${env('AGENTS_FC_ROLE_ARN')}
-  resources:
-    gateway:
-      component: fc3@0.1.26
-      props:
-        region: ${vars.region}
-        runtime: custom-container
-        cpu: 1
-        memorySize: 1024
-        timeout: 120
-        role: ${vars.executionRole}
-    worker:
-      component: fc3@0.1.26
-      props:
-        region: ${vars.region}
-        runtime: custom-container
-        cpu: 2
-        memorySize: 2048
-        timeout: 86400
-        role: ${vars.executionRole}
-    dispatcher:
-      component: fc3@0.1.26
-      props:
-        region: ${vars.region}
-        runtime: custom-container
-        cpu: 2
-        memorySize: 2048
-        timeout: 120
-        role: ${vars.executionRole}
-application:
-  type: agents-api
-  roles:
-    gateway: gateway
-    worker: worker
-    dispatcher: dispatcher
-  server:
-    source:
-      dockerfile: server/Dockerfile
-      context: .
-  state:
-    databaseUrl: ${env('ABX_MANAGED_DATABASE_URL')}
-  bindings:
-    sandboxAccess:
-      apiKey: ${env('SANDBOX_API_KEY')}
-      baseUrl: ${env('SANDBOX_BASE_URL')}
-      domain: ${env('SANDBOX_DOMAIN')}
-      region: ${env('SANDBOX_REGION')}
-    model:
-      apiKey: ${env('OPENAI_API_KEY')}
-      baseUrl: ${env('OPENAI_BASE_URL')}
-      model: ${env('OPENAI_MODEL')}
-      adapter: qwen-code
-    clientAuth:
-      generate: true
-      owner: default
-    internalAuth:
-      generate: true
-    ingress:
-      kind: function-alias
-      aliasName: prod
-      allowTestDomain: true
-  sessions:
-    idleTimeoutSeconds: 900
-    maxLogicalSessionsPerOwner: 100
-    maxActiveSessions: 20
-    maxQueuedTurnsPerSession: 8
-    resultRetentionSeconds: 86400
-  limits:
-    maxRunSeconds: 600
-    maxToolSeconds: 60
-    maxConcurrentRuns: 10
-    maxQueuedRuns: 80
-    maxRunsPerMinute: 60
-    maxEventsPerRun: 10000
-    maxOutputBytes: 8388608
-    maxSubscribersPerSession: 4
-  storage:
-    maxFileBytes: 10485760
-    maxArtifactBytes: 10485760
-    maxTurnArtifactBytes: 10485760
-    maxRetainedBytesPerOwner: 104857600
-  hooks:
-    afterReady:
-    - id: managed-agent-business
-      type: custom
-      argv:
-      - python
-      - scripts/smoke.py
-      cwd: .
-      timeoutSeconds: 900
-      envAllowlist: []
+      memorySize: 4096
+      diskSize: 15360
+      internetAccess: true
+serving:
+  worker:
+    component: serverless-devs/fc3@0.1.26
+    actions:
+      pre-deploy:
+      - run: python scripts/release.py reserve worker
+      - component: serverless-devs/fc3@0.1.26 build --dockerfile ./server/Dockerfile
+          --context .
+      success-deploy:
+      - run: python scripts/release.py observed worker
+    props:
+      region: ${vars.region}
+      functionName: ${vars.applicationName}-worker-${vars.revision}
+      description: Agent Sandbox ${vars.applicationName} ${vars.revision}
+      runtime: custom-container
+      code: .
+      cpu: 2
+      memorySize: 2048
+      diskSize: 512
+      timeout: 86400
+      role: ${env('AGENTS_FC_ROLE_ARN')}
+      internetAccess: true
+      environmentVariables:
+        AGENTS_APPLICATION: ${vars.applicationName}
+        AGENTS_REVISION: ${vars.revision}
+        AGENTS_TEMPLATE: ${resources.agent.output.templateId}
+        AGENTS_MODEL: ${env('OPENAI_MODEL')}
+        AGENTS_ADAPTER: ${vars.adapter}
+        AGENTS_POLICY_JSON: ${env('AGENTS_POLICY_JSON', '{}')}
+        AGENTS_WORKERS_JSON: ${env('AGENTS_WORKERS_JSON', '{}')}
+        AGENTS_STATE_ID: ${env('AGENTS_STATE_ID', '')}
+        ABX_MANAGED_DATABASE_URL: ${env('ABX_MANAGED_DATABASE_URL')}
+        ABX_MANAGED_DATABASE_CA_PEM: ${env('AGENTS_DATABASE_CA_PEM', '')}
+        ABX_MANAGED_INTERNAL_TOKEN: ${env('AGENTS_INTERNAL_TOKEN', '')}
+        SANDBOX_API_KEY: ${env('SANDBOX_API_KEY')}
+        SANDBOX_BASE_URL: ${env('SANDBOX_BASE_URL')}
+        SANDBOX_DOMAIN: ${env('SANDBOX_DOMAIN')}
+        SANDBOX_REGION: ${env('SANDBOX_REGION')}
+        OPENAI_API_KEY: ${env('OPENAI_API_KEY')}
+        OPENAI_BASE_URL: ${env('OPENAI_BASE_URL')}
+      customContainerConfig:
+        image: ${vars.serverImage}
+        port: 9000
+        command:
+        - worker
+      asyncInvokeConfig:
+        asyncTask: true
+        maxAsyncRetryAttempts: 0
+        maxAsyncEventAgeInSeconds: 3600
+  dispatcher:
+    component: serverless-devs/fc3@0.1.26
+    actions:
+      pre-deploy:
+      - run: python scripts/release.py reserve dispatcher
+      success-deploy:
+      - run: python scripts/release.py observed dispatcher
+    props:
+      region: ${vars.region}
+      functionName: ${vars.applicationName}-dispatch-${vars.revision}
+      description: Agent Sandbox ${vars.applicationName} ${vars.revision}
+      runtime: custom-container
+      code: .
+      cpu: 2
+      memorySize: 2048
+      diskSize: 512
+      timeout: 120
+      role: ${env('AGENTS_FC_ROLE_ARN')}
+      internetAccess: true
+      environmentVariables:
+        AGENTS_APPLICATION: ${vars.applicationName}
+        AGENTS_REVISION: ${vars.revision}
+        AGENTS_TEMPLATE: ${resources.agent.output.templateId}
+        AGENTS_MODEL: ${env('OPENAI_MODEL')}
+        AGENTS_ADAPTER: ${vars.adapter}
+        AGENTS_POLICY_JSON: ${env('AGENTS_POLICY_JSON', '{}')}
+        AGENTS_WORKERS_JSON: ${env('AGENTS_WORKERS_JSON', '{}')}
+        AGENTS_STATE_ID: ${env('AGENTS_STATE_ID', '')}
+        ABX_MANAGED_DATABASE_URL: ${env('ABX_MANAGED_DATABASE_URL')}
+        ABX_MANAGED_DATABASE_CA_PEM: ${env('AGENTS_DATABASE_CA_PEM', '')}
+        ABX_MANAGED_INTERNAL_TOKEN: ${env('AGENTS_INTERNAL_TOKEN', '')}
+        SANDBOX_API_KEY: ${env('SANDBOX_API_KEY')}
+        SANDBOX_BASE_URL: ${env('SANDBOX_BASE_URL')}
+        SANDBOX_DOMAIN: ${env('SANDBOX_DOMAIN')}
+        SANDBOX_REGION: ${env('SANDBOX_REGION')}
+        ABX_MANAGED_FC_ENDPOINT: fcv3.${vars.region}.aliyuncs.com
+        AGENTS_WORKER_FUNCTION: ${resources.worker.output.functionName}
+      customContainerConfig:
+        image: ${vars.serverImage}
+        port: 9000
+        command:
+        - dispatcher
+  gateway:
+    component: serverless-devs/fc3@0.1.26
+    actions:
+      pre-deploy:
+      - run: python scripts/release.py reserve gateway
+      success-deploy:
+      - run: python scripts/release.py publish
+    props:
+      region: ${vars.region}
+      functionName: ${vars.applicationName}-gateway
+      description: Agent Sandbox ${vars.applicationName} ${vars.revision}
+      runtime: custom-container
+      code: .
+      cpu: 1
+      memorySize: 1024
+      diskSize: 512
+      timeout: 120
+      role: ${env('AGENTS_FC_ROLE_ARN')}
+      internetAccess: true
+      environmentVariables:
+        AGENTS_APPLICATION: ${vars.applicationName}
+        AGENTS_REVISION: ${vars.revision}
+        AGENTS_TEMPLATE: ${resources.agent.output.templateId}
+        AGENTS_MODEL: ${env('OPENAI_MODEL')}
+        AGENTS_ADAPTER: ${vars.adapter}
+        AGENTS_POLICY_JSON: ${env('AGENTS_POLICY_JSON', '{}')}
+        AGENTS_WORKERS_JSON: ${env('AGENTS_WORKERS_JSON', '{}')}
+        AGENTS_STATE_ID: ${env('AGENTS_STATE_ID', '')}
+        ABX_MANAGED_DATABASE_URL: ${env('ABX_MANAGED_DATABASE_URL')}
+        ABX_MANAGED_DATABASE_CA_PEM: ${env('AGENTS_DATABASE_CA_PEM', '')}
+        ABX_MANAGED_INTERNAL_TOKEN: ${env('AGENTS_INTERNAL_TOKEN', '')}
+        AGENTS_BUSINESS_SHA256: ${env('AGENTS_BUSINESS_SHA256', '')}
+        AGENTS_DISPATCH_FUNCTION: ${resources.dispatcher.output.functionName}
+      customContainerConfig:
+        image: ${vars.serverImage}
+        port: 9000
+        command:
+        - gateway

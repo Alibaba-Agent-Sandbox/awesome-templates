@@ -1,6 +1,6 @@
 # prime-agent
 
-本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。模板属性在 `sandbox.agent.template`；运行默认值在 Dockerfile，私有运行值在创建实例时显式传入。用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
 
 ## 做什么
 
@@ -20,6 +20,9 @@
 
 ## 快速开始（CLI）
 
+`abx deploy` 只准备模板。下载本目录源码后，从该目录执行下面的部署，再将 `<prepared-template-id>` 改成返回的模板 ID，运行 `run.py` 创建实例并显式启动业务服务。脚本只传入本页列出的运行配置，自动生成并将应用令牌保存在本地 `.sandbox-session.json`（仅当前用户可读）；不会打印令牌。已有会话文件不会被覆盖，可用 `--session` 选择新文件。
+
+
 先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，配置选择的平台（沙箱 API Key、连接地址及构建镜像仓库），再配置下面独立的模型/应用凭据。无需 clone 仓库即可启动公共模板。
 
 示例使用显式 Chat Completions 模型和原版本地 CPython REPL 后端，不需要 Prime 订阅或交互登录。Agent 可以执行 Python 并修改项目文件；该配置禁用嵌套/委派 Agent。
@@ -30,17 +33,20 @@
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-# CLI 默认生成并保存应用令牌；外部 SDK/HTTP 如需自定义，在部署前取消下一行注释。
+# run.py 自动生成私有应用令牌；需要自行指定时可取消下一行注释。
 # export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export PRIME_MODEL_API_KEY='<your-model-or-vendor-key>'
 export PRIME_MODEL_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
 export PRIME_MODEL='<model-id-from-your-provider>'
-abx deploy Alibaba-Agent-Sandbox/awesome-templates//prime-agent --sandbox-timeout 1800 --yes
+abx deploy . --yes
+python3 -m pip install "agent-sandbox-client==0.4.0a7"
+python3 run.py --template <prepared-template-id> --timeout 1800
+export ABX_SERVER_TOKEN="$(python3 -c 'import json; print(json.load(open(".sandbox-session.json"))["application_token"])')"
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
-`--sandbox-timeout 1800` 是沙箱生存时间（秒），`command_timeout`/`timeout_s` 是单次任务执行期限，`ABX_HTTP_TIMEOUT`/SDK `timeout` 是客户端等待时间，三者分别设置。
+`run.py --timeout 1800` 是沙箱生存时间（秒），`command_timeout`/`timeout_s` 是单次任务执行期限，`ABX_HTTP_TIMEOUT`/SDK `timeout` 是客户端等待时间，三者分别设置。
 
 launch 已启动该实例的应用，不需要再建第二个沙箱或启动第二个服务。使用 OpenSandbox 时，先按[指南](../docs/using-templates.zh-CN.md#clisdk-与-http)配置它，将 `ABX_PROVIDER=opensandbox`，下方 Python 也读取同一个选择。
 
@@ -52,7 +58,7 @@ ABX_HTTP_TIMEOUT=420 abx sandbox command run "$SANDBOX_ID" prime_agent --json-ar
 
 ## 快速开始（Python SDK）
 
-先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a7`。
 
 ```python
 import asyncio
@@ -97,7 +103,7 @@ asyncio.run(main())
 abx sandbox exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
 abx sandbox download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
 abx sandbox download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
-abx delete "$SANDBOX_ID"
+abx sandbox delete "$SANDBOX_ID" --yes
 ```
 
 程序预期输出 `Hello from the sandbox`。先读取产物并检查再使用；模型回答成功不代表文件一定存在。文件不会自动回写模板或你的本机，释放沙箱前必须导出。
@@ -117,13 +123,15 @@ abx delete "$SANDBOX_ID"
 
 ## 配置
 
+资源配置改 `template.yaml` 的 `sandbox.agent.template`；镜像默认值改 Dockerfile。运行时值从当前进程环境传给 `run.py`，允许的名称直接列在脚本 `RUNTIME_ENV_NAMES` 中。空值不会作为秘密写入镜像。业务启动命令在 `run.py`；不在模板快照阶段启动带动态认证的服务。外部 SDK/HTTP 客户端可从私有 `.sandbox-session.json` 读取 `application_token`，或复用显式设置的 `ABX_SERVER_TOKEN`。
+
 | Name | Default / requirement | Meaning |
 | --- | --- | --- |
 | PRIME_MODEL_API_KEY | empty; required for coding | Approved compatible-model key |
 | PRIME_MODEL_BASE_URL | empty; required for coding | Explicit HTTPS base; literal local HTTP for authored fixtures only; no userinfo/query/fragment; max2048characters |
 | PRIME_MODEL | empty; required for coding | Actual model identifier; max200allowed identifier characters |
 | WORKSPACE | `/home/user/workspace` | Existing caller project root |
-| ABX_SERVER_TOKEN | 必填；清单为空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| ABX_SERVER_TOKEN | 必填；清单为空 | run.py 自动生成，或显式提供；外部客户端从私有会话文件读取。 |
 
 配置在commands.py加载时读取。私有0700HOME/0600models.json使用 apiKey="ABX_PRIME_MODEL_KEY" 环境变量引用，不保存key值。不继承操作端云/GitHub/厂商凭据。固定内核入口在启动原版CPython前删除ABX_PRIME_MODEL_KEY；同一用户仍有OS访问权限，这只是环境收敛，不是凭据隔离。返回值脱敏原值及JSON转义的key/base。禁用遥测、trace、refinement、compaction、factory及发现，设置rlmMaxDepth0；原生print模式不传child host，使用NoRlmChildren，不启动委派代理或daemon。自定义模型价格未知，默认0不能理解为免费。
 

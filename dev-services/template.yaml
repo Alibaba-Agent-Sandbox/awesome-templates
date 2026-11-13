@@ -1,29 +1,13 @@
 specVersion: 1
 name: dev-services
 sandbox:
-  template:
-    source:
-      dockerfile: Dockerfile
-      context: .
-    props:
+  agent:
+    provider: alicloud-express
+    template:
+      region: cn-hangzhou
+      buildConfig:
+        dockerfile: Dockerfile
+        context: .
+      generation: 2
       cpu: 2
-      memory: 2048
-  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
-  ready: agent-sandbox-server healthcheck --port 9000
-  instance:
-    envs:
-      ABX_SERVER_TOKEN: ''
-      DEV_SERVICES_PASSWORD: ''
-      DEV_SERVICES_REDIS_PORT: '16379'
-      DEV_SERVICES_POSTGRES_PORT: '5432'
-  services:
-    app:
-      protocol: agent-sandbox-server
-      version: 2
-      port: 9000
-      operations:
-      - commands.list
-      - commands.run
-  ports:
-  - 5432
-  - 16379
+      memorySize: 2048

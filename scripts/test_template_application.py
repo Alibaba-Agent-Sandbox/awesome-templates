@@ -56,10 +56,11 @@ class ApplicationContractTest(unittest.TestCase):
             data = copy.deepcopy(self.data); data[key] = []
             self.assertTrue(self.check(data))
 
-    def test_source_image_reference_are_exclusive(self):
-        for branch in ['image', 'reference']:
-            data = copy.deepcopy(self.data); data['sandbox']['template'][branch] = 'existing'
-            self.assertTrue(self.check(data))
+    def test_image_is_build_target_and_reference_is_exclusive(self):
+        self.data['sandbox']['agent']['template']['image'] = 'registry.example/image:1'
+        self.assertEqual(self.check(), [])
+        self.data['sandbox']['agent']['template']['reference'] = 'existing'
+        self.assertTrue(self.check())
 
     def test_unknown_fields_and_wrong_types_are_rejected(self):
         for key, value in [('timeout', True), ('timeout', 0), ('unknown', 1), ('envs', [])]:
@@ -68,27 +69,27 @@ class ApplicationContractTest(unittest.TestCase):
 
     def test_rejects_paths_outside_source_and_missing_files(self):
         for path in ['../outside', '/absolute', 'C:/absolute', 'a/../../b', 'a\\b', 'a\x00b', 'missing']:
-            data = copy.deepcopy(self.data); data['sandbox']['template']['source']['dockerfile'] = path
+            data = copy.deepcopy(self.data); data['sandbox']['agent']['template']['buildConfig']['dockerfile'] = path
             self.assertTrue(self.check(data))
         (self.root / 'outside').write_text('FROM example\n')
         (self.template / 'escape').symlink_to(self.root / 'outside')
-        data = copy.deepcopy(self.data); data['sandbox']['template']['source']['dockerfile'] = 'escape'
+        data = copy.deepcopy(self.data); data['sandbox']['agent']['template']['buildConfig']['dockerfile'] = 'escape'
         self.assertTrue(self.check(data))
 
     def test_symlink_loop_fails_as_validation_error(self):
         (self.template / 'loop').symlink_to('loop')
-        self.data['sandbox']['template']['source']['dockerfile'] = 'loop'
+        self.data['sandbox']['agent']['template']['buildConfig']['dockerfile'] = 'loop'
         self.assertTrue(self.check())
 
     def test_native_serving_project_keeps_props_and_expressions(self):
-        data = {'specVersion': 1, 'name': 'web', 'deployment': {'edition': '3.0.0', 'access': 'default', 'resources': {'api': {'component': 'fc3@0.1.26', 'props': {'memorySize': "${env('MEMORY')}", 'vpcConfig': {'vpcId': 'vpc-example'}}}}}}
+        data = {'specVersion': 1, 'name': 'web', 'serving': {'api': {'component': 'serverless-devs/fc3@0.1.26', 'props': {'memorySize': "${env('MEMORY')}", 'vpcConfig': {'vpcId': 'vpc-example'}}}}}
         self.assertEqual(validate_manifest(data), [])
-        self.assertEqual(data['deployment']['resources']['api']['props']['memorySize'], "${env('MEMORY')}")
+        self.assertEqual(data['serving']['api']['props']['memorySize'], "${env('MEMORY')}")
         data['sandbox'] = self.data['sandbox']
-        self.assertEqual(validate_manifest(data), [])  # Independent declarations are valid intent; consumers gate execution.
+        self.assertEqual(validate_manifest(data), [])
 
     def test_static_checker_preserves_numeric_expressions_without_environment_resolution(self):
-        self.data['sandbox']['template']['props'] = {'cpu': "${env('CPU')}", 'memory': "${env('MEMORY')}"}
+        self.data['sandbox']['agent']['template'].update(cpu="${env('CPU')}", memorySize="${env('MEMORY')}")
         (self.template / 'template.yaml').write_text(yaml.safe_dump(self.data))
         (self.template / '.env').write_text('CPU=not-a-number\nMEMORY=not-a-number\n')
         with patch('subprocess.run', side_effect=AssertionError('must not execute')), patch('subprocess.Popen', side_effect=AssertionError('must not execute')):

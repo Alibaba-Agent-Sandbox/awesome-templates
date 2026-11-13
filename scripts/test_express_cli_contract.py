@@ -33,14 +33,18 @@ class ExpressCliContract(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr)
                 return result.stdout
             public = help_for(['--provider', 'alicloud-express', 'deploy'])
-            for flag in ('--name', '--sandbox-timeout', '--build-timeout'):
+            for flag in ('--name', '--build-timeout'):
                 self.assertIn(flag, public)
             self.assertNotIn('--workflow', public)
             self.assertNotIn('--sandbox-create', public)
             author = help_for(['template', 'build'])
-            for flag in ('--out', '--clean', '--build-profile'):
+            for flag in ('--out', '--clean'):
                 self.assertIn(flag, author)
             self.assertIn('--input', help_for(['--provider', 'alicloud-express', 'provider', 'run', 'template.delete']))
+            dynamic = help_for(['sandbox', 'create'])
+            for flag in ('--template', '--timeout', '--env'):
+                self.assertIn(flag, dynamic)
+            self.assertIn('--yes', help_for(['sandbox', 'delete']))
             named = help_for(['sandbox', 'command', 'run'])
             for flag in ('--arg', '--json-args', '--server-port'):
                 self.assertIn(flag, named)

@@ -1,29 +1,13 @@
 specVersion: 1
 name: qm
 sandbox:
-  template:
-    source:
-      dockerfile: Dockerfile
-      context: .
-    props:
+  agent:
+    provider: alicloud-express
+    template:
+      region: cn-hangzhou
+      buildConfig:
+        dockerfile: Dockerfile
+        context: .
+      generation: 2
       cpu: 2
-      memory: 2048
-  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
-  ready: agent-sandbox-server healthcheck --port 9000
-  instance:
-    envs:
-      ABX_SERVER_TOKEN: ''
-      QM_SANDBOX_BASE_URL: http://127.0.0.1:9000
-      QM_SANDBOX_TOKEN: ''
-      WORKSPACE: /home/user/app
-      QM_MODEL_API_KEY: ''
-      QM_MODEL_BASE_URL: ''
-      QM_MODEL: ''
-  services:
-    app:
-      protocol: agent-sandbox-server
-      version: 2
-      port: 9000
-      operations:
-      - commands.list
-      - commands.run
+      memorySize: 2048

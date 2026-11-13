@@ -1,6 +1,6 @@
 # grok
 
-This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Template attributes are under `sandbox.agent.template`. Runtime defaults belong to the Dockerfile; pass private values explicitly when creating an instance. See this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
 
 ## What it does
 
@@ -22,6 +22,9 @@ Use an installed tool in an isolated sandbox, submit work through CLI, Python or
 
 ## Quick start (CLI)
 
+`abx deploy` only prepares the template. Download this directory, run deployment from it, then replace `<prepared-template-id>` with the returned template ID and run `run.py`. The script creates an instance and explicitly starts the application with this page’s runtime settings. It generates an application token and stores it privately in `.sandbox-session.json`, without printing it. Existing session files are never overwritten; use `--session` for another run.
+
+
 Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
 
 This wrapper explicitly configures an OpenAI-compatible Chat Completions model; an xAI subscription/login is not required. It does not silently select a hosted Grok model. The native agent can use file and shell tools as the sandbox user.
@@ -32,17 +35,20 @@ Replace every `<...>` placeholder with your own value; use an exact model ID ava
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# run.py generates a private token; optionally choose your own before running it.
 # export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export GROK_MODEL_API_KEY='<your-model-or-vendor-key>'
 export GROK_MODEL_BASE_URL='https://dashscope.aliyuncs.com/compatible-mode/v1'
 export GROK_MODEL='<model-id-from-your-provider>'
-abx deploy Alibaba-Agent-Sandbox/awesome-templates//grok --sandbox-timeout 1800 --yes
+abx deploy . --yes
+python3 -m pip install "agent-sandbox-client==0.4.0a7"
+python3 run.py --template <prepared-template-id> --timeout 1800
+export ABX_SERVER_TOKEN="$(python3 -c 'import json; print(json.load(open(".sandbox-session.json"))["application_token"])')"
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
-`--sandbox-timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
+`run.py --timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
 
 Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
 
@@ -54,7 +60,7 @@ The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/w
 
 ## Quick start (Python SDK)
 
-In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a7`.
 
 ```python
 import asyncio
@@ -99,7 +105,7 @@ The response is `{"result": ...}`; see the command reference for its actual cont
 abx sandbox exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
 abx sandbox download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
 abx sandbox download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
-abx delete "$SANDBOX_ID"
+abx sandbox delete "$SANDBOX_ID" --yes
 ```
 
 Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
@@ -118,13 +124,15 @@ Named-command results are buffered rather than streamed. `cwd` must be an existi
 
 ## Configuration
 
+Edit resource values under `sandbox.agent.template` in `template.yaml` and image defaults in the Dockerfile. `run.py` reads runtime values from the process environment, limited to its explicit `RUNTIME_ENV_NAMES`. Empty placeholders do not put credentials into the image. Application startup belongs to `run.py`, after creation, so dynamic authentication is not frozen in a template snapshot. External SDK/HTTP clients can read `application_token` from the private `.sandbox-session.json`, or reuse an explicitly supplied `ABX_SERVER_TOKEN`.
+
 | Name | Required / default | Meaning |
 | --- | --- | --- |
 | GROK_MODEL_API_KEY | model required; empty | Approved compatible endpoint key; only forwarded as native ABX_GROK_MODEL_KEY |
 | GROK_MODEL_BASE_URL | model required; empty | Explicit HTTPS API base, literal localhost HTTP for authored development only; no userinfo/query/fragment; max2048characters |
 | GROK_MODEL | model required; empty | Actual model identifier, max200allowed identifier characters |
 | WORKSPACE | `/home/user/workspace` | Existing workspace root |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before the deploy; separate from model and gateway credentials |
+| ABX_SERVER_TOKEN | required; empty declaration | Generated by run.py unless explicitly supplied; external clients read the private session file. |
 
 Values are captured when commands.py loads. A private0600 config.toml stores explicit model/base and env_key="ABX_GROK_MODEL_KEY" without the key value. Custom api_backend="chat_completions" prevents selecting a hosted vendor model. Private GROK_HOME/HOME/cache/session state is removed after each call; auto-update, leader, telemetry/trace upload, memory and background workflows are disabled. Native shell_environment_policy inherits core with default secret exclusion; no caller cloud/GitHub/vendor account token is forwarded. Agent tools still have OS authority in the disposable sandbox.
 

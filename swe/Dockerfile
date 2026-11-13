@@ -45,5 +45,11 @@ ENV WORKSPACE=/home/user/app PYTHON_DOTENV_DISABLED=1
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py swe_process.py swe_environment.py instance.json ./
 RUN chown user:user /home/user/app
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV ABX_SERVER_TOKEN="" \
+    SWE_API_KEY="" \
+    SWE_BASE_URL="" \
+    SWE_MODEL="" \
+    SWE_MODEL_PROTOCOL="toolcall"
 USER user
 EXPOSE 9000

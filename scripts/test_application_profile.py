@@ -16,52 +16,52 @@ class ApplicationProfileTest(unittest.TestCase):
 
     def test_real_manifest_normalization_is_idempotent_and_nonmutating(self):
         import yaml
-        data = yaml.safe_load((ROOT / 'agents-api/template.yaml').read_text())
+        data = yaml.safe_load((ROOT / 'python-hello/template.yaml').read_text())
         original = copy.deepcopy(data)
         normalized = normalize_manifest(data)
         self.assertEqual(normalize_manifest(normalized), normalized)
         self.assertEqual(data, original)
-        self.assertEqual(validate_manifest(data, ROOT / 'agents-api'), [])
-        self.assertEqual(project_manifest(data, ROOT / 'agents-api')['application']['sessions']['maxLifetimeSeconds'], data['sandbox']['instance']['timeout'])
+        self.assertEqual(validate_manifest(data, ROOT / 'python-hello'), [])
+        self.assertIn('agent-sandbox-server serve', project_manifest(data, ROOT / 'python-hello')['start_cmd'])
+        self.assertNotIn('startCommand', data['sandbox']['agent']['template'])
 
-    def test_explicit_conflicts_are_not_repaired(self):
+    def test_retired_application_settings_are_not_repaired(self):
         import yaml
-        original = yaml.safe_load((ROOT / 'agents-api/template.yaml').read_text())
-        for section, field, value in [('sessions', 'maxConcurrentTurnsPerSession', 2), ('sessions', 'maxLifetimeSeconds', 3600), ('state', 'profile', 'ephemeral')]:
-            data = copy.deepcopy(original)
-            data['application'].setdefault(section, {})[field] = value
+        original = yaml.safe_load((ROOT / 'python-hello/template.yaml').read_text())
+        for key in ['application', 'deployment', 'instance']:
+            data = copy.deepcopy(original); data[key] = {'private': 'not-logged'}
             self.assertTrue(validate_manifest(data))
-            self.assertEqual(data['application'][section][field], value)
+            self.assertEqual(data[key], {'private': 'not-logged'})
 
-    def test_business_type_classifies_and_version_only_admits_v1(self):
+    def test_native_serving_classifies_and_version_only_admits_v1(self):
         import yaml
-        data = yaml.safe_load((ROOT / 'agents-api/template.yaml').read_text())
-        self.assertTrue(is_managed_application(data))
+        data = yaml.safe_load((ROOT / 'python-hello/template.yaml').read_text())
+        self.assertFalse(is_managed_application(data))
         for value in [5, 6, 7, None, False, '1']:
             candidate = copy.deepcopy(data); candidate['specVersion'] = value
             self.assertTrue(validate_manifest(candidate))
-        data['application']['type'] = 'other'
+        data['sandbox']['agent']['template']['startCommand'] = 'python -m agent_sandbox.server.managed --port 9000'
         self.assertFalse(is_managed_application(data))
-        self.assertTrue(validate_manifest(data))
+        self.assertEqual(validate_manifest(data), [])
+        managed = yaml.safe_load((ROOT / 'agents-api/template.yaml').read_text())
+        self.assertTrue(is_managed_application(managed))
 
-    def test_unbound_source_and_explicit_provider_conflicts(self):
+    def test_explicit_provider_conflicts_are_rejected(self):
         import yaml
         data = yaml.safe_load((ROOT / 'python-hello/template.yaml').read_text())
-        self.assertNotIn('provider', normalize_manifest(data)['sandbox'])
-        self.assertEqual(normalize_manifest(data, 'e2b')['sandbox']['provider'], 'e2b')
-        data['sandbox']['provider'] = 'e2b'
-        with self.assertRaises(ValueError):
-            normalize_manifest(data, 'opensandbox')
+        self.assertEqual(normalize_manifest(data)['sandbox']['agent']['provider'], 'alicloud-express')
+        with self.assertRaises(ValueError): normalize_manifest(data, 'e2b')
 
-    def test_binding_defaults_preserve_security_boundaries(self):
+    def test_no_business_or_credential_defaults_are_created(self):
         import yaml
-        data = yaml.safe_load((ROOT / 'agents-api/template.yaml').read_text())
+        data = yaml.safe_load((ROOT / 'python-hello/template.yaml').read_text())
         normalized = normalize_manifest(data)
-        self.assertTrue(normalized['application']['bindings']['clientAuth']['generate'])
-        self.assertTrue(normalized['application']['bindings']['internalAuth']['generate'])
-        for patch in [{'targets': ['gateway']}, {'allowedEnv': ['ALIBABA_CLOUD_ACCESS_KEY_SECRET']}, {'resolverRole': 'gateway'}]:
-            invalid = copy.deepcopy(data); invalid['application']['bindings']['model'].update(patch)
-            self.assertTrue(validate_manifest(invalid))
-        for key in ['model', 'sandboxAccess']:
-            invalid = copy.deepcopy(data); del invalid['application']['bindings'][key]
-            self.assertTrue(validate_manifest(invalid))
+        self.assertNotIn('application', normalized)
+        self.assertNotIn('instance', normalized['sandbox']['agent'])
+        self.assertNotIn('environmentVariables', normalized['sandbox']['agent']['template'])
+        self.assertEqual(normalized['sandbox']['agent']['template']['region'], 'cn-hangzhou')
+
+
+    def test_deferred_native_fields_do_not_become_business_classification(self):
+        data = {"serving": {"api": {"props": {"environmentVariables": "${vars.nativeEnv}", "customContainerConfig": None}}}}
+        self.assertFalse(is_managed_application(data))

@@ -4,7 +4,9 @@ RUN python -m pip install --no-cache-dir "agent-sandbox-client[managed-agents] @
     && python -c "from agent_sandbox.managed_agents.models import ManagedConfig; assert {'instance', 'instance_env_names'} <= set(ManagedConfig.__dataclass_fields__)"
 
 RUN useradd --create-home --uid 10001 app
+COPY --chown=app:app server/bootstrap.py /home/app/bootstrap.py
 USER app
 WORKDIR /home/app
 EXPOSE 9000
-CMD ["python", "-m", "agent_sandbox.managed_agents", "gateway"]
+ENTRYPOINT ["python", "/home/app/bootstrap.py"]
+CMD ["gateway"]

@@ -45,7 +45,7 @@ def test_real_usage_does_not_substitute_invalid_or_missing_vendor_accounts(name)
 
 def test_controller_uses_the_template_runtime_workspace(tmp_path):
     source = controller(tmp_path, "example", "print('[PASS] example')\n")
-    (source / "template.yaml").write_text('specVersion: 1\nsandbox:\n  instance:\n    envs:\n      WORKSPACE: /home/user/workspace\n')
+    (source / "Dockerfile").write_text('FROM python:3.13\nENV WORKSPACE=/home/user/workspace\n')
     environment = controller_environment(source, {9000: "http://synthetic.invalid"}, {}, real_usage=True)
     assert environment["E2E_WORKSPACE"] == "/home/user/workspace"
     assert environment["E2E_REMOTE_SANDBOX"] == "1"

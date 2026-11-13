@@ -1,30 +1,37 @@
-# 在启动前配置模板应用
+# 配置应用运行环境
 
 [English](runtime-environment.md)
 
-由一个入口负责启动：`abx deploy` 准备模板并启动其声明的应用。SDK 连接这个已运行的沙箱，调用命名命令。模型配置和 `ABX_SERVER_TOKEN` 必须在应用进程导入模板前传入；再连接一个客户端不会重新配置已有进程。
-
-## 启动一次，再连接使用
-
-先完成[安装和提供方配置](using-templates.zh-CN.md#安装)。以下示例使用已发布的 CLI 0.5.6、Python 客户端 0.4.0a6 和 `python-hello` 模板。配置极速版，并在启动前将 `ABX_SERVER_TOKEN` 安全地设置到本地环境。模型模板还需要按其 README 设置声明的配置项；`template.yaml` 中声明空值并不提供密钥。
+`abx deploy .` 准备可复用的 Sandbox 模板并部署声明的 Serving 资源。普通源码模板自带 `run.py`，用于创建动态实例，并携带运行时凭据启动应用。先完成[安装](using-templates.zh-CN.md#安装)，再按所选模板 README 操作。
 
 ```bash
-abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --yes
+abx deploy . --yes
+python3 run.py --template <prepared-template-id> --timeout 1800
 ```
 
-将返回的沙箱 ID 填入下面示例，提供方和应用令牌与启动时保持一致。应用已在声明的 9000 端口运行；连接时不会启动另一个服务。
+`run.py` 保留该模板的应用启动命令，只传递 `RUNTIME_ENV_NAMES` 声明的变量，等待服务健康检查并验证带认证的命令发现。运行前导出文档要求的模型 Key、端点及模型配置。镜像默认值仍在 Dockerfile 中；启动后修改本机环境不会重新配置已运行的应用。
+
+没有指定 `ABX_SERVER_TOKEN` 时，脚本自动生成独立应用令牌，将令牌、Provider 和已确认的 Sandbox ID 写入仅文件所有者可读写的 `.sandbox-session.json`。此私有文件已加入 Git 忽略列表。脚本不会覆盖已有会话文件；第二个实例可用 `--session` 指定新路径。启动失败时会尝试删除本次创建的实例；清理需要重试时保留会话文件。
+
+后续 CLI 调用可读取令牌而不在终端显示它：
+
+```bash
+export ABX_SERVER_TOKEN="$(python3 -c 'import json; print(json.load(open(".sandbox-session.json"))["application_token"])')"
+```
+
+Python 客户端可直接读取私有文件：
 
 ```python
 import asyncio
-import os
-
+import json
+from pathlib import Path
 from agent_sandbox import ProviderSandbox
 
-
 async def main():
-    sb = await ProviderSandbox.connect("<sandbox-id>", provider="alicloud-express")
+    session = json.loads(Path(".sandbox-session.json").read_text())
+    sb = await ProviderSandbox.connect(session["sandbox_id"], provider=session["provider"])
     try:
-        client = await sb.application_client(9000, token=os.environ["ABX_SERVER_TOKEN"])
+        client = await sb.application_client(9000, token=session["application_token"])
         try:
             print(await client.commands.run("hello", name="Ada"))
         finally:
@@ -32,18 +39,9 @@ async def main():
     finally:
         await sb.close()
 
-
 asyncio.run(main())
 ```
 
-预期结果为 `Hello, Ada!`。使用 OpenSandbox 时，先完成其[提供方配置](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)，启动选择 `--provider opensandbox`，连接选择 `provider="opensandbox"`。其他模板使用其实际服务端口和命令名。CLI 调用、HTTP POST 和清理参见[完整调用示例](using-templates.zh-CN.md)。
+上述命令适用于 `python-hello`，其他模板使用各自命令和端口。关闭客户端不会删除实例。先导出文件，再执行 `abx --provider alicloud-express sandbox delete <sandbox-id> --yes`；实例删除后再删除对应私有会话文件。准备好的模板和镜像有独立生命周期。
 
-`client.aclose()` 和 `sb.close()` 关闭客户端资源，不删除沙箱。使用结束后，资源所有者用 `abx --provider alicloud-express delete <sandbox-id>` 删除该实例，并单独清理不再需要的确切自有准备模板和镜像。消费已运行应用的 API 不需要再创建沙箱。
-
-## 启动配置与认证
-
-模板的启动命令和声明的服务应由同一个入口管理。缺少模型配置时，检查模板文档中的只读配置诊断命令及启动配置，不要为了绕过失败检查再启动第二个命令服务。从已准备引用创建实例属于高级启动路径；已有应用启动后，不应再由另一个入口重复启动。作者按现有 [SDK 模板编写指南](https://github.com/Alibaba-Agent-Sandbox/python-sdk/blob/main/docs/zh/guide/authoring-templates.md) 开发即可。
-
-应用进程启动时读取 `ABX_SERVER_TOKEN`。值非空时保护命名命令调用；未设置时应用允许匿名调用。之后的 create/connect 调用不能为已运行进程补上认证。`/health` 不要求应用令牌，但提供方网关仍可能要求自己的认证。health 成功不证明命令认证或模型配置正确。
-
-应用令牌、提供方网关凭据和上游模型密钥各有用途。`application_client(..., token=...)` 保留提供方网关访问头，并通过支持的请求头发送应用令牌。不要记录令牌，也不要把模型密钥放进命令参数、提示词或镜像层。具体请求头行为见[认证规范](template-spec.zh-CN.md#认证令牌)。
+Sandbox 平台 Key、应用令牌和模型 Key 用于不同系统。仅 `/health` 成功不能证明应用认证有效；SDK 在保留 Provider 网关认证的同时添加应用令牌。参见[认证约定](template-spec.zh-CN.md#认证令牌)和 [CLI、SDK 与 HTTP](using-templates.zh-CN.md#clisdk-与-http)。

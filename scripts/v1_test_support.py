@@ -4,19 +4,10 @@ import yaml
 
 
 def resource(name="example", *, env=None, start=None, ready=None, services=None):
-    sandbox = {
-        "provider": "alicloud-express",
-        "template": {"image": "fixture/image:1", "props": {"cpu": 2, "memory": 2048}},
-    }
-    if env is not None:
-        sandbox["instance"] = {"envs": env}
-    if start is not None:
-        sandbox["start"] = start
-    if ready is not None:
-        sandbox["ready"] = ready
-    if services is not None:
-        sandbox["services"] = services
-    return {"specVersion": 1, "name": name, "sandbox": sandbox}
+    template = {"image": "fixture/image:1", "cpu": 2, "memorySize": 2048}
+    if start is not None: template["startCommand"] = start
+    if ready is not None: template["readyCommand"] = ready
+    return {"specVersion": 1, "name": name, "sandbox": {"agent": {"provider": "alicloud-express", "template": template}}}
 
 
 def publication(source, name="example", version="1.0.1"):

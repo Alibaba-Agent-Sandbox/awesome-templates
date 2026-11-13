@@ -53,7 +53,11 @@ def check(root=ROOT):
             fail('resource: ' + message)
         if resource_errors:
             continue
-        sandbox = resource.get('sandbox', {}) if isinstance(resource, dict) else {}
+        sandboxes = list(resource.get('sandbox', {}).values())
+        if len(sandboxes) != 1 or resource.get('serving'):
+            fail('managed catalog entry must borrow exactly one Sandbox template')
+            continue
+        sandbox = sandboxes[0]
         provider = sandbox.get('provider')
         if not isinstance(name, str) or not re.fullmatch('[a-z0-9][a-z0-9-]*', name):
             fail('name must be kebab-case')
@@ -64,7 +68,7 @@ def check(root=ROOT):
         if not isinstance(provider, str) or provider not in PROVIDERS:
             fail('unknown provider')
         native = sandbox.get('template', {})
-        if row['kind'] != 'provider-managed' or not isinstance(native.get('reference'), str) or any(key in native for key in ('source', 'image')):
+        if row['kind'] != 'provider-managed' or not isinstance(native.get('reference'), str) or any(key in native for key in ('buildConfig', 'image')):
             fail('managed kind/native template reference required')
         if resource.get('name') != name:
             fail('resource name differs from catalog identity')

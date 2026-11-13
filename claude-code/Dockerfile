@@ -17,5 +17,12 @@ RUN pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbo
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py byok.py relay.py process.py lifecycle.py upstream.json .
 RUN chown user:user /home/user/app
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV ANTHROPIC_API_KEY="" \
+    CLAUDE_MODEL_API_KEY="" \
+    CLAUDE_MODEL_BASE_URL="" \
+    CLAUDE_MODEL="" \
+    ABX_SERVER_TOKEN="" \
+    WORKSPACE="/home/user/app"
 USER user
 EXPOSE 9000

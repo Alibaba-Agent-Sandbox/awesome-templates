@@ -27,7 +27,7 @@ def test_all_original_workloads_and_engineering_assertions_survive():
         projected = project_manifest(data, source)
         assert data["specVersion"] == 1 and "spec_version" not in data
         assert data["name"] == ("example" if name == "_skeleton" else old["name"])
-        assert engineering_checks(name) == {
+        assert {key: engineering_checks(name)[key] for key in ["smoke", "priority", "wave"] if key in engineering_checks(name)} == {
             key: old[key] for key in ["smoke", "priority", "wave"] if key in old
         }
         assert projected["base"] == old["base"]
@@ -37,18 +37,17 @@ def test_all_original_workloads_and_engineering_assertions_survive():
         assert projected["provides"] == old["provides"]
         assert projected["ports"] == sorted(set(old["ports"]))
         if name != "agents-api":
-            assert projected["env"] == old["env"]
-            assert (
-                "provider" not in data["sandbox"]
-            )  # Source remains usable across selected Providers.
+            assert {key: projected["env"].get(key) for key in old["env"]} == old["env"]
+            assert data["sandbox"]["agent"]["provider"] == "alicloud-express"
+            assert "instance" not in data["sandbox"]["agent"]
+            assert "startCommand" not in data["sandbox"]["agent"]["template"]
+            import ast
+            tree = ast.parse((source / "run.py").read_text())
+            assignments = {node.targets[0].id: ast.literal_eval(node.value) for node in tree.body if isinstance(node, ast.Assign) and isinstance(node.targets[0], ast.Name) and node.targets[0].id == "START_COMMAND"}
+            assert assignments["START_COMMAND"] == old["start_cmd"]
         else:
-            assert not data["sandbox"]["instance"].get(
-                "envs"
-            )  # Generated bridge/model controls have one owner.
-            assert (
-                normalized["sandbox"]["instance"]["timeout"]
-                == old["application"]["sessions"]["maxLifetimeSeconds"]
-            )
+            assert "application" not in data and "deployment" not in data
+            assert data["serving"]
         for key in ["aliases", "build_profiles"]:
             if key in old:
                 assert projected[key] == old[key]
@@ -88,7 +87,7 @@ def test_each_declared_configuration_name_is_documented_in_both_languages():
         source = ROOT / name
         text = (source / "template.yaml").read_text()
         data = yaml.safe_load(text)
-        names = set(data.get("sandbox", {}).get("instance", {}).get("envs", {}))
+        names = set(ORIGINAL[name].get("env", {}))
         names.update(re.findall(r"\$\{env\('([^']+)'\)\}", text))
         for filename in ["README.md", "README.zh-CN.md"]:
             readme = (source / filename).read_text()

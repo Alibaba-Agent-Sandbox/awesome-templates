@@ -31,7 +31,7 @@ Use the current source CLI and managed catalog; see [installation and provider s
 Install [CLI and provider configuration](../../using-templates.md), then replace `<sandbox-id>` with the ID returned by launch.
 
 ```bash
-abx --provider alicloud-express deploy code-interpreter-v1 --sandbox-timeout 180 --yes
+abx --provider alicloud-express sandbox create --template code-interpreter-v1 --timeout 180 --yes
 export ABX_SANDBOX_ID="<returned-sandbox-id>"
 abx --provider alicloud-express sandbox exec "$ABX_SANDBOX_ID" -- python3 -c 'import pandas as pd; print(int(pd.DataFrame({"amount": [12, 30]})["amount"].sum()))'
 abx --provider alicloud-express delete "$ABX_SANDBOX_ID"

@@ -168,10 +168,11 @@ def test_prepared_image_uses_shared_startup_contract_and_current_services(tmp_pa
     manifest=resource('example',start='python commands.py',ready='python check.py',env={'ABX_SERVER_TOKEN':'','OTHER':'fixed'},services={'app':{'protocol':'agent-sandbox-server','version':2,'port':9000,'operations':['commands.run']}})
     (source/'template.yaml').write_text(yaml.safe_dump(manifest))
     actual=review.prepared_launch_manifest(source,'owned-template')
-    assert actual['sandbox']['template']['reference']=='owned-template'
-    for key in ['start','ready','services']:
-        assert actual['sandbox'][key]==manifest['sandbox'][key]
-    assert actual['sandbox']['instance']['envs']==manifest['sandbox']['instance']['envs']
+    assert actual['sandbox']['agent']['template']['reference']=='owned-template'
+    assert 'instance' not in actual['sandbox']['agent']
+    projected=review.prepared_runtime_contract(source)
+    assert projected['start_cmd']=='python commands.py'
+    assert projected['ready_cmd']=='python check.py'
     assert yaml.safe_load((source/'template.yaml').read_text())==manifest
 
 

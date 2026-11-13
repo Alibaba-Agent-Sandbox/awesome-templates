@@ -1,18 +1,8 @@
 specVersion: 1
-name: sandbox-local-api
+name: application-local
 sandbox:
-  template:
-    reference: existing-sandbox-template
-  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
-  ready: agent-sandbox-server healthcheck --port 9000
-  instance:
-    envs:
-      ABX_SERVER_TOKEN: ''
-  services:
-    app:
-      protocol: agent-sandbox-server
-      version: 2
-      port: 9000
-      operations:
-      - commands.list
-      - commands.run
+  agent:
+    provider: alicloud-express
+    template:
+      reference: existing-sandbox-template
+      region: cn-hangzhou

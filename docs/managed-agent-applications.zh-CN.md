@@ -2,51 +2,62 @@
 
 [English](managed-agent-applications.md)
 
-[Agents API 模板](../agents-api/README.zh-CN.md)提供稳定 Gateway，每个活跃 Session 使用独占 Sandbox，模型、CLI 与工具循环在其中运行。本分支使用 YAML v1 和匹配的开发构建；已发布 CLI0.5.10 不接受新格式。
+[Agents API 模板](../agents-api/README.zh-CN.md)通过一个 Gateway 提供逻辑 Session、文件上传、Agent 任务和结果下载。每个活跃 Session 独占一个运行模型、CLI 和工具的 Sandbox。此 YAML v1 配方需要匹配的开发版 CLI。
 
-## 运行时与生命周期
+## 资源与生命周期
 
-声明 `application.type: agents-api`，用 `application.roles.gateway/worker/dispatcher` 引用三个不同的原生 FC 资源。协调器补齐私有桥接启动、就绪和服务定义；作者不再重复协议、版本和 operations 常量。
+[template.yaml](../agents-api/template.yaml)声明一个命名 Sandbox 模板和三个原生 FC Serving 资源：Gateway、Worker、Dispatcher。Gateway 接收业务请求，Dispatcher 将任务投递到 Session 对应的 Worker 版本，Worker 创建和清理动态 Sandbox。部署准备可复用模板和函数，不创建常驻 Sandbox 实例。
 
-首次输入分配计算，后续轮次保留同一原生 thread 和工作区。`sandbox.instance.timeout` 是唯一最长寿命，Managed 默认3600秒。`application.sessions.idleTimeoutSeconds` 默认900秒，必须小于最长寿命；轮次/工具预算默认600/60秒，必须适合实例寿命。逻辑 Session、存活 Sandbox、队列和保留存储分别限额，详见[字段全表](template-fields.zh-CN.md)。
+Worker 创建实例时注入独立应用令牌和模型环境，再启动 managed bridge；模板快照准备阶段不提前启动需要认证的 bridge。后续轮次复用 Session 的原生线程和工作区。Close 释放计算并保留已提交结果；Delete 删除公开数据并继续完成清理。不确定的执行或删除需要协调处理。
 
-close 释放计算并保留已提交结果；delete 撤下公开数据，同时完成清理。不确定的提交或资源删除需要协调恢复；队列新轮次不等于 steering 当前轮次。能力接口列出 OpenAI 风格子集及显式扩展，不表示实现 OpenAI 托管 harness。
+本配方的 `vars.policy.instance.timeout` 和 `vars.policy.sessions.maxLifetimeSeconds` 都为 3600 秒，且必须一致。空闲期限为 900 秒，轮次/工具预算为 600/60 秒。部署脚本检查预算适合实例寿命，并限制一个 Session 同时执行一轮。其他接收和存储预算见同一个 policy 对象；这些是模板选择，不是 YAML 保留字段。
 
-## 配置与绑定
+## 配置
 
-资源配置都在 [template.yaml](../agents-api/template.yaml)。`${env('NAME')}` 引用本地未提交的 `.env` 或进程环境。无须另一份 bindings JSON；Registry 提问也不是运行必填文件。
+资源值放在 `template.yaml`。原生 `${env('NAME')}` 表达式读取私有项目 `.env` 或进程值，进程值优先。`registry.yaml.parameters` 引导初始化，后续本地运行不依赖它；`vars` 键名由模板作者选择。
 
-| 路径 | 取值及来源 |
+| 配置 | 用途与来源 |
 | --- | --- |
-| application.state.databaseUrl | 数据库管理员提供的已有 PostgreSQL URL。 |
-| application.state.vpcConfig | 可选已有 vpcId、不同的 vSwitchIds 和 securityGroupId；只借用，不创建。 |
-| application.state.databaseCa | 可选私有 CA 证书 PEM，使用原生表达式；保留数据库主机名验证。 |
-| application.bindings.sandboxAccess | 已有平台 apiKey/baseUrl/domain/region；供 Server 管理实例。 |
-| application.bindings.model | 模型 apiKey/baseUrl/model 和 codex 或 qwen-code 适配器；Worker 向 Session Sandbox 提供模型配置。 |
-| application.bindings.clientAuth | 默认 generate:true，自动生成并在本机安全保留业务凭据；可显式提供支持的哈希、owner、scopes。 |
-| application.bindings.internalAuth | 单独生成内部认证；执行角色权威来自一致的原生 role 字段。 |
-| application.bindings.ingress | 选择支持的 Gateway alias/domain 入口；不是 Sandbox 域名。 |
+| `vars.region` | 复用于 `sandbox.agent.template.region` 和各原生 FC `props.region`。 |
+| `vars.adapter` | qwen-code 或 codex，与已授权模型服务匹配。 |
+| `AGENTS_SERVER_IMAGE` | 可写 OCI 仓库及本次 Server 构建唯一 tag。 |
+| `ABX_MANAGED_DATABASE_URL` | 已有 PostgreSQL URL，三个 FC 角色都能访问。 |
+| `AGENTS_DATABASE_CA_PEM` | 可选数据库 CA 证书 PEM，保留主机名验证。 |
+| `serving.<role>.props.vpcConfig` | 该函数可选的已有 VPC、交换机、安全组 ID。 |
+| `SANDBOX_API_KEY`、`SANDBOX_BASE_URL`、`SANDBOX_DOMAIN`、`SANDBOX_REGION` | 匹配的 Sandbox 平台凭据和地址，供 Worker/Dispatcher 使用。 |
+| `OPENAI_API_KEY`、`OPENAI_BASE_URL`、`OPENAI_MODEL` | 已授权模型 Key、HTTPS 地址和模型 ID。仅 Worker 接收 Key 并提供给 Session Sandbox。 |
+| `AGENTS_FC_ROLE_ARN` | 已有 FC 执行角色，包含调用私有 Worker 的权限。 |
 
-Guest 应用认证令牌自动生成，与平台、云账号、模型凭据分开。额外 Sandbox env/metadata/volumes 受 Managed 所有权约束：不能覆盖系统、模型、认证变量和托管 metadata；挂载不能遮盖工作区和状态目录。协调器不支持 pause/resume 生命周期。自定义实例环境值只交给 Worker。
+首次部署生成不同的业务及内部令牌，在本机私有存储中复用。客户端使用 `.abx/agents-api/credentials.json` 中的 `businessKey`，不要分享 `internalToken`。可选的 `AGENTS_BUSINESS_KEY` 和 `AGENTS_INTERNAL_TOKEN` 进程覆盖不复制到凭据存储，各不少于 32 字符且必须不同。内部令牌轮换需要协调迁移保留的版本。
 
-同 UID Agent 工具可读取明确注入的模型凭据。Server 的数据库、管理权限及业务/内部认证不属于 Guest 环境配置。计划不得暴露解析后的凭据和原生环境值。
+每个 Sandbox 的 `ABX_SERVER_TOKEN` 由运行时生成，与云账号、平台、模型和业务凭据不同，无需手工申请云控制台 Key。同 UID 的 Agent 工具可读取明确注入的模型 Key；数据库和 Server 认证凭据不进入 Sandbox。
 
-## Server 构建与部署
+## 构建、部署与更新
 
-Server 配方固定 SDK 开发源码提交 `b988d2a76057b6202d836ec329cc0bd90a572b26`，Guest 保留已发布 Server0.4.0a7。源码包元信息仍为 a7，仅凭版本号不能识别 v1 运行时。
+按模板 README 激活 Python 虚拟环境并安装 `scripts/requirements.txt`。配方使用原生 `serverless-devs/fc3@0.1.26` 构建和部署动作，保留 cpu、memorySize、timeout、role、logConfig、vpcConfig 等原生 props。Guest 和 Server 分别通过各自 Dockerfile 定义镜像。
 
-`deployment` 是原生 Serverless Devs edition3 项目。使用真实 `component: fc3@<版本>` 和原生 props；cpu、memorySize、timeout、role、logConfig、vpcConfig 的名称和单位不另造一层。三个 Managed 角色采用相同固定组件版本、地域和执行角色权威。用户填写的原生 memory4096 不被改回协调器常量。
+```bash
+abx deploy . --plan
+abx deploy . --yes
+python scripts/release.py status
+```
 
-`application.server` 在 source 配方 `{source: {dockerfile, context}}` 和 digest 固定 image 中二选一，提供真实 Server 镜像输入。协调器负责生成函数名、revision 说明、容器启动和内部控制配置。此托管部署仅支持三个角色资源，额外原生资源在部署前拒绝。自定义域名入口借用已有 HTTPS 域名，要求独占的 `/*` 路由指向同一个 Gateway，只更新 revision qualifier，不创建域名、DNS 或网络资源。
+Plan 预览资源准备，不执行动作。Deploy 运行模板的准备和发布动作；候选 Gateway 必须完成真实模型的两轮文件任务，才切换稳定 `prod` 别名。任务可能产生模型和 Sandbox 费用。新 Dispatcher 在候选任务开始前接管新旧 Worker 路由。
 
-构建、部署、配置解析、持久化、版本路由与清理仍由实际运行时承接。静态检查不求值 Devs 表达式，也不证明云部署可用。普通 Sandbox 与 Serving 可独立并列声明；未接入的联合执行会在副作用前拒绝，不自动选择本协调器。
+发布成功后，业务 endpoint 位于 `.abx/agents-api/release.json`。更新时选择新的 Server 镜像 tag，再执行 deploy。已有 Session 保留原 Worker revision；历史 Worker 保留到应用删除，本模板不自动清理旧版本。
 
-## Hooks 与输出
+发布失败或结果不确定时，保留本机记录，先查看阶段和状态再操作。候选任务失败后，新 Dispatcher 继续服务旧 Session。本配方不提供不确定发布的自动回滚和自动续跑。计划、Schema 校验或本地测试不代表托管发布已成功。
 
-可选 beforeApply/afterReady hooks 为有界 custom argv/cwd/timeout/envAllowlist 或 Serverless Devs 角色 info 检查。源码初始化和普通 Sandbox 启动不执行它们。[模板](../agents-api/template.yaml)带部署后双轮业务检查，需要已说明的模型服务并可能产生费用。
+## 访问与清理
 
-协调器提供稳定 endpoint 和安全保留的客户端凭据。更新时旧 Session 继续路由原 revision；关闭 Session 后再删未使用版本。借用的数据库、网络、域名和外部镜像仍由资源拥有者管理。
+稳定入口使用 FC 测试 URL。配方不创建自定义域名、DNS、数据库或网络资源。已有自定义域名另行指向 Gateway `prod` 别名，并实际验证数据库、仓库、Sandbox 和模型服务的网络可达性。
 
-## 调用与资源使用
+业务客户端使用 endpoint 和业务 Key 通过 HTTP 调用；项目没有专用 Gateway 客户端 SDK。见 [API 参考](managed-agents-api.zh-CN.md)及模板完整 Python HTTP、curl 示例。Capabilities 列出 OpenAI 风格子集及托管扩展；路径相似不意味着 OpenAI 托管 harness 或任意 SDK 兼容。
 
-客户端使用 HTTP，不访问私有桥接或单个 Sandbox 地址。见 [API 参考](managed-agents-api.zh-CN.md)和模板里的完整 Python HTTP/URL 示例。项目没有专用 Gateway SDK；能力接口明确支持范围，路径相似不代表任意 SDK 互操作。
+关闭 Session，下载结果并删除不需要的公开数据，再用带排空检查的脚本删除应用：
+
+```bash
+python scripts/release.py destroy
+```
+
+脚本核对当前 Dispatcher 和数据库身份，停止新请求接入，只有活跃 Session、待完成清理和不确定资源都为零时，才调用 `abx delete agents-api --yes`。排空未完成时保留资源，处理剩余任务后重试。若部分删除已移除 Dispatcher，应独立确认业务清理后再完成资源删除。已有数据库、网络、角色、域名、镜像 tag 及保留的数据库历史仍由你管理。

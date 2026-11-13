@@ -4,7 +4,7 @@ Current cloud acceptance runs through public-template-launch.yml and
 public_launch_e2e.py. This module never launches an old pinned deployment path.
 """
 from __future__ import annotations
-from template_application import load_source_document
+from template_application import load_source_document, is_managed_application
 
 import argparse
 import base64
@@ -35,7 +35,7 @@ def select(text: str) -> list[str]:
     available = {item["path"] for item in catalog["templates"]
                  if item.get("kind", "source") == "source"
                  and load_source_document(root / item["path"] / "template.yaml").get("specVersion") == 1
-                 and load_source_document(root / item["path"] / "template.yaml").get("application", {}).get("type") != "agents-api"}
+                 and not is_managed_application(load_source_document(root / item["path"] / "template.yaml"))}
     names = sorted(available) if text == "all" else text.split(",")
     if not names or len(set(names)) != len(names) or any(name not in available for name in names):
         raise ValueError("select unique v1 Sandbox template names or all; managed applications require separate Gateway deployment acceptance")

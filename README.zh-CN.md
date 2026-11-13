@@ -10,22 +10,18 @@
 
 ## 快速开始
 
-先[安装 abx CLI](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#installation)（匹配 YAML v1 的开发构建），按[使用指南](docs/using-templates.zh-CN.md)准备所选提供方的凭据和构建环境，再启动无需模型的入门模板：
+按[使用指南](docs/using-templates.zh-CN.md#安装)安装匹配 YAML v1 的开发版 CLI 和 Python 客户端，准备平台凭据及构建环境。下载此仓库匹配版本后，在无需模型的入门模板目录运行：
 
 ```bash
-abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello
-```
-
-CLI 会引导补齐必要配置，自动生成并保存默认应用认证令牌，后续命令复用。使用模型的模板还需要其 README 指定的模型账号或 API 配置。
-
-启动后，将 `<sandbox-id>` 替换为返回的沙箱 ID：
-
-```bash
+cd python-hello
+abx deploy . --yes
+python3 run.py --template <prepared-template-id> --timeout 1800
+export ABX_SERVER_TOKEN="$(python3 -c 'import json; print(json.load(open(".sandbox-session.json"))["application_token"])')"
 abx sandbox command run <sandbox-id> hello --arg name=Ada
-abx delete <sandbox-id>
+abx sandbox delete <sandbox-id> --yes
 ```
 
-预期输出为 `Hello, Ada!`。`kill` 删除运行中的沙箱；保留的镜像和模板按[清理说明](docs/using-templates.zh-CN.md#导出文件与清理)另行删除。
+将模板 ID 替换为 deploy 返回值，将 Sandbox ID 替换为 run.py 返回值。脚本自动生成应用令牌并私密保存在会话文件，后续调用读取该令牌。预期结果为 `Hello, Ada!`。模型模板的额外凭据见各自 README；可复用模板和镜像按[清理说明](docs/using-templates.zh-CN.md#导出文件与清理)单独管理。
 
 ## 选择模板
 

@@ -42,31 +42,16 @@ for (const fixture of fixtures.registry.invalid) {
   registryInvalid.push(fixture.id);
 }
 const rows = Object.fromEntries(valid.map(row => [row.id, row]));
-assert.deepEqual(rows['independent-sandbox-and-native-serving'].compiled.deployment, rows['independent-sandbox-and-native-serving'].normalized.deployment);
-assert.deepEqual(rows['independent-sandbox-and-native-serving'].compiled.sandbox, rows['independent-sandbox-and-native-serving'].normalized.sandbox);
-assert.equal(Object.hasOwn(rows['independent-sandbox-and-native-serving'].compiled, 'application'), false);
-assert.ok(rows['long-native-reference-unrestricted'].compiled.template_id.length > 128);
-assert.deepEqual(rows['additional-access-ports-only'].compiled.ports, [6080, 9222]);
-assert.deepEqual(rows['additional-access-ports-only'].compiled.provides, {});
-assert.deepEqual(rows['service-and-additional-port-union'].compiled.ports, [9000, 9222]);
-assert.equal(rows['intent-descriptor-deferred'].normalized.sandbox.instance.timeout, "${env('LIFETIME')}");
-assert.equal(rows['managed-resolved-native-memory'].compiled.roleProps.worker.memorySize, 4096);
-assert.equal(rows['managed-resolved-native-memory'].compiled.sandbox.instance.timeout, 3600);
-assert.equal(rows['managed-single-ttl'].compiled.application.sessions.maxLifetimeSeconds, 1800);
-assert.equal(Object.hasOwn(rows['managed-intent'].normalized.application.sessions, 'maxLifetimeSeconds'), false);
-assert.deepEqual(rows['managed-resolved-native-memory'].compiled.bindingValues.clientAuth, {generate: true, owner: 'default'});
-assert.deepEqual(rows['source-context-opensandbox'].compiled.build_profiles.portable, {dockerfile: 'Dockerfile.portable', context: '.'});
-assert.equal(Object.hasOwn(rows['unbound-source-portable'].normalized.sandbox, 'provider'), false);
-assert.equal(Object.hasOwn(rows['managed-explicit-auth-preserved'].compiled.bindingValues.clientAuth, 'generate'), false);
-assert.equal(Object.hasOwn(rows['managed-explicit-auth-preserved'].compiled.bindingValues.internalAuth, 'generate'), false);
-assert.equal(rows['managed-native-role-authority'].compiled.bindingValues.internalAuth.roleArn, 'acs:ram::123456789:role/fixture');
-assert.throws(() => normalizeTemplateV1(fixtures.validTemplates.find(row => row.id === 'third-party-descriptor').manifest, validators.resolved, {stage: 'resolved', validateProvider: () => false}));
-assert.equal(rows['managed-intent'].normalized.application.bindings.model.apiKey, "${env('OPENAI_API_KEY')}");
+assert.equal(rows['dockerfile-directory'].normalized.sandbox.agent.template.buildConfig.context, './sandbox');
+assert.equal(Object.hasOwn(rows['existing-image'].normalized.sandbox.agent.template, 'cpu'), false);
+assert.equal(Object.hasOwn(rows['existing-image'].normalized.sandbox.agent, 'instance'), false);
+assert.equal(rows['borrowed-region'].normalized.sandbox.agent.template.region, 'cn-hangzhou');
+assert.deepEqual(rows['arbitrary-vars'].normalized.vars.anything, {nested:true});
 assert.equal(pointerValue({'a/b': {'~': ['value']}}, '/a~1b/~0/0'), 'value');
 assert.throws(() => pointerValue(['value'], '/01'));
 assert.throws(() => pointerValue({}, ''));
 for (const number of [NaN, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
-  const fixture = structuredClone(fixtures.validTemplates[0].manifest); fixture.sandbox.instance.timeout = number;
+  const fixture = structuredClone(fixtures.validTemplates[0].manifest); fixture.sandbox.agent.template.cpu = number;
   assert.throws(() => normalizeTemplateV1(fixture, validators.intent));
 }
 const yamlFixtures = read('./yaml-fixtures.json');
@@ -88,4 +73,4 @@ const result = {valid, invalid, registry, registryInvalid, yamlValid, yamlInvali
 const python = spawnSync(process.env.PYTHON || 'python3', [fileURLToPath(new URL('./test_contract.py', import.meta.url)), '--emit'], {encoding: 'utf8'});
 assert.equal(python.status, 0, 'Python fixture consumer failed: ' + python.stderr);
 assert.deepEqual(JSON.parse(python.stdout), result, 'Python and JS resolved different resource meaning');
-console.log(JSON.stringify({result: 'PASS', valid: valid.length, invalid: invalid.length, registryInvalid: registryInvalid.length, conformance: 'Python and JavaScript deep-equal', yamlValid: yamlValid.length, yamlInvalid: yamlInvalid.length, scope: 'inactive contract/actual schema and pure normalization; no Devs expression execution or cloud acceptance'}));
+console.log(JSON.stringify({result: 'PASS', valid: valid.length, invalid: invalid.length, registryInvalid: registryInvalid.length, conformance: 'Python and JavaScript deep-equal', yamlValid: yamlValid.length, yamlInvalid: yamlInvalid.length, scope: 'resource contract/actual schema and pure normalization; no Devs expression execution or cloud acceptance'}));

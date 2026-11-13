@@ -20,9 +20,6 @@ from template_application import SCHEMA_PATH, validate_manifest
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def managed_application() -> dict:
-    return yaml.safe_load((ROOT / 'agents-api/template.yaml').read_text())['application']
-
 
 class ManagedApplicationContractTest(unittest.TestCase):
     def setUp(self):
@@ -68,7 +65,7 @@ class ManagedApplicationContractTest(unittest.TestCase):
             text = text.replace("Python SDK", "Python HTTP client" if name == "README.md" else "Python HTTP 客户端")
             target.write_text(text)
 
-        with patch("template_application.engineering_checks", return_value={"smoke": [{"operation": "health", "expect": {"status": "ok"}}]}):
+        with patch("template_application.engineering_checks", return_value={"smoke": [{"operation": "health", "expect": {"status": "ok"}}], "localRuntime": {"start": "python -m agent_sandbox.server.managed --port 9000", "ready": "agent-sandbox-server healthcheck --port 9000"}}):
             self.assertEqual(check_template.check_directory(self.template), [])
         for name in ("README.md", "README.zh-CN.md"):
             target = self.template / name
@@ -76,26 +73,19 @@ class ManagedApplicationContractTest(unittest.TestCase):
             target.write_text(text.replace("httpx", "unrelated_client"))
             self.assertTrue(any(item.code == "readme-client" for item in check_template.check_directory(self.template)))
             target.write_text(text)
-        self.data["sandbox"]["start"] = "python -m agent_sandbox.server.managed --port 9000 --unsafe-option"
+        self.data["sandbox"]["agent"]["template"]["startCommand"] = "python -m agent_sandbox.server.managed --port 9000 --unsafe-option"
         (self.template / "template.yaml").write_text(yaml.safe_dump(self.data))
-        self.assertTrue(any(item.code == "yaml-schema" for item in check_template.check_directory(self.template)))
+        self.assertTrue(check_template.check_directory(self.template))
 
-    def test_invalid_managed_startup_is_rejected_before_any_preparation(self):
+    def test_native_snapshot_commands_cannot_control_local_harness(self):
         manifest = self.template / "template.yaml"
-        invalid = copy.deepcopy(self.data)
-        invalid["sandbox"]["start"] = "python -m agent_sandbox.server.managed --port 9000 --unsafe-option"
-        manifest.write_text(yaml.safe_dump(invalid))
-        with patch.object(run_local_e2e, "_missing_imports") as imports, patch.object(run_local_e2e, "_free_port") as port, patch.object(run_local_e2e.subprocess, "Popen") as process:
-            status, detail = run_local_e2e._run_one(self.template, "")
-        self.assertEqual(status, "fail")
-        self.assertIn("invalid template manifest", detail)
-        imports.assert_not_called(); port.assert_not_called(); process.assert_not_called()
-        manifest.write_text(yaml.safe_dump(self.legacy))
-        with patch.object(run_local_e2e, "_missing_imports", return_value=["fixture dependency"]) as imports:
-            status, detail = run_local_e2e._run_one(self.template, "")
-        self.assertEqual(status, "fail")
-        self.assertIn("fixture dependency", detail)
-        imports.assert_called_once()
+        changed = copy.deepcopy(self.data)
+        changed["sandbox"]["agent"]["template"]["startCommand"] = "python -m agent_sandbox.server.managed --port 9000 --unsafe-option"
+        manifest.write_text(yaml.safe_dump(changed))
+        with patch.object(run_local_e2e.subprocess, "Popen") as process:
+            self.assertEqual(run_local_e2e._startup_argv(self.template, 31234),
+                ([sys.executable, "-m", "agent_sandbox.server.managed", "--port", "31234"], True))
+        process.assert_not_called()
 
     def test_local_runner_can_be_loaded_by_file_without_package_or_sibling_import_path(self):
         source = ROOT / "scripts/run_local_e2e.py"
@@ -136,68 +126,37 @@ class ManagedApplicationContractTest(unittest.TestCase):
                                 capture_output=True, text=True, timeout=30)
         self.assertEqual(result.returncode, 0, result.stderr)
 
-    def test_wrong_profile_topology_or_command_smoke_is_rejected(self):
-        for key, value in (("runtime", {"placement": "in-sandbox", "driver": "sandbox-local-api", "profile": "server-core-agents"}),
-                           ("gateway", {"placement": "client-direct"}),
-                           ("state", {"profile": "ephemeral", "bindingRef": "state"})):
+    def test_retired_application_is_rejected_and_fc_props_are_native(self):
+        data = copy.deepcopy(self.data)
+        data["application"] = {"state": {"profile": "ephemeral"}}
+        self.assertTrue(validate_manifest(data))
+        self.assertEqual(set(self.data["serving"]), {"gateway", "worker", "dispatcher"})
+        for role in self.data["serving"].values():
+            self.assertEqual(role["component"], "serverless-devs/fc3@0.1.26")
+            self.assertEqual(role["props"]["runtime"], "custom-container")
+            self.assertIn("customContainerConfig", role["props"])
+
+    def test_business_budget_checks_belong_to_template_consumer(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("agents_release_policy", ROOT / "agents-api/scripts/release.py")
+        module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+        module.validate_policy(self.data["vars"]["policy"])
+        for section, key, value in (("sessions", "maxConcurrentTurnsPerSession", 2),
+                                    ("sessions", "idleTimeoutSeconds", 4000),
+                                    ("sessions", "maxLifetimeSeconds", 600),
+                                    ("limits", "maxToolSeconds", 601)):
             with self.subTest(key=key):
-                data = copy.deepcopy(self.data); data["application"][key] = value
-                self.assertTrue(validate_manifest(data))
-        self.data["application"]["smoke"] = [{"command": "agents_version", "expect": "diagnostic"}]
-        self.assertTrue(self.validate())
+                policy = copy.deepcopy(self.data["vars"]["policy"]); policy[section][key] = value
+                with self.assertRaises(module.ReleaseError): module.validate_policy(policy)
 
-    def test_server_build_and_frozen_image_are_exclusive(self):
-        deployment = self.data["application"]["server"]
-        deployment["image"] = "registry.example/server@sha256:" + "a" * 64
-        self.assertTrue(self.validate())
-        del deployment["source"]
-        self.assertEqual(self.validate(), [])
-        deployment["image"] = "registry.example/server:latest"
-        self.assertTrue(self.validate())
-
-    def test_missing_or_privilege_crossing_binding_is_rejected(self):
-        for mutation in ("missing", "target", "environment", "state-reference"):
-            with self.subTest(mutation=mutation):
-                data = copy.deepcopy(self.data)
-                bindings = data["application"]["bindings"]
-                if mutation == "missing":
-                    del bindings["model"]
-                elif mutation == "target":
-                    bindings["model"]["targets"] = ["gateway"]
-                elif mutation == "environment":
-                    bindings["model"]["allowedEnv"] = ["ALIBABA_CLOUD_ACCESS_KEY_SECRET"]
-                else:
-                    data["application"]["state"]["bindingRef"] = "model"
-                self.assertTrue(validate_manifest(data))
-
-    def test_budget_and_serial_session_constraints(self):
-        for field, value in (("maxConcurrentTurnsPerSession", 2), ("idleTimeoutSeconds", 4000), ("maxLifetimeSeconds", 600)):
-            with self.subTest(field=field):
-                data = copy.deepcopy(self.data); data["application"]["sessions"][field] = value
-                self.assertTrue(validate_manifest(data))
-        self.data["application"]["limits"]["maxToolSeconds"] = 601
-        self.assertTrue(self.validate())
-
-    def test_hook_cannot_deploy_or_escape_sources(self):
-        app = self.data["application"]
-        app["hooks"] = {"afterReady": [{"id": "info", "type": "serverless-devs", "step": "gateway", "command": "info", "timeoutSeconds": 30}]}
-        self.assertEqual(self.validate(), [])
-        app["hooks"]["afterReady"][0]["command"] = "deploy"
-        self.assertTrue(self.validate())
-        del app["hooks"]
-        app["server"]["source"]["dockerfile"] = "../outside/Dockerfile"
-        self.assertTrue(self.validate())
-        outside = self.root / "outside"; outside.mkdir(); (outside / "Dockerfile").write_text("FROM example\n")
-        (self.template / "escape").symlink_to(outside, target_is_directory=True)
-        app["server"]["source"]["dockerfile"] = "escape/Dockerfile"
-        self.assertTrue(self.validate())
-
-    def test_unknown_fields_and_false_protocol_claim_are_rejected(self):
-        self.data["application"]["steps"] = {}
-        self.assertTrue(self.validate())
-        del self.data["application"]["steps"]
-        self.data["sandbox"]["services"] = {"app": {"protocol": "agent-sandbox-server", "port": 9000, "version": 2, "operations": []}}
-        self.assertTrue(self.validate())
+    def test_model_secret_stays_in_worker_and_gateway_gets_digest(self):
+        roles = self.data["serving"]
+        for role, resource in roles.items():
+            env = resource["props"]["environmentVariables"]
+            self.assertEqual("OPENAI_API_KEY" in env, role == "worker")
+            self.assertEqual("SANDBOX_API_KEY" in env, role != "gateway")
+            self.assertNotIn("AGENTS_BUSINESS_KEY", env)
+        self.assertIn("AGENTS_BUSINESS_SHA256", roles["gateway"]["props"]["environmentVariables"])
 
 
 if __name__ == "__main__":

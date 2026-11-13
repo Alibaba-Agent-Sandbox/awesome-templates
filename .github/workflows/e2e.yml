@@ -28,10 +28,11 @@ jobs:
           npm test --prefix contracts/template-v1
           python contracts/template-v1/test_contract.py
           python scripts/sync_template_reference.py --check
+          python scripts/sync_runtime_runners.py --check
           python scripts/check_template.py --all
           python scripts/test_spec_tools.py
           python -m pip install pytest==9.1.1
-          python -m pytest -q scripts/test_template_v1_migration.py scripts/test_template_reference.py scripts/test_v1_source_reader.py
+          python -m pytest -q scripts/test_template_v1_migration.py scripts/test_template_reference.py scripts/test_v1_source_reader.py scripts/test_runtime_runner.py scripts/test_managed_catalog.py
 
   express-cli-contract:
     runs-on: ubuntu-24.04

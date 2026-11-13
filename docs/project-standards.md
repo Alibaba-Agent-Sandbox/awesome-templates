@@ -34,7 +34,7 @@ datasets and external services instead of substituting a similarly named tool.
 Start from `_skeleton/`. Preserve the default Express recipe's platform base, generation, readiness,
 non-root runtime, reserved ports and `agent_sandbox.server` contract. Declare
 all provided services and the startup command. Additional explicit build profiles follow
-[the build-profile rules](workflows.md#explicit-build-profiles), preserving the original recipe. Validate arguments and bound input/output sizes,
+[the build-profile rules](workflows.md), preserving the original recipe. Validate arguments and bound input/output sizes,
 execution time and subprocesses. Pass user input as argv, preserve nonzero exits
 as errors, and clean up owned descendants on completion, failure and timeout.
 Inspection commands must not silently alter configuration. Isolate generated

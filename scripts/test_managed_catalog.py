@@ -15,7 +15,7 @@ def fixture(tmp_path):
         (doc / name).write_text('# external\n\n' + '\n\n'.join('## ' + heading + '\n\nScoped content.' for heading in headings) + '\n')
     row = {'name': 'external', 'kind': 'provider-managed',
            'documentation': 'docs/managed/external/README.md', 'historical_evidence': ['proof.json'],
-           'registry': 'docs/managed/external/registry.yaml', 'resource': {'specVersion': 1, 'name': 'external', 'sandbox': {'provider': 'e2b', 'template': {'reference': 'desktop'}, 'services': {}}}}
+           'registry': 'docs/managed/external/registry.yaml', 'resource': {'specVersion': 1, 'name': 'external', 'sandbox': {'agent': {'provider': 'e2b', 'template': {'reference': 'desktop'}}}}}
     (doc / 'registry.yaml').write_text(yaml.safe_dump({'specVersion': 1, 'name': 'external', 'version': 'provider-managed', 'description': {'en': 'Native desktop', 'zh': '原生桌面'}, 'author': 'example', 'license': 'Apache-2.0', 'readme': {'en': 'README.md', 'zh': 'README.zh-CN.md'}}))
     proof = {'template': 'external', 'provider': 'e2b', 'passed': False, 'status': 'NOT_VERIFIED'}
     return row, proof
@@ -40,7 +40,7 @@ def test_managed_reference_is_not_a_buildable_source(tmp_path):
 def test_invalid_reference_or_retired_claim_is_rejected(tmp_path, change):
     row, proof = fixture(tmp_path)
     if change == 'claim': row['native_interpreter_verified'] = True
-    elif change == 'provider': row['resource']['sandbox']['provider'] = 'unknown'
+    elif change == 'provider': row['resource']['sandbox']['agent']['provider'] = 'unknown'
     elif change == 'identity': proof['template'] = 'another'
     elif change == 'fields': row['path'] = 'external'
     elif change == 'docs': (tmp_path / 'docs/managed/external/README.zh-CN.md').unlink()
@@ -69,21 +69,21 @@ def test_old_or_invalid_catalog_is_a_validation_failure(tmp_path, value):
 
 def test_untyped_provider_or_history_cannot_bypass_validation(tmp_path):
     row, proof = fixture(tmp_path)
-    row['resource']['sandbox']['provider'] = {}
+    row['resource']['sandbox']['agent']['provider'] = {}
     write(tmp_path, row, proof)
     assert check(tmp_path)
-    row['resource']['sandbox']['provider'] = 'e2b'
+    row['resource']['sandbox']['agent']['provider'] = 'e2b'
     row['historical_evidence'] = 'proof.json'
     write(tmp_path, row, proof)
     assert check(tmp_path)
 
 
-def test_managed_services_are_described_without_selecting_an_operation(tmp_path):
+def test_managed_resource_rejects_removed_public_services_layer(tmp_path):
     row, proof = fixture(tmp_path)
     row['resource']['sandbox']['services'] = {'app': {'protocol': 'agent-sandbox-server', 'version': 2,
                               'port': 9000, 'operations': ['commands.list', 'commands.run']}}
     write(tmp_path, row, proof)
-    assert check(tmp_path) == []
+    assert check(tmp_path)
     row['resource']['sandbox']['services']['app']['port'] = 70000
     write(tmp_path, row, proof)
     assert check(tmp_path)

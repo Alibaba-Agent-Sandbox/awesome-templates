@@ -24,5 +24,7 @@ WORKDIR /home/user/app
 COPY --chown=user:user commands.py .
 COPY --chown=user:user fixtures ./fixtures
 RUN chown user:user /home/user/app
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV ABX_SERVER_TOKEN=""
 USER user
 EXPOSE 9000

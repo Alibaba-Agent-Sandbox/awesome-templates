@@ -4,7 +4,7 @@ These fixtures authorize only owned test resources. They never borrow an
 operator's vendor/model credentials and are separate from image build inputs.
 """
 from __future__ import annotations
-from template_application import load_source_document
+from template_application import _image_environment
 
 import hashlib
 import json
@@ -55,10 +55,9 @@ def controller_environment(source: Path, urls: dict[int, str], fixture: dict[str
                E2E_WORKSPACE="/home/user/app", E2E_RUN_LLM="0", E2E_REQUIRE_LLM="0",
                E2E_REQUIRE_CLI="1", E2E_REQUIRE_OCR="1", E2E_REQUIRE_DATABASES="1",
                E2E_REQUIRE_TOOLCHAIN="1")
-    manifest_path = source / "template.yaml"
-    if manifest_path.is_file():
-        manifest = load_source_document(manifest_path)
-        workspace = manifest.get("sandbox", {}).get("instance", {}).get("envs", {}).get("WORKSPACE", "/home/user/app")
+    dockerfile = source / "Dockerfile"
+    if dockerfile.is_file():
+        workspace = _image_environment(dockerfile).get("WORKSPACE", "/home/user/app")
         if not isinstance(workspace, str) or not workspace.startswith("/"):
             raise ValueError("controller WORKSPACE must be an absolute runtime path")
         env["E2E_WORKSPACE"] = workspace

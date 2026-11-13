@@ -4,7 +4,7 @@
 
 在隔离工作目录中运行 OpenCode 编码任务，通过 CLI、Python 或 HTTP 调用，并下载生成的文件。
 
-本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。模板属性在 `sandbox.agent.template`；运行默认值在 Dockerfile，私有运行值在创建实例时显式传入。用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
 
 ## 做什么
 
@@ -23,18 +23,24 @@
 
 ## 快速开始（CLI）
 
+`abx deploy` 只准备模板。下载本目录源码后，从该目录执行下面的部署，再将 `<prepared-template-id>` 改成返回的模板 ID，运行 `run.py` 创建实例并显式启动业务服务。脚本只传入本页列出的运行配置，自动生成并将应用令牌保存在本地 `.sandbox-session.json`（仅当前用户可读）；不会打印令牌。已有会话文件不会被覆盖，可用 `--session` 选择新文件。
+
+
 先按[安装与平台配置](../docs/using-templates.zh-CN.md#安装)安装工具、配置沙箱平台。极速版源码构建还需要 Docker、ACR 和对应平台凭据。平台 API Key 与模型服务 API Key 是两种不同的凭据。
 
 在**启动模板之前**设置应用配置。下面使用百炼国内主站的 OpenAI 兼容端点；请使用该端点接受的模型 API Key，不要填沙箱平台 API Key。
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-# CLI 默认生成并保存应用令牌；外部 SDK/HTTP 如需自定义，在部署前取消下一行注释。
+# run.py 自动生成私有应用令牌；需要自行指定时可取消下一行注释。
 # export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export ABX_LLM_API_KEY="<模型服务APIKey>"
 export ABX_LLM_BASE_URL="https://dashscope.aliyuncs.com/compatible-mode/v1"
 export ABX_HTTP_TIMEOUT=660
-abx deploy Alibaba-Agent-Sandbox/awesome-templates//opencode --sandbox-timeout 1800 --yes
+abx deploy . --yes
+python3 -m pip install "agent-sandbox-client==0.4.0a7"
+python3 run.py --template <prepared-template-id> --timeout 1800
+export ABX_SERVER_TOKEN="$(python3 -c 'import json; print(json.load(open(".sandbox-session.json"))["application_token"])')"
 ```
 
 把返回的沙箱 ID 填入下一条变量。如果使用 OpenSandbox，先完成该平台配置，并在后续所有示例中统一使用 `ABX_PROVIDER=opensandbox`。
@@ -52,7 +58,7 @@ abx sandbox download "$ABX_SANDBOX_ID" /home/user/workspace/hello.py ./hello.py
 
 ## 快速开始（Python SDK）
 
-在自己的虚拟环境安装 `agent-sandbox-client==0.4.0a6`。保留上面的环境变量，连接**已经由 CLI 启动的应用**。将以下完整代码保存为 `quickstart.py`：
+在自己的虚拟环境安装 `agent-sandbox-client==0.4.0a7`。保留上面的环境变量，连接**已经由 CLI 启动的应用**。将以下完整代码保存为 `quickstart.py`：
 
 ```python
 import asyncio
@@ -143,12 +149,14 @@ asyncio.run(main())
 
 ## 配置
 
+资源配置改 `template.yaml` 的 `sandbox.agent.template`；镜像默认值改 Dockerfile。运行时值从当前进程环境传给 `run.py`，允许的名称直接列在脚本 `RUNTIME_ENV_NAMES` 中。空值不会作为秘密写入镜像。业务启动命令在 `run.py`；不在模板快照阶段启动带动态认证的服务。外部 SDK/HTTP 客户端可从私有 `.sandbox-session.json` 读取 `application_token`，或复用显式设置的 `ABX_SERVER_TOKEN`。
+
 | 设置 | 必填／默认值 | 配置方法 |
 |---|---|---|
 | `ABX_LLM_API_KEY` | 调用 `dashscope/*` 必填 | 在本机启动模板前导出，应用进程启动时读取。 |
 | `ABX_LLM_BASE_URL` | 调用 `dashscope/*` 必填 | 完整 OpenAI 兼容端点，包含 `/v1`；见上面的可复制示例。Key、地域及账号权限应与端点匹配。 |
 | 命令参数 `model` | 可选，默认 `dashscope/qwen3.8-flash` | 填 `dashscope/<模型ID>`；模板会为该次调用补入配置里尚未列出的 DashScope 模型 ID。 |
-| `ABX_SERVER_TOKEN` | 源码启动前必填 | 独立应用访问令牌，CLI／SDK／HTTP 调用方使用同一个值。 |
+| `ABX_SERVER_TOKEN` | 源码启动前必填 | run.py 自动生成，或显式提供；外部客户端从私有会话文件读取。 |
 | `OPENCODE_API_KEY` | 仅 `opencode/*` Zen 模型需要 | 对应服务的模型凭据，不能代替百炼 Key。 |
 | `OPENCODE_SERVER_PASSWORD` | 可选 | 可选 `opencode serve` 服务的 Basic Auth 密码；暴露该服务时在启动前设置。 |
 | `ABX_HTTP_TIMEOUT` | 示例设为 660 秒 | CLI 等待 HTTP 的时长；编码子进程本身上限为 600 秒。SDK 和直接 HTTP 客户端分别设置等待时间。 |
@@ -170,7 +178,7 @@ asyncio.run(main())
 OpenCode 以命令的 `cwd` 为项目目录。示例显式创建工作目录，避免修改模板应用文件。释放前导出代码、会话数据及其他所需产物；沙箱内修改不会更新原始模板。
 
 ```bash
-abx delete "$ABX_SANDBOX_ID"
+abx sandbox delete "$ABX_SANDBOX_ID" --yes
 ```
 
 不再复用准备的模板／镜像时，还应根据启动返回的记录清理本次确切拥有的资源，见[资源清理](../docs/using-templates.zh-CN.md#clisdk-与-http)。不要把 Key 或登录态写进可复用镜像。

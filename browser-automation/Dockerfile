@@ -18,5 +18,8 @@ WORKDIR /home/user/app
 COPY --chown=user:user commands.py mcp_runtime.py mcp_process.py browser_process.py pdf_worker.py .
 RUN chown user:user /home/user/app
 RUN python3 -c "import subprocess; p=subprocess.run(['du','-sx','--block-size=1','/'],capture_output=True,text=True,timeout=120); assert p.returncode==0, 'rootfs accounting failed'; n=int(p.stdout.split()[0]); print('image_rootfs_bytes='+str(n)); assert n<=8*1024**3, 'rootfs exceeds8GiB'"
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV PLAYWRIGHT_BROWSERS_PATH="/opt/playwright" \
+    ABX_SERVER_TOKEN=""
 USER user
 EXPOSE 9000

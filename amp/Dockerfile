@@ -30,5 +30,8 @@ COPY --chown=user:user commands.py .
 COPY --chown=user:user settings.json /home/user/.config/amp/settings.json
 RUN mkdir -p /home/user/.config/amp /home/user/.cache/amp/logs /home/user/app \
     && chown -R user:user /home/user/.config /home/user/.cache /home/user/app
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV AMP_API_KEY="" \
+    ABX_SERVER_TOKEN=""
 USER user
 EXPOSE 9000

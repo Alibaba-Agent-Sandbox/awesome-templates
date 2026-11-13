@@ -2,7 +2,7 @@
 
 [中文](README.zh-CN.md)
 
-This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Template attributes are under `sandbox.agent.template`. Runtime defaults belong to the Dockerfile; pass private values explicitly when creating an instance. See this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
 
 ## What it does
 
@@ -20,18 +20,24 @@ Use the same actual browser through automation and a visible interactive screen 
 
 ## Quick start (CLI)
 
+`abx deploy` only prepares the template. Download this directory, run deployment from it, then replace `<prepared-template-id>` with the returned template ID and run `run.py`. The script creates an instance and explicitly starts the application with this page’s runtime settings. It generates an application token and stores it privately in `.sandbox-session.json`, without printing it. Existing session files are never overwritten; use `--session` for another run.
+
+
 CLI, SDK and HTTP are alternative ways to use the same application. Choose one for the task. Examples may write files, create projects or start services; do not repeat the full example on the same instance without cleaning its previous outputs.
 
-Install the CLI/Python SDK and configure your platform with the [usage guide](../docs/using-templates.md#installation). The platform API key creates sandboxes; `ABX_SERVER_TOKEN` independently protects this template application. Run the following in your own terminal; cloning this repository is unnecessary.
+Install the CLI/Python SDK and configure your platform with the [usage guide](../docs/using-templates.md#installation). The platform API key creates sandboxes; `ABX_SERVER_TOKEN` independently protects this template application. Run the following from your downloaded template directory.
 
 These template commands require no model, model endpoint or model API key.
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# run.py generates a private token; optionally choose your own before running it.
 # export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export ABX_HTTP_TIMEOUT=450
-abx deploy Alibaba-Agent-Sandbox/awesome-templates//chrome --sandbox-timeout 1800 --yes
+abx deploy . --yes
+python3 -m pip install "agent-sandbox-client==0.4.0a7"
+python3 run.py --template <prepared-template-id> --timeout 1800
+export ABX_SERVER_TOKEN="$(python3 -c 'import json; print(json.load(open(".sandbox-session.json"))["application_token"])')"
 # Paste the sandbox ID from the launch output
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
@@ -47,13 +53,13 @@ Returns the actual browser title and final URL. The following screenshot capture
 
 `chrome_start` returns a session-specific VNC password. Resolve port 6080, open noVNC and log in with that password; CDP uses port 9222 and application authentication. Preserve provider URL paths, query strings and gateway headers unchanged. For direct CDP HTTP/WebSocket calls, add both `Authorization: Bearer <application-token>` and `X-Access-Token: <application-token>` after the gateway headers. The fallback is required when a provider proxy strips Authorization; an explicitly incorrect Authorization remains rejected. The noVNC connection still uses its original generated VNC password. Website accounts must be logged in within this remote session; local cookies are not imported.
 
-`--sandbox-timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
+`run.py --timeout 1800` gives the instance a 30-minute lifetime for the task and artifact export. `ABX_HTTP_TIMEOUT` controls local HTTP waiting and does not extend that lifetime. Delete the instance when finished.
 
 For OpenSandbox, set `ABX_PROVIDER=opensandbox` and configure its [provider guide](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md). Keep the same provider selected for subsequent CLI and Python calls.
 
 ## Quick start (Python SDK)
 
-In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a7`.
 
 After launching above and setting `SANDBOX_ID`, save this as `use_template.py` and run `python3 use_template.py`. It connects to the same instance instead of creating another sandbox. Prepare any input file locally as shown above.
 
@@ -130,10 +136,12 @@ Calls serialize. Startup readiness budget90seconds; navigation/CDP/VNC operation
 
 ## Configuration
 
+Edit resource values under `sandbox.agent.template` in `template.yaml` and image defaults in the Dockerfile. `run.py` reads runtime values from the process environment, limited to its explicit `RUNTIME_ENV_NAMES`. Empty placeholders do not put credentials into the image. Application startup belongs to `run.py`, after creation, so dynamic authentication is not frozen in a template snapshot. External SDK/HTTP clients can read `application_token` from the private `.sandbox-session.json`, or reuse an explicitly supplied `ABX_SERVER_TOKEN`.
+
 | Name | Default / requirement | Meaning |
 | --- | --- | --- |
 | WORKSPACE | /home/user/workspace; existing directory | Browser screenshot root, captured at command-module startup |
-| ABX_SERVER_TOKEN | required; empty declaration | Export an independent application token before launching the template; separate from model and gateway credentials. Also used for CDP relay authentication. |
+| ABX_SERVER_TOKEN | required; empty declaration | Generated by run.py unless explicitly supplied; external clients read the private session file. |
 
 [Runtime environment](../docs/runtime-environment.md) explains prewarmed processes: create-time env does not reconfigure an already-running server. Each owned session generates a private8-character VNC password and Xauthority cookie; password is returned only to the authorized start caller, never logged or passed in argv. Browser receives a minimal environment without operator cloud/model/GitHub credentials. Session HOME/profile/config/cookies/password files are private and removed on stop. A noVNC connection still needs the VNC password; protect forwarded URLs with provider access controls.
 
@@ -143,7 +151,7 @@ The working directory is `/home/user/workspace`. Artifacts remain on the sandbox
 # Download the path returned by chrome_screenshot
 abx sandbox download "$SANDBOX_ID" '<returned-path>' ./chrome.png
 abx sandbox command run "$SANDBOX_ID" chrome_stop --json-args '{}'
-abx delete "$SANDBOX_ID"
+abx sandbox delete "$SANDBOX_ID" --yes
 ```
 
 `abx delete` deletes the sandbox, not reusable prepared templates or images. Follow the [cleanup guide](../docs/using-templates.md#cli-sdk-and-http) for resources created by your launch.

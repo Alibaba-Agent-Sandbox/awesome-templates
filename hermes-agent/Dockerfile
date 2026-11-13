@@ -23,5 +23,13 @@ ENV WORKSPACE=/home/user/app
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py .
 RUN chown user:user /home/user/app
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV WORKSPACE="/home/user/app" \
+    ABX_SERVER_TOKEN="" \
+    OPENROUTER_API_KEY="" \
+    OPENAI_API_KEY="" \
+    OPENAI_BASE_URL="" \
+    HERMES_MODEL="" \
+    HERMES_PROVIDER=""
 USER user
 EXPOSE 9000

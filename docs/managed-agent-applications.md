@@ -2,51 +2,62 @@
 
 [中文](managed-agent-applications.zh-CN.md)
 
-The [Agents API template](../agents-api/README.md) provides one stable Gateway with an exclusive Sandbox per active Session. The model, CLI and tool loop execute inside that Sandbox. This branch uses YAML v1 and matching development consumers; published CLI0.5.10 does not accept it.
+The [Agents API template](../agents-api/README.md) provides one Gateway for logical Sessions, file uploads, Agent tasks and result downloads. Each active Session owns a Sandbox that runs its model, CLI and tools. Use the matching development CLI for this YAML v1 recipe.
 
-## Runtime and lifecycle
+## Resources and lifecycle
 
-Set `application.type: agents-api` and reference three distinct native FC resources with `application.roles.gateway`, `worker` and `dispatcher`. The coordinator supplies private bridge startup, readiness and service declarations; authors do not repeat protocol/version/operations constants.
+[template.yaml](../agents-api/template.yaml) declares a named Sandbox template and three native FC Serving resources: Gateway, Worker and Dispatcher. Gateway accepts business requests, Dispatcher delivers work to the Session's Worker revision, and Worker creates and cleans up dynamic Sandboxes. Deployment prepares the reusable template and functions; it does not create a permanent Sandbox instance.
 
-The first input allocates compute; later turns keep the native thread and workspace. `sandbox.instance.timeout` is the sole maximum lifetime, default3600 seconds for Managed applications. `application.sessions.idleTimeoutSeconds` defaults900 and must fit inside it. Turn/tool budgets default600/60 seconds and must fit the instance lifetime. Logical Sessions, active Sandboxes, queue and retained storage have separate limits in the [complete field table](template-fields.md).
+Worker creates each instance with its private application token and model environment, then starts the managed bridge. An authenticated bridge is not started during template snapshot preparation. Subsequent turns reuse the Session's native thread and workspace. Close releases compute while retaining committed results; delete removes public Session data while cleanup completes. Uncertain execution or deletion requires reconciliation.
 
-Close releases compute and retains committed results; delete removes public Session data while cleanup finishes. Uncertain submissions or remote deletion require reconciliation. Queueing a new turn is not steering an active one. The runtime exposes its OpenAI-inspired subset and explicit extensions through capabilities; it does not implement OpenAI's hosted harness.
+The recipe's `vars.policy.instance.timeout` and `vars.policy.sessions.maxLifetimeSeconds` are both 3600 seconds and must agree. Idle timeout is 900 seconds; turn/tool budgets are 600/60 seconds. The deployment script checks that these budgets fit the lifetime and that one Session runs one turn at a time. Other admission and storage budgets are shown in the same policy object. These are recipe choices, not reserved YAML fields.
 
-## Configuration and bindings
+## Configuration
 
-Everything needed to configure resources is in [template.yaml](../agents-api/template.yaml). Use native `${env('NAME')}` references to local untracked `.env` or process values. Credentials, a second bindings JSON and Registry initialization questions are not separate resource files.
+Resource values belong in `template.yaml`. Native `${env('NAME')}` expressions read private project `.env` or process values; process values take precedence. `registry.yaml.parameters` guides initialization and is not required for subsequent local execution. `vars` keys are chosen by the template author.
 
-| Path | Value and source |
+| Setting | Purpose and source |
 | --- | --- |
-| application.state.databaseUrl | Existing PostgreSQL URL from its service owner. |
-| application.state.vpcConfig | Optional existing vpcId, distinct vSwitchIds and securityGroupId; borrowed, not provisioned. |
-| application.state.databaseCa | Optional private CA certificate PEM through a native expression; retain database hostname verification. |
-| application.bindings.sandboxAccess | Existing platform apiKey/baseUrl/domain/region. Server-only lifecycle access. |
-| application.bindings.model | Model apiKey/baseUrl/model and codex or qwen-code adapter; Worker supplies model credentials to the Session's Sandbox. |
-| application.bindings.clientAuth | Default generate:true creates separate locally retained business credentials. Explicit supported hashes/owner/scopes are optional. |
-| application.bindings.internalAuth | Separate generated private identity; execution authority comes from the matching native role properties. |
-| application.bindings.ingress | Supported alias/domain route for the Gateway; not a Sandbox custom domain. |
+| `vars.region` | Reused by `sandbox.agent.template.region` and each native FC `props.region`. |
+| `vars.adapter` | qwen-code or codex, matching the authorized model service. |
+| `AGENTS_SERVER_IMAGE` | Writable OCI repository with a unique tag for this Server build. |
+| `ABX_MANAGED_DATABASE_URL` | Existing PostgreSQL URL, reachable by all three FC roles. |
+| `AGENTS_DATABASE_CA_PEM` | Optional database CA certificate PEM; retain hostname verification. |
+| `serving.<role>.props.vpcConfig` | Optional existing VPC, switch and security-group IDs for that function. |
+| `SANDBOX_API_KEY`, `SANDBOX_BASE_URL`, `SANDBOX_DOMAIN`, `SANDBOX_REGION` | Matching Sandbox platform credentials and addresses, used by Worker/Dispatcher. |
+| `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL` | Authorized model key, HTTPS endpoint and model ID. Only Worker receives the key and passes it to the Session Sandbox. |
+| `AGENTS_FC_ROLE_ARN` | Existing FC execution role, including private Worker invocation permissions. |
 
-The CLI generates each guest application token automatically; it is separate from platform, cloud and model credentials. Additional Sandbox instance env/metadata/volumes are subject to Managed ownership restrictions: system/model/auth variables and managed metadata cannot be overridden; mounted volumes cannot shadow the managed workspace or state. Pause/resume policies are not supported by this coordinator. Only the Worker receives private custom instance env values.
+First deployment generates separate business and internal tokens and stores them privately for reuse. Read `businessKey` from `.abx/agents-api/credentials.json` for clients; never share `internalToken`. Optional `AGENTS_BUSINESS_KEY` and `AGENTS_INTERNAL_TOKEN` process overrides are not copied to that credential store. Each must have at least 32 characters and they must differ. Internal-token rotation requires a coordinated migration of retained revisions.
 
-Same-UID Agent tools can read the model credentials deliberately supplied to their Sandbox. Server database, cloud management and business/internal authentication are not guest environment settings. Plans must not reveal resolved credentials or native environment values.
+Each Sandbox's `ABX_SERVER_TOKEN` is generated by the runtime and is distinct from cloud, platform, model and business credentials. No manual cloud-console token is needed. Same-UID Agent tools can read the model key deliberately supplied to their Sandbox; the database and Server authentication credentials stay outside it.
 
-## Server build and deployment
+## Build, deploy and update
 
-The Server recipe pins the development client source at SDK commit `b988d2a76057b6202d836ec329cc0bd90a572b26`; the Guest retains published Server0.4.0a7. Source package metadata still says a7, so the version alone cannot identify the v1 runtime.
+Activate the template's Python virtual environment and install `scripts/requirements.txt`, as shown in its README. The recipe uses native `serverless-devs/fc3@0.1.26` build/deploy actions and preserves native props such as cpu, memorySize, timeout, role, logConfig and vpcConfig. Its Dockerfiles define the Guest and Server images separately.
 
-`deployment` is the original Serverless Devs edition3 project. Keep real `component: fc3@<version>` identifiers and native `props`: cpu, memorySize, timeout, role, logConfig and vpcConfig retain native names and units. The three Managed role resources use one pinned FC component version and region, with the same execution role authority. User-selected native memory4096 is not normalized back to a coordinator constant.
+```bash
+abx deploy . --plan
+abx deploy . --yes
+python scripts/release.py status
+```
 
-`application.server` chooses exactly one source recipe `{source: {dockerfile, context}}` or digest-pinned image. It supplies the coordinator's actual Server image input. The coordinator owns generated function names, revision descriptions, container entrypoints and private control settings. This Managed deployment supports only its three role resources. Additional native resources are rejected before deployment. Custom-domain ingress borrows an existing HTTPS domain with an exclusive `/*` route to the same Gateway and updates its revision qualifier; it does not create domain, DNS or network resources.
+Plan previews resource preparation without running actions. Deploy runs the template's preparation and publication actions. The candidate Gateway must pass a model-backed two-turn file task before the stable `prod` alias changes. This task can incur model and Sandbox charges. The new Dispatcher takes over routing for retained and new Workers before the candidate task starts.
 
-Build, deployment, configuration resolution, durable state, revision routing and resource cleanup remain explicit runtime operations. Static intent validation does not evaluate Devs variables or prove cloud deployability. Generic independent Sandbox plus Serving intent is valid, but unsupported combined execution fails before side effects rather than selecting this coordinator implicitly.
+After a successful release, read the business endpoint from `.abx/agents-api/release.json`. Update by selecting a new Server image tag and repeating deploy. Existing Sessions retain their original Worker revision. Historical Workers remain allocated until application removal; this recipe has no automatic old-revision retirement.
 
-## Hooks and outputs
+If publication fails or its result is uncertain, keep the local records and inspect its saved phase and status before taking further action. The new Dispatcher continues serving old Sessions after candidate failure. Automatic rollback and resume of uncertain publication are not provided. A plan, schema check or local test is not proof of a successful hosted release.
 
-Optional beforeApply/afterReady hooks use bounded custom argv/cwd/timeout/envAllowlist or a Serverless Devs role info check. They do not run during source initialization or ordinary Sandbox launch. The [template](../agents-api/template.yaml) includes an afterReady two-turn business check; it requires the documented model service and can incur charges.
+## Access and cleanup
 
-The coordinator publishes a stable endpoint and safely retained client credentials. Existing Sessions retain their original revision during an update. Close Sessions before deleting an unused old revision; borrowed databases, networks, domains and externally supplied image artifacts remain the owner's responsibility.
+The stable entry uses an FC test URL. The recipe creates no custom domain, DNS, database or network resources. Configure an existing custom domain separately to target the Gateway `prod` alias, and verify actual network access to the database, registry, Sandbox and model services.
 
-## Client and resource use
+Business clients use HTTP with the endpoint and business key; there is no dedicated Gateway client SDK. See the [API reference](managed-agents-api.md) and the template's complete Python HTTP and curl examples. Capabilities report the OpenAI-inspired subset and managed extensions; path names do not imply OpenAI hosted-harness or arbitrary SDK compatibility.
 
-Clients use HTTP, not the private bridge or individual Sandbox endpoints. See the [API reference](managed-agents-api.md) and template's complete Python HTTP/URL examples. A dedicated Gateway SDK is not supplied. Check capabilities for supported operations rather than inferring full interoperability from path names.
+Close Sessions, download results and delete unneeded public data. Then remove the application using its drain-aware helper:
+
+```bash
+python scripts/release.py destroy
+```
+
+It verifies the current Dispatcher and database identities, stops admission and requires zero active Sessions, pending cleanup and uncertain resources before calling `abx delete agents-api --yes`. If drain is incomplete, retain the resources and resolve the remaining work before retrying. If partial resource removal already deleted the Dispatcher, confirm business cleanup independently before completing deletion. Existing databases, networks, roles, domains, image tags and retained database history remain yours to manage.

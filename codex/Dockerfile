@@ -29,5 +29,15 @@ RUN mkdir -p /home/user/workspace /home/user/.codex \
     && git init /home/user/workspace \
     && git config --system --add safe.directory /home/user/workspace \
     && chown -R user:user /home/user/workspace /home/user/.codex /home/user/app
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV OPENAI_API_KEY="" \
+    CODEX_API_KEY="" \
+    ABX_LLM_API_KEY="" \
+    OPENAI_BASE_URL="" \
+    ABX_LLM_BASE_URL="" \
+    CODEX_MODEL="" \
+    CODEX_HOME="/home/user/.codex" \
+    WORKSPACE="/home/user/workspace" \
+    ABX_SERVER_TOKEN=""
 USER user
 EXPOSE 9000

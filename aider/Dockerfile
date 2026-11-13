@@ -38,5 +38,10 @@ ENV WORKSPACE=/home/user/app PYTHON_DOTENV_DISABLED=1 LITELLM_LOCAL_MODEL_COST_M
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py .
 RUN chown user:user /home/user/app
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV ABX_SERVER_TOKEN="" \
+    AIDER_API_KEY="" \
+    AIDER_BASE_URL="" \
+    AIDER_MODEL=""
 USER user
 EXPOSE 9000

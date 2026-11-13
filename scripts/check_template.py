@@ -534,14 +534,15 @@ def check_directory(template_dir: Path) -> list[Violation]:
             violations.append(
                 Violation(
                     "yaml-start",
-                    "sandbox.start must run the declared supported server entrypoint",
+                    "sandbox.<name>.template.startCommand must run the declared supported server entrypoint",
                 )
             )
-        if not isinstance(ready, str) or "agent-sandbox-server healthcheck" not in ready:
-            violations.append(Violation("yaml-ready", "sandbox.ready must run agent-sandbox-server healthcheck"))
+        managed_ready = managed and ready == "curl -fsS http://127.0.0.1:9000/health"
+        if not managed_ready and (not isinstance(ready, str) or "agent-sandbox-server healthcheck" not in ready):
+            violations.append(Violation("yaml-ready", "sandbox.<name>.template.readyCommand must run agent-sandbox-server healthcheck"))
         resources = data.get("resources")
         if not isinstance(resources, dict):
-            violations.append(Violation("yaml-resources", "sandbox.template.props.cpu and memory are required"))
+            violations.append(Violation("yaml-resources", "sandbox.<name>.template.cpu and memorySize are required"))
         else:
             cpu = resources.get("cpu")
             memory = resources.get("memory")
@@ -582,7 +583,7 @@ def check_directory(template_dir: Path) -> list[Violation]:
                 elif item.get("args") is not None and not isinstance(item.get("args"), dict):
                     violations.append(Violation("yaml-smoke", f"smoke[{index}].args must be a mapping"))
 
-    dockerfile = template_dir / "Dockerfile"
+    dockerfile = template_dir / data.get("sandbox", {}).get("template", {}).get("buildConfig", {}).get("dockerfile", "Dockerfile")
     if dockerfile.is_file():
         lines = _dockerfile_lines(dockerfile.read_text(encoding="utf-8"))
         froms = [line for line in lines if _instruction(line) == "FROM"]
@@ -634,7 +635,9 @@ def check_directory(template_dir: Path) -> list[Violation]:
     if dockerfile.is_file():
         try:
             from server_package import server_version
-            version = server_version(template_dir)
+            version = server_version(template_dir, str(dockerfile.relative_to(template_dir)))
+            if dockerfile.name != "Dockerfile" and server_version(template_dir) != version:
+                raise ValueError("selected recipe server package differs from the default recipe")
             profiles = data.get('build_profiles', {})
             if isinstance(profiles, dict):
                 for profile, recipe in profiles.items():

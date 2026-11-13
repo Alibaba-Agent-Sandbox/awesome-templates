@@ -45,11 +45,8 @@ def test_complete_readable_field_tables(language, suffix):
         if language == "en"
         else "#field-sandbox" in text
     )
-    assert "#type-positiveintegerinput" in text
-    assert (
-        "#type-instance_opensandbox" not in text
-    )  # Explicit anchors are normalized consistently.
-    assert "#type-instance-opensandbox" in text
-    assert "maxRunSeconds" in text and "`600`" in text
-    assert "type=custom" in text and "type=serverless-devs" in text
+    assert "buildConfig" in text and "memorySize" in text
+    assert "startCommand" in text and "readyCommand" in text
+    assert "agenticFSVolumeConfig" in text and "juiceFSVolumeConfig" in text
+    assert "maxRunSeconds" not in text and "sandbox.instance" not in text
     assert max(len(line) for line in text.splitlines() if line.startswith("|")) < 600

@@ -15,5 +15,11 @@ ENV HOME=/home/user WORKSPACE=/home/user/workspace
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py worker.py process.py lifecycle.py UPSTREAM-LICENSE.md AUDIOOP-LICENSE.txt ./
 RUN mkdir -p /home/user/workspace && chown user:user /home/user/app /home/user/workspace     && python3 -c "import subprocess; p=subprocess.run(['du','-sx','--block-size=1','/'],capture_output=True,text=True,timeout=120); assert p.returncode==0; n=int(p.stdout.split()[0]); print('image_rootfs_bytes='+str(n)); assert n<=8*1024**3"
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV ABX_SERVER_TOKEN="" \
+    TAU2_MODEL_API_KEY="" \
+    TAU2_MODEL_BASE_URL="" \
+    TAU2_MODEL="" \
+    WORKSPACE="/home/user/workspace"
 USER user
 EXPOSE 9000

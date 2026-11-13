@@ -1,28 +1,13 @@
 specVersion: 1
 name: browser-use
 sandbox:
-  template:
-    source:
-      dockerfile: Dockerfile
-      context: .
-    props:
+  agent:
+    provider: alicloud-express
+    template:
+      region: cn-hangzhou
+      buildConfig:
+        dockerfile: Dockerfile
+        context: .
+      generation: 2
       cpu: 2
-      memory: 2048
-  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
-  ready: agent-sandbox-server healthcheck --port 9000
-  instance:
-    envs:
-      ABX_SERVER_TOKEN: ''
-      PLAYWRIGHT_BROWSERS_PATH: /opt/playwright
-      BROWSER_USE_PYTHON: /opt/browser-use/bin/python
-      BROWSER_USE_API_KEY: ''
-      BROWSER_USE_BASE_URL: ''
-      BROWSER_USE_MODEL: ''
-  services:
-    app:
-      protocol: agent-sandbox-server
-      version: 2
-      port: 9000
-      operations:
-      - commands.list
-      - commands.run
+      memorySize: 2048

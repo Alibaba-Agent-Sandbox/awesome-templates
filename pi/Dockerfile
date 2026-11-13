@@ -43,5 +43,10 @@ ENV HOME=/home/user WORKSPACE=/home/user/app PI_OFFLINE=1 PI_TELEMETRY=0
 WORKDIR /home/user/app
 COPY --chown=user:user commands.py tools_smoke.mjs ./
 RUN chown user:user /home/user/app
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV ABX_SERVER_TOKEN="" \
+    PI_API_KEY="" \
+    PI_BASE_URL="" \
+    PI_MODEL=""
 USER user
 EXPOSE 9000

@@ -17,3 +17,30 @@ readme:
   en: README.md
   zh: README.zh-CN.md
 entry: template.yaml
+parameters:
+- target: /vars/region
+  title:
+    en: Resource region
+    zh: 资源地域
+- target: /vars/adapter
+  title:
+    en: 'Model adapter: qwen-code or codex'
+    zh: 模型适配器：qwen-code 或 codex
+- target: /serving/worker/props/environmentVariables/ABX_MANAGED_DATABASE_URL
+  title:
+    en: Existing PostgreSQL connection URL
+    zh: 已有 PostgreSQL 连接 URL
+  environmentVariable: ABX_MANAGED_DATABASE_URL
+  sensitive: true
+- target: /serving/worker/props/environmentVariables/SANDBOX_API_KEY
+  title:
+    en: Sandbox platform API key
+    zh: Sandbox 平台 API Key
+  environmentVariable: SANDBOX_API_KEY
+  sensitive: true
+- target: /serving/worker/props/environmentVariables/OPENAI_API_KEY
+  title:
+    en: Model service API key
+    zh: 模型服务 API Key
+  environmentVariable: OPENAI_API_KEY
+  sensitive: true

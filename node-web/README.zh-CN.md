@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。配置路径为 `sandbox.instance.envs`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。模板属性在 `sandbox.agent.template`；运行默认值在 Dockerfile，私有运行值在创建实例时显式传入。用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
 
 ## 做什么
 
@@ -20,6 +20,9 @@ Alibaba 基础镜像 `fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag
 
 ## 快速开始（CLI）
 
+`abx deploy` 只准备模板。下载本目录源码后，从该目录执行下面的部署，再将 `<prepared-template-id>` 改成返回的模板 ID，运行 `run.py` 创建实例并显式启动业务服务。脚本只传入本页列出的运行配置，自动生成并将应用令牌保存在本地 `.sandbox-session.json`（仅当前用户可读）；不会打印令牌。已有会话文件不会被覆盖，可用 `--session` 选择新文件。
+
+
 CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任务。示例可能写入文件、创建项目或启动服务；不要在未清理前对同一实例重复执行整段示例。
 
 先按[使用指南](../docs/using-templates.zh-CN.md#安装)安装 CLI/Python SDK，并完成所选平台配置。平台 API Key 用于创建沙箱，`ABX_SERVER_TOKEN` 是独立的模板应用访问口令。以下命令在自己的终端执行，不需要克隆本仓库。
@@ -28,10 +31,13 @@ CLI、SDK、HTTP 是调用同一个应用的三种选法，任选一种完成任
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-# CLI 默认生成并保存应用令牌；外部 SDK/HTTP 如需自定义，在部署前取消下一行注释。
+# run.py 自动生成私有应用令牌；需要自行指定时可取消下一行注释。
 # export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export ABX_HTTP_TIMEOUT=450
-abx deploy Alibaba-Agent-Sandbox/awesome-templates//node-web --sandbox-timeout 1800 --yes
+abx deploy . --yes
+python3 -m pip install "agent-sandbox-client==0.4.0a7"
+python3 run.py --template <prepared-template-id> --timeout 1800
+export ABX_SERVER_TOKEN="$(python3 -c 'import json; print(json.load(open(".sandbox-session.json"))["application_token"])')"
 # 将启动输出中的沙箱 ID 填到这里
 export SANDBOX_ID='paste-id-from-launch-output'
 abx sandbox command list "$SANDBOX_ID"
@@ -44,13 +50,13 @@ abx sandbox command run "$SANDBOX_ID" request --json-args '{"path":"/"}'
 
 返回示例应用的 HTTP 状态和包含 `node-web ready` 的响应正文。
 
-`--sandbox-timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
+`run.py --timeout 1800` 将实例寿命设为 30 分钟，覆盖示例任务和导出所需时间；`ABX_HTTP_TIMEOUT` 只控制本机客户端等待，不延长实例寿命。完成后仍应主动释放实例。
 
 OpenSandbox 用户将 `ABX_PROVIDER` 改为 `opensandbox`，并按[提供方指南](https://github.com/Alibaba-Agent-Sandbox/awesome-providers/blob/main/opensandbox/docs/README.md)配置；后续 CLI 和 Python 必须继续选择同一个平台。
 
 ## 快速开始（Python SDK）
 
-先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a6`。
+先在虚拟环境执行 `python -m pip install agent-sandbox-client==0.4.0a7`。
 
 在完成上述 CLI 启动、设置 `SANDBOX_ID` 后，将以下保存为 `use_template.py`，执行 `python3 use_template.py`。它连接同一实例，不另建沙箱。对于需要输入的示例，先在本机准备上面的文件。
 
@@ -127,6 +133,8 @@ SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。�
 
 ## 配置
 
+资源配置改 `template.yaml` 的 `sandbox.agent.template`；镜像默认值改 Dockerfile。运行时值从当前进程环境传给 `run.py`，允许的名称直接列在脚本 `RUNTIME_ENV_NAMES` 中。空值不会作为秘密写入镜像。业务启动命令在 `run.py`；不在模板快照阶段启动带动态认证的服务。外部 SDK/HTTP 客户端可从私有 `.sandbox-session.json` 读取 `application_token`，或复用显式设置的 `ABX_SERVER_TOKEN`。
+
 | 环境变量 | 默认值 | 用途 |
 |---|---|---|
 | `NODE_ENV` | `production` | 传给应用；开发场景可在创建沙箱时更改 |
@@ -134,7 +142,7 @@ SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。�
 | `HOST` | 启动时设为 `0.0.0.0` | 兼容应用的监听提示，应用须自行遵循 |
 | `WORKSPACE` | 未设置 | 默认应用目录 |
 | `ABX_SERVER_PORT` | `9000` | 本地命令服务端口 |
-| `ABX_SERVER_TOKEN` | 空 | 模板启动前必须导出独立应用令牌；与模型及网关凭据分开 |
+| `ABX_SERVER_TOKEN` | 自动生成 | run.py 自动生成，或显式提供；外部客户端从私有会话文件读取。 |
 
 命令无需模型或云密钥。秘密值不得写进源码、镜像、日志。只通过授权运行配置注入，不打印环境变量。应用 stdout 由用户代码决定，可能含敏感信息，应用须自行脱敏，公开 issue 前须审阅日志。
 
@@ -142,7 +150,7 @@ SDK 返回命令的原始结果；HTTP 的 `result` 外层由客户端解包。�
 
 ```bash
 abx sandbox command run "$SANDBOX_ID" stop --json-args '{}'
-abx delete "$SANDBOX_ID"
+abx sandbox delete "$SANDBOX_ID" --yes
 ```
 
 `abx delete` 删除沙箱，不表示复用模板和镜像也被删除；按[清理指南](../docs/using-templates.zh-CN.md#clisdk-与-http)清理启动时由你创建的资源。

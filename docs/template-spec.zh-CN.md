@@ -2,81 +2,99 @@
 
 [English](template-spec.md)
 
-本地资源只需一个 `template.yaml`。本分支的 YAML v1 需要匹配的开发版 CLI/SDK；已发布 CLI 0.5.10 不支持它。当前文档不表示新版本已发布或云端组合已经验收。
+`template.yaml` 声明要准备和部署的资源。此格式需要匹配的开发版 CLI；已发布 CLI 0.5.10 未实现该规范。
 
 ## 目录布局
 
-普通源码模板包含 `template.yaml`、Dockerfile、commands.py、e2e_test.py 和中英文 README。只有投稿上架才增加 `registry.yaml`；本地运行不依赖 Registry，也不要求 parameters。
+资源和值写在 `template.yaml`，镜像安装步骤写在 Dockerfile，业务行为写在源码。可选 `registry.yaml` 提供上架信息和初始化表单。本地运行不会重新读取 Registry 默认值。
 
 ## template.yaml
 
 ```yaml
 specVersion: 1
 name: python-hello
+vars:
+  location: cn-hangzhou
 sandbox:
-  template:
-    source: {dockerfile: Dockerfile, context: .}
-    props: {cpu: 2, memory: 2048}
-  instance:
-    timeout: 300
-    envs:
-      SOME_API_KEY: "${env('SOME_API_KEY')}"
-  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
-  ready: agent-sandbox-server healthcheck --port 9000
-  services:
-    app:
-      protocol: agent-sandbox-server
-      version: 2
-      port: 9000
-      operations: [commands.list, commands.run]
+  agent:
+    provider: alicloud-express
+    template:
+      region: ${vars.location}
+      buildConfig:
+        dockerfile: ./Dockerfile
+      generation: 2
+      cpu: 2
+      memorySize: 2048
+      startCommand: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+      readyCommand: agent-sandbox-server healthcheck --port 9000
 ```
 
 | 字段 | 含义 |
 | --- | --- |
-| `specVersion` | 整数，只能为 1；旧 spec_version 不再接受。 |
-| `name` | 资源名称为1–63字符的 ASCII kebab-case。工程目录 `_skeleton` 中的资源名称为 example。 |
-| `sandbox.provider` | 可省略，运行时按明确选项/CLI 配置选择；本地意图可以未绑定，执行时必须具体。显式 Provider 与引用不得冲突。 |
-| `sandbox.template` | `source`、`image`、`reference` 三选一。源码才有 Dockerfile/context，替代配方位于 source.profiles；aliases 是查找别名。 |
-| `sandbox.template.props` | 模板准备阶段参数；目前为 cpu（vCPU）和 memory（Express 为 MB，其它按后端接口）。不把创建实例字段混到此处。 |
-| `sandbox.instance` | 创建阶段参数；timeout 是实例最长生存秒数，与构建/HTTP/就绪等待分别设置。 |
-| `sandbox.start` / `ready` | 一次启动和就绪命令；已由镜像启动的原生引用可省略。 |
-| `sandbox.services` | 服务名映射，包含协议、版本、端口和可调用操作。真实服务端口从此推导；只有额外访问端口才填 sandbox.ports。 |
-| `deployment` | 真实 Serverless Devs edition3 项目；component、props、vars、access、资源关系保留原生语义。 |
-| `application` | 仅在需要 Agents API 协调器时声明 `type: agents-api`。不是所有 Serving 必填。 |
+| `specVersion` | 整数 `1`。 |
+| `name` | 项目名称，1–63 个小写 ASCII 字母、数字和连字符。 |
+| `vars` | 可选、完全由作者命名的复用值；没有保留镜像变量名，也可直接写字面值。 |
+| `sandbox.<名称>` | 命名 Sandbox 资源，包含 Provider、模板、可选静态卷和资源动作。 |
+| `sandbox.<名称>.template` | Provider 属性；Express 使用 `region`、`image`、`generation`、`cpu`、`memorySize`、`diskSize`、网络、日志、仓库和模板原生命令。 |
+| `sandbox.<名称>.template.reference` | 借用已有原生模板。只可同时填写地域 `region`；不更新或删除借用资源。 |
+| `sandbox.<名称>.volumes` | 命名静态卷。`props` 创建拥有卷，`reference` 借用已有卷，`retain: true` 在移除时保留拥有卷。卷共用 `template.region`。 |
+| `serving.<名称>` | 原生组件标识、`props` 和可选资源动作。 |
 
-完整嵌套字段、类型、范围、必填项见[字段全表](template-fields.zh-CN.md)与[机器规范](../spec/template-v1.schema.json)。不接受未知的资源字段。
+Sandbox 与 Serving 逻辑名全局唯一。不接收 `access`、`application`、`deployment`、用户自定义 `outputs`、`instance`、`runtimeConfig`、`sandboxConfig` 或通用 `build`/`builds`。凭据复用现有配置。CPU/内存组合、地域和账号准入仍由 Provider 校验；未填写的 API 属性不会被猜测默认值填充。
 
-`sandbox.ports` 可选声明额外访问端口（去重整数1..65535），有效端口是它与 services.port 的有序并集。不承诺监听已启动、HTTP、认证、协议版本或 Managed 公共 Gateway 路由。
+完整类型见[嵌套字段表](template-fields.zh-CN.md)和[Schema](../spec/template-v1.schema.json)。
 
-## Provider 阶段参数
+## 构建来源与镜像语义
 
-这里列出维护中的五家 Provider 在本项目高层接口已接入的完整 YAML 子集；原生服务可能还有额外能力。`project-prepare/1` 与 `high-level-create/1` 的源码绑定记录在[契约](../contracts/template-v1/contract.json)。第三方插件不被 ID 枚举排除，但执行时必须提供实际 descriptor 校验，不能任意透传未知字段。
+`buildConfig` 只有两种互斥分支：`dockerfile` 配可选 `context`，或者 `steps`。不接受空对象或单独 `context`。路径相对 `template.yaml` 所在目录；省略 `context` 时使用 Dockerfile 所在目录。整段省略时不会扫描并自动构建本地 Dockerfile。
 
-| Provider | 模板准备 props | 实例创建 instance |
-| --- | --- | --- |
-| alicloud-express | cpu, memory | timeout, envs, metadata, cpu, memory, disk, gpu, volume_mounts, lifecycle |
-| opensandbox | cpu, memory | timeout, envs, metadata, cpu, memory, gpu, secure, provider_options |
-| e2b | cpu, memory | timeout, envs, metadata |
-| cubesandbox | cpu, memory | timeout, envs, metadata |
-| alicloud-container | cpu, memory | timeout, envs, metadata |
+| 配置 | 结果 |
+| --- | --- |
+| 只有 `image` | 使用已有镜像准备模板。 |
+| `image` 与 `buildConfig.dockerfile` | 构建并推送到该镜像地址，再准备模板。未填地址时必须由已有构建配置提供目的仓库。 |
+| `image` 与 `buildConfig.steps` | 以该镜像为输入执行原生模板步骤，结果是模板 ID；不承诺把步骤后的 OCI 镜像导出并推回输入地址。 |
+| `reference` | 复用已有模板，不构建或更新。 |
 
-cpu 为正整数 vCPU；memory 为正整数，Express 单位 MB，其他按后端接口；disk 为非负整数 MB，gpu 为 Provider 规格字符串。envs、metadata 是字符串映射。Express volume_mounts 是绝对挂载目录到已有卷名称的映射；不在这里创建卷。lifecycle 为 `{onTimeout: kill|pause, autoResume?: boolean}`。OpenSandbox provider_options 只接入 entrypoint、ready_timeout（秒）、network_policy、platform 和 secure_access；platform 枚举见全表。具体 Provider 的资源比例、平台/账号准入和网络可达性仍须执行校验。
+原生步骤为 `type: USER|WORKDIR|ENV|RUN` 和 `args: string[]`。ENV 按键值成对填写；USER 接受用户名及可选布尔字符串 sudo 标志；RUN 接受命令及可选执行用户。运行秘密不能放进镜像 ENV 或模板构建步骤。
 
-VPC、域名、卷管理 API、运行中挂载和回调并不因此全部成为 Sandbox YAML 参数。FC VPC、日志、自定义域名使用原生组件配置；Sandbox 网络/域名中尚未接入本项目创建接口的字段会拒绝，不伪称支持。原生 SDK/Provider 的独立能力继续可用。
+Express 的 `registryConfig` 按需覆盖拉取认证、TLS 和仓库网络。不需要时整段省略。普通 Linux 和可识别的 ACR 镜像无需重复填写 `osType`、仓库类型或 ACR 实例。存储客户端由 Dockerfile 或基础镜像准备；安装不等于创建卷、挂载或授权。必要镜像复制和注入由 Provider 承接，不再暴露第二套高级构建配置。
 
-## Serving 与 Agents API
+## Serving 与动作
 
-[纯 FC 示例](examples/application-external/template.yaml)直接采用 `fc3@0.1.26`；没有新的必选业务组件。`deployment.resources.<资源>.props` 由实际组件版本定义，不复制一套 FC schema。数字、布尔表达式在原生求值后再校验。只有静态 YAML 检查通过不能证明部署有效。
+```yaml
+serving:
+  api:
+    component: serverless-devs/fc3@0.1.26
+    actions:
+      pre-deploy:
+        - component: serverless-devs/fc3@0.1.26 build --dockerfile ./server/Dockerfile --context ./server
+    props:
+      region: cn-hangzhou
+      functionName: sandbox-api
+      runtime: custom-container
+      code: ./server
+      customContainerConfig:
+        image: registry.example/project/api:release-1
+        port: 9000
+      environmentVariables:
+        SANDBOX_TEMPLATE_ID: ${resources.agent.output.templateId}
+```
 
-Sandbox 与 Serving 可以并列声明；当前开发消费者尚不执行未关联业务的联合部署，会在构建/云操作前报告不支持。它不会静默丢弃任一块。Managed Agents API 的角色、实例、绑定和生命周期见[参考](managed-agent-applications.zh-CN.md)，完整实例见 [agents-api/template.yaml](../agents-api/template.yaml)。
+示例镜像地址是占位符，须改成自己有推送权限的仓库。`serverless-devs/` 前缀选择组件执行适配器，原生 `fc3@0.1.26` 决定 `props`。FC 的 build 与 deploy 推送行为不同；引用已构建远端镜像应走组件支持的跳过推送路径，不能仅删除构建动作就认为不会推送。
+
+动作在部署发起端执行。`run` 执行 Shell，`component` 在当前资源上下文调用原生组件命令，可选 `path` 指定工作目录。`pre-deploy` 在资源部署前，`success-deploy` 在资源就绪后，`fail-deploy` 在失败时，`complete-deploy` 在两种结果后执行。Sandbox 成功需查询模板就绪，不能仅收到构建请求受理就成功。输出引用确定依赖顺序，未知资源和循环引用在部署前失败。
+
+## 模板与动态实例
+
+部署准备可复用模板和静态卷。业务代码、SDK 或 `abx sandbox create --template <template-id>` 创建实例并选择运行环境变量、租期和挂载。`startCommand` 与 `readyCommand` 保留模板准备/快照阶段原生语义，不是每个动态实例的钩子。恢复的预热进程不会自动重新读取创建时环境变量。应用启动与模型凭据见[运行环境指南](runtime-environment.zh-CN.md)。
+
+镜像默认值是普通 Dockerfile ENV；空凭据名称不含秘密。运行时私有值需在创建实例时或通过业务运行时显式注入。端口声明、进程监听、网络访问和业务协议分别配置，声明端口不等于公开或认证业务 API。
 
 ## 配置与上架
 
-源文件使用 JSON 兼容的 YAML1.2 Core 子集：单文档、字符串映射键、无 alias/重复键/自定义 tag，UTF-8 文件最多1MiB。on/off和日期保持字符串；环境值若要写 true/false 或数字须加引号。显式 YAML1.1 声明会拒绝。读取源文件不读取环境值、不求值表达式。
+使用单个 JSON 兼容 YAML 1.2 Core 文档，键为字符串，不允许重复键、别名或自定义标签，UTF-8 最大 1 MiB。静态目录工具不求值 `${env('NAME')}`、`${vars.key}` 或资源输出表达式。
 
-统一使用 Serverless Devs 原生 `${env('NAME')}`、`${vars.name}` 等表达式。实际 CLI 调用官方 parser，检查器只保留原文；不引入第二套 `{env: NAME}` 或 bindings JSON。可在本机 `.env` 提供引用值，勿提交到 Git；密钥来源见模板配置表。普通 Sandbox 的应用认证令牌由 CLI 生成和本机保存；模型 Key、Sandbox Key、云 AK/SK 是不同凭据。
-
-投稿的可选 `registry.yaml` 独立声明 specVersion/name/version、双语 description、author/license/tags、双语 readme；初始化 questions 用 JSON Pointer 指向 template.yaml 的真实字段。类型与默认值从资源配置取得，不重复维护。目录 schema_version:3 的 source 行只保存 name/path/repo/status/registry 定位；运行时只读 template.yaml。托管条目在 resource 中保留 Provider 原生 reference，说明 metadata 放 docs/managed/<name>/registry.yaml；不冒充可安装源码。
+可选 `registry.yaml` 包含 `specVersion`、`name`、`version`、双语 `description`、`author`、`license`、`tags`、双语 `readme` 和 `parameters`。每个参数用 JSON Pointer `target` 指向实际配置值，并提供双语 `title`。敏感参数另设 `environmentVariable`，目标必须对应 `${env('NAME')}`。初始化修改实际本地值或私有来源；之后运行只依赖 `template.yaml` 和它显式引用的来源。
 
 ## 阿里云基础镜像
 
@@ -180,7 +198,7 @@ if __name__ == "__main__":
 
 `/health` 不要求 server token；提供方网关仍可能认证该请求。health 成功不证明命名命令认证或模型配置正确。
 
-以下命名命令认证规则适用于 ordinary Sandbox templates；Managed Agents API bridge 必须提供生成的令牌，不允许匿名托管操作。进程启动时读取 `ABX_SERVER_TOKEN`。变量非空时，受保护的请求需要带 `Authorization: Bearer <token>` 或 `X-Access-Token: <token>`。在 `sandbox.instance.envs` 里声明这个名字，值为空字符串。真正的值必须在服务进程启动前传入。创建时注入（`abx deploy --template-id --env` 或 `ProviderSandbox.create(envs=...)`）仅适用于提供方实际使用这些值启动服务的情况，不能重新配置预热进程。使用统一模板启动入口配置并启动声明的服务，再用 SDK 连接已运行的应用；参见[运行环境配置](runtime-environment.zh-CN.md)。
+应用在进程启动时读取 `ABX_SERVER_TOKEN`，受保护请求使用 `Authorization: Bearer <token>` 或 `X-Access-Token: <token>`。普通模板通过 `run.py` 生成或接收令牌，创建实例并显式启动应用，再验证带认证的命令发现。凭据不写入模板准备命令或镜像层。见[运行环境配置](runtime-environment.zh-CN.md)。
 
 变量未设置时应用允许匿名调用；提供方网关认证仍单独处理。客户端保留提供方的网关访问头，把显式应用令牌放入 `Authorization: Bearer <token>`，并在同名头未被占用时补充已有应用 `X-Access-Token` 头。认证失败会直接返回，不会自动匿名重试。设置 `ABX_SERVER_TOKEN` 的模板必须说明：项目 Python API 使用 `await sb.application_client(port, token=...)`，CLI 命名命令使用 `ABX_SERVER_TOKEN`。
 
@@ -223,7 +241,7 @@ asyncio.run(main())
 ```
 
 `client.commands.run` 把关键字参数作为 `POST /commands/hello` 的 JSON 正文并返回 `result`；
-`sb.commands.run` 是进程 API。关闭连接不会删除沙箱；用完执行 `abx delete <sandbox-id>`
+`sb.commands.run` 是进程 API。关闭连接不会删除沙箱；用完执行 `abx sandbox delete <sandbox-id> --yes`
 删除自己创建的实例，并另行核对准备的模板和镜像。验收记录源码提交及实际安装版本。
 
 本地 L0 不创建云沙箱。`scripts/run_local_e2e.py` 启动 `python3 commands.py`，设置 `E2E_BASE_URL`，再运行 `e2e_test.py`。该测试可以对 `E2E_BASE_URL` 发 HTTP。云验收必须调用实际选定的 CLI/SDK/HTTP 入口。
@@ -291,7 +309,7 @@ Express 历史回执使用 `evidence/express-<date>.json` 或 `evidence/alicloud
 ## 安全
 
 - 密钥的值不进入镜像、`template.yaml`、Docker 历史或证据 JSON。
-- `sandbox.instance.envs` 只声明名字和空字符串。真正的值在使用它的进程启动前明确传入；创建请求不能更新已有进程。
+- 创建实例时的 `envs` 只声明名字和空字符串。真正的值在使用它的进程启动前明确传入；创建请求不能更新已有进程。
 - 日志和报告不包含秘密或原生资源标识。公开运行器私下保留原始子进程诊断，只导出受控检查标签、稳定错误码和数值 HTTP 状态。
 - 不要提交 `.env`、云凭证或 `Dockerfile.abx-build`。
 

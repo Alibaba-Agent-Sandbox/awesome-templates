@@ -15,9 +15,62 @@ ROOT = Path(__file__).resolve().parents[1]
 # Field meanings are editorial text. Types, required fields, limits and defaults come
 # from the actual schema/normalizer contract, so this does not define another format.
 PURPOSES = {
+    "args": ("Native step arguments.", "原生步骤参数。"),
+    "role": ("Existing execution role ARN.", "已有执行角色 ARN。"),
+    "endpoint": ("Storage service endpoint.", "存储服务接入点。"),
+    "baseURL": ("Storage access-point base URL.", "存储接入点基础 URL。"),
+    'serving': ('Named native component resources.', '命名原生组件资源。'),
+    'buildConfig': ('Dockerfile/context or native steps.', 'Dockerfile/context 或原生步骤。'),
+    'steps': ('Ordered native template preparation steps.', '有序的原生模板准备步骤。'),
+    'generation': ('Sandbox runtime generation, not API version.', '沙箱运行代际，不是 API 版本。'),
+    'memorySize': ('Sandbox memory, MB.', '沙箱内存，MB。'),
+    'diskSize': ('Sandbox disk, MB.', '沙箱磁盘，MB。'),
+    'internetAccess': ('Allow outgoing public network access.', '允许访问公网。'),
+    'registryConfig': ('Optional image pull registry overrides.', '可选镜像拉取仓库覆盖。'),
+    'authConfig': ('Registry authentication.', '镜像仓库认证。'),
+    'userName': ('Registry login username.', '镜像仓库登录用户名。'),
+    'password': ('Private registry password or access token.', '私有仓库密码或访问令牌。'),
+    'certConfig': ('Registry TLS verification settings.', '仓库 TLS 校验配置。'),
+    'insecure': ('Skip registry HTTPS certificate verification.', '跳过仓库 HTTPS 证书校验。'),
+    'networkConfig': ('Network used to access the registry.', '访问仓库使用的网络。'),
+    'vSwitchId': ('Existing virtual switch ID.', '已有交换机 ID。'),
+    'vSwitchIds': ('Existing virtual switch IDs.', '已有交换机 ID 列表。'),
+    'securityGroupId': ('Existing security group ID.', '已有安全组 ID。'),
+    'vpcId': ('Existing VPC ID.', '已有 VPC ID。'),
+    'logConfig': ('Existing log delivery destination.', '已有日志投递目标。'),
+    'logstore': ('Existing Logstore name.', '已有 Logstore 名称。'),
+    'project': ('Existing log Project name.', '已有日志 Project 名称。'),
+    'vpcConfig': ('Sandbox runtime network.', '沙箱运行网络。'),
+    'startCommand': ('Native template preparation startup command.', '原生模板准备阶段启动命令。'),
+    'readyCommand': ('Native template preparation readiness command.', '原生模板准备阶段就绪命令。'),
+    'resourceTags': ('Template resource tags.', '模板资源标签。'),
+    'volumes': ('Named static volume resources.', '命名静态卷资源。'),
+    'retain': ('Keep an owned volume on resource removal.', '移除资源时保留拥有卷。'),
+    'agenticBucketVolumeConfig': ('AgenticBucket backend.', 'AgenticBucket 存储后端。'),
+    'agenticFSVolumeConfig': ('AgenticFS backend.', 'AgenticFS 存储后端。'),
+    'juiceFSVolumeConfig': ('JuiceFS backend.', 'JuiceFS 存储后端。'),
+    'ossVolumeConfig': ('OSS backend.', 'OSS 存储后端。'),
+    'mountConfig': ('Native volume mount network and role.', '原生卷挂载网络与角色。'),
+    'volumeName': ('Native volume name, unique within Team.', '原生卷名称，Team 内唯一。'),
+    'agenticBucket': ('AgenticBucket name.', 'AgenticBucket 名称。'),
+    'bucketName': ('Existing OSS bucket name.', '已有 OSS Bucket 名称。'),
+    'bucketPath': ('Path prefix within the bucket.', 'Bucket 内路径前缀。'),
+    'readOnly': ('Mount storage read-only.', '以只读方式挂载存储。'),
+    'groupID': ('Mount group ID.', '挂载组 ID。'),
+    'userID': ('Mount user ID.', '挂载用户 ID。'),
+    'serverAddr': ('Storage server or access-point address.', '存储服务或接入点地址。'),
+    'remoteDir': ('Remote directory.', '远程目录。'),
+    'pre-deploy': ('Host actions before resource deployment.', '资源部署前本机动作。'),
+    'success-deploy': ('Host actions after resource readiness.', '资源就绪后本机动作。'),
+    'fail-deploy': ('Host actions on deployment failure.', '部署失败时本机动作。'),
+    'complete-deploy': ('Host actions on either deployment outcome.', '部署结束时本机动作。'),
+    'run': ('Host shell command.', '部署发起端 Shell 命令。'),
+    'key': ('Tag key.', '标签键。'),
+    'value': ('Tag value.', '标签值。'),
+
     "specVersion": ("Public resource format version.", "公开资源格式版本。"),
     "name": ("Resource name.", "资源名称。"),
-    "sandbox": ("Sandbox template and instance settings.", "Sandbox 模板与实例设置。"),
+    "sandbox": ("Named Sandbox resources.", "命名 Sandbox 资源。"),
     "deployment": ("Native Serverless Devs project.", "原生 Serverless Devs 项目。"),
     "application": ("Select the Agents API coordinator.", "选择 Agents API 协调器。"),
     "provider": ("Provider selected before execution.", "执行前选定的 Provider。"),
@@ -537,57 +590,8 @@ class Reference:
     def defaults(self, section: Section, key: str, data: dict[str, Any]) -> str:
         if "default" in data:
             return literal(data["default"])
-        pointer = section.pointer
-        if section.title == "deployment":
-            return {
-                "name": self.text("root name", "根 name"),
-                "access": literal("default"),
-            }.get(key, "—")
-        if pointer == "/properties/sandbox" and key == "provider":
-            return self.text(
-                "CLI/context; agents-api: alicloud-express",
-                "CLI/调用上下文；agents-api: alicloud-express",
-            )
-        if "then/properties/template/properties/props" in pointer:
-            value = self.contract["templateDefaults"].get(key)
-            if value is not None:
-                return literal(value) + (
-                    self.text("; agents-api:4096", "；agents-api:4096")
-                    if key == "memory"
-                    else ""
-                )
-        if section.title in {"source", "recipe"}:
-            return {"dockerfile": literal("Dockerfile"), "context": literal(".")}.get(
-                key, "—"
-            )
-        if section.title == "service" and key == "operations":
-            return self.text("empty list", "空列表")
-        if section.title == "sandbox.instance" or section.title.startswith("instance_"):
-            if key == "timeout":
-                return self.text("300; agents-api:3600", "300；agents-api:3600")
-            if key in {"envs", "metadata"}:
-                return self.text("empty map", "空映射")
-        for group in ("sessions", "limits", "storage"):
-            if section.title == "application." + group:
-                value = self.contract["managedDefaults"][group].get(key)
-                if value is not None:
-                    return literal(value)
-        if (
-            section.title.startswith("application.bindings.clientAuth")
-            and key == "owner"
-        ):
-            return (
-                literal("default")
-                if "generate" in section.schema.get("properties", {})
-                else "—"
-            )
-        if section.title == "application.bindings" and key in {
-            "clientAuth",
-            "internalAuth",
-        }:
-            return self.text("generated credentials", "自动生成凭据")
-        if section.title == "application.bindings.ingress" and key == "aliasName":
-            return literal("prod")
+        if key == "context" and "buildConfig" in section.title:
+            return self.text("Dockerfile directory", "Dockerfile 所在目录")
         return "—"
 
     def purpose(self, section: Section, key: str) -> str:
@@ -820,7 +824,7 @@ class Reference:
                         "",
                     ]
             lines += ["- " + note for note in self.notes(section)] + [""]
-        return "\n".join(lines)
+        return "\n".join(lines).rstrip() + "\n"
 
 
 def generate(language: str) -> str:

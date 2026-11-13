@@ -2,81 +2,99 @@
 
 [中文](template-spec.zh-CN.md)
 
-One local `template.yaml` declares resources. This branch's YAML v1 requires matching development CLI/SDK builds; published CLI0.5.10 does not support it. These instructions do not announce a release or cloud acceptance.
+`template.yaml` declares the resources to prepare and deploy. This format requires a matching development CLI; published CLI 0.5.10 does not implement it.
 
 ## Directory layout
 
-A source template contains template.yaml, Dockerfile, commands.py, e2e_test.py and bilingual READMEs. Publication alone adds optional registry.yaml. Local execution needs neither Registry nor parameters.
+Keep the resource values in `template.yaml`, image instructions in the Dockerfile, and application behavior in source code. Optional `registry.yaml` supplies publication metadata and initialization forms. Local execution does not read Registry defaults again.
 
 ## template.yaml
 
 ```yaml
 specVersion: 1
 name: python-hello
+vars:
+  location: cn-hangzhou
 sandbox:
-  template:
-    source: {dockerfile: Dockerfile, context: .}
-    props: {cpu: 2, memory: 2048}
-  instance:
-    timeout: 300
-    envs:
-      SOME_API_KEY: "${env('SOME_API_KEY')}"
-  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
-  ready: agent-sandbox-server healthcheck --port 9000
-  services:
-    app:
-      protocol: agent-sandbox-server
-      version: 2
-      port: 9000
-      operations: [commands.list, commands.run]
+  agent:
+    provider: alicloud-express
+    template:
+      region: ${vars.location}
+      buildConfig:
+        dockerfile: ./Dockerfile
+      generation: 2
+      cpu: 2
+      memorySize: 2048
+      startCommand: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
+      readyCommand: agent-sandbox-server healthcheck --port 9000
 ```
 
 | Field | Meaning |
 | --- | --- |
-| specVersion | Integer1 only; old spec_version is rejected. |
-| name | ASCII kebab-case resource name, 1–63 characters. The author directory _skeleton uses name: example. |
-| sandbox.provider | Optional intent binding, selected by explicit CLI/config context before execution. Conflicting qualified references fail. |
-| sandbox.template | Exactly one of source, image or reference. Source has Dockerfile/context and optional source.profiles alternate recipes. aliases supply lookup names. |
-| sandbox.template.props | Template preparation inputs: cpu in vCPU and memory in MB for Express (other adapters use their documented backend units). |
-| sandbox.instance | Instance creation inputs. timeout is lifetime in seconds, separate from build, readiness and HTTP waits. |
-| sandbox.start / ready | One startup and readiness command; native prestarted references may omit them. |
-| sandbox.services | Service names mapped to protocol, version, port and callable operations. Declare real service ports here; optional sandbox.ports holds only additional access ports. |
-| deployment | Native Serverless Devs edition3 project, retaining component, props, vars, access and resource relationships. |
-| application | Explicit type: agents-api selects its coordinator. Ordinary Serving does not require it. |
+| `specVersion` | Integer `1`. |
+| `name` | Project name, 1–63 lowercase ASCII letters, digits and hyphens. |
+| `vars` | Optional author-defined reusable values; no reserved image variable names. Direct literal values work too. |
+| `sandbox.<name>` | Named Sandbox resource with a Provider, template, optional volumes and resource actions. |
+| `sandbox.<name>.template` | Provider attributes; Express uses `region`, `image`, `generation`, `cpu`, `memorySize`, `diskSize`, network/logging/registry settings and native template commands. |
+| `sandbox.<name>.template.reference` | Borrow an existing native template. Only `region` may accompany it; borrowed resources are never updated or removed. |
+| `sandbox.<name>.volumes` | Named static volume declarations. `props` creates an owned volume; `reference` borrows one. `retain: true` keeps an owned volume during removal. Volumes share `template.region`. |
+| `serving.<name>` | Native component selector, `props` and optional resource actions. |
 
-See the complete [nested field reference](template-fields.md) and [machine schema](../spec/template-v1.schema.json) for types, required fields, ranges and enums. Unknown resource fields fail.
+Logical names are globally unique across Sandbox and Serving. `access`, `application`, `deployment`, user-defined `outputs`, `instance`, `runtimeConfig`, `sandboxConfig`, and generic `build`/`builds` are not resource inputs. Reuse the configured credentials. CPU/memory combinations and account/regional availability remain Provider checks; omitted API properties are not silently filled with guessed defaults.
 
-`sandbox.ports` is an optional list of additional access ports (unique integer1..65535). Effective ports are its sorted union with services.port. Raw access ports do not promise that a listener is running, HTTP, authentication, a protocol version or a public Managed Gateway route.
+See the [nested field reference](template-fields.md) and [schema](../spec/template-v1.schema.json).
 
-## Provider stage inputs
+## Build sources and image meaning
 
-The following is the entire YAML subset integrated with this project's high-level interfaces for its five maintained Providers. Native platforms expose additional independent capabilities. [Contract source bindings](../contracts/template-v1/contract.json) identify project-prepare/1 and high-level-create/1. Third-party IDs remain possible but require their actual selected descriptor before execution.
+`buildConfig` has exactly two alternatives: `dockerfile` with optional `context`, or `steps`. It cannot be empty and `context` cannot stand alone. Paths are relative to the directory containing `template.yaml`; omitted `context` is the Dockerfile's directory. There is no implicit scan for a Dockerfile when the whole build configuration is absent.
 
-| Provider | Template preparation props | Instance creation inputs |
-| --- | --- | --- |
-| alicloud-express | cpu, memory | timeout, envs, metadata, cpu, memory, disk, gpu, volume_mounts, lifecycle |
-| opensandbox | cpu, memory | timeout, envs, metadata, cpu, memory, gpu, secure, provider_options |
-| e2b | cpu, memory | timeout, envs, metadata |
-| cubesandbox | cpu, memory | timeout, envs, metadata |
-| alicloud-container | cpu, memory | timeout, envs, metadata |
+| Configuration | Result |
+| --- | --- |
+| `image` alone | Use the existing image to prepare the template. |
+| `image` and `buildConfig.dockerfile` | Build and push to that image address, then prepare the template. Without an explicit address, the configured build destination must supply one. |
+| `image` and `buildConfig.steps` | Use the image as the input for native template steps. The result is a prepared template ID; native steps do not promise an OCI image export to the input address. |
+| `reference` | Reuse an existing template without a build or update. |
 
-cpu is a positive integer vCPU count; memory a positive integer in backend units (Express MB); disk nonnegative MB; gpu a Provider specification string. envs and metadata map strings to strings. Express volume_mounts maps absolute guest paths to existing volume names; it does not create volumes. lifecycle is {onTimeout: kill|pause, autoResume?: boolean}. OpenSandbox provider_options admits entrypoint, ready_timeout in seconds, network_policy, platform and secure_access only. See the field table for platform enums. Actual resource ratios, platform/account availability and networking still require Provider validation.
+Native steps use `type: USER|WORKDIR|ENV|RUN` and `args: string[]`. ENV uses key/value pairs. USER takes a username and optional boolean-string sudo flag; RUN takes a command and optional execution user. Runtime secrets do not belong in image ENV or template build steps.
 
-VPC, custom domains, volume management, hot mounts and SDK callbacks are not automatically YAML inputs. FC VPC/logging/domains use native component properties. Sandbox network/domain options absent from the integrated create interface are rejected. Independent native SDK/Provider capabilities remain available.
+For Express, `registryConfig` optionally overrides pull authentication, TLS and registry network settings. Omit the whole object when unused. Ordinary Linux and recognizable ACR image references do not require duplicate `osType`, registry type or ACR instance inputs. Storage clients belong in the Dockerfile or base image; installing them does not create or mount volumes or grant storage access. Provider internals handle required image copying/injection instead of exposing a second advanced build configuration.
 
-## Serving and Agents API
+## Serving and actions
 
-The [native FC example](examples/application-external/template.yaml) uses fc3@0.1.26 directly. Native deployment.resources.<id>.props belongs to the selected component version; there is no duplicate FC schema. Numeric/boolean expressions are checked after native evaluation. Static validity does not prove deployment.
+```yaml
+serving:
+  api:
+    component: serverless-devs/fc3@0.1.26
+    actions:
+      pre-deploy:
+        - component: serverless-devs/fc3@0.1.26 build --dockerfile ./server/Dockerfile --context ./server
+    props:
+      region: cn-hangzhou
+      functionName: sandbox-api
+      runtime: custom-container
+      code: ./server
+      customContainerConfig:
+        image: registry.example/project/api:release-1
+        port: 9000
+      environmentVariables:
+        SANDBOX_TEMPLATE_ID: ${resources.agent.output.templateId}
+```
 
-Independent Sandbox and Serving declarations may coexist. The current development consumers reject their unsupported combined execution before building or cloud effects, preserving both blocks rather than discarding either. Agents API roles, configuration and lifecycle are in the [Managed reference](managed-agent-applications.md); [agents-api/template.yaml](../agents-api/template.yaml) is the complete example.
+The image address above is a placeholder. Use a repository you can push to. The `serverless-devs/` prefix selects the component execution adapter; native `fc3@0.1.26` owns its properties. FC build and deploy have distinct image-push behavior. Existing remote images must use the component's supported skip-push path; omitting a build action alone does not establish that behavior.
+
+Actions run on the deployment host. `run` executes a shell command; `component` invokes the selected native component command with the resource context. Optional `path` selects a working directory. `pre-deploy` runs before the resource, `success-deploy` after it is ready, `fail-deploy` on failure and `complete-deploy` on either outcome. Sandbox readiness means a successful template readiness query, not merely acceptance of a build request. Output references order dependent resources; unresolved names and cycles fail before deployment.
+
+## Templates and dynamic instances
+
+Deployment prepares reusable templates and static volumes. Business code, SDK or `abx sandbox create --template <template-id>` creates instances and chooses their environment, lifetime and mounts. `startCommand` and `readyCommand` retain native template preparation/snapshot semantics; they are not per-instance hooks. A resumed prewarmed process does not automatically read new create-time environment values. Follow the [runtime environment guide](runtime-environment.md) for application startup and model credentials.
+
+Image defaults are ordinary Dockerfile ENV declarations. Empty credential names contain no credentials. Pass private runtime values explicitly at instance creation or through the application runtime. Ports, listeners, network access and application protocols are distinct; declaring a port does not expose or authenticate a business API.
 
 ## Configuration and publication
 
-Source files use the JSON-compatible YAML1.2 Core subset: one document, string map keys, no aliases/duplicate keys/custom tags, and at most1MiB of UTF-8. Plain on/off/dates remain strings; quote true/false and numbers when an environment value must be a string. Explicit YAML1.1 directives are rejected. Source reading does not read environment values or evaluate expressions.
+Use one JSON-compatible YAML 1.2 Core document with string keys, no duplicate keys, aliases or custom tags, and at most 1 MiB of UTF-8. Static catalog tools do not evaluate `${env('NAME')}`, `${vars.key}` or resource output expressions.
 
-Use native Serverless Devs expressions such as ${env('NAME')} and ${vars.name}. The CLI invokes the official parser; static tools retain the authored text. No second {env: NAME} or bindings JSON syntax is needed. Supply references in a local untracked .env and follow each template's configuration table. The CLI generates and locally retains normal Sandbox application authentication; model keys, Sandbox keys and cloud AK/SK serve separate purposes.
-
-Optional registry.yaml declares specVersion/name/version, bilingual description, author/license/tags and bilingual readme. Initialization questions target actual template.yaml values using JSON Pointer; types and defaults are not duplicated. Catalog schema_version:3 source rows contain only name/path/repo/status/registry locators. Runtime reads template.yaml independently. Native managed rows retain real Provider references under resource, with publication metadata in docs/managed/<name>/registry.yaml; they are not installable source packages.
+Optional `registry.yaml` contains `specVersion`, `name`, `version`, bilingual `description`, `author`, `license`, `tags`, bilingual `readme` and `parameters`. Each parameter names an existing value with a JSON Pointer `target` and bilingual `title`. A sensitive parameter also specifies `environmentVariable`; its target must be the corresponding `${env('NAME')}` expression. Initialization edits those concrete local values or private sources; subsequent execution uses only `template.yaml` and its explicit references.
 
 ## Alibaba base image
 
@@ -179,7 +197,7 @@ if __name__ == "__main__":
 
 `/health` is exempt from server-token authentication; the provider gateway may still authenticate that request. A successful health probe does not prove named-command authentication or model configuration.
 
-The following named-command authentication rules apply to ordinary Sandbox templates. The Managed Agents API bridge instead requires its generated token and never permits anonymous managed operations. The server reads `ABX_SERVER_TOKEN` when the process starts. When the variable is non-empty, protected requests need `Authorization: Bearer <token>` or `X-Access-Token: <token>`. Declare the name in `sandbox.instance.envs` with an empty value. Provide the real value to the server process before it starts. Create-time injection (`abx deploy --template-id --env` or `ProviderSandbox.create(envs=...)`) applies only when that provider starts the server with those values; it cannot reconfigure a prewarmed process. Use the unified deploy to configure and start the declared service, then connect the SDK to that running application; see [runtime environment configuration](runtime-environment.md).
+The server reads `ABX_SERVER_TOKEN` at application startup. Protected requests use `Authorization: Bearer <token>` or `X-Access-Token: <token>`. Ordinary templates start through `run.py`, which generates or accepts the token, creates the instance, explicitly starts the application and verifies authenticated discovery. Keep credentials out of native template preparation commands and image layers. See [runtime configuration](runtime-environment.md).
 
 When the variable is unset, the application allows anonymous calls; provider gateway authentication remains separate. The client preserves the provider's gateway headers and sends an explicit application token as `Authorization: Bearer <token>`, also adding the existing application `X-Access-Token` header when unoccupied. Authentication failures are returned without an anonymous retry. Templates that set `ABX_SERVER_TOKEN` must document `await sb.application_client(port, token=...)` for the project Python API and `ABX_SERVER_TOKEN` for CLI named commands.
 
@@ -223,7 +241,7 @@ asyncio.run(main())
 
 `client.commands.run` posts keyword arguments as the JSON body of `POST /commands/hello`
 and returns `result`. `sb.commands.run` is the process API. Closing a connection does
-not delete the sandbox: delete your owned instance with `abx delete <sandbox-id>` when
+not delete the sandbox: delete your owned instance with `abx sandbox delete <sandbox-id> --yes` when
 finished, and reconcile its prepared template/image separately. Record source refs
 and installed package versions for acceptance.
 
@@ -297,7 +315,7 @@ Template READMEs are usage guides: keep validation reports, historical acceptanc
 ## Security
 
 - Secret values are not copied into the image, `template.yaml`, Docker history, or evidence JSON.
-- `sandbox.instance.envs` declares the name and an empty string. Pass values explicitly to the process that needs them before it starts; a create call does not update existing processes.
+- instance-creation `envs` declares the name and an empty string. Pass values explicitly to the process that needs them before it starts; a create call does not update existing processes.
 - Logs and reports must omit secrets and native resource identifiers. The public runner keeps raw subprocess diagnostics private and exports only controlled check labels, stable codes and numeric HTTP statuses.
 - Do not commit `.env`, cloud credentials, or `Dockerfile.abx-build`.
 

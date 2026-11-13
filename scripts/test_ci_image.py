@@ -15,7 +15,7 @@ def fixture(tmp_path):
     source=tmp_path/'product';source.mkdir()
     from v1_test_support import resource, publication
     import yaml
-    data=resource('product');data['sandbox']['template']={'source':{'dockerfile':'Dockerfile'},'props':{'cpu':2,'memory':2048}}
+    data=resource('product');data['sandbox']['agent']['template']={'buildConfig':{'dockerfile':'Dockerfile'},'cpu':2,'memorySize':2048}
     (source/'template.yaml').write_text(yaml.safe_dump(data))
     publication(source,'product','1.0.0')
     (source/'Dockerfile').write_text('FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>\nRUN pip install agent-sandbox-server==0.4.0a6\nWORKDIR /home/user/app\nCOPY --chown=user:user commands.py .\nUSER user\n')
@@ -40,7 +40,7 @@ def test_mutable_reference_and_changed_runtime_are_rejected(tmp_path):
 
 def test_any_manifest_change_invalidates_image_identity(tmp_path):
     source,proof,path=fixture(tmp_path)
-    text=(source/'template.yaml').read_text().replace('memory: 2048','memory: 3072');(source/'template.yaml').write_text(text)
+    text=(source/'template.yaml').read_text().replace('memorySize: 2048','memorySize: 3072');(source/'template.yaml').write_text(text)
     with pytest.raises(ValueError):ci_image.validate_proof(source,proof,IMAGE)
     (source/'template.yaml').write_text(text.replace('cpu: 2','cpu: 3'))
     with pytest.raises(ValueError):ci_image.validate_proof(source,proof,IMAGE)
@@ -53,7 +53,7 @@ def test_any_manifest_change_invalidates_image_identity(tmp_path):
 def test_invalid_declared_resources_fail_before_any_artifact_or_cloud_call(tmp_path):
     import ci_image_archive
     source,proof,path=fixture(tmp_path)
-    manifest=source/'template.yaml';manifest.write_text(manifest.read_text().replace('memory: 2048','memory: 1024'))
+    manifest=source/'template.yaml';manifest.write_text(manifest.read_text().replace('memorySize: 2048','memorySize: 1024'))
     with patch.object(ci_image_archive,'artifact_download',side_effect=AssertionError('invalid resource preflight must be read-only')):
         with pytest.raises(ValueError,match='per vCPU'):
             ci_image_archive.download_verified(123,source,tmp_path/'private')

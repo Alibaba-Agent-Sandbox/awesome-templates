@@ -514,7 +514,8 @@ def prepare(source: Path, *, region: str = "cn-hangzhou", tag: str = "v0.0.49",
         raise ValueError(f"compressed steps ({wire_bytes} bytes) exceed the provider's 16 KiB limit; use an immutable source archive or Dockerfile mode")
     data["base"] = BASE.replace("<region>", region).replace("<tag>", tag)
     data["build"] = {"mode": "steps", "steps": steps}
-    data["env"] = {**runtime_env, **data.get("env", {})}
+    # Docker ENV expansion is authoritative; projected text may retain ${PATH}.
+    data["env"] = runtime_env
     provenance = {"schema_version": 1, "template": source.name,
                   "materializer_sha256": MATERIALIZER_SHA256,
                   "source_manifest_contract_sha256": manifest_contract_sha256((source / "template.yaml").read_bytes()),

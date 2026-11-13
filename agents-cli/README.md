@@ -2,7 +2,7 @@
 
 Pinned Codex and Qwen Code behind a restricted local Agents HTTP API.
 
-This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Template attributes are under `sandbox.agent.template`. Runtime defaults belong to the Dockerfile; pass private values explicitly when creating an instance. See this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
 
 ## What it does
 
@@ -31,6 +31,9 @@ Use an installed tool in an isolated sandbox, submit work through CLI, Python or
 
 ## Quick start (CLI)
 
+`abx deploy` only prepares the template. Download this directory, run deployment from it, then replace `<prepared-template-id>` with the returned template ID and run `run.py`. The script creates an instance and explicitly starts the application with this page’s runtime settings. It generates an application token and stores it privately in `.sandbox-session.json`, without printing it. Existing session files are never overwritten; use `--session` for another run.
+
+
 Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
 
 Select either `qwen-code` (Chat Completions) or `codex` (Responses). Set `OPENAI_API_KEY`, `OPENAI_BASE_URL` and `OPENAI_MODEL` for your explicitly authorized model service. API-key use does not start OAuth or inherit a host account. Before a Codex session, call `agents_configure_codex`; it explicitly creates a native Responses profile from the startup endpoint, references `OPENAI_API_KEY` by name and disables WebSockets. It never writes the key or overwrites a different existing profile. A Qwen session uses the startup Chat endpoint directly. The same endpoint must support both protocols if you use both adapters in one instance; otherwise launch separate instances with their matching configuration.
@@ -39,17 +42,20 @@ Replace every `<...>` placeholder with your own value; use an exact model ID ava
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# run.py generates a private token; optionally choose your own before running it.
 # export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export OPENAI_API_KEY='<your-model-or-vendor-key>'
 export OPENAI_BASE_URL='<your-model-api-base-including-v1-if-required>'
 export OPENAI_MODEL='<model-id-from-your-provider>'
-abx deploy Alibaba-Agent-Sandbox/awesome-templates//agents-cli --sandbox-timeout 1800 --yes
+abx deploy . --yes
+python3 -m pip install "agent-sandbox-client==0.4.0a7"
+python3 run.py --template <prepared-template-id> --timeout 1800
+export ABX_SERVER_TOKEN="$(python3 -c 'import json; print(json.load(open(".sandbox-session.json"))["application_token"])')"
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
-`--sandbox-timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
+`run.py --timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
 
 Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
 
@@ -68,7 +74,7 @@ The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/w
 
 ## Quick start (Python SDK)
 
-In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a7`.
 
 Connect to the application started by launch and resolve its gateway with the SDK. This Python example submits the same coding task and polls output within a bounded wait. The restricted application policy has no generic file/shell HTTP routes; inspect the files afterward through provider `abx sandbox exec`/`download`.
 
@@ -207,7 +213,7 @@ Post a further input-message event to the same session ID to resume the native c
 abx sandbox exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
 abx sandbox download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
 abx sandbox download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
-abx delete "$SANDBOX_ID"
+abx sandbox delete "$SANDBOX_ID" --yes
 ```
 
 Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
@@ -234,9 +240,11 @@ Named-command results are buffered rather than streamed. `cwd` must be an existi
 
 ## Configuration
 
+Edit resource values under `sandbox.agent.template` in `template.yaml` and image defaults in the Dockerfile. `run.py` reads runtime values from the process environment, limited to its explicit `RUNTIME_ENV_NAMES`. Empty placeholders do not put credentials into the image. Application startup belongs to `run.py`, after creation, so dynamic authentication is not frozen in a template snapshot. External SDK/HTTP clients can read `application_token` from the private `.sandbox-session.json`, or reuse an explicitly supplied `ABX_SERVER_TOKEN`.
+
 | Name | Required | Purpose |
 |---|---|---|
-| `ABX_SERVER_TOKEN` | required; empty declaration | Export an independent application token before the deploy; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | required; empty declaration | Generated by run.py unless explicitly supplied; external clients read the private session file. |
 | `OPENAI_API_KEY` | For compatible model turns | Runtime credential, declared empty; usable by Qwen and compatible Codex setups |
 | `CODEX_API_KEY` | Optional Codex alternative | Declared empty; actual authentication support depends on the chosen upstream provider |
 | `OPENAI_BASE_URL`, `OPENAI_MODEL` | Provider-dependent | Explicit model endpoint/model; Qwen requires Chat Completions, Codex requires Responses after profile preparation |

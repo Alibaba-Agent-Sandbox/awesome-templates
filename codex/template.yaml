@@ -1,31 +1,13 @@
 specVersion: 1
 name: codex
 sandbox:
-  template:
-    source:
-      dockerfile: Dockerfile
-      context: .
-    props:
+  agent:
+    provider: alicloud-express
+    template:
+      region: cn-hangzhou
+      buildConfig:
+        dockerfile: Dockerfile
+        context: .
+      generation: 2
       cpu: 2
-      memory: 2048
-  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
-  ready: agent-sandbox-server healthcheck --port 9000
-  instance:
-    envs:
-      OPENAI_API_KEY: ''
-      CODEX_API_KEY: ''
-      ABX_LLM_API_KEY: ''
-      OPENAI_BASE_URL: ''
-      ABX_LLM_BASE_URL: ''
-      CODEX_MODEL: ''
-      CODEX_HOME: /home/user/.codex
-      WORKSPACE: /home/user/workspace
-      ABX_SERVER_TOKEN: ''
-  services:
-    app:
-      protocol: agent-sandbox-server
-      version: 2
-      port: 9000
-      operations:
-      - commands.list
-      - commands.run
+      memorySize: 2048

@@ -29,5 +29,7 @@ WORKDIR /home/user/app
 COPY --chown=user:user upstream ./upstream
 COPY --chown=user:user commands.py runtime.py accessibility_observer.py .
 RUN chown user:user /home/user/app
+# Runtime defaults; credentials are supplied when creating an instance.
+ENV ABX_SERVER_TOKEN=""
 USER user
 EXPOSE 9000

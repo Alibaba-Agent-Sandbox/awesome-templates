@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md)
 
-This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Template attributes are under `sandbox.agent.template`. Runtime defaults belong to the Dockerfile; pass private values explicitly when creating an instance. See this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
 
 ## What it does
 
@@ -22,6 +22,9 @@ Summarize a small expense list through the native gateway, ask follow-up questio
 
 ## Quick start (CLI)
 
+`abx deploy` only prepares the template. Download this directory, run deployment from it, then replace `<prepared-template-id>` with the returned template ID and run `run.py`. The script creates an instance and explicitly starts the application with this page’s runtime settings. It generates an application token and stores it privately in `.sandbox-session.json`, without printing it. Existing session files are never overwritten; use `--session` for another run.
+
+
 Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
 
 Use an independent `OPENCLAW_GATEWAY_TOKEN` for gateway authentication. For model conversations, set all three `OPENCLAW_MODEL_*` variables below; legacy `OPENAI_API_KEY`/`ANTHROPIC_API_KEY` alone do not configure this workflow. The upstream must support OpenAI Chat Completions. No vendor OAuth login is needed for this explicit API-key workflow. Gateway lifecycle alone remains available without model settings. Keep `bind="loopback"`; the named chat command reaches the gateway internally through application port 9000.
@@ -30,18 +33,21 @@ Replace every `<...>` placeholder with your own value; use an exact model ID ava
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# run.py generates a private token; optionally choose your own before running it.
 # export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export OPENCLAW_GATEWAY_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 export OPENCLAW_MODEL_API_KEY='<your-model-api-key>'
 export OPENCLAW_MODEL_BASE_URL='<your-chat-completions-api-base-including-v1-if-required>'
 export OPENCLAW_MODEL='<your-exact-model-id>'
-abx deploy Alibaba-Agent-Sandbox/awesome-templates//openclaw --sandbox-timeout 1800 --yes
+abx deploy . --yes
+python3 -m pip install "agent-sandbox-client==0.4.0a7"
+python3 run.py --template <prepared-template-id> --timeout 1800
+export ABX_SERVER_TOKEN="$(python3 -c 'import json; print(json.load(open(".sandbox-session.json"))["application_token"])')"
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
-`--sandbox-timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
+`run.py --timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
 
 Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
 
@@ -57,7 +63,7 @@ abx sandbox command run "$SANDBOX_ID" gateway_stop
 
 ## Quick start (Python SDK)
 
-In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a7`.
 
 ```python
 import asyncio
@@ -107,7 +113,7 @@ The response is `{"result": ...}`; see the command reference for its actual cont
 After an HTTP start, call authenticated `POST /commands/gateway_health` with `{}`, then `POST /commands/gateway_stop` with `{}`. Finally delete the sandbox:
 
 ```bash
-abx delete "$SANDBOX_ID"
+abx sandbox delete "$SANDBOX_ID" --yes
 ```
 
 `close()`/`aclose()` only close client connections; they do not delete the sandbox. Prepared templates/images in the launch journal can remain for reuse; remove only your own exact resources when no longer needed.
@@ -134,13 +140,15 @@ The application owns one gateway; `gateway_stop` stops that owned process. Loopb
 
 ## Configuration
 
+Edit resource values under `sandbox.agent.template` in `template.yaml` and image defaults in the Dockerfile. `run.py` reads runtime values from the process environment, limited to its explicit `RUNTIME_ENV_NAMES`. Empty placeholders do not put credentials into the image. Application startup belongs to `run.py`, after creation, so dynamic authentication is not frozen in a template snapshot. External SDK/HTTP clients can read `application_token` from the private `.sandbox-session.json`, or reuse an explicitly supplied `ABX_SERVER_TOKEN`.
+
 On Linux, each short-lived gateway health RPC drains its output and keeps its leader unreaped until owned-group cleanup, including success, error and timeout. This never stops the separate long-running gateway group. A process that deliberately escapes with setsid is outside that group.
 
 | Variable | Default | Meaning |
 |---|---|---|
 | `OPENCLAW_GATEWAY_TOKEN` | empty | Required for gateway start; inject via sandbox environment, never a command parameter. It is passed in the child environment and referenced by name in isolated config, never returned or included in argv. |
 | `OPENCLAW_TRUSTED_PROXIES` | empty | Explicit verified proxy IP/CIDR list for forwarded access; max16/2048bytes, no unrestricted/multicast networks. |
-| `ABX_SERVER_TOKEN` | empty | Export an independent application token before the deploy; separate from model and gateway credentials `/health` does not require the application token. |
+| `ABX_SERVER_TOKEN` | Generated | Generated by run.py unless explicitly supplied; external clients read the private session file. |
 | `OPENCLAW_MODEL_API_KEY` | empty | Explicit compatible-model key, referenced by environment name in native config; never guessed from legacy vendor credentials. |
 | `OPENCLAW_MODEL_BASE_URL` | empty | Explicit HTTP(S) API base, including `/v1` when required; no embedded credentials/query/fragment. |
 | `OPENCLAW_MODEL` | empty | Exact model ID available on that endpoint; all three model settings must be supplied together. Native catalog declares 128000 context / 4096 output tokens; choose a model supporting these limits. |

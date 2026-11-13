@@ -5,7 +5,7 @@
 
 [English](README.md) · [API 参考](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/managed-agents-api.zh-CN.md)
 
-本分支模板使用 YAML v1，需要匹配的开发构建；已发布 CLI 0.5.10 不支持此格式。Sandbox 实例环境配置位于 `sandbox.instance.envs`，模型访问位于 `application.bindings.model`；用途和凭据来源见本页配置部分。详情见[配置规范](../docs/template-spec.zh-CN.md)。
+本模板使用 YAML v1，需要匹配的开发版 CLI。资源和值在 `template.yaml` 中修改；`registry.yaml` 仅用于目录元信息和初始化表单。详见[配置规范](../docs/template-spec.zh-CN.md)。
 
 ## 做什么
 
@@ -36,48 +36,31 @@ Sandbox 管理凭据留在 Server；Sandbox 只接收选定的模型配置和单
 
 ## 快速开始（CLI）
 
-这些命令需要当前源码 CLI，已发布的 0.5.10 不支持。先按[使用指南](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/using-templates.md#installation)
-配置 Sandbox 及镜像构建仓库。`deployment.access` 可选已有 Devs 别名、复用 abx 云凭据的 `abx`，或读取进程云凭据的 `env`，缺省仍为 `default`。FC 地域、Sandbox 地域、数据库网络和镜像仓库访问需要相互匹配。
-CLI 只复制这个模板，得到可编辑项目，不会在获取源码时部署。部署主机仍需 Python 3
-和 `httpx==0.28.1`：部署后会执行 `scripts/smoke.py`，通过 Gateway 完成两轮 Agent
-文件任务。部署及更新时保持该虚拟环境激活。创建虚拟环境会同时创建 `.abx/`，无需单独建目录。
+使用匹配的源码 CLI，按[使用指南](../docs/using-templates.zh-CN.md)配置 Sandbox 和构建仓库凭据。部署主机需要 Python 3、Docker 及有 FC 管理权限的云凭据。部署和维护时保持项目虚拟环境激活。
 
 ```bash
 abx template init ./agents-api --from agents-api
 cd agents-api
 python3 -m venv .abx/venv
 . .abx/venv/bin/activate
-python -m pip install httpx==0.28.1
+python -m pip install -r scripts/requirements.txt
 ```
 
-部署前提供“配置”表中的环境变量，在私有 binding 文件中选择 adapter，
-通过 `OPENAI_MODEL` 提供与其匹配且实际可用的模型 ID，并修改清单中的地域、access 和资源限制。私有文件、构建收据和计划存放在 `.abx/` 下，该目录不进入镜像构建上下文。
+在私有 `.env` 或进程环境中填写“配置”中的变量，在 `template.yaml` 设置 `vars.adapter` 和 `vars.region`。每次 Server 构建给 `AGENTS_SERVER_IMAGE` 使用新的唯一 tag。需要修改应用名称时，在首次部署前同时修改 `name` 和 `vars.applicationName`。
 
 ```bash
-abx deploy . --name agents-api --plan
-abx deploy . --name agents-api --yes
-abx status agents-api
+abx deploy . --plan
+abx deploy . --yes
+python scripts/release.py status
 ```
 
-`--plan` 只预览资源，不构建或部署；`--yes` 确认执行构建、云端部署和模板自带的真实模型业务检查。
+计划不构建、不执行动作。部署准备 Sandbox 模板，构建 Server 镜像，分别创建 Worker、Dispatcher、Gateway 函数，并在切换稳定的 `prod` Gateway 别名前执行真实模型的两轮文件任务。部署不会创建一个常驻 Sandbox 实例。
 
-`abx status agents-api` 显示 endpoint 和本机私有凭据文件路径。首次部署自动生成独立的业务及内部 Key，后续更新复用。业务客户端只需要 endpoint 和该文件中的 `businessKey`，不要分享 `internalToken`。显式提供的自定义凭据不会复制保存。
+首次部署生成不同的业务及内部令牌，更新时复用。本机私有 `.abx/agents-api/credentials.json` 包含 `businessKey` 和 `internalToken`，只向业务客户端提供业务 Key。endpoint 位于 `.abx/agents-api/release.json` 的 `endpoint` 字段。显式进程凭据不复制到凭据存储。`.env` 和 `.abx/` 应保密，并保留供更新、清理使用。
 
-```bash
-abx logs agents-api
-abx recover agents-api
-```
+修改模板并选择新的 Server 镜像 tag 后，再执行同一个部署命令。已有 Session 继续使用原 Worker revision，新 Dispatcher 保留到旧 Worker 的路由。旧版本保留至应用删除。内部令牌不能直接轮换，跨版本共享应用时需另行协调迁移。需要日志投递时，在各角色原生 `props` 下配置 FC `logConfig`。
 
-`abx logs` 需要配置 FC `logConfig`；本模板默认不配置。未配置时，请在 FC 控制台查看可用的函数诊断信息。
-
-部署中断后先执行 `recover` 查看已知资源和恢复提示，不重复提交创建请求。修改模板或配置后，使用相同名称再次执行 `abx deploy . --name agents-api --yes` 更新。已有 Session 保留原 revision；先关闭其 Session，再清理未使用的旧版本：
-
-```bash
-abx status agents-api --revisions
-abx delete agents-api --revision <旧版本> --yes
-```
-
-作者需要分开构建和部署时，可选用 `abx template build . --out .abx/build.json --yes`，再通过 `abx deploy . --build .abx/build.json --name agents-api --yes` 复用构建。发布源码使用 `abx template publish`，不会自动上架 Registry。
+发布失败或中断可能留下候选版本，或者无法确定别名切换的结果。查看保存的阶段及 `python scripts/release.py status`，不要删除记录或重复提交发布。新 Dispatcher 在候选任务开始前接管新旧版本路由，候选任务失败后仍继续服务旧 Session。本模板不提供不确定发布的自动回滚和自动续跑；确认结果前保留旧资源。
 
 ## 快速开始（Python HTTP 客户端）
 
@@ -161,41 +144,37 @@ Agent 已完成任务。
 私有 bridge 不是业务 API。`commands.py` 中的本机 `agents_version()` 无参数，只检查
 安装的 CLI 并返回固定版本；私有 bridge 不开放该命名命令。
 
-清单省略了 `fc-managed-agents` profile 的固定字段。按需修改显式声明的提供方、binding 引用、地域和预算；默认值与允许的覆盖见 [profile 参考](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/managed-agent-applications.zh-CN.md)。
+三个原生 FC `props` 对象和 Sandbox 模板可分别调整。Session 和任务预算属于本模板的 `vars.policy`，由模板部署脚本校验。
 
 ## 配置
 
-只编辑 [template.yaml](template.yaml)；`${env('NAME')}` 由原生 Serverless Devs parser 读取本地环境值。可以在当前项目未提交的 `.env` 中设置下列变量，不再需要 bindings JSON。模板中的 `registry.yaml` 仅用于上架和初始化提问。
+资源值在 [template.yaml](template.yaml) 修改。`${env('NAME')}` 读取项目私有 `.env` 或进程环境，进程值优先。`vars` 的键名由模板作者定义；下面是本模板选用的名称，不是规范保留字。
 
 | 变量 / 字段 | 用途与来源 |
 | --- | --- |
-| ABX_MANAGED_DATABASE_URL | 已有 PostgreSQL URL，来自数据库提供商；三个 FC 角色都要可达。不自动创建或删除数据库。 |
-| SANDBOX_API_KEY | 已有 Sandbox 平台 Key，用于实例生命周期；来自对应平台的账号配置。 |
-| SANDBOX_BASE_URL / SANDBOX_DOMAIN / SANDBOX_REGION | 同一 Sandbox 平台的 API、实例访问域名和地域。与 Key 匹配。 |
-| OPENAI_API_KEY / OPENAI_BASE_URL / OPENAI_MODEL | 模型提供商的 Key、兼容 API 地址和已获授权的准确模型 ID。qwen-code 需要支持工具的 Chat Completions，codex 需要支持工具的 Responses。 |
-| AGENTS_FC_ROLE_ARN | 已有 FC 执行角色的 RAM ARN，须能调用私有 Worker/Dispatcher；来自 RAM/FC 配置。 |
-| application.bindings.model.adapter | 在 template.yaml 选择 qwen-code 或 codex，与上面模型兼容性对应。 |
-| deployment.access / deployment.vars.region | 保留原生缺省 `default` 或选择已有 Devs 别名；也可用 `abx` 复用已配置的 abx 云凭据，或用 `env` 读取进程云凭据。FC 地域在 `deployment.vars.region`。部署凭据与模型、Sandbox Key 分开。 |
-| application.bindings.clientAuth / internalAuth | 缺省由 CLI 自动生成不同的业务和内部密钥并在本机安全复用。业务客户端只使用业务密钥。 |
+| `AGENTS_SERVER_IMAGE` | 你可写的 OCI 仓库地址及唯一 Server 镜像 tag，供原生 FC 构建和三个 Server 角色使用。 |
+| `ABX_MANAGED_DATABASE_URL` | 已有 PostgreSQL URL，来自数据库提供商，三个角色均须可达。数据库创建、删除另行管理。 |
+| `SANDBOX_API_KEY` | Sandbox 平台账号提供的 Key，供 Worker/Dispatcher 管理实例生命周期。 |
+| `SANDBOX_BASE_URL` / `SANDBOX_DOMAIN` / `SANDBOX_REGION` | 同一平台的 API、实例域名和地域，与 Key 匹配。 |
+| `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL` | 模型提供商的 Key、HTTPS API 地址和已授权模型 ID，仅 Worker 接收模型 Key。qwen-code 需要支持工具的 Chat Completions；codex 需要支持工具的 Responses。 |
+| `AGENTS_FC_ROLE_ARN` | 已有 FC 执行角色 RAM ARN，包含调用私有 Worker 的权限。 |
+| `AGENTS_DATABASE_CA_PEM` | 可选数据库 CA 证书 PEM，来自数据库提供商，不是私钥。数据库 URL 保留 `sslmode=verify-full` 和匹配的主机名。 |
+| `vars.adapter` / `vars.region` | 选择 qwen-code 或 codex，以及资源地域。地域仍属于各 `sandbox.<name>.template` 或 FC 原生 `props`，表达式仅复用值。 |
+| `vars.policy` | Session、任务和存储的正整数预算；其中 `instance.timeout` 须与 Session 最大寿命一致。 |
+| `AGENTS_BUSINESS_KEY` / `AGENTS_INTERNAL_TOKEN` | 可选的自定义业务及内部令牌，各不少于 32 字符且不同，缺省自动生成。这些不是云 API Key。 |
 
-例如使用已有私网数据库时，在 `application.state` 中配置现有网络（真实 ID 由网络管理员提供）：
+私网数据库已有网络的 ID 分别放在 `serving.worker.props.vpcConfig`、`serving.dispatcher.props.vpcConfig` 和 `serving.gateway.props.vpcConfig`：
 
 ```yaml
-application:
-  state:
-    databaseUrl: ${env('ABX_MANAGED_DATABASE_URL')}
-    databaseCa: ${env('AGENTS_DATABASE_CA_PEM')}
-    vpcConfig:
-      vpcId: ${env('AGENTS_VPC_ID')}
-      vSwitchIds: ["${env('AGENTS_VSWITCH_ID')}"]
-      securityGroupId: ${env('AGENTS_SECURITY_GROUP_ID')}
+vpcConfig:
+  vpcId: "${env('AGENTS_VPC_ID')}"
+  vSwitchIds: ["${env('AGENTS_VSWITCH_ID')}"]
+  securityGroupId: "${env('AGENTS_SECURITY_GROUP_ID')}"
 ```
 
-只在数据库使用私有 CA 时添加 databaseCa；值为证书 PEM，来自数据库提供商，不是私钥。数据库 URL 保留 sslmode=verify-full，并使用证书覆盖的主机名。本版本不提供另一套 `{env: ...}` 或 `{file: ...}` 配置语法。
+验证这些网络中的数据库、仓库、Sandbox API 和模型端点可达。本模板不创建 VPC、路由、NAT、数据库或自定义域名。稳定入口使用 FC 测试 URL；已有自定义域名需要另行配置到 Gateway 的 `prod` 别名。
 
-FC 三角色借用这些网络资源；不会创建 VPC、交换机、安全组、路由或 NAT。按实际路由验证数据库、镜像仓库、Sandbox 和模型端点可达性。生产入口使用已有 HTTPS 域名，要求独占的 `/*` 路由指向同一个 Gateway；该托管路径只更新 revision qualifier，不创建域名、DNS 或 VPC。托管部署仅支持三个角色资源，额外原生资源在部署前拒绝。具体支持范围见[资源规范](../docs/template-spec.zh-CN.md)。
-
-`ABX_SERVER_TOKEN` 是运行时为每个 Sandbox 生成的独立应用认证令牌，无需去云控制台申请，也无需手动填写。
+Guest Dockerfile 设置 `ABX_MANAGED_WORKSPACE=/workspace` 和 `ABX_MANAGED_STATE_DIR=/home/user/.agent-sandbox/managed-bridge`，分别控制 Session 工作区和 Sandbox 内 bridge 状态。修改时编辑镜像，并保持托管工作区合同一致。Worker 创建动态实例时注入独立令牌和模型环境，然后显式启动 managed bridge；模板快照准备阶段不提前启动这个需要认证的进程。实例期限也由 Worker 负责。`ABX_SERVER_TOKEN` 是运行时为每个 Sandbox 生成的独立应用令牌，无需手动申请云控制台 Key。
 
 ## 资源
 
@@ -208,19 +187,15 @@ FC、镜像存储、Sandbox、数据库和模型可能产生费用。FC 内置�
 捕获的 Agent 输出不是独立执行证明。重启或投递不确定会冻结任务并等待协调，不会静默
 重放工具操作。
 
-完成后关闭 Session，下载结果并删除不再需要的公开 Session/文件。删除部署：
+完成后关闭 Session，下载结果并删除不需要的公开数据。通过带排空检查的脚本删除应用：
 
 ```bash
-abx delete agents-api --yes
+python scripts/release.py destroy
 ```
 
-检查删除结果；操作中断或结果不确定时，使用 `abx recover agents-api` 核查。
-删除操作清理部署记录中的自有资源。通过 `--build` 提供的可复用构建产物、用户提供的
-`application.server.image`，以及已有数据库、网络、模型服务和自定义域名仍由你管理。
+脚本停止新请求接入并请求清理 Session。若仍有活跃 Session、待完成清理或不确定资源，会保留 FC 资源并报告排空未完成；处理剩余任务后再次执行。每次删除都重新核对 Dispatcher 和数据库身份；若上次部分删除已移除 Dispatcher，需要先独立确认业务清理再继续资源删除。确认排空后调用 `abx delete agents-api --yes`，删除记录中的自有资源，包括保留的函数版本。存在活跃 Session 时，不要绕过排空直接删除资源。
 
-独立构建不再被任何部署使用后，可用 `abx template build --clean .abx/build.json --yes`
-清理归属已确认的 Server 镜像。Sandbox 构建镜像可能仍列在 `retained_build_artifacts`
-中；按镜像仓库清理说明只删除属于你的未使用 tag。删除部署不会擦除另外保留的数据库历史。
+已有数据库、网络、执行角色、自定义域名和用户提供的镜像 tag 仍由你管理。不再使用的 tag 通过镜像仓库清理。应用删除不会擦除另外保留的数据库历史；确认资源已删除前保留私有部署记录。
 
 ## 贡献
 

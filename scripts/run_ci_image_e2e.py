@@ -23,7 +23,7 @@ import secrets
 import time
 import yaml
 from template_application import project_manifest, normalize_manifest
-from public_launch_e2e import CLI, CLIError, require, matches, command_url, application_headers, delete_sandbox, verify_cli_io, cleanup_named_deployment
+from public_launch_e2e import CLI, CLIError, require, matches, command_url, application_headers, delete_sandbox, verify_cli_io
 import ci_image_archive as images
 from template_http_acceptance import fixture_environment, run_controller
 
@@ -93,16 +93,20 @@ def publish(source: Path, receipt: dict, report: dict) -> None:
     with (directory/('image-http-'+stamp+'.json')).open('x') as stream:json.dump(report,stream,indent=2);stream.write('\n')
 
 
-def prepared_launch_manifest(source: Path, template_id: str, *, runtime_env: dict[str, str] | None = None) -> dict:
-    """Keep original launch declarations; apply prepared ENV defaults and its owned ID."""
+def prepared_launch_manifest(source: Path, template_id: str) -> dict:
+    """Record the prepared resource identity without adding dynamic instance fields."""
     manifest=normalize_manifest(load_source_document(source/'template.yaml'))
-    sandbox=manifest['sandbox']
-    if runtime_env:
-        instance=sandbox.setdefault('instance', {})
-        instance['envs']={**runtime_env, **instance.get('envs', {})}
-    sandbox['provider']='alicloud-express'
-    sandbox['template']={'reference':template_id}
+    resources=list(manifest['sandbox'].values())
+    if len(resources)!=1:raise ValueError('image acceptance requires one Sandbox resource')
+    resources[0]['template']={'reference':template_id}
     return normalize_manifest(manifest)
+
+
+def prepared_runtime_contract(source: Path, *, runtime_env: dict[str, str] | None = None) -> dict:
+    """Private test inputs from image defaults and application code, never a manifest."""
+    projected=project_manifest(load_source_document(source/'template.yaml'),source)
+    projected['env']={**(runtime_env or {}),**projected.get('env',{})}
+    return projected
 
 
 def exact_templates(cli: CLI, alias: str) -> list[str]:
@@ -154,8 +158,8 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
     from agent_sandbox import ProviderSandbox
     from agent_sandbox.models.errors import SandboxNotFoundError
     import httpx
-    raw_manifest=prepared_launch_manifest(source,template_id,runtime_env=runtime_env)
-    manifest=project_manifest(raw_manifest, source)
+    raw_manifest=prepared_launch_manifest(source,template_id)
+    manifest=prepared_runtime_contract(source,runtime_env=runtime_env)
     runtime=private/'prepared-template';runtime.mkdir()
     (runtime/'template.yaml').write_text(yaml.safe_dump(raw_manifest,sort_keys=False))
     environment=os.environ.copy()
@@ -164,20 +168,23 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
     environment['ABX_SERVER_TOKEN']=secrets.token_urlsafe(32)
     server_fixture,controller_fixture,fixture_proof=fixture_environment(source.name)
     environment.update(server_fixture)
-    # Empty fixture declarations must be visible to the shared launch environment resolver.
-    raw_manifest['sandbox'].setdefault('instance',{}).setdefault('envs',{}).update({key:'' for key in server_fixture})
-    (runtime/'template.yaml').write_text(yaml.safe_dump(raw_manifest,sort_keys=False))
+    # Execute the same standalone business runner documented for this template.
+    import importlib.util
+    from argparse import Namespace
+    runner_spec=importlib.util.spec_from_file_location('prepared_application_runner',source/'run.py')
+    if runner_spec is None or runner_spec.loader is None:raise ValueError('missing template run.py')
+    runner=importlib.util.module_from_spec(runner_spec);runner_spec.loader.exec_module(runner)
     cli=CLI(os.environ.get('ABX','abx'),'alicloud-express',environment)
     alias='image-app-'+uuid.uuid4().hex[:16]
-    report.update(test_configuration=fixture_proof,sandbox_create='abx deploy',
+    session=private/'application-session.json'
+    report.update(test_configuration=fixture_proof,sandbox_create='template run.py / SDK create + start_server',
         cli_version=cli.run(['--version'],json_output=False),client_version=importlib.metadata.version('agent-sandbox-client'),
         cli_distribution=os.environ.get('PUBLIC_LAUNCH_DISTRIBUTION','published'),cli_source_ref=os.environ.get('PUBLIC_LAUNCH_CLI_REF'),
         prepared_launch_manifest_sha256=hashlib.sha256((runtime/'template.yaml').read_bytes()).hexdigest())
-    journals=cli.journal_directory
-    before=set(journals.glob('*.json'));launch=None;sandbox=None;client=None
+    launch=None;sandbox=None;client=None
     try:
-        launch=await asyncio.to_thread(cli.run,['deploy',str(runtime),'--name',alias,
-            '--build-timeout','120','--sandbox-timeout','1200','--yes'],420)
+        launch=await runner.launch(Namespace(template=template_id,provider='alicloud-express',timeout=1200,
+            ready_timeout=120,session=str(session)),environ=environment)
         journal=json.loads(journal_path.read_text());journal['sandbox_ids']=[launch['sandbox_id']];images.save_private(journal_path,journal)
         sandbox=await ProviderSandbox.connect(launch['sandbox_id'],provider='alicloud-express')
         client=await sandbox.application_client(9000,token=environment['ABX_SERVER_TOKEN'])
@@ -212,7 +219,7 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
         report['server_package_version'] = installed.stdout.strip()
         await verify_cli_io(cli, sandbox, alias, private)
         report['commands']=commands
-        report['checks']=['current unified launch starts original declared services','CLI/SDK/host HTTP manifest smoke',
+        report['checks']=['template business runner starts original declared services','CLI/SDK/host HTTP manifest smoke',
             'actual startup service rejects wrong application token','actual runtime command bytes match source','SDK exec and file round trip','CLI exec/stat/upload/download and independent SDK byte/cleanup checks']
         if http:
             urls={};common_headers=None
@@ -226,22 +233,10 @@ async def exercise(source: Path, template_id: str, private: Path, report: dict, 
         report['application_result']='PASS'
     finally:
         cleanup=True
-        try:
-            await cleanup_named_deployment(cli, alias, launch is not None)
-        except Exception as failure:
-            cleanup=False
-            report['public_cleanup_failure_type']=type(failure).__name__
-        owned=set()
-        uncertain=False
-        for path in set(journals.glob('*.json'))-before:
-            data=json.loads(path.read_text())
-            if data.get('provider')!='alicloud-express':continue
-            entries=data.get('entries',[])
-            if not any(alias+'-' in str(entry.get('correlation_key','')) for entry in entries):continue
-            for entry in entries:
-                if entry['kind']=='sandbox':
-                    if entry.get('id'):owned.add(entry['id'])
-                    elif entry.get('state')!='deleted':uncertain=True
+        state=json.loads(session.read_text()) if session.is_file() else {}
+        owned={state['sandbox_id']} if state.get('sandbox_id') else set()
+        # A create attempt without an acknowledged ID remains uncertain.
+        uncertain=bool(state) and not owned and state.get('status') not in {'deleted-after-failure'}
         if launch:owned.add(launch['sandbox_id'])
         for sid in owned:
             try:await delete_sandbox(ProviderSandbox,sid,'alicloud-express',SandboxNotFoundError)

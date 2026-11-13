@@ -1,32 +1,13 @@
 specVersion: 1
 name: agents-cli
 sandbox:
-  template:
-    source:
-      dockerfile: Dockerfile
-      context: .
-    props:
+  agent:
+    provider: alicloud-express
+    template:
+      region: cn-hangzhou
+      buildConfig:
+        dockerfile: Dockerfile
+        context: .
+      generation: 2
       cpu: 2
-      memory: 4096
-  start: agent-sandbox-server serve --port 9000 --commands /home/user/app/commands.py
-    --policy /home/user/app/server-policy.json
-  ready: agent-sandbox-server healthcheck --port 9000
-  instance:
-    envs:
-      ABX_SERVER_TOKEN: ''
-      OPENAI_API_KEY: ''
-      CODEX_API_KEY: ''
-      OPENAI_BASE_URL: ''
-      OPENAI_MODEL: ''
-      ABX_AGENTS_STATE_DIR: /home/user/.agent-sandbox/agents
-      CODEX_HOME: /home/user/.codex
-      ABX_SERVER_POLICY_FILE: /home/user/app/server-policy.json
-      WORKSPACE: /home/user/workspace
-  services:
-    app:
-      protocol: agent-sandbox-server
-      version: 2
-      port: 9000
-      operations:
-      - commands.list
-      - commands.run
+      memorySize: 4096

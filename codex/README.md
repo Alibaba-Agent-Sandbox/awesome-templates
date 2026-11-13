@@ -2,7 +2,7 @@
 
 Non-interactive [OpenAI Codex CLI](https://github.com/openai/codex) in an Agent Sandbox. The image pins `@openai/codex@0.162.1`.
 
-This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Runtime settings are under `sandbox.instance.envs`; see this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
+This branch uses YAML v1 and needs matching development builds; published CLI0.5.10 does not support this format. Template attributes are under `sandbox.agent.template`. Runtime defaults belong to the Dockerfile; pass private values explicitly when creating an instance. See this page’s configuration section for their purpose and credential sources. See the [configuration specification](../docs/template-spec.md).
 
 ## What it does
 
@@ -26,6 +26,9 @@ Use an installed tool in an isolated sandbox, submit work through CLI, Python or
 
 ## Quick start (CLI)
 
+`abx deploy` only prepares the template. Download this directory, run deployment from it, then replace `<prepared-template-id>` with the returned template ID and run `run.py`. The script creates an instance and explicitly starts the application with this page’s runtime settings. It generates an application token and stores it privately in `.sandbox-session.json`, without printing it. Existing session files are never overwritten; use `--session` for another run.
+
+
 Install the CLI/Python client and configure your platform (Sandbox API key, connection address and build image registry) using the [usage guide](../docs/using-templates.md#installation), then set the separate model/application credentials below. Launching the public recipe does not require a repository checkout.
 
 The custom provider requires the HTTP Responses API (`/responses`), not only Chat Completions (`/chat/completions`). Use the endpoint and model offered by your Responses provider; a DashScope Chat endpoint is not automatically compatible. The wrapper writes the provider configuration under `CODEX_HOME`; `ABX_LLM_API_KEY` is its explicit key. No interactive ChatGPT login is needed for this API-key path. Default `sandbox="auto"` may select bypass when nested Linux sandboxing is unavailable: use an owned disposable outer sandbox.
@@ -34,17 +37,20 @@ Replace every `<...>` placeholder with your own value; use an exact model ID ava
 
 ```bash
 export ABX_PROVIDER=alicloud-express
-# CLI generates and saves a token; uncomment below to choose one for external SDK/HTTP clients.
+# run.py generates a private token; optionally choose your own before running it.
 # export ABX_SERVER_TOKEN='<YOUR_APPLICATION_TOKEN>'
 export ABX_LLM_API_KEY='<your-model-or-vendor-key>'
 export ABX_LLM_BASE_URL='https://api.openai.com/v1'
 export CODEX_MODEL='<model-id-from-your-Responses-provider>'
-abx deploy Alibaba-Agent-Sandbox/awesome-templates//codex --sandbox-timeout 1800 --yes
+abx deploy . --yes
+python3 -m pip install "agent-sandbox-client==0.4.0a7"
+python3 run.py --template <prepared-template-id> --timeout 1800
+export ABX_SERVER_TOKEN="$(python3 -c 'import json; print(json.load(open(".sandbox-session.json"))["application_token"])')"
 export SANDBOX_ID='<sandbox-id-returned-by-launch>'
 abx sandbox command list "$SANDBOX_ID"
 ```
 
-`--sandbox-timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
+`run.py --timeout 1800` is the sandbox lifetime in seconds; `command_timeout`/`timeout_s` limits one task, while `ABX_HTTP_TIMEOUT`/SDK `timeout` controls client waiting. These are separate limits.
 
 Launch starts this instance's application; do not create a second sandbox or second server. For OpenSandbox, follow its [setup](../docs/using-templates.md#cli-sdk-and-http) and set `ABX_PROVIDER=opensandbox`; the Python examples below read that same choice.
 
@@ -56,7 +62,7 @@ The task creates `generated_hello.py` and `GENERATED_REPORT.md` in `/home/user/w
 
 ## Quick start (Python SDK)
 
-In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a6`.
+In your virtual environment, run `python -m pip install agent-sandbox-client==0.4.0a7`.
 
 ```python
 import asyncio
@@ -102,7 +108,7 @@ The response is `{"result": ...}`; see the command reference for its actual cont
 abx sandbox exec "$SANDBOX_ID" -- python3 /home/user/workspace/generated_hello.py
 abx sandbox download "$SANDBOX_ID" /home/user/workspace/generated_hello.py ./generated_hello.py
 abx sandbox download "$SANDBOX_ID" /home/user/workspace/GENERATED_REPORT.md ./GENERATED_REPORT.md
-abx delete "$SANDBOX_ID"
+abx sandbox delete "$SANDBOX_ID" --yes
 ```
 
 Expected program output: `Hello from the sandbox`. Inspect actual files before using them; a successful-looking model response does not guarantee files exist. Files do not automatically update the template or your machine; export them before deleting the sandbox.
@@ -139,6 +145,8 @@ Named-command results are buffered rather than streamed. `cwd` must be an existi
 
 ## Configuration
 
+Edit resource values under `sandbox.agent.template` in `template.yaml` and image defaults in the Dockerfile. `run.py` reads runtime values from the process environment, limited to its explicit `RUNTIME_ENV_NAMES`. Empty placeholders do not put credentials into the image. Application startup belongs to `run.py`, after creation, so dynamic authentication is not frozen in a template snapshot. External SDK/HTTP clients can read `application_token` from the private `.sandbox-session.json`, or reuse an explicitly supplied `ABX_SERVER_TOKEN`.
+
 | Name | Required | Default | Purpose |
 |---|---|---|---|
 | `OPENAI_API_KEY` | no | empty | Key for the built-in OpenAI provider, or the `env_key` of a compatible provider. |
@@ -149,9 +157,9 @@ Named-command results are buffered rather than streamed. `cwd` must be an existi
 | `CODEX_MODEL` | no | empty | `model` written into `config.toml` and used when `codex_exec` omits `model`. |
 | `CODEX_HOME` | no | `/home/user/.codex` | Directory of `config.toml` and sessions. |
 | `WORKSPACE` | no | `/home/user/workspace` | Default `cwd`. A starter `AGENTS.md` is in the image. |
-| `ABX_SERVER_TOKEN` | yes | empty | Export an independent application token before the deploy; separate from model and gateway credentials |
+| `ABX_SERVER_TOKEN` | No | Generated by `run.py` | Generated by run.py unless explicitly supplied; external clients read the private session file. |
 
-Before `deploy`, securely export the secret variables declared empty in the manifest so the application reads them at startup. Keep values out of images, YAML and logs.
+Before `run.py`, securely export the runtime settings listed here. The script passes only its declared names to the new application process. Keep secrets out of images, YAML and logs.
 
 `codex_exec` creates `config.toml` when a base URL is set and the file is missing. `codex_config_write` overwrites the file. Codex 0.162.1 will not send Chat Completions; `wire_api = "chat"` is a hard error.
 

@@ -20,6 +20,7 @@ def prepared(tmp_path,monkeypatch):
     original=resource('example',start='original start',ready='original ready',env={'APP_SETTING':'value'},services={'app':{'protocol':'agent-sandbox-server','version':2,'port':9000,'operations':[]}})
     import yaml
     (source/'template.yaml').write_text(yaml.safe_dump(original))
+    (source/'Dockerfile').write_text('FROM fixture/image:1\nENV APP_SETTING=value\n')
     publication(source)
     monkeypatch.setattr(steps,'ROOT',tmp_path)
     monkeypatch.setattr(current,'controller_missing_imports',lambda _:[])
@@ -60,7 +61,7 @@ def test_prepare_then_existing_current_launch_and_independent_template_cleanup(p
         import yaml
         assert yaml.safe_load((source/'template.yaml').read_text())==original
         assert json.loads(journal.read_text())['template_id']=='owned-template'
-        assert runtime_env==original['sandbox']['instance']['envs']
+        assert runtime_env=={'APP_SETTING':'value'}
         report.update(application_result='PASS',cleanup_verified=True,
                       commands=[{'name':'hello','via':via,'ok':True} for via in ['cli','sdk','host-http']],
                       http_acceptance={'passed':True})
@@ -180,13 +181,12 @@ def test_prepared_runtime_environment_preserves_original_launch_contract(tmp_pat
     from v1_test_support import resource
     original=resource('owned',env={'PRIORITY':'manifest','TOKEN':''},start='original start',ready='original ready',services={'app':{'protocol':'agent-sandbox-server','version':2,'port':9000,'operations':[]}})
     (tmp_path/'template.yaml').write_text(yaml.safe_dump(original))
-    actual=current.prepared_launch_manifest(tmp_path,'owned-template',
+    (tmp_path/'Dockerfile').write_text('FROM python:3.12\nENV PRIORITY=manifest TOKEN="" SETTING=manifest\n')
+    actual=current.prepared_runtime_contract(tmp_path,
         runtime_env={'PATH':'/opt/tool/bin:/usr/bin','PRIORITY':'docker'})
-    assert actual['sandbox']['instance']['envs']=={'PATH':'/opt/tool/bin:/usr/bin','PRIORITY':'manifest','TOKEN':''}
-    assert actual['sandbox']['services']==original['sandbox']['services']
-    assert current.prepared_launch_manifest(tmp_path,'owned-template')['sandbox']['instance']['envs']==original['sandbox']['instance']['envs']
-    for key in ['start','ready']:
-        assert current.prepared_launch_manifest(tmp_path,'owned-template')['sandbox'][key]==original['sandbox'][key]
+    assert actual['env']=={'PATH':'/opt/tool/bin:/usr/bin','PRIORITY':'manifest','TOKEN':'','SETTING':'manifest'}
+    assert actual['start_cmd']=='original start'
+    assert actual['ready_cmd']=='original ready'
     assert yaml.safe_load((tmp_path/'template.yaml').read_text())==original
 
 
@@ -203,13 +203,14 @@ def test_native_start_and_ready_receive_explicit_environment_without_freezing_em
     from v1_test_support import resource
     original=resource('owned',env={'SETTING':'manifest','TOKEN':''},start=command,ready='test "$(owned-agent)" = owned-version',services={})
     (tmp_path/'template.yaml').write_text(yaml.safe_dump(original))
+    (tmp_path/'Dockerfile').write_text('FROM python:3.12\nENV PRIORITY=manifest TOKEN="" SETTING=manifest\n')
     supplied={'PATH':str(tools)+':/usr/bin:/bin','SETTING':'docker','LITERAL':"two words; '$HOME'"}
-    actual=current.prepared_launch_manifest(tmp_path,'owned-template',runtime_env=supplied)
+    actual=current.prepared_runtime_contract(tmp_path,runtime_env=supplied)
     environment={'PATH':'/usr/bin:/bin','TOKEN':'inherited-fixture','SETTING':'ambient'}
-    environment.update({key:value for key,value in actual['sandbox']['instance']['envs'].items() if value})
+    environment.update({key:value for key,value in actual['env'].items() if value})
     for key in ['start','ready']:
-        process=subprocess.run(['/bin/sh','-c',actual['sandbox'][key]],env=environment,capture_output=True,text=True,timeout=10)
+        process=subprocess.run(['/bin/sh','-c',actual[key+'_cmd']],env=environment,capture_output=True,text=True,timeout=10)
         assert process.returncode==0,process.stderr
-        assert 'TOKEN=' not in actual['sandbox'][key]
+        assert 'TOKEN=' not in actual[key+'_cmd']
     assert json.loads(output.read_text())=={'setting':'manifest','literal':"two words; '$HOME'",'secret_matches':True}
     assert yaml.safe_load((tmp_path/'template.yaml').read_text())==original
