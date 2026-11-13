@@ -1,5 +1,7 @@
 # Engineering records: awesome-templates
 
+- [Named resource CI follow-up](evidence/verify/2026-11-13-named-resource-ci-followup.md): preserved SWE and agents-cli protocol checks after retiring dynamic manifest fields; media CI reproduction remains separate.
+
 - [Agents API on native named resources](notes/proposed/feature/2026-11-13-agents-api-native-resources.md) · [local verification](evidence/verify/2026-11-13-agents-api-native-resources.md). Business bootstrap and publication ownership; hosted upgrade acceptance remains separate.
 
 - [Named static resource contract and business startup ownership](notes/proposed/architecture/2026-11-13-named-resource-contract.md) · [verification](evidence/verify/2026-11-13-named-resource-contract.md). Supersedes the unmerged v1 public candidate; cloud/release gates remain independent.

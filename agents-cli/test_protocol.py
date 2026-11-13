@@ -19,7 +19,7 @@ import time
 import httpx
 import pytest
 
-from scripts.template_application import load_source_document
+from scripts.template_application import load_source_document, project_manifest
 
 HERE = Path(__file__).resolve().parent
 
@@ -44,7 +44,7 @@ def running_server(tmp_path: Path, canonical: bool, fixtures: bool = True):
     if fixtures:
         env["PATH"] = str(HERE / "e2e-bin") + os.pathsep + env.get("PATH", "")
     if canonical:
-        start_command = load_source_document(HERE / "template.yaml")["sandbox"]["start"]
+        start_command = project_manifest(load_source_document(HERE / "template.yaml"), HERE)["start_cmd"]
         template_argv = shlex.split(start_command.replace("/home/user/app", str(HERE)))
         assert template_argv[0] == "agent-sandbox-server"
         argv = [sys.executable, "-m", "agent_sandbox.server", *template_argv[1:],

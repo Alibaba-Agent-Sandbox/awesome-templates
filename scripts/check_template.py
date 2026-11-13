@@ -534,12 +534,12 @@ def check_directory(template_dir: Path) -> list[Violation]:
             violations.append(
                 Violation(
                     "yaml-start",
-                    "sandbox.<name>.template.startCommand must run the declared supported server entrypoint",
+                    "the business runtime start declaration in scripts/template-checks.json must run the supported server entrypoint",
                 )
             )
         managed_ready = managed and ready == "curl -fsS http://127.0.0.1:9000/health"
         if not managed_ready and (not isinstance(ready, str) or "agent-sandbox-server healthcheck" not in ready):
-            violations.append(Violation("yaml-ready", "sandbox.<name>.template.readyCommand must run agent-sandbox-server healthcheck"))
+            violations.append(Violation("yaml-ready", "the business runtime ready declaration in scripts/template-checks.json must run agent-sandbox-server healthcheck"))
         resources = data.get("resources")
         if not isinstance(resources, dict):
             violations.append(Violation("yaml-resources", "sandbox.<name>.template.cpu and memorySize are required"))
