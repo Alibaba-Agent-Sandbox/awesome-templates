@@ -1,0 +1,13 @@
+{
+  "adapter": "deepseek-harness",
+  "label": "DeepSeek Harness",
+  "package": "@deepseek-ai/dsh",
+  "version": "0.2.2-rc.1",
+  "binary": "dsh",
+  "keyEnv": "DEEPSEEK_API_KEY",
+  "baseUrlEnv": "DEEPSEEK_BASE_URL",
+  "modelEnv": "DEEPSEEK_MODEL",
+  "protocol": "Anthropic Messages",
+  "upstream": "https://github.com/deepseek-ai/deepseek-harness",
+  "license": "MIT"
+}

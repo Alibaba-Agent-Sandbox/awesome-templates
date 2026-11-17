@@ -266,7 +266,7 @@ def _startup_argv(directory: Path, port: int) -> tuple[list[str], bool]:
         return ["python3", "commands.py"], False
     # This is an owner-maintained local test harness. Native preparation commands
     # never become the command executed on the developer's machine.
-    expected = helper["engineering_checks"]("agents-api").get("localRuntime", {}).get("start")
+    expected = helper["engineering_checks"]("agents-api-codex").get("localRuntime", {}).get("start")
     if expected != "python -m agent_sandbox.server.managed --port 9000":
         raise ValueError("invalid template manifest: unsupported managed startup command for local harness")
     return [sys.executable, "-m", "agent_sandbox.server.managed", "--port", str(port)], True

@@ -124,7 +124,7 @@ def project_manifest(data: dict[str, Any], template_dir: Path | None = None, *, 
     name = "_skeleton" if template_dir is not None and template_dir.name == "_skeleton" else normalized["name"]
     checks = engineering_checks(name)
     if is_managed_application(normalized):
-        managed_checks = engineering_checks("agents-api")
+        managed_checks = engineering_checks("agents-api-codex")
         checks = {**managed_checks, **checks}
         checks["localRuntime"] = managed_checks.get("localRuntime", {})
     services = checks.get("services", {})

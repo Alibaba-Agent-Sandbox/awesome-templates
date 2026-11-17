@@ -1,0 +1,41 @@
+specVersion: 1
+name: agents-api-claude-code
+version: 0.2.0
+description:
+  en: Run Claude Code in session-owned sandboxes through one Gateway for tasks, files
+    and results.
+  zh: 通过同一个 Gateway 调用 Claude Code，在会话独占沙箱中执行任务、上传文件和下载结果。
+author: alibaba-agent-sandbox
+license: Apache-2.0
+tags:
+- agents-api
+- gateway
+- sessions
+- claude-code
+readme:
+  en: README.md
+  zh: README.zh-CN.md
+entry: template.yaml
+parameters:
+- target: /vars/region
+  title:
+    en: Resource region
+    zh: 资源地域
+- target: /serving/worker/props/environmentVariables/ABX_MANAGED_DATABASE_URL
+  title:
+    en: Existing PostgreSQL connection URL
+    zh: 已有 PostgreSQL 连接 URL
+  environmentVariable: ABX_MANAGED_DATABASE_URL
+  sensitive: true
+- target: /serving/worker/props/environmentVariables/SANDBOX_API_KEY
+  title:
+    en: Sandbox platform API key
+    zh: Sandbox 平台 API Key
+  environmentVariable: SANDBOX_API_KEY
+  sensitive: true
+- target: /serving/worker/props/environmentVariables/ANTHROPIC_API_KEY
+  title:
+    en: Claude Code credential
+    zh: Claude Code 凭据
+  environmentVariable: ANTHROPIC_API_KEY
+  sensitive: true

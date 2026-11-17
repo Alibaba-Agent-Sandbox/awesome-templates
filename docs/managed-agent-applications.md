@@ -2,11 +2,11 @@
 
 [中文](managed-agent-applications.zh-CN.md)
 
-The [Agents API template](../agents-api/README.md) provides one Gateway for logical Sessions, file uploads, Agent tasks and result downloads. Each active Session owns a Sandbox that runs its model, CLI and tools. Use the matching development CLI for this YAML v1 recipe.
+The [Agents API template](../agents-api-codex/README.md) provides one Gateway for logical Sessions, file uploads, Agent tasks and result downloads. Each active Session owns a Sandbox that runs its model, CLI and tools. Use the matching development CLI for this YAML v1 recipe.
 
 ## Resources and lifecycle
 
-[template.yaml](../agents-api/template.yaml) declares a named Sandbox template and three native FC Serving resources: Gateway, Worker and Dispatcher. Gateway accepts business requests, Dispatcher delivers work to the Session's Worker revision, and Worker creates and cleans up dynamic Sandboxes. Deployment prepares the reusable template and functions; it does not create a permanent Sandbox instance.
+[template.yaml](../agents-api-codex/template.yaml) declares a named Sandbox template and three native FC Serving resources: Gateway, Worker and Dispatcher. Gateway accepts business requests, Dispatcher delivers work to the Session's Worker revision, and Worker creates and cleans up dynamic Sandboxes. Deployment prepares the reusable template and functions; it does not create a permanent Sandbox instance.
 
 Worker creates each instance with its private application token and model environment, then starts the managed bridge. An authenticated bridge is not started during template snapshot preparation. Subsequent turns reuse the Session's native thread and workspace. Close releases compute while retaining committed results; delete removes public Session data while cleanup completes. Uncertain execution or deletion requires reconciliation.
 
@@ -19,13 +19,13 @@ Resource values belong in `template.yaml`. Native `${env('NAME')}` expressions r
 | Setting | Purpose and source |
 | --- | --- |
 | `vars.region` | Reused by `sandbox.agent.template.region` and each native FC `props.region`. |
-| `vars.adapter` | qwen-code or codex, matching the authorized model service. |
+| `vars.adapter` | Fixed by the selected Harness recipe. Choose its family member rather than changing this field alone. |
 | `AGENTS_SERVER_IMAGE` | Writable OCI repository with a unique tag for this Server build. |
 | `ABX_MANAGED_DATABASE_URL` | Existing PostgreSQL URL, reachable by all three FC roles. |
 | `AGENTS_DATABASE_CA_PEM` | Optional database CA certificate PEM; retain hostname verification. |
 | `serving.<role>.props.vpcConfig` | Optional existing VPC, switch and security-group IDs for that function. |
 | `SANDBOX_API_KEY`, `SANDBOX_BASE_URL`, `SANDBOX_DOMAIN`, `SANDBOX_REGION` | Matching Sandbox platform credentials and addresses, used by Worker/Dispatcher. |
-| `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL` | Authorized model key, HTTPS endpoint and model ID. Only Worker receives the key and passes it to the Session Sandbox. |
+| Model credentials | Use the native key, endpoint and model in the Harness family guide. Only Worker receives the credential and passes it to the Session Sandbox. |
 | `AGENTS_FC_ROLE_ARN` | Existing FC execution role, including private Worker invocation permissions. |
 
 First deployment generates separate business and internal tokens and stores them privately for reuse. Read `businessKey` from `.abx/agents-api/credentials.json` for clients; never share `internalToken`. Optional `AGENTS_BUSINESS_KEY` and `AGENTS_INTERNAL_TOKEN` process overrides are not copied to that credential store. Each must have at least 32 characters and they must differ. Internal-token rotation requires a coordinated migration of retained revisions.
@@ -60,4 +60,6 @@ Close Sessions, download results and delete unneeded public data. Then remove th
 python scripts/release.py destroy
 ```
 
-It verifies the current Dispatcher and database identities, stops admission and requires zero active Sessions, pending cleanup and uncertain resources before calling `abx delete agents-api --yes`. If drain is incomplete, retain the resources and resolve the remaining work before retrying. If partial resource removal already deleted the Dispatcher, confirm business cleanup independently before completing deletion. Existing databases, networks, roles, domains, image tags and retained database history remain yours to manage.
+It verifies the current Dispatcher and database identities, stops admission and requires zero active Sessions, pending cleanup and uncertain resources before calling `abx delete <application-name> --yes`. If drain is incomplete, retain the resources and resolve the remaining work before retrying. If partial resource removal already deleted the Dispatcher, confirm business cleanup independently before completing deletion. Existing databases, networks, roles, domains, image tags and retained database history remain yours to manage.
+
+Select a native Harness and its credentials in the [family guide](agents-api-harnesses.md). All six share this Gateway protocol. OpenCode v1 reports tool records only after completion, so its per-tool realtime deadline is not guaranteed; the whole-turn deadline still applies.

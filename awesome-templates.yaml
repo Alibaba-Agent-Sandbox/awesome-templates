@@ -230,11 +230,36 @@ templates:
   path: devin
   status: experimental
   registry: devin/registry.yaml
-- name: agents-api
-  repo: https://github.com/alibaba-agent-sandbox/awesome-templates
-  path: agents-api
+- name: agents-api-codex
+  repo: https://github.com/Alibaba-Agent-Sandbox/awesome-templates
+  path: agents-api-codex
   status: experimental
-  registry: agents-api/registry.yaml
+  registry: agents-api-codex/registry.yaml
+- name: agents-api-qwen-code
+  repo: https://github.com/Alibaba-Agent-Sandbox/awesome-templates
+  path: agents-api-qwen-code
+  status: experimental
+  registry: agents-api-qwen-code/registry.yaml
+- name: agents-api-claude-code
+  repo: https://github.com/Alibaba-Agent-Sandbox/awesome-templates
+  path: agents-api-claude-code
+  status: experimental
+  registry: agents-api-claude-code/registry.yaml
+- name: agents-api-qoder
+  repo: https://github.com/Alibaba-Agent-Sandbox/awesome-templates
+  path: agents-api-qoder
+  status: experimental
+  registry: agents-api-qoder/registry.yaml
+- name: agents-api-opencode
+  repo: https://github.com/Alibaba-Agent-Sandbox/awesome-templates
+  path: agents-api-opencode
+  status: experimental
+  registry: agents-api-opencode/registry.yaml
+- name: agents-api-deepseek-harness
+  repo: https://github.com/Alibaba-Agent-Sandbox/awesome-templates
+  path: agents-api-deepseek-harness
+  status: experimental
+  registry: agents-api-deepseek-harness/registry.yaml
 managed_templates:
 - name: base
   kind: provider-managed

@@ -34,48 +34,6 @@
         ]
       }
     },
-    "agents-api": {
-      "smoke": [
-        {
-          "operation": "health",
-          "expect": {
-            "status": "ok",
-            "protocol": "agent-sandbox-managed-bridge/v1"
-          }
-        },
-        {
-          "operation": "capabilities",
-          "expect": {
-            "durable_receipts": true
-          }
-        }
-      ],
-      "priority": "P1",
-      "wave": 1,
-      "services": {
-        "app": {
-          "protocol": "agent-sandbox-managed-bridge",
-          "version": 1,
-          "port": 9000,
-          "operations": [
-            "health",
-            "capabilities",
-            "session.create",
-            "session.get",
-            "submissions.create",
-            "submissions.get",
-            "submissions.cancel"
-          ]
-        }
-      },
-      "ports": [
-        9000
-      ],
-      "localRuntime": {
-        "start": "python -m agent_sandbox.server.managed --port 9000",
-        "ready": "agent-sandbox-server healthcheck --port 9000"
-      }
-    },
     "agents-cli": {
       "smoke": [
         {
@@ -1797,6 +1755,258 @@
           "TAU2_MODEL",
           "WORKSPACE"
         ]
+      }
+    },
+    "agents-api-codex": {
+      "smoke": [
+        {
+          "operation": "health",
+          "expect": {
+            "status": "ok",
+            "protocol": "agent-sandbox-managed-bridge/v1"
+          }
+        },
+        {
+          "operation": "capabilities",
+          "expect": {
+            "durable_receipts": true
+          }
+        }
+      ],
+      "priority": "P1",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-managed-bridge",
+          "version": 1,
+          "port": 9000,
+          "operations": [
+            "health",
+            "capabilities",
+            "session.create",
+            "session.get",
+            "submissions.create",
+            "submissions.get",
+            "submissions.cancel"
+          ]
+        }
+      },
+      "ports": [
+        9000
+      ],
+      "localRuntime": {
+        "start": "python -m agent_sandbox.server.managed --port 9000",
+        "ready": "agent-sandbox-server healthcheck --port 9000"
+      }
+    },
+    "agents-api-qwen-code": {
+      "smoke": [
+        {
+          "operation": "health",
+          "expect": {
+            "status": "ok",
+            "protocol": "agent-sandbox-managed-bridge/v1"
+          }
+        },
+        {
+          "operation": "capabilities",
+          "expect": {
+            "durable_receipts": true
+          }
+        }
+      ],
+      "priority": "P1",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-managed-bridge",
+          "version": 1,
+          "port": 9000,
+          "operations": [
+            "health",
+            "capabilities",
+            "session.create",
+            "session.get",
+            "submissions.create",
+            "submissions.get",
+            "submissions.cancel"
+          ]
+        }
+      },
+      "ports": [
+        9000
+      ],
+      "localRuntime": {
+        "start": "python -m agent_sandbox.server.managed --port 9000",
+        "ready": "agent-sandbox-server healthcheck --port 9000"
+      }
+    },
+    "agents-api-claude-code": {
+      "smoke": [
+        {
+          "operation": "health",
+          "expect": {
+            "status": "ok",
+            "protocol": "agent-sandbox-managed-bridge/v1"
+          }
+        },
+        {
+          "operation": "capabilities",
+          "expect": {
+            "durable_receipts": true
+          }
+        }
+      ],
+      "priority": "P1",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-managed-bridge",
+          "version": 1,
+          "port": 9000,
+          "operations": [
+            "health",
+            "capabilities",
+            "session.create",
+            "session.get",
+            "submissions.create",
+            "submissions.get",
+            "submissions.cancel"
+          ]
+        }
+      },
+      "ports": [
+        9000
+      ],
+      "localRuntime": {
+        "start": "python -m agent_sandbox.server.managed --port 9000",
+        "ready": "agent-sandbox-server healthcheck --port 9000"
+      }
+    },
+    "agents-api-qoder": {
+      "smoke": [
+        {
+          "operation": "health",
+          "expect": {
+            "status": "ok",
+            "protocol": "agent-sandbox-managed-bridge/v1"
+          }
+        },
+        {
+          "operation": "capabilities",
+          "expect": {
+            "durable_receipts": true
+          }
+        }
+      ],
+      "priority": "P1",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-managed-bridge",
+          "version": 1,
+          "port": 9000,
+          "operations": [
+            "health",
+            "capabilities",
+            "session.create",
+            "session.get",
+            "submissions.create",
+            "submissions.get",
+            "submissions.cancel"
+          ]
+        }
+      },
+      "ports": [
+        9000
+      ],
+      "localRuntime": {
+        "start": "python -m agent_sandbox.server.managed --port 9000",
+        "ready": "agent-sandbox-server healthcheck --port 9000"
+      }
+    },
+    "agents-api-opencode": {
+      "smoke": [
+        {
+          "operation": "health",
+          "expect": {
+            "status": "ok",
+            "protocol": "agent-sandbox-managed-bridge/v1"
+          }
+        },
+        {
+          "operation": "capabilities",
+          "expect": {
+            "durable_receipts": true
+          }
+        }
+      ],
+      "priority": "P1",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-managed-bridge",
+          "version": 1,
+          "port": 9000,
+          "operations": [
+            "health",
+            "capabilities",
+            "session.create",
+            "session.get",
+            "submissions.create",
+            "submissions.get",
+            "submissions.cancel"
+          ]
+        }
+      },
+      "ports": [
+        9000
+      ],
+      "localRuntime": {
+        "start": "python -m agent_sandbox.server.managed --port 9000",
+        "ready": "agent-sandbox-server healthcheck --port 9000"
+      }
+    },
+    "agents-api-deepseek-harness": {
+      "smoke": [
+        {
+          "operation": "health",
+          "expect": {
+            "status": "ok",
+            "protocol": "agent-sandbox-managed-bridge/v1"
+          }
+        },
+        {
+          "operation": "capabilities",
+          "expect": {
+            "durable_receipts": true
+          }
+        }
+      ],
+      "priority": "P1",
+      "wave": 1,
+      "services": {
+        "app": {
+          "protocol": "agent-sandbox-managed-bridge",
+          "version": 1,
+          "port": 9000,
+          "operations": [
+            "health",
+            "capabilities",
+            "session.create",
+            "session.get",
+            "submissions.create",
+            "submissions.get",
+            "submissions.cancel"
+          ]
+        }
+      },
+      "ports": [
+        9000
+      ],
+      "localRuntime": {
+        "start": "python -m agent_sandbox.server.managed --port 9000",
+        "ready": "agent-sandbox-server healthcheck --port 9000"
       }
     }
   }

@@ -1,0 +1,5 @@
+# Host-side release coordination and business verification.
+alibabacloud-fc20230330==4.8.3
+alibabacloud-credentials==1.0.2
+PyYAML==6.0.3
+httpx==0.28.1

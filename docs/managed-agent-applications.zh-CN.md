@@ -2,11 +2,11 @@
 
 [English](managed-agent-applications.md)
 
-[Agents API 模板](../agents-api/README.zh-CN.md)通过一个 Gateway 提供逻辑 Session、文件上传、Agent 任务和结果下载。每个活跃 Session 独占一个运行模型、CLI 和工具的 Sandbox。此 YAML v1 配方需要匹配的开发版 CLI。
+[Agents API 模板](../agents-api-codex/README.zh-CN.md)通过一个 Gateway 提供逻辑 Session、文件上传、Agent 任务和结果下载。每个活跃 Session 独占一个运行模型、CLI 和工具的 Sandbox。此 YAML v1 配方需要匹配的开发版 CLI。
 
 ## 资源与生命周期
 
-[template.yaml](../agents-api/template.yaml)声明一个命名 Sandbox 模板和三个原生 FC Serving 资源：Gateway、Worker、Dispatcher。Gateway 接收业务请求，Dispatcher 将任务投递到 Session 对应的 Worker 版本，Worker 创建和清理动态 Sandbox。部署准备可复用模板和函数，不创建常驻 Sandbox 实例。
+[template.yaml](../agents-api-codex/template.yaml)声明一个命名 Sandbox 模板和三个原生 FC Serving 资源：Gateway、Worker、Dispatcher。Gateway 接收业务请求，Dispatcher 将任务投递到 Session 对应的 Worker 版本，Worker 创建和清理动态 Sandbox。部署准备可复用模板和函数，不创建常驻 Sandbox 实例。
 
 Worker 创建实例时注入独立应用令牌和模型环境，再启动 managed bridge；模板快照准备阶段不提前启动需要认证的 bridge。后续轮次复用 Session 的原生线程和工作区。Close 释放计算并保留已提交结果；Delete 删除公开数据并继续完成清理。不确定的执行或删除需要协调处理。
 
@@ -19,13 +19,13 @@ Worker 创建实例时注入独立应用令牌和模型环境，再启动 manage
 | 配置 | 用途与来源 |
 | --- | --- |
 | `vars.region` | 复用于 `sandbox.agent.template.region` 和各原生 FC `props.region`。 |
-| `vars.adapter` | qwen-code 或 codex，与已授权模型服务匹配。 |
+| `vars.adapter` | 由所选 Harness 模板固定；切换时选择对应系列模板，不能只修改此字段。 |
 | `AGENTS_SERVER_IMAGE` | 可写 OCI 仓库及本次 Server 构建唯一 tag。 |
 | `ABX_MANAGED_DATABASE_URL` | 已有 PostgreSQL URL，三个 FC 角色都能访问。 |
 | `AGENTS_DATABASE_CA_PEM` | 可选数据库 CA 证书 PEM，保留主机名验证。 |
 | `serving.<role>.props.vpcConfig` | 该函数可选的已有 VPC、交换机、安全组 ID。 |
 | `SANDBOX_API_KEY`、`SANDBOX_BASE_URL`、`SANDBOX_DOMAIN`、`SANDBOX_REGION` | 匹配的 Sandbox 平台凭据和地址，供 Worker/Dispatcher 使用。 |
-| `OPENAI_API_KEY`、`OPENAI_BASE_URL`、`OPENAI_MODEL` | 已授权模型 Key、HTTPS 地址和模型 ID。仅 Worker 接收 Key 并提供给 Session Sandbox。 |
+| 模型凭据 | 按 Harness 系列指南选择原生 Key、端点与模型。仅 Worker 接收凭据并提供给 Session Sandbox。 |
 | `AGENTS_FC_ROLE_ARN` | 已有 FC 执行角色，包含调用私有 Worker 的权限。 |
 
 首次部署生成不同的业务及内部令牌，在本机私有存储中复用。客户端使用 `.abx/agents-api/credentials.json` 中的 `businessKey`，不要分享 `internalToken`。可选的 `AGENTS_BUSINESS_KEY` 和 `AGENTS_INTERNAL_TOKEN` 进程覆盖不复制到凭据存储，各不少于 32 字符且必须不同。内部令牌轮换需要协调迁移保留的版本。
@@ -60,4 +60,6 @@ Plan 预览资源准备，不执行动作。Deploy 运行模板的准备和发�
 python scripts/release.py destroy
 ```
 
-脚本核对当前 Dispatcher 和数据库身份，停止新请求接入，只有活跃 Session、待完成清理和不确定资源都为零时，才调用 `abx delete agents-api --yes`。排空未完成时保留资源，处理剩余任务后重试。若部分删除已移除 Dispatcher，应独立确认业务清理后再完成资源删除。已有数据库、网络、角色、域名、镜像 tag 及保留的数据库历史仍由你管理。
+脚本核对当前 Dispatcher 和数据库身份，停止新请求接入，只有活跃 Session、待完成清理和不确定资源都为零时，才调用 `abx delete <application-name> --yes`。排空未完成时保留资源，处理剩余任务后重试。若部分删除已移除 Dispatcher，应独立确认业务清理后再完成资源删除。已有数据库、网络、角色、域名、镜像 tag 及保留的数据库历史仍由你管理。
+
+根据 [Harness 系列指南](agents-api-harnesses.zh-CN.md)选择原生 Harness 及其凭据，六者使用同一 Gateway 协议。OpenCode v1 仅在工具完成后提供记录，因此不保证单工具的实时期限，整轮期限仍适用。

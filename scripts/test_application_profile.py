@@ -43,7 +43,7 @@ class ApplicationProfileTest(unittest.TestCase):
         data['sandbox']['agent']['template']['startCommand'] = 'python -m agent_sandbox.server.managed --port 9000'
         self.assertFalse(is_managed_application(data))
         self.assertEqual(validate_manifest(data), [])
-        managed = yaml.safe_load((ROOT / 'agents-api/template.yaml').read_text())
+        managed = yaml.safe_load((ROOT / 'agents-api-codex/template.yaml').read_text())
         self.assertTrue(is_managed_application(managed))
 
     def test_explicit_provider_conflicts_are_rejected(self):

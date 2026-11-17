@@ -1,0 +1,13 @@
+{
+  "adapter": "claude-code",
+  "label": "Claude Code",
+  "package": "@anthropic-ai/claude-code",
+  "version": "2.1.290",
+  "binary": "claude",
+  "keyEnv": "ANTHROPIC_API_KEY",
+  "baseUrlEnv": "ANTHROPIC_BASE_URL",
+  "modelEnv": "ANTHROPIC_MODEL",
+  "protocol": "Anthropic Messages",
+  "upstream": "https://code.claude.com/docs/en/headless",
+  "license": "Proprietary"
+}

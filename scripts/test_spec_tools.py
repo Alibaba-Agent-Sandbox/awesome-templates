@@ -410,7 +410,7 @@ class ImageBuildContextTest(unittest.TestCase):
                         b"FROM fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
                         b"FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"), original)
                     self.assertFalse(list(context.glob("*.whl")))
-                    expected_version = "0.4.0a7" if name == "agents-api" else "0.4.0a6"
+                    expected_version = "0.4.0a8" if name.startswith("agents-api-") else "0.4.0a6"
                     self.assertIn(
                         f'pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server=={expected_version}"'.encode(),
                         materialized,
@@ -425,10 +425,10 @@ class ImageBuildContextTest(unittest.TestCase):
         step = next(item for item in workflow["jobs"]["image-build"]["steps"]
                     if item.get("name") == "Check installed pins and keyless smoke as the image user")
         code = step["run"].split("<<'PY'", 1)[1].split("\n", 1)[1].rsplit("\nPY", 1)[0]
-        compact = yaml.safe_load((ROOT / "agents-api/template.yaml").read_text())
+        compact = yaml.safe_load((ROOT / "agents-api-codex/template.yaml").read_text())
         ordinary = yaml.safe_load((ROOT / "python-hello/template.yaml").read_text())
-        cases = [("compact", "agents-api", compact, True),
-                 ("expanded", "agents-api", normalize_manifest(compact), True),
+        cases = [("compact", "agents-api-codex", compact, True),
+                 ("expanded", "agents-api-codex", normalize_manifest(compact), True),
                  ("ordinary", "python-hello", ordinary, False)]
         cwd = Path.cwd()
         try:

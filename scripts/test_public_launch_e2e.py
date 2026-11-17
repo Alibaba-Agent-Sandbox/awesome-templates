@@ -35,9 +35,9 @@ class PublicLaunchTests(unittest.TestCase):
 
     def test_source_sandbox_templates_keep_named_smoke_and_managed_apps_are_explicit(self):
         names = source_names()
-        self.assertEqual(len(names), 47)
+        self.assertEqual(len(names), 52)
         for name in names:
-            if name == 'agents-api':
+            if name.startswith('agents-api-'):
                 with self.assertRaisesRegex(ValueError, 'application deployment acceptance through their Gateway'):
                     load_plan(name)
                 continue
