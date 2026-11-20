@@ -1,0 +1,13 @@
+{
+  "adapter": "qwen-code",
+  "label": "Qwen Code",
+  "package": "@qwen-code/qwen-code",
+  "version": "0.28.0",
+  "binary": "qwen",
+  "keyEnv": "OPENAI_API_KEY",
+  "baseUrlEnv": "OPENAI_BASE_URL",
+  "modelEnv": "OPENAI_MODEL",
+  "protocol": "Chat Completions",
+  "upstream": "https://qwenlm.github.io/qwen-code-docs/en/users/features/headless/",
+  "license": "Apache-2.0"
+}

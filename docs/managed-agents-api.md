@@ -116,5 +116,5 @@ operator action. Delete returns 200 after removing the public resource; it retur
 409 while executing/collecting. Internal ownership records may remain until
 cleanup is confirmed. Retention expiry removes access independently of compute.
 
-[Template usage](../agents-api/README.md) ·
+[Template usage](../agents-api-codex/README.md) ·
 [Application manifest reference](managed-agent-applications.md)

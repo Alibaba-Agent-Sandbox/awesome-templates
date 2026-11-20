@@ -126,3 +126,12 @@ Unused-code cleanup must preserve imports used for registration or dependency pr
 Managed-session application authors use the closed [Agents API contract reference](docs/managed-agent-applications.md). Static validation and runtime/provider acceptance are separate requirements.
 
 New resources use `specVersion: 1`. Publication metadata lives only in registry.yaml and catalog rows reference it; local execution is independent. Engineering smoke/priority/wave live in scripts/template-checks.json, not resource fields. Generate field references with `python scripts/sync_template_reference.py`; CI checks with --check.
+
+## Managed Harness family
+
+Maintain shared release/bootstrap/smoke files in `agents-api-codex/`. Run
+`python scripts/sync_agents_api_templates.py` after changing them and review
+`--check` before committing. Profiles pin each actual native CLI and credential
+map; projects remain standalone after download. Keep the matching Harness guide,
+all six registry entries and current owner records aligned. Native progress,
+model protocols and authentication are not interchangeable.

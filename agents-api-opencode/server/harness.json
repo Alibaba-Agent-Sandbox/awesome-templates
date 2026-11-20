@@ -1,0 +1,13 @@
+{
+  "adapter": "opencode",
+  "label": "OpenCode",
+  "package": "opencode-ai",
+  "version": "1.19.5",
+  "binary": "opencode",
+  "keyEnv": "OPENAI_API_KEY",
+  "baseUrlEnv": "OPENAI_BASE_URL",
+  "modelEnv": "OPENAI_MODEL",
+  "protocol": "OpenAI-compatible provider (v1 CLI)",
+  "upstream": "https://opencode.ai/docs/cli/",
+  "license": "MIT"
+}

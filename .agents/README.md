@@ -1,5 +1,11 @@
 # Engineering records: awesome-templates
 
+- [OpenCode two-turn real-model verification](evidence/verify/2026-11-20-agents-api-opencode-model.md). Local native Session resume and artifact bytes checked.
+
+- [Qwen Code two-turn real-model verification](evidence/verify/2026-11-20-agents-api-qwen-model.md). Local isolated ManagedBridge, persisted native Session and independently checked files.
+
+- [Exercise both images for each Agents API Harness](notes/proposed/process/2026-11-20-agents-api-l1-image-coverage.md) · [verification](evidence/verify/2026-11-20-agents-api-l1-image-coverage.md).
+
 - [Named resource CI follow-up](evidence/verify/2026-11-13-named-resource-ci-followup.md): preserved SWE and agents-cli protocol checks after retiring dynamic manifest fields; media CI reproduction remains separate.
 
 - [Agents API on native named resources](notes/proposed/feature/2026-11-13-agents-api-native-resources.md) · [local verification](evidence/verify/2026-11-13-agents-api-native-resources.md). Business bootstrap and publication ownership; hosted upgrade acceptance remains separate.
@@ -443,3 +449,6 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 - [Document engine package pins](notes/proposed/process/2026-11-12-document-engine-package-pins.md) · [verification](evidence/verify/2026-11-12-document-engine-package-pins.md).
 
 - [Inactive canonical template v1 contract](notes/proposed/architecture/2026-11-12-template-v1-contract.md) · [local verification and pending consumer/E2E gates](evidence/verify/2026-11-12-template-v1-contract.md).
+
+- [Native Agents API Harness family](notes/proposed/feature/2026-11-17-agents-api-harness-family.md) · [verification](evidence/verify/2026-11-17-agents-api-harness-family.md).
+- [Agents API release identity and candidate timeout](notes/proposed/process/2026-11-20-agents-api-release-handoff.md) · [verification](evidence/verify/2026-11-20-agents-api-release-handoff.md).

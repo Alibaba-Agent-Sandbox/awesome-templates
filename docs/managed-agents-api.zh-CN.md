@@ -103,5 +103,5 @@ Close 拒绝新任务，释放计算并保留已提交的历史/产物。查询 
 200，正在执行/采集时返回 409。内部所有权记录可保留到确认清理完成。结果保留期到期会
 独立于计算状态移除访问。
 
-[模板用法](../agents-api/README.zh-CN.md) ·
+[模板用法](../agents-api-codex/README.zh-CN.md) ·
 [应用清单参考](managed-agent-applications.zh-CN.md)

@@ -27,3 +27,8 @@ the PR/Issue templates, and any template-local `AGENTS.md`.
   branch and merge after current-head checks and required reviews. Verify actual remote merge
   and Issue acceptance; do not bypass checks, force shared history or push directly to main.
   Honor explicit local-only, draft-only, review-only and no-merge requests.
+
+The managed Harness family uses `agents-api-codex/` as the shared recipe source.
+Run `python scripts/sync_agents_api_templates.py --check` for family edits. Native
+credential/model protocols differ; preserve exact Session model environment admission.
+New adapter source, published runtime and real model/cloud acceptance are separate.

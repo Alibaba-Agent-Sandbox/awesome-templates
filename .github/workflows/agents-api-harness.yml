@@ -1,0 +1,53 @@
+name: Managed source contract
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  managed-source-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Alibaba-Agent-Sandbox/python-sdk
+          ref: 0585bdb2b24d8efab215ad0965246820b50f8362
+          path: .runtime-source
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install the matching candidate pair in one transaction
+        run: |
+          python -m pip install -r scripts/requirements-spec.txt -r agents-api-codex/scripts/requirements.txt -e .runtime-source/server-sdk -e '.runtime-source/client-sdk[managed-agents]' pytest==9.1.1
+          python -m pip check
+      - name: Verify actual source origins and paired metadata
+        run: |
+          python - <<'PY'
+          import importlib.metadata
+          from pathlib import Path
+          import agent_sandbox
+          import agent_sandbox.server
+          root = Path('.runtime-source').resolve()
+          assert Path(agent_sandbox.__file__).resolve().is_relative_to(root / 'client-sdk/src')
+          assert Path(agent_sandbox.server.__file__).resolve().is_relative_to(root / 'server-sdk/src')
+          versions = [importlib.metadata.version(name) for name in ('agent-sandbox-client', 'agent-sandbox-server')]
+          assert versions == ['0.4.0a8', '0.4.0a8']
+          print('PASS: paired candidate metadata and actual source origins')
+          PY
+      - name: Test standalone recipes and local managed contracts
+        run: |
+          python scripts/sync_agents_api_templates.py --check
+          python scripts/check_template.py --all
+          python -m pytest -q scripts/test_agents_api_family.py agents-api-codex/scripts/test_release.py agents-api-codex/test_smoke.py
+      - name: State verification scope
+        run: |
+          echo "Source contract only. No native account/model, image, cloud deployment, upgrade or package publication is certified by this job."

@@ -31,7 +31,7 @@ class ManagedApplicationContractTest(unittest.TestCase):
         (self.template / "server").mkdir()
         (self.template / "server/Dockerfile").write_text("FROM python:3.13.8-slim-bookworm\n")
         self.legacy = yaml.safe_load((self.template / 'template.yaml').read_text())
-        self.data = yaml.safe_load((ROOT / 'agents-api/template.yaml').read_text())
+        self.data = yaml.safe_load((ROOT / 'agents-api-codex/template.yaml').read_text())
         self.data['name'] = 'example'
 
 
@@ -121,7 +121,7 @@ class ManagedApplicationContractTest(unittest.TestCase):
 
     def test_imported_local_runner_keeps_the_package_entry(self):
         code = ("from pathlib import Path; from scripts.run_local_e2e import _startup_argv; "
-                "assert _startup_argv(Path('agents-api'), 31234)[1]")
+                "assert _startup_argv(Path('agents-api-codex'), 31234)[1]")
         result = subprocess.run([sys.executable, "-c", code], cwd=ROOT,
                                 capture_output=True, text=True, timeout=30)
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -138,7 +138,7 @@ class ManagedApplicationContractTest(unittest.TestCase):
 
     def test_business_budget_checks_belong_to_template_consumer(self):
         import importlib.util
-        spec = importlib.util.spec_from_file_location("agents_release_policy", ROOT / "agents-api/scripts/release.py")
+        spec = importlib.util.spec_from_file_location("agents_release_policy", ROOT / "agents-api-codex/scripts/release.py")
         module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
         module.validate_policy(self.data["vars"]["policy"])
         for section, key, value in (("sessions", "maxConcurrentTurnsPerSession", 2),

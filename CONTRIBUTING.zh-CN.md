@@ -91,3 +91,10 @@ HTTP body 直接是参数对象，响应是 result envelope。进程启动配置
 托管会话应用作者遵循封闭的 [Agents API 契约参考](docs/managed-agent-applications.zh-CN.md)。静态检查与运行时、提供方验收分别完成。
 
 新增资源使用 `specVersion: 1`。上架信息只写 registry.yaml，目录行只引用它。本地运行不依赖该文件。工程 smoke/priority/wave 保存在 scripts/template-checks.json；修改后同步测试，勿移回用户字段。完整字段文档由 `python scripts/sync_template_reference.py` 生成，CI 用 --check 校验。
+
+## 托管 Harness 系列
+
+共享发布、启动和业务 smoke 源码在 `agents-api-codex/` 维护。修改后运行
+`python scripts/sync_agents_api_templates.py`，提交前使用 `--check` 检查同步。
+各 profile 固定真实 CLI 及凭据映射，下载后的项目无需兄弟目录。同步维护
+Harness 指南、六个目录条目和工程记录；原生进度、模型协议与认证不能混同。

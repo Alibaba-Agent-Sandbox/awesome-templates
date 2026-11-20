@@ -1,0 +1,13 @@
+{
+  "adapter": "codex",
+  "label": "Codex",
+  "package": "@openai/codex",
+  "version": "0.162.1",
+  "binary": "codex",
+  "keyEnv": "OPENAI_API_KEY",
+  "baseUrlEnv": "OPENAI_BASE_URL",
+  "modelEnv": "OPENAI_MODEL",
+  "protocol": "Responses",
+  "upstream": "https://developers.openai.com/codex/noninteractive",
+  "license": "Apache-2.0"
+}

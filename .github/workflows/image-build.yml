@@ -81,8 +81,11 @@ jobs:
           import re
           import shutil
 
+          from scripts.template_application import managed_harness_pin
+
           source = Path(os.environ["TEMPLATE"])
           assert re.fullmatch(r"[a-z0-9][a-z0-9-]*", source.name)
+          managed = managed_harness_pin(source) is not None
           context = Path(os.environ["RUNNER_TEMP"]) / ("image-context-" + source.name)
           shutil.copytree(source, context, ignore=shutil.ignore_patterns(
               ".env", ".env.*", ".abx", "*.whl", "__pycache__", ".pytest_cache"))
@@ -97,6 +100,7 @@ jobs:
           dockerfile.write_text("".join(lines))
           with Path(os.environ["GITHUB_ENV"]).open("a") as output:
               output.write(f"L1_CONTEXT={context}\n")
+              output.write(f"L1_MANAGED={str(managed).lower()}\n")
           print(f"{source.name}: unchanged public server package install; default provider base resolved")
           PY
 
@@ -106,12 +110,14 @@ jobs:
           docker build --progress=plain --tag "abx-l1:$TEMPLATE" "$L1_CONTEXT" 2>&1 | tee "$RUNNER_TEMP/$TEMPLATE-build.log"
 
       - name: Build and inspect the managed Server image
-        if: matrix.template == 'agents-api'
+        if: env.L1_MANAGED == 'true'
         run: |
           set -euo pipefail
-          docker build --progress=plain --file "$L1_CONTEXT/server/Dockerfile" --tag abx-l1:agents-api-server "$L1_CONTEXT" 2>&1 | tee -a "$RUNNER_TEMP/$TEMPLATE-build.log"
-          docker run --rm --network none --entrypoint python abx-l1:agents-api-server -c 'import os; import agent_sandbox.managed_agents; assert os.geteuid() != 0; print("PASS actual managed Server package import and non-root user")' 2>&1 | tee -a "$RUNNER_TEMP/$TEMPLATE-build.log"
-          docker run --rm --network none --entrypoint python abx-l1:agents-api-server -m agent_sandbox.managed_agents --help 2>&1 | tee -a "$RUNNER_TEMP/$TEMPLATE-build.log"
+          server_image="abx-l1:$TEMPLATE-server"
+          server_pin=$(python -c 'import sys; from pathlib import Path; from scripts.server_package import server_version; print(server_version(Path(sys.argv[1])))' "$TEMPLATE")
+          docker build --progress=plain --file "$L1_CONTEXT/server/Dockerfile" --tag "$server_image" "$L1_CONTEXT" 2>&1 | tee -a "$RUNNER_TEMP/$TEMPLATE-build.log"
+          docker run --rm --network none --entrypoint python "$server_image" -c 'import os, sys; from importlib.metadata import version; import agent_sandbox.managed_agents; assert os.geteuid() != 0; assert version("agent-sandbox-client") == sys.argv[1]; print("PASS matching managed Server package import and non-root user")' "$server_pin" 2>&1 | tee -a "$RUNNER_TEMP/$TEMPLATE-build.log"
+          docker run --rm --network none --entrypoint python "$server_image" -m agent_sandbox.managed_agents --help 2>&1 | tee -a "$RUNNER_TEMP/$TEMPLATE-build.log"
 
       - name: Check installed pins and keyless smoke as the image user
         run: |
@@ -123,14 +129,13 @@ jobs:
           import subprocess
 
           from scripts.server_package import server_version
-          from scripts.template_application import is_managed_application, project_manifest, load_source_document
+          from scripts.template_application import is_managed_application, project_manifest, load_source_document, managed_harness_pin
 
           template = os.environ["TEMPLATE"]
           config = project_manifest(load_source_document(Path(template) / "template.yaml"), Path(template))
           pins = {
               "polyglot-toolchain": [("go version", "go1.25.14"), ("rustc --version", "1.90.0"), ("cargo --version", "1.90.0"), ("javac --version", "21.0.12.1")],
               "agents-cli": [("node --version", "v24.16.0"), ("codex --version", "0.162.1"), ("qwen --version", "0.23.0")],
-              "agents-api": [("node --version", "v24.16.0"), ("codex --version", "0.162.1"), ("qwen --version", "0.23.0")],
               "pi": [("node --version", "v24.16.0"), ("pi --version", "1.3.0"), ("fd --version", "10.5.0"), ("rg --version", "15.2.0")],
               "amp": [("amp version", "0.0.1792022479-ge66e24")],
               "claude-code": [("claude --version", "2.0.76")],
@@ -147,7 +152,8 @@ jobs:
               "qwen-code": [("qwen --version", "0.23.0")],
           }
           managed = is_managed_application(config)
-          payload = {"smoke": config["smoke"], "pins": pins.get(template, []), "template": template, "server_version": server_version(Path(template)), "managed": managed}
+          image_pins = pins.get(template, []) + ([("node --version", "v24.16.0")] if managed else [])
+          payload = {"smoke": config["smoke"], "pins": image_pins, "template": template, "server_version": server_version(Path(template)), "managed": managed, "harness": managed_harness_pin(Path(template))}
           code = r'''
           import importlib.metadata
           import importlib.util
@@ -179,7 +185,12 @@ jobs:
               assert importlib.metadata.version(package) == expected
               print("PASS installed pin: " + package + " " + expected, flush=True)
           if payload["managed"]:
-              import secrets, socket, time, urllib.error, urllib.request
+              import re, secrets, socket, time, urllib.error, urllib.request
+              binary, expected = payload["harness"]
+              probe = subprocess.run([binary, "--version"], text=True, capture_output=True, timeout=60)
+              versions = re.findall(r"(?<![\w.+-])\d+\.\d+\.\d+(?:[-+][\w.-]+)?(?![\w.+-])", probe.stdout + "\n" + probe.stderr)
+              assert probe.returncode == 0 and expected in versions, binary + " pin mismatch"
+              print("PASS installed managed Harness: " + binary + " -> " + expected, flush=True)
               with tempfile.TemporaryDirectory(prefix=".l1-managed-", dir="/home/user/app") as scratch:
                   with socket.socket() as sock:
                       sock.bind(("127.0.0.1", 0)); port = sock.getsockname()[1]
