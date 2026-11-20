@@ -15,7 +15,7 @@ import httpx
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import patch, AsyncMock
+from unittest.mock import patch, AsyncMock, Mock
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,6 +52,13 @@ class ReleaseTests(unittest.TestCase):
                 self.assertEqual(release.read(private/'credentials.json'),tokens)
                 self.assertNotEqual(tokens['businessKey'],tokens['internalToken'])
                 self.assertEqual(release.dotenv()['AGENTS_BUSINESS_SHA256'],hashlib.sha256(tokens['businessKey'].encode()).hexdigest())
+                # Native Devs dotenv preserves backslashes around double-quoted
+                # inner JSON. Single-quoted values carry actual JSON to FC.
+                policy_line = next(line for line in content.splitlines() if line.startswith("AGENTS_POLICY_JSON="))
+                raw_policy = policy_line.split("=", 1)[1]
+                self.assertTrue(raw_policy.startswith("'") and raw_policy.endswith("'"))
+                self.assertEqual(json.loads(raw_policy[1:-1]), self.manifest['vars']['policy'])
+                self.assertEqual(json.loads(release.dotenv()['AGENTS_POLICY_JSON']), self.manifest['vars']['policy'])
                 state=release.read(release.STATE);state['status']='requires_reconcile';release.save(release.STATE,state)
                 with self.assertRaises(release.ReleaseError):release.initialize('agents-api','cn-hangzhou')
 
@@ -63,6 +70,27 @@ class ReleaseTests(unittest.TestCase):
                 self.assertNotIn('b'*40,(root/'.env').read_text());self.assertFalse((private/'credentials.json').exists())
                 with patch.dict(os.environ,{'AGENTS_INTERNAL_TOKEN':'x'*40}):
                     with self.assertRaises(release.ReleaseError):release.initialize('agents-api','cn-hangzhou')
+
+    def test_init_rejects_process_overrides_of_release_generated_values_before_writes(self):
+        generated_keys = (
+            "AGENTS_REVISION", "AGENTS_WORKERS_JSON", "AGENTS_POLICY_JSON",
+            "AGENTS_STATE_ID", "AGENTS_BUSINESS_SHA256",
+        )
+        overrides = {key: "forced" for key in generated_keys} | {
+            "AGENTS_INTERNAL_TOKEN": "", "AGENTS_BUSINESS_KEY": "",
+        }
+        for key, value in overrides.items():
+            with self.subTest(key=key), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                private = root / ".abx" / "agents-api"
+                (root / "template.yaml").write_text(yaml.safe_dump(self.manifest))
+                (root / "server").mkdir()
+                (root / "server" / "harness.json").write_text(json.dumps(bootstrap.PROFILE))
+                with patch.multiple(release, ROOT=root, PRIVATE=private, STATE=private / "release.json"), patch.dict(os.environ, {**self.env, key: value}, clear=True):
+                    with self.assertRaisesRegex(release.ReleaseError, key):
+                        release.initialize("agents-api", "cn-hangzhou")
+                self.assertFalse(private.exists())
+                self.assertFalse((root / ".env").exists())
 
     def test_bootstrap_separates_gateway_and_worker_credentials(self):
         env={**self.env,'AGENTS_APPLICATION':'agents-api','AGENTS_REVISION':'rev-one','AGENTS_TEMPLATE':'template-one','AGENTS_MODEL':'test-model','AGENTS_ADAPTER':'codex','ABX_MANAGED_INTERNAL_TOKEN':'i'*40,'AGENTS_BUSINESS_SHA256':'a'*64,'AGENTS_WORKERS_JSON':'{"rev-one":"worker-one","rev-old":"worker-old"}','AGENTS_POLICY_JSON':json.dumps(self.manifest['vars']['policy']),'AGENTS_STATE_ID':'a'*32}
@@ -156,11 +184,12 @@ class ReleaseTests(unittest.TestCase):
                     except subprocess.TimeoutExpired:process.kill();process.communicate(timeout=5)
 
     def test_failed_candidate_keeps_dispatch_but_does_not_publish_alias(self):
-        state={'application':'agents-api','region':'cn-hangzhou','status':'preparing','revision':'rev-one','phase':'resources','functions':dict(worker='worker',dispatcher='dispatcher',gateway='gateway'),'previous':{'functions':{'dispatcher':'old-dispatcher'},'version':'previous-version'}}
+        state={'application':'agents-api','region':'cn-hangzhou','status':'preparing','revision':'rev-one','phase':'resources','functions':dict(worker='worker',dispatcher='dispatcher',gateway='gateway'),'previous':{'functions':{'dispatcher':'old-dispatcher'},'identities':{'dispatcher':'old-dispatcher-id'},'version':'previous-version'}}
         calls=[]
         class FakeFC:
             def __init__(self,*args):pass
             def model(self,name,**kwargs):return kwargs
+            def function(self,name):return {'functionId':'old-dispatcher-id'}
             def control(self,*args):return {'stateInstanceId':'a'*32,'draining':False}
             def patch(self,*args):pass
             def call(self,operation,*args):
@@ -173,6 +202,29 @@ class ReleaseTests(unittest.TestCase):
             smoke.return_value.returncode=1
             with self.assertRaises(release.ReleaseError):release.publish()
         self.assertEqual(calls,[('trigger','dispatcher','timer',True),('trigger','old-dispatcher','timer',False),'publish_function_version',('trigger','gateway','http',None)])
+
+    def test_publish_will_not_change_replaced_previous_dispatcher(self):
+        for identities, expected_mutations in [
+            (["replacement"], []),
+            (["old-id", "replacement"], ["pin worker", "pin dispatcher", "pin gateway", "timer dispatcher"]),
+        ]:
+            with self.subTest(identities=identities):
+                state = {
+                    "application": "agents-api", "region": "cn-hangzhou", "status": "preparing",
+                    "revision": "rev-new", "functions": dict(worker="worker", dispatcher="dispatcher", gateway="gateway"),
+                    "previous": {"functions": {"dispatcher": "old-dispatcher"}, "identities": {"dispatcher": "old-id"}},
+                }
+                mutations = []
+                fc = SimpleNamespace(
+                    function=Mock(side_effect=[{"functionId": value} for value in identities]),
+                    control=lambda *_args: {"stateInstanceId": "a" * 32, "draining": False},
+                    patch=lambda name, _changes: mutations.append("pin " + name),
+                    trigger=lambda name, *_args: mutations.append("timer " + name),
+                )
+                with patch.object(release, "read", return_value=state), patch.object(release, "save"), patch.object(release, "write_generated"), patch.object(release, "observed"), patch.object(release, "FC", return_value=fc), patch.object(release, "environment", return_value={"AGENTS_INTERNAL_TOKEN": "i" * 40}):
+                    with self.assertRaisesRegex(release.ReleaseError, "Previous Dispatcher identity"):
+                        release.publish()
+                self.assertEqual(mutations, expected_mutations)
 
     def test_reserve_refuses_unowned_function(self):
         class FakeFC:

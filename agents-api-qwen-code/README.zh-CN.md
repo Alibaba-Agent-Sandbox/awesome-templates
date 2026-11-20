@@ -5,7 +5,7 @@
 
 [Harness 文档](https://qwenlm.github.io/qwen-code-docs/en/users/features/headless/) · [English](README.md) · [API 参考](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/managed-agents-api.zh-CN.md)
 
-本模板使用 YAML v1，需要匹配的开发版 CLI。资源和值在 `template.yaml` 中修改；`registry.yaml` 仅用于目录元信息和初始化表单。详见[配置规范](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/feat/agentsapi-harness-20261117/docs/template-spec.zh-CN.md)。
+本模板使用 YAML v1，需要匹配的开发版 CLI。资源和值在 `template.yaml` 中修改；`registry.yaml` 仅用于目录元信息和初始化表单。详见[配置规范](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/template-spec.zh-CN.md)。
 
 ## 做什么
 
@@ -19,14 +19,14 @@ Submission 和事件、下载产物。首次输入按需创建 Sandbox；后续�
 
 ## 技术栈
 
-阿里云第二代 Sandbox 基础镜像、非 root 用户、Node.js 24.16.0、Qwen Code 0.23.0、PostgreSQL，以及 FC Gateway/Worker/Dispatcher 函数。
+阿里云第二代 Sandbox 基础镜像、非 root 用户、Node.js 24.16.0、Qwen Code 0.28.0、PostgreSQL，以及 FC Gateway/Worker/Dispatcher 函数。
 
 [template.yaml](template.yaml) · [Sandbox Dockerfile](Dockerfile) ·
 [Server Dockerfile](server/Dockerfile)
 
 部署应用需要 Node.js 20 或更高版本和匹配的开发版 CLI。业务 HTTP 客户端只需要 Gateway endpoint 和业务 Key。
 
-两个镜像依赖配套 client/server 0.4.0a8 候选运行时；该版本尚未发布，镜像构建与部署须等待发行。已发布的 0.4.0a7 不提供六种 Harness 的适配合同。选择和认证方式见 [Harness 指南](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/feat/agentsapi-harness-20261117/docs/agents-api-harnesses.zh-CN.md)。
+两个镜像依赖配套 client/server 0.4.0a8 候选运行时；该版本尚未发布，镜像构建与部署须等待发行。已发布的 0.4.0a7 不提供六种 Harness 的适配合同。选择和认证方式见 [Harness 指南](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/agents-api-harnesses.zh-CN.md)。
 
 ## 解决的问题
 
@@ -35,7 +35,7 @@ Sandbox 管理凭据留在 Server；Sandbox 只接收选定的模型配置和单
 
 ## 快速开始（CLI）
 
-使用匹配的源码 CLI，按[使用指南](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/feat/agentsapi-harness-20261117/docs/using-templates.zh-CN.md)配置 Sandbox 和构建仓库凭据。部署主机需要 Python 3、Docker 及有 FC 管理权限的云凭据。部署和维护时保持项目虚拟环境激活。
+使用匹配的源码 CLI，按[使用指南](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/using-templates.zh-CN.md)配置 Sandbox 和构建仓库凭据。部署主机需要 Python 3、Docker 及有 FC 管理权限的云凭据。部署和维护时保持项目虚拟环境激活。
 
 ```bash
 abx template init ./agents-api-qwen-code --from agents-api-qwen-code
@@ -49,11 +49,11 @@ python -m pip install -r scripts/requirements.txt
 
 ```bash
 abx deploy . --plan
-abx deploy . --yes
+abx deploy . --build-timeout 1800 --yes
 python scripts/release.py status
 ```
 
-计划不构建、不执行动作。部署准备 Sandbox 模板，构建 Server 镜像，分别创建 Worker、Dispatcher、Gateway 函数，并在切换稳定的 `prod` Gateway 别名前执行真实模型的两轮文件任务。部署不会创建一个常驻 Sandbox 实例。
+计划展示资源和依赖。部署准备 Sandbox 模板，构建 Server 镜像，分别创建 Worker、Dispatcher、Gateway 函数，并在切换稳定的 `prod` Gateway 别名前执行真实模型的两轮文件任务。`--build-timeout 1800` 为每个部署动作预留最多 30 分钟，包括模型验证。会话按需启动 Sandbox。
 
 首次部署生成不同的业务及内部令牌，更新时复用。本机私有 `.abx/agents-api/credentials.json` 包含 `businessKey` 和 `internalToken`，只向业务客户端提供业务 Key。endpoint 位于 `.abx/agents-api/release.json` 的 `endpoint` 字段。显式进程凭据不复制到凭据存储。`.env` 和 `.abx/` 应保密，并保留供更新、清理使用。
 
@@ -149,12 +149,14 @@ Agent 已完成任务。
 
 资源值在 [template.yaml](template.yaml) 修改。`${env('NAME')}` 读取项目私有 `.env` 或进程环境，进程值优先。`vars` 的键名由模板作者定义；下面是本模板选用的名称，不是规范保留字。
 
+只需配置下表列出的变量。发布脚本在 `.env` 管理版本、Worker 路由、运行策略、状态标识和业务 Key 指纹。需要自动生成业务或内部令牌时，保持对应变量未设置。
+
 | 变量 / 字段 | 用途与来源 |
 | --- | --- |
 | `AGENTS_SERVER_IMAGE` | 你可写的 OCI 仓库地址及唯一 Server 镜像 tag，供原生 FC 构建和三个 Server 角色使用。 |
 | `ABX_MANAGED_DATABASE_URL` | 已有 PostgreSQL URL，来自数据库提供商，三个角色均须可达。数据库创建、删除另行管理。 |
 | `SANDBOX_API_KEY` | Sandbox 平台账号提供的 Key，供 Worker/Dispatcher 管理实例生命周期。 |
-| `SANDBOX_BASE_URL` / `SANDBOX_DOMAIN` / `SANDBOX_REGION` | 同一平台的 API、实例域名和地域，与 Key 匹配。 |
+| `SANDBOX_BASE_URL` / `SANDBOX_DOMAIN` | Sandbox 的 API 地址和实例域名，与 Key 和 `vars.region` 匹配。 |
 | `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL` | 从所选服务获取已授权凭据和模型 ID，写入私有 `.env`。端点必须使用 HTTPS。提供商必须支持 Responses 的真实工具回合；仅 Worker 接收这些值，Sandbox 接收选定的模型配置。 |
 | `AGENTS_FC_ROLE_ARN` | 已有 FC 执行角色 RAM ARN，包含调用私有 Worker 的权限。 |
 | `AGENTS_DATABASE_CA_PEM` | 可选数据库 CA 证书 PEM，来自数据库提供商，不是私钥。数据库 URL 保留 `sslmode=verify-full` 和匹配的主机名。 |

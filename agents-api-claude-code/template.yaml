@@ -76,8 +76,8 @@ serving:
         AGENTS_TEMPLATE: ${resources.agent.output.templateId}
         AGENTS_MODEL: ${env('ANTHROPIC_MODEL')}
         AGENTS_ADAPTER: ${vars.adapter}
-        AGENTS_POLICY_JSON: ${env('AGENTS_POLICY_JSON', '{}')}
-        AGENTS_WORKERS_JSON: ${env('AGENTS_WORKERS_JSON', '{}')}
+        AGENTS_POLICY_JSON: ${env('AGENTS_POLICY_JSON', '')}
+        AGENTS_WORKERS_JSON: ${env('AGENTS_WORKERS_JSON', '')}
         AGENTS_STATE_ID: ${env('AGENTS_STATE_ID', '')}
         ABX_MANAGED_DATABASE_URL: ${env('ABX_MANAGED_DATABASE_URL')}
         ABX_MANAGED_DATABASE_CA_PEM: ${env('AGENTS_DATABASE_CA_PEM', '')}
@@ -85,7 +85,7 @@ serving:
         SANDBOX_API_KEY: ${env('SANDBOX_API_KEY')}
         SANDBOX_BASE_URL: ${env('SANDBOX_BASE_URL')}
         SANDBOX_DOMAIN: ${env('SANDBOX_DOMAIN')}
-        SANDBOX_REGION: ${env('SANDBOX_REGION')}
+        SANDBOX_REGION: ${vars.region}
         ANTHROPIC_API_KEY: ${env('ANTHROPIC_API_KEY')}
         ANTHROPIC_BASE_URL: ${env('ANTHROPIC_BASE_URL')}
       customContainerConfig:
@@ -122,8 +122,8 @@ serving:
         AGENTS_TEMPLATE: ${resources.agent.output.templateId}
         AGENTS_MODEL: ${env('ANTHROPIC_MODEL')}
         AGENTS_ADAPTER: ${vars.adapter}
-        AGENTS_POLICY_JSON: ${env('AGENTS_POLICY_JSON', '{}')}
-        AGENTS_WORKERS_JSON: ${env('AGENTS_WORKERS_JSON', '{}')}
+        AGENTS_POLICY_JSON: ${env('AGENTS_POLICY_JSON', '')}
+        AGENTS_WORKERS_JSON: ${env('AGENTS_WORKERS_JSON', '')}
         AGENTS_STATE_ID: ${env('AGENTS_STATE_ID', '')}
         ABX_MANAGED_DATABASE_URL: ${env('ABX_MANAGED_DATABASE_URL')}
         ABX_MANAGED_DATABASE_CA_PEM: ${env('AGENTS_DATABASE_CA_PEM', '')}
@@ -131,7 +131,7 @@ serving:
         SANDBOX_API_KEY: ${env('SANDBOX_API_KEY')}
         SANDBOX_BASE_URL: ${env('SANDBOX_BASE_URL')}
         SANDBOX_DOMAIN: ${env('SANDBOX_DOMAIN')}
-        SANDBOX_REGION: ${env('SANDBOX_REGION')}
+        SANDBOX_REGION: ${vars.region}
         ABX_MANAGED_FC_ENDPOINT: fcv3.${vars.region}.aliyuncs.com
         AGENTS_WORKER_FUNCTION: ${resources.worker.output.functionName}
       customContainerConfig:
@@ -164,8 +164,8 @@ serving:
         AGENTS_TEMPLATE: ${resources.agent.output.templateId}
         AGENTS_MODEL: ${env('ANTHROPIC_MODEL')}
         AGENTS_ADAPTER: ${vars.adapter}
-        AGENTS_POLICY_JSON: ${env('AGENTS_POLICY_JSON', '{}')}
-        AGENTS_WORKERS_JSON: ${env('AGENTS_WORKERS_JSON', '{}')}
+        AGENTS_POLICY_JSON: ${env('AGENTS_POLICY_JSON', '')}
+        AGENTS_WORKERS_JSON: ${env('AGENTS_WORKERS_JSON', '')}
         AGENTS_STATE_ID: ${env('AGENTS_STATE_ID', '')}
         ABX_MANAGED_DATABASE_URL: ${env('ABX_MANAGED_DATABASE_URL')}
         ABX_MANAGED_DATABASE_CA_PEM: ${env('AGENTS_DATABASE_CA_PEM', '')}

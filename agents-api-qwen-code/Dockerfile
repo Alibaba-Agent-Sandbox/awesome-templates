@@ -36,7 +36,7 @@ with tarfile.open(archive) as source:
 archive.unlink()
 NODE
 ENV PATH="/opt/node/current/bin:${PATH}"
-RUN npm install -g @qwen-code/qwen-code@0.23.0 \
+RUN npm install -g @qwen-code/qwen-code@0.28.0 \
     && qwen --version \
     && npm cache clean --force
 

@@ -51,6 +51,14 @@ def is_managed_application(data: dict[str, Any]) -> bool:
     return False
 
 
+def managed_harness_pin(template_dir: Path) -> tuple[str, str] | None:
+    """Return the managed image's native binary and version from its shipped descriptor."""
+    if not is_managed_application(load_source_document(template_dir / "template.yaml")):
+        return None
+    profile = json.loads((template_dir / "server/harness.json").read_text())
+    return profile["binary"], profile["version"]
+
+
 def _contained(root: Path, value: str, *, directory: bool = False) -> Path:
     path = root / value
     if (

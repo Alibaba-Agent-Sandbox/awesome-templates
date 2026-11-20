@@ -6,7 +6,7 @@ key once.
 
 [Harness documentation](https://docs.qoder.com/cli/run-in-scripts) · [中文](README.zh-CN.md) · [API reference](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/managed-agents-api.md)
 
-This recipe uses YAML v1 and requires a matching development CLI. Configure resources in `template.yaml`; `registry.yaml` is only used for catalog metadata and initialization forms. See the [configuration specification](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/feat/agentsapi-harness-20261117/docs/template-spec.md).
+This recipe uses YAML v1 and requires a matching development CLI. Configure resources in `template.yaml`; `registry.yaml` is only used for catalog metadata and initialization forms. See the [configuration specification](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/template-spec.md).
 
 ## What it does
 
@@ -29,7 +29,7 @@ Alibaba generation-2 Sandbox base, non-root user, Node.js 24.16.0, Qoder 1.1.90,
 [template.yaml](template.yaml) · [Sandbox Dockerfile](Dockerfile) ·
 [Server Dockerfile](server/Dockerfile)
 
-Both images require the paired client/server 0.4.0a8 runtime candidate. This version is not yet published; image builds and deployment must wait for that release. Published 0.4.0a7 does not provide the six-Harness adapter contract. See the [Harness guide](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/feat/agentsapi-harness-20261117/docs/agents-api-harnesses.md) for alternatives and authentication.
+Both images require the paired client/server 0.4.0a8 runtime candidate. This version is not yet published; image builds and deployment must wait for that release. Published 0.4.0a7 does not provide the six-Harness adapter contract. See the [Harness guide](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/agents-api-harnesses.md) for alternatives and authentication.
 Application deployment requires Node.js 20 or later and the current source CLI. Business HTTP clients need only the Gateway endpoint and business key.
 
 ## Problem solved
@@ -41,7 +41,7 @@ application token enter the Sandbox.
 
 ## Quick start (CLI)
 
-Use the matching source CLI and configure Sandbox/build credentials with the [usage guide](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/feat/agentsapi-harness-20261117/docs/using-templates.md). The deployment host needs Python 3, Docker and cloud credentials authorized for FC. Keep the project virtual environment active for deploy and maintenance.
+Use the matching source CLI and configure Sandbox/build credentials with the [usage guide](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/using-templates.md). The deployment host needs Python 3, Docker and cloud credentials authorized for FC. Keep the project virtual environment active for deploy and maintenance.
 
 ```bash
 abx template init ./agents-api-qoder --from agents-api-qoder
@@ -55,11 +55,11 @@ Supply the variables in Configuration through a private `.env` or process enviro
 
 ```bash
 abx deploy . --plan
-abx deploy . --yes
+abx deploy . --build-timeout 1800 --yes
 python scripts/release.py status
 ```
 
-The plan does not build or run actions. Deployment prepares the Sandbox template, builds the Server image and creates separate Worker, Dispatcher and Gateway functions. It runs a model-backed two-turn file task before switching the stable `prod` Gateway alias. It does not create a permanent Sandbox instance.
+The plan lists the resources and their dependencies. Deployment prepares the Sandbox template, builds the Server image and creates separate Worker, Dispatcher and Gateway functions. It runs a model-backed two-turn file task before switching the stable `prod` Gateway alias. `--build-timeout 1800` gives deployment actions, including the model check, up to 30 minutes each. Session Sandboxes start on demand.
 
 First deployment generates distinct business and internal tokens and reuses them on updates. The private `.abx/agents-api/credentials.json` contains `businessKey` and `internalToken`; share only the business key. The endpoint is in `.abx/agents-api/release.json` under `endpoint`. Explicit process credentials are not copied to the credential store. Keep `.env` and `.abx/` private and retain them for updates and cleanup.
 
@@ -159,12 +159,14 @@ Customize the three native FC `props` objects and the Sandbox template independe
 
 Edit [template.yaml](template.yaml) for resource values. Its `${env('NAME')}` expressions read a private project `.env` or process environment; process values take precedence. `vars` keys are author-defined. The keys below are this recipe's choices, not reserved specification names.
 
+Set only the variables listed below. The release script manages the revision, Worker routing, policy, state identity and business-key fingerprint in `.env`. Leave optional authentication variables unset to generate them.
+
 | Variable / field | Purpose and source |
 | --- | --- |
 | `AGENTS_SERVER_IMAGE` | Your writable OCI repository and unique Server image tag, used by native FC build and all three Server roles. |
 | `ABX_MANAGED_DATABASE_URL` | Existing PostgreSQL URL from the database provider, reachable by all three roles. Database creation/deletion is separate. |
 | `SANDBOX_API_KEY` | Sandbox platform key from account setup, used by Worker/Dispatcher for instance lifecycle. |
-| `SANDBOX_BASE_URL` / `SANDBOX_DOMAIN` / `SANDBOX_REGION` | Matching platform API, instance endpoint domain and region. |
+| `SANDBOX_BASE_URL` / `SANDBOX_DOMAIN` | Platform API and instance endpoint domain matching the Sandbox key and `vars.region`. |
 | `QODER_PERSONAL_ACCESS_TOKEN` / `QODER_MODEL` | Generate a PAT in your Qoder account and use an account-authorized model. Qoder uses its native service and PAT; set QODER_MODEL to a model allowed by your account, or keep auto. No OpenAI endpoint is configured. BYOK requires the plan and account configuration documented by Qoder. Keep native Qoder authentication; no generic model endpoint is passed. Only Worker receives these values; the Sandbox receives the selected model configuration. |
 | `AGENTS_FC_ROLE_ARN` | Existing RAM role ARN for FC execution, including permission to invoke private Worker functions. |
 | `AGENTS_DATABASE_CA_PEM` | Optional database-provider CA certificate PEM, not a private key. Retain `sslmode=verify-full` and a matching hostname in the database URL. |

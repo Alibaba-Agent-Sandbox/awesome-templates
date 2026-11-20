@@ -14,6 +14,7 @@ import unittest
 from unittest.mock import AsyncMock, patch
 
 from sync_agents_api_templates import PROFILES
+from template_application import managed_harness_pin
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -26,6 +27,15 @@ def load_bootstrap(path):
 
 
 class HarnessFamilyTests(unittest.TestCase):
+    def test_image_matrix_selects_managed_server_and_native_pin_after_rename(self):
+        for adapter, profile in PROFILES.items():
+            name = "agents-api-" + adapter
+            with self.subTest(template=name):
+                self.assertEqual(managed_harness_pin(ROOT / name), (profile["binary"], profile["version"]))
+                self.assertTrue((ROOT / name / "server/Dockerfile").is_file())
+        self.assertIsNone(managed_harness_pin(ROOT / "codex"))
+        self.assertIsNone(managed_harness_pin(ROOT / "python-hello"))
+
     def test_actual_guest_npm_run_commands_execute_without_shell_tokens(self):
         # Run the exact Dockerfile shell instruction against bounded stand-ins.
         # This detects malformed generated shell, without pretending to build an image.

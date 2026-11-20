@@ -400,7 +400,8 @@ class ImageBuildContextTest(unittest.TestCase):
             runner = Path(folder)
             environment = {"RUNNER_TEMP": folder, "GITHUB_ENV": str(runner / "environment")}
             for name in templates:
-                with self.subTest(template=name), patch.dict(os.environ, {**environment, "TEMPLATE": str(ROOT / name)}):
+                with self.subTest(template=name), patch.dict(os.environ, {**environment, "TEMPLATE": str(ROOT / name)}), \
+                        patch.object(sys, "path", [str(ROOT), *sys.path]):
                     with contextlib.redirect_stdout(io.StringIO()):
                         exec(compile(code, "image-build.yml::prepare", "exec"), {})
                     context = runner / ("image-context-" + name)
@@ -410,6 +411,8 @@ class ImageBuildContextTest(unittest.TestCase):
                         b"FROM fc-e2b-registry.cn-hangzhou.cr.aliyuncs.com/runtime/base:v0.0.49",
                         b"FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>"), original)
                     self.assertFalse(list(context.glob("*.whl")))
+                    self.assertEqual((runner / "environment").read_text().splitlines()[-1],
+                                     "L1_MANAGED=" + str(name.startswith("agents-api-")).lower())
                     expected_version = "0.4.0a8" if name.startswith("agents-api-") else "0.4.0a6"
                     self.assertIn(
                         f'pip install --no-cache-dir --index-url https://pypi.org/simple "agent-sandbox-server=={expected_version}"'.encode(),
@@ -446,6 +449,7 @@ class ImageBuildContextTest(unittest.TestCase):
                     self.assertEqual(argv[:8], ["docker", "run", "--rm", "--network", "none", "--entrypoint", "python3", "abx-l1:" + template])
                     payload = json.loads(argv[-1])
                     self.assertEqual(payload["managed"], managed)
+                    self.assertEqual(payload["harness"], ["codex", "0.162.1"] if managed else None)
                     self.assertEqual(payload["smoke"], engineering_checks(template)["smoke"])
                     self.assertTrue(all(("operation" if managed else "command") in smoke for smoke in payload["smoke"]))
                     self.assertEqual(json.dumps(manifest, sort_keys=True), before)
