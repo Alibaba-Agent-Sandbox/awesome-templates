@@ -1,5 +1,7 @@
 # Engineering records: awesome-templates
 
+- [OpenCode two-turn real-model verification](evidence/verify/2026-11-20-agents-api-opencode-model.md). Local native Session resume and artifact bytes checked.
+
 - [Qwen Code two-turn real-model verification](evidence/verify/2026-11-20-agents-api-qwen-model.md). Local isolated ManagedBridge, persisted native Session and independently checked files.
 
 - [Exercise both images for each Agents API Harness](notes/proposed/process/2026-11-20-agents-api-l1-image-coverage.md) · [verification](evidence/verify/2026-11-20-agents-api-l1-image-coverage.md).

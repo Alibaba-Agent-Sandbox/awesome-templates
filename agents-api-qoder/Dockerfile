@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /home/user/app /home/user/workspace /workspace \
     && chown -R user:user /home/user/app /home/user/workspace /workspace
-# Qwen Code 0.23.0 requires Node >=22; the base Node 20 is insufficient.
+# Use the pinned Node runtime for the native Harness CLI.
 RUN python3 - <<'NODE'
 import hashlib
 from pathlib import Path
