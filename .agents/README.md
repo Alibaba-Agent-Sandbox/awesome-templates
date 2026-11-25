@@ -424,4 +424,5 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 - [Inactive canonical template v1 contract](notes/proposed/architecture/2026-11-12-template-v1-contract.md) · [local verification and pending consumer/E2E gates](evidence/verify/2026-11-12-template-v1-contract.md).
 
 - [Confirmed documentation feedback](notes/proposed/process/2026-11-25-confirmed-documentation-feedback.md) · [verification](evidence/verify/2026-11-25-confirmed-documentation-feedback.md).
-- [Offline CI Debian archive preparation](notes/proposed/process/2026-11-25-offline-ci-apt-snapshot.md) · [verification](evidence/verify/2026-11-25-offline-ci-apt-snapshot.md). Existing native version assertions remain required.
+- [Current CLI template guidance](evidence/verify/2026-11-25-current-cli-template-guidance.md). Actual executable help and SDK/HTTP reader path; publication remains separate.
+- [Offline CI Debian archive preparation](notes/proposed/process/2026-11-25-offline-ci-apt-snapshot.md) · [preparation evidence](evidence/verify/2026-11-25-offline-ci-apt-snapshot.md) · [actual GitHub verification](evidence/verify/2026-11-25-offline-ci-apt-snapshot-remote.md). Existing native version assertions remain required.

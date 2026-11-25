@@ -2,26 +2,23 @@
 
 [English](using-templates.md)
 
-选模板，配置沙箱平台及它需要的模型服务，启动一次，再调用命名命令。每个模板 README 提供准确参数、模型与认证配置，以及 CLI、Python、HTTP 的实际任务示例。
+选模板，配置沙箱平台及它需要的模型服务，启动一次，再调用应用。每个模板 README 提供参数、模型与认证配置；本指南通过 CLI 管理生命周期，通过 SDK／HTTP 调用应用。
 
 ## 安装
 
-本页使用当前源码中的统一命令；已发布 CLI 0.5.10 不支持这些新入口。先从源码安装 CLI（需要 Node 20+），Python 示例继续使用 client 0.4.0a6 和独立虚拟环境。
+本指南针对 CLI **0.6.0-alpha.0** 与 Python client **0.5.0a0** 预览版。npm CLI 需要 Node 20+；Python 使用独立虚拟环境。
+
+模板自有 README 的 CLI 示例以其标注版本为准。旧版 0.5 的命令包装入口不适用于 0.6；0.6 请使用下方 SDK／HTTP 示例，或按[显式 OpenAPI 绑定指南](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/zh/guide/sandbox-api.md)调用业务 API。
 
 ```bash
-git clone https://github.com/Alibaba-Agent-Sandbox/agent-sandbox.git
-cd agent-sandbox
-npm ci
-npm run build
-npm link
-cd ..
+npm install -g @agent-sandbox/cli@0.6.0-alpha.0
 python3 -m venv .venv
 . .venv/bin/activate
-python3 -m pip install --index-url https://pypi.org/simple 'agent-sandbox-client==0.4.0a6'
+python3 -m pip install --index-url https://pypi.org/simple 'agent-sandbox-client==0.5.0a0'
 abx --version
 ```
 
-独立二进制参见 [CLI 安装指南](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/zh/guide/binary-installation.md)。安装后找不到 `abx` 时，执行安装器提示的 PATH 配置。
+其他安装方式参见 [CLI 安装指南](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/zh/guide/binary-installation.md)，并选择同一 CLI 版本。安装后找不到 `abx` 时，按对应方式的说明配置 PATH。
 
 ### 配置沙箱平台
 
@@ -59,11 +56,13 @@ export ABX_SERVER_TOKEN="<independent-application-token>"
 export ABX_HTTP_TIMEOUT=660
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --name hello --sandbox-timeout 1800
 export ABX_SANDBOX_ID="<returned-sandbox-id>"
-abx sandbox command list "$ABX_SANDBOX_ID"
-abx sandbox command run "$ABX_SANDBOX_ID" hello --arg name=Ada
+abx status hello
+abx logs hello
 ```
 
-预期返回 `Hello, Ada!`。启动过程准备模板并启动它声明的应用，返回沙箱 ID 和保留的准备资源引用。`abx sandbox command run` 调用命名命令，`abx sandbox exec` 执行进程；数值和布尔参数使用 `--json-args`。
+启动过程准备模板并启动它声明的应用，返回沙箱 ID 和保留的准备资源引用。下方 SDK 和 HTTP 示例调用 `hello` 并返回 `Hello, Ada!`；`abx exec` 用于执行进程。
+
+要通过 `abx sandbox TARGET OPERATION` 调用业务 API，需要先按 [Sandbox API 指南](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/zh/guide/sandbox-api.md)绑定应用的显式 OpenAPI 契约。当前 `python-hello` 包不包含此绑定，仅有 `@command` 声明不会自动建立绑定。
 
 三类超时分别控制不同阶段：`--build-timeout` 是构建期限，`--sandbox-timeout` 是实例寿命，`ABX_HTTP_TIMEOUT` 是 CLI 等待 HTTP 的时间；模型命令还有自己的执行期限。对于 600 秒编码任务，示例采用 1800 秒实例与 660 秒客户端等待，避免默认 300 秒实例或 SDK 的默认 30 秒等待先到期。
 
@@ -139,7 +138,7 @@ asyncio.run(main())
 
 ### 导出文件与清理
 
-释放前用 `abx sandbox download "$ABX_SANDBOX_ID" /remote/path ./local-file` 或 `await sb.files.read_bytes("/remote/path")` 导出产物。删除上面创建的命名部署，并按提示确认：
+释放前用 `abx download "$ABX_SANDBOX_ID" /remote/path ./local-file` 或 `await sb.files.read_bytes("/remote/path")` 导出产物。删除上面创建的命名部署，并按提示确认：
 
 ```bash
 abx delete hello

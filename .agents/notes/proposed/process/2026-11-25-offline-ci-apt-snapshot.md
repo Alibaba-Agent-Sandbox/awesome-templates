@@ -34,3 +34,5 @@ Parse the workflow, syntax-check the modified shell blocks, compare engine pins 
 ## Acceptance criteria
 
 Both required offline jobs install the existing exact engines and pass their unchanged native/HTTP checks on the current PR head. All other required checks remain enabled. Snapshot metadata continues to require Debian signatures. No cloud resources are created for this CI repair.
+
+Actual GitHub results for the repair head are recorded in the [remote verification](../../../evidence/verify/2026-11-25-offline-ci-apt-snapshot-remote.md); the original failed preparation remains preserved separately.

@@ -2,26 +2,23 @@
 
 [中文](using-templates.zh-CN.md)
 
-Choose a template, configure the sandbox platform and any model service it needs, launch once, then call its named commands. Each template README supplies its exact parameters, model/authentication setup and a useful task through CLI, Python and HTTP.
+Choose a template, configure the sandbox platform and any model service it needs, launch once, then call its application. Each template README supplies its parameters and model/authentication setup. This guide uses CLI lifecycle commands and SDK/HTTP application calls.
 
 ## Installation
 
-These examples use the unified commands in the current source. Published CLI 0.5.10 does not support these new entry points. Install the CLI from source with Node 20+; Python examples continue to use client 0.4.0a6 in a virtual environment.
+This guide targets the CLI **0.6.0-alpha.0** and Python client **0.5.0a0** previews. The npm CLI needs Node 20+; use a virtual environment for Python.
+
+Template README CLI examples follow the version documented there. The older 0.5 command wrappers do not apply to 0.6; use the SDK/HTTP examples below or the [explicit OpenAPI binding guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/guide/sandbox-api.md) with 0.6.
 
 ```bash
-git clone https://github.com/Alibaba-Agent-Sandbox/agent-sandbox.git
-cd agent-sandbox
-npm ci
-npm run build
-npm link
-cd ..
+npm install -g @agent-sandbox/cli@0.6.0-alpha.0
 python3 -m venv .venv
 . .venv/bin/activate
-python3 -m pip install --index-url https://pypi.org/simple 'agent-sandbox-client==0.4.0a6'
+python3 -m pip install --index-url https://pypi.org/simple 'agent-sandbox-client==0.5.0a0'
 abx --version
 ```
 
-For the standalone binary, use the [CLI installation guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/guide/binary-installation.md). If `abx` is not on PATH, apply the PATH instruction printed by the installer.
+For alternative installation methods, use the [CLI installation guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/guide/binary-installation.md) and select the same CLI version. If `abx` is not on PATH, follow that method's PATH instructions.
 
 ### Configure the sandbox platform
 
@@ -59,11 +56,13 @@ export ABX_SERVER_TOKEN="<independent-application-token>"
 export ABX_HTTP_TIMEOUT=660
 abx deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --name hello --sandbox-timeout 1800
 export ABX_SANDBOX_ID="<returned-sandbox-id>"
-abx sandbox command list "$ABX_SANDBOX_ID"
-abx sandbox command run "$ABX_SANDBOX_ID" hello --arg name=Ada
+abx status hello
+abx logs hello
 ```
 
-Expected result: `Hello, Ada!`. Launch prepares the template and starts its declared application; it returns the sandbox ID and references to retained prepared resources. `abx sandbox command run` calls named commands, while `abx sandbox exec` executes a process. Numeric and boolean named-command arguments use `--json-args`.
+Launch prepares the template and starts its declared application; it returns the sandbox ID and references to retained prepared resources. The SDK and HTTP examples below call `hello` and return `Hello, Ada!`. `abx exec` executes a process.
+
+For business API calls through `abx sandbox TARGET OPERATION`, first bind the application's explicit OpenAPI contract as shown in the [Sandbox API guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/guide/sandbox-api.md). The existing `python-hello` package does not include that binding; its `@command` declarations alone do not create one.
 
 The three timeout controls serve different purposes: `--build-timeout` is the build deadline; `--sandbox-timeout` is the instance lifetime; `ABX_HTTP_TIMEOUT` is the CLI HTTP wait. A model command's own execution limit is separate. For a 600-second coding task, an 1800-second instance and a 660-second client wait avoid the default 300-second instance/30-second SDK wait expiring first.
 
@@ -139,7 +138,7 @@ For another template, change the command path and JSON arguments to its document
 
 ### Export files and clean up
 
-Use `abx sandbox download "$ABX_SANDBOX_ID" /remote/path ./local-file` or `await sb.files.read_bytes("/remote/path")` before removing the sandbox. Delete the named deployment created above and confirm the prompt:
+Use `abx download "$ABX_SANDBOX_ID" /remote/path ./local-file` or `await sb.files.read_bytes("/remote/path")` before removing the sandbox. Delete the named deployment created above and confirm the prompt:
 
 ```bash
 abx delete hello
