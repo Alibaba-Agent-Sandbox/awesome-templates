@@ -44,7 +44,8 @@ class RegistryApiTest(unittest.TestCase):
         self.assertFalse([v for v in check_template.check_directory(self.root) if v.code == "registry-api"])
 
     def test_bad_binding_reaches_checker(self):
-        for field, value in [("port", True), ("port", 65536), ("resource", "serving.api"),
+        for field, value in [("port", True), ("port", 65536), ("port", 9000.5),
+                             ("port", float("nan")), ("port", float("inf")), ("resource", "serving.api"),
                              ("openapi", "https://example.invalid/openapi.yaml"), ("extra", "unknown")]:
             with self.subTest(field=field, value=value):
                 saved = copy.deepcopy(self.entry)
@@ -54,6 +55,15 @@ class RegistryApiTest(unittest.TestCase):
                     module.read_api_bindings(self.root)
                 self.assertTrue(any(v.code == "registry-api" for v in check_template.check_directory(self.root)))
                 self.entry = saved
+
+    def test_integral_port_matches_json_schema_and_cli_number_semantics(self):
+        self.entry["port"] = 9000.0
+        self.write()
+        schema = json.loads((ROOT / "spec/registry-v1.schema.json").read_text())
+        jsonschema.Draft202012Validator(schema["$defs"]["apiBindings"]).validate({"reports": self.entry})
+        port = module.read_api_bindings(self.root)[0]["port"]
+        self.assertEqual(port, 9000)
+        self.assertIs(type(port), int)
 
     def test_symlink_escape_and_external_references(self):
         with tempfile.TemporaryDirectory() as outside:

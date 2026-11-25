@@ -125,7 +125,8 @@ def read_api_bindings(package: Path) -> list[dict]:
             raise ValueError("Registry API entries require resource, port and openapi only")
         if not isinstance(entry["resource"], str) or not re.fullmatch(r"sandbox\.[A-Za-z][A-Za-z0-9_-]*", entry["resource"]):
             raise ValueError("Registry API binding requires a sandbox.NAME resource")
-        if type(entry["port"]) is not int or not 1 <= entry["port"] <= 65535:
+        port = entry["port"]
+        if isinstance(port, bool) or not isinstance(port, (int, float)) or not 1 <= port <= 65535 or int(port) != port:
             raise ValueError("Registry API port must be an integer between 1 and 65535")
         source = entry["openapi"]
         if not isinstance(source, str) or Path(source).is_absolute() or re.match(r"[A-Za-z][A-Za-z0-9+.-]*:", source):
@@ -169,5 +170,5 @@ def read_api_bindings(package: Path) -> list[dict]:
                 operations.append({"operationId": identifier, "method": method.upper(), "path": route})
         if not operations:
             raise ValueError("OpenAPI document has no callable operationId")
-        summaries.append({"name": name, **entry, "operations": operations})
+        summaries.append({"name": name, **entry, "port": int(port), "operations": operations})
     return summaries

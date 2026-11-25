@@ -37,3 +37,9 @@ The initial head47ee1bee local-e2e job139101844091 failed in the new Registry te
 ## Narrow final CI dependency scope
 
 Head63158c775ae09c11f857cb3b9d93bdbf7cd86529 passed all seven e2e jobs, including local-e2e: https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/45585840953 . Its image workflow was unnecessarily broadened by editing the plan job: select_image_templates.py only reads YAML, while the actual image checker job already installs requirements-spec.txt. The canonical authorization job also does not load the API reader. Root cross-review therefore approved restoring those two unrelated workflow edits exactly to baseline, retaining only the local-e2e dependency correction. Final-head checks run independently. The superseded broad image run may be canceled to avoid redundant builds; canceled images are not passes.
+
+## Final numeric port consistency review
+
+A real parser comparison found that YAML `port: 9000.0` passed JSON Schema integer semantics and the built CLI but failed this publication validator's Python-kind check. The CLI/API reviewer independently confirmed numeric integer semantics. The fix accepts integral numeric values in range, rejects booleans/fractions/nonfinite numbers, and emits an integer summary. The focused suite now has 8 passing tests, including the schema comparison and negative numeric controls. No new API field or coercion from strings was added.
+
+Final full `python scripts/test_spec_tools.py` rerun: 68 tests passed after numeric normalization.
