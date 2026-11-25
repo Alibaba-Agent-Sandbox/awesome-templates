@@ -425,4 +425,4 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 
 - [Offline CI Debian archive preparation](notes/proposed/process/2026-11-25-offline-ci-apt-snapshot.md) · [preparation evidence](evidence/verify/2026-11-25-offline-ci-apt-snapshot.md) · [actual GitHub verification](evidence/verify/2026-11-25-offline-ci-apt-snapshot-remote.md). Existing native version assertions remain required.
 
-- [Reproducible database/document image sources](notes/proposed/process/2026-11-25-engine-image-sources.md) · [verification](evidence/verify/2026-11-25-engine-image-sources.md). Exact runtime contracts and Beta status remain unchanged.
+- [Reproducible database/document image sources](notes/proposed/process/2026-11-25-engine-image-sources.md) · [preparation verification](evidence/verify/2026-11-25-engine-image-sources.md) · [actual image/HTTP verification](evidence/verify/2026-11-25-engine-image-sources-remote.md). Exact runtime contracts and Beta status remain unchanged.

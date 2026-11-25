@@ -39,3 +39,7 @@ Use a separate, unmerged verification branch to add strict HTTP validation to th
 ## Acceptance criteria
 
 Both actual Provider-base images build from signed dated sources and retain their exact engines/server package. Current-head mandatory CI, non-root native checks and actual image HTTP/business/artifact/owned-cleanup checks pass. Context hashes match the repair source, old failures remain recorded, and neither Beta status nor historical provider qualification is promoted.
+
+## Evidence
+
+[Original failure and local preparation](../../../evidence/verify/2026-11-25-engine-image-sources.md) · [actual rebuilt-image and HTTP verification](../../../evidence/verify/2026-11-25-engine-image-sources-remote.md).
