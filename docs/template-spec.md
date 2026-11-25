@@ -1,5 +1,7 @@
 # Template development, listing, and acceptance
 
+Optional business API bindings: [Registry/OpenAPI guide](registry-api.md) · [中文](registry-api.zh-CN.md).
+
 This is the normative spec for a template in this repository. [docs/template-spec.zh-CN.md](./template-spec.zh-CN.md) is the same content in Chinese. If the two files disagree, this file wins.
 
 `docs/acceptance.md` is a pointer here. `_skeleton/` is a passing example of the file layout. It is not a catalog entry.

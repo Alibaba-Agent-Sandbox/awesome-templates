@@ -1,5 +1,7 @@
 # Engineering records: awesome-templates
 
+- [Validate optional Registry API bindings](notes/proposed/process/2026-11-25-registry-api-publication.md) · [verification](evidence/verify/2026-11-25-registry-api-publication.md).
+
 - [Independent v1 resources and Worker bootstrap ownership](notes/proposed/architecture/2026-11-12-template-v1-independent-resources.md) · [verification](evidence/verify/2026-11-12-template-v1-independent-resources.md). Producer-only increment; combined execution and cloud acceptance remain separate.
 
 - [Resolved Provider validation boundary](notes/proposed/architecture/2026-11-12-template-v1-provider-validation-stage.md) · [verification](evidence/verify/2026-11-12-template-v1-provider-validation-stage.md). Intent expressions remain unevaluated.

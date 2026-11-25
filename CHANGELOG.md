@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+- Validate optional package-local Registry/OpenAPI bindings and document current target-first API calls, without enabling the separate resource-schema migration. / 校验包内可选 Registry/OpenAPI 绑定，说明当前目标优先 API 调用，不启用独立的资源规范迁移。
+
 - Resolve the unchanged database/document engine pins from signed dated Debian sources in their image recipes and native CI; preserve runtime behavior and historical provider evidence. / 数据库和文档镜像配方及原生 CI 使用固定日期的已签名 Debian 软件源解析原精确引擎版本，保留运行行为与历史 Provider 记录。
 
 - Clarify the CLI prerequisite, named-deployment inspection/cleanup and explicit business-API binding in the bilingual quick start and usage guide. / 双语快速开始与使用指南明确 CLI 前提、命名部署的查看和清理，以及业务 API 的显式绑定。
