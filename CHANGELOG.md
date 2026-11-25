@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+- Preserve exact database/document CI engine contracts using dated Debian package sources. / 数据库和文档 CI 使用固定日期的 Debian 软件源，保留精确引擎版本和原生检查。
+
 - Clarify the source CLI prerequisite and named-deployment cleanup in the bilingual quick start. / 双语快速开始明确源码 CLI 前提与命名部署的清理方式。
 
 - Acquire the agents-api Serving project with template init, clarify required host business-check dependencies and private bindings, and identify its Python HTTP client accurately. / agents-api 使用 template init 获取项目，明确宿主机业务检查依赖及私有 bindings，并将 Python 接入如实标为 HTTP 客户端。
