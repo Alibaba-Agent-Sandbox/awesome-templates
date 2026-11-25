@@ -8,22 +8,24 @@ Reusable environments for AI agents: browser automation, coding tools, web servi
 
 ## Quick start
 
-[Install abx CLI](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#installation) 0.5.8 or newer. Follow the [usage guide](docs/using-templates.md) to prepare the selected provider's credentials and build environment, then launch the introductory template, which needs no model:
+This quick start targets the CLI 0.6.0-alpha.1 preview (Node 20+). Prepare the selected provider's credentials and build environment using the [usage guide](docs/using-templates.md), then launch the introductory template, which needs no model:
 
 ```bash
-abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello
+npm install -g @agent-sandbox/cli@0.6.0-alpha.1
+abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --name hello
 ```
 
 The CLI guides missing setup, generates and saves the default application token, and reuses it for later commands. Model-based templates also need the model account or API settings described in their README.
 
-Replace `<sandbox-id>` with the returned sandbox ID:
+Inspect the named deployment and its startup logs, then delete it when finished:
 
 ```bash
-abx sandbox command run <sandbox-id> hello --arg name=Ada
-abx delete <sandbox-id>
+abx status hello
+abx logs hello
+abx delete hello
 ```
 
-Expected output: `Hello, Ada!`. `kill` deletes the running sandbox. Follow [cleanup instructions](docs/using-templates.md#export-files-and-clean-up) to remove retained images and templates separately.
+Call its application through the [Python SDK or HTTP examples](docs/using-templates.md#python-sdk). `delete hello` removes this deployment's owned sandbox and templates after confirmation. Follow [cleanup instructions](docs/using-templates.md#export-files-and-clean-up) for retained images and borrowed build artifacts.
 
 ## Choose a template
 

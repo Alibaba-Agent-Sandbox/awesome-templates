@@ -1,6 +1,6 @@
 # Decision: Preserve offline engine contracts with a dated Debian archive
 
-Status: proposed
+Status: implemented
 
 ## Problem
 

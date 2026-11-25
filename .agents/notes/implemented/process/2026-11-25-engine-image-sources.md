@@ -1,6 +1,6 @@
 # Decision: Restore reproducible database and document image sources
 
-Status: proposed
+Status: implemented
 
 ## Problem
 
