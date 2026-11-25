@@ -243,6 +243,12 @@ jobs:
                           "abx-l1:" + template, "-c", code, json.dumps(payload)], check=True, timeout=240)
           PY
 
+      - name: Verify engine images through actual HTTP and owned cleanup
+        if: matrix.template == 'dev-services' || matrix.template == 'document-tools'
+        run: |
+          python -m pip install --index-url https://pypi.org/simple httpx==0.28.1 pypdf==6.21.1
+          python .agents/evidence/verify/2026-11-25-engine-image-http.py --template "$TEMPLATE" --context "$L1_CONTEXT"
+
       - name: Export selected images for a separate local registry transfer
         if: success() && ((github.event_name == 'workflow_dispatch' && inputs.export_images) || (github.event_name != 'workflow_dispatch' && (needs.plan.outputs.export_all_selected == 'true' || matrix.template == 'python-hello' || matrix.template == 'pi')))
         run: |
