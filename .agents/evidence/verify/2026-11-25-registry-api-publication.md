@@ -29,3 +29,7 @@ Publication checks do not assert server reachability, permission, full OpenAPI i
 
 - `python scripts/test_spec_tools.py`: 67 tests passed after the final reference/size controls.
 - `python scripts/check_docs.py`: 238 current documents, zero failures after record additions.
+
+## Actual CI dependency correction
+
+The initial head47ee1bee local-e2e job139101844091 failed in the new Registry tests with ModuleNotFoundError for yamlcore. Its manual dependency list installed only PyYAML/jsonschema, while the canonical contract job used scripts/requirements-spec.txt and passed. The follow-up changes checker jobs to the existing pinned requirements file; it does not weaken or skip the failing tests. The initial failure remains at https://github.com/Alibaba-Agent-Sandbox/awesome-templates/actions/runs/45584294163/job/139101844091 . Current-head CI must pass before merge.
