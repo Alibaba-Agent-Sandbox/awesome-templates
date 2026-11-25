@@ -158,6 +158,9 @@
           }
         ]
       }
+    },
+    "apis": {
+      "$ref": "#/$defs/apiBindings"
     }
   },
   "required": [
@@ -168,5 +171,41 @@
     "author",
     "license",
     "readme"
-  ]
+  ],
+  "$defs": {
+    "apiBindings": {
+      "description": "Optional package-local API bindings. This fragment is usable independently of the inactive Registry publication envelope.",
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 32,
+      "propertyNames": {
+        "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}(?![\\s\\S])"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "resource",
+          "port",
+          "openapi"
+        ],
+        "properties": {
+          "resource": {
+            "type": "string",
+            "pattern": "^sandbox\\.[A-Za-z][A-Za-z0-9_-]*(?![\\s\\S])"
+          },
+          "port": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "openapi": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Package-local OpenAPI 3.1 file; the checker also checks resolved path containment, references and operation IDs."
+          }
+        }
+      }
+    }
+  }
 }

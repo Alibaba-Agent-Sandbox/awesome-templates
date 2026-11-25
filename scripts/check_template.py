@@ -10,6 +10,7 @@ Every template declares a supported specification with one template startup.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import ast
 import json
 import re
@@ -461,6 +462,17 @@ def check_directory(template_dir: Path) -> list[Violation]:
         violations.extend(errors)
         if isinstance(loaded, dict):
             data = loaded
+
+    if (template_dir / "registry.yaml").exists():
+        spec = importlib.util.spec_from_file_location(
+            "registry_api", ROOT / "contracts" / "registry-api" / "validate.py"
+        )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        try:
+            module.read_api_bindings(template_dir)
+        except (ValueError, OSError, UnicodeError) as error:
+            violations.append(Violation("registry-api", str(error)))
 
     directory_name = template_dir.name
     name = _require_str(data, "name", violations) if data else ""
