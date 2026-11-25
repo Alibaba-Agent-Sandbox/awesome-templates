@@ -1,0 +1,38 @@
+{
+  "manifest_digest": "sha256:baa760a43ee80b4d387d55269679c4bb572a4c333bd9b3c521aed6fe04b550bc",
+  "layers": [
+    {
+      "digest": "sha256:2b07980aa0f9402f58125dadc141fbf695e59982c3c5fca57b9e6a25136e5224",
+      "bytes": 228952304
+    },
+    {
+      "digest": "sha256:666009dd246a080081867f818aefcc2b71fa1abd86e13a7d3199510bc12fb411",
+      "bytes": 11075185
+    }
+  ],
+  "files": {
+    "etc/apt/sources.list.d/debian.sources": {
+      "type": "file",
+      "size": 445,
+      "sha256": "4def7ab6e00af969d79d14bdcbeda305b34a9fbe99eabbafa8f4ab0aadf456ba",
+      "content": "Types: deb\n# http://snapshot.debian.org/archive/debian/20260406T000000Z\nURIs: http://mirrors.aliyun.com/debian\nSuites: trixie trixie-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.pgp\n\nTypes: deb\n# http://snapshot.debian.org/archive/debian-security/20260406T000000Z\nURIs: http://mirrors.aliyun.com/debian-security\nSuites: trixie-security\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.pgp\n"
+    },
+    "etc/os-release": {
+      "type": "symlink",
+      "size": 0,
+      "target": "../usr/lib/os-release"
+    },
+    "usr/lib/os-release": {
+      "type": "file",
+      "size": 286,
+      "sha256": "55179f383ae6c3edc9238d185f2dfa73bf8d048ce0273b2be9adb77128432b26",
+      "content": "PRETTY_NAME=\"Debian GNU/Linux 13 (trixie)\"\nNAME=\"Debian GNU/Linux\"\nVERSION_ID=\"13\"\nVERSION=\"13 (trixie)\"\nVERSION_CODENAME=trixie\nDEBIAN_VERSION_FULL=13.4\nID=debian\nHOME_URL=\"https://www.debian.org/\"\nSUPPORT_URL=\"https://www.debian.org/support\"\nBUG_REPORT_URL=\"https://bugs.debian.org/\"\n"
+    },
+    "usr/share/keyrings/debian-archive-keyring.gpg": {
+      "type": "symlink",
+      "size": 0,
+      "target": "debian-archive-keyring.pgp"
+    }
+  },
+  "execution": "read-only manifest and tar stream; no container execution or extraction"
+}

@@ -1,5 +1,21 @@
 FROM fc-e2b-registry.<region>.cr.aliyuncs.com/runtime/base:<tag>
 ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8
+# Resolve the reviewed engine packages from signed, dated Debian repositories.
+RUN printf '%s\n' \
+      'Types: deb' \
+      'URIs: http://snapshot.debian.org/archive/debian/20261112T000000Z' \
+      'Suites: trixie trixie-updates' \
+      'Components: main' \
+      'Signed-By: /usr/share/keyrings/debian-archive-keyring.pgp' \
+      'Check-Valid-Until: no' \
+      '' \
+      'Types: deb' \
+      'URIs: http://snapshot.debian.org/archive/debian-security/20261112T000000Z' \
+      'Suites: trixie-security' \
+      'Components: main' \
+      'Signed-By: /usr/share/keyrings/debian-archive-keyring.pgp' \
+      'Check-Valid-Until: no' > /etc/apt/sources.list.d/debian.sources
+
 # Prevent package installation from creating/starting a root-owned default cluster.
 RUN mkdir -p /etc/postgresql-common \
     && printf 'create_main_cluster = false\n' > /etc/postgresql-common/createcluster.conf \
