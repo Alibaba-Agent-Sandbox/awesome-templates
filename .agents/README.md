@@ -423,9 +423,9 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 
 - [Inactive canonical template v1 contract](notes/proposed/architecture/2026-11-12-template-v1-contract.md) · [local verification and pending consumer/E2E gates](evidence/verify/2026-11-12-template-v1-contract.md).
 
-- [Confirmed documentation feedback](notes/proposed/process/2026-11-25-confirmed-documentation-feedback.md) · [verification](evidence/verify/2026-11-25-confirmed-documentation-feedback.md).
-- [Current CLI template guidance](evidence/verify/2026-11-25-current-cli-template-guidance.md). Actual executable help and SDK/HTTP reader path; publication remains separate.
-- [Alpha.1 prerequisite and landed image-source integration](evidence/verify/2026-11-25-cli-alpha1-template-guidance.md). Alpha.0 preparation remains historical; current CLI public readback is still required.
+- [Confirmed documentation feedback](notes/implemented/process/2026-11-25-confirmed-documentation-feedback.md) · [final public-package prerequisites](evidence/verify/2026-11-25-template-guidance-public-prerequisites.md) · [initial local checkpoint](evidence/verify/2026-11-25-confirmed-documentation-feedback.md).
+- [Earlier CLI template-guidance checkpoint](evidence/verify/2026-11-25-current-cli-template-guidance.md). Historical source/help verification; publication is closed by the final prerequisite receipt above.
+- [Earlier alpha.1 prerequisite and landed image-source integration](evidence/verify/2026-11-25-cli-alpha1-template-guidance.md). Historical prepublication checkpoint; its original observations remain unchanged.
 - [Offline CI Debian archive preparation](notes/implemented/process/2026-11-25-offline-ci-apt-snapshot.md) · [preparation evidence](evidence/verify/2026-11-25-offline-ci-apt-snapshot.md) · [actual GitHub verification](evidence/verify/2026-11-25-offline-ci-apt-snapshot-remote.md). Existing native version assertions remain required.
 
 - [Reproducible database/document image sources](notes/implemented/process/2026-11-25-engine-image-sources.md) · [preparation verification](evidence/verify/2026-11-25-engine-image-sources.md) · [actual image/HTTP verification](evidence/verify/2026-11-25-engine-image-sources-remote.md). Exact runtime contracts and Beta status remain unchanged.
