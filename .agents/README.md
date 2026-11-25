@@ -422,3 +422,5 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 - [Document engine package pins](notes/proposed/process/2026-11-12-document-engine-package-pins.md) · [verification](evidence/verify/2026-11-12-document-engine-package-pins.md).
 
 - [Inactive canonical template v1 contract](notes/proposed/architecture/2026-11-12-template-v1-contract.md) · [local verification and pending consumer/E2E gates](evidence/verify/2026-11-12-template-v1-contract.md).
+
+- [Confirmed documentation feedback](notes/proposed/process/2026-11-25-confirmed-documentation-feedback.md) · [verification](evidence/verify/2026-11-25-confirmed-documentation-feedback.md).

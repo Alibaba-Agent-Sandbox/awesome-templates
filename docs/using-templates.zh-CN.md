@@ -57,7 +57,7 @@ OpenSandbox 先按其 [provider 指南](https://github.com/Alibaba-Agent-Sandbox
 ```bash
 export ABX_SERVER_TOKEN="<independent-application-token>"
 export ABX_HTTP_TIMEOUT=660
-abx deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --name hello --sandbox-timeout 1800
 export ABX_SANDBOX_ID="<returned-sandbox-id>"
 abx sandbox command list "$ABX_SANDBOX_ID"
 abx sandbox command run "$ABX_SANDBOX_ID" hello --arg name=Ada
@@ -139,13 +139,13 @@ asyncio.run(main())
 
 ### 导出文件与清理
 
-释放前用 `abx sandbox download "$ABX_SANDBOX_ID" /remote/path ./local-file` 或 `await sb.files.read_bytes("/remote/path")` 导出产物。只删除自己这次任务创建的实例：
+释放前用 `abx sandbox download "$ABX_SANDBOX_ID" /remote/path ./local-file` 或 `await sb.files.read_bytes("/remote/path")` 导出产物。删除上面创建的命名部署，并按提示确认：
 
 ```bash
-abx delete "$ABX_SANDBOX_ID"
+abx delete hello
 ```
 
-准备的模板／镜像可能保留供复用。不再需要时，按启动返回的准确资源引用，通过所选平台管理工具清理；不要删除共享基础模板或其他用户的资源。
+删除命名部署会清理它拥有的沙箱和模板。借用的构建产物及需要手动清理的镜像会保留；不再需要时，按返回的准确资源引用，通过所选平台管理工具清理。不要删除共享基础模板或其他用户的资源。
 
 ## 验收与厂商
 

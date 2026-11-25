@@ -8,10 +8,10 @@
 
 ## 快速开始
 
-先[安装 abx CLI](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox#installation)（0.5.8 或更新版本），按[使用指南](docs/using-templates.zh-CN.md)准备所选提供方的凭据和构建环境，再启动无需模型的入门模板：
+以下命令使用当前 CLI 源码，公开发行版 0.5.10 使用不同入口。先按[安装说明](docs/using-templates.zh-CN.md#安装)安装源码 CLI，按[使用指南](docs/using-templates.zh-CN.md)准备所选提供方的凭据和构建环境，再启动无需模型的入门模板：
 
 ```bash
-abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello
+abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --name hello
 ```
 
 CLI 会引导补齐必要配置，自动生成并保存默认应用认证令牌，后续命令复用。使用模型的模板还需要其 README 指定的模型账号或 API 配置。
@@ -20,10 +20,10 @@ CLI 会引导补齐必要配置，自动生成并保存默认应用认证令牌�
 
 ```bash
 abx sandbox command run <sandbox-id> hello --arg name=Ada
-abx delete <sandbox-id>
+abx delete hello
 ```
 
-预期输出为 `Hello, Ada!`。`kill` 删除运行中的沙箱；保留的镜像和模板按[清理说明](docs/using-templates.zh-CN.md#导出文件与清理)另行删除。
+预期输出为 `Hello, Ada!`。确认后，`delete hello` 删除此部署拥有的沙箱和模板；保留的镜像及借用的构建产物按[清理说明](docs/using-templates.zh-CN.md#导出文件与清理)处理。
 
 ## 选择模板
 

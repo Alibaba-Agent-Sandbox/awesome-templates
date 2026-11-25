@@ -57,7 +57,7 @@ The `python-hello` template below needs no model service. The example's credenti
 ```bash
 export ABX_SERVER_TOKEN="<independent-application-token>"
 export ABX_HTTP_TIMEOUT=660
-abx deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --sandbox-timeout 1800 --yes
+abx deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --name hello --sandbox-timeout 1800
 export ABX_SANDBOX_ID="<returned-sandbox-id>"
 abx sandbox command list "$ABX_SANDBOX_ID"
 abx sandbox command run "$ABX_SANDBOX_ID" hello --arg name=Ada
@@ -139,13 +139,13 @@ For another template, change the command path and JSON arguments to its document
 
 ### Export files and clean up
 
-Use `abx sandbox download "$ABX_SANDBOX_ID" /remote/path ./local-file` or `await sb.files.read_bytes("/remote/path")` before removing the sandbox. Only delete the instance owned by your task:
+Use `abx sandbox download "$ABX_SANDBOX_ID" /remote/path ./local-file` or `await sb.files.read_bytes("/remote/path")` before removing the sandbox. Delete the named deployment created above and confirm the prompt:
 
 ```bash
-abx delete "$ABX_SANDBOX_ID"
+abx delete hello
 ```
 
-Prepared templates/images may remain for reuse. When no longer needed, remove the exact owned resources reported by launch using the selected platform's management tools. Do not delete shared base templates or other users' resources.
+Deleting the named deployment removes its owned sandbox and templates. Borrowed build artifacts and images requiring manual cleanup are retained; use the returned resource references and the selected platform's management tools when they are no longer needed. Do not delete shared base templates or other users' resources.
 
 ## Evidence and providers
 
