@@ -29,7 +29,56 @@ Qwen Code 0.23.0, PostgreSQL and FC Gateway/Worker/Dispatcher functions.
 [Server Dockerfile](server/Dockerfile)
 
 The images pin SDK 0.4.0a7, which provides the managed Gateway and guest bridge.
-Application deployment requires Node.js 20 or later and the current source CLI. Business HTTP clients need only the Gateway endpoint and business key.
+Application deployment requires Node.js 20 or later and CLI 0.6.0-alpha.2. Business HTTP clients need only the Gateway endpoint and business key.
+
+### Architecture and cloud services
+
+Each deployment revision has three FC functions: Gateway, Dispatcher and Worker.
+They share one Server image and start with different roles. Model calls, tools and
+workspaces run in Agent Sandbox Express. Each Session owns a Sandbox, created on
+its first task and reused across later turns.
+
+![agents-api runtime: clients call the FC Gateway, which saves data to PostgreSQL; an FC timer invokes Dispatcher, which schedules Worker asynchronously; Worker drives a Session Sandbox that calls the model API](https://raw.githubusercontent.com/Alibaba-Agent-Sandbox/awesome-templates/main/docs/assets/agents-api-architecture.svg)
+
+| Module | Cloud product or service | Responsibility |
+| --- | --- | --- |
+| Gateway | Function Compute (FC) container function, HTTP trigger and function alias | Expose the business URL, authenticate requests, accept sessions, files and tasks, and serve status, events and artifact downloads |
+| Dispatcher | FC container function and timer trigger | Read pending tasks, expiry and cleanup work from the database and schedule the Worker for the appropriate revision |
+| Worker | FC container function invoked through FC asynchronous tasks | Create or reuse the Session Sandbox, submit and track tasks through the private bridge, and save events, results and artifacts to the database |
+| Guest bridge, Qwen Code / Codex and workspace | Alibaba Cloud Agent Sandbox Express | Run the Agent tool loop and user code, call the model API and preserve the Session workspace |
+| Durable state and file storage | Existing PostgreSQL, such as RDS for PostgreSQL | Store sessions, queue state, events, uploaded files and captured artifacts, using the current size-limited database storage backend |
+| Model inference | Existing compatible model API, such as a Model Studio endpoint supporting the selected adapter | Called by the Agent inside the Sandbox; the deployer supplies a key, endpoint and available model ID |
+| Image registry | Container Registry (ACR) | Store the Server and Sandbox images used by FC and Agent Sandbox |
+
+The private bridge is an authenticated internal application protocol. Its name
+does not imply VPC-only networking; configure the actual network access separately.
+
+A task follows this path:
+
+1. The client uploads files and submits input to Gateway, which stores the data and pending work in PostgreSQL.
+2. An FC timer invokes Dispatcher, currently once per minute. Dispatcher finds due work and invokes Worker through an FC asynchronous task. This interval can affect when a new task starts.
+3. Worker creates or reuses the Session Sandbox and drives it through the private bridge. Qwen Code / Codex calls the model and executes tools inside the Sandbox.
+4. Worker saves events and captured artifacts to PostgreSQL. The client reads progress and downloads results through Gateway. After the Session closes, saved results remain until the configured retention period expires.
+
+### Resources to prepare
+
+| Resource | Requirement | Preparation and deployment |
+| --- | --- | --- |
+| Available FC and Agent Sandbox Express accounts and permissions | Required | The deployer enables access and supplies configuration; `abx deploy` deploys the three FC functions, triggers and ingress, and prepares the Sandbox template. The runtime creates instances per Session |
+| ACR registry and namespace | Required | The deployer prepares the registry and access; the build uploads images |
+| PostgreSQL database | Required | Supply an existing reachable database and connection details; the template does not create or delete the database instance |
+| Compatible model service | Required | Supply a model account, key, endpoint and model ID; `qwen-code` needs Chat Completions with tools, while `codex` needs Responses with tool turns |
+| RAM deployment identity and FC execution role | Required | Select the deployment identity through an existing Serverless Devs access profile and supply an FC role ARN with the required internal function invocation permissions |
+| VPC, vSwitches and security group | Conditional | For a database accessible only through a private network, supply existing network configuration and verify connectivity from all three FC functions to the database and required external services |
+| Database CA chain | Conditional | Supply it when PostgreSQL uses a private CA; a publicly trusted certificate does not require an additional private CA |
+| HTTPS custom domain and certificate | Prepare for production ingress as needed | The default provides an FC test domain; configure an existing domain and the corresponding HTTPS ingress for production use |
+
+Gateway is an application module running on FC, so a separate API Gateway product
+is not required. Queue state, files and artifacts currently reside in PostgreSQL;
+the template does not require a separate message queue, Redis or OSS. RDS for
+PostgreSQL and Model Studio are service options, not exclusive requirements. The
+CLI, local Docker and Serverless Devs are deployment tools, not additional resident
+services. See Configuration and Resources below for network, credentials and cleanup.
 
 ## Problem solved
 
@@ -40,7 +89,7 @@ application token enter the Sandbox.
 
 ## Quick start (CLI)
 
-Install the current source CLI using the linked guide; published CLI 0.5.10 does not support these commands. Configure your Sandbox/build registry with the
+Install the pinned preview below. Configure your Sandbox/build registry with the
 [usage guide](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/using-templates.md#installation), and select an existing
 Serverless Devs access profile in `application.deployment.accessRef`. The FC
 region, Sandbox region, database connectivity and registry image access must agree.
@@ -51,6 +100,7 @@ two-turn Agent file task. Keep the virtual environment active for deploy/update.
 The venv command also creates `.abx/`; no separate directory setup is needed.
 
 ```bash
+npm install -g @agent-sandbox/cli@0.6.0-alpha.2 --registry=https://registry.npmjs.org
 abx template init ./agents-api --from agents-api
 cd agents-api
 python3 -m venv .abx/venv
@@ -64,7 +114,7 @@ Set the referenced environment variables described in Configuration before deplo
 Choose the adapter in the private bindings file and supply its matching model ID
 through `OPENAI_MODEL`.
 Edit the manifest's region, access profile and limits for your account. Keep
-private files, plans and build receipts under `.abx/`, excluded from image builds.
+private bindings and credentials under `.abx/`, excluded from image builds.
 
 ```bash
 abx deploy . --name agents-api --bindings .abx/bindings.json --plan
@@ -91,7 +141,6 @@ abx status agents-api --revisions
 abx delete agents-api --revision <old-revision> --bindings .abx/bindings.json --yes
 ```
 
-Authors may build separately with `abx template build . --out .abx/build.json --yes`, then reuse it through `abx deploy . --build .abx/build.json --name agents-api --bindings .abx/bindings.json --yes`. `abx template publish` publishes committed source without automatically listing it in Registry.
 
 ## Quick start (Python HTTP client)
 
@@ -263,14 +312,11 @@ abx delete agents-api --bindings .abx/bindings.json --yes
 
 Inspect the result and use `abx recover agents-api` if an operation was interrupted
 or its result is uncertain. Delete removes the deployment's recorded owned
-resources. A reusable artifact supplied with `--build`, a supplied `serverImage`,
-and existing databases, networks, model services and custom domains remain yours
-to manage.
+resources. A supplied `serverImage` and existing databases, networks, model
+services and custom domains remain yours to manage.
 
-When a standalone build is no longer used by any deployment, clean its confirmed
-owned Server image with `abx template build --clean .abx/build.json --yes`.
-Sandbox image builds may remain in `retained_build_artifacts`; remove only your
-unused image tags using the registry's cleanup instructions. Deleting a deployment
+For separately retained images, use your image registry's cleanup controls to
+remove only tags you own and no deployment still uses. Deleting a deployment
 does not erase separately retained database history.
 
 ## Contributing

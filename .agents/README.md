@@ -1,5 +1,7 @@
 # Engineering records: awesome-templates
 
+- [Template guidance and Agents architecture](notes/implemented/process/2026-11-25-template-guidance-completion.md) · [verification](evidence/verify/2026-11-25-template-guidance-completion.md). Includes the explicitly dated November9 catalog assessment.
+
 - [Native-template startup prerequisite audit](evidence/verify/2026-11-25-native-template-startup-audit.md): draft migration remains unactivated; snapshot startup and dynamic application credentials are distinct.
 
 - [Validate optional Registry API bindings](notes/proposed/process/2026-11-25-registry-api-publication.md) · [verification](evidence/verify/2026-11-25-registry-api-publication.md).

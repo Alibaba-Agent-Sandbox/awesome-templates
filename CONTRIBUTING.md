@@ -10,6 +10,9 @@ The rules for a template are [docs/template-spec.md](./docs/template-spec.md)
 ([中文](./docs/template-spec.zh-CN.md)). `_skeleton/` is a directory that
 already passes `scripts/check_template.py`. It is not a catalog entry.
 
+Read the [development convention](docs/template-convention.md) and [AI review procedure](docs/template-evaluation.md) when defining task interfaces, customization and resource requirements.
+
+
 ## Checklist
 
 1. Copy `_skeleton/` to a kebab-case directory. The directory name,

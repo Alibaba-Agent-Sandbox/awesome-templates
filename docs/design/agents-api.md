@@ -14,6 +14,19 @@ owns one native thread/workspace; first input allocates compute. PostgreSQL is
 host-authoritative for acceptance/ownership, not independent proof of Agent
 execution. Same-UID guest records do not establish hostile-code attestation.
 
+## Deployment architecture
+
+The [user-facing architecture and resource map](../../agents-api/README.md#architecture-and-cloud-services)
+describes the current cloud prerequisites. Gateway, Dispatcher and Worker run as
+three FC functions sharing the Server image. Gateway accepts business requests
+and persists them to PostgreSQL. The FC timer invokes Dispatcher, which reads due
+work and invokes the revision-bound Worker through FC asynchronous tasks. Worker
+creates or reuses the session-owned Sandbox, drives the private bridge, and
+captures events and artifacts. The native Agent calls the model from the Sandbox.
+PostgreSQL stores queue state and bounded file/artifact bytes as well as sessions.
+The deployer supplies the database, model access, ACR namespace and RAM role;
+private network and custom-domain resources are conditional existing inputs.
+
 ## Exposed API
 
 Business calls use Gateway authentication; no guest endpoint is returned. The
