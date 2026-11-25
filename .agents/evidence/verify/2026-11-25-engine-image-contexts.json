@@ -1,0 +1,64 @@
+{
+  "base_revision": "52f7653bda0b6c6406207e28095ee09a87cb5018",
+  "context_rules": "Existing image workflow copytree ignore patterns; default FROM placeholder resolved to cn-hangzhou/v0.0.49 only",
+  "templates": {
+    "dev-services": {
+      "source_files_sha256": {
+        ".dockerignore": "6cedf6b5816a203f9fb60100cf1a5e7ab90a5802dfc05e0f0fe6a9a697daf11b",
+        "Dockerfile": "3b2c9ed5a51587134301fcffdc8aab2e331c85333b85aabc87734a5e407d3541",
+        "README.md": "50c8f1fe47de86339df03cf44fb8a6a6852f5ff72200614f80c11ca7292a06fb",
+        "README.zh-CN.md": "dc2aafdc39eb3b520ca4a11d7108e6f1b706a49f7e1d72145b7be6c14d4441f5",
+        "commands.py": "de4fe2ff4f2c00c05013586bb7025ffc11122f37faa41467f8a1ccb04accb743",
+        "e2e_test.py": "4d7abf354f6f7dfcced56be1045921a8b8d1a5c1d3da5e9f60d40b3e40379564",
+        "evidence/express-2026-10-20.json": "b98d2eb8ddd242b3f376101ee1f47b8fd9b3525ee82531d682025dad57536e6f",
+        "evidence/express-2026-10-20T130648Z.json": "38e5f6af985bc149c0c547cef760f92025c73eae230e9b26c1712a05768835d5",
+        "evidence/full-http-steps-2026-10-20T130648Z.json": "0c3c5193856950f2a351b3e6d23168960986bcdbad1527c9e8e8d7b20d2b8643",
+        "evidence/image-attempt-2026-10-20T090316Z.json": "6a615f0add0f78469c687cd9c3ae01cfd50a2986f7ebad115a80c44f92eb3597",
+        "evidence/image-attempt-2026-10-20T091417Z.json": "f7f8d30110677f6fd338dcc9edbc94527c1eeb44ac46f0f8b21cb130f2553ca6",
+        "evidence/image-attempt-2026-10-20T092859Z.json": "f7f8d30110677f6fd338dcc9edbc94527c1eeb44ac46f0f8b21cb130f2553ca6",
+        "evidence/image-http-2026-10-20T101159Z.json": "0cfe1dda4180ebc3acb51f2a17ab388668b01e92200984cc559b8ac73951840e",
+        "evidence/opensandbox-2026-10-22T111605Z.json": "c9e6f6b15f79ae54d56aba99559433629a017da2c66ec6724963df6aa1bc84bf",
+        "evidence/opensandbox-native-2026-10-22-run39751400293.json": "322aa20eb65ca77acab58a4e312256825f15b53d8a62815b14fd2521e483c9b8",
+        "evidence/port-conflict-2026-10-20.json": "370cee446f2c93a18edd035a517c17333f779edfced5346d79e8c82a189b0890",
+        "evidence/public-launch-opensandbox-dev-services-40239893681-1-public-launch.json": "34d0c35825eaf2056a5e79c768981d52ea31e89eb422cbff782b99e99bf45e3f",
+        "evidence/verification-steps-2026-10-25T233920Z.json": "ce22be0deb45c2edefe6a6418cacce4c900f5e18c3b71498d6a946a47fd4c815",
+        "lifecycle.py": "33741ef7d32255925fea985fb1101fd39388594ff20a7300c4724d2374e65eff",
+        "template.yaml": "313f1bade2e817891812cb56288993f08dc6dd662b8634a530a905934bff600f",
+        "test_commands.py": "af1bab0920243e1d3c3022b361051b1568a586fd9d504e211349bf7d5ca23be7",
+        "upstream-pins.json": "dea44807309de2f5b2116ac71a24e1854bca1521129e8e5ade38e3a3ff38abb7"
+      },
+      "source_context_sha256": "36e062ef66ec73cb02c24cd4a05e92e7ee83a2151046bdcc7de0f9e54a23d266",
+      "prepared_dockerfile_sha256": "b4fc807d7f4887d2dee32536f53adea2c976e9c7d6901653fdca813d684cd92a"
+    },
+    "document-tools": {
+      "source_files_sha256": {
+        "Dockerfile": "0695ef96da9da59ad038b81566fdc5523cafb6b38dd7abc813bed8ab7e14db56",
+        "README.md": "fe9a0ccecc08784cc1d702d003c5ad67c445b2c94f296ba9058d25718c9d5b01",
+        "README.zh-CN.md": "978b4913c498a39e15d93954f5d5e981b8b7feec51b4b7d5ad2ebe4ec0e9c3cb",
+        "commands.py": "bcc4efdba0f2dda7b3ce2b626531107712f7331e2d4fa3534b196fac4dcf78c0",
+        "e2e_test.py": "9ce21efadb870c3b02c58d6c033cca402efbe67d49a82f18c83edaf57b8be948",
+        "evidence/express-2026-10-19.json": "a0644758efd202091fafeb49f7f99a6e80bb95e80b5c1d5f76c454ca295d1beb",
+        "evidence/express-2026-10-20.json": "2d9e426196f5eee1c76710fd5323b1918fb196982a5d464170dbef7cfc61ec5e",
+        "evidence/express-2026-10-20T143722Z.json": "fe604e8ad5631fa5325b3bd5345d55479b9d3ec30f996a147c43327667d3dae9",
+        "evidence/full-http-steps-2026-10-20T143234Z.json": "09e2e65d38514f3f8b8c40defa889b574ab165a75e7f269536ae722dc3672f66",
+        "evidence/full-http-steps-2026-10-20T143722Z.json": "7e5389f492b9a94e8adf96669cc468cb2c5398865bf1dfcea4e7645240b95b46",
+        "evidence/image-http-2026-10-20T150549Z.json": "49651e864a5a4018cc120d8a70258d110381ee580fc0953c32c9d4968a921a92",
+        "evidence/opensandbox-2026-10-22T112219Z.json": "1222317795a4b1e496ccec1a614604e132092a6ce7a694d51e92eaff847d21d9",
+        "evidence/opensandbox-native-2026-10-22-run39751400293.json": "27d488a94de34bc2f8dce45d9a0d450c8e51f696034fa943ec5c4e3c6a6562d1",
+        "evidence/public-launch-opensandbox-document-tools-40239893681-1-public-launch.json": "1d152e600ca70d5b87b3e623b29e7f3bd1e6b7969c38e96259f004a09b45cc14",
+        "evidence/verification-steps-2026-10-19T143740Z.json": "3af0e0b0d92098ba10a952614f9e895483b6395899343cff4333284c474ab4a0",
+        "evidence/verification-steps-2026-10-19T144234Z.json": "a6288af2a738ae828aa7711503f910be53aa6d64a12d06e26448c6bace529b7f",
+        "evidence/verification-steps-2026-10-19T144712Z.json": "a23a8232c15edd4db34e153c965fe534df80a520a4935d63b722db54f07754e1",
+        "evidence/verification-steps-2026-10-19T145044Z.json": "507422591c166c58d47b6f21c7647300901f51e2b69feb79d064f9947b235597",
+        "evidence/verification-steps-2026-10-19T145109Z.json": "3d382cbf035d47aeb48d16abb55cb9566683c0cb8ef5780b75bb05301142599c",
+        "evidence/verification-steps-2026-10-19T145657Z.json": "51d4cf227c3e2d6edb2b78976532bd517b5f7360fbb50346b547c5ae27e972d6",
+        "evidence/verification-steps-2026-10-25T234223Z.json": "a3c95c53fea0ac23765e077b10950a6d5bbb70e9e65b497384beb0b70bd71cac",
+        "template.yaml": "ca6951cee890f85e11d4ce474b50a3c2338109850feaf8ccaa75d5a371feb883",
+        "test_commands.py": "d1d3e8843b2a330bcbd760fb0bc901f91ecef6344bdceecc9e2cb33210c0cad4",
+        "test_http.py": "f5fa890c0f90a50a2f49edced4de06d0e44f13da3fd77af3c3ee18feb331d974"
+      },
+      "source_context_sha256": "495c7bc4652b09f2d37512e2ce678ef315e586bcd907e0df22dc5aa4f40bf283",
+      "prepared_dockerfile_sha256": "9cce85014c5845bd6a9caea163ea0ca58deac823ff2700d08c4ce94900ea36cc"
+    }
+  }
+}

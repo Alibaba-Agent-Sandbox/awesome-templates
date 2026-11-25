@@ -425,4 +425,7 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 
 - [Confirmed documentation feedback](notes/proposed/process/2026-11-25-confirmed-documentation-feedback.md) · [verification](evidence/verify/2026-11-25-confirmed-documentation-feedback.md).
 - [Current CLI template guidance](evidence/verify/2026-11-25-current-cli-template-guidance.md). Actual executable help and SDK/HTTP reader path; publication remains separate.
-- [Offline CI Debian archive preparation](notes/proposed/process/2026-11-25-offline-ci-apt-snapshot.md) · [preparation evidence](evidence/verify/2026-11-25-offline-ci-apt-snapshot.md) · [actual GitHub verification](evidence/verify/2026-11-25-offline-ci-apt-snapshot-remote.md). Existing native version assertions remain required.
+- [Alpha.1 prerequisite and landed image-source integration](evidence/verify/2026-11-25-cli-alpha1-template-guidance.md). Alpha.0 preparation remains historical; current CLI public readback is still required.
+- [Offline CI Debian archive preparation](notes/implemented/process/2026-11-25-offline-ci-apt-snapshot.md) · [preparation evidence](evidence/verify/2026-11-25-offline-ci-apt-snapshot.md) · [actual GitHub verification](evidence/verify/2026-11-25-offline-ci-apt-snapshot-remote.md). Existing native version assertions remain required.
+
+- [Reproducible database/document image sources](notes/implemented/process/2026-11-25-engine-image-sources.md) · [preparation verification](evidence/verify/2026-11-25-engine-image-sources.md) · [actual image/HTTP verification](evidence/verify/2026-11-25-engine-image-sources-remote.md). Exact runtime contracts and Beta status remain unchanged.

@@ -8,10 +8,10 @@
 
 ## 快速开始
 
-本快速开始针对 CLI 0.6.0-alpha.0 预览版（需要 Node 20+）。先按[使用指南](docs/using-templates.zh-CN.md)准备所选提供方的凭据和构建环境，再启动无需模型的入门模板：
+本快速开始针对 CLI 0.6.0-alpha.1 预览版（需要 Node 20+）。先按[使用指南](docs/using-templates.zh-CN.md)准备所选提供方的凭据和构建环境，再启动无需模型的入门模板：
 
 ```bash
-npm install -g @agent-sandbox/cli@0.6.0-alpha.0
+npm install -g @agent-sandbox/cli@0.6.0-alpha.1
 abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --name hello
 ```
 

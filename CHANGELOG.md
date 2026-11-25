@@ -6,7 +6,7 @@
 
 ## Unreleased
 
-- Preserve exact database/document CI engine contracts using dated Debian package sources. / 数据库和文档 CI 使用固定日期的 Debian 软件源，保留精确引擎版本和原生检查。
+- Resolve the unchanged database/document engine pins from signed dated Debian sources in their image recipes and native CI; preserve runtime behavior and historical provider evidence. / 数据库和文档镜像配方及原生 CI 使用固定日期的已签名 Debian 软件源解析原精确引擎版本，保留运行行为与历史 Provider 记录。
 
 - Clarify the CLI prerequisite, named-deployment inspection/cleanup and explicit business-API binding in the bilingual quick start and usage guide. / 双语快速开始与使用指南明确 CLI 前提、命名部署的查看和清理，以及业务 API 的显式绑定。
 

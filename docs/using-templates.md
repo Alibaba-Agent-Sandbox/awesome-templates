@@ -6,12 +6,12 @@ Choose a template, configure the sandbox platform and any model service it needs
 
 ## Installation
 
-This guide targets the CLI **0.6.0-alpha.0** and Python client **0.5.0a0** previews. The npm CLI needs Node 20+; use a virtual environment for Python.
+This guide targets the CLI **0.6.0-alpha.1** and Python client **0.5.0a0** previews. The npm CLI needs Node 20+; use a virtual environment for Python.
 
 Template README CLI examples follow the version documented there. The older 0.5 command wrappers do not apply to 0.6; use the SDK/HTTP examples below or the [explicit OpenAPI binding guide](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/en/guide/sandbox-api.md) with 0.6.
 
 ```bash
-npm install -g @agent-sandbox/cli@0.6.0-alpha.0
+npm install -g @agent-sandbox/cli@0.6.0-alpha.1
 python3 -m venv .venv
 . .venv/bin/activate
 python3 -m pip install --index-url https://pypi.org/simple 'agent-sandbox-client==0.5.0a0'

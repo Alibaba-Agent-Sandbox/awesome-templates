@@ -8,10 +8,10 @@ Reusable environments for AI agents: browser automation, coding tools, web servi
 
 ## Quick start
 
-This quick start targets the CLI 0.6.0-alpha.0 preview (Node 20+). Prepare the selected provider's credentials and build environment using the [usage guide](docs/using-templates.md), then launch the introductory template, which needs no model:
+This quick start targets the CLI 0.6.0-alpha.1 preview (Node 20+). Prepare the selected provider's credentials and build environment using the [usage guide](docs/using-templates.md), then launch the introductory template, which needs no model:
 
 ```bash
-npm install -g @agent-sandbox/cli@0.6.0-alpha.0
+npm install -g @agent-sandbox/cli@0.6.0-alpha.1
 abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --name hello
 ```
 

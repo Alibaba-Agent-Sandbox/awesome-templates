@@ -6,12 +6,12 @@
 
 ## 安装
 
-本指南针对 CLI **0.6.0-alpha.0** 与 Python client **0.5.0a0** 预览版。npm CLI 需要 Node 20+；Python 使用独立虚拟环境。
+本指南针对 CLI **0.6.0-alpha.1** 与 Python client **0.5.0a0** 预览版。npm CLI 需要 Node 20+；Python 使用独立虚拟环境。
 
 模板自有 README 的 CLI 示例以其标注版本为准。旧版 0.5 的命令包装入口不适用于 0.6；0.6 请使用下方 SDK／HTTP 示例，或按[显式 OpenAPI 绑定指南](https://github.com/Alibaba-Agent-Sandbox/agent-sandbox/blob/main/docs/zh/guide/sandbox-api.md)调用业务 API。
 
 ```bash
-npm install -g @agent-sandbox/cli@0.6.0-alpha.0
+npm install -g @agent-sandbox/cli@0.6.0-alpha.1
 python3 -m venv .venv
 . .venv/bin/activate
 python3 -m pip install --index-url https://pypi.org/simple 'agent-sandbox-client==0.5.0a0'
