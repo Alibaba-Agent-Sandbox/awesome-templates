@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="660" viewBox="0 0 1120 660" role="img" aria-labelledby="title description">
+  <title id="title">Managed Agents runtime architecture</title>
+  <desc id="description">Business clients access the Gateway on Function Compute. Gateway, Dispatcher and Worker share an existing PostgreSQL database for state, inputs, events and artifacts. An FC timer invokes Dispatcher, which sends FC asynchronous tasks to Worker. Worker communicates with the private bridge in a session-owned Agent Sandbox. The agent and tools run in that Sandbox and call an existing model API.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 1 1 L 9 5 L 1 9 Z" fill="#526579"/>
+    </marker>
+  </defs>
+  <rect width="1120" height="660" rx="16" fill="#ffffff"/>
+  <g font-family="sans-serif" fill="#172b43">
+    <text x="26" y="43" font-size="26" font-weight="700">Managed Agents: runtime architecture</text>
+    <text x="26" y="72" font-size="15" fill="#526579">One public endpoint. Agent execution stays inside a session-owned Sandbox.</text>
+
+    <rect x="220" y="105" width="620" height="345" rx="18" fill="#f3f7fd" stroke="#c3d5ed" stroke-width="1.5"/>
+    <text x="245" y="137" font-size="21" font-weight="700" fill="#255797">Function Compute (FC)</text>
+
+    <g fill="none" stroke="#526579" stroke-width="2" stroke-linejoin="round">
+      <path d="M 185 273 H 250" marker-end="url(#arrow)"/>
+      <path d="M 537 193 V 225" marker-end="url(#arrow)"/>
+      <path d="M 625 273 H 670" marker-end="url(#arrow)"/>
+      <path d="M 810 273 H 905" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+      <path d="M 1000 340 V 450" marker-end="url(#arrow)"/>
+      <path d="M 330 320 V 574 H 445" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+      <path d="M 537 320 V 525" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+      <path d="M 740 320 V 574 H 695" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    </g>
+
+    <g font-size="12" fill="#526579" text-anchor="middle">
+      <text x="217" y="256">HTTP</text>
+      <text x="647" y="256" font-size="11">FC async</text>
+      <text x="857" y="250">Private bridge</text>
+    </g>
+    <text x="1014" y="399" font-size="13" fill="#526579">API calls</text>
+
+    <rect x="25" y="238" width="160" height="70" rx="11" fill="#f8fafc" stroke="#cbd5df" stroke-width="1.5"/>
+    <text x="105" y="267" font-size="17" font-weight="700" text-anchor="middle">Business client</text>
+    <text x="105" y="290" font-size="12" fill="#526579" text-anchor="middle">URL + business Key</text>
+
+    <rect x="462" y="157" width="150" height="36" rx="18" fill="#e4edf9" stroke="#b7cce8"/>
+    <text x="537" y="180" font-size="13" fill="#255797" text-anchor="middle">FC timer · 1 min</text>
+
+    <g fill="#ffffff" stroke="#9cb9df" stroke-width="1.5">
+      <rect x="250" y="225" width="160" height="95" rx="12"/>
+      <rect x="450" y="225" width="175" height="95" rx="12"/>
+      <rect x="670" y="225" width="140" height="95" rx="12"/>
+    </g>
+    <g text-anchor="middle">
+      <text x="330" y="264" font-size="19" font-weight="700">Gateway</text>
+      <text x="330" y="289" font-size="13" fill="#526579">Public HTTP API</text>
+      <text x="537" y="264" font-size="19" font-weight="700">Dispatcher</text>
+      <text x="537" y="289" font-size="13" fill="#526579">Queue / lifecycle</text>
+      <text x="740" y="264" font-size="19" font-weight="700">Worker</text>
+      <text x="740" y="289" font-size="13" fill="#526579">Run / collect</text>
+    </g>
+
+    <rect x="905" y="225" width="190" height="115" rx="14" fill="#eff9f4" stroke="#9bcbb3" stroke-width="1.5"/>
+    <g text-anchor="middle">
+      <text x="1000" y="257" font-size="18" font-weight="700" fill="#246345">Agent Sandbox</text>
+      <text x="1000" y="285" font-size="14">Express · per Session</text>
+      <text x="1000" y="310" font-size="13" fill="#526579">Bridge · Agent · tools</text>
+    </g>
+
+    <rect x="905" y="450" width="190" height="90" rx="12" fill="#f8fafc" stroke="#cbd5df" stroke-width="1.5"/>
+    <g text-anchor="middle">
+      <text x="1000" y="485" font-size="19" font-weight="700">Model API</text>
+      <text x="1000" y="511" font-size="12" fill="#526579">Existing compatible endpoint</text>
+    </g>
+
+    <rect x="445" y="525" width="250" height="98" rx="14" fill="#fff8ed" stroke="#d8b787" stroke-width="1.5"/>
+    <g text-anchor="middle">
+      <text x="570" y="550" font-size="12" font-weight="700" fill="#8c612c">EXISTING DATABASE</text>
+      <text x="570" y="577" font-size="21" font-weight="700">PostgreSQL</text>
+      <text x="570" y="602" font-size="13" fill="#526579">State · inputs · events · artifacts</text>
+    </g>
+  </g>
+</svg>

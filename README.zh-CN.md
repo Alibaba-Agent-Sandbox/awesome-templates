@@ -8,10 +8,10 @@
 
 ## 快速开始
 
-本快速开始针对 CLI 0.6.0-alpha.1 预览版（需要 Node 20+）。先按[使用指南](docs/using-templates.zh-CN.md)准备所选提供方的凭据和构建环境，再启动无需模型的入门模板：
+本快速开始针对 CLI 0.6.0-alpha.2 预览版（需要 Node 20+）。先按[使用指南](docs/using-templates.zh-CN.md)准备所选提供方的凭据和构建环境，再启动无需模型的入门模板：
 
 ```bash
-npm install -g @agent-sandbox/cli@0.6.0-alpha.1
+npm install -g @agent-sandbox/cli@0.6.0-alpha.2
 abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --name hello
 ```
 
@@ -123,6 +123,8 @@ abx template init ./python-hello --from Alibaba-Agent-Sandbox/awesome-templates/
 ```
 
 源码与目录由本仓库维护，[`awesome-templates.yaml`](awesome-templates.yaml)供 CLI 和 Registry 读取。修改或新增模板前请阅读[贡献指南](CONTRIBUTING.zh-CN.md)与[模板规范](docs/template-spec.zh-CN.md)。模板问题请提交到 [Issues](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues)。
+
+模板作者可使用[开发公约](docs/template-convention.zh-CN.md)和[AI 评价流程](docs/template-evaluation.zh-CN.md)，说明业务接口、定制方式与资源需求。
 
 ## 许可证
 

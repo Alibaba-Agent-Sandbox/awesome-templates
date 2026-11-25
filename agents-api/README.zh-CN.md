@@ -24,7 +24,52 @@ Qwen Code 0.23.0、PostgreSQL，以及 FC Gateway/Worker/Dispatcher 函数。
 [Server Dockerfile](server/Dockerfile)
 
 镜像固定使用 SDK 0.4.0a7，提供托管 Gateway 和 guest bridge。部署应用需要 Node.js 20
-或更高版本，以及当前源码 CLI。业务 HTTP 客户端只需要 Gateway endpoint 和业务 Key。
+或更高版本，以及 CLI 0.6.0-alpha.2。业务 HTTP 客户端只需要 Gateway endpoint 和业务 Key。
+
+### 技术架构与云产品
+
+一个部署版本包含 Gateway、Dispatcher、Worker 三个 FC 函数，共用 Server 镜像并按角色启动。
+Agent 的模型调用、工具执行和工作区位于 Agent Sandbox 极速版中；每个 Session 独占一个
+Sandbox，首次任务时按需创建，后续轮次复用。
+
+![agents-api 运行架构：业务客户端调用 FC Gateway，Gateway 将数据保存到 PostgreSQL；FC 定时触发 Dispatcher，后者异步调度 Worker，Worker 驱动 Session Sandbox，Sandbox 调用模型 API](https://raw.githubusercontent.com/Alibaba-Agent-Sandbox/awesome-templates/main/docs/assets/agents-api-architecture.svg)
+
+| 模块 | 使用的云产品或服务 | 职责 |
+| --- | --- | --- |
+| Gateway | 函数计算 FC 容器函数、HTTP 触发器与函数别名 | 提供统一业务 URL，鉴权，接收 Session、文件和任务请求，查询状态、事件并下载产物 |
+| Dispatcher | 函数计算 FC 容器函数、定时触发器 | 定期读取数据库中的待执行任务及到期、清理工作，调度对应版本的 Worker |
+| Worker | 函数计算 FC 容器函数，通过 FC 异步任务调用 | 创建或复用 Session 的 Sandbox，经私有 bridge 提交和跟踪任务，将事件、结果和产物保存到数据库 |
+| Guest bridge、Qwen Code / Codex、工作区 | 阿里云 Agent Sandbox 极速版 | 执行 Agent 工具循环和用户代码，调用模型服务，维持同一 Session 的工作区 |
+| 持久状态与文件存储 | 已有 PostgreSQL，可选择 RDS PostgreSQL | 保存 Session、任务队列状态、事件、上传文件及已捕获产物；当前使用有大小限制的数据库存储 |
+| 模型推理 | 已有兼容模型 API，例如支持所选 adapter 的百炼端点 | 由 Sandbox 内的 Agent 调用；部署者提供 Key、接口地址及实际可用的模型 ID |
+| 镜像仓库 | 容器镜像服务 ACR | 存放 Server 和 Sandbox 两类镜像，供 FC 和 Agent Sandbox 使用 |
+
+这里的私有 bridge 指有认证的内部应用协议，不代表已配置 VPC 网络隔离；实际网络访问仍由部署配置控制。
+
+一次任务的主要过程：
+
+1. 客户端向 Gateway 上传文件并提交输入，Gateway 将数据和待执行任务保存到 PostgreSQL。
+2. FC 定时触发 Dispatcher；当前部署配置为每分钟一次。Dispatcher 查询待处理工作，通过 FC 异步任务调用 Worker。新任务启动可能受这一调度间隔影响。
+3. Worker 创建或复用 Session 的 Sandbox，通过私有 bridge 驱动任务。Qwen Code / Codex 在 Sandbox 内调用模型并执行工具。
+4. Worker 将事件和捕获的产物写回 PostgreSQL；客户端通过 Gateway 查询进度和下载结果。关闭 Session 后，已保存的结果保留到配置的保留期结束。
+
+### 部署前需要准备哪些资源
+
+| 资源 | 是否需要 | 准备与部署方式 |
+| --- | --- | --- |
+| 函数计算 FC、Agent Sandbox 极速版的可用账号及权限 | 必需 | 部署者开通并提供访问配置；`abx deploy` 部署三个 FC 函数、触发器和入口，并准备 Sandbox 模板；运行时按 Session 创建实例 |
+| ACR 镜像仓库及命名空间 | 必需 | 部署者提前准备并配置访问权限；构建过程上传镜像 |
+| PostgreSQL 数据库 | 必需 | 部署者提供已有可达数据库及连接信息；模板不创建或删除数据库实例 |
+| 兼容模型服务 | 必需 | 部署者准备模型账号、Key、endpoint 和模型 ID；`qwen-code` 使用支持工具调用的 Chat Completions，`codex` 使用支持工具回合的 Responses |
+| RAM 部署身份与 FC 执行角色 | 必需 | 部署身份通过已有 Serverless Devs access 配置选择；提供具有所需内部函数调用权限的 FC 角色 ARN |
+| VPC、交换机、安全组 | 按需 | 数据库仅允许私网访问时，提供已有网络配置，并确认三个 FC 函数可达数据库及所需外部服务 |
+| 数据库 CA 链 | 按需 | PostgreSQL 使用私有 CA 时提供；公开受信任证书不需要额外配置私有 CA |
+| HTTPS 自定义域名及证书 | 生产入口按需准备 | 默认提供 FC 测试域名；生产使用时配置已有域名及相应 HTTPS 入口 |
+
+Gateway 是本应用部署在 FC 上的模块，无需另行部署 API 网关产品。当前模板将队列状态、
+文件和产物保存在 PostgreSQL，不要求额外配置消息队列、Redis 或 OSS。RDS PostgreSQL 和
+百炼是可选的具体服务，不是唯一选择。CLI、本机 Docker 和 Serverless Devs 用于构建部署，
+不作为额外的常驻服务。网络、凭据及清理方式见下文“配置”和“资源”。
 
 ## 解决的问题
 
@@ -33,7 +78,7 @@ Sandbox 管理凭据留在 Server；Sandbox 只接收选定的模型配置和单
 
 ## 快速开始（CLI）
 
-这些命令需要当前源码 CLI，已发布的 0.5.10 不支持。先按[使用指南](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/using-templates.md#installation)
+安装下方固定预览版，再按[使用指南](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/blob/main/docs/using-templates.md#installation)
 配置 Sandbox 及镜像构建仓库，并在 `application.deployment.accessRef` 选择已有的
 Serverless Devs access。FC 地域、Sandbox 地域、数据库网络和镜像仓库访问需要相互匹配。
 CLI 只复制这个模板，得到可编辑项目，不会在获取源码时部署。部署主机仍需 Python 3
@@ -41,6 +86,7 @@ CLI 只复制这个模板，得到可编辑项目，不会在获取源码时部�
 文件任务。部署及更新时保持该虚拟环境激活。创建虚拟环境会同时创建 `.abx/`，无需单独建目录。
 
 ```bash
+npm install -g @agent-sandbox/cli@0.6.0-alpha.2 --registry=https://registry.npmjs.org
 abx template init ./agents-api --from agents-api
 cd agents-api
 python3 -m venv .abx/venv
@@ -51,7 +97,7 @@ chmod 600 .abx/bindings.json
 ```
 
 部署前提供“配置”表中的环境变量，在私有 binding 文件中选择 adapter，
-通过 `OPENAI_MODEL` 提供与其匹配且实际可用的模型 ID，并修改清单中的地域、access 和资源限制。私有文件、构建收据和计划存放在 `.abx/` 下，该目录不进入镜像构建上下文。
+通过 `OPENAI_MODEL` 提供与其匹配且实际可用的模型 ID，并修改清单中的地域、access 和资源限制。私有绑定和凭据存放在 `.abx/` 下，该目录不进入镜像构建上下文。
 
 ```bash
 abx deploy . --name agents-api --bindings .abx/bindings.json --plan
@@ -77,7 +123,6 @@ abx status agents-api --revisions
 abx delete agents-api --revision <旧版本> --bindings .abx/bindings.json --yes
 ```
 
-作者需要分开构建和部署时，可选用 `abx template build . --out .abx/build.json --yes`，再通过 `abx deploy . --build .abx/build.json --name agents-api --bindings .abx/bindings.json --yes` 复用构建。发布源码使用 `abx template publish`，不会自动上架 Registry。
 
 ## 快速开始（Python HTTP 客户端）
 
@@ -231,12 +276,11 @@ abx delete agents-api --bindings .abx/bindings.json --yes
 ```
 
 检查删除结果；操作中断或结果不确定时，使用 `abx recover agents-api` 核查。
-删除操作清理部署记录中的自有资源。通过 `--build` 提供的可复用构建产物、用户提供的
-`serverImage`，以及已有数据库、网络、模型服务和自定义域名仍由你管理。
+删除操作清理部署记录中的自有资源。用户提供的 `serverImage`，以及已有数据库、
+网络、模型服务和自定义域名仍由你管理。
 
-独立构建不再被任何部署使用后，可用 `abx template build --clean .abx/build.json --yes`
-清理归属已确认的 Server 镜像。Sandbox 构建镜像可能仍列在 `retained_build_artifacts`
-中；按镜像仓库清理说明只删除属于你的未使用 tag。删除部署不会擦除另外保留的数据库历史。
+对于单独保留的镜像，使用镜像仓库的清理功能，仅删除属于你且没有部署继续使用的
+tag。删除部署不会擦除另外保留的数据库历史。
 
 ## 贡献
 

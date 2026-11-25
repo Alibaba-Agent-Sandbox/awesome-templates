@@ -8,10 +8,10 @@ Reusable environments for AI agents: browser automation, coding tools, web servi
 
 ## Quick start
 
-This quick start targets the CLI 0.6.0-alpha.1 preview (Node 20+). Prepare the selected provider's credentials and build environment using the [usage guide](docs/using-templates.md), then launch the introductory template, which needs no model:
+This quick start targets the CLI 0.6.0-alpha.2 preview (Node 20+). Prepare the selected provider's credentials and build environment using the [usage guide](docs/using-templates.md), then launch the introductory template, which needs no model:
 
 ```bash
-npm install -g @agent-sandbox/cli@0.6.0-alpha.1
+npm install -g @agent-sandbox/cli@0.6.0-alpha.2
 abx --provider alicloud-express deploy Alibaba-Agent-Sandbox/awesome-templates//python-hello --name hello
 ```
 
@@ -123,6 +123,8 @@ abx template init ./python-hello --from Alibaba-Agent-Sandbox/awesome-templates/
 ```
 
 This repository owns the source templates and [`awesome-templates.yaml`](awesome-templates.yaml), read by the CLI and Registry. Read [CONTRIBUTING.md](CONTRIBUTING.md) and the [template specification](docs/template-spec.md) before changing or adding a template. Report template problems in [Issues](https://github.com/Alibaba-Agent-Sandbox/awesome-templates/issues).
+
+Authors can use the [development convention](docs/template-convention.md) and [AI review procedure](docs/template-evaluation.md) to explain task interfaces, customization and resource requirements.
 
 ## License
 
