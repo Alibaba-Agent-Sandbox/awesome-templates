@@ -437,3 +437,5 @@ Current controller authentication: [decision](notes/proposed/process/2026-10-25-
 - [Reproducible database/document image sources](notes/implemented/process/2026-11-25-engine-image-sources.md) · [preparation verification](evidence/verify/2026-11-25-engine-image-sources.md) · [actual image/HTTP verification](evidence/verify/2026-11-25-engine-image-sources-remote.md). Exact runtime contracts and Beta status remain unchanged.
 
 - [Unified design implementation plan](notes/proposed/architecture/2026-11-27-unified-design-plan.md) · [planning review and verification](evidence/verify/2026-11-27-unified-design-plan.md). Implementation and release acceptance remain pending.
+
+- [Failure and authentication contract follow-up](evidence/verify/2026-11-27-feedback-contracts.md) refines the existing unified plan; product implementation remains pending.

@@ -47,6 +47,20 @@ The HTTP-without-envd example stays an unqualified candidate until a real suppor
 
 TM-04 covers the existing-service HTTP, named-command, OpenAPI and combined-tool paths without silently changing protocols after failure. Serving examples use real component configuration and explicit application URLs; dynamic Session instances and application data have their own cleanup. `template build` prepares artifacts, `deploy` publishes resources, create is explicit, and local close does not delete a borrowed instance. Cleanup uses actual instance/template/volume IDs or the platform's management interface.
 
+### Follow-up contract clarification
+
+TM-01 owns initialization authoring semantics; TM-03 owns helper failure/cleanup examples; TM-04 owns authentication examples; TM-05 owns aligned guidance. These refinements stay within the existing tasks; no additional subsystem or completed implementation is implied.
+
+Initialization prepares and validates the complete source in its own staging directory, saves explicitly collected private inputs and preferences for the final path, then publishes into an absent or still-empty destination without overwriting concurrent files. Failure before publication leaves no partial target source; report already-saved private inputs and allow rerunning the original init command. Ordinary unsaved answers are collected again and a changed source version is shown. No cross-store transaction, nonempty-directory takeover or resume command is introduced. After publication the directory is valid; an output failure must not delete it or suggest overwriting it with init.
+The CSV Serving example is an explicitly selected custom-Bearer flow, not a default automatic-token flow. A declared sensitive input collects or reuses an existing application-managed value; absent values fail before deployment, and repeat deployment does not generate or rotate it. CLI private configuration does not populate SDK process environments. SDK-only callers explicitly supply the same existing value from their application's own configuration; no CLI dependency, implicit secret retrieval or second random token is allowed. Normal no-manual-token examples use their declared platform or FC-signed ingress. Do not change only the FC trigger and claim the old Bearer service supports signing.
+A received upload identity remains observable when a later helper stage fails. Preserve the original exception/HTTP details and recognizable cancellation, with safe progress containing the completed stage, known file ID and actual cleanup state. An unknown submission is not safe to replay or automatically delete. Explicit file deletion affects only the caller's selected upload, never a borrowed instance. MCP cancellation/disconnection cannot guarantee delivery of a final error or identity; do not add a recovery daemon or claim durable recovery from exception fields.
+
+Raw HTTP request/invoke keeps its status, allowed headers and body, including non-2xx. CLI and MCP adapters use actual HTTP executor metadata to report non-2xx as failure, not the presence or absence of an exception or an arbitrary business `error` field. A submission returning 202 is accepted, not completed; a completion-promising helper must observe its actual terminal contract. Successful tool output schemas do not constrain error content. Keep native E2B/OpenSandbox exception and process-result semantics intact.
+
+Default MD5 application authentication requires both sides to know the same real instance and historical cloud-template identity. Native connect may obtain platform traffic credentials without recovering that association. A Provider-verified mapping or an explicit caller assertion based on original creation facts may supply it; current Registry aliases, downloaded source and unverified runtime fields may not. The optional shared service binding `template_id` fills an unknown association only, never overwrites a confirmed identity or changes server-side identity, and is distinct from a platform-verified mapping. Compare only identifiers with the same confirmed semantics. Missing identity disables that authentication branch, with no alias guessing or authentication downgrade. The derived value is not strong authentication.
+
+The report service supplies bounded explicit deletion by received file ID. Its helper checks the real HTTP completion status rather than assuming every 2xx JSON body is a finished report. Document the bounded in-memory lifetime and the absence of durable recovery after disconnect; never suggest deleting an entire borrowed instance to clean one upload. Existing schema fields are sufficient for the custom-Bearer sensitive input.
+
 ## Alternatives considered
 
 - Moving parameters or helper installation metadata into `template.yaml` would duplicate initialization and runtime inputs. Registry metadata and ordinary code dependencies already cover those tasks.
@@ -84,6 +98,13 @@ Publication or document checks do not move this implementation plan to `implemen
 
 ## Acceptance criteria
 
+Follow-up acceptance also requires:
+
+- Validate the complete custom-Bearer Registry parameter and matching environment reference, both languages of guidance, missing-input behavior and explicitly provided SDK identity.
+- Exercise real local HTTP success, upload-then-422, cancellation before report, and deletion that preserves another upload and releases capacity; distinguish a test transport from the production SDK.
+- Check source publication failure paths and authentication identity prerequisites in executable consumer acceptance; schema validity alone is not proof.
+
+
 - TM-01 has one consistent v1 authoring contract and semantic checker across complete examples; no additional user binding or internal state file is required.
 - Initialization writes actual supported inputs, preserves private references and temporary override semantics, and does not install or execute helper code.
 - TM-02 delivers a real generated description and ordinary SDK import path. CLI and SDK consume the same applicable service contract without duplicate startup or CLI-state dependence.
@@ -95,3 +116,5 @@ Publication or document checks do not move this implementation plan to `implemen
 - The ADR remains proposed until its record and contribution gates pass; future implementation tasks and releases are not marked complete by publishing this plan.
 
 Document validation and review disposition: [verification](../../../evidence/verify/2026-11-27-unified-design-plan.md).
+
+Follow-up review and verification: [failure and authentication contracts](../../../evidence/verify/2026-11-27-feedback-contracts.md).
